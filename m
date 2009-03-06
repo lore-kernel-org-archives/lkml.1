@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbZCFKUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbZCFKWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbZCFKUM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 05:20:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZCFKT5
+	id S1753620AbZCFKWF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 05:22:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbZCFKVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 05:19:57 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54214 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752925AbZCFKT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 05:19:56 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC][PATCH 0/4] Rework disabling of interrupts during suspend-resume
-Date: Fri, 6 Mar 2009 11:19:29 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7-tst; KDE/4.2.0; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Johannes Berg <johannes@sipsolutions.net>
-References: <200902221837.49396.rjw@sisk.pl> <200903012321.40328.rjw@sisk.pl> <alpine.LFD.2.00.0903051542270.19207@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903051542270.19207@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 6 Mar 2009 05:21:53 -0500
+Received: from batfish.pepperfish.net ([87.237.62.180]:35731 "EHLO
+	flounder.pepperfish.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750880AbZCFKVw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 05:21:52 -0500
+Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
+From: Daniel Silverstone <dsilvers@simtec.co.uk>
+Reply-To: dsilvers@simtec.co.uk
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Richard Hughes <hughsient@gmail.com>, linux-acpi@vger.kernel.org,
+       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org,
+       len.brown@intel.com
+In-Reply-To: <20090306101533.GA6408@srcf.ucam.org>
+References: <20090306003941.GA32403@srcf.ucam.org>
+	 <20090306005234.GA32539@srcf.ucam.org>
+	 <1236330536.12838.2.camel@hughsie-work.lan>
+	 <1236332843.19146.4.camel@petitemort> <20090306095623.GA6014@srcf.ucam.org>
+	 <1236333861.19146.9.camel@petitemort> <20090306100951.GA6268@srcf.ucam.org>
+	 <1236334376.19146.11.camel@petitemort>
+	 <20090306101533.GA6408@srcf.ucam.org>
+Content-Type: text/plain
+Organization: Simtec Electronics
+Date: Fri, 06 Mar 2009 10:21:49 +0000
+Message-Id: <1236334909.19146.16.camel@petitemort>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903061119.33023.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 March 2009, Linus Torvalds wrote:
-> 
-> On Sun, 1 Mar 2009, Rafael J. Wysocki wrote:
-> > 
-> > The following patches modifiy the way in which we handle disabling interrupts
-> > during suspend and enabling them during resume.  They also change the ordering
-> > of the core suspend and hibernation code.
-> 
-> Side note - I've tested them on the EeePC that had trouble resuming due to 
-> interrupt timings, and it suspends and resumes fine with these patches 
-> (modulo some new X problems, but that's what I get for living with 
-> Fedora-11 testing).
-> 
-> Of course, it also suspends and resumes without them, since the CPU "cli" 
-> was sufficient for that machine, and it doesn't have any ACPI issues. But 
-> it's still an ack that at least nothing breaks that I can tell.
+On Fri, 2009-03-06 at 10:15 +0000, Matthew Garrett wrote:
+> > I see. One other thing occurred to me. Is there any way for Hal to know
+> > that the notify stuff is in place and thus doesn't need to
+> > poll /proc/acpi/toshiba/keys? Otherwise it's going to poll it anyway
+> > which fails to remove the periodic wakeups.
+> No. Distributions should build without --enable-toshiba if they ship a 
+> kernel with this functionaliy.
 
-OK, thanks for testing!  The next-step patches (ie. PCI suspend-resume rework)
-are in the works.
+This only makes sense if all the rest of /proc/acpi/toshiba/* is now
+implemented in proper modern kernel facilities. I noticed rfkill
+switches (although I'll have to see if another is needed for the HSDPA
+modems in modern laptops) and a proper brightness control. I assume
+xrandr does what video did, which just leaves the fan control.
 
-Rafael
+D.
+
+-- 
+Daniel Silverstone                              http://www.simtec.co.uk/
+PGP mail accepted and encouraged.            Key Id: 2BC8 4016 2068 7895
+
+
