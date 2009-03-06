@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZCFKlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbZCFKqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbZCFKlk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 05:41:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbZCFKl2
+	id S1755151AbZCFKqW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 05:46:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbZCFKqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 05:41:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37219 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754191AbZCFKl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 05:41:26 -0500
-Date: Fri, 6 Mar 2009 11:41:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/3] [GIT PULL] for tip/tracing/ftrace
-Message-ID: <20090306104106.GF31042@elte.hu>
-References: <20090306031857.686507907@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090306031857.686507907@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 6 Mar 2009 05:46:13 -0500
+Received: from casper.infradead.org ([85.118.1.10]:51804 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753377AbZCFKqN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 05:46:13 -0500
+Subject: Re: [patch 2/2] lockdep: initialize lockdep debugging statistics
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0903060221500.25972@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903050222160.30401@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.0903050223240.30401@chino.kir.corp.google.com>
+	 <1236250159.4228.186.camel@laptop> <20090305110522.GI32407@elte.hu>
+	 <alpine.DEB.2.00.0903051355010.25505@chino.kir.corp.google.com>
+	 <1236328083.5187.1213.camel@laptop>
+	 <alpine.DEB.2.00.0903060149540.26215@chino.kir.corp.google.com>
+	 <1236334756.6326.106.camel@laptop>
+	 <alpine.DEB.2.00.0903060221500.25972@chino.kir.corp.google.com>
+Content-Type: text/plain
+Date: Fri, 06 Mar 2009 11:46:03 +0100
+Message-Id: <1236336363.6326.139.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-03-06 at 02:27 -0800, David Rientjes wrote:
+> That's the point about good software engineering practices: atomic_t 
+> should not be assumed to be another int. 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+We do, and its a rather fundamental assumption. Any implementation not
+conforming is deemed buggy -- esp on the 0 property.
 
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (3):
->       tracing: make all file_operations const
->       tracing: move print of event format to separate file
->       tracing: add format files for ftrace default entries
-> 
-> ----
->  kernel/trace/Makefile               |    1 +
->  kernel/trace/ftrace.c               |   10 +-
->  kernel/trace/ring_buffer.c          |    2 +-
->  kernel/trace/trace.c                |   24 +++---
->  kernel/trace/trace_event_types.h    |  165 +++++++++++++++++++++++++++++++++++
->  kernel/trace/trace_events.c         |   12 ++-
->  kernel/trace/trace_events_stage_2.h |   53 +-----------
->  kernel/trace/trace_export.c         |   81 +++++++++++++++++
->  kernel/trace/trace_format.h         |   55 ++++++++++++
->  kernel/trace/trace_sysprof.c        |    2 +-
->  10 files changed, 329 insertions(+), 76 deletions(-)
+http://lkml.org/lkml/2008/10/28/216
 
-Pulled, thanks Steve!
-
-	Ingo
