@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZCFO0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZCFO2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbZCFO0r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 09:26:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZCFO0i
+	id S1754153AbZCFO2g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 09:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbZCFO2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 09:26:38 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:38976 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751001AbZCFO0h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 09:26:37 -0500
-Date: Fri, 6 Mar 2009 15:26:34 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jim Paris <jim@jtan.com>, Vivien Chappelier <vivien.chappelier@free.fr>,
-       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
-     RAM as block device
-In-Reply-To: <20090306125832.GX11787@kernel.dk>
-Message-ID: <alpine.LRH.2.00.0903061525340.16809@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be> <20090305083701.GQ11787@kernel.dk> <alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be> <20090305110940.GY11787@kernel.dk> <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be>
- <20090306074639.GN11787@kernel.dk> <alpine.LRH.2.00.0903061347360.16809@vixen.sonytel.be> <20090306125832.GX11787@kernel.dk>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Fri, 6 Mar 2009 09:28:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42114 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751897AbZCFO2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 09:28:24 -0500
+Date: Fri, 6 Mar 2009 14:27:35 GMT
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1236265466.31324.9.camel@penberg-laptop>
+References: <1236265466.31324.9.camel@penberg-laptop>
+Subject: [tip:x86/mm] x86: fix uninitialized variable in init_memory_mapping()
+Message-ID: <tip-c77a3b59c624454c501cbfa1a3611d5a00bf9532@git.kernel.org>
+Git-Commit-ID: c77a3b59c624454c501cbfa1a3611d5a00bf9532
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 06 Mar 2009 14:27:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Mar 2009, Jens Axboe wrote:
-> On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
-> > On Fri, 6 Mar 2009, Jens Axboe wrote:
-> > > On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
-> > > > But then I noticed ps3vram_make_request() may be called concurrently,
-> > > > so I had to add a mutex to avoid data corruption. This slows the
-> > > > driver down, and in the end, the version with a thread turns out to be
-> > > > ca. 1% faster. The version without a thread is about 50 lines less
-> > > > code, though.
-> > >
-> > > That is correct, ->make_request_fn may get reentered. I'm not surprised
-> > > that performance dropped if you just shoved everything under a mutex.
-> > > You could be a little more smart and queue concurrent bio's for
-> > > processing when the current one is complete though, there are several
-> > > approaches there that be a lot faster than going all the way through the
-> > > IO stack and scheduler just to avoid concurrency.
-> > 
-> > Yes, using a spinlock and queueing requests on a list if the driver is
-> > busy can be done after 2.6.29...
-> 
-> Certainly. Even just replacing your current mutex with a spinlock during
-> the memcpy() would surely be a lot faster. Or even just grabbing the
-> mutex before calling into the write for the duration of the bio. The way
-> you do it is certain context switch death :-)
+Commit-ID:  c77a3b59c624454c501cbfa1a3611d5a00bf9532
+Gitweb:     http://git.kernel.org/tip/c77a3b59c624454c501cbfa1a3611d5a00bf9532
+Author:     "Pekka Enberg" <penberg@cs.helsinki.fi>
+AuthorDate: Thu, 5 Mar 2009 17:04:26 +0200
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 6 Mar 2009 15:25:52 +0100
 
-It's not just the memcpy(). ps3vram_{up,down}load() call msleep(), so I cannot
-use a spinlock.
+x86: fix uninitialized variable in init_memory_mapping()
 
-With kind regards,
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+LKML-Reference: <1236265466.31324.9.camel@penberg-laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Geert Uytterhoeven
-Software Architect
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+---
+ arch/x86/mm/init.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index 6d63e3d..15219e0 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -134,8 +134,8 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ {
+ 	unsigned long page_size_mask = 0;
+ 	unsigned long start_pfn, end_pfn;
++	unsigned long ret = 0;
+ 	unsigned long pos;
+-	unsigned long ret;
+ 
+ 	struct map_range mr[NR_RANGE_MR];
+ 	int nr_range, i;
