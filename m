@@ -1,45 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbZCFKPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbZCFKQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754350AbZCFKPt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 05:15:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZCFKPj
+	id S1753590AbZCFKQU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 05:16:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbZCFKQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 05:15:39 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:37350 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbZCFKPj (ORCPT
+	Fri, 6 Mar 2009 05:16:01 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52920 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbZCFKQA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 05:15:39 -0500
-Date: Fri, 6 Mar 2009 10:15:33 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Daniel Silverstone <dsilvers@simtec.co.uk>
-Cc: Richard Hughes <hughsient@gmail.com>, linux-acpi@vger.kernel.org,
-       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org,
-       len.brown@intel.com
-Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
-Message-ID: <20090306101533.GA6408@srcf.ucam.org>
-References: <20090306003941.GA32403@srcf.ucam.org> <20090306005234.GA32539@srcf.ucam.org> <1236330536.12838.2.camel@hughsie-work.lan> <1236332843.19146.4.camel@petitemort> <20090306095623.GA6014@srcf.ucam.org> <1236333861.19146.9.camel@petitemort> <20090306100951.GA6268@srcf.ucam.org> <1236334376.19146.11.camel@petitemort>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236334376.19146.11.camel@petitemort>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Fri, 6 Mar 2009 05:16:00 -0500
+Date: Fri, 6 Mar 2009 19:14:36 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Bharata B Rao <bharata@in.ibm.com>, Paul Menage <menage@google.com>,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/4] Memory controller soft limit reclaim on contention
+ (v4)
+Message-Id: <20090306191436.ceeb6e42.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090306100155.GC5482@balbir.in.ibm.com>
+References: <20090306092323.21063.93169.sendpatchset@localhost.localdomain>
+	<20090306092353.21063.11068.sendpatchset@localhost.localdomain>
+	<20090306185124.51a52519.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090306100155.GC5482@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 10:12:56AM +0000, Daniel Silverstone wrote:
+On Fri, 6 Mar 2009 15:31:55 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> I see. One other thing occurred to me. Is there any way for Hal to know
-> that the notify stuff is in place and thus doesn't need to
-> poll /proc/acpi/toshiba/keys? Otherwise it's going to poll it anyway
-> which fails to remove the periodic wakeups.
 
-No. Distributions should build without --enable-toshiba if they ship a 
-kernel with this functionaliy.
+> > > +		if (wait)
+> > > +			wait_for_completion(&mem->wait_on_soft_reclaim);
+> > >  	}
+> > What ???? Why we have to wait here...holding mmap->sem...This is too bad.
+> >
+> 
+> Since mmap_sem is no longer used for pthread_mutex*, I was not sure.
+> That is why I added the comment asking for more review and see what
+> people think about it. We get here only when
+> 
+> 1. The memcg is over its soft limit
+> 2. Tasks/threads belonging to memcg are faulting in more pages
+> 
+> The idea is to throttle them. If we did reclaim inline, like we do for
+> hard limits, we can still end up holding mmap_sem for a long time.
+> 
+This "throttle" is hard to measuer the effect and IIUC, not implemneted in
+vmscan.c ...for global try_to_free_pages() yet.
+Under memory shortage. before reaching here, the thread already called
+try_to_free_pages() or check some memory shorage conditions because
+it called alloc_pages(). So, waiting here is redundant and gives it
+too much penaly.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+
+> > > +	/*
+> > > +	 * This loop can run a while, specially if mem_cgroup's continuously
+> > > +	 * keep exceeding their soft limit and putting the system under
+> > > +	 * pressure
+> > > +	 */
+> > > +	do {
+> > > +		mem = mem_cgroup_get_largest_soft_limit_exceeding_node();
+> > > +		if (!mem)
+> > > +			break;
+> > > +		usage = mem_cgroup_get_node_zone_usage(mem, zone, nid);
+> > > +		if (!usage)
+> > > +			goto skip_reclaim;
+> > 
+> > Why this works well ? if "mem" is the laragest, it will be inserted again
+> > as the largest. Do I miss any ?
+> >
+> 
+> No that is correct, but when reclaim is initiated from a different
+> zone/node combination, we still want mem to show up. 
+....
+your logic is
+==
+   nr_reclaimd = 0;
+   do {
+      mem = select victim.
+      remvoe victim from the RBtree (the largest usage one is selected)
+      if (victim is not good)
+          goto  skip this.
+      reclaimed += shirnk_zone.
+      
+skip_this:
+      if (mem is still exceeds soft limit)
+           insert RB tree again.
+   } while(!nr_reclaimed)
+==
+When this exits loop ?
+
+Thanks,
+-Kame
+
