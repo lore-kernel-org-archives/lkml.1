@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbZCFKIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbZCFKKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbZCFKIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 05:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZCFKIA
+	id S1755298AbZCFKKT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 05:10:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZCFKKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 05:08:00 -0500
-Received: from wa4ehsobe001.messaging.microsoft.com ([216.32.181.11]:15052
-	"EHLO WA4EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751175AbZCFKH7 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 05:07:59 -0500
-X-BigFish: VPS-36(zz1432R98dR936eQ1805M936fKzzzzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KG2XGY-01-EH9-01
-Date: Fri, 6 Mar 2009 11:07:41 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] x86: msr architecture debug code
-Message-ID: <20090306100741.GA12960@alberich.amd.com>
-References: <1236008575.3332.2.camel@localhost.localdomain> <20090302205437.GB14471@elte.hu> <20090305135444.GB7347@alberich.amd.com> <1236262346.2527.3.camel@ht.satnam> <20090305143726.GC7347@alberich.amd.com> <1236268057.2527.23.camel@ht.satnam> <20090305182318.GE7347@alberich.amd.com> <1236278412.3316.8.camel@localhost.localdomain>
+	Fri, 6 Mar 2009 05:10:04 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:45260 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750810AbZCFKKD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 05:10:03 -0500
+Date: Fri, 6 Mar 2009 10:09:51 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Daniel Silverstone <dsilvers@simtec.co.uk>
+Cc: Richard Hughes <hughsient@gmail.com>, linux-acpi@vger.kernel.org,
+       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org,
+       len.brown@intel.com
+Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
+Message-ID: <20090306100951.GA6268@srcf.ucam.org>
+References: <20090306003941.GA32403@srcf.ucam.org> <20090306005234.GA32539@srcf.ucam.org> <1236330536.12838.2.camel@hughsie-work.lan> <1236332843.19146.4.camel@petitemort> <20090306095623.GA6014@srcf.ucam.org> <1236333861.19146.9.camel@petitemort>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1236278412.3316.8.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 06 Mar 2009 10:07:45.0203 (UTC) FILETIME=[650BA830:01C99E43]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1236333861.19146.9.camel@petitemort>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 12:10:12AM +0530, Jaswinder Singh Rajput wrote:
-> On Thu, 2009-03-05 at 19:23 +0100, Andreas Herrmann wrote:
-> > On Thu, Mar 05, 2009 at 09:17:37PM +0530, Jaswinder Singh Rajput wrote:
-> > > 
-> > > You are running these commands on shell when every thing is working.
-> > > 
-> > > What you will do if you are not getting the shell and kernel is dumping
-> > > or rebooting before that.
-> > 
-> > In this case a deep debugfs tree with all the MSR details is not of
-> > use either.
-> > 
+On Fri, Mar 06, 2009 at 10:04:21AM +0000, Daniel Silverstone wrote:
+> On Fri, 2009-03-06 at 09:56 +0000, Matthew Garrett wrote:
+> > Yes, it'll be as functional as it was previously. They can be remapped 
+> > on machines that have a different keymap.
 > 
-> Yes, then functions from msr_debug.c will dump the details on screen if
-> seq is NULL (thats why I am also using printk ;-)
+> Since I don't understand the input layer well enough yet, can you
+> confirm if it is possible to add new mappings in without changing the
+> source? I.E. if laptop <foo> has another hotkey not yet considered, is
+> it just an FDI for hal, or is it a source change in the kernel?
 
-There is no corresponding caller in your patch -- or did I miss it?
-Where will you add it?
-Maybe you are even suggesting to dump all MSRs on panic?
-This wouldn't be helpful at all. Who should sort out the flood of
-information when you've dumped more than 100 MSRs per core on a 16
-core machine?
+Yes, the remapping can be done from userspace.
 
-In contrary to that it makes sense to evaluate and print certain MSRs, e.g.
-- when kernel panics due to uncorrectable MCE or
-- when you are debugging specific stuff and know exactly when to check
-  which MSR
+> > > How will it interact with software stacks like HAL when the lock button
+> > > is pressed?
+> > I don't really understand the question?
+> 
+> It was more: will events come out of both the notify method *and*
+> the /proc/acpi/toshiba/keys stuff, or will they only come out of the
+> notify method if it can be enabled? (I'm just trying to establish that
+> things polling /proc/acpi/toshiba/keys won't end up causing duplicated
+> events).
 
-In the latter case you patch the kernel anyway and then it's no burden
-to add a printk directly in the debug code.
-
-
-Andreas
+Either the kernel or userspace will get the event, but not both. There's 
+an argument for disabling the input code if /proc/acpi/toshiba/keys is 
+open in order to avoid breaking anything that expects to get the code 
+itself.
 
 -- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
-
+Matthew Garrett | mjg59@srcf.ucam.org
