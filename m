@@ -1,138 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbZCFNga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbZCFNgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756161AbZCFNga (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 08:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbZCFNbG
+	id S1756165AbZCFNgr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 08:36:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbZCFNbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 08:31:06 -0500
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:42896 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754386AbZCFNaw (ORCPT
+	Fri, 6 Mar 2009 08:31:07 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:25865 "EHLO
+	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752810AbZCFNa4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 08:30:52 -0500
-X-BigFish: VPS-6(zz18c1K655Oc8kzzzzz32i65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-SS: 5,
-X-WSS-ID: 0KG36US-02-TL1-01
+	Fri, 6 Mar 2009 08:30:56 -0500
+X-BigFish: VPS-2(zz18c1Kzzzzz32i61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KG36UW-01-JL1-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: mingo@redhat.com
 CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
        Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 02/18] dma-debug: add header file and core data structures
-Date: Fri, 6 Mar 2009 14:30:13 +0100
-Message-ID: <1236346229-6618-3-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 10/18] dma-debug: add add checking for map/unmap_sg
+Date: Fri, 6 Mar 2009 14:30:21 +0100
+Message-ID: <1236346229-6618-11-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1236346229-6618-1-git-send-email-joerg.roedel@amd.com>
 References: <1236346229-6618-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 06 Mar 2009 13:30:30.0042 (UTC) FILETIME=[B7DAC7A0:01C99E5F]
+X-OriginalArrivalTime: 06 Mar 2009 13:30:30.0323 (UTC) FILETIME=[B805A830:01C99E5F]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: add groundwork for DMA-API debugging
+Impact: add debug callbacks for dma_{un}map_sg
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- include/linux/dma-debug.h |   25 +++++++++++++++++++++++++
- lib/Makefile              |    2 ++
- lib/dma-debug.c           |   42 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 69 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/dma-debug.h
- create mode 100644 lib/dma-debug.c
+ include/linux/dma-debug.h |   16 ++++++++++
+ lib/dma-debug.c           |   73 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 89 insertions(+), 0 deletions(-)
 
 diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
-new file mode 100644
-index 0000000..ce4ace7
---- /dev/null
+index 65f7352..ee9fdb3 100644
+--- a/include/linux/dma-debug.h
 +++ b/include/linux/dma-debug.h
-@@ -0,0 +1,25 @@
-+/*
-+ * Copyright (C) 2008 Advanced Micro Devices, Inc.
-+ *
-+ * Author: Joerg Roedel <joerg.roedel@amd.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#ifndef __DMA_DEBUG_H
-+#define __DMA_DEBUG_H
-+
-+struct device;
-+
-+#endif /* __DMA_DEBUG_H */
-diff --git a/lib/Makefile b/lib/Makefile
-index 32b0e64..50b48cf 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -84,6 +84,8 @@ obj-$(CONFIG_HAVE_ARCH_TRACEHOOK) += syscall.o
+@@ -23,6 +23,7 @@
+ #include <linux/types.h>
  
- obj-$(CONFIG_DYNAMIC_PRINTK_DEBUG) += dynamic_printk.o
+ struct device;
++struct scatterlist;
  
-+obj-$(CONFIG_DMA_API_DEBUG) += dma-debug.o
+ #ifdef CONFIG_DMA_API_DEBUG
+ 
+@@ -36,6 +37,11 @@ extern void debug_dma_map_page(struct device *dev, struct page *page,
+ extern void debug_dma_unmap_page(struct device *dev, dma_addr_t addr,
+ 				 size_t size, int direction, bool map_single);
+ 
++extern void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
++			     int nents, int mapped_ents, int direction);
 +
- hostprogs-y	:= gen_crc32table
- clean-files	:= crc32table.h
++extern void debug_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
++			       int nelems, int dir);
+ 
+ #else /* CONFIG_DMA_API_DEBUG */
+ 
+@@ -56,6 +62,16 @@ static inline void debug_dma_unmap_page(struct device *dev, dma_addr_t addr,
+ {
+ }
+ 
++static inline void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
++				    int nents, int mapped_ents, int direction)
++{
++}
++
++static inline void debug_dma_unmap_sg(struct device *dev,
++				      struct scatterlist *sglist,
++				      int nelems, int dir)
++{
++}
+ 
+ #endif /* CONFIG_DMA_API_DEBUG */
  
 diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-new file mode 100644
-index 0000000..3109971
---- /dev/null
+index a2ed2b7..26e40e9 100644
+--- a/lib/dma-debug.c
 +++ b/lib/dma-debug.c
-@@ -0,0 +1,42 @@
-+/*
-+ * Copyright (C) 2008 Advanced Micro Devices, Inc.
-+ *
-+ * Author: Joerg Roedel <joerg.roedel@amd.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
+@@ -17,6 +17,7 @@
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+  */
+ 
++#include <linux/scatterlist.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/dma-debug.h>
+ #include <linux/spinlock.h>
+@@ -619,3 +620,75 @@ void debug_dma_unmap_page(struct device *dev, dma_addr_t addr,
+ }
+ EXPORT_SYMBOL(debug_dma_unmap_page);
+ 
++void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
++		      int nents, int mapped_ents, int direction)
++{
++	struct dma_debug_entry *entry;
++	struct scatterlist *s;
++	int i;
 +
-+#include <linux/dma-debug.h>
-+#include <linux/types.h>
-+#include <linux/list.h>
++	if (unlikely(global_disable))
++		return;
 +
-+enum {
-+	dma_debug_single,
-+	dma_debug_page,
-+	dma_debug_sg,
-+	dma_debug_coherent,
-+};
++	for_each_sg(sg, s, mapped_ents, i) {
++		entry = dma_entry_alloc();
++		if (!entry)
++			return;
 +
-+struct dma_debug_entry {
-+	struct list_head list;
-+	struct device    *dev;
-+	int              type;
-+	phys_addr_t      paddr;
-+	u64              dev_addr;
-+	u64              size;
-+	int              direction;
-+	int		 sg_call_ents;
-+	int		 sg_mapped_ents;
-+};
++		entry->type           = dma_debug_sg;
++		entry->dev            = dev;
++		entry->paddr          = sg_phys(s);
++		entry->size           = s->length;
++		entry->dev_addr       = s->dma_address;
++		entry->direction      = direction;
++		entry->sg_call_ents   = nents;
++		entry->sg_mapped_ents = mapped_ents;
++
++		check_for_stack(dev, sg_virt(s));
++
++		add_dma_entry(entry);
++	}
++}
++EXPORT_SYMBOL(debug_dma_map_sg);
++
++void debug_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
++			int nelems, int dir)
++{
++	struct dma_debug_entry *entry;
++	struct scatterlist *s;
++	int mapped_ents = 0, i;
++	unsigned long flags;
++
++	if (unlikely(global_disable))
++		return;
++
++	for_each_sg(sglist, s, nelems, i) {
++
++		struct dma_debug_entry ref = {
++			.type           = dma_debug_sg,
++			.dev            = dev,
++			.paddr          = sg_phys(s),
++			.dev_addr       = s->dma_address,
++			.size           = s->length,
++			.direction      = dir,
++			.sg_call_ents   = 0,
++		};
++
++		if (mapped_ents && i >= mapped_ents)
++			break;
++
++		if (mapped_ents == 0) {
++			struct hash_bucket *bucket;
++			ref.sg_call_ents = nelems;
++			bucket = get_hash_bucket(&ref, &flags);
++			entry = hash_bucket_find(bucket, &ref);
++			if (entry)
++				mapped_ents = entry->sg_mapped_ents;
++			put_hash_bucket(bucket, &flags);
++		}
++
++		check_unmap(&ref);
++	}
++}
++EXPORT_SYMBOL(debug_dma_unmap_sg);
 +
 -- 
 1.5.6.4
