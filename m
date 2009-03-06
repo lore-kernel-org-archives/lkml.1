@@ -1,99 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964AbZCFHES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZCFHFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754964AbZCFHES (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 02:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZCFHEH
+	id S1754877AbZCFHFt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 02:05:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbZCFHFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 02:04:07 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57951 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752020AbZCFHEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 02:04:05 -0500
-Message-ID: <49B0CAEC.80801@cn.fujitsu.com>
-Date: Fri, 06 Mar 2009 15:04:12 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [RFC][PATCH] kmemdup_from_user(): introduce
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Mar 2009 02:05:40 -0500
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:54836 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899AbZCFHFj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 02:05:39 -0500
+Date: Fri, 6 Mar 2009 07:05:23 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andreas Robinson <andr345@gmail.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org
+Subject: fastboot kernel parameter
+Message-ID: <20090306070523.GA26395@silver.sucs.org>
+References: <cc43514a0902170242m5af7e511ne00f424f06a5da22@mail.gmail.com> <ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com> <200902181528.29697.rusty@rustcorp.com.au> <ac3eb2510902180115o4690a335n129e4df695540de0@mail.gmail.com> <1234952753.10531.48.camel@andreas-laptop> <cc43514a0902191637h5a9680c5id95f7d6c32cca472@mail.gmail.com> <ac3eb2510902191755i391d4defnc5a514f4525ec6cf@mail.gmail.com> <1235216636.7025.1023.camel@andreas-laptop> <1236004353.10055.49.camel@andreas-laptop> <20090302082003.1bb7bdc5@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090302082003.1bb7bdc5@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I notice there are many places doing copy_from_user() which follows
-kmalloc():
+On Mon, Mar 02, 2009 at 08:20:03AM -0800, Arjan van de Ven wrote:
+> 
+> I would strongly suggest that you turn on the async function calls and
 
-        dst = kmalloc(len, GFP_KERNEL);
-        if (!dst)
-                return -ENOMEM;
-        if (copy_from_user(dst, src, len)) {
-		kfree(dst);
-		return -EFAULT
-	}
+Are async calls only turned on if you boot with the "fastboot" commandline
+parameter? If so could a mention of it be added to
+kernel-parameters as I don't see anything about it when I glanced at
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=Documentation/kernel-parameters.txt;h=54f21a5c262b02ef6cb4718f72b8357693197cf3;hb=HEAD
+...
 
-kmemdup_from_user() is a wrapper of the above code. With this new
-function, we don't have to write 'len' twice, which can lead to
-typos/mistakes. It also produces smaller code.
-
-A qucik grep shows 250+ places where kmemdup_from_user() *may* be
-used. I'll prepare a patchset to do this conversion.
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/string.h |    1 +
- mm/util.c              |   24 ++++++++++++++++++++++++
- 2 files changed, 25 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/string.h b/include/linux/string.h
-index 76ec218..397e622 100644
---- a/include/linux/string.h
-+++ b/include/linux/string.h
-@@ -105,6 +105,7 @@ extern void * memchr(const void *,int,__kernel_size_t);
- extern char *kstrdup(const char *s, gfp_t gfp);
- extern char *kstrndup(const char *s, size_t len, gfp_t gfp);
- extern void *kmemdup(const void *src, size_t len, gfp_t gfp);
-+extern void *kmemdup_from_user(const void __user *src, size_t len, gfp_t gfp);
- 
- extern char **argv_split(gfp_t gfp, const char *str, int *argcp);
- extern void argv_free(char **argv);
-diff --git a/mm/util.c b/mm/util.c
-index 37eaccd..a608ebb 100644
---- a/mm/util.c
-+++ b/mm/util.c
-@@ -70,6 +70,30 @@ void *kmemdup(const void *src, size_t len, gfp_t gfp)
- EXPORT_SYMBOL(kmemdup);
- 
- /**
-+ * kmemdup_from_user - duplicate memory region from user space
-+ *
-+ * @src: source address in user space
-+ * @len: number of bytes to copy
-+ * @gfp: GFP mask to use
-+ */
-+void *kmemdup_from_user(const void __user *src, size_t len, gfp_t gfp)
-+{
-+	void *p;
-+
-+	p = kmalloc_track_caller(len, gfp);
-+	if (!p)
-+		return ERR_PTR(-ENOMEM);
-+
-+	if (copy_from_user(p, src, len)) {
-+		kfree(p);
-+		return ERR_PTR(-EFAULT);
-+	}
-+
-+	return p;
-+}
-+EXPORT_SYMBOL(kmemdup_from_user);
-+
-+/**
-  * __krealloc - like krealloc() but don't free @p.
-  * @p: object to reallocate memory for.
-  * @new_size: how many bytes of memory are required.
 -- 
-1.5.4.rc3
+Sitsofe | http://sucs.org/~sits/
