@@ -1,114 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbZCGC7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZCGDtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756402AbZCGC7A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 21:59:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756126AbZCGC6f
+	id S1755239AbZCGDtd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 22:49:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbZCGDtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 21:58:35 -0500
-Received: from ozlabs.org ([203.10.76.45]:43519 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756122AbZCGC6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 21:58:33 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: lenb@kernel.org
-Subject: [PATCH] acpi: simplify module_param namespace
-Date: Sat, 7 Mar 2009 13:28:27 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+	Fri, 6 Mar 2009 22:49:23 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:58718 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753490AbZCGDtX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 22:49:23 -0500
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200903071328.28113.rusty@rustcorp.com.au>
+In-Reply-To: <49B09126.1040204@oracle.com>
+References: <200903060051.n260p4gp022115@imap1.linux-foundation.org>
+	 <49B09126.1040204@oracle.com>
+Date: Fri, 6 Mar 2009 22:49:20 -0500
+X-Google-Sender-Auth: 41468aa7266bee32
+Message-ID: <5aa163d00903061949o6de1753ep9fe3fb0fbbaa3c1b@mail.gmail.com>
+Subject: Re: [PATCH -mmotm] xpad: fix build error and warnings
+From: Mike Murphy <mamurph@cs.clemson.edu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(I've been holding this for a while: if you really hate it I'll delete it)
+On Thu, Mar 5, 2009 at 9:57 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> Add a dummy xpad_send_led_command() for the case of
+> CONFIG_JOYSTICK_XPAD_LEDS=n.  Fixes this build error:
+>
+> ERROR: "xpad_send_led_command" [drivers/input/joystick/xpad.ko] undefined!
+>
+> Remove 2 duplicate function prototypes in xpad.h.
+>
+> Fix these xpad.h warnings:
+> drivers/input/joystick/xpad.h:231: warning: 'enum led_brightness' declared inside parameter list
+> drivers/input/joystick/xpad.h:231: warning: its scope is only this definition or declaration, which is probably not what you want
+> drivers/input/joystick/xpad.h:231: warning: 'struct led_classdev' declared inside parameter list
+> drivers/input/joystick/xpad.h:231: warning: 'xpad_led_set' declared 'static' but never defined
+>
+...
 
-Rather than overriding MODULE_PARAM_PREFIX, build via acpi.o so
-KBUILD_MODNAME is set to "acpi".
+Thanks Randy. I found the prototype for xpad_deinit_output to be
+missing and will have a patch shortly. I will also be updating the
+out-of-tree distribution of this driver version to match the current
+-mm tree version:
 
-This is the logical way to do it, even though acpi cannot be a module
-due to these config options being bool.
+http://cirg.cs.clemson.edu/~mamurph/pub/xpad/
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- drivers/acpi/Makefile |   10 ++++++----
- drivers/acpi/debug.c  |    5 -----
- drivers/acpi/power.c  |    4 ----
- drivers/acpi/system.c |    4 ----
- 4 files changed, 6 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
---- a/drivers/acpi/Makefile
-+++ b/drivers/acpi/Makefile
-@@ -14,8 +14,13 @@ obj-$(CONFIG_X86)		+= blacklist.o
- #
- # ACPI Core Subsystem (Interpreter)
- #
--obj-y				+= osl.o utils.o reboot.o\
-+obj-y				+= acpi.o \
- 					acpica/
-+
-+# "acpi." module_param namespace.
-+acpi-y				+= osl.o utils.o reboot.o power.o \
-+					system.o event.o
-+acpi-$(CONFIG_ACPI_DEBUG)	+= debug.o
- 
- # sleep related files
- obj-y				+= wakeup.o
-@@ -51,9 +56,6 @@ obj-$(CONFIG_ACPI_PROCESSOR)	+= processo
- obj-$(CONFIG_ACPI_PROCESSOR)	+= processor.o
- obj-$(CONFIG_ACPI_CONTAINER)	+= container.o
- obj-$(CONFIG_ACPI_THERMAL)	+= thermal.o
--obj-y				+= power.o
--obj-y				+= system.o event.o
--obj-$(CONFIG_ACPI_DEBUG)	+= debug.o
- obj-$(CONFIG_ACPI_NUMA)		+= numa.o
- obj-$(CONFIG_ACPI_HOTPLUG_MEMORY)	+= acpi_memhotplug.o
- obj-$(CONFIG_ACPI_PROCFS_POWER)	+= cm_sbs.o
-diff --git a/drivers/acpi/debug.c b/drivers/acpi/debug.c
---- a/drivers/acpi/debug.c
-+++ b/drivers/acpi/debug.c
-@@ -12,11 +12,6 @@
- 
- #define _COMPONENT		ACPI_SYSTEM_COMPONENT
- ACPI_MODULE_NAME("debug");
--
--#ifdef MODULE_PARAM_PREFIX
--#undef MODULE_PARAM_PREFIX
--#endif
--#define MODULE_PARAM_PREFIX "acpi."
- 
- struct acpi_dlayer {
- 	const char *name;
-diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
---- a/drivers/acpi/power.c
-+++ b/drivers/acpi/power.c
-@@ -54,10 +54,6 @@ ACPI_MODULE_NAME("power");
- #define ACPI_POWER_RESOURCE_STATE_ON	0x01
- #define ACPI_POWER_RESOURCE_STATE_UNKNOWN 0xFF
- 
--#ifdef MODULE_PARAM_PREFIX
--#undef MODULE_PARAM_PREFIX
--#endif
--#define MODULE_PARAM_PREFIX "acpi."
- int acpi_power_nocheck;
- module_param_named(power_nocheck, acpi_power_nocheck, bool, 000);
- 
-diff --git a/drivers/acpi/system.c b/drivers/acpi/system.c
---- a/drivers/acpi/system.c
-+++ b/drivers/acpi/system.c
-@@ -33,10 +33,6 @@
- 
- #define _COMPONENT		ACPI_SYSTEM_COMPONENT
- ACPI_MODULE_NAME("system");
--#ifdef MODULE_PARAM_PREFIX
--#undef MODULE_PARAM_PREFIX
--#endif
--#define MODULE_PARAM_PREFIX "acpi."
- 
- #define ACPI_SYSTEM_CLASS		"system"
- #define ACPI_SYSTEM_DEVICE_NAME		"System"
+Mike
+-- 
+Mike Murphy
+Ph.D. Candidate and NSF Graduate Research Fellow
+Clemson University School of Computing
+120 McAdams Hall
+Clemson, SC 29634-0974 USA
+Tel: +1 864.656.2838   Fax: +1 864.656.0145
+http://cirg.cs.clemson.edu/~mamurph
