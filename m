@@ -1,99 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZCGQsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbZCGQvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755673AbZCGQsN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 11:48:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbZCGQr4
+	id S1755830AbZCGQvb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 11:51:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZCGQvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 11:47:56 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44944 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755265AbZCGQr4 (ORCPT
+	Sat, 7 Mar 2009 11:51:22 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:2627 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752334AbZCGQvV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 11:47:56 -0500
-Date: Sat, 7 Mar 2009 08:48:05 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, adobriyan@gmail.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH -v2] memdup_user(): introduce
-Message-ID: <20090307084805.7cf3d574@infradead.org>
-In-Reply-To: <20090306150335.c512c1b6.akpm@linux-foundation.org>
-References: <49B0CAEC.80801@cn.fujitsu.com>
-	<20090306082056.GB3450@x200.localdomain>
-	<49B0DE89.9000401@cn.fujitsu.com>
-	<20090306003900.a031a914.akpm@linux-foundation.org>
-	<49B0E67C.2090404@cn.fujitsu.com>
-	<20090306011548.ffdf9cbc.akpm@linux-foundation.org>
-	<49B0F1B9.1080903@cn.fujitsu.com>
-	<20090306150335.c512c1b6.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 7 Mar 2009 11:51:21 -0500
+Date: Sat, 7 Mar 2009 11:51:19 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: LKML <linux-kernel@vger.kernel.org>, <Arve@smtp1.linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] [RFC][PATCH][1/8] PM: Rework handling of interrupts
+ during suspend-resume (rev. 5)
+In-Reply-To: <200903071120.53901.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0903071143340.5732-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Mar 2009 15:03:35 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Sat, 7 Mar 2009, Rafael J. Wysocki wrote:
 
-> >  
-> >  /**
-> > + * memdup_user - duplicate memory region from user space
-> > + *
-> > + * @src: source address in user space
-> > + * @len: number of bytes to copy
-> > + * @gfp: GFP mask to use
-> > + *
-> > + * Returns an ERR_PTR() on failure.
-> > + */
-> > +void *memdup_user(const void __user *src, size_t len, gfp_t gfp)
-> > +{
-> > +	void *p;
-> > +
-> > +	p = kmalloc_track_caller(len, gfp);
-> > +	if (!p)
-> > +		return ERR_PTR(-ENOMEM);
-> > +
-> > +	if (copy_from_user(p, src, len)) {
-> > +		kfree(p);
-> > +		return ERR_PTR(-EFAULT);
-> > +	}
-> > +
-> > +	return p;
-> > +}
-> > +EXPORT_SYMBOL(memdup_user);
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Introduce two helper functions allowing us to prevent device drivers
+> from getting any interrupts (without disabling interrupts on the CPU)
+> during suspend (or hibernation) and to make them start to receive
+> interrupts again during the subsequent resume, respectively.  These
+> functions make it possible to keep timer interrupts enabled while the
+> "late" suspend and "early" resume callbacks provided by device
+> drivers are being executed.
+> 
+> Use these functions to rework the handling of interrupts during
+> suspend (hibernation) and resume.  Namely, interrupts will only be
+> disabled on the CPU right before suspending sysdevs, while device
+> drivers will be prevented from receiving interrupts, with the help of
+> the new helper function, before their "late" suspend callbacks run
+> (and analogously during resume).
+> 
+> In addition, since the device interrups are now disabled before the
+> CPU has turned all interrupts off and the CPU will ACK the interrupts
+> setting the IRQ_PENDING bit for them, check in sysdev_suspend() if
+> any wake-up interrupts are pending and abort suspend if that's the
+> case.
 
-Hi,
+One thing about this isn't clear: the distinction between "wake-up" 
+interrupts and other interrupts.
 
-I like the general idea of this a lot; it will make things much less
-error prone (and we can add some sanity checks on "len" to catch the
-standard security holes around copy_from_user usage). I'd even also
-want a memdup_array() like thing in the style of calloc().
+In an ideal world, the only pending interrupts during sysdev_suspend
+would be wake-up interrupts, because drivers would have prevented their
+devices from generating any other kind of IRQ and would have done all
+the necessary synchronization as part of their suspend (_not_
+suspend_late) methods.  Thus there would be no need to distinguish
+between wake-up and non-wake-up interrupts.
 
-However, I have two questions/suggestions for improvement:
+So perhaps you're worried about drivers that aren't sufficiently
+clever.  Or is something deeper going on?
 
-I would like to question the use of the gfp argument here;
-copy_from_user sleeps, so you can't use GFP_ATOMIC anyway.
-You can't use GFP_NOFS etc, because the pagefault path will happily do
-things that are equivalent, if not identical, to GFP_KERNEL.
+Alan Stern
 
-So the only value you can pass in correctly, as far as I can see, is
-GFP_KERNEL. Am I wrong?
-
-A second thing.. I'd like to have this function return NULL on failure;
-error checking a pointer for NULL is so much easier than testing for
-anything else; the only distinction is -ENOMEM versus -EFAULT, and I'm
-not sure that that is worth the complexity on all callers.
-
-
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
