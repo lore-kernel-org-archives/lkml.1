@@ -1,50 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbZCGPoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbZCGPoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754937AbZCGPoj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 10:44:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZCGPoa
+	id S1752780AbZCGPoz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 10:44:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbZCGPop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 10:44:30 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:38969 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751656AbZCGPo3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 10:44:29 -0500
-Date: Sat, 7 Mar 2009 15:44:24 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hal@lists.freedesktop.org, Richard Hughes <hughsient@gmail.com>
-Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
-Message-ID: <20090307154424.GA3909@srcf.ucam.org>
-References: <20090306003941.GA32403@srcf.ucam.org> <E1LfqwF-000B1G-00.arvidjaar-mail-ru@mx3.mail.ru> <20090307150640.GA3516@srcf.ucam.org> <200903071839.16508.arvidjaar@mail.ru>
+	Sat, 7 Mar 2009 10:44:45 -0500
+Received: from www.tglx.de ([62.245.132.106]:40976 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755282AbZCGPoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 10:44:44 -0500
+Date: Sat, 7 Mar 2009 16:44:17 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Darren Hart <dvhltc@us.ibm.com>
+cc: "lkml, " <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Sripathi Kodi <sripathik@in.ibm.com>,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+Subject: Re: [TIP][RFC 5/7] rt_mutex: add proxy lock routines
+In-Reply-To: <49AC76EF.4030402@us.ibm.com>
+Message-ID: <alpine.LFD.2.00.0903071631060.29264@localhost.localdomain>
+References: <49AC73A9.4040804@us.ibm.com> <49AC76EF.4030402@us.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903071839.16508.arvidjaar@mail.ru>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 07, 2009 at 06:38:53PM +0300, Andrey Borzenkov wrote:
+On Mon, 2 Mar 2009, Darren Hart wrote:
+> /**
+> + * rt_mutex_start_proxy_lock - prepare another task to take the lock
 
-> - patch toshiba_acpi to return KEY_SUSPEND/KEY_HIBERNATE instead of 
-> KEY_SLEEP/KEY_SUSPEND. This depends on commit 
-> 6932b918e05b06165ed3457a9f3aa279099a7cbd in linux-next.
-> 
-> - patch HAL to recognize KEY_HIBERNATE and return "suspend" for 
-> KEY_SUSPEND; right now it is:
-> 
->         [KEY_SLEEP] = "sleep",
->         [KEY_SUSPEND] = "hibernate",
+Hmm. _start_ sounds weird. Also we do not prepare another task to take
+the lock. We either take the lock on behalf on another task or block
+that task on the lock.
 
-Ugh. Why are we changing this? The semantics were pretty clear before. 
-The KEY_SUSPEND to hibernate mapping was decided years ago, and it's 
-clearly an incompatible change as far as userspace goes.
+> + * @lock:		the rt_mutex to take
+> + * @waiter:		the rt_mutex_waiter initialized by the waiter
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+  initialized by the caller perhaps ?
+
+> + * @task:		the task to prepare
+> + * @detext_deadlock:	passed to task_blocks_on_rt_mutex
+
+That's not interesting where it is passed to. The argument tells us,
+whether deadlock detection needs to be done or not.
+
+> + * The lock should have an owner, and it should not be task.
+
+Why ? The lock can have no owner, if the previous owner released it
+before we took lock->wait_lock.
+
+> + * Special API call for FUTEX_REQUEUE_PI support.
+> + */
+> +int rt_mutex_start_proxy_lock(struct rt_mutex *lock,
+> +			      struct rt_mutex_waiter *waiter,
+> +			      struct task_struct *task, int detect_deadlock)
+> +{
+> +	int ret;
+> +
+> +	spin_lock(&lock->wait_lock);
+
+You need to try to take the lock on behalf of task here under
+lock->wait_lock to avoid an enqueue on an ownerless rtmutex.
+
+> +
+> +/**
+> + * rt_mutex_finish_proxy_lock - Complete the taking of the lock initialized
+> on
+> + *                              our behalf by another thread.
+
+IIRC this needs to be a single line. Or does kerneldoc support this now ?
+
+> + * @lock: the rt_mutex we were woken on
+> + * @to: the timeout, null if none. hrtimer should already have been started.
+> + * @waiter: the pre-initialized rt_mutex_waiter
+> + * @detect_deadlock: for use by __rt_mutex_slowlock
+
+See above.
+
+Thanks,
+
+	tglx
