@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbZCGAP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZCGASB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756454AbZCGAP3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 19:15:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZCGAPR
+	id S1756758AbZCGASB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 19:18:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbZCGARw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 19:15:17 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41684 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbZCGAPP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 19:15:15 -0500
-Message-ID: <49B1BBB8.7010806@zytor.com>
-Date: Fri, 06 Mar 2009 16:11:36 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Fri, 6 Mar 2009 19:17:52 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:51047 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755138AbZCGARv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 19:17:51 -0500
+Message-ID: <49B1BD2B.1040500@us.ibm.com>
+Date: Fri, 06 Mar 2009 16:17:47 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Yinghai Lu <yinghai@kernel.org>, mingo@elte.hu,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: introduce bootmem_state
-References: <> <1236257708-27269-7-git-send-email-penberg@cs.helsinki.fi> <49B02498.9080300@kernel.org> <49B02C68.1030203@cs.helsinki.fi> <49B0640A.5080607@kernel.org> <49B0BF46.4080405@zytor.com> <49B19FB4.40909@goop.org> <49B1B2E9.5050507@zytor.com> <49B1BB6F.2080800@goop.org>
-In-Reply-To: <49B1BB6F.2080800@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "lkml, " <linux-kernel@vger.kernel.org>
+Subject: Re: Dynamically determine if kernel includes CFS Scheduler
+References: <49B18B2E.606@us.ibm.com> <20090306225312.GA25593@silver.sucs.org> <49B1AB3A.2050303@us.ibm.com> <20090306230804.GA963@silver.sucs.org>
+In-Reply-To: <20090306230804.GA963@silver.sucs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
+Sitsofe Wheeler wrote:
+> On Fri, Mar 06, 2009 at 03:01:14PM -0800, Darren Hart wrote:
+>> So I am of course in agreement with both you and Peter.  In this case, 
+>> the development team of an existing product is trying to move away from 
+>> heavy use of sched_yield(), and the CFS scheduler provides some 
 > 
-> The total number of states is always going to be subsys1 * subsys2 * 
-> ..., but folding them all into one state variable only makes sense if we 
-> have a well-defined set of states *and* transitions between them.  But 
-> even then it implies that we have enough coupling between our subsystems 
-> that we would even care what their aggregate state is, which is already 
-> a bad idea.  If we keep the internal workings of our subsystems as 
-> internal details, then having private state variables is the way to go.
-> 
-> The real problem with system_state is that it has a few broadly-defined 
-> values, but no real explanation of what they mean, so they end up 
-> getting used in inappropriate ways (like the virt_addr_valid() thing I 
-> fixed yesterday).
-> 
+> Hmm. The only thing I'll say about checking kernel versions is: do some
+> tests/checks with the different enterprise distro kernels. I don't think
+> they tend to do big backports any more but if they have that kernel
+> version check could become tricky...
 
-Obviously.
+Right, excellent point.  Regardless of how thing are right now, relying 
+on the kernel revision is a bad idea for this reason.
 
-	-hpa
-
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
