@@ -1,40 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbZCGJNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754399AbZCGJ1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753858AbZCGJNy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 04:13:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZCGJNi
+	id S1754399AbZCGJ1v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 04:27:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZCGJ1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 04:13:38 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:42091 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752589AbZCGJNh (ORCPT
+	Sat, 7 Mar 2009 04:27:39 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:55086 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752067AbZCGJ1h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 04:13:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=VdXmefMdw6xqQDhhsU8HLHS1UqGhJmUlGb7SrgphD6Xg9phAfHrfzRLVySbM3034Cd
-         +WgODZOmNXkXOUt4ZhHu3xcmTFiiWN2vVDU9GHB9Dl+YCCQ1yR2aA2usGu7fAb4fvZ5g
-         cTztEjTqfxKZ58WCO4nQJj/CcTLculZYWZ7bg=
-Message-ID: <49B23ABC.7030304@gmail.com>
-Date: Sat, 07 Mar 2009 10:13:32 +0100
+	Sat, 7 Mar 2009 04:27:37 -0500
 From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-CC: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add function spin_event_timeout()
-References: <1236384801-10305-1-git-send-email-timur@freescale.com>	 <adaiqmmf87v.fsf@cisco.com> <ed82fe3e0903061725y40dc246ehd3482690ee3898fa@mail.gmail.com>
-In-Reply-To: <ed82fe3e0903061725y40dc246ehd3482690ee3898fa@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Nick Kossifidis <mickflemm@gmail.com>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Bob Copeland <me@bobcopeland.com>
+Subject: [PATCH 1/2] ath5k: constify stuff
+Date: Sat,  7 Mar 2009 10:26:41 +0100
+Message-Id: <1236418002-2189-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7.3.2009 02:25, Timur Tabi wrote:
-> Ok.  I'll post version 2 on Monday.  Anything else I'm missing?
+Make some structures const to place them in .rodata, since we won't
+change them.
 
-Use time_after().
+Most important parts of objdump -h:
+-  0 .text         00011170
++  0 .text         00011140
+-  5 .rodata       0000828e
++  5 .rodata       0000895e
+- 13 .data         00000560
++ 13 .data         00000110
+- 14 .devinit.data 00000260
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Nick Kossifidis <mickflemm@gmail.com>
+Cc: Luis R. Rodriguez <lrodriguez@atheros.com>
+Cc: Bob Copeland <me@bobcopeland.com>
+---
+ drivers/net/wireless/ath5k/attach.c |   13 ++++++-------
+ drivers/net/wireless/ath5k/base.c   |    8 ++++----
+ drivers/net/wireless/ath5k/debug.c  |   10 +++++-----
+ drivers/net/wireless/ath5k/reset.c  |    2 +-
+ 4 files changed, 16 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/net/wireless/ath5k/attach.c b/drivers/net/wireless/ath5k/attach.c
+index 05bc5cb..656cb9d 100644
+--- a/drivers/net/wireless/ath5k/attach.c
++++ b/drivers/net/wireless/ath5k/attach.c
+@@ -34,14 +34,14 @@
+ static int ath5k_hw_post(struct ath5k_hw *ah)
+ {
+ 
+-	int i, c;
+-	u16 cur_reg;
+-	u16 regs[2] = {AR5K_STA_ID0, AR5K_PHY(8)};
+-	u32 var_pattern;
+-	u32 static_pattern[4] = {
++	static const u32 static_pattern[4] = {
+ 		0x55555555,	0xaaaaaaaa,
+ 		0x66666666,	0x99999999
+ 	};
++	static const u16 regs[2] = { AR5K_STA_ID0, AR5K_PHY(8) };
++	int i, c;
++	u16 cur_reg;
++	u32 var_pattern;
+ 	u32 init_val;
+ 	u32 cur_val;
+ 
+@@ -106,7 +106,6 @@ struct ath5k_hw *ath5k_hw_attach(struct ath5k_softc *sc, u8 mac_version)
+ {
+ 	struct ath5k_hw *ah;
+ 	struct pci_dev *pdev = sc->pdev;
+-	u8 mac[ETH_ALEN] = {};
+ 	int ret;
+ 	u32 srev;
+ 
+@@ -312,7 +311,7 @@ struct ath5k_hw *ath5k_hw_attach(struct ath5k_softc *sc, u8 mac_version)
+ 	}
+ 
+ 	/* MAC address is cleared until add_interface */
+-	ath5k_hw_set_lladdr(ah, mac);
++	ath5k_hw_set_lladdr(ah, (u8[ETH_ALEN]){});
+ 
+ 	/* Set BSSID to bcast address: ff:ff:ff:ff:ff:ff for now */
+ 	memset(ah->ah_bssid, 0xff, ETH_ALEN);
+diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
+index 08d691d..780fe6c 100644
+--- a/drivers/net/wireless/ath5k/base.c
++++ b/drivers/net/wireless/ath5k/base.c
+@@ -79,7 +79,7 @@ MODULE_VERSION("0.6.0 (EXPERIMENTAL)");
+ 
+ 
+ /* Known PCI ids */
+-static struct pci_device_id ath5k_pci_id_table[] __devinitdata = {
++static const struct pci_device_id ath5k_pci_id_table[] = {
+ 	{ PCI_VDEVICE(ATHEROS, 0x0207), .driver_data = AR5K_AR5210 }, /* 5210 early */
+ 	{ PCI_VDEVICE(ATHEROS, 0x0007), .driver_data = AR5K_AR5210 }, /* 5210 */
+ 	{ PCI_VDEVICE(ATHEROS, 0x0011), .driver_data = AR5K_AR5211 }, /* 5311 - this is on AHB bus !*/
+@@ -103,7 +103,7 @@ static struct pci_device_id ath5k_pci_id_table[] __devinitdata = {
+ MODULE_DEVICE_TABLE(pci, ath5k_pci_id_table);
+ 
+ /* Known SREVs */
+-static struct ath5k_srev_name srev_names[] = {
++static const struct ath5k_srev_name srev_names[] = {
+ 	{ "5210",	AR5K_VERSION_MAC,	AR5K_SREV_AR5210 },
+ 	{ "5311",	AR5K_VERSION_MAC,	AR5K_SREV_AR5311 },
+ 	{ "5311A",	AR5K_VERSION_MAC,	AR5K_SREV_AR5311A },
+@@ -142,7 +142,7 @@ static struct ath5k_srev_name srev_names[] = {
+ 	{ "xxxxx",	AR5K_VERSION_RAD,	AR5K_SREV_UNKNOWN },
+ };
+ 
+-static struct ieee80211_rate ath5k_rates[] = {
++static const struct ieee80211_rate ath5k_rates[] = {
+ 	{ .bitrate = 10,
+ 	  .hw_value = ATH5K_RATE_CODE_1M, },
+ 	{ .bitrate = 20,
+@@ -248,7 +248,7 @@ static void ath5k_bss_info_changed(struct ieee80211_hw *hw,
+ 		struct ieee80211_bss_conf *bss_conf,
+ 		u32 changes);
+ 
+-static struct ieee80211_ops ath5k_hw_ops = {
++static const struct ieee80211_ops ath5k_hw_ops = {
+ 	.tx 		= ath5k_tx,
+ 	.start 		= ath5k_start,
+ 	.stop 		= ath5k_stop,
+diff --git a/drivers/net/wireless/ath5k/debug.c b/drivers/net/wireless/ath5k/debug.c
+index 413ed68..9770bb3 100644
+--- a/drivers/net/wireless/ath5k/debug.c
++++ b/drivers/net/wireless/ath5k/debug.c
+@@ -82,14 +82,14 @@ static int ath5k_debugfs_open(struct inode *inode, struct file *file)
+ /* debugfs: registers */
+ 
+ struct reg {
+-	char *name;
++	const char *name;
+ 	int addr;
+ };
+ 
+ #define REG_STRUCT_INIT(r) { #r, r }
+ 
+ /* just a few random registers, might want to add more */
+-static struct reg regs[] = {
++static const struct reg regs[] = {
+ 	REG_STRUCT_INIT(AR5K_CR),
+ 	REG_STRUCT_INIT(AR5K_RXDP),
+ 	REG_STRUCT_INIT(AR5K_CFG),
+@@ -142,7 +142,7 @@ static struct reg regs[] = {
+ 
+ static void *reg_start(struct seq_file *seq, loff_t *pos)
+ {
+-	return *pos < ARRAY_SIZE(regs) ? &regs[*pos] : NULL;
++	return *pos < ARRAY_SIZE(regs) ? (void *)&regs[*pos] : NULL;
+ }
+ 
+ static void reg_stop(struct seq_file *seq, void *p)
+@@ -153,7 +153,7 @@ static void reg_stop(struct seq_file *seq, void *p)
+ static void *reg_next(struct seq_file *seq, void *p, loff_t *pos)
+ {
+ 	++*pos;
+-	return *pos < ARRAY_SIZE(regs) ? &regs[*pos] : NULL;
++	return *pos < ARRAY_SIZE(regs) ? (void *)&regs[*pos] : NULL;
+ }
+ 
+ static int reg_show(struct seq_file *seq, void *p)
+@@ -290,7 +290,7 @@ static const struct file_operations fops_reset = {
+ 
+ /* debugfs: debug level */
+ 
+-static struct {
++static const struct {
+ 	enum ath5k_debug_level level;
+ 	const char *name;
+ 	const char *desc;
+diff --git a/drivers/net/wireless/ath5k/reset.c b/drivers/net/wireless/ath5k/reset.c
+index 1531ccd..685dc21 100644
+--- a/drivers/net/wireless/ath5k/reset.c
++++ b/drivers/net/wireless/ath5k/reset.c
+@@ -102,7 +102,7 @@ static inline int ath5k_hw_write_ofdm_timings(struct ath5k_hw *ah,
+  * index into rates for control rates, we can set it up like this because
+  * this is only used for AR5212 and we know it supports G mode
+  */
+-static int control_rates[] =
++static const unsigned int control_rates[] =
+ 	{ 0, 1, 1, 1, 4, 4, 6, 6, 8, 8, 8, 8 };
+ 
+ /**
+-- 
+1.6.1.3
 
