@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZCGFxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZCGFy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbZCGFxi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 00:53:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbZCGFx0
+	id S1755330AbZCGFy0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 00:54:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbZCGFyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 00:53:26 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35306 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755132AbZCGFxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 00:53:25 -0500
-Message-ID: <49B20BD9.70509@kernel.org>
-Date: Sat, 07 Mar 2009 14:53:29 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sat, 7 Mar 2009 00:54:18 -0500
+Received: from kroah.org ([198.145.64.141]:53204 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751378AbZCGFyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 00:54:17 -0500
+Date: Fri, 6 Mar 2009 21:54:04 -0800
+From: Greg KH <greg@kroah.com>
+To: "J.R. Mauro" <jrm8005@gmail.com>
+Cc: Christopher Brannon <cmbrannon@cox.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] /dev/time for Linux, inspired by Plan 9
+Message-ID: <20090307055404.GA549@kroah.com>
+References: <20090304031238.WCEC18213.eastrmmtao106.cox.net@eastrmimpo03.cox.net> <20090306175708.GD3099@kroah.com> <3aaafc130903062143g4b7d6afel575781208319454e@mail.gmail.com>
 MIME-Version: 1.0
-To: Cliff Wickman <cpw@sgi.com>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH v2] x86: UV uv_flush_tlb_others WARN_ON
-References: <E1LfjVI-0006v9-MG@eag09.americas.sgi.com>
-In-Reply-To: <E1LfjVI-0006v9-MG@eag09.americas.sgi.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 07 Mar 2009 05:53:07 +0000 (UTC)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3aaafc130903062143g4b7d6afel575781208319454e@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cliff Wickman wrote:
-> From: Cliff Wickman <cpw@sgi.com>
+On Sat, Mar 07, 2009 at 12:43:43AM -0500, J.R. Mauro wrote:
+> On Fri, Mar 6, 2009 at 12:57 PM, Greg KH <greg@kroah.com> wrote:
+> > On Tue, Mar 03, 2009 at 09:06:46PM -0600, Christopher Brannon wrote:
+> >> Under Plan 9 from Bell Labs, one queries or sets the system clock by
+> >> reading or writing text strings to a special file named /dev/time.
+> >> I implemented such a facility for Linux.  A read of /dev/time produces
+> >> four decimal numbers: epoch seconds, nanoseconds since start of epoch,
+> >> jiffies since boot, and jiffies per second.  Writing a decimal number to
+> >> /dev/time sets the system clock to the given number of epoch seconds.
+> >> Anyone who is permitted to write to /dev/time may set the clock.
+> >> Granting this privilege becomes as easy as modifying groups and file
+> >> permissions.
+> >>
+> >> Signed-off-by: Christopher Brannon <cmbrannon@cox.net>
+> >
+> > I'm starting to see a few plan9 specific devices being proposed
+> > recently, with one making it into the staging tree recently (the p9auth
+> > interface).  Should we just start lumping them all together so to keep
+> > them in one place?  drivers/plan9/ ?
 > 
-> The problem WARN_ON remains in Ingo's tree, and linux-next.
-> It should be dropped.
+> That might be a good idea, assuming it doesn't start up a flamewar.
 
-Sorry, I must have lost it while tinkering with branches.  Added to
-#tj-percpu.  Ingo, the patch is on top of the locking granuality
-patchset.  Pulling #tj-percpu will include this one too.
+I don't think if we keep it all in one place, it would.
 
-Thanks.
+> The Glendix folks are working hard to get a lot of these device files
+> and filesystems implemented and it would be nice to see them have a
+> place to feel welcome.
+> 
+> Would it be very involved to get a little sandbox for these things?
 
--- 
-tejun
+drivers/plan9 looks like a nice place to me, any objections?
+
+thanks,
+
+greg k-h
