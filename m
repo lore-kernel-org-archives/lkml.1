@@ -1,62 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZCGC6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbZCGC7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123AbZCGC6m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 21:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbZCGC5l
+	id S1756402AbZCGC7A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 21:59:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756126AbZCGC6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 21:57:41 -0500
-Received: from kroah.org ([198.145.64.141]:35960 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754924AbZCGC5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 21:57:32 -0500
-Date: Fri, 6 Mar 2009 18:40:06 -0800
-From: Greg KH <greg@kroah.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Yu Zhao <yu.zhao@intel.com>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [PATCH v10 4/7] PCI: add SR-IOV API for Physical Function
-	driver
-Message-ID: <20090307024006.GE3596@kroah.com>
-References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <1235112888-9524-5-git-send-email-yu.zhao@intel.com> <20090306203717.GG25995@parisc-linux.org>
+	Fri, 6 Mar 2009 21:58:35 -0500
+Received: from ozlabs.org ([203.10.76.45]:43519 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756122AbZCGC6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 21:58:33 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: lenb@kernel.org
+Subject: [PATCH] acpi: simplify module_param namespace
+Date: Sat, 7 Mar 2009 13:28:27 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090306203717.GG25995@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200903071328.28113.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 01:37:18PM -0700, Matthew Wilcox wrote:
-> On Fri, Feb 20, 2009 at 02:54:45PM +0800, Yu Zhao wrote:
-> > +	virtfn->sysdata = dev->bus->sysdata;
-> > +	virtfn->dev.parent = dev->dev.parent;
-> > +	virtfn->dev.bus = dev->dev.bus;
-> > +	virtfn->devfn = devfn;
-> > +	virtfn->hdr_type = PCI_HEADER_TYPE_NORMAL;
-> > +	virtfn->cfg_size = PCI_CFG_SPACE_EXP_SIZE;
-> > +	virtfn->error_state = pci_channel_io_normal;
-> > +	virtfn->current_state = PCI_UNKNOWN;
-> > +	virtfn->is_pcie = 1;
-> > +	virtfn->pcie_type = PCI_EXP_TYPE_ENDPOINT;
-> > +	virtfn->dma_mask = 0xffffffff;
-> > +	virtfn->vendor = dev->vendor;
-> > +	virtfn->subsystem_vendor = dev->subsystem_vendor;
-> > +	virtfn->class = dev->class;
-> 
-> There seems to be a certain amount of commonality between this and
-> pci_scan_device().  Have you considered trying to make a common helper
-> function, or does it not work out well?
-> 
-> > +	pci_device_add(virtfn, virtfn->bus);
-> 
-> Greg is probably going to ding you here for adding the device, then
-> creating the symlinks.  I believe it's now best practice to create the
-> symlinks first, so there's no window where userspace can get confused.
+(I've been holding this for a while: if you really hate it I'll delete it)
 
-If the uevent gets sent before the symlinks are created, it's a bug.
+Rather than overriding MODULE_PARAM_PREFIX, build via acpi.o so
+KBUILD_MODNAME is set to "acpi".
 
-thanks,
+This is the logical way to do it, even though acpi cannot be a module
+due to these config options being bool.
 
-greg k-h
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ drivers/acpi/Makefile |   10 ++++++----
+ drivers/acpi/debug.c  |    5 -----
+ drivers/acpi/power.c  |    4 ----
+ drivers/acpi/system.c |    4 ----
+ 4 files changed, 6 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+--- a/drivers/acpi/Makefile
++++ b/drivers/acpi/Makefile
+@@ -14,8 +14,13 @@ obj-$(CONFIG_X86)		+= blacklist.o
+ #
+ # ACPI Core Subsystem (Interpreter)
+ #
+-obj-y				+= osl.o utils.o reboot.o\
++obj-y				+= acpi.o \
+ 					acpica/
++
++# "acpi." module_param namespace.
++acpi-y				+= osl.o utils.o reboot.o power.o \
++					system.o event.o
++acpi-$(CONFIG_ACPI_DEBUG)	+= debug.o
+ 
+ # sleep related files
+ obj-y				+= wakeup.o
+@@ -51,9 +56,6 @@ obj-$(CONFIG_ACPI_PROCESSOR)	+= processo
+ obj-$(CONFIG_ACPI_PROCESSOR)	+= processor.o
+ obj-$(CONFIG_ACPI_CONTAINER)	+= container.o
+ obj-$(CONFIG_ACPI_THERMAL)	+= thermal.o
+-obj-y				+= power.o
+-obj-y				+= system.o event.o
+-obj-$(CONFIG_ACPI_DEBUG)	+= debug.o
+ obj-$(CONFIG_ACPI_NUMA)		+= numa.o
+ obj-$(CONFIG_ACPI_HOTPLUG_MEMORY)	+= acpi_memhotplug.o
+ obj-$(CONFIG_ACPI_PROCFS_POWER)	+= cm_sbs.o
+diff --git a/drivers/acpi/debug.c b/drivers/acpi/debug.c
+--- a/drivers/acpi/debug.c
++++ b/drivers/acpi/debug.c
+@@ -12,11 +12,6 @@
+ 
+ #define _COMPONENT		ACPI_SYSTEM_COMPONENT
+ ACPI_MODULE_NAME("debug");
+-
+-#ifdef MODULE_PARAM_PREFIX
+-#undef MODULE_PARAM_PREFIX
+-#endif
+-#define MODULE_PARAM_PREFIX "acpi."
+ 
+ struct acpi_dlayer {
+ 	const char *name;
+diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
+--- a/drivers/acpi/power.c
++++ b/drivers/acpi/power.c
+@@ -54,10 +54,6 @@ ACPI_MODULE_NAME("power");
+ #define ACPI_POWER_RESOURCE_STATE_ON	0x01
+ #define ACPI_POWER_RESOURCE_STATE_UNKNOWN 0xFF
+ 
+-#ifdef MODULE_PARAM_PREFIX
+-#undef MODULE_PARAM_PREFIX
+-#endif
+-#define MODULE_PARAM_PREFIX "acpi."
+ int acpi_power_nocheck;
+ module_param_named(power_nocheck, acpi_power_nocheck, bool, 000);
+ 
+diff --git a/drivers/acpi/system.c b/drivers/acpi/system.c
+--- a/drivers/acpi/system.c
++++ b/drivers/acpi/system.c
+@@ -33,10 +33,6 @@
+ 
+ #define _COMPONENT		ACPI_SYSTEM_COMPONENT
+ ACPI_MODULE_NAME("system");
+-#ifdef MODULE_PARAM_PREFIX
+-#undef MODULE_PARAM_PREFIX
+-#endif
+-#define MODULE_PARAM_PREFIX "acpi."
+ 
+ #define ACPI_SYSTEM_CLASS		"system"
+ #define ACPI_SYSTEM_DEVICE_NAME		"System"
