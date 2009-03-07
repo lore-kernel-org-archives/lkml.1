@@ -1,53 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbZCGU1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbZCGUhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbZCGU1e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 15:27:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756196AbZCGU10
+	id S1756589AbZCGUhA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 15:37:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbZCGUgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 15:27:26 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47698 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755912AbZCGU1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 15:27:25 -0500
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
-Subject: Re: [RFC][PATCH 0/2] Syscalls tracing
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Sat, 07 Mar 2009 15:26:49 -0500
-In-Reply-To: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> (Frederic Weisbecker's message of "Sat,  7 Mar 2009 05:52:58 +0100")
-Message-ID: <y0mbpsdqdti.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 7 Mar 2009 15:36:49 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:33130 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751723AbZCGUgs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 15:36:48 -0500
+Subject: Re: [PATCH 1/2] resubmit cciss: kernel thread to detect changes on
+	MSA2012
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>, mike.miller@hp.com,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, coldwell@redhat.com
+In-Reply-To: <20090306155623.2e817207.akpm@linux-foundation.org>
+References: <20090306181603.GA30801@roadking.ldev.net>
+	 <1236363867.12019.2.camel@localhost.localdomain>
+	 <20090306232918.GA586@beardog.cca.cpqcorp.net>
+	 <20090306155623.2e817207.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 07 Mar 2009 14:36:38 -0600
+Message-Id: <1236458199.3670.29.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker <fweisbec@gmail.com> writes:
+On Fri, 2009-03-06 at 15:56 -0800, Andrew Morton wrote:
+> On Fri, 6 Mar 2009 17:29:18 -0600
+> "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net> wrote:
+> 
+> > On Fri, Mar 06, 2009 at 12:24:27PM -0600, James Bottomley wrote:
+> > > On Fri, 2009-03-06 at 12:16 -0600, Mike Miller wrote:
+> > > > Patch 1 of 2
+> > > > 
+> > > > This is a resubmission of yesterdays patch to detect changes on the MSA2012.
+> > > > I hope I've addressed all concerns. This patch rearranges some of the code
+> > > > so we also have coverage in the sg and the ioctl paths as well as the main
+> > > > data path.
+> > > > 
+> > > > The MSA2012 cannot inform the driver of configuration changes since all
+> > > > management is out of band. This is a departure from any storage we have
+> > > > supported in the past. We need some way to detect changes on the topology so
+> > > > we implement this kernel thread. In some instances there's nothing we can do
+> > > > from the driver (like LUN failure) so just print out a message. In the case
+> > > > where logical volumes are added or deleted we call rebuild_lun_table to
+> > > > refreash the driver's view of the world.
+> > > > 
+> > > > Please consider this for inclusion.
+> > > 
+> > > I still don't quite see how the thread stops on module removal ... there
+> > > needs to be an explicit kthread_stop() somewhere in the clean up path.
+> > > 
+> > > James
+> > > 
+> > > 
+> > This time I make a call to kthread_stop in cciss_remove_one. The driver can
+> > be unloaded and the thread gets cleaned up.
+> 
+> Please include a complete (and suitably updated) copy of the changelog
+> with each iteration of a patch.
+> 
+> 
+> > KNOWN BUG: it seems the timeout must expire before kthread_stop actually
+> > stops the thread. This causes the driver to hang and wait during rmmod. I've
+> > played around with several things but haven't found the correct way to
+> > address the problem. Looking at other drivers hasn't been much help. Any
+> > advice is greatly appreciated.
+> 
+> Well, wait_for_completion_timeout() is only going to return when the
+> timeout timed out, or someone ran complete().
+> 
+> > +static int scan_thread(ctlr_info_t *h)
+> > +{
+> > +	int rc;
+> > +	DECLARE_COMPLETION_ONSTACK(wait);
+> > +	h->rescan_wait = &wait;
+> > +
+> > +	while (!kthread_should_stop()) {
+> > +		rc = wait_for_completion_timeout(&wait, 300 * HZ);
+> > +		if (!rc)
+> > +			continue;
+> > +		else
+> > +			rebuild_lun_table(h, 0);
+> > +	}
+> > +	return 0;
+> > +}
+> 
+> So..  we shouldn't need the timeout here at all - just use
+> wait_for_completion().
+> 
+> static int scan_thread(ctlr_info_t *h)
+> {
+> 	DECLARE_COMPLETION_ONSTACK(wait);
+> 
+> 	h->rescan_wait = &wait;
+> 	for ( ; ; ) {
+> 		wait_for_completion(&wait);
+> 		if (kthread_should_stop())
+> 			break;
+> 		rebuild_lun_table(h, 0);
+> 	}
+> 	return 0;
+> }
+> 
+> And on the teardown path, do
+> 
+> 	complete(...);
+> 	kthread_stop(...);
 
-> Here is a first attempt, quick one-shot, to provide a syscall tracing
-> infrastructure on ftrace.
+This is racy ... although I think the race would only show in a pre-empt
+kernel:  complete causes the thread to run immediately pre-empting us.
+Now it runs around the loop, through kthread_should_stop() and back to
+wait_for_completion() before we get a chance to run kthread_stop().
 
-Please see also the utrace-based thread syscall/signal/lifecycle.
-tracer I posted a few times, and is just about to be reposted as a
-part of the larger utrace submission.
+The only way to avoid this seems to be to use wait queues and wake up
+(kthread_stop does an automatic wake_up of the process, which is ignored
+by completions).
 
-System call metadata (name, argument count, and getting fancier from
-there) would be nice to have for other clients too, such as the audit
-subsystem.
+James
 
-The main drawback of this general approach however is the notion that
-ftrace is the solitary user of system call tracing, thus dedicating
-that new task flag to this purpose.  Therefore, your code has nothing
-like reference counting or sharing; nothing yet to avoid overhead on
-threads that need no tracing, nor to allow more than one tracing
-widget to consume events.  These are the sorts of services that utrace
-provides.
 
-- FChE
