@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbZCGPyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZCGQDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580AbZCGPyT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 10:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbZCGPyK
+	id S1755218AbZCGQDD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 11:03:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZCGQCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 10:54:10 -0500
-Received: from www.tglx.de ([62.245.132.106]:41818 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754937AbZCGPyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 10:54:09 -0500
-Date: Sat, 7 Mar 2009 16:50:56 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Darren Hart <dvhltc@us.ibm.com>
-cc: Steven Rostedt <rostedt@goodmis.org>,
-       "lkml, " <linux-kernel@vger.kernel.org>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [TIP][RFC 6/7] futex: add requeue_pi calls
-In-Reply-To: <49B0B43D.2030907@us.ibm.com>
-Message-ID: <alpine.LFD.2.00.0903071645480.29264@localhost.localdomain>
-References: <49AC73A9.4040804@us.ibm.com> <49AC77D1.6090106@us.ibm.com> <49AE3386.1070604@us.ibm.com> <49B00302.5000607@us.ibm.com> <49B07F87.2020808@us.ibm.com> <alpine.DEB.2.00.0903052119300.14535@gandalf.stny.rr.com> <49B0B43D.2030907@us.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 7 Mar 2009 11:02:53 -0500
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:38858 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752574AbZCGQCx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 11:02:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=A0on28FjphTSL+uhGvcm7OX106iTPctS+5BWysF0UROeARrtmKcmD6yPoq1/5HvBTV
+         Yzhgbm/hFzQtxvcU0EMlLKJlRMdNZuFHShCWTJSG0GB5vpo5YfaY7AnBzuGzXwzYkxKv
+         FVUNSYYeF5TcGBLvl8Yq7917LYti+l0qY6+Eo=
+Date: Sat, 7 Mar 2009 17:02:47 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC][PATCH 0/2] Syscalls tracing
+Message-ID: <20090307160246.GB6075@nowhere>
+References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236428118.6376.239.camel@laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236428118.6376.239.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Mar 2009, Darren Hart wrote:
-> int rt_mutex_start_proxy_lock(struct rt_mutex *lock,
-> 			      struct rt_mutex_waiter *waiter,
-> 			      struct task_struct *task, int detect_deadlock)
-> {
-> 	int ret;
+On Sat, Mar 07, 2009 at 01:15:18PM +0100, Peter Zijlstra wrote:
+> On Sat, 2009-03-07 at 05:52 +0100, Frederic Weisbecker wrote:
+> > Here is a first attempt, quick one-shot, to provide a syscall tracing
+> > infrastructure on ftrace.
+> > 
+> > The RFC prefix is here to reflect its ugliness on various parts.
+> > The compromise between tracing reliabilty and speed is hard to balance.
+> > For example I guess the basic and horrid string mask should be dropped in favour
+> > of something else, which takes care of the volatile strings from the userspace.
+> > 
+> > But I hope a lot of ideas to make it better will come along this discussion.
 > 
-> 	spin_lock(&lock->wait_lock);
-> 	ret = task_blocks_on_rt_mutex(lock, waiter, task, detect_deadlock);
+> Can't you abuse the SYSCALL_DEFINE macros? This current approach looks
+> like it will replicate the syscall table.
 > 
-> 
-> I add the following line to fix the bug.  Question is, should I use this
-> atomic
-> optimization here (under the lock->wait_lock) or should I just do "lock->owner
-> |= RT_MUTEX_HAS_WAITERS" ?
-> 
-> =====>	mark_rt_mutex_waiters(lock);
 
-This is still not enough as I explained in the review of the original
-patch. What you need to do is:
 
-	if (try_to_take_rt_mutex(lock, task)) {
-	   	spin_unlock(&lock->wait_lock);
-		/* The caller needs to wake up task, as it is now the owner */
-		return WAKEIT;
-	}
+Ah, I did not even think about it.
+I will be able to get the number of parameters. Sounds good. But I will
+still need a way to store their format somewhere.
 
-	ret = task_blocks_on_rt_mutex(lock, waiter, task, detect_deadlock);
- 
-> 	if (ret && !waiter->task) {
-> 		/*
-> 		 * Reset the return value. We might have
-> 		 * returned with -EDEADLK and the owner
-> 		 * released the lock while we were walking the
-> 		 * pi chain.  Let the waiter sort it out.
-> 		 */
-> 		ret = 0;
-> 	}
-> 	spin_unlock(&lock->wait_lock);
-> 
-> 	debug_rt_mutex_print_deadlock(waiter);
-> 
-> 	return ret;
-> }
-
-Thanks,
-
-	tglx
