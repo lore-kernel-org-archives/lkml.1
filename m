@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbZCGKqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbZCGK42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755054AbZCGKqv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 05:46:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZCGKqn
+	id S1755098AbZCGK42 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 05:56:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbZCGK4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 05:46:43 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:46296 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752632AbZCGKqm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 05:46:42 -0500
-Date: Sat, 7 Mar 2009 18:46:37 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Phillip Lougher <phillip@lougher.demon.co.uk>
-Subject: Re: [PATCH 6/6] squashfs: Make SquashFS 4 use the new pcomp crypto
-	interface
-Message-ID: <20090307104637.GB8731@gondor.apana.org.au>
-References: <1235569394-15217-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-4-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-6-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	Sat, 7 Mar 2009 05:56:19 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:61821 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753921AbZCGK4S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 05:56:18 -0500
+Message-ID: <49B2526E.40106@cn.fujitsu.com>
+Date: Sat, 07 Mar 2009 18:54:38 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu
+ are migrated to online cpu
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 02:43:14PM +0100, Geert Uytterhoeven wrote:
-> Modify SquashFS 4 to use the new "pcomp" crypto interface for decompression,
-> instead of calling the underlying zlib library directly. This simplifies e.g.
-> the addition of support for hardware decompression and different decompression
-> algorithms.
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> Cc: Phillip Lougher <phillip@lougher.demon.co.uk>
+[RFC]
+I don't like this patch, but I thought for some days and I can't
+thought out a better one.
 
-I've applied patches 1-5.  I'd like to see an ack on this before
-applying it.
+I'm very hope rcu_barrier() can be called anywhere(any sleepable context).
+But get_online_cpus() is a very large lock, it limits rcu_barrier().
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+We can avoid get_online_cpus() easily for rcupreempt by using a new rcu_barrier:
+void rcu_barrier(void)
+{
+	for each rcu_data {
+		lock rcu_data;
+		if rcu_data is not empty, queue a callback for rcu_barrier;
+		unlock rcu_data;
+	}
+}
+But we cannot use this algorithm for rcuclassic and rcutree,
+rcu_data in rcuclassic and rcutree have not a spinlock for queuing callback.
+
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+
+cpu hotplug may be happened asynchronously, some rcu callbacks are maybe
+still in dead cpu, rcu_barrier() also needs to wait for these rcu callbacks
+to complete, so we must ensure callbacks in dead cpu are migrated to
+online cpu.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index cae8a05..4665d18 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -129,6 +129,8 @@ static void rcu_barrier_func(void *type)
+ static void _rcu_barrier(enum rcu_barrier type)
+ {
+ 	BUG_ON(in_interrupt());
++	/* Ensure callbacks in dead cpu are migrated to online cpu */
++	get_online_cpus();
+ 	/* Take cpucontrol mutex to protect against CPU hotplug */
+ 	mutex_lock(&rcu_barrier_mutex);
+ 	init_completion(&rcu_barrier_completion);
+@@ -147,6 +149,7 @@ static void _rcu_barrier(enum rcu_barrier type)
+ 		complete(&rcu_barrier_completion);
+ 	wait_for_completion(&rcu_barrier_completion);
+ 	mutex_unlock(&rcu_barrier_mutex);
++	put_online_cpus();
+ }
+ 
+ /**
+
