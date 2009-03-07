@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZCGDtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbZCGDzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbZCGDtd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 22:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbZCGDtX
+	id S1755421AbZCGDzB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 22:55:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZCGDyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 22:49:23 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:58718 "EHLO
+	Fri, 6 Mar 2009 22:54:51 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:63141 "EHLO
 	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753490AbZCGDtX convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751828AbZCGDyv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 22:49:23 -0500
+	Fri, 6 Mar 2009 22:54:51 -0500
 MIME-Version: 1.0
-In-Reply-To: <49B09126.1040204@oracle.com>
-References: <200903060051.n260p4gp022115@imap1.linux-foundation.org>
-	 <49B09126.1040204@oracle.com>
-Date: Fri, 6 Mar 2009 22:49:20 -0500
-X-Google-Sender-Auth: 41468aa7266bee32
-Message-ID: <5aa163d00903061949o6de1753ep9fe3fb0fbbaa3c1b@mail.gmail.com>
-Subject: Re: [PATCH -mmotm] xpad: fix build error and warnings
+Date: Fri, 6 Mar 2009 22:54:47 -0500
+X-Google-Sender-Auth: 43c53b0141ade8f5
+Message-ID: <5aa163d00903061954m273fb93ate7d745e9528b7a53@mail.gmail.com>
+Subject: [PATCH -mmotm] xpad: add missing prototype and update history
 From: Mike Murphy <mamurph@cs.clemson.edu>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
        Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/mixed; boundary=0016e64608d6d263a904647f5c51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 5, 2009 at 9:57 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> Add a dummy xpad_send_led_command() for the case of
-> CONFIG_JOYSTICK_XPAD_LEDS=n.  Fixes this build error:
->
-> ERROR: "xpad_send_led_command" [drivers/input/joystick/xpad.ko] undefined!
->
-> Remove 2 duplicate function prototypes in xpad.h.
->
-> Fix these xpad.h warnings:
-> drivers/input/joystick/xpad.h:231: warning: 'enum led_brightness' declared inside parameter list
-> drivers/input/joystick/xpad.h:231: warning: its scope is only this definition or declaration, which is probably not what you want
-> drivers/input/joystick/xpad.h:231: warning: 'struct led_classdev' declared inside parameter list
-> drivers/input/joystick/xpad.h:231: warning: 'xpad_led_set' declared 'static' but never defined
->
-...
+--0016e64608d6d263a904647f5c51
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Thanks Randy. I found the prototype for xpad_deinit_output to be
-missing and will have a patch shortly. I will also be updating the
-out-of-tree distribution of this driver version to match the current
--mm tree version:
+Add missing prototype to xpad.h and update driver history and last
+modified dates
 
-http://cirg.cs.clemson.edu/~mamurph/pub/xpad/
+Signed-off-by: Mike Murphy <mamurph@cs.clemson.edu>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+cc: Randy Dunlap <randy.dunlap@oracle.com>
 
-Mike
--- 
-Mike Murphy
-Ph.D. Candidate and NSF Graduate Research Fellow
-Clemson University School of Computing
-120 McAdams Hall
-Clemson, SC 29634-0974 USA
-Tel: +1 864.656.2838   Fax: +1 864.656.0145
-http://cirg.cs.clemson.edu/~mamurph
+--0016e64608d6d263a904647f5c51
+Content-Type: text/plain; charset=US-ASCII; name="mmfix1.patch.txt"
+Content-Disposition: attachment; filename="mmfix1.patch.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_frzrfraq0
+
+ZGlmZiAtdU5yIG1tZHJ2L2RyaXZlcnMvaW5wdXQvam95c3RpY2sveHBhZC5jIG5ld2Rydi9kcml2
+ZXJzL2lucHV0L2pveXN0aWNrL3hwYWQuYwotLS0gbW1kcnYvZHJpdmVycy9pbnB1dC9qb3lzdGlj
+ay94cGFkLmMJMjAwOS0wMy0wNiAyMjo0MjoyMi4wMDAwMDAwMDAgLTA1MDAKKysrIG5ld2Rydi9k
+cml2ZXJzL2lucHV0L2pveXN0aWNrL3hwYWQuYwkyMDA5LTAzLTA2IDIyOjE5OjQ3LjAwMDAwMDAw
+MCAtMDUwMApAQCAtMSw3ICsxLDcgQEAKIC8qCiAgKiBYYm94IGdhbWVwYWQgZHJpdmVyIHdpdGgg
+WGJveCAzNjAgd2lyZWQvd2lyZWxlc3Mgc3VwcG9ydAogICoKLSAqIExhc3QgTW9kaWZpZWQ6CTIg
+TWFyY2ggMjAwOQorICogTGFzdCBNb2RpZmllZDoJNiBNYXJjaCAyMDA5CiAgKgkJCU1pa2UgTXVy
+cGh5IDxtYW11cnBoQGNzLmNsZW1zb24uZWR1PgogICoKICAqIENvcHlyaWdodCAoYykgMjAwMiBN
+YXJrbyBGcmllZGVtYW5uIDxtZnJAYm14LWNoZW1uaXR6LmRlPgpkaWZmIC11TnIgbW1kcnYvZHJp
+dmVycy9pbnB1dC9qb3lzdGljay94cGFkLmggbmV3ZHJ2L2RyaXZlcnMvaW5wdXQvam95c3RpY2sv
+eHBhZC5oCi0tLSBtbWRydi9kcml2ZXJzL2lucHV0L2pveXN0aWNrL3hwYWQuaAkyMDA5LTAzLTA2
+IDIyOjQyOjIyLjAwMDAwMDAwMCAtMDUwMAorKysgbmV3ZHJ2L2RyaXZlcnMvaW5wdXQvam95c3Rp
+Y2sveHBhZC5oCTIwMDktMDMtMDYgMjI6NDQ6NTMuMDAwMDAwMDAwIC0wNTAwCkBAIC0xLDcgKzEs
+NyBAQAogLyoKICAqIFhib3ggZ2FtZXBhZCBkcml2ZXIgd2l0aCBYYm94IDM2MCB3aXJlZC93aXJl
+bGVzcyBzdXBwb3J0CiAgKgotICogTGFzdCBNb2RpZmllZDoJMiBNYXJjaCAyMDA5CisgKiBMYXN0
+IE1vZGlmaWVkOgk2IE1hcmNoIDIwMDkKICAqCQkJTWlrZSBNdXJwaHkgPG1hbXVycGhAY3MuY2xl
+bXNvbi5lZHU+CiAgKgogICogQ29weXJpZ2h0IChjKSAyMDAyIE1hcmtvIEZyaWVkZW1hbm4gPG1m
+ckBibXgtY2hlbW5pdHouZGU+CkBAIC0yMjQsNiArMjI0LDcgQEAKIHN0YXRpYyB2b2lkIHhwYWRf
+aXJxX291dChzdHJ1Y3QgdXJiICp1cmIpOwogc3RhdGljIGludCB4cGFkX2luaXRfb3V0cHV0KHN0
+cnVjdCB1c2JfaW50ZXJmYWNlICppbnRmLCBzdHJ1Y3QgdXNiX3hwYWQgKnhwYWQpOwogc3RhdGlj
+IHZvaWQgeHBhZF9zdG9wX291dHB1dChzdHJ1Y3QgdXNiX3hwYWQgKnhwYWQpOworc3RhdGljIHZv
+aWQgeHBhZF9kZWluaXRfb3V0cHV0KHN0cnVjdCB1c2JfeHBhZCAqeHBhZCk7CiBzdGF0aWMgaW50
+IHhwYWRfcGxheV9lZmZlY3Qoc3RydWN0IGlucHV0X2RldiAqZGV2LCB2b2lkICpkYXRhLAogCQkJ
+ICAgIHN0cnVjdCBmZl9lZmZlY3QgKmVmZmVjdCk7CiBzdGF0aWMgaW50IHhwYWRfaW5pdF9mZihz
+dHJ1Y3QgdXNiX3hwYWQgKnhwYWQpOwpAQCAtMjk4LDYgKzI5OSwxMyBAQAogCiAvKiBEcml2ZXIg
+SGlzdG9yeToKICAqCisgKiAyMDA5LTAzLTA2IDogUGF0Y2hlcyBmcm9tIC1tbSB0cmVlCisgKiAg
+LSBmaXhlZCBidWlsZCBpc3N1ZSB3aGVuIENPTkZJR19KT1lTVElDS19YUEFEX0xFRFMgbm90IHNl
+dCBhbmQgcmVtb3ZlZAorICogICAgZHVwbGljYXRlIHByb3RvdHlwZXMgKHRoYW5rcyBSYW5keSBE
+dW5sYXAgZm9yIHBhdGNoKQorICogIC0gZml4ZWQgZXJyb25lb3VzIHdoaXRlc3BhY2UgcmVwb3J0
+ZWQgYnkgY2hlY2twYXRjaCAodGhhbmtzIEFuZHJldyBNb3J0b24KKyAqICAgIGZvciBwYXRjaCkK
+KyAqICAtIGFkZGVkIG1pc3NpbmcgcHJvdG90eXBlCisgKgogICogMjAwOS0wMy0wMiA6IENvZGUg
+Y2xlYW51cAogICogIC0gdXNlZCBtaW4oKSwgbWF4KCksIGFuZCBhYnMoKSB3aGVyZSBhcHByb3By
+aWF0ZSwgc2ltcGxpZnlpbmcgY29kZQogICogIC0gbW92ZWQgY29kZSB0aGF0IGdlbmVyYXRlcyBk
+YXRhIG9iamVjdHMgb3V0IG9mIHhwYWQuaCBhbmQgaW50byB4cGFkLmMK
+--0016e64608d6d263a904647f5c51--
