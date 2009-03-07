@@ -1,169 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbZCGTnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756296AbZCGTpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbZCGTnz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 14:43:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbZCGTnq
+	id S1756296AbZCGTpS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 14:45:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbZCGTpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 14:43:46 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:61593 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753732AbZCGTnp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 14:43:45 -0500
-Message-ID: <49B2CE6E.3090501@free.fr>
-Date: Sat, 07 Mar 2009 20:43:42 +0100
-From: Daniel Lezcano <daniel.lezcano@free.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sat, 7 Mar 2009 14:45:03 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:34835 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752137AbZCGTpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 14:45:02 -0500
+Message-ID: <49B2CE44.4060305@pardus.org.tr>
+Date: Sat, 07 Mar 2009 21:43:00 +0200
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-CC: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Containers <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       roland@redhat.com, Greg Kurz <gkurz@fr.ibm.com>
-Subject: Re: [PATCH 0/7][v8] Container-init signal semantics
-References: <20090219030207.GA18783@us.ibm.com> <499D73C8.3090209@free.fr> <20090307190428.GA30594@us.ibm.com>
-In-Reply-To: <20090307190428.GA30594@us.ibm.com>
-Content-Type: multipart/mixed;
- boundary="------------080303010407060308060503"
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] A simple way to determine if the kernel needs HIGHMEM64G
+ to be able to use all the installed memory
+References: <49B254C6.8010507@pardus.org.tr> <20090307193026.GA2165@x200.localdomain>
+In-Reply-To: <20090307193026.GA2165@x200.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080303010407060308060503
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Sukadev Bhattiprolu wrote:
->> Gregory Kurz proposed a solution:
->>    * when shutdown is called and we are not in the init pidns, then we kill 
->> the process 1 of the pidnamespace.
->>    * when reboot is called and we are not in the init pidns, then we reexec 
->> the init process, using the same command line. I guess this one could be 
->> easily retrieved if we are able to display /proc/1/cmdline ;)
+Alexey Dobriyan wrote:
+> On Sat, Mar 07, 2009 at 01:04:38PM +0200, Ozan Çağlayan wrote:
 >>
->> IMHO, this is a good proposition because it is generic and intuitive, no ?
->>
->> What do you thing ?
->>     
->
-> Yes, I think it makes sense. Do we have any prototype patches that
-> implement this behavior ?
->   
-I have a simple prototype for the first case, added in attachment.
-For the second case, I didn't had time to do it yet as it is not so 
-trivial because we force an exec of another process.
+>> I'm quite dumb about the internal structures of the kernel but, wouldn't it
+>> be possible to create a simple read-only sysfs object like kexec_loaded
+>> that will contain "1" when the kernel needs HIGHMEM64G to see all of the memory
+>> and "0" when it doesn't?
+> 
+> Why do you need a file? If kernel says to enable HIGHMEM64G, enable it.
 
+It's not for me. We're not able to ship HIGHMEM64G enabled kernel packages with
+distributions because it breaks some processors not having PAE flag.
 
+So, the PAE enabled kernel should be installed by distribution installers or
+package management systems if the processor honors the PAE bit. Because PAE
+is an extension mechanism for 32bit processors, AFAIK it has some overhead.
+So enabling it if the user doesn't have a memory size >=4GB would not make
+much sense if a proper noexecute (NX) support is not intended.
 
---------------080303010407060308060503
-Content-Type: text/x-diff;
- name="kill-cinit-at-shutdown.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="kill-cinit-at-shutdown.patch"
+Fedora installer parses /proc/iomem to see if any address listed is bigger than
+0x100000000h. I checked it on a machine having 4GB of memory, and it failed.
 
-Subject: kill the pid 1 process at shutdown
-From: Daniel Lezcano <daniel.lezcano@free.fr>
+If the linux kernel is able to drop such an advisory message into the log buffer,
+it would be very easy to implement a read-only sysfs object. dmesg parsing
+is another hacky, dirty solution to the problem that I would not prefer at all.
 
-This patch makes the pid 1 to be killed when we shutdown the host
-and we are not in the init namespace.
+Regards,
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@free.fr>
----
- include/linux/pid_namespace.h |    5 +++++
- kernel/pid_namespace.c        |   17 +++++++++++++++++
- kernel/sys.c                  |   17 +++++++++++------
- 3 files changed, 33 insertions(+), 6 deletions(-)
+-- 
 
-Index: 2.6.29-rc3/include/linux/pid_namespace.h
-===================================================================
---- 2.6.29-rc3.orig/include/linux/pid_namespace.h
-+++ 2.6.29-rc3/include/linux/pid_namespace.h
-@@ -44,6 +44,7 @@ static inline struct pid_namespace *get_
- 
- extern struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *ns);
- extern void free_pid_ns(struct kref *kref);
-+extern int power_off_pid_ns(struct pid_namespace *ns);
- extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
- 
- static inline void put_pid_ns(struct pid_namespace *ns)
-@@ -72,6 +73,10 @@ static inline void put_pid_ns(struct pid
- {
- }
- 
-+static inline int power_off_pid_ns(struct pid_namespace *ns)
-+{
-+	return -EINVAL;
-+}
- 
- static inline void zap_pid_ns_processes(struct pid_namespace *ns)
- {
-Index: 2.6.29-rc3/kernel/pid_namespace.c
-===================================================================
---- 2.6.29-rc3.orig/kernel/pid_namespace.c
-+++ 2.6.29-rc3/kernel/pid_namespace.c
-@@ -148,6 +148,23 @@ void free_pid_ns(struct kref *kref)
- 		put_pid_ns(parent);
- }
- 
-+int power_off_pid_ns(struct pid_namespace *pid_ns)
-+{
-+	struct task_struct *task;
-+
-+	if (pid_ns == &init_pid_ns)
-+		return -EINVAL;
-+
-+	rcu_read_lock();
-+
-+	task = pid_task(find_vpid(1), PIDTYPE_PID);
-+	force_sig(SIGKILL, task);
-+
-+	rcu_read_unlock();
-+
-+	return 0;
-+}
-+
- void zap_pid_ns_processes(struct pid_namespace *pid_ns)
- {
- 	int nr;
-Index: 2.6.29-rc3/kernel/sys.c
-===================================================================
---- 2.6.29-rc3.orig/kernel/sys.c
-+++ 2.6.29-rc3/kernel/sys.c
-@@ -34,6 +34,7 @@
- #include <linux/seccomp.h>
- #include <linux/cpu.h>
- #include <linux/ptrace.h>
-+#include <linux/pid_namespace.h>
- 
- #include <linux/compat.h>
- #include <linux/syscalls.h>
-@@ -393,15 +394,19 @@ SYSCALL_DEFINE4(reboot, int, magic1, int
- 		break;
- 
- 	case LINUX_REBOOT_CMD_HALT:
--		kernel_halt();
--		unlock_kernel();
--		do_exit(0);
-+		if (power_off_pid_ns(current->nsproxy->pid_ns)) {
-+			kernel_halt();
-+			unlock_kernel();
-+			do_exit(0);
-+		}
- 		break;
- 
- 	case LINUX_REBOOT_CMD_POWER_OFF:
--		kernel_power_off();
--		unlock_kernel();
--		do_exit(0);
-+		if (power_off_pid_ns(current->nsproxy->pid_ns)) {
-+			kernel_power_off();
-+			unlock_kernel();
-+			do_exit(0);
-+		}
- 		break;
- 
- 	case LINUX_REBOOT_CMD_RESTART2:
-
---------------080303010407060308060503--
+Ozan Çağlayan
+<ozan_at_pardus.org.tr>
