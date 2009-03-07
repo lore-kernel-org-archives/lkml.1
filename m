@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZCGXNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbZCGXVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752722AbZCGXNm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 18:13:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZCGXNd
+	id S1753740AbZCGXVr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 18:21:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZCGXVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 18:13:33 -0500
-Received: from mx03.syneticon.net ([78.111.66.105]:35341 "EHLO
-	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751046AbZCGXNc (ORCPT
+	Sat, 7 Mar 2009 18:21:38 -0500
+Received: from casper.infradead.org ([85.118.1.10]:34923 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751522AbZCGXVi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 18:13:32 -0500
-Message-ID: <49B2FF8B.4000803@wpkg.org>
-Date: Sun, 08 Mar 2009 00:13:15 +0100
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081231)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	Sat, 7 Mar 2009 18:21:38 -0500
+Date: Sat, 7 Mar 2009 15:22:20 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Subject: Re: Initialized radeon -> Oops: 0000 [#1] SMP
-References: <49B1754C.50109@wpkg.org> <200903072216.33271.rjw@sisk.pl>
-In-Reply-To: <200903072216.33271.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Message-ID: <20090307152220.693ab8e8@infradead.org>
+In-Reply-To: <49B1754C.50109@wpkg.org>
+References: <49B1754C.50109@wpkg.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki schrieb:
-> On Friday 06 March 2009, Tomasz Chmielewski wrote:
->> Don't really know where one should send Oops... Is there a better place than linux-kernel?
-> 
-> dri-devel@lists.sourceforge.net for one example (CCed).
-> 
-> Is this a regression and if so, then what's the last good kernel?
+On Fri, 06 Mar 2009 20:11:08 +0100
+Tomasz Chmielewski <mangoo@wpkg.org> wrote:
 
-I'm not sure if it's a regression or not.
-I've never seen that before.
+> Don't really know where one should send Oops... Is there a better
+> place than linux-kernel?
+> 
+> 
+> First time I see such an oops on this multiseat system. Everything
+> still works fine though.
+> 
 
-On the other hand, I've never seen that again with 2.6.29-rc7 as well, 
-so it could be a bug which hides well somewhere all the time...
+Hi,
+
+if you run the oops through "markup_oops.pl" (and assuming you have
+CONFIG_DEBUG_INFO set) the oops gets part transformed into a sourcecode
+dump of where the oops is happening..... that sometimes helps in
+nailing it down.
+
 
 
 -- 
-Tomasz Chmielewski
-http://wpkg.org
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
