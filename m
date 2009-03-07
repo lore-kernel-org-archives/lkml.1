@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbZCGMPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbZCGM1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753786AbZCGMPo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 07:15:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZCGMPg
+	id S1754709AbZCGM1a (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 07:27:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZCGM1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 07:15:36 -0500
-Received: from casper.infradead.org ([85.118.1.10]:51685 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750946AbZCGMPf (ORCPT
+	Sat, 7 Mar 2009 07:27:18 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:42358 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbZCGM1S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 07:15:35 -0500
-Subject: Re: [RFC][PATCH 0/2] Syscalls tracing
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <1236401580-5758-1-git-send-email-fweisbec@gmail.com>
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com>
-Content-Type: text/plain
-Date: Sat, 07 Mar 2009 13:15:18 +0100
-Message-Id: <1236428118.6376.239.camel@laptop>
+	Sat, 7 Mar 2009 07:27:18 -0500
+Date: Sat, 7 Mar 2009 13:29:13 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Josh Hunt <josh@scalex86.org>
+Cc: linux-kernel@vger.kernel.org, kiran@scalex86.org, mingo@elte.hu,
+       linux-kbuild@vger.kernel.org
+Subject: Re: [PATCHv2] Fix 'make rpm' when CONFIG_LOCALVERSION_AUTO=y and using SCM tree
+Message-ID: <20090307122913.GA5484@uranus.ravnborg.org>
+References: <20090220074531.GF8151@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090220074531.GF8151@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-07 at 05:52 +0100, Frederic Weisbecker wrote:
-> Here is a first attempt, quick one-shot, to provide a syscall tracing
-> infrastructure on ftrace.
+On Thu, Feb 19, 2009 at 11:45:31PM -0800, Josh Hunt wrote:
+> Updated patch with Sam's fixes as per this discussion:
+> http://lkml.org/lkml/2009/2/15/18
 > 
-> The RFC prefix is here to reflect its ugliness on various parts.
-> The compromise between tracing reliabilty and speed is hard to balance.
-> For example I guess the basic and horrid string mask should be dropped in favour
-> of something else, which takes care of the volatile strings from the userspace.
-> 
-> But I hope a lot of ideas to make it better will come along this discussion.
+> Running 'make rpm' fails when CONFIG_LOCALVERSION_AUTO=y and using a kernel
+> source tree under SCM.  This is due to KERNELRELEASE being different when the
+> initial make is run and when make is run from rpmbuild.
+...
+Hand applied - your patches continue to be wordwrapped.
+Please see if you can fix this next time.
 
-Can't you abuse the SYSCALL_DEFINE macros? This current approach looks
-like it will replicate the syscall table.
-
-
-
+Thanks,
+	Sam
