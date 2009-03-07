@@ -1,64 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbZCGFxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZCGFxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850AbZCGFxW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 00:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751031AbZCGFxN
+	id S1755239AbZCGFxi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 00:53:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbZCGFx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 00:53:13 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:25552 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750742AbZCGFxM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 00:53:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Qjw26KZu3eY/OM+i8FV7I6zt0HS7hObXfDwvETLzWK5neRQZQOdHFuxOP9v//RYINA
-         mC6duJDRr5KuGQq+8pTWq0vH2zaOP/fj7F9p+DMmcyQ+b7e0oyu+H4I710Czj90/gUxQ
-         m7zSZ/9bESgYGPojR9z05rPqCDEmHSqf5qB6Y=
-Subject: Re: [Bug #12806] i915 broken STR
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>, Eric Anholt <eric@anholt.net>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <SLCXkuHtxAO.A.QeB.sUarJB@chimera>
-References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
-	 <SLCXkuHtxAO.A.QeB.sUarJB@chimera>
-Content-Type: text/plain
-Date: Fri, 06 Mar 2009 21:53:07 -0800
-Message-Id: <1236405187.7409.2.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
+	Sat, 7 Mar 2009 00:53:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35306 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755132AbZCGFxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 00:53:25 -0500
+Message-ID: <49B20BD9.70509@kernel.org>
+Date: Sat, 07 Mar 2009 14:53:29 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Cliff Wickman <cpw@sgi.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH v2] x86: UV uv_flush_tlb_others WARN_ON
+References: <E1LfjVI-0006v9-MG@eag09.americas.sgi.com>
+In-Reply-To: <E1LfjVI-0006v9-MG@eag09.americas.sgi.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 07 Mar 2009 05:53:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-03 at 20:25 +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Cliff Wickman wrote:
+> From: Cliff Wickman <cpw@sgi.com>
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12806
-> Subject		: i915 broken STR
-> Submitter	: Harvey Harrison <harvey.harrison@gmail.com>
-> Date		: 2009-02-28 4:20 (4 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5669fcacc58bf3a7386057addffd280d75380858
-> References	: http://marc.info/?l=linux-kernel&m=123579487801064&w=4
-> 
-> 
+> The problem WARN_ON remains in Ingo's tree, and linux-next.
+> It should be dropped.
 
-This looks to have been a case of old-userspace..upgrading to
-xorg-intel-video 2.6.1 (ubuntu Jaunty Alpha5) fixes STR here.
+Sorry, I must have lost it while tinkering with branches.  Added to
+#tj-percpu.  Ingo, the patch is on top of the locking granuality
+patchset.  Pulling #tj-percpu will include this one too.
 
-Harvey
+Thanks.
 
-
-
+-- 
+tejun
