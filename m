@@ -1,108 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbZCGSAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbZCGSJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbZCGSAr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 13:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZCGSAi
+	id S1755838AbZCGSJw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 13:09:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbZCGSJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 13:00:38 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59820 "EHLO ogre.sisk.pl"
+	Sat, 7 Mar 2009 13:09:44 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:37053 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752600AbZCGSAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 13:00:37 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>
-Subject: Re: [PATCH] Re: ALSA HDA Intel stoped to work in 2.6.16-*
-Date: Sat, 7 Mar 2009 19:00:44 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7-tst; KDE/4.2.0; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <87wtfhx7rm.fsf@nurf.casa> <s5hek1fmzf4.wl%tiwai@suse.de> <gou8k9$reh$1@ger.gmane.org>
-In-Reply-To: <gou8k9$reh$1@ger.gmane.org>
+	id S1751323AbZCGSJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 13:09:43 -0500
+Date: Sat, 7 Mar 2009 10:08:16 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@osdl.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: serue@us.ibm.com, hpa@zytor.com, sukadev@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/5][v2] Simplify devpts code
+Message-ID: <20090307180816.GA30072@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903071900.44762.rjw@sisk.pl>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(adding CCs).
 
-Usually, sending such things to the LKML alone doesn't really work.  Please
-always send a CC to the relevant subsystem maintainer.
+This patchset tries to address Christoph Hellwig's review comments on the
+support for multiple-instances in devpts.  http://lkml.org/lkml/2009/1/3/84
+It breaks up the patch into smaller pieces for (hopefully)  easier review.
 
-On Saturday 07 March 2009, Daniel Gimpelevich wrote:
-> At Mon, 6 Mar 2006 15:16:15 +0100,
-> Takashi Iwai wrote:
-> 
-> > At Sat, 4 Mar 2006 15:51:14 +0100,
-> > Adrian Bunk wrote:
-> >> 
-> >> On Sat, Mar 04, 2006 at 02:29:02AM -0300, Otavio Salvador wrote:
-> >> > Takashi Iwai <tiwai@suse.de> writes:
-> >> > 
-> >> > > Are you sure that your device has PCI SUB-system id 8086:2668 ?
-> >> > 
-> >> > oh no! Sorry!
-> >> > 
-> >> > 0000:00:1b.0 0403: 8086:2668 (rev 04)
-> >> >         Subsystem: 152d:0729
-> >> >                    ^^^^^^^^^
-> >> 
-> >> Can you make a patch with the correct id test whether it fixes your 
-> >> problem (without model=basic)?
-> > 
-> > This one should work for his device.
-> > 
-> > 
-> > Takashi
-> > ===
-> > 
-> > [PATCH] Add default entry for CTL Travel Master U553W
-> > 
-> > Added the default entry of ALC880 configuration table for
-> > CTL Travel Master U553W.
-> > 
-> > Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > 
-> > ---
-> > diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
-> > index b767552..d5cd3a1 100644
-> > --- a/sound/pci/hda/patch_realtek.c
-> > +++ b/sound/pci/hda/patch_realtek.c
-> > @@ -2948,6 +2948,8 @@ static struct hda_board_config alc260_cf
-> >       { .modelname = "basic", .config = ALC260_BASIC },
-> >       { .pci_subvendor = 0x104d, .pci_subdevice = 0x81bb,
-> >         .config = ALC260_BASIC }, /* Sony VAIO */
-> > +     { .pci_subvendor = 0x152d, .pci_subdevice = 0x0729,
-> > +       .config = ALC260_BASIC }, /* CTL Travel Master U553W */
-> >       { .modelname = "hp", .config = ALC260_HP },
-> >       { .pci_subvendor = 0x103c, .pci_subdevice = 0x3010, .config = ALC260_HP },
-> >       { .pci_subvendor = 0x103c, .pci_subdevice = 0x3011, .config = ALC260_HP },
-> 
-> It has been three years since the above patch was posted with a request for
-> testing. No testing reply ever appeared, and the patch was committed as
-> submitted. On the relevant hardware, I determined the patch to be incorrect.
-> For the git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-> head, the following patch appears to fix it correctly:
-> 
-> 
-> Signed-off-by: Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>
-> 
-> diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
-> index 6c26afc..87ec806 100644
-> --- a/sound/pci/hda/patch_realtek.c
-> +++ b/sound/pci/hda/patch_realtek.c
-> @@ -5692,7 +5692,7 @@ static struct snd_pci_quirk alc260_cfg_tbl[] = {
->         SND_PCI_QUIRK(0x104d, 0x81cc, "Sony VAIO", ALC260_BASIC),
->         SND_PCI_QUIRK(0x104d, 0x81cd, "Sony VAIO", ALC260_BASIC),
->         SND_PCI_QUIRK(0x10cf, 0x1326, "Fujitsu S702X", ALC260_FUJITSU_S702X),
-> -       SND_PCI_QUIRK(0x152d, 0x0729, "CTL U553W", ALC260_BASIC),
-> +       SND_PCI_QUIRK(0x152d, 0x0729, "CTL U553W", ALC260_WILL),
->         SND_PCI_QUIRK(0x161f, 0x2057, "Replacer 672V", ALC260_REPLACER_672V),
->         SND_PCI_QUIRK(0x1631, 0xc017, "PB V7900", ALC260_WILL),
->         {}
-> 
-> --
+IIUC, the key observation was that most of do_remount_sb() (MS_RDONLY flag
+and shrink_dcache() does not apply to devpts and only the parsing of
+options does. Moving the parsing code into devpts enables us to parse
+the options just once and vastly simplifies the code.
+
+This patchset does not change any functionality/behavior. But it does
+depend on following two related patches.
+
+	http://lkml.org/lkml/2009/1/29/10
+	http://lkml.org/lkml/2009/1/29/11
+
+Patches in this set:
+
+	[PATCH 1/5] Unroll essentials of do_remount_sb() into devpts
+	[PATCH 2/5] Parse mount options just once and copy them to super block
+	[PATCH 3/5] Move common mknod_ptmx() calls into caller
+	[PATCH 4/5] Remove get_init_pts_sb()
+	[PATCH 5/5] Merge code for single and multiple-instance mounts
+
+Changelog[v3]:
+	- (Serge Hallyn): Remove unnecessary printks
+
+Changelog[v2]:
+	- (Christoph Hellwig) Patch 2/5 remove '//check' comment. Initialized
+	  object using memset().
+	- (Christoph Hellwig) - Patch 5/5; Removed the do_pts_mount() function
+	   and moved that code into devpts_get_sb()
+
+TODO: (Independent patch set)
+
+	- Merge CONFIG_DEVPTS_MULTIPLE_INSTANCES token with other container-
+	  related tokens ? 
