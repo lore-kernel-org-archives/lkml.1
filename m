@@ -1,84 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbZCGEfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbZCGEr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755477AbZCGEfy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 23:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbZCGEfm
+	id S1755503AbZCGEr4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 23:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbZCGErq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 23:35:42 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36553 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752117AbZCGEfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 23:35:41 -0500
-Message-ID: <49B1F934.5050006@kernel.org>
-Date: Fri, 06 Mar 2009 20:33:56 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 6 Mar 2009 23:47:46 -0500
+Received: from mail.deathmatch.net ([70.167.247.36]:4045 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752502AbZCGEro (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 23:47:44 -0500
+Date: Fri, 6 Mar 2009 23:47:32 -0500
+From: Bob Copeland <me@bobcopeland.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
+Message-ID: <20090307044732.GA13663@hash.localnet>
+References: <40f31dec0902231508l512af5b7w68cfcc0bdf3cfa87@mail.gmail.com> <20090224135817.GB6019@hash.localnet> <49A46AD4.3060007@gmail.com> <20090225140139.GA18694@silver.sucs.org> <20090226135938.GA12182@hash.localnet> <20090226170338.GA1745@silver.sucs.org> <20090303041222.GA1238@hash.localnet> <20090303200352.GA8343@silver.sucs.org> <20090304120759.GA6519@hash.localnet> <20090306094249.GA10236@silver.sucs.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: [PATCH] igb: fix kexec with igb
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090306094249.GA10236@silver.sucs.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 06, 2009 at 09:42:49AM +0000, Sitsofe Wheeler wrote:
+> Unfortunately I can't quite provide you what you were asking for... 
 
-Impact: could probe igb
+Well, this is great so far!  It'll take some time to dig through it
+but it looks useful.
 
-Found one system with 82575EB, in the kernel that is kexeced, probe igb
-failed with -2.
+I saw _get_tsf64 in the trace; were you using ad-hoc/ibss mode, or 
+is that just a weird artifact?
 
-it looks like the same behavior happened on forcedeth.
+-- 
+Bob Copeland %% www.bobcopeland.com
 
-try to check system_state to make sure if put it on D3
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
- 1 file changed, 14 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/drivers/net/igb/igb_main.c
-===================================================================
---- linux-2.6.orig/drivers/net/igb/igb_main.c
-+++ linux-2.6/drivers/net/igb/igb_main.c
-@@ -4358,14 +4358,22 @@ static int igb_suspend(struct pci_dev *p
- 		wr32(E1000_WUFC, 0);
- 	}
- 
-+	/*
-+	 * Apparently it is not possible to reinitialise from D3 hot,
-+	 * only put the device into D3 if we really go for poweroff.
-+	 */
- 	/* make sure adapter isn't asleep if manageability/wol is enabled */
- 	if (wufc || adapter->en_mng_pt) {
--		pci_enable_wake(pdev, PCI_D3hot, 1);
--		pci_enable_wake(pdev, PCI_D3cold, 1);
-+		if (system_state == SYSTEM_POWER_OFF) {
-+			pci_enable_wake(pdev, PCI_D3hot, 1);
-+			pci_enable_wake(pdev, PCI_D3cold, 1);
-+		}
- 	} else {
- 		igb_shutdown_fiber_serdes_link_82575(hw);
--		pci_enable_wake(pdev, PCI_D3hot, 0);
--		pci_enable_wake(pdev, PCI_D3cold, 0);
-+		if (system_state == SYSTEM_POWER_OFF) {
-+			pci_enable_wake(pdev, PCI_D3hot, 0);
-+			pci_enable_wake(pdev, PCI_D3cold, 0);
-+		}
- 	}
- 
- 	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
-@@ -4374,7 +4382,8 @@ static int igb_suspend(struct pci_dev *p
- 
- 	pci_disable_device(pdev);
- 
--	pci_set_power_state(pdev, pci_choose_state(pdev, state));
-+	if (system_state == SYSTEM_POWER_OFF)
-+		pci_set_power_state(pdev, pci_choose_state(pdev, state));
- 
- 	return 0;
- }
