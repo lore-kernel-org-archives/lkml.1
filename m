@@ -1,181 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbZCGBmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZCGC2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755634AbZCGBmj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 20:42:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZCGBma
+	id S1754862AbZCGC2b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 21:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbZCGC2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 20:42:30 -0500
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:32815 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753338AbZCGBma (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 20:42:30 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsAEACNdsUlMQW1W/2dsb2JhbACBTtNNhAUG
-Date: Fri, 6 Mar 2009 20:42:20 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+	Fri, 6 Mar 2009 21:28:22 -0500
+Received: from ozlabs.org ([203.10.76.45]:34439 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751272AbZCGC2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 21:28:09 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: [PATCH] param: fix charp parameters set via sysfs
+Date: Sat, 7 Mar 2009 12:58:03 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH -tip 5/4] Expands irq-off region in text_poke()
-Message-ID: <20090307014219.GA27154@Krystal>
-References: <49B1428A.9050500@redhat.com> <49B14352.2040705@redhat.com> <20090306181356.GD14236@Krystal> <49B16C69.6060203@redhat.com> <20090306190828.GA28582@elte.hu> <20090306191517.GG14236@Krystal> <20090306192246.GF28582@elte.hu> <49B186A9.3030506@redhat.com> <20090306210116.GB20603@Krystal> <49B19C5B.30805@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Frederic Weisbecker <fweisbec@gmail.com>, Greg KH <gregkh@suse.de>,
+       stable@kernel.org
+References: <200902171010.34819.rusty@rustcorp.com.au> <20090306175854.GA28349@silver.sucs.org>
+In-Reply-To: <20090306175854.GA28349@silver.sucs.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49B19C5B.30805@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 20:41:18 up 6 days, 22:07,  1 user,  load average: 0.81, 0.82,
-	0.73
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903071258.03701.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
+On Saturday 07 March 2009 04:28:55 Sitsofe Wheeler wrote:
+> On Tue, Feb 17, 2009 at 10:10:34AM +1030, Rusty Russell wrote:
+> > Impact: fix crash on reading from /sys/module/.../ieee80211_default_rc_algo
 > 
-> 
-> Mathieu Desnoyers wrote:
-> > * Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> >> Ingo Molnar wrote:
-> >>> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> >>>
-> >>>> * Ingo Molnar (mingo@elte.hu) wrote:
-> >>>>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> >>>>>
-> >>>>>> @@ -523,14 +526,17 @@ void *__kprobes text_poke(void *addr, co
-> >>>>>>  		pages[1] = virt_to_page(addr + PAGE_SIZE);
-> >>>>>>  	}
-> >>>>>>  	BUG_ON(!pages[0]);
-> >>>>>> -	if (!pages[1])
-> >>>>>> -		nr_pages = 1;
-> >>>>>> -	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
-> >>>>>> -	BUG_ON(!vaddr);
-> >>>>>> -	local_irq_disable();
-> >>>>>> +	local_irq_save(flags);
-> >>>>>> +	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
-> >>>>>> +	if (pages[1])
-> >>>>>> +		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
-> >>>>>> +	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
-> >>>>>>  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
-> >>>>>> -	local_irq_enable();
-> >>>>>> -	vunmap(vaddr);
-> >>>>>> +	clear_fixmap(FIX_TEXT_POKE0);
-> >>>>>> +	if (pages[1])
-> >>>>>> +		clear_fixmap(FIX_TEXT_POKE1);
-> >>>>>> +	local_flush_tlb();
-> >>>>>> +	local_irq_restore(flags);
-> >>>>>>  	sync_core();
-> >>>>> I'm not sure at all about this widening of the irq-atomic 
-> >>>>> section and the idea of allowing non-locked access on single-CPU 
-> >>>>> situations - we dont really want to micro-optimize any of this 
-> >>>>> on such a level, holding the text lock is a robust rule all code 
-> >>>>> should be listening to. (Creating locking assymetry always 
-> >>>>> inserts a certain amount of fragility - adding to an already 
-> >>>>> fragile concept here.)
-> >>>>>
-> >>>>> And note that there's no reason why text_poke could not be used 
-> >>>>> in stop_machine_run() - the stop_machine_run() handler must not 
-> >>>>> take the text_lock of course - but outside code calling 
-> >>>>> stop_machine_run() can do it and can hence serialize properly.
-> >>>>>
-> >>>>> Note that even if we did this then your v2 patch is not fully 
-> >>>>> correct: you need to move the sync_core() at the end of the 
-> >>>>> sequence inside the critical section too. (right now this is 
-> >>>>> mostly harmless because the INVLPG inside the clear_fixmap() 
-> >>>>> happens to be serializing so it has an implicit sync_core() 
-> >>>>> property - but nevertheless we better do this straight away to 
-> >>>>> not cause problems later down the line.)
-> >>>>>
-> >>>>> 	Ingo
-> >>>> Agreed. The alternatives_smp_lock/alternatives_smp_unlock 
-> >>>> specific case does not bring us much if it has no perceivable 
-> >>>> performance impact. It's better to keep a standard interface 
-> >>>> and clear requirements.
-> >>> Note that i dont object to another aspect of this same change: 
-> >>> the fact that it makes the whole sequence more atomic and more 
-> >>> defensive [which is never bad of fragile interfaces].
-> >>>
-> >>> I only got worried about the "lets use this without the text 
-> >>> lock" ideas.
-> >>>
-> >>> So if Masami-san sends a delta patch with a different changelog 
-> >>> and with the sync_core() bit moved inside the critical section, 
-> >>> i'll apply that too.
-> >> OK, here is the delta patch.
-> >>
-> >> Expand irq-atomic region to cover fixmap using code and sync_core.
-> >>
-> >> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> >> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> >> Cc: Ingo Molnar <mingo@elte.hu>
-> >> ---
-> >>  arch/x86/kernel/alternative.c |    4 ++--
-> >>  1 file changed, 2 insertions(+), 2 deletions(-)
-> >>
-> >> Index: linux-2.6-tip/arch/x86/kernel/alternative.c
-> >> ===================================================================
-> >> --- linux-2.6-tip.orig/arch/x86/kernel/alternative.c
-> >> +++ linux-2.6-tip/arch/x86/kernel/alternative.c
-> >> @@ -526,13 +526,12 @@ void *__kprobes text_poke(void *addr, co
-> >>  		pages[1] = virt_to_page(addr + PAGE_SIZE);
-> >>  	}
-> >>  	BUG_ON(!pages[0]);
-> >> +	local_irq_save(flags);
-> >>  	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
-> >>  	if (pages[1])
-> >>  		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
-> >>  	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
-> >> -	local_irq_save(flags);
-> >>  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
-> >> -	local_irq_restore(flags);
-> >>  	clear_fixmap(FIX_TEXT_POKE0);
-> >>  	if (pages[1])
-> >>  		clear_fixmap(FIX_TEXT_POKE1);
-> >> @@ -540,6 +539,7 @@ void *__kprobes text_poke(void *addr, co
-> >>  	sync_core();
-> >>  	/* Could also do a CLFLUSH here to speed up CPU recovery; but
-> >>  	   that causes hangs on some VIA CPUs. */
-> >> +	local_irq_restore(flags);
-> >>  	for (i = 0; i < len; i++)
-> >>  		BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
-> > 
-> > I think irq off should cover the BUG_ON too. This safety check assumes
-> > we are the only ones modifying "addr".
-> 
-> I think others don't change without text_mutex, don't it?
-> 
+> Is this too late to be queued for 2.6.30 (I guess it missed the current
+> window as it doesn't appear to be in 2.6.29-rc7)?
 
-They shouldn't, but given we decided to grow the irq off region to
-contain all the code that needs to be executed atomically, it should
-also contain the BUG_ON, because it is expected to be as atomic as the
-rest of the code.
+Linus didn't take it.  Since it predates 2.6.29 and not a one-line fix, I
+guessed that meant he doesn't want it in 2.6.30.
 
-Mathieu
+Just in case, here it is again:
 
-> Thank you,
-> 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America) Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
+Subject: param: fix charp parameters set via sysfs
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Impact: fix crash on reading from /sys/module/.../ieee80211_default_rc_algo
+
+The module_param type "charp" simply sets a char * pointer in the
+module to the parameter in the commandline string: this is why we keep
+the (mangled) module command line around.  But when set via sysfs (as
+about 11 charp parameters can be) this memory is freed on the way
+out of the write().  Future reads hit random mem.
+
+So we kstrdup instead: we have to check we're not in early commandline
+parsing, and we have to note when we've used it so we can reliably
+kfree the parameter when it's next overwritten, and also on module
+unload.
+
+(Thanks to Randy Dunlap for CONFIG_SYSFS=n fixes)
+
+Reported-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+Diagnosed-by: Frederic Weisbecker <fweisbec@gmail.com>
+Tested-by: Frederic Weisbecker <fweisbec@gmail.com>
+Tested-by: Christof Schmitt <christof.schmitt@de.ibm.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ kernel/params.c |   14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/module.h b/include/linux/module.h
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -247,6 +247,10 @@ struct module
+ 	const struct kernel_symbol *syms;
+ 	const unsigned long *crcs;
+ 	unsigned int num_syms;
++
++	/* Kernel parameters. */
++	struct kernel_param *kp;
++	unsigned int num_kp;
+ 
+ 	/* GPL-only exported symbols. */
+ 	unsigned int num_gpl_syms;
+diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
+--- a/include/linux/moduleparam.h
++++ b/include/linux/moduleparam.h
+@@ -138,6 +138,16 @@ extern int parse_args(const char *name,
+ 		      unsigned num,
+ 		      int (*unknown)(char *param, char *val));
+ 
++/* Called by module remove. */
++#ifdef CONFIG_SYSFS
++extern void destroy_params(const struct kernel_param *params, unsigned num);
++#else
++static inline void destroy_params(const struct kernel_param *params,
++				  unsigned num)
++{
++}
++#endif /* !CONFIG_SYSFS */
++
+ /* All the helper functions */
+ /* The macros to do compile-time type checking stolen from Jakub
+    Jelinek, who IIRC came up with this idea for the 2.4 module init code. */
+diff --git a/kernel/module.c b/kernel/module.c
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1457,6 +1457,9 @@ static void free_module(struct module *m
+ 	/* Module unload stuff */
+ 	module_unload_free(mod);
+ 
++	/* Free any allocated parameters. */
++	destroy_params(mod->kp, mod->num_kp);
++
+ 	/* release any pointers to mcount in this module */
+ 	ftrace_release(mod->module_core, mod->core_size);
+ 
+@@ -1870,8 +1873,7 @@ static noinline struct module *load_modu
+ 	unsigned int symindex = 0;
+ 	unsigned int strindex = 0;
+ 	unsigned int modindex, versindex, infoindex, pcpuindex;
+-	unsigned int num_kp, num_mcount;
+-	struct kernel_param *kp;
++	unsigned int num_mcount;
+ 	struct module *mod;
+ 	long err = 0;
+ 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
+@@ -2116,8 +2118,8 @@ static noinline struct module *load_modu
+ 
+ 	/* Now we've got everything in the final locations, we can
+ 	 * find optional sections. */
+-	kp = section_objs(hdr, sechdrs, secstrings, "__param", sizeof(*kp),
+-			  &num_kp);
++	mod->kp = section_objs(hdr, sechdrs, secstrings, "__param",
++			       sizeof(*mod->kp), &mod->num_kp);
+ 	mod->syms = section_objs(hdr, sechdrs, secstrings, "__ksymtab",
+ 				 sizeof(*mod->syms), &mod->num_syms);
+ 	mod->crcs = section_addr(hdr, sechdrs, secstrings, "__kcrctab");
+@@ -2262,11 +2264,11 @@ static noinline struct module *load_modu
+ 	 */
+ 	list_add_rcu(&mod->list, &modules);
+ 
+-	err = parse_args(mod->name, mod->args, kp, num_kp, NULL);
++	err = parse_args(mod->name, mod->args, mod->kp, mod->num_kp, NULL);
+ 	if (err < 0)
+ 		goto unlink;
+ 
+-	err = mod_sysfs_setup(mod, kp, num_kp);
++	err = mod_sysfs_setup(mod, mod->kp, mod->num_kp);
+ 	if (err < 0)
+ 		goto unlink;
+ 	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+diff --git a/kernel/params.c b/kernel/params.c
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -23,6 +23,9 @@
+ #include <linux/device.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
++
++/* We abuse the high bits of "perm" to record whether we kmalloc'ed. */
++#define KPARAM_KMALLOCED	0x80000000
+ 
+ #if 0
+ #define DEBUGP printk
+@@ -217,7 +220,19 @@ int param_set_charp(const char *val, str
+ 		return -ENOSPC;
+ 	}
+ 
+-	*(char **)kp->arg = (char *)val;
++	if (kp->perm & KPARAM_KMALLOCED)
++		kfree(*(char **)kp->arg);
++
++	/* This is a hack.  We can't need to strdup in early boot, and we
++	 * don't need to; this mangled commandline is preserved. */
++	if (slab_is_available()) {
++		kp->perm |= KPARAM_KMALLOCED;
++		*(char **)kp->arg = kstrdup(val, GFP_KERNEL);
++		if (!kp->arg)
++			return -ENOMEM;
++	} else
++		*(const char **)kp->arg = val;
++
+ 	return 0;
+ }
+ 
+@@ -571,6 +586,15 @@ void module_param_sysfs_remove(struct mo
+ }
+ #endif
+ 
++void destroy_params(const struct kernel_param *params, unsigned num)
++{
++	unsigned int i;
++
++	for (i = 0; i < num; i++)
++		if (params[i].perm & KPARAM_KMALLOCED)
++			kfree(*(char **)params[i].arg);
++}
++
+ static void __init kernel_add_sysfs_param(const char *name,
+ 					  struct kernel_param *kparam,
+ 					  unsigned int name_skip)
