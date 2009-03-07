@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756296AbZCGTpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbZCGTwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756296AbZCGTpS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 14:45:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbZCGTpD
+	id S1756216AbZCGTwK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 14:52:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbZCGTv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 14:45:03 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:34835 "EHLO pardus.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752137AbZCGTpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 14:45:02 -0500
-Message-ID: <49B2CE44.4060305@pardus.org.tr>
-Date: Sat, 07 Mar 2009 21:43:00 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] A simple way to determine if the kernel needs HIGHMEM64G
- to be able to use all the installed memory
-References: <49B254C6.8010507@pardus.org.tr> <20090307193026.GA2165@x200.localdomain>
-In-Reply-To: <20090307193026.GA2165@x200.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sat, 7 Mar 2009 14:51:56 -0500
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:35999 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755273AbZCGTv4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 14:51:56 -0500
+Subject: Re: [PATCH 0/7][v8] Container-init signal semantics
+From: Greg Kurz <gkurz@fr.ibm.com>
+To: Daniel Lezcano <daniel.lezcano@free.fr>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Containers <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       roland@redhat.com
+In-Reply-To: <49B2CE6E.3090501@free.fr>
+References: <20090219030207.GA18783@us.ibm.com> <499D73C8.3090209@free.fr>
+	 <20090307190428.GA30594@us.ibm.com>  <49B2CE6E.3090501@free.fr>
+Content-Type: text/plain
+Date: Sat, 07 Mar 2009 20:51:49 +0100
+Message-Id: <1236455509.9151.4.camel@bahia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Sat, Mar 07, 2009 at 01:04:38PM +0200, Ozan Çağlayan wrote:
->>
->> I'm quite dumb about the internal structures of the kernel but, wouldn't it
->> be possible to create a simple read-only sysfs object like kexec_loaded
->> that will contain "1" when the kernel needs HIGHMEM64G to see all of the memory
->> and "0" when it doesn't?
+On Sat, 2009-03-07 at 20:43 +0100, Daniel Lezcano wrote:
+>         case LINUX_REBOOT_CMD_HALT:
+> -               kernel_halt();
+> -               unlock_kernel();
+> -               do_exit(0);
+> +               if (power_off_pid_ns(current->nsproxy->pid_ns)) {
+> +                       kernel_halt();
+> +                       unlock_kernel();
+> +                       do_exit(0);
+> +               }
+
+Even if current will get SIGKILLed when zap_pid_ns_processes() is
+called, I see no reason it doesn't call do_exit(0).
+
+>                 break;
 > 
-> Why do you need a file? If kernel says to enable HIGHMEM64G, enable it.
+>         case LINUX_REBOOT_CMD_POWER_OFF:
+> -               kernel_power_off();
+> -               unlock_kernel();
+> -               do_exit(0);
+> +               if (power_off_pid_ns(current->nsproxy->pid_ns)) {
+> +                       kernel_power_off();
+> +                       unlock_kernel();
+> +                       do_exit(0);
+> +               }
 
-It's not for me. We're not able to ship HIGHMEM64G enabled kernel packages with
-distributions because it breaks some processors not having PAE flag.
+Same.
 
-So, the PAE enabled kernel should be installed by distribution installers or
-package management systems if the processor honors the PAE bit. Because PAE
-is an extension mechanism for 32bit processors, AFAIK it has some overhead.
-So enabling it if the user doesn't have a memory size >=4GB would not make
-much sense if a proper noexecute (NX) support is not intended.
-
-Fedora installer parses /proc/iomem to see if any address listed is bigger than
-0x100000000h. I checked it on a machine having 4GB of memory, and it failed.
-
-If the linux kernel is able to drop such an advisory message into the log buffer,
-it would be very easy to implement a read-only sysfs object. dmesg parsing
-is another hacky, dirty solution to the problem that I would not prefer at all.
-
-Regards,
-
+>                 break;
+> 
 -- 
+Gregory Kurz                                     gkurz@fr.ibm.com
+Software Engineer @ IBM/Meiosys                  http://www.ibm.com
+Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
 
-Ozan Çağlayan
-<ozan_at_pardus.org.tr>
+"Anarchy is about taking complete responsibility for yourself."
+        Alan Moore.
+
