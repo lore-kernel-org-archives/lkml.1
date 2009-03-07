@@ -1,144 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbZCGFJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751255AbZCGFJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbZCGFJK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 00:09:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbZCGFHh
+	id S1751255AbZCGFJa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 00:09:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbZCGFHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 00:07:37 -0500
-Received: from rv-out-0506.google.com ([209.85.198.229]:3900 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755232AbZCGFHd convert rfc822-to-8bit (ORCPT
+	Sat, 7 Mar 2009 00:07:47 -0500
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:59878 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752158AbZCGFHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 00:07:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=JINJG6+NIaxTR7k+PmshhjUxa/mjTOOqxad7UvFiUUuFetIQ8pa0fpyYdO348fNOus
-         PC6O0JvmLKP3hhcuGDKBXxRSuJK2KNTI62goRjBWQW0Go9P9OPA9viBMQXwMA0dAFecK
-         3FX3Uv/EcTtJ++DcByigfWBlUkdhRerXMITWM=
+	Sat, 7 Mar 2009 00:07:44 -0500
+Date: Sat, 7 Mar 2009 10:37:34 +0530
+From: prasad@linux.vnet.ibm.com
+To: mingo@elte.hu
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Roland McGrath <roland@redhat.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: [Patch 10/11] Sample HW breakpoint over kernel data address
+Message-ID: <20090307050734.GK23959@in.ibm.com>
+References: <20090307045120.039324630@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1235858664-32201-1-git-send-email-gustavo@las.ic.unicamp.br>
-References: <1235858664-32201-1-git-send-email-gustavo@las.ic.unicamp.br>
-Date: Sat, 7 Mar 2009 02:07:31 -0300
-X-Google-Sender-Auth: 5eab31b85f84fa1d
-Message-ID: <6b53b1990903062107q24b6c8a1w58325ee18a216653@mail.gmail.com>
-Subject: Re: [PATCH] bluetooth: create macros for channels identifiers
-From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-To: linux-bluetooth@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename=10
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What about that?
+This patch introduces a sample kernel module to demonstrate the use of Hardware
+Breakpoint feature. It places a breakpoint over the kernel variable 'pid_max'
+to monitor all write operations and emits a function-backtrace when done.
 
-On Sat, Feb 28, 2009 at 7:04 PM, Gustavo F. Padovan
-<gustavo@las.ic.unicamp.br> wrote:
-> Use macros instead of hardcoded numbers to get a code more readable.
->
-> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
-> ---
->  include/net/bluetooth/l2cap.h |    6 ++++++
->  net/bluetooth/l2cap.c         |   18 +++++++++---------
->  2 files changed, 15 insertions(+), 9 deletions(-)
->
-> diff --git a/include/net/bluetooth/l2cap.h b/include/net/bluetooth/l2cap.h
-> index f566aa1..ed4ba91 100644
-> --- a/include/net/bluetooth/l2cap.h
-> +++ b/include/net/bluetooth/l2cap.h
-> @@ -106,6 +106,12 @@ struct l2cap_conn_rsp {
->        __le16     status;
->  } __attribute__ ((packed));
->
-> +/* channel indentifier */
-> +#define L2CAP_CID_SIGNALING    0x0001
-> +#define L2CAP_CID_CONN_LESS    0x0002
-> +#define L2CAP_CID_DYN_START    0x0040
-> +#define L2CAP_CID_DYN_END      0xffff
-> +
->  /* connect result */
->  #define L2CAP_CR_SUCCESS    0x0000
->  #define L2CAP_CR_PEND       0x0001
-> diff --git a/net/bluetooth/l2cap.c b/net/bluetooth/l2cap.c
-> index ca4d3b4..ff1744e 100644
-> --- a/net/bluetooth/l2cap.c
-> +++ b/net/bluetooth/l2cap.c
-> @@ -161,9 +161,9 @@ static inline struct sock *l2cap_get_chan_by_ident(struct l2cap_chan_list *l, u8
->
->  static u16 l2cap_alloc_cid(struct l2cap_chan_list *l)
->  {
-> -       u16 cid = 0x0040;
-> +       u16 cid = L2CAP_CID_DYN_START;
->
-> -       for (; cid < 0xffff; cid++) {
-> +       for (; cid < L2CAP_CID_DYN_END; cid++) {
->                if(!__l2cap_get_chan_by_scid(l, cid))
->                        return cid;
->        }
-> @@ -215,13 +215,13 @@ static void __l2cap_chan_add(struct l2cap_conn *conn, struct sock *sk, struct so
->                l2cap_pi(sk)->scid = l2cap_alloc_cid(l);
->        } else if (sk->sk_type == SOCK_DGRAM) {
->                /* Connectionless socket */
-> -               l2cap_pi(sk)->scid = 0x0002;
-> -               l2cap_pi(sk)->dcid = 0x0002;
-> +               l2cap_pi(sk)->scid = L2CAP_CID_CONN_LESS;
-> +               l2cap_pi(sk)->dcid = L2CAP_CID_CONN_LESS;
->                l2cap_pi(sk)->omtu = L2CAP_DEFAULT_MTU;
->        } else {
->                /* Raw socket can send/recv signalling messages only */
-> -               l2cap_pi(sk)->scid = 0x0001;
-> -               l2cap_pi(sk)->dcid = 0x0001;
-> +               l2cap_pi(sk)->scid = L2CAP_CID_SIGNALING;
-> +               l2cap_pi(sk)->dcid = L2CAP_CID_SIGNALING;
->                l2cap_pi(sk)->omtu = L2CAP_DEFAULT_MTU;
->        }
->
-> @@ -1598,7 +1598,7 @@ static struct sk_buff *l2cap_build_cmd(struct l2cap_conn *conn,
->
->        lh = (struct l2cap_hdr *) skb_put(skb, L2CAP_HDR_SIZE);
->        lh->len = cpu_to_le16(L2CAP_CMD_HDR_SIZE + dlen);
-> -       lh->cid = cpu_to_le16(0x0001);
-> +       lh->cid = cpu_to_le16(L2CAP_CID_SIGNALING);
->
->        cmd = (struct l2cap_cmd_hdr *) skb_put(skb, L2CAP_CMD_HDR_SIZE);
->        cmd->code  = code;
-> @@ -2420,11 +2420,11 @@ static void l2cap_recv_frame(struct l2cap_conn *conn, struct sk_buff *skb)
->        BT_DBG("len %d, cid 0x%4.4x", len, cid);
->
->        switch (cid) {
-> -       case 0x0001:
-> +       case L2CAP_CID_SIGNALING:
->                l2cap_sig_channel(conn, skb);
->                break;
->
-> -       case 0x0002:
-> +       case L2CAP_CID_CONN_LESS:
->                psm = get_unaligned((__le16 *) skb->data);
->                skb_pull(skb, 2);
->                l2cap_conless_channel(conn, psm, skb);
-> --
-> 1.6.0.6
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+---
+ samples/Kconfig                         |    6 ++
+ samples/Makefile                        |    3 -
+ samples/hw_breakpoint/Makefile          |    1 
+ samples/hw_breakpoint/data_breakpoint.c |   80 ++++++++++++++++++++++++++++++++
+ 4 files changed, 89 insertions(+), 1 deletion(-)
 
+Index: linux-2.6-tip/samples/Kconfig
+===================================================================
+--- linux-2.6-tip.orig/samples/Kconfig
++++ linux-2.6-tip/samples/Kconfig
+@@ -39,5 +39,11 @@ config SAMPLE_KRETPROBES
+ 	default m
+ 	depends on SAMPLE_KPROBES && KRETPROBES
+ 
++config SAMPLE_HW_BREAKPOINT
++	tristate "Build kernel hardware breakpoint examples -- loadable modules only"
++	depends on m
++	help
++	  This builds kernel hardware breakpoint example modules.
++
+ endif # SAMPLES
+ 
+Index: linux-2.6-tip/samples/Makefile
+===================================================================
+--- linux-2.6-tip.orig/samples/Makefile
++++ linux-2.6-tip/samples/Makefile
+@@ -1,3 +1,4 @@
+ # Makefile for Linux samples code
+ 
+-obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/
++obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/ \
++			   hw_breakpoint/
+Index: linux-2.6-tip/samples/hw_breakpoint/Makefile
+===================================================================
+--- /dev/null
++++ linux-2.6-tip/samples/hw_breakpoint/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_SAMPLE_HW_BREAKPOINT) += data_breakpoint.o
+Index: linux-2.6-tip/samples/hw_breakpoint/data_breakpoint.c
+===================================================================
+--- /dev/null
++++ linux-2.6-tip/samples/hw_breakpoint/data_breakpoint.c
+@@ -0,0 +1,80 @@
++/*
++ * data_breakpoint.c - Sample HW Breakpoint file to watch kernel data address
++ *
++ * This file is a kernel module that places a breakpoint over 'pid_max' kernel
++ * variable using Hardware Breakpoint register. The corresponding handler which
++ * prints a backtrace is invoked everytime a write operation is performed on
++ * that variable.
++ *
++ * After inserting this module, invoke a write operation using
++ * 'echo <desired_value> > /proc/sys/kernel/pid_max'
++ * to find the function-call backtrace.
++ *
++ * Copyright (C) IBM Corporation, 2009
++ */
++#include <linux/module.h>	/* Needed by all modules */
++#include <linux/kernel.h>	/* Needed for KERN_INFO */
++#include <linux/init.h>		/* Needed for the macros */
++
++#include <asm/hw_breakpoint.h>
++
++struct hw_breakpoint pid_max_hbkpt;
++
++void pid_max_hbkpt_installed(struct hw_breakpoint *temp, struct pt_regs
++								*temp_regs)
++{
++	printk(KERN_INFO "pid_max_hbkpt ENABLED\n");
++}
++
++void pid_max_hbkpt_uninstalled(struct hw_breakpoint *temp, struct
++							pt_regs * temp_regs)
++{
++	printk(KERN_INFO "pid_max_hbkpt DISABLED\n");
++}
++
++void pid_max_hbkpt_handler(struct hw_breakpoint *temp, struct pt_regs
++								*temp_regs)
++{
++	printk(KERN_INFO "pid_max value is changed\n");
++	dump_stack();
++	printk(KERN_INFO "Dump stack from pid_max_hbkpt_handler\n");
++}
++
++static int __init hw_break_module_init(void)
++{
++	int ret;
++
++#ifdef CONFIG_X86
++	pid_max_hbkpt.info.name = "pid_max";
++	pid_max_hbkpt.info.type = HW_BREAKPOINT_WRITE;
++	pid_max_hbkpt.info.len = HW_BREAKPOINT_LEN_4;
++	pid_max_hbkpt.priority = HW_BREAKPOINT_PRIO_NORMAL;
++
++	pid_max_hbkpt.installed = (void *)pid_max_hbkpt_installed;
++	pid_max_hbkpt.uninstalled = (void *)pid_max_hbkpt_uninstalled;
++	pid_max_hbkpt.triggered = (void *)pid_max_hbkpt_handler;
++#endif /* CONFIG_X86 */
++
++	ret = register_kernel_hw_breakpoint(&pid_max_hbkpt);
++
++	if (ret < 0) {
++		printk(KERN_INFO "Breakpoint registration failed\n");
++		return ret;
++	} else
++		printk(KERN_INFO "HW Breakpoint for pid_max write installed\n");
++
++	return 0;
++}
++
++static void __exit hw_break_module_exit(void)
++{
++	unregister_kernel_hw_breakpoint(&pid_max_hbkpt);
++	printk(KERN_INFO "HW Breakpoint for pid_max write uninstalled\n");
++}
++
++module_init(hw_break_module_init);
++module_exit(hw_break_module_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("K.Prasad");
++MODULE_DESCRIPTION("pid_max breakpoint");
 
-
--- 
-Gustavo F. Padovan
-
-Computer Engineering Student
-Institute of Computing - IC
-University of Campinas - UNICAMP
-
-email: gustavo@las.ic.unicamp.br
-gtalk: gfpadovan@gmail.com
-mobile: +55 19 81030803
