@@ -1,142 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755537AbZCGRUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZCGR3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755537AbZCGRUk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 12:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755663AbZCGRUX
+	id S1755979AbZCGR3T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 12:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbZCGR3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 12:20:23 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35485 "EHLO e1.ny.us.ibm.com"
+	Sat, 7 Mar 2009 12:29:10 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:58949 "EHLO e7.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755748AbZCGRUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 12:20:20 -0500
-Date: Sat, 7 Mar 2009 09:20:19 -0800
+	id S1751866AbZCGR3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 12:29:09 -0500
+Date: Sat, 7 Mar 2009 09:29:07 -0800
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcu_barrier VS cpu_hotplug: make rcu_barrier can be
-	called on CPU_DEAD
-Message-ID: <20090307172019.GG10625@linux.vnet.ibm.com>
+Subject: Re: [PATCH] rcu_barrier VS cpu_hotplug: Ensure callbacks in dead
+	cpu are migrated to online cpu
+Message-ID: <20090307172907.GH10625@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <49B2526C.5070503@cn.fujitsu.com>
+References: <49B2526E.40106@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49B2526C.5070503@cn.fujitsu.com>
+In-Reply-To: <49B2526E.40106@cn.fujitsu.com>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 07, 2009 at 06:54:36PM +0800, Lai Jiangshan wrote:
+On Sat, Mar 07, 2009 at 06:54:38PM +0800, Lai Jiangshan wrote:
+> [RFC]
+> I don't like this patch, but I thought for some days and I can't
+> thought out a better one.
 > 
-> cpu hotplug notifier_call for CPU_DEAD are very complex, some notifier_call
-> may call rcu_barrier(), if this notifier_call is called earlier than
-> rcu_cpu_notify(), it is buggy.
+> I'm very hope rcu_barrier() can be called anywhere(any sleepable context).
+> But get_online_cpus() is a very large lock, it limits rcu_barrier().
 > 
-> _cpu_down() -->
-> 	some_cpu_hotplug_notify() -->
-> 		case CPU_DEAD: rcu_barrier()
-> 	rcu_cpu_notify() -->
-> 		rcu_offline_cpu()
+> We can avoid get_online_cpus() easily for rcupreempt by using a new rcu_barrier:
+> void rcu_barrier(void)
+> {
+> 	for each rcu_data {
+> 		lock rcu_data;
+> 		if rcu_data is not empty, queue a callback for rcu_barrier;
+> 		unlock rcu_data;
+> 	}
+> }
+> But we cannot use this algorithm for rcuclassic and rcutree,
+> rcu_data in rcuclassic and rcutree have not a spinlock for queuing callback.
 > 
-> When rcu_barrier() is called, rcu_barrier() does not know how to finish
-> his work: rcu callbacks in dead cpu have not been migrated to online cpu,
-> so rcu_barrier() cannot wait for these rcu callbacks, but rcu_barrier()
-> should wait for all queued rcu callbacks.
-
-Hmmm...
-
-What should happen in this case is that rcu_offline_cpu() moves the
-rcu_barrier() callback to a surviving CPU, and then the rcu_barrier()
-should complete just fine at the end of a subsequent grace period.
-In fact, this is why it is so important to keep RCU callbacks ordered
-through CPU-hotplug operations.
-
-Or do you have a test that demonstrates a failure in this case?
-If so, please share!
-
-						Thanx, Paul
-
-> This patch ensure that rcu_cpu_notify() is called earlier than 
-> any other notifier_call.
+> From: Lai Jiangshan <laijs@cn.fujitsu.com>
 > 
+> cpu hotplug may be happened asynchronously, some rcu callbacks are maybe
+> still in dead cpu, rcu_barrier() also needs to wait for these rcu callbacks
+> to complete, so we must ensure callbacks in dead cpu are migrated to
+> online cpu.
+
+Hmmm...  I thought that on_each_cpu() took care of interlocking with
+CPU hotplug via smp_call_function().  During a CPU-hotplug operation,
+the RCU callbacks do get migrated from the CPU going offline.  Are you
+seeing a sequence of events that finds a hole in this approach?
+
+Now, if a CPU were to go offline in the middle of smp_call_function()
+there could be trouble, but I was under the impression that the
+preempt_disable() in on_each_cpu() prevented this from happening.
+
+So, please tell me more!
+
+							Thanx, Paul
+
 > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 > ---
-> diff --git a/include/linux/notifier.h b/include/linux/notifier.h
-> index b86fa2f..f7ae5a3 100644
-> --- a/include/linux/notifier.h
-> +++ b/include/linux/notifier.h
-> @@ -238,6 +238,12 @@ static inline int notifier_to_errno(int ret)
->  #define CPU_DYING_FROZEN	(CPU_DYING | CPU_TASKS_FROZEN)
->  #define CPU_STARTING_FROZEN	(CPU_STARTING | CPU_TASKS_FROZEN)
-> 
-> +/* Register at highest priority so that task migration (migrate_all_tasks)
-> + * and rcu callbacks migration happens before everything else.
-> + */
-> +#define CPUHOTPLUG_TASK_MIGRATE_PRIORITY	10
-> +#define CPUHOTPLUG_RCU_MIGRATE_PRIORITY		11
-> +
->  /* Hibernation and suspend events */
->  #define PM_HIBERNATION_PREPARE	0x0001 /* Going to hibernate */
->  #define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
-> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
-> index 654c640..040b894 100644
-> --- a/kernel/rcuclassic.c
-> +++ b/kernel/rcuclassic.c
-> @@ -764,6 +764,7 @@ static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
-> 
->  static struct notifier_block __cpuinitdata rcu_nb = {
->  	.notifier_call	= rcu_cpu_notify,
-> +	.priority	= CPUHOTPLUG_RCU_MIGRATE_PRIORITY,
->  };
-> 
->  /*
-> diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-> index 5d59e85..8ffcbf0 100644
-> --- a/kernel/rcupreempt.c
-> +++ b/kernel/rcupreempt.c
-> @@ -1407,6 +1407,7 @@ static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
-> 
->  static struct notifier_block __cpuinitdata rcu_nb = {
->  	.notifier_call = rcu_cpu_notify,
-> +	.priority = CPUHOTPLUG_RCU_MIGRATE_PRIORITY,
->  };
-> 
->  void __init __rcu_init(void)
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index 97ce315..fcef06c 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -1503,6 +1503,7 @@ do { \
-> 
->  static struct notifier_block __cpuinitdata rcu_nb = {
->  	.notifier_call	= rcu_cpu_notify,
-> +	.priority	= CPUHOTPLUG_RCU_MIGRATE_PRIORITY,
->  };
-> 
->  void __init __rcu_init(void)
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 8e2558c..56f225e 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -6740,12 +6740,9 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
->  	return NOTIFY_OK;
+> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+> index cae8a05..4665d18 100644
+> --- a/kernel/rcupdate.c
+> +++ b/kernel/rcupdate.c
+> @@ -129,6 +129,8 @@ static void rcu_barrier_func(void *type)
+>  static void _rcu_barrier(enum rcu_barrier type)
+>  {
+>  	BUG_ON(in_interrupt());
+> +	/* Ensure callbacks in dead cpu are migrated to online cpu */
+> +	get_online_cpus();
+>  	/* Take cpucontrol mutex to protect against CPU hotplug */
+>  	mutex_lock(&rcu_barrier_mutex);
+>  	init_completion(&rcu_barrier_completion);
+> @@ -147,6 +149,7 @@ static void _rcu_barrier(enum rcu_barrier type)
+>  		complete(&rcu_barrier_completion);
+>  	wait_for_completion(&rcu_barrier_completion);
+>  	mutex_unlock(&rcu_barrier_mutex);
+> +	put_online_cpus();
 >  }
 > 
-> -/* Register at highest priority so that task migration (migrate_all_tasks)
-> - * happens before everything else.
-> - */
->  static struct notifier_block __cpuinitdata migration_notifier = {
->  	.notifier_call = migration_call,
-> -	.priority = 10
-> +	.priority = CPUHOTPLUG_TASK_MIGRATE_PRIORITY,
->  };
+>  /**
 > 
->  static int __init migration_init(void)
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
