@@ -1,122 +1,301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbZCGSul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZCGSxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbZCGSul (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 13:50:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZCGSua
+	id S1755966AbZCGSxS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 13:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZCGSxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 13:50:30 -0500
-Received: from rv-out-0506.google.com ([209.85.198.236]:44905 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753806AbZCGSu3 convert rfc822-to-8bit (ORCPT
+	Sat, 7 Mar 2009 13:53:00 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:8267 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753806AbZCGSw6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 13:50:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=et6tisajzT77oJcb6A32bYvPH7bdS69zYW7WHXKthMNe/201XOM7KzukEre1r0By84
-         PDsCtxtdL/1yah+C/FmGIryPzxbdPVRVh8EOghxSbrlceTGc1o2EixyQUle3p0NXrhq0
-         DqQsd2UQjJKOoGmkDJ4ZpkCBhheDuVa4tQKd0=
-MIME-Version: 1.0
-In-Reply-To: <m1ocwddwjp.fsf@fess.ebiederm.org>
-References: <49B1F934.5050006@kernel.org>
-	 <4807377b0903062318q15ba52a7n82d4c9399b8a7fa8@mail.gmail.com>
-	 <86802c440903062331j22aa57c7r93c84da880a8e572@mail.gmail.com>
-	 <m1ocwddwjp.fsf@fess.ebiederm.org>
-Date: Sat, 7 Mar 2009 10:50:27 -0800
-X-Google-Sender-Auth: 3b969fd331f90f55
-Message-ID: <86802c440903071050y453c7648x653d3e2073a33c1e@mail.gmail.com>
-Subject: Re: [PATCH] igb: fix kexec with igb
-From: Yinghai Lu <yinghai@kernel.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 7 Mar 2009 13:52:58 -0500
+Date: Sat, 7 Mar 2009 12:52:56 -0600
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: Mike Miller <mike.miller@hp.com>, mikem@beardog.cca.cpqcorp.net,
+       mikem@roadking.cca.cpqcorp.net
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>, coldwell@redhat.com,
+       james.bottomley@hansenpartnership.com
+Subject: Re: [PATCH 1/2] resubmit cciss: kernel thread to detect changes on MSA2012
+Message-ID: <20090307185256.GB29798@beardog.cca.cpqcorp.net>
+References: <20090306181603.GA30801@roadking.ldev.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090306181603.GA30801@roadking.ldev.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 7, 2009 at 10:20 AM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
-> Yinghai Lu <yinghai@kernel.org> writes:
->
->> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
->> <jesse.brandeburg@gmail.com> wrote:
->>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
->>>>
->>>> Impact: could probe igb
->>>>
->>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
->>>> failed with -2.
->>>>
->>>> it looks like the same behavior happened on forcedeth.
->>>>
->>>> try to check system_state to make sure if put it on D3
->>>>
->>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>>>
->>>> ---
->>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
->>>>  1 file changed, 14 insertions(+), 5 deletions(-)
->>>
->>> I see the point of the patch, but I know for a fact that ixgbe when
->>> enabled for MSI-X also doesn't work with kexec.
->>>
->>> so my questions are:
->>> are you going to change every driver?
->>
->> i tend to only change driver that i have related HW.
->>
->>> why can't this be fixed in core kernel code instead?
->> will check it.
->>
->>> Shouldn't pci_enable_device take it out of D3?
->>> Or maybe it should be taken out of D3 immediately if someone tries to
->>> ioremap any of the BARx registers?
->>
->>
->> looks like second kernel can not detect the state any more.
->
-> I know this has historically been a problem with the e1000 NICs.
-> Placing the hardware in a state they can not get them out of on
-> the reboot path.
->
-> Last I heard (a couple of weeks ago?) we had code to bring devices out
-> of a low power state that was working for the e1000 driver.
+On Fri, Mar 06, 2009 at 12:16:03PM -0600, Miller, Mike (OS Dev)?? wrote:
+Patch 1 of 2
 
-in net-next tree?
+This is yet another go at the patch to detect changes on the MSA2012.
+I hope I've addressed all concerns. This patch rearranges some of the code
+so we also have coverage in the sg and the ioctl paths as well as the main
+data path.
 
->
-> YH can you look and see if you can find that code and if it works?
+The MSA2012 cannot inform the driver of configuration changes since all
+management is out of band. This is a departure from any storage we have
+supported in the past. We need some way to detect changes on the topology so
+we implement this kernel thread. In some instances there's nothing we can do
+from the driver (like LUN failure) so just print out a message. In the case
+where logical volumes are added or deleted we call rebuild_lun_table to
+refresh the driver's view of the world.
 
-it seems e1000 and e1000e works well for a long time.
+Changelog:
+1. Do the completion(hba[i]->rescan_wait) before calling kthread_stop,
+this resolves the issue of waiting for the timeout on rmmod
+2. Added a new function called check_ioctl_unit_attention to cover UA's
+from the ioctl patch
+3. I preserved the wait_for_completion_timeout to avoid call traces
+caused by /proc/sys/kernel/hung_task_timeout_secs expiring
+4. Moved the call to check_for_unit_attention to evaluate_target_status
+since it's already called from complete_command
+5. Add retry_cmd as an argument to evaluate_target_status
+6. Added *rescan_wait to the controller info struct
 
->
-> <rant>
-> Frankly I don't understand why anyone would want to power down a device
-> when they are rebooting or shutting down a computer.  That is a
-> system state change.  But it seems to be bleed over from the confusion
-> that has been the power management code.
-> </rant>
+Please consider this for inclusion.
 
-agreed.
+Signed-off-by: Mike Miller <mike.miller@hp.com>
 
->
-> If we can teach the kernel to handle this case with the proper enables
-> and disables that would be great.  Otherwise let's look at getting the
-> responsibilities of the various methods sorted out so we can at least
-> say with certainty what the various methods are supposed to do and
-> not do.
-
-root cause could be some BIOS/acpi lying to Kernel about device state querying.
-
-for igb, it only has problem on one platform. but other one platform is ok.
-for forcedeth, it seems all platform has the problem, aka you can not
-put it in D3 in kexec path.
-
-YH
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index d2cb67b..96e20e1 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -51,6 +51,7 @@
+ #include <scsi/scsi_ioctl.h>
+ #include <linux/cdrom.h>
+ #include <linux/scatterlist.h>
++#include <linux/kthread.h>
+ 
+ #define CCISS_DRIVER_VERSION(maj,min,submin) ((maj<<16)|(min<<8)|(submin))
+ #define DRIVER_NAME "HP CISS Driver (v 3.6.20)"
+@@ -186,6 +187,8 @@ static int sendcmd_withirq(__u8 cmd, int ctlr, void *buff, size_t size,
+ 			   __u8 page_code, int cmd_type);
+ 
+ static void fail_all_cmds(unsigned long ctlr);
++static int scan_thread(ctlr_info_t *h);
++static int check_for_unit_attention(ctlr_info_t *h, CommandList_struct *c);
+ 
+ #ifdef CONFIG_PROC_FS
+ static void cciss_procinit(int i);
+@@ -735,6 +738,12 @@ static int cciss_getgeo(struct block_device *bdev, struct hd_geometry *geo)
+ 	return 0;
+ }
+ 
++static void check_ioctl_unit_attention(ctlr_info_t *host, CommandList_struct *c)
++{
++	if (c->err_info->CommandStatus == CMD_TARGET_STATUS &&
++			c->err_info->ScsiStatus != SAM_STAT_CHECK_CONDITION)
++		(void)check_for_unit_attention(host, c);
++}
+ /*
+  * ioctl
+  */
+@@ -1029,6 +1038,8 @@ static int cciss_ioctl(struct block_device *bdev, fmode_t mode,
+ 					 iocommand.buf_size,
+ 					 PCI_DMA_BIDIRECTIONAL);
+ 
++			check_ioctl_unit_attention(host, c);
++
+ 			/* Copy the error information out */
+ 			iocommand.error_info = *(c->err_info);
+ 			if (copy_to_user
+@@ -1180,6 +1191,7 @@ static int cciss_ioctl(struct block_device *bdev, fmode_t mode,
+ 					(dma_addr_t) temp64.val, buff_size[i],
+ 					PCI_DMA_BIDIRECTIONAL);
+ 			}
++			check_ioctl_unit_attention(host, c);
+ 			/* Copy the error information out */
+ 			ioc->error_info = *(c->err_info);
+ 			if (copy_to_user(argp, ioc, sizeof(*ioc))) {
+@@ -2585,12 +2597,14 @@ static inline unsigned int make_status_bytes(unsigned int scsi_status_byte,
+ 		((driver_byte & 0xff) << 24);
+ }
+ 
+-static inline int evaluate_target_status(CommandList_struct *cmd)
++static inline int evaluate_target_status(ctlr_info_t *h,
++			CommandList_struct *cmd, int *retry_cmd)
+ {
+ 	unsigned char sense_key;
+ 	unsigned char status_byte, msg_byte, host_byte, driver_byte;
+ 	int error_value;
+ 
++	*retry_cmd = 0;
+ 	/* If we get in here, it means we got "target status", that is, scsi status */
+ 	status_byte = cmd->err_info->ScsiStatus;
+ 	driver_byte = DRIVER_OK;
+@@ -2618,6 +2632,11 @@ static inline int evaluate_target_status(CommandList_struct *cmd)
+ 	if (((sense_key == 0x0) || (sense_key == 0x1)) && !blk_pc_request(cmd->rq))
+ 		error_value = 0;
+ 
++	if (check_for_unit_attention(h, cmd)) {
++		*retry_cmd = !blk_pc_request(cmd->rq);
++		return 0;
++	}
++
+ 	if (!blk_pc_request(cmd->rq)) { /* Not SG_IO or similar? */
+ 		if (error_value != 0)
+ 			printk(KERN_WARNING "cciss: cmd %p has CHECK CONDITION"
+@@ -2657,7 +2676,7 @@ static inline void complete_command(ctlr_info_t *h, CommandList_struct *cmd,
+ 
+ 	switch (cmd->err_info->CommandStatus) {
+ 	case CMD_TARGET_STATUS:
+-		rq->errors = evaluate_target_status(cmd);
++		rq->errors = evaluate_target_status(h, cmd, &retry_cmd);
+ 		break;
+ 	case CMD_DATA_UNDERRUN:
+ 		if (blk_fs_request(cmd->rq)) {
+@@ -3008,6 +3027,62 @@ static irqreturn_t do_cciss_intr(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
++static int scan_thread(ctlr_info_t *h)
++{
++	int rc;
++	DECLARE_COMPLETION_ONSTACK(wait);
++	h->rescan_wait = &wait;
++
++	while (!kthread_should_stop()) {
++		rc = wait_for_completion_timeout(&wait, 300 * HZ);
++		if (!rc)
++			continue;
++		else
++			rebuild_lun_table(h, 0);
++	}
++	return 0;
++}
++
++static int check_for_unit_attention(ctlr_info_t *h, CommandList_struct *c)
++{
++	if (c->err_info->SenseInfo[2] != UNIT_ATTENTION)
++		return 0;
++
++	switch (c->err_info->SenseInfo[12]) {
++	case STATE_CHANGED:
++		printk(KERN_WARNING "cciss%d: a state change "
++			"detected, command retried\n", h->ctlr);
++		return 1;
++	break;
++	case LUN_FAILED:
++		printk(KERN_WARNING "cciss%d: LUN failure "
++			"detected, action required\n", h->ctlr);
++		return 1;
++	break;
++	case REPORT_LUNS_CHANGED:
++		printk(KERN_WARNING "cciss%d: report LUN data "
++			"changed\n", h->ctlr);
++		if (h->rescan_wait)
++			complete(h->rescan_wait);
++		return 1;
++	break;
++	case POWER_OR_RESET:
++		printk(KERN_WARNING "cciss%d: a power on "
++			"or device reset detected\n", h->ctlr);
++		return 1;
++	break;
++	case UNIT_ATTENTION_CLEARED:
++		printk(KERN_WARNING "cciss%d: unit attention "
++		    "cleared by another initiator\n", h->ctlr);
++		return 1;
++	break;
++	default:
++		printk(KERN_WARNING "cciss%d: unknown "
++			"unit attention detected\n", h->ctlr);
++				return 1;
++	}
++}
++
+ /*
+  *  We cannot read the structure directly, for portability we must use
+  *   the io functions.
+@@ -3600,6 +3675,7 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 	int rc;
+ 	int dac, return_code;
+ 	InquiryData_struct *inq_buff = NULL;
++	char cciss_scan[14];
+ 
+ 	if (reset_devices) {
+ 		/* Reset the controller with a PCI power-cycle */
+@@ -3751,6 +3827,12 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 	hba[i]->busy_initializing = 0;
+ 
+ 	rebuild_lun_table(hba[i], 1);
++	snprintf(cciss_scan, 14, "cciss_scan%02d", i);
++	hba[i]->cciss_scan_thread = kthread_run((void *)scan_thread, hba[i],
++				cciss_scan);
++	if (IS_ERR(hba[i]->cciss_scan_thread))
++		return PTR_ERR(hba[i]->cciss_scan_thread);
++
+ 	return 1;
+ 
+ clean4:
+@@ -3826,6 +3908,7 @@ static void __devexit cciss_remove_one(struct pci_dev *pdev)
+ 		printk(KERN_ERR "cciss: Unable to remove device \n");
+ 		return;
+ 	}
++
+ 	tmp_ptr = pci_get_drvdata(pdev);
+ 	i = tmp_ptr->ctlr;
+ 	if (hba[i] == NULL) {
+@@ -3834,6 +3917,9 @@ static void __devexit cciss_remove_one(struct pci_dev *pdev)
+ 		return;
+ 	}
+ 
++	complete(hba[i]->rescan_wait);
++	kthread_stop(hba[i]->cciss_scan_thread);
++
+ 	remove_proc_entry(hba[i]->devname, proc_cciss);
+ 	unregister_blkdev(hba[i]->major, hba[i]->devname);
+ 
+diff --git a/drivers/block/cciss.h b/drivers/block/cciss.h
+index 15e2b84..703e080 100644
+--- a/drivers/block/cciss.h
++++ b/drivers/block/cciss.h
+@@ -121,6 +121,8 @@ struct ctlr_info
+ 	struct sendcmd_reject_list scsi_rejects;
+ #endif
+ 	unsigned char alive;
++	struct completion *rescan_wait;
++	struct task_struct *cciss_scan_thread;
+ };
+ 
+ /*  Defining the diffent access_menthods */
+diff --git a/drivers/block/cciss_cmd.h b/drivers/block/cciss_cmd.h
+index 24e22de..40b1b92 100644
+--- a/drivers/block/cciss_cmd.h
++++ b/drivers/block/cciss_cmd.h
+@@ -25,6 +25,29 @@
+ #define CMD_TIMEOUT             0x000B
+ #define CMD_UNABORTABLE		0x000C
+ 
++/* Unit Attentions ASC's as defined for the MSA2012sa */
++#define POWER_OR_RESET			0x29
++#define STATE_CHANGED			0x2a
++#define UNIT_ATTENTION_CLEARED		0x2f
++#define LUN_FAILED			0x3e
++#define REPORT_LUNS_CHANGED		0x3f
++
++/* Unit Attentions ASCQ's as defined for the MSA2012sa */
++
++	/* These ASCQ's defined for ASC = POWER_OR_RESET */
++#define POWER_ON_RESET			0x00
++#define POWER_ON_REBOOT			0x01
++#define SCSI_BUS_RESET			0x02
++#define MSA_TARGET_RESET		0x03
++#define CONTROLLER_FAILOVER		0x04
++#define TRANSCEIVER_SE			0x05
++#define TRANSCEIVER_LVD			0x06
++
++	/* These ASCQ's defined for ASC = STATE_CHANGED */
++#define RESERVATION_PREEMPTED		0x03
++#define ASYM_ACCESS_CHANGED		0x06
++#define LUN_CAPACITY_CHANGED		0x09
++
+ //transfer direction
+ #define XFER_NONE               0x00
+ #define XFER_WRITE              0x01
