@@ -1,281 +1,446 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbZCGFn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752518AbZCGFuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754486AbZCGFn4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 00:43:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbZCGFnr
+	id S1752518AbZCGFuY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 00:50:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbZCGFuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 00:43:47 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:33911 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbZCGFnq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 00:43:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XV93jyfAJjWu+kKp8rHQ1eYHM8sYAMI7nDdROKnXmLjpGFKd3zcws6XQsORGvooVBd
-         NpwfkoQDxN7eGWz/fGe7blIGShqY6qh/BN1vHltRDp+TdQlKXbuKz90K+WKuVia7aXVR
-         xX3xwB3R2Egykfh8lsMWNvpL2bOKXEt57TuOY=
+	Sat, 7 Mar 2009 00:50:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35182 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751118AbZCGFuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 00:50:03 -0500
+Message-ID: <49B20AF8.6080504@kernel.org>
+Date: Sat, 07 Mar 2009 14:49:44 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <20090306175708.GD3099@kroah.com>
-References: <20090304031238.WCEC18213.eastrmmtao106.cox.net@eastrmimpo03.cox.net>
-	 <20090306175708.GD3099@kroah.com>
-Date: Sat, 7 Mar 2009 00:43:43 -0500
-Message-ID: <3aaafc130903062143g4b7d6afel575781208319454e@mail.gmail.com>
-Subject: Re: [PATCH] /dev/time for Linux, inspired by Plan 9
-From: "J.R. Mauro" <jrm8005@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Christopher Brannon <cmbrannon@cox.net>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, npiggin@suse.de,
+       akpm@linux-foundation.org
+Subject: [PATCH UPDATED 4/4] percpu: finer grained locking to break deadlock
+ and allow atomic free
+References: <1236354883-25063-1-git-send-email-tj@kernel.org> <1236354883-25063-5-git-send-email-tj@kernel.org>
+In-Reply-To: <1236354883-25063-5-git-send-email-tj@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 07 Mar 2009 05:49:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 6, 2009 at 12:57 PM, Greg KH <greg@kroah.com> wrote:
-> On Tue, Mar 03, 2009 at 09:06:46PM -0600, Christopher Brannon wrote:
->> Under Plan 9 from Bell Labs, one queries or sets the system clock by
->> reading or writing text strings to a special file named /dev/time.
->> I implemented such a facility for Linux.  A read of /dev/time produces
->> four decimal numbers: epoch seconds, nanoseconds since start of epoch,
->> jiffies since boot, and jiffies per second.  Writing a decimal number to
->> /dev/time sets the system clock to the given number of epoch seconds.
->> Anyone who is permitted to write to /dev/time may set the clock.
->> Granting this privilege becomes as easy as modifying groups and file
->> permissions.
->>
->> Signed-off-by: Christopher Brannon <cmbrannon@cox.net>
->
-> I'm starting to see a few plan9 specific devices being proposed
-> recently, with one making it into the staging tree recently (the p9auth
-> interface).  Should we just start lumping them all together so to keep
-> them in one place?  drivers/plan9/ ?
+Impact: fix deadlock and allow atomic free
 
-That might be a good idea, assuming it doesn't start up a flamewar.
-The Glendix folks are working hard to get a lot of these device files
-and filesystems implemented and it would be nice to see them have a
-place to feel welcome.
+Percpu allocation always uses GFP_KERNEL and whole alloc/free paths
+were protected by single mutex.  All percpu allocations have been from
+GFP_KERNEL-safe context and the original allocator had this assumption
+too.  However, by protecting both alloc and free paths with the same
+mutex, the new allocator creates free -> alloc -> GFP_KERNEL
+dependency which the original allocator didn't have.  This can lead to
+deadlock if free is called from FS or IO paths.  Also, in general,
+allocators are expected to allow free to be called from atomic
+context.
 
-Would it be very involved to get a little sandbox for these things?
+This patch implements finer grained locking to break the deadlock and
+allow atomic free.  For details, please read the "Synchronization
+rules" comment.
 
->
->
->> ---
->>  Documentation/time-device.txt |   49 ++++++++++++++++++
->>  arch/um/Kconfig.char          |   11 ++++
->>  drivers/char/Kconfig          |   11 ++++
->>  drivers/char/Makefile         |    2 +
->>  drivers/char/devtime.c        |  112 +++++++++++++++++++++++++++++++++++++++++
->>  5 files changed, 185 insertions(+), 0 deletions(-)
->>  create mode 100644 Documentation/time-device.txt
->>  create mode 100644 drivers/char/devtime.c
->>
->> diff --git a/Documentation/time-device.txt b/Documentation/time-device.txt
->> new file mode 100644
->> index 0000000..6294732
->> --- /dev/null
->> +++ b/Documentation/time-device.txt
->> @@ -0,0 +1,49 @@
->> +/dev/time for Linux
->> +===================
->> +
->> +Christopher M. Brannon <cmbrannon@cox.net>
->> +
->> +Inspiration
->> +-----------
->> +This document describes an implementation for the Linux kernel of a facility
->> +that is provided by the Plan 9 operating system from Bell Laboratories [1].
->> +
->> +Functionality
->> +-------------
->> +/dev/time provides a file-based interface to the system clock.
->> +Using this interface, one can query or set the system clock by reading or
->> +writing text strings.  A read of /dev/time yields four decimal integers:
->> +seconds since start of epoch, nanoseconds since start of epoch,
->> +jiffies since boot, and jiffies per second.
->> +Writing a decimal number n to /dev/time sets the system clock to the
->> +date and time which is n seconds greater than January 1, 1970, 00:00:00 GMT.
->> +
->> +Examples
->> +--------
->> +cat /dev/time
->> +# Produces: 1236121128 123612012877063000 495497 300,
->> +# at time of writing on a test machine.
->> +echo 287604960 > /dev/time
->> +# sets the clock to the approximate time of my birth.
->> +
->> +Use Case
->> +--------
->> +Traditionally, super-user privileges were required in order to set the
->> +system clock under Linux.
->> +Since the advent of capabilities, any process having the CAP_SYS_TIME
->> +capability may perform this operation.
->> +The /dev/time device ties privileges to file permissions.  If a user
->> +can write to /dev/time, then he can set the system clock.
->> +
->> +Difference from Plan 9
->> +-----------------------
->> +This implementation differs from Plan 9 in one respect.  the Plan 9
->> +Programmer's Manual exactly specifies the format of data read from the
->> +device, including the widths of the four numeric fields [1].  This Linux
->> +implementation does not pad values with whitespace, so the four fields
->> +are of variable width.
->> +
->> +References
->> +----------
->> +[1] Plan 9 Programmers Manual, section 3.
->> +http://plan9.bell-labs.com/magic/man2html/3/cons
->> diff --git a/arch/um/Kconfig.char b/arch/um/Kconfig.char
->> index 70dabd1..7d0da78 100644
->> --- a/arch/um/Kconfig.char
->> +++ b/arch/um/Kconfig.char
->> @@ -236,4 +236,15 @@ config MMAPPER
->>         This driver allows a host file to be used as emulated IO memory inside
->>         UML.
->>
->> +config DEVTIME
->> +     tristate "/dev/time virtual device support."
->> +     depends on EXPERIMENTAL
->> +     help
->> +       This device provides a file-based interface to the system clock.
->> +       The interface is based on the /dev/time device used in the
->> +       Plan 9 operating system from Bell Labs.
->> +       See <file:Documentation/time-device.txt> for a full description.
->> +       To compile this driver as a module, choose M here: the
->> +       module will be called devtime.
->> +
->>  endmenu
->> diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
->> index 735bbe2..5bad918 100644
->> --- a/drivers/char/Kconfig
->> +++ b/drivers/char/Kconfig
->> @@ -97,6 +97,17 @@ config DEVKMEM
->>         kind of kernel debugging operations.
->>         When in doubt, say "N".
->>
->> +config DEVTIME
->> +     tristate "/dev/time virtual device support."
->> +     depends on EXPERIMENTAL
->> +     help
->> +       This device provides a file-based interface to the system clock.
->> +       The interface is based on the /dev/time device used in the
->> +       Plan 9 operating system from Bell Labs.
->> +       See <file:Documentation/time-device.txt> for a full description.
->> +       To compile this driver as a module, choose M here: the
->> +       module will be called devtime.
->> +
->>  config SERIAL_NONSTANDARD
->>       bool "Non-standard serial port support"
->>       depends on HAS_IOMEM
->> diff --git a/drivers/char/Makefile b/drivers/char/Makefile
->> index 9caf5b5..aba7403 100644
->> --- a/drivers/char/Makefile
->> +++ b/drivers/char/Makefile
->> @@ -111,6 +111,8 @@ obj-$(CONFIG_PS3_FLASH)           += ps3flash.o
->>  obj-$(CONFIG_JS_RTC)         += js-rtc.o
->>  js-rtc-y = rtc.o
->>
->> +obj-$(CONFIG_DEVTIME)                += devtime.o
->> +
->>  # Files generated that shall be removed upon make clean
->>  clean-files := consolemap_deftbl.c defkeymap.c
->>
->> diff --git a/drivers/char/devtime.c b/drivers/char/devtime.c
->> new file mode 100644
->> index 0000000..5e4ca66
->> --- /dev/null
->> +++ b/drivers/char/devtime.c
->> @@ -0,0 +1,112 @@
->> +#include <linux/init.h>
->> +#include <linux/module.h>
->> +#include <linux/fs.h>
->> +#include <linux/miscdevice.h>
->> +#include <linux/time.h>
->> +#include <linux/jiffies.h>
->> +#include <linux/uaccess.h>
->> +
->> +MODULE_AUTHOR("Christopher Brannon <cmbrannon79@gmail.com>");
->> +MODULE_LICENSE("GPL");
->> +
->> +const long long NS_PER_SEC = 1000000000;
->> +const long long NS_PER_USEC = 1000;
->> +const size_t time_bufsize = 256;
->> +
->> +static ssize_t time_read(struct file *, char __user *, size_t, loff_t *);
->> +static ssize_t time_write(struct file *, const char __user *, size_t, loff_t *);
->> +
->> +static const struct file_operations time_fops = {
->> +     .owner = THIS_MODULE,
->> +     .read = time_read,
->> +     .write = time_write,
->> +};
->> +
->> +static struct miscdevice timedev = {
->> +     .minor = MISC_DYNAMIC_MINOR,
->> +     .name = "time",
->> +     .fops = &time_fops
->> +};
->> +
->> +static int time2text(char *buffer, size_t bufsize)
->> +{
->> +     int count = 0;
->> +     struct timeval tv;
->> +     long long nanos;
->> +
->> +/* jiffies isn't 0 at boot time; its value is INITIAL_JIFFIES. */
->> +     u64 ticks = get_jiffies_64() - INITIAL_JIFFIES;
->
-> Are you sure this will handle the roll-over properly?
->
->> +     do_gettimeofday(&tv);
->> +     nanos = tv.tv_sec * NS_PER_SEC + tv.tv_usec * NS_PER_USEC;
->> +     count =
->> +         scnprintf(buffer, bufsize, "%ld %lld %llu %d\n", tv.tv_sec, nanos,
->> +                   ticks, HZ);
->> +     return count;
->> +}
->> +
->> +static int text2time(char *buffer)
->> +{
->> +     struct timespec tv;
->> +     int result = strict_strtol(buffer, 10, &tv.tv_sec);
->> +     if ((result == 0) && (tv.tv_sec > 0)) {
->> +             tv.tv_nsec = 0;
->> +             do_settimeofday(&tv);
->> +     } else
->> +             result = -EINVAL;       /* only positive longs are valid. */
->> +     return result;
->> +}
->> +
->> +static ssize_t
->> +time_read(struct file *f, char __user *buffer, size_t count, loff_t * offset)
->> +{
->> +     int result = 0;
->> +     if (*offset != 0)
->> +             result = 0;
->> +     else {
->> +             char tmpbuf[time_bufsize];
->
-> Not good to put 256 bytes on the stack.  Dynamically allocate it?
->
->> +             int timetextlen = time2text(tmpbuf, time_bufsize);
->> +             unsigned long readcount = min(count, (size_t) timetextlen);
->
-> As was recently pointed out to me, we have min_t() for when you need to
-> cast like this.
->
->> +             if (timetextlen <= 0)
->> +                     return -EAGAIN;
->
-> If it equals 0, shouldn't you return 0?  And how could it be negative?
->
-> thanks,
->
-> greg k-h
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+While at it, also add CONTEXT: to function comments to describe which
+context they expect to be called from and what they do to it.
+
+This problem was reported by Thomas Gleixner and Peter Zijlstra.
+
+  http://thread.gmane.org/gmane.linux.kernel/802384
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Thomas Gleixner <tglx@linutronix.de>
+Reported-by: Peter Zijlstra <peterz@infradead.org>
+---
+IRQ spin lock ops should be used to allow free to be called from IRQ
+context.  Fixed.  The git tree is updated too.  The new commit ID is
+ccea34b5d0fbab081496d1860f31acee99fa8a6d.
+
+Thanks.
+
+ mm/percpu.c |  161 +++++++++++++++++++++++++++++++++++++++++++++--------------
+ 1 files changed, 124 insertions(+), 37 deletions(-)
+
+diff --git a/mm/percpu.c b/mm/percpu.c
+index 4c8a419..bfe6a3a 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -62,6 +62,7 @@
+ #include <linux/pfn.h>
+ #include <linux/rbtree.h>
+ #include <linux/slab.h>
++#include <linux/spinlock.h>
+ #include <linux/vmalloc.h>
+ #include <linux/workqueue.h>
+ 
+@@ -101,20 +102,28 @@ static struct pcpu_chunk *pcpu_reserved_chunk;
+ static int pcpu_reserved_chunk_limit;
+ 
+ /*
+- * One mutex to rule them all.
+- *
+- * The following mutex is grabbed in the outermost public alloc/free
+- * interface functions and released only when the operation is
+- * complete.  As such, every function in this file other than the
+- * outermost functions are called under pcpu_mutex.
+- *
+- * It can easily be switched to use spinlock such that only the area
+- * allocation and page population commit are protected with it doing
+- * actual [de]allocation without holding any lock.  However, given
+- * what this allocator does, I think it's better to let them run
+- * sequentially.
++ * Synchronization rules.
++ *
++ * There are two locks - pcpu_alloc_mutex and pcpu_lock.  The former
++ * protects allocation/reclaim paths, chunks and chunk->page arrays.
++ * The latter is a spinlock and protects the index data structures -
++ * chunk slots, rbtree, chunks and area maps in chunks.
++ *
++ * During allocation, pcpu_alloc_mutex is kept locked all the time and
++ * pcpu_lock is grabbed and released as necessary.  All actual memory
++ * allocations are done using GFP_KERNEL with pcpu_lock released.
++ *
++ * Free path accesses and alters only the index data structures, so it
++ * can be safely called from atomic context.  When memory needs to be
++ * returned to the system, free path schedules reclaim_work which
++ * grabs both pcpu_alloc_mutex and pcpu_lock, unlinks chunks to be
++ * reclaimed, release both locks and frees the chunks.  Note that it's
++ * necessary to grab both locks to remove a chunk from circulation as
++ * allocation path might be referencing the chunk with only
++ * pcpu_alloc_mutex locked.
+  */
+-static DEFINE_MUTEX(pcpu_mutex);
++static DEFINE_MUTEX(pcpu_alloc_mutex);	/* protects whole alloc and reclaim */
++static DEFINE_SPINLOCK(pcpu_lock);	/* protects index data structures */
+ 
+ static struct list_head *pcpu_slot __read_mostly; /* chunk list slots */
+ static struct rb_root pcpu_addr_root = RB_ROOT;	/* chunks by address */
+@@ -176,6 +185,9 @@ static bool pcpu_chunk_page_occupied(struct pcpu_chunk *chunk,
+  * kzalloc() is used; otherwise, vmalloc() is used.  The returned
+  * memory is always zeroed.
+  *
++ * CONTEXT:
++ * Does GFP_KERNEL allocation.
++ *
+  * RETURNS:
+  * Pointer to the allocated area on success, NULL on failure.
+  */
+@@ -215,6 +227,9 @@ static void pcpu_mem_free(void *ptr, size_t size)
+  * New slot according to the changed state is determined and @chunk is
+  * moved to the slot.  Note that the reserved chunk is never put on
+  * chunk slots.
++ *
++ * CONTEXT:
++ * pcpu_lock.
+  */
+ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
+ {
+@@ -260,6 +275,9 @@ static struct rb_node **pcpu_chunk_rb_search(void *addr,
+  * searchs for the chunk with the highest start address which isn't
+  * beyond @addr.
+  *
++ * CONTEXT:
++ * pcpu_lock.
++ *
+  * RETURNS:
+  * The address of the found chunk.
+  */
+@@ -300,6 +318,9 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
+  * @new: chunk to insert
+  *
+  * Insert @new into address rb tree.
++ *
++ * CONTEXT:
++ * pcpu_lock.
+  */
+ static void pcpu_chunk_addr_insert(struct pcpu_chunk *new)
+ {
+@@ -319,6 +340,10 @@ static void pcpu_chunk_addr_insert(struct pcpu_chunk *new)
+  * A single allocation can split an area into three areas, so this
+  * function makes sure that @chunk->map has at least two extra slots.
+  *
++ * CONTEXT:
++ * pcpu_alloc_mutex, pcpu_lock.  pcpu_lock is released and reacquired
++ * if area map is extended.
++ *
+  * RETURNS:
+  * 0 if noop, 1 if successfully extended, -errno on failure.
+  */
+@@ -332,13 +357,25 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk)
+ 	if (chunk->map_alloc >= chunk->map_used + 2)
+ 		return 0;
+ 
++	spin_unlock_irq(&pcpu_lock);
++
+ 	new_alloc = PCPU_DFL_MAP_ALLOC;
+ 	while (new_alloc < chunk->map_used + 2)
+ 		new_alloc *= 2;
+ 
+ 	new = pcpu_mem_alloc(new_alloc * sizeof(new[0]));
+-	if (!new)
++	if (!new) {
++		spin_lock_irq(&pcpu_lock);
+ 		return -ENOMEM;
++	}
++
++	/*
++	 * Acquire pcpu_lock and switch to new area map.  Only free
++	 * could have happened inbetween, so map_used couldn't have
++	 * grown.
++	 */
++	spin_lock_irq(&pcpu_lock);
++	BUG_ON(new_alloc < chunk->map_used + 2);
+ 
+ 	size = chunk->map_alloc * sizeof(chunk->map[0]);
+ 	memcpy(new, chunk->map, size);
+@@ -371,6 +408,9 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk)
+  * is inserted after the target block.
+  *
+  * @chunk->map must have enough free slots to accomodate the split.
++ *
++ * CONTEXT:
++ * pcpu_lock.
+  */
+ static void pcpu_split_block(struct pcpu_chunk *chunk, int i,
+ 			     int head, int tail)
+@@ -406,6 +446,9 @@ static void pcpu_split_block(struct pcpu_chunk *chunk, int i,
+  *
+  * @chunk->map must have at least two free slots.
+  *
++ * CONTEXT:
++ * pcpu_lock.
++ *
+  * RETURNS:
+  * Allocated offset in @chunk on success, -1 if no matching area is
+  * found.
+@@ -495,6 +538,9 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align)
+  * Free area starting from @freeme to @chunk.  Note that this function
+  * only modifies the allocation map.  It doesn't depopulate or unmap
+  * the area.
++ *
++ * CONTEXT:
++ * pcpu_lock.
+  */
+ static void pcpu_free_area(struct pcpu_chunk *chunk, int freeme)
+ {
+@@ -580,6 +626,9 @@ static void pcpu_unmap(struct pcpu_chunk *chunk, int page_start, int page_end,
+  * For each cpu, depopulate and unmap pages [@page_start,@page_end)
+  * from @chunk.  If @flush is true, vcache is flushed before unmapping
+  * and tlb after.
++ *
++ * CONTEXT:
++ * pcpu_alloc_mutex.
+  */
+ static void pcpu_depopulate_chunk(struct pcpu_chunk *chunk, int off, int size,
+ 				  bool flush)
+@@ -658,6 +707,9 @@ static int pcpu_map(struct pcpu_chunk *chunk, int page_start, int page_end)
+  *
+  * For each cpu, populate and map pages [@page_start,@page_end) into
+  * @chunk.  The area is cleared on return.
++ *
++ * CONTEXT:
++ * pcpu_alloc_mutex, does GFP_KERNEL allocation.
+  */
+ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
+ {
+@@ -748,15 +800,16 @@ static struct pcpu_chunk *alloc_pcpu_chunk(void)
+  * @align: alignment of area (max PAGE_SIZE)
+  * @reserved: allocate from the reserved chunk if available
+  *
+- * Allocate percpu area of @size bytes aligned at @align.  Might
+- * sleep.  Might trigger writeouts.
++ * Allocate percpu area of @size bytes aligned at @align.
++ *
++ * CONTEXT:
++ * Does GFP_KERNEL allocation.
+  *
+  * RETURNS:
+  * Percpu pointer to the allocated area on success, NULL on failure.
+  */
+ static void *pcpu_alloc(size_t size, size_t align, bool reserved)
+ {
+-	void *ptr = NULL;
+ 	struct pcpu_chunk *chunk;
+ 	int slot, off;
+ 
+@@ -766,27 +819,37 @@ static void *pcpu_alloc(size_t size, size_t align, bool reserved)
+ 		return NULL;
+ 	}
+ 
+-	mutex_lock(&pcpu_mutex);
++	mutex_lock(&pcpu_alloc_mutex);
++	spin_lock_irq(&pcpu_lock);
+ 
+ 	/* serve reserved allocations from the reserved chunk if available */
+ 	if (reserved && pcpu_reserved_chunk) {
+ 		chunk = pcpu_reserved_chunk;
+ 		if (size > chunk->contig_hint ||
+ 		    pcpu_extend_area_map(chunk) < 0)
+-			goto out_unlock;
++			goto fail_unlock;
+ 		off = pcpu_alloc_area(chunk, size, align);
+ 		if (off >= 0)
+ 			goto area_found;
+-		goto out_unlock;
++		goto fail_unlock;
+ 	}
+ 
++restart:
+ 	/* search through normal chunks */
+ 	for (slot = pcpu_size_to_slot(size); slot < pcpu_nr_slots; slot++) {
+ 		list_for_each_entry(chunk, &pcpu_slot[slot], list) {
+ 			if (size > chunk->contig_hint)
+ 				continue;
+-			if (pcpu_extend_area_map(chunk) < 0)
+-				goto out_unlock;
++
++			switch (pcpu_extend_area_map(chunk)) {
++			case 0:
++				break;
++			case 1:
++				goto restart;	/* pcpu_lock dropped, restart */
++			default:
++				goto fail_unlock;
++			}
++
+ 			off = pcpu_alloc_area(chunk, size, align);
+ 			if (off >= 0)
+ 				goto area_found;
+@@ -794,27 +857,36 @@ static void *pcpu_alloc(size_t size, size_t align, bool reserved)
+ 	}
+ 
+ 	/* hmmm... no space left, create a new chunk */
++	spin_unlock_irq(&pcpu_lock);
++
+ 	chunk = alloc_pcpu_chunk();
+ 	if (!chunk)
+-		goto out_unlock;
++		goto fail_unlock_mutex;
++
++	spin_lock_irq(&pcpu_lock);
+ 	pcpu_chunk_relocate(chunk, -1);
+ 	pcpu_chunk_addr_insert(chunk);
+-
+-	off = pcpu_alloc_area(chunk, size, align);
+-	if (off < 0)
+-		goto out_unlock;
++	goto restart;
+ 
+ area_found:
++	spin_unlock_irq(&pcpu_lock);
++
+ 	/* populate, map and clear the area */
+ 	if (pcpu_populate_chunk(chunk, off, size)) {
++		spin_lock_irq(&pcpu_lock);
+ 		pcpu_free_area(chunk, off);
+-		goto out_unlock;
++		goto fail_unlock;
+ 	}
+ 
+-	ptr = __addr_to_pcpu_ptr(chunk->vm->addr + off);
+-out_unlock:
+-	mutex_unlock(&pcpu_mutex);
+-	return ptr;
++	mutex_unlock(&pcpu_alloc_mutex);
++
++	return __addr_to_pcpu_ptr(chunk->vm->addr + off);
++
++fail_unlock:
++	spin_unlock_irq(&pcpu_lock);
++fail_unlock_mutex:
++	mutex_unlock(&pcpu_alloc_mutex);
++	return NULL;
+ }
+ 
+ /**
+@@ -825,6 +897,9 @@ out_unlock:
+  * Allocate percpu area of @size bytes aligned at @align.  Might
+  * sleep.  Might trigger writeouts.
+  *
++ * CONTEXT:
++ * Does GFP_KERNEL allocation.
++ *
+  * RETURNS:
+  * Percpu pointer to the allocated area on success, NULL on failure.
+  */
+@@ -843,6 +918,9 @@ EXPORT_SYMBOL_GPL(__alloc_percpu);
+  * percpu area if arch has set it up; otherwise, allocation is served
+  * from the same dynamic area.  Might sleep.  Might trigger writeouts.
+  *
++ * CONTEXT:
++ * Does GFP_KERNEL allocation.
++ *
+  * RETURNS:
+  * Percpu pointer to the allocated area on success, NULL on failure.
+  */
+@@ -856,6 +934,9 @@ void *__alloc_reserved_percpu(size_t size, size_t align)
+  * @work: unused
+  *
+  * Reclaim all fully free chunks except for the first one.
++ *
++ * CONTEXT:
++ * workqueue context.
+  */
+ static void pcpu_reclaim(struct work_struct *work)
+ {
+@@ -863,7 +944,8 @@ static void pcpu_reclaim(struct work_struct *work)
+ 	struct list_head *head = &pcpu_slot[pcpu_nr_slots - 1];
+ 	struct pcpu_chunk *chunk, *next;
+ 
+-	mutex_lock(&pcpu_mutex);
++	mutex_lock(&pcpu_alloc_mutex);
++	spin_lock_irq(&pcpu_lock);
+ 
+ 	list_for_each_entry_safe(chunk, next, head, list) {
+ 		WARN_ON(chunk->immutable);
+@@ -876,7 +958,8 @@ static void pcpu_reclaim(struct work_struct *work)
+ 		list_move(&chunk->list, &todo);
+ 	}
+ 
+-	mutex_unlock(&pcpu_mutex);
++	spin_unlock_irq(&pcpu_lock);
++	mutex_unlock(&pcpu_alloc_mutex);
+ 
+ 	list_for_each_entry_safe(chunk, next, &todo, list) {
+ 		pcpu_depopulate_chunk(chunk, 0, pcpu_unit_size, false);
+@@ -888,18 +971,22 @@ static void pcpu_reclaim(struct work_struct *work)
+  * free_percpu - free percpu area
+  * @ptr: pointer to area to free
+  *
+- * Free percpu area @ptr.  Might sleep.
++ * Free percpu area @ptr.
++ *
++ * CONTEXT:
++ * Can be called from atomic context.
+  */
+ void free_percpu(void *ptr)
+ {
+ 	void *addr = __pcpu_ptr_to_addr(ptr);
+ 	struct pcpu_chunk *chunk;
++	unsigned long flags;
+ 	int off;
+ 
+ 	if (!ptr)
+ 		return;
+ 
+-	mutex_lock(&pcpu_mutex);
++	spin_lock_irqsave(&pcpu_lock, flags);
+ 
+ 	chunk = pcpu_chunk_addr_search(addr);
+ 	off = addr - chunk->vm->addr;
+@@ -917,7 +1004,7 @@ void free_percpu(void *ptr)
+ 			}
+ 	}
+ 
+-	mutex_unlock(&pcpu_mutex);
++	spin_unlock_irqrestore(&pcpu_lock, flags);
+ }
+ EXPORT_SYMBOL_GPL(free_percpu);
+ 
+-- 
+1.6.0.2
+
