@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbZCGSy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbZCGTGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756125AbZCGSy5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 13:54:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbZCGSyt
+	id S1755954AbZCGTGI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 14:06:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbZCGTFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 13:54:49 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:34472 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755588AbZCGSyt (ORCPT
+	Sat, 7 Mar 2009 14:05:55 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:58949 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750860AbZCGTFy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 13:54:49 -0500
-Date: Sat, 7 Mar 2009 19:54:45 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: David Miller <davem@davemloft.net>
-Subject: Change %Z to %z in printf
-Message-ID: <alpine.LSU.2.00.0903071952180.19385@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Sat, 7 Mar 2009 14:05:54 -0500
+Date: Sat, 7 Mar 2009 11:04:28 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Daniel Lezcano <daniel.lezcano@free.fr>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Containers <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       roland@redhat.com, Greg Kurz <gkurz@fr.ibm.com>
+Subject: Re: [PATCH 0/7][v8] Container-init signal semantics
+Message-ID: <20090307190428.GA30594@us.ibm.com>
+References: <20090219030207.GA18783@us.ibm.com> <499D73C8.3090209@free.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <499D73C8.3090209@free.fr>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> Gregory Kurz proposed a solution:
+>    * when shutdown is called and we are not in the init pidns, then we kill 
+> the process 1 of the pidnamespace.
+>    * when reboot is called and we are not in the init pidns, then we reexec 
+> the init process, using the same command line. I guess this one could be 
+> easily retrieved if we are able to display /proc/1/cmdline ;)
+>
+> IMHO, this is a good proposition because it is generic and intuitive, no ?
+>
+> What do you thing ?
 
-
-I found out that %Z is actually a deprecated libc5-ism as printf(3) of 
-man-pages 3.17 dated 2008-12-19 tells me.
-
-In ${kernel}/lib/vsprintf.c, I find the following note and wondered
-if there might be any objections to going back to 'z'.
-
-        int qualifier;          /* 'h', 'l', or 'L' for integer fields */ 
-                                /* 'z' support added 23/7/1999 S.H.    */ 
-                                /* 'z' changed to 'Z' --davidm 1/25/99 */ 
-                                /* 't' added for ptrdiff_t */ 
-
-
-Jan
+Yes, I think it makes sense. Do we have any prototype patches that
+implement this behavior ?
