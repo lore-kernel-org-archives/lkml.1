@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbZCGTVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbZCGTXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbZCGTVE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 14:21:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689AbZCGTUw
+	id S1756050AbZCGTXq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 14:23:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZCGTXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 14:20:52 -0500
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:54817 "EHLO
+	Sat, 7 Mar 2009 14:23:38 -0500
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:57467 "EHLO
 	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754768AbZCGTUv (ORCPT
+	with ESMTP id S1754439AbZCGTXh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 14:20:51 -0500
+	Sat, 7 Mar 2009 14:23:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=Cni9V1LlVYeyWN1rK/UX2aqnKgQs05zVahfa2Xk4F+Uajk7iRPwgfrRxIRMQlYRE6X
-         k/bfMBpjDt/oOklPT8eNM1zIjOZSI2QLqnqLtkkolXvfsbmnI+uvWusmrht3urk2e0XI
-         1S9hCmOA3fDCXLRxs37jOkC5TJKgywiznoeHs=
-Subject: [BUG] Loading both ehci-hcd and uhci-hcd drivers causes my printer
- to fail
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sat, 07 Mar 2009 21:20:44 +0200
-Message-Id: <1236453644.6077.68.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=gwIx963IMN9rE2ROYM8iN6//Iwk5eRk9JlZKkuZF1miREpXcx7J7hWGACU3o1UFcY0
+         GHcWlt767fYQaIIaTvmFQEitoWBicMU06l3psza38B+lIL7D3M4qS7/A9hMUQH3UBzTv
+         xgiJuwCDUml5OU7FLta8HT+u2FvRs5R4xDCYI=
+Date: Sat, 7 Mar 2009 22:30:26 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] A simple way to determine if the kernel needs HIGHMEM64G
+	to be able to use all the installed memory
+Message-ID: <20090307193026.GA2165@x200.localdomain>
+References: <49B254C6.8010507@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49B254C6.8010507@pardus.org.tr>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Mar 07, 2009 at 01:04:38PM +0200, Ozan Çağlayan wrote:
+> When the installed memory size is >= 4GB, kernel drops some messages like
+> 
+> Warning only 4GB of memory will be used
+> You have to enable HIGHMEM64G.
+> 
+> I checked that the message comes from arch/x86/init_32.c after checking
+> max_pfn.
+> 
+> I'm quite dumb about the internal structures of the kernel but, wouldn't it
+> be possible to create a simple read-only sysfs object like kexec_loaded
+> that will contain "1" when the kernel needs HIGHMEM64G to see all of the memory
+> and "0" when it doesn't?
 
-Short summary:
+Why do you need a file? If kernel says to enable HIGHMEM64G, enable it.
 
-I have HP1018 printer, and it works well in windows.
-When I use in in linux, I often see messages like:
-
-usbfs: USBDEVFS_CONTROL failed cmd python rqt 128 rq 6 len 255 ret -110
-
-This is using hp backend that talks to printer using usbfs.
-I also tried usblp, but it just doesn't say anything in kernel log. I
-think it silently ignores similar errors, because the end result is the
-same, the printer sometimes works, but sometimes doesn't.
-(printer needs firmware to be uploaded to it, and I do upload it).
-
-On the other hand, IF I remove _ether_ ehci-hcd or uhci-hcd from kernel,
-then everything works fine, I already rebooted the printer many times,
-used it to print, upload firmware, and everything just work, but as soon
-as I load the second driver it fails in same way again.
-
-USB issues with this class of printers are nothing but new, for example
-see:
-
-http://foo2zjs.rkkda.com/forum/read.php?9,374
-https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.15/+bug/54419
-
-I compiled without CONFIG_USB_EHCI_ROOT_HUB_TT
-and it did help (didn't that much testing, but at least firmware loads
-ok, and no error messages)
-
-Looking for your comments,
-	Best regards,
-		Maxim Levitsky
-
-
+> I think that it would be a nice facility for distribution kernels to detect
+> the need for a PAE enabled 32-bit kernel by just reading some /sys/.. entry.
