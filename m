@@ -1,78 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbZCGDzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbZCGEI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbZCGDzB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 22:55:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZCGDyv
+	id S1755399AbZCGEI1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 23:08:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZCGEIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 22:54:51 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:63141 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751828AbZCGDyv (ORCPT
+	Fri, 6 Mar 2009 23:08:16 -0500
+Received: from jenny.ondioline.org ([66.220.1.122]:44050 "EHLO
+	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750728AbZCGEIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 22:54:51 -0500
-MIME-Version: 1.0
-Date: Fri, 6 Mar 2009 22:54:47 -0500
-X-Google-Sender-Auth: 43c53b0141ade8f5
-Message-ID: <5aa163d00903061954m273fb93ate7d745e9528b7a53@mail.gmail.com>
-Subject: [PATCH -mmotm] xpad: add missing prototype and update history
-From: Mike Murphy <mamurph@cs.clemson.edu>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Content-Type: multipart/mixed; boundary=0016e64608d6d263a904647f5c51
+	Fri, 6 Mar 2009 23:08:15 -0500
+From: Paul Collins <paul@burly.ondioline.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] hid/apple: add module parameter to swap Command and Option keys
+Date: Sat,  7 Mar 2009 17:07:14 +1300
+Message-Id: <1236398835-8211-1-git-send-email-paul@burly.ondioline.org>
+X-Mailer: git-send-email 1.6.2
+In-Reply-To: <49B19FF3.2000605@gmail.com>
+References: <49B19FF3.2000605@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016e64608d6d263a904647f5c51
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Apple keyboards have the Command keys (a.k.a. the Apple or "waffle" key)
+in the positions normally occupied on PC keyboards by the Alt/AltGr keys,
+and the Option or Alt keys in the position occupied by the so-called
+Windows keys.  Folks who have been using PC-type computers for too long
+generally have insurmountable muscle memory in this regard.
 
-Add missing prototype to xpad.h and update driver history and last
-modified dates
+This patch adds a module parameter, defaulting to off, that swaps these keys.
 
-Signed-off-by: Mike Murphy <mamurph@cs.clemson.edu>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Randy Dunlap <randy.dunlap@oracle.com>
+The same effect can also be achieved by changing the console and X
+keymaps, but this approach does not scale.  For example, I don't want to
+have to learn how to reconfigure Wayland's keymaps when the future
+arrives and we all start using it, and there may be applications I don't
+know about that also read keyboard events directly.
 
---0016e64608d6d263a904647f5c51
-Content-Type: text/plain; charset=US-ASCII; name="mmfix1.patch.txt"
-Content-Disposition: attachment; filename="mmfix1.patch.txt"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_frzrfraq0
+Signed-off-by: Paul Collins <paul@ondioline.org>
+---
+ drivers/hid/hid-apple.c |   21 +++++++++++++++++++++
+ 1 files changed, 21 insertions(+), 0 deletions(-)
 
-ZGlmZiAtdU5yIG1tZHJ2L2RyaXZlcnMvaW5wdXQvam95c3RpY2sveHBhZC5jIG5ld2Rydi9kcml2
-ZXJzL2lucHV0L2pveXN0aWNrL3hwYWQuYwotLS0gbW1kcnYvZHJpdmVycy9pbnB1dC9qb3lzdGlj
-ay94cGFkLmMJMjAwOS0wMy0wNiAyMjo0MjoyMi4wMDAwMDAwMDAgLTA1MDAKKysrIG5ld2Rydi9k
-cml2ZXJzL2lucHV0L2pveXN0aWNrL3hwYWQuYwkyMDA5LTAzLTA2IDIyOjE5OjQ3LjAwMDAwMDAw
-MCAtMDUwMApAQCAtMSw3ICsxLDcgQEAKIC8qCiAgKiBYYm94IGdhbWVwYWQgZHJpdmVyIHdpdGgg
-WGJveCAzNjAgd2lyZWQvd2lyZWxlc3Mgc3VwcG9ydAogICoKLSAqIExhc3QgTW9kaWZpZWQ6CTIg
-TWFyY2ggMjAwOQorICogTGFzdCBNb2RpZmllZDoJNiBNYXJjaCAyMDA5CiAgKgkJCU1pa2UgTXVy
-cGh5IDxtYW11cnBoQGNzLmNsZW1zb24uZWR1PgogICoKICAqIENvcHlyaWdodCAoYykgMjAwMiBN
-YXJrbyBGcmllZGVtYW5uIDxtZnJAYm14LWNoZW1uaXR6LmRlPgpkaWZmIC11TnIgbW1kcnYvZHJp
-dmVycy9pbnB1dC9qb3lzdGljay94cGFkLmggbmV3ZHJ2L2RyaXZlcnMvaW5wdXQvam95c3RpY2sv
-eHBhZC5oCi0tLSBtbWRydi9kcml2ZXJzL2lucHV0L2pveXN0aWNrL3hwYWQuaAkyMDA5LTAzLTA2
-IDIyOjQyOjIyLjAwMDAwMDAwMCAtMDUwMAorKysgbmV3ZHJ2L2RyaXZlcnMvaW5wdXQvam95c3Rp
-Y2sveHBhZC5oCTIwMDktMDMtMDYgMjI6NDQ6NTMuMDAwMDAwMDAwIC0wNTAwCkBAIC0xLDcgKzEs
-NyBAQAogLyoKICAqIFhib3ggZ2FtZXBhZCBkcml2ZXIgd2l0aCBYYm94IDM2MCB3aXJlZC93aXJl
-bGVzcyBzdXBwb3J0CiAgKgotICogTGFzdCBNb2RpZmllZDoJMiBNYXJjaCAyMDA5CisgKiBMYXN0
-IE1vZGlmaWVkOgk2IE1hcmNoIDIwMDkKICAqCQkJTWlrZSBNdXJwaHkgPG1hbXVycGhAY3MuY2xl
-bXNvbi5lZHU+CiAgKgogICogQ29weXJpZ2h0IChjKSAyMDAyIE1hcmtvIEZyaWVkZW1hbm4gPG1m
-ckBibXgtY2hlbW5pdHouZGU+CkBAIC0yMjQsNiArMjI0LDcgQEAKIHN0YXRpYyB2b2lkIHhwYWRf
-aXJxX291dChzdHJ1Y3QgdXJiICp1cmIpOwogc3RhdGljIGludCB4cGFkX2luaXRfb3V0cHV0KHN0
-cnVjdCB1c2JfaW50ZXJmYWNlICppbnRmLCBzdHJ1Y3QgdXNiX3hwYWQgKnhwYWQpOwogc3RhdGlj
-IHZvaWQgeHBhZF9zdG9wX291dHB1dChzdHJ1Y3QgdXNiX3hwYWQgKnhwYWQpOworc3RhdGljIHZv
-aWQgeHBhZF9kZWluaXRfb3V0cHV0KHN0cnVjdCB1c2JfeHBhZCAqeHBhZCk7CiBzdGF0aWMgaW50
-IHhwYWRfcGxheV9lZmZlY3Qoc3RydWN0IGlucHV0X2RldiAqZGV2LCB2b2lkICpkYXRhLAogCQkJ
-ICAgIHN0cnVjdCBmZl9lZmZlY3QgKmVmZmVjdCk7CiBzdGF0aWMgaW50IHhwYWRfaW5pdF9mZihz
-dHJ1Y3QgdXNiX3hwYWQgKnhwYWQpOwpAQCAtMjk4LDYgKzI5OSwxMyBAQAogCiAvKiBEcml2ZXIg
-SGlzdG9yeToKICAqCisgKiAyMDA5LTAzLTA2IDogUGF0Y2hlcyBmcm9tIC1tbSB0cmVlCisgKiAg
-LSBmaXhlZCBidWlsZCBpc3N1ZSB3aGVuIENPTkZJR19KT1lTVElDS19YUEFEX0xFRFMgbm90IHNl
-dCBhbmQgcmVtb3ZlZAorICogICAgZHVwbGljYXRlIHByb3RvdHlwZXMgKHRoYW5rcyBSYW5keSBE
-dW5sYXAgZm9yIHBhdGNoKQorICogIC0gZml4ZWQgZXJyb25lb3VzIHdoaXRlc3BhY2UgcmVwb3J0
-ZWQgYnkgY2hlY2twYXRjaCAodGhhbmtzIEFuZHJldyBNb3J0b24KKyAqICAgIGZvciBwYXRjaCkK
-KyAqICAtIGFkZGVkIG1pc3NpbmcgcHJvdG90eXBlCisgKgogICogMjAwOS0wMy0wMiA6IENvZGUg
-Y2xlYW51cAogICogIC0gdXNlZCBtaW4oKSwgbWF4KCksIGFuZCBhYnMoKSB3aGVyZSBhcHByb3By
-aWF0ZSwgc2ltcGxpZnlpbmcgY29kZQogICogIC0gbW92ZWQgY29kZSB0aGF0IGdlbmVyYXRlcyBk
-YXRhIG9iamVjdHMgb3V0IG9mIHhwYWQuaCBhbmQgaW50byB4cGFkLmMK
---0016e64608d6d263a904647f5c51--
+diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
+index aa28aed..74429cc 100644
+--- a/drivers/hid/hid-apple.c
++++ b/drivers/hid/hid-apple.c
+@@ -40,6 +40,11 @@ module_param(fnmode, uint, 0644);
+ MODULE_PARM_DESC(fnmode, "Mode of fn key on Apple keyboards (0 = disabled, "
+ 		"[1] = fkeyslast, 2 = fkeysfirst)");
+ 
++static int swapmodifiers;
++module_param(swapmodifiers, bool, 0644);
++MODULE_PARM_DESC(swapmodifiers, "Modifiers match labels or positions "
++		 "([0] = labels, 1 = positions)");
++
+ struct apple_sc {
+ 	unsigned long quirks;
+ 	unsigned int fn_on;
+@@ -123,6 +128,14 @@ static struct apple_key_translation apple_iso_keyboard[] = {
+ 	{ }
+ };
+ 
++static struct apple_key_translation apple_swap_modifiers[] = {
++	{ KEY_LEFTALT,	KEY_LEFTMETA },
++	{ KEY_RIGHTALT,	KEY_RIGHTMETA },
++	{ KEY_LEFTMETA,	KEY_LEFTALT },
++	{ KEY_RIGHTMETA, KEY_RIGHTALT },
++	{ }
++};
++
+ static struct apple_key_translation *apple_find_translation(
+ 		struct apple_key_translation *table, u16 from)
+ {
+@@ -199,6 +212,14 @@ static int hidinput_apple_event(struct hid_device *hid, struct input_dev *input,
+ 		}
+ 	}
+ 
++	if (swapmodifiers) {
++		trans = apple_find_translation(apple_swap_modifiers, usage->code);
++		if (trans) {
++			input_event(input, usage->type, trans->to, value);
++			return 1;
++		}
++	}
++
+ 	if (asc->quirks & APPLE_ISO_KEYBOARD) {
+ 		trans = apple_find_translation(apple_iso_keyboard, usage->code);
+ 		if (trans) {
+-- 
+1.6.2
+
