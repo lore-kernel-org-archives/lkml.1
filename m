@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbZCGPGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbZCGPRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148AbZCGPGx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 10:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbZCGPGo
+	id S1755312AbZCGPRe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 10:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbZCGPRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 10:06:44 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:48041 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752760AbZCGPGn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 10:06:43 -0500
-Date: Sat, 7 Mar 2009 15:06:40 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
-Message-ID: <20090307150640.GA3516@srcf.ucam.org>
-References: <20090306003941.GA32403@srcf.ucam.org> <20090306005234.GA32539@srcf.ucam.org> <E1LfqwF-000B1G-00.arvidjaar-mail-ru@mx3.mail.ru>
+	Sat, 7 Mar 2009 10:17:25 -0500
+Received: from www.tglx.de ([62.245.132.106]:39163 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752276AbZCGPRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 10:17:25 -0500
+Date: Sat, 7 Mar 2009 16:16:18 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Darren Hart <dvhltc@us.ibm.com>
+cc: "lkml, " <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Sripathi Kodi <sripathik@in.ibm.com>,
+       John Stultz <johnstul@linux.vnet.ibm.com>
+Subject: Re: [TIP][RFC 2/7] futex: futex_top_waiter()
+In-Reply-To: <49AC75BA.3030006@us.ibm.com>
+Message-ID: <alpine.LFD.2.00.0903071612000.29264@localhost.localdomain>
+References: <49AC73A9.4040804@us.ibm.com> <49AC75BA.3030006@us.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LfqwF-000B1G-00.arvidjaar-mail-ru@mx3.mail.ru>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 07, 2009 at 10:27:09AM +0300, Andrey Borzenkov wrote:
-> Matthew Garrett wrote:
+On Mon, 2 Mar 2009, Darren Hart wrote:
+
+> From: Darren Hart <dvhltc@us.ibm.com>
 > 
-> > +	{KE_KEY, 0x13d, KEY_SLEEP},
-> > +	{KE_KEY, 0x13e, KEY_SUSPEND},
-> 
-> I have two buttons marked with memory and disk pictures. When I press the 
-> first one HAL emits "sleep" button event, for the the second one HAL emits 
-> "hibernate" event. I am using KDE4 and neither works :) According to KDE4 
-> developer, they implement "suspend" button as suspend to RAM. Just trying to 
-> clarify which key this should be and whether HAL should be fixed.  (I opened 
-> bug report for KDE4)
+> Improve legibility by wrapping finding the top waiter in a function.  This
+> will be used by the follow-on patches for enabling requeue pi.
+> +static struct futex_q *futex_top_waiter(struct futex_hash_bucket *hb,
+> +					union futex_key *key)
 
-Yeah, I'm not really a KDE guy, so I'm not sure what's happening there.
+Can we just have *head as argument instead of *hb ?
 
-> > +	{KE_KEY, 0x13f, KEY_SWITCHVIDEOMODE},
-> 
-> I wonder, who is supposed to act upon it? Is there any generic user space 
-> agent who implements video output switching?
+> +{
+> +	struct plist_head *head;
+> +	struct futex_q *this;
+> +	struct futex_q *top_waiter = NULL;
 
-At present I don't believe so, no.
+  	struct futex_q *this;
 
-> > +	{KE_KEY, 0x140, KEY_BRIGHTNESSDOWN},
-> > +	{KE_KEY, 0x141, KEY_BRIGHTNESSUP},
-> > +	{KE_KEY, 0x142, KEY_WLAN},
-> 
-> Ditto. Theoretically Toshiba even supports turning off radio via HCI, but it 
-> is again not clear who should actually initiate it.
+> +	head = &hb->chain;
+> +	plist_for_each_entry(this, head, list) {
+> +		if (match_futex(&this->key, key)) {
+  		   	return this;		    
 
-Right. In some of these cases there's nothing that currently handles 
-them, but userspace should probably get round to it at some point.
+> +			top_waiter = this;
+> +			break;
+> +		}
+> +	}
+> +	return top_waiter;
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+  	return NULL;
+
+Makes the function half the size.
+
+Thanks,
+
+	tglx
