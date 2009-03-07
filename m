@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbZCGTwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756443AbZCGTwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756216AbZCGTwK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 14:52:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbZCGTv4
+	id S1756443AbZCGTwq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 14:52:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755273AbZCGTwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 14:51:56 -0500
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:35999 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755273AbZCGTv4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 14:51:56 -0500
-Subject: Re: [PATCH 0/7][v8] Container-init signal semantics
-From: Greg Kurz <gkurz@fr.ibm.com>
-To: Daniel Lezcano <daniel.lezcano@free.fr>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Containers <containers@lists.osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       roland@redhat.com
-In-Reply-To: <49B2CE6E.3090501@free.fr>
-References: <20090219030207.GA18783@us.ibm.com> <499D73C8.3090209@free.fr>
-	 <20090307190428.GA30594@us.ibm.com>  <49B2CE6E.3090501@free.fr>
-Content-Type: text/plain
-Date: Sat, 07 Mar 2009 20:51:49 +0100
-Message-Id: <1236455509.9151.4.camel@bahia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sat, 7 Mar 2009 14:52:36 -0500
+Received: from kroah.org ([198.145.64.141]:60991 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752461AbZCGTwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 14:52:35 -0500
+Date: Sat, 7 Mar 2009 11:52:25 -0800
+From: Greg KH <greg@kroah.com>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUG] Loading both ehci-hcd and uhci-hcd drivers causes my
+	printer to fail
+Message-ID: <20090307195225.GA2585@kroah.com>
+References: <1236453644.6077.68.camel@maxim-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236453644.6077.68.camel@maxim-laptop>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-07 at 20:43 +0100, Daniel Lezcano wrote:
->         case LINUX_REBOOT_CMD_HALT:
-> -               kernel_halt();
-> -               unlock_kernel();
-> -               do_exit(0);
-> +               if (power_off_pid_ns(current->nsproxy->pid_ns)) {
-> +                       kernel_halt();
-> +                       unlock_kernel();
-> +                       do_exit(0);
-> +               }
-
-Even if current will get SIGKILLed when zap_pid_ns_processes() is
-called, I see no reason it doesn't call do_exit(0).
-
->                 break;
+On Sat, Mar 07, 2009 at 09:20:44PM +0200, Maxim Levitsky wrote:
+> Hi,
 > 
->         case LINUX_REBOOT_CMD_POWER_OFF:
-> -               kernel_power_off();
-> -               unlock_kernel();
-> -               do_exit(0);
-> +               if (power_off_pid_ns(current->nsproxy->pid_ns)) {
-> +                       kernel_power_off();
-> +                       unlock_kernel();
-> +                       do_exit(0);
-> +               }
-
-Same.
-
->                 break;
+> Short summary:
 > 
--- 
-Gregory Kurz                                     gkurz@fr.ibm.com
-Software Engineer @ IBM/Meiosys                  http://www.ibm.com
-Tel +33 (0)534 638 479                           Fax +33 (0)561 400 420
+> I have HP1018 printer, and it works well in windows.
+> When I use in in linux, I often see messages like:
+> 
+> usbfs: USBDEVFS_CONTROL failed cmd python rqt 128 rq 6 len 255 ret -110
+> 
+> This is using hp backend that talks to printer using usbfs.
+> I also tried usblp, but it just doesn't say anything in kernel log. I
+> think it silently ignores similar errors, because the end result is the
+> same, the printer sometimes works, but sometimes doesn't.
+> (printer needs firmware to be uploaded to it, and I do upload it).
+> 
+> On the other hand, IF I remove _ether_ ehci-hcd or uhci-hcd from kernel,
+> then everything works fine, I already rebooted the printer many times,
+> used it to print, upload firmware, and everything just work, but as soon
+> as I load the second driver it fails in same way again.
+> 
+> USB issues with this class of printers are nothing but new, for example
+> see:
+> 
+> http://foo2zjs.rkkda.com/forum/read.php?9,374
+> https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.15/+bug/54419
 
-"Anarchy is about taking complete responsibility for yourself."
-        Alan Moore.
+What kernel version are you using?
 
+> I compiled without CONFIG_USB_EHCI_ROOT_HUB_TT
+> and it did help (didn't that much testing, but at least firmware loads
+> ok, and no error messages)
+
+Can you provide the full kernel log messages from when you plug in your
+printer?  Are there any other messages saying that you need to be sure
+to load one driver before the other?
+
+thanks,
+
+greg k-h
