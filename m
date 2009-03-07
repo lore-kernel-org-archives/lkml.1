@@ -1,140 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbZCGSrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbZCGSul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbZCGSrU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 13:47:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbZCGSrK
+	id S1756045AbZCGSul (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 13:50:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZCGSua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 13:47:10 -0500
-Received: from support.balabit.hu ([195.70.41.86]:37600 "EHLO lists.balabit.hu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753806AbZCGSrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 13:47:09 -0500
-Subject: Re: scheduler oddity [bug?]
-From: Balazs Scheidler <bazsi@balabit.hu>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <1236448069.16726.21.camel@bzorp.balabit>
-References: <1236448069.16726.21.camel@bzorp.balabit>
-Content-Type: text/plain
-Date: Sat, 07 Mar 2009 19:47:04 +0100
-Message-Id: <1236451624.16726.32.camel@bzorp.balabit>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Sat, 7 Mar 2009 13:50:30 -0500
+Received: from rv-out-0506.google.com ([209.85.198.236]:44905 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753806AbZCGSu3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 13:50:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=et6tisajzT77oJcb6A32bYvPH7bdS69zYW7WHXKthMNe/201XOM7KzukEre1r0By84
+         PDsCtxtdL/1yah+C/FmGIryPzxbdPVRVh8EOghxSbrlceTGc1o2EixyQUle3p0NXrhq0
+         DqQsd2UQjJKOoGmkDJ4ZpkCBhheDuVa4tQKd0=
+MIME-Version: 1.0
+In-Reply-To: <m1ocwddwjp.fsf@fess.ebiederm.org>
+References: <49B1F934.5050006@kernel.org>
+	 <4807377b0903062318q15ba52a7n82d4c9399b8a7fa8@mail.gmail.com>
+	 <86802c440903062331j22aa57c7r93c84da880a8e572@mail.gmail.com>
+	 <m1ocwddwjp.fsf@fess.ebiederm.org>
+Date: Sat, 7 Mar 2009 10:50:27 -0800
+X-Google-Sender-Auth: 3b969fd331f90f55
+Message-ID: <86802c440903071050y453c7648x653d3e2073a33c1e@mail.gmail.com>
+Subject: Re: [PATCH] igb: fix kexec with igb
+From: Yinghai Lu <yinghai@kernel.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-07 at 18:47 +0100, Balazs Scheidler wrote:
-> Hi,
-> 
-> I'm experiencing an odd behaviour from the Linux scheduler. I have an
-> application that feeds data to another process using a pipe. Both
-> processes use a fair amount of CPU time apart from writing to/reading
-> from this pipe.
-> 
-> The machine I'm running on  is an Opteron Quad-Core CPU:
-> model name	: Quad-Core AMD Opteron(tm) Processor 2347 HE
-> stepping	: 3
-> 
-> What I see is that only one of the cores is used, the other three is
-> idling without doing any work. If I explicitly set the CPU affinity of
-> the processes to use distinct CPUs the performance goes up
-> significantly. (e.g. it starts to use the other cores and the load
-> scales linearly).
-> 
-> I've tried to reproduce the problem by writing a small test program,
-> which you can find attached. The program creates two processes, one
-> feeds the other using a pipe and each does a series of memset() calls to
-> simulate CPU load. I've also added capability to the program to set its
-> own CPU affinity. The results (the more the better):
-> 
-> Without enabling CPU affinity:
-> $ ./a.out
-> Check: 0 loops/sec, sum: 1 
-> Check: 12 loops/sec, sum: 13 
-> Check: 41 loops/sec, sum: 54 
-> Check: 41 loops/sec, sum: 95 
-> Check: 41 loops/sec, sum: 136 
-> Check: 41 loops/sec, sum: 177 
-> Check: 41 loops/sec, sum: 218 
-> Check: 40 loops/sec, sum: 258 
-> Check: 41 loops/sec, sum: 299 
-> Check: 41 loops/sec, sum: 340 
-> Check: 41 loops/sec, sum: 381 
-> Check: 41 loops/sec, sum: 422 
-> Check: 41 loops/sec, sum: 463 
-> Check: 41 loops/sec, sum: 504 
-> Check: 41 loops/sec, sum: 545 
-> Check: 40 loops/sec, sum: 585 
-> Check: 41 loops/sec, sum: 626 
-> Check: 41 loops/sec, sum: 667 
-> Check: 41 loops/sec, sum: 708 
-> Check: 41 loops/sec, sum: 749 
-> Check: 41 loops/sec, sum: 790 
-> Check: 41 loops/sec, sum: 831 
-> Final: 39 loops/sec, sum: 831
-> 
-> 
-> With CPU affinity:
-> # ./a.out 1
-> Check: 0 loops/sec, sum: 1 
-> Check: 41 loops/sec, sum: 42 
-> Check: 49 loops/sec, sum: 91 
-> Check: 49 loops/sec, sum: 140 
-> Check: 49 loops/sec, sum: 189 
-> Check: 49 loops/sec, sum: 238 
-> Check: 49 loops/sec, sum: 287 
-> Check: 50 loops/sec, sum: 337 
-> Check: 49 loops/sec, sum: 386 
-> Check: 49 loops/sec, sum: 435 
-> Check: 49 loops/sec, sum: 484 
-> Check: 49 loops/sec, sum: 533 
-> Check: 49 loops/sec, sum: 582 
-> Check: 49 loops/sec, sum: 631 
-> Check: 49 loops/sec, sum: 680 
-> Check: 49 loops/sec, sum: 729 
-> Check: 49 loops/sec, sum: 778 
-> Check: 49 loops/sec, sum: 827 
-> Check: 49 loops/sec, sum: 876 
-> Check: 49 loops/sec, sum: 925 
-> Check: 50 loops/sec, sum: 975 
-> Check: 49 loops/sec, sum: 1024 
-> Final: 48 loops/sec, sum: 1024
-> 
-> The difference is about 20%, which is about the same work performed by
-> the slave process. If the two processes race for the same CPU this 20%
-> of performance is lost.
-> 
-> I've tested this on 3 computers and each showed the same symptoms:
->  * quad core Opteron, running Ubuntu kernel 2.6.27-13.29
->  * Core 2 Duo, running Ubuntu kernel 2.6.27-11.27
->  * Dual Core Opteron, Debian backports.org kernel 2.6.26-13~bpo40+1
-> 
-> Is this a bug, or a feature?
-> 
+On Sat, Mar 7, 2009 at 10:20 AM, Eric W. Biederman
+<ebiederm@xmission.com> wrote:
+> Yinghai Lu <yinghai@kernel.org> writes:
+>
+>> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
+>> <jesse.brandeburg@gmail.com> wrote:
+>>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+>>>>
+>>>> Impact: could probe igb
+>>>>
+>>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
+>>>> failed with -2.
+>>>>
+>>>> it looks like the same behavior happened on forcedeth.
+>>>>
+>>>> try to check system_state to make sure if put it on D3
+>>>>
+>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>>
+>>>> ---
+>>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
+>>>>  1 file changed, 14 insertions(+), 5 deletions(-)
+>>>
+>>> I see the point of the patch, but I know for a fact that ixgbe when
+>>> enabled for MSI-X also doesn't work with kexec.
+>>>
+>>> so my questions are:
+>>> are you going to change every driver?
+>>
+>> i tend to only change driver that i have related HW.
+>>
+>>> why can't this be fixed in core kernel code instead?
+>> will check it.
+>>
+>>> Shouldn't pci_enable_device take it out of D3?
+>>> Or maybe it should be taken out of D3 immediately if someone tries to
+>>> ioremap any of the BARx registers?
+>>
+>>
+>> looks like second kernel can not detect the state any more.
+>
+> I know this has historically been a problem with the e1000 NICs.
+> Placing the hardware in a state they can not get them out of on
+> the reboot path.
+>
+> Last I heard (a couple of weeks ago?) we had code to bring devices out
+> of a low power state that was working for the e1000 driver.
 
-One new interesting information: I've retested with a 2.6.22 based
-kernel, and it still works there, setting the CPU affinity does not
-change the performance of the test program and mpstat nicely shows that
-2 cores are working, not just one.
+in net-next tree?
 
-Maybe this is CFS related? That was merged for 2.6.23 IIRC.
+>
+> YH can you look and see if you can find that code and if it works?
 
-Also, I tried changing various scheduler knobs
-in /proc/sys/kernel/sched_* but they didn't help. I've tried to change
-these:
+it seems e1000 and e1000e works well for a long time.
 
- * sched_migration_cost: changed from the default 500000 to 100000 and
-then 10000 but neither helped.
- * sched_nr_migrate: increased it to 64, but again nothing
+>
+> <rant>
+> Frankly I don't understand why anyone would want to power down a device
+> when they are rebooting or shutting down a computer.  That is a
+> system state change.  But it seems to be bleed over from the confusion
+> that has been the power management code.
+> </rant>
 
-I'm starting to think that this is a regression that may or may not be
-related to CFS. 
+agreed.
 
-I don't have a box where I could bisect on, but the test program makes
-the problem quite obvious.
+>
+> If we can teach the kernel to handle this case with the proper enables
+> and disables that would be great.  Otherwise let's look at getting the
+> responsibilities of the various methods sorted out so we can at least
+> say with certainty what the various methods are supposed to do and
+> not do.
 
+root cause could be some BIOS/acpi lying to Kernel about device state querying.
 
--- 
-Bazsi
+for igb, it only has problem on one platform. but other one platform is ok.
+for forcedeth, it seems all platform has the problem, aka you can not
+put it in D3 in kexec path.
 
-
+YH
