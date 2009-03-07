@@ -1,130 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZCGB06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbZCGBiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755333AbZCGB06 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 20:26:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZCGB0t
+	id S1756120AbZCGBiR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 20:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbZCGBiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 20:26:49 -0500
-Received: from gw.goop.org ([64.81.55.164]:43392 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751164AbZCGB0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 20:26:48 -0500
-Message-ID: <49B1CD54.8070805@goop.org>
-Date: Fri, 06 Mar 2009 17:26:44 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: akataria@vmware.com
-CC: Ingo Molnar <mingo@elte.hu>,
-       "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Process accounting in interrupt diabled cases
-References: <1236380615.4637.67.camel@alok-dev1> <49B1C1D1.4070603@goop.org> <1236387583.4558.22.camel@alok-dev1>
-In-Reply-To: <1236387583.4558.22.camel@alok-dev1>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Mar 2009 20:38:00 -0500
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:35579 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752156AbZCGBh7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Mar 2009 20:37:59 -0500
+Subject: Re: Problems with AGPGART/drm and X11 2D-acceleration
+From: Eric Anholt <eric@anholt.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       David Airlie <airlied@linux.ie>
+In-Reply-To: <Pine.LNX.4.44L0.0903061522001.2715-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0903061522001.2715-100000@iolanthe.rowland.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Xti/nhw2qdSdffA1deKx"
+Date: Fri, 06 Mar 2009 17:37:56 -0800
+Message-Id: <1236389876.30263.16.camel@gaiman>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
-> I don't know if their are instances when interrupts are actually
-> disabled for such a long time in the kernel , but I don't see a reason
-> why this might not be happening currently, i.e. do we have a way to
-> detect such cases. 
-> I noticed this problem ( with process accounting) only when testing my
-> stolen time theory below, in which i had intentionally disabled
-> interrupts for long. 
->
-> So, in case of buggy code which disables interrupt for long, this could
-> affect process accounting and could result in the stolen time being
-> reported incorrectly ( considering the stolen time idea mentioned below
-> is okay).
->   
 
-Does it matter how long interrupts are actually disabled.  Tickless is 
-definitely the preferred mode of operation for any virtual guest, so 
-time accounting is independent from when the actual timer interrupts 
-occur; its quite possible we'll see no interrupts for a long time 
-indeed.  If we accrue unstolen time to a task when we actually context 
-switch then the accounting will all work out, no?
+--=-Xti/nhw2qdSdffA1deKx
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->>> I stumbled across this while trying to find a solution to figure out the
->>> amount of stolen time from Linux, when it is running under a hypervisor.
->>> One of the solutions could be to ask the hypervisor directly for this
->>> info, but in my quest to find a generic solution I think the below would
->>> work too.
->>> The total process time accounted by the system on a cpu ( system, idle,
->>> wait and etc) when deducted from the amount TSC counter has advanced
->>> since boot, should give us this info about the cputime stolen from the
->>> kernel
->>>       
->> You're assuming that the tsc is always going to be advancing at a 
->> constant rate in wallclock time?  Is that a good assumption?  Does 
->> VMWare virtualize the tsc to make this valid?  If something's going to 
->> the effort of virtualizing tsc, how do you know they're not also 
->> excluding stolen time?
->>     
->
->
-> Yes, TSC is the correct thing atleast for VMware over here. But my idea
-> is not to advocate using TSC here, if it doesn't work for Xen we could
-> use something else which gives a notion of Total_time there, a parvirt
-> call to read that can be done. I don't know what that would be for XEN,
-> but you would know better, please suggest if there is already a paravirt
-> call which gets that value for XEN ? 
->   
+On Fri, 2009-03-06 at 15:33 -0500, Alan Stern wrote:
+> I've been experiencing problems running X with recent kernels. =20
+> Without 2D-acceleration everything seems to work okay, but scrolling is
+> uncomfortably slow.  With acceleration enabled...
+>=20
+> Under 2.6.27.19, X runs okay.  But the dmesg log gets these error
+> messages when X start:
+>=20
+> [   54.375769] [drm] Initialized drm 1.1.0 20060810
+> [   54.441049] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ =
+16
+> [   54.441521] pci 0000:00:02.0: setting latency timer to 64
+> [   54.442380] [drm] Initialized i915 1.6.0 20060119 on minor 0
+> [   54.543516] [drm:i915_getparam] *ERROR* Unknown parameter 5
+> [   55.292058] [drm:i915_getparam] *ERROR* Unknown parameter 5
 
-Yes, Xen already accounts stolen time in its timer interrupt handler.
+This says userland is asking about things (GEM) that the kernel doesn't
+know about.
 
-But more significantly it uses unstolen time as the timebase for 
-sched_clock() so that the scheduler will only credit a task for the 
-actual amount of time it spends executing, rather than a full wallclock 
-timeslice.
+> Under 2.6.28.7, X fails during startup and exits with an error message. =20
+> Dmesg says:
+>=20
+> [   63.129319] [drm] Initialized drm 1.1.0 20060810
+> [   63.196690] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ =
+16
+> [   63.196704] pci 0000:00:02.0: setting latency timer to 64
+> [   63.197679] [drm] Initialized i915 1.6.0 20080730 on minor 0
+> [   63.457664] [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LR=
+U list empty
+> [   63.457673] [drm:i915_gem_object_pin] *ERROR* Failure to bind: -12
 
->> What timebase is the kernel using to measure idle, system, wait, ...?  
->> Presumably something that doesn't include stolen time.  In that case 
->> this just comes down to "PCPU_STOLEN = TOTAL_TIME - PCPU_UNSTOLEN_TIME", 
->> where you're proposing that TOTAL_TIME is the tsc.
->>     
->
-> Again not proposing to use tsc, please suggest what works for Xen. 
-> And about the PCU_UNSTOLEN_TIME, i am proposing it could be a summation
-> of all the fields in kstat_cpu.cpustat except the steal value.
->   
+Your xorg log probably says that you ran out of aperture space while
+trying to initialize the server.  This message says "I ran out of
+aperture space".
 
-No, I'm not advocating anything in particular; I'm trying to understand 
-your proposal.
+If userland's defaults (as long as you don't have any options in
+xorg.conf) fail, then they need to be fixed.
 
-You're positing two timebases: one which measures wallclock time (that 
-could be the tsc in VMWare's case), and another which measures unstolen 
-time, so you can tell how long a cpu has spent actually running 
-something.  What's your proposal for the unstolen clock?  How does the 
-kernel measure unstolen time?  It can't measure it with the tsc, because 
-that would include any stolen time in the measurement.
+> Under 2.6.29-rc6, X hangs during startup.  I have to reboot the machine
+> to recover.  Dmesg says only:
+>=20
+> [   57.001997] [drm] Initialized drm 1.1.0 20060810
+> [   57.121966] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ =
+16
+> [   57.121980] pci 0000:00:02.0: setting latency timer to 64
+> [   57.127739] [drm] Initialized i915 1.6.0 20080730 on minor 0
 
-Also, I'm not sure it makes sense to distinguish between vcpu idle time 
-and stolen time.  If a vcpu is idle/blocked, how can you steal time from 
-it?  It's only stolen time if it wants to run but can't.
+Can't really say anything here without Xorg.0.log.  Maybe a backtrace of
+the server, too?
 
->> Direct use of the tsc definitely doesn't work in a Xen PV guest because 
->> the tsc is the raw physical cpu tsc; but Xen also provides everything 
->> you need to derive a globally-meaningful timebase from the tsc.  Xen 
->> also provides per-vcpu info on time spent blocked, runnable (ie, could 
->> run but no pcpu available), running and offline.
->>
->>     
-> That means it should be easy to get the TOTAL_Time value then ? 
->   
+> Relevant device info:
+>=20
+> # lspci -v -s 0:2.0
+> 00:02.0 VGA compatible controller: Intel Corporation 82845G/GL[Brookdale-=
+G]/GE Chipset Integrated Graphics Device (rev 03) (prog-if 00 [VGA controll=
+er])
+>         Subsystem: Intel Corporation Device 5247
+>         Flags: bus master, fast devsel, latency 0, IRQ 16
+>         Memory at f0000000 (32-bit, prefetchable) [size=3D128M]
+>         Memory at ffa80000 (32-bit, non-prefetchable) [size=3D512K]
+>         Capabilities: [d0] Power Management version 1
+>         Kernel modules: intelfb
 
-Yes, Xen exposes all the necessary accounting information directly.  It 
-also guarantees that if you add up blocked+runnable+running+offline == 
-wallclock time.
+intelfb could interact badly with the DRM, I'd recommend removing it.
 
-See xen/time.c: do_stolen_accounting(), and how it accumulates stolen 
-time with account_steal_ticks().
+> From /etc/X11/xorg.conf:
+>=20
+> Section "Device"
+>         Identifier  "Card0"
+>         Driver      "intel"
+>         VendorName  "Intel Corporation"
+>         BoardName   "82845G/GL[Brookdale-G]/GE Chipset Integrated Graphic=
+s Device"
+>         BusID       "PCI:0:2:0"
+>         Option      "AccelMethod"       "XAA"
+> #       Option      "NoAccel" "yes"
+>         Option      "BackingStore"      "on"
+> EndSection
+>=20
+> I use XAA because the default EXA method causes X to hang during=20
+> startup even under 2.6.27.
+>=20
+> Any advice or suggestions for things to try?
 
-    J
+Userland needs to get fixed so that the defaults work for pre-9xx.  But
+we don't support XAA.
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-Xti/nhw2qdSdffA1deKx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmxz/QACgkQHUdvYGzw6vfJBgCfYH2eeaelFWcUPPC+W/ifWLYS
+1hwAnjH9uVasKMq6Ns8ql6J+fjIO9yud
+=JW9i
+-----END PGP SIGNATURE-----
+
+--=-Xti/nhw2qdSdffA1deKx--
+
