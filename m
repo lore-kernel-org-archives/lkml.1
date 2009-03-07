@@ -1,90 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbZCGR5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbZCGSAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755687AbZCGR5B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 12:57:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZCGR4w
+	id S1755509AbZCGSAr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 13:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZCGSAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 12:56:52 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59802 "EHLO ogre.sisk.pl"
+	Sat, 7 Mar 2009 13:00:38 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59820 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752010AbZCGR4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 12:56:51 -0500
+	id S1752600AbZCGSAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 13:00:37 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [linux-pm] [RFC][PATCH][1/8] PM: Rework handling of interrupts during suspend-resume (rev. 5)
-Date: Sat, 7 Mar 2009 18:56:35 +0100
+To: Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>
+Subject: Re: [PATCH] Re: ALSA HDA Intel stoped to work in 2.6.16-*
+Date: Sat, 7 Mar 2009 19:00:44 +0100
 User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7-tst; KDE/4.2.0; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-References: <Pine.LNX.4.44L0.0903071143340.5732-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0903071143340.5732-100000@netrider.rowland.org>
+Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <87wtfhx7rm.fsf@nurf.casa> <s5hek1fmzf4.wl%tiwai@suse.de> <gou8k9$reh$1@ger.gmane.org>
+In-Reply-To: <gou8k9$reh$1@ger.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903071856.36230.rjw@sisk.pl>
+Message-Id: <200903071900.44762.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 March 2009, Alan Stern wrote:
-> On Sat, 7 Mar 2009, Rafael J. Wysocki wrote:
+(adding CCs).
+
+Usually, sending such things to the LKML alone doesn't really work.  Please
+always send a CC to the relevant subsystem maintainer.
+
+On Saturday 07 March 2009, Daniel Gimpelevich wrote:
+> At Mon, 6 Mar 2006 15:16:15 +0100,
+> Takashi Iwai wrote:
 > 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > At Sat, 4 Mar 2006 15:51:14 +0100,
+> > Adrian Bunk wrote:
+> >> 
+> >> On Sat, Mar 04, 2006 at 02:29:02AM -0300, Otavio Salvador wrote:
+> >> > Takashi Iwai <tiwai@suse.de> writes:
+> >> > 
+> >> > > Are you sure that your device has PCI SUB-system id 8086:2668 ?
+> >> > 
+> >> > oh no! Sorry!
+> >> > 
+> >> > 0000:00:1b.0 0403: 8086:2668 (rev 04)
+> >> >         Subsystem: 152d:0729
+> >> >                    ^^^^^^^^^
+> >> 
+> >> Can you make a patch with the correct id test whether it fixes your 
+> >> problem (without model=basic)?
 > > 
-> > Introduce two helper functions allowing us to prevent device drivers
-> > from getting any interrupts (without disabling interrupts on the CPU)
-> > during suspend (or hibernation) and to make them start to receive
-> > interrupts again during the subsequent resume, respectively.  These
-> > functions make it possible to keep timer interrupts enabled while the
-> > "late" suspend and "early" resume callbacks provided by device
-> > drivers are being executed.
+> > This one should work for his device.
 > > 
-> > Use these functions to rework the handling of interrupts during
-> > suspend (hibernation) and resume.  Namely, interrupts will only be
-> > disabled on the CPU right before suspending sysdevs, while device
-> > drivers will be prevented from receiving interrupts, with the help of
-> > the new helper function, before their "late" suspend callbacks run
-> > (and analogously during resume).
 > > 
-> > In addition, since the device interrups are now disabled before the
-> > CPU has turned all interrupts off and the CPU will ACK the interrupts
-> > setting the IRQ_PENDING bit for them, check in sysdev_suspend() if
-> > any wake-up interrupts are pending and abort suspend if that's the
-> > case.
+> > Takashi
+> > ===
+> > 
+> > [PATCH] Add default entry for CTL Travel Master U553W
+> > 
+> > Added the default entry of ALC880 configuration table for
+> > CTL Travel Master U553W.
+> > 
+> > Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> > 
+> > ---
+> > diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+> > index b767552..d5cd3a1 100644
+> > --- a/sound/pci/hda/patch_realtek.c
+> > +++ b/sound/pci/hda/patch_realtek.c
+> > @@ -2948,6 +2948,8 @@ static struct hda_board_config alc260_cf
+> >       { .modelname = "basic", .config = ALC260_BASIC },
+> >       { .pci_subvendor = 0x104d, .pci_subdevice = 0x81bb,
+> >         .config = ALC260_BASIC }, /* Sony VAIO */
+> > +     { .pci_subvendor = 0x152d, .pci_subdevice = 0x0729,
+> > +       .config = ALC260_BASIC }, /* CTL Travel Master U553W */
+> >       { .modelname = "hp", .config = ALC260_HP },
+> >       { .pci_subvendor = 0x103c, .pci_subdevice = 0x3010, .config = ALC260_HP },
+> >       { .pci_subvendor = 0x103c, .pci_subdevice = 0x3011, .config = ALC260_HP },
 > 
-> One thing about this isn't clear: the distinction between "wake-up" 
-> interrupts and other interrupts.
+> It has been three years since the above patch was posted with a request for
+> testing. No testing reply ever appeared, and the patch was committed as
+> submitted. On the relevant hardware, I determined the patch to be incorrect.
+> For the git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+> head, the following patch appears to fix it correctly:
 > 
-> In an ideal world, the only pending interrupts during sysdev_suspend
-> would be wake-up interrupts, because drivers would have prevented their
-> devices from generating any other kind of IRQ and would have done all
-> the necessary synchronization as part of their suspend (_not_
-> suspend_late) methods.  Thus there would be no need to distinguish
-> between wake-up and non-wake-up interrupts.
 > 
-> So perhaps you're worried about drivers that aren't sufficiently
-> clever.  Or is something deeper going on?
-
-Some drivers leave interrupts enabled during suspend on purpose and mark
-them as "wake-up interrupts" so that the platform can abort suspend if any
-of them is pending at the time the "enter suspend" hook is called (this doesn't
-happen on x86 AFAICS).
-
-However, after the $subject patch the CPU will ACK those interrupts if they
-happen between suspend_device_irqs() and local_irq_disable(), so the platform
-won't see them as pending.  Instead, they will have IRQ_PENDING set in
-desc->status, so we check if this is the case.
-
-Thanks,
-Rafael
-
-
+> Signed-off-by: Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>
+> 
+> diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+> index 6c26afc..87ec806 100644
+> --- a/sound/pci/hda/patch_realtek.c
+> +++ b/sound/pci/hda/patch_realtek.c
+> @@ -5692,7 +5692,7 @@ static struct snd_pci_quirk alc260_cfg_tbl[] = {
+>         SND_PCI_QUIRK(0x104d, 0x81cc, "Sony VAIO", ALC260_BASIC),
+>         SND_PCI_QUIRK(0x104d, 0x81cd, "Sony VAIO", ALC260_BASIC),
+>         SND_PCI_QUIRK(0x10cf, 0x1326, "Fujitsu S702X", ALC260_FUJITSU_S702X),
+> -       SND_PCI_QUIRK(0x152d, 0x0729, "CTL U553W", ALC260_BASIC),
+> +       SND_PCI_QUIRK(0x152d, 0x0729, "CTL U553W", ALC260_WILL),
+>         SND_PCI_QUIRK(0x161f, 0x2057, "Replacer 672V", ALC260_REPLACER_672V),
+>         SND_PCI_QUIRK(0x1631, 0xc017, "PB V7900", ALC260_WILL),
+>         {}
+> 
+> --
