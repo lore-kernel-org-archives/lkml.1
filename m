@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbZCGUJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756288AbZCGUUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756255AbZCGUJR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 15:09:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbZCGUJC
+	id S1756288AbZCGUUI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 15:20:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756091AbZCGUT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 15:09:02 -0500
-Received: from mail-in-12.arcor-online.net ([151.189.21.52]:52997 "EHLO
-	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752461AbZCGUJA (ORCPT
+	Sat, 7 Mar 2009 15:19:56 -0500
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:44652 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756077AbZCGUTy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 15:09:00 -0500
-X-DKIM: Sendmail DKIM Filter v2.6.0 mail-in-11.arcor-online.net DD53B21EF03
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Future of md multipath
-To: martin f krafft <madduck@debian.org>, Neil Brown <neilb@suse.de>,
-       Christoph Hellwig <hch@lst.de>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Sat, 07 Mar 2009 21:08:54 +0100
-References: <cbHe8-JR-9@gated-at.bofh.it> <ccbYG-sd-9@gated-at.bofh.it> <ccluS-7IV-3@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Sat, 7 Mar 2009 15:19:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rjdXFwUUeRU/r+xkQvQkiyFk6OgT0CBd4vWcDuSUJNucc/OmvcOTZhHuqtnKvraBU9
+         +Wd/HsvkErvIATufz5B9BoJo3xNpAEyl0tNpuC/ZxP+USKv0IGP+L/e+87/JUTqMHkRO
+         2peCePpkzSkfmmsii/FMqrLUvTw/IPvm+hRQA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1Lg2pL-0003s6-4e@be1.7eggert.dyndns.org>
+In-Reply-To: <20090307154424.GA3909@srcf.ucam.org>
+References: <20090306003941.GA32403@srcf.ucam.org>
+	 <E1LfqwF-000B1G-00.arvidjaar-mail-ru@mx3.mail.ru>
+	 <20090307150640.GA3516@srcf.ucam.org>
+	 <200903071839.16508.arvidjaar@mail.ru>
+	 <20090307154424.GA3909@srcf.ucam.org>
+Date: Sat, 7 Mar 2009 20:19:51 +0000
+Message-ID: <15e53e180903071219q4ed318edt2fa8f492426c0ab6@mail.gmail.com>
+Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
+From: Richard Hughes <hughsient@gmail.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hal@lists.freedesktop.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-martin f krafft <madduck@debian.org> wrote:
-> also sprach Neil Brown <neilb@suse.de> [2009.03.05.0349 +0100]:
+On Sat, Mar 7, 2009 at 3:44 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> On Sat, Mar 07, 2009 at 06:38:53PM +0300, Andrey Borzenkov wrote:
+>
+>> - patch toshiba_acpi to return KEY_SUSPEND/KEY_HIBERNATE instead of
+>> KEY_SLEEP/KEY_SUSPEND. This depends on commit
+>> 6932b918e05b06165ed3457a9f3aa279099a7cbd in linux-next.
+>>
+>> - patch HAL to recognize KEY_HIBERNATE and return "suspend" for
+>> KEY_SUSPEND; right now it is:
+>>
+>>         [KEY_SLEEP] = "sleep",
+>>         [KEY_SUSPEND] = "hibernate",
+>
+> Ugh. Why are we changing this? The semantics were pretty clear before.
+> The KEY_SUSPEND to hibernate mapping was decided years ago, and it's
+> clearly an incompatible change as far as userspace goes.
 
->> I'm in favour of deprecating it.  Whenever I hear of people using it I
->> suggest dm-multipath, but there could people I don't here about.
->> I think the upcoming mdadm-3.0 will need a compile-time option to
->> enable multipath, so people will only get it if they really really
->> want it.
-> 
-> How do you propose a distro to deal with this? Keep it enabled for
-> a certain time (with a deprecation warning?) and then just to close
-> the doors on users who still need it?
+See my mails to linux-acpi. Hibernate = sleep to disk, suspend = sleep
+to ram, and sleep = sleep type not indicated or unknown. This is how
+it is in Xorg and the session now.
 
-What about reverting the patch for their kernels until they release the
-next major version, then drop it?
+Mapping KEY_SUSPEND to hibernate is just insane. Can you please change
+the toshiba driver to use KEY_HIBERNATE and KEY_SUSPEND as thinkpad
+now does? Thanks.
 
-For users who compile their kernels, add "Deprecated" to the description,
-and rename the CONFIG_.
-
+Richard.
