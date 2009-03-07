@@ -1,95 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbZCGS2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbZCGSrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755954AbZCGS2V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 13:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZCGS2M
+	id S1756025AbZCGSrU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 13:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbZCGSrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 13:28:12 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38901 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751443AbZCGS2L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 13:28:11 -0500
-Date: Sat, 7 Mar 2009 10:27:35 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, adobriyan@gmail.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH -v2] memdup_user(): introduce
-Message-Id: <20090307102735.80f498b1.akpm@linux-foundation.org>
-In-Reply-To: <20090307084805.7cf3d574@infradead.org>
-References: <49B0CAEC.80801@cn.fujitsu.com>
-	<20090306082056.GB3450@x200.localdomain>
-	<49B0DE89.9000401@cn.fujitsu.com>
-	<20090306003900.a031a914.akpm@linux-foundation.org>
-	<49B0E67C.2090404@cn.fujitsu.com>
-	<20090306011548.ffdf9cbc.akpm@linux-foundation.org>
-	<49B0F1B9.1080903@cn.fujitsu.com>
-	<20090306150335.c512c1b6.akpm@linux-foundation.org>
-	<20090307084805.7cf3d574@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Sat, 7 Mar 2009 13:47:10 -0500
+Received: from support.balabit.hu ([195.70.41.86]:37600 "EHLO lists.balabit.hu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753806AbZCGSrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 13:47:09 -0500
+Subject: Re: scheduler oddity [bug?]
+From: Balazs Scheidler <bazsi@balabit.hu>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1236448069.16726.21.camel@bzorp.balabit>
+References: <1236448069.16726.21.camel@bzorp.balabit>
+Content-Type: text/plain
+Date: Sat, 07 Mar 2009 19:47:04 +0100
+Message-Id: <1236451624.16726.32.camel@bzorp.balabit>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Mar 2009 08:48:05 -0800 Arjan van de Ven <arjan@infradead.org> wrote:
-
-> On Fri, 6 Mar 2009 15:03:35 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > >  
-> > >  /**
-> > > + * memdup_user - duplicate memory region from user space
-> > > + *
-> > > + * @src: source address in user space
-> > > + * @len: number of bytes to copy
-> > > + * @gfp: GFP mask to use
-> > > + *
-> > > + * Returns an ERR_PTR() on failure.
-> > > + */
-> > > +void *memdup_user(const void __user *src, size_t len, gfp_t gfp)
-> > > +{
-> > > +	void *p;
-> > > +
-> > > +	p = kmalloc_track_caller(len, gfp);
-> > > +	if (!p)
-> > > +		return ERR_PTR(-ENOMEM);
-> > > +
-> > > +	if (copy_from_user(p, src, len)) {
-> > > +		kfree(p);
-> > > +		return ERR_PTR(-EFAULT);
-> > > +	}
-> > > +
-> > > +	return p;
-> > > +}
-> > > +EXPORT_SYMBOL(memdup_user);
-> 
+On Sat, 2009-03-07 at 18:47 +0100, Balazs Scheidler wrote:
 > Hi,
 > 
-> I like the general idea of this a lot; it will make things much less
-> error prone (and we can add some sanity checks on "len" to catch the
-> standard security holes around copy_from_user usage). I'd even also
-> want a memdup_array() like thing in the style of calloc().
+> I'm experiencing an odd behaviour from the Linux scheduler. I have an
+> application that feeds data to another process using a pipe. Both
+> processes use a fair amount of CPU time apart from writing to/reading
+> from this pipe.
 > 
-> However, I have two questions/suggestions for improvement:
+> The machine I'm running on  is an Opteron Quad-Core CPU:
+> model name	: Quad-Core AMD Opteron(tm) Processor 2347 HE
+> stepping	: 3
 > 
-> I would like to question the use of the gfp argument here;
-> copy_from_user sleeps, so you can't use GFP_ATOMIC anyway.
-> You can't use GFP_NOFS etc, because the pagefault path will happily do
-> things that are equivalent, if not identical, to GFP_KERNEL.
+> What I see is that only one of the cores is used, the other three is
+> idling without doing any work. If I explicitly set the CPU affinity of
+> the processes to use distinct CPUs the performance goes up
+> significantly. (e.g. it starts to use the other cores and the load
+> scales linearly).
 > 
-> So the only value you can pass in correctly, as far as I can see, is
-> GFP_KERNEL. Am I wrong?
+> I've tried to reproduce the problem by writing a small test program,
+> which you can find attached. The program creates two processes, one
+> feeds the other using a pipe and each does a series of memset() calls to
+> simulate CPU load. I've also added capability to the program to set its
+> own CPU affinity. The results (the more the better):
+> 
+> Without enabling CPU affinity:
+> $ ./a.out
+> Check: 0 loops/sec, sum: 1 
+> Check: 12 loops/sec, sum: 13 
+> Check: 41 loops/sec, sum: 54 
+> Check: 41 loops/sec, sum: 95 
+> Check: 41 loops/sec, sum: 136 
+> Check: 41 loops/sec, sum: 177 
+> Check: 41 loops/sec, sum: 218 
+> Check: 40 loops/sec, sum: 258 
+> Check: 41 loops/sec, sum: 299 
+> Check: 41 loops/sec, sum: 340 
+> Check: 41 loops/sec, sum: 381 
+> Check: 41 loops/sec, sum: 422 
+> Check: 41 loops/sec, sum: 463 
+> Check: 41 loops/sec, sum: 504 
+> Check: 41 loops/sec, sum: 545 
+> Check: 40 loops/sec, sum: 585 
+> Check: 41 loops/sec, sum: 626 
+> Check: 41 loops/sec, sum: 667 
+> Check: 41 loops/sec, sum: 708 
+> Check: 41 loops/sec, sum: 749 
+> Check: 41 loops/sec, sum: 790 
+> Check: 41 loops/sec, sum: 831 
+> Final: 39 loops/sec, sum: 831
+> 
+> 
+> With CPU affinity:
+> # ./a.out 1
+> Check: 0 loops/sec, sum: 1 
+> Check: 41 loops/sec, sum: 42 
+> Check: 49 loops/sec, sum: 91 
+> Check: 49 loops/sec, sum: 140 
+> Check: 49 loops/sec, sum: 189 
+> Check: 49 loops/sec, sum: 238 
+> Check: 49 loops/sec, sum: 287 
+> Check: 50 loops/sec, sum: 337 
+> Check: 49 loops/sec, sum: 386 
+> Check: 49 loops/sec, sum: 435 
+> Check: 49 loops/sec, sum: 484 
+> Check: 49 loops/sec, sum: 533 
+> Check: 49 loops/sec, sum: 582 
+> Check: 49 loops/sec, sum: 631 
+> Check: 49 loops/sec, sum: 680 
+> Check: 49 loops/sec, sum: 729 
+> Check: 49 loops/sec, sum: 778 
+> Check: 49 loops/sec, sum: 827 
+> Check: 49 loops/sec, sum: 876 
+> Check: 49 loops/sec, sum: 925 
+> Check: 50 loops/sec, sum: 975 
+> Check: 49 loops/sec, sum: 1024 
+> Final: 48 loops/sec, sum: 1024
+> 
+> The difference is about 20%, which is about the same work performed by
+> the slave process. If the two processes race for the same CPU this 20%
+> of performance is lost.
+> 
+> I've tested this on 3 computers and each showed the same symptoms:
+>  * quad core Opteron, running Ubuntu kernel 2.6.27-13.29
+>  * Core 2 Duo, running Ubuntu kernel 2.6.27-11.27
+>  * Dual Core Opteron, Debian backports.org kernel 2.6.26-13~bpo40+1
+> 
+> Is this a bug, or a feature?
+> 
 
-True.
+One new interesting information: I've retested with a 2.6.22 based
+kernel, and it still works there, setting the CPU affinity does not
+change the performance of the test program and mpstat nicely shows that
+2 cores are working, not just one.
 
-> A second thing.. I'd like to have this function return NULL on failure;
-> error checking a pointer for NULL is so much easier than testing for
-> anything else; the only distinction is -ENOMEM versus -EFAULT, and I'm
-> not sure that that is worth the complexity on all callers.
+Maybe this is CFS related? That was merged for 2.6.23 IIRC.
 
-This errno will be returned to userspace.  If the caller guesses wrong,
-that's a kernel bug, of the regression variety.  
+Also, I tried changing various scheduler knobs
+in /proc/sys/kernel/sched_* but they didn't help. I've tried to change
+these:
+
+ * sched_migration_cost: changed from the default 500000 to 100000 and
+then 10000 but neither helped.
+ * sched_nr_migrate: increased it to 64, but again nothing
+
+I'm starting to think that this is a regression that may or may not be
+related to CFS. 
+
+I don't have a box where I could bisect on, but the test program makes
+the problem quite obvious.
+
+
+-- 
+Bazsi
+
+
