@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbZCGWZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbZCGW1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757013AbZCGWZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 17:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZCGWZP
+	id S1757122AbZCGW1V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 17:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbZCGW1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 17:25:15 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:35205 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755458AbZCGWZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 17:25:14 -0500
-Date: Sat, 7 Mar 2009 14:25:11 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+	Sat, 7 Mar 2009 17:27:13 -0500
+Received: from newton.gmurray.org.uk ([81.2.114.237]:52923 "EHLO
+	newton.gmurray.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755458AbZCGW1M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 17:27:12 -0500
+X-DKIM: Sendmail DKIM Filter v2.8.2 newton.gmurray.org.uk n27MR8lo001306
+From: Graham Murray <graham@gmurray.org.uk>
 To: linux-kernel@vger.kernel.org
-Cc: manfred@colorfullife.com, Nadia.Derbey@bull.net, miltonm@austin.ibm.com,
-       mingo@elte.hu, akpm@linux-foundation.org, peterz@infradead.org,
-       lnxninja@linux.vnet.ibm.com, efault@gmx.de, riel@redhat.com
-Subject: [PATCH] make idr_remove_all() do removal -before- free_layer()
-Message-ID: <20090307222511.GA10727@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+Subject: Re: [Bug #12444] X hangs following switch from radeonfb console - Bisected
+References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
+	<SLCXkuHtxAO.A.NI.mXarJB@chimera>
+X-Hashcash: 1:22:090307:linux-kernel@vger.kernel.org::OJriTi2gOlX9NWIq:000000000000000000000000000000000huJ/
+Date: Sat, 07 Mar 2009 22:27:08 +0000
+In-Reply-To: <SLCXkuHtxAO.A.NI.mXarJB@chimera> (Rafael J. Wysocki's message of
+	"Tue, 3 Mar 2009 20:25:52 +0100 (CET)")
+Message-ID: <87hc2555qb.fsf@newton.gmurray.org.uk>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch fixes a problem in the IDR system, where an
-idr_remove_all() hands a data element to call_rcu() (via free_layer())
-before making that data element inaccessible to new readers.  This is
-very bad, and results in readers still having a reference to this data
-element at the end of the grace period.  Tests on large machines that
-concurrently map and unmap user-space memory within the same multithreaded
-process result in crashes within about five minutes.  Applying this
-patch increases the kernel's longevity to the three-to-eight-hour range.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-There appear to be other similar problems in idr_get_empty_slot() and
-sub_remove(), but I fixed the easy one in idr_remove_all() first.  It is
-therefore no surprise that failures still occur.
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12444
+> Subject		: X hangs following switch from radeonfb console - Bisected
+> Submitter	: Graham Murray <graham@gmurray.org.uk>
+> Date		: 2009-01-13 14:03 (50 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7c1c2871a6a3a114853ec6836e9035ac1c0c7f7a
 
-(Yes, and I did look at the relevant patch last year without spotting
-this one.  Goes to show the value of testing as well as code review,
-I guess...)
-
-Nadia, Manfred, any thoughts?
-
-Located-by: Milton Miller II <miltonm@austin.ibm.com>
-Tested-by: Milton Miller II <miltonm@austin.ibm.com>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
-diff --git a/lib/idr.c b/lib/idr.c
-index c11c576..dab4bca 100644
---- a/lib/idr.c
-+++ b/lib/idr.c
-@@ -449,6 +449,7 @@ void idr_remove_all(struct idr *idp)
- 
- 	n = idp->layers * IDR_BITS;
- 	p = idp->top;
-+	rcu_assign_pointer(idp->top, NULL);
- 	max = 1 << n;
- 
- 	id = 0;
-@@ -467,7 +468,6 @@ void idr_remove_all(struct idr *idp)
- 			p = *--paa;
- 		}
- 	}
--	rcu_assign_pointer(idp->top, NULL);
- 	idp->layers = 0;
- }
- EXPORT_SYMBOL(idr_remove_all);
-
------ End forwarded message -----
+I am still seeing the same symptoms in 2.6.29-rc7-0003-g559595a.
