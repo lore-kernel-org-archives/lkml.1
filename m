@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbZCGBI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbZCGBLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757194AbZCGBI6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Mar 2009 20:08:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbZCGBIt
+	id S1757313AbZCGBLT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Mar 2009 20:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbZCGBLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Mar 2009 20:08:49 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51873 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754048AbZCGBIs (ORCPT
+	Fri, 6 Mar 2009 20:11:07 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:59352 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754709AbZCGBLG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Mar 2009 20:08:48 -0500
-Message-ID: <49B1C909.4080805@zytor.com>
-Date: Fri, 06 Mar 2009 17:08:25 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 6 Mar 2009 20:11:06 -0500
+X-IronPort-AV: E=Sophos;i="4.38,317,1233532800"; 
+   d="scan'208";a="262917107"
+From: Roland Dreier <rdreier@cisco.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add function spin_event_timeout()
+References: <1236384801-10305-1-git-send-email-timur@freescale.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 06 Mar 2009 17:11:00 -0800
+In-Reply-To: <1236384801-10305-1-git-send-email-timur@freescale.com> (Timur
+	Tabi's message of "Fri, 6 Mar 2009 18:13:21 -0600")
+Message-ID: <adaiqmmf87v.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew Wilcox <matthew@wil.cx>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] x86/pci: try to detect host_bridge pci_cfg_space
-References: <49B1C50E.5010209@kernel.org> <49B1C69F.70904@zytor.com> <49B1C7F7.1040403@kernel.org>
-In-Reply-To: <49B1C7F7.1040403@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 07 Mar 2009 01:11:01.0061 (UTC) FILETIME=[944B4F50:01C99EC1]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> 
-> currently only found amd and intel host bridge (on cpu or io hub) need this trick.
-> other device we could still use quirks.
-> 
+ > The function spin_event_timeout() takes a condition and timeout value
+ > (in jiffies) as parameters.  It spins until either the condition is true
+ > or the timeout expires.  It returns non-zero if the condition is true,
+ > zero otherwise.
 
-I'd suspect that we might just want to do this for all devices if we 
-ever find any, but yes, let's wait until we have a concrete specimen 
-before even trying something like that.
+What's the motivation for this?  Where do you plan to use it?
 
-However, it'd be good to have this in the patch description (which 
-really is a PCI patch more than an x86 patch, so I'd be happier if it 
-went through Jesse than me.)
+ > + * The function returns non-zero if the @condition evaluated to true, or
 
-	-hpa
+It's not a function but rather a macro.
 
+ > +#define spin_event_timeout(condition, timeout)		\
+ > +({							\
+ > +	long __timeout = jiffies + (timeout);		\
+ > +	while (!(condition) && (jiffies < __timeout));	\
+ > +	(condition);					\
+ > +})
+
+If we're going to make this core infrastructure, it seems we should
+implement it with all best practices... eg I would think the while loop
+should include cpu_relax().
