@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752195AbZCHNll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288AbZCHNqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752195AbZCHNll (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 09:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbZCHNld
+	id S1752288AbZCHNqh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 09:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbZCHNq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 09:41:33 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:52933 "EHLO
+	Sun, 8 Mar 2009 09:46:28 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:60839 "EHLO
 	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751923AbZCHNlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 09:41:32 -0400
-Date: Sun, 8 Mar 2009 14:41:28 +0100
+	id S1751923AbZCHNq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 09:46:28 -0400
+Date: Sun, 8 Mar 2009 14:46:24 +0100
 From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Balaji Rao <balajirrao@openmoko.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andy Green <andy@openmoko.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mmc: During unsafe resume, select the right volatge for
- the card
-Message-ID: <20090308144128.03fab50d@mjolnir.ossman.eu>
-In-Reply-To: <20090225095806.GB3217@fedora.yogi>
-References: <20090209132806.GD3278@fedora.yogi>
-	<20090218212515.6bae1bf6@mjolnir.ossman.eu>
-	<20090225095806.GB3217@fedora.yogi>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: Matt Fleming <matt@console-pimps.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mmc_core: fix data timeout for SEND_EXT_CSD
+Message-ID: <20090308144624.26e810d3@mjolnir.ossman.eu>
+In-Reply-To: <49AD1914.8030705@nokia.com>
+References: <4991A00B.8040002@nokia.com>
+	<20090211133004.GH478@console-pimps.org>
+	<4992D90E.10506@nokia.com>
+	<4992E597.2030404@nokia.com>
+	<20090218211627.7c16339a@mjolnir.ossman.eu>
+	<499D0B5C.4000005@nokia.com>
+	<20090219112243.GB25903@console-pimps.org>
+	<499D4CB6.3070807@nokia.com>
+	<20090302205548.223003d5@mjolnir.ossman.eu>
+	<49AD1914.8030705@nokia.com>
 X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,34 +34,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Feb 2009 15:28:09 +0530
-Balaji Rao <balajirrao@openmoko.org> wrote:
+On Tue, 03 Mar 2009 13:48:36 +0200
+Adrian Hunter <adrian.hunter@nokia.com> wrote:
 
-> On Wed, Feb 18, 2009 at 09:25:15PM +0100, Pierre Ossman wrote:
-> > On Mon, 9 Feb 2009 18:58:08 +0530
-> > Balaji Rao <balajirrao@openmoko.org> wrote:
-> > 
-> > > When mmc_power_up is called during unsafe resume, host->ocr should be
-> > > used instead of host->ocr_avail.
-> > > 
-> > > Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
-> > > Cc: Andy Green <andy@openmoko.com>
-> > > Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>
-> > > ---
-> > 
-> > Hmm... This is a bit hackish and changes the previously known behaviour
-> > of mmc_power_up(). We probably need to refactor things and have some
-> > other explicit call from the resume path.
-> > 
+> From 58e858f20149d279368441055d8ba3ae43a1fc6d Mon Sep 17 00:00:00 2001
+> From: Adrian Hunter <adrian.hunter@nokia.com>
+> Date: Tue, 10 Feb 2009 16:32:33 +0200
+> Subject: [PATCH] mmc_core: fix data timeout for SEND_EXT_CSD
 > 
-> Hi Pierre,
+> Commit 0d3e0460f307e84904968aad6cff97bd688583d8
+> "MMC: CSD and CID timeout values" inadvertently broke
+> the timeout for the MMC command SEND_EXT_CSD.
 > 
-> Here's a simpler patch. How does this look ? 
+> This patch puts it back again.
 > 
+> Depending on the characteristics of the controller,
+> this bug may prevent the use of MMC cards.
+> 
+> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+> ---
 
-Should work. Queued up.
+Queued, thanks.
 
-Thanks
+Rgds
 -- 
      -- Pierre Ossman
 
