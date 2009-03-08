@@ -1,95 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbZCHPxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbZCHPyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbZCHPxt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 11:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZCHPwx
+	id S1753153AbZCHPyK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 11:54:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbZCHPxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 11:52:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34161 "EHLO hera.kernel.org"
+	Sun, 8 Mar 2009 11:53:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34165 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753495AbZCHPww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 11:52:52 -0400
-Date: Sun, 8 Mar 2009 15:52:06 GMT
-From: Peter Zijlstra <peterz@infradead.org>
+	id S1753675AbZCHPxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 11:53:01 -0400
+Date: Sun, 8 Mar 2009 15:52:23 GMT
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, jaswinder@kernel.org, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
+       srostedt@redhat.com, tglx@linutronix.de, kosaki.motohiro@jp.fujitsu.com,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, jaswinder@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1236508459.22914.3645.camel@twins>
-References: <1236508459.22914.3645.camel@twins>
-Subject: [tip:perfcounters/core] x86: perf_counter cleanup
-Message-ID: <tip-184fe4ab1f2e4dfa45584889bb3820031648386b@git.kernel.org>
-Git-Commit-ID: 184fe4ab1f2e4dfa45584889bb3820031648386b
+       srostedt@redhat.com, tglx@linutronix.de, kosaki.motohiro@jp.fujitsu.com,
+       mingo@elte.hu
+In-Reply-To: <20090307235409.5A87.A69D9226@jp.fujitsu.com>
+References: <20090307235409.5A87.A69D9226@jp.fujitsu.com>
+Subject: [tip:tracing/doc] ftrace: fix documentation typo s/trace_max_latency/tracing_max_latency/
+Message-ID: <tip-42b40b3d55f5782b00b74d9105c3565fbfa5cb80@git.kernel.org>
+Git-Commit-ID: 42b40b3d55f5782b00b74d9105c3565fbfa5cb80
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 08 Mar 2009 15:52:08 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 08 Mar 2009 15:52:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  184fe4ab1f2e4dfa45584889bb3820031648386b
-Gitweb:     http://git.kernel.org/tip/184fe4ab1f2e4dfa45584889bb3820031648386b
-Author:     "Peter Zijlstra" <peterz@infradead.org>
-AuthorDate: Sun, 8 Mar 2009 11:34:19 +0100
+Commit-ID:  42b40b3d55f5782b00b74d9105c3565fbfa5cb80
+Gitweb:     http://git.kernel.org/tip/42b40b3d55f5782b00b74d9105c3565fbfa5cb80
+Author:     "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+AuthorDate: Sat, 7 Mar 2009 23:55:09 +0900
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 8 Mar 2009 16:24:49 +0100
+CommitDate: Sun, 8 Mar 2009 16:50:07 +0100
 
-x86: perf_counter cleanup
+ftrace: fix documentation typo s/trace_max_latency/tracing_max_latency/
 
-Use and actual unsigned long bitmap instead of casting our way around.
+There isn't a trace_max_latency file, there is tracing_max_latency.
+Fix it.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>
-LKML-Reference: <1236508459.22914.3645.camel@twins>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Acked-by: Steven Rostedt <srostedt@redhat.com>
+LKML-Reference: <20090307235409.5A87.A69D9226@jp.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/cpu/perf_counter.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ Documentation/ftrace.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index f585371..1df4210 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -37,7 +37,7 @@ struct cpu_hw_counters {
- 	unsigned long		used[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
- 	unsigned long		interrupts;
- 	u64			throttle_ctrl;
--	u64			active_mask;
-+	unsigned long		active_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
- 	int			enabled;
- };
+diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
+index 22614be..fd9a3e6 100644
+--- a/Documentation/ftrace.txt
++++ b/Documentation/ftrace.txt
+@@ -100,7 +100,7 @@ of ftrace. Here is a list of some of the key files:
+ 	that is displayed in one of the above output
+ 	files.
  
-@@ -291,7 +291,7 @@ static void pmc_amd_restore_all(u64 ctrl)
- 		return;
+-  trace_max_latency:
++  tracing_max_latency:
  
- 	for (idx = 0; idx < nr_counters_generic; idx++) {
--		if (test_bit(idx, (unsigned long *)&cpuc->active_mask)) {
-+		if (test_bit(idx, cpuc->active_mask)) {
- 			u64 val;
- 
- 			rdmsrl(MSR_K7_EVNTSEL0 + idx, val);
-@@ -377,7 +377,7 @@ static void pmc_amd_enable(int idx, u64 config)
- {
- 	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
- 
--	set_bit(idx, (unsigned long *)&cpuc->active_mask);
-+	set_bit(idx, cpuc->active_mask);
- 	if (cpuc->enabled)
- 		config |= ARCH_PERFMON_EVENTSEL0_ENABLE;
- 
-@@ -401,7 +401,7 @@ static void pmc_amd_disable(int idx, u64 config)
- {
- 	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
- 
--	clear_bit(idx, (unsigned long *)&cpuc->active_mask);
-+	clear_bit(idx, cpuc->active_mask);
- 	wrmsrl(MSR_K7_EVNTSEL0 + idx, config);
- 
- }
+ 	Some of the tracers record the max latency.
+ 	For example, the time interrupts are disabled.
