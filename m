@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZCHALz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbZCHAXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbZCHALz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 19:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZCHALn
+	id S1754197AbZCHAXA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 19:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZCHAWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 19:11:43 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:58655 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752379AbZCHALn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 19:11:43 -0500
-Date: Sat, 7 Mar 2009 16:11:38 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, akpm@linux-foundation.org, dipankar@in.ibm.com,
-       niv@us.ibm.com, dvhltc@us.ibm.com
-Subject: [PATCH] RCU documentation 1Q09 update
-Message-ID: <20090308001138.GA15335@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	Sat, 7 Mar 2009 19:22:48 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:54727 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752270AbZCHAWr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 19:22:47 -0500
+X-Sasl-enc: pgaqnXmfKPsKJqwRF3kmzOsLHJ6UBsum5PhuqAy7P777 1236471764
+Message-ID: <49B30FC4.5040305@imap.cc>
+Date: Sun, 08 Mar 2009 01:22:28 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Arjan van de Ven <arjan@infradead.org>
+CC: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Paul Bolle <pebolle@tiscali.nl>, Hansjoerg Lipp <hjlipp@web.de>
+Subject: Re: [PATCH 1/2] gigaset: return -ENOSYS for unimplemented functions
+References: <20090307-patch-00.tilman@imap.cc>	<20090307-patch-01.tilman@imap.cc> <20090307142609.2995bb3d@infradead.org>
+In-Reply-To: <20090307142609.2995bb3d@infradead.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig87C33221364751EA02A0FE96"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the RCU documentation to call out the need for callers of
-primitives like call_rcu() and synchronize_rcu() to prevent subsequent
-RCU readers from hazard.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig87C33221364751EA02A0FE96
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+Am 07.03.2009 23:26 schrieb Arjan van de Ven:
+> On Sat,  7 Mar 2009 23:10:57 +0100 (CET)
+> Tilman Schmidt <tilman@imap.cc> wrote:
+>=20
+>> From: Paul Bolle <pebolle@tiscali.nl>
+>>
+>> A number of functions in the usb_gigaset module will return -EINVAL if=
 
- checklist.txt |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+>> CONFIG_GIGASET_UNDOCREQ is not set. Make these return -ENOSYS as it's
+>> more specific and it might make it easier to see (from userspace) why
+>> these functions actually fail.
+>>
+>> Impact: some error return codes changed
+>=20
+> ENODEV is what would be more appropriate.
 
-diff --git a/Documentation/RCU/checklist.txt b/Documentation/RCU/checklist.txt
-index 6e25340..accfe2f 100644
---- a/Documentation/RCU/checklist.txt
-+++ b/Documentation/RCU/checklist.txt
-@@ -298,3 +298,15 @@ over a rather long period of time, but improvements are always welcome!
- 
- 	Note that, rcu_assign_pointer() and rcu_dereference() relate to
- 	SRCU just as they do to other forms of RCU.
-+
-+15.	The whole point of call_rcu(), synchronize_rcu(), and friends
-+	is to wait until all pre-existing readers have finished before
-+	carrying out some otherwise-destructive operation.  It is
-+	therefore critically important to -first- remove any path
-+	that readers can follow that could be affected by the
-+	destructive operation, and -only- -then- invoke call_rcu(),
-+	synchronize_rcu(), or friends.
-+
-+	Because these primitives only wait for pre-existing readers,
-+	it is the caller's responsibility to guarantee safety to
-+	any subsequent readers.
+Not at all. ENODEV means "no such device", which would be quite wrong.
+The device does exist and is in all probability working perfectly fine.
+It just doesn't implement that particular ioctl.
+
+> ENOSYS shuoldn't be returned from drivers, only from unimplemented
+> system calls!
+
+There's precedent for using ENOSYS for that case, for example in
+drivers/char/vt_ioctl.c. But I'm open for other suggestions.
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig87C33221364751EA02A0FE96
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFJsw/RQ3+did9BuFsRAo42AJ9hA8aQThdvXGByEgYGuCuZheYifwCfRFon
+dUO+CM+yWPAKt1mJd30K89w=
+=bnBE
+-----END PGP SIGNATURE-----
+
+--------------enig87C33221364751EA02A0FE96--
