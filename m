@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288AbZCHKQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbZCHKRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752288AbZCHKQc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 06:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZCHKQU
+	id S1752580AbZCHKRn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 06:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZCHKRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 06:16:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46074 "EHLO mx3.mail.elte.hu"
+	Sun, 8 Mar 2009 06:17:34 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33370 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750891AbZCHKQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 06:16:19 -0400
-Date: Sun, 8 Mar 2009 11:15:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       David Miller <davem@davemloft.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, linux-pci@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] pci: fix kexec with power state D3
-Message-ID: <20090308101530.GB14133@elte.hu>
-References: <49B1F934.5050006@kernel.org> <4807377b0903062318q15ba52a7n82d4c9399b8a7fa8@mail.gmail.com> <49B37D38.7060304@kernel.org> <200903081108.24541.rjw@sisk.pl>
+	id S1751205AbZCHKRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 06:17:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alex Chiang <achiang@hp.com>
+Subject: Re: [PATCH] PCIe: portdrv: call pci_disable_device during remove
+Date: Sun, 8 Mar 2009 11:17:19 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, matthew@wil.cx, stable@kernel.org,
+       "linux-pci" <linux-pci@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <20090308023547.GB3575@ldl.fc.hp.com>
+In-Reply-To: <20090308023547.GB3575@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200903081108.24541.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200903081117.19660.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> On Sunday 08 March 2009, Yinghai Lu wrote:
-> > 
-> > Impact: second kernel by kexec will have some pci devices working
-> > 
-> > Found one system with 82575EB, in the kernel that is kexeced, probe igb
-> > failed with -2.
-> > 
-> > it looks like the same behavior happened on forcedeth.
-> > try to check system_state to make sure if put it on D3
+On Sunday 08 March 2009, Alex Chiang wrote:
+> The PCIe port driver calls pci_enable_device() during probe but
+> never calls pci_disable_device() during remove.
 > 
-> This is not enough, because the PM code doesn't change 
-> system_state and it uses pci_set_power_state too.
+> Cc: stable@kernel.org
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> This is a bug in the original PCIe port driver code, and should
+> be backported to the .27 and .28 stable series.
 > 
-> > Jesse Brandeburg said that we should do that check in core 
-> > code instead of every device driver.
-> 
-> Well, I'm not really sure.  The drivers are where the bug is.
+> The implementation of the PCIe port driver is different in
+> linux-next, and I have a different patch for that.
 
-So Yinghai has now written a driver fix and a generic code fix 
-as well and both are being rejected pointing to the other side? 
+Fine with me.
 
-This really sucks for users (who'd be happy with any of the 
-patches) and the disagreement needs to be resolved ASAP.
+> ---
+> diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+> index 248b4db..5ea566e 100644
+> --- a/drivers/pci/pcie/portdrv_pci.c
+> +++ b/drivers/pci/pcie/portdrv_pci.c
+> @@ -103,6 +103,7 @@ static int __devinit pcie_portdrv_probe (struct pci_dev *dev,
+>  static void pcie_portdrv_remove (struct pci_dev *dev)
+>  {
+>  	pcie_port_device_remove(dev);
+> +	pci_disable_device(dev);
+>  	kfree(pci_get_drvdata(dev));
+>  }
 
-	Ingo
+Thanks,
+Rafael
