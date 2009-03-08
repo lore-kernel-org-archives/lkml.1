@@ -1,85 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZCHSqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZCHSzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754293AbZCHSqS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 14:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbZCHSqB
+	id S1754338AbZCHSzm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 14:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZCHSzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 14:46:01 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:57788 "EHLO mail.sf-mail.de"
+	Sun, 8 Mar 2009 14:55:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58471 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753648AbZCHSqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 14:46:00 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: 2.6.29-rc breaks STD using Intel 945
-Date: Sun, 8 Mar 2009 19:02:17 +0100
-User-Agent: KMail/1.9.10
-Cc: LKML <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>,
-       dri-devel@lists.sourceforge.net
-References: <200903042020.57671.eike-kernel@sf-tec.de> <20090305125529.GB16693@silver.sucs.org>
-In-Reply-To: <20090305125529.GB16693@silver.sucs.org>
+	id S1753173AbZCHSzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 14:55:31 -0400
+Date: Sun, 8 Mar 2009 19:55:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Balazs Scheidler <bazsi@balabit.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: scheduler oddity [bug?]
+Message-ID: <20090308185518.GB28169@elte.hu>
+References: <1236448069.16726.21.camel@bzorp.balabit> <1236505323.6281.57.camel@marge.simson.net> <1236506309.6972.8.camel@marge.simson.net> <20090308153956.GB19658@elte.hu> <1236529200.7110.16.camel@marge.simson.net> <20090308175255.GA22802@elte.hu> <1236537580.7094.8.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6217616.K59jsveYJe";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200903081902.23998.eike-kernel@sf-tec.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236537580.7094.8.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart6217616.K59jsveYJe
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Sitsofe Wheeler wrote:
-> On Wed, Mar 04, 2009 at 08:20:56PM +0100, Rolf Eike Beer wrote:
-> > I tested several snapshots post 2.6.28 and all of them show one severe
-> > problem: resume from disk is not always successful. Only about 50% of t=
-he
-> > resume attempts work, in the other cases I just get a completely black
-> > screen, can't switch to text console or anything. What I often get is a
-> > line like this in the logs directly before suspend:
->
-> Does this happen when X hasn't been started and you suspend to disk then
-> resume?
+* Mike Galbraith <efault@gmx.de> wrote:
 
-I tested several times without X, with X running only in backgroud (i.e. me=
-=20
-initiating the suspend from console) and from xdm only. Never it froze. Tha=
-t=20
-leads me to the conclusion that it is probably related to composite. I'm=20
-using KDE 4.2.
+> On Sun, 2009-03-08 at 18:52 +0100, Ingo Molnar wrote:
+> > * Mike Galbraith <efault@gmx.de> wrote:
+> > 
+> > > On Sun, 2009-03-08 at 16:39 +0100, Ingo Molnar wrote:
+> > > > * Mike Galbraith <efault@gmx.de> wrote:
+> > > > 
+> > > > > The problem with your particular testcase is that while one 
+> > > > > half has an avg_overlap (what we use as affinity hint for 
+> > > > > synchronous wakeups) which triggers the affinity hint, the 
+> > > > > other half has avg_overlap of zero, what it was born with, so 
+> > > > > despite significant execution overlap, the scheduler treats 
+> > > > > them as if they were truly synchronous tasks.
+> > > > 
+> > > > hm, why does it stay on zero?
+> > > 
+> > > Wakeup preemption.  Presuming here: heavy task wakes light 
+> > > task, is preempted, light task stuffs data into pipe, heavy 
+> > > task doesn't block, so no avg_overlap is ever computed.  The 
+> > > heavy task uses 100% CPU.
+> > > 
+> > > Running as SCHED_BATCH (virgin source), it becomes sane.
+> > 
+> > ah.
+> > 
+> > I'd argue then that time spent on the rq preempted _should_ 
+> > count in avg_overlap statistics. I.e. couldnt we do something 
+> > like ... your patch? :)
+> > 
+> > > >     if (sleep && p->se.last_wakeup) {
+> > > >             update_avg(&p->se.avg_overlap,
+> > > >                        p->se.sum_exec_runtime - p->se.last_wakeup);
+> > > >             p->se.last_wakeup = 0;
+> > > > -   }
+> > > > +   } else if (p->se.avg_overlap < limit && runtime >= limit)
+> > > > +           update_avg(&p->se.avg_overlap, runtime);
+> > 
+> > Just done unconditionally, i.e. something like:
+> > 
+> > 	if (sleep) {
+> > 		runtime = p->se.sum_exec_runtime - p->se.last_wakeup;
+> > 		p->se.last_wakeup = 0;
+> > 	} else {
+> > 		runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
+> > 	}
+> > 
+> > 	update_avg(&p->se.avg_overlap, runtime);
+> > 
+> > ?
+> 
+> That'll do it for this load.  I'll resume in the a.m., give 
+> that some testing, and try to remember all the things I was 
+> paranoid about.
 
-Here is the corresponding section from Xorg.conf:
+btw., there's room for a cleanup + micro-optimization here too: 
+it would be nice to change se.last_wakeup and 
+se.prev_sum_exec_runtime to be the same variable, 
+se.prev_timestamp or so.
 
-Section "Device"
-  BoardName    "945 GM"
-  BusID        "0:2:0"
-  Driver       "intel"
-  Identifier   "Device[0]"
-  Option       "NoDDC"
-  Option       "usevnc" "no"
-  VendorName   "Intel"
-  Option      "ExaNoComposite" "false"
-  Option      "MigrationHeuristic" "greedy"
-EndSection
+That way we can do a simple:
 
-Eike
+ 	update_avg(&p->se.avg_overlap,
+		    p->se.sum_exec_runtime - p->se.prev_timestamp);
+	p->se.prev_timestamp = 0;
 
---nextPart6217616.K59jsveYJe
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+the latter is needed as we rely on the zeroing here:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+	kernel/sched.c: if (sleep && p->se.last_wakeup) {
 
-iEYEABECAAYFAkm0CC8ACgkQXKSJPmm5/E4SnQCdEic28CbbSw6xLLjEPbGM/XVj
-oasAn3+Kv0VQGGWGHAXOqSwKAPSew2sc
-=9rED
------END PGP SIGNATURE-----
 
---nextPart6217616.K59jsveYJe--
+	Ingo
