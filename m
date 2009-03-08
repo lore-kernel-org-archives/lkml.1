@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbZCHK6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751971AbZCHLA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752530AbZCHK6R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 06:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZCHK55
+	id S1751971AbZCHLA4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 07:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbZCHLAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 06:57:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33504 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750891AbZCHK54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 06:57:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] igb: fix kexec with igb
-Date: Sun, 8 Mar 2009 11:57:36 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-References: <49B1F934.5050006@kernel.org> <4807377b0903062318q15ba52a7n82d4c9399b8a7fa8@mail.gmail.com> <86802c440903062331j22aa57c7r93c84da880a8e572@mail.gmail.com>
-In-Reply-To: <86802c440903062331j22aa57c7r93c84da880a8e572@mail.gmail.com>
+	Sun, 8 Mar 2009 07:00:47 -0400
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:56145 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbZCHLAq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 07:00:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=G8NfWx9sK5AosMeNXkzr8HaZdomXtWnOwiawZMT6QOgRmLDvEZPSjh3Hu98DQTgQy8
+         KC7XazVkLZJauHfdBye2z6UBc7Hild3R7Tsrub+iW2neUjga2v+cOvHinQYS1K4vKp0d
+         KLBQi5JdDLFxbBzT7JG/95m4nGVyiBezH26bA=
+Date: Sun, 8 Mar 2009 12:00:40 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       prasad@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [Patch 11/11] ftrace plugin for kernel symbol tracing using HW
+	Breakpoint interfaces - v2
+Message-ID: <20090308110038.GA5000@nowhere>
+References: <20090307045120.039324630@linux.vnet.ibm.com> <20090307050747.GL23959@in.ibm.com> <20090307222955.25A7.A69D9226@jp.fujitsu.com> <20090308100929.GA14133@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903081157.37139.rjw@sisk.pl>
+In-Reply-To: <20090308100929.GA14133@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 07 March 2009, Yinghai Lu wrote:
-> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
-> <jesse.brandeburg@gmail.com> wrote:
-> > On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> >>
-> >> Impact: could probe igb
-> >>
-> >> Found one system with 82575EB, in the kernel that is kexeced, probe igb
-> >> failed with -2.
-> >>
-> >> it looks like the same behavior happened on forcedeth.
-> >>
-> >> try to check system_state to make sure if put it on D3
-> >>
-> >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> >>
-> >> ---
-> >>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
-> >>  1 file changed, 14 insertions(+), 5 deletions(-)
-> >
-> > I see the point of the patch, but I know for a fact that ixgbe when
-> > enabled for MSI-X also doesn't work with kexec.
-> >
-> > so my questions are:
-> > are you going to change every driver?
+On Sun, Mar 08, 2009 at 11:09:29AM +0100, Ingo Molnar wrote:
 > 
-> i tend to only change driver that i have related HW.
+> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 > 
-> > why can't this be fixed in core kernel code instead?
-> will check it.
+> > Hi
+> > 
+> > > This patch adds an ftrace plugin to detect and profile memory access over
+> > > kernel variables. It uses HW Breakpoint interfaces to 'watch memory
+> > > addresses.
+> > > 
+> > > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com> 
+> > > ---
+> > >  kernel/trace/Kconfig          |    6 
+> > >  kernel/trace/Makefile         |    1 
+> > >  kernel/trace/trace.h          |   16 +
+> > >  kernel/trace/trace_ksym.c     |  448 ++++++++++++++++++++++++++++++++++++++++++
+> > >  kernel/trace/trace_selftest.c |   36 +++
+> > >  5 files changed, 507 insertions(+)
+> > 
+> > Could you please update Documentation/ftrace.txt?
+> > I guess many user interesting this patch. :)
 > 
-> > Shouldn't pci_enable_device take it out of D3?
-> > Or maybe it should be taken out of D3 immediately if someone tries to
-> > ioremap any of the BARx registers?
+> Yeah, it has become a really nice feature this way. As i told it 
+> to K.Prasad before: we need this tracer because the data tracer 
+> will likely become the most common usecase of this facility. We 
+> will get the hw breakpoints facility tested and used.
 > 
+> And in fact we can go one step further: it would also be nice to 
+> wire it up with the ftrace histogram code: so that we can get 
+> usage histograms of kernel symbol read/write activities without 
+> the overhead of tracing. (The branch tracer already has this.)
 > 
-> looks like second kernel can not detect the state any more.
+> Especially frequently used variables generate a _lot_ of events.
+> 
+> 	Ingo
 
-In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
-thing.  The question is why it doesn't work as expected.
+Right, it will even be an occasion to improve and further test
+the histogram tracing.
+K. Prasad if you need some help on how to use it, don't hesitate to tell.
 
-What kernel(s) have you tested?
+Frederic.
 
-Thanks,
-Rafael
