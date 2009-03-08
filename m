@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751939AbZCHILZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751476AbZCHI3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751939AbZCHILZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 04:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZCHILM
+	id S1751476AbZCHI3W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 04:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZCHI3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 04:11:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39091 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751079AbZCHILJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 04:11:09 -0400
-Message-ID: <49B37D38.7060304@kernel.org>
-Date: Sun, 08 Mar 2009 00:09:28 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 8 Mar 2009 04:29:12 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51218 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbZCHI3L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 04:29:11 -0400
+Date: Sun, 8 Mar 2009 09:29:02 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: kernel list <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net
+Subject: Re: introduce delayed-leds.h to reduce code duplication
+Message-ID: <20090308082902.GC1371@ucw.cz>
+References: <20090111224331.GA28010@elf.ucw.cz> <20090112100500.GA31656@khazad-dum.debian.net> <20090119150219.GA6463@ucw.cz> <20090120120400.GA15144@khazad-dum.debian.net>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>
-CC: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       David Miller <davem@davemloft.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: [PATCH] pci: fix kexec with power state D3
-References: <49B1F934.5050006@kernel.org> <4807377b0903062318q15ba52a7n82d4c9399b8a7fa8@mail.gmail.com>
-In-Reply-To: <4807377b0903062318q15ba52a7n82d4c9399b8a7fa8@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120120400.GA15144@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 2009-01-20 10:04:00, Henrique de Moraes Holschuh wrote:
+> On Mon, 19 Jan 2009, Pavel Machek wrote:
+> > On Mon 2009-01-12 08:05:01, Henrique de Moraes Holschuh wrote:
+> > > On Sun, 11 Jan 2009, Pavel Machek wrote:
+> > > > What about something like this? 
+> > > > 
+> > > > [Alternatively, I can add a flag to the leds class, and make delayed
+> > > > leds a built-in functionality...]
+> > > > 
+> > > > [Attached is driver that uses new infrastructure for hp_accel, but it
+> > > > does a bit more.]
+> > > 
+> > > FWIW, I am looking over the thinkpad-acpi side of this.  I like the idea,
+> > > but I am not completely sure I agree fully with the changes to
+> > > thinkpad-acpi.
+> > > 
+> > > Which isn't a problem, as long as the thinkpad-acpi hunks are NOT merged to
+> > > any tree before my ACK, please.  I will test and comment on the patch before
+> > > the weekend.
+> > 
+> > Any news?
+> 
+> Sure.  Sorry for not replying earlier.
+> 
+> I don't like the loss of functionality of the private workqueue.  I kicked
+> the thinkpad led handling to a private workqueue in order to never tie up
+> the system-wide one with crap spinning around in the ACPI layer, etc.  In
+> fact, all thinkpad-acpi deferred work is in the private workqueue for this
+> reason.
 
-Impact: second kernel by kexec will have some pci devices working
-
-Found one system with 82575EB, in the kernel that is kexeced, probe igb
-failed with -2.
-
-it looks like the same behavior happened on forcedeth.
-try to check system_state to make sure if put it on D3
-
-Jesse Brandeburg said that we should do that check in core code instead of
-every device driver.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- drivers/pci/pci.c |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -593,6 +593,14 @@ int pci_set_power_state(struct pci_dev *
- 	if (state == PCI_D3hot && (dev->dev_flags & PCI_DEV_FLAGS_NO_D3))
- 		return 0;
- 
-+	/*
-+	 * Apparently it is not possible to reinitialise from D3 hot,
-+	 * only put the device into D3 if we really go for poweroff.
-+	 */
-+	if (system_state != SYSTEM_POWER_OFF &&
-+	    (state == PCI_D3hot || state == PCI_D3cold))
-+		return 0;
-+
- 	error = pci_raw_set_power_state(dev, state, true);
- 
- 	if (state > PCI_D0 && platform_pci_power_manageable(dev)) {
-@@ -1124,6 +1132,15 @@ int pci_enable_wake(struct pci_dev *dev,
- 	int error = 0;
- 	bool pme_done = false;
- 
-+	/*
-+	 * Apparently it is not possible to reinitialise from D3 hot,
-+	 * only put the device into D3 if we really go for poweroff.
-+	 * we only need to enable wake when we are going to power off
-+	 */
-+	if (enable && system_state != SYSTEM_POWER_OFF &&
-+	    (state == PCI_D3hot || state == PCI_D3cold))
-+		return 0;
-+
- 	if (enable && !device_may_wakeup(&dev->dev))
- 		return -EINVAL;
- 
+Is the private workqueue really required? AFAICT workqueues are not
+exactly cheap, and leds are not toggled that often. Was it problem in
+practice?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
