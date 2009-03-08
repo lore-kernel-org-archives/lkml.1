@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZCHRP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753360AbZCHRVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbZCHRP1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 13:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbZCHRPQ
+	id S1753360AbZCHRVV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 13:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbZCHRVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 13:15:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:47830 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752935AbZCHRPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 13:15:15 -0400
-Message-ID: <49B3FD1F.9010000@goop.org>
-Date: Sun, 08 Mar 2009 10:15:11 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sun, 8 Mar 2009 13:21:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40888 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753011AbZCHRVM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 13:21:12 -0400
+Date: Sun, 8 Mar 2009 10:20:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Stern <stern@rowland.harvard.edu>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       =?ISO-8859-15?Q?Arve__Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [linux-pm] [RFC][PATCH][1/8] PM: Rework handling of interrupts
+ during suspend-resume (rev. 5)
+In-Reply-To: <Pine.LNX.4.44L0.0903072248030.8870-100000@netrider.rowland.org>
+Message-ID: <alpine.LFD.2.00.0903081014430.19207@localhost.localdomain>
+References: <Pine.LNX.4.44L0.0903072248030.8870-100000@netrider.rowland.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 01/13] [VOYAGER] x86: add {safe,hard}_smp_processor_id
- to smp_ops
-References: <1236530906-7175-1-git-send-email-James.Bottomley@HansenPartnership.com> <1236530906-7175-2-git-send-email-James.Bottomley@HansenPartnership.com>
-In-Reply-To: <1236530906-7175-2-git-send-email-James.Bottomley@HansenPartnership.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> Not having apics, Voyager can't use the default apic implementation of
-> these, it has to read from a special port in the VIC to get the
-> processor ID, so abstract these functions in smp_ops to allow voyager
-> to live simultaneously with the apic code.
->   
 
-These aren't performance-sensitive at all, are they?  smp_ops is not 
-subject to patching/inlining optimisations happen to more hotpath pvops.
 
-Is safe_smp_processor_id needed at all?  It's only got two callers, and 
-x86-64 just implements it as smp_processor_id().
+On Sat, 7 Mar 2009, Alan Stern wrote:
+> 
+> You didn't answer my question.  Why bother to distinguish between 
+> "wake-up" interrupts and non-"wake-up" interrupts?
+> 
+> In other words, why not simply abort the suspend if IRQ_PENDING is set
+> for _any_ interrupt during sysdev_suspend()?
 
-> diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
-> index 035582a..0dfb8c0 100644
-> --- a/arch/x86/xen/smp.c
-> +++ b/arch/x86/xen/smp.c
-> @@ -450,6 +450,11 @@ static irqreturn_t xen_call_function_single_interrupt(int irq, void *dev_id)
->  	return IRQ_HANDLED;
->  }
->  
-> +static int xen_hard_smp_processor_id(void)
-> +{
-> +	return read_apic_id();
-> +}
-> +
->  static const struct smp_ops xen_smp_ops __initdata = {
->  	.smp_prepare_boot_cpu = xen_smp_prepare_boot_cpu,
->  	.smp_prepare_cpus = xen_smp_prepare_cpus,
-> @@ -465,6 +470,8 @@ static const struct smp_ops xen_smp_ops __initdata = {
->  
->  	.send_call_func_ipi = xen_smp_send_call_function_ipi,
->  	.send_call_func_single_ipi = xen_smp_send_call_function_single_ipi,
-> +	.hard_smp_processor_id = xen_hard_smp_processor_id,
-> +	.safe_smp_processor_id = apic_safe_smp_processor_id,
->   
+.. because some drivers might not actually shut down the hardware until 
+they get to "suspend_late"? If even then, for that matter - a driver may 
+simply not care, knowing that the hardware will be powered off, and will 
+be re-initialized at resume.
 
-Hm, there's no meaningful apic-based implementation for these under 
-Xen.  DomU has no access to apics, and Dom0's vcpus don't have any fixed 
-relationship to physical cpu apics.  They should both just return 
-smp_processor_id(), I guess.
+The thinking that you have to shut your hardware down at "->suspend()" 
+time is a _disease_. There are literally classes of hardware out there 
+where that would be an outright _bug_, like for a PCI bridge device. For 
+many devices, "suspend()" has to be the phase where you shut down the 
+_external_ stuff (eg for a disk controller, it's when you'd flush and stop 
+your disks), but the controller itself may well be alive until later.
 
-    J
+			Linus
