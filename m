@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbZCHDxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbZCHD7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbZCHDxn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 22:53:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZCHDxe
+	id S1755295AbZCHD7P (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 22:59:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZCHD66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 22:53:34 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:45422 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752526AbZCHDxd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 22:53:33 -0500
-Date: Sat, 7 Mar 2009 22:53:31 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
+	Sat, 7 Mar 2009 22:58:58 -0500
+Received: from cmpxchg.org ([85.214.51.133]:49185 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752526AbZCHD65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 22:58:57 -0500
+Date: Sun, 8 Mar 2009 04:58:40 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [linux-pm] [RFC][PATCH][1/8] PM: Rework handling of interrupts
- during suspend-resume (rev. 5)
-In-Reply-To: <200903071856.36230.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0903072248030.8870-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       rui.zhang@intel.com
+Subject: Re: [Bug #12501] build bug in eeepc-laptop.c
+Message-ID: <20090308035840.GA5802@cmpxchg.org>
+References: <KiHv0irKPzE.A.l3.hUarJB@chimera> <SLCXkuHtxAO.A.nSG.-WarJB@chimera> <84144f020903040102o1ddc6ee7l31bf4cf928092773@mail.gmail.com> <200903072231.30667.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903072231.30667.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 7 Mar 2009, Rafael J. Wysocki wrote:
-
-> > One thing about this isn't clear: the distinction between "wake-up" 
-> > interrupts and other interrupts.
+On Sat, Mar 07, 2009 at 10:31:30PM +0100, Rafael J. Wysocki wrote:
+> On Wednesday 04 March 2009, Pekka Enberg wrote:
+> > On Tue, Mar 3, 2009 at 9:25 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > >
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.28.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > >
+> > >
+> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12501
+> > > Subject         : build bug in eeepc-laptop.c
+> > > Submitter       : Ingo Molnar <mingo@elte.hu>
+> > > Date            : 2009-01-14 17:25 (49 days old)
+> > > References      : http://lkml.org/lkml/2009/1/14/315
 > > 
-> > In an ideal world, the only pending interrupts during sysdev_suspend
-> > would be wake-up interrupts, because drivers would have prevented their
-> > devices from generating any other kind of IRQ and would have done all
-> > the necessary synchronization as part of their suspend (_not_
-> > suspend_late) methods.  Thus there would be no need to distinguish
-> > between wake-up and non-wake-up interrupts.
+> > There's seems to be a patch for the bug here:
 > > 
-> > So perhaps you're worried about drivers that aren't sufficiently
-> > clever.  Or is something deeper going on?
+> > http://bugzilla.kernel.org/attachment.cgi?id=20341&action=view
 > 
-> Some drivers leave interrupts enabled during suspend on purpose and mark
-> them as "wake-up interrupts" so that the platform can abort suspend if any
-> of them is pending at the time the "enter suspend" hook is called (this doesn't
-> happen on x86 AFAICS).
-> 
-> However, after the $subject patch the CPU will ACK those interrupts if they
-> happen between suspend_device_irqs() and local_irq_disable(), so the platform
-> won't see them as pending.  Instead, they will have IRQ_PENDING set in
-> desc->status, so we check if this is the case.
+> Thanks, updated.
 
-You didn't answer my question.  Why bother to distinguish between 
-"wake-up" interrupts and non-"wake-up" interrupts?
-
-In other words, why not simply abort the suspend if IRQ_PENDING is set
-for _any_ interrupt during sysdev_suspend()?
-
-Alan Stern
-
+This fix is upstream: 3a5093ee6728c8cbe9c039e685fc1fca8f965048
