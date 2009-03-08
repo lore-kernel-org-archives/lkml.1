@@ -1,31 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288AbZCHNqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbZCHOAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752288AbZCHNqh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 09:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbZCHNq2
+	id S1752177AbZCHOAJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 10:00:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZCHN7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 09:46:28 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:60839 "EHLO
+	Sun, 8 Mar 2009 09:59:55 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:50841 "EHLO
 	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751923AbZCHNq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 09:46:28 -0400
-Date: Sun, 8 Mar 2009 14:46:24 +0100
+	id S1751857AbZCHN7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 09:59:55 -0400
+Date: Sun, 8 Mar 2009 14:59:51 +0100
 From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: Matt Fleming <matt@console-pimps.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mmc_core: fix data timeout for SEND_EXT_CSD
-Message-ID: <20090308144624.26e810d3@mjolnir.ossman.eu>
-In-Reply-To: <49AD1914.8030705@nokia.com>
-References: <4991A00B.8040002@nokia.com>
-	<20090211133004.GH478@console-pimps.org>
-	<4992D90E.10506@nokia.com>
-	<4992E597.2030404@nokia.com>
-	<20090218211627.7c16339a@mjolnir.ossman.eu>
-	<499D0B5C.4000005@nokia.com>
-	<20090219112243.GB25903@console-pimps.org>
-	<499D4CB6.3070807@nokia.com>
-	<20090302205548.223003d5@mjolnir.ossman.eu>
-	<49AD1914.8030705@nokia.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Mark Brown <broonie@sirena.org.uk>, Liam Girdwood <lrg@slimlogic.co.uk>,
+       lkml <linux-kernel@vger.kernel.org>, OMAP <linux-omap@vger.kernel.org>
+Subject: Re: [patch 2.6.29-rc6+misc] MMC: regulator utilities
+Message-ID: <20090308145951.0fdd607a@mjolnir.ossman.eu>
+In-Reply-To: <200903031918.07443.david-b@pacbell.net>
+References: <200902081037.06645.david-b@pacbell.net>
+	<20090302224040.5e7ab0b2@mjolnir.ossman.eu>
+	<200903021400.50201.david-b@pacbell.net>
+	<200903031918.07443.david-b@pacbell.net>
 X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,27 +29,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Mar 2009 13:48:36 +0200
-Adrian Hunter <adrian.hunter@nokia.com> wrote:
+On Tue, 3 Mar 2009 19:18:06 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-> From 58e858f20149d279368441055d8ba3ae43a1fc6d Mon Sep 17 00:00:00 2001
-> From: Adrian Hunter <adrian.hunter@nokia.com>
-> Date: Tue, 10 Feb 2009 16:32:33 +0200
-> Subject: [PATCH] mmc_core: fix data timeout for SEND_EXT_CSD
+> From: David Brownell <dbrownell@users.sourceforge.net>
 > 
-> Commit 0d3e0460f307e84904968aad6cff97bd688583d8
-> "MMC: CSD and CID timeout values" inadvertently broke
-> the timeout for the MMC command SEND_EXT_CSD.
+> Glue between MMC and regulator stacks ... compiles, and
+> mmc_regulator_get_ocrmask() passed sanity testing.
 > 
-> This patch puts it back again.
+> These calls are intended to be used by MMC host adapters
+> using at least one regulator per host.  Examples include
+> slots with regulators supporting multiple voltages and
+> ones using multiple voltage rails (e.g. DAT4..DAT7 using a
+> separate supply, or a split rail chip like certain SDIO
+> WLAN or eMMC solutions).
 > 
-> Depending on the characteristics of the controller,
-> this bug may prevent the use of MMC cards.
-> 
-> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 > ---
+> Changes from previous version:  automagically available if the
+> regulator calls are available; callers now pass in host->ios.vdd.
+> mmc_regulator_set_ocr() still untested.
+> 
 
-Queued, thanks.
+Looks good. Now what should I do with it? Merge it in the next window
+good enough?
 
 Rgds
 -- 
