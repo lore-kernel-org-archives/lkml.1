@@ -1,118 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZCHXBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbZCHXCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbZCHXBP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 19:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbZCHXA6
+	id S1755405AbZCHXCm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 19:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbZCHXCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 19:00:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:11814 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754782AbZCHXA5 (ORCPT
+	Sun, 8 Mar 2009 19:02:33 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:56263 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754854AbZCHXCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 19:00:57 -0400
+	Sun, 8 Mar 2009 19:02:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=qL/aFC39CFkpaRVKs9rALAAY4qI0k8c9EBFPRwV2SKdtIwEQLrkIHFYfU1ot0NiLNK
-         0EsWJ00GWSthp6EuU1NbpC3QOhubUSUz+r+qjE3xllDjZaapEa6wEgii0rvHYbgwAlJK
-         rVQjn8iDwcYM4Wx/sWzjwHcNq3HagyUTvNmFs=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=M/uUUH7ABfv0DBtm9txaBsPUoV81HvME54mc3IarIRji6ghinecRJRZOKxxFN95LwS
+         ElbLvH0wyncZ6DTG8nRTvYu9Hd4Fd3jaHUkYDZPQEat2uRwYkeGPi4HTaGB7gkcF6KD/
+         f0GV+oij7GyduJyU1Tww1tarB+dgdbhGcXL6o=
 MIME-Version: 1.0
-In-Reply-To: <20090308222804.GA25376@elte.hu>
-References: <49B1C81B.5010904@zytor.com> <20090308110437.GA27811@elte.hu>
-	 <20090308145803.GL25995@parisc-linux.org> <49B4330C.1060700@zytor.com>
-	 <49B4343B.9050807@kernel.org> <49B43585.2050606@zytor.com>
-	 <49B436E4.1050103@kernel.org>
-	 <20090308220100.GO25995@parisc-linux.org> <49B44182.1030707@zytor.com>
-	 <20090308222804.GA25376@elte.hu>
-Date: Sun, 8 Mar 2009 16:00:55 -0700
-X-Google-Sender-Auth: cbc8ae01369351d4
-Message-ID: <86802c440903081600l517c22ccj6328633c01131cb1@mail.gmail.com>
-Subject: Re: [PATCH] x86/pci: try to detect host_bridge pci_cfg_space
-From: Yinghai Lu <yinghai@kernel.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Matthew Wilcox <matthew@wil.cx>,
-       Greg KH <gregkh@suse.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
+In-Reply-To: <43e72e890903022314o44ae710u834d6207403fd4a2@mail.gmail.com>
+References: <43e72e890903022314o44ae710u834d6207403fd4a2@mail.gmail.com>
+Date: Mon, 9 Mar 2009 00:02:30 +0100
+Message-ID: <c384c5ea0903081602j5d8a91b7pad5eec80fffd3274@mail.gmail.com>
+Subject: Re: Staging, place holder for better company/community development 
+	model
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: Greg KH <greg@kroah.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       stable@kernel.org
-Content-Type: multipart/mixed; boundary=000e0cd1452e87cf640464a37deb
+       Jouni Malinen <j@w1.fi>, Sujith <m.sujith@gmail.com>,
+       Sujith <Sujith.Manoharan@atheros.com>,
+       Senthilkumar Balasubramanian 
+	<Senthilkumar.Balasubramanian@atheros.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Vasanthakumar Thiagarajan <vasanth@atheros.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---000e0cd1452e87cf640464a37deb
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hello,
 
-please check...
+On Tue, Mar 3, 2009 at 8:14 AM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+>
+> With future devices we may want to create a better path for
+> integration into upstream drivers. But I also want users to get
+> support for the devices as soon as those devices hit shelves in the
+> market, maybe even before.
+>
+The situation prior to the staging/ tree, was that niche drivers often
+lived outside of the kernel tree, without much exposure and without
+API consistency.
 
---000e0cd1452e87cf640464a37deb
-Content-Type: text/x-diff; charset=US-ASCII; name="host_bridge_4k_cfg.patch"
-Content-Disposition: attachment; filename="host_bridge_4k_cfg.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fs2bumxg0
+With staging/ available, there should be no reason for either a
+company or individual(s) to develop a Linux driver outside the kernel
+tree.
 
-W1BBVENIXSBwY2kveDg2OiB0cnkgdG8gZGV0ZWN0IGhvc3RfYnJpZGdlIHBjaV9jZmdfc3BhY2Ug
-LXYyCgpJbXBhY3Q6IGdldCBjb3JyZWN0IHBjaV9jZmdfc2l6ZSBmb3IgaG9zdF9icmlkZ2UKCm1v
-cmUgaG9zdCBicmlkZ2VzIHN1cHBvcnQgNGsgY2ZnLCBzbyBjaGVjayB0aGVtIGRpcmVjdHkgaW5z
-dGVhZCBvZiBxdWlya3MuCgpvbmx5IG5lZWQgdG8gZG8gdGhpcyBleHRyYSBjaGVjayBmb3IgaG9z
-dF9icmlkZ2UgYXQgdGhpcyBwb2ludCwgYmVjYXVzZSBvbmx5Cmhvc3QgYnJpZGdlcyBhcmUga25v
-d24gdG8gaGF2ZSBleHRlbmRlZCBhZGRyZXNzIHNwYWNlIHdpdGhvdXQgYWxzbyBoYXZpbmcgYQpQ
-Q0ktWC9QQ0ktRSBjYXBzLgpvdGhlciBkZXZpY2VzIHdlIGNvdWxkIHN0aWxsIGRvIHF1aXJrcyBm
-b3IgdGhlbSBpZiB0aGVyZSBpcyBhbnkuCgphbHNvIHJlbW92ZSB0aGUgcXVpcmtzIGZvciBBTUQg
-aG9zdCBicmlkZ2VzIHdpdGggZmFtaWx5IDEwaCBhbmQgMTFoIHRoYXQgaXMgbm90Cm5lZWRlZCBh
-bnkgbW9yZQoKd2l0aCB0aGlzIHBhdGNoLCB3ZSBjYW4gZ2V0IGNvcnJlY3QgcGNpIGNmZyBzaXpl
-IG9mIG5ldyBJbnRlbCBDUFVzL0lPSHMgd2l0aApob3N0IGJyaWRnZXMKCnYyOiB1cGRhdGVkIGNv
-bW1pdCBsb2cuCgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aW5naGFpQGtlcm5lbC5vcmc+
-CkFja2VkLWJ5OiBILiBQZXRlciBBbnZpbiA8aHBhQHp5dG9yLmNvbT4KUmV2aWV3ZWQtYnk6IE1h
-dHRoZXcgV2lsY294IDx3aWxseUBsaW51eC5pbnRlbC5jb20+CkNjOiA8c3RhYmxlQGtlcm5lbC5v
-cmc+CgotLS0KIGFyY2gveDg2L3BjaS9maXh1cC5jIHwgICAyMCAtLS0tLS0tLS0tLS0tLS0tLS0t
-LQogZHJpdmVycy9wY2kvcHJvYmUuYyAgfCAgICA5ICsrKysrKysrLQogMiBmaWxlcyBjaGFuZ2Vk
-LCA4IGluc2VydGlvbnMoKyksIDIxIGRlbGV0aW9ucygtKQoKSW5kZXg6IGxpbnV4LTIuNi9hcmNo
-L3g4Ni9wY2kvZml4dXAuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9hcmNoL3g4Ni9w
-Y2kvZml4dXAuYworKysgbGludXgtMi42L2FyY2gveDg2L3BjaS9maXh1cC5jCkBAIC00OTUsMjYg
-KzQ5NSw2IEBAIERFQ0xBUkVfUENJX0ZJWFVQX0hFQURFUihQQ0lfVkVORE9SX0lEX1MKIAkJCSAg
-cGNpX3NpZW1lbnNfaW50ZXJydXB0X2NvbnRyb2xsZXIpOwogCiAvKgotICogUmVndWxhciBQQ0kg
-ZGV2aWNlcyBoYXZlIDI1NiBieXRlcywgYnV0IEFNRCBGYW1pbHkgMTBoLzExaCBDUFVzIGhhdmUK
-LSAqIDQwOTYgYnl0ZXMgY29uZmlndXJhdGlvbiBzcGFjZSBmb3IgZWFjaCBmdW5jdGlvbiBvZiB0
-aGVpciBwcm9jZXNzb3IKLSAqIGNvbmZpZ3VyYXRpb24gc3BhY2UuCi0gKi8KLXN0YXRpYyB2b2lk
-IGFtZF9jcHVfcGNpX2NmZ19zcGFjZV9zaXplKHN0cnVjdCBwY2lfZGV2ICpkZXYpCi17Ci0JZGV2
-LT5jZmdfc2l6ZSA9IHBjaV9jZmdfc3BhY2Vfc2l6ZV9leHQoZGV2KTsKLX0KLURFQ0xBUkVfUENJ
-X0ZJWFVQX0hFQURFUihQQ0lfVkVORE9SX0lEX0FNRCwgMHgxMjAwLCBhbWRfY3B1X3BjaV9jZmdf
-c3BhY2Vfc2l6ZSk7Ci1ERUNMQVJFX1BDSV9GSVhVUF9IRUFERVIoUENJX1ZFTkRPUl9JRF9BTUQs
-IDB4MTIwMSwgYW1kX2NwdV9wY2lfY2ZnX3NwYWNlX3NpemUpOwotREVDTEFSRV9QQ0lfRklYVVBf
-SEVBREVSKFBDSV9WRU5ET1JfSURfQU1ELCAweDEyMDIsIGFtZF9jcHVfcGNpX2NmZ19zcGFjZV9z
-aXplKTsKLURFQ0xBUkVfUENJX0ZJWFVQX0hFQURFUihQQ0lfVkVORE9SX0lEX0FNRCwgMHgxMjAz
-LCBhbWRfY3B1X3BjaV9jZmdfc3BhY2Vfc2l6ZSk7Ci1ERUNMQVJFX1BDSV9GSVhVUF9IRUFERVIo
-UENJX1ZFTkRPUl9JRF9BTUQsIDB4MTIwNCwgYW1kX2NwdV9wY2lfY2ZnX3NwYWNlX3NpemUpOwot
-REVDTEFSRV9QQ0lfRklYVVBfSEVBREVSKFBDSV9WRU5ET1JfSURfQU1ELCAweDEzMDAsIGFtZF9j
-cHVfcGNpX2NmZ19zcGFjZV9zaXplKTsKLURFQ0xBUkVfUENJX0ZJWFVQX0hFQURFUihQQ0lfVkVO
-RE9SX0lEX0FNRCwgMHgxMzAxLCBhbWRfY3B1X3BjaV9jZmdfc3BhY2Vfc2l6ZSk7Ci1ERUNMQVJF
-X1BDSV9GSVhVUF9IRUFERVIoUENJX1ZFTkRPUl9JRF9BTUQsIDB4MTMwMiwgYW1kX2NwdV9wY2lf
-Y2ZnX3NwYWNlX3NpemUpOwotREVDTEFSRV9QQ0lfRklYVVBfSEVBREVSKFBDSV9WRU5ET1JfSURf
-QU1ELCAweDEzMDMsIGFtZF9jcHVfcGNpX2NmZ19zcGFjZV9zaXplKTsKLURFQ0xBUkVfUENJX0ZJ
-WFVQX0hFQURFUihQQ0lfVkVORE9SX0lEX0FNRCwgMHgxMzA0LCBhbWRfY3B1X3BjaV9jZmdfc3Bh
-Y2Vfc2l6ZSk7Ci0KLS8qCiAgKiBTQjYwMDogRGlzYWJsZSBCQVIxIG9uIGRldmljZSAxNC4wIHRv
-IGF2b2lkIEhQRVQgcmVzb3VyY2VzIGZyb20KICAqIGNvbmZ1c2luZyB0aGUgUENJIGVuZ2luZToK
-ICAqLwpJbmRleDogbGludXgtMi42L2RyaXZlcnMvcGNpL3Byb2JlLmMKPT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0g
-bGludXgtMi42Lm9yaWcvZHJpdmVycy9wY2kvcHJvYmUuYworKysgbGludXgtMi42L2RyaXZlcnMv
-cGNpL3Byb2JlLmMKQEAgLTg0Nyw2ICs4NDcsMTEgQEAgaW50IHBjaV9jZmdfc3BhY2Vfc2l6ZShz
-dHJ1Y3QgcGNpX2RldiAqZAogewogCWludCBwb3M7CiAJdTMyIHN0YXR1czsKKwl1MTYgY2xhc3M7
-CisKKwljbGFzcyA9IGRldi0+Y2xhc3MgPj4gODsKKwlpZiAoY2xhc3MgPT0gUENJX0NMQVNTX0JS
-SURHRV9IT1NUKQorCQlyZXR1cm4gcGNpX2NmZ19zcGFjZV9zaXplX2V4dChkZXYpOwogCiAJcG9z
-ID0gcGNpX2ZpbmRfY2FwYWJpbGl0eShkZXYsIFBDSV9DQVBfSURfRVhQKTsKIAlpZiAoIXBvcykg
-ewpAQCAtOTM2LDcgKzk0MSw2IEBAIHN0YXRpYyBzdHJ1Y3QgcGNpX2RldiAqcGNpX3NjYW5fZGV2
-aWNlKHMKIAlkZXYtPm11bHRpZnVuY3Rpb24gPSAhIShoZHJfdHlwZSAmIDB4ODApOwogCWRldi0+
-dmVuZG9yID0gbCAmIDB4ZmZmZjsKIAlkZXYtPmRldmljZSA9IChsID4+IDE2KSAmIDB4ZmZmZjsK
-LQlkZXYtPmNmZ19zaXplID0gcGNpX2NmZ19zcGFjZV9zaXplKGRldik7CiAJZGV2LT5lcnJvcl9z
-dGF0ZSA9IHBjaV9jaGFubmVsX2lvX25vcm1hbDsKIAlzZXRfcGNpZV9wb3J0X3R5cGUoZGV2KTsK
-IApAQCAtOTUyLDYgKzk1Niw5IEBAIHN0YXRpYyBzdHJ1Y3QgcGNpX2RldiAqcGNpX3NjYW5fZGV2
-aWNlKHMKIAkJcmV0dXJuIE5VTEw7CiAJfQogCisJLyogbmVlZCB0byBoYXZlIGRldi0+Y2xhc3Mg
-cmVhZHkgKi8KKwlkZXYtPmNmZ19zaXplID0gcGNpX2NmZ19zcGFjZV9zaXplKGRldik7CisKIAly
-ZXR1cm4gZGV2OwogfQogCg==
---000e0cd1452e87cf640464a37deb--
+A driver can live there until enough momentum (devices in the field,
+in Linux developer hands) exists to have the driver reworked for main
+tree clearance.
+
+At least, with this in the back of my head I submitted my driver to
+staging which would otherwise live in a secret place. I have contacted
+the hardware vendor and they are (not yet) interested in Linux
+support. I am counting the days before they will.
+
+Regards,
+-- 
+Leon
