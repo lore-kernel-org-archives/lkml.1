@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbZCHKdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752695AbZCHKdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751973AbZCHKdW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 06:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZCHKdN
+	id S1752695AbZCHKdr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 06:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZCHKde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 06:33:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38888 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751225AbZCHKdM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 06:33:12 -0400
-Subject: Re: [git-pull -tip] x86:perf_counter cleanup
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1236507232.28127.2.camel@localhost.localdomain>
-References: <1236507232.28127.2.camel@localhost.localdomain>
-Content-Type: text/plain
+	Sun, 8 Mar 2009 06:33:34 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33424 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751433AbZCHKdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 06:33:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] pci: fix kexec with power state D3
+Date: Sun, 8 Mar 2009 11:33:31 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       David Miller <davem@davemloft.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, linux-pci@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <49B1F934.5050006@kernel.org> <20090308101530.GB14133@elte.hu> <200903081128.35970.rjw@sisk.pl>
+In-Reply-To: <200903081128.35970.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Sun, 08 Mar 2009 11:32:39 +0100
-Message-Id: <1236508359.22914.3643.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Disposition: inline
+Message-Id: <200903081133.33020.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-08 at 15:43 +0530, Jaswinder Singh Rajput wrote:
->  
->  static struct pmc_x86_ops *pmc_amd_init(void)
->  {
-> -       u64 old;
-> -       int bits;
-> -
->         nr_counters_generic = 4;
->         nr_counters_fixed = 0;
->         counter_value_mask = 0x0000FFFFFFFFFFFFULL;
+On Sunday 08 March 2009, Rafael J. Wysocki wrote:
+> On Sunday 08 March 2009, Ingo Molnar wrote:
+> > 
+> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > 
+> > > On Sunday 08 March 2009, Yinghai Lu wrote:
+> > > > 
+> > > > Impact: second kernel by kexec will have some pci devices working
+> > > > 
+> > > > Found one system with 82575EB, in the kernel that is kexeced, probe igb
+> > > > failed with -2.
+> > > > 
+> > > > it looks like the same behavior happened on forcedeth.
+> > > > try to check system_state to make sure if put it on D3
+> > > 
+> > > This is not enough, because the PM code doesn't change 
+> > > system_state and it uses pci_set_power_state too.
+> > > 
+> > > > Jesse Brandeburg said that we should do that check in core 
+> > > > code instead of every device driver.
+> > > 
+> > > Well, I'm not really sure.  The drivers are where the bug is.
+> > 
+> > So Yinghai has now written a driver fix and a generic code fix 
+> > as well and both are being rejected pointing to the other side? 
+> > 
+> > This really sucks for users (who'd be happy with any of the 
+> > patches) and the disagreement needs to be resolved ASAP.
+> 
+> I hope you read my other comment (that you deleted from the reply)?
+> 
+> If we're going to fix this at the core level along the Yinghai's patch lines,
+> we'll have to introduce a few additional values for system_state and make
+> suspend and hibernation code use them.
+> 
+> Do you think it's worth the effort, given that only a couple of drivers have
+> been found to be affected so far?
 
+And, quite frankly, I'm not sure if users will be happy with the $subject
+patch, because it _really_ breaks things (well, the kexec users who don't use
+suspend might be, but surely suspend users who don't use kexec won't).
 
-
-I would rather we try something like the below:
-
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index f585371..ccb4f79 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -957,12 +957,39 @@ static struct pmc_x86_ops *pmc_amd_init(void)
- 	u64 old;
- 	int bits;
- 
-+	pr_info("AMD Performance Monitoring support detected.\n");
-+
- 	nr_counters_generic = 4;
- 	nr_counters_fixed = 0;
--	counter_value_mask = 0x0000FFFFFFFFFFFFULL;
--	counter_value_bits = 48;
-+	counter_value_mask = ~0ULL;
- 
--	pr_info("AMD Performance Monitoring support detected.\n");
-+	rdmsrl(MSR_K7_PERFCTR0, old);
-+	wrmsrl(MSR_K7_PERFCTR0, counter_value_mask);
-+
-+	/*
-+	 * Ensure the counter_value_mask write, is completed before
-+	 * we try to read it back.
-+	 */ 
-+	mb();
-+
-+	/* read the truncated mask */
-+	rdmsrl(MSR_K7_PERFCTR0, counter_value_mask);
-+	wrmsrl(MSR_K7_PERFCTR0, old);
-+
-+	bits = 32 + fls(counter_value_mask >> 32);
-+	if (bits == 32)
-+		bits = fls((u32)counter_value_mask);
-+	counter_value_bits = bits;
-+
-+	if (counter_value_bits != 48 ||
-+	    counter_value_mask != ((1ULL << counter_value_bits) - 1)) {
-+		printk(KERN_ERR "Bad cpu! speculated through full memory barrier!\n");
-+		printk(KERN_ERR " ... old value: %llx\n", old);
-+		printk(KERN_ERR " ... new value: %llx\n", counter_value_mask);
-+
-+		counter_value_bits = 48;
-+		counter_value_mask = 0x0000FFFFFFFFFFFFULL;
-+	}
- 
- 	return &pmc_amd_ops;
- }
-
+Thanks,
+Rafael
