@@ -1,196 +1,381 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050AbZCHKCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752271AbZCHKEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752050AbZCHKCT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 06:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZCHKCI
+	id S1752271AbZCHKEW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 06:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZCHKEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 06:02:08 -0400
-Received: from mail.gmx.net ([213.165.64.20]:53179 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751291AbZCHKCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 06:02:07 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18DOadodiwDLdJVbAE+nfXfABGiu9iKZ6uwt0uRqQ
-	UfD1fbWx8f5sAB
-Subject: Re: scheduler oddity [bug?]
-From: Mike Galbraith <efault@gmx.de>
-To: Balazs Scheidler <bazsi@balabit.hu>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <1236506309.6972.8.camel@marge.simson.net>
-References: <1236448069.16726.21.camel@bzorp.balabit>
-	 <1236505323.6281.57.camel@marge.simson.net>
-	 <1236506309.6972.8.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Sun, 08 Mar 2009 11:02:02 +0100
-Message-Id: <1236506522.6972.13.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Sun, 8 Mar 2009 06:04:13 -0400
+Received: from cathcart.site5.com ([74.54.107.137]:47984 "EHLO
+	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751460AbZCHKEM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 06:04:12 -0400
+Message-ID: <49B39803.2030505@compulab.co.il>
+Date: Sun, 08 Mar 2009 12:03:47 +0200
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
+MIME-Version: 1.0
+To: David Brownell <david-b@pacbell.net>
+CC: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org, raph@8d.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] rtc-v3020: add ability to access v3020 chip with GPIOs
+References: <cover.1235400430.git.mike@compulab.co.il> <20090302124737.03075958@i1501.lan.towertech.it> <49ABCEB3.6090100@compulab.co.il> <200903031308.29933.david-b@pacbell.net>
+In-Reply-To: <200903031308.29933.david-b@pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - cathcart.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-08 at 10:58 +0100, Mike Galbraith wrote:
-> On Sun, 2009-03-08 at 10:42 +0100, Mike Galbraith wrote:
-> > On Sat, 2009-03-07 at 18:47 +0100, Balazs Scheidler wrote:
-> > > Hi,
-> > > 
-> > > I'm experiencing an odd behaviour from the Linux scheduler. I have an
-> > > application that feeds data to another process using a pipe. Both
-> > > processes use a fair amount of CPU time apart from writing to/reading
-> > > from this pipe.
-> > > 
-> > > The machine I'm running on  is an Opteron Quad-Core CPU:
-> > > model name	: Quad-Core AMD Opteron(tm) Processor 2347 HE
-> > > stepping	: 3
-> > > 
-> > > What I see is that only one of the cores is used, the other three is
-> > > idling without doing any work. If I explicitly set the CPU affinity of
-> > > the processes to use distinct CPUs the performance goes up
-> > > significantly. (e.g. it starts to use the other cores and the load
-> > > scales linearly).
-> > > 
-> > > I've tried to reproduce the problem by writing a small test program,
-> > > which you can find attached. The program creates two processes, one
-> > > feeds the other using a pipe and each does a series of memset() calls to
-> > > simulate CPU load. I've also added capability to the program to set its
-> > > own CPU affinity. The results (the more the better):
-> > > 
-> > > Without enabling CPU affinity:
-> > > $ ./a.out
-> > > Check: 0 loops/sec, sum: 1 
-> > > Check: 12 loops/sec, sum: 13 
-> > > Check: 41 loops/sec, sum: 54 
-> > > Check: 41 loops/sec, sum: 95 
-> > > Check: 41 loops/sec, sum: 136 
-> > > Check: 41 loops/sec, sum: 177 
-> > > Check: 41 loops/sec, sum: 218 
-> > > Check: 40 loops/sec, sum: 258 
-> > > Check: 41 loops/sec, sum: 299 
-> > > Check: 41 loops/sec, sum: 340 
-> > > Check: 41 loops/sec, sum: 381 
-> > > Check: 41 loops/sec, sum: 422 
-> > > Check: 41 loops/sec, sum: 463 
-> > > Check: 41 loops/sec, sum: 504 
-> > > Check: 41 loops/sec, sum: 545 
-> > > Check: 40 loops/sec, sum: 585 
-> > > Check: 41 loops/sec, sum: 626 
-> > > Check: 41 loops/sec, sum: 667 
-> > > Check: 41 loops/sec, sum: 708 
-> > > Check: 41 loops/sec, sum: 749 
-> > > Check: 41 loops/sec, sum: 790 
-> > > Check: 41 loops/sec, sum: 831 
-> > > Final: 39 loops/sec, sum: 831
-> > > 
-> > > 
-> > > With CPU affinity:
-> > > # ./a.out 1
-> > > Check: 0 loops/sec, sum: 1 
-> > > Check: 41 loops/sec, sum: 42 
-> > > Check: 49 loops/sec, sum: 91 
-> > > Check: 49 loops/sec, sum: 140 
-> > > Check: 49 loops/sec, sum: 189 
-> > > Check: 49 loops/sec, sum: 238 
-> > > Check: 49 loops/sec, sum: 287 
-> > > Check: 50 loops/sec, sum: 337 
-> > > Check: 49 loops/sec, sum: 386 
-> > > Check: 49 loops/sec, sum: 435 
-> > > Check: 49 loops/sec, sum: 484 
-> > > Check: 49 loops/sec, sum: 533 
-> > > Check: 49 loops/sec, sum: 582 
-> > > Check: 49 loops/sec, sum: 631 
-> > > Check: 49 loops/sec, sum: 680 
-> > > Check: 49 loops/sec, sum: 729 
-> > > Check: 49 loops/sec, sum: 778 
-> > > Check: 49 loops/sec, sum: 827 
-> > > Check: 49 loops/sec, sum: 876 
-> > > Check: 49 loops/sec, sum: 925 
-> > > Check: 50 loops/sec, sum: 975 
-> > > Check: 49 loops/sec, sum: 1024 
-> > > Final: 48 loops/sec, sum: 1024
-> > > 
-> > > The difference is about 20%, which is about the same work performed by
-> > > the slave process. If the two processes race for the same CPU this 20%
-> > > of performance is lost.
-> > > 
-> > > I've tested this on 3 computers and each showed the same symptoms:
-> > >  * quad core Opteron, running Ubuntu kernel 2.6.27-13.29
-> > >  * Core 2 Duo, running Ubuntu kernel 2.6.27-11.27
-> > >  * Dual Core Opteron, Debian backports.org kernel 2.6.26-13~bpo40+1
-> > > 
-> > > Is this a bug, or a feature?
-> > 
-> > Both.  Affine wakeups are cache friendly, and generally a feature, but
-> > can lead to underutilized CPUs in some cases, thus turning feature into
-> > bug as your testcase demonstrates.  The metric we for the affinity hint
-> > works well, but clearly wants some refinement.
-> > 
-> > You can turn this scheduler hint off via:
-> > 	echo NO_SYNC_WAKEUPS > /sys/kernel/debug/sched_features
-> > 
+David,
+
+David Brownell wrote:
+> On Monday 02 March 2009, Mike Rapoport wrote:
+>> +
+>> +#define V3020_CS       0
+>> +#define V3020_WR       1
+>> +#define V3020_RD       2
+>> +#define V3020_IO       3
+>> +
+>> +struct v3020_gpio {
+>> +       const char *name;
+>> +       unsigned int gpio;
+>> +};
+>> +
+> 
+>> +static struct v3020_gpio v3020_gpio[] = {
+>> +       { "RTC CS", 0 },
+>> +       { "RTC WR", 0 },
+>> +       { "RTC RD", 0 },
+>> +       { "RTC IO", 0 },
+>> +};
+> 
+> After Andrew's fault path cleanup it looks OK, but I see
+> no point to that GPIO struct with the name.  You know the
+> name based on the position, if you ever need one.  Take
+> that away, and you can add my ack.
+> 
+> 
+> Also, best not to have a single static struct; there's
+> no need to add a driver restriction that there be only
+> one of these chips in a system.
+
+What about the below version?
+
+> - Dave
 > 
 
-(reply got munged)
+Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+CC: Alessandro Zummo <alessandro.zummo@towertech.it>
+CC: David Brownell <david-b@pacbell.net>
+CC: Andrew Morton <akpm@linux-foundation.org>
+---
+ drivers/rtc/rtc-v3020.c   |  183 ++++++++++++++++++++++++++++++++++++++++-----
+ include/linux/rtc-v3020.h |    6 ++
+ 2 files changed, 169 insertions(+), 20 deletions(-)
 
-> The problem with your particular testcase is that while one half has an
-> avg_overlap (what we use as affinity hint for synchronous wakeups) which
-> triggers the affinity hint, the other half has avg_overlap of zero, what
-> it was born with, so despite significant execution overlap, the
-> scheduler treats them as if they were truly synchronous tasks.
-> 
-> The below cures it, but is only a demo hack.
+diff --git a/drivers/rtc/rtc-v3020.c b/drivers/rtc/rtc-v3020.c
+index 66955cc..9f29929 100644
+--- a/drivers/rtc/rtc-v3020.c
++++ b/drivers/rtc/rtc-v3020.c
+@@ -27,17 +27,155 @@
+ #include <linux/bcd.h>
+ #include <linux/rtc-v3020.h>
+ #include <linux/delay.h>
++#include <linux/gpio.h>
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8e2558c..85f9ced 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1712,11 +1712,15 @@ static void enqueue_task(struct rq *rq, struct task_struct *p, int wakeup)
- 
- static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
- {
-+	u64 limit = sysctl_sched_migration_cost;
-+	u64 runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
+ #include <linux/io.h>
+
+ #undef DEBUG
+
++struct v3020;
 +
- 	if (sleep && p->se.last_wakeup) {
- 		update_avg(&p->se.avg_overlap,
- 			   p->se.sum_exec_runtime - p->se.last_wakeup);
- 		p->se.last_wakeup = 0;
--	}
-+	} else if (p->se.avg_overlap < limit && runtime >= limit)
-+		update_avg(&p->se.avg_overlap, runtime);
- 
- 	sched_info_dequeued(p);
- 	p->sched_class->dequeue_task(rq, p, sleep);
++struct v3020_chip_ops {
++	int (*map_io)(struct v3020 *chip, struct platform_device *pdev,
++		      struct v3020_platform_data *pdata);
++	void (*unmap_io)(struct v3020 *chip);
++	unsigned char (*read_bit)(struct v3020 *chip);
++	void (*write_bit)(struct v3020 *chip, unsigned char bit);
++};
++
++#define V3020_CS	0
++#define V3020_WR	1
++#define V3020_RD	2
++#define V3020_IO	3
++
+ struct v3020 {
++	/* MMIO access */
+ 	void __iomem *ioaddress;
+ 	int leftshift;
++
++	/* GPIO access */
++	unsigned int gpio[4];
++
++	struct v3020_chip_ops *ops;
++
+ 	struct rtc_device *rtc;
+ };
 
-pipetest (6701, #threads: 1)
----------------------------------------------------------
-se.exec_start                      :       5607096.896687
-se.vruntime                        :        274158.274352
-se.sum_exec_runtime                :        139434.783417
-se.avg_overlap                     :             6.477067 <== was zero
-nr_switches                        :                 2246
-nr_voluntary_switches              :                    1
-nr_involuntary_switches            :                 2245
-se.load.weight                     :                 1024
-policy                             :                    0
-prio                               :                  120
-clock-delta                        :                  102
++
++static int v3020_mmio_map(struct v3020 *chip, struct platform_device *pdev,
++			  struct v3020_platform_data *pdata)
++{
++	if (pdev->num_resources != 1)
++		return -EBUSY;
++
++	if (pdev->resource[0].flags != IORESOURCE_MEM)
++		return -EBUSY;
++
++	chip->leftshift = pdata->leftshift;
++	chip->ioaddress = ioremap(pdev->resource[0].start, 1);
++	if (chip->ioaddress == NULL)
++		return -EBUSY;
++
++	return 0;
++}
++
++static void v3020_mmio_unmap(struct v3020 *chip)
++{
++	iounmap(chip->ioaddress);
++}
++
++static void v3020_mmio_write_bit(struct v3020 *chip, unsigned char bit)
++{
++	writel(bit << chip->leftshift, chip->ioaddress);
++}
++
++static unsigned char v3020_mmio_read_bit(struct v3020 *chip)
++{
++	return readl(chip->ioaddress) & (1 << chip->leftshift);
++}
++
++static struct v3020_chip_ops v3020_mmio_ops = {
++	.map_io		= v3020_mmio_map,
++	.unmap_io	= v3020_mmio_unmap,
++	.read_bit	= v3020_mmio_read_bit,
++	.write_bit	= v3020_mmio_write_bit,
++};
++
++static const char *v3020_gpio_names[] = {
++	"RTC CS",
++	"RTC WR",
++	"RTC RD",
++	"RTC IO",
++};
++
++static int v3020_gpio_map(struct v3020 *chip, struct platform_device *pdev,
++			  struct v3020_platform_data *pdata)
++{
++	int i, err;
++
++	chip->gpio[V3020_CS] = pdata->gpio_cs;
++	chip->gpio[V3020_WR] = pdata->gpio_wr;
++	chip->gpio[V3020_RD] = pdata->gpio_rd;
++	chip->gpio[V3020_IO] = pdata->gpio_io;
++
++	for (i = 0; i < ARRAY_SIZE(chip->gpio); i++) {
++		err = gpio_request(chip->gpio[i], v3020_gpio_names[i]);
++		if (err)
++			goto err_request;
++
++		gpio_direction_output(chip->gpio[i], 1);
++	}
++
++	return 0;
++
++err_request:
++	while (--i >= 0)
++		gpio_free(chip->gpio[i]);
++
++	return err;
++}
++
++static void v3020_gpio_unmap(struct v3020 *chip)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(chip->gpio); i++)
++		gpio_free(chip->gpio[i]);
++}
++
++static void v3020_gpio_write_bit(struct v3020 *chip, unsigned char bit)
++{
++	gpio_direction_output(chip->gpio[V3020_IO], bit);
++	gpio_set_value(chip->gpio[V3020_CS], 0);
++	gpio_set_value(chip->gpio[V3020_WR], 0);
++	udelay(1);
++	gpio_set_value(chip->gpio[V3020_WR], 1);
++	gpio_set_value(chip->gpio[V3020_CS], 1);
++}
++
++static unsigned char v3020_gpio_read_bit(struct v3020 *chip)
++{
++	int bit;
++
++	gpio_direction_input(chip->gpio[V3020_IO]);
++	gpio_set_value(chip->gpio[V3020_CS], 0);
++	gpio_set_value(chip->gpio[V3020_RD], 0);
++	udelay(1);
++	bit = !!gpio_get_value(chip->gpio[V3020_IO]);
++	udelay(1);
++	gpio_set_value(chip->gpio[V3020_RD], 1);
++	gpio_set_value(chip->gpio[V3020_CS], 1);
++
++	return bit;
++}
++
++static struct v3020_chip_ops v3020_gpio_ops = {
++	.map_io		= v3020_gpio_map,
++	.unmap_io	= v3020_gpio_unmap,
++	.read_bit	= v3020_gpio_read_bit,
++	.write_bit	= v3020_gpio_write_bit,
++};
++
+ static void v3020_set_reg(struct v3020 *chip, unsigned char address,
+ 			unsigned char data)
+ {
+@@ -46,7 +184,7 @@ static void v3020_set_reg(struct v3020 *chip, unsigned char address,
 
-pipetest (6702, #threads: 1)
----------------------------------------------------------
-se.exec_start                      :       5607096.896687
-se.vruntime                        :        274098.273516
-se.sum_exec_runtime                :         32987.899515
-se.avg_overlap                     :             0.502174 <== was always < migration cost
-nr_switches                        :                13631
-nr_voluntary_switches              :                11639
-nr_involuntary_switches            :                 1992
-se.load.weight                     :                 1024
-policy                             :                    0
-prio                               :                  120
-clock-delta                        :                  117
+ 	tmp = address;
+ 	for (i = 0; i < 4; i++) {
+-		writel((tmp & 1) << chip->leftshift, chip->ioaddress);
++		chip->ops->write_bit(chip, (tmp & 1));
+ 		tmp >>= 1;
+ 		udelay(1);
+ 	}
+@@ -54,7 +192,7 @@ static void v3020_set_reg(struct v3020 *chip, unsigned char address,
+ 	/* Commands dont have data */
+ 	if (!V3020_IS_COMMAND(address)) {
+ 		for (i = 0; i < 8; i++) {
+-			writel((data & 1) << chip->leftshift, chip->ioaddress);
++			chip->ops->write_bit(chip, (data & 1));
+ 			data >>= 1;
+ 			udelay(1);
+ 		}
+@@ -67,14 +205,14 @@ static unsigned char v3020_get_reg(struct v3020 *chip, unsigned char address)
+ 	int i;
 
+ 	for (i = 0; i < 4; i++) {
+-		writel((address & 1) << chip->leftshift, chip->ioaddress);
++		chip->ops->write_bit(chip, (address & 1));
+ 		address >>= 1;
+ 		udelay(1);
+ 	}
+
+ 	for (i = 0; i < 8; i++) {
+ 		data >>= 1;
+-		if (readl(chip->ioaddress) & (1 << chip->leftshift))
++		if (chip->ops->read_bit(chip))
+ 			data |= 0x80;
+ 		udelay(1);
+ 	}
+@@ -164,25 +302,23 @@ static int rtc_probe(struct platform_device *pdev)
+ 	int i;
+ 	int temp;
+
+-	if (pdev->num_resources != 1)
+-		return -EBUSY;
+-
+-	if (pdev->resource[0].flags != IORESOURCE_MEM)
+-		return -EBUSY;
+-
+ 	chip = kzalloc(sizeof *chip, GFP_KERNEL);
+ 	if (!chip)
+ 		return -ENOMEM;
+
+-	chip->leftshift = pdata->leftshift;
+-	chip->ioaddress = ioremap(pdev->resource[0].start, 1);
+-	if (chip->ioaddress == NULL)
++	if (pdata->use_gpio)
++		chip->ops = &v3020_gpio_ops;
++	else
++		chip->ops = &v3020_mmio_ops;
++
++	retval = chip->ops->map_io(chip, pdev, pdata);
++	if (retval)
+ 		goto err_chip;
+
+ 	/* Make sure the v3020 expects a communication cycle
+ 	 * by reading 8 times */
+ 	for (i = 0; i < 8; i++)
+-		temp = readl(chip->ioaddress);
++		temp = chip->ops->read_bit(chip);
+
+ 	/* Test chip by doing a write/read sequence
+ 	 * to the chip ram */
+@@ -196,10 +332,17 @@ static int rtc_probe(struct platform_device *pdev)
+ 	 * are all disabled */
+ 	v3020_set_reg(chip, V3020_STATUS_0, 0x0);
+
+-	dev_info(&pdev->dev, "Chip available at physical address 0x%llx,"
+-		"data connected to D%d\n",
+-		(unsigned long long)pdev->resource[0].start,
+-		chip->leftshift);
++	if (pdata->use_gpio)
++		dev_info(&pdev->dev, "Chip available at GPIOs "
++			 "%d, %d, %d, %d\n",
++			 chip->gpio[V3020_CS], chip->gpio[V3020_WR],
++			 chip->gpio[V3020_RD], chip->gpio[V3020_IO]);
++	else
++		dev_info(&pdev->dev, "Chip available at "
++			 "physical address 0x%llx,"
++			 "data connected to D%d\n",
++			 (unsigned long long)pdev->resource[0].start,
++			 chip->leftshift);
+
+ 	platform_set_drvdata(pdev, chip);
+
+@@ -214,7 +357,7 @@ static int rtc_probe(struct platform_device *pdev)
+ 	return 0;
+
+ err_io:
+-	iounmap(chip->ioaddress);
++	chip->ops->unmap_io(chip);
+ err_chip:
+ 	kfree(chip);
+
+@@ -229,7 +372,7 @@ static int rtc_remove(struct platform_device *dev)
+ 	if (rtc)
+ 		rtc_device_unregister(rtc);
+
+-	iounmap(chip->ioaddress);
++	chip->ops->unmap_io(chip);
+ 	kfree(chip);
+
+ 	return 0;
+diff --git a/include/linux/rtc-v3020.h b/include/linux/rtc-v3020.h
+index bf74e63..8ba646e 100644
+--- a/include/linux/rtc-v3020.h
++++ b/include/linux/rtc-v3020.h
+@@ -14,6 +14,12 @@
+  * is used depends on the board. */
+ struct v3020_platform_data {
+ 	int leftshift; /* (1<<(leftshift)) & readl() */
++
++	int use_gpio:1;
++	unsigned int gpio_cs;
++	unsigned int gpio_wr;
++	unsigned int gpio_rd;
++	unsigned int gpio_io;
+ };
+
+ #define V3020_STATUS_0	0x00
+-- 
+1.5.6.4
+
+
+
+
+-- 
+Sincerely yours,
+Mike.
 
