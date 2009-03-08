@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbZCHKRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059AbZCHKUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752580AbZCHKRn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 06:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZCHKRe
+	id S1752059AbZCHKUc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 06:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZCHKUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 06:17:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33370 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbZCHKRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 06:17:33 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [PATCH] PCIe: portdrv: call pci_disable_device during remove
-Date: Sun, 8 Mar 2009 11:17:19 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, matthew@wil.cx, stable@kernel.org,
-       "linux-pci" <linux-pci@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <20090308023547.GB3575@ldl.fc.hp.com>
-In-Reply-To: <20090308023547.GB3575@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 8 Mar 2009 06:20:23 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:9589 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbZCHKUX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 06:20:23 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: scheduler oddity [bug?]
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Balazs Scheidler <bazsi@balabit.hu>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1236506309.6972.8.camel@marge.simson.net>
+References: <1236448069.16726.21.camel@bzorp.balabit>
+	 <1236505323.6281.57.camel@marge.simson.net>
+	 <1236506309.6972.8.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Sun, 08 Mar 2009 11:19:54 +0100
+Message-Id: <1236507594.22914.3641.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903081117.19660.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 March 2009, Alex Chiang wrote:
-> The PCIe port driver calls pci_enable_device() during probe but
-> never calls pci_disable_device() during remove.
+On Sun, 2009-03-08 at 10:58 +0100, Mike Galbraith wrote:
 > 
-> Cc: stable@kernel.org
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
-> This is a bug in the original PCIe port driver code, and should
-> be backported to the .27 and .28 stable series.
+> The below cures it, but is only a demo hack.
 > 
-> The implementation of the PCIe port driver is different in
-> linux-next, and I have a different patch for that.
-
-Fine with me.
-
-> ---
-> diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-> index 248b4db..5ea566e 100644
-> --- a/drivers/pci/pcie/portdrv_pci.c
-> +++ b/drivers/pci/pcie/portdrv_pci.c
-> @@ -103,6 +103,7 @@ static int __devinit pcie_portdrv_probe (struct pci_dev *dev,
->  static void pcie_portdrv_remove (struct pci_dev *dev)
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 8e2558c..85f9ced 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -1712,11 +1712,15 @@ static void enqueue_task(struct rq *rq, struct task_struct *p, int wakeup)
+>  
+>  static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
 >  {
->  	pcie_port_device_remove(dev);
-> +	pci_disable_device(dev);
->  	kfree(pci_get_drvdata(dev));
->  }
+> +       u64 limit = sysctl_sched_migration_cost;
+> +       u64 runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
+> +
+>         if (sleep && p->se.last_wakeup) {
+>                 update_avg(&p->se.avg_overlap,
+>                            p->se.sum_exec_runtime - p->se.last_wakeup);
+>                 p->se.last_wakeup = 0;
+> -       }
 
-Thanks,
-Rafael
+
+Wouldn't something like the below be more suited:
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 89e2ca0..94c8b02 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2501,7 +2501,7 @@ static void __sched_fork(struct task_struct *p)
+ 	p->se.prev_sum_exec_runtime	= 0;
+ 	p->se.nr_migrations		= 0;
+ 	p->se.last_wakeup		= 0;
+-	p->se.avg_overlap		= 0;
++	p->se.avg_overlap		= sysctl_sched_migration_cost;
+ 	p->se.start_runtime		= 0;
+ 	p->se.avg_wakeup		= sysctl_sched_wakeup_granularity;
+ 
+
+
