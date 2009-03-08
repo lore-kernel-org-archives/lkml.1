@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751476AbZCHI3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751460AbZCHIeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751476AbZCHI3W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 04:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZCHI3M
+	id S1751460AbZCHIeH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 04:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbZCHIdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 04:29:12 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51218 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbZCHI3L (ORCPT
+	Sun, 8 Mar 2009 04:33:54 -0400
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:39570 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751200AbZCHIdw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 04:29:11 -0400
-Date: Sun, 8 Mar 2009 09:29:02 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: kernel list <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net
-Subject: Re: introduce delayed-leds.h to reduce code duplication
-Message-ID: <20090308082902.GC1371@ucw.cz>
-References: <20090111224331.GA28010@elf.ucw.cz> <20090112100500.GA31656@khazad-dum.debian.net> <20090119150219.GA6463@ucw.cz> <20090120120400.GA15144@khazad-dum.debian.net>
+	Sun, 8 Mar 2009 04:33:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=k7PyyyLxo4vR02dnHreT5tMWTsnu8eSGXCOj+X/4Vc++utWRbIJiB2RvonFk8NeeJK
+         KlPNRcrHuhy6TXlwNGCb3oabOKDuC5drEwlVPwHVCLo00IqpD+iyABjTywiUjZhyKnGN
+         +YaQehSiMmkFtUnpbjpqqhL0+z66AyoXB7WIE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120120400.GA15144@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090307202647.GA9776@srcf.ucam.org>
+References: <20090306003941.GA32403@srcf.ucam.org>
+	 <E1LfqwF-000B1G-00.arvidjaar-mail-ru@mx3.mail.ru>
+	 <20090307150640.GA3516@srcf.ucam.org>
+	 <200903071839.16508.arvidjaar@mail.ru>
+	 <20090307154424.GA3909@srcf.ucam.org>
+	 <15e53e180903071219q4ed318edt2fa8f492426c0ab6@mail.gmail.com>
+	 <20090307202647.GA9776@srcf.ucam.org>
+Date: Sun, 8 Mar 2009 08:33:48 +0000
+Message-ID: <15e53e180903080033h5e990f08o3622afae018c38ca@mail.gmail.com>
+Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
+From: Richard Hughes <hughsient@gmail.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hal@lists.freedesktop.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-01-20 10:04:00, Henrique de Moraes Holschuh wrote:
-> On Mon, 19 Jan 2009, Pavel Machek wrote:
-> > On Mon 2009-01-12 08:05:01, Henrique de Moraes Holschuh wrote:
-> > > On Sun, 11 Jan 2009, Pavel Machek wrote:
-> > > > What about something like this? 
-> > > > 
-> > > > [Alternatively, I can add a flag to the leds class, and make delayed
-> > > > leds a built-in functionality...]
-> > > > 
-> > > > [Attached is driver that uses new infrastructure for hp_accel, but it
-> > > > does a bit more.]
-> > > 
-> > > FWIW, I am looking over the thinkpad-acpi side of this.  I like the idea,
-> > > but I am not completely sure I agree fully with the changes to
-> > > thinkpad-acpi.
-> > > 
-> > > Which isn't a problem, as long as the thinkpad-acpi hunks are NOT merged to
-> > > any tree before my ACK, please.  I will test and comment on the patch before
-> > > the weekend.
-> > 
-> > Any news?
-> 
-> Sure.  Sorry for not replying earlier.
-> 
-> I don't like the loss of functionality of the private workqueue.  I kicked
-> the thinkpad led handling to a private workqueue in order to never tie up
-> the system-wide one with crap spinning around in the ACPI layer, etc.  In
-> fact, all thinkpad-acpi deferred work is in the private workqueue for this
-> reason.
+On Sat, Mar 7, 2009 at 8:26 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> On Sat, Mar 07, 2009 at 08:19:51PM +0000, Richard Hughes wrote:
+>
+>> Mapping KEY_SUSPEND to hibernate is just insane. Can you please change
+>> the toshiba driver to use KEY_HIBERNATE and KEY_SUSPEND as thinkpad
+>> now does? Thanks.
+>
+> Mapping KEY_SUSPEND to hibernate is what we've been doing for years.
+> It's what hal *still does*.
 
-Is the private workqueue really required? AFAICT workqueues are not
-exactly cheap, and leds are not toggled that often. Was it problem in
-practice?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Sure, but how much userspace now listens to HAL for these events? Xorg
+and evdev has taken over that role for all the session. We can ship a
+trivial patch as an fdi file to HAL to remap this if required.
+
+> KEY_SLEEP has been the suspend to RAM key forever.
+
+Except if you're a USB keyboard. Grep through the kernel sources and
+see how many drivers get this wrong. We can't map three sleep states
+to two buttons in any sane way. For instance, is the sleep acpi button
+supposed to trigger a suspend of hibernate? Surely this is user policy
+as it is not specified on the the exterior of the machine.
+
+> How are we supposed to perform this transition? We've no idea
+> how much of userspace makes the same assumption.
+
+FWIW, I think emitting KEY_ events (not switch events) in HAL is crazy
+as now we can just use the fixed Xorg in the session. FWIW, HAL gets
+other keys wrong too, for instance KEY_BATTERY is mapped to
+display_off, but nobody has noticed as we've been using Xorg since
+ages.
+
+Richard.
