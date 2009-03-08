@@ -1,87 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbZCHLke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbZCHLnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752176AbZCHLke (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 07:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZCHLkX
+	id S1752471AbZCHLnS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 07:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbZCHLnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 07:40:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37199 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751416AbZCHLkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 07:40:23 -0400
-Subject: Re: [git-pull -tip] x86:perf_counter cleanup
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090308104133.GA3360@elte.hu>
-References: <1236507232.28127.2.camel@localhost.localdomain>
-	 <1236507643.22914.3642.camel@twins>
-	 <1236508753.3638.3.camel@localhost.localdomain>
-	 <20090308104133.GA3360@elte.hu>
-Content-Type: text/plain
-Date: Sun, 08 Mar 2009 17:09:49 +0530
-Message-Id: <1236512389.3205.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+	Sun, 8 Mar 2009 07:43:06 -0400
+Received: from smtp3.tech.numericable.fr ([82.216.111.39]:59143 "EHLO
+	smtp3.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751271AbZCHLnF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 07:43:05 -0400
+Message-ID: <49B3AF45.8080209@numericable.fr>
+Date: Sun, 08 Mar 2009 12:43:01 +0100
+From: etienne <etienne.basset@numericable.fr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: tiwai@suse.de
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [2.6.29-rc7][REGRESSION][FOUND] sound broken on Creative Labs SB
+ Audigy
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-08 at 11:41 +0100, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> > These leads to warnings:
-> >  WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
-> >  WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
-> 
-> ignore those checkpatch warnings, they are wrong in this case.
+Hi Takashi,
 
-OK, ignored for time being.
+on 2.6.29-rc7 my sound card Creative Labs SB Audigy doesn't work anymore
+it worked in the previous -rc i tested (rc5)
 
-Log messages available at:
-http://git.kernel.org/?p=linux/kernel/git/jaswinder/linux-2.6-tip.git;a=shortlog;h=perfcounters/core
+dmesg
+EMU10K1_Audigy 0000:03:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+Installing spdif_bug patch: SB Audigy 2 ZS [SB0353]
 
-So here is new pull request:
-
-The following changes since commit 880860e392d92c457e8116cdee39ec4d109174ee:
-  Paul Mackerras (1):
-        perfcounters/powerpc: add support for POWER4 processors
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git perfcounters/core
-
-Jaswinder Singh Rajput (2):
-      x86: perf_counter.c remove unused variables
-      x86: perf_counter.c remove duplicate header file
-
- arch/x86/kernel/cpu/perf_counter.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
-
-Complete diff:
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index f585371..79d88bf 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -17,7 +17,6 @@
- #include <linux/kdebug.h>
- #include <linux/sched.h>
- 
--#include <asm/perf_counter.h>
- #include <asm/apic.h>
- 
- static bool perf_counters_initialized __read_mostly;
-@@ -954,9 +953,6 @@ static struct pmc_x86_ops *pmc_intel_init(void)
- 
- static struct pmc_x86_ops *pmc_amd_init(void)
- {
--	u64 old;
--	int bits;
--
- 	nr_counters_generic = 4;
- 	nr_counters_fixed = 0;
- 	counter_value_mask = 0x0000FFFFFFFFFFFFULL;
+cat /proc/asound/cards
+ 0 [Audigy2        ]: Audigy2 - SB Audigy 2 ZS [SB0353]
+                      SB Audigy 2 ZS [SB0353] (rev.4, serial:0x10031102) at 0xcc80, irq 16
 
 
+lscpi
+03:00.0 Multimedia audio controller: Creative Labs SB Audigy (rev 04)
+lspci -vvv
+03:00.0 Multimedia audio controller: Creative Labs SB Audigy (rev 04)
+        Subsystem: Creative Labs Device 1003
+        Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 64 (500ns min, 5000ns max)
+        Interrupt: pin A routed to IRQ 16
+        Region 0: I/O ports at cc80 [size=64]
+        Capabilities: <access denied>
+        Kernel driver in use: EMU10K1_Audigy
+        Kernel modules: snd-emu10k1
+
+i've use alsa-info.sh, my info is stored at
+ http://www.alsa-project.org/db/?f=4460e77670d538196e11ae5e61e9b1f86fb9669b
+
+
+if I revert the following commit, it works again
+
+
+commit 1f9da5544073d38e05139f8ce9da24e78653c73e
+Author: Takashi Iwai <tiwai@suse.de>
+Date:   Tue Feb 24 15:31:02 2009 +0100
+
+    ALSA: emu10k1 - Fix digital/analog switch on audigy2 ZS
+
+    Fix the inverted logic of shared spdif switch.
+
+    Reference: Novell bnc#478496
+        https://bugzilla.novell.com/show_bug.cgi?id=478496
+
+    Signed-off-by: Takashi Iwai <tiwai@suse.de>
+
+
+thanks,
+Etienne
