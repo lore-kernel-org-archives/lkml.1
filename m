@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbZCHVAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbZCHVDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754471AbZCHVAW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 17:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbZCHVAH
+	id S1754348AbZCHVDw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 17:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbZCHVDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 17:00:07 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35527 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753479AbZCHVAG (ORCPT
+	Sun, 8 Mar 2009 17:03:44 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35013 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753953AbZCHVDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 17:00:06 -0400
-Subject: Re: [tip:perfcounters/core] x86: perf_counter cleanup
-From: Peter Zijlstra <peterz@infradead.org>
-To: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       jaswinder@kernel.org, tglx@linutronix.de, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-In-Reply-To: <tip-e255357764f92afcafafbd4879b222b8c752065a@git.kernel.org>
-References: <tip-e255357764f92afcafafbd4879b222b8c752065a@git.kernel.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sun, 08 Mar 2009 21:59:08 +0100
-Message-Id: <1236545948.22914.3648.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Sun, 8 Mar 2009 17:03:43 -0400
+Date: Sun, 8 Mar 2009 22:03:30 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Eric Piel <eric.piel@tremplin-utc.net>, Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Vladimir Botka <vbotka@suse.cz>, mmarek@suse.cz
+Subject: hp_accel: add two more axis information
+Message-ID: <20090308202817.GA27465@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-08 at 15:52 +0000, Jaswinder Singh Rajput wrote:
-> Commit-ID:  e255357764f92afcafafbd4879b222b8c752065a
-> Gitweb:     http://git.kernel.org/tip/e255357764f92afcafafbd4879b222b8c752065a
-> Author:     "Jaswinder Singh Rajput" <jaswinder@kernel.org>
-> AuthorDate: Sun, 8 Mar 2009 17:09:49 +0530
-> Commit:     Ingo Molnar <mingo@elte.hu>
-> CommitDate: Sun, 8 Mar 2009 16:26:50 +0100
-> 
-> x86: perf_counter cleanup
-> 
-> Remove unused variables and duplicate header file.
 
-Why did you commit this?
+Add two more laptops to whitelist.
 
-Until someone from AMD steps up and either tells us they're going to be
-48bits _ALWAYS_ or that it's impossible to detect dynamically, I'd
-rather try and get the dynamic thing working.
+Signed-off-by: Michal Marek <mmarek@suse.cz>
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinder@kernel.org>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> ---
->  arch/x86/kernel/cpu/perf_counter.c |    4 ----
->  1 files changed, 0 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-> index 1df4210..155bc3c 100644
-> --- a/arch/x86/kernel/cpu/perf_counter.c
-> +++ b/arch/x86/kernel/cpu/perf_counter.c
-> @@ -17,7 +17,6 @@
->  #include <linux/kdebug.h>
->  #include <linux/sched.h>
->  
-> -#include <asm/perf_counter.h>
->  #include <asm/apic.h>
->  
->  static bool perf_counters_initialized __read_mostly;
-> @@ -954,9 +953,6 @@ static struct pmc_x86_ops *pmc_intel_init(void)
->  
->  static struct pmc_x86_ops *pmc_amd_init(void)
->  {
-> -	u64 old;
-> -	int bits;
-> -
->  	nr_counters_generic = 4;
->  	nr_counters_fixed = 0;
->  	counter_value_mask = 0x0000FFFFFFFFFFFFULL;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-tip-commits" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+diff --git a/drivers/hwmon/hp_accel.c b/drivers/hwmon/hp_accel.c
+index 29c83b5..448a462 100644
+--- a/drivers/hwmon/hp_accel.c
++++ b/drivers/hwmon/hp_accel.c
+@@ -187,6 +187,7 @@ static struct dmi_system_id lis3lv02d_dmi_ids[] = {
+ 	AXIS_DMI_MATCH("NC2510", "HP Compaq 2510", y_inverted),
+ 	AXIS_DMI_MATCH("NC8510", "HP Compaq 8510", xy_swap_inverted),
+ 	AXIS_DMI_MATCH("HP2133", "HP 2133", xy_rotated_left),
++	AXIS_DMI_MATCH("HP2140", "HP 2140", xy_swap_inverted),
+ 	AXIS_DMI_MATCH("NC653x", "HP Compaq 653", xy_rotated_left_usd),
+ 	AXIS_DMI_MATCH("NC673x", "HP Compaq 673", xy_rotated_left_usd),
+ 	AXIS_DMI_MATCH("NC651xx", "HP Compaq 651", xy_rotated_right),
+@@ -201,6 +202,7 @@ static struct dmi_system_id lis3lv02d_dmi_ids[] = {
+ 			PRODUCT_NAME, "HP Pavilion dv5",
+ 			BOARD_NAME, "3600",
+ 			y_inverted),
++	AXIS_DMI_MATCH("DV7", "HP Pavilion dv7", x_inverted),
+ 	{ NULL, }
+ /* Laptop models without axis info (yet):
+  * "NC6910" "HP Compaq 6910"
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
