@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754280AbZCHVGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZCHVGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754280AbZCHVGN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 17:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbZCHVFy
+	id S1754848AbZCHVGo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 17:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbZCHVGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 17:05:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33899 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657AbZCHVFx (ORCPT
+	Sun, 8 Mar 2009 17:06:34 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:42924 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754274AbZCHVGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 17:05:53 -0400
-Message-ID: <49B4330C.1060700@zytor.com>
-Date: Sun, 08 Mar 2009 14:05:16 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 8 Mar 2009 17:06:34 -0400
+Date: Sun, 8 Mar 2009 22:06:25 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Eric Piel <eric.piel@tremplin-utc.net>, Andrew Morton <akpm@osdl.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Vladimir Botka <vbotka@suse.cz>, mmarek@suse.cz
+Subject: Re: hp_accel: add two more axis information
+Message-ID: <20090308210625.GC13309@buzzloop.caiaq.de>
+References: <20090308202817.GA27465@elf.ucw.cz>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] x86/pci: try to detect host_bridge pci_cfg_space
-References: <49B1C50E.5010209@kernel.org> <49B1C69F.70904@zytor.com> <49B1C81B.5010904@zytor.com> <49B1C8C1.4090304@kernel.org> <20090308110437.GA27811@elte.hu> <20090308145803.GL25995@parisc-linux.org>
-In-Reply-To: <20090308145803.GL25995@parisc-linux.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090308202817.GA27465@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Sun, Mar 08, 2009 at 12:04:37PM +0100, Ingo Molnar wrote:
->> I'd also suggest to flip around the subject line from x86/pci to 
->> pci/x86 - it's more of a PCI patch than a pure x86 patch. The 
->> same problem could affect other platforms too i suspect.
+On Sun, Mar 08, 2009 at 10:03:30PM +0100, Pavel Machek wrote:
+> Add two more laptops to whitelist.
 > 
-> Not all platforms expose the root bridge in PCI configuration space.
-> Intel ia64 platforms do have a materialised root bridge; HP's don't.
-> (I don't know whether Intel ship any PCIe ia64 machines or not).  I
-> don't remember details for other platforms, but I think Intel is the odd
-> one out in this regard.
+> Signed-off-by: Michal Marek <mmarek@suse.cz>
+> Signed-off-by: Pavel Machek <pavel@ucw.cz>
 > 
+> 
+> diff --git a/drivers/hwmon/hp_accel.c b/drivers/hwmon/hp_accel.c
+> index 29c83b5..448a462 100644
+> --- a/drivers/hwmon/hp_accel.c
+> +++ b/drivers/hwmon/hp_accel.c
+> @@ -187,6 +187,7 @@ static struct dmi_system_id lis3lv02d_dmi_ids[] = {
+>  	AXIS_DMI_MATCH("NC2510", "HP Compaq 2510", y_inverted),
+>  	AXIS_DMI_MATCH("NC8510", "HP Compaq 8510", xy_swap_inverted),
+>  	AXIS_DMI_MATCH("HP2133", "HP 2133", xy_rotated_left),
+> +	AXIS_DMI_MATCH("HP2140", "HP 2140", xy_swap_inverted),
+>  	AXIS_DMI_MATCH("NC653x", "HP Compaq 653", xy_rotated_left_usd),
+>  	AXIS_DMI_MATCH("NC673x", "HP Compaq 673", xy_rotated_left_usd),
+>  	AXIS_DMI_MATCH("NC651xx", "HP Compaq 651", xy_rotated_right),
+> @@ -201,6 +202,7 @@ static struct dmi_system_id lis3lv02d_dmi_ids[] = {
+>  			PRODUCT_NAME, "HP Pavilion dv5",
+>  			BOARD_NAME, "3600",
+>  			y_inverted),
+> +	AXIS_DMI_MATCH("DV7", "HP Pavilion dv7", x_inverted),
+>  	{ NULL, }
+>  /* Laptop models without axis info (yet):
+>   * "NC6910" "HP Compaq 6910"
 
-It's still generic PCI code, however.  If there is no host bridge
-exposed in PCI space, the patch is a noop.
+Does this apply on top of my recent ACPI resolve patches? Could you test
+the latest versions already?
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Daniel
 
