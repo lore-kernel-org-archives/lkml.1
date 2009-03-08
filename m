@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbZCHWMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbZCHWRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755274AbZCHWMm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 18:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZCHWMd
+	id S1754912AbZCHWRj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 18:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZCHWR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 18:12:33 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51510 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753521AbZCHWMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 18:12:32 -0400
-Date: Sun, 8 Mar 2009 23:12:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH] xen: core dom0 support
-Message-ID: <20090308221208.GA24079@elte.hu>
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <20090227212812.26d02f34.akpm@linux-foundation.org> <20090228084254.GA29342@elte.hu> <49A907DD.6010408@goop.org> <20090302120859.GB29015@elte.hu> <49B23907.8030103@goop.org> <20090308110150.GA19151@elte.hu> <49B43F1D.2000400@zytor.com> <20090308220609.GA23447@elte.hu> <49B441D9.4010004@zytor.com>
+	Sun, 8 Mar 2009 18:17:29 -0400
+Received: from h155.mvista.com ([63.81.120.155]:5994 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753521AbZCHWR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 18:17:28 -0400
+Message-ID: <49B443F1.7050102@ru.mvista.com>
+Date: Mon, 09 Mar 2009 01:17:21 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B441D9.4010004@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/10] ide: add ->dma_clear method and remove ->dma_timeout
+ one
+References: <20090220171139.25429.26702.sendpatchset@localhost.localdomain> <20090220171147.25429.26218.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090220171147.25429.26218.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bartlomiej Zolnierkiewicz wrote:
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+> All custom ->dma_timeout implementations call the generic one thus it is
+> possible to have only an optional method for resetting DMA engine instead:
+>
+> * Add ->dma_clear method and convert hpt366, pdc202xx_old and sl82c105
+>   host drivers to use it.
+>
+> * Always use ide_dma_timeout() in ide_dma_timeout_retry() and remove
+>  ->dma_timeout method.
+>
+> * Make ide_dma_timeout() static.
+>
+> There should be no functional changes caused by this patch.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>   
 
-> Ingo Molnar wrote:
-> > 
-> > Since it's the same kernel image i think the only truly reliable 
-> > method would be to reboot between _different_ kernel images: 
-> > same instructions but randomly re-align variables both in terms 
-> > of absolute address and in terms of relative position to each 
-> > other. Plus randomize bootmem allocs and never-gets-freed-really 
-> > boot-time allocations.
-> > 
-> > Really hard to do i think ...
-> > 
-> 
-> Ouch, yeah.
-> 
-> On the other hand, the numbers made sense to me, so I don't 
-> see why there is any reason to distrust them.  They show a 5% 
-> overhead with pv_ops enabled, reduced to a 2% overhead with 
-> the changed.  That is more or less what would match my 
-> intuition from seeing the code.
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Yeah - it was Jeremy expressed doubt in the numbers, not me.
+> Index: b/include/linux/ide.h
+> ===================================================================
+> --- a/include/linux/ide.h
+> +++ b/include/linux/ide.h
+> @@ -715,8 +715,9 @@ struct ide_dma_ops {
+>  	int	(*dma_end)(struct ide_drive_s *);
+>  	int	(*dma_test_irq)(struct ide_drive_s *);
+>  	void	(*dma_lost_irq)(struct ide_drive_s *);
+> +	/* below ones are optional */
+>  	int	(*dma_timer_expiry)(struct ide_drive_s *);
+> -	void	(*dma_timeout)(struct ide_drive_s *);
+> +	void	(*dma_clear)(struct ide_drive_s *);
+>  	/*
+>  	 * The following method is optional and only required to be
+>   
 
-And we need to eliminate that 2% as well - 2% is still an awful 
-lot of native kernel overhead from a kernel feature that 95%+ of 
-users do not make any use of.
+   Perhaps worth removing the words about method being optional now...
 
-	Ingo
+>  	 * implemented for the SFF-8038i compatible controllers.
+>   
+
+MBR, Sergei
+
