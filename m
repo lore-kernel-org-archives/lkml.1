@@ -1,70 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751790AbZCHJ2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751741AbZCHJmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751790AbZCHJ2n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 05:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbZCHJ2c
+	id S1751741AbZCHJmV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 05:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZCHJmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 05:28:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:37150 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbZCHJ2a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 05:28:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=faiGtZ/ur45MynOxxKNJiVziU9DeZt0FYxoVCV+zrEGeiy0W1PuHq9AYeRdW43HM2X
-         hAvQUgtoYyj8guy5bYeCT0MgZIcaZ9zN6a0EVoyWAWOhvb3BPktXhyI4XN+JZLwIeWki
-         9HWtUPMm4R+Nle0LrlSx6w7al3znTD7FEdlRA=
-Message-ID: <49B38FB7.3000002@gmail.com>
-Date: Sun, 08 Mar 2009 10:28:23 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Bob Copeland <me@bobcopeland.com>
-CC: Sitsofe Wheeler <sitsofe@yahoo.com>, Nick Kossifidis <mickflemm@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-References: <40f31dec0902231508l512af5b7w68cfcc0bdf3cfa87@mail.gmail.com> <20090224135817.GB6019@hash.localnet> <49A46AD4.3060007@gmail.com> <20090225140139.GA18694@silver.sucs.org> <20090226135938.GA12182@hash.localnet> <20090226170338.GA1745@silver.sucs.org> <20090303041222.GA1238@hash.localnet> <20090303200352.GA8343@silver.sucs.org> <20090304120759.GA6519@hash.localnet> <20090306094249.GA10236@silver.sucs.org> <20090308030928.GB14966@hash.localnet>
-In-Reply-To: <20090308030928.GB14966@hash.localnet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 8 Mar 2009 05:42:10 -0400
+Received: from mail.gmx.net ([213.165.64.20]:42667 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751291AbZCHJmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 05:42:09 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18c9Bhsu1gcYMXSop49kywEMOZudmM85yXYiA6Psf
+	RL6Sfeb4VyRUh0
+Subject: Re: scheduler oddity [bug?]
+From: Mike Galbraith <efault@gmx.de>
+To: Balazs Scheidler <bazsi@balabit.hu>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1236448069.16726.21.camel@bzorp.balabit>
+References: <1236448069.16726.21.camel@bzorp.balabit>
+Content-Type: text/plain
+Date: Sun, 08 Mar 2009 10:42:03 +0100
+Message-Id: <1236505323.6281.57.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8.3.2009 04:09, Bob Copeland wrote:
-> At this point, I guess the best way forward is to have a special debug
-> patch for when we pass an skb up the stack, when it gets allocated, and
-> what is in the descriptors.
+On Sat, 2009-03-07 at 18:47 +0100, Balazs Scheidler wrote:
+> Hi,
+> 
+> I'm experiencing an odd behaviour from the Linux scheduler. I have an
+> application that feeds data to another process using a pipe. Both
+> processes use a fair amount of CPU time apart from writing to/reading
+> from this pipe.
+> 
+> The machine I'm running on  is an Opteron Quad-Core CPU:
+> model name	: Quad-Core AMD Opteron(tm) Processor 2347 HE
+> stepping	: 3
+> 
+> What I see is that only one of the cores is used, the other three is
+> idling without doing any work. If I explicitly set the CPU affinity of
+> the processes to use distinct CPUs the performance goes up
+> significantly. (e.g. it starts to use the other cores and the load
+> scales linearly).
+> 
+> I've tried to reproduce the problem by writing a small test program,
+> which you can find attached. The program creates two processes, one
+> feeds the other using a pipe and each does a series of memset() calls to
+> simulate CPU load. I've also added capability to the program to set its
+> own CPU affinity. The results (the more the better):
+> 
+> Without enabling CPU affinity:
+> $ ./a.out
+> Check: 0 loops/sec, sum: 1 
+> Check: 12 loops/sec, sum: 13 
+> Check: 41 loops/sec, sum: 54 
+> Check: 41 loops/sec, sum: 95 
+> Check: 41 loops/sec, sum: 136 
+> Check: 41 loops/sec, sum: 177 
+> Check: 41 loops/sec, sum: 218 
+> Check: 40 loops/sec, sum: 258 
+> Check: 41 loops/sec, sum: 299 
+> Check: 41 loops/sec, sum: 340 
+> Check: 41 loops/sec, sum: 381 
+> Check: 41 loops/sec, sum: 422 
+> Check: 41 loops/sec, sum: 463 
+> Check: 41 loops/sec, sum: 504 
+> Check: 41 loops/sec, sum: 545 
+> Check: 40 loops/sec, sum: 585 
+> Check: 41 loops/sec, sum: 626 
+> Check: 41 loops/sec, sum: 667 
+> Check: 41 loops/sec, sum: 708 
+> Check: 41 loops/sec, sum: 749 
+> Check: 41 loops/sec, sum: 790 
+> Check: 41 loops/sec, sum: 831 
+> Final: 39 loops/sec, sum: 831
+> 
+> 
+> With CPU affinity:
+> # ./a.out 1
+> Check: 0 loops/sec, sum: 1 
+> Check: 41 loops/sec, sum: 42 
+> Check: 49 loops/sec, sum: 91 
+> Check: 49 loops/sec, sum: 140 
+> Check: 49 loops/sec, sum: 189 
+> Check: 49 loops/sec, sum: 238 
+> Check: 49 loops/sec, sum: 287 
+> Check: 50 loops/sec, sum: 337 
+> Check: 49 loops/sec, sum: 386 
+> Check: 49 loops/sec, sum: 435 
+> Check: 49 loops/sec, sum: 484 
+> Check: 49 loops/sec, sum: 533 
+> Check: 49 loops/sec, sum: 582 
+> Check: 49 loops/sec, sum: 631 
+> Check: 49 loops/sec, sum: 680 
+> Check: 49 loops/sec, sum: 729 
+> Check: 49 loops/sec, sum: 778 
+> Check: 49 loops/sec, sum: 827 
+> Check: 49 loops/sec, sum: 876 
+> Check: 49 loops/sec, sum: 925 
+> Check: 50 loops/sec, sum: 975 
+> Check: 49 loops/sec, sum: 1024 
+> Final: 48 loops/sec, sum: 1024
+> 
+> The difference is about 20%, which is about the same work performed by
+> the slave process. If the two processes race for the same CPU this 20%
+> of performance is lost.
+> 
+> I've tested this on 3 computers and each showed the same symptoms:
+>  * quad core Opteron, running Ubuntu kernel 2.6.27-13.29
+>  * Core 2 Duo, running Ubuntu kernel 2.6.27-11.27
+>  * Dual Core Opteron, Debian backports.org kernel 2.6.26-13~bpo40+1
+> 
+> Is this a bug, or a feature?
 
-Yes, I have been thinking about some (ring buffer) array which would 
-store address-desc_status pairs (even few megs in a vmalloc area) and 
-pointer (not modulo-ed counter) to this array (index would be modulo-ed, 
-indeed). From poison output we know the address, so we can then instruct 
-ath5k to dump the buffer and see what happens :), what was in the status 
-when we freed the skb.
+Both.  Affine wakeups are cache friendly, and generally a feature, but
+can lead to underutilized CPUs in some cases, thus turning feature into
+bug as your testcase demonstrates.  The metric we for the affinity hint
+works well, but clearly wants some refinement.
 
-Maybe some additional info may be needed, as you suggest.
+You can turn this scheduler hint off via:
+	echo NO_SYNC_WAKEUPS > /sys/kernel/debug/sched_features
 
-> Jiri, I really think we should implement that better check for the
-> self linked descriptor using the rxdp register.
+	-Mike
 
-As I stated a while ago, definitely!
-
-> bf_last is no longer a
-> valid marker for the self-linked descriptor at the end of the loop since
-> we re-add the just-processed descriptor every time through the loop
-> (or am I missing something?)...
-
-Why? bf_last is snapshotted before the loop. And when we see this bf 
-while processing, we stop. In the next round we check if bf->next is 
-done. If yes, we move on.
-
-> If you want I'll cook up a patch for that too.
-
-If you like, feel free to kick it off. Remember to remove bf->flags 
-completely, so that we save another bunch of memory ;).
