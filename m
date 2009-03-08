@@ -1,88 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751833AbZCHMP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059AbZCHM1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751833AbZCHMP3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 08:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbZCHMPN
+	id S1752059AbZCHM1X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 08:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbZCHM1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 08:15:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35656 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751113AbZCHMPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 08:15:11 -0400
-Message-ID: <49B3B6CC.2010304@redhat.com>
-Date: Sun, 08 Mar 2009 14:15:08 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sun, 8 Mar 2009 08:27:09 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:41215 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751256AbZCHM1I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 08:27:08 -0400
+X-Sasl-enc: Jg6gF/itm95yPbWX7lZAy5FW5n/05PIVhu/6N+0k7WRB 1236515224
+Message-ID: <49B3B97B.5090308@imap.cc>
+Date: Sun, 08 Mar 2009 13:26:35 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Glauber Costa <glommer@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove static declaration from wall clock version
-References: <1235677340-3139-1-git-send-email-glommer@redhat.com>
-In-Reply-To: <1235677340-3139-1-git-send-email-glommer@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Arjan van de Ven <arjan@infradead.org>
+CC: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Paul Bolle <pebolle@tiscali.nl>, Hansjoerg Lipp <hjlipp@web.de>
+Subject: Re: [PATCH 1/2] gigaset: return -ENOSYS for unimplemented functions
+References: <20090307-patch-00.tilman@imap.cc>	<20090307-patch-01.tilman@imap.cc>	<20090307142609.2995bb3d@infradead.org>	<49B30FC4.5040305@imap.cc>	<20090307163522.1165494b@infradead.org>	<49B3176A.7000004@imap.cc> <20090307173819.36d352c8@infradead.org>
+In-Reply-To: <20090307173819.36d352c8@infradead.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig40F7EB796403E0284CD5E062"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber Costa wrote:
-> Matt T. Yourst noted that we're currently having a dumb
-> race for no reason in paravirtual wall clock. This is due
-> to the use of a static variable to hold the counting.
->
-> This can race with multiple guests reading wallclock
-> at the same time, since the static variable value would
-> then be accessible to all callers. This wasn't noted
-> before because it is a rather rare scenario.
->
-> Instead, just use a normal stack variable. This will
-> mean that each caller will have it's version written
-> separatedly. No need for a global counter.
->
-> Signed-off-by: Glauber Costa <glommer@redhat.com>
-> ---
->  arch/x86/kvm/x86.c |    4 +---
->  1 files changed, 1 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 2511708..d7236f6 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -548,15 +548,13 @@ static int do_set_msr(struct kvm_vcpu *vcpu, unsigned index, u64 *data)
->  
->  static void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock)
->  {
-> -	static int version;
-> +	int version = 1;
->  	struct pvclock_wall_clock wc;
->  	struct timespec now, sys, boot;
->  
->  	if (!wall_clock)
->  		return;
->  
-> -	version++;
-> -
->  	kvm_write_guest(kvm, wall_clock, &version, sizeof(version));
->  
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig40F7EB796403E0284CD5E062
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Suppose currently version == 2.
+Am 08.03.2009 02:38 schrieb Arjan van de Ven:
+> from the ioctl manpage:
+>=20
+> ERRORS
+> 	[snip]
+>=20
+>        ENOTTY The specified request does not apply to the kind of
+>        object that the descriptor d references.
 
-guest: read version (2)
-guest: read sec
-    host: write version (1)
-    host: write sec
-    host: write nsec
-    host: write version (2)
-guest: read nsec
-guest: read version (2)
+Ok, I'm convinced. I'll redo the patch with ENOTTY instead of ENOSYS.
 
-So now we have inconsistent time (sec from old data, nsec from new data).
+Thanks,
+Tilman
 
-We need to make version a per-vm value.  Best to read it from guest 
-memory, so nothing special needs to be done for live migration.  Also 
-use mutual exclusion in kvm_write_wall_clock() - sequence locks don't 
-support multiple writers.
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
--- 
-error compiling committee.c: too many arguments to function
 
+--------------enig40F7EB796403E0284CD5E062
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFJs7mSQ3+did9BuFsRAsXxAJ9CLmk6MvK7v9kU1MLf1ihqIAoGDgCfbK5p
+5R6NfmJYTYjA5i9j+mEUBI8=
+=TRh8
+-----END PGP SIGNATURE-----
+
+--------------enig40F7EB796403E0284CD5E062--
