@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752935AbZCHOai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbZCHOay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752935AbZCHOai (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 10:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZCHOaL
+	id S1753271AbZCHOay (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 10:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbZCHOaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 10:30:11 -0400
-Received: from main.gmane.org ([80.91.229.2]:43705 "EHLO ciao.gmane.org"
+	Sun, 8 Mar 2009 10:30:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57848 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752621AbZCHOaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 10:30:10 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Manfred Knick <Manfred.Knick@T-Online.de>
-Subject: Re: [PATCH] xen: core dom0 support
-Date: Sun, 8 Mar 2009 14:25:12 +0000 (UTC)
-Message-ID: <loom.20090308T141818-855@post.gmane.org>
-References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <20090227212812.26d02f34.akpm@linux-foundation.org> <B4ED8DE8E195E84A872496A085BC07822F42@exchange01.corp.win-professional.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752996AbZCHOaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 10:30:21 -0400
+Message-ID: <49B3D678.4050004@redhat.com>
+Date: Sun, 08 Mar 2009 16:30:16 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Yu Zhao <yu.zhao@intel.com>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Yang, Sheng" <sheng.yang@intel.com>
+Subject: Re: [PATCH v10 0/7] PCI: Linux kernel SR-IOV support
+References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <49A3D04A.9010501@redhat.com> <20090306193329.GB25995@parisc-linux.org>
+In-Reply-To: <20090306193329.GB25995@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 79.239.236.208 (Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.0.7) Gecko/2009030813 Gentoo Firefox/3.0.7)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Morten P.D. Stevens <mstevens <at> win-professional.com> writes:
+Matthew Wilcox wrote:
+> On Tue, Feb 24, 2009 at 12:47:38PM +0200, Avi Kivity wrote:
+>   
+>> Do those patches allow using a VF on the host (in other words, does the 
+>> kernel emulate config space accesses)?
+>>     
+>
+> SR-IOV hardware handles config space accesses to virtual functions.  No
+> kernel changes needed for that aspect of it.
+>   
 
-> Here some benchmarks with Citrix XenServer 5.0 vs KVM with linux and windows
-guests on an IBM x3400 server:
+Patches 2 and 3 of the patchset that enables SR/IOV in kvm [1] suggest 
+that at the config space is only partially implemented.
 
-Thanks!
-Just out of curiosity, to complete your appreciated impression:
-Do you perhaps have the corresponding figures regarding e.g. VMware ESX(i)
-available?
+[1] http://thread.gmane.org/gmane.comp.emulators.kvm.devel/29034
 
-Thanks in advance!
-Manfred
-
+-- 
+error compiling committee.c: too many arguments to function
 
