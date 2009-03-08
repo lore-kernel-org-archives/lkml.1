@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752279AbZCHLFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbZCHLJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752279AbZCHLFB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 07:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZCHLEw
+	id S1752138AbZCHLJj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 07:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZCHLJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 07:04:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40028 "EHLO mx2.mail.elte.hu"
+	Sun, 8 Mar 2009 07:09:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40466 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751093AbZCHLEv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 07:04:51 -0400
-Date: Sun, 8 Mar 2009 12:04:37 +0100
+	id S1751256AbZCHLJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 07:09:26 -0400
+Date: Sun, 8 Mar 2009 12:08:35 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
        Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       David Miller <davem@davemloft.net>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] x86/pci: try to detect host_bridge pci_cfg_space
-Message-ID: <20090308110437.GA27811@elte.hu>
-References: <49B1C50E.5010209@kernel.org> <49B1C69F.70904@zytor.com> <49B1C81B.5010904@zytor.com> <49B1C8C1.4090304@kernel.org>
+       NetDev <netdev@vger.kernel.org>, linux-pci@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] pci: fix kexec with power state D3
+Message-ID: <20090308110835.GB27811@elte.hu>
+References: <49B1F934.5050006@kernel.org> <20090308101530.GB14133@elte.hu> <200903081128.35970.rjw@sisk.pl> <200903081133.33020.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49B1C8C1.4090304@kernel.org>
+In-Reply-To: <200903081133.33020.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,39 +41,54 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> H. Peter Anvin wrote:
-> > H. Peter Anvin wrote:
-> >> Yinghai Lu wrote:
-> >>> Impact: get correct pci_cfg_size for host_bridge
-> >>>
-> >>> more host bridges support 4k cfg, so check them directly
-> >>> instead of quirks.
-> >>>
-> >>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> >>
-> >> I'm utterly confused by this.  This is basically saying we should try
-> >> to probe for an extended device space for every host bridge. 
-> >> Logically speaking, this is valid: if there is a valid path by which
-> >> we can probe for byte 256 then it should succeed.
-> >>
-> >> HOWEVER, the same argument applies for *every single device*.  So if
-> >> this does indeed work, why should we limit it to host bridges?
-> >>
+> On Sunday 08 March 2009, Rafael J. Wysocki wrote:
+> > On Sunday 08 March 2009, Ingo Molnar wrote:
+> > > 
+> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > 
+> > > > On Sunday 08 March 2009, Yinghai Lu wrote:
+> > > > > 
+> > > > > Impact: second kernel by kexec will have some pci devices working
+> > > > > 
+> > > > > Found one system with 82575EB, in the kernel that is kexeced, probe igb
+> > > > > failed with -2.
+> > > > > 
+> > > > > it looks like the same behavior happened on forcedeth.
+> > > > > try to check system_state to make sure if put it on D3
+> > > > 
+> > > > This is not enough, because the PM code doesn't change 
+> > > > system_state and it uses pci_set_power_state too.
+> > > > 
+> > > > > Jesse Brandeburg said that we should do that check in core 
+> > > > > code instead of every device driver.
+> > > > 
+> > > > Well, I'm not really sure.  The drivers are where the bug is.
+> > > 
+> > > So Yinghai has now written a driver fix and a generic code fix 
+> > > as well and both are being rejected pointing to the other side? 
+> > > 
+> > > This really sucks for users (who'd be happy with any of the 
+> > > patches) and the disagreement needs to be resolved ASAP.
 > > 
-> > Looking at the code (as opposed to just the patch) made it a bit
-> > clearer.  The argument you're making here is that only host bridges are
-> > known to have extended address space without also having a PCI-X
-> > extension header, right?
+> > I hope you read my other comment (that you deleted from the reply)?
+> > 
+> > If we're going to fix this at the core level along the Yinghai's patch lines,
+> > we'll have to introduce a few additional values for system_state and make
+> > suspend and hibernation code use them.
+> > 
+> > Do you think it's worth the effort, given that only a couple of drivers have
+> > been found to be affected so far?
 > 
->  
-> Yes.
+> And, quite frankly, I'm not sure if users will be happy with 
+> the $subject patch, because it _really_ breaks things (well, 
+> the kexec users who don't use suspend might be, but surely 
+> suspend users who don't use kexec won't).
 
-This too should go into the v2 patch description. 
-
-I'd also suggest to flip around the subject line from x86/pci to 
-pci/x86 - it's more of a PCI patch than a pure x86 patch. The 
-same problem could affect other platforms too i suspect.
+Please note that i havent reviewed the patches and i did not 
+take any sides in the discussion - i just flagged the maintainer 
+ping-pong. As long as we pick one of the patches (or a third 
+one) within a bound amount of time we should be fine :)
 
 	Ingo
