@@ -1,121 +1,553 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751271AbZCHGVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751294AbZCHGjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751271AbZCHGVU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 01:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbZCHGVE
+	id S1751294AbZCHGjQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 01:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZCHGi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 01:21:04 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:46011 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbZCHGVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 01:21:01 -0500
-Date: Sat, 7 Mar 2009 22:20:59 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcu_barrier VS cpu_hotplug: Ensure callbacks in dead
-	cpu are migrated to online cpu
-Message-ID: <20090308062059.GO10625@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <49B2526E.40106@cn.fujitsu.com> <20090307172907.GH10625@linux.vnet.ibm.com> <49B33463.7010300@cn.fujitsu.com>
+	Sun, 8 Mar 2009 01:38:59 -0500
+Received: from mail-qy0-f122.google.com ([209.85.221.122]:58141 "EHLO
+	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732AbZCHGi5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 01:38:57 -0500
+X-Greylist: delayed 162047 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Mar 2009 01:38:56 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QBKgap4DLHa1oYEh8LmL1y3BIu/mPsOIvV8eXyf8kRa7rOgrPZeL0OzHA/zlwtdBz8
+         aRRJxzIUuh1p2ky1YcuTliZPezm3fy4eiE5gxI5dXe8MKm/bEWILoW+YzI5czI3I9s9A
+         Kvqm0AGIlBQxYIAE8bAPXii1h6o90+3IY5JOE=
+Date: Sat, 7 Mar 2009 22:38:43 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Bryan Wu <cooloney@kernel.org>,
+       Michael Hennerich <michael.hennerich@analog.com>
+Cc: akpm@linux-foundation.org, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Input/Touchscreen Driver: add support AD7877
+	touchscreen driver (try #5)
+Message-ID: <20090308063834.GA7102@dtor-d630.eng.vmware.com>
+References: <1224179768-14475-1-git-send-email-cooloney@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49B33463.7010300@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1224179768-14475-1-git-send-email-cooloney@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 08, 2009 at 10:58:43AM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
-> > On Sat, Mar 07, 2009 at 06:54:38PM +0800, Lai Jiangshan wrote:
-> >> [RFC]
-> >> I don't like this patch, but I thought for some days and I can't
-> >> thought out a better one.
-> >>
-> >> I'm very hope rcu_barrier() can be called anywhere(any sleepable context).
-> >> But get_online_cpus() is a very large lock, it limits rcu_barrier().
-> >>
-> >> We can avoid get_online_cpus() easily for rcupreempt by using a new rcu_barrier:
-> >> void rcu_barrier(void)
-> >> {
-> >> 	for each rcu_data {
-> >> 		lock rcu_data;
-> >> 		if rcu_data is not empty, queue a callback for rcu_barrier;
-> >> 		unlock rcu_data;
-> >> 	}
-> >> }
-> >> But we cannot use this algorithm for rcuclassic and rcutree,
-> >> rcu_data in rcuclassic and rcutree have not a spinlock for queuing callback.
-> >>
-> >> From: Lai Jiangshan <laijs@cn.fujitsu.com>
-> >>
-> >> cpu hotplug may be happened asynchronously, some rcu callbacks are maybe
-> >> still in dead cpu, rcu_barrier() also needs to wait for these rcu callbacks
-> >> to complete, so we must ensure callbacks in dead cpu are migrated to
-> >> online cpu.
-> > 
-> > Hmmm...  I thought that on_each_cpu() took care of interlocking with
-> > CPU hotplug via smp_call_function().  During a CPU-hotplug operation,
-> > the RCU callbacks do get migrated from the CPU going offline.  Are you
-> > seeing a sequence of events that finds a hole in this approach?
-> > 
-> > Now, if a CPU were to go offline in the middle of smp_call_function()
-> > there could be trouble, but I was under the impression that the
-> > preempt_disable() in on_each_cpu() prevented this from happening.
-> > 
-> > So, please tell me more!
-> > 
+Hi Bryan, Michael,
+
+On Fri, Oct 17, 2008 at 01:56:08AM +0800, Bryan Wu wrote:
+> From: Michael Hennerich <michael.hennerich@analog.com>
 > 
-> preempt_disable() ensure online cpu is still online until preempt_enable(),
-> but preempt_disable()/preempt_enable() can't ensure rcu callbacks migrated.
+> [try #5]
+>  - Fix indention
+>  - Lock spi_async()
+>  - Remove useless header comments
+>  - Use strict_strtoul
+>  - Use EDGE triggered interrupts ?\226?\128?\147 this simplifies some of the IRQ handling.
+>  - Fix error cleanup path
+>  - Remove duplicated code
+>  - SPI access functions parameter use struct spi_device
 > 
-> 
-> rcu_barrier()			|	_cpu_down()
-> 				|		__cpu_die() (cpu D is dead)
-> 	........................|............................
-> 	on_each_cpu()		|
-> 	........................|...........................
-> 	wait_for_completion()	|		rcu_offline_cpu() (move cpu D's
-> 				|			rcu callbacks to A,B,or C)
-> 
-> 
-> on_each_cpu() does not queue rcu_barrier_callback to cpu D(it's dead).
-> So rcu_barrier() will not wait for callbacks which are original at cpu D.
-> 
-> We need ensure callbacks in dead cpu are migrated to online cpu before
-> we call on_each_cpu().
 
-Good catch!!!  I did indeed miss that possibility.  :-/
+I looked at the latest version of the driver in Andrew's queue and I
+think it needs the following changes:
 
-Hmmmm...  rcu_barrier() already acquires a global mutex, and is an
-infrequent operation, so I am not all that worried about the scalability.
+- you can't have parts of bitfield updated from IRQ context and part from
+  process context unless every field is protected by the same spinlock.
 
-But I agree that there should be a better way to do this.  One approach
-might be to the dying CPU enqueue the rcu_barrier() callback on its
-own list when it goes offline, during the stop_machine() time period.
-This enqueuing operation would require some care -- it would be necessary
-to check to see if the callback was already on the list, for example,
-as well as to properly adjust the rcu_barrier_completion() state.
+- You need more full mutual exclusion between enable and disable so you
+  don't inadvertingly kill the timer if you disable and enable from
+  different processes.
 
-Of course, it would also be necessary to handle the case where an
-rcu_barrier() callback was enqueued when there was no rcu_barrier()
-in flight, preferably by preventing this from happening.
+- I think you need serialization in various store() methods so that
+  consistent values are written into chip's registers.
 
-An entirely different approach would be to steal a trick from CPU
-designers, and use a count of the number of rcu_barrier() calls (this
-counter could be a single bit).  Have a per-CPU counter of the number
-of callbacks outstanding for each counter value.  Then rcu_barrier()
-simply increments the rcu_barrier() counter, and waits until the
-number of outstanding callbacks corresponding to the old value drops
-to zero.  This would get rid of the need for rcu_barrier() to enqueue
-callbacks, preventing the scenario above from arising in the first
-place.
+- There were coule of inverted logic errors in disabling chip code.
 
-Other thoughts?
+- Kay is trying to get rid of bus_id in devices, you need to use
+  dev_name() instead.
 
-And again, good catch!!!
+Could you please try the patch below and let me know if the driver still
+works so I can commit it. I also did some formatting changes, I hope you
+don't mind. Thanks!
 
-						Thanx, Paul
+-- 
+Dmitry
+
+Input: ad7877 fixups
+
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+
+ drivers/input/touchscreen/ad7877.c |  226 ++++++++++++++++--------------------
+ 1 files changed, 99 insertions(+), 127 deletions(-)
+
+
+diff --git a/drivers/input/touchscreen/ad7877.c b/drivers/input/touchscreen/ad7877.c
+index 6615bcd..6702364 100644
+--- a/drivers/input/touchscreen/ad7877.c
++++ b/drivers/input/touchscreen/ad7877.c
+@@ -1,7 +1,7 @@
+ /*
+  * File:        drivers/input/touchscreen/ad7877.c
+  *
+- * Based on: 	ads7846.c
++ * Based on:	ads7846.c
+  *
+  *		Copyright (C) 2006-2008 Michael Hennerich, Analog Devices Inc.
+  *
+@@ -185,21 +185,24 @@ struct ad7877 {
+ 	u8			averaging;
+ 	u8			pen_down_acc_interval;
+ 
+-	u16 			conversion_data[AD7877_NR_SENSE];
++	u16			conversion_data[AD7877_NR_SENSE];
+ 
+ 	struct spi_transfer	xfer[AD7877_NR_SENSE + 2];
+ 	struct spi_message	msg;
+ 
++	struct mutex		mutex;
++	unsigned		disabled:1;	/* P: mutex */
++	unsigned		gpio3:1;	/* P: mutex */
++	unsigned		gpio4:1;	/* P: mutex */
++
+ 	spinlock_t		lock;
+ 	struct timer_list	timer;		/* P: lock */
+-	unsigned		pendown:1;	/* P: lock */
+ 	unsigned		pending:1;	/* P: lock */
+-	unsigned		disabled:1;
+-	unsigned		gpio3:1;
+-	unsigned		gpio4:1;
+ };
+ 
+ static int gpio3;
++module_param(gpio3, int, 0);
++MODULE_PARM_DESC(gpio3, "If gpio3 is set to 1 AUX3 acts as GPIO3");
+ 
+ /*
+  * ad7877_read/write are only used for initial setup and for sysfs controls.
+@@ -208,9 +211,10 @@ static int gpio3;
+ 
+ static int ad7877_read(struct spi_device *spi, u16 reg)
+ {
+-	struct ser_req		*req = kzalloc(sizeof *req, GFP_KERNEL);
+-	int			status, ret;
++	struct ser_req *req;
++	int status, ret;
+ 
++	req = kzalloc(sizeof *req, GFP_KERNEL);
+ 	if (!req)
+ 		return -ENOMEM;
+ 
+@@ -228,11 +232,8 @@ static int ad7877_read(struct spi_device *spi, u16 reg)
+ 	spi_message_add_tail(&req->xfer[1], &req->msg);
+ 
+ 	status = spi_sync(spi, &req->msg);
++	ret = status ? : req->sample;
+ 
+-	if (status == 0)
+-		status = req->msg.status;
+-
+-	ret = status ? status : req->sample;
+ 	kfree(req);
+ 
+ 	return ret;
+@@ -240,9 +241,10 @@ static int ad7877_read(struct spi_device *spi, u16 reg)
+ 
+ static int ad7877_write(struct spi_device *spi, u16 reg, u16 val)
+ {
+-	struct ser_req		*req = kzalloc(sizeof *req, GFP_KERNEL);
+-	int			status;
++	struct ser_req *req;
++	int status;
+ 
++	req = kzalloc(sizeof *req, GFP_KERNEL);
+ 	if (!req)
+ 		return -ENOMEM;
+ 
+@@ -256,9 +258,6 @@ static int ad7877_write(struct spi_device *spi, u16 reg, u16 val)
+ 
+ 	status = spi_sync(spi, &req->msg);
+ 
+-	if (status == 0)
+-		status = req->msg.status;
+-
+ 	kfree(req);
+ 
+ 	return status;
+@@ -266,12 +265,13 @@ static int ad7877_write(struct spi_device *spi, u16 reg, u16 val)
+ 
+ static int ad7877_read_adc(struct spi_device *spi, unsigned command)
+ {
+-	struct ad7877 		*ts = dev_get_drvdata(&spi->dev);
+-	struct ser_req		*req = kzalloc(sizeof *req, GFP_KERNEL);
+-	int			status;
+-	int			sample;
+-	int			i;
++	struct ad7877 *ts = dev_get_drvdata(&spi->dev);
++	struct ser_req *req;
++	int status;
++	int sample;
++	int i;
+ 
++	req = kzalloc(sizeof *req, GFP_KERNEL);
+ 	if (!req)
+ 		return -ENOMEM;
+ 
+@@ -314,21 +314,18 @@ static int ad7877_read_adc(struct spi_device *spi, unsigned command)
+ 		spi_message_add_tail(&req->xfer[i], &req->msg);
+ 
+ 	status = spi_sync(spi, &req->msg);
+-
+-	if (status == 0)
+-		status = req->msg.status;
+-
+ 	sample = req->sample;
+ 
+ 	kfree(req);
+-	return status ? status : sample;
++
++	return status ? : sample;
+ }
+ 
+ static void ad7877_rx(struct ad7877 *ts)
+ {
+-	struct input_dev	*input_dev = ts->input;
+-	unsigned		Rt;
+-	u16			x, y, z1, z2;
++	struct input_dev *input_dev = ts->input;
++	unsigned Rt;
++	u16 x, y, z1, z2;
+ 
+ 	x = ts->conversion_data[AD7877_SEQ_XPOS] & MAX_12BIT;
+ 	y = ts->conversion_data[AD7877_SEQ_YPOS] & MAX_12BIT;
+@@ -350,10 +347,7 @@ static void ad7877_rx(struct ad7877 *ts)
+ 		Rt = (z2 - z1) * x * ts->x_plate_ohms;
+ 		Rt /= z1;
+ 		Rt = (Rt + 2047) >> 12;
+-	} else
+-		Rt = 0;
+ 
+-	if (Rt) {
+ 		input_report_abs(input_dev, ABS_X, x);
+ 		input_report_abs(input_dev, ABS_Y, y);
+ 		input_report_abs(input_dev, ABS_PRESSURE, Rt);
+@@ -371,7 +365,7 @@ static inline void ad7877_ts_event_release(struct ad7877 *ts)
+ 
+ static void ad7877_timer(unsigned long handle)
+ {
+-	struct ad7877	*ts = (void *)handle;
++	struct ad7877 *ts = (void *)handle;
+ 
+ 	ad7877_ts_event_release(ts);
+ }
+@@ -382,78 +376,72 @@ static irqreturn_t ad7877_irq(int irq, void *handle)
+ 	unsigned long flags;
+ 	int status;
+ 
+-	/* The repeated conversion sequencer controlled by TMR kicked off too fast.
+-	 * We ignore the last and process the sample sequence currently in the queue
+-	 * It can't be older than 9.4ms, and we need to avoid that ts->msg
+-	 * doesn't get issued twice while in work.
++	/*
++	 * The repeated conversion sequencer controlled by TMR kicked off
++	 * too fast. We ignore the last and process the sample sequence
++	 * currently in the queue. It can't be older than 9.4ms, and we
++	 * need to avoid that ts->msg doesn't get issued twice while in work.
+ 	 */
+ 
+ 	spin_lock_irqsave(&ts->lock, flags);
+-	if (ts->pending) {
+-		spin_unlock_irqrestore(&ts->lock, flags);
+-		return IRQ_HANDLED;
++	if (!ts->pending) {
++		ts->pending = 1;
++
++		status = spi_async(ts->spi, &ts->msg);
++		if (status)
++			dev_err(&ts->spi->dev, "spi_sync --> %d\n", status);
+ 	}
+-	ts->pending = 1;
+ 	spin_unlock_irqrestore(&ts->lock, flags);
+ 
+-	status = spi_async(ts->spi, &ts->msg);
+-
+-	if (status)
+-		dev_err(&ts->spi->dev, "spi_sync --> %d\n", status);
+-
+ 	return IRQ_HANDLED;
+ }
+ 
+ static void ad7877_callback(void *_ts)
+ {
+ 	struct ad7877 *ts = _ts;
+-	unsigned long flags;
+ 
+-	ad7877_rx(ts);
++	spin_lock_irq(&ts->lock);
+ 
+-	spin_lock_irqsave(&ts->lock, flags);
++	ad7877_rx(ts);
+ 	ts->pending = 0;
+ 	mod_timer(&ts->timer, jiffies + TS_PEN_UP_TIMEOUT);
+-	spin_unlock_irqrestore(&ts->lock, flags);
++
++	spin_unlock_irq(&ts->lock);
+ }
+ 
+ static void ad7877_disable(struct ad7877 *ts)
+ {
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&ts->lock, flags);
+-	if (ts->disabled) {
+-		spin_unlock_irqrestore(&ts->lock, flags);
+-		return;
+-	}
++	mutex_lock(&ts->mutex);
+ 
+-	ts->disabled = 1;
+-	disable_irq(ts->spi->irq);
+-	spin_unlock_irqrestore(&ts->lock, flags);
++	if (!ts->disabled) {
++		ts->disabled = 1;
++		disable_irq(ts->spi->irq);
+ 
+-	while (ts->pending) /* Wait for spi_async callback */
+-		msleep(1);
++		/* Wait for spi_async callback */
++		while (ts->pending)
++			msleep(1);
+ 
+-	if (del_timer_sync(&ts->timer))
+-		ad7877_ts_event_release(ts);
++		if (del_timer_sync(&ts->timer))
++			ad7877_ts_event_release(ts);
++	}
+ 
+ 	/* we know the chip's in lowpower mode since we always
+ 	 * leave it that way after every request
+ 	 */
++
++	mutex_unlock(&ts->mutex);
+ }
+ 
+ static void ad7877_enable(struct ad7877 *ts)
+ {
+-	unsigned long flags;
++	mutex_lock(&ts->mutex);
+ 
+-	spin_lock_irqsave(&ts->lock, flags);
+ 	if (ts->disabled) {
+-		spin_unlock_irqrestore(&ts->lock, flags);
+-		return;
++		ts->disabled = 0;
++		enable_irq(ts->spi->irq);
+ 	}
+-	ts->disabled = 0;
+-	enable_irq(ts->spi->irq);
+-	spin_unlock_irqrestore(&ts->lock, flags);
++
++	mutex_unlock(&ts->mutex);
+ }
+ 
+ #define SHOW(name) static ssize_t \
+@@ -490,12 +478,11 @@ static ssize_t ad7877_disable_store(struct device *dev,
+ {
+ 	struct ad7877 *ts = dev_get_drvdata(dev);
+ 	unsigned long val;
+-	int ret;
++	int error;
+ 
+-	ret = strict_strtoul(buf, 10, &val);
+-
+-	if (ret)
+-		return ret;
++	error = strict_strtoul(buf, 10, &val);
++	if (error)
++		return error;
+ 
+ 	if (val)
+ 		ad7877_disable(ts);
+@@ -521,16 +508,16 @@ static ssize_t ad7877_dac_store(struct device *dev,
+ {
+ 	struct ad7877 *ts = dev_get_drvdata(dev);
+ 	unsigned long val;
+-	int ret;
+-
+-	ret = strict_strtoul(buf, 10, &val);
++	int error;
+ 
+-	if (ret)
+-		return ret;
++	error = strict_strtoul(buf, 10, &val);
++	if (error)
++		return error;
+ 
++	mutex_lock(&ts->mutex);
+ 	ts->dac = val & 0xFF;
+-
+ 	ad7877_write(ts->spi, AD7877_REG_DAC, (ts->dac << 4) | AD7877_DAC_CONF);
++	mutex_unlock(&ts->mutex);
+ 
+ 	return count;
+ }
+@@ -551,16 +538,17 @@ static ssize_t ad7877_gpio3_store(struct device *dev,
+ {
+ 	struct ad7877 *ts = dev_get_drvdata(dev);
+ 	unsigned long val;
+-	int ret;
++	int error;
+ 
+-	ret = strict_strtoul(buf, 10, &val);
+-	if (ret)
+-		return ret;
++	error = strict_strtoul(buf, 10, &val);
++	if (error)
++		return error;
+ 
++	mutex_lock(&ts->mutex);
+ 	ts->gpio3 = !!val;
+-
+ 	ad7877_write(ts->spi, AD7877_REG_EXTWRITE, AD7877_EXTW_GPIO_DATA |
+ 		 (ts->gpio4 << 4) | (ts->gpio3 << 5));
++	mutex_unlock(&ts->mutex);
+ 
+ 	return count;
+ }
+@@ -581,16 +569,17 @@ static ssize_t ad7877_gpio4_store(struct device *dev,
+ {
+ 	struct ad7877 *ts = dev_get_drvdata(dev);
+ 	unsigned long val;
+-	int ret;
++	int error;
+ 
+-	ret = strict_strtoul(buf, 10, &val);
+-	if (ret)
+-		return ret;
++	error = strict_strtoul(buf, 10, &val);
++	if (error)
++		return error;
+ 
++	mutex_lock(&ts->mutex);
+ 	ts->gpio4 = !!val;
+-
+ 	ad7877_write(ts->spi, AD7877_REG_EXTWRITE, AD7877_EXTW_GPIO_DATA |
+-		 (ts->gpio4 << 4) | (ts->gpio3 << 5));
++		     (ts->gpio4 << 4) | (ts->gpio3 << 5));
++	mutex_unlock(&ts->mutex);
+ 
+ 	return count;
+ }
+@@ -685,14 +674,10 @@ static int __devinit ad7877_probe(struct spi_device *spi)
+ 	}
+ 
+ 	ts = kzalloc(sizeof(struct ad7877), GFP_KERNEL);
+-	if (!ts)
+-		return -ENOMEM;
+-
+-
+ 	input_dev = input_allocate_device();
+-	if (!input_dev) {
+-		kfree(ts);
+-		return -ENOMEM;
++	if (!ts || !input_dev) {
++		err = -ENOMEM;
++		goto err_free_mem;
+ 	}
+ 
+ 	dev_set_drvdata(&spi->dev, ts);
+@@ -700,6 +685,7 @@ static int __devinit ad7877_probe(struct spi_device *spi)
+ 	ts->input = input_dev;
+ 
+ 	setup_timer(&ts->timer, ad7877_timer, (unsigned long) ts);
++	mutex_init(&ts->mutex);
+ 	spin_lock_init(&ts->lock);
+ 
+ 	ts->model = pdata->model ? : 7877;
+@@ -713,7 +699,7 @@ static int __devinit ad7877_probe(struct spi_device *spi)
+ 	ts->averaging = pdata->averaging;
+ 	ts->pen_down_acc_interval = pdata->pen_down_acc_interval;
+ 
+-	snprintf(ts->phys, sizeof(ts->phys), "%s/inputX", spi->dev.bus_id);
++	snprintf(ts->phys, sizeof(ts->phys), "%s/input0", dev_name(&spi->dev));
+ 
+ 	input_dev->name = "AD7877 Touchscreen";
+ 	input_dev->phys = ts->phys;
+@@ -761,30 +747,25 @@ static int __devinit ad7877_probe(struct spi_device *spi)
+ 	}
+ 
+ 	err = sysfs_create_group(&spi->dev.kobj, &ad7877_attr_group);
+-
+-	if (gpio3)
+-		err |= device_create_file(&spi->dev, &dev_attr_gpio3);
+-	else
+-		err |= device_create_file(&spi->dev, &dev_attr_aux3);
+-
+ 	if (err)
+ 		goto err_free_irq;
+ 
++	err = device_create_file(&spi->dev,
++				 gpio3 ? &dev_attr_gpio3 : &dev_attr_aux3);
++	if (err)
++		goto err_remove_attr_group;
++
+ 	err = input_register_device(input_dev);
+ 	if (err)
+ 		goto err_remove_attr;
+ 
+-	dev_info(&spi->dev, "touchscreen, irq %d\n", spi->irq);
+-
+ 	return 0;
+ 
+ err_remove_attr:
++	device_remove_file(&spi->dev,
++			   gpio3 ? &dev_attr_gpio3 : &dev_attr_aux3);
++err_remove_attr_group:
+ 	sysfs_remove_group(&spi->dev.kobj, &ad7877_attr_group);
+-
+-	if (gpio3)
+-		device_remove_file(&spi->dev, &dev_attr_gpio3);
+-	else
+-		device_remove_file(&spi->dev, &dev_attr_aux3);
+ err_free_irq:
+ 	free_irq(spi->irq, ts);
+ err_free_mem:
+@@ -798,19 +779,14 @@ static int __devexit ad7877_remove(struct spi_device *spi)
+ {
+ 	struct ad7877		*ts = dev_get_drvdata(&spi->dev);
+ 
+-	ad7877_disable(ts);
+-
+ 	sysfs_remove_group(&spi->dev.kobj, &ad7877_attr_group);
++	device_remove_file(&spi->dev,
++			   gpio3 ? &dev_attr_gpio3 : &dev_attr_aux3);
+ 
+-	if (gpio3)
+-		device_remove_file(&spi->dev, &dev_attr_gpio3);
+-	else
+-		device_remove_file(&spi->dev, &dev_attr_aux3);
+-
++	ad7877_disable(ts);
+ 	free_irq(ts->spi->irq, ts);
+ 
+ 	input_unregister_device(ts->input);
+-
+ 	kfree(ts);
+ 
+ 	dev_dbg(&spi->dev, "unregistered touchscreen\n");
+@@ -866,10 +842,6 @@ static void __exit ad7877_exit(void)
+ }
+ module_exit(ad7877_exit);
+ 
+-module_param(gpio3, int, 0);
+-MODULE_PARM_DESC(gpio3,
+-	"If gpio3 is set to 1 AUX3 acts as GPIO3");
+-
+ MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
+ MODULE_DESCRIPTION("AD7877 touchscreen Driver");
+ MODULE_LICENSE("GPL");
