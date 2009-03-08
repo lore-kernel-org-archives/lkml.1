@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbZCHDGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZCHDJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755683AbZCHDGe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 22:06:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZCHDGZ
+	id S1754475AbZCHDJs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 22:09:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbZCHDJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 22:06:25 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:53069 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752277AbZCHDGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 22:06:24 -0500
-Message-ID: <49B335F6.2030509@cn.fujitsu.com>
-Date: Sun, 08 Mar 2009 11:05:26 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sat, 7 Mar 2009 22:09:38 -0500
+Received: from mail.deathmatch.net ([70.167.247.36]:2624 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478AbZCHDJh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 22:09:37 -0500
+Date: Sat, 7 Mar 2009 22:09:28 -0500
+From: Bob Copeland <me@bobcopeland.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
+Message-ID: <20090308030928.GB14966@hash.localnet>
+References: <40f31dec0902231508l512af5b7w68cfcc0bdf3cfa87@mail.gmail.com> <20090224135817.GB6019@hash.localnet> <49A46AD4.3060007@gmail.com> <20090225140139.GA18694@silver.sucs.org> <20090226135938.GA12182@hash.localnet> <20090226170338.GA1745@silver.sucs.org> <20090303041222.GA1238@hash.localnet> <20090303200352.GA8343@silver.sucs.org> <20090304120759.GA6519@hash.localnet> <20090306094249.GA10236@silver.sucs.org>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcu_barrier VS cpu_hotplug: make rcu_barrier can be	called
- on CPU_DEAD
-References: <49B2526C.5070503@cn.fujitsu.com> <20090307172019.GG10625@linux.vnet.ibm.com>
-In-Reply-To: <20090307172019.GG10625@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090306094249.GA10236@silver.sucs.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Sat, Mar 07, 2009 at 06:54:36PM +0800, Lai Jiangshan wrote:
->> cpu hotplug notifier_call for CPU_DEAD are very complex, some notifier_call
->> may call rcu_barrier(), if this notifier_call is called earlier than
->> rcu_cpu_notify(), it is buggy.
->>
->> _cpu_down() -->
->> 	some_cpu_hotplug_notify() -->
->> 		case CPU_DEAD: rcu_barrier()
->> 	rcu_cpu_notify() -->
->> 		rcu_offline_cpu()
->>
->> When rcu_barrier() is called, rcu_barrier() does not know how to finish
->> his work: rcu callbacks in dead cpu have not been migrated to online cpu,
->> so rcu_barrier() cannot wait for these rcu callbacks, but rcu_barrier()
->> should wait for all queued rcu callbacks.
-> 
-> Hmmm...
-> 
-> What should happen in this case is that rcu_offline_cpu() moves the
-> rcu_barrier() callback to a surviving CPU, and then the rcu_barrier()
+On Fri, Mar 06, 2009 at 09:42:49AM +0000, Sitsofe Wheeler wrote:
+> > parallel with iwlist wlan0 scan (as root, so scans are actually 
+> > performed), in parallel with iperf or ping.  I didn't personally have
+> > luck with that workload, though.
 
-It's not about the rcu_barrier() callback, It's about rcu callbacks
-in dead cpu. rcu_barrier() should also wait for these rcu callbacks
-to complete. But these rcu callbacks are not migrated to online cpu,
-rcu_barrier() cannot wait for them.
+So I looked through this log for a few hours today.  Sorry to say
+that I don't have any answers, but here's a summary of what I saw:
 
-Thanks, Lai.
+- it didn't seem like there were any obvious race conditions at play;
+  that is, I didn't see other ath5k_XXX functions being pre-empted
+  by ath5k_intr, followed by the softirq.
 
+- there were a few errors prior to catching the poison.  I don't think
+  the trace contains enough info to say whether they were phy errors,
+  unsupported jumbo type errors, or whatever.  Anyway there didn't seem
+  to be any obvious causal pattern, nothing like an error on the
+  40th previous buffer or a cascading series of errors.  Of course, 
+  the error could have happened much earlier compared to when the skbuff
+  in the freelist got reused.
 
-> should complete just fine at the end of a subsequent grace period.
-> In fact, this is why it is so important to keep RCU callbacks ordered
-> through CPU-hotplug operations.
-> 
-> Or do you have a test that demonstrates a failure in this case?
-> If so, please share!
-> 
+At this point, I guess the best way forward is to have a special debug
+patch for when we pass an skb up the stack, when it gets allocated, and
+what is in the descriptors.
+
+Jiri, I really think we should implement that better check for the
+self linked descriptor using the rxdp register.  bf_last is no longer a
+valid marker for the self-linked descriptor at the end of the loop since
+we re-add the just-processed descriptor every time through the loop  
+(or am I missing something?)...  If you want I'll cook up a patch for 
+that too.
+
+-- 
+Bob Copeland %% www.bobcopeland.com
+
