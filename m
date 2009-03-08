@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751926AbZCHMIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751833AbZCHMP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751926AbZCHMIG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 08:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbZCHMHy
+	id S1751833AbZCHMP3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 08:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbZCHMPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 08:07:54 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:52619 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751271AbZCHMHx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 08:07:53 -0400
-Subject: Re: Staging, place holder for better company/community development
-	model
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jouni Malinen <j@w1.fi>, Sujith <m.sujith@gmail.com>,
-       Sujith <Sujith.Manoharan@atheros.com>,
-       Senthilkumar Balasubramanian 
-	<Senthilkumar.Balasubramanian@atheros.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Vasanthakumar Thiagarajan <vasanth@atheros.com>
-In-Reply-To: <43e72e890903022314o44ae710u834d6207403fd4a2@mail.gmail.com> (sfid-20090303_081500_233847_F31CB324)
-References: <43e72e890903022314o44ae710u834d6207403fd4a2@mail.gmail.com>
-	 (sfid-20090303_081500_233847_F31CB324)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-6ZDSZhnRAIMuWoVqgE4R"
-Date: Sun, 08 Mar 2009 13:07:45 +0100
-Message-Id: <1236514065.4205.9.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sun, 8 Mar 2009 08:15:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35656 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751113AbZCHMPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 08:15:11 -0400
+Message-ID: <49B3B6CC.2010304@redhat.com>
+Date: Sun, 08 Mar 2009 14:15:08 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Glauber Costa <glommer@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove static declaration from wall clock version
+References: <1235677340-3139-1-git-send-email-glommer@redhat.com>
+In-Reply-To: <1235677340-3139-1-git-send-email-glommer@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Glauber Costa wrote:
+> Matt T. Yourst noted that we're currently having a dumb
+> race for no reason in paravirtual wall clock. This is due
+> to the use of a static variable to hold the counting.
+>
+> This can race with multiple guests reading wallclock
+> at the same time, since the static variable value would
+> then be accessible to all callers. This wasn't noted
+> before because it is a rather rare scenario.
+>
+> Instead, just use a normal stack variable. This will
+> mean that each caller will have it's version written
+> separatedly. No need for a global counter.
+>
+> Signed-off-by: Glauber Costa <glommer@redhat.com>
+> ---
+>  arch/x86/kvm/x86.c |    4 +---
+>  1 files changed, 1 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 2511708..d7236f6 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -548,15 +548,13 @@ static int do_set_msr(struct kvm_vcpu *vcpu, unsigned index, u64 *data)
+>  
+>  static void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock)
+>  {
+> -	static int version;
+> +	int version = 1;
+>  	struct pvclock_wall_clock wc;
+>  	struct timespec now, sys, boot;
+>  
+>  	if (!wall_clock)
+>  		return;
+>  
+> -	version++;
+> -
+>  	kvm_write_guest(kvm, wall_clock, &version, sizeof(version));
+>  
 
---=-6ZDSZhnRAIMuWoVqgE4R
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Suppose currently version == 2.
 
-On Mon, 2009-03-02 at 23:14 -0800, Luis R. Rodriguez wrote:
+guest: read version (2)
+guest: read sec
+    host: write version (1)
+    host: write sec
+    host: write nsec
+    host: write version (2)
+guest: read nsec
+guest: read version (2)
 
-> If we should take this approach -- should we send patches for wireless
-> staging to John, or Greg? It would still be "crap" so I don't expect
-> John to accept to help maintain crap but what if its crap with a clear
-> defined path to un-crap land?
+So now we have inconsistent time (sec from old data, nsec from new data).
 
-FWIW, I would MUCH prefer if the staging crap never passed any official
-mailing lists.
+We need to make version a per-vm value.  Best to read it from guest 
+memory, so nothing special needs to be done for live migration.  Also 
+use mutual exclusion in kvm_write_wall_clock() - sequence locks don't 
+support multiple writers.
 
-johannes
-
---=-6ZDSZhnRAIMuWoVqgE4R
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJs7UOAAoJEKVg1VMiehFYQ28QAI+aLnN9iAkoHxYzT6nVutoT
-FEOgWuBqrACSGdWVUU1mspBOJzEDrtIQeMTET5cEtfg5SziMt2CR7UWGTldU/FlO
-wBs0gWK4ZZEokiIBrm+HdpBwcFaXTWNgFojdpfCwuburpaxh1UtixVIesr59HYL/
-u4xuIQ2fGH2zPy14iSU31u1uXJC5dNvP++KktniKm6WYRV6NdjEjUIfPD9ajd8qy
-K4wjvqdpEWGeaQdl4IxE98FFZOzzqLa+O0peC57nwdG1h7Uj1pkTBHSRZwg+9fT0
-U2bp7uK4oP9u1D8OmDbXrMgNQoI08pd0suJlNYSiDds6Q1nLlafdjSWP7albo8Ij
-+ZB0rUO0pL4RbNoMMHn99VgDLcas32oZUF7ui6EZ/Q3X492ASgsahyxEotw4Hs9V
-XqWs8nu7tMjcPaif/utI1pxgDvuVZ3/ifRjSBj7fgcbKl970Nxn49HQRkrcD/Wlu
-KL2gbd9JCyni6jvpaN7Y5KpZY7oIgnfNpuvOQsMQLu0iXaejUlcWZnjysy2rUI9F
-iYEHoSvf5EN4RCBm7fzU7yVE9c2uyyUO8qmY68PaIao3K28fKlJxitytHTInpKVK
-oin4qJ4DhAA47YJx0MA7M5JJDtdttfCGGv0h3EdpUt1oLs2/udTF6X4P29s5PQvS
-PBQuD83QG2zOMp5HTegI
-=vCYi
------END PGP SIGNATURE-----
-
---=-6ZDSZhnRAIMuWoVqgE4R--
+-- 
+error compiling committee.c: too many arguments to function
 
