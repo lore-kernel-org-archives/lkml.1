@@ -1,109 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbZCHUSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbZCHUVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754391AbZCHUSY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 16:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZCHUSQ
+	id S1754360AbZCHUVK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 16:21:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbZCHUU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 16:18:16 -0400
-Received: from support.balabit.hu ([195.70.41.86]:49249 "EHLO lists.balabit.hu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753733AbZCHUSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 16:18:15 -0400
-Subject: Re: scheduler oddity [bug?]
-From: Balazs Scheidler <bazsi@balabit.hu>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <1236451624.16726.32.camel@bzorp.balabit>
-References: <1236448069.16726.21.camel@bzorp.balabit>
-	 <1236451624.16726.32.camel@bzorp.balabit>
-Content-Type: text/plain
-Date: Sun, 08 Mar 2009 20:45:24 +0100
-Message-Id: <1236541524.19045.6.camel@bzorp.balabit>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Sun, 8 Mar 2009 16:20:56 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40392 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753817AbZCHUUz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 16:20:55 -0400
+To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] A simple way to determine if the kernel needs HIGHMEM64G to be able to use all the installed memory
+From: Andi Kleen <andi@firstfloor.org>
+References: <49B254C6.8010507@pardus.org.tr>
+	<20090307193026.GA2165@x200.localdomain>
+	<49B2CE44.4060305@pardus.org.tr>
+Date: Sun, 08 Mar 2009 21:20:49 +0100
+In-Reply-To: <49B2CE44.4060305@pardus.org.tr> (Ozan =?utf-8?B?w4dhxJ9sYXlh?=
+ =?utf-8?B?bidz?= message of "Sat, 07 Mar 2009 21:43:00 +0200")
+Message-ID: <87r617ojfi.fsf@firstfloor.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-07 at 19:47 +0100, Balazs Scheidler wrote:
-> On Sat, 2009-03-07 at 18:47 +0100, Balazs Scheidler wrote:
-> > Hi,
-> > 
-> > I've tested this on 3 computers and each showed the same symptoms:
-> >  * quad core Opteron, running Ubuntu kernel 2.6.27-13.29
-> >  * Core 2 Duo, running Ubuntu kernel 2.6.27-11.27
-> >  * Dual Core Opteron, Debian backports.org kernel 2.6.26-13~bpo40+1
-> > 
-> > Is this a bug, or a feature?
-> > 
-> 
-> One new interesting information: I've retested with a 2.6.22 based
-> kernel, and it still works there, setting the CPU affinity does not
-> change the performance of the test program and mpstat nicely shows that
-> 2 cores are working, not just one.
-> 
-> Maybe this is CFS related? That was merged for 2.6.23 IIRC.
-> 
-> Also, I tried changing various scheduler knobs
-> in /proc/sys/kernel/sched_* but they didn't help. I've tried to change
-> these:
-> 
->  * sched_migration_cost: changed from the default 500000 to 100000 and
-> then 10000 but neither helped.
->  * sched_nr_migrate: increased it to 64, but again nothing
-> 
-> I'm starting to think that this is a regression that may or may not be
-> related to CFS. 
-> 
-> I don't have a box where I could bisect on, but the test program makes
-> the problem quite obvious.
+Ozan Çağlayan <ozan@pardus.org.tr> writes:
+>
+> So, the PAE enabled kernel should be installed by distribution installers or
+> package management systems if the processor honors the PAE bit. Because PAE
+> is an extension mechanism for 32bit processors, AFAIK it has some overhead.
+> So enabling it if the user doesn't have a memory size >=4GB would not make
+> much sense if a proper noexecute (NX) support is not intended.
 
-Some more test results:
+The general recommendation is to always use PAE when the machine 
+is NX capable. Or at least use it by default.
 
-Latest tree from Linus seems to work, at least the program runs on both
-cores as it should. I bisected the patch that changed behaviour, and
-I've found this:
+> Fedora installer parses /proc/iomem to see if any address listed is bigger than
+> 0x100000000h. I checked it on a machine having 4GB of memory, and it failed.
 
-commit 38736f475071b80b66be28af7b44c854073699cc
-Author: Gautham R Shenoy <ego@in.ibm.com>
-Date:   Sat Sep 6 14:50:23 2008 +0530
+Newer kernels have the memmap in /sys/firmware/memmap to export the memory
+map. If anything is in there >4GB you need PAE.
 
-    sched: fix __load_balance_iterator() for cfq with only one task
-    
-    The __load_balance_iterator() returns a NULL when there's only one
-    sched_entity which is a task. It is caused by the following code-path.
-    
-    	/* Skip over entities that are not tasks */
-    	do {
-    		se = list_entry(next, struct sched_entity, group_node);
-    		next = next->next;
-    	} while (next != &cfs_rq->tasks && !entity_is_task(se));
-    
-    	if (next == &cfs_rq->tasks)
-    		return NULL;
-    	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-          This will return NULL even when se is a task.
-    
-    As a side-effect, there was a regression in sched_mc behavior since 2.6.25,
-    since iter_move_one_task() when it calls load_balance_start_fair(),
-    would not get any tasks to move!
-    
-    Fix this by checking if the last entity was a task or not.
-    
-    Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-    Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+But there's also the problem that a few systems have MMIO mappings above 4GB.
+If you're lucky they are in the memmap too, but sometimes they are not.
 
+For those you also always need PAE. The only way to check for that
+would be to load all drivers and then check /proc/iomem or walk
+the PCI resources (in /sys/bus/pci). That would be still not 100% fool
+proof, but probably as good as you can get.
 
-This patch was integrated for 2.6.28. With the above patch, my test program uses 
-two cores as it should. I could only test this in a virtual machine so I don't 
-know exact performance metrics, but I'll test 2.6.27 + plus this patch on a real 
-box tomorrow to see if this was the culprit.
-
-I'm not sure if this is related to the avg_overlap discussion (which I honestly 
-don't really understand :)
-
-
--- 
-Bazsi
-
-
+-Andi
