@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751273AbZCHHVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751185AbZCHHYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751273AbZCHHVn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 03:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbZCHHVd
+	id S1751185AbZCHHYh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 03:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbZCHHY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 03:21:33 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:56816 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750844AbZCHHVc (ORCPT
+	Sun, 8 Mar 2009 03:24:28 -0400
+Received: from ti-out-0910.google.com ([209.85.142.189]:36602 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbZCHHY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 03:21:32 -0400
-From: Frans Pop <elendil@planet.nl>
-To: linux-s390@vger.kernel.org
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
-Date: Sun, 8 Mar 2009 08:21:28 +0100
-User-Agent: KMail/1.9.9
-Cc: Roman Zippel <zippel@linux-m68k.org>, John Stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200903080230.10099.elendil@planet.nl>
-In-Reply-To: <200903080230.10099.elendil@planet.nl>
+	Sun, 8 Mar 2009 03:24:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=fvpg9qM9KcwWyG7NJRlEDODA9LkGF9WAVnDvowjYF7F3RfkLGnRUMmjjnmPBe861bA
+         EjpcPNXz2qPA1vkGTs5ydmuSPCpQu1XNFuMq0t+ntDdOoNsICtZ5R/bPj0bGAMJ+ljox
+         M0eJuDbjeCh1ybmpARz2gzsTHAAAMMdsgGmww=
+Date: Sun, 8 Mar 2009 15:24:43 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: [trivial Patch] uml: improve error messages
+Message-ID: <20090308072443.GB30016@hack.private>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903080821.29609.elendil@planet.nl>
-X-OriginalArrivalTime: 08 Mar 2009 07:21:30.0455 (UTC) FILETIME=[80756670:01C99FBE]
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 March 2009, Frans Pop wrote:
-> Kernels after 2.6.27 fail to boot in the Hercules S/390 emulator, quite
-> early in the boot process:
->      0.141419! Initializing cgroup subsys ns
->      0.141605! Initializing cgroup subsys cpuacct
->      0.142009! Initializing cgroup subsys devices
->      0.180403! cpu: 2 configured CPUs, 0 standby CPUs
->
-> I've bisected this to the following commit:
-> commit 5cd1c9c5cf30d4b33df3d3f74d8142f278d536b7
-> Author: Roman Zippel <zippel@linux-m68k.org>
-> Date:   Mon Sep 22 14:42:43 2008 -0700
->     timekeeping: fix rounding problem during clock update
->
-> After reverting 5cd1c9c5cf30 and the somewhat related 6c9bacb41c10 on
-> top of 2.6.28.7, the system boots OK again.
 
-JFYI, with the same reverts 2.6.29-rc7 boots correctly too.
+These error messages are from check_sysemu(), not check_ptrace().
+
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Jeff Dike <jdike@addtoit.com>
+
+---
+diff --git a/arch/um/os-Linux/start_up.c b/arch/um/os-Linux/start_up.c
+index 183db26..02ee9ad 100644
+--- a/arch/um/os-Linux/start_up.c
++++ b/arch/um/os-Linux/start_up.c
+@@ -244,7 +244,7 @@ static void __init check_sysemu(void)
+ 
+ 	if ((ptrace(PTRACE_OLDSETOPTIONS, pid, 0,
+ 		   (void *) PTRACE_O_TRACESYSGOOD) < 0))
+-		fatal_perror("check_ptrace: PTRACE_OLDSETOPTIONS failed");
++		fatal_perror("check_sysemu: PTRACE_OLDSETOPTIONS failed");
+ 
+ 	while (1) {
+ 		count++;
+@@ -252,12 +252,12 @@ static void __init check_sysemu(void)
+ 			goto fail;
+ 		CATCH_EINTR(n = waitpid(pid, &status, WUNTRACED));
+ 		if (n < 0)
+-			fatal_perror("check_ptrace : wait failed");
++			fatal_perror("check_sysemu: wait failed");
+ 
+ 		if (WIFSTOPPED(status) &&
+ 		    (WSTOPSIG(status) == (SIGTRAP|0x80))) {
+ 			if (!count) {
+-				non_fatal("check_ptrace : SYSEMU_SINGLESTEP "
++				non_fatal("check_sysemu: SYSEMU_SINGLESTEP "
+ 					  "doesn't singlestep");
+ 				goto fail;
+ 			}
+@@ -271,7 +271,7 @@ static void __init check_sysemu(void)
+ 		else if (WIFSTOPPED(status) && (WSTOPSIG(status) == SIGTRAP))
+ 			count++;
+ 		else {
+-			non_fatal("check_ptrace : expected SIGTRAP or "
++			non_fatal("check_sysemu: expected SIGTRAP or "
+ 				  "(SIGTRAP | 0x80), got status = %d\n",
+ 				  status);
+ 			goto fail;
+
+ 
