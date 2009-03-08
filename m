@@ -1,73 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbZCHXCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZCHXEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755405AbZCHXCm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 19:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbZCHXCd
+	id S1755423AbZCHXEV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 19:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbZCHXEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 19:02:33 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:56263 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754854AbZCHXCd (ORCPT
+	Sun, 8 Mar 2009 19:04:07 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:12315 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754728AbZCHXEE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 19:02:33 -0400
+	Sun, 8 Mar 2009 19:04:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=M/uUUH7ABfv0DBtm9txaBsPUoV81HvME54mc3IarIRji6ghinecRJRZOKxxFN95LwS
-         ElbLvH0wyncZ6DTG8nRTvYu9Hd4Fd3jaHUkYDZPQEat2uRwYkeGPi4HTaGB7gkcF6KD/
-         f0GV+oij7GyduJyU1Tww1tarB+dgdbhGcXL6o=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=qNWzVsQLVfPjf5Ua7OLlBLVogFm/h86UF6RK+gnSjW+KOwvUEhGCvk4i6om8PXYKjc
+         Z3vV+QN0PgWdac/BvtKWjcN65vfnQBFNR7NJzCjd4t9UDyyRoUfg21YJk4E1dOYK3N/R
+         RVvfigNU3MWy1x8zL1tf/6qycB/JYkiNphxEw=
 MIME-Version: 1.0
-In-Reply-To: <43e72e890903022314o44ae710u834d6207403fd4a2@mail.gmail.com>
-References: <43e72e890903022314o44ae710u834d6207403fd4a2@mail.gmail.com>
-Date: Mon, 9 Mar 2009 00:02:30 +0100
-Message-ID: <c384c5ea0903081602j5d8a91b7pad5eec80fffd3274@mail.gmail.com>
-Subject: Re: Staging, place holder for better company/community development 
-	model
-From: Leon Woestenberg <leon.woestenberg@gmail.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Greg KH <greg@kroah.com>,
+In-Reply-To: <200903082357.19623.rjw@sisk.pl>
+References: <49B1F934.5050006@kernel.org> <200903082232.36660.rjw@sisk.pl>
+	 <86802c440903081535n7cca1b79t85d4b1bfd677483b@mail.gmail.com>
+	 <200903082357.19623.rjw@sisk.pl>
+Date: Sun, 8 Mar 2009 16:04:02 -0700
+X-Google-Sender-Auth: 8b0b3bb88030fb20
+Message-ID: <86802c440903081604u5321ea0y1160cfa4a0504f9@mail.gmail.com>
+Subject: Re: [PATCH] igb: fix kexec with igb
+From: Yinghai Lu <yinghai@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jouni Malinen <j@w1.fi>, Sujith <m.sujith@gmail.com>,
-       Sujith <Sujith.Manoharan@atheros.com>,
-       Senthilkumar Balasubramanian 
-	<Senthilkumar.Balasubramanian@atheros.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Vasanthakumar Thiagarajan <vasanth@atheros.com>
+       NetDev <netdev@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On Tue, Mar 3, 2009 at 8:14 AM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
+On Sun, Mar 8, 2009 at 3:57 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Sunday 08 March 2009, Yinghai Lu wrote:
+>> On Sun, Mar 8, 2009 at 2:32 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > On Sunday 08 March 2009, Rafael J. Wysocki wrote:
+>> >> On Sunday 08 March 2009, Yinghai Lu wrote:
+>> >> > Rafael J. Wysocki wrote:
+>> >> > > On Saturday 07 March 2009, Yinghai Lu wrote:
+>> >> > >> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
+>> >> > >> <jesse.brandeburg@gmail.com> wrote:
+>> >> > >>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+>> >> > >>>> Impact: could probe igb
+>> >> > >>>>
+>> >> > >>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
+>> >> > >>>> failed with -2.
+>> >> > >>>>
+>> >> > >>>> it looks like the same behavior happened on forcedeth.
+>> >> > >>>>
+>> >> > >>>> try to check system_state to make sure if put it on D3
+>> >> > >>>>
+>> >> > >>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>> >> > >>>>
+>> >> > >>>> ---
+>> >> > >>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
+>> >> > >>>>  1 file changed, 14 insertions(+), 5 deletions(-)
+>> >> > >>> I see the point of the patch, but I know for a fact that ixgbe when
+>> >> > >>> enabled for MSI-X also doesn't work with kexec.
+>> >> > >>>
+>> >> > >>> so my questions are:
+>> >> > >>> are you going to change every driver?
+>> >> > >> i tend to only change driver that i have related HW.
+>> >> > >>
+>> >> > >>> why can't this be fixed in core kernel code instead?
+>> >> > >> will check it.
+>> >> > >>
+>> >> > >>> Shouldn't pci_enable_device take it out of D3?
+>> >> > >>> Or maybe it should be taken out of D3 immediately if someone tries to
+>> >> > >>> ioremap any of the BARx registers?
+>> >> > >>
+>> >> > >> looks like second kernel can not detect the state any more.
+>> >> > >
+>> >> > > In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
+>> >> > > thing.  The question is why it doesn't work as expected.
+>> >> >
+>> >> > not sure... please check the version for forcedeth that you made.
+>> >> >
+>> >> > commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
+>> >> > Author: Rafael J. Wysocki <rjw@sisk.pl>
+>> >> > Date:   Fri Sep 5 14:00:19 2008 -0700
+>> >> >
+>> >> >     forcedeth: fix kexec regression
+>> >> >
+>> >> >     Fix regression tracked as http://bugzilla.kernel.org/show_bug.cgi?id=11361
+>> >> >     and caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
+>> >> >     forcedeth: setup wake-on-lan before shutting down") that makes network
+>> >> >     adapters integrated into the NVidia MCP55 chipsets fail to work in kexeced
+>> >> >     kernels.  The problem appears to be that if the adapter is put into D3_hot
+>> >> >     during ->shutdown(), it cannot be brought back into D0 after kexec (ref.
+>> >> >     http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore, only
+>> >> >     put forcedeth into D3 during ->shutdown() if the system is to be powered
+>> >> >     off.
+>> >>
+>> >> Thanks, I remember now.
+>> >
+>> > In which case you need to rework igb_shutdown() rather than igb_suspend().
+>> >
+>> > Something like the patch below, perhaps (totally untested).
+>> >
+>> > Thanks,
+>> > Rafael
+>> >
+>> > ---
+>> >  drivers/net/igb/igb_main.c |   24 +++++++++++++++++++-----
+>> >  1 file changed, 19 insertions(+), 5 deletions(-)
+>> >
+>> > Index: linux-2.6/drivers/net/igb/igb_main.c
+>> > ===================================================================
+>> > --- linux-2.6.orig/drivers/net/igb/igb_main.c
+>> > +++ linux-2.6/drivers/net/igb/igb_main.c
+>> > @@ -4299,7 +4299,7 @@ int igb_set_spd_dplx(struct igb_adapter
+>> >  }
+>> >
+>> >
+>> > -static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
+>> > +static int __igb_shutdown(struct pci_dev *pdev, bool enable_wake)
+>> >  {
+>> >        struct net_device *netdev = pci_get_drvdata(pdev);
+>> >        struct igb_adapter *adapter = netdev_priv(netdev);
+>> > @@ -4359,7 +4359,7 @@ static int igb_suspend(struct pci_dev *p
+>> >        }
+>> >
+>> >        /* make sure adapter isn't asleep if manageability/wol is enabled */
+>> > -       if (wufc || adapter->en_mng_pt) {
+>> > +       if ((wufc || adapter->en_mng_pt) && enable_wake) {
+>> >                pci_enable_wake(pdev, PCI_D3hot, 1);
+>> >                pci_enable_wake(pdev, PCI_D3cold, 1);
+>> >        } else {
+>> > @@ -4374,12 +4374,21 @@ static int igb_suspend(struct pci_dev *p
+>> >
+>> >        pci_disable_device(pdev);
+>> >
+>> > -       pci_set_power_state(pdev, pci_choose_state(pdev, state));
+>> > -
+>> >        return 0;
+>> >  }
+>> >
+>> >  #ifdef CONFIG_PM
+>> > +static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
+>> > +{
+>> > +       int retval;
+>> > +
+>> > +       retval = __igb_shutdown(pdev, true);
+>> > +       if (!retval)
+>> > +               pci_set_power_state(pdev, PCI_D3hot);
+>> > +
+>> > +       return retval;
+>> > +}
+>> > +
+>> >  static int igb_resume(struct pci_dev *pdev)
+>> >  {
+>> >        struct net_device *netdev = pci_get_drvdata(pdev);
+>> > @@ -4434,7 +4443,12 @@ static int igb_resume(struct pci_dev *pd
+>> >
+>> >  static void igb_shutdown(struct pci_dev *pdev)
+>> >  {
+>> > -       igb_suspend(pdev, PMSG_SUSPEND);
+>> > +       if (system_state == SYSTEM_POWER_OFF) {
+>> > +               __igb_shutdown(pdev, true);
+>> > +               pci_set_power_state(pdev, PCI_D3hot);
+>>
+>> you don't need to use pci_choose_state(pdev, state), but use PCI-D3hot directly?
 >
-> With future devices we may want to create a better path for
-> integration into upstream drivers. But I also want users to get
-> support for the devices as soon as those devices hit shelves in the
-> market, maybe even before.
+> Yes, because we've already decided we'd put the device into D3_hot by calling
+> pci_enable_wake(pdev, PCI_D3hot, 1) in __igb_shutdown().
 >
-The situation prior to the staging/ tree, was that niche drivers often
-lived outside of the kernel tree, without much exposure and without
-API consistency.
+> In fact we should first determine the target state and _then_ call
+> pci_enable_wake() and pci_set_power_state() with that as the argument, but this
+> is a separate issue.  For now, IMO, it's better to use D3_hot in both places
+> directly.
+>
+> On a slightly related note, the sequence
+>
+>                pci_enable_wake(pdev, PCI_D3hot, 1);
+>                pci_enable_wake(pdev, PCI_D3cold, 1);
+>
+> is (slightly) incorrect by itself, because ACPI doesn't distinguish bewteen
+> D3_hot and D3_cold, so this just causes the same platform code to run twice,
+> which may or may not work (it theory it should always work, but still).
+>
+> This is yet another problem, though.
 
-With staging/ available, there should be no reason for either a
-company or individual(s) to develop a Linux driver outside the kernel
-tree.
+can you go through e1000, e1000e, ixgb, ixgbe too?
 
-A driver can live there until enough momentum (devices in the field,
-in Linux developer hands) exists to have the driver reworked for main
-tree clearance.
-
-At least, with this in the back of my head I submitted my driver to
-staging which would otherwise live in a secret place. I have contacted
-the hardware vendor and they are (not yet) interested in Linux
-support. I am counting the days before they will.
-
-Regards,
--- 
-Leon
+YH
