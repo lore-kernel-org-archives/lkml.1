@@ -1,43 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbZCHAlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZCHAze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbZCHAlo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 19:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZCHAlg
+	id S1754463AbZCHAze (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 19:55:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZCHAzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 19:41:36 -0500
-Received: from vs832.rosehosting.com ([209.135.157.232]:54497 "EHLO
-	aura.v7w.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751353AbZCHAlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 19:41:35 -0500
-X-Greylist: delayed 2089 seconds by postgrey-1.27 at vger.kernel.org; Sat, 07 Mar 2009 19:41:35 EST
-Date: Sun, 8 Mar 2009 11:05:07 +1100
-From: =?iso-8859-1?Q?An=EDbal?= Monsalve Salazar <anibal@debian.org>
-To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Hello
-Message-ID: <20090308000507.GJ2465@debianrules.debiancolombia.org>
-Mail-Followup-To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <2d05c4580903071127i7531c6f7la6598dbf4d25750@mail.gmail.com>
+	Sat, 7 Mar 2009 19:55:21 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:55699 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751544AbZCHAzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 7 Mar 2009 19:55:20 -0500
+X-Sasl-enc: lqvdIrgZ6oRCJ4LEVyQ/Vvn5r/GM/EyL16B5ntxynJ+v 1236473718
+Message-ID: <49B3176A.7000004@imap.cc>
+Date: Sun, 08 Mar 2009 01:55:06 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <2d05c4580903071127i7531c6f7la6598dbf4d25750@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Arjan van de Ven <arjan@infradead.org>
+CC: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Paul Bolle <pebolle@tiscali.nl>, Hansjoerg Lipp <hjlipp@web.de>
+Subject: Re: [PATCH 1/2] gigaset: return -ENOSYS for unimplemented functions
+References: <20090307-patch-00.tilman@imap.cc>	<20090307-patch-01.tilman@imap.cc>	<20090307142609.2995bb3d@infradead.org>	<49B30FC4.5040305@imap.cc> <20090307163522.1165494b@infradead.org>
+In-Reply-To: <20090307163522.1165494b@infradead.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig1BCE8383244CF301D995FF9D"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 07, 2009 at 08:27:40PM +0100, Dragoslav Zaric wrote:
->I have read rules of this mailing list (no personal questions and
->problems) and I have done my basic homework, so my question is how can
->I contribute to Linux development, or more precise what is the process
->of development? Is there some list what should be done or should I make
->recommendations and ask someone is it ok to be implemented. Or maybe
->implement and present results?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig1BCE8383244CF301D995FF9D
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-pdf and html:
-http://ldn.linuxfoundation.org/book/how-participate-linux-community
+Am 08.03.2009 01:35 schrieb Arjan van de Ven:
+> On Sun, 08 Mar 2009 01:22:28 +0100
+> Tilman Schmidt <tilman@imap.cc> wrote:
+>=20
+>> Am 07.03.2009 23:26 schrieb Arjan van de Ven:
+[...]
+>>> ENODEV is what would be more appropriate.
+>> Not at all. ENODEV means "no such device", which would be quite wrong.=
 
-video:
-http://mirror.linux.org.au/pub/linux.conf.au/2009/Wednesday/11.ogg
+>> The device does exist and is in all probability working perfectly
+>> fine. It just doesn't implement that particular ioctl.
+>=20
+> then -ENOTTY is the right answer
+
+Interesting, though slightly surprising proposition.
+"Not a typewriter" is certainly correct. :-)
+
+"Not a tty device", however, which I take is the customary
+interpretation, much less clearly so. The device most certainly
+is a tty device. It just happens to know a few additional ioctl
+commands which may or may not be implemented, depending on the
+kernel config.
+
+Not to question your authority, but I would really like a second
+opinion on that issue before I adopt your proposition, simply to
+minimize the risk of getting another objection from someone else
+who feels that ENOTTY is inappropriate in that situation.
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig1BCE8383244CF301D995FF9D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFJsxdzQ3+did9BuFsRArTVAJ9khgOCxeAH35LYWYIXiLgPHFk4rACghkd5
+V9Hor1hIHHOpjr89yda1AZA=
+=h1EP
+-----END PGP SIGNATURE-----
+
+--------------enig1BCE8383244CF301D995FF9D--
