@@ -1,118 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754360AbZCHTWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZCHT2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754360AbZCHTWU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 15:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbZCHTWL
+	id S1754060AbZCHT2T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 15:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbZCHT2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 15:22:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52699 "EHLO mx2.mail.elte.hu"
+	Sun, 8 Mar 2009 15:28:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46619 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752838AbZCHTWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 15:22:10 -0400
-Date: Sun, 8 Mar 2009 20:21:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jiaying Zhang <jiayingz@google.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Martin Bligh <mbligh@google.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       mrubin@google.com, md@google.com
-Subject: Re: [PATCH 0/5] [RFC] binary reading of ftrace ring buffers
-Message-ID: <20090308192127.GA5888@elte.hu>
-References: <20090304024921.153061228@goodmis.org> <20090304170015.GB1150@Krystal> <alpine.DEB.2.00.0903061124400.23248@gandalf.stny.rr.com> <20090306191052.GB16067@Krystal> <5df78e1d0903061528v1db73ab8g1f470c569ea37b70@mail.gmail.com>
+	id S1752908AbZCHT2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 15:28:02 -0400
+Date: Sun, 8 Mar 2009 19:27:30 GMT
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, jirislaby@gmail.com, jeremy.fitzhardinge@citrix.com,
+       jeremy@goop.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, jirislaby@gmail.com, jeremy.fitzhardinge@citrix.com,
+       jeremy@goop.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49B166D6.2080505@goop.org>
+References: <49B166D6.2080505@goop.org>
+Subject: [tip:x86/mm-v2] x86-32: make sure virt_addr_valid() returns false for fixmap addresses
+Message-ID: <tip-0feca851c1b3cb4ebfa3149144b3d5de0879ebaa@git.kernel.org>
+Git-Commit-ID: 0feca851c1b3cb4ebfa3149144b3d5de0879ebaa
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <5df78e1d0903061528v1db73ab8g1f470c569ea37b70@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 08 Mar 2009 19:27:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  0feca851c1b3cb4ebfa3149144b3d5de0879ebaa
+Gitweb:     http://git.kernel.org/tip/0feca851c1b3cb4ebfa3149144b3d5de0879ebaa
+Author:     "Jeremy Fitzhardinge" <jeremy@goop.org>
+AuthorDate: Fri, 6 Mar 2009 10:09:26 -0800
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 8 Mar 2009 20:03:52 +0100
 
-* Jiaying Zhang <jiayingz@google.com> wrote:
+x86-32: make sure virt_addr_valid() returns false for fixmap addresses
 
-> I would like to point out that we think it is really important 
-> to have some very efficient probing mechanism in the kernel 
-> for tracing in production environments. The printf and va_arg 
-> based probes are flexible but less efficient when we want to 
-> trace high-throughput events. Even function calls can add 
-> noticeable overhead according to our measurements. So I think 
-> we need to provide a way (mostly via macro definitions) with 
-> which a subsystem can enter an event into a trace buffer 
-> through a short code path. I.e., we should limit the number of 
-> callbacks and avoid format string parsing.
-> 
-> As I understand, Steven's latest TRACE_FIELD patch avoids such 
-> overhead, although it does seem to add complexity for adding 
-> new trace points. [...]
+I found that virt_addr_valid() was returning true for fixmap addresses.
 
-Yeah - it was motivated by the patches you sent to lkml which 
-showed that it's possible to do it quite sanely and that it can 
-be done faster.
+I'm not sure whether pfn_valid() is supposed to include this test,
+but there's no harm in being explicit.
 
-> [...] It would be nice if we can replace the above 
-> sched_switch declaration with just a couple of macros.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>
+Cc: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <49B166D6.2080505@goop.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Good point - there's ongoing work to simplify the TRACE_FIELD 
-approach. The current (not yet pushed out) optimized tracepoint 
-format Steve is working on is:
 
-/*
- * Tracepoint for task switches, performed by the scheduler:
- *
- * (NOTE: the 'rq' argument is not used by generic trace events,
- *        but used by the latency tracer plugin. )
- */
-TRACE_EVENT(sched_switch,
+---
+ arch/x86/mm/ioremap.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-	TP_PROTO(struct rq *rq, struct task_struct *prev,
-		 struct task_struct *next),
-
-	TP_ARGS(rq, prev, next),
-
-	TP_STRUCT__entry(
-		__array(	char,	prev_comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	prev_pid			)
-		__field(	int,	prev_prio			)
-		__array(	char,	next_comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	next_pid			)
-		__field(	int,	next_prio			)
-	),
-
-	TP_printk("task %s:%d [%d] ==> %s:%d [%d]",
-		__entry->prev_comm, __entry->prev_pid, __entry->prev_prio,
-		__entry->next_comm, __entry->next_pid, __entry->next_prio),
-
-	TP_fast_assign(
-		memcpy(__entry->next_comm, next->comm, TASK_COMM_LEN);
-		__entry->prev_pid	= prev->pid;
-		__entry->prev_prio	= prev->prio;
-		memcpy(__entry->prev_comm, prev->comm, TASK_COMM_LEN);
-		__entry->next_pid	= next->pid;
-		__entry->next_prio	= next->prio;
-	)
-);
-
-As you can see it enumerates fields, provides format-based 
-tracing and a tracepoint as well. It also looks quite similar to 
-C syntax while still being an information-dense macro.
-
-	Ingo
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index 62773ab..62def57 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -87,6 +87,8 @@ bool __virt_addr_valid(unsigned long x)
+ 		return false;
+ 	if (__vmalloc_start_set && is_vmalloc_addr((void *) x))
+ 		return false;
++	if (x >= FIXADDR_START)
++		return false;
+ 	return pfn_valid((x - PAGE_OFFSET) >> PAGE_SHIFT);
+ }
+ EXPORT_SYMBOL(__virt_addr_valid);
