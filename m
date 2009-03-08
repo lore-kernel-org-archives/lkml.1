@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZCHDJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbZCHD0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754475AbZCHDJs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 22:09:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbZCHDJi
+	id S1755515AbZCHD0p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 22:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbZCHD0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 22:09:38 -0500
-Received: from mail.deathmatch.net ([70.167.247.36]:2624 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751478AbZCHDJh (ORCPT
+	Sat, 7 Mar 2009 22:26:36 -0500
+Received: from wf-out-1314.google.com ([209.85.200.174]:1510 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753210AbZCHD0f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 22:09:37 -0500
-Date: Sat, 7 Mar 2009 22:09:28 -0500
-From: Bob Copeland <me@bobcopeland.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-Message-ID: <20090308030928.GB14966@hash.localnet>
-References: <40f31dec0902231508l512af5b7w68cfcc0bdf3cfa87@mail.gmail.com> <20090224135817.GB6019@hash.localnet> <49A46AD4.3060007@gmail.com> <20090225140139.GA18694@silver.sucs.org> <20090226135938.GA12182@hash.localnet> <20090226170338.GA1745@silver.sucs.org> <20090303041222.GA1238@hash.localnet> <20090303200352.GA8343@silver.sucs.org> <20090304120759.GA6519@hash.localnet> <20090306094249.GA10236@silver.sucs.org>
+	Sat, 7 Mar 2009 22:26:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=YC03Y0hQrcgKt4hpyOJASPmOxjrN6MrnKDjIzG5BiOnawPhWfVmGFIGuKzZscixDb3
+         gxsGBd2nE4PD0RDCYXj/aLUSX0fxwuxu5SHVOIn8EvfMQYymxUaUeexvLlg2qbYD9CNr
+         9N9a89WWNSbfzLm+A9dHWdoT/jgQinWyOsqtI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090306094249.GA10236@silver.sucs.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090307153427.GA6075@nowhere>
+References: <20090307235209.5A84.A69D9226@jp.fujitsu.com>
+	 <20090307153427.GA6075@nowhere>
+Date: Sun, 8 Mar 2009 12:26:33 +0900
+X-Google-Sender-Auth: 0d2f16dfddbb8c26
+Message-ID: <2f11576a0903071926u3eeb793fx44300a0257439535@mail.gmail.com>
+Subject: Re: [PATCH for tip] ftrace: remove latency_trace document
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 09:42:49AM +0000, Sitsofe Wheeler wrote:
-> > parallel with iwlist wlan0 scan (as root, so scans are actually 
-> > performed), in parallel with iperf or ping.  I didn't personally have
-> > luck with that workload, though.
+2009/3/8 Frederic Weisbecker <fweisbec@gmail.com>:
+> On Sat, Mar 07, 2009 at 11:53:40PM +0900, KOSAKI Motohiro wrote:
+>> Subject: [PATCH] remove latency_trace document
+>>
+>> Currently, there aren't "Latency tracer" and latency_trace file.
+>> Then, its documentation is removed too.
+>
+> Hi,
+>
+> The latency_trace file has been removed but the latency tracing stil exists.
+> It has become an option instead of a file now:
+>
+> echo latency-format > /debugfs/tracing/trace_options
+>
+> There are even some tracers that default enable it (irqsoff, preemptoff...)
+> IMO, the documentation about latency tracing shouldn't be removed but
+> just updated a bit to reflect this change.
 
-So I looked through this log for a few hours today.  Sorry to say
-that I don't have any answers, but here's a summary of what I saw:
+Ah, sorry.
+I totally misunderstood it.
 
-- it didn't seem like there were any obvious race conditions at play;
-  that is, I didn't see other ath5k_XXX functions being pre-empted
-  by ath5k_intr, followed by the softirq.
-
-- there were a few errors prior to catching the poison.  I don't think
-  the trace contains enough info to say whether they were phy errors,
-  unsupported jumbo type errors, or whatever.  Anyway there didn't seem
-  to be any obvious causal pattern, nothing like an error on the
-  40th previous buffer or a cascading series of errors.  Of course, 
-  the error could have happened much earlier compared to when the skbuff
-  in the freelist got reused.
-
-At this point, I guess the best way forward is to have a special debug
-patch for when we pass an skb up the stack, when it gets allocated, and
-what is in the descriptors.
-
-Jiri, I really think we should implement that better check for the
-self linked descriptor using the rxdp register.  bf_last is no longer a
-valid marker for the self-linked descriptor at the end of the loop since
-we re-add the just-processed descriptor every time through the loop  
-(or am I missing something?)...  If you want I'll cook up a patch for 
-that too.
-
--- 
-Bob Copeland %% www.bobcopeland.com
-
+thanks to correct my fault.
