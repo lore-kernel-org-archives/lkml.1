@@ -1,108 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751937AbZCHKI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752088AbZCHKKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751937AbZCHKI3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 06:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbZCHKIS
+	id S1752088AbZCHKKY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 06:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbZCHKKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 06:08:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33336 "EHLO ogre.sisk.pl"
+	Sun, 8 Mar 2009 06:10:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48848 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750891AbZCHKIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 06:08:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] pci: fix kexec with power state D3
-Date: Sun, 8 Mar 2009 11:08:23 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       David Miller <davem@davemloft.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, linux-pci@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <49B1F934.5050006@kernel.org> <4807377b0903062318q15ba52a7n82d4c9399b8a7fa8@mail.gmail.com> <49B37D38.7060304@kernel.org>
-In-Reply-To: <49B37D38.7060304@kernel.org>
+	id S1750921AbZCHKKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 06:10:09 -0400
+Date: Sun, 8 Mar 2009 11:09:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: prasad@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [Patch 11/11] ftrace plugin for kernel symbol tracing using HW
+	Breakpoint interfaces - v2
+Message-ID: <20090308100929.GA14133@elte.hu>
+References: <20090307045120.039324630@linux.vnet.ibm.com> <20090307050747.GL23959@in.ibm.com> <20090307222955.25A7.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903081108.24541.rjw@sisk.pl>
+In-Reply-To: <20090307222955.25A7.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 March 2009, Yinghai Lu wrote:
+
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+
+> Hi
 > 
-> Impact: second kernel by kexec will have some pci devices working
+> > This patch adds an ftrace plugin to detect and profile memory access over
+> > kernel variables. It uses HW Breakpoint interfaces to 'watch memory
+> > addresses.
+> > 
+> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com> 
+> > ---
+> >  kernel/trace/Kconfig          |    6 
+> >  kernel/trace/Makefile         |    1 
+> >  kernel/trace/trace.h          |   16 +
+> >  kernel/trace/trace_ksym.c     |  448 ++++++++++++++++++++++++++++++++++++++++++
+> >  kernel/trace/trace_selftest.c |   36 +++
+> >  5 files changed, 507 insertions(+)
 > 
-> Found one system with 82575EB, in the kernel that is kexeced, probe igb
-> failed with -2.
-> 
-> it looks like the same behavior happened on forcedeth.
-> try to check system_state to make sure if put it on D3
+> Could you please update Documentation/ftrace.txt?
+> I guess many user interesting this patch. :)
 
-This is not enough, because the PM code doesn't change system_state and
-it uses pci_set_power_state too.
+Yeah, it has become a really nice feature this way. As i told it 
+to K.Prasad before: we need this tracer because the data tracer 
+will likely become the most common usecase of this facility. We 
+will get the hw breakpoints facility tested and used.
 
-> Jesse Brandeburg said that we should do that check in core code instead of
-> every device driver.
+And in fact we can go one step further: it would also be nice to 
+wire it up with the ftrace histogram code: so that we can get 
+usage histograms of kernel symbol read/write activities without 
+the overhead of tracing. (The branch tracer already has this.)
 
-Well, I'm not really sure.  The drivers are where the bug is.
+Especially frequently used variables generate a _lot_ of events.
 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  drivers/pci/pci.c |   17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
-> 
-> Index: linux-2.6/drivers/pci/pci.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci.c
-> +++ linux-2.6/drivers/pci/pci.c
-> @@ -593,6 +593,14 @@ int pci_set_power_state(struct pci_dev *
->  	if (state == PCI_D3hot && (dev->dev_flags & PCI_DEV_FLAGS_NO_D3))
->  		return 0;
->  
-> +	/*
-> +	 * Apparently it is not possible to reinitialise from D3 hot,
-> +	 * only put the device into D3 if we really go for poweroff.
-> +	 */
-> +	if (system_state != SYSTEM_POWER_OFF &&
-> +	    (state == PCI_D3hot || state == PCI_D3cold))
-> +		return 0;
-> +
-
-This breaks suspend/hibernation, doesn't it?  Surely, we want to put devices
-into D3 when going for suspend, for example.
-
-That's apart from the fact that the 'state == PCI_D3cold' is redundant.
-
->  	error = pci_raw_set_power_state(dev, state, true);
->  
->  	if (state > PCI_D0 && platform_pci_power_manageable(dev)) {
-> @@ -1124,6 +1132,15 @@ int pci_enable_wake(struct pci_dev *dev,
->  	int error = 0;
->  	bool pme_done = false;
->  
-> +	/*
-> +	 * Apparently it is not possible to reinitialise from D3 hot,
-> +	 * only put the device into D3 if we really go for poweroff.
-> +	 * we only need to enable wake when we are going to power off
-> +	 */
-> +	if (enable && system_state != SYSTEM_POWER_OFF &&
-> +	    (state == PCI_D3hot || state == PCI_D3cold))
-> +		return 0;
-> +
->  	if (enable && !device_may_wakeup(&dev->dev))
->  		return -EINVAL;
-
-I don't like this at all, sorry.
-
-I thought we were supposed to avoid using system_state in such a way,
-apart from the other things.
-
-Thanks,
-Rafael
+	Ingo
