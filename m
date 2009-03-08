@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbZCHQ6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbZCHRAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbZCHQ6p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 12:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbZCHQ6f
+	id S1753294AbZCHRAf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 13:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbZCHRA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 12:58:35 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:40370 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752845AbZCHQ6e (ORCPT
+	Sun, 8 Mar 2009 13:00:26 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:62344 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752665AbZCHRA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 12:58:34 -0400
-Date: Sun, 8 Mar 2009 12:58:32 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-cc: Greg KH <greg@kroah.com>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] Loading both ehci-hcd and uhci-hcd drivers causes my
- printer to fail
-In-Reply-To: <1236528558.11774.50.camel@maxim-laptop>
-Message-ID: <Pine.LNX.4.44L0.0903081243100.5243-100000@netrider.rowland.org>
+	Sun, 8 Mar 2009 13:00:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=l0Zf2nWCIQ/Tmq5olYQ7Ij56gP+6dy64yTGN/aadnblCcNkXI91DtE+Ck5tHR9uBlT
+         RkHtiOOa5ixfYS43046VEClvcv4ERvYUQk8dL+0KCN2w6zIGIXdIrDuWPx4+Zd45sbvY
+         oYH8zMN3bQcpuF/cuyhiw4idp+QeORWUqjS/Q=
+Message-ID: <49B3F9A5.4060506@gmail.com>
+Date: Sun, 08 Mar 2009 18:00:21 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v2 1/2] x86_32: summit_32, use BAD_APICID
+References: <20090224175518.GA15616@elte.hu> <1235508093-18063-1-git-send-email-jirislaby@gmail.com> <49A524D3.3090408@gmail.com> <20090225111002.GA15453@elte.hu> <49A71105.4050001@gmail.com> <20090228082120.GA11425@elte.hu>
+In-Reply-To: <20090228082120.GA11425@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Mar 2009, Maxim Levitsky wrote:
+On 28.2.2009 09:21, Ingo Molnar wrote:
+>> I've sent 4 more patches, but there are still issues:
+>> * es7000 + summit: I haven't solved calling with all bits set (only all
+>> online is sufficient to trigger this). Some of the processors needn't be
+>> on the same apic cluster. It will scream now (again -- it did before
+>> adding the "optimisation"). Actually I don't know how to solve this. How
+>> the caller would know the correct mask, ANDing with a apic->target_cpus
+>> retval?
 
-> > No, adding a dependency won't work because it is valid to load 
-> > uhci-hcd without ehci-hcd.  The only time a problem occurs is if you 
-> > load both of them in the wrong order.  (And in fact it's pretty rare 
-> > for that to cause a real problem -- mostly you just get some annoying 
-> > messages in the log.)
-> But since it can cause a problem, this has to be somehow automatically
-> fixed isn't it?
-
-Can it cause a problem?  I'm not so sure -- it depends on what you mean 
-by "problem".  One person complained forcefully just because he didn't 
-like all the extra "disconnect" messages in the system log, even though 
-everything worked perfectly.
-
-> For example how to I ensure the correct order with udev?
-
-You can't.  But you can add rules to /etc/modprobe.conf to insure that 
-ehci-hcd is always loaded before uhci-hcd.
-
-> > CONFIG_USB_EHCI_ROOT_HUB_TT shouldn't make any difference at all.  
-> > That setting matters only for hardware using the ARC/TDI design, which
-> > is not present in your Intel chipset.  Likewise, provided ehci-hcd is
-> > loaded first, it shouldn't make any difference whether uhci-hcd is
-> > loaded or not.
-> Well, I retest this.
-> But it seems to work
-
-Best would be if you could send two usbmon traces, one showing the 
-problem and one showing what happens when uhci-hcd isn't loaded but 
-everything else is the same.  For each test, plug in the printer's USB 
-cable after starting the trace.
-
-And don't try to confuse matters by querying the printer status while 
-reloading its firmware.
-
-Alan Stern
+Anybody, please? This is not a theoretical issue, this is a real problem 
+we hit...
 
