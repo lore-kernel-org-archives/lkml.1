@@ -1,109 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbZCHQU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbZCHQZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753222AbZCHQU3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 12:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZCHQUR
+	id S1752652AbZCHQZV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 12:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbZCHQZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 12:20:17 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49847 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752532AbZCHQUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 12:20:15 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/5g7c64Zj5M1bgKYhHqxhKeMa6dXprjTjafQrRau
-	cx4KPMk9naH0De
-Subject: Re: scheduler oddity [bug?]
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Balazs Scheidler <bazsi@balabit.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20090308153956.GB19658@elte.hu>
-References: <1236448069.16726.21.camel@bzorp.balabit>
-	 <1236505323.6281.57.camel@marge.simson.net>
-	 <1236506309.6972.8.camel@marge.simson.net> <20090308153956.GB19658@elte.hu>
-Content-Type: text/plain
-Date: Sun, 08 Mar 2009 17:20:00 +0100
-Message-Id: <1236529200.7110.16.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.47
+	Sun, 8 Mar 2009 12:25:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40388 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752463AbZCHQZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 12:25:05 -0400
+Date: Sun, 8 Mar 2009 17:24:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
+Subject: Re: [RFC][PATCH 1/2] tracing/ftrace: syscall tracing infrastructure
+Message-ID: <20090308162444.GG19658@elte.hu>
+References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-2-git-send-email-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236401580-5758-2-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-08 at 16:39 +0100, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
-> 
-> > The problem with your particular testcase is that while one 
-> > half has an avg_overlap (what we use as affinity hint for 
-> > synchronous wakeups) which triggers the affinity hint, the 
-> > other half has avg_overlap of zero, what it was born with, so 
-> > despite significant execution overlap, the scheduler treats 
-> > them as if they were truly synchronous tasks.
-> 
-> hm, why does it stay on zero?
 
-Wakeup preemption.  Presuming here: heavy task wakes light task, is
-preempted, light task stuffs data into pipe, heavy task doesn't block,
-so no avg_overlap is ever computed.  The heavy task uses 100% CPU.
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-Running as SCHED_BATCH (virgin source), it becomes sane.
+> +static const struct syscall_trace_entry syscall_trace_entries[] = {
+> +	/* For open, the first argument is a string, hence the given mask */
+> +	[SYSCALL_TRACE_OPEN]	= SYS_TRACE_ENTRY(open, 3, 0x1),
+> +	[SYSCALL_TRACE_CLOSE]	= SYS_TRACE_ENTRY(close, 1, 0),
+> +	[SYSCALL_TRACE_READ]	= SYS_TRACE_ENTRY(read, 3, 0),
+> +	[SYSCALL_TRACE_WRITE]	= SYS_TRACE_ENTRY(read, 3, 0),
+> +};
 
-pipetest (6836, #threads: 1)
----------------------------------------------------------
-se.exec_start                      :        266073.001296
-se.vruntime                        :        173620.953443
-se.sum_exec_runtime                :         11324.486321
-se.avg_overlap                     :             1.306762
-nr_switches                        :                  381
-nr_voluntary_switches              :                    2
-nr_involuntary_switches            :                  379
-se.load.weight                     :                 1024
-policy                             :                    3
-prio                               :                  120
-clock-delta                        :                  109
+s/read/write in the last entry i guess.
 
-pipetest (6837, #threads: 1)
----------------------------------------------------------
-se.exec_start                      :        266066.098182
-se.vruntime                        :         51893.050177
-se.sum_exec_runtime                :          2367.077751
-se.avg_overlap                     :             0.077492
-nr_switches                        :                  897
-nr_voluntary_switches              :                  828
-nr_involuntary_switches            :                   69
-se.load.weight                     :                 1024
-policy                             :                    3
-prio                               :                  120
-clock-delta                        :                  109
+But i think the whole concept of duplicating the syscall table 
+is the wrong way around.
 
-> >  static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
-> >  {
-> > +	u64 limit = sysctl_sched_migration_cost;
-> > +	u64 runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
-> > +
-> >  	if (sleep && p->se.last_wakeup) {
-> >  		update_avg(&p->se.avg_overlap,
-> >  			   p->se.sum_exec_runtime - p->se.last_wakeup);
-> >  		p->se.last_wakeup = 0;
-> > -	}
-> > +	} else if (p->se.avg_overlap < limit && runtime >= limit)
-> > +		update_avg(&p->se.avg_overlap, runtime);
-> >  
-> >  	sched_info_dequeued(p);
-> >  	p->sched_class->dequeue_task(rq, p, sleep);
-> 
-> hm, that's weird. We want to limit avg_overlap maintenance to 
-> true sleeps only.
+Note that we dont have to build this information at all - in 
+2.6.29-rc1 all syscalls got wrapper macros:
 
-Except that when we stop sleeping, we're left with a stale avg_overlap.
+ SYSCALL_DEFINE1(nice, int, increment)
+ SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
+ SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
+                 unsigned long __user *, user_mask_ptr)
 
-> And this patch only makes a difference in the !sleep case - 
-> which shouldnt be that common in this workload.
+We also have the syscall table itself.
 
-Hack was only to kill the stale zero.  Let's forget hack ;-)
+So what we can do: by changing the SYSCALL_DEFINEX() macros we 
+can emit the following information into a table:
 
-	-Mike
+  (syscall_fn_address, syscall_name_string, #of arguments, array 
+   of argument names and type sizeof()s)
 
+then during bootup we can match up the sys_call_table[] to the 
+secondary table we built, so that we can order the secondary 
+table based on syscall NR. 99% of the syscalls will match up 
+just fine.
+
+	Ingo
