@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751698AbZCHKAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752016AbZCHKBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751698AbZCHKAU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 06:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZCHKAG
+	id S1752016AbZCHKBE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 06:01:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbZCHKAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 06:00:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42769 "EHLO mx3.mail.elte.hu"
+	Sun, 8 Mar 2009 06:00:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33283 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751291AbZCHKAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 06:00:04 -0400
-Date: Sun, 8 Mar 2009 10:59:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: AMD 64 Box is not able to boot with latest -tip
-Message-ID: <20090308095952.GA12298@elte.hu>
-References: <1236441089.3285.6.camel@localhost.localdomain> <49B31909.9020407@kernel.org> <1236498137.2807.5.camel@ht.satnam>
+	id S1751291AbZCHKAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 06:00:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-pm] [RFC][PATCH][1/8] PM: Rework handling of interrupts during suspend-resume (rev. 5)
+Date: Sun, 8 Mar 2009 11:00:42 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+References: <Pine.LNX.4.44L0.0903072248030.8870-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0903072248030.8870-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1236498137.2807.5.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200903081100.43757.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-
-> Hello Peter,
+On Sunday 08 March 2009, Alan Stern wrote:
+> On Sat, 7 Mar 2009, Rafael J. Wysocki wrote:
 > 
-> On Sat, 2009-03-07 at 17:02 -0800, H. Peter Anvin wrote:
-> > Jaswinder Singh Rajput wrote:
-> > > My AMD 64 Box was not able to boot with latest -tip and kernel is
-> > > dumping.
+> > > One thing about this isn't clear: the distinction between "wake-up" 
+> > > interrupts and other interrupts.
 > > > 
-> > > Because of hot weather and not proper cooling I cannot debug the problem
-> > > so only thing I can tell is:
+> > > In an ideal world, the only pending interrupts during sysdev_suspend
+> > > would be wake-up interrupts, because drivers would have prevented their
+> > > devices from generating any other kind of IRQ and would have done all
+> > > the necessary synchronization as part of their suspend (_not_
+> > > suspend_late) methods.  Thus there would be no need to distinguish
+> > > between wake-up and non-wake-up interrupts.
 > > > 
-> > > BAD : cb553adb4e83bc
-> > > 
-> > > Good : f0ef03985130287c6c
-> > > 
+> > > So perhaps you're worried about drivers that aren't sufficiently
+> > > clever.  Or is something deeper going on?
 > > 
-> > You realize you left absolutely no usable information in that post, I
-> > hope... not a single bit of detail about the system other than it having
-> > an AMD CPU.
+> > Some drivers leave interrupts enabled during suspend on purpose and mark
+> > them as "wake-up interrupts" so that the platform can abort suspend if any
+> > of them is pending at the time the "enter suspend" hook is called (this doesn't
+> > happen on x86 AFAICS).
+> > 
+> > However, after the $subject patch the CPU will ACK those interrupts if they
+> > happen between suspend_device_irqs() and local_irq_disable(), so the platform
+> > won't see them as pending.  Instead, they will have IRQ_PENDING set in
+> > desc->status, so we check if this is the case.
 > 
-> Oops, I have send my configs file and other related info 
-> various times to LKML and Ingo.
+> You didn't answer my question.  Why bother to distinguish between 
+> "wake-up" interrupts and non-"wake-up" interrupts?
 
-You should attach such information to every separate new 
-bugreport.
+Sorry, I thought it followed from what I wrote.
 
-> Anyhow now I made a git tree for it ;)
-> 
-> http://git.kernel.org/?p=linux/kernel/git/jaswinder/kernel-cfgs.git;a=summary
+> In other words, why not simply abort the suspend if IRQ_PENDING is set
+> for _any_ interrupt during sysdev_suspend()?
 
-that's not very useful for a quick review on lkml. Also, kernel 
-configs change between kernel versions so that link can go 
-stale. So it's always useful to attach the very config you saw a 
-breakage with to the bugreport.
+The "wake-up" ones are _intentionally_ left enabled, while the other ones may
+be left enabled by mistake.  The check is intended to prevent the current
+behavior from changing (ie. suspend is aborted if any "wake-up" interrupts
+are pending) and since the platforms only check for the "wake-up" interrupts,
+it doesn't go any further.  Moreover, I think it might introduce a regression
+if it did.
 
-You say that the "kernel dumps" - does this mean you got a 
-kernel oops during bootup? If possible you should try to capture 
-the first oops/warning that triggers either via a serial console 
-or via a digital camera. pause_on_oops=10000 can be useful too 
-to make sure you capture the first oops in its entirety.
-
-	Ingo
+Thanks,
+Rafael
