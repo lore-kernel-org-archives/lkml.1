@@ -1,86 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbZCHRxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbZCHSE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbZCHRxT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 13:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbZCHRxI
+	id S1754126AbZCHSE7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 14:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZCHSEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 13:53:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49151 "EHLO mx2.mail.elte.hu"
+	Sun, 8 Mar 2009 14:04:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58815 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751647AbZCHRxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 13:53:07 -0400
-Date: Sun, 8 Mar 2009 18:52:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Balazs Scheidler <bazsi@balabit.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: scheduler oddity [bug?]
-Message-ID: <20090308175255.GA22802@elte.hu>
-References: <1236448069.16726.21.camel@bzorp.balabit> <1236505323.6281.57.camel@marge.simson.net> <1236506309.6972.8.camel@marge.simson.net> <20090308153956.GB19658@elte.hu> <1236529200.7110.16.camel@marge.simson.net>
+	id S1753245AbZCHSEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 14:04:46 -0400
+Message-ID: <49B40871.3040102@kernel.org>
+Date: Sun, 08 Mar 2009 11:03:29 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236529200.7110.16.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] igb: fix kexec with igb
+References: <49B1F934.5050006@kernel.org> <4807377b0903062318q15ba52a7n82d4c9399b8a7fa8@mail.gmail.com> <86802c440903062331j22aa57c7r93c84da880a8e572@mail.gmail.com> <200903081157.37139.rjw@sisk.pl>
+In-Reply-To: <200903081157.37139.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki wrote:
 
-* Mike Galbraith <efault@gmx.de> wrote:
-
-> On Sun, 2009-03-08 at 16:39 +0100, Ingo Molnar wrote:
-> > * Mike Galbraith <efault@gmx.de> wrote:
-> > 
-> > > The problem with your particular testcase is that while one 
-> > > half has an avg_overlap (what we use as affinity hint for 
-> > > synchronous wakeups) which triggers the affinity hint, the 
-> > > other half has avg_overlap of zero, what it was born with, so 
-> > > despite significant execution overlap, the scheduler treats 
-> > > them as if they were truly synchronous tasks.
-> > 
-> > hm, why does it stay on zero?
+>>
+>> looks like second kernel can not detect the state any more.
 > 
-> Wakeup preemption.  Presuming here: heavy task wakes light 
-> task, is preempted, light task stuffs data into pipe, heavy 
-> task doesn't block, so no avg_overlap is ever computed.  The 
-> heavy task uses 100% CPU.
+> In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
+> thing.  The question is why it doesn't work as expected.
 > 
-> Running as SCHED_BATCH (virgin source), it becomes sane.
+> What kernel(s) have you tested?
 
-ah.
+tip/master
 
-I'd argue then that time spent on the rq preempted _should_ 
-count in avg_overlap statistics. I.e. couldnt we do something 
-like ... your patch? :)
+also RHEL 5.3 with igb + kexec have the same problem.
 
-> >     if (sleep && p->se.last_wakeup) {
-> >             update_avg(&p->se.avg_overlap,
-> >                        p->se.sum_exec_runtime - p->se.last_wakeup);
-> >             p->se.last_wakeup = 0;
-> > -   }
-> > +   } else if (p->se.avg_overlap < limit && runtime >= limit)
-> > +           update_avg(&p->se.avg_overlap, runtime);
-
-Just done unconditionally, i.e. something like:
-
-	if (sleep) {
-		runtime = p->se.sum_exec_runtime - p->se.last_wakeup;
-		p->se.last_wakeup = 0;
-	} else {
-		runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
-	}
-
-	update_avg(&p->se.avg_overlap, runtime);
-
-?
-
-	Ingo
+YH
