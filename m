@@ -1,131 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbZCHUOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754391AbZCHUSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754197AbZCHUOT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 16:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZCHUOG
+	id S1754391AbZCHUSY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 16:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZCHUSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 16:14:06 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:40518 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753315AbZCHUOD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 16:14:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=J3CHVOscICNVWUCVB/NYmWBNDaWaoca5S6osU5NV0judKAGJgh58E0VEHNfQA5qyc/
-         ve6aEMgWsi+NKOiO8MdsKLvVHM+IaNPXu6yTryTT0ypl5tE8VkclU3TJZRsr1EJlp7A3
-         XvVgiEXkgYKO2CGhfLI92WuUB4sT5sEkuDxAM=
-Subject: [PATCH] sata_nv: add a module parameter to enable async scanning
-From: Andreas Robinson <andr345@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090308090102.2db82a5b@infradead.org>
-References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
-	 <ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com>
-	 <200902181528.29697.rusty@rustcorp.com.au>
-	 <ac3eb2510902180115o4690a335n129e4df695540de0@mail.gmail.com>
-	 <1234952753.10531.48.camel@andreas-laptop>
-	 <cc43514a0902191637h5a9680c5id95f7d6c32cca472@mail.gmail.com>
-	 <ac3eb2510902191755i391d4defnc5a514f4525ec6cf@mail.gmail.com>
-	 <1235216636.7025.1023.camel@andreas-laptop>
-	 <1236004353.10055.49.camel@andreas-laptop>
-	 <20090302082003.1bb7bdc5@infradead.org>
-	 <ac3eb2510903020829s7c876a96y7eb5568eeb9921fd@mail.gmail.com>
-	 <20090302102703.50aaf724@infradead.org>
-	 <1236192430.6785.111.camel@andreas-laptop>
-	 <20090305161837.6ba80cc1@infradead.org>
-	 <1236352543.6594.59.camel@andreas-laptop>
-	 <20090306074548.36ed2f9f@infradead.org>
-	 <1236509237.5645.151.camel@andreas-laptop>
-	 <20090308090102.2db82a5b@infradead.org>
+	Sun, 8 Mar 2009 16:18:16 -0400
+Received: from support.balabit.hu ([195.70.41.86]:49249 "EHLO lists.balabit.hu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753733AbZCHUSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 16:18:15 -0400
+Subject: Re: scheduler oddity [bug?]
+From: Balazs Scheidler <bazsi@balabit.hu>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <1236451624.16726.32.camel@bzorp.balabit>
+References: <1236448069.16726.21.camel@bzorp.balabit>
+	 <1236451624.16726.32.camel@bzorp.balabit>
 Content-Type: text/plain
-Date: Sun, 08 Mar 2009 21:13:57 +0100
-Message-Id: <1236543237.5783.16.camel@andreas-laptop>
+Date: Sun, 08 Mar 2009 20:45:24 +0100
+Message-Id: <1236541524.19045.6.camel@bzorp.balabit>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-08 at 09:01 -0700, Arjan van de Ven wrote:
-> One thing to mention is that fastinit for sata... I only did AHCI
-> (because all my machines have that). Your machine looks like it has
-> something different than AHCI, so maybe the sata controller can use
-> some work ;-)
-> (a sata driver needs to opt into parallel scanning via a flag)
+On Sat, 2009-03-07 at 19:47 +0100, Balazs Scheidler wrote:
+> On Sat, 2009-03-07 at 18:47 +0100, Balazs Scheidler wrote:
+> > Hi,
+> > 
+> > I've tested this on 3 computers and each showed the same symptoms:
+> >  * quad core Opteron, running Ubuntu kernel 2.6.27-13.29
+> >  * Core 2 Duo, running Ubuntu kernel 2.6.27-11.27
+> >  * Dual Core Opteron, Debian backports.org kernel 2.6.26-13~bpo40+1
+> > 
+> > Is this a bug, or a feature?
+> > 
 > 
-> SATA init tends to be one of the things that are fix time per drive;
-> and so working on that first to at least ONLY get that is worth it,
-> it's a huge chunk of time (more than half the total time in your
-> bootchart)
+> One new interesting information: I've retested with a 2.6.22 based
+> kernel, and it still works there, setting the CPU affinity does not
+> change the performance of the test program and mpstat nicely shows that
+> 2 cores are working, not just one.
+> 
+> Maybe this is CFS related? That was merged for 2.6.23 IIRC.
+> 
+> Also, I tried changing various scheduler knobs
+> in /proc/sys/kernel/sched_* but they didn't help. I've tried to change
+> these:
+> 
+>  * sched_migration_cost: changed from the default 500000 to 100000 and
+> then 10000 but neither helped.
+>  * sched_nr_migrate: increased it to 64, but again nothing
+> 
+> I'm starting to think that this is a regression that may or may not be
+> related to CFS. 
+> 
+> I don't have a box where I could bisect on, but the test program makes
+> the problem quite obvious.
 
-Something like the patch below, mabye? :-)
+Some more test results:
 
-Before: [    3.056308] Freeing unused kernel memory: 364k freed
-After:  [    2.411417] Freeing unused kernel memory: 364k freed
+Latest tree from Linus seems to work, at least the program runs on both
+cores as it should. I bisected the patch that changed behaviour, and
+I've found this:
 
-The chipset is nforce2 (drivers/ata/sata_nv.c). I couldn't find
-anything like the SSS flag documented in the code, and register
-specs from nvidia are as rare as hen's teeth... So I only added
-the module parameter to force parallel scans.
+commit 38736f475071b80b66be28af7b44c854073699cc
+Author: Gautham R Shenoy <ego@in.ibm.com>
+Date:   Sat Sep 6 14:50:23 2008 +0530
 
-I named it parallel_scan instead of ignore_sss though, since
-there might not be an SSS-flag to ignore.
+    sched: fix __load_balance_iterator() for cfq with only one task
+    
+    The __load_balance_iterator() returns a NULL when there's only one
+    sched_entity which is a task. It is caused by the following code-path.
+    
+    	/* Skip over entities that are not tasks */
+    	do {
+    		se = list_entry(next, struct sched_entity, group_node);
+    		next = next->next;
+    	} while (next != &cfs_rq->tasks && !entity_is_task(se));
+    
+    	if (next == &cfs_rq->tasks)
+    		return NULL;
+    	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          This will return NULL even when se is a task.
+    
+    As a side-effect, there was a regression in sched_mc behavior since 2.6.25,
+    since iter_move_one_task() when it calls load_balance_start_fair(),
+    would not get any tasks to move!
+    
+    Fix this by checking if the last entity was a task or not.
+    
+    Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+    Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-/Andreas
 
->From a5b090856173782308c8f61de84085be9a9b73ba Mon Sep 17 00:00:00 2001
-From: Andreas Robinson <andr345@gmail.com>
-Date: Sun, 8 Mar 2009 20:44:16 +0100
-Subject: [PATCH] sata_nv: add a module parameter to enable async scanning
+This patch was integrated for 2.6.28. With the above patch, my test program uses 
+two cores as it should. I could only test this in a virtual machine so I don't 
+know exact performance metrics, but I'll test 2.6.27 + plus this patch on a real 
+box tomorrow to see if this was the culprit.
 
-This parameter (parallel_scan) forces the OS to scan for
-disks asynchronously/in parallel, to reduce boot time.
+I'm not sure if this is related to the avg_overlap discussion (which I honestly 
+don't really understand :)
 
-It might cause problems (brown-outs, blown fuses) in
-multi-drive systems, if the PSU is unable to handle several
-drives spinning up simultaneously.
 
-It ought to be safe in single-drive systems.
-
-Signed-off-by: Andreas Robinson <andr345@gmail.com>
----
- drivers/ata/sata_nv.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-index 55a8eed..e8aba2f 100644
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -579,6 +579,7 @@ MODULE_VERSION(DRV_VERSION);
- 
- static int adma_enabled;
- static int swncq_enabled = 1;
-+static int parallel_scan = 0;
- 
- static void nv_adma_register_mode(struct ata_port *ap)
- {
-@@ -2427,6 +2428,9 @@ static int nv_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	} else if (type == SWNCQ)
- 		nv_swncq_host_init(host);
- 
-+	if (parallel_scan)
-+		host->flags |= ATA_HOST_PARALLEL_SCAN;
-+
- 	pci_set_master(pdev);
- 	return ata_host_activate(host, pdev->irq, ipriv->irq_handler,
- 				 IRQF_SHARED, ipriv->sht);
-@@ -2526,4 +2530,6 @@ module_param_named(adma, adma_enabled, bool, 0444);
- MODULE_PARM_DESC(adma, "Enable use of ADMA (Default: true)");
- module_param_named(swncq, swncq_enabled, bool, 0444);
- MODULE_PARM_DESC(swncq, "Enable use of SWNCQ (Default: true)");
-+module_param_named(parallel_scan, parallel_scan, bool, 0444);
-+MODULE_PARM_DESC(parallel_scan, "Force parallel host scan (Default: false)");
- 
 -- 
-1.5.6.3
+Bazsi
 
 
