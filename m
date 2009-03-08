@@ -1,69 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZCHVIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZCHVIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbZCHVIV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 17:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbZCHVII
+	id S1755195AbZCHVIu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 17:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZCHVIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 17:08:08 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35701 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754309AbZCHVIF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 17:08:05 -0400
-Date: Sun, 8 Mar 2009 22:07:57 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: Eric Piel <eric.piel@tremplin-utc.net>, Andrew Morton <akpm@osdl.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Vladimir Botka <vbotka@suse.cz>, mmarek@suse.cz
-Subject: Re: hp_accel: add two more axis information
-Message-ID: <20090308210757.GA17680@elf.ucw.cz>
-References: <20090308202817.GA27465@elf.ucw.cz> <20090308210625.GC13309@buzzloop.caiaq.de>
+	Sun, 8 Mar 2009 17:08:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34807 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754308AbZCHVIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 17:08:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] igb: fix kexec with igb
+Date: Sun, 8 Mar 2009 22:08:42 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+References: <49B1F934.5050006@kernel.org> <200903081157.37139.rjw@sisk.pl> <49B40A03.7060703@kernel.org>
+In-Reply-To: <49B40A03.7060703@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090308210625.GC13309@buzzloop.caiaq.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903082208.42957.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-03-08 22:06:25, Daniel Mack wrote:
-> On Sun, Mar 08, 2009 at 10:03:30PM +0100, Pavel Machek wrote:
-> > Add two more laptops to whitelist.
+On Sunday 08 March 2009, Yinghai Lu wrote:
+> Rafael J. Wysocki wrote:
+> > On Saturday 07 March 2009, Yinghai Lu wrote:
+> >> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
+> >> <jesse.brandeburg@gmail.com> wrote:
+> >>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+> >>>> Impact: could probe igb
+> >>>>
+> >>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
+> >>>> failed with -2.
+> >>>>
+> >>>> it looks like the same behavior happened on forcedeth.
+> >>>>
+> >>>> try to check system_state to make sure if put it on D3
+> >>>>
+> >>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >>>>
+> >>>> ---
+> >>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
+> >>>>  1 file changed, 14 insertions(+), 5 deletions(-)
+> >>> I see the point of the patch, but I know for a fact that ixgbe when
+> >>> enabled for MSI-X also doesn't work with kexec.
+> >>>
+> >>> so my questions are:
+> >>> are you going to change every driver?
+> >> i tend to only change driver that i have related HW.
+> >>
+> >>> why can't this be fixed in core kernel code instead?
+> >> will check it.
+> >>
+> >>> Shouldn't pci_enable_device take it out of D3?
+> >>> Or maybe it should be taken out of D3 immediately if someone tries to
+> >>> ioremap any of the BARx registers?
+> >>
+> >> looks like second kernel can not detect the state any more.
 > > 
-> > Signed-off-by: Michal Marek <mmarek@suse.cz>
-> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> > 
-> > 
-> > diff --git a/drivers/hwmon/hp_accel.c b/drivers/hwmon/hp_accel.c
-> > index 29c83b5..448a462 100644
-> > --- a/drivers/hwmon/hp_accel.c
-> > +++ b/drivers/hwmon/hp_accel.c
-> > @@ -187,6 +187,7 @@ static struct dmi_system_id lis3lv02d_dmi_ids[] = {
-> >  	AXIS_DMI_MATCH("NC2510", "HP Compaq 2510", y_inverted),
-> >  	AXIS_DMI_MATCH("NC8510", "HP Compaq 8510", xy_swap_inverted),
-> >  	AXIS_DMI_MATCH("HP2133", "HP 2133", xy_rotated_left),
-> > +	AXIS_DMI_MATCH("HP2140", "HP 2140", xy_swap_inverted),
-> >  	AXIS_DMI_MATCH("NC653x", "HP Compaq 653", xy_rotated_left_usd),
-> >  	AXIS_DMI_MATCH("NC673x", "HP Compaq 673", xy_rotated_left_usd),
-> >  	AXIS_DMI_MATCH("NC651xx", "HP Compaq 651", xy_rotated_right),
-> > @@ -201,6 +202,7 @@ static struct dmi_system_id lis3lv02d_dmi_ids[] = {
-> >  			PRODUCT_NAME, "HP Pavilion dv5",
-> >  			BOARD_NAME, "3600",
-> >  			y_inverted),
-> > +	AXIS_DMI_MATCH("DV7", "HP Pavilion dv7", x_inverted),
-> >  	{ NULL, }
-> >  /* Laptop models without axis info (yet):
-> >   * "NC6910" "HP Compaq 6910"
+> > In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
+> > thing.  The question is why it doesn't work as expected.
 > 
-> Does this apply on top of my recent ACPI resolve patches? Could you test
-> the latest versions already?
+> not sure... please check the version for forcedeth that you made.
+> 
+> commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Fri Sep 5 14:00:19 2008 -0700
+> 
+>     forcedeth: fix kexec regression
+>     
+>     Fix regression tracked as http://bugzilla.kernel.org/show_bug.cgi?id=11361
+>     and caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
+>     forcedeth: setup wake-on-lan before shutting down") that makes network
+>     adapters integrated into the NVidia MCP55 chipsets fail to work in kexeced
+>     kernels.  The problem appears to be that if the adapter is put into D3_hot
+>     during ->shutdown(), it cannot be brought back into D0 after kexec (ref.
+>     http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore, only
+>     put forcedeth into D3 during ->shutdown() if the system is to be powered
+>     off.
 
-I guess it should; you did not change anything in the
-whitelist. Unfortunately, I no longer have hardware to do testing.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks, I remember now.
+
+This appears to be quirky hardware, doesn't it?
+
+Rafael
