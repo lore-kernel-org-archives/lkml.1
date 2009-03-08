@@ -1,83 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbZCHQLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbZCHQU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800AbZCHQLU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 12:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZCHQLE
+	id S1753222AbZCHQU3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 12:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZCHQUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 12:11:04 -0400
-Received: from mail.deathmatch.net ([70.167.247.36]:4695 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752479AbZCHQLD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 12:11:03 -0400
-Date: Sun, 8 Mar 2009 12:10:51 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, Nick Kossifidis <mickflemm@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-Message-ID: <20090308161051.GA17812@hash.localnet>
-References: <49A46AD4.3060007@gmail.com> <20090225140139.GA18694@silver.sucs.org> <20090226135938.GA12182@hash.localnet> <20090226170338.GA1745@silver.sucs.org> <20090303041222.GA1238@hash.localnet> <20090303200352.GA8343@silver.sucs.org> <20090304120759.GA6519@hash.localnet> <20090306094249.GA10236@silver.sucs.org> <20090308030928.GB14966@hash.localnet> <49B38FB7.3000002@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B38FB7.3000002@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 8 Mar 2009 12:20:17 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49847 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752532AbZCHQUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 12:20:15 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/5g7c64Zj5M1bgKYhHqxhKeMa6dXprjTjafQrRau
+	cx4KPMk9naH0De
+Subject: Re: scheduler oddity [bug?]
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Balazs Scheidler <bazsi@balabit.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20090308153956.GB19658@elte.hu>
+References: <1236448069.16726.21.camel@bzorp.balabit>
+	 <1236505323.6281.57.camel@marge.simson.net>
+	 <1236506309.6972.8.camel@marge.simson.net> <20090308153956.GB19658@elte.hu>
+Content-Type: text/plain
+Date: Sun, 08 Mar 2009 17:20:00 +0100
+Message-Id: <1236529200.7110.16.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.47
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 08, 2009 at 10:28:23AM +0100, Jiri Slaby wrote:
->> bf_last is no longer a
->> valid marker for the self-linked descriptor at the end of the loop since
->> we re-add the just-processed descriptor every time through the loop
->> (or am I missing something?)...
->
-> Why? bf_last is snapshotted before the loop. And when we see this bf  
-> while processing, we stop. In the next round we check if bf->next is  
-> done. If yes, we move on.
+On Sun, 2009-03-08 at 16:39 +0100, Ingo Molnar wrote:
+> * Mike Galbraith <efault@gmx.de> wrote:
+> 
+> > The problem with your particular testcase is that while one 
+> > half has an avg_overlap (what we use as affinity hint for 
+> > synchronous wakeups) which triggers the affinity hint, the 
+> > other half has avg_overlap of zero, what it was born with, so 
+> > despite significant execution overlap, the scheduler treats 
+> > them as if they were truly synchronous tasks.
+> 
+> hm, why does it stay on zero?
 
-I think it works for the first one but doesn't take into account 
-subsequent self-linked descriptors.  E.g. if we start with buffers:
+Wakeup preemption.  Presuming here: heavy task wakes light task, is
+preempted, light task stuffs data into pipe, heavy task doesn't block,
+so no avg_overlap is ever computed.  The heavy task uses 100% CPU.
 
-A->B->C
+Running as SCHED_BATCH (virgin source), it becomes sane.
 
-bf_last is 'C'.  The hardware sees descriptors:
+pipetest (6836, #threads: 1)
+---------------------------------------------------------
+se.exec_start                      :        266073.001296
+se.vruntime                        :        173620.953443
+se.sum_exec_runtime                :         11324.486321
+se.avg_overlap                     :             1.306762
+nr_switches                        :                  381
+nr_voluntary_switches              :                    2
+nr_involuntary_switches            :                  379
+se.load.weight                     :                 1024
+policy                             :                    3
+prio                               :                  120
+clock-delta                        :                  109
 
-A'->B'->C'(->C')
+pipetest (6837, #threads: 1)
+---------------------------------------------------------
+se.exec_start                      :        266066.098182
+se.vruntime                        :         51893.050177
+se.sum_exec_runtime                :          2367.077751
+se.avg_overlap                     :             0.077492
+nr_switches                        :                  897
+nr_voluntary_switches              :                  828
+nr_involuntary_switches            :                   69
+se.load.weight                     :                 1024
+policy                             :                    3
+prio                               :                  120
+clock-delta                        :                  109
 
-After one round, the hardware sees:
+> >  static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
+> >  {
+> > +	u64 limit = sysctl_sched_migration_cost;
+> > +	u64 runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
+> > +
+> >  	if (sleep && p->se.last_wakeup) {
+> >  		update_avg(&p->se.avg_overlap,
+> >  			   p->se.sum_exec_runtime - p->se.last_wakeup);
+> >  		p->se.last_wakeup = 0;
+> > -	}
+> > +	} else if (p->se.avg_overlap < limit && runtime >= limit)
+> > +		update_avg(&p->se.avg_overlap, runtime);
+> >  
+> >  	sched_info_dequeued(p);
+> >  	p->sched_class->dequeue_task(rq, p, sleep);
+> 
+> hm, that's weird. We want to limit avg_overlap maintenance to 
+> true sleeps only.
 
-B'->C'->A'(->A')
+Except that when we stop sleeping, we're left with a stale avg_overlap.
 
-Suppose the hardware does A',B',C' before we process any buffer.  So after
-we process A, the hardware moves on to A'.  It finishes a packet, re-reads
-the link and starts overwriting A' again, but for some reason is really
-slow to complete this second packet.  
+> And this patch only makes a difference in the !sleep case - 
+> which shouldnt be that common in this workload.
 
-Now, the tasklet burns through B and C.  On C we do the check if bf->next 
-(i.e. A) is done, and it is because the hardware wrote one packet to it[1].
-However, it's still in the process of writing another frame over A' again.  
-We skip C, send A to __ieee80211_rx, the skb is freed, but the hardware 
-is still writing stuff to it.
+Hack was only to kill the stale zero.  Let's forget hack ;-)
 
-In the trace Sitsofe posted, I didn't see any tasklets processing more
-than a couple of packets, though.
-
-[1] Note, the status is cleared when we hand the buffer to hardware, but
-not by the hardware itself when it rewrites the same buffer.  That could
-explain why status is "martian" for overwritten frames.
-
->> If you want I'll cook up a patch for that too.
->
-> If you like, feel free to kick it off. Remember to remove bf->flags  
-> completely, so that we save another bunch of memory ;).
-
-Ok, I probably won't get to it until this evening so if you prefer to
-do it, go ahead - otherwise I'll tackle it then.
-
--- 
-Bob Copeland %% www.bobcopeland.com
+	-Mike
 
