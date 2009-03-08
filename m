@@ -1,95 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZCHVIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZCHVMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195AbZCHVIu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 17:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZCHVIg
+	id S1754830AbZCHVMN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 17:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbZCHVL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 17:08:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34807 "EHLO ogre.sisk.pl"
+	Sun, 8 Mar 2009 17:11:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44763 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754308AbZCHVIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 17:08:35 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] igb: fix kexec with igb
-Date: Sun, 8 Mar 2009 22:08:42 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-References: <49B1F934.5050006@kernel.org> <200903081157.37139.rjw@sisk.pl> <49B40A03.7060703@kernel.org>
-In-Reply-To: <49B40A03.7060703@kernel.org>
+	id S1754200AbZCHVL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 17:11:56 -0400
+Message-ID: <49B4343B.9050807@kernel.org>
+Date: Sun, 08 Mar 2009 14:10:19 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] x86/pci: try to detect host_bridge pci_cfg_space
+References: <49B1C50E.5010209@kernel.org> <49B1C69F.70904@zytor.com> <49B1C81B.5010904@zytor.com> <49B1C8C1.4090304@kernel.org> <20090308110437.GA27811@elte.hu> <20090308145803.GL25995@parisc-linux.org> <49B4330C.1060700@zytor.com>
+In-Reply-To: <49B4330C.1060700@zytor.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903082208.42957.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 March 2009, Yinghai Lu wrote:
-> Rafael J. Wysocki wrote:
-> > On Saturday 07 March 2009, Yinghai Lu wrote:
-> >> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
-> >> <jesse.brandeburg@gmail.com> wrote:
-> >>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> >>>> Impact: could probe igb
-> >>>>
-> >>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
-> >>>> failed with -2.
-> >>>>
-> >>>> it looks like the same behavior happened on forcedeth.
-> >>>>
-> >>>> try to check system_state to make sure if put it on D3
-> >>>>
-> >>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> >>>>
-> >>>> ---
-> >>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
-> >>>>  1 file changed, 14 insertions(+), 5 deletions(-)
-> >>> I see the point of the patch, but I know for a fact that ixgbe when
-> >>> enabled for MSI-X also doesn't work with kexec.
-> >>>
-> >>> so my questions are:
-> >>> are you going to change every driver?
-> >> i tend to only change driver that i have related HW.
-> >>
-> >>> why can't this be fixed in core kernel code instead?
-> >> will check it.
-> >>
-> >>> Shouldn't pci_enable_device take it out of D3?
-> >>> Or maybe it should be taken out of D3 immediately if someone tries to
-> >>> ioremap any of the BARx registers?
-> >>
-> >> looks like second kernel can not detect the state any more.
-> > 
-> > In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
-> > thing.  The question is why it doesn't work as expected.
+H. Peter Anvin wrote:
+> Matthew Wilcox wrote:
+>> On Sun, Mar 08, 2009 at 12:04:37PM +0100, Ingo Molnar wrote:
+>>> I'd also suggest to flip around the subject line from x86/pci to 
+>>> pci/x86 - it's more of a PCI patch than a pure x86 patch. The 
+>>> same problem could affect other platforms too i suspect.
+>> Not all platforms expose the root bridge in PCI configuration space.
+>> Intel ia64 platforms do have a materialised root bridge; HP's don't.
+>> (I don't know whether Intel ship any PCIe ia64 machines or not).  I
+>> don't remember details for other platforms, but I think Intel is the odd
+>> one out in this regard.
+>>
 > 
-> not sure... please check the version for forcedeth that you made.
-> 
-> commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
-> Author: Rafael J. Wysocki <rjw@sisk.pl>
-> Date:   Fri Sep 5 14:00:19 2008 -0700
-> 
->     forcedeth: fix kexec regression
->     
->     Fix regression tracked as http://bugzilla.kernel.org/show_bug.cgi?id=11361
->     and caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
->     forcedeth: setup wake-on-lan before shutting down") that makes network
->     adapters integrated into the NVidia MCP55 chipsets fail to work in kexeced
->     kernels.  The problem appears to be that if the adapter is put into D3_hot
->     during ->shutdown(), it cannot be brought back into D0 after kexec (ref.
->     http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore, only
->     put forcedeth into D3 during ->shutdown() if the system is to be powered
->     off.
+> It's still generic PCI code, however.  If there is no host bridge
+> exposed in PCI space, the patch is a noop.
 
-Thanks, I remember now.
+ok, will split that patch to two
+1. one touch pci.c
+2. and one touch x86/pci.
 
-This appears to be quirky hardware, doesn't it?
-
-Rafael
+YH
