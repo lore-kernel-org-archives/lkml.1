@@ -1,119 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbZCHQAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbZCHQC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753660AbZCHQAt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 12:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbZCHQAb
+	id S1753451AbZCHQC3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 12:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZCHQCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 12:00:31 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47411 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330AbZCHQAa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 12:00:30 -0400
-Date: Sun, 8 Mar 2009 09:01:02 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andreas Robinson <andr345@gmail.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       sam@ravnborg.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
-Message-ID: <20090308090102.2db82a5b@infradead.org>
-In-Reply-To: <1236509237.5645.151.camel@andreas-laptop>
-References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
-	<ac3eb2510902170353ia62a630nbe5cf059ca7d616e@mail.gmail.com>
-	<200902181528.29697.rusty@rustcorp.com.au>
-	<ac3eb2510902180115o4690a335n129e4df695540de0@mail.gmail.com>
-	<1234952753.10531.48.camel@andreas-laptop>
-	<cc43514a0902191637h5a9680c5id95f7d6c32cca472@mail.gmail.com>
-	<ac3eb2510902191755i391d4defnc5a514f4525ec6cf@mail.gmail.com>
-	<1235216636.7025.1023.camel@andreas-laptop>
-	<1236004353.10055.49.camel@andreas-laptop>
-	<20090302082003.1bb7bdc5@infradead.org>
-	<ac3eb2510903020829s7c876a96y7eb5568eeb9921fd@mail.gmail.com>
-	<20090302102703.50aaf724@infradead.org>
-	<1236192430.6785.111.camel@andreas-laptop>
-	<20090305161837.6ba80cc1@infradead.org>
-	<1236352543.6594.59.camel@andreas-laptop>
-	<20090306074548.36ed2f9f@infradead.org>
-	<1236509237.5645.151.camel@andreas-laptop>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 8 Mar 2009 12:02:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44384 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752479AbZCHQCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 12:02:19 -0400
+Date: Sun, 8 Mar 2009 16:00:28 GMT
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       akpm@linux-foundation.org, tglx@linutronix.de,
+       kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, tglx@linutronix.de,
+       kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu
+In-Reply-To: <20090308124421.23C3.A69D9226@jp.fujitsu.com>
+References: <20090308124421.23C3.A69D9226@jp.fujitsu.com>
+Subject: [tip:tracing/ftrace] ftrace: tracing header should put '#' at the beginning of a line
+Message-ID: <tip-888b55dc314d26239d84c3b187dae555a81c1605@git.kernel.org>
+Git-Commit-ID: 888b55dc314d26239d84c3b187dae555a81c1605
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 08 Mar 2009 16:00:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 08 Mar 2009 11:47:17 +0100
-Andreas Robinson <andr345@gmail.com> wrote:
+Commit-ID:  888b55dc314d26239d84c3b187dae555a81c1605
+Gitweb:     http://git.kernel.org/tip/888b55dc314d26239d84c3b187dae555a81c1605
+Author:     "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+AuthorDate: Sun, 8 Mar 2009 13:12:43 +0900
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 8 Mar 2009 16:57:22 +0100
 
-> > but I guess that is for Ubuntu to resolve. I don't see the machines
-> > I run (with Fedora) exhibit this same issue; while there are a
-> > bunch of modules, none of the ones that are expensive-and-useless
-> > in your charts are there.
-> 
-> I think they will. Fast boot is one of the "essential" goals for
-> Jaunty and Karmic.
-> 
-> Anyway, attached is a bootchart for a cleaned up kernel with the
-> important (AFAIK) drivers built in.
+ftrace: tracing header should put '#' at the beginning of a line
 
-thanks; very useful overview!
+In a recent discussion, Andrew Morton pointed out that tracing header
+should put '#' at the beginning of a line.
 
-> 
-> >From this, I've found some tasks that I can set myself to. They would
-> obviously be the topic of other threads:
-> 
-> * Make the nforce2 ethernet driver (init_nic) initialize itself
->   asynchronously, if possible.
+Then, we can easily filtered the header by following grep usage:
 
-I looked at doing this generically and it is really hard. BUT..
-one of the options is to move work from the init to the "ifconfig up"
-code...
+  cat trace | grep -v '^#'
 
-In addition, for 2.6.30, I have a patch pending to move sata init
-before the network init, which can help hide it some
-> 
-> * New config option: Separate initramfs decompression and
->   file-system calls. Decompress as early as possible in a
->   separate thread.
+Wakeup trace also has the same header problem.
 
-interesting idea!
-> 
-> * Don't unpack initramfs twice. If CONFIG_BLK_DEV_RAM is
->   set, the kernel decompresses the ramdisk just to see if
->   it's a cpio archive or not, and then throws away the result.
+Comparison of headers displayed:
 
-I actually have a patch for it stuck away somewhere; I thought it was
-sent upstream but apparently it was not. I'll dig it out and dust it
-off.
+before this patch:
 
-Note: Having a smaller initrd (like Fedora does, they make the initrd
-only have the modules the specific machine needs) will save a bunch of
-time... what isn't there you don't have to decompress either.
+ # tracer: wakeup
+ #
+ wakeup latency trace v1.1.5 on 2.6.29-rc7-tip-tip
+ --------------------------------------------------------------------
+  latency: 19059 us, #21277/21277, CPU#1 | (M:desktop VP:0, KP:0, SP:0 HP:0 #P:4)
+     -----------------
+     | task: kondemand/1-1644 (uid:0 nice:-5 policy:0 rt_prio:0)
+     -----------------
 
-> 
-> * See what can be done about pci_init(), if anything.
-> 
-> If there's anything else regarding fastboot you think would make more
-> sense to work on first, please let me know.
+ #                  _------=> CPU#
+ #                 / _-----=> irqs-off
+ #                | / _----=> need-resched
+ #                || / _---=> hardirq/softirq
+ #                ||| / _--=> preempt-depth
+ #                |||| /
+ #                |||||     delay
+ #  cmd     pid   ||||| time  |   caller
+ #     \   /      |||||   \   |   /
+ irqbalan-1887    1d.s.    0us :   1887:120:R   + [001]  1644:115:S kondemand/1
+ irqbalan-1887    1d.s.    1us : default_wake_function <-autoremove_wake_function
+ irqbalan-1887    1d.s.    2us : check_preempt_wakeup <-try_to_wake_up
+
+after this patch:
+
+ # tracer: wakeup
+ #
+ # wakeup latency trace v1.1.5 on 2.6.29-rc7-tip-tip
+ # --------------------------------------------------------------------
+ # latency: 529 us, #530/530, CPU#0 | (M:desktop VP:0, KP:0, SP:0 HP:0 #P:4)
+ #    -----------------
+ #    | task: kondemand/0-1641 (uid:0 nice:-5 policy:0 rt_prio:0)
+ #    -----------------
+ #
+ #                  _------=> CPU#
+ #                 / _-----=> irqs-off
+ #                | / _----=> need-resched
+ #                || / _---=> hardirq/softirq
+ #                ||| / _--=> preempt-depth
+ #                |||| /
+ #                |||||     delay
+ #  cmd     pid   ||||| time  |   caller
+ #     \   /      |||||   \   |   /
+     sshd-2496    0d.s.    0us :   2496:120:R   + [000]  1641:115:S kondemand/0
+     sshd-2496    0d.s.    1us : default_wake_function <-autoremove_wake_function
+     sshd-2496    0d.s.    1us : check_preempt_wakeup <-try_to_wake_up
+
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <20090308124421.23C3.A69D9226@jp.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-One thing to mention is that fastinit for sata... I only did AHCI
-(because all my machines have that). Your machine looks like it has
-something different than AHCI, so maybe the sata controller can use
-some work ;-)
-(a sata driver needs to opt into parallel scanning via a flag)
+---
+ kernel/trace/trace.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-SATA init tends to be one of the things that are fix time per drive;
-and so working on that first to at least ONLY get that is worth it,
-it's a huge chunk of time (more than half the total time in your
-bootchart)
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index cc94f86..e5b5619 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -1466,11 +1466,11 @@ print_trace_header(struct seq_file *m, struct trace_iterator *iter)
+ 	total = entries +
+ 		ring_buffer_overruns(iter->tr->buffer);
+ 
+-	seq_printf(m, "%s latency trace v1.1.5 on %s\n",
++	seq_printf(m, "# %s latency trace v1.1.5 on %s\n",
+ 		   name, UTS_RELEASE);
+-	seq_puts(m, "-----------------------------------"
++	seq_puts(m, "# -----------------------------------"
+ 		 "---------------------------------\n");
+-	seq_printf(m, " latency: %lu us, #%lu/%lu, CPU#%d |"
++	seq_printf(m, "# latency: %lu us, #%lu/%lu, CPU#%d |"
+ 		   " (M:%s VP:%d, KP:%d, SP:%d HP:%d",
+ 		   nsecs_to_usecs(data->saved_latency),
+ 		   entries,
+@@ -1492,24 +1492,24 @@ print_trace_header(struct seq_file *m, struct trace_iterator *iter)
+ #else
+ 	seq_puts(m, ")\n");
+ #endif
+-	seq_puts(m, "    -----------------\n");
+-	seq_printf(m, "    | task: %.16s-%d "
++	seq_puts(m, "#    -----------------\n");
++	seq_printf(m, "#    | task: %.16s-%d "
+ 		   "(uid:%d nice:%ld policy:%ld rt_prio:%ld)\n",
+ 		   data->comm, data->pid, data->uid, data->nice,
+ 		   data->policy, data->rt_priority);
+-	seq_puts(m, "    -----------------\n");
++	seq_puts(m, "#    -----------------\n");
+ 
+ 	if (data->critical_start) {
+-		seq_puts(m, " => started at: ");
++		seq_puts(m, "#  => started at: ");
+ 		seq_print_ip_sym(&iter->seq, data->critical_start, sym_flags);
+ 		trace_print_seq(m, &iter->seq);
+-		seq_puts(m, "\n => ended at:   ");
++		seq_puts(m, "\n#  => ended at:   ");
+ 		seq_print_ip_sym(&iter->seq, data->critical_end, sym_flags);
+ 		trace_print_seq(m, &iter->seq);
+-		seq_puts(m, "\n");
++		seq_puts(m, "#\n");
+ 	}
+ 
+-	seq_puts(m, "\n");
++	seq_puts(m, "#\n");
+ }
+ 
+ static void test_cpu_buff_start(struct trace_iterator *iter)
