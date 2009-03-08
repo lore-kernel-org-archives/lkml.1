@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbZCHCUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754250AbZCHCgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbZCHCUd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 7 Mar 2009 21:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZCHCUZ
+	id S1754250AbZCHCgD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 7 Mar 2009 21:36:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZCHCfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 7 Mar 2009 21:20:25 -0500
-Received: from an-out-0708.google.com ([209.85.132.250]:47156 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbZCHCUY (ORCPT
+	Sat, 7 Mar 2009 21:35:52 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:32450 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZCHCfv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 7 Mar 2009 21:20:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=lKiazlWzaRVurhW5dArnNuvX8b5qTyjEe+wC1EjULnCufRcXnGINiILl5+5iT/nrj6
-         xJfLEBd6YYM5LOTF6TJQwo2PYHasewFmW1uLj7xsYK/SFhz4FWgTt1GjpmBqnxygWOrm
-         BmMFu6VIvKBRLrF30hTAwr8jg0T0su7QBbhj0=
-Message-ID: <49B32B63.9030106@gmail.com>
-Date: Sat, 07 Mar 2009 20:20:19 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sat, 7 Mar 2009 21:35:51 -0500
+Date: Sat, 7 Mar 2009 19:35:47 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>, rjw@sisk.pl, matthew@wil.cx
+Cc: stable@kernel.org, linux-pci <linux-pci@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] PCIe: portdrv: call pci_disable_device during remove
+Message-ID: <20090308023547.GB3575@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>, rjw@sisk.pl,
+	matthew@wil.cx, stable@kernel.org,
+	linux-pci <linux-pci@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Adrian McMenamin <lkmladrian@gmail.com>
-CC: Roland Dreier <rdreier@cisco.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: printk issue - bug?
-References: <8b67d60903071537p10994257obc7cce99028a740c@mail.gmail.com>	 <adaab7wgabs.fsf@cisco.com> <8b67d60903071704j4392cde7mb826531da079430d@mail.gmail.com>
-In-Reply-To: <8b67d60903071704j4392cde7mb826531da079430d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian McMenamin wrote:
-> 2009/3/7 Roland Dreier <rdreier@cisco.com>:
-> 
->> ie offset is a 64-bit type but the printk format for it is %x, which
->> presumably only consumes 32 bits on SH4?  Seems like your code is buggy
->> and you ignored a compiler warning about printk format mismatch?
->>
->>  - R.
->>
-> 
-> Yes, loff_t is a long long  but why did it work in the first line and
-> not the second?
+The PCIe port driver calls pci_enable_device() during probe but
+never calls pci_disable_device() during remove.
 
-It didn't. You didn't print loff_t in the first printk, and the variable 
-size mismatch corrupted the next value being printed in the second one.
+Cc: stable@kernel.org
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+This is a bug in the original PCIe port driver code, and should
+be backported to the .27 and .28 stable series.
+
+The implementation of the PCIe port driver is different in
+linux-next, and I have a different patch for that.
+---
+diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+index 248b4db..5ea566e 100644
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -103,6 +103,7 @@ static int __devinit pcie_portdrv_probe (struct pci_dev *dev,
+ static void pcie_portdrv_remove (struct pci_dev *dev)
+ {
+ 	pcie_port_device_remove(dev);
++	pci_disable_device(dev);
+ 	kfree(pci_get_drvdata(dev));
+ }
+ 
