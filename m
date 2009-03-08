@@ -1,553 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751294AbZCHGjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751256AbZCHGsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751294AbZCHGjQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 01:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZCHGi7
+	id S1751256AbZCHGsN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 01:48:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbZCHGr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 01:38:59 -0500
-Received: from mail-qy0-f122.google.com ([209.85.221.122]:58141 "EHLO
-	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbZCHGi5 (ORCPT
+	Sun, 8 Mar 2009 01:47:57 -0500
+Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:53591 "EHLO
+	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750761AbZCHGr4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 01:38:57 -0500
-X-Greylist: delayed 162047 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Mar 2009 01:38:56 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=QBKgap4DLHa1oYEh8LmL1y3BIu/mPsOIvV8eXyf8kRa7rOgrPZeL0OzHA/zlwtdBz8
-         aRRJxzIUuh1p2ky1YcuTliZPezm3fy4eiE5gxI5dXe8MKm/bEWILoW+YzI5czI3I9s9A
-         Kvqm0AGIlBQxYIAE8bAPXii1h6o90+3IY5JOE=
-Date: Sat, 7 Mar 2009 22:38:43 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Bryan Wu <cooloney@kernel.org>,
-       Michael Hennerich <michael.hennerich@analog.com>
-Cc: akpm@linux-foundation.org, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Input/Touchscreen Driver: add support AD7877
-	touchscreen driver (try #5)
-Message-ID: <20090308063834.GA7102@dtor-d630.eng.vmware.com>
-References: <1224179768-14475-1-git-send-email-cooloney@kernel.org>
+	Sun, 8 Mar 2009 01:47:56 -0500
+Message-ID: <49B36A18.5030506@lougher.demon.co.uk>
+Date: Sun, 08 Mar 2009 06:47:52 +0000
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1224179768-14475-1-git-send-email-cooloney@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] squashfs: Make SquashFS 4 use the new pcomp crypto
+ interface
+References: <1235569394-15217-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-4-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-6-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090307104637.GB8731@gondor.apana.org.au>
+In-Reply-To: <20090307104637.GB8731@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bryan, Michael,
-
-On Fri, Oct 17, 2008 at 01:56:08AM +0800, Bryan Wu wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
+Herbert Xu wrote:
+> On Wed, Feb 25, 2009 at 02:43:14PM +0100, Geert Uytterhoeven wrote:
+>> Modify SquashFS 4 to use the new "pcomp" crypto interface for decompression,
+>> instead of calling the underlying zlib library directly. This simplifies e.g.
+>> the addition of support for hardware decompression and different decompression
+>> algorithms.
+>>
+>> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+>> Cc: Phillip Lougher <phillip@lougher.demon.co.uk>
 > 
-> [try #5]
->  - Fix indention
->  - Lock spi_async()
->  - Remove useless header comments
->  - Use strict_strtoul
->  - Use EDGE triggered interrupts ?\226?\128?\147 this simplifies some of the IRQ handling.
->  - Fix error cleanup path
->  - Remove duplicated code
->  - SPI access functions parameter use struct spi_device
+> I've applied patches 1-5.  I'd like to see an ack on this before
+> applying it.
 > 
 
-I looked at the latest version of the driver in Andrew's queue and I
-think it needs the following changes:
+I've not acked it because I've not yet made any decisions as to whether 
+I want it in Squashfs.  Also as Squashfs maintainer I maintain my own 
+tree of patches to Squashfs, and so I'll prefer to add it to my tree for 
+subsequent feeding into 2.6.30 once the merge window opens.
 
-- you can't have parts of bitfield updated from IRQ context and part from
-  process context unless every field is protected by the same spinlock.
+I'm fairly agnostic about what decompression library Squashfs uses.  The 
+only thing I care about is cleanliness and usability of the API and 
+performance.  If the crypto API is cleaner or the cryto zlib 
+implementation is faster than the current zlib implementation then I see 
+no reason not to move over to it.  But, I've seen no performance figures 
+and the API seems clumsier.
 
-- You need more full mutual exclusion between enable and disable so you
-  don't inadvertingly kill the timer if you disable and enable from
-  different processes.
+Two API issues of concern (one major, one minor).  Both of these relate 
+to the way Squashfs drives the decompression code, where it repeatedly 
+calls it supplying additional input/output buffers, rather than using a 
+"single-shot" approach where it calls the decompression code once 
+supplying all the necessary input and output buffer space.
 
-- I think you need serialization in various store() methods so that
-  consistent values are written into chip's registers.
+1. Minor issue -the lack of a stream.total_out field.  The current 
+zlib_inflate code collects the total number of bytes decompressed over 
+the multiple calls into the stream.total_out field.
 
-- There were coule of inverted logic errors in disabling chip code.
+    There is clearly no such field available in the cryto API, leading 
+to the somewhat clumsy need to track it, i.e. it leads to the following 
+additional code.
 
-- Kay is trying to get rid of bus_id in devices, you need to use
-  dev_name() instead.
++		unsigned int produced = 0;
 
-Could you please try the patch below and let me know if the driver still
-works so I can commit it. I also did some formatting changes, I hope you
-don't mind. Thanks!
+[snip]
 
--- 
-Dmitry
+ > +		length = 0;
 
-Input: ad7877 fixups
+[snip]
+ > +			produced = req.avail_out;
+ > +			error = crypto_decompress_update(msblk->tfm, &req);
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
+ > +			produced -= req.avail_out;
+ >
+ > +			length += produced;
+ >
 
- drivers/input/touchscreen/ad7877.c |  226 ++++++++++++++++--------------------
- 1 files changed, 99 insertions(+), 127 deletions(-)
+[snip]
+ > +		produced = req.avail_out;
+ > +		error = crypto_decompress_final(msblk->tfm, &req);
+
+ > +		produced -= req.avail_out;
+ > +
+ > +		length += produced;
 
 
-diff --git a/drivers/input/touchscreen/ad7877.c b/drivers/input/touchscreen/ad7877.c
-index 6615bcd..6702364 100644
---- a/drivers/input/touchscreen/ad7877.c
-+++ b/drivers/input/touchscreen/ad7877.c
-@@ -1,7 +1,7 @@
- /*
-  * File:        drivers/input/touchscreen/ad7877.c
-  *
-- * Based on: 	ads7846.c
-+ * Based on:	ads7846.c
-  *
-  *		Copyright (C) 2006-2008 Michael Hennerich, Analog Devices Inc.
-  *
-@@ -185,21 +185,24 @@ struct ad7877 {
- 	u8			averaging;
- 	u8			pen_down_acc_interval;
- 
--	u16 			conversion_data[AD7877_NR_SENSE];
-+	u16			conversion_data[AD7877_NR_SENSE];
- 
- 	struct spi_transfer	xfer[AD7877_NR_SENSE + 2];
- 	struct spi_message	msg;
- 
-+	struct mutex		mutex;
-+	unsigned		disabled:1;	/* P: mutex */
-+	unsigned		gpio3:1;	/* P: mutex */
-+	unsigned		gpio4:1;	/* P: mutex */
-+
- 	spinlock_t		lock;
- 	struct timer_list	timer;		/* P: lock */
--	unsigned		pendown:1;	/* P: lock */
- 	unsigned		pending:1;	/* P: lock */
--	unsigned		disabled:1;
--	unsigned		gpio3:1;
--	unsigned		gpio4:1;
- };
- 
- static int gpio3;
-+module_param(gpio3, int, 0);
-+MODULE_PARM_DESC(gpio3, "If gpio3 is set to 1 AUX3 acts as GPIO3");
- 
- /*
-  * ad7877_read/write are only used for initial setup and for sysfs controls.
-@@ -208,9 +211,10 @@ static int gpio3;
- 
- static int ad7877_read(struct spi_device *spi, u16 reg)
- {
--	struct ser_req		*req = kzalloc(sizeof *req, GFP_KERNEL);
--	int			status, ret;
-+	struct ser_req *req;
-+	int status, ret;
- 
-+	req = kzalloc(sizeof *req, GFP_KERNEL);
- 	if (!req)
- 		return -ENOMEM;
- 
-@@ -228,11 +232,8 @@ static int ad7877_read(struct spi_device *spi, u16 reg)
- 	spi_message_add_tail(&req->xfer[1], &req->msg);
- 
- 	status = spi_sync(spi, &req->msg);
-+	ret = status ? : req->sample;
- 
--	if (status == 0)
--		status = req->msg.status;
--
--	ret = status ? status : req->sample;
- 	kfree(req);
- 
- 	return ret;
-@@ -240,9 +241,10 @@ static int ad7877_read(struct spi_device *spi, u16 reg)
- 
- static int ad7877_write(struct spi_device *spi, u16 reg, u16 val)
- {
--	struct ser_req		*req = kzalloc(sizeof *req, GFP_KERNEL);
--	int			status;
-+	struct ser_req *req;
-+	int status;
- 
-+	req = kzalloc(sizeof *req, GFP_KERNEL);
- 	if (!req)
- 		return -ENOMEM;
- 
-@@ -256,9 +258,6 @@ static int ad7877_write(struct spi_device *spi, u16 reg, u16 val)
- 
- 	status = spi_sync(spi, &req->msg);
- 
--	if (status == 0)
--		status = req->msg.status;
--
- 	kfree(req);
- 
- 	return status;
-@@ -266,12 +265,13 @@ static int ad7877_write(struct spi_device *spi, u16 reg, u16 val)
- 
- static int ad7877_read_adc(struct spi_device *spi, unsigned command)
- {
--	struct ad7877 		*ts = dev_get_drvdata(&spi->dev);
--	struct ser_req		*req = kzalloc(sizeof *req, GFP_KERNEL);
--	int			status;
--	int			sample;
--	int			i;
-+	struct ad7877 *ts = dev_get_drvdata(&spi->dev);
-+	struct ser_req *req;
-+	int status;
-+	int sample;
-+	int i;
- 
-+	req = kzalloc(sizeof *req, GFP_KERNEL);
- 	if (!req)
- 		return -ENOMEM;
- 
-@@ -314,21 +314,18 @@ static int ad7877_read_adc(struct spi_device *spi, unsigned command)
- 		spi_message_add_tail(&req->xfer[i], &req->msg);
- 
- 	status = spi_sync(spi, &req->msg);
--
--	if (status == 0)
--		status = req->msg.status;
--
- 	sample = req->sample;
- 
- 	kfree(req);
--	return status ? status : sample;
-+
-+	return status ? : sample;
- }
- 
- static void ad7877_rx(struct ad7877 *ts)
- {
--	struct input_dev	*input_dev = ts->input;
--	unsigned		Rt;
--	u16			x, y, z1, z2;
-+	struct input_dev *input_dev = ts->input;
-+	unsigned Rt;
-+	u16 x, y, z1, z2;
- 
- 	x = ts->conversion_data[AD7877_SEQ_XPOS] & MAX_12BIT;
- 	y = ts->conversion_data[AD7877_SEQ_YPOS] & MAX_12BIT;
-@@ -350,10 +347,7 @@ static void ad7877_rx(struct ad7877 *ts)
- 		Rt = (z2 - z1) * x * ts->x_plate_ohms;
- 		Rt /= z1;
- 		Rt = (Rt + 2047) >> 12;
--	} else
--		Rt = 0;
- 
--	if (Rt) {
- 		input_report_abs(input_dev, ABS_X, x);
- 		input_report_abs(input_dev, ABS_Y, y);
- 		input_report_abs(input_dev, ABS_PRESSURE, Rt);
-@@ -371,7 +365,7 @@ static inline void ad7877_ts_event_release(struct ad7877 *ts)
- 
- static void ad7877_timer(unsigned long handle)
- {
--	struct ad7877	*ts = (void *)handle;
-+	struct ad7877 *ts = (void *)handle;
- 
- 	ad7877_ts_event_release(ts);
- }
-@@ -382,78 +376,72 @@ static irqreturn_t ad7877_irq(int irq, void *handle)
- 	unsigned long flags;
- 	int status;
- 
--	/* The repeated conversion sequencer controlled by TMR kicked off too fast.
--	 * We ignore the last and process the sample sequence currently in the queue
--	 * It can't be older than 9.4ms, and we need to avoid that ts->msg
--	 * doesn't get issued twice while in work.
-+	/*
-+	 * The repeated conversion sequencer controlled by TMR kicked off
-+	 * too fast. We ignore the last and process the sample sequence
-+	 * currently in the queue. It can't be older than 9.4ms, and we
-+	 * need to avoid that ts->msg doesn't get issued twice while in work.
- 	 */
- 
- 	spin_lock_irqsave(&ts->lock, flags);
--	if (ts->pending) {
--		spin_unlock_irqrestore(&ts->lock, flags);
--		return IRQ_HANDLED;
-+	if (!ts->pending) {
-+		ts->pending = 1;
-+
-+		status = spi_async(ts->spi, &ts->msg);
-+		if (status)
-+			dev_err(&ts->spi->dev, "spi_sync --> %d\n", status);
- 	}
--	ts->pending = 1;
- 	spin_unlock_irqrestore(&ts->lock, flags);
- 
--	status = spi_async(ts->spi, &ts->msg);
--
--	if (status)
--		dev_err(&ts->spi->dev, "spi_sync --> %d\n", status);
--
- 	return IRQ_HANDLED;
- }
- 
- static void ad7877_callback(void *_ts)
- {
- 	struct ad7877 *ts = _ts;
--	unsigned long flags;
- 
--	ad7877_rx(ts);
-+	spin_lock_irq(&ts->lock);
- 
--	spin_lock_irqsave(&ts->lock, flags);
-+	ad7877_rx(ts);
- 	ts->pending = 0;
- 	mod_timer(&ts->timer, jiffies + TS_PEN_UP_TIMEOUT);
--	spin_unlock_irqrestore(&ts->lock, flags);
-+
-+	spin_unlock_irq(&ts->lock);
- }
- 
- static void ad7877_disable(struct ad7877 *ts)
- {
--	unsigned long flags;
--
--	spin_lock_irqsave(&ts->lock, flags);
--	if (ts->disabled) {
--		spin_unlock_irqrestore(&ts->lock, flags);
--		return;
--	}
-+	mutex_lock(&ts->mutex);
- 
--	ts->disabled = 1;
--	disable_irq(ts->spi->irq);
--	spin_unlock_irqrestore(&ts->lock, flags);
-+	if (!ts->disabled) {
-+		ts->disabled = 1;
-+		disable_irq(ts->spi->irq);
- 
--	while (ts->pending) /* Wait for spi_async callback */
--		msleep(1);
-+		/* Wait for spi_async callback */
-+		while (ts->pending)
-+			msleep(1);
- 
--	if (del_timer_sync(&ts->timer))
--		ad7877_ts_event_release(ts);
-+		if (del_timer_sync(&ts->timer))
-+			ad7877_ts_event_release(ts);
-+	}
- 
- 	/* we know the chip's in lowpower mode since we always
- 	 * leave it that way after every request
- 	 */
-+
-+	mutex_unlock(&ts->mutex);
- }
- 
- static void ad7877_enable(struct ad7877 *ts)
- {
--	unsigned long flags;
-+	mutex_lock(&ts->mutex);
- 
--	spin_lock_irqsave(&ts->lock, flags);
- 	if (ts->disabled) {
--		spin_unlock_irqrestore(&ts->lock, flags);
--		return;
-+		ts->disabled = 0;
-+		enable_irq(ts->spi->irq);
- 	}
--	ts->disabled = 0;
--	enable_irq(ts->spi->irq);
--	spin_unlock_irqrestore(&ts->lock, flags);
-+
-+	mutex_unlock(&ts->mutex);
- }
- 
- #define SHOW(name) static ssize_t \
-@@ -490,12 +478,11 @@ static ssize_t ad7877_disable_store(struct device *dev,
- {
- 	struct ad7877 *ts = dev_get_drvdata(dev);
- 	unsigned long val;
--	int ret;
-+	int error;
- 
--	ret = strict_strtoul(buf, 10, &val);
--
--	if (ret)
--		return ret;
-+	error = strict_strtoul(buf, 10, &val);
-+	if (error)
-+		return error;
- 
- 	if (val)
- 		ad7877_disable(ts);
-@@ -521,16 +508,16 @@ static ssize_t ad7877_dac_store(struct device *dev,
- {
- 	struct ad7877 *ts = dev_get_drvdata(dev);
- 	unsigned long val;
--	int ret;
--
--	ret = strict_strtoul(buf, 10, &val);
-+	int error;
- 
--	if (ret)
--		return ret;
-+	error = strict_strtoul(buf, 10, &val);
-+	if (error)
-+		return error;
- 
-+	mutex_lock(&ts->mutex);
- 	ts->dac = val & 0xFF;
--
- 	ad7877_write(ts->spi, AD7877_REG_DAC, (ts->dac << 4) | AD7877_DAC_CONF);
-+	mutex_unlock(&ts->mutex);
- 
- 	return count;
- }
-@@ -551,16 +538,17 @@ static ssize_t ad7877_gpio3_store(struct device *dev,
- {
- 	struct ad7877 *ts = dev_get_drvdata(dev);
- 	unsigned long val;
--	int ret;
-+	int error;
- 
--	ret = strict_strtoul(buf, 10, &val);
--	if (ret)
--		return ret;
-+	error = strict_strtoul(buf, 10, &val);
-+	if (error)
-+		return error;
- 
-+	mutex_lock(&ts->mutex);
- 	ts->gpio3 = !!val;
--
- 	ad7877_write(ts->spi, AD7877_REG_EXTWRITE, AD7877_EXTW_GPIO_DATA |
- 		 (ts->gpio4 << 4) | (ts->gpio3 << 5));
-+	mutex_unlock(&ts->mutex);
- 
- 	return count;
- }
-@@ -581,16 +569,17 @@ static ssize_t ad7877_gpio4_store(struct device *dev,
- {
- 	struct ad7877 *ts = dev_get_drvdata(dev);
- 	unsigned long val;
--	int ret;
-+	int error;
- 
--	ret = strict_strtoul(buf, 10, &val);
--	if (ret)
--		return ret;
-+	error = strict_strtoul(buf, 10, &val);
-+	if (error)
-+		return error;
- 
-+	mutex_lock(&ts->mutex);
- 	ts->gpio4 = !!val;
--
- 	ad7877_write(ts->spi, AD7877_REG_EXTWRITE, AD7877_EXTW_GPIO_DATA |
--		 (ts->gpio4 << 4) | (ts->gpio3 << 5));
-+		     (ts->gpio4 << 4) | (ts->gpio3 << 5));
-+	mutex_unlock(&ts->mutex);
- 
- 	return count;
- }
-@@ -685,14 +674,10 @@ static int __devinit ad7877_probe(struct spi_device *spi)
- 	}
- 
- 	ts = kzalloc(sizeof(struct ad7877), GFP_KERNEL);
--	if (!ts)
--		return -ENOMEM;
--
--
- 	input_dev = input_allocate_device();
--	if (!input_dev) {
--		kfree(ts);
--		return -ENOMEM;
-+	if (!ts || !input_dev) {
-+		err = -ENOMEM;
-+		goto err_free_mem;
- 	}
- 
- 	dev_set_drvdata(&spi->dev, ts);
-@@ -700,6 +685,7 @@ static int __devinit ad7877_probe(struct spi_device *spi)
- 	ts->input = input_dev;
- 
- 	setup_timer(&ts->timer, ad7877_timer, (unsigned long) ts);
-+	mutex_init(&ts->mutex);
- 	spin_lock_init(&ts->lock);
- 
- 	ts->model = pdata->model ? : 7877;
-@@ -713,7 +699,7 @@ static int __devinit ad7877_probe(struct spi_device *spi)
- 	ts->averaging = pdata->averaging;
- 	ts->pen_down_acc_interval = pdata->pen_down_acc_interval;
- 
--	snprintf(ts->phys, sizeof(ts->phys), "%s/inputX", spi->dev.bus_id);
-+	snprintf(ts->phys, sizeof(ts->phys), "%s/input0", dev_name(&spi->dev));
- 
- 	input_dev->name = "AD7877 Touchscreen";
- 	input_dev->phys = ts->phys;
-@@ -761,30 +747,25 @@ static int __devinit ad7877_probe(struct spi_device *spi)
- 	}
- 
- 	err = sysfs_create_group(&spi->dev.kobj, &ad7877_attr_group);
--
--	if (gpio3)
--		err |= device_create_file(&spi->dev, &dev_attr_gpio3);
--	else
--		err |= device_create_file(&spi->dev, &dev_attr_aux3);
--
- 	if (err)
- 		goto err_free_irq;
- 
-+	err = device_create_file(&spi->dev,
-+				 gpio3 ? &dev_attr_gpio3 : &dev_attr_aux3);
-+	if (err)
-+		goto err_remove_attr_group;
-+
- 	err = input_register_device(input_dev);
- 	if (err)
- 		goto err_remove_attr;
- 
--	dev_info(&spi->dev, "touchscreen, irq %d\n", spi->irq);
--
- 	return 0;
- 
- err_remove_attr:
-+	device_remove_file(&spi->dev,
-+			   gpio3 ? &dev_attr_gpio3 : &dev_attr_aux3);
-+err_remove_attr_group:
- 	sysfs_remove_group(&spi->dev.kobj, &ad7877_attr_group);
--
--	if (gpio3)
--		device_remove_file(&spi->dev, &dev_attr_gpio3);
--	else
--		device_remove_file(&spi->dev, &dev_attr_aux3);
- err_free_irq:
- 	free_irq(spi->irq, ts);
- err_free_mem:
-@@ -798,19 +779,14 @@ static int __devexit ad7877_remove(struct spi_device *spi)
- {
- 	struct ad7877		*ts = dev_get_drvdata(&spi->dev);
- 
--	ad7877_disable(ts);
--
- 	sysfs_remove_group(&spi->dev.kobj, &ad7877_attr_group);
-+	device_remove_file(&spi->dev,
-+			   gpio3 ? &dev_attr_gpio3 : &dev_attr_aux3);
- 
--	if (gpio3)
--		device_remove_file(&spi->dev, &dev_attr_gpio3);
--	else
--		device_remove_file(&spi->dev, &dev_attr_aux3);
--
-+	ad7877_disable(ts);
- 	free_irq(ts->spi->irq, ts);
- 
- 	input_unregister_device(ts->input);
--
- 	kfree(ts);
- 
- 	dev_dbg(&spi->dev, "unregistered touchscreen\n");
-@@ -866,10 +842,6 @@ static void __exit ad7877_exit(void)
- }
- module_exit(ad7877_exit);
- 
--module_param(gpio3, int, 0);
--MODULE_PARM_DESC(gpio3,
--	"If gpio3 is set to 1 AUX3 acts as GPIO3");
--
- MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
- MODULE_DESCRIPTION("AD7877 touchscreen Driver");
- MODULE_LICENSE("GPL");
+Whereas previously, only the following single line was required:
+
+ > -		length = msblk->stream.total_out;
+
+2. Major issue - working out loop termination.
+
+It transpires when decompressing from multiple input buffers into 
+multiple output buffers, determining when the decompressor has consumed 
+all input buffers and has flushed all output to the output buffers is 
+difficult.
+
+One might assume loop termination can take place once the decompressor 
+has consumed all the input data - however, this is insufficient because 
+the decompressor may exit having consumed all the input data but it 
+still requires additional output buffer space (stream.avail_in == 0, 
+stream.avail_out == 0).
+
+This leads to the exit condition (stream.avail_in == 0 && 
+stream.avail_out != 0).  However, this still isn't sufficient because 
+the majority of blocks in Squashfs decompress to an exact multiple of 
+the output buffer, i.e. stream.avail_in == 0 && stream.avail_out == 0 is 
+true at the end of decompression.
+
+(stream.avail_in == 0 && stream_avail_out == 0) == true may or may not 
+indicate the end of decompression.  In other words the status of the 
+input/output buffers doesn't give sufficient information as to whether 
+to terminate the loop or not.
+
+With zlib_inflate this is irrelevant because it supplies a suitable exit 
+code indicating whether it needs to be called again (Z_OK) or whether 
+decompression has finished (Z_STREAM_END).  This makes loop termination 
+easy.
+
+My biggest criticism against the cryto changes to Squashfs is 
+crypto_decompress_update doesn't seem to give this information, leaving 
+to the clumsy introduction of a check to see if crypto_decompress_update 
+produced any output data, i.e.:
+
+-		} while (zlib_err == Z_OK);
+ > -
+
+is replaced by:
+
+ > +		} while (bytes || produced);
+ > +
+
+This is clearly suboptimal, and always leads to an additional iteration 
+around the loop.  Only once we've iterated over the loop one last time 
+doing nothing do we decide the decompression has completed.
+
+Not only this, but the loop termination also suffers from a major 
+unanticipated bug:
+
+The loop termination forces an additional iteration around the loop even 
+though we've run out of output buffer space.
+
+Consider the usual scenario where we're decompressing a buffer into two 
+4K pages (pages = 2), and the buffer decompresses to 8K.  The final 
+"real" iteration will have produced != 0 and req.avail_out == 0 (we've 
+consumed all the output bytes in the last output buffer).
+
+Because produced != 0 we will iterate over the loop again.  But because
+req.avail_out == 0 we will load req.next_out with a non-existent buffer 
+(we will fall off the end of the buffer array), i.e.
+
++			if (req.avail_out == 0) {
+ > +				req.next_out = buffer[page++];
+ > +				req.avail_out = PAGE_CACHE_SIZE;
+ >  			}
+ >
+
+If for any reason crypto_decompress_update produces unexpected output 
+(perhaps because of corrupted data), we will trigger a kernel oops.
+
+Obviously in the majority of cases (which is why the code works), the 
+"false" additional iteration doesn't produce any output.  But it is 
+distinctly bad practice to have code in the kernel that in normal 
+operation passes a bad pointer to crypto_decompress_output, and relies 
+on its behaviour not to use that bad pointer.
+
+> Thanks,
+
+Currently as it stands I cannot accept the patch into Squashfs for the 
+above reasons.  The code is less optimal, suffers from a major bug, and 
+has a number of workarounds stemming from what I feel is a less 
+"featureful" API.
+
+I'm willing to consider moving Squashfs over to the crypto API once my 
+concerns have been addressed.  The promised simplification in the 
+"addition of support for hardware decompression and different 
+decompression algorithms" seems quite attractive.  But I'm unwilling to 
+degrade the zlib support in Squashfs for this future promise.
+
+Phillip
+
