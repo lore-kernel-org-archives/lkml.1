@@ -1,184 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbZCHW5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZCHXBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204AbZCHW5x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 18:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbZCHW5k
+	id S1755356AbZCHXBP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 19:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbZCHXA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 18:57:40 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35165 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754224AbZCHW5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 18:57:39 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] igb: fix kexec with igb
-Date: Sun, 8 Mar 2009 23:57:17 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-References: <49B1F934.5050006@kernel.org> <200903082232.36660.rjw@sisk.pl> <86802c440903081535n7cca1b79t85d4b1bfd677483b@mail.gmail.com>
-In-Reply-To: <86802c440903081535n7cca1b79t85d4b1bfd677483b@mail.gmail.com>
+	Sun, 8 Mar 2009 19:00:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:11814 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754782AbZCHXA5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 19:00:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=qL/aFC39CFkpaRVKs9rALAAY4qI0k8c9EBFPRwV2SKdtIwEQLrkIHFYfU1ot0NiLNK
+         0EsWJ00GWSthp6EuU1NbpC3QOhubUSUz+r+qjE3xllDjZaapEa6wEgii0rvHYbgwAlJK
+         rVQjn8iDwcYM4Wx/sWzjwHcNq3HagyUTvNmFs=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903082357.19623.rjw@sisk.pl>
+In-Reply-To: <20090308222804.GA25376@elte.hu>
+References: <49B1C81B.5010904@zytor.com> <20090308110437.GA27811@elte.hu>
+	 <20090308145803.GL25995@parisc-linux.org> <49B4330C.1060700@zytor.com>
+	 <49B4343B.9050807@kernel.org> <49B43585.2050606@zytor.com>
+	 <49B436E4.1050103@kernel.org>
+	 <20090308220100.GO25995@parisc-linux.org> <49B44182.1030707@zytor.com>
+	 <20090308222804.GA25376@elte.hu>
+Date: Sun, 8 Mar 2009 16:00:55 -0700
+X-Google-Sender-Auth: cbc8ae01369351d4
+Message-ID: <86802c440903081600l517c22ccj6328633c01131cb1@mail.gmail.com>
+Subject: Re: [PATCH] x86/pci: try to detect host_bridge pci_cfg_space
+From: Yinghai Lu <yinghai@kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Matthew Wilcox <matthew@wil.cx>,
+       Greg KH <gregkh@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       stable@kernel.org
+Content-Type: multipart/mixed; boundary=000e0cd1452e87cf640464a37deb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 March 2009, Yinghai Lu wrote:
-> On Sun, Mar 8, 2009 at 2:32 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Sunday 08 March 2009, Rafael J. Wysocki wrote:
-> >> On Sunday 08 March 2009, Yinghai Lu wrote:
-> >> > Rafael J. Wysocki wrote:
-> >> > > On Saturday 07 March 2009, Yinghai Lu wrote:
-> >> > >> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
-> >> > >> <jesse.brandeburg@gmail.com> wrote:
-> >> > >>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> >> > >>>> Impact: could probe igb
-> >> > >>>>
-> >> > >>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
-> >> > >>>> failed with -2.
-> >> > >>>>
-> >> > >>>> it looks like the same behavior happened on forcedeth.
-> >> > >>>>
-> >> > >>>> try to check system_state to make sure if put it on D3
-> >> > >>>>
-> >> > >>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> >> > >>>>
-> >> > >>>> ---
-> >> > >>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
-> >> > >>>>  1 file changed, 14 insertions(+), 5 deletions(-)
-> >> > >>> I see the point of the patch, but I know for a fact that ixgbe when
-> >> > >>> enabled for MSI-X also doesn't work with kexec.
-> >> > >>>
-> >> > >>> so my questions are:
-> >> > >>> are you going to change every driver?
-> >> > >> i tend to only change driver that i have related HW.
-> >> > >>
-> >> > >>> why can't this be fixed in core kernel code instead?
-> >> > >> will check it.
-> >> > >>
-> >> > >>> Shouldn't pci_enable_device take it out of D3?
-> >> > >>> Or maybe it should be taken out of D3 immediately if someone tries to
-> >> > >>> ioremap any of the BARx registers?
-> >> > >>
-> >> > >> looks like second kernel can not detect the state any more.
-> >> > >
-> >> > > In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
-> >> > > thing.  The question is why it doesn't work as expected.
-> >> >
-> >> > not sure... please check the version for forcedeth that you made.
-> >> >
-> >> > commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
-> >> > Author: Rafael J. Wysocki <rjw@sisk.pl>
-> >> > Date:   Fri Sep 5 14:00:19 2008 -0700
-> >> >
-> >> >     forcedeth: fix kexec regression
-> >> >
-> >> >     Fix regression tracked as http://bugzilla.kernel.org/show_bug.cgi?id=11361
-> >> >     and caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
-> >> >     forcedeth: setup wake-on-lan before shutting down") that makes network
-> >> >     adapters integrated into the NVidia MCP55 chipsets fail to work in kexeced
-> >> >     kernels.  The problem appears to be that if the adapter is put into D3_hot
-> >> >     during ->shutdown(), it cannot be brought back into D0 after kexec (ref.
-> >> >     http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore, only
-> >> >     put forcedeth into D3 during ->shutdown() if the system is to be powered
-> >> >     off.
-> >>
-> >> Thanks, I remember now.
-> >
-> > In which case you need to rework igb_shutdown() rather than igb_suspend().
-> >
-> > Something like the patch below, perhaps (totally untested).
-> >
-> > Thanks,
-> > Rafael
-> >
-> > ---
-> >  drivers/net/igb/igb_main.c |   24 +++++++++++++++++++-----
-> >  1 file changed, 19 insertions(+), 5 deletions(-)
-> >
-> > Index: linux-2.6/drivers/net/igb/igb_main.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/net/igb/igb_main.c
-> > +++ linux-2.6/drivers/net/igb/igb_main.c
-> > @@ -4299,7 +4299,7 @@ int igb_set_spd_dplx(struct igb_adapter
-> >  }
-> >
-> >
-> > -static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
-> > +static int __igb_shutdown(struct pci_dev *pdev, bool enable_wake)
-> >  {
-> >        struct net_device *netdev = pci_get_drvdata(pdev);
-> >        struct igb_adapter *adapter = netdev_priv(netdev);
-> > @@ -4359,7 +4359,7 @@ static int igb_suspend(struct pci_dev *p
-> >        }
-> >
-> >        /* make sure adapter isn't asleep if manageability/wol is enabled */
-> > -       if (wufc || adapter->en_mng_pt) {
-> > +       if ((wufc || adapter->en_mng_pt) && enable_wake) {
-> >                pci_enable_wake(pdev, PCI_D3hot, 1);
-> >                pci_enable_wake(pdev, PCI_D3cold, 1);
-> >        } else {
-> > @@ -4374,12 +4374,21 @@ static int igb_suspend(struct pci_dev *p
-> >
-> >        pci_disable_device(pdev);
-> >
-> > -       pci_set_power_state(pdev, pci_choose_state(pdev, state));
-> > -
-> >        return 0;
-> >  }
-> >
-> >  #ifdef CONFIG_PM
-> > +static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
-> > +{
-> > +       int retval;
-> > +
-> > +       retval = __igb_shutdown(pdev, true);
-> > +       if (!retval)
-> > +               pci_set_power_state(pdev, PCI_D3hot);
-> > +
-> > +       return retval;
-> > +}
-> > +
-> >  static int igb_resume(struct pci_dev *pdev)
-> >  {
-> >        struct net_device *netdev = pci_get_drvdata(pdev);
-> > @@ -4434,7 +4443,12 @@ static int igb_resume(struct pci_dev *pd
-> >
-> >  static void igb_shutdown(struct pci_dev *pdev)
-> >  {
-> > -       igb_suspend(pdev, PMSG_SUSPEND);
-> > +       if (system_state == SYSTEM_POWER_OFF) {
-> > +               __igb_shutdown(pdev, true);
-> > +               pci_set_power_state(pdev, PCI_D3hot);
-> 
-> you don't need to use pci_choose_state(pdev, state), but use PCI-D3hot directly?
+--000e0cd1452e87cf640464a37deb
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Yes, because we've already decided we'd put the device into D3_hot by calling
-pci_enable_wake(pdev, PCI_D3hot, 1) in __igb_shutdown().
+please check...
 
-In fact we should first determine the target state and _then_ call
-pci_enable_wake() and pci_set_power_state() with that as the argument, but this
-is a separate issue.  For now, IMO, it's better to use D3_hot in both places
-directly.
+--000e0cd1452e87cf640464a37deb
+Content-Type: text/x-diff; charset=US-ASCII; name="host_bridge_4k_cfg.patch"
+Content-Disposition: attachment; filename="host_bridge_4k_cfg.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fs2bumxg0
 
-On a slightly related note, the sequence
-
-                pci_enable_wake(pdev, PCI_D3hot, 1);
-                pci_enable_wake(pdev, PCI_D3cold, 1);
-
-is (slightly) incorrect by itself, because ACPI doesn't distinguish bewteen
-D3_hot and D3_cold, so this just causes the same platform code to run twice,
-which may or may not work (it theory it should always work, but still).
-
-This is yet another problem, though.
-
-Thanks,
-Rafael
+W1BBVENIXSBwY2kveDg2OiB0cnkgdG8gZGV0ZWN0IGhvc3RfYnJpZGdlIHBjaV9jZmdfc3BhY2Ug
+LXYyCgpJbXBhY3Q6IGdldCBjb3JyZWN0IHBjaV9jZmdfc2l6ZSBmb3IgaG9zdF9icmlkZ2UKCm1v
+cmUgaG9zdCBicmlkZ2VzIHN1cHBvcnQgNGsgY2ZnLCBzbyBjaGVjayB0aGVtIGRpcmVjdHkgaW5z
+dGVhZCBvZiBxdWlya3MuCgpvbmx5IG5lZWQgdG8gZG8gdGhpcyBleHRyYSBjaGVjayBmb3IgaG9z
+dF9icmlkZ2UgYXQgdGhpcyBwb2ludCwgYmVjYXVzZSBvbmx5Cmhvc3QgYnJpZGdlcyBhcmUga25v
+d24gdG8gaGF2ZSBleHRlbmRlZCBhZGRyZXNzIHNwYWNlIHdpdGhvdXQgYWxzbyBoYXZpbmcgYQpQ
+Q0ktWC9QQ0ktRSBjYXBzLgpvdGhlciBkZXZpY2VzIHdlIGNvdWxkIHN0aWxsIGRvIHF1aXJrcyBm
+b3IgdGhlbSBpZiB0aGVyZSBpcyBhbnkuCgphbHNvIHJlbW92ZSB0aGUgcXVpcmtzIGZvciBBTUQg
+aG9zdCBicmlkZ2VzIHdpdGggZmFtaWx5IDEwaCBhbmQgMTFoIHRoYXQgaXMgbm90Cm5lZWRlZCBh
+bnkgbW9yZQoKd2l0aCB0aGlzIHBhdGNoLCB3ZSBjYW4gZ2V0IGNvcnJlY3QgcGNpIGNmZyBzaXpl
+IG9mIG5ldyBJbnRlbCBDUFVzL0lPSHMgd2l0aApob3N0IGJyaWRnZXMKCnYyOiB1cGRhdGVkIGNv
+bW1pdCBsb2cuCgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aW5naGFpQGtlcm5lbC5vcmc+
+CkFja2VkLWJ5OiBILiBQZXRlciBBbnZpbiA8aHBhQHp5dG9yLmNvbT4KUmV2aWV3ZWQtYnk6IE1h
+dHRoZXcgV2lsY294IDx3aWxseUBsaW51eC5pbnRlbC5jb20+CkNjOiA8c3RhYmxlQGtlcm5lbC5v
+cmc+CgotLS0KIGFyY2gveDg2L3BjaS9maXh1cC5jIHwgICAyMCAtLS0tLS0tLS0tLS0tLS0tLS0t
+LQogZHJpdmVycy9wY2kvcHJvYmUuYyAgfCAgICA5ICsrKysrKysrLQogMiBmaWxlcyBjaGFuZ2Vk
+LCA4IGluc2VydGlvbnMoKyksIDIxIGRlbGV0aW9ucygtKQoKSW5kZXg6IGxpbnV4LTIuNi9hcmNo
+L3g4Ni9wY2kvZml4dXAuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9hcmNoL3g4Ni9w
+Y2kvZml4dXAuYworKysgbGludXgtMi42L2FyY2gveDg2L3BjaS9maXh1cC5jCkBAIC00OTUsMjYg
+KzQ5NSw2IEBAIERFQ0xBUkVfUENJX0ZJWFVQX0hFQURFUihQQ0lfVkVORE9SX0lEX1MKIAkJCSAg
+cGNpX3NpZW1lbnNfaW50ZXJydXB0X2NvbnRyb2xsZXIpOwogCiAvKgotICogUmVndWxhciBQQ0kg
+ZGV2aWNlcyBoYXZlIDI1NiBieXRlcywgYnV0IEFNRCBGYW1pbHkgMTBoLzExaCBDUFVzIGhhdmUK
+LSAqIDQwOTYgYnl0ZXMgY29uZmlndXJhdGlvbiBzcGFjZSBmb3IgZWFjaCBmdW5jdGlvbiBvZiB0
+aGVpciBwcm9jZXNzb3IKLSAqIGNvbmZpZ3VyYXRpb24gc3BhY2UuCi0gKi8KLXN0YXRpYyB2b2lk
+IGFtZF9jcHVfcGNpX2NmZ19zcGFjZV9zaXplKHN0cnVjdCBwY2lfZGV2ICpkZXYpCi17Ci0JZGV2
+LT5jZmdfc2l6ZSA9IHBjaV9jZmdfc3BhY2Vfc2l6ZV9leHQoZGV2KTsKLX0KLURFQ0xBUkVfUENJ
+X0ZJWFVQX0hFQURFUihQQ0lfVkVORE9SX0lEX0FNRCwgMHgxMjAwLCBhbWRfY3B1X3BjaV9jZmdf
+c3BhY2Vfc2l6ZSk7Ci1ERUNMQVJFX1BDSV9GSVhVUF9IRUFERVIoUENJX1ZFTkRPUl9JRF9BTUQs
+IDB4MTIwMSwgYW1kX2NwdV9wY2lfY2ZnX3NwYWNlX3NpemUpOwotREVDTEFSRV9QQ0lfRklYVVBf
+SEVBREVSKFBDSV9WRU5ET1JfSURfQU1ELCAweDEyMDIsIGFtZF9jcHVfcGNpX2NmZ19zcGFjZV9z
+aXplKTsKLURFQ0xBUkVfUENJX0ZJWFVQX0hFQURFUihQQ0lfVkVORE9SX0lEX0FNRCwgMHgxMjAz
+LCBhbWRfY3B1X3BjaV9jZmdfc3BhY2Vfc2l6ZSk7Ci1ERUNMQVJFX1BDSV9GSVhVUF9IRUFERVIo
+UENJX1ZFTkRPUl9JRF9BTUQsIDB4MTIwNCwgYW1kX2NwdV9wY2lfY2ZnX3NwYWNlX3NpemUpOwot
+REVDTEFSRV9QQ0lfRklYVVBfSEVBREVSKFBDSV9WRU5ET1JfSURfQU1ELCAweDEzMDAsIGFtZF9j
+cHVfcGNpX2NmZ19zcGFjZV9zaXplKTsKLURFQ0xBUkVfUENJX0ZJWFVQX0hFQURFUihQQ0lfVkVO
+RE9SX0lEX0FNRCwgMHgxMzAxLCBhbWRfY3B1X3BjaV9jZmdfc3BhY2Vfc2l6ZSk7Ci1ERUNMQVJF
+X1BDSV9GSVhVUF9IRUFERVIoUENJX1ZFTkRPUl9JRF9BTUQsIDB4MTMwMiwgYW1kX2NwdV9wY2lf
+Y2ZnX3NwYWNlX3NpemUpOwotREVDTEFSRV9QQ0lfRklYVVBfSEVBREVSKFBDSV9WRU5ET1JfSURf
+QU1ELCAweDEzMDMsIGFtZF9jcHVfcGNpX2NmZ19zcGFjZV9zaXplKTsKLURFQ0xBUkVfUENJX0ZJ
+WFVQX0hFQURFUihQQ0lfVkVORE9SX0lEX0FNRCwgMHgxMzA0LCBhbWRfY3B1X3BjaV9jZmdfc3Bh
+Y2Vfc2l6ZSk7Ci0KLS8qCiAgKiBTQjYwMDogRGlzYWJsZSBCQVIxIG9uIGRldmljZSAxNC4wIHRv
+IGF2b2lkIEhQRVQgcmVzb3VyY2VzIGZyb20KICAqIGNvbmZ1c2luZyB0aGUgUENJIGVuZ2luZToK
+ICAqLwpJbmRleDogbGludXgtMi42L2RyaXZlcnMvcGNpL3Byb2JlLmMKPT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0g
+bGludXgtMi42Lm9yaWcvZHJpdmVycy9wY2kvcHJvYmUuYworKysgbGludXgtMi42L2RyaXZlcnMv
+cGNpL3Byb2JlLmMKQEAgLTg0Nyw2ICs4NDcsMTEgQEAgaW50IHBjaV9jZmdfc3BhY2Vfc2l6ZShz
+dHJ1Y3QgcGNpX2RldiAqZAogewogCWludCBwb3M7CiAJdTMyIHN0YXR1czsKKwl1MTYgY2xhc3M7
+CisKKwljbGFzcyA9IGRldi0+Y2xhc3MgPj4gODsKKwlpZiAoY2xhc3MgPT0gUENJX0NMQVNTX0JS
+SURHRV9IT1NUKQorCQlyZXR1cm4gcGNpX2NmZ19zcGFjZV9zaXplX2V4dChkZXYpOwogCiAJcG9z
+ID0gcGNpX2ZpbmRfY2FwYWJpbGl0eShkZXYsIFBDSV9DQVBfSURfRVhQKTsKIAlpZiAoIXBvcykg
+ewpAQCAtOTM2LDcgKzk0MSw2IEBAIHN0YXRpYyBzdHJ1Y3QgcGNpX2RldiAqcGNpX3NjYW5fZGV2
+aWNlKHMKIAlkZXYtPm11bHRpZnVuY3Rpb24gPSAhIShoZHJfdHlwZSAmIDB4ODApOwogCWRldi0+
+dmVuZG9yID0gbCAmIDB4ZmZmZjsKIAlkZXYtPmRldmljZSA9IChsID4+IDE2KSAmIDB4ZmZmZjsK
+LQlkZXYtPmNmZ19zaXplID0gcGNpX2NmZ19zcGFjZV9zaXplKGRldik7CiAJZGV2LT5lcnJvcl9z
+dGF0ZSA9IHBjaV9jaGFubmVsX2lvX25vcm1hbDsKIAlzZXRfcGNpZV9wb3J0X3R5cGUoZGV2KTsK
+IApAQCAtOTUyLDYgKzk1Niw5IEBAIHN0YXRpYyBzdHJ1Y3QgcGNpX2RldiAqcGNpX3NjYW5fZGV2
+aWNlKHMKIAkJcmV0dXJuIE5VTEw7CiAJfQogCisJLyogbmVlZCB0byBoYXZlIGRldi0+Y2xhc3Mg
+cmVhZHkgKi8KKwlkZXYtPmNmZ19zaXplID0gcGNpX2NmZ19zcGFjZV9zaXplKGRldik7CisKIAly
+ZXR1cm4gZGV2OwogfQogCg==
+--000e0cd1452e87cf640464a37deb--
