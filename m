@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZCHQyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbZCHQ6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbZCHQyD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 12:54:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbZCHQxw
+	id S1753828AbZCHQ6p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 12:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbZCHQ6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 12:53:52 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:24357 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752996AbZCHQxv convert rfc822-to-8bit (ORCPT
+	Sun, 8 Mar 2009 12:58:35 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:40370 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752845AbZCHQ6e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 12:53:51 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=ny/IWXORbiN2sVbwoQUlAkKm+8TeYlTJTSbVpODxo2o453Sl6VCJ7LXVzOZ1zxUN9
-	IOndEGbcArTAjB1QPwv+g==
+	Sun, 8 Mar 2009 12:58:34 -0400
+Date: Sun, 8 Mar 2009 12:58:32 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+cc: Greg KH <greg@kroah.com>, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] Loading both ehci-hcd and uhci-hcd drivers causes my
+ printer to fail
+In-Reply-To: <1236528558.11774.50.camel@maxim-laptop>
+Message-ID: <Pine.LNX.4.44L0.0903081243100.5243-100000@netrider.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0903080917460.25207@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903080917460.25207@chino.kir.corp.google.com>
-Date: Sun, 8 Mar 2009 09:53:44 -0700
-Message-ID: <6599ad830903080953na692dcfh7f455bfe46a895c3@mail.gmail.com>
-Subject: Re: [patch -mm] cpusets: add memory_slab_hardwall flag
-From: Paul Menage <menage@google.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 8, 2009 at 9:27 AM, David Rientjes <rientjes@google.com> wrote:
-> +/**
-> + * current_cpuset_object_allowed - can a slab object be allocated on a node?
-> + * @node: the node for object allocation
-> + * @flags: allocation flags
-> + *
-> + * Return non-zero if object is allowed, zero otherwise.
-> + */
-> +int current_cpuset_object_allowed(int node, gfp_t flags)
-> +{
-> +       return !is_slab_hardwall(task_cs(current)) ||
-> +              cpuset_node_allowed_hardwall(node, flags);
-> +}
-> +
+On Sun, 8 Mar 2009, Maxim Levitsky wrote:
 
-This should be in rcu_read_lock()/rcu_read_unlock() in order to safely
-dereference the result of task_cs(current)
+> > No, adding a dependency won't work because it is valid to load 
+> > uhci-hcd without ehci-hcd.  The only time a problem occurs is if you 
+> > load both of them in the wrong order.  (And in fact it's pretty rare 
+> > for that to cause a real problem -- mostly you just get some annoying 
+> > messages in the log.)
+> But since it can cause a problem, this has to be somehow automatically
+> fixed isn't it?
 
-I'll leave the actual memory allocator changes for others to comment on .
+Can it cause a problem?  I'm not so sure -- it depends on what you mean 
+by "problem".  One person complained forcefully just because he didn't 
+like all the extra "disconnect" messages in the system log, even though 
+everything worked perfectly.
 
-Paul
+> For example how to I ensure the correct order with udev?
+
+You can't.  But you can add rules to /etc/modprobe.conf to insure that 
+ehci-hcd is always loaded before uhci-hcd.
+
+> > CONFIG_USB_EHCI_ROOT_HUB_TT shouldn't make any difference at all.  
+> > That setting matters only for hardware using the ARC/TDI design, which
+> > is not present in your Intel chipset.  Likewise, provided ehci-hcd is
+> > loaded first, it shouldn't make any difference whether uhci-hcd is
+> > loaded or not.
+> Well, I retest this.
+> But it seems to work
+
+Best would be if you could send two usbmon traces, one showing the 
+problem and one showing what happens when uhci-hcd isn't loaded but 
+everything else is the same.  For each test, plug in the printer's USB 
+cable after starting the trace.
+
+And don't try to confuse matters by querying the printer status while 
+reloading its firmware.
+
+Alan Stern
+
