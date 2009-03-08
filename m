@@ -1,71 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbZCHTUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZCHTVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbZCHTUg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 15:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbZCHTUZ
+	id S1754093AbZCHTVW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 15:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbZCHTVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 15:20:25 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:57122 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752838AbZCHTUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 15:20:25 -0400
-Date: Sun, 8 Mar 2009 12:20:24 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, manfred@colorfullife.com,
-       Nadia.Derbey@bull.net, miltonm@austin.ibm.com,
-       akpm@linux-foundation.org, peterz@infradead.org,
-       lnxninja@linux.vnet.ibm.com, efault@gmx.de, riel@redhat.com
-Subject: Re: [PATCH] make idr_remove_all() do removal -before- free_layer()
-Message-ID: <20090308192024.GQ10625@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090307222511.GA10727@linux.vnet.ibm.com> <20090308153336.GA19658@elte.hu>
+	Sun, 8 Mar 2009 15:21:12 -0400
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:56515 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752908AbZCHTVL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 15:21:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:disposition-notification-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=iIsp8oZ9Yo4EzqJTRWURfzQPeyXapV8BXH+GUlIKx2zOlqt1oOlPIUvZSDTgAEWE0x
+         d1sKW05fGm+DJEnn2duop0CSPmouZdU4b2sDXyec24em65ib0Lz91y128NryZPEfEbIK
+         VI0IFQqxND0MbLcfTAy7xD5PmSsVgc/NQVmhs=
+From: Leonardo Potenza <leo.potenza@gmail.com>
+To: kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/gpio: fix section mismatch warnings in twl4030-gpio.c
+Date: Sun, 8 Mar 2009 20:17:34 +0100
+User-Agent: KMail/1.9.9
+Cc: hskinnemoen@atmel.com, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090308153336.GA19658@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200903082017.35072.lpotenza@inwind.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 08, 2009 at 04:33:36PM +0100, Ingo Molnar wrote:
-> 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > The following patch fixes a problem in the IDR system, where 
-> > an idr_remove_all() hands a data element to call_rcu() (via 
-> > free_layer()) before making that data element inaccessible to 
-> > new readers.  This is very bad, and results in readers still 
-> > having a reference to this data element at the end of the 
-> > grace period.  Tests on large machines that concurrently map 
-> > and unmap user-space memory within the same multithreaded 
-> > process result in crashes within about five minutes.  Applying 
-> > this patch increases the kernel's longevity to the 
-> > three-to-eight-hour range.
-> > 
-> > There appear to be other similar problems in 
-> > idr_get_empty_slot() and sub_remove(), but I fixed the easy 
-> > one in idr_remove_all() first.  It is therefore no surprise 
-> > that failures still occur.
-> > 
-> > (Yes, and I did look at the relevant patch last year without 
-> > spotting this one.  Goes to show the value of testing as well 
-> > as code review, I guess...)
-> > 
-> > Nadia, Manfred, any thoughts?
-> > 
-> > Located-by: Milton Miller II <miltonm@austin.ibm.com>
-> > Tested-by: Milton Miller II <miltonm@austin.ibm.com>
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> Hm, looks like something we really want to see fixed in 
-> 2.6.29-final, right?
+From: Leonardo Potenza <lpotenza@inwind.it>
 
-This was located in real testing, so I agree that it is pretty high
-priority.  So this patch should go into 2.6.29.
+Removed the __devexit annotation of gpio_twl4030_remove(), in order to suppress the following section mismatch messages:
 
-The priority of the remaining yet-as-unknown fixes depends on their
-complexity and risk.
+WARNING: drivers/gpio/built-in.o(.devinit.text+0xa0b): Section mismatch in reference from the function gpio_twl4030_probe() to the function .devexit.text:gpio_twl4030_remove()
+The function __devinit gpio_twl4030_probe() references
+a function __devexit gpio_twl4030_remove().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+gpio_twl4030_remove() so it may be used outside an exit section.
 
-							Thanx, Paul
+WARNING: drivers/built-in.o(.devinit.text+0xa0b): Section mismatch in reference from the function gpio_twl4030_probe() to the function .devexit.text:gpio_twl4030_remove()
+The function __devinit gpio_twl4030_probe() references
+a function __devexit gpio_twl4030_remove().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+gpio_twl4030_remove() so it may be used outside an exit section.
+
+WARNING: vmlinux.o(.devinit.text+0x1702): Section mismatch in reference from the function gpio_twl4030_probe() to the function .devexit.text:gpio_twl4030_remove()
+The function __devinit gpio_twl4030_probe() references
+a function __devexit gpio_twl4030_remove().
+This is often seen when error handling in the init function
+uses functionality in the exit path.
+The fix is often to remove the __devexit annotation of
+gpio_twl4030_remove() so it may be used outside an exit section.
+
+Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
+---
+Index: linux-2.6/drivers/gpio/twl4030-gpio.c
+===================================================================
+--- linux-2.6.orig/drivers/gpio/twl4030-gpio.c	2009-03-08 19:23:06.000000000 +0100
++++ linux-2.6/drivers/gpio/twl4030-gpio.c	2009-03-08 20:07:41.000000000 +0100
+@@ -460,7 +460,7 @@ no_irqs:
+ 	return ret;
+ }
+ 
+-static int __devexit gpio_twl4030_remove(struct platform_device *pdev)
++static int gpio_twl4030_remove(struct platform_device *pdev)
+ {
+ 	struct twl4030_gpio_platform_data *pdata = pdev->dev.platform_data;
+ 	int status;
+@@ -493,7 +493,7 @@ static struct platform_driver gpio_twl40
+ 	.driver.name	= "twl4030_gpio",
+ 	.driver.owner	= THIS_MODULE,
+ 	.probe		= gpio_twl4030_probe,
+-	.remove		= __devexit_p(gpio_twl4030_remove),
++	.remove		= gpio_twl4030_remove,
+ };
+ 
+ static int __init gpio_twl4030_init(void)
