@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZCHXpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbZCHXrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752703AbZCHXpi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 19:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbZCHXp3
+	id S1753426AbZCHXrQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 19:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbZCHXrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 19:45:29 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55005 "EHLO
+	Sun, 8 Mar 2009 19:47:00 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55071 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751421AbZCHXp2 (ORCPT
+	with ESMTP id S1751421AbZCHXq7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 19:45:28 -0400
-Date: Mon, 9 Mar 2009 08:44:04 +0900
+	Sun, 8 Mar 2009 19:46:59 -0400
+Date: Mon, 9 Mar 2009 08:45:36 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Randy Dunlap <randy.dunlap@oracle.com>
 Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
@@ -26,7 +26,7 @@ Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [RFC][PATCH 3/3] memcg documenation soft limit (Yet Another
  One)
-Message-Id: <20090309084404.f7a19ad4.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20090309084536.d5b1c110.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <49B153A3.8090906@oracle.com>
 References: <20090306092323.21063.93169.sendpatchset@localhost.localdomain>
 	<20090306185440.66b92ca3.kamezawa.hiroyu@jp.fujitsu.com>
@@ -44,48 +44,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Fri, 06 Mar 2009 08:47:31 -0800
 Randy Dunlap <randy.dunlap@oracle.com> wrote:
-
-> KAMEZAWA Hiroyuki wrote:
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-Thank you. (and sorry
--Kame
-
-> > 
-> > Documentation for softlimit (3/3)
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > ---
-> >  Documentation/cgroups/memory.txt |   19 +++++++++++++++++++
-> >  1 file changed, 19 insertions(+)
-> > 
-> > Index: mmotm-2.6.29-Mar3/Documentation/cgroups/memory.txt
-> > ===================================================================
-> > --- mmotm-2.6.29-Mar3.orig/Documentation/cgroups/memory.txt
-> > +++ mmotm-2.6.29-Mar3/Documentation/cgroups/memory.txt
-> > @@ -322,6 +322,25 @@ will be charged as a new owner of it.
-> >    - a cgroup which uses hierarchy and it has child cgroup.
-> >    - a cgroup which uses hierarchy and not the root of hierarchy.
-> >  
-> > +5.4 softlimit
-> > +  Memory cgroup supports softlimit and has 2 params for control.
-> 
->                                                 parameters
-> 
-> > +    - memory.softlimit_in_bytes
-> > +	- softlimit to this cgroup.
->          softlimit for this cgroup
-> 		(i.e., no beginning '-' and no ending '.')
-> 
-> 
-> > +    - memory.softlimit_priority.
-> > +	- priority of this cgroup at softlimit reclaim.
-> 	 priority of this cgroup at softlimit reclaim
-> 
 > > +	  Allowed priority level is 3-0 and 3 is the lowest.
 > 
 > 	Not very user friendly...
 > 
+Ok, then, 0(lowest) - 8(highest) in the next version.
+
+-Kame
+
 > > +	  If 0, this cgroup will not be target of softlimit.
 > > +
 > > +  At memory shortage of the system (or local node/zone), softlimit helps
@@ -116,5 +82,11 @@ Thank you. (and sorry
 > 
 > -- 
 > ~Randy
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 > 
 
