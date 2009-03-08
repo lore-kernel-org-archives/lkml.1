@@ -1,85 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752802AbZCHKfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbZCHKju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752802AbZCHKfO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 06:35:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZCHKfA
+	id S1752411AbZCHKju (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 06:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbZCHKjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 06:35:00 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38978 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbZCHKe7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 06:34:59 -0400
+	Sun, 8 Mar 2009 06:39:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37048 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751342AbZCHKjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 06:39:39 -0400
 Subject: Re: [git-pull -tip] x86:perf_counter cleanup
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1236507232.28127.2.camel@localhost.localdomain>
+In-Reply-To: <1236507643.22914.3642.camel@twins>
 References: <1236507232.28127.2.camel@localhost.localdomain>
+	 <1236507643.22914.3642.camel@twins>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sun, 08 Mar 2009 11:34:19 +0100
-Message-Id: <1236508459.22914.3645.camel@twins>
+Date: Sun, 08 Mar 2009 16:09:13 +0530
+Message-Id: <1236508753.3638.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Peter,
 
-An actual cleanup would be:
+On Sun, 2009-03-08 at 11:20 +0100, Peter Zijlstra wrote:
+> On Sun, 2009-03-08 at 15:43 +0530, Jaswinder Singh Rajput wrote:
+> 
+> > +/*
+> > + * Exported because of ACPI idle
+> > + */
+> >  u64 hw_perf_save_disable(void)
+> >  {
+> >  	if (unlikely(!perf_counters_initialized))
+> > @@ -270,9 +272,6 @@ u64 hw_perf_save_disable(void)
+> >  
+> >  	return pmc_ops->save_disable_all();
+> >  }
+> > -/*
+> > - * Exported because of ACPI idle
+> > - */
+> >  EXPORT_SYMBOL_GPL(hw_perf_save_disable);
+> >  
+> >  static void pmc_intel_restore_all(u64 ctrl)
+> > @@ -301,6 +300,9 @@ static void pmc_amd_restore_all(u64 ctrl)
+> >  	}
+> >  }
+> >  
+> > +/*
+> > + * Exported because of ACPI idle
+> > + */
+> >  void hw_perf_restore(u64 ctrl)
+> >  {
+> >  	if (unlikely(!perf_counters_initialized))
+> > @@ -308,9 +310,6 @@ void hw_perf_restore(u64 ctrl)
+> >  
+> >  	pmc_ops->restore_all(ctrl);
+> >  }
+> > -/*
+> > - * Exported because of ACPI idle
+> > - */
+> >  EXPORT_SYMBOL_GPL(hw_perf_restore);
+> 
+> Please leave those comments where they are, they do not describe the
+> function, but comment on the export.
 
----
-Subject: perf_counters: cleanup amd64 code a little
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Thu Mar 05 21:18:49 CET 2009
+Have you checked this:
+http://git.kernel.org/?p=linux/kernel/git/jaswinder/linux-2.6-tip.git;a=commitdiff;h=1ae843834668af3a30484e256fb27dc1a49f59cb
 
-Use and actual unsigned long bitmap instead of casting our way around.
+These leads to warnings:
+ WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+ WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- arch/x86/kernel/cpu/perf_counter.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+So we have two options:
+1. which I already shown above
+2. remove these comments
 
-Index: linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_counter.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-@@ -37,7 +37,7 @@ struct cpu_hw_counters {
- 	unsigned long		used[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
- 	unsigned long		interrupts;
- 	u64			throttle_ctrl;
--	u64			active_mask;
-+	unsigned long		active_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
- 	int			enabled;
- };
- 
-@@ -291,7 +291,7 @@ static void pmc_amd_restore_all(u64 ctrl
- 		return;
- 
- 	for (idx = 0; idx < nr_counters_generic; idx++) {
--		if (test_bit(idx, (unsigned long *)&cpuc->active_mask)) {
-+		if (test_bit(idx, cpuc->active_mask)) {
- 			u64 val;
- 
- 			rdmsrl(MSR_K7_EVNTSEL0 + idx, val);
-@@ -377,7 +377,7 @@ static void pmc_amd_enable(int idx, u64 
- {
- 	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
- 
--	set_bit(idx, (unsigned long *)&cpuc->active_mask);
-+	set_bit(idx, cpuc->active_mask);
- 	if (cpuc->enabled)
- 		config |= ARCH_PERFMON_EVENTSEL0_ENABLE;
- 
-@@ -401,7 +401,7 @@ static void pmc_amd_disable(int idx, u64
- {
- 	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
- 
--	clear_bit(idx, (unsigned long *)&cpuc->active_mask);
-+	clear_bit(idx, cpuc->active_mask);
- 	wrmsrl(MSR_K7_EVNTSEL0 + idx, config);
- 
- }
+Please let me know, which option you will prefer.
+
+Thanks,
+--
+JSR
 
