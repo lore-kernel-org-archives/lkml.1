@@ -1,83 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZCHVhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZCHVjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbZCHVhR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 17:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbZCHVhD
+	id S1754219AbZCHVjX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 17:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZCHVjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 17:37:03 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34976 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753852AbZCHVhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 17:37:00 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-pm] [RFC][PATCH][1/8] PM: Rework handling of interrupts during suspend-resume (rev. 5)
-Date: Sun, 8 Mar 2009 22:37:07 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-References: <Pine.LNX.4.44L0.0903081629010.9313-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0903081629010.9313-100000@netrider.rowland.org>
+	Sun, 8 Mar 2009 17:39:14 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:2659 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753037AbZCHVjN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 17:39:13 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=G0kZIUAN5eBq8HaGrPod8MqG26t+/q9GDduTlRYv/xrKMyUCO7A5fQqMEENDBTaln
+	VxhY5cXaUT4b/8Z3HMDNA==
+Date: Sun, 8 Mar 2009 14:38:50 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Menage <menage@google.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm] cpusets: add memory_slab_hardwall flag
+In-Reply-To: <6599ad830903080953na692dcfh7f455bfe46a895c3@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0903081438180.30551@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903080917460.25207@chino.kir.corp.google.com> <6599ad830903080953na692dcfh7f455bfe46a895c3@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903082237.08843.rjw@sisk.pl>
+Content-Type: MULTIPART/MIXED; BOUNDARY="497827084-2013226614-1236548330=:30551"
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 March 2009, Alan Stern wrote:
-> On Sun, 8 Mar 2009, Linus Torvalds wrote:
-> 
-> > On Sat, 7 Mar 2009, Alan Stern wrote:
-> > > 
-> > > You didn't answer my question.  Why bother to distinguish between 
-> > > "wake-up" interrupts and non-"wake-up" interrupts?
-> > > 
-> > > In other words, why not simply abort the suspend if IRQ_PENDING is set
-> > > for _any_ interrupt during sysdev_suspend()?
-> > 
-> > .. because some drivers might not actually shut down the hardware until 
-> > they get to "suspend_late"? If even then, for that matter - a driver may 
-> > simply not care, knowing that the hardware will be powered off, and will 
-> > be re-initialized at resume.
-> > 
-> > The thinking that you have to shut your hardware down at "->suspend()" 
-> > time is a _disease_. There are literally classes of hardware out there 
-> > where that would be an outright _bug_, like for a PCI bridge device. For 
-> > many devices, "suspend()" has to be the phase where you shut down the 
-> > _external_ stuff (eg for a disk controller, it's when you'd flush and stop 
-> > your disks), but the controller itself may well be alive until later.
-> 
-> Yes, certainly.  I agree completely.
-> 
-> But there is a difference between shutting down the hardware and merely
-> preventing it from generating interrupt requests.  If a device remains
-> capable of generating IRQs after its driver's suspend method has run,
-> the driver runs the risk of having its handler called at a time when it
-> isn't prepared to cope correctly.  Of course, this will depend on the
-> details of how the driver is written.
-> 
-> There have been examples in the past of devices that, for one reason or
-> another, _did_ generate IRQs at inconvenient times.  The hardware or
-> the BIOS may have done improper initialization, for example.  On a
-> shared IRQ this led to interrupt storms.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Well, we're now trying to fix exactly this problem. :-)
+--497827084-2013226614-1236548330=:30551
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
->  IIRC, the solution was to add a PCI quirk routine to disable IRQ generation
->  at an early stage.   Didn't e100 have this problem?
+On Sun, 8 Mar 2009, Paul Menage wrote:
 
-I don't remember, sorry.
+> > +/**
+> > + * current_cpuset_object_allowed - can a slab object be allocated on a node?
+> > + * @node: the node for object allocation
+> > + * @flags: allocation flags
+> > + *
+> > + * Return non-zero if object is allowed, zero otherwise.
+> > + */
+> > +int current_cpuset_object_allowed(int node, gfp_t flags)
+> > +{
+> > +       return !is_slab_hardwall(task_cs(current)) ||
+> > +              cpuset_node_allowed_hardwall(node, flags);
+> > +}
+> > +
+> 
+> This should be in rcu_read_lock()/rcu_read_unlock() in order to safely
+> dereference the result of task_cs(current)
+> 
 
-Thanks,
-Rafael
+I've folded the following into the patch, thanks Paul.
+---
+ kernel/cpuset.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1205,8 +1205,12 @@ int current_cpuset_is_being_rebound(void)
+  */
+ int current_cpuset_object_allowed(int node, gfp_t flags)
+ {
+-	return !is_slab_hardwall(task_cs(current)) ||
+-	       cpuset_node_allowed_hardwall(node, flags);
++	int is_hardwall;
++
++	rcu_read_lock();
++	is_hardwall = is_slab_hardwall(task_cs(current));
++	rcu_read_unlock();
++	return !is_hardwall || cpuset_node_allowed_hardwall(node, flags);
+ }
+ 
+ static int update_relax_domain_level(struct cpuset *cs, s64 val)
+--497827084-2013226614-1236548330=:30551--
