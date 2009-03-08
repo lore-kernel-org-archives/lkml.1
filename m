@@ -1,43 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbZCHWsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbZCHWvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984AbZCHWsN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 18:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZCHWr5
+	id S1755301AbZCHWvk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 18:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZCHWvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 18:47:57 -0400
-Received: from mx03.syneticon.net ([78.111.66.105]:50564 "EHLO
-	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754514AbZCHWr4 (ORCPT
+	Sun, 8 Mar 2009 18:51:31 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53061 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754728AbZCHWvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 18:47:56 -0400
-Message-ID: <49B44B10.1020707@wpkg.org>
-Date: Sun, 08 Mar 2009 23:47:44 +0100
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081231)
+	Sun, 8 Mar 2009 18:51:31 -0400
+Message-ID: <49B44BE8.1080700@zytor.com>
+Date: Sun, 08 Mar 2009 15:51:20 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Initialized radeon -> Oops: 0000 [#1] SMP
-References: <49B1754C.50109@wpkg.org> <200903072216.33271.rjw@sisk.pl>
-In-Reply-To: <200903072216.33271.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Cliff Wickman <cpw@sgi.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] x86: access to efi reserved memory type
+References: <E1Lfe8A-00056c-SH@eag09.americas.sgi.com>
+In-Reply-To: <E1Lfe8A-00056c-SH@eag09.americas.sgi.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki schrieb:
-> On Friday 06 March 2009, Tomasz Chmielewski wrote:
->> Don't really know where one should send Oops... Is there a better place than linux-kernel?
+Cliff Wickman wrote:
+> From: Cliff Wickman <cpw@sgi.com>
 > 
-> dri-devel@lists.sourceforge.net for one example (CCed).
+>  (this patch dates back to 2008-11-06
+>     http://marc.info/?l=linux-kernel&m=122600658522471&w=2
+>   but has never been applied.)
+> 
+> Give drivers addresses of memory type EFI_RESERVED_TYPE.
+> This supports drivers that use vendor-specific memory, available
+> only to special devices.
+> 
+> The walk() function scans the EFI memory map and does a callback to a
+> specified function for each memory area of a specified type.
+> efi_memmap_walk_reserved() provides a scan for type EFI_RESERVED_TYPE.
+>  (an earlier version of this patch had proposed a new EFI type, but
+>   EFI_RESERVED_TYPE should be sufficient, given that the firmware follows
+>   the standard and does not use such memory for its own purposes)
+> 
+> A UV driver will be posted to the community in the future that will use
+> these routines.
+> 
+> Tested on 2.6.29-rc7 (and many previous versions) running on a
+> UV hardware simulator.
+> 
 
-So, assuming I won't find a better place to send an oops i.e. on 
-http://vger.kernel.org/vger-lists.html, should I go on and use linux-kernel?
+I have multiple issues with this patch.
 
-I.e., where do I go with cpufreq oopses?
+FIRST, this is identical to a platform driver.  I really don't
+understand why it should need a special interface.
 
+SECOND, the EFI-specific callback interface is just plain weird.
+
+THIRD, saying "A UV driver will be posted to the community in the future
+that will use these routines" is not exactly motivation.  At no point
+are you technically justifying this code.
+
+In particular, I really want to know why a plain platform device is
+insufficient, and look for a better solution than this, using the
+generic memory map interfaces rather than something EFI-specific.
+
+	-hpa
 
 -- 
-Tomasz Chmielewski
-http://wpkg.org
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
