@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbZCHPkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093AbZCHPmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753192AbZCHPkY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 11:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbZCHPkK
+	id S1753093AbZCHPmT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 11:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbZCHPmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 11:40:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38547 "EHLO mx2.mail.elte.hu"
+	Sun, 8 Mar 2009 11:42:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39614 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752479AbZCHPkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 11:40:09 -0400
-Date: Sun, 8 Mar 2009 16:39:56 +0100
+	id S1752532AbZCHPmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 11:42:08 -0400
+Date: Sun, 8 Mar 2009 16:41:51 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Balazs Scheidler <bazsi@balabit.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: scheduler oddity [bug?]
-Message-ID: <20090308153956.GB19658@elte.hu>
-References: <1236448069.16726.21.camel@bzorp.balabit> <1236505323.6281.57.camel@marge.simson.net> <1236506309.6972.8.camel@marge.simson.net>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH for tip] ftrace: remove latency_trace document
+Message-ID: <20090308154151.GC19658@elte.hu>
+References: <20090307235209.5A84.A69D9226@jp.fujitsu.com> <20090307153427.GA6075@nowhere> <2f11576a0903071926u3eeb793fx44300a0257439535@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1236506309.6972.8.camel@marge.simson.net>
+In-Reply-To: <2f11576a0903071926u3eeb793fx44300a0257439535@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,44 +36,47 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Galbraith <efault@gmx.de> wrote:
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> The problem with your particular testcase is that while one 
-> half has an avg_overlap (what we use as affinity hint for 
-> synchronous wakeups) which triggers the affinity hint, the 
-> other half has avg_overlap of zero, what it was born with, so 
-> despite significant execution overlap, the scheduler treats 
-> them as if they were truly synchronous tasks.
+> 2009/3/8 Frederic Weisbecker <fweisbec@gmail.com>:
+> > On Sat, Mar 07, 2009 at 11:53:40PM +0900, KOSAKI Motohiro wrote:
+> >> Subject: [PATCH] remove latency_trace document
+> >>
+> >> Currently, there aren't "Latency tracer" and latency_trace file.
+> >> Then, its documentation is removed too.
+> >
+> > Hi,
+> >
+> > The latency_trace file has been removed but the latency tracing stil exists.
+> > It has become an option instead of a file now:
+> >
+> > echo latency-format > /debugfs/tracing/trace_options
+> >
+> > There are even some tracers that default enable it (irqsoff, preemptoff...)
+> > IMO, the documentation about latency tracing shouldn't be removed but
+> > just updated a bit to reflect this change.
+> 
+> Ah, sorry.
+> I totally misunderstood it.
+> 
+> thanks to correct my fault.
 
-hm, why does it stay on zero?
+You are correct to point out that the documentation about 
+latency tracing does need to be updated - as there's no 
+latency_trace file anymore and we reference it in a few places:
 
->  static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
->  {
-> +	u64 limit = sysctl_sched_migration_cost;
-> +	u64 runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
-> +
->  	if (sleep && p->se.last_wakeup) {
->  		update_avg(&p->se.avg_overlap,
->  			   p->se.sum_exec_runtime - p->se.last_wakeup);
->  		p->se.last_wakeup = 0;
-> -	}
-> +	} else if (p->se.avg_overlap < limit && runtime >= limit)
-> +		update_avg(&p->se.avg_overlap, runtime);
->  
->  	sched_info_dequeued(p);
->  	p->sched_class->dequeue_task(rq, p, sleep);
-
-hm, that's weird. We want to limit avg_overlap maintenance to 
-true sleeps only.
-
-And this patch only makes a difference in the !sleep case - 
-which shouldnt be that common in this workload.
-
-What am i missing? A trace would be nice of a few millisecs of 
-runtime of this workload, with a few more trace_printk()'s added 
-showing how avg_overlap develops.
-
-Maybe it's some task migration artifact? There we do a 
-dequeue/enqueue with sleep=0.
+Documentation/ftrace.txt:  latency_trace:
+Documentation/ftrace.txt:	is retrieved. Unlike the "trace" and "latency_trace"
+Documentation/ftrace.txt:	"latency_trace" files are static, and if the
+Documentation/ftrace.txt:	"trace" or "latency_trace".  A new max trace will
+Documentation/ftrace.txt:	trace via the latency_trace file.
+Documentation/ftrace.txt:For traces that display latency times, the latency_trace file
+Documentation/ftrace.txt:	latency_trace file is relative to the start of the trace.
+Documentation/ftrace.txt:  verbose - This deals with the latency_trace file.
+Documentation/ftrace.txt:		trace,trace_pipe,latency_trace. Example:
+Documentation/ftrace.txt: # cat /debug/tracing/latency_trace
+Documentation/ftrace.txt: # cat /debug/tracing/latency_trace
+Documentation/ftrace.txt: # cat /debug/tracing/latency_trace
+Documentation/ftrace.txt: # cat /debug/tracing/latency_trace
 
 	Ingo
