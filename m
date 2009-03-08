@@ -1,109 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZCHSzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbZCHSz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbZCHSzm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 14:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZCHSzb
+	id S1754538AbZCHSz6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 14:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbZCHSzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 14:55:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58471 "EHLO mx2.mail.elte.hu"
+	Sun, 8 Mar 2009 14:55:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33680 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753173AbZCHSzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753275AbZCHSzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 8 Mar 2009 14:55:31 -0400
-Date: Sun, 8 Mar 2009 19:55:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Balazs Scheidler <bazsi@balabit.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: scheduler oddity [bug?]
-Message-ID: <20090308185518.GB28169@elte.hu>
-References: <1236448069.16726.21.camel@bzorp.balabit> <1236505323.6281.57.camel@marge.simson.net> <1236506309.6972.8.camel@marge.simson.net> <20090308153956.GB19658@elte.hu> <1236529200.7110.16.camel@marge.simson.net> <20090308175255.GA22802@elte.hu> <1236537580.7094.8.camel@marge.simson.net>
+Date: Sun, 8 Mar 2009 18:54:57 GMT
+From: Stuart Bennett <stuart@freedesktop.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com, pq@iki.fi,
+       stuart@freedesktop.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       pq@iki.fi, stuart@freedesktop.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090308202135.34933feb@daedalus.pq.iki.fi>
+References: <20090308202135.34933feb@daedalus.pq.iki.fi>
+Subject: [tip:x86/urgent] x86 mmiotrace: fix remove_kmmio_fault_pages()
+Message-ID: <tip-d0fc63f7bd07cb779a06dc1cdd0c5a14e7f5d562@git.kernel.org>
+Git-Commit-ID: d0fc63f7bd07cb779a06dc1cdd0c5a14e7f5d562
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1236537580.7094.8.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 08 Mar 2009 18:55:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  d0fc63f7bd07cb779a06dc1cdd0c5a14e7f5d562
+Gitweb:     http://git.kernel.org/tip/d0fc63f7bd07cb779a06dc1cdd0c5a14e7f5d562
+Author:     "Stuart Bennett" <stuart@freedesktop.org>
+AuthorDate: Sun, 8 Mar 2009 20:21:35 +0200
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 8 Mar 2009 19:51:23 +0100
 
-* Mike Galbraith <efault@gmx.de> wrote:
+x86 mmiotrace: fix remove_kmmio_fault_pages()
 
-> On Sun, 2009-03-08 at 18:52 +0100, Ingo Molnar wrote:
-> > * Mike Galbraith <efault@gmx.de> wrote:
-> > 
-> > > On Sun, 2009-03-08 at 16:39 +0100, Ingo Molnar wrote:
-> > > > * Mike Galbraith <efault@gmx.de> wrote:
-> > > > 
-> > > > > The problem with your particular testcase is that while one 
-> > > > > half has an avg_overlap (what we use as affinity hint for 
-> > > > > synchronous wakeups) which triggers the affinity hint, the 
-> > > > > other half has avg_overlap of zero, what it was born with, so 
-> > > > > despite significant execution overlap, the scheduler treats 
-> > > > > them as if they were truly synchronous tasks.
-> > > > 
-> > > > hm, why does it stay on zero?
-> > > 
-> > > Wakeup preemption.  Presuming here: heavy task wakes light 
-> > > task, is preempted, light task stuffs data into pipe, heavy 
-> > > task doesn't block, so no avg_overlap is ever computed.  The 
-> > > heavy task uses 100% CPU.
-> > > 
-> > > Running as SCHED_BATCH (virgin source), it becomes sane.
-> > 
-> > ah.
-> > 
-> > I'd argue then that time spent on the rq preempted _should_ 
-> > count in avg_overlap statistics. I.e. couldnt we do something 
-> > like ... your patch? :)
-> > 
-> > > >     if (sleep && p->se.last_wakeup) {
-> > > >             update_avg(&p->se.avg_overlap,
-> > > >                        p->se.sum_exec_runtime - p->se.last_wakeup);
-> > > >             p->se.last_wakeup = 0;
-> > > > -   }
-> > > > +   } else if (p->se.avg_overlap < limit && runtime >= limit)
-> > > > +           update_avg(&p->se.avg_overlap, runtime);
-> > 
-> > Just done unconditionally, i.e. something like:
-> > 
-> > 	if (sleep) {
-> > 		runtime = p->se.sum_exec_runtime - p->se.last_wakeup;
-> > 		p->se.last_wakeup = 0;
-> > 	} else {
-> > 		runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
-> > 	}
-> > 
-> > 	update_avg(&p->se.avg_overlap, runtime);
-> > 
-> > ?
-> 
-> That'll do it for this load.  I'll resume in the a.m., give 
-> that some testing, and try to remember all the things I was 
-> paranoid about.
+Impact: fix race+crash in mmiotrace
 
-btw., there's room for a cleanup + micro-optimization here too: 
-it would be nice to change se.last_wakeup and 
-se.prev_sum_exec_runtime to be the same variable, 
-se.prev_timestamp or so.
+The list manipulation in remove_kmmio_fault_pages() was broken. If more
+than one consecutive kmmio_fault_page was re-added during the grace
+period between unregister_kmmio_probe() and remove_kmmio_fault_pages(),
+the list manipulation failed to remove pages from the release list.
 
-That way we can do a simple:
+After a second grace period the pages get into rcu_free_kmmio_fault_pages()
+and raise a BUG_ON() kernel crash.
 
- 	update_avg(&p->se.avg_overlap,
-		    p->se.sum_exec_runtime - p->se.prev_timestamp);
-	p->se.prev_timestamp = 0;
+The list manipulation is fixed to properly remove pages from the release
+list.
 
-the latter is needed as we rely on the zeroing here:
+This bug has been present from the very beginning of mmiotrace in the
+mainline kernel. It was introduced in 0fd0e3da ("x86: mmiotrace full
+patch, preview 1");
 
-	kernel/sched.c: if (sleep && p->se.last_wakeup) {
+An urgent fix for Linus. Tested by Stuart (on 32-bit) and Pekka
+(on amd and intel 64-bit systems, nouveau and nvidia proprietary).
+
+Signed-off-by: Stuart Bennett <stuart@freedesktop.org>
+Signed-off-by: Pekka Paalanen <pq@iki.fi>
+LKML-Reference: <20090308202135.34933feb@daedalus.pq.iki.fi>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-	Ingo
+---
+ arch/x86/mm/kmmio.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/mm/kmmio.c b/arch/x86/mm/kmmio.c
+index 9f20503..6a518dd 100644
+--- a/arch/x86/mm/kmmio.c
++++ b/arch/x86/mm/kmmio.c
+@@ -451,23 +451,24 @@ static void rcu_free_kmmio_fault_pages(struct rcu_head *head)
+ 
+ static void remove_kmmio_fault_pages(struct rcu_head *head)
+ {
+-	struct kmmio_delayed_release *dr = container_of(
+-						head,
+-						struct kmmio_delayed_release,
+-						rcu);
++	struct kmmio_delayed_release *dr =
++		container_of(head, struct kmmio_delayed_release, rcu);
+ 	struct kmmio_fault_page *p = dr->release_list;
+ 	struct kmmio_fault_page **prevp = &dr->release_list;
+ 	unsigned long flags;
++
+ 	spin_lock_irqsave(&kmmio_lock, flags);
+ 	while (p) {
+-		if (!p->count)
++		if (!p->count) {
+ 			list_del_rcu(&p->list);
+-		else
++			prevp = &p->release_next;
++		} else {
+ 			*prevp = p->release_next;
+-		prevp = &p->release_next;
++		}
+ 		p = p->release_next;
+ 	}
+ 	spin_unlock_irqrestore(&kmmio_lock, flags);
++
+ 	/* This is the real RCU destroy call. */
+ 	call_rcu(&dr->rcu, rcu_free_kmmio_fault_pages);
+ }
