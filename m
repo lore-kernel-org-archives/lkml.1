@@ -1,88 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZCHVjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZCHVkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbZCHVjX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 17:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZCHVjO
+	id S1755175AbZCHVkb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 17:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbZCHVkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 17:39:14 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:2659 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753037AbZCHVjN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 17:39:13 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=G0kZIUAN5eBq8HaGrPod8MqG26t+/q9GDduTlRYv/xrKMyUCO7A5fQqMEENDBTaln
-	VxhY5cXaUT4b/8Z3HMDNA==
-Date: Sun, 8 Mar 2009 14:38:50 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Menage <menage@google.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm] cpusets: add memory_slab_hardwall flag
-In-Reply-To: <6599ad830903080953na692dcfh7f455bfe46a895c3@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0903081438180.30551@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903080917460.25207@chino.kir.corp.google.com> <6599ad830903080953na692dcfh7f455bfe46a895c3@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 8 Mar 2009 17:40:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34998 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754011AbZCHVkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 17:40:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] igb: fix kexec with igb
+Date: Sun, 8 Mar 2009 22:40:25 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+References: <49B1F934.5050006@kernel.org> <200903082208.42957.rjw@sisk.pl> <49B43622.9070303@kernel.org>
+In-Reply-To: <49B43622.9070303@kernel.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="497827084-2013226614-1236548330=:30551"
-X-System-Of-Record: true
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903082240.26380.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---497827084-2013226614-1236548330=:30551
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Sun, 8 Mar 2009, Paul Menage wrote:
-
-> > +/**
-> > + * current_cpuset_object_allowed - can a slab object be allocated on a node?
-> > + * @node: the node for object allocation
-> > + * @flags: allocation flags
-> > + *
-> > + * Return non-zero if object is allowed, zero otherwise.
-> > + */
-> > +int current_cpuset_object_allowed(int node, gfp_t flags)
-> > +{
-> > +       return !is_slab_hardwall(task_cs(current)) ||
-> > +              cpuset_node_allowed_hardwall(node, flags);
-> > +}
-> > +
+On Sunday 08 March 2009, Yinghai Lu wrote:
+> Rafael J. Wysocki wrote:
+> > On Sunday 08 March 2009, Yinghai Lu wrote:
+> >> Rafael J. Wysocki wrote:
+> >>> On Saturday 07 March 2009, Yinghai Lu wrote:
+> >>>> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
+> >>>> <jesse.brandeburg@gmail.com> wrote:
+> >>>>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+> >>>>>> Impact: could probe igb
+> >>>>>>
+> >>>>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
+> >>>>>> failed with -2.
+> >>>>>>
+> >>>>>> it looks like the same behavior happened on forcedeth.
+> >>>>>>
+> >>>>>> try to check system_state to make sure if put it on D3
+> >>>>>>
+> >>>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >>>>>>
+> >>>>>> ---
+> >>>>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
+> >>>>>>  1 file changed, 14 insertions(+), 5 deletions(-)
+> >>>>> I see the point of the patch, but I know for a fact that ixgbe when
+> >>>>> enabled for MSI-X also doesn't work with kexec.
+> >>>>>
+> >>>>> so my questions are:
+> >>>>> are you going to change every driver?
+> >>>> i tend to only change driver that i have related HW.
+> >>>>
+> >>>>> why can't this be fixed in core kernel code instead?
+> >>>> will check it.
+> >>>>
+> >>>>> Shouldn't pci_enable_device take it out of D3?
+> >>>>> Or maybe it should be taken out of D3 immediately if someone tries to
+> >>>>> ioremap any of the BARx registers?
+> >>>> looks like second kernel can not detect the state any more.
+> >>> In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
+> >>> thing.  The question is why it doesn't work as expected.
+> >> not sure... please check the version for forcedeth that you made.
+> >>
+> >> commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
+> >> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> >> Date:   Fri Sep 5 14:00:19 2008 -0700
+> >>
+> >>     forcedeth: fix kexec regression
+> >>     
+> >>     Fix regression tracked as http://bugzilla.kernel.org/show_bug.cgi?id=11361
+> >>     and caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
+> >>     forcedeth: setup wake-on-lan before shutting down") that makes network
+> >>     adapters integrated into the NVidia MCP55 chipsets fail to work in kexeced
+> >>     kernels.  The problem appears to be that if the adapter is put into D3_hot
+> >>     during ->shutdown(), it cannot be brought back into D0 after kexec (ref.
+> >>     http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore, only
+> >>     put forcedeth into D3 during ->shutdown() if the system is to be powered
+> >>     off.
+> > 
+> > Thanks, I remember now.
+> > 
+> > This appears to be quirky hardware, doesn't it?
+> > 
+> all my systems with ck804 and mcp55 need this trick.
 > 
-> This should be in rcu_read_lock()/rcu_read_unlock() in order to safely
-> dereference the result of task_cs(current)
+> for igb: one system need this trick, and other doesn't need this trick.
+> could BIOS/ACPI difference or the nic option rom difference.
 > 
+> but for kexec path, we really don't need put pci devices to D3.
 
-I've folded the following into the patch, thanks Paul.
----
- kernel/cpuset.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+Agreed, but pci_set_power_state() may be called for too many different reasons
+to be a suitable place for a fix IMO.
 
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1205,8 +1205,12 @@ int current_cpuset_is_being_rebound(void)
-  */
- int current_cpuset_object_allowed(int node, gfp_t flags)
- {
--	return !is_slab_hardwall(task_cs(current)) ||
--	       cpuset_node_allowed_hardwall(node, flags);
-+	int is_hardwall;
-+
-+	rcu_read_lock();
-+	is_hardwall = is_slab_hardwall(task_cs(current));
-+	rcu_read_unlock();
-+	return !is_hardwall || cpuset_node_allowed_hardwall(node, flags);
- }
- 
- static int update_relax_domain_level(struct cpuset *cs, s64 val)
---497827084-2013226614-1236548330=:30551--
+Thanks,
+Rafael
