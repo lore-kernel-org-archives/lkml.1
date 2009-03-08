@@ -1,95 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753625AbZCHRNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZCHRP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753625AbZCHRNy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 13:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbZCHRNp
+	id S1754012AbZCHRP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 13:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbZCHRPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 13:13:45 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:56234 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752868AbZCHRNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 13:13:45 -0400
-Date: Sun, 8 Mar 2009 18:13:38 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC fix for 2.6.29-rc8
-Message-ID: <20090308181338.427cdbd7@mjolnir.ossman.eu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.drzeus.cx-25664-1236532420-0001-2"
+	Sun, 8 Mar 2009 13:15:16 -0400
+Received: from gw.goop.org ([64.81.55.164]:47830 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752935AbZCHRPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 13:15:15 -0400
+Message-ID: <49B3FD1F.9010000@goop.org>
+Date: Sun, 08 Mar 2009 10:15:11 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 01/13] [VOYAGER] x86: add {safe,hard}_smp_processor_id
+ to smp_ops
+References: <1236530906-7175-1-git-send-email-James.Bottomley@HansenPartnership.com> <1236530906-7175-2-git-send-email-James.Bottomley@HansenPartnership.com>
+In-Reply-To: <1236530906-7175-2-git-send-email-James.Bottomley@HansenPartnership.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+James Bottomley wrote:
+> Not having apics, Voyager can't use the default apic implementation of
+> these, it has to read from a special port in the VIC to get the
+> processor ID, so abstract these functions in smp_ops to allow voyager
+> to live simultaneously with the apic code.
+>   
 
---=_freyr.drzeus.cx-25664-1236532420-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+These aren't performance-sensitive at all, are they?  smp_ops is not 
+subject to patching/inlining optimisations happen to more hotpath pvops.
 
-Linus, please pull from
+Is safe_smp_processor_id needed at all?  It's only got two callers, and 
+x86-64 just implements it as smp_processor_id().
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-li=
-nus
+> diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+> index 035582a..0dfb8c0 100644
+> --- a/arch/x86/xen/smp.c
+> +++ b/arch/x86/xen/smp.c
+> @@ -450,6 +450,11 @@ static irqreturn_t xen_call_function_single_interrupt(int irq, void *dev_id)
+>  	return IRQ_HANDLED;
+>  }
+>  
+> +static int xen_hard_smp_processor_id(void)
+> +{
+> +	return read_apic_id();
+> +}
+> +
+>  static const struct smp_ops xen_smp_ops __initdata = {
+>  	.smp_prepare_boot_cpu = xen_smp_prepare_boot_cpu,
+>  	.smp_prepare_cpus = xen_smp_prepare_cpus,
+> @@ -465,6 +470,8 @@ static const struct smp_ops xen_smp_ops __initdata = {
+>  
+>  	.send_call_func_ipi = xen_smp_send_call_function_ipi,
+>  	.send_call_func_single_ipi = xen_smp_send_call_function_single_ipi,
+> +	.hard_smp_processor_id = xen_hard_smp_processor_id,
+> +	.safe_smp_processor_id = apic_safe_smp_processor_id,
+>   
 
-to receive a fix for a regression that broke MMC cards:
+Hm, there's no meaningful apic-based implementation for these under 
+Xen.  DomU has no access to apics, and Dom0's vcpus don't have any fixed 
+relationship to physical cpu apics.  They should both just return 
+smp_processor_id(), I guess.
 
- drivers/mmc/core/mmc_ops.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
-
-Adrian Hunter (1):
-      mmc: fix data timeout for SEND_EXT_CSD
-
-diff --git a/drivers/mmc/core/mmc_ops.c b/drivers/mmc/core/mmc_ops.c
-index 9c50e6f..34ce270 100644
---- a/drivers/mmc/core/mmc_ops.c
-+++ b/drivers/mmc/core/mmc_ops.c
-@@ -248,12 +248,15 @@ mmc_send_cxd_data(struct mmc_card *card, struct mmc_h=
-ost *host,
-=20
- 	sg_init_one(&sg, data_buf, len);
-=20
--	/*
--	 * The spec states that CSR and CID accesses have a timeout
--	 * of 64 clock cycles.
--	 */
--	data.timeout_ns =3D 0;
--	data.timeout_clks =3D 64;
-+	if (opcode =3D=3D MMC_SEND_CSD || opcode =3D=3D MMC_SEND_CID) {
-+		/*
-+		 * The spec states that CSR and CID accesses have a timeout
-+		 * of 64 clock cycles.
-+		 */
-+		data.timeout_ns =3D 0;
-+		data.timeout_clks =3D 64;
-+	} else
-+		mmc_set_data_timeout(&data, card);
-=20
- 	mmc_wait_for_req(host, &mrq);
-=20
-
-
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-25664-1236532420-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkmz/MQACgkQ7b8eESbyJLgMWgCfeZJrRRMeyGJRVy4m+nKtqTYd
-ExgAn30vr9CILe67f/on8sr+pt0luWD5
-=mWLA
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-25664-1236532420-0001-2--
+    J
