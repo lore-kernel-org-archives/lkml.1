@@ -1,78 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbZCHQDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbZCHQJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753451AbZCHQDr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 12:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZCHQDi
+	id S1753373AbZCHQJj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 12:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbZCHQJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 12:03:38 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:11961 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695AbZCHQDh (ORCPT
+	Sun, 8 Mar 2009 12:09:28 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:52242 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752463AbZCHQJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 12:03:37 -0400
+	Sun, 8 Mar 2009 12:09:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OGlCJlhTWuf/YB1FmYaZ8dK6PMLaychyVChXPdvWbWmSCQ317B+wTCqO4CabEON6RB
-         rMj/l/zg/CFmFb9AE+Jaf0DT5k9iHYRDUgscPwPIgm1aBb7OrsmkRlaxSVOMYXDze5vX
-         TYkTiS+Pv2PjMniZh4cLFEmlO3Yb+7YgHLbwE=
-MIME-Version: 1.0
-In-Reply-To: <20090307055404.GA549@kroah.com>
-References: <20090304031238.WCEC18213.eastrmmtao106.cox.net@eastrmimpo03.cox.net>
-	 <20090306175708.GD3099@kroah.com>
-	 <3aaafc130903062143g4b7d6afel575781208319454e@mail.gmail.com>
-	 <20090307055404.GA549@kroah.com>
-Date: Sun, 8 Mar 2009 11:03:34 -0500
-Message-ID: <3aaafc130903080903x4f1c49ealee40d3bf2b9e8764@mail.gmail.com>
-Subject: Re: [PATCH] /dev/time for Linux, inspired by Plan 9
-From: "J.R. Mauro" <jrm8005@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Christopher Brannon <cmbrannon@cox.net>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=SVmhJkNFPE8CkmutxV7RqVSRtkvCQYa5Y6vTalmucfX8LhZ8fHoPOLXqxKWYggATIy
+         9AW0bL7d+0jOcUccIR7lz7dkWW/7zDSEmDNdNK+8nOF24XrUC41mxzCWuYyxdczShMVM
+         IZFjv/fg15M0hk+3/qqQO9RfyViNV22Oz5PHs=
+Subject: Re: [BUG] Loading both ehci-hcd and uhci-hcd drivers causes my
+ printer to fail
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.44L0.0903072219240.8870-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0903072219240.8870-100000@netrider.rowland.org>
+Content-Type: text/plain
+Date: Sun, 08 Mar 2009 18:09:18 +0200
+Message-Id: <1236528558.11774.50.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/7/09, Greg KH <greg@kroah.com> wrote:
-> On Sat, Mar 07, 2009 at 12:43:43AM -0500, J.R. Mauro wrote:
->> On Fri, Mar 6, 2009 at 12:57 PM, Greg KH <greg@kroah.com> wrote:
->> > On Tue, Mar 03, 2009 at 09:06:46PM -0600, Christopher Brannon wrote:
->> >> Under Plan 9 from Bell Labs, one queries or sets the system clock by
->> >> reading or writing text strings to a special file named /dev/time.
->> >> I implemented such a facility for Linux.  A read of /dev/time produces
->> >> four decimal numbers: epoch seconds, nanoseconds since start of epoch,
->> >> jiffies since boot, and jiffies per second.  Writing a decimal number
->> >> to
->> >> /dev/time sets the system clock to the given number of epoch seconds.
->> >> Anyone who is permitted to write to /dev/time may set the clock.
->> >> Granting this privilege becomes as easy as modifying groups and file
->> >> permissions.
->> >>
->> >> Signed-off-by: Christopher Brannon <cmbrannon@cox.net>
->> >
->> > I'm starting to see a few plan9 specific devices being proposed
->> > recently, with one making it into the staging tree recently (the p9auth
->> > interface).  Should we just start lumping them all together so to keep
->> > them in one place?  drivers/plan9/ ?
->>
->> That might be a good idea, assuming it doesn't start up a flamewar.
->
-> I don't think if we keep it all in one place, it would.
->
->> The Glendix folks are working hard to get a lot of these device files
->> and filesystems implemented and it would be nice to see them have a
->> place to feel welcome.
->>
->> Would it be very involved to get a little sandbox for these things?
->
-> drivers/plan9 looks like a nice place to me, any objections?
->
+On Sat, 2009-03-07 at 22:27 -0500, Alan Stern wrote:
+> On Sat, 7 Mar 2009, Maxim Levitsky wrote:
+> 
+> > On Sat, 2009-03-07 at 11:52 -0800, Greg KH wrote:
+> > > On Sat, Mar 07, 2009 at 09:20:44PM +0200, Maxim Levitsky wrote:
+> > > > Hi,
+> > > > 
+> > > > Short summary:
+> > > > 
+> > > > I have HP1018 printer, and it works well in windows.
+> > > > When I use in in linux, I often see messages like:
+> > > > 
+> > > > usbfs: USBDEVFS_CONTROL failed cmd python rqt 128 rq 6 len 255 ret -110
+> > > > 
+> > > > This is using hp backend that talks to printer using usbfs.
+> > > > I also tried usblp, but it just doesn't say anything in kernel log. I
+> > > > think it silently ignores similar errors, because the end result is the
+> > > > same, the printer sometimes works, but sometimes doesn't.
+> > > > (printer needs firmware to be uploaded to it, and I do upload it).
+> > > > 
+> > > > On the other hand, IF I remove _ether_ ehci-hcd or uhci-hcd from kernel,
+> > > > then everything works fine, I already rebooted the printer many times,
+> > > > used it to print, upload firmware, and everything just work, but as soon
+> > > > as I load the second driver it fails in same way again.
+> > > > 
+> > > > USB issues with this class of printers are nothing but new, for example
+> > > > see:
+> > > > 
+> > > > http://foo2zjs.rkkda.com/forum/read.php?9,374
+> > > > https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.15/+bug/54419
+> > > 
+> > > What kernel version are you using?
+> > > 
+> > > > I compiled without CONFIG_USB_EHCI_ROOT_HUB_TT
+> > > > and it did help (didn't that much testing, but at least firmware loads
+> > > > ok, and no error messages)
+> > > 
+> > > Can you provide the full kernel log messages from when you plug in your
+> > > printer?  Are there any other messages saying that you need to be sure
+> > > to load one driver before the other?
+> > I am familiar with these messages, maybe instead uhci should depend on
+> > ehci or something like that?
+> 
+> No, adding a dependency won't work because it is valid to load 
+> uhci-hcd without ehci-hcd.  The only time a problem occurs is if you 
+> load both of them in the wrong order.  (And in fact it's pretty rare 
+> for that to cause a real problem -- mostly you just get some annoying 
+> messages in the log.)
+But since it can cause a problem, this has to be somehow automatically
+fixed isn't it?
+For example how to I ensure the correct order with udev?
 
-Sounds good to keep this all together, as more things come in. We
-don't want to male a mess :-)
-> thanks,
->
-> greg k-h
->
+
+
+> 
+> > Tommorow I try to load them manually in correct order.
+> > Btw, if I unload both and then load first ehci then uhci, this is ok
+> > (if they were loaded incorrectly)
+> > 
+> > 
+> > Confirm again that without CONFIG_USB_EHCI_ROOT_HUB_TT both drivers
+> > work.
+> > 
+> > dmesg (from /var/log/kern.log.0) attached
+> > It shows how I rebooted the printer often.
+> > It also have this error message about the order.
+> > 
+> > But this isn't related.
+> > I currently blacklisted uhci-hcd, so only ehci-hcd gets loaded.
+> > Then I loaded the uhci, and got same bug
+> > (This is why I attached an older dmesg, if you need I reproduce that bug
+> > again)
+> 
+> The dmesg you attached shows that you unloaded uhci-hcd but the printer 
+> still failed to work.  This contradicts your statement above that if 
+> you remove either driver then everything works fine.
+We both yes and no:
+#define	ETIMEDOUT	110
+
+I forgot to tell you that without CONFIG_USB_EHCI_ROOT_HUB_TT or without
+one of the drivers it is still possible to see that error, if I attempt
+to query printer status while firmware is loading.
+I think this is not a bug, and printer works after such message.
+This is what you have seen in the logs, I tried to make the printer
+crash, so I tried the above.
+
+
+
+
+> 
+> The information in the log isn't really enough to tell what's 
+> happening.  It would be better if you could provide a usbmon trace 
+> showing the problem.
+
+> 
+> CONFIG_USB_EHCI_ROOT_HUB_TT shouldn't make any difference at all.  
+> That setting matters only for hardware using the ARC/TDI design, which
+> is not present in your Intel chipset.  Likewise, provided ehci-hcd is
+> loaded first, it shouldn't make any difference whether uhci-hcd is
+> loaded or not.
+Well, I retest this.
+But it seems to work
+
+
+> Alan Stern
+> 
+
+Best regards,
+	Maxim Levitsky
+
