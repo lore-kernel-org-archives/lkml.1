@@ -1,110 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZCIKwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbZCIKy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbZCIKwY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 06:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZCIKwP
+	id S1753737AbZCIKy5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 06:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbZCIKys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 06:52:15 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:63982 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752549AbZCIKwP (ORCPT
+	Mon, 9 Mar 2009 06:54:48 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:10874 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753284AbZCIKyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 06:52:15 -0400
-Date: Mon, 9 Mar 2009 11:52:12 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jim Paris <jim@jtan.com>, Vivien Chappelier <vivien.chappelier@free.fr>,
-       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
-       Geoff Levand <geoffrey.levand@am.sony.com>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Cell Broadband Engine OSS Development 
-	<cbe-oss-dev@ozlabs.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
-       RAM as block device
-In-Reply-To: <20090309105022.GN11787@kernel.dk>
-Message-ID: <alpine.LRH.2.00.0903091151480.19484@vixen.sonytel.be>
-References: <alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be> <20090305110940.GY11787@kernel.dk> <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be> <20090306074639.GN11787@kernel.dk> <alpine.LRH.2.00.0903061347360.16809@vixen.sonytel.be>
- <20090306125832.GX11787@kernel.dk> <alpine.LRH.2.00.0903061525340.16809@vixen.sonytel.be> <20090306190350.GD11787@kernel.dk> <alpine.LRH.2.00.0903091142500.19484@vixen.sonytel.be> <20090309104833.GM11787@kernel.dk> <20090309105022.GN11787@kernel.dk>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Mon, 9 Mar 2009 06:54:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Y2wierq/5NOwErpaRbjPu52WiUCZ0UbPbsiXf4cdzRMIGINgb/HkY2NLsMnSNsK9Bo
+         GXWQ7nCJzUAwtWBd+a3xAeAjLqCLGOiwvKG73D0z0SovUNEutbpL2tSKrq+mA8R47F8e
+         KNs27OdGAIhRxbcb6b4ArVrrV5SWXjJPYlIl8=
+Subject: Re: Acer Aspire One fan control
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Peter Feuerer <peter@piie.net>
+Cc: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <cone.1234473266.28534.5384.1000@mentalhome>
+References: <cone.1234471033.988571.5384.1000@mentalhome>
+	 <20090212210330.GH12846@charite.de>
+	 <cone.1234473266.28534.5384.1000@mentalhome>
+Content-Type: text/plain
+Date: Mon, 09 Mar 2009 12:54:41 +0200
+Message-Id: <1236596081.609.9.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Mar 2009, Jens Axboe wrote:
-> On Mon, Mar 09 2009, Jens Axboe wrote:
-> > On Mon, Mar 09 2009, Geert Uytterhoeven wrote:
-> > > On Fri, 6 Mar 2009, Jens Axboe wrote:
-> > > > On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
-> > > > > On Fri, 6 Mar 2009, Jens Axboe wrote:
-> > > > > > On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
-> > > > > > > On Fri, 6 Mar 2009, Jens Axboe wrote:
-> > > > > > > > On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
-> > > > > > > > > But then I noticed ps3vram_make_request() may be called concurrently,
-> > > > > > > > > so I had to add a mutex to avoid data corruption. This slows the
-> > > > > > > > > driver down, and in the end, the version with a thread turns out to be
-> > > > > > > > > ca. 1% faster. The version without a thread is about 50 lines less
-> > > > > > > > > code, though.
-> > > > > > > >
-> > > > > > > > That is correct, ->make_request_fn may get reentered. I'm not surprised
-> > > > > > > > that performance dropped if you just shoved everything under a mutex.
-> > > > > > > > You could be a little more smart and queue concurrent bio's for
-> > > > > > > > processing when the current one is complete though, there are several
-> > > > > > > > approaches there that be a lot faster than going all the way through the
-> > > > > > > > IO stack and scheduler just to avoid concurrency.
-> > > > > > >
-> > > > > > > Yes, using a spinlock and queueing requests on a list if the driver is
-> > > > > > > busy can be done after 2.6.29...
-> > > > > >
-> > > > > > Certainly. Even just replacing your current mutex with a spinlock during
-> > > > > > the memcpy() would surely be a lot faster. Or even just grabbing the
-> > > > > > mutex before calling into the write for the duration of the bio. The way
-> > > > > > you do it is certain context switch death :-)
-> > > > >
-> > > > > It's not just the memcpy(). ps3vram_{up,down}load() call msleep(), so
-> > > > > I cannot use a spinlock.
-> > > >
-> > > > Ah right, I hadn't looked close enough. But putting the mutex_lock()
-> > > > outside of the bio_for_each_segment() is going to be much faster than
-> > > > getting/releasing it for each segment.
-> > > 
-> > > It doesn't seem to make any measurable difference, so I'm gonna leave it for
-> > > now.
-> > 
-> > It will depend on where the bio's are coming from. If they are all
-> > single segment, then there will be no difference. If they contain
-> > multiple segments, you reduce the lock/release by that amount.
-> > 
-> > But yeah, just leave it as-is for now. You can send a final patch for
-> > inclusion though. Unless I'm mistaken, I only saw the original and then
-> > an incremental patch for changing it to ->make_request_fn?
+On Thu, 2009-02-12 at 22:14 +0100, Peter Feuerer wrote:
+> Ralf Hildebrandt writes:
 > 
-> There was a full version, my mistake. I got confused by the removal of
+> > There's a userspace program for that. So why add a kernel module?
+> 
+> Because you must write to and read from io-ports and I think this should be 
+> done in the kernel. I guess the userspace program you are talking about is 
+> acer_ec.pl? A perl script which needs very much cpu time for a 
+> functionality which can be handled in kernelspace without causing any big 
+> troubles.
+Not just that.
+While on acer one it seems that if I kill userspace script,
+fan restores to its original state (eg: running), I would also
+like such driver on my main notebook, which is also acer.
+It fan is also controlled via EC, but 'control' is done via hack
+in acpi thermal code, every time it is updated, it sends new temperature
+to EC, so I can just unload acpi thermal driver, and use own
+script/driver do do same job, but I afraid that usespace driver can
+hung/be killed/etc leaving me without fan at all, so this why kernel
+driver is better - it is more reliable.
 
-Indeed.
+Best regards,
+	Maxim Levitsky
 
-> the old driver in another directory :-)
 
-Can you please ack it? Thx!
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
