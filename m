@@ -1,157 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbZCIQVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753615AbZCIQYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754469AbZCIQVB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 12:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZCIQUw
+	id S1753615AbZCIQYi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 12:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbZCIQYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 12:20:52 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62160 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbZCIQUw (ORCPT
+	Mon, 9 Mar 2009 12:24:30 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:40044 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751599AbZCIQY3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 12:20:52 -0400
-Date: Mon, 9 Mar 2009 12:20:48 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Roel Kluin <roel.kluin@gmail.com>
-cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Observe wrapping variables in while loops
-In-Reply-To: <49B3481E.5080108@gmail.com>
-Message-ID: <alpine.DEB.2.00.0903091119090.2203@gandalf.stny.rr.com>
-References: <49B3481E.5080108@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Mar 2009 12:24:29 -0400
+Date: Mon, 9 Mar 2009 16:24:16 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Gene Heskett <gene.heskett@verizon.net>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, tigran@aivazian.fsnet.co.uk,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+Subject: Re: Linux* Processor Microcode Data File
+Message-ID: <20090309162416.GC24213@silver.sucs.org>
+References: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com> <20090309081109.376f7a7e@infradead.org> <20090309153449.GB24213@silver.sucs.org> <200903091158.22918.gene.heskett@verizon.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903091158.22918.gene.heskett@verizon.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+At the risk of being wrong twice in a row...
 
+On Mon, Mar 09, 2009 at 11:58:22AM -0400, Gene Heskett wrote:
+> I'll have to admit it was with some trepidation that I might brick my 
+> processor, which is a quad core AMD 9550, stepping 03 running at 2.2 ghz, but 
 
+Microcode patching in this particular fashion (i.e. _not_ updating the
+BIOS but "on the fly") is volatile (so it has to be redone at every
+boot) which should mean it is very hard to brick a machine this way as
+rebooting will undo everything. Of course someone is going to tell me
+how they managed to kill a machine stone dead due to some sequence of
+events I hadn't thought of and I disclaim any responsiblity if someone
+tries to update their microcode and harms their machine in any fashion -
+you update at your own risk :).
 
-On Sun, 8 Mar 2009, Roel Kluin wrote:
+> the directions didn't note until the end, that it would take a 2.6.29 series 
+> kernel to do it and I was running 2.6.28.7.  But when I got to the 
+> modprobe -r microcode, modprobe microcode part, there was no feedback from 
+> either command.  So did I, or did I not do this as I was and am running 
+> 2.6.28.7?  The following was reported in my log:
 
-> Inspired by your definition of 'if', I came up with something to test variable
-> wrapping in while loops, and was wondering if this was useful for the linux
-> kernel:
-> 
-> The source below is adapted to illustrate how it works. If you run it, this
-> will print:
-> 
->  8 6 4 2 0 variable wraps at ../test.c:88:main(): -1!
-> ...-2
->  9 7 5 3 1 variable wraps at ../test.c:94:main(): -1!
-> ...-1
->  8 7 6 5 4 3 2 1 0 ...-1
->  8 7 6 5 4 3 2 1 ...0
->  21 22 23 24 25 26 27 28 29 30 ...31
->  19 18 17 16 15 14 13 12 11 10 ...9
->  4 3 2 1 0 -1 -2 -3 -4 -5 ...-6
->  -5 -4 -3 -2 -1 0 1 2 3 4 5 6 7 8 9 10 ...11
->  4 2 0 variable wraps at ../test.c:129:main(): -1!
-> ...-2
-> 
-> In the first two loops and the last, a wrap occurs due to the double decrement.
-> Tests like 'while(i++ < 30)' and 'while(j-- > -5)' are boolean.
-> 
-> However, this may not work for a construction like this:
+modprobe generally doesn't return much if the module in question loads
+or (as in this case because you were using -r) is removed. That's the
+typical Unix command line behviour - no response/output on "OK".
 
-Interesting variation. Now the question is, how many bugs are we aware of 
-that were caused by wraps? If there are a few, then I would say this is 
-definitely something to look at. Otherwise, it may not be worth putting 
-this in mainline.
+> Mar  9 07:22:04 coyote kernel: [65725.855365] platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
+> Mar  9 07:22:04 coyote kernel: [65725.863101] microcode: size 1936, total_size 960
+> Mar  9 07:22:04 coyote kernel: [65725.863107] microcode: CPU3 patch does not match (processor_rev_id: 1020, eqiv_cpu_id: 1022)
+> Mar  9 07:22:04 coyote kernel: [65725.863110] microcode: size 968, total_size 960
+> Mar  9 07:22:04 coyote kernel: [65725.863120] microcode: CPU3 updated from revision 0x1000065 to 0x1000083
+> Mar  9 07:22:04 coyote kernel: [65725.863122] Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
+> 
+> Inquiring minds and all that.  Comments please?
 
--- Steve
+It looks like the firmware file (amd-ucode/microcode_amd.bin) doesn't
+match your processor. CC'ing Andreas for comment as you have an AMD
+machine...
 
-
-
-> 
-> while ((ret = foo())) {
-> 	do_stuff();
-> }
-> ------------------------------>8-------------8<---------------------------------
-> #include <stdio.h>
-> 
-> struct while_data {
->         const char *func;
->         const char *file;
->         unsigned line;
->         unsigned long last;
-> };
-> 
-> int is_while_wrap(struct while_data *w, unsigned long val)
-> {
-> 	if (w->last < val) {
-> 		printf("variable wraps at %s:%u:%s(): %d!\n", w->file, w->line, w->func, val);
-> 		return 0;
-> 	}
-> 	w->last = val;
-> 	return val;
-> }
-> 
-> #define __while_check__(x) ({                             \
-> 			static struct while_data			\
->                                 ______w = {                             \
->                                 .func = __func__,                       \
->                                 .file = __FILE__,                       \
->                                 .line = __LINE__,                       \
-> 				.last = ULONG_MAX,			\
->                         };                                              \
-> 			printf(" ");					\
->                         is_while_wrap(&______w, (x)); 	\
->                 })
-> 
-> #define while(x) 	while(__while_check__(x))
-> 
-> 
-> int main(int argc, char* argv[])
-> {
-> 	unsigned int i=9;
-> 	while(i--) {
-> 		printf("%d", i);
-> 		--i;
-> 	}
-> 	printf("...%d\n", i);
-> 	i=10;
-> 	while(--i) {
-> 		printf("%d", i);
-> 		--i;
-> 	}
-> 	printf("...%d\n", i);
-> 
-> 	i=9;
-> 	while(i--)
-> 		printf("%d", i);
-> 	printf("...%d\n", i);
-> 
-> 	i=9;
-> 	while(--i)
-> 		printf("%d", i);
-> 	printf("...%d\n", i);
-> 
-> 	i=20;
-> 	while(i++ < 30)
-> 		printf("%d", i);
-> 	printf("...%d\n", i);
-> 
-> 	i=20;
-> 	while(i-- > 10)
-> 		printf("%d", i);
-> 	printf("...%d\n", i);
-> 
-> 	int j=5;
-> 	while(j-- > -5)
-> 		printf("%d", j);
-> 	printf("...%d\n", j);
-> 	while(j++ < 10)
-> 		printf("%d", j);
-> 	printf("...%d\n", j);
-> 
-> 	j=5;
-> 	while(j--) {
-> 		printf("%d", j);
-> 		j--;
-> 	}
-> 	printf("...%d\n", j);
-> }
-> 
+-- 
+Sitsofe | http://sucs.org/~sits/
