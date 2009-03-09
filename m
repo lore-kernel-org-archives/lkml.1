@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbZCIQw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441AbZCIQx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754499AbZCIQw6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 12:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbZCIQws
+	id S1754441AbZCIQx2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 12:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbZCIQxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 12:52:48 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45554 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752194AbZCIQwr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 12:52:47 -0400
-Date: Mon, 9 Mar 2009 09:53:30 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Linux* Processor Microcode Data File
-Message-ID: <20090309095330.30278385@infradead.org>
-In-Reply-To: <20090309153449.GB24213@silver.sucs.org>
-References: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com>
-	<20090309141655.GA24213@silver.sucs.org>
-	<20090309081109.376f7a7e@infradead.org>
-	<20090309153449.GB24213@silver.sucs.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 9 Mar 2009 12:53:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60473 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752157AbZCIQxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 12:53:16 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090302215845.GA22307@redhat.com>
+References: <20090302215845.GA22307@redhat.com> <20090225190211.GA7445@redhat.com> <20090225193927.1ED25FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902251156160.3111@localhost.localdomain> <20090225212039.GA11883@redhat.com> <20090226215945.GA12520@redhat.com> <alpine.LFD.2.00.0902261410581.3111@localhost.localdomain> <20090226223031.GA14477@redhat.com> <20090302212256.GA19262@redhat.com> <alpine.LFD.2.00.0903021332130.3111@localhost.localdomain> 
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: dhowells@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Evans <scarybeasts@gmail.com>, Don Howard <dhoward@redhat.com>,
+       Eugene Teo <eugene@redhat.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Tavis Ormandy <taviso@sdf.lonestar.org>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] copy_process: fix CLONE_PARENT && parent_exec_id interaction
+Date: Mon, 09 Mar 2009 16:45:56 +0000
+Message-ID: <2712.1236617156@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Mar 2009 15:34:50 +0000
-Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-> On Mon, Mar 09, 2009 at 08:11:09AM -0700, Arjan van de Ven wrote:
-> > On Mon, 9 Mar 2009 14:16:55 +0000
-> > Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-> > 
-> > > The kernel doesn't load microcode automatically 
-> > 
-> > it does if you have the right format; the kernel uses
-> > request_firmware() for this.
-> > The microcode on the intel website is not ready for this yet, but
-> > we're working hard to have future drops to be in the new format.
-> 
-> Wow so I was redundant AND wrong in the same email!
-> 
-> What motivated the switch to the generic request_firmware interface?
-> Is it just less messy/faster than previous methods? 
+> -	/* Our parent execution domain becomes current domain
+> -	   These must match for thread signalling to apply */
 
-there are various cases where microcode is needed (for example, when
-you hotplug a new cpu); request_firmware() is just the right way to do
-such things, and an initscript is just the wrong way
+Should you retain this comment somewhere?
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+David
