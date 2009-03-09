@@ -1,303 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbZCIN26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbZCIN3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753414AbZCIN26 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 09:28:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZCIN0q
+	id S1753500AbZCIN3Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 09:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbZCIN0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 9 Mar 2009 09:26:46 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:35634 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751251AbZCIN03 (ORCPT
+Received: from cavan.codon.org.uk ([93.93.128.6]:47527 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751594AbZCIN0n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 09:26:29 -0400
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       Kyle McMartin <kyle@mcmartin.ca>
-Cc: rtc-linux@googlegroups.com, linux-parisc@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       Dann Frazier <dannf@dannf.org>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCH 4/7] parisc: rtc: Rename rtc-parisc to rtc-generic
-Date: Mon,  9 Mar 2009 14:26:20 +0100
-Message-Id: <1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	Mon, 9 Mar 2009 09:26:43 -0400
+Date: Mon, 9 Mar 2009 13:26:33 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, rjw@sisk.pl,
+       hughsient@gmail.com, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: suspend / hibernate nomenclature
+Message-ID: <20090309132633.GB9797@srcf.ucam.org>
+References: <1235992429.3858.58.camel@hughsie-work.lan> <15e53e180903080045x5874f05cv5ea836d73e3855b1@mail.gmail.com> <20090308144145.GB26233@srcf.ucam.org> <200903082156.46219.rjw@sisk.pl> <20090308230741.GA5357@dtor-d630.eng.vmware.com> <E1Lgatk-000Jyt-00.arvidjaar-mail-ru@mx5.mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Lgatk-000Jyt-00.arvidjaar-mail-ru@mx5.mail.ru>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The rtc-parisc driver is not PA-RISC specific at all, as it uses the existing
-(but deprecated) generic RTC infrastructure ([gs]et_rtc_time()).
-Rename the driver from rtc-parisc to rtc-generic.
+On Mon, Mar 09, 2009 at 11:31:36AM +0300, Andrey Borzenkov wrote:
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- arch/parisc/Kconfig       |    2 +-
- arch/parisc/kernel/time.c |    6 ++--
- drivers/rtc/Kconfig       |   10 +++--
- drivers/rtc/Makefile      |    2 +-
- drivers/rtc/rtc-generic.c |   84 +++++++++++++++++++++++++++++++++++++++++++++
- drivers/rtc/rtc-parisc.c  |   84 ---------------------------------------------
- 6 files changed, 95 insertions(+), 93 deletions(-)
- create mode 100644 drivers/rtc/rtc-generic.c
- delete mode 100644 drivers/rtc/rtc-parisc.c
+> What about systems that have clear indication of STR and STD on respective 
+> keys? Should they continue to return KEY_SLEEP for STR? I think this 
+> conflicts with definition above. So in the long run those should be changed to 
+> return KEY_SUSPEND2RAM it seems.
 
-diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
-index aacf11d..378b649 100644
---- a/arch/parisc/Kconfig
-+++ b/arch/parisc/Kconfig
-@@ -10,7 +10,7 @@ config PARISC
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
- 	select RTC_CLASS
--	select RTC_DRV_PARISC
-+	select RTC_DRV_GENERIC
- 	select INIT_ALL_POSSIBLE
- 	help
- 	  The PA-RISC microprocessor is designed by Hewlett-Packard and used
-diff --git a/arch/parisc/kernel/time.c b/arch/parisc/kernel/time.c
-index e75cae6..86a99d0 100644
---- a/arch/parisc/kernel/time.c
-+++ b/arch/parisc/kernel/time.c
-@@ -216,14 +216,14 @@ void __init start_cpu_itimer(void)
- 	per_cpu(cpu_data, cpu).it_value = next_tick;
- }
- 
--static struct platform_device rtc_parisc_dev = {
--	.name = "rtc-parisc",
-+static struct platform_device rtc_generic_dev = {
-+	.name = "rtc-generic",
- 	.id = -1,
- };
- 
- static int __init rtc_init(void)
- {
--	if (platform_device_register(&rtc_parisc_dev) < 0)
-+	if (platform_device_register(&rtc_generic_dev) < 0)
- 		printk(KERN_ERR "unable to register rtc device...\n");
- 
- 	/* not necessarily an error */
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 81450fb..d0aeff2 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -677,12 +677,14 @@ config RTC_DRV_RS5C313
- 	help
- 	  If you say yes here you get support for the Ricoh RS5C313 RTC chips.
- 
--config RTC_DRV_PARISC
--	tristate "PA-RISC firmware RTC support"
-+config RTC_DRV_GENERIC
-+	tristate "Generic RTC support"
-+	# Please consider writing a new RTC driver instead of using the generic
-+	# RTC abstraction
- 	depends on PARISC
- 	help
--	  Say Y or M here to enable RTC support on PA-RISC systems using
--	  firmware calls. If you do not know what you are doing, you should
-+	  Say Y or M here to enable RTC support on systems using the generic
-+	  RTC abstraction. If you do not know what you are doing, you should
- 	  just say Y.
- 
- config RTC_DRV_PPC
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 0e697aa..9c18a01 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -55,7 +55,7 @@ obj-$(CONFIG_RTC_DRV_PCF8563)	+= rtc-pcf8563.o
- obj-$(CONFIG_RTC_DRV_PCF8583)	+= rtc-pcf8583.o
- obj-$(CONFIG_RTC_DRV_PL030)	+= rtc-pl030.o
- obj-$(CONFIG_RTC_DRV_PL031)	+= rtc-pl031.o
--obj-$(CONFIG_RTC_DRV_PARISC)	+= rtc-parisc.o
-+obj-$(CONFIG_RTC_DRV_GENERIC)	+= rtc-generic.o
- obj-$(CONFIG_RTC_DRV_PPC)	+= rtc-ppc.o
- obj-$(CONFIG_RTC_DRV_PXA)	+= rtc-pxa.o
- obj-$(CONFIG_RTC_DRV_R9701)	+= rtc-r9701.o
-diff --git a/drivers/rtc/rtc-generic.c b/drivers/rtc/rtc-generic.c
-new file mode 100644
-index 0000000..9832200
---- /dev/null
-+++ b/drivers/rtc/rtc-generic.c
-@@ -0,0 +1,84 @@
-+/* rtc-generic: RTC driver using the generic RTC abstraction
-+ *
-+ * Copyright (C) 2008 Kyle McMartin <kyle@mcmartin.ca>
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/time.h>
-+#include <linux/platform_device.h>
-+#include <linux/rtc.h>
-+
-+#include <asm/rtc.h>
-+
-+static int generic_get_time(struct device *dev, struct rtc_time *tm)
-+{
-+	unsigned int ret = get_rtc_time(tm);
-+
-+	if (ret & RTC_BATT_BAD)
-+		return -EOPNOTSUPP;
-+
-+	return rtc_valid_tm(tm);
-+}
-+
-+static int generic_set_time(struct device *dev, struct rtc_time *tm)
-+{
-+	if (set_rtc_time(tm) < 0)
-+		return -EOPNOTSUPP;
-+
-+	return 0;
-+}
-+
-+static const struct rtc_class_ops generic_rtc_ops = {
-+	.read_time = generic_get_time,
-+	.set_time = generic_set_time,
-+};
-+
-+static int __init generic_rtc_probe(struct platform_device *dev)
-+{
-+	struct rtc_device *rtc;
-+
-+	rtc = rtc_device_register("rtc-generic", &dev->dev, &generic_rtc_ops,
-+				  THIS_MODULE);
-+	if (IS_ERR(rtc))
-+		return PTR_ERR(rtc);
-+
-+	platform_set_drvdata(dev, rtc);
-+
-+	return 0;
-+}
-+
-+static int __exit generic_rtc_remove(struct platform_device *dev)
-+{
-+	struct rtc_device *rtc = platform_get_drvdata(dev);
-+
-+	rtc_device_unregister(rtc);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver generic_rtc_driver = {
-+	.driver = {
-+		.name = "rtc-generic",
-+		.owner = THIS_MODULE,
-+	},
-+	.remove = __exit_p(generic_rtc_remove),
-+};
-+
-+static int __init generic_rtc_init(void)
-+{
-+	return platform_driver_probe(&generic_rtc_driver, generic_rtc_probe);
-+}
-+
-+static void __exit generic_rtc_fini(void)
-+{
-+	platform_driver_unregister(&generic_rtc_driver);
-+}
-+
-+module_init(generic_rtc_init);
-+module_exit(generic_rtc_fini);
-+
-+MODULE_AUTHOR("Kyle McMartin <kyle@mcmartin.ca>");
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("Generic RTC driver");
-+MODULE_ALIAS("platform:rtc-generic");
-diff --git a/drivers/rtc/rtc-parisc.c b/drivers/rtc/rtc-parisc.c
-deleted file mode 100644
-index 48ef5b4..0000000
---- a/drivers/rtc/rtc-parisc.c
-+++ /dev/null
-@@ -1,84 +0,0 @@
--/* rtc-parisc: RTC for HP PA-RISC firmware
-- *
-- * Copyright (C) 2008 Kyle McMartin <kyle@mcmartin.ca>
-- */
--
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/time.h>
--#include <linux/platform_device.h>
--#include <linux/rtc.h>
--
--#include <asm/rtc.h>
--
--static int parisc_get_time(struct device *dev, struct rtc_time *tm)
--{
--	unsigned int ret = get_rtc_time(tm);
--
--	if (ret & RTC_BATT_BAD)
--		return -EOPNOTSUPP;
--
--	return rtc_valid_tm(tm);
--}
--
--static int parisc_set_time(struct device *dev, struct rtc_time *tm)
--{
--	if (set_rtc_time(tm) < 0)
--		return -EOPNOTSUPP;
--
--	return 0;
--}
--
--static const struct rtc_class_ops parisc_rtc_ops = {
--	.read_time = parisc_get_time,
--	.set_time = parisc_set_time,
--};
--
--static int __init parisc_rtc_probe(struct platform_device *dev)
--{
--	struct rtc_device *rtc;
--
--	rtc = rtc_device_register("rtc-parisc", &dev->dev, &parisc_rtc_ops,
--				  THIS_MODULE);
--	if (IS_ERR(rtc))
--		return PTR_ERR(rtc);
--
--	platform_set_drvdata(dev, rtc);
--
--	return 0;
--}
--
--static int __exit parisc_rtc_remove(struct platform_device *dev)
--{
--	struct rtc_device *rtc = platform_get_drvdata(dev);
--
--	rtc_device_unregister(rtc);
--
--	return 0;
--}
--
--static struct platform_driver parisc_rtc_driver = {
--	.driver = {
--		.name = "rtc-parisc",
--		.owner = THIS_MODULE,
--	},
--	.remove = __exit_p(parisc_rtc_remove),
--};
--
--static int __init parisc_rtc_init(void)
--{
--	return platform_driver_probe(&parisc_rtc_driver, parisc_rtc_probe);
--}
--
--static void __exit parisc_rtc_fini(void)
--{
--	platform_driver_unregister(&parisc_rtc_driver);
--}
--
--module_init(parisc_rtc_init);
--module_exit(parisc_rtc_fini);
--
--MODULE_AUTHOR("Kyle McMartin <kyle@mcmartin.ca>");
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("HP PA-RISC RTC driver");
--MODULE_ALIAS("platform:rtc-parisc");
+Perhaps, but at present they KEY_SLEEP is probably adequate. KEY_SLEEP 
+is always going to default to suspend to RAM, so really the only 
+distinction between it and a dedicated suspend to RAM key is whether a 
+UI element affects its behaviour or not.
+
 -- 
-1.6.0.4
-
+Matthew Garrett | mjg59@srcf.ucam.org
