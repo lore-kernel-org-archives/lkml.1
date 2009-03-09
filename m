@@ -1,87 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbZCIPBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752023AbZCIPEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbZCIPBQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 11:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZCIPA7
+	id S1752023AbZCIPEF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 11:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZCIPDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 11:00:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55278 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751670AbZCIPA6 (ORCPT
+	Mon, 9 Mar 2009 11:03:49 -0400
+Received: from usea-naimss4.unisys.com ([192.61.61.109]:1464 "EHLO
+	usea-naimss4.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751062AbZCIPDs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 11:00:58 -0400
-Date: Mon, 9 Mar 2009 07:59:37 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       =?ISO-8859-15?Q?Arve__Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [linux-pm] [RFC][PATCH][1/8] PM: Rework handling of interrupts
- during suspend-resume (rev. 5)
-In-Reply-To: <Pine.LNX.4.44L0.0903081629010.9313-100000@netrider.rowland.org>
-Message-ID: <alpine.LFD.2.00.0903090748350.19207@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0903081629010.9313-100000@netrider.rowland.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Mar 2009 11:03:48 -0400
+Subject: Re: [tip:x86/apic] x86: MSI: check for BIOS assigned addresses
+From: Daniel Yeisley <dan.yeisley@unisys.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, stable@kernel.org, tglx@linutronix.de,
+       linux-pci@vger.kernel.org
+In-Reply-To: <20090308105410.GA15010@elte.hu>
+References: <1236352309.31604.2.camel@localhost.localdomain>
+	 <tip-affd49d36e2e2df4cbb3e07a57db901c23823b6a@git.kernel.org>
+	 <20090306184514.GC15526@elte.hu>
+	 <1236364109.31604.10.camel@localhost.localdomain>
+	 <20090306191345.GD28582@elte.hu> <49B1C884.2020301@kernel.org>
+	 <20090308105410.GA15010@elte.hu>
+Content-Type: text/plain
+Date: Mon, 09 Mar 2009 10:32:45 -0400
+Message-Id: <1236609166.4400.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 (2.25.92-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Mar 2009 15:02:57.0700 (UTC) FILETIME=[21C17640:01C9A0C8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 8 Mar 2009, Alan Stern wrote:
+On Sun, 2009-03-08 at 11:54 +0100, Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
 > 
-> There have been examples in the past of devices that, for one reason or
-> another, _did_ generate IRQs at inconvenient times.  The hardware or
-> the BIOS may have done improper initialization, for example.  On a
-> shared IRQ this led to interrupt storms.  IIRC, the solution was to add
-> a PCI quirk routine to disable IRQ generation at an early stage.  
-> Didn't e100 have this problem?
+> > Ingo Molnar wrote:
+> > > * Daniel Yeisley <dan.yeisley@unisys.com> wrote:
+> > > 
+> > >> On Fri, 2009-03-06 at 19:45 +0100, Ingo Molnar wrote:
+> > >>> * Daniel Yeisley <dan.yeisley@unisys.com> wrote:
+> > >>>
+> > >>>> Commit-ID:  affd49d36e2e2df4cbb3e07a57db901c23823b6a
+> > >>>> Gitweb:     http://git.kernel.org/tip/affd49d36e2e2df4cbb3e07a57db901c23823b6a
+> > >>>> Author:     "Daniel Yeisley" <dan.yeisley@unisys.com>
+> > >>>> AuthorDate: Fri, 6 Mar 2009 10:11:49 -0500
+> > >>>> Commit:     Ingo Molnar <mingo@elte.hu>
+> > >>>> CommitDate: Fri, 6 Mar 2009 19:32:44 +0100
+> > >>>>
+> > >>>> x86: MSI: check for BIOS assigned addresses
+> > >>>>
+> > >>>> Impact: fix ACPI hotplug on certain systems
+> > >>> Note, this commit means that i moved the commit over from 
+> > >>> tip:x86/urgent into tip:x86/apic - i.e. with a 2.6.30 merge 
+> > >>> date. When exactly was this regression introduced? I think this 
+> > >>> code never really accepted the MSI settings from the firmware, 
+> > >>> so changing that behavior might affect a lot of systems.
+> > >>>
+> > >>> So i'm uneasy about applying this fix this late in the .29 
+> > >>> cycle, but marked it for -stable backport so it could hit 
+> > >>> 2.6.29.1 if it stays problem-free.
+> > >>>
+> > >>> 	Ingo
+> > >> I initially noticed the problem on a 2.6.18 kernel.  ACPI 
+> > >> hotplugging didn't work unless I booted with pci=nomsi.  I 
+> > >> don't have a problem with waiting until 2.6.30 to make sure it 
+> > >> is thoroughly tested.
+> > > 
+> > > Okay - so it's an ancient bug. The current track should thus be 
+> > > fine.
+> > > 
+> > 
+> > please drop this patch. it seems it break msi-x.
+> > at least igbe with msi-x does not work anymore.
+> 
+> Not just that, it also causes bootup crashes - attached below. 
+> I'v dropped the patch for now.
+> 
+> 	Ingo
+> 
+> [    4.276015] calling  pcie_portdrv_init+0x0/0x4c @ 1
+> [    4.280343] bus: 'pci_express': registered
+> [    4.284017] bus: 'pci': add driver pcieport-driver
+> [    4.288046] bus: 'pci': driver_probe_device: matched device 0000:00:0b.0 with driver pcieport-driver
+> [    4.292014] bus: 'pci': really_probe: probing driver pcieport-driver with device 0000:00:0b.0
+> [    4.296148] pcieport-driver 0000:00:0b.0: setting latency timer to 64
+> [    4.304157]   alloc irq_desc for 16 on cpu 0 node 0
+> [    4.308008]   alloc kstat_irqs on cpu 0 node 0
+> [    4.308124] ------------[ cut here ]------------
+> [    4.312008] kernel BUG at arch/x86/kernel/apic/io_apic.c:1362!
+> [    4.312008] invalid opcode: 0000 [#1] SMP 
+> [    4.312008] last sysfs file: 
+> [    4.312008] CPU 0 
+> [    4.312008] Modules linked in:
+> [    4.312008] Pid: 7, comm: work_on_cpu/0 Not tainted 2.6.29-rc7-tip-02101-g8d7adfc-dirty #31737 SMP Sun Mar 8 11:50:18 CET 2009 System Product Name
+> [    4.312008] RIP: 0010:[<ffffffff80221e36>]  [<ffffffff80221e36>] __clear_irq_vector+0x1d/0xd8
+> [    4.312008] RSP: 0018:ffff88003f121bf0  EFLAGS: 00010046
+> [    4.312008] RAX: 0000000000000246 RBX: ffff88003ea0b1a0 RCX: 0000000000000002
+> [    4.312008] RDX: 8c6318c6318c6300 RSI: ffff88003ea0b1a0 RDI: 0000000000000010
+> [    4.312008] RBP: ffff88003f121c10 R08: ffff88003f118998 R09: 0000000000000070
+> [    4.312008] R10: 0000000000000000 R11: ffffffff80222c03 R12: 0000000000000010
+> [    4.312008] R13: 0000000000000010 R14: ffff88003f2a31b0 R15: 0000000000000001
+> [    4.312008] FS:  0000000000000000(0000) GS:ffff8800035b0000(0000) knlGS:0000000000000000
+> [    4.312008] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> [    4.312008] CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+> [    4.312008] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [    4.312008] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [    4.312008] Process work_on_cpu/0 (pid: 7, threadinfo ffff88003f120000, task ffff88003f118000)
+> [    4.312008] Stack:
+> [    4.312008]  0000000000000246 0000000000000010 ffff88003ea0b1a0 ffff88003f2a31b0
+> [    4.312008]  ffff88003f121c40 ffffffff80222c11 ffff88003f121c50 ffff88003ea060a8
+> [    4.312008]  ffff88003f2a38b0 ffff88003f2a38b0 ffff88003f121c50 ffffffff80222c36
+> [    4.312008] Call Trace:
+> [    4.312008]  [<ffffffff80222c11>] destroy_irq+0x4f/0x66
+> [    4.312008]  [<ffffffff80222c36>] arch_teardown_msi_irq+0xe/0x10
+> [    4.312008]  [<ffffffff80471099>] arch_teardown_msi_irqs+0x2c/0xa3
+> [    4.312008]  [<ffffffff80471188>] msi_free_irqs+0x5d/0xff
+> [    4.312008]  [<ffffffff80471a8f>] msi_capability_init+0x134/0x16d
+> [    4.312008]  [<ffffffff8047202e>] pci_enable_msi+0x7c/0x82
+> [    4.312008]  [<ffffffff804707ff>] assign_interrupt_mode+0xda/0x10b
+> [    4.312008]  [<ffffffff80470a0d>] pcie_port_device_register+0xb3/0x123
+> [    4.312008]  [<ffffffff80260f9c>] ? do_work_for_cpu+0x0/0x20
+> [    4.312008]  [<ffffffff807e10af>] pcie_portdrv_probe+0x8c/0xb4
+> [    4.312008]  [<ffffffff8046baee>] local_pci_probe+0x17/0x1b
+> [    4.312008]  [<ffffffff80260fb4>] do_work_for_cpu+0x18/0x20
+> [    4.312008]  [<ffffffff80261492>] run_workqueue+0x10c/0x221
+> [    4.312008]  [<ffffffff80261440>] ? run_workqueue+0xba/0x221
+> [    4.312008]  [<ffffffff802611b5>] ? test_ti_thread_flag+0x9/0x11
+> [    4.312008]  [<ffffffff80262282>] worker_thread+0xd6/0xe7
+> [    4.312008]  [<ffffffff802658b8>] ? autoremove_wake_function+0x0/0x3d
+> [    4.312008]  [<ffffffff802621ac>] ? worker_thread+0x0/0xe7
+> [    4.312008]  [<ffffffff802656d3>] kthread+0x4e/0x7b
+> [    4.312008]  [<ffffffff80c54140>] ? early_idt_handler+0x0/0x73
+> [    4.312008]  [<ffffffff8020d1ca>] child_rip+0xa/0x20
+> [    4.312008]  [<ffffffff8020cb90>] ? restore_args+0x0/0x30
+> [    4.312008]  [<ffffffff80265685>] ? kthread+0x0/0x7b
+> [    4.312008]  [<ffffffff8020d1c0>] ? child_rip+0x0/0x20
+> [    4.312008] Code: ff 8b 35 2e 78 a1 00 e8 cd ff ff ff c9 c3 55 48 89 e5 41 56 41 55 41 54 53 e8 97 9f fe ff 8a 56 1c 41 89 fd 48 89 f3 84 d2 75 04 <0f> 0b eb fe 0f b6 d2 4c 8b 35 d4 b1 5f 00 48 c7 c0 20 b0 00 00 
+> [    4.312008] RIP  [<ffffffff80221e36>] __clear_irq_vector+0x1d/0xd8
+> [    4.312008]  RSP <ffff88003f121bf0>
 
-.. and this is exactly the reason why we've done all these changes.
+Can someone try the patch below?  It only checks for MSI capability so
+it shouldn't affect MSI-x.  
 
-There are tons of drivers that are unable to cope with interrupts that 
-happen after they've done their "pci_set_power_state(PCI_D3hot)".
 
-With shared interrupts (and _another_ device still live), they do stupid 
-things like read the interrupt status register, getting all-ones (because 
-the device is dead), and then deciding that that means that that need to 
-handle the interrupt. And that goes on in a loop. Forever.
+Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
 
-Or they do _that_ part right, but their suspend also free'd some data 
-structure, so now the interrupt handler will follow a NULL pointer and/or 
-scribble to freed memory. The source of bugs is infinite, and not fixable 
-(because, quite frankly, most device driver writers are very focused on 
-the hardware, and have a hard time thinking about it as part of the bigger 
-system - and even if they happen test suspend/resume, they probably won't 
-be testing it with shared interrupts, so it will work _for_them_ even if 
-it's totally broken).
+---
+diff -Naur linux-2.6.29-rc5/arch/x86/kernel/io_apic.c linux-2.6.29-rc5-dpy/arch/x86/kernel/io_apic.c
+--- linux-2.6.29-rc5/arch/x86/kernel/io_apic.c	2009-02-13 18:31:30.000000000 -0500
++++ linux-2.6.29-rc5-dpy/arch/x86/kernel/io_apic.c	2009-03-09 04:36:35.000000000 -0400
+@@ -3258,6 +3258,7 @@
+ 	struct irq_cfg *cfg;
+ 	int err;
+ 	unsigned dest;
++	int pos;
+ 
+ 	cfg = irq_cfg(irq);
+ 	err = assign_irq_vector(irq, cfg, TARGET_CPUS);
+@@ -3266,6 +3267,14 @@
+ 
+ 	dest = cpu_mask_to_apicid_and(cfg->domain, TARGET_CPUS);
+ 
++	pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
++	if (pos != 0) {
++		pci_read_config_dword(pdev, pos + PCI_MSI_ADDRESS_LO,
++        	                                &msg->address_lo);
++		pci_read_config_dword(pdev, pos + PCI_MSI_ADDRESS_HI,
++        	                                &msg->address_hi);
++	}
++
+ #ifdef CONFIG_INTR_REMAP
+ 	if (irq_remapped(irq)) {
+ 		struct irte irte;
+@@ -3295,17 +3304,18 @@
+ 	} else
+ #endif
+ 	{
+-		msg->address_hi = MSI_ADDR_BASE_HI;
+-		msg->address_lo =
+-			MSI_ADDR_BASE_LO |
+-			((INT_DEST_MODE == 0) ?
+-				MSI_ADDR_DEST_MODE_PHYSICAL:
+-				MSI_ADDR_DEST_MODE_LOGICAL) |
+-			((INT_DELIVERY_MODE != dest_LowestPrio) ?
+-				MSI_ADDR_REDIRECTION_CPU:
+-				MSI_ADDR_REDIRECTION_LOWPRI) |
+-			MSI_ADDR_DEST_ID(dest);
+-
++		if (!msg->address_hi && !msg->address_lo) {
++			msg->address_hi = MSI_ADDR_BASE_HI;
++			msg->address_lo = 
++				MSI_ADDR_BASE_LO |
++				((INT_DEST_MODE == 0) ?
++					MSI_ADDR_DEST_MODE_PHYSICAL:
++					MSI_ADDR_DEST_MODE_LOGICAL) |
++				((INT_DELIVERY_MODE != dest_LowestPrio) ?
++					MSI_ADDR_REDIRECTION_CPU:
++					MSI_ADDR_REDIRECTION_LOWPRI) |
++				MSI_ADDR_DEST_ID(dest); 
++		}
+ 		msg->data =
+ 			MSI_DATA_TRIGGER_EDGE |
+ 			MSI_DATA_LEVEL_ASSERT |
 
-So what all the PCI changes try to do is to basically not have the driver 
-do the "pci_set_power_state(PCI_D3)" at _all_, an do it in the PCI layer. 
-But more importantly, it needs to be done _after_ interrupts have been 
-disabled for this all to work. And, for exactly the same reason, the PCI 
-layer needs to wake the device up and restore its config space _before_ 
-enabling interrupts again, and _before_ doing any ->resume calls.
 
-And that, in turn, means that since we have all these ACPI ordering 
-things, and many cases want to use ACPI to wake things up, and/or have 
-delays etc, we end up actually wanting things like timer interrupts 
-working at that time - but not normal "device" interrupts. Because many 
-delays do need them, even as simple delays as the (fairly short, but not 
-"busy loop" short) one for turning the device back into PCI_D0 again.
-
-So this literally explains all the re-ordering, and all the interrupt 
-games we now play in Rafael's patch-set. The _whole_ (and only) point is 
-to make it easier for device drivers, while also changing the environment 
-so that we can call ACPI and we can sleep even before the devices have 
-really resumed (or even early_resume'd).
-
-			Linus
