@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbZCIDfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbZCIDf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755527AbZCIDfm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 23:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbZCIDbs
+	id S1755725AbZCIDf7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 23:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbZCIDbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 23:31:48 -0400
-Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35861 "EHLO
+	Sun, 8 Mar 2009 23:31:52 -0400
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35863 "EHLO
 	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754240AbZCIDbJ (ORCPT
+	with ESMTP id S1754272AbZCIDbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 8 Mar 2009 23:31:09 -0400
 From: "J. R. Okajima" <hooanon05@yahoo.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, "J. R. Okajima" <hooanon05@yahoo.co.jp>
-Subject: [Aufs 14/25] aufs pseudo-link
-Date: Mon,  9 Mar 2009 12:25:07 +0900
-Message-Id: <1236569118-3750-15-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [Aufs 15/25] aufs policies to select one among multiple writable branches
+Date: Mon,  9 Mar 2009 12:25:08 +0900
+Message-Id: <1236569118-3750-16-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.6.1.284.g5dc13
 In-Reply-To: <1236569118-3750-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1236569118-3750-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -24,20 +24,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 initial commit
-pseudo-link is a logical hardlink over branches or different filesystems.
+when creating/removing an entry and there are multiple writable branches
+specified in aufs, aufs has to decide which branch is the target.
+aufs has several policies for that such as, round-robin, most-free-space
+and so on.
 
 Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/plink.c |  335 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 335 insertions(+), 0 deletions(-)
- create mode 100644 fs/aufs/plink.c
+ fs/aufs/wbr_policy.c |  628 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 628 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/wbr_policy.c
 
-diff --git a/fs/aufs/plink.c b/fs/aufs/plink.c
+diff --git a/fs/aufs/wbr_policy.c b/fs/aufs/wbr_policy.c
 new file mode 100644
-index 0000000..62d258f
+index 0000000..436ebfc
 --- /dev/null
-+++ b/fs/aufs/plink.c
-@@ -0,0 +1,335 @@
++++ b/fs/aufs/wbr_policy.c
+@@ -0,0 +1,628 @@
 +/*
 + * Copyright (C) 2005-2009 Junjiro R. Okajima
 + *
@@ -48,331 +51,624 @@ index 0000000..62d258f
 + */
 +
 +/*
-+ * pseudo-link
++ * policies for selecting one among multiple writable branches
 + */
 +
++#include <linux/statfs.h>
 +#include "aufs.h"
 +
-+/*
-+ * during a user process maintains the pseudo-links,
-+ * prohibit adding a new plink and branch manipulation.
-+ */
-+void au_plink_block_maintain(struct super_block *sb)
++/* subset of cpup_attr() */
++static noinline_for_stack
++int au_cpdown_attr(struct path *h_path, struct dentry *h_src)
 +{
-+	struct au_sbinfo *sbi = au_sbi(sb);
-+	/* gave up wake_up_bit() */
-+	wait_event(sbi->si_plink_wq, !au_ftest_si(sbi, MAINTAIN_PLINK));
++	int err, sbits;
++	struct iattr ia;
++	struct inode *h_isrc;
++
++	h_isrc = h_src->d_inode;
++	ia.ia_valid = ATTR_FORCE | ATTR_MODE | ATTR_UID | ATTR_GID;
++	ia.ia_mode = h_isrc->i_mode;
++	ia.ia_uid = h_isrc->i_uid;
++	ia.ia_gid = h_isrc->i_gid;
++	sbits = !!(ia.ia_mode & (S_ISUID | S_ISGID));
++	au_cpup_attr_flags(h_path->dentry->d_inode, h_isrc);
++	err = vfsub_sio_notify_change(h_path, &ia);
++
++	/* is this nfs only? */
++	if (!err && sbits && au_test_nfs(h_path->dentry->d_sb)) {
++		ia.ia_valid = ATTR_FORCE | ATTR_MODE;
++		ia.ia_mode = h_isrc->i_mode;
++		err = vfsub_sio_notify_change(h_path, &ia);
++	}
++
++	return err;
 +}
 +
-+/* ---------------------------------------------------------------------- */
++#define AuCpdown_PARENT_OPQ	1
++#define AuCpdown_WHED		(1 << 1)
++#define AuCpdown_MADE_DIR	(1 << 2)
++#define AuCpdown_DIROPQ		(1 << 3)
++#define au_ftest_cpdown(flags, name)	((flags) & AuCpdown_##name)
++#define au_fset_cpdown(flags, name)	{ (flags) |= AuCpdown_##name; }
++#define au_fclr_cpdown(flags, name)	{ (flags) &= ~AuCpdown_##name; }
 +
-+struct pseudo_link {
-+	struct list_head list;
-+	struct inode *inode;
++struct au_cpdown_dir_args {
++	struct dentry *parent;
++	unsigned int flags;
 +};
 +
-+#ifdef CONFIG_AUFS_DEBUG
-+void au_plink_list(struct super_block *sb)
-+{
-+	struct au_sbinfo *sbinfo;
-+	struct list_head *plink_list;
-+	struct pseudo_link *plink;
-+
-+	sbinfo = au_sbi(sb);
-+	AuDebugOn(!au_opt_test(au_mntflags(sb), PLINK));
-+
-+	plink_list = &sbinfo->si_plink.head;
-+	spin_lock(&sbinfo->si_plink.spin);
-+	list_for_each_entry(plink, plink_list, list)
-+		AuDbg("%lu\n", plink->inode->i_ino);
-+	spin_unlock(&sbinfo->si_plink.spin);
-+}
-+#endif
-+
-+/* is the inode pseudo-linked? */
-+int au_plink_test(struct inode *inode)
-+{
-+	int found;
-+	struct au_sbinfo *sbinfo;
-+	struct list_head *plink_list;
-+	struct pseudo_link *plink;
-+
-+	sbinfo = au_sbi(inode->i_sb);
-+	AuDebugOn(!au_opt_test(au_mntflags(inode->i_sb), PLINK));
-+
-+	found = 0;
-+	plink_list = &sbinfo->si_plink.head;
-+	spin_lock(&sbinfo->si_plink.spin);
-+	list_for_each_entry(plink, plink_list, list)
-+		if (plink->inode == inode) {
-+			found = 1;
-+			break;
-+		}
-+	spin_unlock(&sbinfo->si_plink.spin);
-+	return found;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/*
-+ * generate a name for plink.
-+ * the file will be stored under AUFS_WH_PLINKDIR.
-+ */
-+/* 20 is max digits length of ulong 64 */
-+#define PLINK_NAME_LEN	((20 + 1) * 2)
-+
-+static int plink_name(char *name, int len, struct inode *inode,
-+		      aufs_bindex_t bindex)
-+{
-+	int rlen;
-+	struct inode *h_inode;
-+
-+	h_inode = au_h_iptr(inode, bindex);
-+	rlen = snprintf(name, len, "%lu.%lu", inode->i_ino, h_inode->i_ino);
-+	return rlen;
-+}
-+
-+/* lookup the plink-ed @inode under the branch at @bindex */
-+struct dentry *au_plink_lkup(struct inode *inode, aufs_bindex_t bindex)
-+{
-+	struct dentry *h_dentry, *h_parent;
-+	struct au_branch *br;
-+	struct inode *h_dir;
-+	char a[PLINK_NAME_LEN];
-+	struct qstr tgtname = {
-+		.name	= a
-+	};
-+
-+	br = au_sbr(inode->i_sb, bindex);
-+	h_parent = br->br_wbr->wbr_plink;
-+	h_dir = h_parent->d_inode;
-+	tgtname.len = plink_name(a, sizeof(a), inode, bindex);
-+
-+	/* always superio. */
-+	mutex_lock_nested(&h_dir->i_mutex, AuLsc_I_CHILD2);
-+	h_dentry = au_sio_lkup_one(&tgtname, h_parent, br);
-+	mutex_unlock(&h_dir->i_mutex);
-+	return h_dentry;
-+}
-+
-+/* create a pseudo-link */
-+static int do_whplink(struct qstr *tgt, struct dentry *h_parent,
-+		      struct dentry *h_dentry, struct au_branch *br)
++static int au_cpdown_dir_opq(struct dentry *dentry, aufs_bindex_t bdst,
++			     struct au_cpdown_dir_args *a)
 +{
 +	int err;
-+	struct path h_path = {
-+		.mnt = br->br_mnt
-+	};
-+	struct inode *h_dir;
++	struct dentry *opq_dentry;
 +
-+	h_dir = h_parent->d_inode;
-+ again:
-+	h_path.dentry = au_lkup_one(tgt, h_parent, br, /*nd*/NULL);
++	opq_dentry = au_diropq_create(dentry, bdst);
++	err = PTR_ERR(opq_dentry);
++	if (IS_ERR(opq_dentry))
++		goto out;
++	dput(opq_dentry);
++	au_fset_cpdown(a->flags, DIROPQ);
++
++ out:
++	return err;
++}
++
++static int au_cpdown_dir_wh(struct dentry *dentry, struct dentry *h_parent,
++			    struct inode *dir, aufs_bindex_t bdst)
++{
++	int err;
++	struct path h_path;
++	struct au_branch *br;
++
++	br = au_sbr(dentry->d_sb, bdst);
++	h_path.dentry = au_wh_lkup(h_parent, &dentry->d_name, br);
 +	err = PTR_ERR(h_path.dentry);
 +	if (IS_ERR(h_path.dentry))
 +		goto out;
 +
 +	err = 0;
-+	/* wh.plink dir is not monitored */
-+	if (h_path.dentry->d_inode
-+	    && h_path.dentry->d_inode != h_dentry->d_inode) {
-+		err = vfsub_unlink(h_dir, &h_path, /*force*/0);
-+		dput(h_path.dentry);
-+		h_path.dentry = NULL;
-+		if (!err)
-+			goto again;
++	if (h_path.dentry->d_inode) {
++		h_path.mnt = br->br_mnt;
++		err = au_wh_unlink_dentry(au_h_iptr(dir, bdst), &h_path,
++					  dentry);
 +	}
-+	if (!err && !h_path.dentry->d_inode)
-+		err = vfsub_link(h_dentry, h_dir, &h_path);
 +	dput(h_path.dentry);
 +
 + out:
 +	return err;
 +}
 +
-+struct do_whplink_args {
-+	int *errp;
-+	struct qstr *tgt;
-+	struct dentry *h_parent;
-+	struct dentry *h_dentry;
-+	struct au_branch *br;
-+};
-+
-+static void call_do_whplink(void *args)
++static int au_cpdown_dir(struct dentry *dentry, aufs_bindex_t bdst,
++			 struct dentry *h_parent, void *arg)
 +{
-+	struct do_whplink_args *a = args;
-+	*a->errp = do_whplink(a->tgt, a->h_parent, a->h_dentry, a->br);
++	int err, rerr;
++	aufs_bindex_t bend, bopq, bstart;
++	unsigned char parent_opq;
++	struct path h_path;
++	struct dentry *parent;
++	struct inode *h_dir, *h_inode, *inode, *dir;
++	struct au_cpdown_dir_args *args = arg;
++
++	bstart = au_dbstart(dentry);
++	/* dentry is di-locked */
++	parent = dget_parent(dentry);
++	dir = parent->d_inode;
++	h_dir = h_parent->d_inode;
++	AuDebugOn(h_dir != au_h_iptr(dir, bdst));
++	IMustLock(h_dir);
++
++	err = au_lkup_neg(dentry, bdst);
++	if (unlikely(err < 0))
++		goto out;
++	h_path.dentry = au_h_dptr(dentry, bdst);
++	h_path.mnt = au_sbr_mnt(dentry->d_sb, bdst);
++	err = vfsub_sio_mkdir(au_h_iptr(dir, bdst), &h_path,
++			      S_IRWXU | S_IRUGO | S_IXUGO);
++	if (unlikely(err))
++		goto out_put;
++	au_fset_cpdown(args->flags, MADE_DIR);
++
++	bend = au_dbend(dentry);
++	bopq = au_dbdiropq(dentry);
++	au_fclr_cpdown(args->flags, WHED);
++	au_fclr_cpdown(args->flags, DIROPQ);
++	if (au_dbwh(dentry) == bdst)
++		au_fset_cpdown(args->flags, WHED);
++	if (!au_ftest_cpdown(args->flags, PARENT_OPQ) && bopq <= bdst)
++		au_fset_cpdown(args->flags, PARENT_OPQ);
++	parent_opq = (au_ftest_cpdown(args->flags, PARENT_OPQ)
++		      && args->parent == dentry);
++	h_inode = h_path.dentry->d_inode;
++	mutex_lock_nested(&h_inode->i_mutex, AuLsc_I_CHILD);
++	if (au_ftest_cpdown(args->flags, WHED)) {
++		err = au_cpdown_dir_opq(dentry, bdst, args);
++		if (unlikely(err)) {
++			mutex_unlock(&h_inode->i_mutex);
++			goto out_dir;
++		}
++	}
++
++	err = au_cpdown_attr(&h_path, au_h_dptr(dentry, bstart));
++	mutex_unlock(&h_inode->i_mutex);
++	if (unlikely(err))
++		goto out_opq;
++
++	if (au_ftest_cpdown(args->flags, WHED)) {
++		err = au_cpdown_dir_wh(dentry, h_parent, dir, bdst);
++		if (unlikely(err))
++			goto out_opq;
++	}
++
++	inode = dentry->d_inode;
++	if (au_ibend(inode) < bdst)
++		au_set_ibend(inode, bdst);
++	au_set_h_iptr(inode, bdst, au_igrab(h_inode),
++		      au_hi_flags(inode, /*isdir*/1));
++	goto out; /* success */
++
++	/* revert */
++ out_opq:
++	if (au_ftest_cpdown(args->flags, DIROPQ)) {
++		mutex_lock_nested(&h_inode->i_mutex, AuLsc_I_CHILD);
++		rerr = au_diropq_remove(dentry, bdst);
++		mutex_unlock(&h_inode->i_mutex);
++		if (unlikely(rerr)) {
++			AuIOErr("failed removing diropq for %.*s b%d (%d)\n",
++				AuDLNPair(dentry), bdst, rerr);
++			err = -EIO;
++			goto out;
++		}
++	}
++ out_dir:
++	if (au_ftest_cpdown(args->flags, MADE_DIR)) {
++		rerr = vfsub_sio_rmdir(au_h_iptr(dir, bdst), &h_path);
++		if (unlikely(rerr)) {
++			AuIOErr("failed removing %.*s b%d (%d)\n",
++				AuDLNPair(dentry), bdst, rerr);
++			err = -EIO;
++		}
++	}
++ out_put:
++	au_set_h_dptr(dentry, bdst, NULL);
++	if (au_dbend(dentry) == bdst)
++		au_update_dbend(dentry);
++ out:
++	dput(parent);
++	return err;
 +}
 +
-+static int whplink(struct dentry *h_dentry, struct inode *inode,
-+		   aufs_bindex_t bindex, struct au_branch *br)
++int au_cpdown_dirs(struct dentry *dentry, aufs_bindex_t bdst)
 +{
-+	int err, wkq_err;
-+	struct au_wbr *wbr;
-+	struct dentry *h_parent;
-+	struct inode *h_dir;
-+	char a[PLINK_NAME_LEN];
-+	struct qstr tgtname = {
-+		.name = a
++	int err;
++	struct au_cpdown_dir_args args = {
++		.parent	= dget_parent(dentry),
++		.flags	= 0
 +	};
 +
-+	wbr = au_sbr(inode->i_sb, bindex)->br_wbr;
-+	h_parent = wbr->wbr_plink;
-+	h_dir = h_parent->d_inode;
-+	tgtname.len = plink_name(a, sizeof(a), inode, bindex);
-+
-+	/* always superio. */
-+	mutex_lock_nested(&h_dir->i_mutex, AuLsc_I_CHILD2);
-+	if (!au_test_wkq(current)) {
-+		struct do_whplink_args args = {
-+			.errp		= &err,
-+			.tgt		= &tgtname,
-+			.h_parent	= h_parent,
-+			.h_dentry	= h_dentry,
-+			.br		= br
-+		};
-+		wkq_err = au_wkq_wait(call_do_whplink, &args);
-+		if (unlikely(wkq_err))
-+			err = wkq_err;
-+	} else
-+		err = do_whplink(&tgtname, h_parent, h_dentry, br);
-+	mutex_unlock(&h_dir->i_mutex);
++	err = au_cp_dirs(dentry, bdst, au_cpdown_dir, &args);
++	dput(args.parent);
 +
 +	return err;
 +}
 +
-+/* free a single plink */
-+static void do_put_plink(struct pseudo_link *plink, int do_del)
++/* ---------------------------------------------------------------------- */
++
++/* policies for create */
++
++static int au_wbr_bu(struct super_block *sb, aufs_bindex_t bindex)
 +{
-+	iput(plink->inode);
-+	if (do_del)
-+		list_del(&plink->list);
-+	kfree(plink);
++	for (; bindex >= 0; bindex--)
++		if (!au_br_rdonly(au_sbr(sb, bindex)))
++			return bindex;
++	return -EROFS;
 +}
 +
-+/*
-+ * create a new pseudo-link for @h_dentry on @bindex.
-+ * the linked inode is held in aufs @inode.
-+ */
-+void au_plink_append(struct inode *inode, aufs_bindex_t bindex,
-+		     struct dentry *h_dentry)
++/* top down parent */
++static int au_wbr_create_tdp(struct dentry *dentry, int isdir __maybe_unused)
 +{
++	int err;
++	aufs_bindex_t bstart, bindex;
 +	struct super_block *sb;
-+	struct au_sbinfo *sbinfo;
-+	struct list_head *plink_list;
-+	struct pseudo_link *plink;
-+	int found, err, cnt;
++	struct dentry *parent, *h_parent;
 +
-+	sb = inode->i_sb;
-+	sbinfo = au_sbi(sb);
-+	AuDebugOn(!au_opt_test(au_mntflags(sb), PLINK));
++	sb = dentry->d_sb;
++	bstart = au_dbstart(dentry);
++	err = bstart;
++	if (!au_br_rdonly(au_sbr(sb, bstart)))
++		goto out;
 +
-+	err = 0;
-+	cnt = 0;
-+	found = 0;
-+	plink_list = &sbinfo->si_plink.head;
-+	spin_lock(&sbinfo->si_plink.spin);
-+	list_for_each_entry(plink, plink_list, list) {
-+		cnt++;
-+		if (plink->inode == inode) {
-+			found = 1;
++	err = -EROFS;
++	parent = dget_parent(dentry);
++	for (bindex = au_dbstart(parent); bindex < bstart; bindex++) {
++		h_parent = au_h_dptr(parent, bindex);
++		if (!h_parent || !h_parent->d_inode)
++			continue;
++
++		if (!au_br_rdonly(au_sbr(sb, bindex))) {
++			err = bindex;
 +			break;
 +		}
 +	}
-+	if (found) {
-+		spin_unlock(&sbinfo->si_plink.spin);
++	dput(parent);
++
++	/* bottom up here */
++	if (unlikely(err < 0))
++		err = au_wbr_bu(sb, bstart - 1);
++
++ out:
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* an exception for the policy other than tdp */
++static int au_wbr_create_exp(struct dentry *dentry)
++{
++	int err;
++	aufs_bindex_t bwh, bdiropq;
++	struct dentry *parent;
++
++	err = -1;
++	bwh = au_dbwh(dentry);
++	parent = dget_parent(dentry);
++	bdiropq = au_dbdiropq(parent);
++	if (bwh >= 0) {
++		if (bdiropq >= 0)
++			err = min(bdiropq, bwh);
++		else
++			err = bwh;
++		AuDbg("%d\n", err);
++	} else if (bdiropq >= 0) {
++		err = bdiropq;
++		AuDbg("%d\n", err);
++	}
++	dput(parent);
++
++	if (err >= 0 && au_br_rdonly(au_sbr(dentry->d_sb, err)))
++		err = -1;
++
++	AuDbg("%d\n", err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* round robin */
++static int au_wbr_create_init_rr(struct super_block *sb)
++{
++	int err;
++
++	err = au_wbr_bu(sb, au_sbend(sb));
++	atomic_set(&au_sbi(sb)->si_wbr_rr_next, -err); /* less important */
++
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++static int au_wbr_create_rr(struct dentry *dentry, int isdir)
++{
++	int err, nbr;
++	unsigned int u;
++	aufs_bindex_t bindex, bend;
++	struct super_block *sb;
++	atomic_t *next;
++
++	err = au_wbr_create_exp(dentry);
++	if (err >= 0)
++		goto out;
++
++	sb = dentry->d_sb;
++	next = &au_sbi(sb)->si_wbr_rr_next;
++	bend = au_sbend(sb);
++	nbr = bend + 1;
++	for (bindex = 0; bindex <= bend; bindex++) {
++		if (!isdir) {
++			err = atomic_dec_return(next) + 1;
++			/* modulo for 0 is meaningless */
++			if (unlikely(!err))
++				err = atomic_dec_return(next) + 1;
++		} else
++			err = atomic_read(next);
++		AuDbg("%d\n", err);
++		u = err;
++		err = u % nbr;
++		AuDbg("%d\n", err);
++		if (!au_br_rdonly(au_sbr(sb, err)))
++			break;
++		err = -EROFS;
++	}
++
++ out:
++	AuDbg("%d\n", err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* most free space */
++static void au_mfs(struct dentry *dentry)
++{
++	struct super_block *sb;
++	struct au_branch *br;
++	struct au_wbr_mfs *mfs;
++	aufs_bindex_t bindex, bend;
++	int err;
++	unsigned long long b, bavail;
++	/* reduce the stack usage */
++	struct kstatfs *st;
++
++	st = kmalloc(sizeof(*st), GFP_NOFS);
++	if (unlikely(!st)) {
++		AuWarn1("failed updating mfs(%d), ignored\n", -ENOMEM);
 +		return;
 +	}
 +
-+	plink = NULL;
-+	if (!found) {
-+		plink = kmalloc(sizeof(*plink), GFP_ATOMIC);
-+		if (plink) {
-+			plink->inode = au_igrab(inode);
-+			list_add(&plink->list, plink_list);
-+			cnt++;
-+		} else
-+			err = -ENOMEM;
-+	}
-+	spin_unlock(&sbinfo->si_plink.spin);
++	bavail = 0;
++	sb = dentry->d_sb;
++	mfs = &au_sbi(sb)->si_wbr_mfs;
++	mfs->mfs_bindex = -EROFS;
++	mfs->mfsrr_bytes = 0;
++	bend = au_sbend(sb);
++	for (bindex = 0; bindex <= bend; bindex++) {
++		br = au_sbr(sb, bindex);
++		if (au_br_rdonly(br))
++			continue;
 +
-+	if (!err) {
-+		au_plink_block_maintain(sb);
-+		err = whplink(h_dentry, inode, bindex, au_sbr(sb, bindex));
-+	}
-+
-+	if (unlikely(cnt > AUFS_PLINK_WARN))
-+		AuWarn1("unexpectedly many pseudo links, %d\n", cnt);
-+	if (unlikely(err)) {
-+		AuWarn("err %d, damaged pseudo link.\n", err);
-+		if (!found && plink)
-+			do_put_plink(plink, /*do_del*/1);
-+	}
-+}
-+
-+/* free all plinks */
-+void au_plink_put(struct super_block *sb)
-+{
-+	struct au_sbinfo *sbinfo;
-+	struct list_head *plink_list;
-+	struct pseudo_link *plink, *tmp;
-+
-+	sbinfo = au_sbi(sb);
-+	AuDebugOn(!au_opt_test(au_mntflags(sb), PLINK));
-+
-+	plink_list = &sbinfo->si_plink.head;
-+	/* no spin_lock since sbinfo is write-locked */
-+	list_for_each_entry_safe(plink, tmp, plink_list, list)
-+		do_put_plink(plink, 0);
-+	INIT_LIST_HEAD(plink_list);
-+}
-+
-+/* free the plinks on a branch specified by @br_id */
-+void au_plink_half_refresh(struct super_block *sb, aufs_bindex_t br_id)
-+{
-+	struct au_sbinfo *sbinfo;
-+	struct list_head *plink_list;
-+	struct pseudo_link *plink, *tmp;
-+	struct inode *inode;
-+	aufs_bindex_t bstart, bend, bindex;
-+	unsigned char do_put;
-+
-+	sbinfo = au_sbi(sb);
-+	AuDebugOn(!au_opt_test(au_mntflags(sb), PLINK));
-+
-+	plink_list = &sbinfo->si_plink.head;
-+	/* no spin_lock since sbinfo is write-locked */
-+	list_for_each_entry_safe(plink, tmp, plink_list, list) {
-+		do_put = 0;
-+		inode = au_igrab(plink->inode);
-+		ii_write_lock_child(inode);
-+		bstart = au_ibstart(inode);
-+		bend = au_ibend(inode);
-+		if (bstart >= 0) {
-+			for (bindex = bstart; bindex <= bend; bindex++) {
-+				if (!au_h_iptr(inode, bindex)
-+				    || au_ii_br_id(inode, bindex) != br_id)
-+					continue;
-+				au_set_h_iptr(inode, bindex, NULL, 0);
-+				do_put = 1;
-+				break;
-+			}
-+		} else
-+			do_put_plink(plink, 1);
-+
-+		if (do_put) {
-+			for (bindex = bstart; bindex <= bend; bindex++)
-+				if (au_h_iptr(inode, bindex)) {
-+					do_put = 0;
-+					break;
-+				}
-+			if (do_put)
-+				do_put_plink(plink, 1);
++		/* sb->s_root for NFS is unreliable */
++		err = vfs_statfs(br->br_mnt->mnt_root, st);
++		if (unlikely(err)) {
++			AuWarn1("failed statfs, b%d, %d\n", bindex, err);
++			continue;
 +		}
-+		ii_write_unlock(inode);
-+		iput(inode);
++
++		/* when the available size is equal, select the lower one */
++		BUILD_BUG_ON(sizeof(b) < sizeof(st->f_bavail)
++			     || sizeof(b) < sizeof(st->f_bsize));
++		b = st->f_bavail * st->f_bsize;
++		br->br_wbr->wbr_bytes = b;
++		if (b >= bavail) {
++			bavail = b;
++			mfs->mfs_bindex = bindex;
++			mfs->mfs_jiffy = jiffies;
++		}
 +	}
++
++	mfs->mfsrr_bytes = bavail;
++	AuDbg("b%d\n", mfs->mfs_bindex);
++	kfree(st);
 +}
++
++static int au_wbr_create_mfs(struct dentry *dentry, int isdir __maybe_unused)
++{
++	int err;
++	struct super_block *sb;
++	struct au_wbr_mfs *mfs;
++
++	err = au_wbr_create_exp(dentry);
++	if (err >= 0)
++		goto out;
++
++	sb = dentry->d_sb;
++	mfs = &au_sbi(sb)->si_wbr_mfs;
++	mutex_lock(&mfs->mfs_lock);
++	if (time_after(jiffies, mfs->mfs_jiffy + mfs->mfs_expire)
++	    || mfs->mfs_bindex < 0
++	    || au_br_rdonly(au_sbr(sb, mfs->mfs_bindex)))
++		au_mfs(dentry);
++	mutex_unlock(&mfs->mfs_lock);
++	err = mfs->mfs_bindex;
++
++ out:
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++static int au_wbr_create_init_mfs(struct super_block *sb)
++{
++	struct au_wbr_mfs *mfs;
++
++	mfs = &au_sbi(sb)->si_wbr_mfs;
++	mutex_init(&mfs->mfs_lock);
++	mfs->mfs_jiffy = 0;
++	mfs->mfs_bindex = -EROFS;
++
++	return 0;
++}
++
++static int au_wbr_create_fin_mfs(struct super_block *sb __maybe_unused)
++{
++	mutex_destroy(&au_sbi(sb)->si_wbr_mfs.mfs_lock);
++	return 0;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* most free space and then round robin */
++static int au_wbr_create_mfsrr(struct dentry *dentry, int isdir)
++{
++	int err;
++	struct au_wbr_mfs *mfs;
++
++	err = au_wbr_create_mfs(dentry, isdir);
++	if (err >= 0) {
++		mfs = &au_sbi(dentry->d_sb)->si_wbr_mfs;
++		if (mfs->mfsrr_bytes < mfs->mfsrr_watermark)
++			err = au_wbr_create_rr(dentry, isdir);
++	}
++
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++static int au_wbr_create_init_mfsrr(struct super_block *sb)
++{
++	int err;
++
++	au_wbr_create_init_mfs(sb); /* ignore */
++	err = au_wbr_create_init_rr(sb);
++
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* top down parent and most free space */
++static int au_wbr_create_pmfs(struct dentry *dentry, int isdir)
++{
++	int err, e2;
++	unsigned long long b;
++	aufs_bindex_t bindex, bstart, bend;
++	struct super_block *sb;
++	struct dentry *parent, *h_parent;
++	struct au_branch *br;
++
++	err = au_wbr_create_tdp(dentry, isdir);
++	if (unlikely(err < 0))
++		goto out;
++	parent = dget_parent(dentry);
++	bstart = au_dbstart(parent);
++	bend = au_dbtaildir(parent);
++	if (bstart == bend)
++		goto out_parent; /* success */
++
++	e2 = au_wbr_create_mfs(dentry, isdir);
++	if (e2 < 0)
++		goto out_parent; /* success */
++
++	/* when the available size is equal, select upper one */
++	sb = dentry->d_sb;
++	br = au_sbr(sb, err);
++	b = br->br_wbr->wbr_bytes;
++	AuDbg("b%d, %llu\n", err, b);
++
++	for (bindex = bstart; bindex <= bend; bindex++) {
++		h_parent = au_h_dptr(parent, bindex);
++		if (!h_parent || !h_parent->d_inode)
++			continue;
++
++		br = au_sbr(sb, bindex);
++		if (!au_br_rdonly(br) && br->br_wbr->wbr_bytes > b) {
++			b = br->br_wbr->wbr_bytes;
++			err = bindex;
++			AuDbg("b%d, %llu\n", err, b);
++		}
++	}
++
++ out_parent:
++	dput(parent);
++ out:
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* policies for copyup */
++
++/* top down parent */
++static int au_wbr_copyup_tdp(struct dentry *dentry)
++{
++	return au_wbr_create_tdp(dentry, /*isdir, anything is ok*/0);
++}
++
++/* bottom up parent */
++static int au_wbr_copyup_bup(struct dentry *dentry)
++{
++	int err;
++	aufs_bindex_t bindex, bstart;
++	struct dentry *parent, *h_parent;
++	struct super_block *sb;
++
++	err = -EROFS;
++	sb = dentry->d_sb;
++	parent = dget_parent(dentry);
++	bstart = au_dbstart(parent);
++	for (bindex = au_dbstart(dentry); bindex >= bstart; bindex--) {
++		h_parent = au_h_dptr(parent, bindex);
++		if (!h_parent || !h_parent->d_inode)
++			continue;
++
++		if (!au_br_rdonly(au_sbr(sb, bindex))) {
++			err = bindex;
++			break;
++		}
++	}
++	dput(parent);
++
++	/* bottom up here */
++	if (unlikely(err < 0))
++		err = au_wbr_bu(sb, bstart - 1);
++
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++/* bottom up */
++static int au_wbr_copyup_bu(struct dentry *dentry)
++{
++	int err;
++
++	err = au_wbr_bu(dentry->d_sb, au_dbstart(dentry));
++
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++struct au_wbr_copyup_operations au_wbr_copyup_ops[] = {
++	[AuWbrCopyup_TDP] = {
++		.copyup	= au_wbr_copyup_tdp
++	},
++	[AuWbrCopyup_BUP] = {
++		.copyup	= au_wbr_copyup_bup
++	},
++	[AuWbrCopyup_BU] = {
++		.copyup	= au_wbr_copyup_bu
++	}
++};
++
++struct au_wbr_create_operations au_wbr_create_ops[] = {
++	[AuWbrCreate_TDP] = {
++		.create	= au_wbr_create_tdp
++	},
++	[AuWbrCreate_RR] = {
++		.create	= au_wbr_create_rr,
++		.init	= au_wbr_create_init_rr
++	},
++	[AuWbrCreate_MFS] = {
++		.create	= au_wbr_create_mfs,
++		.init	= au_wbr_create_init_mfs,
++		.fin	= au_wbr_create_fin_mfs
++	},
++	[AuWbrCreate_MFSV] = {
++		.create	= au_wbr_create_mfs,
++		.init	= au_wbr_create_init_mfs,
++		.fin	= au_wbr_create_fin_mfs
++	},
++	[AuWbrCreate_MFSRR] = {
++		.create	= au_wbr_create_mfsrr,
++		.init	= au_wbr_create_init_mfsrr,
++		.fin	= au_wbr_create_fin_mfs
++	},
++	[AuWbrCreate_MFSRRV] = {
++		.create	= au_wbr_create_mfsrr,
++		.init	= au_wbr_create_init_mfsrr,
++		.fin	= au_wbr_create_fin_mfs
++	},
++	[AuWbrCreate_PMFS] = {
++		.create	= au_wbr_create_pmfs,
++		.init	= au_wbr_create_init_mfs,
++		.fin	= au_wbr_create_fin_mfs
++	},
++	[AuWbrCreate_PMFSV] = {
++		.create	= au_wbr_create_pmfs,
++		.init	= au_wbr_create_init_mfs,
++		.fin	= au_wbr_create_fin_mfs
++	}
++};
 -- 
 1.6.1.284.g5dc13
 
