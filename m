@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbZCIORQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752279AbZCIOUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbZCIORQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 10:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZCIOQ6
+	id S1752279AbZCIOUY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 10:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZCIOUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 10:16:58 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:45146 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751672AbZCIOQ6 (ORCPT
+	Mon, 9 Mar 2009 10:20:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38029 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751599AbZCIOUH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 10:16:58 -0400
-Date: Mon, 9 Mar 2009 14:16:55 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Linux* Processor Microcode Data File
-Message-ID: <20090309141655.GA24213@silver.sucs.org>
-References: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com>
+	Mon, 9 Mar 2009 10:20:07 -0400
+Subject: Re: [patch] Re: scheduler oddity [bug?]
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: David Newall <davidn@davidnewall.com>
+Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       Balazs Scheidler <bazsi@balabit.hu>, linux-kernel@vger.kernel.org,
+       Willy Tarreau <w@1wt.eu>
+In-Reply-To: <49B52118.7010509@davidnewall.com>
+References: <1236448069.16726.21.camel@bzorp.balabit>
+	 <1236505323.6281.57.camel@marge.simson.net>
+	 <1236506309.6972.8.camel@marge.simson.net> <20090308153956.GB19658@elte.hu>
+	 <1236529200.7110.16.camel@marge.simson.net>
+	 <20090308175255.GA22802@elte.hu>
+	 <1236585731.6118.24.camel@marge.simson.net>
+	 <20090309080714.GB24904@elte.hu>  <1236596664.8389.331.camel@laptop>
+	 <1236604563.6027.8.camel@marge.simson.net>
+	 <1236605267.8389.490.camel@laptop>  <49B52118.7010509@davidnewall.com>
+Content-Type: text/plain
+Date: Mon, 09 Mar 2009 15:19:50 +0100
+Message-Id: <1236608390.8389.557.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.25.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 09, 2009 at 10:43:57AM +0100, Dragoslav Zaric wrote:
+On Tue, 2009-03-10 at 00:30 +1030, David Newall wrote:
+> Peter Zijlstra wrote:
+> > Does it actually solve the reported problem? I've only thought about the
+> > issue so far
+> 
+> Wasn't it reported to be caused by an off-by-one bug in commit 
+> 38736f475071b80b66be28af7b44c854073699cc?
 
-> So, does new kernel versions just copy this microcode update file in
-> /etc/firmware folder or new
-> instructions are replaced in assembly code ?
+Completely different issue. Unfortunate interference of effects though.
 
-The kernel doesn't load microcode automatically but it can provide a
-device to allow userspace to trigger a microcode update (via
-/dev/cpu/microcode ). On boot the patching process is normally started
-by an initscript. See http://www.urbanmyth.org/microcode/ for details.
 
--- 
-Sitsofe | http://sucs.org/~sits/
