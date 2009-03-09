@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbZCIDcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbZCIDdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045AbZCIDcm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 23:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbZCIDbN
+	id S1755252AbZCIDdA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 23:33:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754371AbZCIDbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 23:31:13 -0400
-Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35823 "EHLO
+	Sun, 8 Mar 2009 23:31:15 -0400
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35825 "EHLO
 	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753212AbZCIDbD (ORCPT
+	with ESMTP id S1753295AbZCIDbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 8 Mar 2009 23:31:03 -0400
 From: "J. R. Okajima" <hooanon05@yahoo.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, "J. R. Okajima" <hooanon05@yahoo.co.jp>
-Subject: [Aufs 24/25] aufs test for fstype
-Date: Mon,  9 Mar 2009 12:25:17 +0900
-Message-Id: <1236569118-3750-25-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [Aufs 21/25] aufs sysfs entries
+Date: Mon,  9 Mar 2009 12:25:14 +0900
+Message-Id: <1236569118-3750-22-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.6.1.284.g5dc13
 In-Reply-To: <1236569118-3750-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1236569118-3750-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -24,22 +24,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 initial commit
-judge the type of filesystem of branch
+sysfs entries, compiled only when CONFIG_SYSFS is enabled
 
 Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/fstype.h |  434 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/aufs/magic.mk |   52 +++++++
- 2 files changed, 486 insertions(+), 0 deletions(-)
- create mode 100644 fs/aufs/fstype.h
- create mode 100644 fs/aufs/magic.mk
+ fs/aufs/sysfs.c |  308 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 308 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/sysfs.c
 
-diff --git a/fs/aufs/fstype.h b/fs/aufs/fstype.h
+diff --git a/fs/aufs/sysfs.c b/fs/aufs/sysfs.c
 new file mode 100644
-index 0000000..eac06aa
+index 0000000..b03c2f7
 --- /dev/null
-+++ b/fs/aufs/fstype.h
-@@ -0,0 +1,434 @@
++++ b/fs/aufs/sysfs.c
+@@ -0,0 +1,308 @@
 +/*
 + * Copyright (C) 2005-2009 Junjiro R. Okajima
 + *
@@ -50,488 +48,304 @@ index 0000000..eac06aa
 + */
 +
 +/*
-+ * judging filesystem type
++ * sysfs interface
 + */
-+
-+#ifndef __AUFS_FSTYPE_H__
-+#define __AUFS_FSTYPE_H__
-+
-+#ifdef __KERNEL__
 +
 +#include <linux/fs.h>
-+#include <linux/cramfs_fs.h>
-+#include <linux/magic.h>
-+#include <linux/romfs_fs.h>
-+#include <linux/aufs_type.h>
++#include <linux/seq_file.h>
++#include <linux/sysfs.h>
++#include "aufs.h"
 +
-+static inline int au_test_aufs(struct super_block *sb)
++#ifdef CONFIG_AUFS_DEBUG
++static ssize_t debug_show(struct kobject *kobj __maybe_unused,
++			  struct kobj_attribute *attr __maybe_unused,
++			  char *buf)
 +{
-+	return sb->s_magic == AUFS_SUPER_MAGIC;
++	return sprintf(buf, "%d\n", au_debug_test());
 +}
 +
-+static inline const char *au_sbtype(struct super_block *sb)
++static ssize_t debug_store(struct kobject *kobj __maybe_unused,
++			   struct kobj_attribute *attr __maybe_unused,
++			   const char *buf, size_t sz)
 +{
-+	return sb->s_type->name;
++	if (unlikely(!sz || (*buf != '0' && *buf != '1')))
++		return -EOPNOTSUPP;
++
++	if (*buf == '0')
++		au_debug(0);
++	else if (*buf == '1')
++		au_debug(1);
++	return sz;
 +}
 +
-+static inline int au_test_iso9660(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_ROMFS_FS) || defined(CONFIG_ROMFS_FS_MODULE)
-+	return sb->s_magic == ROMFS_MAGIC;
-+#else
-+	return 0;
++static struct kobj_attribute au_debug_attr = __ATTR(debug, S_IRUGO | S_IWUSR,
++						    debug_show, debug_store);
 +#endif
-+}
 +
-+static inline int au_test_romfs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_ISO9660_FS) || defined(CONFIG_ISO9660_FS_MODULE)
-+	return sb->s_magic == ISOFS_SUPER_MAGIC;
-+#else
-+	return 0;
++static struct attribute *au_attr[] = {
++#ifdef CONFIG_AUFS_DEBUG
++	&au_debug_attr.attr,
 +#endif
-+}
++	NULL,	/* need to NULL terminate the list of attributes */
++};
 +
-+static inline int au_test_cramfs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_CRAMFS) || defined(CONFIG_CRAMFS_MODULE)
-+	return sb->s_magic == CRAMFS_MAGIC;
-+#endif
-+	return 0;
-+}
++static struct attribute_group sysaufs_attr_group_body = {
++	.attrs = au_attr
++};
 +
-+static inline int au_test_nfs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_NFS_FS) || defined(CONFIG_NFS_FS_MODULE)
-+	return sb->s_magic == NFS_SUPER_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_fuse(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_FUSE_FS) || defined(CONFIG_FUSE_FS_MODULE)
-+	return sb->s_magic == FUSE_SUPER_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_xfs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_XFS_FS) || defined(CONFIG_XFS_FS_MODULE)
-+	return sb->s_magic == XFS_SB_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_tmpfs(struct super_block *sb __maybe_unused)
-+{
-+#ifdef CONFIG_TMPFS
-+	return sb->s_magic == TMPFS_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_ecryptfs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_ECRYPT_FS) || defined(CONFIG_ECRYPT_FS_MODULE)
-+	return !strcmp(au_sbtype(sb), "ecryptfs");
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_smbfs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_SMB_FS) || defined(CONFIG_SMB_FS_MODULE)
-+	return sb->s_magic == SMB_SUPER_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_ocfs2(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_OCFS2_FS) || defined(CONFIG_OCFS2_FS_MODULE)
-+	return sb->s_magic == OCFS2_SUPER_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_ocfs2_dlmfs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_OCFS2_FS_O2CB) || defined(CONFIG_OCFS2_FS_O2CB_MODULE)
-+	return sb->s_magic == DLMFS_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_coda(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_CODA_FS) || defined(CONFIG_CODA_FS_MODULE)
-+	return sb->s_magic == CODA_SUPER_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_v9fs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_9P_FS) || defined(CONFIG_9P_FS_MODULE)
-+	return sb->s_magic == V9FS_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_ext4(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_EXT4DEV_FS) || defined(CONFIG_EXT4DEV_FS_MODULE)
-+	return sb->s_magic == EXT4_SUPER_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_sysv(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_SYSV_FS) || defined(CONFIG_SYSV_FS_MODULE)
-+	return !strcmp(au_sbtype(sb), "sysv");
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_ramfs(struct super_block *sb)
-+{
-+	return sb->s_magic == RAMFS_MAGIC;
-+}
-+
-+static inline int au_test_ubifs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_UBIFS_FS) || defined(CONFIG_UBIFS_FS_MODULE)
-+	return sb->s_magic == UBIFS_SUPER_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_procfs(struct super_block *sb __maybe_unused)
-+{
-+#ifdef CONFIG_PROC_FS
-+	return sb->s_magic == PROC_SUPER_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_sysfs(struct super_block *sb __maybe_unused)
-+{
-+#ifdef CONFIG_SYSFS
-+	return sb->s_magic == SYSFS_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_configfs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_CONFIGFS_FS) || defined(CONFIG_CONFIGFS_FS_MODULE)
-+	return sb->s_magic == CONFIGFS_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_minix(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_MINIX_FS) || defined(CONFIG_MINIX_FS_MODULE)
-+	return sb->s_magic == MINIX3_SUPER_MAGIC
-+		|| sb->s_magic == MINIX2_SUPER_MAGIC
-+		|| sb->s_magic == MINIX2_SUPER_MAGIC2
-+		|| sb->s_magic == MINIX_SUPER_MAGIC
-+		|| sb->s_magic == MINIX_SUPER_MAGIC2;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_cifs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_CIFS_FS) || defined(CONFIGCIFS_FS_MODULE)
-+	return sb->s_magic == CIFS_MAGIC_NUMBER;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_fat(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_FAT_FS) || defined(CONFIG_FAT_FS_MODULE)
-+	return sb->s_magic == MSDOS_SUPER_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_msdos(struct super_block *sb)
-+{
-+	return au_test_fat(sb);
-+}
-+
-+static inline int au_test_vfat(struct super_block *sb)
-+{
-+	return au_test_fat(sb);
-+}
-+
-+static inline int au_test_securityfs(struct super_block *sb __maybe_unused)
-+{
-+#ifdef CONFIG_SECURITYFS
-+	return sb->s_magic == SECURITYFS_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_squashfs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_SQUASHFS) || defined(CONFIG_SQUASHFS_MODULE)
-+	return sb->s_magic == SQUASHFS_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_btrfs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_BTRFS_FS) || defined(CONFIG_BTRFS_FS_MODULE)
-+	return sb->s_magic == BTRFS_SUPER_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+static inline int au_test_xenfs(struct super_block *sb __maybe_unused)
-+{
-+#if defined(CONFIG_XENFS) || defined(CONFIG_XENFS_MODULE)
-+	return sb->s_magic == XENFS_SUPER_MAGIC;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+/*
-+ * they can't be an aufs branch.
-+ */
-+static inline int au_test_fs_unsuppoted(struct super_block *sb)
-+{
-+	return au_test_procfs(sb)
-+		|| au_test_sysfs(sb)
-+		|| au_test_configfs(sb)
-+		|| au_test_securityfs(sb)
-+		|| au_test_xenfs(sb)
-+		|| au_test_ramfs(sb)
-+		/* || !strcmp(au_sbtype(sb), "unionfs") */
-+		|| au_test_aufs(sb); /* will be supported in next version */
-+}
-+
-+/*
-+ * If the filesystem supports NFS-export, then it has to support NULL as
-+ * a nameidata parameter for ->create(), ->lookup() and ->d_revalidate().
-+ * We can apply this principle when we handle a lower filesystem.
-+ */
-+static inline int au_test_fs_null_nd(struct super_block *sb)
-+{
-+	return !!sb->s_export_op;
-+}
-+
-+static inline int au_test_fs_remote(struct super_block *sb)
-+{
-+	return !au_test_tmpfs(sb)
-+		&& !(sb->s_type->fs_flags & FS_REQUIRES_DEV);
-+}
++struct attribute_group *sysaufs_attr_group = &sysaufs_attr_group_body;
 +
 +/* ---------------------------------------------------------------------- */
 +
 +/*
-+ * Note: these functions (below) are created after reading ->getattr() in all
-+ * filesystems under linux/fs. it means we have to do so in every update...
++ * they are copied from linux/lib/kobject.c,
++ * and will be exported in the future.
 + */
-+
-+/*
-+ * some filesystems require getattr to refresh the inode attributes before
-+ * referencing.
-+ * in most cases, we can rely on the inode attribute in NFS (or every remote fs)
-+ * and leave the work for d_revalidate()
-+ */
-+static inline int au_test_fs_refresh_iattr(struct super_block *sb)
++static ssize_t au_attr_show(struct kobject *kobj, struct attribute *attr,
++			    char *buf)
 +{
-+	return au_test_nfs(sb)
-+		|| au_test_fuse(sb)
-+		/* || au_test_smbfs(sb) */	/* untested */
-+		/* || au_test_ocfs2(sb) */	/* untested */
-+		/* || au_test_btrfs(sb) */	/* untested */
-+		/* || au_test_coda(sb) */	/* untested */
-+		/* || au_test_v9fs(sb) */	/* untested */
-+		;
++	struct kobj_attribute *kattr;
++	ssize_t ret = -EIO;
++
++	kattr = container_of(attr, struct kobj_attribute, attr);
++	if (kattr->show)
++		ret = kattr->show(kobj, kattr, buf);
++	return ret;
++}
++
++#ifdef CONFIG_AUFS_DEBUG
++static ssize_t au_attr_store(struct kobject *kobj, struct attribute *attr,
++			     const char *buf, size_t count)
++{
++	struct kobj_attribute *kattr;
++	ssize_t ret = -EIO;
++
++	kattr = container_of(attr, struct kobj_attribute, attr);
++	if (kattr->store)
++		ret = kattr->store(kobj, kattr, buf, count);
++	return ret;
++}
++#endif
++
++static struct sysfs_ops sysaufs_ops = {
++	.show   = au_attr_show,
++#ifdef CONFIG_AUFS_DEBUG
++	.store  = au_attr_store
++#endif
++};
++
++static struct kobj_type sysaufs_ktype_body = {
++	.sysfs_ops = &sysaufs_ops
++};
++struct kobj_type *sysaufs_ktype = &sysaufs_ktype_body;
++
++/* ---------------------------------------------------------------------- */
++
++static int sysaufs_sbi_xi(struct seq_file *seq, struct file *xf,
++			  struct kstat *st)
++{
++	int err;
++
++	err = vfs_getattr(xf->f_vfsmnt, xf->f_dentry, st);
++	if (!err) {
++		seq_printf(seq, "%llux%lu %lld",
++			   st->blocks, st->blksize, (long long)st->size);
++		seq_putc(seq, '\n');
++	} else
++		seq_printf(seq, "err %d\n", err);
++
++	return err;
++}
++
++int sysaufs_si_xino(struct seq_file *seq, struct super_block *sb)
++{
++	int err;
++	aufs_bindex_t bend, bindex;
++	struct kstat st;
++	struct au_sbinfo *sbinfo;
++	struct file *xf;
++
++	err = 0;
++	sbinfo = au_sbi(sb);
++	if (!au_opt_test(au_mntflags(sb), XINO))
++		goto out; /* success */
++
++	xf = sbinfo->si_xib;
++	err = au_xino_path(seq, xf);
++	seq_putc(seq, '\n');
++	if (!err)
++		err = sysaufs_sbi_xi(seq, xf, &st);
++
++	bend = au_sbend(sb);
++	for (bindex = 0; !err && bindex <= bend; bindex++) {
++		xf = au_sbr(sb, bindex)->br_xino.xi_file;
++		if (!xf)
++			continue;
++
++		seq_printf(seq, "%d: ", bindex);
++		err = vfs_getattr(xf->f_vfsmnt, xf->f_dentry, &st);
++		if (!err) {
++			seq_printf(seq, "%ld, %llux%lu %lld",
++				   (long)file_count(xf), st.blocks, st.blksize,
++				   (long long)st.size);
++			seq_putc(seq, '\n');
++		} else
++			seq_printf(seq, "err %d\n", err);
++	}
++
++ out:
++	return err;
 +}
 +
 +/*
-+ * filesystems which don't maintain i_size or i_blocks.
++ * the lifetime of branch is independent from the entry under sysfs.
++ * sysfs handles the lifetime of the entry, and never call ->show() after it is
++ * unlinked.
 + */
-+static inline int au_test_fs_bad_iattr_size(struct super_block *sb)
++#define SysaufsBr_PREFIX "br"
++static int sysaufs_sbi_br(struct seq_file *seq, struct super_block *sb,
++			  aufs_bindex_t bindex)
 +{
-+	return au_test_xfs(sb)
-+		/* || au_test_ext4(sb) */	/* untested */
-+		/* || au_test_ocfs2(sb) */	/* untested */
-+		/* || au_test_ocfs2_dlmfs(sb) */ /* untested */
-+		/* || au_test_sysv(sb) */	/* untested */
-+		/* || au_test_ramfs(sb)*/	/* unsupported */
-+		/* || au_test_ubifs(sb) */	/* untested */
-+		/* || au_test_minix(sb) */	/* untested */
-+		;
-+}
++	int err;
++	struct path path;
++	struct dentry *root;
++	struct au_branch *br;
 +
-+/*
-+ * filesystems which don't store the correct value in some of their inode
-+ * attributes.
-+ */
-+static inline int au_test_fs_bad_iattr(struct super_block *sb)
-+{
-+	return au_test_fs_bad_iattr_size(sb)
-+		/* || au_test_cifs(sb) */	/* untested */
-+		|| au_test_fat(sb)
-+		|| au_test_msdos(sb)
-+		|| au_test_vfat(sb);
-+}
++	err = -ENOENT;
++	if (unlikely(au_sbend(sb) < bindex))
++		goto out;
 +
-+/*
-+ * filesystems which sets S_NOATIME and S_NOCMTIME.
-+ */
-+static inline int au_test_fs_notime(struct super_block *sb)
-+{
-+	return au_test_nfs(sb)
-+		|| au_test_fuse(sb)
-+		/* || au_test_cifs(sb) */	/* untested */
-+		/* || au_test_ubifs(sb) */	/* untested */
-+		;
-+}
++	err = 0;
++	root = sb->s_root;
++	di_read_lock_parent(root, !AuLock_IR);
++	br = au_sbr(sb, bindex);
++	path.mnt = br->br_mnt;
++	path.dentry = au_h_dptr(root, bindex);
++	au_seq_path(seq, &path);
++	di_read_unlock(root, !AuLock_IR);
++	seq_printf(seq, "=%s\n", au_optstr_br_perm(br->br_perm));
 +
-+/*
-+ * filesystems which requires replacing i_mapping.
-+ */
-+static inline int au_test_fs_bad_mapping(struct super_block *sb)
-+{
-+	return au_test_fuse(sb);
-+}
-+
-+/* temporary support for i#1 in cramfs */
-+static inline int au_test_fs_unique_ino(struct inode *inode)
-+{
-+	if (au_test_cramfs(inode->i_sb))
-+		return inode->i_ino != 1;
-+	return 1;
++ out:
++	return err;
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+/*
-+ * the filesystem where the xino files placed must support i/o after unlink and
-+ * maintain i_size and i_blocks.
-+ */
-+static inline int au_test_fs_bad_xino(struct super_block *sb)
++static struct seq_file *au_seq(char *p, ssize_t len)
 +{
-+	return au_test_fs_remote(sb)
-+		|| au_test_fs_bad_iattr_size(sb)
-+		|| !au_test_fs_null_nd(sb) /* to keep xino code simple */
-+		/* don't want unnecessary work for xino */
-+		|| au_test_aufs(sb)
-+		|| au_test_ecryptfs(sb);
++	struct seq_file *seq;
++
++	seq = kzalloc(sizeof(*seq), GFP_NOFS);
++	if (seq) {
++		/* mutex_init(&seq.lock); */
++		seq->buf = p;
++		seq->size = len;
++		return seq; /* success */
++	}
++
++	seq = ERR_PTR(-ENOMEM);
++	return seq;
 +}
 +
-+static inline int au_test_fs_trunc_xino(struct super_block *sb)
++/* todo: file size may exceed PAGE_SIZE */
++ssize_t sysaufs_si_show(struct kobject *kobj, struct attribute *attr,
++			 char *buf)
 +{
-+	return au_test_tmpfs(sb);
++	ssize_t err;
++	long l;
++	struct au_sbinfo *sbinfo;
++	struct super_block *sb;
++	struct seq_file *seq;
++	char *name;
++	struct attribute **cattr;
++
++	sbinfo = container_of(kobj, struct au_sbinfo, si_kobj);
++	sb = sbinfo->si_sb;
++	si_noflush_read_lock(sb);
++
++	seq = au_seq(buf, PAGE_SIZE);
++	err = PTR_ERR(seq);
++	if (IS_ERR(seq))
++		goto out;
++
++	name = (void *)attr->name;
++	cattr = sysaufs_si_attrs;
++	while (*cattr) {
++		if (!strcmp(name, (*cattr)->name)) {
++			err = container_of(*cattr, struct sysaufs_si_attr, attr)
++				->show(seq, sb);
++			goto out_seq;
++		}
++		cattr++;
++	}
++
++	if (!strncmp(name, SysaufsBr_PREFIX, sizeof(SysaufsBr_PREFIX) - 1)) {
++		name += sizeof(SysaufsBr_PREFIX) - 1;
++		err = strict_strtol(name, 10, &l);
++		if (!err)
++			err = sysaufs_sbi_br(seq, sb, (aufs_bindex_t)l);
++		goto out_seq;
++	}
++	BUG();
++
++ out_seq:
++	if (!err) {
++		err = seq->count;
++		/* sysfs limit */
++		if (unlikely(err == PAGE_SIZE))
++			err = -EFBIG;
++	}
++	kfree(seq);
++ out:
++	si_read_unlock(sb);
++	return err;
 +}
 +
-+/*
-+ * test if the @sb is real-readonly.
-+ */
-+static inline int au_test_fs_rr(struct super_block *sb)
++/* ---------------------------------------------------------------------- */
++
++void sysaufs_br_init(struct au_branch *br)
 +{
-+	return au_test_squashfs(sb)
-+		|| au_test_iso9660(sb)
-+		|| au_test_cramfs(sb)
-+		|| au_test_romfs(sb);
++	br->br_attr.name = br->br_name;
++	br->br_attr.mode = S_IRUGO;
++	br->br_attr.owner = THIS_MODULE;
 +}
 +
-+#endif /* __KERNEL__ */
-+#endif /* __AUFS_FSTYPE_H__ */
-diff --git a/fs/aufs/magic.mk b/fs/aufs/magic.mk
-new file mode 100644
-index 0000000..83d613c
---- /dev/null
-+++ b/fs/aufs/magic.mk
-@@ -0,0 +1,52 @@
++void sysaufs_brs_del(struct super_block *sb, aufs_bindex_t bindex)
++{
++	struct au_sbinfo *sbinfo;
++	aufs_bindex_t bend;
 +
-+# defined in ${srctree}/fs/fuse/inode.c
-+# tristate
-+ifdef CONFIG_FUSE_FS
-+ccflags-y += -DFUSE_SUPER_MAGIC=0x65735546
-+endif
++	if (!sysaufs_brs)
++		return;
 +
-+# defined in ${srctree}/fs/ocfs2/ocfs2_fs.h
-+# tristate
-+ifdef CONFIG_OCFS2_FS
-+ccflags-y += -DOCFS2_SUPER_MAGIC=0x7461636f
-+endif
++	sbinfo = au_sbi(sb);
++	bend = au_sbend(sb);
++	for (; bindex <= bend; bindex++)
++		sysfs_remove_file(&sbinfo->si_kobj,
++				  &au_sbr(sb, bindex)->br_attr);
++}
 +
-+# defined in ${srctree}/fs/ocfs2/dlm/userdlm.h
-+# tristate
-+ifdef CONFIG_OCFS2_FS_O2CB
-+ccflags-y += -DDLMFS_MAGIC=0x76a9f425
-+endif
++void sysaufs_brs_add(struct super_block *sb, aufs_bindex_t bindex)
++{
++	int err;
++	aufs_bindex_t bend;
++	struct kobject *kobj;
++	struct au_branch *br;
 +
-+# defined in ${srctree}/fs/ramfs/inode.c
-+# always true
-+ccflags-y += -DRAMFS_MAGIC=0x858458f6
++	if (!sysaufs_brs)
++		return;
 +
-+# defined in ${srctree}/fs/cifs/cifsfs.c
-+# tristate
-+ifdef CONFIG_CIFS_FS
-+ccflags-y += -DCIFS_MAGIC_NUMBER=0xFF534D42
-+endif
-+
-+# defined in ${srctree}/fs/xfs/xfs_sb.h
-+# tristate
-+ifdef CONFIG_XFS_FS
-+ccflags-y += -DXFS_SB_MAGIC=0x58465342
-+endif
-+
-+# defined in ${srctree}/fs/configfs/mount.c
-+# tristate
-+ifdef CONFIG_CONFIGFS_FS
-+ccflags-y += -DCONFIGFS_MAGIC=0x62656570
-+endif
-+
-+# defined in ${srctree}/fs/9p/v9fs.h
-+# tristate
-+ifdef CONFIG_9P_FS
-+ccflags-y += -DV9FS_MAGIC=0x01021997
-+endif
-+
-+# defined in ${srctree}/fs/ubifs/ubifs.h
-+# tristate
-+ifdef CONFIG_UBIFS_FS
-+ccflags-y += -DUBIFS_SUPER_MAGIC=0x24051905
-+endif
++	kobj = &au_sbi(sb)->si_kobj;
++	bend = au_sbend(sb);
++	for (; bindex <= bend; bindex++) {
++		br = au_sbr(sb, bindex);
++		snprintf(br->br_name, sizeof(br->br_name),
++			 SysaufsBr_PREFIX "%d", bindex);
++		err = sysfs_create_file(kobj, &br->br_attr);
++		if (unlikely(err))
++			AuWarn("failed %s under sysfs(%d)\n", br->br_name, err);
++	}
++}
 -- 
 1.6.1.284.g5dc13
 
