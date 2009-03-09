@@ -1,126 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbZCIDkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756444AbZCIDkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755953AbZCIDkX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 23:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbZCIDf3
+	id S1756444AbZCIDkn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 23:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbZCIDg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 23:35:29 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48388 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755761AbZCIDf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 23:35:27 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19e2sE21jhebqgVXpdpUFgZcxl7ECqcymwf6jASUj
-	5pzmagFLrMnSL5
-Subject: Re: scheduler oddity [bug?]
-From: Mike Galbraith <efault@gmx.de>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Balazs Scheidler <bazsi@balabit.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090308220319.GA570@1wt.eu>
-References: <1236448069.16726.21.camel@bzorp.balabit>
-	 <1236451624.16726.32.camel@bzorp.balabit>
-	 <1236541524.19045.6.camel@bzorp.balabit>  <20090308220319.GA570@1wt.eu>
-Content-Type: text/plain
-Date: Mon, 09 Mar 2009 04:35:22 +0100
-Message-Id: <1236569722.14798.5.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.44
+	Sun, 8 Mar 2009 23:36:59 -0400
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35994 "EHLO
+	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755990AbZCIDg5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 23:36:57 -0400
+From: "J. R. Okajima" <hooanon05@yahoo.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, "J. R. Okajima" <hooanon05@yahoo.co.jp>
+Subject: [Aufs 00/25] source files
+Date: Mon,  9 Mar 2009 12:24:53 +0900
+Message-Id: <1236569118-3750-1-git-send-email-hooanon05@yahoo.co.jp>
+X-Mailer: git-send-email 1.6.1.284.g5dc13
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-08 at 23:03 +0100, Willy Tarreau wrote:
-> Hi Balazs,
-> 
-> On Sun, Mar 08, 2009 at 08:45:24PM +0100, Balazs Scheidler wrote:
-> > On Sat, 2009-03-07 at 19:47 +0100, Balazs Scheidler wrote:
-> > > On Sat, 2009-03-07 at 18:47 +0100, Balazs Scheidler wrote:
-> > > > Hi,
-> > > > 
-> > > > I've tested this on 3 computers and each showed the same symptoms:
-> > > >  * quad core Opteron, running Ubuntu kernel 2.6.27-13.29
-> > > >  * Core 2 Duo, running Ubuntu kernel 2.6.27-11.27
-> > > >  * Dual Core Opteron, Debian backports.org kernel 2.6.26-13~bpo40+1
-> > > > 
-> > > > Is this a bug, or a feature?
-> > > > 
-> > > 
-> > > One new interesting information: I've retested with a 2.6.22 based
-> > > kernel, and it still works there, setting the CPU affinity does not
-> > > change the performance of the test program and mpstat nicely shows that
-> > > 2 cores are working, not just one.
-> > > 
-> > > Maybe this is CFS related? That was merged for 2.6.23 IIRC.
-> > > 
-> > > Also, I tried changing various scheduler knobs
-> > > in /proc/sys/kernel/sched_* but they didn't help. I've tried to change
-> > > these:
-> > > 
-> > >  * sched_migration_cost: changed from the default 500000 to 100000 and
-> > > then 10000 but neither helped.
-> > >  * sched_nr_migrate: increased it to 64, but again nothing
-> > > 
-> > > I'm starting to think that this is a regression that may or may not be
-> > > related to CFS. 
-> > > 
-> > > I don't have a box where I could bisect on, but the test program makes
-> > > the problem quite obvious.
-> > 
-> > Some more test results:
-> > 
-> > Latest tree from Linus seems to work, at least the program runs on both
-> > cores as it should. I bisected the patch that changed behaviour, and
-> > I've found this:
-> > 
-> > commit 38736f475071b80b66be28af7b44c854073699cc
-> > Author: Gautham R Shenoy <ego@in.ibm.com>
-> > Date:   Sat Sep 6 14:50:23 2008 +0530
-> > 
-> >     sched: fix __load_balance_iterator() for cfq with only one task
-> >     
-> >     The __load_balance_iterator() returns a NULL when there's only one
-> >     sched_entity which is a task. It is caused by the following code-path.
-> >     
-> >     	/* Skip over entities that are not tasks */
-> >     	do {
-> >     		se = list_entry(next, struct sched_entity, group_node);
-> >     		next = next->next;
-> >     	} while (next != &cfs_rq->tasks && !entity_is_task(se));
-> >     
-> >     	if (next == &cfs_rq->tasks)
-> >     		return NULL;
-> >     	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> >           This will return NULL even when se is a task.
-> >     
-> >     As a side-effect, there was a regression in sched_mc behavior since 2.6.25,
-> >     since iter_move_one_task() when it calls load_balance_start_fair(),
-> >     would not get any tasks to move!
-> >     
-> >     Fix this by checking if the last entity was a task or not.
-> >     
-> >     Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-> >     Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
-> > 
-> > This patch was integrated for 2.6.28. With the above patch, my test program uses 
-> > two cores as it should. I could only test this in a virtual machine so I don't 
-> > know exact performance metrics, but I'll test 2.6.27 + plus this patch on a real 
-> > box tomorrow to see if this was the culprit.
-> 
-> Just tested right here and I can confirm it is the culprit. I can reliably
-> reproduce the issue here on my core2 duo, and this patch fixes it. With your
-> memset() loop at 20k iterations, I saw exactly 50% CPU usage, and a final
-> sum of 794. With the patch, I see 53% CPU and 909. Changing the loop to 80k
-> iterations shows 53% CPU usage and 541 loops without the patch, versus
-> 639 loops and 63% CPU usage with the patch.
+A few weeks ago, I posted the design of aufs.
+And here are source files.
 
-Interesting.  I'm testing in .git (Q6600), and it's only using one CPU
-unless I actively intervene.  Doing whatever to pry the pair apart takes
-loops/sec from 70 to 84.
+I have another version which dropped many features and the size became
+about half because such suggestion was posted LKML. But I got no
+response for it. Additionally I am afraid it is useless in real world
+since the dropped features are so essential.
+This version here I am posting is full aufs2 against the mainline
+(linux-2.6.git).
 
-	-Mike
+Kindly review and let me know your comments.
+And please consider incorporating into mainline.
+
+J. R. Okajima (25):
+  aufs documents
+  aufs public header file
+  aufs module global
+  aufs super_block
+  aufs branch directory/filesystem
+  aufs xino
+  aufs object lifetime management via sysfs
+  aufs mount options/flags
+  aufs workqueue
+  aufs sub-VFS
+  aufs sub-dcache
+  aufs copy-up
+  aufs whiteout
+  aufs pseudo-link
+  aufs policies to select one among multiple writable branches
+  aufs dentry and lookup
+  aufs file
+  aufs direcotry
+  aufs inode
+  aufs ioctl
+  aufs sysfs entries
+  aufs branch for loopback block device
+  aufs internal inotify
+  aufs test for fstype
+  aufs debug
+
+ Documentation/filesystems/aufs/README              |  251 ++++
+ Documentation/filesystems/aufs/aufs.5              | 1514 ++++++++++++++++++++
+ Documentation/filesystems/aufs/design/01intro.txt  |  128 ++
+ Documentation/filesystems/aufs/design/02struct.txt |  205 +++
+ Documentation/filesystems/aufs/design/03lookup.txt |   95 ++
+ Documentation/filesystems/aufs/design/04branch.txt |   67 +
+ .../filesystems/aufs/design/05wbr_policy.txt       |   57 +
+ .../filesystems/aufs/design/06fmode_exec.txt       |   24 +
+ Documentation/filesystems/aufs/design/07mmap.txt   |   44 +
+ Documentation/filesystems/aufs/design/08plan.txt   |  169 +++
+ fs/Kconfig                                         |    1 +
+ fs/Makefile                                        |    1 +
+ fs/aufs/Kconfig                                    |   78 +
+ fs/aufs/Makefile                                   |   20 +
+ fs/aufs/aufs.h                                     |   43 +
+ fs/aufs/branch.c                                   |  944 ++++++++++++
+ fs/aufs/branch.h                                   |  200 +++
+ fs/aufs/cpup.c                                     | 1028 +++++++++++++
+ fs/aufs/cpup.h                                     |   68 +
+ fs/aufs/dcsub.c                                    |  214 +++
+ fs/aufs/dcsub.h                                    |   43 +
+ fs/aufs/debug.c                                    |  406 ++++++
+ fs/aufs/debug.h                                    |  245 ++++
+ fs/aufs/dentry.c                                   |  857 +++++++++++
+ fs/aufs/dentry.h                                   |  213 +++
+ fs/aufs/dinfo.c                                    |  351 +++++
+ fs/aufs/dir.c                                      |  493 +++++++
+ fs/aufs/dir.h                                      |  104 ++
+ fs/aufs/f_op.c                                     |  551 +++++++
+ fs/aufs/file.c                                     |  552 +++++++
+ fs/aufs/file.h                                     |  148 ++
+ fs/aufs/finfo.c                                    |  126 ++
+ fs/aufs/fstype.h                                   |  434 ++++++
+ fs/aufs/hinotify.c                                 |  746 ++++++++++
+ fs/aufs/i_op.c                                     |  855 +++++++++++
+ fs/aufs/i_op_add.c                                 |  625 ++++++++
+ fs/aufs/i_op_del.c                                 |  471 ++++++
+ fs/aufs/i_op_ren.c                                 |  929 ++++++++++++
+ fs/aufs/iinfo.c                                    |  257 ++++
+ fs/aufs/inode.c                                    |  356 +++++
+ fs/aufs/inode.h                                    |  471 ++++++
+ fs/aufs/ioctl.c                                    |   54 +
+ fs/aufs/loop.c                                     |   46 +
+ fs/aufs/loop.h                                     |   41 +
+ fs/aufs/magic.mk                                   |   52 +
+ fs/aufs/module.c                                   |  164 +++
+ fs/aufs/module.h                                   |   66 +
+ fs/aufs/opts.c                                     | 1438 +++++++++++++++++++
+ fs/aufs/opts.h                                     |  180 +++
+ fs/aufs/plink.c                                    |  335 +++++
+ fs/aufs/rwsem.h                                    |   52 +
+ fs/aufs/sbinfo.c                                   |  192 +++
+ fs/aufs/spl.h                                      |   47 +
+ fs/aufs/super.c                                    |  846 +++++++++++
+ fs/aufs/super.h                                    |  266 ++++
+ fs/aufs/sysaufs.c                                  |   79 +
+ fs/aufs/sysaufs.h                                  |  102 ++
+ fs/aufs/sysfs.c                                    |  308 ++++
+ fs/aufs/sysrq.c                                    |  105 ++
+ fs/aufs/vdir.c                                     |  776 ++++++++++
+ fs/aufs/vfsub.c                                    |  716 +++++++++
+ fs/aufs/vfsub.h                                    |  137 ++
+ fs/aufs/wbr_policy.c                               |  628 ++++++++
+ fs/aufs/whout.c                                    | 1010 +++++++++++++
+ fs/aufs/whout.h                                    |   78 +
+ fs/aufs/wkq.c                                      |  249 ++++
+ fs/aufs/wkq.h                                      |   72 +
+ fs/aufs/xino.c                                     | 1181 +++++++++++++++
+ fs/namei.c                                         |    4 +-
+ fs/splice.c                                        |   10 +-
+ include/linux/aufs_type.h                          |   98 ++
+ include/linux/namei.h                              |    3 +
+ include/linux/splice.h                             |    6 +
+ 73 files changed, 23718 insertions(+), 7 deletions(-)
+ create mode 100644 Documentation/filesystems/aufs/README
+ create mode 100644 Documentation/filesystems/aufs/aufs.5
+ create mode 100644 Documentation/filesystems/aufs/design/01intro.txt
+ create mode 100644 Documentation/filesystems/aufs/design/02struct.txt
+ create mode 100644 Documentation/filesystems/aufs/design/03lookup.txt
+ create mode 100644 Documentation/filesystems/aufs/design/04branch.txt
+ create mode 100644 Documentation/filesystems/aufs/design/05wbr_policy.txt
+ create mode 100644 Documentation/filesystems/aufs/design/06fmode_exec.txt
+ create mode 100644 Documentation/filesystems/aufs/design/07mmap.txt
+ create mode 100644 Documentation/filesystems/aufs/design/08plan.txt
+ create mode 100644 fs/aufs/Kconfig
+ create mode 100644 fs/aufs/Makefile
+ create mode 100644 fs/aufs/aufs.h
+ create mode 100644 fs/aufs/branch.c
+ create mode 100644 fs/aufs/branch.h
+ create mode 100644 fs/aufs/cpup.c
+ create mode 100644 fs/aufs/cpup.h
+ create mode 100644 fs/aufs/dcsub.c
+ create mode 100644 fs/aufs/dcsub.h
+ create mode 100644 fs/aufs/debug.c
+ create mode 100644 fs/aufs/debug.h
+ create mode 100644 fs/aufs/dentry.c
+ create mode 100644 fs/aufs/dentry.h
+ create mode 100644 fs/aufs/dinfo.c
+ create mode 100644 fs/aufs/dir.c
+ create mode 100644 fs/aufs/dir.h
+ create mode 100644 fs/aufs/f_op.c
+ create mode 100644 fs/aufs/file.c
+ create mode 100644 fs/aufs/file.h
+ create mode 100644 fs/aufs/finfo.c
+ create mode 100644 fs/aufs/fstype.h
+ create mode 100644 fs/aufs/hinotify.c
+ create mode 100644 fs/aufs/i_op.c
+ create mode 100644 fs/aufs/i_op_add.c
+ create mode 100644 fs/aufs/i_op_del.c
+ create mode 100644 fs/aufs/i_op_ren.c
+ create mode 100644 fs/aufs/iinfo.c
+ create mode 100644 fs/aufs/inode.c
+ create mode 100644 fs/aufs/inode.h
+ create mode 100644 fs/aufs/ioctl.c
+ create mode 100644 fs/aufs/loop.c
+ create mode 100644 fs/aufs/loop.h
+ create mode 100644 fs/aufs/magic.mk
+ create mode 100644 fs/aufs/module.c
+ create mode 100644 fs/aufs/module.h
+ create mode 100644 fs/aufs/opts.c
+ create mode 100644 fs/aufs/opts.h
+ create mode 100644 fs/aufs/plink.c
+ create mode 100644 fs/aufs/rwsem.h
+ create mode 100644 fs/aufs/sbinfo.c
+ create mode 100644 fs/aufs/spl.h
+ create mode 100644 fs/aufs/super.c
+ create mode 100644 fs/aufs/super.h
+ create mode 100644 fs/aufs/sysaufs.c
+ create mode 100644 fs/aufs/sysaufs.h
+ create mode 100644 fs/aufs/sysfs.c
+ create mode 100644 fs/aufs/sysrq.c
+ create mode 100644 fs/aufs/vdir.c
+ create mode 100644 fs/aufs/vfsub.c
+ create mode 100644 fs/aufs/vfsub.h
+ create mode 100644 fs/aufs/wbr_policy.c
+ create mode 100644 fs/aufs/whout.c
+ create mode 100644 fs/aufs/whout.h
+ create mode 100644 fs/aufs/wkq.c
+ create mode 100644 fs/aufs/wkq.h
+ create mode 100644 fs/aufs/xino.c
+ create mode 100644 include/linux/aufs_type.h
 
