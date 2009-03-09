@@ -1,112 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbZCID0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbZCIDa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754024AbZCID0U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 23:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbZCID0I
+	id S1753566AbZCIDa2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 23:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZCIDaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 23:26:08 -0400
-Received: from ozlabs.org ([203.10.76.45]:47082 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752220AbZCID0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 23:26:07 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PULL] lguest fixes
-Date: Mon, 9 Mar 2009 13:55:58 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org, lguest <lguest@ozlabs.org>
+	Sun, 8 Mar 2009 23:30:20 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:59920 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752220AbZCIDaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 23:30:19 -0400
+Message-ID: <49B48D4A.6000207@cn.fujitsu.com>
+Date: Mon, 09 Mar 2009 11:30:18 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Arjan van de Ven <arjan@infradead.org>, adobriyan@gmail.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH -v2] memdup_user(): introduce
+References: <49B0CAEC.80801@cn.fujitsu.com>	<20090306082056.GB3450@x200.localdomain>	<49B0DE89.9000401@cn.fujitsu.com>	<20090306003900.a031a914.akpm@linux-foundation.org>	<49B0E67C.2090404@cn.fujitsu.com>	<20090306011548.ffdf9cbc.akpm@linux-foundation.org>	<49B0F1B9.1080903@cn.fujitsu.com>	<20090306150335.c512c1b6.akpm@linux-foundation.org>	<20090307084805.7cf3d574@infradead.org>	<49B47D50.5000608@cn.fujitsu.com> <20090308200033.f5282b5b.akpm@linux-foundation.org>
+In-Reply-To: <20090308200033.f5282b5b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903091355.59089.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 7a203f3b089be4410fe065dd9927027eade94557:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../drzeus/mmc
+Andrew Morton wrote:
+> On Mon, 09 Mar 2009 10:22:08 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
+> 
+>>>>> +EXPORT_SYMBOL(memdup_user);
+>>> Hi,
+>>>
+>>> I like the general idea of this a lot; it will make things much less
+>>> error prone (and we can add some sanity checks on "len" to catch the
+>>> standard security holes around copy_from_user usage). I'd even also
+>>> want a memdup_array() like thing in the style of calloc().
+>>>
+>>> However, I have two questions/suggestions for improvement:
+>>>
+>>> I would like to question the use of the gfp argument here;
+>>> copy_from_user sleeps, so you can't use GFP_ATOMIC anyway.
+>>> You can't use GFP_NOFS etc, because the pagefault path will happily do
+>>> things that are equivalent, if not identical, to GFP_KERNEL.
+>>>
+>>> So the only value you can pass in correctly, as far as I can see, is
+>>> GFP_KERNEL. Am I wrong?
+>>>
+>> Right! I just dug and found a few kmalloc(GFP_ATOMIC/GFP_NOFS)+copy_from_user(),
+>> so we have one more reason to use this memdup_user().
+> 
+> gack, those callsites are probably buggy.  Where are they?
+> 
 
-are available in the git repository at:
+Yes, either buggy or should use GFP_KERNEL.
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
+All are in -mm only, except the first one:
 
-Rusty Russell (2):
-      lguest: fix crash 'unhandled trap 13 at <native_read_msr_safe>'
-      lguest: fix for CONFIG_SPARSE_IRQ=y
+drivers/isdn/i4l/isdn_common.c:
+	struct sk_buff *skb = alloc_skb(hl + len, GFP_ATOMIC);
+	...
+	if (copy_from_user(skb_put(skb, len), buf, len)) {
 
- arch/x86/lguest/boot.c         |   21 ++++++++++++++-------
- drivers/lguest/lguest_device.c |    6 ++++++
- 2 files changed, 20 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/lguest/boot.c b/arch/x86/lguest/boot.c
-index 92f1c6f..960a8d9 100644
---- a/arch/x86/lguest/boot.c
-+++ b/arch/x86/lguest/boot.c
-@@ -343,6 +343,11 @@ static void lguest_cpuid(unsigned int *ax, unsigned int *bx,
- 		 * flush_tlb_user() for both user and kernel mappings unless
- 		 * the Page Global Enable (PGE) feature bit is set. */
- 		*dx |= 0x00002000;
-+		/* We also lie, and say we're family id 5.  6 or greater
-+		 * leads to a rdmsr in early_init_intel which we can't handle.
-+		 * Family ID is returned as bits 8-12 in ax. */
-+		*ax &= 0xFFFFF0FF;
-+		*ax |= 0x00000500;
- 		break;
- 	case 0x80000000:
- 		/* Futureproof this a little: if they ask how much extended
-@@ -589,19 +594,21 @@ static void __init lguest_init_IRQ(void)
- 		/* Some systems map "vectors" to interrupts weirdly.  Lguest has
- 		 * a straightforward 1 to 1 mapping, so force that here. */
- 		__get_cpu_var(vector_irq)[vector] = i;
--		if (vector != SYSCALL_VECTOR) {
--			set_intr_gate(vector,
--				      interrupt[vector-FIRST_EXTERNAL_VECTOR]);
--			set_irq_chip_and_handler_name(i, &lguest_irq_controller,
--						      handle_level_irq,
--						      "level");
--		}
-+		if (vector != SYSCALL_VECTOR)
-+			set_intr_gate(vector, interrupt[i]);
- 	}
- 	/* This call is required to set up for 4k stacks, where we have
- 	 * separate stacks for hard and soft interrupts. */
- 	irq_ctx_init(smp_processor_id());
- }
- 
-+void lguest_setup_irq(unsigned int irq)
-+{
-+	irq_to_desc_alloc_cpu(irq, 0);
-+	set_irq_chip_and_handler_name(irq, &lguest_irq_controller,
-+				      handle_level_irq, "level");
-+}
-+
- /*
-  * Time.
-  *
-diff --git a/drivers/lguest/lguest_device.c b/drivers/lguest/lguest_device.c
-index b4d44e5..8132533 100644
---- a/drivers/lguest/lguest_device.c
-+++ b/drivers/lguest/lguest_device.c
-@@ -212,6 +212,9 @@ static void lg_notify(struct virtqueue *vq)
- 	hcall(LHCALL_NOTIFY, lvq->config.pfn << PAGE_SHIFT, 0, 0);
- }
- 
-+/* An extern declaration inside a C file is bad form.  Don't do it. */
-+extern void lguest_setup_irq(unsigned int irq);
-+
- /* This routine finds the first virtqueue described in the configuration of
-  * this device and sets it up.
-  *
-@@ -266,6 +269,9 @@ static struct virtqueue *lg_find_vq(struct virtio_device *vdev,
- 		goto unmap;
- 	}
- 
-+	/* Make sure the interrupt is allocated. */
-+	lguest_setup_irq(lvq->config.irq);
-+
- 	/* Tell the interrupt for this virtqueue to go to the virtio_ring
- 	 * interrupt handler. */
- 	/* FIXME: We used to have a flag for the Host to tell us we could use
+net/irda/af_irda.c:
+	ias_opt = kmalloc(sizeof(struct irda_ias_set), GFP_ATOMIC);
+	...
+	if (copy_from_user(ias_opt, optval, optlen)) {
+
+
+fs/btrfs/ioctl.c:
+	vol_args = kmalloc(sizeof(*vol_args), GFP_NOFS);
+	...
+	if (copy_from_user(vol_args, arg, sizeof(*vol_args))) {
+
+
+fs/ocfs2/dlm/dlmfs.c:
+	lvb_buf = kmalloc(writelen, GFP_NOFS);
+	...
+	bytes_left = copy_from_user(lvb_buf, buf, writelen);
+
+
+net/sunrpc/auth_gss/auth_gss.c:
+	buf = kmalloc(mlen, GFP_NOFS);
+	...
+	if (copy_from_user(buf, src, mlen))
