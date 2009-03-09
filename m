@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZCIU2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbZCIU3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbZCIU2e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 16:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZCIU2Y
+	id S1754890AbZCIU3X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 16:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbZCIU3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 16:28:24 -0400
-Received: from exhub015-4.exch015.msoutlookonline.net ([207.5.72.96]:50837
-	"EHLO EXHUB015-4.exch015.msoutlookonline.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753377AbZCIU2X convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 16:28:23 -0400
-From: Stuart Xu <sxu@soleranetworks.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 9 Mar 2009 13:25:50 -0700
-Subject: Where to get a Kernel tree with KGDB patched? -- help needed
-Thread-Topic: Where to get a Kernel tree with KGDB patched? -- help needed
-Thread-Index: AQHJoPWWqT8cj3jW/ESeGeIz5tGf9A==
-Message-ID: <395C6DBC66158B4CA921D1A81BB7BE7CD03C8E44@EXVMBX015-1.exch015.msoutlookonline.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Mon, 9 Mar 2009 16:29:10 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:65341 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752785AbZCIU3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 16:29:09 -0400
+Date: Mon, 9 Mar 2009 21:29:01 +0100 (MET)
+Message-Id: <200903092029.n29KT1DS004531@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: romieu@fr.zoreil.com
+Subject: [BUG] 2.6.29-rc7 broke r8169 MAC on Thecus n2100 ARM board
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+With the 2.6.29-rc7 kernel I'm unable to 'ifup' eth0 on my ARM-based
+Thecus n2100 NAS box, which has an RTL8169 NIC (10ec:8169 (rev 10)).
+A diff of the kernel logs from 2.6.29-rc6 and -rc7 shows that -rc7
+first mangles and then zaps the MAC addresses:
 
-Hi,
+--- dmesg-2.6.29-rc6	2009-03-09 20:27:49.000000000 +0100
++++ dmesg-2.6.29-rc7	2009-03-09 20:25:54.000000000 +0100
+@@ -145,11 +145,13 @@
+ r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+ r8169 0000:00:01.0: enabling Mem-Wr-Inval
+ r8169 0000:00:01.0: no PCI Express capability
+-eth0: RTL8169sb/8110sb at 0xe080c200, 00:14:fd:30:11:78, XID 10000000 IRQ 27
++r8169 0000:00:01.0: MAC address found in EEPROM: 00:14:fd:10:00:00
++eth0: RTL8169sb/8110sb at 0xe080c200, 00:00:00:00:00:00, XID 10000000 IRQ 27
+ r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+ r8169 0000:00:02.0: enabling Mem-Wr-Inval
+ r8169 0000:00:02.0: no PCI Express capability
+-eth1: RTL8169sb/8110sb at 0xe0810300, 00:14:fd:30:11:79, XID 10000000 IRQ 30
++r8169 0000:00:02.0: MAC address found in EEPROM: 00:14:fd:10:00:00
++eth1: RTL8169sb/8110sb at 0xe0810300, 00:00:00:00:00:00, XID 10000000 IRQ 30
+ Driver 'sd' needs updating - please use bus_type methods
+ sata_sil 0000:00:03.0: version 2.4
+ sata_sil 0000:00:03.0: Applying R_ERR on DMA activate FIS errata fix
+@@ -242,6 +244,4 @@
+ EXT3 FS on sda5, internal journal
+ EXT3-fs: mounted filesystem with ordered data mode.
+ Adding 2008116k swap on /dev/sda3.  Priority:-1 extents:1 across:2008116k 
+-r8169: eth0: link up
+-r8169: eth0: link up
+ warning: `dbus-daemon' uses 32-bit capabilities (legacy support in use)
 
->From online discussions, it seems that the linux 2.6 tree has included KGDB.  Anyone can tell me where and how to get such a kernel tree (preferably 2.6.27 ) that with KGDB patched already?
+Reverting 6709fe9a27e43a4931938fe0d7f2cc5edef31386
+"r8169: read MAC address from EEPROM on init (2nd attempt)"
+fixes the problem on this machine.
 
-I tried to use git-checkout, but got a error:
-
-git-checkout git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_linus
-fatal: Not a git repository
-
-Thanks,
-
-Stuart
-
-The information in this e-mail and in any attachments is confidential and may be privileged.  If you are not the intended recipient, please destroy this message, delete any copies held on your systems and notify the sender immediately.  You should not retain copy or use this e-mail for any purpose, nor disclose all or any part of its content to any other person.
+/Mikael
