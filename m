@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbZCIOMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZCIONx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752402AbZCIOMi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 10:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbZCIOM3
+	id S1752842AbZCIONx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 10:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZCIONm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 10:12:29 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:36649 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751186AbZCIOM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 10:12:28 -0400
-Date: Mon, 9 Mar 2009 15:12:16 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: Geert.Uytterhoeven@sonycom.com, Kyle McMartin <kyle@mcmartin.ca>,
-       linux-parisc@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>, Dann Frazier <dannf@dannf.org>,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [rtc-linux] [PATCH 7/7] powerpc/ps3: Add rtc-ps3
-Message-ID: <20090309151216.17f13862@i1501.lan.towertech.it>
-In-Reply-To: <1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Mar 2009 10:13:42 -0400
+Received: from fmmailgate02.web.de ([217.72.192.227]:56919 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751233AbZCIONl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 10:13:41 -0400
+From: Goswin von Brederlow <goswin-v-b@web.de>
+To: Theodore Tso <tytso@mit.edu>
+Cc: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>,
+       Mike Snitzer <snitzer@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: ext3 duplicate entries with readdir
+References: <20090303200526.GA20236@ub>
+	<170fa0d20903031254l7070294cwfa45ffdcc63b24d9@mail.gmail.com>
+	<20090303215122.GB20640@ub> <20090304015713.GJ32284@mit.edu>
+Date: Mon, 09 Mar 2009 15:13:37 +0100
+In-Reply-To: <20090304015713.GJ32284@mit.edu> (Theodore Tso's message of "Tue,
+	3 Mar 2009 20:57:13 -0500")
+Message-ID: <87vdqivl66.fsf@frosties.localdomain>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.21 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX1+htJrQDxTJWHvl5HNj5we7ICWzfAyRBHgMioIg
+	cBzIavWDWfC/6/uXEMQoF+sMdYooZ+qaGpzk7CnSwO0L9WHk9l
+	jdqk0VNC8=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon,  9 Mar 2009 14:26:23 +0100
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+Theodore Tso <tytso@mit.edu> writes:
 
- Hi,
+> On Tue, Mar 03, 2009 at 10:51:26PM +0100, Andries E. Brouwer wrote:
+>> > Yes, it has been fixed, please see the following git commits:
+>> >
+>> > 6a897cf447a83c9c3fd1b85a1e525c02d6eada7d
+>> > 8c9fa93d51123c5540762b1a9e1919d6f9c4af7c
+>> 
+>> [On another machine, Ubuntu with 2.6.27-7-server still fails:
+>> % ../readdirtest
+>> expected 61005 files, but readdir reports 61006
+>> % rm *
+>> rm: cannot remove `59992': No such file or directory
+>> (where the same name occurs twice in the expansion of *).]
+>
+> The patches were backported to 2.6.27 stable in 2.6.27.8.  So the
+> problem would expected to be still present in an 2.6.27.7 kernel.
+>
+> 	      	       	     	   	   - Ted
 
-   just a few notes:
+Does the bug also affect xfs? Because I see the problem there.
 
-> +
-> +static int ps3_get_time(struct device *dev, struct rtc_time *tm)
-> +{
-> +	to_tm(read_rtc() + ps3_os_area_get_rtc_diff(), tm);
-> +	tm->tm_year -= 1900;
-> +	tm->tm_mon -= 1;
-> +	return 0;
-> +}
-
- this should be return rtc_valid_tm() .
-
- can't you use functions from rtc-lib.c instead of 
- that to_tm ?
-
-> +
-> +MODULE_AUTHOR("Sony Corporation");
-
- real name, if possible and a contact address
- here . Just in case I need someone to bother :)
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+MfG
+        Goswin
