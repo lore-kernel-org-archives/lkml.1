@@ -1,87 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbZCIDa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZCIDb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753566AbZCIDa2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 23:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZCIDaU
+	id S1754313AbZCIDb2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 23:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbZCIDbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 23:30:20 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59920 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752220AbZCIDaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 23:30:19 -0400
-Message-ID: <49B48D4A.6000207@cn.fujitsu.com>
-Date: Mon, 09 Mar 2009 11:30:18 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Arjan van de Ven <arjan@infradead.org>, adobriyan@gmail.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH -v2] memdup_user(): introduce
-References: <49B0CAEC.80801@cn.fujitsu.com>	<20090306082056.GB3450@x200.localdomain>	<49B0DE89.9000401@cn.fujitsu.com>	<20090306003900.a031a914.akpm@linux-foundation.org>	<49B0E67C.2090404@cn.fujitsu.com>	<20090306011548.ffdf9cbc.akpm@linux-foundation.org>	<49B0F1B9.1080903@cn.fujitsu.com>	<20090306150335.c512c1b6.akpm@linux-foundation.org>	<20090307084805.7cf3d574@infradead.org>	<49B47D50.5000608@cn.fujitsu.com> <20090308200033.f5282b5b.akpm@linux-foundation.org>
-In-Reply-To: <20090308200033.f5282b5b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 8 Mar 2009 23:31:04 -0400
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35819 "EHLO
+	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752220AbZCIDbC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 23:31:02 -0400
+X-Greylist: delayed 339 seconds by postgrey-1.27 at vger.kernel.org; Sun, 08 Mar 2009 23:31:02 EDT
+From: "J. R. Okajima" <hooanon05@yahoo.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, "J. R. Okajima" <hooanon05@yahoo.co.jp>
+Subject: [Aufs 22/25] aufs branch for loopback block device
+Date: Mon,  9 Mar 2009 12:25:15 +0900
+Message-Id: <1236569118-3750-23-git-send-email-hooanon05@yahoo.co.jp>
+X-Mailer: git-send-email 1.6.1.284.g5dc13
+In-Reply-To: <1236569118-3750-1-git-send-email-hooanon05@yahoo.co.jp>
+References: <1236569118-3750-1-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 09 Mar 2009 10:22:08 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
->>>>> +EXPORT_SYMBOL(memdup_user);
->>> Hi,
->>>
->>> I like the general idea of this a lot; it will make things much less
->>> error prone (and we can add some sanity checks on "len" to catch the
->>> standard security holes around copy_from_user usage). I'd even also
->>> want a memdup_array() like thing in the style of calloc().
->>>
->>> However, I have two questions/suggestions for improvement:
->>>
->>> I would like to question the use of the gfp argument here;
->>> copy_from_user sleeps, so you can't use GFP_ATOMIC anyway.
->>> You can't use GFP_NOFS etc, because the pagefault path will happily do
->>> things that are equivalent, if not identical, to GFP_KERNEL.
->>>
->>> So the only value you can pass in correctly, as far as I can see, is
->>> GFP_KERNEL. Am I wrong?
->>>
->> Right! I just dug and found a few kmalloc(GFP_ATOMIC/GFP_NOFS)+copy_from_user(),
->> so we have one more reason to use this memdup_user().
-> 
-> gack, those callsites are probably buggy.  Where are they?
-> 
+initial commit
+support and test loopback block device as a branch
 
-Yes, either buggy or should use GFP_KERNEL.
+Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
+---
+ fs/aufs/loop.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+ fs/aufs/loop.h |   41 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 87 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/loop.c
+ create mode 100644 fs/aufs/loop.h
 
-All are in -mm only, except the first one:
+diff --git a/fs/aufs/loop.c b/fs/aufs/loop.c
+new file mode 100644
+index 0000000..84a940f
+--- /dev/null
++++ b/fs/aufs/loop.c
+@@ -0,0 +1,46 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/*
++ * support for loopback block device as a branch
++ */
++
++#include <linux/loop.h>
++#include "aufs.h"
++
++/*
++ * test if two lower dentries have overlapping branches.
++ */
++int au_test_loopback_overlap(struct super_block *sb, struct dentry *h_d1,
++			     struct dentry *h_d2)
++{
++	struct inode *h_inode;
++	struct loop_device *l;
++
++	h_inode = h_d1->d_inode;
++	if (MAJOR(h_inode->i_sb->s_dev) != LOOP_MAJOR)
++		return 0;
++
++	l = h_inode->i_sb->s_bdev->bd_disk->private_data;
++	h_d1 = l->lo_backing_file->f_dentry;
++	/* h_d1 can be local NFS. in this case aufs cannot detect the loop */
++	if (unlikely(h_d1->d_sb == sb))
++		return 1;
++	return !!au_test_subdir(h_d1, h_d2);
++}
++
++/* true if a kernel thread named 'loop[0-9].*' accesses a file */
++int au_test_loopback_kthread(void)
++{
++	const char c = current->comm[4];
++
++	return current->mm == NULL
++	       && '0' <= c && c <= '9'
++	       && strncmp(current->comm, "loop", 4) == 0;
++}
+diff --git a/fs/aufs/loop.h b/fs/aufs/loop.h
+new file mode 100644
+index 0000000..1c0ee40
+--- /dev/null
++++ b/fs/aufs/loop.h
+@@ -0,0 +1,41 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/*
++ * support for loopback mount as a branch
++ */
++
++#ifndef __AUFS_LOOP_H__
++#define __AUFS_LOOP_H__
++
++#ifdef __KERNEL__
++
++#include <linux/fs.h>
++
++#ifdef CONFIG_AUFS_BDEV_LOOP
++/* loop.c */
++int au_test_loopback_overlap(struct super_block *sb, struct dentry *h_d1,
++			     struct dentry *h_d2);
++int au_test_loopback_kthread(void);
++#else
++static inline
++int au_test_loopback_overlap(struct super_block *sb, struct dentry *h_d1,
++			     struct dentry *h_d2)
++{
++	return 0;
++}
++
++static inline int au_test_loopback_kthread(void)
++{
++	return 0;
++}
++#endif /* BLK_DEV_LOOP */
++
++#endif /* __KERNEL__ */
++#endif /* __AUFS_LOOP_H__ */
+-- 
+1.6.1.284.g5dc13
 
-drivers/isdn/i4l/isdn_common.c:
-	struct sk_buff *skb = alloc_skb(hl + len, GFP_ATOMIC);
-	...
-	if (copy_from_user(skb_put(skb, len), buf, len)) {
-
-
-net/irda/af_irda.c:
-	ias_opt = kmalloc(sizeof(struct irda_ias_set), GFP_ATOMIC);
-	...
-	if (copy_from_user(ias_opt, optval, optlen)) {
-
-
-fs/btrfs/ioctl.c:
-	vol_args = kmalloc(sizeof(*vol_args), GFP_NOFS);
-	...
-	if (copy_from_user(vol_args, arg, sizeof(*vol_args))) {
-
-
-fs/ocfs2/dlm/dlmfs.c:
-	lvb_buf = kmalloc(writelen, GFP_NOFS);
-	...
-	bytes_left = copy_from_user(lvb_buf, buf, writelen);
-
-
-net/sunrpc/auth_gss/auth_gss.c:
-	buf = kmalloc(mlen, GFP_NOFS);
-	...
-	if (copy_from_user(buf, src, mlen))
