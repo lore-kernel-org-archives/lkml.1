@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbZCIRER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZCIRMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753990AbZCIRER (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 13:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbZCIREB
+	id S1754085AbZCIRMZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 13:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbZCIRMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 13:04:01 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:44144 "EHLO
+	Mon, 9 Mar 2009 13:12:12 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:53068 "EHLO
 	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbZCIREA (ORCPT
+	with ESMTP id S1751648AbZCIRMK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 13:04:00 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: Linux* Processor Microcode Data File
-Date: Mon, 09 Mar 2009 13:03:31 -0400
-User-Agent: KMail/1.11.0 (Linux/2.6.28.7; KDE/4.2.0; i686; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, tigran@aivazian.fsnet.co.uk,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-References: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com>
- <200903091158.22918.gene.heskett@verizon.net>
- <20090309162416.GC24213@silver.sucs.org>
-In-reply-to: <20090309162416.GC24213@silver.sucs.org>
+	Mon, 9 Mar 2009 13:12:10 -0400
+Date: Mon, 09 Mar 2009 13:11:56 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Richard Hughes <hughsient@gmail.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hal@lists.freedesktop.org
+Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
+In-reply-to: <15e53e180903080033h5e990f08o3622afae018c38ca@mail.gmail.com>
+Message-id: <alpine.LFD.2.00.0903091307200.16491@localhost.localdomain>
+References: <20090306003941.GA32403@srcf.ucam.org>
+ <E1LfqwF-000B1G-00.arvidjaar-mail-ru@mx3.mail.ru>
+ <20090307150640.GA3516@srcf.ucam.org>  <200903071839.16508.arvidjaar@mail.ru>
+ <20090307154424.GA3909@srcf.ucam.org>
+ <15e53e180903071219q4ed318edt2fa8f492426c0ab6@mail.gmail.com>
+ <20090307202647.GA9776@srcf.ucam.org>
+ <15e53e180903080033h5e990f08o3622afae018c38ca@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200903091303.32022.gene.heskett@verizon.net>
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 March 2009, Sitsofe Wheeler wrote:
->At the risk of being wrong twice in a row...
->
->On Mon, Mar 09, 2009 at 11:58:22AM -0400, Gene Heskett wrote:
->> I'll have to admit it was with some trepidation that I might brick my
->> processor, which is a quad core AMD 9550, stepping 03 running at 2.2 ghz,
->> but
->
->Microcode patching in this particular fashion (i.e. _not_ updating the
->BIOS but "on the fly") is volatile (so it has to be redone at every
->boot) which should mean it is very hard to brick a machine this way as
->rebooting will undo everything. Of course someone is going to tell me
->how they managed to kill a machine stone dead due to some sequence of
->events I hadn't thought of and I disclaim any responsiblity if someone
->tries to update their microcode and harms their machine in any fashion -
->you update at your own risk :).
->
->> the directions didn't note until the end, that it would take a 2.6.29
->> series kernel to do it and I was running 2.6.28.7.  But when I got to the
->> modprobe -r microcode, modprobe microcode part, there was no feedback from
->> either command.  So did I, or did I not do this as I was and am running
->> 2.6.28.7?  The following was reported in my log:
->
->modprobe generally doesn't return much if the module in question loads
->or (as in this case because you were using -r) is removed. That's the
->typical Unix command line behviour - no response/output on "OK".
->
->> Mar  9 07:22:04 coyote kernel: [65725.855365] platform microcode:
->> firmware: requesting amd-ucode/microcode_amd.bin Mar  9 07:22:04 coyote
->> kernel: [65725.863101] microcode: size 1936, total_size 960 Mar  9
->> 07:22:04 coyote kernel: [65725.863107] microcode: CPU3 patch does not
->> match (processor_rev_id: 1020, eqiv_cpu_id: 1022) Mar  9 07:22:04 coyote
->> kernel: [65725.863110] microcode: size 968, total_size 960 Mar  9 07:22:04
->> coyote kernel: [65725.863120] microcode: CPU3 updated from revision
->> 0x1000065 to 0x1000083 Mar  9 07:22:04 coyote kernel: [65725.863122]
->> Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
->>
->> Inquiring minds and all that.  Comments please?
->
->It looks like the firmware file (amd-ucode/microcode_amd.bin) doesn't
->match your processor. CC'ing Andreas for comment as you have an AMD
->machine...
+On Sun, 8 Mar 2009, Richard Hughes wrote:
 
-Thank You.  But the text report above also says it did update it, hence the 
-confusion.
+> On Sat, Mar 7, 2009 at 8:26 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > On Sat, Mar 07, 2009 at 08:19:51PM +0000, Richard Hughes wrote:
+> >
+> >> Mapping KEY_SUSPEND to hibernate is just insane. Can you please change
+> >> the toshiba driver to use KEY_HIBERNATE and KEY_SUSPEND as thinkpad
+> >> now does? Thanks.
+> >
+> > Mapping KEY_SUSPEND to hibernate is what we've been doing for years.
+> > It's what hal *still does*.
+> 
+> Sure, but how much userspace now listens to HAL for these events? Xorg
+> and evdev has taken over that role for all the session. We can ship a
+> trivial patch as an fdi file to HAL to remap this if required.
+> 
+> > KEY_SLEEP has been the suspend to RAM key forever.
+> 
+> Except if you're a USB keyboard. Grep through the kernel sources and
+> see how many drivers get this wrong. We can't map three sleep states
+> to two buttons in any sane way. For instance, is the sleep acpi button
+> supposed to trigger a suspend of hibernate? Surely this is user policy
+> as it is not specified on the the exterior of the machine.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-For fast-acting relief, try slowing down.
+While hot-keys are totally platform dependent and non-standard,
+the ACPI spec does describe the power and sleep button.
 
+Unfortunately, it doesn't answer this question for us --
+stating that the sleep button enters G1, which can be
+any of S1-S4.
+
+Len Brown, Intel Open Source Technology Center
