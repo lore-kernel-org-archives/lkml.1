@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZCIRMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZCIRMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085AbZCIRMZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 13:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbZCIRMM
+	id S1754039AbZCIRMk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 13:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbZCIRMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 13:12:12 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:53068 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648AbZCIRMK (ORCPT
+	Mon, 9 Mar 2009 13:12:23 -0400
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:38912 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753759AbZCIRMV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 13:12:10 -0400
-Date: Mon, 09 Mar 2009 13:11:56 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Richard Hughes <hughsient@gmail.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hal@lists.freedesktop.org
-Subject: Re: [PATCH] toshiba_acpi: Add full hotkey support
-In-reply-to: <15e53e180903080033h5e990f08o3622afae018c38ca@mail.gmail.com>
-Message-id: <alpine.LFD.2.00.0903091307200.16491@localhost.localdomain>
-References: <20090306003941.GA32403@srcf.ucam.org>
- <E1LfqwF-000B1G-00.arvidjaar-mail-ru@mx3.mail.ru>
- <20090307150640.GA3516@srcf.ucam.org>  <200903071839.16508.arvidjaar@mail.ru>
- <20090307154424.GA3909@srcf.ucam.org>
- <15e53e180903071219q4ed318edt2fa8f492426c0ab6@mail.gmail.com>
- <20090307202647.GA9776@srcf.ucam.org>
- <15e53e180903080033h5e990f08o3622afae018c38ca@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Mar 2009 13:12:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=EhB5x0IFXFO+yeZC6/B/qf/tn1ZW1AdeulK7WWzr1hJOpVWUtYsVn7i51uDhdr6NV/
+         BNtBszVBcfSt9RVoZ9ZDiUPdX5YkhwN7/gfq7ghHnTCAOhk989d7sTGryFt7Ef1BMAYr
+         SuxZrhKroCODTKs/MhcP9ab0j+hpy4wksQHeo=
+MIME-Version: 1.0
+In-Reply-To: <20090308090102.2db82a5b@infradead.org>
+References: <1234722028-8110-1-git-send-email-andr345@gmail.com>
+	 <20090302082003.1bb7bdc5@infradead.org>
+	 <ac3eb2510903020829s7c876a96y7eb5568eeb9921fd@mail.gmail.com>
+	 <20090302102703.50aaf724@infradead.org>
+	 <1236192430.6785.111.camel@andreas-laptop>
+	 <20090305161837.6ba80cc1@infradead.org>
+	 <1236352543.6594.59.camel@andreas-laptop>
+	 <20090306074548.36ed2f9f@infradead.org>
+	 <1236509237.5645.151.camel@andreas-laptop>
+	 <20090308090102.2db82a5b@infradead.org>
+Date: Mon, 9 Mar 2009 17:12:18 +0000
+Message-ID: <87a5b0800903091012j62da205bp8e825497f5ce59ec@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/6] module, kbuild: Faster boot with custom kernel.
+From: Will Newton <will.newton@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andreas Robinson <andr345@gmail.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, sam@ravnborg.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 8 Mar 2009, Richard Hughes wrote:
+On Sun, Mar 8, 2009 at 4:01 PM, Arjan van de Ven <arjan@infradead.org> wrote:
 
-> On Sat, Mar 7, 2009 at 8:26 PM, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > On Sat, Mar 07, 2009 at 08:19:51PM +0000, Richard Hughes wrote:
-> >
-> >> Mapping KEY_SUSPEND to hibernate is just insane. Can you please change
-> >> the toshiba driver to use KEY_HIBERNATE and KEY_SUSPEND as thinkpad
-> >> now does? Thanks.
-> >
-> > Mapping KEY_SUSPEND to hibernate is what we've been doing for years.
-> > It's what hal *still does*.
-> 
-> Sure, but how much userspace now listens to HAL for these events? Xorg
-> and evdev has taken over that role for all the session. We can ship a
-> trivial patch as an fdi file to HAL to remap this if required.
-> 
-> > KEY_SLEEP has been the suspend to RAM key forever.
-> 
-> Except if you're a USB keyboard. Grep through the kernel sources and
-> see how many drivers get this wrong. We can't map three sleep states
-> to two buttons in any sane way. For instance, is the sleep acpi button
-> supposed to trigger a suspend of hibernate? Surely this is user policy
-> as it is not specified on the the exterior of the machine.
+>> * Don't unpack initramfs twice. If CONFIG_BLK_DEV_RAM is
+>>   set, the kernel decompresses the ramdisk just to see if
+>>   it's a cpio archive or not, and then throws away the result.
+>
+> I actually have a patch for it stuck away somewhere; I thought it was
+> sent upstream but apparently it was not. I'll dig it out and dust it
+> off.
 
-While hot-keys are totally platform dependent and non-standard,
-the ACPI spec does describe the power and sleep button.
-
-Unfortunately, it doesn't answer this question for us --
-stating that the sleep button enters G1, which can be
-any of S1-S4.
-
-Len Brown, Intel Open Source Technology Center
+Please do. It's a big win in relative terms compared to the rest of
+the boot for small systems.
