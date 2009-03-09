@@ -1,209 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752023AbZCIPEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZCIPFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752023AbZCIPEF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 11:04:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZCIPDt
+	id S1753380AbZCIPFQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 11:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbZCIPFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 11:03:49 -0400
-Received: from usea-naimss4.unisys.com ([192.61.61.109]:1464 "EHLO
-	usea-naimss4.unisys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751062AbZCIPDs (ORCPT
+	Mon, 9 Mar 2009 11:05:00 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:62331 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751903AbZCIPE7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 11:03:48 -0400
-Subject: Re: [tip:x86/apic] x86: MSI: check for BIOS assigned addresses
-From: Daniel Yeisley <dan.yeisley@unisys.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, stable@kernel.org, tglx@linutronix.de,
-       linux-pci@vger.kernel.org
-In-Reply-To: <20090308105410.GA15010@elte.hu>
-References: <1236352309.31604.2.camel@localhost.localdomain>
-	 <tip-affd49d36e2e2df4cbb3e07a57db901c23823b6a@git.kernel.org>
-	 <20090306184514.GC15526@elte.hu>
-	 <1236364109.31604.10.camel@localhost.localdomain>
-	 <20090306191345.GD28582@elte.hu> <49B1C884.2020301@kernel.org>
-	 <20090308105410.GA15010@elte.hu>
-Content-Type: text/plain
-Date: Mon, 09 Mar 2009 10:32:45 -0400
-Message-Id: <1236609166.4400.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 (2.25.92-1.fc11) 
+	Mon, 9 Mar 2009 11:04:59 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-s390@vger.kernel.org
+Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
+Date: Mon, 9 Mar 2009 16:04:53 +0100
+User-Agent: KMail/1.9.9
+Cc: Roman Zippel <zippel@linux-m68k.org>, John Stultz <johnstul@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200903080230.10099.elendil@planet.nl>
+In-Reply-To: <200903080230.10099.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Mar 2009 15:02:57.0700 (UTC) FILETIME=[21C17640:01C9A0C8]
+Content-Disposition: inline
+Message-Id: <200903091604.56455.elendil@planet.nl>
+X-OriginalArrivalTime: 09 Mar 2009 15:04:57.0091 (UTC) FILETIME=[68EB1530:01C9A0C8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-08 at 11:54 +0100, Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
-> 
-> > Ingo Molnar wrote:
-> > > * Daniel Yeisley <dan.yeisley@unisys.com> wrote:
-> > > 
-> > >> On Fri, 2009-03-06 at 19:45 +0100, Ingo Molnar wrote:
-> > >>> * Daniel Yeisley <dan.yeisley@unisys.com> wrote:
-> > >>>
-> > >>>> Commit-ID:  affd49d36e2e2df4cbb3e07a57db901c23823b6a
-> > >>>> Gitweb:     http://git.kernel.org/tip/affd49d36e2e2df4cbb3e07a57db901c23823b6a
-> > >>>> Author:     "Daniel Yeisley" <dan.yeisley@unisys.com>
-> > >>>> AuthorDate: Fri, 6 Mar 2009 10:11:49 -0500
-> > >>>> Commit:     Ingo Molnar <mingo@elte.hu>
-> > >>>> CommitDate: Fri, 6 Mar 2009 19:32:44 +0100
-> > >>>>
-> > >>>> x86: MSI: check for BIOS assigned addresses
-> > >>>>
-> > >>>> Impact: fix ACPI hotplug on certain systems
-> > >>> Note, this commit means that i moved the commit over from 
-> > >>> tip:x86/urgent into tip:x86/apic - i.e. with a 2.6.30 merge 
-> > >>> date. When exactly was this regression introduced? I think this 
-> > >>> code never really accepted the MSI settings from the firmware, 
-> > >>> so changing that behavior might affect a lot of systems.
-> > >>>
-> > >>> So i'm uneasy about applying this fix this late in the .29 
-> > >>> cycle, but marked it for -stable backport so it could hit 
-> > >>> 2.6.29.1 if it stays problem-free.
-> > >>>
-> > >>> 	Ingo
-> > >> I initially noticed the problem on a 2.6.18 kernel.  ACPI 
-> > >> hotplugging didn't work unless I booted with pci=nomsi.  I 
-> > >> don't have a problem with waiting until 2.6.30 to make sure it 
-> > >> is thoroughly tested.
-> > > 
-> > > Okay - so it's an ancient bug. The current track should thus be 
-> > > fine.
-> > > 
-> > 
-> > please drop this patch. it seems it break msi-x.
-> > at least igbe with msi-x does not work anymore.
-> 
-> Not just that, it also causes bootup crashes - attached below. 
-> I'v dropped the patch for now.
-> 
-> 	Ingo
-> 
-> [    4.276015] calling  pcie_portdrv_init+0x0/0x4c @ 1
-> [    4.280343] bus: 'pci_express': registered
-> [    4.284017] bus: 'pci': add driver pcieport-driver
-> [    4.288046] bus: 'pci': driver_probe_device: matched device 0000:00:0b.0 with driver pcieport-driver
-> [    4.292014] bus: 'pci': really_probe: probing driver pcieport-driver with device 0000:00:0b.0
-> [    4.296148] pcieport-driver 0000:00:0b.0: setting latency timer to 64
-> [    4.304157]   alloc irq_desc for 16 on cpu 0 node 0
-> [    4.308008]   alloc kstat_irqs on cpu 0 node 0
-> [    4.308124] ------------[ cut here ]------------
-> [    4.312008] kernel BUG at arch/x86/kernel/apic/io_apic.c:1362!
-> [    4.312008] invalid opcode: 0000 [#1] SMP 
-> [    4.312008] last sysfs file: 
-> [    4.312008] CPU 0 
-> [    4.312008] Modules linked in:
-> [    4.312008] Pid: 7, comm: work_on_cpu/0 Not tainted 2.6.29-rc7-tip-02101-g8d7adfc-dirty #31737 SMP Sun Mar 8 11:50:18 CET 2009 System Product Name
-> [    4.312008] RIP: 0010:[<ffffffff80221e36>]  [<ffffffff80221e36>] __clear_irq_vector+0x1d/0xd8
-> [    4.312008] RSP: 0018:ffff88003f121bf0  EFLAGS: 00010046
-> [    4.312008] RAX: 0000000000000246 RBX: ffff88003ea0b1a0 RCX: 0000000000000002
-> [    4.312008] RDX: 8c6318c6318c6300 RSI: ffff88003ea0b1a0 RDI: 0000000000000010
-> [    4.312008] RBP: ffff88003f121c10 R08: ffff88003f118998 R09: 0000000000000070
-> [    4.312008] R10: 0000000000000000 R11: ffffffff80222c03 R12: 0000000000000010
-> [    4.312008] R13: 0000000000000010 R14: ffff88003f2a31b0 R15: 0000000000000001
-> [    4.312008] FS:  0000000000000000(0000) GS:ffff8800035b0000(0000) knlGS:0000000000000000
-> [    4.312008] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> [    4.312008] CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
-> [    4.312008] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [    4.312008] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> [    4.312008] Process work_on_cpu/0 (pid: 7, threadinfo ffff88003f120000, task ffff88003f118000)
-> [    4.312008] Stack:
-> [    4.312008]  0000000000000246 0000000000000010 ffff88003ea0b1a0 ffff88003f2a31b0
-> [    4.312008]  ffff88003f121c40 ffffffff80222c11 ffff88003f121c50 ffff88003ea060a8
-> [    4.312008]  ffff88003f2a38b0 ffff88003f2a38b0 ffff88003f121c50 ffffffff80222c36
-> [    4.312008] Call Trace:
-> [    4.312008]  [<ffffffff80222c11>] destroy_irq+0x4f/0x66
-> [    4.312008]  [<ffffffff80222c36>] arch_teardown_msi_irq+0xe/0x10
-> [    4.312008]  [<ffffffff80471099>] arch_teardown_msi_irqs+0x2c/0xa3
-> [    4.312008]  [<ffffffff80471188>] msi_free_irqs+0x5d/0xff
-> [    4.312008]  [<ffffffff80471a8f>] msi_capability_init+0x134/0x16d
-> [    4.312008]  [<ffffffff8047202e>] pci_enable_msi+0x7c/0x82
-> [    4.312008]  [<ffffffff804707ff>] assign_interrupt_mode+0xda/0x10b
-> [    4.312008]  [<ffffffff80470a0d>] pcie_port_device_register+0xb3/0x123
-> [    4.312008]  [<ffffffff80260f9c>] ? do_work_for_cpu+0x0/0x20
-> [    4.312008]  [<ffffffff807e10af>] pcie_portdrv_probe+0x8c/0xb4
-> [    4.312008]  [<ffffffff8046baee>] local_pci_probe+0x17/0x1b
-> [    4.312008]  [<ffffffff80260fb4>] do_work_for_cpu+0x18/0x20
-> [    4.312008]  [<ffffffff80261492>] run_workqueue+0x10c/0x221
-> [    4.312008]  [<ffffffff80261440>] ? run_workqueue+0xba/0x221
-> [    4.312008]  [<ffffffff802611b5>] ? test_ti_thread_flag+0x9/0x11
-> [    4.312008]  [<ffffffff80262282>] worker_thread+0xd6/0xe7
-> [    4.312008]  [<ffffffff802658b8>] ? autoremove_wake_function+0x0/0x3d
-> [    4.312008]  [<ffffffff802621ac>] ? worker_thread+0x0/0xe7
-> [    4.312008]  [<ffffffff802656d3>] kthread+0x4e/0x7b
-> [    4.312008]  [<ffffffff80c54140>] ? early_idt_handler+0x0/0x73
-> [    4.312008]  [<ffffffff8020d1ca>] child_rip+0xa/0x20
-> [    4.312008]  [<ffffffff8020cb90>] ? restore_args+0x0/0x30
-> [    4.312008]  [<ffffffff80265685>] ? kthread+0x0/0x7b
-> [    4.312008]  [<ffffffff8020d1c0>] ? child_rip+0x0/0x20
-> [    4.312008] Code: ff 8b 35 2e 78 a1 00 e8 cd ff ff ff c9 c3 55 48 89 e5 41 56 41 55 41 54 53 e8 97 9f fe ff 8a 56 1c 41 89 fd 48 89 f3 84 d2 75 04 <0f> 0b eb fe 0f b6 d2 4c 8b 35 d4 b1 5f 00 48 c7 c0 20 b0 00 00 
-> [    4.312008] RIP  [<ffffffff80221e36>] __clear_irq_vector+0x1d/0xd8
-> [    4.312008]  RSP <ffff88003f121bf0>
+On Sunday 08 March 2009, Frans Pop wrote:
+> Kernels after 2.6.27 fail to boot in the Hercules S/390 emulator, quite
+> early in the boot process:
+[...]
+>      0.141419! Initializing cgroup subsys ns
+>      0.141605! Initializing cgroup subsys cpuacct
+>      0.142009! Initializing cgroup subsys devices
+>      0.180403! cpu: 2 configured CPUs, 0 standby CPUs
+>
+> I've bisected this to the following commit:
+> commit 5cd1c9c5cf30d4b33df3d3f74d8142f278d536b7
+> Author: Roman Zippel <zippel@linux-m68k.org>
+> Date:   Mon Sep 22 14:42:43 2008 -0700
+>     timekeeping: fix rounding problem during clock update
 
-Can someone try the patch below?  It only checks for MSI capability so
-it shouldn't affect MSI-x.  
-
-
-Signed-off-by: Dan Yeisley <dan.yeisley@unisys.com>
-
----
-diff -Naur linux-2.6.29-rc5/arch/x86/kernel/io_apic.c linux-2.6.29-rc5-dpy/arch/x86/kernel/io_apic.c
---- linux-2.6.29-rc5/arch/x86/kernel/io_apic.c	2009-02-13 18:31:30.000000000 -0500
-+++ linux-2.6.29-rc5-dpy/arch/x86/kernel/io_apic.c	2009-03-09 04:36:35.000000000 -0400
-@@ -3258,6 +3258,7 @@
- 	struct irq_cfg *cfg;
- 	int err;
- 	unsigned dest;
-+	int pos;
- 
- 	cfg = irq_cfg(irq);
- 	err = assign_irq_vector(irq, cfg, TARGET_CPUS);
-@@ -3266,6 +3267,14 @@
- 
- 	dest = cpu_mask_to_apicid_and(cfg->domain, TARGET_CPUS);
- 
-+	pos = pci_find_capability(pdev, PCI_CAP_ID_MSI);
-+	if (pos != 0) {
-+		pci_read_config_dword(pdev, pos + PCI_MSI_ADDRESS_LO,
-+        	                                &msg->address_lo);
-+		pci_read_config_dword(pdev, pos + PCI_MSI_ADDRESS_HI,
-+        	                                &msg->address_hi);
+After staring at this commit for a while I decided to try the following
+patch:
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -547,5 +547,11 @@ void update_wall_time(void)
+ 	* add the remainder to the error difference.
+ 	*/
+ 	xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
++	if (unlikely(clock->xtime_nsec < ((s64)xtime.tv_nsec << clock->shift))) {
++		printk("Negative result: %llu - %lld\n",
++			(unsigned long long)clock->xtime_nsec,
++			(long long)((s64)xtime.tv_nsec << clock->shift));
++		BUG_ON(1);
 +	}
-+
- #ifdef CONFIG_INTR_REMAP
- 	if (irq_remapped(irq)) {
- 		struct irte irte;
-@@ -3295,17 +3304,18 @@
- 	} else
- #endif
- 	{
--		msg->address_hi = MSI_ADDR_BASE_HI;
--		msg->address_lo =
--			MSI_ADDR_BASE_LO |
--			((INT_DEST_MODE == 0) ?
--				MSI_ADDR_DEST_MODE_PHYSICAL:
--				MSI_ADDR_DEST_MODE_LOGICAL) |
--			((INT_DELIVERY_MODE != dest_LowestPrio) ?
--				MSI_ADDR_REDIRECTION_CPU:
--				MSI_ADDR_REDIRECTION_LOWPRI) |
--			MSI_ADDR_DEST_ID(dest);
--
-+		if (!msg->address_hi && !msg->address_lo) {
-+			msg->address_hi = MSI_ADDR_BASE_HI;
-+			msg->address_lo = 
-+				MSI_ADDR_BASE_LO |
-+				((INT_DEST_MODE == 0) ?
-+					MSI_ADDR_DEST_MODE_PHYSICAL:
-+					MSI_ADDR_DEST_MODE_LOGICAL) |
-+				((INT_DELIVERY_MODE != dest_LowestPrio) ?
-+					MSI_ADDR_REDIRECTION_CPU:
-+					MSI_ADDR_REDIRECTION_LOWPRI) |
-+				MSI_ADDR_DEST_ID(dest); 
-+		}
- 		msg->data =
- 			MSI_DATA_TRIGGER_EDGE |
- 			MSI_DATA_LEVEL_ASSERT |
+ 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+ 	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
 
+And that resulted in:
+     0.004175! Negative result: 166039808000 - 166039808256
 
+So we're trying to stuff a negative value into an unsigned field, and I
+keep seeing on these lists that's a bad idea.
+
+I'll leave it up to you how we get there, but could it possibly be the
+same kind of thing as corrected earlier today in Heiko Carsten's patch:
+http://lkml.org/lkml/2009/3/9/112 ?
+
+Cheers,
+FJP
