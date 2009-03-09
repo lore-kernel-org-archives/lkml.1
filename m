@@ -1,64 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751600AbZCINRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751478AbZCINVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751600AbZCINRQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 09:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbZCINRA
+	id S1751478AbZCINVq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 09:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZCINVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 09:17:00 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:37629 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751022AbZCINQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 09:16:59 -0400
-Date: Mon, 9 Mar 2009 08:16:56 -0500
-From: Robin Holt <holt@sgi.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Cliff Wickman <cpw@sgi.com>, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] x86: access to efi reserved memory type
-Message-ID: <20090309131656.GK10460@sgi.com>
-References: <E1Lfe8A-00056c-SH@eag09.americas.sgi.com> <49B44BE8.1080700@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B44BE8.1080700@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 9 Mar 2009 09:21:38 -0400
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:54452 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751217AbZCINVh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 09:21:37 -0400
+Subject: vcs: hook sysfs devices into object lifetime instead of "binding"
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg Kroah-Hartman <gregkh@suse.de>
+Content-Type: text/plain
+Date: Mon, 09 Mar 2009 14:18:52 +0100
+Message-Id: <1236604732.2573.4.camel@nga>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.91 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 08, 2009 at 03:51:20PM -0700, H. Peter Anvin wrote:
-> Cliff Wickman wrote:
-...
-> > The walk() function scans the EFI memory map and does a callback to a
-> > specified function for each memory area of a specified type.
-> > efi_memmap_walk_reserved() provides a scan for type EFI_RESERVED_TYPE.
-> >  (an earlier version of this patch had proposed a new EFI type, but
-> >   EFI_RESERVED_TYPE should be sufficient, given that the firmware follows
-> >   the standard and does not use such memory for its own purposes)
-...
-> In particular, I really want to know why a plain platform device is
-> insufficient, and look for a better solution than this, using the
-> generic memory map interfaces rather than something EFI-specific.
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: vcs: hook sysfs devices into object lifetime instead of "binding"
 
-For the driver Cliff is referring to, we are attempting to provide EFI
-reserved memory to a special hardware (drivers/misc/sgi-gru) device
-which is capable of handling pages up to 1TB in size.  Additionally, a
-previously posted xpmem driver could make those pages available via
-Numalink to other SSIs connected to the same fabric.
+During bootup performance tracing I noticed many occurrences of
+vca* device creation and removal, leading to the usual userspace
+uevent processing, which are, in this case, rather pointless.
 
-Excuse my ignorance, but what do you mean by a "plain platform device"?
-By generic memory map interfaces, are you proposing we use order based
-allocations?  If so, how do you propose we zero these 1TB (worst case)
-size pages.  Our current estimate is this will take approx 20 minutes,
-but newer processors might shorten that.  What assurances can we get on
-these large pages not getting fragmented and therefore becoming useless
-and requiring a reboot to reclaim.
+A simple test showing the kernel timing (not including all the
+work userspace has to do), gives us these numbers:
+  $ time for i in `seq 1000`; do echo a > /dev/tty2; done
+  real    0m1.142s
+  user    0m0.015s
+  sys     0m0.540s
 
-I believe we have a special case of memory needing to be reserved by
-BIOS, passed to a special driver which can utilize the GRU for async
-zero on allocation and to prevent unintended fragmentation.  I agree we
-probably made a small mistake in our submission in that the patch set
-which adds the EFI walk should have included the special purpose driver.
-We will work to correct that.
+If we move the hook for the vcs* driver core devices from the
+tty "binding" to the vc allocation/deallocation, which is what
+the vcs* devices represent, we get the following numbers:
+  $ time for i in `seq 1000`; do echo a > /dev/tty2; done
+  real    0m0.152s
+  user    0m0.030s
+  sys     0m0.072s
 
-Thanks,
-Robin
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
+ drivers/char/vc_screen.c |   16 ++++++++--------
+ drivers/char/vt.c        |    5 +++--
+ include/linux/console.h  |    4 ++--
+ 3 files changed, 13 insertions(+), 12 deletions(-)
+
+--- a/drivers/char/vc_screen.c
++++ b/drivers/char/vc_screen.c
+@@ -479,18 +479,18 @@ static const struct file_operations vcs_
+ 
+ static struct class *vc_class;
+ 
+-void vcs_make_sysfs(struct tty_struct *tty)
++void vcs_make_sysfs(int index)
+ {
+-	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, tty->index + 1), NULL,
+-		      "vcs%u", tty->index + 1);
+-	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, tty->index + 129), NULL,
+-		      "vcsa%u", tty->index + 1);
++	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, index + 1), NULL,
++		      "vcs%u", index + 1);
++	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, index + 129), NULL,
++		      "vcsa%u", index + 1);
+ }
+ 
+-void vcs_remove_sysfs(struct tty_struct *tty)
++void vcs_remove_sysfs(int index)
+ {
+-	device_destroy(vc_class, MKDEV(VCS_MAJOR, tty->index + 1));
+-	device_destroy(vc_class, MKDEV(VCS_MAJOR, tty->index + 129));
++	device_destroy(vc_class, MKDEV(VCS_MAJOR, index + 1));
++	device_destroy(vc_class, MKDEV(VCS_MAJOR, index + 129));
+ }
+ 
+ int __init vcs_init(void)
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -778,6 +778,7 @@ int vc_allocate(unsigned int currcons)	/
+ 	    }
+ 	    vc->vc_kmalloced = 1;
+ 	    vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
++	    vcs_make_sysfs(currcons);
+ 	    atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
+ 	}
+ 	return 0;
+@@ -987,7 +988,9 @@ void vc_deallocate(unsigned int currcons
+ 	if (vc_cons_allocated(currcons)) {
+ 		struct vc_data *vc = vc_cons[currcons].d;
+ 		struct vt_notifier_param param = { .vc = vc };
++
+ 		atomic_notifier_call_chain(&vt_notifier_list, VT_DEALLOCATE, &param);
++		vcs_remove_sysfs(currcons);
+ 		vc->vc_sw->con_deinit(vc);
+ 		put_pid(vc->vt_pid);
+ 		module_put(vc->vc_sw->owner);
+@@ -2775,7 +2778,6 @@ static int con_open(struct tty_struct *t
+ 				tty->termios->c_iflag |= IUTF8;
+ 			else
+ 				tty->termios->c_iflag &= ~IUTF8;
+-			vcs_make_sysfs(tty);
+ 			release_console_sem();
+ 			return ret;
+ 		}
+@@ -2795,7 +2797,6 @@ static void con_shutdown(struct tty_stru
+ 	BUG_ON(vc == NULL);
+ 	acquire_console_sem();
+ 	vc->vc_tty = NULL;
+-	vcs_remove_sysfs(tty);
+ 	release_console_sem();
+ 	tty_shutdown(tty);
+ }
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -137,8 +137,8 @@ extern void resume_console(void);
+ int mda_console_init(void);
+ void prom_con_init(void);
+ 
+-void vcs_make_sysfs(struct tty_struct *tty);
+-void vcs_remove_sysfs(struct tty_struct *tty);
++void vcs_make_sysfs(int index);
++void vcs_remove_sysfs(int index);
+ 
+ /* Some debug stub to catch some of the obvious races in the VT code */
+ #if 1
+
