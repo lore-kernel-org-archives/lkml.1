@@ -1,157 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751410AbZCINov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752402AbZCINqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751410AbZCINov (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 09:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbZCINon
+	id S1752402AbZCINqT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 09:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZCINp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 09:44:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48564 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078AbZCINom (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 09:44:42 -0400
-Date: Mon, 9 Mar 2009 09:44:35 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
-Subject: Re: [RFC][PATCH 1/2] tracing/ftrace: syscall tracing
- infrastructure
-In-Reply-To: <1236401580-5758-2-git-send-email-fweisbec@gmail.com>
-Message-ID: <alpine.DEB.2.00.0903090942030.2203@gandalf.stny.rr.com>
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-2-git-send-email-fweisbec@gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 9 Mar 2009 09:45:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35661 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751128AbZCINp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 09:45:57 -0400
+Message-ID: <49B51D90.5090603@redhat.com>
+Date: Mon, 09 Mar 2009 15:45:52 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Yang, Sheng" <sheng.yang@intel.com>
+CC: Matthew Wilcox <matthew@wil.cx>, "Zhao, Yu" <yu.zhao@intel.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v10 0/7] PCI: Linux kernel SR-IOV support
+References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <49B3D678.4050004@redhat.com> <200903091142.06628.sheng.yang@intel.com> <200903091235.43083.sheng.yang@intel.com>
+In-Reply-To: <200903091235.43083.sheng.yang@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yang, Sheng wrote:
+>>> Patches 2 and 3 of the patchset that enables SR/IOV in kvm [1] suggest
+>>> that at the config space is only partially implemented.
+>>>
+>>> [1] http://thread.gmane.org/gmane.comp.emulators.kvm.devel/29034
+>>>       
+>> Hi Avi
+>>
+>> For kernel side, patch 2 is not necessary. Because kernel would read
+>> VID/DID directly from pci_dev rather than configuration space, which have
+>> been set properly already.
+>>
+>> And very sorry, for the patch 3. We haven't known exactly what's happened.
+>> I think the problem is caused by guest driver, but didn't confirm(and I
+>> have some misunderstandings with ZhaoYu for I thought we are agree on the
+>> reason, but after confirm with him, he didn't agree). I am doing more
+>> investigations to find the real cause.
+>>     
+>
+> Found the reason of patch 3.
+>
+> After insert guest driver module(vf driver), the driver would do a RMW to the 
+> command register to enable Bus Master bit(bit 2). And before that, MMIO bit 
+> have been set in the register. But without the patch 3, guest driver won't see 
+> the MMIO bit(bit 1), then just set 0x4 to the command register, with the side 
+> effect to unmap MMIO in QEmu. So patch 3 is needed(and what I thought before 
+> is right).
+>
+> Unset the bit only affect the QEmu, which would unmap the mapping for MMIO. 
+> Kernel side don't need this, so it's OK.
+>   
 
-On Sat, 7 Mar 2009, Frederic Weisbecker wrote:
->  
->  libftrace-y := ftrace.o
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index cc94f86..5152be3 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -242,6 +242,12 @@ static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
->  unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
->  	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO;
->  
-> +
-> +struct trace_array *__get_global_trace(void)
-> +{
-> +	return &global_trace;
-> +}
-> +
+Thanks for the explanations!
 
-
-Don't do that. It's opening up a can of worms ;-)
-
->  
-> @@ -568,6 +587,7 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
->  #endif /* CONFIG_FTRACE_STARTUP_TEST */
->  
->  extern void *head_page(struct trace_array_cpu *data);
-> +extern struct trace_array *__get_global_trace(void);
-
-Remove that too.
-
-> +void ftrace_syscall_enter(struct pt_regs *regs)
-> +{
-> +	struct trace_array *tr = __get_global_trace();
-
-Don't do that.
-
-> +	struct syscall_trace_enter *entry;
-> +	const struct syscall_trace_entry *sys_data;
-> +	struct ring_buffer_event *event;
-> +	struct trace_array_cpu *data;
-> +	int size;
-> +	int syscall_nr;
-> +	int nr_offset;
-> +	int cpu;
-> +
-> +	syscall_nr = syscall_get_nr(current, regs);
-> +	nr_offset = arch_syscall_trace_nr[syscall_nr];
-> +	if (!nr_offset || nr_offset >= __SYSCALL_TRACE_END)
-> +		return;
-> +
-> +	cpu = raw_smp_processor_id();
-> +	data = tr->data[cpu];
-> +
-> +	if (unlikely(atomic_read(&data->disabled)))
-> +		return;
-> +
-> +	sys_data = &syscall_trace_entries[nr_offset];
-> +	size = sizeof(*entry) + sizeof(unsigned long) * sys_data->nb_args;
-> +
-> +	event = trace_buffer_lock_reserve(tr, TRACE_SYSCALL_ENTER, size, 0, 0);
-
-Here you want:
-
-	trace_current_buffer_lock_reserve(TRACE_SYSCALL_ENTER, size, 0, 0);
-
-
--- Steve
-
-
-> +	if (!event)
-> +		return;
-> +
-> +	entry = ring_buffer_event_data(event);
-> +	entry->nr = nr_offset;
-> +	syscall_get_arguments(current, regs, 0, sys_data->nb_args, entry->args);
-> +
-> +	ring_buffer_unlock_commit(tr->buffer, event);
-> +	trace_wake_up();
-> +}
-> +
-> +void ftrace_syscall_exit(struct pt_regs *regs)
-> +{
-> +	struct trace_array *tr = __get_global_trace();
-> +	struct syscall_trace_exit *entry;
-> +	const struct syscall_trace_entry *sys_data;
-> +	struct ring_buffer_event *event;
-> +	struct trace_array_cpu *data;
-> +	int syscall_nr;
-> +	int nr_offset;
-> +	int cpu;
-> +
-> +	syscall_nr = syscall_get_nr(current, regs);
-> +	nr_offset = arch_syscall_trace_nr[syscall_nr];
-> +	if (!nr_offset || nr_offset >= __SYSCALL_TRACE_END)
-> +		return;
-> +
-> +	cpu = raw_smp_processor_id();
-> +	data = tr->data[cpu];
-> +
-> +	if (unlikely(atomic_read(&data->disabled)))
-> +		return;
-> +
-> +	sys_data = &syscall_trace_entries[nr_offset];
-> +
-> +	event = trace_buffer_lock_reserve(tr, TRACE_SYSCALL_EXIT,
-> +				sizeof(*entry), 0, 0);
-
-Same here.
-
-> +	if (!event)
-> +		return;
-> +
-> +	entry = ring_buffer_event_data(event);
-> +	entry->nr = nr_offset;
-> +	entry->ret = syscall_get_return_value(current, regs);
-> +
-> +	ring_buffer_unlock_commit(tr->buffer, event);
-> +	trace_wake_up();
-> +}
-> +
-
--- Steve
+-- 
+error compiling committee.c: too many arguments to function
 
