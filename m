@@ -1,108 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbZCIHnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbZCIHpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452AbZCIHnU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 03:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZCIHnK
+	id S1753384AbZCIHpj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 03:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbZCIHpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 03:43:10 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:37926 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752162AbZCIHnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 03:43:09 -0400
-Date: Mon, 9 Mar 2009 08:43:06 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Shan Wei <shanwei@cn.fujitsu.com>
-Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: CFQ is worse than other IO schedulers in some cases
-Message-ID: <20090309074306.GF11787@kernel.dk>
-References: <499BA413.2010705@cn.fujitsu.com> <1234944336.6141.8.camel@marge.simson.net> <49B4A81C.3070609@cn.fujitsu.com>
+	Mon, 9 Mar 2009 03:45:30 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:47966 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172AbZCIHp3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 03:45:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=T2B9v7sZpAUeUujuFREmHJkZt6RKsgc8M5rRlXefCXbg35iOqIN/HjVTUKpSZjEgwO
+         9vu7to7GRbrpR8RRYtTRrs2qpCpnqw6HPhVIWAxQSzIPeENh+o1yucHHJfzwXssOnZ08
+         OHA3zAfEmXltarRVUzh6hczijIxDzeY2JFHTY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B4A81C.3070609@cn.fujitsu.com>
+In-Reply-To: <49AB1A5C.6040300@zytor.com>
+References: <1235785882-17580-1-git-send-email-jeremy@goop.org>
+	 <20090228071534.GB9351@elte.hu> <49A8EA1A.50802@kernel.org>
+	 <49A8ED3D.1060704@kernel.org> <49A8F319.3030802@goop.org>
+	 <49A9E392.6090004@kernel.org> <49AA47D2.4020804@kernel.org>
+	 <49AA5356.3050602@zytor.com> <49AACEB3.5050206@kernel.org>
+	 <49AB1A5C.6040300@zytor.com>
+Date: Mon, 9 Mar 2009 00:45:27 -0700
+X-Google-Sender-Auth: 5fbc81931cbdf4cf
+Message-ID: <86802c440903090045y5bfa2201q198c6851c15a1d4d@mail.gmail.com>
+Subject: Re: [PATCH] x86: put initial_pg_tables into bss -v2
+From: Yinghai Lu <yinghai@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Content-Type: multipart/mixed; boundary=000e0cd28e8468c6500464aad161
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 09 2009, Shan Wei wrote:
-> Mike Galbraith said:
-> > On Wed, 2009-02-18 at 14:00 +0800, Shan Wei wrote:
-> > 
-> >> In sysbench(version:sysbench-0.4.10), I confirmed followings.
-> >>   - CFQ's performance is worse than other IO schedulers when only multiple
-> >>     threads test.
-> >>     (There is no difference under single thread test.)
-> >>   - It is worse than other IO scheduler when
-> >>     I used read mode. (No regression in write mode).
-> >>   - There is no difference among other IO schedulers. (e.g noop deadline)
-> >>
-> >>
-> >> The Test Result(sysbench):
-> >>    UNIT:Mb/sec
-> >>     __________________________________________________
-> >>     |   IO       |      thread  number               |  
-> >>     | scheduler  |-----------------------------------|
-> >>     |            |  1   |  3    |  5   |   7  |   9  |
-> >>     +------------|------|-------|------|------|------|
-> >>     |cfq         | 77.8 |  32.4 | 43.3 | 55.8 | 58.5 | 
-> >>     |noop        | 78.2 |  79.0 | 78.2 | 77.2 | 77.0 |
-> >>     |anticipatory| 78.2 |  78.6 | 78.4 | 77.8 | 78.1 |
-> >>     |deadline    | 76.9 |  78.4 | 77.0 | 78.4 | 77.9 |
-> >>     +------------------------------------------------+
-> > ???
-> > My Q6600 box agrees that cfq produces less throughput doing this test,
-> > but throughput here is ~flat. Disk is external SATA ST3500820AS.
-> >     _________________________________________________
-> >     |   IO       |     thread  number               |  
-> >     | scheduler  |----------------------------------|
-> >     |            |  1   |  3   |  5   |  7   |  9   |
-> >     +------------|------|------|------|------|------|
-> >     |cfq         | 84.4 | 89.1 | 91.3 | 88.8 | 88.8 |
-> >     |noop        |102.9 | 99.3 | 99.4 | 99.7 | 98.7 | 
-> >     |anticipatory|100.5 |100.1 | 99.8 | 99.7 | 99.6 | 
-> >     |deadline    | 97.9 | 98.7 | 99.5 | 99.5 | 99.3 | 
-> >     +-----------------------------------------------+
-> > 
-> 
-> I have tested sysbench tool on the SATA disk under 2.6.29-rc6, 
-> and don't set RAID.
-> 
-> [root@DaVid software]# lspci -nn
-> ...snip...
-> 00:02.5 IDE interface [0101]: Silicon Integrated Systems [SiS] 5513 [IDE] [1039:5513] (rev 01)
-> 00:05.0 IDE interface [0101]: Silicon Integrated Systems [SiS] RAID bus controller 180 SATA/PATA  [SiS] [1039:0180] (rev 01)
-> 
-> The attached script(sysbench-threads.sh) execute sysbench 4 times for each I/O scheduler.
-> And the average result is below:
->      ________________________________________
->      |   IO       |     thread  number       |  
->      | scheduler  |--------------------------|
->      |            |  1     |  3     |  5     |  
->      +------------|--------|--------|--------|
->      |cfq         | 60.324 | 33.982 | 37.309 |
->      |noop        | 57.391 | 60.406 | 57.355 | 
->      |anticipatory| 58.962 | 59.342 | 56.999 | 
->      |deadline    | 57.791 | 60.097 | 57.700 | 
->      +---------------------------------------+
-> 
-> I am wondering about the result vs Mike's.
-> why is the regression under multi-thread not present on Mike's box?
+--000e0cd28e8468c6500464aad161
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I don't know that much about the IO workload that sysbench generates, so
-it's hard to say. Since you both use SATA, I'm assuming you have write
-caching enabled on that drive? What file system and mount options are
-you using?
+On Sun, Mar 1, 2009 at 4:29 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> It's still really ugly, though. =A0A much easier and cleaner way would se=
+em to
+> be to calculate a far limit on the brk and then marking it as a formal
+> (non-alloc) section in the linker script and vmlinux file. =A0That way
+> anything that examines the vmlinux file will see it as an exclusion secti=
+on.
+> =A0We can (and should) even verify that we don't overflow the brk and pan=
+ic if
+> we do.
 
-> Jens, multi threads interleave the same file, and there may be
-> some requests that can merge but not merged on different thread queue,
-> So the CFQ performs poorly, right?
+please check attached patch.
 
-You can test that theory by editing
-block/cfq-iosched.c:cfq_allow_merge(), changing it to return 1 always.
+[PATCH] x86: put initial_pg_tables into .bss -v4
 
-I'll try and rerun this test here on various bits of storage and see
-what it turns up!
+Impact: cleanup
 
--- 
-Jens Axboe
+Don't use ram after _end blindly for pagetables. aka init pages is before _=
+end
+put those pg table into .bss
 
+v2: keep initial page table up to 512M only.
+v4: put initial page tables just before _end
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+
+YH
+
+--000e0cd28e8468c6500464aad161
+Content-Type: text/x-diff; charset=US-ASCII; name="initial_pg_tables_4.patch"
+Content-Disposition: attachment; filename="initial_pg_tables_4.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fs2ugn0c0
+
+W1BBVENIXSB4ODY6IHB1dCBpbml0aWFsX3BnX3RhYmxlcyBpbnRvIC5ic3MgLXY0CgpJbXBhY3Q6
+IGNsZWFudXAKCkRvbid0IHVzZSByYW0gYWZ0ZXIgX2VuZCBibGluZGx5IGZvciBwYWdldGFibGVz
+LiBha2EgaW5pdCBwYWdlcyBpcyBiZWZvcmUgX2VuZApwdXQgdGhvc2UgcGcgdGFibGUgaW50byAu
+YnNzCgp2Mjoga2VlcCBpbml0aWFsIHBhZ2UgdGFibGUgdXAgdG8gNTEyTSBvbmx5Lgp2NDogcHV0
+IGluaXRpYWwgcGFnZSB0YWJsZXMganVzdCBiZWZvcmUgX2VuZAoKU2lnbmVkLW9mZi1ieTogWWlu
+Z2hhaSBMdSA8eWluZ2hhaUBrZXJuZWwub3JnPgoKLS0tCiBhcmNoL3g4Ni9pbmNsdWRlL2FzbS9w
+YWdlXzMyX3R5cGVzLmggfCAgICA1ICsrKwogYXJjaC94ODYva2VybmVsL2hlYWQzMi5jICAgICAg
+ICAgICAgIHwgICAgMyArCiBhcmNoL3g4Ni9rZXJuZWwvaGVhZF8zMi5TICAgICAgICAgICAgfCAg
+IDU1ICsrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiBhcmNoL3g4Ni9rZXJuZWwv
+dm1saW51eF8zMi5sZHMuUyAgICAgfCAgIDExICsrKysrKy0KIDQgZmlsZXMgY2hhbmdlZCwgNDAg
+aW5zZXJ0aW9ucygrKSwgMzQgZGVsZXRpb25zKC0pCgpJbmRleDogbGludXgtMi42L2FyY2gveDg2
+L2tlcm5lbC9oZWFkMzIuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9hcmNoL3g4Ni9r
+ZXJuZWwvaGVhZDMyLmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvaGVhZDMyLmMKQEAg
+LTE4LDcgKzE4LDggQEAgdm9pZCBfX2luaXQgaTM4Nl9zdGFydF9rZXJuZWwodm9pZCkKIHsKIAly
+ZXNlcnZlX3RyYW1wb2xpbmVfbWVtb3J5KCk7CiAKLQlyZXNlcnZlX2Vhcmx5KF9fcGFfc3ltYm9s
+KCZfdGV4dCksIF9fcGFfc3ltYm9sKCZfZW5kKSwgIlRFWFQgREFUQSBCU1MiKTsKKwlyZXNlcnZl
+X2Vhcmx5KF9fcGFfc3ltYm9sKCZfdGV4dCksIF9fcGFfc3ltYm9sKCZfX2Jzc19zdG9wKSwKKwkJ
+CSAiVEVYVCBEQVRBIEJTUyIpOwogCiAjaWZkZWYgQ09ORklHX0JMS19ERVZfSU5JVFJECiAJLyog
+UmVzZXJ2ZSBJTklUUkQgKi8KSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvaGVhZF8z
+Mi5TCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gveDg2L2tlcm5lbC9oZWFkXzMy
+LlMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvaGVhZF8zMi5TCkBAIC0zOCw0MiArMzgs
+MzAgQEAKICNkZWZpbmUgWDg2X1ZFTkRPUl9JRAluZXdfY3B1X2RhdGErQ1BVSU5GT194ODZfdmVu
+ZG9yX2lkCiAKIC8qCi0gKiBUaGlzIGlzIGhvdyBtdWNoIG1lbW9yeSAqaW4gYWRkaXRpb24gdG8g
+dGhlIG1lbW9yeSBjb3ZlcmVkIHVwIHRvCi0gKiBhbmQgaW5jbHVkaW5nIF9lbmQqIHdlIG5lZWQg
+bWFwcGVkIGluaXRpYWxseS4KLSAqIFdlIG5lZWQ6Ci0gKiAgLSBvbmUgYml0IGZvciBlYWNoIHBv
+c3NpYmxlIHBhZ2UsIGJ1dCBvbmx5IGluIGxvdyBtZW1vcnksIHdoaWNoIG1lYW5zCi0gKiAgICAg
+Ml4zMi80MDk2LzggPSAxMjhLIHdvcnN0IGNhc2UgKDRHLzRHIHNwbGl0LikKKyAqIFRoaXMgaXMg
+aG93IG11Y2ggbWVtb3J5IGZvciBwYWdlIHRhYmxlIHRvIGFuZCBpbmNsdWRpbmcgX2VuZAorICog
+d2UgbmVlZCBtYXBwZWQgaW5pdGlhbGx5LgogICogIC0gZW5vdWdoIHNwYWNlIHRvIG1hcCBhbGwg
+bG93IG1lbW9yeSwgd2hpY2ggbWVhbnMKLSAqICAgICAoMl4zMi80MDk2KSAvIDEwMjQgcGFnZXMg
+KHdvcnN0IGNhc2UsIG5vbiBQQUUpCi0gKiAgICAgKDJeMzIvNDA5NikgLyA1MTIgKyA0IHBhZ2Vz
+ICh3b3JzdCBjYXNlIGZvciBQQUUpCi0gKiAgLSBhIGZldyBwYWdlcyBmb3IgYWxsb2NhdG9yIHVz
+ZSBiZWZvcmUgdGhlIGtlcm5lbCBwYWdldGFibGUgaGFzCi0gKiAgICAgYmVlbiBzZXQgdXAKKyAq
+ICAgICAoS0VSTkVMX0lNQUdFX1NJWkUvNDA5NikgLyAxMDI0IHBhZ2VzICh3b3JzdCBjYXNlLCBu
+b24gUEFFKQorICogICAgIChLRVJORUxfSU1BR0VfU0laRS80MDk2KSAvIDUxMiArIDQgcGFnZXMg
+KHdvcnN0IGNhc2UgZm9yIFBBRSkKICAqCiAgKiBNb2R1bG8gcm91bmRpbmcsIGVhY2ggbWVnYWJ5
+dGUgYXNzaWduZWQgaGVyZSByZXF1aXJlcyBhIGtpbG9ieXRlIG9mCiAgKiBtZW1vcnksIHdoaWNo
+IGlzIGN1cnJlbnRseSB1bnJlY2xhaW1lZC4KICAqCiAgKiBUaGlzIHNob3VsZCBiZSBhIG11bHRp
+cGxlIG9mIGEgcGFnZS4KKyAqCisgKiBLRVJORUxfSU1BR0VfU0laRSBzaG91bGQgYmUgZ3JlYXRl
+ciB0aGFuIHBhKF9lbmQpCisgKiBhbmQgc21hbGwgdGhhbiBtYXhfbG93X3Bmbiwgb3RoZXJ3aXNl
+IHdpbGwgd2FzdGUgc29tZSBwYWdlIHRhYmxlIGVudHJpZXMKICAqLwotTE9XX1BBR0VTID0gMTw8
+KDMyLVBBR0VfU0hJRlRfYXNtKQotCi0vKgotICogVG8gcHJlc2VydmUgdGhlIERNQSBwb29sIGlu
+IFBBR0VBTExPQyBrZXJuZWxzLCB3ZSdsbCBhbGxvY2F0ZQotICogcGFnZXRhYmxlcyBmcm9tIGFi
+b3ZlIHRoZSAxNk1CIERNQSBsaW1pdCwgc28gd2UnbGwgaGF2ZSB0byBzZXQKLSAqIHVwIHBhZ2V0
+YWJsZXMgMTZNQiBtb3JlICh3b3JzdC1jYXNlKToKLSAqLwotI2lmIGRlZmluZWQoQ09ORklHX0RF
+QlVHX1BBR0VBTExPQykgfHwgZGVmaW5lZChDT05GSUdfS01FTUNIRUNLKQotTE9XX1BBR0VTID0g
+TE9XX1BBR0VTICsgMHgxMDAwMDAwCi0jZW5kaWYKK0xPV19QQUdFUyA9IChLRVJORUxfSU1BR0Vf
+U0laRSArIFBBR0VfU0laRV9hc20gLSAxKT4+UEFHRV9TSElGVAogCiAjaWYgUFRSU19QRVJfUE1E
+ID4gMQogUEFHRV9UQUJMRV9TSVpFID0gKExPV19QQUdFUyAvIFBUUlNfUEVSX1BNRCkgKyBQVFJT
+X1BFUl9QR0QKICNlbHNlCiBQQUdFX1RBQkxFX1NJWkUgPSAoTE9XX1BBR0VTIC8gUFRSU19QRVJf
+UEdEKQogI2VuZGlmCi1CT09UQklUTUFQX1NJWkUgPSBMT1dfUEFHRVMgLyA4CiBBTExPQ0FUT1Jf
+U0xPUCA9IDQKIAotSU5JVF9NQVBfQkVZT05EX0VORCA9IEJPT1RCSVRNQVBfU0laRSArIChQQUdF
+X1RBQkxFX1NJWkUgKyBBTExPQ0FUT1JfU0xPUCkqUEFHRV9TSVpFX2FzbQorSU5JVF9NQVBfU0la
+RSA9IChQQUdFX1RBQkxFX1NJWkUgKyBBTExPQ0FUT1JfU0xPUCkgKiBQQUdFX1NJWkVfYXNtCiAK
+IC8qCiAgKiAzMi1iaXQga2VybmVsIGVudHJ5cG9pbnQ7IG9ubHkgdXNlZCBieSB0aGUgYm9vdCBD
+UFUuICBPbiBlbnRyeSwKQEAgLTE2NiwxMCArMTU0LDkgQEAgbnVtX3N1YmFyY2hfZW50cmllcyA9
+ICguIC0gc3ViYXJjaF9lbnRyaQogCiAvKgogICogSW5pdGlhbGl6ZSBwYWdlIHRhYmxlcy4gIFRo
+aXMgY3JlYXRlcyBhIFBERSBhbmQgYSBzZXQgb2YgcGFnZQotICogdGFibGVzLCB3aGljaCBhcmUg
+bG9jYXRlZCBpbW1lZGlhdGVseSBiZXlvbmQgX2VuZC4gIFRoZSB2YXJpYWJsZQotICogaW5pdF9w
+Z190YWJsZXNfZW5kIGlzIHNldCB1cCB0byBwb2ludCB0byB0aGUgZmlyc3QgInNhZmUiIGxvY2F0
+aW9uLgorICogdGFibGVzLCB3aGljaCBhcmUgbG9jYXRlZCBpbW1lZGlhdGVseSBiZXlvbmQgX2Vu
+ZC4KICAqIE1hcHBpbmdzIGFyZSBjcmVhdGVkIGJvdGggYXQgdmlydHVhbCBhZGRyZXNzIDAgKGlk
+ZW50aXR5IG1hcHBpbmcpCi0gKiBhbmQgUEFHRV9PRkZTRVQgZm9yIHVwIHRvIF9lbmQrc2l6ZW9m
+KHBhZ2UgdGFibGVzKStJTklUX01BUF9CRVlPTkRfRU5ELgorICogYW5kIFBBR0VfT0ZGU0VUIGZv
+ciB1cCB0byBfZW5kCiAgKgogICogTm90ZSB0aGF0IHRoZSBzdGFjayBpcyBub3QgeWV0IHNldCB1
+cCEKICAqLwpAQCAtMjA5LDE0ICsxOTYsMTQgQEAgZGVmYXVsdF9lbnRyeToKIAlsb29wIDExYgog
+CiAJLyoKLQkgKiBFbmQgY29uZGl0aW9uOiB3ZSBtdXN0IG1hcCB1cCB0byBhbmQgaW5jbHVkaW5n
+IElOSVRfTUFQX0JFWU9ORF9FTkQKLQkgKiBieXRlcyBiZXlvbmQgdGhlIGVuZCBvZiBvdXIgb3du
+IHBhZ2UgdGFibGVzLgorCSAqIEVuZCBjb25kaXRpb246IHdlIG11c3QgbWFwIHVwIHRvIHRoZSBl
+bmQuCiAJICovCi0JbGVhbCAoSU5JVF9NQVBfQkVZT05EX0VORCtQVEVfSURFTlRfQVRUUikoJWVk
+aSksJWVicAorCW1vdmwgJHBhKF9lbmQpLCAlZWJwCisJYWRkbCBQVEVfSURFTlRfQVRUUiwgJWVi
+cAogCWNtcGwgJWVicCwlZWF4CiAJamIgMTBiCiAxOgotCW1vdmwgJWVkaSxwYShpbml0X3BnX3Rh
+Ymxlc19lbmQpCisJbW92bCAlZWRpLCBwYShpbml0X3BnX3RhYmxlc19lbmQpCiAJc2hybCAkMTIs
+ICVlYXgKIAltb3ZsICVlYXgsIHBhKG1heF9wZm5fbWFwcGVkKQogCkBAIC0yNDIsMTQgKzIyOSwx
+NCBAQCBwYWdlX3BkZV9vZmZzZXQgPSAoX19QQUdFX09GRlNFVCA+PiAyMCk7CiAJYWRkbCAkMHgx
+MDAwLCVlYXgKIAlsb29wIDExYgogCS8qCi0JICogRW5kIGNvbmRpdGlvbjogd2UgbXVzdCBtYXAg
+dXAgdG8gYW5kIGluY2x1ZGluZyBJTklUX01BUF9CRVlPTkRfRU5ECi0JICogYnl0ZXMgYmV5b25k
+IHRoZSBlbmQgb2Ygb3VyIG93biBwYWdlIHRhYmxlczsgdGhlICsweDAwNyBpcworCSAqIEVuZCBj
+b25kaXRpb246IHdlIG11c3QgbWFwIHVwIHRvIGVuZCwgdGhlICsweDAwNyBpcwogCSAqIHRoZSBh
+dHRyaWJ1dGUgYml0cwogCSAqLwotCWxlYWwgKElOSVRfTUFQX0JFWU9ORF9FTkQrUFRFX0lERU5U
+X0FUVFIpKCVlZGkpLCVlYnAKKwltb3ZsICRwYShfZW5kKSwgJWVicAorCWFkZGwgUFRFX0lERU5U
+X0FUVFIsICVlYnAKIAljbXBsICVlYnAsJWVheAogCWpiIDEwYgotCW1vdmwgJWVkaSxwYShpbml0
+X3BnX3RhYmxlc19lbmQpCisJbW92bCAlZWRpLCBwYShpbml0X3BnX3RhYmxlc19lbmQpCiAJc2hy
+bCAkMTIsICVlYXgKIAltb3ZsICVlYXgsIHBhKG1heF9wZm5fbWFwcGVkKQogCkBAIC02MzYsNiAr
+NjIzLDEwIEBAIHN3YXBwZXJfcGdfZml4bWFwOgogCS5maWxsIDEwMjQsNCwwCiBFTlRSWShlbXB0
+eV96ZXJvX3BhZ2UpCiAJLmZpbGwgNDA5NiwxLDAKKworLnNlY3Rpb24gIi5ic3MuZXh0cmFfcGFn
+ZV9hbGlnbmVkIiwid2EiCisJLmFsaWduIFBBR0VfU0laRV9hc20KKwkuZmlsbCBJTklUX01BUF9T
+SVpFLDEsMAogLyoKICAqIFRoaXMgc3RhcnRzIHRoZSBkYXRhIHNlY3Rpb24uCiAgKi8KSW5kZXg6
+IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvdm1saW51eF8zMi5sZHMuUwo9PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0t
+LSBsaW51eC0yLjYub3JpZy9hcmNoL3g4Ni9rZXJuZWwvdm1saW51eF8zMi5sZHMuUworKysgbGlu
+dXgtMi42L2FyY2gveDg2L2tlcm5lbC92bWxpbnV4XzMyLmxkcy5TCkBAIC0xODksMTAgKzE4OSwx
+MyBAQCBTRUNUSU9OUwogCSooLmJzcykKIAkuID0gQUxJR04oNCk7CiAJX19ic3Nfc3RvcCA9IC47
+Ci0gIAlfZW5kID0gLiA7CisJLyogZXh0cmFfcGFnZV9hbGlnbmVkIG11c3QgYmUgbGFzdCBvbmUg
+YmVmb3JlIGVuZCovCiAJLyogVGhpcyBpcyB3aGVyZSB0aGUga2VybmVsIGNyZWF0ZXMgdGhlIGVh
+cmx5IGJvb3QgcGFnZSB0YWJsZXMgKi8KIAkuID0gQUxJR04oUEFHRV9TSVpFKTsKIAlwZzAgPSAu
+IDsKKwkqKC5ic3MuZXh0cmFfcGFnZV9hbGlnbmVkKQorCS4gPSBBTElHTig4KTsKKwlfZW5kID0g
+LiA7CiAgIH0KIAogICAvKiBTZWN0aW9ucyB0byBiZSBkaXNjYXJkZWQgKi8KQEAgLTIwNSw2ICsy
+MDgsMTIgQEAgU0VDVElPTlMKICAgRFdBUkZfREVCVUcKIH0KIAorLyoKKyAqIEJ1aWxkLXRpbWUg
+Y2hlY2sgb24gdGhlIGltYWdlIHNpemU6CisgKi8KK0FTU0VSVCgoX2VuZCAtIExPQURfT0ZGU0VU
+IDw9IEtFUk5FTF9JTUFHRV9TSVpFKSwKKwkia2VybmVsIGltYWdlIGJpZ2dlciB0aGFuIEtFUk5F
+TF9JTUFHRV9TSVpFIikKKwogI2lmZGVmIENPTkZJR19LRVhFQwogLyogTGluayB0aW1lIGNoZWNr
+cyAqLwogI2luY2x1ZGUgPGFzbS9rZXhlYy5oPgpJbmRleDogbGludXgtMi42L2FyY2gveDg2L2lu
+Y2x1ZGUvYXNtL3BhZ2VfMzJfdHlwZXMuaAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9h
+cmNoL3g4Ni9pbmNsdWRlL2FzbS9wYWdlXzMyX3R5cGVzLmgKKysrIGxpbnV4LTIuNi9hcmNoL3g4
+Ni9pbmNsdWRlL2FzbS9wYWdlXzMyX3R5cGVzLmgKQEAgLTM5LDYgKzM5LDExIEBACiAjZGVmaW5l
+IF9fVklSVFVBTF9NQVNLX1NISUZUCTMyCiAjZW5kaWYJLyogQ09ORklHX1g4Nl9QQUUgKi8KIAor
+LyoKKyAqIEtlcm5lbCBpbWFnZSBzaXplIGlzIGxpbWl0ZWQgdG8gNTEyIE1CIChzZWUgaW4gYXJj
+aC94ODYva2VybmVsL2hlYWRfMzIuUykKKyAqLworI2RlZmluZSBLRVJORUxfSU1BR0VfU0laRQko
+NTEyICogMTAyNCAqIDEwMjQpCisKICNpZm5kZWYgX19BU1NFTUJMWV9fCiAKIC8qCg==
+--000e0cd28e8468c6500464aad161--
