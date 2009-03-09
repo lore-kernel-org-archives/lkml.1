@@ -1,85 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZCIKfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbZCIKn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753759AbZCIKfV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 06:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZCIKfH
+	id S1753913AbZCIKn2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 06:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbZCIKnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 06:35:07 -0400
-Received: from mailbox-us-s-12.mailhostingserver.com ([75.125.101.9]:47480
-	"EHLO mailbox-us-s-12.mailhostingserver.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751192AbZCIKfF (ORCPT
+	Mon, 9 Mar 2009 06:43:18 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:63657 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753145AbZCIKnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 06:35:05 -0400
-X-Greylist: delayed 443 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Mar 2009 06:35:05 EDT
-Date: Mon, 9 Mar 2009 11:27:30 +0100
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       Russell King <linux@arm.linux.org.uk>,
-       Steven Rostedt <rostedt@rostedt.homelinux.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] ftrace: fix crash due to tracing of __naked functions
-Message-ID: <20090309102730.GA32492@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
-	Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	linux-kernel@vger.kernel.org,
-	Abhishek Sagar <sagar.abhishek@gmail.com>,
-	Russell King <linux@arm.linux.org.uk>,
-	Steven Rostedt <rostedt@home.goodmis.org>,
-	Ingo Molnar <mingo@elte.hu>
-References: <1236584800-7686-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	Mon, 9 Mar 2009 06:43:17 -0400
+Date: Mon, 9 Mar 2009 11:43:14 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jim Paris <jim@jtan.com>, Vivien Chappelier <vivien.chappelier@free.fr>,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       Geoff Levand <geoffrey.levand@am.sony.com>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Cell Broadband Engine OSS Development 
+	<cbe-oss-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH/RFC] ps3/block: Add ps3vram-ng driver for accessing video
+      RAM as block device
+In-Reply-To: <20090306190350.GD11787@kernel.dk>
+Message-ID: <alpine.LRH.2.00.0903091142500.19484@vixen.sonytel.be>
+References: <alpine.LRH.2.00.0903041444300.32279@vixen.sonytel.be> <20090305083701.GQ11787@kernel.dk> <alpine.LRH.2.00.0903051146440.2618@vixen.sonytel.be> <20090305110940.GY11787@kernel.dk> <alpine.LRH.2.00.0903051325450.2618@vixen.sonytel.be>
+ <20090306074639.GN11787@kernel.dk> <alpine.LRH.2.00.0903061347360.16809@vixen.sonytel.be> <20090306125832.GX11787@kernel.dk> <alpine.LRH.2.00.0903061525340.16809@vixen.sonytel.be> <20090306190350.GD11787@kernel.dk>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1236584800-7686-1-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Mon, Mar 09, 2009 at 08:46:40AM +0100 Uwe Kleine-König ha dit:
-
-> This is a fix for the following crash observed in 2.6.29-rc3:
-> http://lkml.org/lkml/2009/1/29/150
+On Fri, 6 Mar 2009, Jens Axboe wrote:
+> On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
+> > On Fri, 6 Mar 2009, Jens Axboe wrote:
+> > > On Fri, Mar 06 2009, Geert Uytterhoeven wrote:
+> > > > On Fri, 6 Mar 2009, Jens Axboe wrote:
+> > > > > On Thu, Mar 05 2009, Geert Uytterhoeven wrote:
+> > > > > > But then I noticed ps3vram_make_request() may be called concurrently,
+> > > > > > so I had to add a mutex to avoid data corruption. This slows the
+> > > > > > driver down, and in the end, the version with a thread turns out to be
+> > > > > > ca. 1% faster. The version without a thread is about 50 lines less
+> > > > > > code, though.
+> > > > >
+> > > > > That is correct, ->make_request_fn may get reentered. I'm not surprised
+> > > > > that performance dropped if you just shoved everything under a mutex.
+> > > > > You could be a little more smart and queue concurrent bio's for
+> > > > > processing when the current one is complete though, there are several
+> > > > > approaches there that be a lot faster than going all the way through the
+> > > > > IO stack and scheduler just to avoid concurrency.
+> > > >
+> > > > Yes, using a spinlock and queueing requests on a list if the driver is
+> > > > busy can be done after 2.6.29...
+> > >
+> > > Certainly. Even just replacing your current mutex with a spinlock during
+> > > the memcpy() would surely be a lot faster. Or even just grabbing the
+> > > mutex before calling into the write for the duration of the bio. The way
+> > > you do it is certain context switch death :-)
+> > 
+> > It's not just the memcpy(). ps3vram_{up,down}load() call msleep(), so
+> > I cannot use a spinlock.
 > 
-> On ARM it doesn't make sense to trace a naked function because then
-> mcount is called without stack and frame pointer being set up and there
-> is no chance to restore the lr register to the value before mcount was
-> called.
-> 
-> Compared to the original fix posted to arm-linux-kernel ML on 29 Jan
-> 2009 by Abhishek Sagar I only changed the definition of __naked for ARM.
-> 
-> Reported-by: Matthias Kaehlcke <matthias@kaehlcke.net>
-> Cc: Abhishek Sagar <sagar.abhishek@gmail.com>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Steven Rostedt <rostedt@home.goodmis.org>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> ---
-> Hello,
-> 
-> without this change a kernel having CONFIG_FUNCTION_TRACER=y doesn't
-> boot on many maschines.  It would be great if this change would make it
-> into .29.
+> Ah right, I hadn't looked close enough. But putting the mutex_lock()
+> outside of the bio_for_each_segment() is going to be much faster than
+> getting/releasing it for each segment.
 
-i agree that it would be convenient to have this resolved in .29
+It doesn't seem to make any measurable difference, so I'm gonna leave it for
+now.
 
-Tested-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+With kind regards,
 
--- 
-Matthias Kaehlcke
-Embedded Linux Engineer
-Barcelona
+Geert Uytterhoeven
+Software Architect
 
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-  The salvation of mankind lies only in making everything the concern of all
-                         (Alexander Solzhenitsyn)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
