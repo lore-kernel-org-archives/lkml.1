@@ -1,47 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZCIUoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZCIUo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291AbZCIUoU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 16:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbZCIUoE
+	id S1755353AbZCIUo4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 16:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZCIUoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 16:44:04 -0400
-Received: from smtp.tal.de ([81.92.1.5]:52224 "EHLO smtp.tal.de"
+	Mon, 9 Mar 2009 16:44:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44670 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751315AbZCIUoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 16:44:03 -0400
-X-Greylist: delayed 2522 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Mar 2009 16:44:03 EDT
-From: ib@wupperonline.de (Ingo Brueckl)
-Date: Mon, 09 Mar 2009 20:06:00 +0100
-Subject: [PATCH] unnecessary SCSI module
-X-Mailer: blueMail 1.4 (SlipDoor 2.2)
-Message-ID: <49b5689f@wupperonline.de>
+	id S1751319AbZCIUop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 16:44:45 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Michael Kerrisk <michael.kerrisk@googlemail.com>
+Cc: linux-aio <linux-aio@kvack.org>, michael.kerrisk@gmail.com,
+       zach.brown@oracle.com, bcrl@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>
+Subject: Re: [patch] man-pages: add documentation about the memlock  implications of io_setup
+References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>
+	<x49zlfud6w7.fsf@segfault.boston.devel.redhat.com>
+	<c49095e30903090948n2d015516t480e917c36943001@mail.gmail.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 09 Mar 2009 16:44:01 -0400
+In-Reply-To: <c49095e30903090948n2d015516t480e917c36943001@mail.gmail.com>
+	(Michael Kerrisk's message of "Tue, 10 Mar 2009 05:48:07 +1300")
+Message-ID: <x494oy2ctpq.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-To: James.Bottomley@HansenPartnership.com
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When configuring MODULES with the kernel to be able to load external drivers
-coming as modules, but not using anything as module in the kernel itself, one
-would expect to end up in a module-free kernel. Currently, you don't if you
-use SCSI. You'll get one unnecessary module.
+Michael Kerrisk <michael.kerrisk@googlemail.com> writes:
 
-Please consider the attached patch.
+> [RESEND: Really CC+=Vegard Nossum, this time, and += mtk.manpages@, as well]
+>
+> Hi Jeff,
+>
+> Note that my address for man-pages is mtk.manpages@gmail.com.
 
-Signed-off-by: Ingo Brueckl <ib@wupperonline.de>
+Sorry about that!
 
---- linux-2.6.28/drivers/scsi/Kconfig.orig	2008-12-25 00:26:37.000000000 +0100
-+++ linux-2.6.28/drivers/scsi/Kconfig	2009-03-06 22:49:40.000000000 +0100
-@@ -259,7 +259,7 @@ config SCSI_SCAN_ASYNC
- config SCSI_WAIT_SCAN
- 	tristate
- 	default m
--	depends on SCSI
-+	depends on SCSI = m || SCSI_SCAN_ASYNC = y
- 	depends on MODULES
+> On Tue, Mar 10, 2009 at 4:59 AM, Jeff Moyer <jmoyer@redhat.com> wrote:
+>> Hi,
+>>
+>> This patch, against man-pages-3.19, adds verbiage surrounding the newly
+>> proposed accounting of pinned aio completion ring pages against the
+>> memlock rlimit.  It also fixes up a few references to aio_context_t
+>> (which should be io_context_t).  Sorry for conflating the two, I can
+>> break it apart if needed.
+>
+> Breaking apart really would be better.  Could you resubmit (to
+> mtk.manpages@, and CC linux-man@vger) please?
 
- menu "SCSI Transports"
+Sure thing.  I'll address your question when I resubmit.
+
+Thanks!
+
+Jeff
