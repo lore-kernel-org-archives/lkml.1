@@ -1,150 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751153AbZCIMOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751161AbZCIM1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751153AbZCIMOz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 08:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZCIMOq
+	id S1751161AbZCIM1M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 08:27:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbZCIM0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 08:14:46 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:35827 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751078AbZCIMOp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 08:14:45 -0400
-Date: Mon, 9 Mar 2009 13:14:43 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Shan Wei <shanwei@cn.fujitsu.com>
-Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org
-Subject: Re: CFQ is worse than other IO schedulers in some cases
-Message-ID: <20090309121443.GP11787@kernel.dk>
-References: <499BA413.2010705@cn.fujitsu.com> <1234944336.6141.8.camel@marge.simson.net> <49B4A81C.3070609@cn.fujitsu.com> <20090309074306.GF11787@kernel.dk> <49B50551.1030305@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B50551.1030305@cn.fujitsu.com>
+	Mon, 9 Mar 2009 08:26:55 -0400
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:35321 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbZCIM0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 08:26:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=u8NRgVv5Etv8lS0nr173BIhRtRGNL3uSAqK2WvLKjbRW+ij+uOI5ymx56WITYgugg4
+         U+4QbGASQOUdK1qOOjrxlGCoEZ2vafAHu0pLUkt3hYqJT1cb7K4uMKwAs/KnEuElbV/j
+         aBECQ95c/koNQnd5D34a8OHmWQxmB+rCFa3BU=
+Subject: Re: [BUG] Loading both ehci-hcd and uhci-hcd drivers causes my
+ printer to fail
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1236593260.609.1.camel@maxim-laptop>
+References: <Pine.LNX.4.44L0.0903081243100.5243-100000@netrider.rowland.org>
+	 <1236593260.609.1.camel@maxim-laptop>
+Content-Type: text/plain
+Date: Mon, 09 Mar 2009 14:26:46 +0200
+Message-Id: <1236601606.7762.15.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 09 2009, Shan Wei wrote:
-> Jens Axboe said:
-> > On Mon, Mar 09 2009, Shan Wei wrote:
-> >> Mike Galbraith said:
-> >>> On Wed, 2009-02-18 at 14:00 +0800, Shan Wei wrote:
-> >>>
-> >>>> In sysbench(version:sysbench-0.4.10), I confirmed followings.
-> >>>>   - CFQ's performance is worse than other IO schedulers when only multiple
-> >>>>     threads test.
-> >>>>     (There is no difference under single thread test.)
-> >>>>   - It is worse than other IO scheduler when
-> >>>>     I used read mode. (No regression in write mode).
-> >>>>   - There is no difference among other IO schedulers. (e.g noop deadline)
-> >>>>
-> >>>>
-> >>>> The Test Result(sysbench):
-> >>>>    UNIT:Mb/sec
-> >>>>     __________________________________________________
-> >>>>     |   IO       |      thread  number               |
-> >>>>     | scheduler  |-----------------------------------|
-> >>>>     |            |  1   |  3    |  5   |   7  |   9  |
-> >>>>     +------------|------|-------|------|------|------|
-> >>>>     |cfq         | 77.8 |  32.4 | 43.3 | 55.8 | 58.5 |
-> >>>>     |noop        | 78.2 |  79.0 | 78.2 | 77.2 | 77.0 |
-> >>>>     |anticipatory| 78.2 |  78.6 | 78.4 | 77.8 | 78.1 |
-> >>>>     |deadline    | 76.9 |  78.4 | 77.0 | 78.4 | 77.9 |
-> >>>>     +------------------------------------------------+
-> >>> ???
-> >>> My Q6600 box agrees that cfq produces less throughput doing this test,
-> >>> but throughput here is ~flat. Disk is external SATA ST3500820AS.
-> >>>     _________________________________________________
-> >>>     |   IO       |     thread  number               |
-> >>>     | scheduler  |----------------------------------|
-> >>>     |            |  1   |  3   |  5   |  7   |  9   |
-> >>>     +------------|------|------|------|------|------|
-> >>>     |cfq         | 84.4 | 89.1 | 91.3 | 88.8 | 88.8 |
-> >>>     |noop        |102.9 | 99.3 | 99.4 | 99.7 | 98.7 |
-> >>>     |anticipatory|100.5 |100.1 | 99.8 | 99.7 | 99.6 |
-> >>>     |deadline    | 97.9 | 98.7 | 99.5 | 99.5 | 99.3 |
-> >>>     +-----------------------------------------------+
-> >>>
-> >> I have tested sysbench tool on the SATA disk under 2.6.29-rc6,
-> >> and don't set RAID.
-> >>
-> >> [root@DaVid software]# lspci -nn
-> >> ...snip...
-> >> 00:02.5 IDE interface [0101]: Silicon Integrated Systems [SiS] 5513 [IDE] [1039:5513] (rev 01)
-> >> 00:05.0 IDE interface [0101]: Silicon Integrated Systems [SiS] RAID bus controller 180 SATA/PATA  [SiS] [1039:0180] (rev 01)
-> >>
-> >> The attached script(sysbench-threads.sh) execute sysbench 4 times for each I/O scheduler.
-> >> And the average result is below:
-> >>      ________________________________________
-> >>      |   IO       |     thread  number       |
-> >>      | scheduler  |--------------------------|
-> >>      |            |  1     |  3     |  5     |
-> >>      +------------|--------|--------|--------|
-> >>      |cfq         | 60.324 | 33.982 | 37.309 |
-> >>      |noop        | 57.391 | 60.406 | 57.355 |
-> >>      |anticipatory| 58.962 | 59.342 | 56.999 |
-> >>      |deadline    | 57.791 | 60.097 | 57.700 |
-> >>      +---------------------------------------+
-> >>
-> >> I am wondering about the result vs Mike's.
-> >> why is the regression under multi-thread not present on Mike's box?
-> >
-> > I don't know that much about the IO workload that sysbench generates, so
-> > it's hard to say. Since you both use SATA, I'm assuming you have write
-> > caching enabled on that drive? What file system and mount options are
-> > you using?
-> >
-> 
-> How to see whether the write caching enabled ?
+On Mon, 2009-03-09 at 12:07 +0200, Maxim Levitsky wrote:
+> On Sun, 2009-03-08 at 12:58 -0400, Alan Stern wrote:
+> > On Sun, 8 Mar 2009, Maxim Levitsky wrote:
+> > 
+> > > > No, adding a dependency won't work because it is valid to load 
+> > > > uhci-hcd without ehci-hcd.  The only time a problem occurs is if you 
+> > > > load both of them in the wrong order.  (And in fact it's pretty rare 
+> > > > for that to cause a real problem -- mostly you just get some annoying 
+> > > > messages in the log.)
+> > > But since it can cause a problem, this has to be somehow automatically
+> > > fixed isn't it?
+> > 
+> > Can it cause a problem?  I'm not so sure -- it depends on what you mean 
+> > by "problem".  One person complained forcefully just because he didn't 
+> > like all the extra "disconnect" messages in the system log, even though 
+> > everything worked perfectly.
+> > 
+> > > For example how to I ensure the correct order with udev?
+> > 
+> > You can't.  But you can add rules to /etc/modprobe.conf to insure that 
+> > ehci-hcd is always loaded before uhci-hcd.
+> > 
+> > > > CONFIG_USB_EHCI_ROOT_HUB_TT shouldn't make any difference at all.  
+> > > > That setting matters only for hardware using the ARC/TDI design, which
+> > > > is not present in your Intel chipset.  Likewise, provided ehci-hcd is
+> > > > loaded first, it shouldn't make any difference whether uhci-hcd is
+> > > > loaded or not.
+> > > Well, I retest this.
+> > > But it seems to work
+> > 
+> > Best would be if you could send two usbmon traces, one showing the 
+> > problem and one showing what happens when uhci-hcd isn't loaded but 
+> > everything else is the same.  For each test, plug in the printer's USB 
+> > cable after starting the trace.
+Sorry, sorry, sorry.
 
-If it's a sata drive, then it'll have write caching enabled (unless it's
-some custom firmware for storage units). You can check with the
-'cache_type' sysfs file in the scsi_disk directory for that device.
+is was the CONFIG_USB_EHCI_TT_NEWSCHED that did it.
+I confused both options, without the above option printer works
+flawlessly.
 
-> Mount the device with default options just like ???mount /dev/sda3 /mnt???.
-> The file system of the device is ext3.
+In addition I instructed modprobe to load ehci when it loads uhci, and
+then uhci.
 
-OK
+Truth is truth, I have again seen same timeout messages, just after I
+reboot the printer. It is possible that some of the hp scripts, eg the
+one that loads firmware, queries the printer while firmware loads or so,
+anyway even after such message printer works (I printed a page using
+it).
 
-> >> Jens, multi threads interleave the same file, and there may be
-> >> some requests that can merge but not merged on different thread queue,
-> >> So the CFQ performs poorly, right?
-> >
-> > You can test that theory by editing
-> > block/cfq-iosched.c:cfq_allow_merge(), changing it to return 1 always.
-> >
-> 
-> I mean that: five threads read the file like below.
-> Are there some requests that can merge but not merged between threads?
-> 
-> CFQ manages an request queue for each process.
-> Is it the same for thread?
 
-I understood your description, my suggested edit would make sure that
-you always do merging. CFQ manages a cfq_queue per process OR thread,
-the request queue is the same.
 
-Or you can just take iostat samples before and after an io scheduler
-test to see how may ios you issued and how many merges you got etc.
+Now I will enable again the CONFIG_USB_EHCI_TT_NEWSCHED, and see how
+fast it will fail.
 
-> 
 
-> >
-> >        t_0   t_1   t_2   t_3   t_4   t_0   t_1
-> >         ^     ^     ^     ^     ^     ^     ^
-> >      ---|-----|-----|-----|-----|-----|-----|--------
-> > file | 16k | 16k | 16k | 16k | 16k | 16k | 16k | ...
-> >      ------------------------------------------------
-> >                   (num-threads=5)
-> >
-> > (t_0 stand for the first thread)
-> > (the executed threads are decide by the thread scheduler)
-> 
-> > I'll try and rerun this test here on various bits of storage and see
-> > what it turns up!
-> >
-> 
-
--- 
-Jens Axboe
+Best regards,
+	Maxim Levitsky
 
