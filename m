@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbZCIVKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbZCIVRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753669AbZCIVKo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 17:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbZCIVKe
+	id S1753724AbZCIVRG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 17:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZCIVQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 17:10:34 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:50818 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752202AbZCIVKe (ORCPT
+	Mon, 9 Mar 2009 17:16:53 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:38781 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751286AbZCIVQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 17:10:34 -0400
-Subject: Re: [PATCH] unnecessary SCSI module
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Brueckl <ib@wupperonline.de>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <49b5689f@wupperonline.de>
-References: <49b5689f@wupperonline.de>
-Content-Type: text/plain
-Date: Mon, 09 Mar 2009 21:10:29 +0000
-Message-Id: <1236633029.6029.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Mar 2009 17:16:52 -0400
+Date: Mon, 9 Mar 2009 17:14:07 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: David Rientjes <rientjes@google.com>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm] cpusets: add memory_slab_hardwall flag
+In-Reply-To: <alpine.DEB.2.00.0903091313090.27253@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.10.0903091706540.1861@qirst.com>
+References: <20090309123011.A228.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0903090206010.24605@chino.kir.corp.google.com> <20090309181756.CF66.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0903091313090.27253@chino.kir.corp.google.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-09 at 20:06 +0100, Ingo Brueckl wrote:
-> When configuring MODULES with the kernel to be able to load external drivers
-> coming as modules, but not using anything as module in the kernel itself, one
-> would expect to end up in a module-free kernel. Currently, you don't if you
-> use SCSI. You'll get one unnecessary module.
-> 
-> Please consider the attached patch.
-> 
-> Signed-off-by: Ingo Brueckl <ib@wupperonline.de>
-> 
-> --- linux-2.6.28/drivers/scsi/Kconfig.orig	2008-12-25 00:26:37.000000000 +0100
-> +++ linux-2.6.28/drivers/scsi/Kconfig	2009-03-06 22:49:40.000000000 +0100
-> @@ -259,7 +259,7 @@ config SCSI_SCAN_ASYNC
->  config SCSI_WAIT_SCAN
->  	tristate
->  	default m
-> -	depends on SCSI
-> +	depends on SCSI = m || SCSI_SCAN_ASYNC = y
+On Mon, 9 Mar 2009, David Rientjes wrote:
 
-This isn't right because SCSI_SCAN_ASYNC only sets the *default*
-behaviour of the kernel.  Even if it's n the user can still boot up with
-async scans by setting the kernel parameter.
+> On Mon, 9 Mar 2009, KOSAKI Motohiro wrote:
+>
+> > My question mean, Why anyone need isolation?
+> > your patch insert new branch into hotpath.
+> > then, it makes slower hotpath a abit although a user don't use this feature.
+> On large NUMA machines, it is currently possible for a very large
+> percentage (if not all) of your slab allocations to come from memory that
+> is distant from your application's set of allowable cpus.  Such
+> allocations that are long-lived would benefit from having affinity to
+> those processors.  Again, this is the typical use case for cpusets: to
+> bind memory nodes to groups of cpus with affinity to it for the tasks
+> attached to the cpuset.
 
-It also keeps coming up regularly:
+Can you show us a real workload that suffers from this issue?
 
-http://marc.info/?t=122658550300002
+If you want to make sure that an allocation comes from a certain node then
+specifying the node in kmalloc_node() will give you what you want.
 
-James
+> > typically, slab cache don't need strict node binding because
+> > inode/dentry touched from multiple cpus.
+> This change would obviously require inode and dentry objects to originate
+> from a node on the cpuset's set of mems_allowed.  That would incur a
+> performance penalty if the cpu slab is not from such a node, but that is
+> assumed by the user who has enabled the option.
 
+The usage of kernel objects may not be cpuset specific. This is true for
+other objects than inode and dentries well.
+
+> > In addition, on large numa systems, slab cache is relatively small
+> > than page cache. then this feature's improvement seems relatively small too.
+> That's irrelevant, large NUMA machines may still require memory affinity
+> to a specific group of cpus, the size of the global slab cache isn't
+> important if that's the goal.  When the option is enabled for cpusets
+> that require that memory locality, we happily trade off partial list
+> fragmentation and increased slab allocations for the long-lived local
+> allocations.
+
+Other memory may spill over too. F.e. two processes from disjunct cpu sets
+cause faults in the same address range (its rather common for this to
+happen to glibc code f.e.). Two processes may use another kernel feature
+that buffers objects (are you going to want to search the LRU lists for objects
+from the right node?)
+
+NUMA affinity is there in the large picture. In detail the allocation
+strategies over nodes etc etc may be disturbed by this and that in
+particular if processes with disjoint cpusets run on the same processor.
+
+Just dont do it. Dedicate a cpu to a cpuset. Overlapping cpusets can cause
+other strange things as well.
 
