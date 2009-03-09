@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbZCITTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbZCITVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753067AbZCITTA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 15:19:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbZCITSt
+	id S1754346AbZCITVe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 15:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZCITVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 15:18:49 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1592 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbZCITSs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 15:18:48 -0400
-Subject: Re: [rtc-linux] Re: [PATCH 7/7] powerpc/ps3: Add rtc-ps3
-From: Joe Perches <joe@perches.com>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       rtc-linux@googlegroups.com, Geert.Uytterhoeven@sonycom.com,
-       Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       Dann Frazier <dannf@dannf.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <49B568D0.5000901@am.sony.com>
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	 <20090309151216.17f13862@i1501.lan.towertech.it>
-	 <49B55A21.2010801@am.sony.com>
-	 <20090309194307.154f3e95@i1501.lan.towertech.it>
-	 <49B568D0.5000901@am.sony.com>
-Content-Type: text/plain
-Date: Mon, 09 Mar 2009 12:18:42 -0700
-Message-Id: <1236626322.8307.9.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Mar 2009 15:21:25 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:59288 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751641AbZCITVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 15:21:25 -0400
+Date: Mon, 9 Mar 2009 20:21:22 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] block: fix memory leak in bio_clone()
+Message-ID: <20090309192122.GZ11787@kernel.dk>
+References: <49B4DD9C.5030902@cn.fujitsu.com> <20090309092407.GI11787@kernel.dk> <yq1prgqy8wc.fsf@sermon.lab.mkp.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq1prgqy8wc.fsf@sermon.lab.mkp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-09 at 12:06 -0700, Geoff Levand wrote:
-> There was some work by Joe Perches to list the files a maintainer is
-> responsible for into the MAINTAINERS file.  I think that would give
-> you what you want, a way to automatically get the maintainer of a
-> file.
+On Mon, Mar 09 2009, Martin K. Petersen wrote:
+> Jens> The second bug is that it should be using its own bioset, as it is
+> Jens> illegal to do multiple __GFP_WAIT allocations on a single mempool
+> Jens> and always expect progress.
 > 
-> Joe, could you let us know the status of that work?
+> So how do you propose I go about this?
+> 
+> The original intent was to contain all the integrity blah inside the
+> bio_set to make it completely transparent to the caller.  That's why the
+> bip mempool is hanging off of the bio_set.  But obviously two bvecs are
+> needed per bio, one to describe data and to describe the integrity
+> buffer.
+> 
+> Having two bvec mempools per bio_set seems icky.  I guess what you are
+> suggesting is that we could have a dedicated bio_integrity_set akin to
+> the bio_split_pool.  That removes the caller's option of passing a
+> dedicated bio_set to the clone command, though.  Will that have forward
+> progress implications for stacking drivers?
 
-I think it works fine, and is an acceptable
-approach to finding a maintainer for either a
-patch or a specific file.
+I was just wondering why you wanted to pass the bio_set in to
+bio_integrity_clone(), why would the caller care?
 
-The changes I've posted are probably not suitable
-for merging by anyone other than Linus as
-MAINTAINERS is the most heavily modified file
-in the kernel tree.
+Even two mempools isn't that bad. You can reuse the slab of course, and
+the mempool should only have a single entry preallocated. But I agree,
+it should not be in the bio_set. A dedicated bio_set for the integrity
+stuff would be the way to go, and that should provide you all the
+forward progress guarantees you need.
 
-I've submitted it several times after merging it
-with the latest kernel without response from Linus.
-
-I'd merge and submit it again if it could be accepted.
-
-If someone would propose a mechanism that would
-improve the possibility to get it merged, I'd
-also appreciate that.
+-- 
+Jens Axboe
 
