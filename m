@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755698AbZCIDfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbZCIDew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755698AbZCIDfS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 23:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbZCIDbq
+	id S1755615AbZCIDew (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 23:34:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZCIDbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 23:31:46 -0400
-Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35855 "EHLO
+	Sun, 8 Mar 2009 23:31:44 -0400
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35838 "EHLO
 	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754203AbZCIDbH (ORCPT
+	with ESMTP id S1753809AbZCIDbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 23:31:07 -0400
+	Sun, 8 Mar 2009 23:31:05 -0400
 From: "J. R. Okajima" <hooanon05@yahoo.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, "J. R. Okajima" <hooanon05@yahoo.co.jp>
-Subject: [Aufs 09/25] aufs workqueue
-Date: Mon,  9 Mar 2009 12:25:02 +0900
-Message-Id: <1236569118-3750-10-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [Aufs 03/25] aufs module global
+Date: Mon,  9 Mar 2009 12:24:56 +0900
+Message-Id: <1236569118-3750-4-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.6.1.284.g5dc13
 In-Reply-To: <1236569118-3750-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1236569118-3750-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -24,26 +24,143 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 initial commit
-workqueue for asynchronous and super-io operations.
-they are used for:
-- handling 'opaque' directory and whiteout
-- lookup and copy-up/down with credential
-- internal xino file i/o
+common header file
+module initialization and module global vars
 
 Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/wkq.c |  249 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/aufs/wkq.h |   72 +++++++++++++++++
- 2 files changed, 321 insertions(+), 0 deletions(-)
- create mode 100644 fs/aufs/wkq.c
- create mode 100644 fs/aufs/wkq.h
+ fs/aufs/Kconfig  |   78 ++++++++++++++++++++++++++
+ fs/aufs/Makefile |   20 +++++++
+ fs/aufs/aufs.h   |   43 ++++++++++++++
+ fs/aufs/module.c |  164 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/aufs/module.h |   66 ++++++++++++++++++++++
+ fs/aufs/rwsem.h  |   52 +++++++++++++++++
+ fs/aufs/spl.h    |   47 +++++++++++++++
+ 7 files changed, 470 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/Kconfig
+ create mode 100644 fs/aufs/Makefile
+ create mode 100644 fs/aufs/aufs.h
+ create mode 100644 fs/aufs/module.c
+ create mode 100644 fs/aufs/module.h
+ create mode 100644 fs/aufs/rwsem.h
+ create mode 100644 fs/aufs/spl.h
 
-diff --git a/fs/aufs/wkq.c b/fs/aufs/wkq.c
+diff --git a/fs/aufs/Kconfig b/fs/aufs/Kconfig
 new file mode 100644
-index 0000000..41e30be
+index 0000000..065a0c6
 --- /dev/null
-+++ b/fs/aufs/wkq.c
-@@ -0,0 +1,249 @@
++++ b/fs/aufs/Kconfig
+@@ -0,0 +1,78 @@
++config AUFS_FS
++	bool "Advanced multi layered unification filesystem support"
++	depends on EXPERIMENTAL
++	help
++	Aufs is a stackable unification filesystem such as Unionfs,
++	which unifies several directories and provides a merged single
++	directory.
++	In the early days, aufs was entirely re-designed and
++	re-implemented Unionfs Version 1.x series. Introducing many
++	original ideas, approaches and improvements, it becomes totally
++	different from Unionfs while keeping the basic features.
++
++if AUFS_FS
++choice
++	prompt "Maximum number of branches"
++	default AUFS_BRANCH_MAX_127
++	help
++	Specifies the maximum number of branches (or member directories)
++	in a single aufs. The larger value consumes more system
++	resources and has a minor impact to performance.
++config AUFS_BRANCH_MAX_127
++	bool "127"
++	help
++	Specifies the maximum number of branches (or member directories)
++	in a single aufs. The larger value consumes more system
++	resources and has a minor impact to performance.
++config AUFS_BRANCH_MAX_511
++	bool "511"
++	help
++	Specifies the maximum number of branches (or member directories)
++	in a single aufs. The larger value consumes more system
++	resources and has a minor impact to performance.
++config AUFS_BRANCH_MAX_1023
++	bool "1023"
++	help
++	Specifies the maximum number of branches (or member directories)
++	in a single aufs. The larger value consumes more system
++	resources and has a minor impact to performance.
++config AUFS_BRANCH_MAX_32767
++	bool "32767"
++	help
++	Specifies the maximum number of branches (or member directories)
++	in a single aufs. The larger value consumes more system
++	resources and has a minor impact to performance.
++endchoice
++
++config AUFS_HINOTIFY
++	bool "Use inotify to detect actions on a branch"
++	depends on INOTIFY
++	help
++	If you want to modify files on branches directly, eg. bypassing aufs,
++	and want aufs to detect the changes of them fully, then enable this
++	option and use 'udba=inotify' mount option.
++	It will have a negative impact to the performance.
++	See detail in aufs.5.
++
++config AUFS_DEBUG
++	bool "Debug aufs"
++	help
++	Enable this to compile aufs internal debug code.
++	It will have a negative impact to the performance.
++
++config AUFS_MAGIC_SYSRQ
++	bool
++	depends on AUFS_DEBUG && MAGIC_SYSRQ
++	default y
++	help
++	Automatic configuration for internal use.
++	When aufs supports Magic SysRq, enabled automatically.
++
++config AUFS_BDEV_LOOP
++	bool
++	depends on BLK_DEV_LOOP
++	default y
++	help
++	Automatic configuration for internal use.
++	Convert =[ym] into =y.
++endif
+diff --git a/fs/aufs/Makefile b/fs/aufs/Makefile
+new file mode 100644
+index 0000000..9952a46
+--- /dev/null
++++ b/fs/aufs/Makefile
+@@ -0,0 +1,20 @@
++
++include ${srctree}/${src}/magic.mk
++-include ${srctree}/${src}/priv_def.mk
++
++obj-$(CONFIG_AUFS_FS) += aufs.o
++aufs-y := module.o sbinfo.o super.o branch.o xino.o sysaufs.o opts.o \
++	wkq.o vfsub.o dcsub.o \
++	cpup.o whout.o plink.o wbr_policy.o \
++	dinfo.o dentry.o \
++	finfo.o file.o f_op.o \
++	dir.o vdir.o \
++	iinfo.o inode.o i_op.o i_op_add.o i_op_del.o i_op_ren.o \
++	ioctl.o
++
++# all are boolean
++aufs-$(CONFIG_SYSFS) += sysfs.o
++aufs-$(CONFIG_AUFS_BDEV_LOOP) += loop.o
++aufs-$(CONFIG_AUFS_HINOTIFY) += hinotify.o
++aufs-$(CONFIG_AUFS_DEBUG) += debug.o
++aufs-$(CONFIG_AUFS_MAGIC_SYSRQ) += sysrq.o
+diff --git a/fs/aufs/aufs.h b/fs/aufs/aufs.h
+new file mode 100644
+index 0000000..a599aee
+--- /dev/null
++++ b/fs/aufs/aufs.h
+@@ -0,0 +1,43 @@
 +/*
 + * Copyright (C) 2005-2009 Junjiro R. Okajima
 + *
@@ -54,251 +171,215 @@ index 0000000..41e30be
 + */
 +
 +/*
-+ * workqueue for asynchronous/super-io operations
-+ * todo: try new dredential scheme
++ * all header files
 + */
 +
++#ifndef __AUFS_H__
++#define __AUFS_H__
++
++#ifdef __KERNEL__
++
++#include <linux/bug.h>
++
++#include "debug.h"
++
++#include "branch.h"
++#include "cpup.h"
++#include "dcsub.h"
++#include "dentry.h"
++#include "dir.h"
++#include "file.h"
++#include "fstype.h"
++#include "inode.h"
++#include "loop.h"
++#include "module.h"
++#include "opts.h"
++#include "rwsem.h"
++#include "spl.h"
++#include "super.h"
++#include "sysaufs.h"
++#include "vfsub.h"
++#include "whout.h"
++#include "wkq.h"
++
++#endif /* __KERNEL__ */
++#endif /* __AUFS_H__ */
+diff --git a/fs/aufs/module.c b/fs/aufs/module.c
+new file mode 100644
+index 0000000..c2219d3
+--- /dev/null
++++ b/fs/aufs/module.c
+@@ -0,0 +1,164 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/*
++ * module global variables and operations
++ */
++
++#include <linux/module.h>
++#include <linux/seq_file.h>
 +#include "aufs.h"
 +
-+/* internal workqueue named AUFS_WKQ_NAME */
-+static struct au_wkq {
-+	struct workqueue_struct	*q;
++void *au_kzrealloc(void *p, unsigned int nused, unsigned int new_sz, gfp_t gfp)
++{
++	if (new_sz <= nused)
++		return p;
 +
-+	/* balancing */
-+	atomic_t		busy;
-+} *au_wkq;
-+
-+struct au_wkinfo {
-+	struct work_struct wk;
-+	struct super_block *sb;
-+
-+	unsigned int flags; /* see wkq.h */
-+
-+	au_wkq_func_t func;
-+	void *args;
-+
-+	atomic_t *busyp;
-+	struct completion *comp;
-+};
++	p = krealloc(p, new_sz, gfp);
++	if (p)
++		memset(p + nused, 0, new_sz - nused);
++	return p;
++}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+static int enqueue(struct au_wkq *wkq, struct au_wkinfo *wkinfo)
-+{
-+	wkinfo->busyp = &wkq->busy;
-+	if (au_ftest_wkq(wkinfo->flags, WAIT))
-+		return !queue_work(wkq->q, &wkinfo->wk);
-+	else
-+		return !schedule_work(&wkinfo->wk);
-+}
-+
-+static void do_wkq(struct au_wkinfo *wkinfo)
-+{
-+	unsigned int idle, n;
-+	int i, idle_idx;
-+
-+	while (1) {
-+		if (au_ftest_wkq(wkinfo->flags, WAIT)) {
-+			idle_idx = 0;
-+			idle = UINT_MAX;
-+			for (i = 0; i < aufs_nwkq; i++) {
-+				n = atomic_inc_return(&au_wkq[i].busy);
-+				if (n == 1 && !enqueue(au_wkq + i, wkinfo))
-+					return; /* success */
-+
-+				if (n < idle) {
-+					idle_idx = i;
-+					idle = n;
-+				}
-+				atomic_dec(&au_wkq[i].busy);
-+			}
-+		} else
-+			idle_idx = aufs_nwkq;
-+
-+		atomic_inc(&au_wkq[idle_idx].busy);
-+		if (!enqueue(au_wkq + idle_idx, wkinfo))
-+			return; /* success */
-+
-+		/* impossible? */
-+		AuWarn1("failed to queue_work()\n");
-+		yield();
-+	}
-+}
-+
-+static void wkq_func(struct work_struct *wk)
-+{
-+	struct au_wkinfo *wkinfo = container_of(wk, struct au_wkinfo, wk);
-+
-+	wkinfo->func(wkinfo->args);
-+	atomic_dec(wkinfo->busyp);
-+	if (au_ftest_wkq(wkinfo->flags, WAIT))
-+		complete(wkinfo->comp);
-+	else {
-+		kobject_put(&au_sbi(wkinfo->sb)->si_kobj);
-+		module_put(THIS_MODULE);
-+		kfree(wkinfo);
-+	}
-+}
-+
 +/*
-+ * Since struct completion is large, try allocating it dynamically.
++ * aufs caches
 + */
-+#if defined(CONFIG_4KSTACKS) || defined(AuTest4KSTACKS)
-+#define AuWkqCompDeclare(name)	struct completion *comp = NULL
-+
-+static int au_wkq_comp_alloc(struct au_wkinfo *wkinfo, struct completion **comp)
++struct kmem_cache *au_cachep[AuCache_Last];
++static int __init au_cache_init(void)
 +{
-+	*comp = kmalloc(sizeof(**comp), GFP_NOFS);
-+	if (*comp) {
-+		init_completion(*comp);
-+		wkinfo->comp = *comp;
++	au_cachep[AuCache_DINFO] = AuCache(au_dinfo);
++	if (au_cachep[AuCache_DINFO])
++		au_cachep[AuCache_ICNTNR] = AuCache(au_icntnr);
++	if (au_cachep[AuCache_ICNTNR])
++		au_cachep[AuCache_FINFO] = AuCache(au_finfo);
++	if (au_cachep[AuCache_FINFO])
++		au_cachep[AuCache_VDIR] = AuCache(au_vdir);
++	if (au_cachep[AuCache_VDIR])
++		au_cachep[AuCache_DEHSTR] = AuCache(au_vdir_dehstr);
++	if (au_cachep[AuCache_DEHSTR])
 +		return 0;
-+	}
++
 +	return -ENOMEM;
 +}
 +
-+static void au_wkq_comp_free(struct completion *comp)
++static void au_cache_fin(void)
 +{
-+	kfree(comp);
-+}
-+
-+#else
-+
-+/* no braces */
-+#define AuWkqCompDeclare(name) \
-+	DECLARE_COMPLETION_ONSTACK(_ ## name); \
-+	struct completion *comp = &_ ## name
-+
-+static int au_wkq_comp_alloc(struct au_wkinfo *wkinfo, struct completion **comp)
-+{
-+	wkinfo->comp = *comp;
-+	return 0;
-+}
-+
-+static void au_wkq_comp_free(struct completion *comp __maybe_unused)
-+{
-+	/* empty */
-+}
-+#endif /* 4KSTACKS */
-+
-+static void au_wkq_run(struct au_wkinfo *wkinfo)
-+{
-+	au_dbg_verify_kthread();
-+	INIT_WORK(&wkinfo->wk, wkq_func);
-+	do_wkq(wkinfo);
-+}
-+
-+int au_wkq_wait(au_wkq_func_t func, void *args)
-+{
-+	int err;
-+	AuWkqCompDeclare(comp);
-+	struct au_wkinfo wkinfo = {
-+		.flags	= AuWkq_WAIT,
-+		.func	= func,
-+		.args	= args
-+	};
-+
-+	err = au_wkq_comp_alloc(&wkinfo, &comp);
-+	if (!err) {
-+		au_wkq_run(&wkinfo);
-+		/* no timeout, no interrupt */
-+		wait_for_completion(wkinfo.comp);
-+		au_wkq_comp_free(comp);
-+	}
-+
-+	return err;
-+
-+}
-+
-+int au_wkq_nowait(au_wkq_func_t func, void *args, struct super_block *sb)
-+{
-+	int err;
-+	struct au_wkinfo *wkinfo;
-+
-+	atomic_inc(&au_sbi(sb)->si_nowait.nw_len);
-+
-+	/*
-+	 * wkq_func() must free this wkinfo.
-+	 * it highly depends upon the implementation of workqueue.
-+	 */
-+	err = 0;
-+	wkinfo = kmalloc(sizeof(*wkinfo), GFP_NOFS);
-+	if (wkinfo) {
-+		wkinfo->sb = sb;
-+		wkinfo->flags = !AuWkq_WAIT;
-+		wkinfo->func = func;
-+		wkinfo->args = args;
-+		wkinfo->comp = NULL;
-+		kobject_get(&au_sbi(sb)->si_kobj);
-+		__module_get(THIS_MODULE);
-+
-+		au_wkq_run(wkinfo);
-+	} else {
-+		err = -ENOMEM;
-+		atomic_dec(&au_sbi(sb)->si_nowait.nw_len);
-+	}
-+
-+	return err;
++	int i;
++	for (i = 0; i < AuCache_Last; i++)
++		if (au_cachep[i]) {
++			kmem_cache_destroy(au_cachep[i]);
++			au_cachep[i] = NULL;
++		}
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+void au_nwt_init(struct au_nowait_tasks *nwt)
++int au_dir_roflags;
++
++/*
++ * functions for module interface.
++ */
++MODULE_LICENSE("GPL");
++/* MODULE_LICENSE("GPL v2"); */
++MODULE_AUTHOR("Junjiro R. Okajima");
++MODULE_DESCRIPTION(AUFS_NAME
++	" -- Advanced multi layered unification filesystem");
++MODULE_VERSION(AUFS_VERSION);
++
++/* it should be 'byte', but param_set_byte() prints it by "%c" */
++short aufs_nwkq = AUFS_NWKQ_DEF;
++MODULE_PARM_DESC(nwkq, "the number of workqueue thread, " AUFS_WKQ_NAME);
++module_param_named(nwkq, aufs_nwkq, short, S_IRUGO);
++
++/* this module parameter has no meaning when SYSFS is disabled */
++int sysaufs_brs = 1;
++MODULE_PARM_DESC(brs, "use <sysfs>/fs/aufs/si_*/brN");
++module_param_named(brs, sysaufs_brs, int, S_IRUGO);
++
++/* ---------------------------------------------------------------------- */
++
++static char au_esc_chars[0x20 + 3]; /* 0x01-0x20, backslash, del, and NULL */
++
++int au_seq_path(struct seq_file *seq, struct path *path)
 +{
-+	atomic_set(&nwt->nw_len, 0);
-+	/* smp_mb();*/ /* atomic_set */
-+	init_waitqueue_head(&nwt->nw_wq);
++	return seq_path(seq, path, au_esc_chars);
 +}
 +
-+void au_wkq_fin(void)
-+{
-+	int i;
++/* ---------------------------------------------------------------------- */
 +
-+	for (i = 0; i < aufs_nwkq; i++)
-+		if (au_wkq[i].q && !IS_ERR(au_wkq[i].q))
-+			destroy_workqueue(au_wkq[i].q);
-+	kfree(au_wkq);
-+}
-+
-+int __init au_wkq_init(void)
++static int __init aufs_init(void)
 +{
 +	int err, i;
-+	struct au_wkq *nowaitq;
++	char *p;
 +
-+	/* '+1' is for accounting of nowait queue */
-+	err = -ENOMEM;
-+	au_wkq = kcalloc(aufs_nwkq + 1, sizeof(*au_wkq), GFP_NOFS);
-+	if (unlikely(!au_wkq))
++	p = au_esc_chars;
++	for (i = 1; i <= ' '; i++)
++		*p++ = i;
++	*p++ = '\\';
++	*p++ = '\x7f';
++	*p = 0;
++
++	au_dir_roflags = au_file_roflags(O_DIRECTORY | O_LARGEFILE);
++
++	sysaufs_brs_init();
++	au_debug_init();
++
++	err = -EINVAL;
++	if (unlikely(aufs_nwkq <= 0))
 +		goto out;
 +
-+	err = 0;
-+	for (i = 0; i < aufs_nwkq; i++) {
-+		au_wkq[i].q = create_singlethread_workqueue(AUFS_WKQ_NAME);
-+		if (au_wkq[i].q && !IS_ERR(au_wkq[i].q)) {
-+			atomic_set(&au_wkq[i].busy, 0);
-+			continue;
-+		}
-+
-+		err = PTR_ERR(au_wkq[i].q);
-+		au_wkq_fin();
++	err = sysaufs_init();
++	if (unlikely(err))
 +		goto out;
-+	}
++	err = au_wkq_init();
++	if (unlikely(err))
++		goto out_sysaufs;
++	err = au_hinotify_init();
++	if (unlikely(err))
++		goto out_wkq;
++	err = au_sysrq_init();
++	if (unlikely(err))
++		goto out_hin;
++	err = au_cache_init();
++	if (unlikely(err))
++		goto out_sysrq;
++	err = register_filesystem(&aufs_fs_type);
++	if (unlikely(err))
++		goto out_cache;
++	pr_info(AUFS_NAME " " AUFS_VERSION "\n");
++	goto out; /* success */
 +
-+	/* nowait accounting */
-+	nowaitq = au_wkq + aufs_nwkq;
-+	atomic_set(&nowaitq->busy, 0);
-+	nowaitq->q = NULL;
-+	/* smp_mb(); */ /* atomic_set */
-+
++ out_cache:
++	au_cache_fin();
++ out_sysrq:
++	au_sysrq_fin();
++ out_hin:
++	au_hinotify_fin();
++ out_wkq:
++	au_wkq_fin();
++ out_sysaufs:
++	sysaufs_fin();
 + out:
 +	return err;
 +}
-diff --git a/fs/aufs/wkq.h b/fs/aufs/wkq.h
++
++static void __exit aufs_exit(void)
++{
++	unregister_filesystem(&aufs_fs_type);
++	au_cache_fin();
++	au_sysrq_fin();
++	au_hinotify_fin();
++	au_wkq_fin();
++	sysaufs_fin();
++}
++
++module_init(aufs_init);
++module_exit(aufs_exit);
+diff --git a/fs/aufs/module.h b/fs/aufs/module.h
 new file mode 100644
-index 0000000..17d24d8
+index 0000000..85e397a
 --- /dev/null
-+++ b/fs/aufs/wkq.h
-@@ -0,0 +1,72 @@
++++ b/fs/aufs/module.h
+@@ -0,0 +1,66 @@
 +/*
 + * Copyright (C) 2005-2009 Junjiro R. Okajima
 + *
@@ -309,68 +390,173 @@ index 0000000..17d24d8
 + */
 +
 +/*
-+ * workqueue for asynchronous/super-io operations
-+ * todo: try new credentials management scheme
++ * module initialization and module-global
 + */
 +
-+#ifndef __AUFS_WKQ_H__
-+#define __AUFS_WKQ_H__
++#ifndef __AUFS_MODULE_H__
++#define __AUFS_MODULE_H__
++
++#ifdef __KERNEL__
++
++#include <linux/slab.h>
++
++/* module parameters */
++extern short aufs_nwkq;
++extern int sysaufs_brs;
++
++/* ---------------------------------------------------------------------- */
++
++extern int au_dir_roflags;
++
++void *au_kzrealloc(void *p, unsigned int nused, unsigned int new_sz, gfp_t gfp);
++int au_seq_path(struct seq_file *seq, struct path *path);
++
++/* ---------------------------------------------------------------------- */
++
++/* kmem cache */
++enum {
++	AuCache_DINFO,
++	AuCache_ICNTNR,
++	AuCache_FINFO,
++	AuCache_VDIR,
++	AuCache_DEHSTR,
++#ifdef CONFIG_AUFS_HINOTIFY
++	AuCache_HINOTIFY,
++#endif
++	AuCache_Last
++};
++
++#define AuCache(type)	KMEM_CACHE(type, SLAB_RECLAIM_ACCOUNT)
++
++extern struct kmem_cache *au_cachep[];
++
++#define AuCacheFuncs(name, index) \
++static inline void *au_cache_alloc_##name(void) \
++{ return kmem_cache_alloc(au_cachep[AuCache_##index], GFP_NOFS); } \
++static inline void au_cache_free_##name(void *p) \
++{ kmem_cache_free(au_cachep[AuCache_##index], p); }
++
++AuCacheFuncs(dinfo, DINFO);
++AuCacheFuncs(icntnr, ICNTNR);
++AuCacheFuncs(finfo, FINFO);
++AuCacheFuncs(vdir, VDIR);
++AuCacheFuncs(dehstr, DEHSTR);
++
++/*  ---------------------------------------------------------------------- */
++
++#endif /* __KERNEL__ */
++#endif /* __AUFS_MODULE_H__ */
+diff --git a/fs/aufs/rwsem.h b/fs/aufs/rwsem.h
+new file mode 100644
+index 0000000..d569243
+--- /dev/null
++++ b/fs/aufs/rwsem.h
+@@ -0,0 +1,52 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/*
++ * simple read-write semaphore wrappers
++ */
++
++#ifndef __AUFS_RWSEM_H__
++#define __AUFS_RWSEM_H__
 +
 +#ifdef __KERNEL__
 +
 +#include <linux/fs.h>
-+#include <linux/sched.h>
-+#include <linux/workqueue.h>
-+#include <linux/aufs_type.h>
 +
-+/* ---------------------------------------------------------------------- */
++#define au_rwsem_destroy(rw)	AuDebugOn(rwsem_is_locked(rw))
++#define AuRwMustNoWaiters(rw)	AuDebugOn(!list_empty(&(rw)->wait_list))
++
++#define AuSimpleLockRwsemFuncs(prefix, param, rwsem) \
++static inline void prefix##_read_lock(param) \
++{ down_read(rwsem); } \
++static inline void prefix##_write_lock(param) \
++{ down_write(rwsem); } \
++static inline int prefix##_read_trylock(param) \
++{ return down_read_trylock(rwsem); } \
++static inline int prefix##_write_trylock(param) \
++{ return down_write_trylock(rwsem); }
++/* why is not _nested version defined */
++/* static inline void prefix##_read_trylock_nested(param, lsc)
++{ down_write_trylock_nested(rwsem, lsc)); }
++static inline void prefix##_write_trylock_nestd(param, lsc)
++{ down_write_trylock_nested(rwsem, lsc); } */
++
++#define AuSimpleUnlockRwsemFuncs(prefix, param, rwsem) \
++static inline void prefix##_read_unlock(param) \
++{ up_read(rwsem); } \
++static inline void prefix##_write_unlock(param) \
++{ up_write(rwsem); } \
++static inline void prefix##_downgrade_lock(param) \
++{ downgrade_write(rwsem); }
++
++#define AuSimpleRwsemFuncs(prefix, param, rwsem) \
++	AuSimpleLockRwsemFuncs(prefix, param, rwsem) \
++	AuSimpleUnlockRwsemFuncs(prefix, param, rwsem)
++
++#endif /* __KERNEL__ */
++#endif /* __AUFS_RWSEM_H__ */
+diff --git a/fs/aufs/spl.h b/fs/aufs/spl.h
+new file mode 100644
+index 0000000..89ea7a2
+--- /dev/null
++++ b/fs/aufs/spl.h
+@@ -0,0 +1,47 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
 +
 +/*
-+ * in the next operation, wait for the 'nowait' tasks in system-wide workqueue
++ * simple list protected by a spinlock
 + */
-+struct au_nowait_tasks {
-+	atomic_t		nw_len;
-+	wait_queue_head_t	nw_wq;
++
++#ifndef __AUFS_SPL_H__
++#define __AUFS_SPL_H__
++
++#ifdef __KERNEL__
++
++#include <linux/fs.h>
++
++struct au_splhead {
++	spinlock_t		spin;
++	struct list_head	head;
 +};
 +
-+/* ---------------------------------------------------------------------- */
-+
-+typedef void (*au_wkq_func_t)(void *args);
-+
-+/* wkq flags */
-+#define AuWkq_WAIT	1
-+#define au_ftest_wkq(flags, name)	((flags) & AuWkq_##name)
-+#define au_fset_wkq(flags, name)	{ (flags) |= AuWkq_##name; }
-+#define au_fclr_wkq(flags, name)	{ (flags) &= ~AuWkq_##name; }
-+
-+/* wkq.c */
-+int au_wkq_wait(au_wkq_func_t func, void *args);
-+int au_wkq_nowait(au_wkq_func_t func, void *args, struct super_block *sb);
-+void au_nwt_init(struct au_nowait_tasks *nwt);
-+int __init au_wkq_init(void);
-+void au_wkq_fin(void);
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static inline int au_test_wkq(struct task_struct *tsk)
++static inline void au_spl_init(struct au_splhead *spl)
 +{
-+	return !tsk->mm && !strcmp(tsk->comm, AUFS_WKQ_NAME);
++	spin_lock_init(&spl->spin);
++	INIT_LIST_HEAD(&spl->head);
 +}
 +
-+static inline void au_nwt_done(struct au_nowait_tasks *nwt)
++static inline void au_spl_add(struct list_head *list, struct au_splhead *spl)
 +{
-+	if (!atomic_dec_return(&nwt->nw_len))
-+		wake_up_all(&nwt->nw_wq);
++	spin_lock(&spl->spin);
++	list_add(list, &spl->head);
++	spin_unlock(&spl->spin);
 +}
 +
-+static inline int au_nwt_flush(struct au_nowait_tasks *nwt)
++static inline void au_spl_del(struct list_head *list, struct au_splhead *spl)
 +{
-+	wait_event(nwt->nw_wq, !atomic_read(&nwt->nw_len));
-+	return 0;
++	spin_lock(&spl->spin);
++	list_del(list);
++	spin_unlock(&spl->spin);
 +}
 +
 +#endif /* __KERNEL__ */
-+#endif /* __AUFS_WKQ_H__ */
++#endif /* __AUFS_SPL_H__ */
 -- 
 1.6.1.284.g5dc13
 
