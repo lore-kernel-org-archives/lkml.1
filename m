@@ -1,84 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZCIPxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbZCIPzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbZCIPxr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 11:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbZCIPxi
+	id S1754045AbZCIPzb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 11:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZCIPzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 11:53:38 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:45684 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752053AbZCIPxh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 11:53:37 -0400
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Daniel Mack <daniel@caiaq.de>, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
-       Matt Reimer <mreimer@vpop.net>, Anton Vorontsov <cbou@mail.ru>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH] ds2760_battery.c: fix division by zero
-Date: Mon,  9 Mar 2009 16:53:22 +0100
-Message-Id: <1236614002-9102-1-git-send-email-daniel@caiaq.de>
-X-Mailer: git-send-email 1.6.1.3
+	Mon, 9 Mar 2009 11:55:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33410 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752176AbZCIPzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 11:55:22 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: linux-aio <linux-aio@kvack.org>, bos@pathscale.com
+Cc: zach.brown@oracle.com, bcrl@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [patch] factor out checks against the memlock rlimit
+References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 09 Mar 2009 11:54:39 -0400
+In-Reply-To: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com> (Jeff Moyer's
+	message of "Mon, 09 Mar 2009 11:49:57 -0400")
+Message-ID: <x497i2yelog.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 'battery remaining capacity' calculation in
-drivers/power/ds2760_battery.c lacks a parameter check to a division
-operation which causes the kernel to oops on my board.
+Hi,
 
-[   21.233750] Division by zero in kernel.
-[   21.237646] [<c002955c>] (__div0+0x0/0x20) from [<c012561c>] (Ldiv0+0x8/0x10)
-[   21.244816] [<c01bef34>] (ds2760_battery_read_status+0x0/0x2a4) from [<c01bf3a4>] (ds2760_battery_get_property+0x30/0xdc)
-[   21.255803]  r8:c03a22c0 r7:c7886100 r6:00000009 r5:c782fe7c r4:c7886084
-[   21.262518] [<c01bf374>] (ds2760_battery_get_property+0x0/0xdc) from [<c01bde98>] (power_supply_show_property+0x48/0x114)
-[   21.273480]  r6:c7996000 r5:00000009 r4:00000000
-[   21.278111] [<c01bde50>] (power_supply_show_property+0x0/0x114) from [<c01be158>] (power_supply_uevent+0x188/0x280)
-[   21.288537]  r8:00000001 r7:c7886100 r6:c7996000 r5:000000b4 r4:00000000
-[   21.295222] [<c01bdfd0>] (power_supply_uevent+0x0/0x280) from [<c015c664>] (dev_uevent+0xd4/0x10c)
-[   21.304199] [<c015c590>] (dev_uevent+0x0/0x10c) from [<c0128440>] (kobject_uevent_env+0x180/0x390)
-[   21.313170]  r5:00000000 r4:c78860ac
-[   21.316725] [<c01282c0>] (kobject_uevent_env+0x0/0x390) from [<c0128664>] (kobject_uevent+0x14/0x18)
-[   21.325850] [<c0128650>] (kobject_uevent+0x0/0x18) from [<c01bdc34>] (power_supply_changed_work+0x5c/0x70)
-[   21.335506] [<c01bdbd8>] (power_supply_changed_work+0x0/0x70) from [<c004d290>] (run_workqueue+0xbc/0x144)
-[   21.345167]  r4:c7812040
-[   21.347716] [<c004d1d4>] (run_workqueue+0x0/0x144) from [<c004d94c>] (worker_thread+0xa8/0xbc)
-[   21.356296]  r7:c7812040 r6:c7820b00 r5:c782ffa4 r4:c7812048
-[   21.361957] [<c004d8a4>] (worker_thread+0x0/0xbc) from [<c0051008>] (kthread+0x5c/0x94)
-[   21.369971]  r7:00000000 r6:c004d8a4 r5:c7812040 r4:c782e000
-[   21.375612] [<c0050fac>] (kthread+0x0/0x94) from [<c00403d0>] (do_exit+0x0/0x688)
+There are several places in the kernel where the memlock rlimit is
+checked, all duplicating code.  I added another in a recent patch and it
+made me feel dirty, so this patch factors all of that into a single
+function, can_mlock_pages.
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
-Cc: Matt Reimer <mreimer@vpop.net>
-Cc: Anton Vorontsov <cbou@mail.ru>
-Cc: David Woodhouse <dwmw2@infradead.org>
----
- drivers/power/ds2760_battery.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+The infiniband implementation of the rlimit check was actually broken.
+Weeding through changelogs showed that the initial implementation was
+wrong, code was #if 0'd out because it didn't work, and instead of
+fixing things, they just removed the code all together.  If my
+assessment of that is wrong, please let me know!  ;-)
 
-diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
-index 1d76892..a52d4a1 100644
---- a/drivers/power/ds2760_battery.c
-+++ b/drivers/power/ds2760_battery.c
-@@ -180,10 +180,13 @@ static int ds2760_battery_read_status(struct ds2760_device_info *di)
- 	di->empty_uAh = battery_interpolate(scale, di->temp_C / 10);
- 	di->empty_uAh *= 1000; /* convert to µAh */
+Comments, as always, are encouraged.
+
+Cheers,
+Jeff
+
+diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.c
+index 6f7c096..c4d4f1b 100644
+--- a/drivers/infiniband/core/umem.c
++++ b/drivers/infiniband/core/umem.c
+@@ -135,14 +135,11 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
  
--	/* From Maxim Application Note 131: remaining capacity =
--	 * ((ICA - Empty Value) / (Full Value - Empty Value)) x 100% */
--	di->rem_capacity = ((di->accum_current_uAh - di->empty_uAh) * 100L) /
--			    (di->full_active_uAh - di->empty_uAh);
-+	if (di->full_active_uAh == di->empty_uAh)
-+		di->rem_capacity = 0;
-+	else
-+		/* From Maxim Application Note 131: remaining capacity =
-+		 * ((ICA - Empty Value) / (Full Value - Empty Value)) x 100% */
-+		di->rem_capacity = ((di->accum_current_uAh - di->empty_uAh) * 100L) /
-+				    (di->full_active_uAh - di->empty_uAh);
+ 	down_write(&current->mm->mmap_sem);
  
- 	if (di->rem_capacity < 0)
- 		di->rem_capacity = 0;
--- 
-1.6.1.3
-
+-	locked     = npages + current->mm->locked_vm;
+-	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >> PAGE_SHIFT;
+-
+-	if ((locked > lock_limit) && !capable(CAP_IPC_LOCK)) {
++	if (!can_mlock_pages(npages)) {
+ 		ret = -ENOMEM;
+ 		goto out;
+ 	}
+-
++	locked = npages + current->mm->locked_vm;
+ 	cur_base = addr & PAGE_MASK;
+ 
+ 	ret = 0;
+diff --git a/drivers/infiniband/hw/ipath/ipath_user_pages.c b/drivers/infiniband/hw/ipath/ipath_user_pages.c
+index 0190edc..9ab17e3 100644
+--- a/drivers/infiniband/hw/ipath/ipath_user_pages.c
++++ b/drivers/infiniband/hw/ipath/ipath_user_pages.c
+@@ -58,10 +58,7 @@ static int __get_user_pages(unsigned long start_page, size_t num_pages,
+ 	size_t got;
+ 	int ret;
+ 
+-	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >>
+-		PAGE_SHIFT;
+-
+-	if (num_pages > lock_limit) {
++	if (!can_mlock_pages(num_pages)) {
+ 		ret = -ENOMEM;
+ 		goto bail;
+ 	}
+diff --git a/fs/aio.c b/fs/aio.c
+index 3bbda9d..0ca64eb 100644
+--- a/fs/aio.c
++++ b/fs/aio.c
+@@ -136,10 +136,7 @@ static int aio_setup_ring(struct kioctx *ctx)
+ 	 * Check that the memory reserved for the completion ring does
+ 	 * not exceed the memlock memory limit.
+ 	 */
+-	locked = nr_pages + ctx->mm->locked_vm;
+-	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
+-	lock_limit >>= PAGE_SHIFT;
+-	if ((locked > lock_limit) && !capable(CAP_IPC_LOCK)) {
++	if (!can_mlock_pages(nr_pages)) {
+ 		up_write(&ctx->mm->mmap_sem);
+ 		info->mmap_size = 0;
+ 		aio_free_ring(ctx);
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 065cdf8..79c1127 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -737,6 +737,7 @@ extern unsigned long shmem_get_unmapped_area(struct file *file,
+ #endif
+ 
+ extern int can_do_mlock(void);
++extern int can_mlock_pages(unsigned long);
+ extern int user_shm_lock(size_t, struct user_struct *);
+ extern void user_shm_unlock(size_t, struct user_struct *);
+ 
+diff --git a/mm/mlock.c b/mm/mlock.c
+index cbe9e05..4ec96c2 100644
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -31,6 +31,33 @@ int can_do_mlock(void)
+ }
+ EXPORT_SYMBOL(can_do_mlock);
+ 
++/**
++ * can_mlock_pages() - tell whether mlocking nr_pages is possible
++ * @nr_pages:	Number of pages to be locked in memory
++ *
++ * Boolean function which tells whether the MEMLOCK rlimit will prevent
++ * locking nr_pages pages.
++ */
++int can_mlock_pages(unsigned long nr_pages)
++{
++	unsigned long locked, lock_limit;
++
++	if (capable(CAP_IPC_LOCK))
++		return 1;
++
++	locked = nr_pages;
++	locked += current->mm->locked_vm;
++
++	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
++	lock_limit >>= PAGE_SHIFT;
++
++	/* check against resource limits */
++	if (locked <= lock_limit)
++		return 1;
++	return 0;
++}
++EXPORT_SYMBOL(can_mlock_pages);
++
+ #ifdef CONFIG_UNEVICTABLE_LRU
+ /*
+  * Mlocked pages are marked with PageMlocked() flag for efficient testing
+@@ -505,14 +532,8 @@ SYSCALL_DEFINE2(mlock, unsigned long, start, size_t, len)
+ 	len = PAGE_ALIGN(len + (start & ~PAGE_MASK));
+ 	start &= PAGE_MASK;
+ 
+-	locked = len >> PAGE_SHIFT;
+-	locked += current->mm->locked_vm;
+-
+-	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
+-	lock_limit >>= PAGE_SHIFT;
+-
+ 	/* check against resource limits */
+-	if ((locked <= lock_limit) || capable(CAP_IPC_LOCK))
++	if (can_mlock_pages(len >> PAGE_SHIFT))
+ 		error = do_mlock(start, len, 1);
+ 	up_write(&current->mm->mmap_sem);
+ 	return error;
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 00ced3e..52d1c32 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -975,12 +975,7 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+ 
+ 	/* mlock MCL_FUTURE? */
+ 	if (vm_flags & VM_LOCKED) {
+-		unsigned long locked, lock_limit;
+-		locked = len >> PAGE_SHIFT;
+-		locked += mm->locked_vm;
+-		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
+-		lock_limit >>= PAGE_SHIFT;
+-		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
++		if (!can_mlock_pages(len >> PAGE_SHIFT))
+ 			return -EAGAIN;
+ 	}
+ 
+@@ -2006,12 +2001,7 @@ unsigned long do_brk(unsigned long addr, unsigned long len)
+ 	 * mlock MCL_FUTURE?
+ 	 */
+ 	if (mm->def_flags & VM_LOCKED) {
+-		unsigned long locked, lock_limit;
+-		locked = len >> PAGE_SHIFT;
+-		locked += mm->locked_vm;
+-		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
+-		lock_limit >>= PAGE_SHIFT;
+-		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
++		if (!can_mlock_pages(len>>PAGE_SHIFT))
+ 			return -EAGAIN;
+ 	}
+ 
+diff --git a/mm/mremap.c b/mm/mremap.c
+index a39b7b9..6fb50e2 100644
+--- a/mm/mremap.c
++++ b/mm/mremap.c
+@@ -342,12 +342,8 @@ unsigned long do_mremap(unsigned long addr,
+ 			goto out;
+ 	}
+ 	if (vma->vm_flags & VM_LOCKED) {
+-		unsigned long locked, lock_limit;
+-		locked = mm->locked_vm << PAGE_SHIFT;
+-		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
+-		locked += new_len - old_len;
+ 		ret = -EAGAIN;
+-		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
++		if (!can_mlock_pages((new_len - old_len)>>PAGE_SHIFT))
+ 			goto out;
+ 	}
+ 	if (!may_expand_vm(mm, (new_len - old_len) >> PAGE_SHIFT)) {
