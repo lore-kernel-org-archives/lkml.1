@@ -1,66 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbZCIDmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbZCIDqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbZCIDmp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 23:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbZCIDme
+	id S1754943AbZCIDqs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 23:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZCIDqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 23:42:34 -0400
-Received: from mga09.intel.com ([134.134.136.24]:32127 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbZCIDmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 23:42:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,327,1233561600"; 
-   d="scan'208";a="496136928"
-From: "Yang, Sheng" <sheng.yang@intel.com>
-Organization: Intel Opensource Technology Center
-To: Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH v10 0/7] PCI: Linux kernel SR-IOV support
-Date: Mon, 9 Mar 2009 11:42:05 +0800
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
-Cc: Matthew Wilcox <matthew@wil.cx>, "Zhao, Yu" <yu.zhao@intel.com>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <20090306193329.GB25995@parisc-linux.org> <49B3D678.4050004@redhat.com>
-In-Reply-To: <49B3D678.4050004@redhat.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 8 Mar 2009 23:46:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34912 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753451AbZCIDqh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 23:46:37 -0400
+Date: Sun, 8 Mar 2009 20:45:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, adobriyan@gmail.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Karsten Keil <kkeil@suse.de>, Samuel Ortiz <samuel@sortiz.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: [PATCH -v2] memdup_user(): introduce
+Message-Id: <20090308204535.8a2af3fa.akpm@linux-foundation.org>
+In-Reply-To: <49B48D4A.6000207@cn.fujitsu.com>
+References: <49B0CAEC.80801@cn.fujitsu.com>
+	<20090306082056.GB3450@x200.localdomain>
+	<49B0DE89.9000401@cn.fujitsu.com>
+	<20090306003900.a031a914.akpm@linux-foundation.org>
+	<49B0E67C.2090404@cn.fujitsu.com>
+	<20090306011548.ffdf9cbc.akpm@linux-foundation.org>
+	<49B0F1B9.1080903@cn.fujitsu.com>
+	<20090306150335.c512c1b6.akpm@linux-foundation.org>
+	<20090307084805.7cf3d574@infradead.org>
+	<49B47D50.5000608@cn.fujitsu.com>
+	<20090308200033.f5282b5b.akpm@linux-foundation.org>
+	<49B48D4A.6000207@cn.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200903091142.06628.sheng.yang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 08 March 2009 22:30:16 Avi Kivity wrote:
-> Matthew Wilcox wrote:
-> > On Tue, Feb 24, 2009 at 12:47:38PM +0200, Avi Kivity wrote:
-> >> Do those patches allow using a VF on the host (in other words, does the
-> >> kernel emulate config space accesses)?
-> >
-> > SR-IOV hardware handles config space accesses to virtual functions.  No
-> > kernel changes needed for that aspect of it.
->
-> Patches 2 and 3 of the patchset that enables SR/IOV in kvm [1] suggest
-> that at the config space is only partially implemented.
->
-> [1] http://thread.gmane.org/gmane.comp.emulators.kvm.devel/29034
+On Mon, 09 Mar 2009 11:30:18 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-Hi Avi
+> Andrew Morton wrote:
+> > On Mon, 09 Mar 2009 10:22:08 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
+> > 
+> >>>>> +EXPORT_SYMBOL(memdup_user);
+> >>> Hi,
+> >>>
+> >>> I like the general idea of this a lot; it will make things much less
+> >>> error prone (and we can add some sanity checks on "len" to catch the
+> >>> standard security holes around copy_from_user usage). I'd even also
+> >>> want a memdup_array() like thing in the style of calloc().
+> >>>
+> >>> However, I have two questions/suggestions for improvement:
+> >>>
+> >>> I would like to question the use of the gfp argument here;
+> >>> copy_from_user sleeps, so you can't use GFP_ATOMIC anyway.
+> >>> You can't use GFP_NOFS etc, because the pagefault path will happily do
+> >>> things that are equivalent, if not identical, to GFP_KERNEL.
+> >>>
+> >>> So the only value you can pass in correctly, as far as I can see, is
+> >>> GFP_KERNEL. Am I wrong?
+> >>>
+> >> Right! I just dug and found a few kmalloc(GFP_ATOMIC/GFP_NOFS)+copy_from_user(),
+> >> so we have one more reason to use this memdup_user().
+> > 
+> > gack, those callsites are probably buggy.  Where are they?
+> > 
+> 
+> Yes, either buggy or should use GFP_KERNEL.
+> 
+> All are in -mm only, except the first one:
+> 
+> drivers/isdn/i4l/isdn_common.c:
+> 	struct sk_buff *skb = alloc_skb(hl + len, GFP_ATOMIC);
+> 	...
+> 	if (copy_from_user(skb_put(skb, len), buf, len)) {
 
-For kernel side, patch 2 is not necessary. Because kernel would read VID/DID 
-directly from pci_dev rather than configuration space, which have been set 
-properly already.
+Bug.  Should be GFP_KERNEL, or copy_from_user() is incorrect in this
+context.
 
-And very sorry, for the patch 3. We haven't known exactly what's happened. I 
-think the problem is caused by guest driver, but didn't confirm(and I have 
-some misunderstandings with ZhaoYu for I thought we are agree on the reason, 
-but after confirm with him, he didn't agree). I am doing more investigations 
-to find the real cause.
+> 
+> net/irda/af_irda.c:
+> 	ias_opt = kmalloc(sizeof(struct irda_ias_set), GFP_ATOMIC);
+> 	...
+> 	if (copy_from_user(ias_opt, optval, optlen)) {
 
--- 
-regards
-Yang, Sheng
+Bug.  Should be GFP_KERNEL, or copy_from_user() is incorrect in this
+context.
+
+> 
+> fs/btrfs/ioctl.c:
+> 	vol_args = kmalloc(sizeof(*vol_args), GFP_NOFS);
+> 	...
+> 	if (copy_from_user(vol_args, arg, sizeof(*vol_args))) {
+
+Bug.  Should be GFP_KERNEL, or copy_from_user() is incorrect in this
+context.
+
+> > fs/ocfs2/dlm/dlmfs.c:
+> 	lvb_buf = kmalloc(writelen, GFP_NOFS);
+> 	...
+> 	bytes_left = copy_from_user(lvb_buf, buf, writelen);
+
+Bug.  Should be GFP_KERNEL, or copy_from_user() is incorrect in this
+context.
+
+> 
+> net/sunrpc/auth_gss/auth_gss.c:
+> 	buf = kmalloc(mlen, GFP_NOFS);
+> 	...
+> 	if (copy_from_user(buf, src, mlen))
+
+Bug.  Should be GFP_KERNEL, or copy_from_user() is incorrect in this
+context.
+
