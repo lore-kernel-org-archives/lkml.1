@@ -1,83 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbZCITwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZCITwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbZCITwB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 15:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZCITvv
+	id S1754192AbZCITwX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 15:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbZCITv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 15:51:51 -0400
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:60817 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbZCITvu (ORCPT
+	Mon, 9 Mar 2009 15:51:57 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:43242 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752574AbZCITvz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 15:51:50 -0400
+	Mon, 9 Mar 2009 15:51:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=SgUMpzV62gvq9y0cLcoA0qYK9hH16gscLdIrW5jjBkgAU0vFJrIh1D+dXiMRWqntCd
-         yRKOkcQdTNY4fWVLaHKUGagGuWHVstR/eYLHTBUbPMKcueCFsm0z1XAoiMfVAeTqKpSY
-         oWG41Qt2zn8hkenq8mD7OhdsUyLP/v7N/vbqY=
-Subject: Re: [BUG] Loading both ehci-hcd and uhci-hcd drivers causes my
- printer to fail
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.44L0.0903091511030.4674-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0903091511030.4674-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Mon, 09 Mar 2009 21:51:41 +0200
-Message-Id: <1236628301.11146.1.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:cc:content-type:content-transfer-encoding;
+        b=nE9iHeymfrgTsrdbE893LrIOCzykdQd9PjNnsC29fAKnQkNvvsiuSe82dSna+NtzbA
+         s9iEQLVsFjecnfTVaeKwioHQTdSTGs09yynKDeDpyPqu0G/K90GMSow6fC2qP/RGnz9I
+         5wOAxLIN//Ui465iwy18UlwSEeCSCr47gkqyA=
+MIME-Version: 1.0
+Date: Mon, 9 Mar 2009 12:51:53 -0700
+X-Google-Sender-Auth: 00cb89a6fd30e964
+Message-ID: <86802c440903091251x41899167r96680c62c35ad63b@mail.gmail.com>
+Subject: panic with strcmp
+From: Yinghai Lu <yinghai@kernel.org>
+To: Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-09 at 15:12 -0400, Alan Stern wrote:
-> On Mon, 9 Mar 2009, Maxim Levitsky wrote:
-> 
-> > T:  Bus=02 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  7 Spd=480 MxCh= 0
-> > D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
-> > P:  Vendor=03f0 ProdID=4117 Rev= 1.00
-> > S:  Manufacturer=Hewlett-Packard
-> > S:  Product=HP LaserJet 1018
-> > S:  SerialNumber=KP06J6V
-> > C:* #Ifs= 1 Cfg#= 1 Atr=c0 MxPwr= 98mA
-> > I:* If#= 0 Alt= 0 #EPs= 2 Cls=07(print) Sub=01 Prot=02 Driver=(none)
-> > E:  Ad=01(O) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-> > E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-> > 
-> > T:  Bus=02 Lev=01 Prnt=01 Port=03 Cnt=02 Dev#=  2 Spd=480 MxCh= 0
-> > D:  Ver= 2.00 Cls=ef(unk. ) Sub=02 Prot=01 MxPS=64 #Cfgs=  1
-> > P:  Vendor=064e ProdID=a101 Rev= 1.00
-> > S:  Manufacturer=SuYin
-> > S:  Product=Acer CrystalEye webcam
-> > S:  SerialNumber=CN0314-OV03-VA-R02.00.00
-> > C:* #Ifs= 2 Cfg#= 1 Atr=80 MxPwr=500mA
-> > A:  FirstIf#= 0 IfCount= 2 Cls=0e(video) Sub=03 Prot=00
-> > I:* If#= 0 Alt= 0 #EPs= 1 Cls=0e(video) Sub=01 Prot=00 Driver=uvcvideo
-> > E:  Ad=83(I) Atr=03(Int.) MxPS=  16 Ivl=4ms
-> > I:* If#= 1 Alt= 0 #EPs= 0 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> > I:  If#= 1 Alt= 1 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> > E:  Ad=81(I) Atr=05(Isoc) MxPS= 128 Ivl=125us
-> > I:  If#= 1 Alt= 2 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> > E:  Ad=81(I) Atr=05(Isoc) MxPS= 256 Ivl=125us
-> > I:  If#= 1 Alt= 3 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> > E:  Ad=81(I) Atr=05(Isoc) MxPS= 800 Ivl=125us
-> > I:  If#= 1 Alt= 4 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> > E:  Ad=81(I) Atr=05(Isoc) MxPS=1600 Ivl=125us
-> > I:  If#= 1 Alt= 5 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> > E:  Ad=81(I) Atr=05(Isoc) MxPS=2400 Ivl=125us
-> > I:  If#= 1 Alt= 6 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> > E:  Ad=81(I) Atr=05(Isoc) MxPS=3000 Ivl=125us
-> 
-> I wonder...  Does it make any difference if you unplug that webcam, or 
-> plug it into the other high-speed bus?
-Can't do so, its built-in.
+happen on kexec loop test, it seems it only do kexec three time continuous.
+only on one two sockets with quad core opteron + 16 sas disks.
 
+YH
 
-Best regards,
-	Maxim Levitsky
-
+[   11.139038] calling  pty_init+0x0/0x606 @ 1
+[   11.163070] general protection fault: 0000 [#1] SMP
+[   11.167058] last sysfs file:
+[   11.167058] CPU 5
+[   11.167058] Modules linked in:
+[   11.167058] Pid: 1, comm: swapper Not tainted
+2.6.29-rc7-tip-02233-ga94bfce-dirty #736 SMP Mon Mar 9 11:24:51 PDT
+2009 Sun Fire X4240
+[   11.167058] RIP: 0010:[<ffffffff8053244d>]  [<ffffffff8053244d>]
+strcmp+0x19/0x45
+[   11.167058] RSP: 0018:ffff8804270499f0  EFLAGS: 00010246
+[   11.167058] RAX: 0000000000000000 RBX: ffff88042403e050 RCX: ffff880424776270
+[   11.167058] RDX: 0000000000000000 RSI: ffff880224676080 RDI: 0010c2c018100dbf
+[   11.167058] RBP: ffff880427049a00 R08: 0000000000000001 R09: ffff880427049978
+[   11.167058] R10: 000000003ce73f1d R11: 000000003ce73f20 R12: ffff880224676080
+[   11.167058] R13: ffff880427049ab0 R14: ffff880424776280 R15: ffff880427049b28
+[   11.167058] FS:  0000000000000000(0000) GS:ffffc20000069000(0000)
+knlGS:0000000000000000
+[   11.167058] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+[   11.167058] CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+[   11.167058] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[   11.167058] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[   11.167058] Process swapper (pid: 1, threadinfo ffff880427048000,
+task ffff880227060000)
+[   11.167058] Stack:
+[   11.167058]  0000000000000006 000000003ce73f1d ffff880427049a30
+ffffffff8034562e
+[   11.167058]  ffff880227c0b800 000000003ce73f1d ffff880224675f50
+ffff880224675f50
+[   11.167058]  ffff880427049a70 ffffffff803457ed 0000000000000001
+ffff880427049a6c
+[   11.167058] Call Trace:
+[   11.167058]  [<ffffffff8034562e>] sysfs_find_dirent+0x2f/0x5a
+[   11.167058]  [<ffffffff803457ed>] __sysfs_add_one+0x2e/0xd8
+[   11.167058]  [<ffffffff803458b9>] sysfs_add_one+0x22/0x68
+[   11.167058]  [<ffffffff80345fd9>] create_dir+0x67/0xb6
+[   11.167058]  [<ffffffff8034606f>] sysfs_create_dir+0x47/0x72
+[   11.167058]  [<ffffffff8052e05e>] kobject_add_internal+0xe4/0x1ba
+[   11.167058]  [<ffffffff8052e264>] kobject_add_varg+0x50/0x73
+[   11.167058]  [<ffffffff8052e374>] kobject_add+0x73/0x89
+[   11.167058]  [<ffffffff805dcbd6>] device_add+0xcf/0x56f
+[   11.167058]  [<ffffffff8052dbe4>] ? kobject_init+0x56/0xac
+[   11.167058]  [<ffffffff805dd09e>] device_register+0x28/0x43
+[   11.167058]  [<ffffffff805dd167>] device_create_vargs+0xae/0xf0
+[   11.167058]  [<ffffffff805dd1e4>] device_create+0x3b/0x51
+[   11.167058]  [<ffffffff805e1f1a>] ? kobj_map+0x12f/0x154
+[   11.167058]  [<ffffffff8059f792>] tty_register_device+0xe9/0x10a
+[   11.167058]  [<ffffffff8059f996>] tty_register_driver+0x1e3/0x221
+[   11.167058]  [<ffffffff8112938d>] ? pty_init+0x0/0x606
+[   11.167058]  [<ffffffff8112963b>] pty_init+0x2ae/0x606
+[   11.167058]  [<ffffffff80209092>] do_one_initcall+0x65/0x14e
+[   11.167058]  [<ffffffff810fa80e>] kernel_init+0x14a/0x1b6
+[   11.167058]  [<ffffffff80230d5a>] child_rip+0xa/0x20
+[   11.167058]  [<ffffffff810fa6c4>] ? kernel_init+0x0/0x1b6
+[   11.167058]  [<ffffffff80230d50>] ? child_rip+0x0/0x20
+[   11.167058] Code: 14 25 28 00 00 00 48 89 f8 74 05 e8 57 98 d3 ff
+c9 c3 55 31 d2 48 89 e5 48 83 ec 10 65 48 8b 04 25 28 00 00 00 48 89
+45 f8 31 c0 <8a> 0c 17 88 c8 2a 04 16 84 c0 75 07 48 ff c2 84 c9 75 ed
+48 8b
+[   11.167058] RIP  [<ffffffff8053244d>] strcmp+0x19/0x45
+[   11.167058]  RSP <ffff8804270499f0>
+[   11.461778] ---[ end trace 800948b0be98e94c ]---
