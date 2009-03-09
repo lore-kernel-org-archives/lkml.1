@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbZCIPmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbZCIPm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752004AbZCIPmE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 11:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZCIPlw
+	id S1753676AbZCIPm3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 11:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbZCIPmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 11:41:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37027 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751223AbZCIPlv (ORCPT
+	Mon, 9 Mar 2009 11:42:19 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55891 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751326AbZCIPmS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 11:41:51 -0400
-Date: Mon, 9 Mar 2009 08:40:58 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Stern <stern@rowland.harvard.edu>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       =?ISO-8859-15?Q?Arve__Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [linux-pm] [RFC][PATCH][1/8] PM: Rework handling of interrupts
- during suspend-resume (rev. 5)
-In-Reply-To: <Pine.LNX.4.44L0.0903091106010.3778-100000@iolanthe.rowland.org>
-Message-ID: <alpine.LFD.2.00.0903090837340.19207@localhost.localdomain>
-References: <Pine.LNX.4.44L0.0903091106010.3778-100000@iolanthe.rowland.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 9 Mar 2009 11:42:18 -0400
+Message-ID: <49B538AB.9080006@zytor.com>
+Date: Mon, 09 Mar 2009 08:41:31 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: put initial_pg_tables into .bss -v4
+References: <1235785882-17580-1-git-send-email-jeremy@goop.org> <1235785882-17580-4-git-send-email-jeremy@goop.org> <86802c440902272302n3787b2bex3741b46a372a19b0@mail.gmail.com> <49A8E235.6010900@goop.org> <20090228071534.GB9351@elte.hu> <49A8EA1A.50802@kernel.org> <49A8ED3D.1060704@kernel.org> <49A8F319.3030802@goop.org> <49A9E392.6090004@kernel.org> <49AA47D2.4020804@kernel.org> <49AA5356.3050602@zytor.com> <49AACEB3.5050206@kernel.org> <49AB1A5C.6040300@zytor.com> <49AB2E69.1010201@kernel.org> <49B4D03D.7030205@kernel.org>
+In-Reply-To: <49B4D03D.7030205@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 9 Mar 2009, Alan Stern wrote:
+Yinghai Lu wrote:
+> Impact: cleanup
 > 
-> I see.  The unstated key point is this:
+> Don't use ram after _end blindly for pagetables. aka init pages is before _end
+> put those pg table into .bss
 > 
-> 	Unsophisticated drivers [...]
+> v2: keep initial page table up to 512M only.
+> v4: put initial page tables just before _end
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
 
-Another key point is:
+I still feel that this is a movement in *EXACTLY* the wrong direction,
+as it is deliberately intended to prevent a general allocator for
+anything that needs to be dynamic very early on.  I still think that
+makes a lot more sense.
 
- - _un_sophisticated is the norm, and anybody who expects otherwise is 
-   living in some odd la-la-land together with his or her pink unicorn and 
-   endless supplies of quaaludes.
+	-hpa
 
-The thing is, we have about a metric sh*tload of drivers, and many of them 
-are effectively written by people who don't really do kernel work, and are
-basically unmaintained in the long run (ie they may be maintained while 
-written, but two years down the line they have a couple of hundred users 
-and nobody who really cares about it, because the original author long 
-since moved on to fancier hardware).
-
-			Linus
