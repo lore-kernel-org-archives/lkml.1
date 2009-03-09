@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbZCIIWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbZCIIVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754279AbZCIIWA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 04:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZCIIUc
+	id S1754118AbZCIIVo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 04:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZCIIUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 04:20:32 -0400
-Received: from mail.windriver.com ([147.11.1.11]:37101 "EHLO mail.wrs.com"
+	Mon, 9 Mar 2009 04:20:31 -0400
+Received: from mail.windriver.com ([147.11.1.11]:37098 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753156AbZCIIU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 04:20:29 -0400
+	id S1752927AbZCIIU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 04:20:28 -0400
 From: Harry Ciao <qingtao.cao@windriver.com>
 To: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
-Subject: [v1 PATCH 6/8] EDAC: AMD8131 driver header file
-Date: Mon,  9 Mar 2009 16:08:15 +0800
-Message-Id: <1236586097-3830-7-git-send-email-qingtao.cao@windriver.com>
+Subject: [v1 PATCH 2/8] EDAC: AMD8111 driver header file
+Date: Mon,  9 Mar 2009 16:08:11 +0800
+Message-Id: <1236586097-3830-3-git-send-email-qingtao.cao@windriver.com>
 X-Mailer: git-send-email 1.5.6.2
-In-Reply-To: <1236586097-3830-6-git-send-email-qingtao.cao@windriver.com>
+In-Reply-To: <1236586097-3830-2-git-send-email-qingtao.cao@windriver.com>
 References: <1236586097-3830-1-git-send-email-qingtao.cao@windriver.com>
  <1236586097-3830-2-git-send-email-qingtao.cao@windriver.com>
- <1236586097-3830-3-git-send-email-qingtao.cao@windriver.com>
- <1236586097-3830-4-git-send-email-qingtao.cao@windriver.com>
- <1236586097-3830-5-git-send-email-qingtao.cao@windriver.com>
- <1236586097-3830-6-git-send-email-qingtao.cao@windriver.com>
-X-OriginalArrivalTime: 09 Mar 2009 08:20:26.0088 (UTC) FILETIME=[E645EE80:01C9A08F]
+X-OriginalArrivalTime: 09 Mar 2009 08:20:19.0135 (UTC) FILETIME=[E220FCF0:01C9A08F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce AMD8131 EDAC driver header file, which adds register and bits
-definitions for the PCI-X Bridge Controller on the AMD8131 HyperTransport
-I/O Hub.
+Introduce AMD8111 EDAC driver header file, which adds register and bits
+definitions for the LPC Bridge Controller and PCI Bridge Controller on
+the AMD8111 HyperTransport I/O Hub.
 
 Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
 ---
- drivers/edac/amd8131_edac.h |  119 +++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 119 insertions(+), 0 deletions(-)
- create mode 100644 drivers/edac/amd8131_edac.h
+ drivers/edac/amd8111_edac.h |  130 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 130 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/edac/amd8111_edac.h
 
-diff --git a/drivers/edac/amd8131_edac.h b/drivers/edac/amd8131_edac.h
+diff --git a/drivers/edac/amd8111_edac.h b/drivers/edac/amd8111_edac.h
 new file mode 100644
-index 0000000..60e0d1c
+index 0000000..ef9eb36
 --- /dev/null
-+++ b/drivers/edac/amd8131_edac.h
-@@ -0,0 +1,119 @@
++++ b/drivers/edac/amd8111_edac.h
+@@ -0,0 +1,130 @@
 +/*
-+ * amd8131_edac.h, EDAC defs for AMD8131 hypertransport chip
++ * amd8111_edac.h, EDAC defs for AMD8111 hypertransport chip
 + *
 + * Copyright (c) 2008 Wind River Systems, Inc.
 + *
@@ -66,102 +62,113 @@ index 0000000..60e0d1c
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 + */
 +
-+#ifndef _AMD8131_EDAC_H_
-+#define _AMD8131_EDAC_H_
-+
-+#define DEVFN_PCIX_BRIDGE_NORTH_A	8
-+#define DEVFN_PCIX_BRIDGE_NORTH_B	16
-+#define DEVFN_PCIX_BRIDGE_SOUTH_A	24
-+#define DEVFN_PCIX_BRIDGE_SOUTH_B	32
++#ifndef _AMD8111_EDAC_H_
++#define _AMD8111_EDAC_H_
 +
 +/************************************************************
-+ *	PCI-X Bridge Status and Command Register, DevA:0x04
++ *	PCI Bridge Status and Command Register, DevA:0x04
 + ************************************************************/
-+#define REG_STS_CMD	0x04
-+enum sts_cmd_bits {
-+	STS_CMD_SSE	= BIT(30),
-+	STS_CMD_SERREN	= BIT(8)
++#define REG_PCI_STSCMD	0x04
++enum pci_stscmd_bits {
++	PCI_STSCMD_SSE		= BIT(30),
++	PCI_STSCMD_RMA		= BIT(29),
++	PCI_STSCMD_RTA		= BIT(28),
++	PCI_STSCMD_SERREN	= BIT(8),
++	PCI_STSCMD_CLEAR_MASK	= (PCI_STSCMD_SSE |
++				   PCI_STSCMD_RMA |
++				   PCI_STSCMD_RTA)
 +};
 +
 +/************************************************************
-+ *	PCI-X Bridge Interrupt and Bridge Control Register,
++ *	PCI Bridge Memory Base-Limit Register, DevA:0x1c
 + ************************************************************/
-+#define REG_INT_CTLR	0x3c
-+enum int_ctlr_bits {
-+	INT_CTLR_DTSE	= BIT(27),
-+	INT_CTLR_DTS	= BIT(26),
-+	INT_CTLR_SERR	= BIT(17),
-+	INT_CTLR_PERR	= BIT(16)
-+};
-+
-+/************************************************************
-+ *	PCI-X Bridge Memory Base-Limit Register, DevA:0x1C
-+ ************************************************************/
-+#define REG_MEM_LIM	0x1c
++#define REG_MEM_LIM     0x1c
 +enum mem_limit_bits {
-+	MEM_LIMIT_DPE 	= BIT(31),
-+	MEM_LIMIT_RSE 	= BIT(30),
-+	MEM_LIMIT_RMA 	= BIT(29),
-+	MEM_LIMIT_RTA 	= BIT(28),
-+	MEM_LIMIT_STA	= BIT(27),
-+	MEM_LIMIT_MDPE	= BIT(24),
-+	MEM_LIMIT_MASK	= MEM_LIMIT_DPE|MEM_LIMIT_RSE|MEM_LIMIT_RMA|
-+				MEM_LIMIT_RTA|MEM_LIMIT_STA|MEM_LIMIT_MDPE
++	MEM_LIMIT_DPE   = BIT(31),
++	MEM_LIMIT_RSE   = BIT(30),
++	MEM_LIMIT_RMA   = BIT(29),
++	MEM_LIMIT_RTA   = BIT(28),
++	MEM_LIMIT_STA   = BIT(27),
++	MEM_LIMIT_MDPE  = BIT(24),
++	MEM_LIMIT_CLEAR_MASK  = (MEM_LIMIT_DPE |
++				 MEM_LIMIT_RSE |
++				 MEM_LIMIT_RMA |
++				 MEM_LIMIT_RTA |
++				 MEM_LIMIT_STA |
++				 MEM_LIMIT_MDPE)
 +};
 +
 +/************************************************************
-+ *	Link Configuration And Control Register, side A
++ *	HyperTransport Link Control Register, DevA:0xc4
 + ************************************************************/
-+#define REG_LNK_CTRL_A	0xc4
++#define REG_HT_LINK	0xc4
++enum ht_link_bits {
++	HT_LINK_LKFAIL	= BIT(4),
++	HT_LINK_CRCFEN	= BIT(1),
++	HT_LINK_CLEAR_MASK = (HT_LINK_LKFAIL)
++};
 +
 +/************************************************************
-+ *	Link Configuration And Control Register, side B
++ *	PCI Bridge Interrupt and Bridge Control, DevA:0x3c
 + ************************************************************/
-+#define REG_LNK_CTRL_B  0xc8
-+
-+enum lnk_ctrl_bits {
-+	LNK_CTRL_CRCERR_A	= BIT(9),
-+	LNK_CTRL_CRCERR_B	= BIT(8),
-+	LNK_CTRL_CRCFEN		= BIT(1)
++#define REG_PCI_INTBRG_CTRL	0x3c
++enum pci_intbrg_ctrl_bits {
++	PCI_INTBRG_CTRL_DTSERREN	= BIT(27),
++	PCI_INTBRG_CTRL_DTSTAT		= BIT(26),
++	PCI_INTBRG_CTRL_MARSP		= BIT(21),
++	PCI_INTBRG_CTRL_SERREN		= BIT(17),
++	PCI_INTBRG_CTRL_PEREN		= BIT(16),
++	PCI_INTBRG_CTRL_CLEAR_MASK	= (PCI_INTBRG_CTRL_DTSTAT),
++	PCI_INTBRG_CTRL_POLL_MASK	= (PCI_INTBRG_CTRL_DTSERREN |
++					   PCI_INTBRG_CTRL_MARSP |
++					   PCI_INTBRG_CTRL_SERREN)
 +};
 +
-+enum pcix_bridge_inst {
-+	NORTH_A = 0,
-+	NORTH_B = 1,
-+	SOUTH_A = 2,
-+	SOUTH_B = 3,
-+	NO_BRIDGE = 4
++/************************************************************
++ *		I/O Control 1 Register, DevB:0x40
++ ************************************************************/
++#define REG_IO_CTRL_1 0x40
++enum io_ctrl_1_bits {
++	IO_CTRL_1_NMIONERR	= BIT(7),
++	IO_CTRL_1_LPC_ERR	= BIT(6),
++	IO_CTRL_1_PW2LPC	= BIT(1),
++	IO_CTRL_1_CLEAR_MASK	= (IO_CTRL_1_LPC_ERR | IO_CTRL_1_PW2LPC)
 +};
 +
-+struct amd8131_dev_info {
-+	int devfn;
-+	enum pcix_bridge_inst inst;
++/************************************************************
++ *		Legacy I/O Space Registers
++ ************************************************************/
++#define REG_AT_COMPAT 0x61
++enum at_compat_bits {
++	AT_COMPAT_SERR		= BIT(7),
++	AT_COMPAT_IOCHK		= BIT(6),
++	AT_COMPAT_CLRIOCHK	= BIT(3),
++	AT_COMPAT_CLRSERR	= BIT(2),
++};
++
++struct amd8111_dev_info {
++	u16 err_dev;	/* PCI Device ID */
 +	struct pci_dev *dev;
-+	int edac_idx;	/* pci device index */
-+	char *ctl_name;
-+	struct edac_pci_ctl_info *edac_dev;
++	int edac_idx;	/* device index */
++	const char *ctl_name;
++	struct edac_device_ctl_info *edac_dev;
++	void (*init)(struct amd8111_dev_info *dev_info);
++	void (*exit)(struct amd8111_dev_info *dev_info);
++	void (*check)(struct edac_device_ctl_info *edac_dev);
 +};
 +
-+/*
-+ * AMD8131 chipset has two pairs of PCIX Bridge and related IOAPIC
-+ * Controler, and ATCA-6101 has two AMD8131 chipsets, so there are
-+ * four PCIX Bridges on ATCA-6101 altogether.
-+ *
-+ * These PCIX Bridges share the same PCI Device ID and are all of
-+ * Function Zero, they could be discrimated by their pci_dev->devfn.
-+ * They share the same set of init/check/exit methods, and their
-+ * private structures are collected in the devices[] array.
-+ */
-+struct amd8131_info {
-+	u16 err_dev;	/* PCI Device ID for AMD8131 APIC*/
-+	struct amd8131_dev_info *devices;
-+	void (*init)(struct amd8131_dev_info *dev_info);
-+	void (*exit)(struct amd8131_dev_info *dev_info);
++struct amd8111_pci_info {
++	u16 err_dev;	/* PCI Device ID */
++	struct pci_dev *dev;
++	int edac_idx;	/* pci index */
++	const char *ctl_name;
++	struct edac_pci_ctl_info *edac_dev;
++	void (*init)(struct amd8111_pci_info *dev_info);
++	void (*exit)(struct amd8111_pci_info *dev_info);
 +	void (*check)(struct edac_pci_ctl_info *edac_dev);
 +};
 +
-+#endif /* _AMD8131_EDAC_H_ */
-+
++#endif /* _AMD8111_EDAC_H_ */
 -- 
 1.5.6.2
 
