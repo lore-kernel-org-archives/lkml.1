@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbZCISI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbZCISLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754769AbZCISI2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 14:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbZCISIT
+	id S1754672AbZCISLc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 14:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZCISLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 14:08:19 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:48097 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752623AbZCISIS (ORCPT
+	Mon, 9 Mar 2009 14:11:22 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:34382 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752491AbZCISLV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 14:08:18 -0400
-Date: Mon, 9 Mar 2009 12:08:15 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, rjw@sisk.pl
-Cc: linux-pci <linux-pci@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] PCIe portdrv: eliminate double kfree in remove path
-Message-ID: <20090309180815.GH32589@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>, rjw@sisk.pl,
-	linux-pci <linux-pci@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>
+	Mon, 9 Mar 2009 14:11:21 -0400
+Date: Mon, 9 Mar 2009 12:11:19 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Yu Zhao <yu.zhao@intel.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v10 3/7] PCI: reserve bus range for SR-IOV device
+Message-ID: <20090309181118.GV25995@parisc-linux.org>
+References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <1235112888-9524-4-git-send-email-yu.zhao@intel.com> <20090306202024.GF25995@parisc-linux.org> <20090309081337.GB4638@yzhao-otc.sh.intel.com> <49B55B3E.3090502@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <49B55B3E.3090502@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 55633af3 (PCIe portdrv: Use driver data to simplify code)
-added a kfree of the driver private data in pcie_port_device_remove
-but forgot to remove the old kfree from pcie_portdrv_remove.
+On Mon, Mar 09, 2009 at 11:09:02AM -0700, Randy Dunlap wrote:
+> >> static inline __pure u16 virtfn_bdf(struct pci_dev *dev, int id)
+> >> {
+> >> 	return (dev->bus->number << 8) + dev->devfn + dev->sriov->offset +
+> >> 		dev->sriov->stride * id;
+> >> }
+> >>
+> >> #define VIRT_BUS(dev, id)	(virtfn_bdf(dev, id) >> 8)
+> >> #define VIRT_DEVFN(dev, id)	(virtfn_bdf(dev, id) & 0xff)
+> >>
+> >> We rely on GCC to do CSE and not actually invoke virtfn_bdf more than
+> >> once.
+> > 
+> > Yes, that's a good idea. Will replace that function with macros.
+> 
+> That's the opposite of most changes lately.  I.e., functions (with
+> typechecking) are preferred.
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-index a6fee6c..f2368b1 100644
---- a/drivers/pci/pcie/portdrv_pci.c
-+++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -93,7 +93,6 @@ static int __devinit pcie_portdrv_probe (struct pci_dev *dev,
- static void pcie_portdrv_remove (struct pci_dev *dev)
- {
- 	pcie_port_device_remove(dev);
--	kfree(pci_get_drvdata(dev));
- }
- 
- static int error_detected_iter(struct device *device, void *data)
+There's every bit as much typechecking with the approach I outlined as
+there was with the original.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
