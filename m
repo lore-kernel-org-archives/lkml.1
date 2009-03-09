@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbZCIVRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbZCIVUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754143AbZCIVRZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 17:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbZCIVQ7
+	id S1754420AbZCIVUO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 17:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbZCIVT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 17:16:59 -0400
-Received: from b-mail.com.ua ([195.68.202.242]:62510 "EHLO b-mail.com.ua"
+	Mon, 9 Mar 2009 17:19:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41152 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753966AbZCIVQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 17:16:58 -0400
-Message-ID: <49B58779.9040905@lebon.org.ua>
-Date: Mon, 09 Mar 2009 23:17:45 +0200
-From: Mikhail Zolotaryov <lebon@lebon.org.ua>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090209)
+	id S1752270AbZCIVT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 17:19:58 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alex Chiang <achiang@hp.com>
+Subject: Re: [PATCH] PCIe portdrv: eliminate double kfree in remove path
+Date: Mon, 9 Mar 2009 22:19:37 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-pci" <linux-pci@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <20090309180815.GH32589@ldl.fc.hp.com>
+In-Reply-To: <20090309180815.GH32589@ldl.fc.hp.com>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc 4xx: DDR0_14[REDUC] decoded incorrectly
-References: <49B54210.5040709@lebon.org.ua> <20090309171243.GA26415@zod.rchland.ibm.com>
-In-Reply-To: <20090309171243.GA26415@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903092219.37414.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 09 March 2009, Alex Chiang wrote:
+> Commit 55633af3 (PCIe portdrv: Use driver data to simplify code)
+> added a kfree of the driver private data in pcie_port_device_remove
+> but forgot to remove the old kfree from pcie_portdrv_remove.
 
->> However, "1" is decoded as 64 bit (8 byte), "0" - as 32 bit (4 byte) bus  
->> by the kernel code. My understanding is this is not correct - patch  
->> attached.
->
-> You are missing the Signed-off-by tag that is needed.
->
-I'm sorry.
+Ah, sorry for that, it resulted in quite a lot of debugging work for you. :-(
 
-Signed-off-by: Mikhail Zolotaryov <lebon@lebon.org.ua>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
 
-> Aside from that, I'm curious if you found this just through inspection, or
-> if you actually had a problem because of it.  Your fix seems correct, yet
-> I've had no problems with my boards at all.
->
+Acked-by; Rafael J. Wysocki <rjw@sisk.pl>
 
-I'm actually working on custom PowerPC 440EPX board development here and 
-have found the problem: without applying changes described, Linux 
-detects memory size incorrectly and is unable to start. The rest of 
-memory size computation process seems to be correct.
-
-I have checked Sequoia evaluation board with U-Boot 2009.1 and confirm 
-that original kernel code reported memory size correctly. So, for my 
-understanding, if computation algorithm was wrong but result was correct 
-- the problem is source data i.e. initial DDR configuration parameters 
-loaded by U-Boot (please don't give a damn that memory size is always 
-reported correctly by U-Boot - it's hard-coded constant there). I have 
-checked Sequoia board schematics (DES0211_11_SCH_11.pdf, page 5, unit 
-U1D) and noted that BankSel#1 is not connected, while bootloader memory 
-configuration is (board/amcc/sequoia/sdram.c):
-        mtsdram(DDR0_10, 0x00000300);
-i.e. both Chip Selects used.
-
-If I change this line to:
-        mtsdram(DDR0_10, 0x00000100);
-memory is accessible, patched kernel detects memory size correctly and 
-kernel seems to be working well.
-
-Please check my considerations, possibly it may be necessary to request 
-additional information from board manufacturer.
-
+> ---
+> diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+> index a6fee6c..f2368b1 100644
+> --- a/drivers/pci/pcie/portdrv_pci.c
+> +++ b/drivers/pci/pcie/portdrv_pci.c
+> @@ -93,7 +93,6 @@ static int __devinit pcie_portdrv_probe (struct pci_dev *dev,
+>  static void pcie_portdrv_remove (struct pci_dev *dev)
+>  {
+>  	pcie_port_device_remove(dev);
+> -	kfree(pci_get_drvdata(dev));
+>  }
+>  
+>  static int error_detected_iter(struct device *device, void *data)
+> --
