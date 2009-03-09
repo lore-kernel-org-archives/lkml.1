@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753693AbZCIX1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbZCIX10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753693AbZCIX1G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 19:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZCIX0x
+	id S1754253AbZCIX10 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 19:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZCIX07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 19:26:53 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:64685 "EHLO
+	Mon, 9 Mar 2009 19:26:59 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:64714 "EHLO
 	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751749AbZCIX0w (ORCPT
+	with ESMTP id S1753991AbZCIX06 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 19:26:52 -0400
-Date: Mon, 9 Mar 2009 16:27:18 -0700
+	Mon, 9 Mar 2009 19:26:58 -0400
+Date: Mon, 9 Mar 2009 16:26:20 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, inaky.perez-gonzalez@intel.com
-Subject: [PATCH -mmotm] wimax: fix i2400m printk formats
-Message-Id: <20090309162718.e38a7299.randy.dunlap@oracle.com>
+Cc: Andres Salomon <dilinger@debian.org>, akpm <akpm@linux-foundation.org>
+Subject: [PATCH -mmotm] gpio: fix cs553x printk format
+Message-Id: <20090309162620.cab7b3bd.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.49B5A592.004D:SCFSTAT928724,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090205.49B5A590.014E:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix printk format warnings:
+Fix printk format warning:
 
-drivers/net/wimax/i2400m/netdev.c:523: warning: format '%zu' expects type 'size_t', but argument 7 has type 'unsigned int'
-drivers/net/wimax/i2400m/netdev.c:548: warning: format '%zu' expects type 'size_t', but argument 7 has type 'unsigned int'
+drivers/gpio/cs553x-gpio.c:193: warning: format '%x' expects type 'unsigned int', but argument 5 has type 'resource_size_t'
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/net/wimax/i2400m/netdev.c |    4 ++--
+ drivers/gpio/cs553x-gpio.c |    4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
---- mmotm-2009-0306-1659.orig/drivers/net/wimax/i2400m/netdev.c
-+++ mmotm-2009-0306-1659/drivers/net/wimax/i2400m/netdev.c
-@@ -520,7 +520,7 @@ void i2400m_net_erx(struct i2400m *i2400
- 	struct device *dev = i2400m_dev(i2400m);
- 	int protocol;
+--- mmotm-2009-0306-1659.orig/drivers/gpio/cs553x-gpio.c
++++ mmotm-2009-0306-1659/drivers/gpio/cs553x-gpio.c
+@@ -190,8 +190,8 @@ static int __init cs553x_gpio_probe(stru
+ 	cs553x_gpio_chip.pdev = pdev;
+ 	spin_lock_init(&cs553x_gpio_chip.lock);
  
--	d_fnstart(2, dev, "(i2400m %p skb %p [%zu] cs %d)\n",
-+	d_fnstart(2, dev, "(i2400m %p skb %p [%u] cs %d)\n",
- 		  i2400m, skb, skb->len, cs);
- 	switch(cs) {
- 	case I2400M_CS_IPV4_0:
-@@ -545,7 +545,7 @@ void i2400m_net_erx(struct i2400m *i2400
- 	d_dump(4, dev, skb->data, skb->len);
- 	netif_rx_ni(skb);	/* see notes in function header */
- error:
--	d_fnend(2, dev, "(i2400m %p skb %p [%zu] cs %d) = void\n",
-+	d_fnend(2, dev, "(i2400m %p skb %p [%u] cs %d) = void\n",
- 		i2400m, skb, skb->len, cs);
- }
+-	dev_info(&pdev->dev, "allocated PCI BAR #%d: base 0x%x\n", GPIO_BAR,
+-			cs553x_gpio_chip.base);
++	dev_info(&pdev->dev, "allocated PCI BAR #%d: base 0x%llx\n", GPIO_BAR,
++			(unsigned long long)cs553x_gpio_chip.base);
  
+ 	/* finally, register with the generic GPIO API */
+ 	err = gpiochip_add(&cs553x_gpio_chip.chip);
