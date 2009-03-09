@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbZCIFuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbZCIFvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbZCIFuu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 01:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZCIFtE
+	id S1754489AbZCIFvN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 01:51:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbZCIFtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 01:49:04 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:43850 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752917AbZCIFtC (ORCPT
+	Mon, 9 Mar 2009 01:49:09 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:46953 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751727AbZCIFtH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 01:49:02 -0400
+	Mon, 9 Mar 2009 01:49:07 -0400
 From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH v3 05/11] PCI: beef up pci_do_scan_bus()
+Subject: [PATCH v3 06/11] PCI: Introduce /sys/bus/pci/rescan
 To: jbarnes@virtuousgeek.org
 Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Trent Piepho <xyzzy@speakeasy.org>, djwong@us.ibm.com,
        Alex Chiang <achiang@hp.com>
-Date: Sun, 08 Mar 2009 23:49:01 -0600
-Message-ID: <20090309054900.3918.4473.stgit@bob.kio>
+Date: Sun, 08 Mar 2009 23:49:06 -0600
+Message-ID: <20090309054906.3918.51833.stgit@bob.kio>
 In-Reply-To: <20090309052933.3918.86601.stgit@bob.kio>
 References: <20090309052933.3918.86601.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
@@ -27,47 +28,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We have a nice interface for re-scanning a PCI bus which will
-discover newly added devices, add them to the device tree, and
-enable them properly.
+This interface allows the user to force a rescan of all PCI buses
+in system, and rediscover devices that have been removed earlier.
 
-Ensure that the bridge resources are properly sized and assigned
-during the rescan.
-
+Cc: Trent Piepho <xyzzy@speakeasy.org>
+Cc: djwong@us.ibm.com
+Reviewed-by: James Cameron <qz@hp.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/pci/hotplug-pci.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
+ Documentation/ABI/testing/sysfs-bus-pci |    9 +++++++++
+ drivers/pci/pci-sysfs.c                 |   26 ++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/pci/hotplug-pci.c b/drivers/pci/hotplug-pci.c
-index 4d4a644..33ab2d2 100644
---- a/drivers/pci/hotplug-pci.c
-+++ b/drivers/pci/hotplug-pci.c
-@@ -6,13 +6,21 @@
+diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
+index e638e15..ea4aee2 100644
+--- a/Documentation/ABI/testing/sysfs-bus-pci
++++ b/Documentation/ABI/testing/sysfs-bus-pci
+@@ -41,6 +41,15 @@ Description:
+ 		for the device and attempt to bind to it.  For example:
+ 		# echo "8086 10f5" > /sys/bus/pci/drivers/foo/new_id
  
- unsigned int __devinit pci_do_scan_bus(struct pci_bus *bus)
- {
--	unsigned int max;
-+	unsigned int max, pass;
-+	struct pci_dev *dev;
- 
- 	max = pci_scan_child_bus(bus);
- 
--	/*
--	 * Make the discovered devices available.
--	 */
-+	for (pass=0; pass < 2; pass++)
-+		list_for_each_entry(dev, &bus->devices, bus_list) {
-+			if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
-+			    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
-+				if (pass && dev->subordinate)
-+					pci_bus_size_bridges(dev->subordinate);
-+		}
++What:		/sys/bus/pci/rescan
++Date:		January 2009
++Contact:	Linux PCI developers <linux-pci@vger.kernel.org>
++Description:
++		Writing a non-zero value to this attribute will
++		force a rescan of all PCI buses in the system, and
++		re-discover previously removed devices.
++		Depends on CONFIG_HOTPLUG.
 +
-+	pci_bus_assign_resources(bus);
-+	pci_enable_bridges(bus);
- 	pci_bus_add_devices(bus);
+ What:		/sys/bus/pci/devices/.../vpd
+ Date:		February 2008
+ Contact:	Ben Hutchings <bhutchings@solarflare.com>
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index 1c89298..a29fc3b 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -971,12 +971,38 @@ void pci_remove_sysfs_dev_files(struct pci_dev *pdev)
+ 	}
+ }
  
- 	return max;
++#ifdef CONFIG_HOTPLUG
++static ssize_t bus_rescan_store(struct bus_type *bus, const char *buf, size_t count)
++{
++	unsigned long val;
++	struct pci_bus *b = NULL;
++
++	if (strict_strtoul(buf, 0, &val) < 0)
++		return -EINVAL;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	if (val)
++		while ((b = pci_find_next_bus(b)) != NULL)
++			pci_do_scan_bus(b);
++
++	return count;
++}
++static BUS_ATTR(rescan, S_IWUSR, NULL, bus_rescan_store);
++#endif
++
+ static int __init pci_sysfs_init(void)
+ {
+ 	struct pci_dev *pdev = NULL;
+ 	int retval;
+ 
+ 	sysfs_initialized = 1;
++#ifdef CONFIG_HOTPLUG
++	retval = bus_create_file(&pci_bus_type, &bus_attr_rescan);
++	if (retval)
++		return retval;
++#endif
+ 	for_each_pci_dev(pdev) {
+ 		retval = pci_create_sysfs_dev_files(pdev);
+ 		if (retval) {
 
