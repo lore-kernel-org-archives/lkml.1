@@ -1,73 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbZCIWh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZCIWho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753804AbZCIWh2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 18:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZCIWhS
+	id S1753834AbZCIWho (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 18:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbZCIWh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 18:37:18 -0400
-Received: from cmpxchg.org ([85.214.51.133]:53973 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752747AbZCIWhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 18:37:18 -0400
-Date: Mon, 9 Mar 2009 23:37:03 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Oliver Neukum <oliver@neukum.name>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [patch] hiddev: fix incorrect hiddev freeing
-Message-ID: <20090309223703.GA3412@cmpxchg.org>
-References: <20090309023151.GA11464@cmpxchg.org>
+	Mon, 9 Mar 2009 18:37:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54777 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753380AbZCIWh0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 18:37:26 -0400
+Date: Mon, 9 Mar 2009 15:36:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: linux-aio@kvack.org, zach.brown@oracle.com, bcrl@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] aio: remove aio-max-nr and instead use the memlock
+ rlimit to limit the number of pages pinned for the aio completion ring
+Message-Id: <20090309153630.912d36a0.akpm@linux-foundation.org>
+In-Reply-To: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>
+References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090309023151.GA11464@cmpxchg.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 09, 2009 at 03:31:51AM +0100, Johannes Weiner wrote:
-> When hiddev_open() fails for whatever reason, free the just allocated
-> hiddev_list structure shared hiddev potentially still in use.
-> 
-> The hiddev is freed in device disconnect/last close of the device file
-> and must not be freed while there are possibly existing references to
-> it.
-> 
-> This is probably responsible for these
-> 
->   http://kerneloops.org/oops.php?number=221185
->   http://kerneloops.org/oops.php?number=220365
-> 
-> where a reader sleeps on the waitqueue, the device gets disconnected
-> (exist -> 0) another user tries to open it, fails on the exist check
-> and frees the hiddev from the table.  The finish_wait() in the reader
-> will then dereference the hiddev to get to the waitqueue and oopses.
-> 
-> This was introduced by commit 079034073faf974973baa0256b029451f6e768ad
-> "HID: hiddev cleanup -- handle all error conditions properly".
-> 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> Cc: Oliver Neukum <oliver@neukum.name>
-> ---
-> 
-> diff --git a/drivers/hid/usbhid/hiddev.c b/drivers/hid/usbhid/hiddev.c
-> index 4940e4d..00ea1ed 100644
-> --- a/drivers/hid/usbhid/hiddev.c
-> +++ b/drivers/hid/usbhid/hiddev.c
-> @@ -306,7 +306,7 @@ static int hiddev_open(struct inode *inode, struct file *file)
->  	return 0;
->  bail:
->  	file->private_data = NULL;
-> -	kfree(list->hiddev);
-> +	kfree(list);
->  	return res;
+On Mon, 09 Mar 2009 11:49:57 -0400
+Jeff Moyer <jmoyer@redhat.com> wrote:
 
-This isn't responsible for the above quoted oopsen but I think I found
-the real issue.  Resend coming soon.
+> Hi,
+> 
+> Believe it or not, I get numerous questions from customers about the
+> suggested tuning value of aio-max-nr.  aio-max-nr limits the total
+> number of io events that can be reserved, system wide, for aio
+> completions.  Each time io_setup is called, a ring buffer is allocated
+> that can hold nr_events I/O completions.  That ring buffer is then
+> mapped into the process' address space, and the pages are pinned in
+> memory.  So, the reason for this upper limit (I believe) is to keep a
+> malicious user from pinning all of kernel memory.  Now, this sounds like
+> a much better job for the memlock rlimit to me, hence the following
+> patch.
+> 
+> It's worth noting that, by default, aio-max-nr was set to 65536
+> requests.  By default, the memlock rlimit is set to 64kb per process.
+> With this patch in place, a single process can specify 2045 for the
+> nr_events parameter of io_setup.  Or, for the worst case scenario, a
+> process can only create 16 io contexts, each with a single event (since
+> the minimum ring size is a page).
+> 
+> I created a simple program that sets the process' memlock rlimit and
+> then drops the CAP_IPC_LOCK capability (the memlock rlimit is a command
+> line parameter, so you can see how the nr_events allowable changes with
+> different limits in place).  Then, it calls io_setup/io_destroy in a
+> loop, increasing nr_events until it fails.  Finally, it calls io_setup
+> in a loop with a single event to see how many iterations it can perform
+> before receiving -EAGAIN.  I ran the test on a patched kernel and the
+> results are in line with expectations.
+> 
+> I also ran the aio-dio-regress regression tests, and all passed but
+> one.  The one that failed only failed due to an expected return code of
+> -ENOMEM, and instead got -EAGAIN.  Part of the patch below returns a
+> proper error code from aio_setup_ring.  So, I'm calling this a test
+> issue, but we can debate this nuance if it is deemed important.
+> 
+> Further, as a result of this exercise, I noticed that there are numerous
+> places in the kernel that test to see if locking memory will exceed the
+> maximum amount of allowed locked memory.  I've factored out that bit of
+> code in a follow-on patch that I will post.
+> 
+> Finally, I updated the aio man pages to reflect this change (and fix
+> references to aio_context_t that should be io_context_t).
+> 
+> You can find a copy of the test program I used at:
+>   http://people.redhat.com/jmoyer/aio/ioctx_alloc.c
+> I'll apologize in advance for the crudity of the test code.
+> 
+> For those reviewing the below patch, it may be worth looking at:
+> 
+> commit d55b5fdaf40846221d543937b786956e27837fda
+> Author: Zach Brown <zach.brown@oracle.com>
+> Date:   Mon Nov 7 00:59:31 2005 -0800
+> 
+>     [PATCH] aio: remove aio_max_nr accounting race
+> 
+> The below patch basically reverts the above commit.  There is no
+> accounting race now, because we are charging per-process rlimits instead
+> of a system-wide maximum number of aio requests.  This has the added
+> benefit of reducing some code complexity.
 
-Dear stable team, I mixed up the commit date with the authoring date.
-The bugs were introduced after .28, so there is no need to backport
-anything unless my fixes fail to get into .29.  So please ignore for
-now.
+It's risky to simply remove an existing tunable.  What if someone's
+mission-critical startup script which is provided by a super-slow or
+even no-longer-in-business vendor does 
 
-	Hannes
+	if (write(aoi-max-nr, something) == error)
+		crash_and_burn()
+
+?
+
+It would be prudent to have a more cautious update scheme.  Leave the
+existing tunable in place.  Keep it working if possible.  If someone
+uses it, blurt out a loud printk telling them that they're using a
+deprecated interface and informing them how to update.
+
+Then at some later time we can remove the old interface.
+
+>  /*------ sysctl variables----*/
+> -static DEFINE_SPINLOCK(aio_nr_lock);
+> -unsigned long aio_nr;		/* current system wide number of aio requests */
+> -unsigned long aio_max_nr = 0x10000; /* system wide maximum number of aio requests */
+> +/* current system wide number of aio requests */
+> +atomic_t aio_nr = ATOMIC_INIT(0);
+
+Was it a conscious decision to downgrade this from a `long' type to an
+`int' type?  It _could_ have used atomic_long_t.
+
+
