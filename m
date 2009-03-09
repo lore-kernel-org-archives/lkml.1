@@ -1,72 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbZCIRWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441AbZCIRX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbZCIRWf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 13:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbZCIRWY
+	id S1754441AbZCIRX0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 13:23:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbZCIRXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 13:22:24 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:32667 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751385AbZCIRWX (ORCPT
+	Mon, 9 Mar 2009 13:23:16 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:59031 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751326AbZCIRXQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 13:22:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=lSuZxz1lbiNOXe3NiUNxByqBrZ4180fk/dIWAY/u6a7KtxMuuEkFP7P9jGOA/ufyYh
-         s5qOxUmLLXQZkMdSVFIqZu9JS/Nba+Wjt8hrbZhd0lRCvcFx6uMPLaEWtAnvkaCQeTci
-         0HObbN6Aw1YW0qiHwhR0xJkz2KgXhXVAofz5U=
-Date: Mon, 9 Mar 2009 20:19:51 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip] x86: shrink __ALIGN and __ALIGN_STR definitions
-Message-ID: <20090309171951.GE9945@localhost>
+	Mon, 9 Mar 2009 13:23:16 -0400
+Date: Mon, 9 Mar 2009 13:23:12 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/printk] tracing: optimize trace_printk()
+In-Reply-To: <tip-7bffc23e56e92c14b787bf4d95249a32085bfed5@git.kernel.org>
+Message-ID: <alpine.DEB.2.00.0903091322050.2203@gandalf.stny.rr.com>
+References: <1236356510-8381-5-git-send-email-fweisbec@gmail.com> <tip-7bffc23e56e92c14b787bf4d95249a32085bfed5@git.kernel.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
 
-1) .p2align 4 and .align 16 are the same meaning
-   (until a.out format for i386 is used which is
-    not our case for CONFIG_X86_ALIGNMENT_16 anyway)
-2) having 15 as max allowed bytes to be skipped
-   does not make sense on modulo 16
+On Mon, 9 Mar 2009, Ingo Molnar wrote:
+> 
+> tracing: optimize trace_printk()
+> 
+> Impact: micro-optimization
+> 
+> trace_printk() does this unconditionally:
+> 
+> 	trace_printk_fmt = fmt;
+> 
+> Where trace_printk_fmt is an entry into a global array. This is
+> very SMP-unfriendly.
+> 
+> So only write it once per bootup.
+> 
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> LKML-Reference: <1236356510-8381-5-git-send-email-fweisbec@gmail.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  include/linux/kernel.h |   10 ++++++++--
+>  1 files changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> index 4e726b9..7742798 100644
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -454,7 +454,10 @@ do {									\
+>  do {									\
+>  	static const char *trace_printk_fmt				\
+>  	__attribute__((section("__trace_printk_fmt")));			\
+> -	trace_printk_fmt = fmt;					\
+> +									\
+> +	if (!trace_printk_fmt)						\
+> +		trace_printk_fmt = fmt;					\
+> +									\
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
+But this is a static init. That is, it is done at initialization and not
+every time.
 
-Check it please
+The change actually slows down the system.
 
- arch/x86/include/asm/linkage.h |   11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+>  	__trace_printk_check_format(fmt, ##args);			\
+>  	__trace_printk(_THIS_IP_, trace_printk_fmt, ##args);		\
+>  } while (0)
+> @@ -467,7 +470,10 @@ __trace_printk(unsigned long ip, const char *fmt, ...)
+>  do {									\
+>  	static const char *trace_printk_fmt				\
+>  	__attribute__((section("__trace_printk_fmt")));			\
+> -	trace_printk_fmt = fmt;					\
+> +									\
+> +	if (!trace_printk_fmt)						\
+> +		trace_printk_fmt = fmt;					\
+> +									\
 
-Index: linux-2.6.git/arch/x86/include/asm/linkage.h
-===================================================================
---- linux-2.6.git.orig/arch/x86/include/asm/linkage.h
-+++ linux-2.6.git/arch/x86/include/asm/linkage.h
-@@ -53,14 +53,9 @@
- 	.globl name;	\
- 	name:
- 
--#ifdef CONFIG_X86_64
--#define __ALIGN .p2align 4,,15
--#define __ALIGN_STR ".p2align 4,,15"
--#endif
--
--#ifdef CONFIG_X86_ALIGNMENT_16
--#define __ALIGN .align 16,0x90
--#define __ALIGN_STR ".align 16,0x90"
-+#if defined(CONFIG_X86_64) || defined(CONFIG_X86_ALIGNMENT_16)
-+#define __ALIGN .p2align 4,0x90
-+#define __ALIGN_STR ".p2align 4,0x90"
- #endif
- 
- #endif /* __ASSEMBLY__ */
+Same here.
+
+-- Steve
+
+>  	__ftrace_vprintk(_THIS_IP_, trace_printk_fmt, vargs);		\
+>  } while (0)
+>  
+> 
