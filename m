@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZCIDBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbZCIDCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbZCIDBd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 23:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZCIDBZ
+	id S1754749AbZCIDCg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 23:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbZCIDCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 23:01:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59977 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753413AbZCIDBY (ORCPT
+	Sun, 8 Mar 2009 23:02:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49151
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753413AbZCIDCW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 23:01:24 -0400
-Date: Sun, 8 Mar 2009 20:00:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, adobriyan@gmail.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH -v2] memdup_user(): introduce
-Message-Id: <20090308200033.f5282b5b.akpm@linux-foundation.org>
-In-Reply-To: <49B47D50.5000608@cn.fujitsu.com>
-References: <49B0CAEC.80801@cn.fujitsu.com>
-	<20090306082056.GB3450@x200.localdomain>
-	<49B0DE89.9000401@cn.fujitsu.com>
-	<20090306003900.a031a914.akpm@linux-foundation.org>
-	<49B0E67C.2090404@cn.fujitsu.com>
-	<20090306011548.ffdf9cbc.akpm@linux-foundation.org>
-	<49B0F1B9.1080903@cn.fujitsu.com>
-	<20090306150335.c512c1b6.akpm@linux-foundation.org>
-	<20090307084805.7cf3d574@infradead.org>
-	<49B47D50.5000608@cn.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Sun, 8 Mar 2009 23:02:22 -0400
+Date: Sun, 08 Mar 2009 20:02:07 -0700 (PDT)
+Message-Id: <20090308.200207.90768249.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-03-06
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090306212414.GG3712@tuxdriver.com>
+References: <20090306212414.GG3712@tuxdriver.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 09 Mar 2009 10:22:08 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Fri, 6 Mar 2009 16:24:14 -0500
 
-> >>> +EXPORT_SYMBOL(memdup_user);
-> > 
-> > Hi,
-> > 
-> > I like the general idea of this a lot; it will make things much less
-> > error prone (and we can add some sanity checks on "len" to catch the
-> > standard security holes around copy_from_user usage). I'd even also
-> > want a memdup_array() like thing in the style of calloc().
-> > 
-> > However, I have two questions/suggestions for improvement:
-> > 
-> > I would like to question the use of the gfp argument here;
-> > copy_from_user sleeps, so you can't use GFP_ATOMIC anyway.
-> > You can't use GFP_NOFS etc, because the pagefault path will happily do
-> > things that are equivalent, if not identical, to GFP_KERNEL.
-> > 
-> > So the only value you can pass in correctly, as far as I can see, is
-> > GFP_KERNEL. Am I wrong?
-> > 
+> Here are a few small patches intended for 2.6.29.
 > 
-> Right! I just dug and found a few kmalloc(GFP_ATOMIC/GFP_NOFS)+copy_from_user(),
-> so we have one more reason to use this memdup_user().
+> Two of them add USB IDs to the Ralink drivers.  Some of those IDs are
+> already in -next, so there will be some minor conflicts.
+> 
+> The one from Roel Kluin avoids checking for <0 on an unsigned variable.
+> It seems like a very low-risk fix to a potentially hard to find
+> problem, so it seems worthwhile to me.
+> 
+> The iwlwifi fix corrects some problems with cleaning-up after
+> initialization errors, avoiding some potential resources leaks.
+> 
+> The p54 patch corrects a crash that was unveiled by applying a patch
+> headed to -next.  The problem was their all along, so it seems work
+> taking now.
 
-gack, those callsites are probably buggy.  Where are they?
+Pulled, thanks a lot John.
