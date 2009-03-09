@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZCIPee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbZCIPfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753380AbZCIPee (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 11:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZCIPe0
+	id S1753555AbZCIPfH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 11:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbZCIPey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 11:34:26 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:57730 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbZCIPeZ (ORCPT
+	Mon, 9 Mar 2009 11:34:54 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:33559 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751603AbZCIPex (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 11:34:25 -0400
-Message-ID: <49B536F4.9060609@freescale.com>
-Date: Mon, 09 Mar 2009 10:34:12 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: Will Newton <will.newton@gmail.com>
-CC: linux-kernel@vger.kernel.org, rdreier@cisco.com, jirislaby@gmail.com
-Subject: Re: [PATCH v2] add function spin_event_timeout()
-References: <1236611904-9843-1-git-send-email-timur@freescale.com> <87a5b0800903090831l6a74b8afhd640ce880be36114@mail.gmail.com>
-In-Reply-To: <87a5b0800903090831l6a74b8afhd640ce880be36114@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Mar 2009 11:34:53 -0400
+Date: Mon, 9 Mar 2009 15:34:50 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Linux* Processor Microcode Data File
+Message-ID: <20090309153449.GB24213@silver.sucs.org>
+References: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com> <20090309141655.GA24213@silver.sucs.org> <20090309081109.376f7a7e@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090309081109.376f7a7e@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Will Newton wrote:
+On Mon, Mar 09, 2009 at 08:11:09AM -0700, Arjan van de Ven wrote:
+> On Mon, 9 Mar 2009 14:16:55 +0000
+> Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> 
+> > The kernel doesn't load microcode automatically 
+> 
+> it does if you have the right format; the kernel uses
+> request_firmware() for this.
+> The microcode on the intel website is not ready for this yet, but we're
+> working hard to have future drops to be in the new format.
 
-> Are you sure you want to evaluate condition a second time when
-> returning? Some memory mapped registers don't have a stable value so
-> e.g. the first test could succeed but the return value could still be
-> zero.
+Wow so I was redundant AND wrong in the same email!
 
-Ah, good point.  I was hoping to keep the loop simple by combining the
-two test conditions, but I guess that's not going to work.
+What motivated the switch to the generic request_firmware interface? Is
+it just less messy/faster than previous methods?
 
-v3 coming up.
+Additionally while I remember, is it worth updating the microcode on all
+machines? At present I have an EeePC 900 and it's unclear if it would
+benefit from a microcode update (but there's a definite cost to running
+the current initscript at boot).
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Sitsofe | http://sucs.org/~sits/
