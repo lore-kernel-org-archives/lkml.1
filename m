@@ -1,146 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZCITFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbZCITHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753759AbZCITFg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 15:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZCITFZ
+	id S1754734AbZCITHZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 15:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZCITHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 15:05:25 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:50763 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752059AbZCITFX (ORCPT
+	Mon, 9 Mar 2009 15:07:10 -0400
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:34919 "EHLO
+	TX2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbZCITHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 15:05:23 -0400
-X-Greylist: delayed 2021 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Mar 2009 15:05:23 EDT
-Date: Mon, 9 Mar 2009 11:31:40 -0700 (PDT)
-From: Sage Weil <sage@newdream.net>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk
-cc: adilger@sun.com
-Subject: [PATCH] vfs: make real_lookup do dentry revalidation with i_mutex
- held
-Message-ID: <Pine.LNX.4.64.0903091118210.2773@cobra.newdream.net>
+	Mon, 9 Mar 2009 15:07:08 -0400
+X-BigFish: VPS-50(zz1418M1432R98dR936eQ1805M936fK9371Pzzzzz2fh6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+Message-ID: <49B568D0.5000901@am.sony.com>
+Date: Mon, 9 Mar 2009 12:06:56 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       Joe Perches <joe@perches.com>
+CC: rtc-linux@googlegroups.com, Geert.Uytterhoeven@sonycom.com,
+       Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       Dann Frazier <dannf@dannf.org>
+Subject: Re: [rtc-linux] Re: [PATCH 7/7] powerpc/ps3: Add rtc-ps3
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>	<20090309151216.17f13862@i1501.lan.towertech.it>	<49B55A21.2010801@am.sony.com> <20090309194307.154f3e95@i1501.lan.towertech.it>
+In-Reply-To: <20090309194307.154f3e95@i1501.lan.towertech.it>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Mar 2009 19:06:57.0203 (UTC) FILETIME=[37945830:01C9A0EA]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-real_lookup() is called by do_lookup() if dentry revalidation fails.  If
-the cache is re-populated while waiting for i_mutex, it may find that
-a d_lookup() subsequently succeeds (see the "Uhhuh! Nasty case" comment).
+Hi,
 
-Previously, real_lookup() would drop i_mutex and do_revalidate() again. If
-revalidate failed _again_, however, it would give up with -ENOENT.  The
-problem here that network file systems may be invalidating dentries via
-server callbacks, e.g. due to concurrent access from another client, and
--ENOENT is frequently the wrong answer.
+On 03/09/2009 11:43 AM, Alessandro Zummo wrote:
+> Geoff Levand <geoffrey.levand@am.sony.com> wrote:
+>> On 03/09/2009 07:12 AM, Alessandro Zummo wrote:
+>> > On Mon,  9 Mar 2009 14:26:23 +0100
+>> > Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+>> >> +
+>> >> +MODULE_AUTHOR("Sony Corporation");
+>> > 
+>> >  real name, if possible and a contact address
+>> >  here . Just in case I need someone to bother :)
+>> 
+>> Please look at the MAINTAINERS file, that will give
+>> the contact for PS3.  It is much easier to maintain
+>> a single place for the contact than many spread
+>> throughout the kernel sources.
+> 
+>  Having it in MODULE_AUTHOR allow my scripts to automatically
+>  send an email when appropriate.
+> 
+>  MAINTAINERS lists the files with an arbitrary
+>  driver title so that the search must be made by an human and there's
+>  no field that links a person to a specific .c .
+> 
+>  so every time I want to address someone I need to check MODULE_AUTHOR,
+>  the git log and the MAINTAINERS file.
 
-This problem has been seen with both Lustre and Ceph.  It seems possible
-to hit this case with NFS as well if the cache lifetime is very short.
+I see.  It seems what you want is MODULE_MAINTAINER, as author is
+the author, who after some time, may not be the maintainer any more.
 
-Instead, we should do_revalidate() while i_mutex is still held.  If
-revalidation fails, we can move on to a ->lookup() and ensure a correct
-result without worrying about any subsequent races.
+There was some work by Joe Perches to list the files a maintainer is
+responsible for into the MAINTAINERS file.  I think that would give
+you what you want, a way to automatically get the maintainer of a
+file.
 
-Note that do_revalidate() is called with i_mutex held elsewhere.  For
-example, do_filp_open(), lookup_create(), do_unlinkat(), do_rmdir(),
-and possibly others all take the directory i_mutex, and then
+Joe, could you let us know the status of that work?
 
--> lookup_hash
-        -> __lookup_hash
-                -> cached_lookup
-                        -> do_revalidate
-
-so this does not introduce any new locking rules for d_revalidate
-implementations.
-
-CC: Al Viro <viro@zeniv.linux.org.uk>
-CC: Andreas Dilger <adilger@sun.com>
-Signed-off-by: Yehuda Sadeh <yehuda@newdream.net>
-Signed-off-by: Sage Weil <sage@newdream.net>
----
- fs/namei.c |   56 +++++++++++++++++++++++++++++---------------------------
- 1 files changed, 29 insertions(+), 27 deletions(-)
-
-diff --git a/fs/namei.c b/fs/namei.c
-index c30e33d..49f58d1 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -469,6 +469,7 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
- {
- 	struct dentry * result;
- 	struct inode *dir = parent->d_inode;
-+	struct dentry *dentry;
- 
- 	mutex_lock(&dir->i_mutex);
- 	/*
-@@ -486,38 +487,39 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
- 	 * so doing d_lookup() (with seqlock), instead of lockfree __d_lookup
- 	 */
- 	result = d_lookup(parent, name);
--	if (!result) {
--		struct dentry *dentry;
--
--		/* Don't create child dentry for a dead directory. */
--		result = ERR_PTR(-ENOENT);
--		if (IS_DEADDIR(dir))
--			goto out_unlock;
--
--		dentry = d_alloc(parent, name);
--		result = ERR_PTR(-ENOMEM);
--		if (dentry) {
--			result = dir->i_op->lookup(dir, dentry, nd);
-+	if (result) {
-+		/*
-+		 * The cache was re-populated while we waited on the
-+		 * mutex.  We need to revalidate, this time while
-+		 * holding i_mutex (to avoid another race).
-+		 */
-+		if (result->d_op && result->d_op->d_revalidate) {
-+			result = do_revalidate(result, nd);
- 			if (result)
--				dput(dentry);
--			else
--				result = dentry;
-+				goto out_unlock;
-+			/*
-+			 * The dentry was left behind invalid.  Just
-+			 * do the lookup.
-+			 */
- 		}
--out_unlock:
--		mutex_unlock(&dir->i_mutex);
--		return result;
- 	}
- 
--	/*
--	 * Uhhuh! Nasty case: the cache was re-populated while
--	 * we waited on the semaphore. Need to revalidate.
--	 */
--	mutex_unlock(&dir->i_mutex);
--	if (result->d_op && result->d_op->d_revalidate) {
--		result = do_revalidate(result, nd);
--		if (!result)
--			result = ERR_PTR(-ENOENT);
-+	/* Don't create child dentry for a dead directory. */
-+	result = ERR_PTR(-ENOENT);
-+	if (IS_DEADDIR(dir))
-+		goto out_unlock;
-+
-+	dentry = d_alloc(parent, name);
-+	result = ERR_PTR(-ENOMEM);
-+	if (dentry) {
-+		result = dir->i_op->lookup(dir, dentry, nd);
-+		if (result) {
-+			dput(dentry);
-+		} else
-+			result = dentry;
- 	}
-+out_unlock:
-+	mutex_unlock(&dir->i_mutex);
- 	return result;
- }
- 
--- 
-1.5.6.5
+-Geoff
 
