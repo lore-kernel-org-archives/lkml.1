@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbZCIUhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZCIUiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755022AbZCIUhk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 16:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZCIUh0
+	id S1755174AbZCIUiu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 16:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZCIUim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 16:37:26 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:27920 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752446AbZCIUhZ (ORCPT
+	Mon, 9 Mar 2009 16:38:42 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:59414 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753498AbZCIUil (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 16:37:25 -0400
-Date: Mon, 9 Mar 2009 14:37:19 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       jbarnes@virtuousgeek.org, xyzzy@speakeasy.org, djwong@us.ibm.com,
-       shimada-yxb@necst.nec.co.jp, rjw@sisk.pl, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 00/11] PCI core learns hotplug
-Message-ID: <20090309203719.GR32589@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Vegard Nossum <vegard.nossum@gmail.com>,
-	Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-	jbarnes@virtuousgeek.org, xyzzy@speakeasy.org, djwong@us.ibm.com,
-	shimada-yxb@necst.nec.co.jp, rjw@sisk.pl, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20090309052933.3918.86601.stgit@bob.kio> <20090309185117.GJ32589@ldl.fc.hp.com> <19f34abd0903091230q27a04f37mdb0ba75ba170e6a@mail.gmail.com> <20090309195250.GQ32589@ldl.fc.hp.com> <19f34abd0903091328q4471bb3he0c6e07fa32a6a1f@mail.gmail.com>
+	Mon, 9 Mar 2009 16:38:41 -0400
+Date: Mon, 9 Mar 2009 21:38:36 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Cc: Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Russell King <linux@arm.linux.org.uk>,
+       Steven Rostedt <rostedt@rostedt.homelinux.com>,
+       Ingo Molnar <mingo@elte.hu>, Matthias Kaehlcke <matthias@kaehlcke.net>
+Subject: Re: [PATCH] ftrace: fix crash due to tracing of __naked functions
+Message-ID: <20090309203836.GA1458@pengutronix.de>
+References: <1236584800-7686-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <19f34abd0903091328q4471bb3he0c6e07fa32a6a1f@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1236584800-7686-1-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vegard Nossum <vegard.nossum@gmail.com>:
-> 2009/3/9 Alex Chiang <achiang@hp.com>:
-> >> It reproduces reliably if I do this:
-> >>
-> >> $ while true; do echo 1 > /sys/bus/pci/devices/0000\:00\:00.0/remove; done
-> >
-> > I was going to ask for lspci -v output so that I could see what
-> > device 0000:00:00.0 might be, but I was able to reproduce
-> > something similar on my machine.
-> >
-> > Can I ask why you're doing the above with a while loop? Just to
-> > torture the code? Or something else?
+Hello,
+
+On Mon, Mar 09, 2009 at 08:46:40AM +0100, Uwe Kleine-König wrote:
+> This is a fix for the following crash observed in 2.6.29-rc3:
+> http://lkml.org/lkml/2009/1/29/150
 > 
-> Yes, purely for the purpose of torture ;-)
+> On ARM it doesn't make sense to trace a naked function because then
+> mcount is called without stack and frame pointer being set up and there
+> is no chance to restore the lr register to the value before mcount was
+> called.
+> 
+> Compared to the original fix posted to arm-linux-kernel ML on 29 Jan
+> 2009 by Abhishek Sagar I only changed the definition of __naked for ARM.
+while talking on #linux-rt about this patch I noticed that ARM is
+currently the only user of __naked.  So maybe making __naked include
+notrace unconditionally (as Abhishek suggested) is the right thing to
+do.
+
+Russell: Steven considers this patch more ARM than ftrace related, so he
+(and probably Ingo, too) would prefer this to go via your tree.  Or at
+least they want your Ack.
  
-Ok, just checking. :)
+What do you think?
 
-> I also found one more use-after-free error using kmemcheck:
-> 
-> Hope this helps :-)
+Best regards
+Uwe
 
-Yes, thanks a lot!
-
-I'll work on these. Thanks for the excellent bug reports.
-
-/ac
-
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
