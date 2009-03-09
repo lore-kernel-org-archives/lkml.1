@@ -1,195 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbZCIHpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbZCIHqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753384AbZCIHpj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 03:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752409AbZCIHpa
+	id S1753714AbZCIHqz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 03:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbZCIHqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 03:45:30 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:47966 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752172AbZCIHp3 (ORCPT
+	Mon, 9 Mar 2009 03:46:46 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:40999 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172AbZCIHqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 03:45:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=T2B9v7sZpAUeUujuFREmHJkZt6RKsgc8M5rRlXefCXbg35iOqIN/HjVTUKpSZjEgwO
-         9vu7to7GRbrpR8RRYtTRrs2qpCpnqw6HPhVIWAxQSzIPeENh+o1yucHHJfzwXssOnZ08
-         OHA3zAfEmXltarRVUzh6hczijIxDzeY2JFHTY=
+	Mon, 9 Mar 2009 03:46:45 -0400
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Cc: Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Russell King <linux@arm.linux.org.uk>,
+       Steven Rostedt <rostedt@rostedt.homelinux.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] ftrace: fix crash due to tracing of __naked functions
+Date: Mon,  9 Mar 2009 08:46:40 +0100
+Message-Id: <1236584800-7686-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.5.6.5
 MIME-Version: 1.0
-In-Reply-To: <49AB1A5C.6040300@zytor.com>
-References: <1235785882-17580-1-git-send-email-jeremy@goop.org>
-	 <20090228071534.GB9351@elte.hu> <49A8EA1A.50802@kernel.org>
-	 <49A8ED3D.1060704@kernel.org> <49A8F319.3030802@goop.org>
-	 <49A9E392.6090004@kernel.org> <49AA47D2.4020804@kernel.org>
-	 <49AA5356.3050602@zytor.com> <49AACEB3.5050206@kernel.org>
-	 <49AB1A5C.6040300@zytor.com>
-Date: Mon, 9 Mar 2009 00:45:27 -0700
-X-Google-Sender-Auth: 5fbc81931cbdf4cf
-Message-ID: <86802c440903090045y5bfa2201q198c6851c15a1d4d@mail.gmail.com>
-Subject: Re: [PATCH] x86: put initial_pg_tables into bss -v2
-From: Yinghai Lu <yinghai@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Content-Type: multipart/mixed; boundary=000e0cd28e8468c6500464aad161
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---000e0cd28e8468c6500464aad161
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This is a fix for the following crash observed in 2.6.29-rc3:
+http://lkml.org/lkml/2009/1/29/150
 
-On Sun, Mar 1, 2009 at 4:29 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> It's still really ugly, though. =A0A much easier and cleaner way would se=
-em to
-> be to calculate a far limit on the brk and then marking it as a formal
-> (non-alloc) section in the linker script and vmlinux file. =A0That way
-> anything that examines the vmlinux file will see it as an exclusion secti=
-on.
-> =A0We can (and should) even verify that we don't overflow the brk and pan=
-ic if
-> we do.
+On ARM it doesn't make sense to trace a naked function because then
+mcount is called without stack and frame pointer being set up and there
+is no chance to restore the lr register to the value before mcount was
+called.
 
-please check attached patch.
+Compared to the original fix posted to arm-linux-kernel ML on 29 Jan
+2009 by Abhishek Sagar I only changed the definition of __naked for ARM.
 
-[PATCH] x86: put initial_pg_tables into .bss -v4
+Reported-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+Cc: Abhishek Sagar <sagar.abhishek@gmail.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Steven Rostedt <rostedt@home.goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+Hello,
 
-Impact: cleanup
+without this change a kernel having CONFIG_FUNCTION_TRACER=y doesn't
+boot on many maschines.  It would be great if this change would make it
+into .29.
 
-Don't use ram after _end blindly for pagetables. aka init pages is before _=
-end
-put those pg table into .bss
+The change of include/linux/compiler-gcc.h isn't pretty, but this is the
+best change I currently see without bigger modifications.
 
-v2: keep initial page table up to 512M only.
-v4: put initial page tables just before _end
+Best regards
+Uwe
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+ arch/arm/kernel/fiq.c           |    4 ++--
+ arch/arm/mm/copypage-feroceon.c |    2 +-
+ arch/arm/mm/copypage-v3.c       |    2 +-
+ arch/arm/mm/copypage-v4mc.c     |    2 +-
+ arch/arm/mm/copypage-v4wb.c     |    2 +-
+ arch/arm/mm/copypage-v4wt.c     |    2 +-
+ arch/arm/mm/copypage-xsc3.c     |    2 +-
+ arch/arm/mm/copypage-xscale.c   |    2 +-
+ include/linux/compiler-gcc.h    |    6 ++++++
+ 9 files changed, 15 insertions(+), 9 deletions(-)
 
-
-YH
-
---000e0cd28e8468c6500464aad161
-Content-Type: text/x-diff; charset=US-ASCII; name="initial_pg_tables_4.patch"
-Content-Disposition: attachment; filename="initial_pg_tables_4.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fs2ugn0c0
-
-W1BBVENIXSB4ODY6IHB1dCBpbml0aWFsX3BnX3RhYmxlcyBpbnRvIC5ic3MgLXY0CgpJbXBhY3Q6
-IGNsZWFudXAKCkRvbid0IHVzZSByYW0gYWZ0ZXIgX2VuZCBibGluZGx5IGZvciBwYWdldGFibGVz
-LiBha2EgaW5pdCBwYWdlcyBpcyBiZWZvcmUgX2VuZApwdXQgdGhvc2UgcGcgdGFibGUgaW50byAu
-YnNzCgp2Mjoga2VlcCBpbml0aWFsIHBhZ2UgdGFibGUgdXAgdG8gNTEyTSBvbmx5Lgp2NDogcHV0
-IGluaXRpYWwgcGFnZSB0YWJsZXMganVzdCBiZWZvcmUgX2VuZAoKU2lnbmVkLW9mZi1ieTogWWlu
-Z2hhaSBMdSA8eWluZ2hhaUBrZXJuZWwub3JnPgoKLS0tCiBhcmNoL3g4Ni9pbmNsdWRlL2FzbS9w
-YWdlXzMyX3R5cGVzLmggfCAgICA1ICsrKwogYXJjaC94ODYva2VybmVsL2hlYWQzMi5jICAgICAg
-ICAgICAgIHwgICAgMyArCiBhcmNoL3g4Ni9rZXJuZWwvaGVhZF8zMi5TICAgICAgICAgICAgfCAg
-IDU1ICsrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiBhcmNoL3g4Ni9rZXJuZWwv
-dm1saW51eF8zMi5sZHMuUyAgICAgfCAgIDExICsrKysrKy0KIDQgZmlsZXMgY2hhbmdlZCwgNDAg
-aW5zZXJ0aW9ucygrKSwgMzQgZGVsZXRpb25zKC0pCgpJbmRleDogbGludXgtMi42L2FyY2gveDg2
-L2tlcm5lbC9oZWFkMzIuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9hcmNoL3g4Ni9r
-ZXJuZWwvaGVhZDMyLmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvaGVhZDMyLmMKQEAg
-LTE4LDcgKzE4LDggQEAgdm9pZCBfX2luaXQgaTM4Nl9zdGFydF9rZXJuZWwodm9pZCkKIHsKIAly
-ZXNlcnZlX3RyYW1wb2xpbmVfbWVtb3J5KCk7CiAKLQlyZXNlcnZlX2Vhcmx5KF9fcGFfc3ltYm9s
-KCZfdGV4dCksIF9fcGFfc3ltYm9sKCZfZW5kKSwgIlRFWFQgREFUQSBCU1MiKTsKKwlyZXNlcnZl
-X2Vhcmx5KF9fcGFfc3ltYm9sKCZfdGV4dCksIF9fcGFfc3ltYm9sKCZfX2Jzc19zdG9wKSwKKwkJ
-CSAiVEVYVCBEQVRBIEJTUyIpOwogCiAjaWZkZWYgQ09ORklHX0JMS19ERVZfSU5JVFJECiAJLyog
-UmVzZXJ2ZSBJTklUUkQgKi8KSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvaGVhZF8z
-Mi5TCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gveDg2L2tlcm5lbC9oZWFkXzMy
-LlMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvaGVhZF8zMi5TCkBAIC0zOCw0MiArMzgs
-MzAgQEAKICNkZWZpbmUgWDg2X1ZFTkRPUl9JRAluZXdfY3B1X2RhdGErQ1BVSU5GT194ODZfdmVu
-ZG9yX2lkCiAKIC8qCi0gKiBUaGlzIGlzIGhvdyBtdWNoIG1lbW9yeSAqaW4gYWRkaXRpb24gdG8g
-dGhlIG1lbW9yeSBjb3ZlcmVkIHVwIHRvCi0gKiBhbmQgaW5jbHVkaW5nIF9lbmQqIHdlIG5lZWQg
-bWFwcGVkIGluaXRpYWxseS4KLSAqIFdlIG5lZWQ6Ci0gKiAgLSBvbmUgYml0IGZvciBlYWNoIHBv
-c3NpYmxlIHBhZ2UsIGJ1dCBvbmx5IGluIGxvdyBtZW1vcnksIHdoaWNoIG1lYW5zCi0gKiAgICAg
-Ml4zMi80MDk2LzggPSAxMjhLIHdvcnN0IGNhc2UgKDRHLzRHIHNwbGl0LikKKyAqIFRoaXMgaXMg
-aG93IG11Y2ggbWVtb3J5IGZvciBwYWdlIHRhYmxlIHRvIGFuZCBpbmNsdWRpbmcgX2VuZAorICog
-d2UgbmVlZCBtYXBwZWQgaW5pdGlhbGx5LgogICogIC0gZW5vdWdoIHNwYWNlIHRvIG1hcCBhbGwg
-bG93IG1lbW9yeSwgd2hpY2ggbWVhbnMKLSAqICAgICAoMl4zMi80MDk2KSAvIDEwMjQgcGFnZXMg
-KHdvcnN0IGNhc2UsIG5vbiBQQUUpCi0gKiAgICAgKDJeMzIvNDA5NikgLyA1MTIgKyA0IHBhZ2Vz
-ICh3b3JzdCBjYXNlIGZvciBQQUUpCi0gKiAgLSBhIGZldyBwYWdlcyBmb3IgYWxsb2NhdG9yIHVz
-ZSBiZWZvcmUgdGhlIGtlcm5lbCBwYWdldGFibGUgaGFzCi0gKiAgICAgYmVlbiBzZXQgdXAKKyAq
-ICAgICAoS0VSTkVMX0lNQUdFX1NJWkUvNDA5NikgLyAxMDI0IHBhZ2VzICh3b3JzdCBjYXNlLCBu
-b24gUEFFKQorICogICAgIChLRVJORUxfSU1BR0VfU0laRS80MDk2KSAvIDUxMiArIDQgcGFnZXMg
-KHdvcnN0IGNhc2UgZm9yIFBBRSkKICAqCiAgKiBNb2R1bG8gcm91bmRpbmcsIGVhY2ggbWVnYWJ5
-dGUgYXNzaWduZWQgaGVyZSByZXF1aXJlcyBhIGtpbG9ieXRlIG9mCiAgKiBtZW1vcnksIHdoaWNo
-IGlzIGN1cnJlbnRseSB1bnJlY2xhaW1lZC4KICAqCiAgKiBUaGlzIHNob3VsZCBiZSBhIG11bHRp
-cGxlIG9mIGEgcGFnZS4KKyAqCisgKiBLRVJORUxfSU1BR0VfU0laRSBzaG91bGQgYmUgZ3JlYXRl
-ciB0aGFuIHBhKF9lbmQpCisgKiBhbmQgc21hbGwgdGhhbiBtYXhfbG93X3Bmbiwgb3RoZXJ3aXNl
-IHdpbGwgd2FzdGUgc29tZSBwYWdlIHRhYmxlIGVudHJpZXMKICAqLwotTE9XX1BBR0VTID0gMTw8
-KDMyLVBBR0VfU0hJRlRfYXNtKQotCi0vKgotICogVG8gcHJlc2VydmUgdGhlIERNQSBwb29sIGlu
-IFBBR0VBTExPQyBrZXJuZWxzLCB3ZSdsbCBhbGxvY2F0ZQotICogcGFnZXRhYmxlcyBmcm9tIGFi
-b3ZlIHRoZSAxNk1CIERNQSBsaW1pdCwgc28gd2UnbGwgaGF2ZSB0byBzZXQKLSAqIHVwIHBhZ2V0
-YWJsZXMgMTZNQiBtb3JlICh3b3JzdC1jYXNlKToKLSAqLwotI2lmIGRlZmluZWQoQ09ORklHX0RF
-QlVHX1BBR0VBTExPQykgfHwgZGVmaW5lZChDT05GSUdfS01FTUNIRUNLKQotTE9XX1BBR0VTID0g
-TE9XX1BBR0VTICsgMHgxMDAwMDAwCi0jZW5kaWYKK0xPV19QQUdFUyA9IChLRVJORUxfSU1BR0Vf
-U0laRSArIFBBR0VfU0laRV9hc20gLSAxKT4+UEFHRV9TSElGVAogCiAjaWYgUFRSU19QRVJfUE1E
-ID4gMQogUEFHRV9UQUJMRV9TSVpFID0gKExPV19QQUdFUyAvIFBUUlNfUEVSX1BNRCkgKyBQVFJT
-X1BFUl9QR0QKICNlbHNlCiBQQUdFX1RBQkxFX1NJWkUgPSAoTE9XX1BBR0VTIC8gUFRSU19QRVJf
-UEdEKQogI2VuZGlmCi1CT09UQklUTUFQX1NJWkUgPSBMT1dfUEFHRVMgLyA4CiBBTExPQ0FUT1Jf
-U0xPUCA9IDQKIAotSU5JVF9NQVBfQkVZT05EX0VORCA9IEJPT1RCSVRNQVBfU0laRSArIChQQUdF
-X1RBQkxFX1NJWkUgKyBBTExPQ0FUT1JfU0xPUCkqUEFHRV9TSVpFX2FzbQorSU5JVF9NQVBfU0la
-RSA9IChQQUdFX1RBQkxFX1NJWkUgKyBBTExPQ0FUT1JfU0xPUCkgKiBQQUdFX1NJWkVfYXNtCiAK
-IC8qCiAgKiAzMi1iaXQga2VybmVsIGVudHJ5cG9pbnQ7IG9ubHkgdXNlZCBieSB0aGUgYm9vdCBD
-UFUuICBPbiBlbnRyeSwKQEAgLTE2NiwxMCArMTU0LDkgQEAgbnVtX3N1YmFyY2hfZW50cmllcyA9
-ICguIC0gc3ViYXJjaF9lbnRyaQogCiAvKgogICogSW5pdGlhbGl6ZSBwYWdlIHRhYmxlcy4gIFRo
-aXMgY3JlYXRlcyBhIFBERSBhbmQgYSBzZXQgb2YgcGFnZQotICogdGFibGVzLCB3aGljaCBhcmUg
-bG9jYXRlZCBpbW1lZGlhdGVseSBiZXlvbmQgX2VuZC4gIFRoZSB2YXJpYWJsZQotICogaW5pdF9w
-Z190YWJsZXNfZW5kIGlzIHNldCB1cCB0byBwb2ludCB0byB0aGUgZmlyc3QgInNhZmUiIGxvY2F0
-aW9uLgorICogdGFibGVzLCB3aGljaCBhcmUgbG9jYXRlZCBpbW1lZGlhdGVseSBiZXlvbmQgX2Vu
-ZC4KICAqIE1hcHBpbmdzIGFyZSBjcmVhdGVkIGJvdGggYXQgdmlydHVhbCBhZGRyZXNzIDAgKGlk
-ZW50aXR5IG1hcHBpbmcpCi0gKiBhbmQgUEFHRV9PRkZTRVQgZm9yIHVwIHRvIF9lbmQrc2l6ZW9m
-KHBhZ2UgdGFibGVzKStJTklUX01BUF9CRVlPTkRfRU5ELgorICogYW5kIFBBR0VfT0ZGU0VUIGZv
-ciB1cCB0byBfZW5kCiAgKgogICogTm90ZSB0aGF0IHRoZSBzdGFjayBpcyBub3QgeWV0IHNldCB1
-cCEKICAqLwpAQCAtMjA5LDE0ICsxOTYsMTQgQEAgZGVmYXVsdF9lbnRyeToKIAlsb29wIDExYgog
-CiAJLyoKLQkgKiBFbmQgY29uZGl0aW9uOiB3ZSBtdXN0IG1hcCB1cCB0byBhbmQgaW5jbHVkaW5n
-IElOSVRfTUFQX0JFWU9ORF9FTkQKLQkgKiBieXRlcyBiZXlvbmQgdGhlIGVuZCBvZiBvdXIgb3du
-IHBhZ2UgdGFibGVzLgorCSAqIEVuZCBjb25kaXRpb246IHdlIG11c3QgbWFwIHVwIHRvIHRoZSBl
-bmQuCiAJICovCi0JbGVhbCAoSU5JVF9NQVBfQkVZT05EX0VORCtQVEVfSURFTlRfQVRUUikoJWVk
-aSksJWVicAorCW1vdmwgJHBhKF9lbmQpLCAlZWJwCisJYWRkbCBQVEVfSURFTlRfQVRUUiwgJWVi
-cAogCWNtcGwgJWVicCwlZWF4CiAJamIgMTBiCiAxOgotCW1vdmwgJWVkaSxwYShpbml0X3BnX3Rh
-Ymxlc19lbmQpCisJbW92bCAlZWRpLCBwYShpbml0X3BnX3RhYmxlc19lbmQpCiAJc2hybCAkMTIs
-ICVlYXgKIAltb3ZsICVlYXgsIHBhKG1heF9wZm5fbWFwcGVkKQogCkBAIC0yNDIsMTQgKzIyOSwx
-NCBAQCBwYWdlX3BkZV9vZmZzZXQgPSAoX19QQUdFX09GRlNFVCA+PiAyMCk7CiAJYWRkbCAkMHgx
-MDAwLCVlYXgKIAlsb29wIDExYgogCS8qCi0JICogRW5kIGNvbmRpdGlvbjogd2UgbXVzdCBtYXAg
-dXAgdG8gYW5kIGluY2x1ZGluZyBJTklUX01BUF9CRVlPTkRfRU5ECi0JICogYnl0ZXMgYmV5b25k
-IHRoZSBlbmQgb2Ygb3VyIG93biBwYWdlIHRhYmxlczsgdGhlICsweDAwNyBpcworCSAqIEVuZCBj
-b25kaXRpb246IHdlIG11c3QgbWFwIHVwIHRvIGVuZCwgdGhlICsweDAwNyBpcwogCSAqIHRoZSBh
-dHRyaWJ1dGUgYml0cwogCSAqLwotCWxlYWwgKElOSVRfTUFQX0JFWU9ORF9FTkQrUFRFX0lERU5U
-X0FUVFIpKCVlZGkpLCVlYnAKKwltb3ZsICRwYShfZW5kKSwgJWVicAorCWFkZGwgUFRFX0lERU5U
-X0FUVFIsICVlYnAKIAljbXBsICVlYnAsJWVheAogCWpiIDEwYgotCW1vdmwgJWVkaSxwYShpbml0
-X3BnX3RhYmxlc19lbmQpCisJbW92bCAlZWRpLCBwYShpbml0X3BnX3RhYmxlc19lbmQpCiAJc2hy
-bCAkMTIsICVlYXgKIAltb3ZsICVlYXgsIHBhKG1heF9wZm5fbWFwcGVkKQogCkBAIC02MzYsNiAr
-NjIzLDEwIEBAIHN3YXBwZXJfcGdfZml4bWFwOgogCS5maWxsIDEwMjQsNCwwCiBFTlRSWShlbXB0
-eV96ZXJvX3BhZ2UpCiAJLmZpbGwgNDA5NiwxLDAKKworLnNlY3Rpb24gIi5ic3MuZXh0cmFfcGFn
-ZV9hbGlnbmVkIiwid2EiCisJLmFsaWduIFBBR0VfU0laRV9hc20KKwkuZmlsbCBJTklUX01BUF9T
-SVpFLDEsMAogLyoKICAqIFRoaXMgc3RhcnRzIHRoZSBkYXRhIHNlY3Rpb24uCiAgKi8KSW5kZXg6
-IGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvdm1saW51eF8zMi5sZHMuUwo9PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0t
-LSBsaW51eC0yLjYub3JpZy9hcmNoL3g4Ni9rZXJuZWwvdm1saW51eF8zMi5sZHMuUworKysgbGlu
-dXgtMi42L2FyY2gveDg2L2tlcm5lbC92bWxpbnV4XzMyLmxkcy5TCkBAIC0xODksMTAgKzE4OSwx
-MyBAQCBTRUNUSU9OUwogCSooLmJzcykKIAkuID0gQUxJR04oNCk7CiAJX19ic3Nfc3RvcCA9IC47
-Ci0gIAlfZW5kID0gLiA7CisJLyogZXh0cmFfcGFnZV9hbGlnbmVkIG11c3QgYmUgbGFzdCBvbmUg
-YmVmb3JlIGVuZCovCiAJLyogVGhpcyBpcyB3aGVyZSB0aGUga2VybmVsIGNyZWF0ZXMgdGhlIGVh
-cmx5IGJvb3QgcGFnZSB0YWJsZXMgKi8KIAkuID0gQUxJR04oUEFHRV9TSVpFKTsKIAlwZzAgPSAu
-IDsKKwkqKC5ic3MuZXh0cmFfcGFnZV9hbGlnbmVkKQorCS4gPSBBTElHTig4KTsKKwlfZW5kID0g
-LiA7CiAgIH0KIAogICAvKiBTZWN0aW9ucyB0byBiZSBkaXNjYXJkZWQgKi8KQEAgLTIwNSw2ICsy
-MDgsMTIgQEAgU0VDVElPTlMKICAgRFdBUkZfREVCVUcKIH0KIAorLyoKKyAqIEJ1aWxkLXRpbWUg
-Y2hlY2sgb24gdGhlIGltYWdlIHNpemU6CisgKi8KK0FTU0VSVCgoX2VuZCAtIExPQURfT0ZGU0VU
-IDw9IEtFUk5FTF9JTUFHRV9TSVpFKSwKKwkia2VybmVsIGltYWdlIGJpZ2dlciB0aGFuIEtFUk5F
-TF9JTUFHRV9TSVpFIikKKwogI2lmZGVmIENPTkZJR19LRVhFQwogLyogTGluayB0aW1lIGNoZWNr
-cyAqLwogI2luY2x1ZGUgPGFzbS9rZXhlYy5oPgpJbmRleDogbGludXgtMi42L2FyY2gveDg2L2lu
-Y2x1ZGUvYXNtL3BhZ2VfMzJfdHlwZXMuaAo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9h
-cmNoL3g4Ni9pbmNsdWRlL2FzbS9wYWdlXzMyX3R5cGVzLmgKKysrIGxpbnV4LTIuNi9hcmNoL3g4
-Ni9pbmNsdWRlL2FzbS9wYWdlXzMyX3R5cGVzLmgKQEAgLTM5LDYgKzM5LDExIEBACiAjZGVmaW5l
-IF9fVklSVFVBTF9NQVNLX1NISUZUCTMyCiAjZW5kaWYJLyogQ09ORklHX1g4Nl9QQUUgKi8KIAor
-LyoKKyAqIEtlcm5lbCBpbWFnZSBzaXplIGlzIGxpbWl0ZWQgdG8gNTEyIE1CIChzZWUgaW4gYXJj
-aC94ODYva2VybmVsL2hlYWRfMzIuUykKKyAqLworI2RlZmluZSBLRVJORUxfSU1BR0VfU0laRQko
-NTEyICogMTAyNCAqIDEwMjQpCisKICNpZm5kZWYgX19BU1NFTUJMWV9fCiAKIC8qCg==
---000e0cd28e8468c6500464aad161--
+diff --git a/arch/arm/kernel/fiq.c b/arch/arm/kernel/fiq.c
+index 36f81d9..6ff7919 100644
+--- a/arch/arm/kernel/fiq.c
++++ b/arch/arm/kernel/fiq.c
+@@ -88,7 +88,7 @@ void set_fiq_handler(void *start, unsigned int length)
+  * disable irqs for the duration.  Note - these functions are almost
+  * entirely coded in assembly.
+  */
+-void __attribute__((naked)) set_fiq_regs(struct pt_regs *regs)
++void __naked set_fiq_regs(struct pt_regs *regs)
+ {
+ 	register unsigned long tmp;
+ 	asm volatile (
+@@ -106,7 +106,7 @@ void __attribute__((naked)) set_fiq_regs(struct pt_regs *regs)
+ 	: "r" (&regs->ARM_r8), "I" (PSR_I_BIT | PSR_F_BIT | FIQ_MODE));
+ }
+ 
+-void __attribute__((naked)) get_fiq_regs(struct pt_regs *regs)
++void __naked get_fiq_regs(struct pt_regs *regs)
+ {
+ 	register unsigned long tmp;
+ 	asm volatile (
+diff --git a/arch/arm/mm/copypage-feroceon.c b/arch/arm/mm/copypage-feroceon.c
+index c3ba6a9..70997d5 100644
+--- a/arch/arm/mm/copypage-feroceon.c
++++ b/arch/arm/mm/copypage-feroceon.c
+@@ -13,7 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/highmem.h>
+ 
+-static void __attribute__((naked))
++static void __naked
+ feroceon_copy_user_page(void *kto, const void *kfrom)
+ {
+ 	asm("\
+diff --git a/arch/arm/mm/copypage-v3.c b/arch/arm/mm/copypage-v3.c
+index 70ed96c..de9c068 100644
+--- a/arch/arm/mm/copypage-v3.c
++++ b/arch/arm/mm/copypage-v3.c
+@@ -15,7 +15,7 @@
+  *
+  * FIXME: do we need to handle cache stuff...
+  */
+-static void __attribute__((naked))
++static void __naked
+ v3_copy_user_page(void *kto, const void *kfrom)
+ {
+ 	asm("\n\
+diff --git a/arch/arm/mm/copypage-v4mc.c b/arch/arm/mm/copypage-v4mc.c
+index 1601698..7370a71 100644
+--- a/arch/arm/mm/copypage-v4mc.c
++++ b/arch/arm/mm/copypage-v4mc.c
+@@ -44,7 +44,7 @@ static DEFINE_SPINLOCK(minicache_lock);
+  * instruction.  If your processor does not supply this, you have to write your
+  * own copy_user_highpage that does the right thing.
+  */
+-static void __attribute__((naked))
++static void __naked
+ mc_copy_user_page(void *from, void *to)
+ {
+ 	asm volatile(
+diff --git a/arch/arm/mm/copypage-v4wb.c b/arch/arm/mm/copypage-v4wb.c
+index 3ec93da..9ab0984 100644
+--- a/arch/arm/mm/copypage-v4wb.c
++++ b/arch/arm/mm/copypage-v4wb.c
+@@ -22,7 +22,7 @@
+  * instruction.  If your processor does not supply this, you have to write your
+  * own copy_user_highpage that does the right thing.
+  */
+-static void __attribute__((naked))
++static void __naked
+ v4wb_copy_user_page(void *kto, const void *kfrom)
+ {
+ 	asm("\
+diff --git a/arch/arm/mm/copypage-v4wt.c b/arch/arm/mm/copypage-v4wt.c
+index 0f1188e..300efaf 100644
+--- a/arch/arm/mm/copypage-v4wt.c
++++ b/arch/arm/mm/copypage-v4wt.c
+@@ -20,7 +20,7 @@
+  * dirty data in the cache.  However, we do have to ensure that
+  * subsequent reads are up to date.
+  */
+-static void __attribute__((naked))
++static void __naked
+ v4wt_copy_user_page(void *kto, const void *kfrom)
+ {
+ 	asm("\
+diff --git a/arch/arm/mm/copypage-xsc3.c b/arch/arm/mm/copypage-xsc3.c
+index 39a9945..bc4525f 100644
+--- a/arch/arm/mm/copypage-xsc3.c
++++ b/arch/arm/mm/copypage-xsc3.c
+@@ -29,7 +29,7 @@
+  * if we eventually end up using our copied page.
+  *
+  */
+-static void __attribute__((naked))
++static void __naked
+ xsc3_mc_copy_user_page(void *kto, const void *kfrom)
+ {
+ 	asm("\
+diff --git a/arch/arm/mm/copypage-xscale.c b/arch/arm/mm/copypage-xscale.c
+index d18f239..76824d3 100644
+--- a/arch/arm/mm/copypage-xscale.c
++++ b/arch/arm/mm/copypage-xscale.c
+@@ -42,7 +42,7 @@ static DEFINE_SPINLOCK(minicache_lock);
+  * Dcache aliasing issue.  The writes will be forwarded to the write buffer,
+  * and merged as appropriate.
+  */
+-static void __attribute__((naked))
++static void __naked
+ mc_copy_user_page(void *from, void *to)
+ {
+ 	/*
+diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
+index 1514d53..bf80fa0 100644
+--- a/include/linux/compiler-gcc.h
++++ b/include/linux/compiler-gcc.h
+@@ -52,7 +52,13 @@
+ #define __deprecated			__attribute__((deprecated))
+ #define __packed			__attribute__((packed))
+ #define __weak				__attribute__((weak))
++
++#if defined(CONFIG_ARM)
++#define __naked				__attribute__((naked)) notrace
++#else
+ #define __naked				__attribute__((naked))
++#endif
++
+ #define __noreturn			__attribute__((noreturn))
+ 
+ /*
+-- 
+tg: (7a203f3..) t/armmisc/make_naked_functions_use___naked (depends on: linus/master)
