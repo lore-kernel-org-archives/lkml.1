@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbZCIJTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbZCIJVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753676AbZCIJTa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 05:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbZCIJTU
+	id S1753123AbZCIJVU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 05:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbZCIJVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 05:19:20 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:34191 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752035AbZCIJTU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 05:19:20 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=ZyHS9vCj36udM6hQpCyhWZInQjHGxEFohYzjLPb6dBVQpbk+0+fubUCAUpv03J1lu
-	dqC825rjxtOLd6eK7TGYw==
-Date: Mon, 9 Mar 2009 02:18:29 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Menage <menage@google.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm] cpusets: add memory_slab_hardwall flag
-In-Reply-To: <6599ad830903090008u4418e7efie137c87c6ac42e55@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0903090212250.24605@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903080917460.25207@chino.kir.corp.google.com>  <6599ad830903080953na692dcfh7f455bfe46a895c3@mail.gmail.com>  <alpine.DEB.2.00.0903081438180.30551@chino.kir.corp.google.com>
- <6599ad830903090008u4418e7efie137c87c6ac42e55@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Mon, 9 Mar 2009 05:21:07 -0400
+Received: from mail.windriver.com ([147.11.1.11]:45470 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752083AbZCIJVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 05:21:06 -0400
+From: Harry Ciao <qingtao.cao@windriver.com>
+To: jbarnes@virtuousgeek.org
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: [v1 PATCH 0/1] PCI: Add PCI Device ID for the PCI Bridge Controller on AMD8111 chip
+Date: Mon,  9 Mar 2009 17:09:02 +0800
+Message-Id: <1236589743-4358-1-git-send-email-qingtao.cao@windriver.com>
+X-Mailer: git-send-email 1.5.6.2
+X-OriginalArrivalTime: 09 Mar 2009 09:21:02.0210 (UTC) FILETIME=[5D921E20:01C9A098]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Mar 2009, Paul Menage wrote:
 
-> Another thought - it would probably be better to call this flag
-> kernel_mem_hardwall or mem_hardwall_kernel, to avoid hard-coding its
-> name to be slab-specific.
-> 
+Comments:
+---------
+Add the PCI Device ID for the PCI Bridge Controller on AMD8111 chip,
+which is used by AMD8111 EDAC driver.
 
-The change only affects slab allocations, it doesn't affect all kernel 
-memory allocations.  With slub, for example, allocations that are larger 
-than SLUB_MAX_ORDER (was formerly PAGE_SIZE) simply use compound pages 
-from the page allocator where the cpuset memory policy was already 
-enforced.
+Test:
+-----
+This patch has been tested along with the series of patches of
+"[v1 PATCH 0/8] Add AMD8111 and AMD8131 EDAC drivers", the PCI Bridge
+Controller on AMD8111 chip could be successfully probed.
 
-While there are a few different options for slab allocators in mainline 
-and slqb on the way, these are still generally referred to as "slab" 
-allocations regardless of which one is configured.
-
-Prefixing the name with `memory_' just seemed natural considering the 
-tunables already in place such as memory_spread_page and 
-memory_spread_slab.  The user also already understands `hardwall' since 
-mem_hardwall has existed for quite some time.
+Diffstat:
+---------
+0001-PCI-Add-AMD8111-PCI-Bridge-PCI-Device-ID.patch
+ include/linux/pci_ids.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
