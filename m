@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbZCITM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbZCITTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754407AbZCITM3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 15:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZCITMT
+	id S1753067AbZCITTA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 15:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbZCITSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 15:12:19 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:46940 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751512AbZCITMT (ORCPT
+	Mon, 9 Mar 2009 15:18:49 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1592 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751627AbZCITSs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 15:12:19 -0400
-Date: Mon, 9 Mar 2009 15:12:16 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-cc: Greg KH <greg@kroah.com>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] Loading both ehci-hcd and uhci-hcd drivers causes my
- printer to fail
-In-Reply-To: <1236625199.18734.18.camel@maxim-laptop>
-Message-ID: <Pine.LNX.4.44L0.0903091511030.4674-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 9 Mar 2009 15:18:48 -0400
+Subject: Re: [rtc-linux] Re: [PATCH 7/7] powerpc/ps3: Add rtc-ps3
+From: Joe Perches <joe@perches.com>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       rtc-linux@googlegroups.com, Geert.Uytterhoeven@sonycom.com,
+       Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       Dann Frazier <dannf@dannf.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <49B568D0.5000901@am.sony.com>
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	 <20090309151216.17f13862@i1501.lan.towertech.it>
+	 <49B55A21.2010801@am.sony.com>
+	 <20090309194307.154f3e95@i1501.lan.towertech.it>
+	 <49B568D0.5000901@am.sony.com>
+Content-Type: text/plain
+Date: Mon, 09 Mar 2009 12:18:42 -0700
+Message-Id: <1236626322.8307.9.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Mar 2009, Maxim Levitsky wrote:
-
-> T:  Bus=02 Lev=01 Prnt=01 Port=00 Cnt=01 Dev#=  7 Spd=480 MxCh= 0
-> D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
-> P:  Vendor=03f0 ProdID=4117 Rev= 1.00
-> S:  Manufacturer=Hewlett-Packard
-> S:  Product=HP LaserJet 1018
-> S:  SerialNumber=KP06J6V
-> C:* #Ifs= 1 Cfg#= 1 Atr=c0 MxPwr= 98mA
-> I:* If#= 0 Alt= 0 #EPs= 2 Cls=07(print) Sub=01 Prot=02 Driver=(none)
-> E:  Ad=01(O) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-> E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
+On Mon, 2009-03-09 at 12:06 -0700, Geoff Levand wrote:
+> There was some work by Joe Perches to list the files a maintainer is
+> responsible for into the MAINTAINERS file.  I think that would give
+> you what you want, a way to automatically get the maintainer of a
+> file.
 > 
-> T:  Bus=02 Lev=01 Prnt=01 Port=03 Cnt=02 Dev#=  2 Spd=480 MxCh= 0
-> D:  Ver= 2.00 Cls=ef(unk. ) Sub=02 Prot=01 MxPS=64 #Cfgs=  1
-> P:  Vendor=064e ProdID=a101 Rev= 1.00
-> S:  Manufacturer=SuYin
-> S:  Product=Acer CrystalEye webcam
-> S:  SerialNumber=CN0314-OV03-VA-R02.00.00
-> C:* #Ifs= 2 Cfg#= 1 Atr=80 MxPwr=500mA
-> A:  FirstIf#= 0 IfCount= 2 Cls=0e(video) Sub=03 Prot=00
-> I:* If#= 0 Alt= 0 #EPs= 1 Cls=0e(video) Sub=01 Prot=00 Driver=uvcvideo
-> E:  Ad=83(I) Atr=03(Int.) MxPS=  16 Ivl=4ms
-> I:* If#= 1 Alt= 0 #EPs= 0 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> I:  If#= 1 Alt= 1 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> E:  Ad=81(I) Atr=05(Isoc) MxPS= 128 Ivl=125us
-> I:  If#= 1 Alt= 2 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> E:  Ad=81(I) Atr=05(Isoc) MxPS= 256 Ivl=125us
-> I:  If#= 1 Alt= 3 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> E:  Ad=81(I) Atr=05(Isoc) MxPS= 800 Ivl=125us
-> I:  If#= 1 Alt= 4 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> E:  Ad=81(I) Atr=05(Isoc) MxPS=1600 Ivl=125us
-> I:  If#= 1 Alt= 5 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> E:  Ad=81(I) Atr=05(Isoc) MxPS=2400 Ivl=125us
-> I:  If#= 1 Alt= 6 #EPs= 1 Cls=0e(video) Sub=02 Prot=00 Driver=uvcvideo
-> E:  Ad=81(I) Atr=05(Isoc) MxPS=3000 Ivl=125us
+> Joe, could you let us know the status of that work?
 
-I wonder...  Does it make any difference if you unplug that webcam, or 
-plug it into the other high-speed bus?
+I think it works fine, and is an acceptable
+approach to finding a maintainer for either a
+patch or a specific file.
 
-Alan Stern
+The changes I've posted are probably not suitable
+for merging by anyone other than Linus as
+MAINTAINERS is the most heavily modified file
+in the kernel tree.
+
+I've submitted it several times after merging it
+with the latest kernel without response from Linus.
+
+I'd merge and submit it again if it could be accepted.
+
+If someone would propose a mechanism that would
+improve the possibility to get it merged, I'd
+also appreciate that.
 
