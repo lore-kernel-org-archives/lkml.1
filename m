@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753814AbZCIJir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbZCIJoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753814AbZCIJir (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 05:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbZCIJij
+	id S1753156AbZCIJoS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 05:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZCIJoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 05:38:39 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52162 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752594AbZCIJii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 05:38:38 -0400
-Date: Mon, 9 Mar 2009 10:38:36 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, martin.petersen@oracle.com
-Subject: Re: [PATCH] block: fix memory leak in bio_clone()
-Message-ID: <20090309093836.GJ11787@kernel.dk>
-References: <49B4DD9C.5030902@cn.fujitsu.com> <20090309092407.GI11787@kernel.dk> <49B4E2BA.3030809@cn.fujitsu.com>
+	Mon, 9 Mar 2009 05:44:01 -0400
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:44593 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751980AbZCIJoA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 05:44:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=R5fKTpMl+Ii5xDf9DFsobZFoptQIYNRykbXLRiWUp3MH5tr53piI6dEt8f0u9d8nXA
+         4+lKEIipCRsP4x9u2eySw0renLUriL5RCmXMyJx5LAcDRZ7iRpNfB/ZQTVUyteFBEsY7
+         /CvE8SwIk0KP8MzHR5sxIBMV/SRgFnsi0NWAI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B4E2BA.3030809@cn.fujitsu.com>
+Date: Mon, 9 Mar 2009 10:43:57 +0100
+Message-ID: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com>
+Subject: Linux* Processor Microcode Data File
+From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 09 2009, Li Zefan wrote:
-> Jens Axboe wrote:
-> > On Mon, Mar 09 2009, Li Zefan wrote:
-> >> If bio_integrity_clone() fails, bio_clone() returns NULL without freeing
-> >> the newly allocated bio.
-> >>
-> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> >> ---
-> >>  fs/bio.c |    4 +++-
-> >>  1 files changed, 3 insertions(+), 1 deletions(-)
-> >>
-> >> diff --git a/fs/bio.c b/fs/bio.c
-> >> index 124b95c..896330e 100644
-> >> --- a/fs/bio.c
-> >> +++ b/fs/bio.c
-> >> @@ -465,8 +465,10 @@ struct bio *bio_clone(struct bio *bio, gfp_t gfp_mask)
-> >>  
-> >>  		ret = bio_integrity_clone(b, bio, fs_bio_set);
-> >>  
-> >> -		if (ret < 0)
-> >> +		if (ret < 0) {
-> >> +			bio_put(bio);
-> >>  			return NULL;
-> >> +		}
-> >>  	}
-> >>  
-> >>  	return b;
-> >> -- 1.5.4.rc3 
-> > 
-> > Good spotting. But it looks like there are actually several problems
-> > there. bio_integrity_clone() is mempool backed. Currently that ret < 0
-> > can never trigger, since bio_integrity_clone() has hard-wired __GFP_WAIT
-> 
-> Do you mean GFP_NOIO? 
+Hello,
 
-The __GFP_WAIT part of GFP_NOIO is the important bit :-)
+I was browsing Intel web site for my processor docs and I bumped
+on download link "Linux* Processor Microcode Data File" and it says
+there:
 
-> > as the mempool mask. So the leak will not occur, but it does mean that
-> > it isn't honoring the gfp_mask passed in to bio_clone(), which is the
-> 
-> I noticed there was a patch to do this, and seems you planed to merge
-> it into .29?
-> 
-> "[PATCH] Add gfp_mask to bio_integrity_clone()"
-> 
-> http://lkml.org/lkml/2008/10/30/11
+"The microcode data file contains the latest microcode definitions for
+all Intel processors.
+Intel releases microcode updates to correct processor behavior as
+documented in the respective
+processor specification updates. While the regular approach to getting
+this microcode update is via
+a BIOS upgrade, Intel realizes that this can be an administrative
+hassle. The Linux Operating System
+and VMware ESX products have a mechanism to update the microcode after
+booting. For example,
+this file will be used by the operating system mechanism if the file
+is placed in the /etc/firmware
+directory of the Linux system."
 
-Hmm strange, apparently that never got queued up and I had forgotten all
-about that issue until your email. I'll add it asap.
+So, does new kernel versions just copy this microcode update file in
+/etc/firmware folder or new
+instructions are replaced in assembly code ?
 
-> > first bug. The second bug is that it should be using its own bioset, as
-> > it is illegal to do multiple __GFP_WAIT allocations on a single mempool
-> > and always expect progress.
-
-That one still stands.
-
--- 
-Jens Axboe
-
+greet
