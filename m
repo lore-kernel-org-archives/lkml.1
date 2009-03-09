@@ -1,97 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbZCIBT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbZCIBji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbZCIBT3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 21:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbZCIBTW
+	id S1754556AbZCIBji (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 21:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbZCIBja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 21:19:22 -0400
-Received: from mail-qy0-f122.google.com ([209.85.221.122]:52682 "EHLO
-	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753854AbZCIBTV (ORCPT
+	Sun, 8 Mar 2009 21:39:30 -0400
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:7960 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754146AbZCIBj3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 21:19:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=a5cJ7dXZdGojLCX/QUowFexq7CO1EvKswsU7MZmP+yjszLcrbEn2WnYeAtUl8158Kj
-         KOr4TdGy1GNE3X75CqHs+9yw7ZbGCLxBSuwoM8pTvyp4wM6H+Tf3KJ+T94MK/9T8T1Yr
-         1disiCU+aUjOedBoMPyTkfcZ/wE1e3mIFH9Tc=
-Message-ID: <49B46E8D.6020702@gmail.com>
-Date: Sun, 08 Mar 2009 21:19:09 -0400
-From: Weedy <weedy2887@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090211)
+	Sun, 8 Mar 2009 21:39:29 -0400
+X-BigFish: VPS-19(zz62a3L98dR936eQ3b5bkzzzzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KG7TWT-04-RYA-01
+Date: Mon, 9 Mar 2009 02:39:03 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] Performance Counters for Linux, v6
+Message-ID: <20090309013902.GK10085@erda.amd.com>
+References: <20090121185021.GA8852@elte.hu>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [Fwd: Re: [Openswan Users] Cannot get NETKEY working on openwrt ERROR:
- netlink XFRM_MSG_NEWPOLICY]
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090121185021.GA8852@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 09 Mar 2009 01:39:03.0189 (UTC) FILETIME=[D3BF2C50:01C9A057]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--------- Original Message --------
-Subject: Re: [Openswan Users] Cannot get NETKEY working on openwrt
-ERROR: netlink XFRM_MSG_NEWPOLICY
-Date: Sun, 8 Mar 2009 20:02:27 -0400 (EDT)
-From: Paul Wouters <paul@xelerance.com>
-To: Weedy <weedy2887@gmail.com>
-References: <49B38FE8.6060700@gmail.com>
-<Pine.LNX.4.64.0903081916370.19531@newtla.xelerance.com>
-<49B459AB.7020300@gmail.com>
+Some points to mention here. This patch set actually introduces two
+interfaces, a new user/kernel interface and an in-kernel api to access
+performance counters. These are separate things and sometimes mixed
+too much. There is a strong need for an in-kernel api. This is the
+third implementation I am involved (oprofile, perfmon are the others)
+and the things are always the same way. All these subsystems should be
+merged to one in-kernel implemenation and share the same code. The
+different user/kernel i/fs could then coexist and meet the users
+different needs.
 
-On Sun, 8 Mar 2009, Weedy wrote:
+The implementation of the hardware counters is written from scratch
+again. It is sometimes useful to drop old code, but there is the
+danger of making errors twice. Implementing performance counters is
+not trivial, especially buffer handling, SMP and cpu hotplug. For
+oprofile and perfmon it took years to get stable code. We should
+benefit from this. (The current x86 code in this patch series seems
+not to work proper with SMP.) So we should look for a way to better
+reuse and share code.
 
-Then I'm not sure what's wrong with that kernel.
+See also my comments below.
 
-Paul
+On 21.01.09 19:50:21, Ingo Molnar wrote:
 
-> Date: Sun, 08 Mar 2009 19:50:03 -0400
-> From: Weedy <weedy2887@gmail.com>
-> To: Paul Wouters <paul@xelerance.com>
-> Subject: Re: [Openswan Users] Cannot get NETKEY working on openwrt ERROR:
->     netlink XFRM_MSG_NEWPOLICY
-> 
-> Paul Wouters wrote:
-> > On Sun, 8 Mar 2009, Weedy wrote:
-> > 
-> >> Openwrt - Linux Openswan U2.4.13/K2.6.28.7 (netkey)
-> >> pluto[6262]: "pom" #4: ERROR: netlink response for Add SA
-> >> esp.623130a2@1.2.3.4 included errno 2: No such file or directory
-> > 
-> >> I have tried to sync the kernel config as best as possible for all IPsec
-> >> related options but to no avail, any hints would be much appreciated.
-> >> (Between the gentoo box and a centos test box it works fine, so I know I
-> >> have the configs working and the kernel setup properly)
-> > 
-> > Are you using the real "ip" command, and not the limitel broken "ip"
-> > command from busybox?
-> > 
-> > Paul
-> 
->  make[3] -C package/iproute2 compile
-> --2009-03-08 19:21:48--
-> http://devresources.linux-foundation.org/dev/iproute2/download/iproute2-2.6.28.tar.bz2
-> 
-> root@cbarone:~# ip -V
-> ip utility, iproute2-ss090115
-> 
+[...]
 
-I'm posting this in hopes that someone more familiar with this area of
-the kernel can tell me what the error message means, or what direction I
-should go from here.
+> +static bool perf_counters_initialized __read_mostly;
+> +
+> +/*
+> + * Number of (generic) HW counters:
+> + */
+> +static int nr_counters_generic __read_mostly;
+> +static u64 perf_counter_mask __read_mostly;
+> +static u64 counter_value_mask __read_mostly;
+> +
+> +static int nr_counters_fixed __read_mostly;
+> +
+> +struct cpu_hw_counters {
+> +	struct perf_counter	*counters[X86_PMC_IDX_MAX];
+> +	unsigned long		used[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
+> +};
+> +
+> +/*
+> + * Intel PerfMon v3. Used on Core2 and later.
+> + */
+> +static DEFINE_PER_CPU(struct cpu_hw_counters, cpu_hw_counters);
+> +
+> +static const int intel_perfmon_event_map[] =
+> +{
+> +  [PERF_COUNT_CPU_CYCLES]		= 0x003c,
+> +  [PERF_COUNT_INSTRUCTIONS]		= 0x00c0,
+> +  [PERF_COUNT_CACHE_REFERENCES]		= 0x4f2e,
+> +  [PERF_COUNT_CACHE_MISSES]		= 0x412e,
+> +  [PERF_COUNT_BRANCH_INSTRUCTIONS]	= 0x00c4,
+> +  [PERF_COUNT_BRANCH_MISSES]		= 0x00c5,
+> +  [PERF_COUNT_BUS_CYCLES]		= 0x013c,
+> +};
 
-Openwrt - Linux Openswan U2.4.13/K2.6.28.7 (netkey)
-pluto[6262]: "pom" #4: ERROR: netlink response for Add SA
-esp.623130a2@1.2.3.4 included errno 2: No such file or directory
+I would like to define _all_ the behaviour of the architecture and the
+models in functions instead of parameters and lists. It is hard to
+explain why, because it is more esthetics, but I believe, only nice
+things work best. Let me try.
 
-Gentoo - Linux Openswan U2.4.13/K2.6.28-gentoo-r2 (netkey)
-pluto[12367]: "cbarone" #5: ERROR: netlink XFRM_MSG_NEWPOLICY response
-for flow tun.10000@4.3.2.1 included errno 17: File exists
+1) The list above seems to be random, there are lots of events and it
+is hard to define, which event is really important. Surely these
+events are important, but it is hard to draw a line here.
 
-openwrt modules: aes_generic af_key ah4 arc4 authenc cbc deflate
-des_generic ecb esp4 hmac ipcomp ipt_ah md5 sha1_generic xfrm4_mode_beet
-xfrm4_mode_transport xfrm4_mode_tunnel xfrm4_tunnel xfrm_ipcomp
-xfrm_user xt_esp
+2) The list assumes/implies the events are available on all
+architectures and cpus. This is probably not the case, and also, the
+existence of an event must not be _important_ for a certain
+architecture. But it has to be there even if it is of no interest.
+
+3) Hard to extend. If an event is added here this could have impact to
+all other architectures. Data structures are changing.
+
+4) In the kernel the behaviour of a subsystem is offen implemented by
+functions (e.g. struct device_driver). There are lots of ops structs
+in the kernel and there are reasons for it.
+
+5) ops structs are more dynamic. The data could be generated
+dynamically and does not have to be static in some tables and
+variables.
+
+So, instead of making the list a public data structure, better pass
+the type to an arch specific function, e.g.:
+
+int arch_xxx_setup_event(int event_type);
+
+If the type is not supported, an error could be returned. There is no
+more impact. Even the binaries of the builds would be identically if
+hw_event_types would be extended for a single different architecture.
+
+The same applies also for counters and so on, better implement
+functions.
+
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
