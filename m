@@ -1,67 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZCIUiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbZCIUkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755174AbZCIUiu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 16:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZCIUim
+	id S1755131AbZCIUkb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 16:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbZCIUkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 16:38:42 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:59414 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753498AbZCIUil (ORCPT
+	Mon, 9 Mar 2009 16:40:23 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:11317 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319AbZCIUkW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 16:38:41 -0400
-Date: Mon, 9 Mar 2009 21:38:36 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Cc: Abhishek Sagar <sagar.abhishek@gmail.com>,
-       Russell King <linux@arm.linux.org.uk>,
-       Steven Rostedt <rostedt@rostedt.homelinux.com>,
-       Ingo Molnar <mingo@elte.hu>, Matthias Kaehlcke <matthias@kaehlcke.net>
-Subject: Re: [PATCH] ftrace: fix crash due to tracing of __naked functions
-Message-ID: <20090309203836.GA1458@pengutronix.de>
-References: <1236584800-7686-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	Mon, 9 Mar 2009 16:40:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=b9nD4UtBbSxWiKUNGrQJ6/nrn77KP1+Bvs2pJln+lX/q+AvM4vPs27kXEQ25t8oLT+
+         LZC6r4TbkuuoepUn8cSoZoLAX3pgLRU5fc02n+TiWeetrG+nSVDrp2E2lYe4TnTJZ43c
+         vYdpIG+Xzq+3JTcL2GHSObXh1W93NwaWckJpQ=
+Date: Mon, 9 Mar 2009 21:40:14 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
+Subject: Re: [RFC][PATCH 1/2] tracing/ftrace: syscall tracing infrastructure
+Message-ID: <20090309204013.GB5010@nowhere>
+References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-2-git-send-email-fweisbec@gmail.com> <20090308162444.GG19658@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1236584800-7686-1-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <20090308162444.GG19658@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On Mon, Mar 09, 2009 at 08:46:40AM +0100, Uwe Kleine-König wrote:
-> This is a fix for the following crash observed in 2.6.29-rc3:
-> http://lkml.org/lkml/2009/1/29/150
+On Sun, Mar 08, 2009 at 05:24:44PM +0100, Ingo Molnar wrote:
 > 
-> On ARM it doesn't make sense to trace a naked function because then
-> mcount is called without stack and frame pointer being set up and there
-> is no chance to restore the lr register to the value before mcount was
-> called.
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
-> Compared to the original fix posted to arm-linux-kernel ML on 29 Jan
-> 2009 by Abhishek Sagar I only changed the definition of __naked for ARM.
-while talking on #linux-rt about this patch I noticed that ARM is
-currently the only user of __naked.  So maybe making __naked include
-notrace unconditionally (as Abhishek suggested) is the right thing to
-do.
+> > +static const struct syscall_trace_entry syscall_trace_entries[] = {
+> > +	/* For open, the first argument is a string, hence the given mask */
+> > +	[SYSCALL_TRACE_OPEN]	= SYS_TRACE_ENTRY(open, 3, 0x1),
+> > +	[SYSCALL_TRACE_CLOSE]	= SYS_TRACE_ENTRY(close, 1, 0),
+> > +	[SYSCALL_TRACE_READ]	= SYS_TRACE_ENTRY(read, 3, 0),
+> > +	[SYSCALL_TRACE_WRITE]	= SYS_TRACE_ENTRY(read, 3, 0),
+> > +};
+> 
+> s/read/write in the last entry i guess.
+> 
+> But i think the whole concept of duplicating the syscall table 
+> is the wrong way around.
+> 
+> Note that we dont have to build this information at all - in 
+> 2.6.29-rc1 all syscalls got wrapper macros:
+> 
+>  SYSCALL_DEFINE1(nice, int, increment)
+>  SYSCALL_DEFINE2(sched_setparam, pid_t, pid, struct sched_param __user *, param)
+>  SYSCALL_DEFINE3(sched_setaffinity, pid_t, pid, unsigned int, len,
+>                  unsigned long __user *, user_mask_ptr)
+> 
+> We also have the syscall table itself.
+> 
+> So what we can do: by changing the SYSCALL_DEFINEX() macros we 
+> can emit the following information into a table:
+> 
+>   (syscall_fn_address, syscall_name_string, #of arguments, array 
+>    of argument names and type sizeof()s)
+> 
+> then during bootup we can match up the sys_call_table[] to the 
+> secondary table we built, so that we can order the secondary 
+> table based on syscall NR. 99% of the syscalls will match up 
+> just fine.
+> 
+> 	Ingo
 
-Russell: Steven considers this patch more ARM than ftrace related, so he
-(and probably Ingo, too) would prefer this to go via your tree.  Or at
-least they want your Ack.
- 
-What do you think?
+Yes, I didn't know the SYSCALL_DEFINEx() macro until Peter told me.
+That's indeed a much better way to proceed, I will look at all that.
 
-Best regards
-Uwe
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Thanks!
+
