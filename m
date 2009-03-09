@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZCIUo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbZCIUsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbZCIUo4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 16:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZCIUoq
+	id S1754777AbZCIUsK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 16:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbZCIUr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 16:44:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44670 "EHLO mx2.redhat.com"
+	Mon, 9 Mar 2009 16:47:56 -0400
+Received: from gw.goop.org ([64.81.55.164]:43494 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751319AbZCIUop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 16:44:45 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Michael Kerrisk <michael.kerrisk@googlemail.com>
-Cc: linux-aio <linux-aio@kvack.org>, michael.kerrisk@gmail.com,
-       zach.brown@oracle.com, bcrl@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>
-Subject: Re: [patch] man-pages: add documentation about the memlock  implications of io_setup
-References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>
-	<x49zlfud6w7.fsf@segfault.boston.devel.redhat.com>
-	<c49095e30903090948n2d015516t480e917c36943001@mail.gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Mon, 09 Mar 2009 16:44:01 -0400
-In-Reply-To: <c49095e30903090948n2d015516t480e917c36943001@mail.gmail.com>
-	(Michael Kerrisk's message of "Tue, 10 Mar 2009 05:48:07 +1300")
-Message-ID: <x494oy2ctpq.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1751646AbZCIUrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 16:47:55 -0400
+Message-ID: <49B58076.8020703@goop.org>
+Date: Mon, 09 Mar 2009 13:47:50 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Timur Tabi <timur@freescale.com>
+CC: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add function spin_event_timeout()
+References: <1236384801-10305-1-git-send-email-timur@freescale.com>	 <adaiqmmf87v.fsf@cisco.com> <ed82fe3e0903061725y40dc246ehd3482690ee3898fa@mail.gmail.com>
+In-Reply-To: <ed82fe3e0903061725y40dc246ehd3482690ee3898fa@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk <michael.kerrisk@googlemail.com> writes:
-
-> [RESEND: Really CC+=Vegard Nossum, this time, and += mtk.manpages@, as well]
->
-> Hi Jeff,
->
-> Note that my address for man-pages is mtk.manpages@gmail.com.
-
-Sorry about that!
-
-> On Tue, Mar 10, 2009 at 4:59 AM, Jeff Moyer <jmoyer@redhat.com> wrote:
->> Hi,
+Timur Tabi wrote:
+> On Fri, Mar 6, 2009 at 7:11 PM, Roland Dreier <rdreier@cisco.com> wrote:
+>   
+>>  > The function spin_event_timeout() takes a condition and timeout value
+>>  > (in jiffies) as parameters.  It spins until either the condition is true
+>>  > or the timeout expires.  It returns non-zero if the condition is true,
+>>  > zero otherwise.
 >>
->> This patch, against man-pages-3.19, adds verbiage surrounding the newly
->> proposed accounting of pinned aio completion ring pages against the
->> memlock rlimit.  It also fixes up a few references to aio_context_t
->> (which should be io_context_t).  Sorry for conflating the two, I can
->> break it apart if needed.
+>> What's the motivation for this?  Where do you plan to use it?
+>>     
 >
-> Breaking apart really would be better.  Could you resubmit (to
-> mtk.manpages@, and CC linux-man@vger) please?
+> I expect it would be useful for drivers that need to wait until a
+> specific register has changed its value, but don't want to risk an
+> infinite loop if the hardware is not functioning.  For example, to
+> replace the while loop and subsequent check in this code:
+>   
 
-Sure thing.  I'll address your question when I resubmit.
+A jiffy is a really long time to be spinning, let alone liffies plural.  
+In this use case are you expecting that the loop will iterate a very 
+small number of times before returning, and the timeout case is a very 
+unlikely error condition?
 
-Thanks!
-
-Jeff
+    J
