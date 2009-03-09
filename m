@@ -1,113 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbZCITzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZCIUAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754170AbZCITzm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 15:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZCITzd
+	id S1753543AbZCIUAv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 16:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZCIUAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 15:55:33 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:43817 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751276AbZCITzd (ORCPT
+	Mon, 9 Mar 2009 16:00:42 -0400
+Received: from e3.win-professional.com ([85.214.150.225]:34115 "EHLO
+	e3.win-professional.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752402AbZCIUAl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 15:55:33 -0400
-Message-ID: <49B5741F.6070005@us.ibm.com>
-Date: Mon, 09 Mar 2009 12:55:11 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 9 Mar 2009 16:00:41 -0400
+X-Greylist: delayed 520 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Mar 2009 16:00:41 EDT
+Subject: RE:  Re: [PATCH] xen: core dom0 support
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       "lkml, " <linux-kernel@vger.kernel.org>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [TIP][RFC 6/7] futex: add requeue_pi calls
-References: <49AC73A9.4040804@us.ibm.com> <49AC77D1.6090106@us.ibm.com> <49AE3386.1070604@us.ibm.com> <49B00302.5000607@us.ibm.com> <49B07F87.2020808@us.ibm.com> <alpine.DEB.2.00.0903052119300.14535@gandalf.stny.rr.com> <49B0B43D.2030907@us.ibm.com> <alpine.LFD.2.00.0903071645480.29264@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903071645480.29264@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Date: Mon, 9 Mar 2009 21:00:38 +0100
+Message-ID: <B4ED8DE8E195E84A872496A085BC07822F68@exchange01.corp.win-professional.com>
+Content-class: urn:content-classes:message
+In-Reply-To: A<loom.20090308T141818-855@post.gmane.org>
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: [PATCH] xen: core dom0 support
+Thread-Index: Acmf+oWG5q+U9gmSTs6ghpsSeUFl+QA9w6lQ
+References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <20090227212812.26d02f34.akpm@linux-foundation.org> <B4ED8DE8E195E84A872496A085BC07822F42@exchange01.corp.win-professional.com> A<loom.20090308T141818-855@post.gmane.org>
+From: "Morten P.D. Stevens" <mstevens@win-professional.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 09 Mar 2009 20:00:38.0931 (UTC) FILETIME=[B7E10630:01C9A0F1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Thu, 5 Mar 2009, Darren Hart wrote:
->> int rt_mutex_start_proxy_lock(struct rt_mutex *lock,
->> 			      struct rt_mutex_waiter *waiter,
->> 			      struct task_struct *task, int detect_deadlock)
->> {
->> 	int ret;
->>
->> 	spin_lock(&lock->wait_lock);
->> 	ret = task_blocks_on_rt_mutex(lock, waiter, task, detect_deadlock);
->>
->>
->> I add the following line to fix the bug.  Question is, should I use this
->> atomic
->> optimization here (under the lock->wait_lock) or should I just do "lock->owner
->> |= RT_MUTEX_HAS_WAITERS" ?
->>
->> =====>	mark_rt_mutex_waiters(lock);
-> 
-> This is still not enough as I explained in the review of the original
-> patch. What you need to do is:
-> 
-> 	if (try_to_take_rt_mutex(lock, task)) {
-> 	   	spin_unlock(&lock->wait_lock);
-> 		/* The caller needs to wake up task, as it is now the owner */
-> 		return WAKEIT;
-> 	}
-> 
-> 	ret = task_blocks_on_rt_mutex(lock, waiter, task, detect_deadlock);
-> 
+Hi,
 
-Right, so I'm testing this out:
+> Do you perhaps have the corresponding figures regarding e.g. VMware 
+> ESX(i) available?
 
-	mark_rt_mutex_waiters(lock);
+Yes.
 
-	if (!rt_mutex_owner(lock) || try_to_steal_lock(lock, task)) {
-		/* We got the lock for task. */
-		debug_rt_mutex_lock(lock);
+HDD: XEN | KVM | ESXi
 
-		rt_mutex_set_owner(lock, task, 0);
+Write: 110 MB/s | 60 MB/s | 35 MB/s
+Read: 130 MB/s  | 80 MB/s | 160 MB/s
 
-		rt_mutex_deadlock_account_lock(lock, task);
-		return 1;
-	}
+Network Performance: (download an 4 GB iso image from apache webserver)
 
-Steven, is this the proper use of the debug* routines?  I copied them 
-from try_to_take_rt_mutex(), but they are empty routines without 
-comments so I wasn't sure exactly how they were intended to be used. 
-Does the usage of debug_rt_mutex_lock() assume task=current (the other 
-has the task_struct passed int).
+XEN | KVM | ESXi
 
-Thanks,
+download Speed: 105 MB/s | 50 MB/s | 43 MB/s
 
-Darren
+Overall, xen is the most powerful virtualization platform on our IBM
+servers.
 
 
->> 	if (ret && !waiter->task) {
->> 		/*
->> 		 * Reset the return value. We might have
->> 		 * returned with -EDEADLK and the owner
->> 		 * released the lock while we were walking the
->> 		 * pi chain.  Let the waiter sort it out.
->> 		 */
->> 		ret = 0;
->> 	}
->> 	spin_unlock(&lock->wait_lock);
->>
->> 	debug_rt_mutex_print_deadlock(waiter);
->>
->> 	return ret;
->> }
-> 
-> Thanks,
-> 
-> 	tglx
+Best regards,
+
+Morten
+
+-----Original Message-----
+From: linux-kernel-owner@vger.kernel.org
+[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Manfred Knick
+Sent: Sunday, March 08, 2009 3:25 PM
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] xen: core dom0 support
+
+Morten P.D. Stevens <mstevens <at> win-professional.com> writes:
+
+> Here some benchmarks with Citrix XenServer 5.0 vs KVM with linux and
+windows
+guests on an IBM x3400 server:
+
+Thanks!
+Just out of curiosity, to complete your appreciated impression:
+Do you perhaps have the corresponding figures regarding e.g. VMware
+ESX(i)
+available?
+
+Thanks in advance!
+Manfred
 
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
