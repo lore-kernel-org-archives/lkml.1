@@ -1,136 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751478AbZCINVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751966AbZCINWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751478AbZCINVq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 09:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZCINVi
+	id S1751966AbZCINWq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 09:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbZCINWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 09:21:38 -0400
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:54452 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751217AbZCINVh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 09:21:37 -0400
-Subject: vcs: hook sysfs devices into object lifetime instead of "binding"
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg Kroah-Hartman <gregkh@suse.de>
-Content-Type: text/plain
-Date: Mon, 09 Mar 2009 14:18:52 +0100
-Message-Id: <1236604732.2573.4.camel@nga>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.91 
+	Mon, 9 Mar 2009 09:22:38 -0400
+Received: from mail.pentek.com ([12.35.250.145]:3551 "HELO mailhost.pentek.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751217AbZCINWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 09:22:38 -0400
+X-Greylist: delayed 2644 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Mar 2009 09:22:37 EDT
+Message-ID: <49B50DBE.8020100@pentek.com>
+Date: Mon, 09 Mar 2009 08:38:22 -0400
+From: Steve Rottinger <steve@pentek.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Direct transfer between SCSI and PCI
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: vcs: hook sysfs devices into object lifetime instead of "binding"
+Hi All,
 
-During bootup performance tracing I noticed many occurrences of
-vca* device creation and removal, leading to the usual userspace
-uevent processing, which are, in this case, rather pointless.
+I am working with version 2.6.23 of the linux kernel on a custom PowerPC 
+board.  As part
+of my project, I need to be able to directly transfer data from a large
+buffer that resides on
+a custom PCI communications device to a SCSI disk without going through
+the CPU's main
+memory.  Initially, it seemed like opening up the raw SCSI device in
+O_DIRECT mode would
+be the perfect solution.  However, through some experimentation, and
+reading some posts from
+a few years back, it appears that O_DIRECT only works on buffer's that
+reside in processor's
+main memory.   Does anyone have any suggestions as to how to get this to
+work?  My environment
+is pretty well controlled, so I can patch/hack the kernel without any
+problem.
 
-A simple test showing the kernel timing (not including all the
-work userspace has to do), gives us these numbers:
-  $ time for i in `seq 1000`; do echo a > /dev/tty2; done
-  real    0m1.142s
-  user    0m0.015s
-  sys     0m0.540s
+Thanks in advance,
 
-If we move the hook for the vcs* driver core devices from the
-tty "binding" to the vc allocation/deallocation, which is what
-the vcs* devices represent, we get the following numbers:
-  $ time for i in `seq 1000`; do echo a > /dev/tty2; done
-  real    0m0.152s
-  user    0m0.030s
-  sys     0m0.072s
+-Steve
 
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
----
- drivers/char/vc_screen.c |   16 ++++++++--------
- drivers/char/vt.c        |    5 +++--
- include/linux/console.h  |    4 ++--
- 3 files changed, 13 insertions(+), 12 deletions(-)
-
---- a/drivers/char/vc_screen.c
-+++ b/drivers/char/vc_screen.c
-@@ -479,18 +479,18 @@ static const struct file_operations vcs_
- 
- static struct class *vc_class;
- 
--void vcs_make_sysfs(struct tty_struct *tty)
-+void vcs_make_sysfs(int index)
- {
--	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, tty->index + 1), NULL,
--		      "vcs%u", tty->index + 1);
--	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, tty->index + 129), NULL,
--		      "vcsa%u", tty->index + 1);
-+	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, index + 1), NULL,
-+		      "vcs%u", index + 1);
-+	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, index + 129), NULL,
-+		      "vcsa%u", index + 1);
- }
- 
--void vcs_remove_sysfs(struct tty_struct *tty)
-+void vcs_remove_sysfs(int index)
- {
--	device_destroy(vc_class, MKDEV(VCS_MAJOR, tty->index + 1));
--	device_destroy(vc_class, MKDEV(VCS_MAJOR, tty->index + 129));
-+	device_destroy(vc_class, MKDEV(VCS_MAJOR, index + 1));
-+	device_destroy(vc_class, MKDEV(VCS_MAJOR, index + 129));
- }
- 
- int __init vcs_init(void)
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -778,6 +778,7 @@ int vc_allocate(unsigned int currcons)	/
- 	    }
- 	    vc->vc_kmalloced = 1;
- 	    vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
-+	    vcs_make_sysfs(currcons);
- 	    atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
- 	}
- 	return 0;
-@@ -987,7 +988,9 @@ void vc_deallocate(unsigned int currcons
- 	if (vc_cons_allocated(currcons)) {
- 		struct vc_data *vc = vc_cons[currcons].d;
- 		struct vt_notifier_param param = { .vc = vc };
-+
- 		atomic_notifier_call_chain(&vt_notifier_list, VT_DEALLOCATE, &param);
-+		vcs_remove_sysfs(currcons);
- 		vc->vc_sw->con_deinit(vc);
- 		put_pid(vc->vt_pid);
- 		module_put(vc->vc_sw->owner);
-@@ -2775,7 +2778,6 @@ static int con_open(struct tty_struct *t
- 				tty->termios->c_iflag |= IUTF8;
- 			else
- 				tty->termios->c_iflag &= ~IUTF8;
--			vcs_make_sysfs(tty);
- 			release_console_sem();
- 			return ret;
- 		}
-@@ -2795,7 +2797,6 @@ static void con_shutdown(struct tty_stru
- 	BUG_ON(vc == NULL);
- 	acquire_console_sem();
- 	vc->vc_tty = NULL;
--	vcs_remove_sysfs(tty);
- 	release_console_sem();
- 	tty_shutdown(tty);
- }
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -137,8 +137,8 @@ extern void resume_console(void);
- int mda_console_init(void);
- void prom_con_init(void);
- 
--void vcs_make_sysfs(struct tty_struct *tty);
--void vcs_remove_sysfs(struct tty_struct *tty);
-+void vcs_make_sysfs(int index);
-+void vcs_remove_sysfs(int index);
- 
- /* Some debug stub to catch some of the obvious races in the VT code */
- #if 1
 
