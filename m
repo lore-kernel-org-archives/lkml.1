@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbZCISln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441AbZCISn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754091AbZCISln (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 14:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZCISle
+	id S1754441AbZCISn0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 14:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZCISnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 14:41:34 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:45888 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751658AbZCISld (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 14:41:33 -0400
-Date: Mon, 9 Mar 2009 12:41:31 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>,
-       kay.sievers@vrfy.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: kobj refcounting weirdness
-Message-ID: <20090309184131.GI32589@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Vegard Nossum <vegard.nossum@gmail.com>,
-	Matthew Wilcox <matthew@wil.cx>, Greg KH <greg@kroah.com>,
-	kay.sievers@vrfy.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-	linux-pci@vger.kernel.org
-References: <20090309063654.GB23137@ldl.fc.hp.com> <20090309150453.GB7627@kroah.com> <20090309165010.GB32589@ldl.fc.hp.com> <20090309165807.GU25995@parisc-linux.org> <20090309180143.GG32589@ldl.fc.hp.com> <19f34abd0903091121g73d6cdeeqfa8353b55a3e9607@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19f34abd0903091121g73d6cdeeqfa8353b55a3e9607@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 9 Mar 2009 14:43:16 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:36043 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751444AbZCISnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 14:43:15 -0400
+Date: Mon, 9 Mar 2009 19:43:07 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Cc: geoffrey.levand@am.sony.com, Geert.Uytterhoeven@sonycom.com,
+       Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       Dann Frazier <dannf@dannf.org>
+Subject: Re: [rtc-linux] Re: [PATCH 7/7] powerpc/ps3: Add rtc-ps3
+Message-ID: <20090309194307.154f3e95@i1501.lan.towertech.it>
+In-Reply-To: <49B55A21.2010801@am.sony.com>
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<20090309151216.17f13862@i1501.lan.towertech.it>
+	<49B55A21.2010801@am.sony.com>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vegard Nossum <vegard.nossum@gmail.com>:
-> 2009/3/9 Alex Chiang <achiang@hp.com>:
-> > * Matthew Wilcox <matthew@wil.cx>:
-> >> On Mon, Mar 09, 2009 at 10:50:10AM -0600, Alex Chiang wrote:
-> >> > I thought about the allocators returning a pointer to the same
-> >> > location that maybe has some valid looking data hanging around,
-> >> > but it's not wise for someone like me to go pointing fingers at
-> >> > the allocator before I've proven the bug isn't in my code. ;)
-> >>
-> >> Slab poisoning would be the logical next thing to try to decide whether
-> >> the allocator is wrong or you're using it wrong ;-)
-> >
-> > We had a double free in the PCIe port driver. Removing the double
-> > free seems to fix my issue.
-> >
-> > The double free is only in Jesse's linux-next branch, so no need
-> > to worry about it in mainline/stable.
+On Mon, 9 Mar 2009 11:04:17 -0700
+Geoff Levand <geoffrey.levand@am.sony.com> wrote:
+
 > 
-> Sorry for butting in, just wondering if I could have the patch to fix
-> the double free? :-)
+> Hi,
+> 
+> On 03/09/2009 07:12 AM, Alessandro Zummo wrote:
+> > On Mon,  9 Mar 2009 14:26:23 +0100
+> > Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> >> +
+> >> +MODULE_AUTHOR("Sony Corporation");
+> > 
+> >  real name, if possible and a contact address
+> >  here . Just in case I need someone to bother :)
+> 
+> Please look at the MAINTAINERS file, that will give
+> the contact for PS3.  It is much easier to maintain
+> a single place for the contact than many spread
+> throughout the kernel sources.
 
-http://thread.gmane.org/gmane.linux.kernel.pci/3524
+ Having it in MODULE_AUTHOR allow my scripts to automatically
+ send an email when appropriate.
 
-Remember, it only applies to Jesse's linux-next, since it has
-Rafael's latest port driver cleanups.
+ MAINTAINERS lists the files with an arbitrary
+ driver title so that the search must be made by an human and there's
+ no field that links a person to a specific .c .
 
-If you apply it to mainline, you will leak memory.
+ so every time I want to address someone I need to check MODULE_AUTHOR,
+ the git log and the MAINTAINERS file.
 
-Thanks.
+-- 
 
-/ac
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
