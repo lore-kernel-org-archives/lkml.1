@@ -1,57 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbZCIU3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbZCIUc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754890AbZCIU3X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 16:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbZCIU3K
+	id S1754740AbZCIUc3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 16:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbZCIUcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 16:29:10 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:65341 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752785AbZCIU3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 16:29:09 -0400
-Date: Mon, 9 Mar 2009 21:29:01 +0100 (MET)
-Message-Id: <200903092029.n29KT1DS004531@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: romieu@fr.zoreil.com
-Subject: [BUG] 2.6.29-rc7 broke r8169 MAC on Thecus n2100 ARM board
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+	Mon, 9 Mar 2009 16:32:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41224 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751597AbZCIUcU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 16:32:20 -0400
+Date: Mon, 9 Mar 2009 13:31:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nicolas Pitre <nico@cam.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, minchan.kim@gmail.com,
+       linux@arm.linux.org.uk
+Subject: Re: [PATCH] atomic highmem kmap page pinning
+Message-Id: <20090309133121.eab3bbd9.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0903071731120.30483@xanadu.home>
+References: <alpine.LFD.2.00.0903071731120.30483@xanadu.home>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the 2.6.29-rc7 kernel I'm unable to 'ifup' eth0 on my ARM-based
-Thecus n2100 NAS box, which has an RTL8169 NIC (10ec:8169 (rev 10)).
-A diff of the kernel logs from 2.6.29-rc6 and -rc7 shows that -rc7
-first mangles and then zaps the MAC addresses:
+On Sat, 07 Mar 2009 17:42:44 -0500 (EST)
+Nicolas Pitre <nico@cam.org> wrote:
 
---- dmesg-2.6.29-rc6	2009-03-09 20:27:49.000000000 +0100
-+++ dmesg-2.6.29-rc7	2009-03-09 20:25:54.000000000 +0100
-@@ -145,11 +145,13 @@
- r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
- r8169 0000:00:01.0: enabling Mem-Wr-Inval
- r8169 0000:00:01.0: no PCI Express capability
--eth0: RTL8169sb/8110sb at 0xe080c200, 00:14:fd:30:11:78, XID 10000000 IRQ 27
-+r8169 0000:00:01.0: MAC address found in EEPROM: 00:14:fd:10:00:00
-+eth0: RTL8169sb/8110sb at 0xe080c200, 00:00:00:00:00:00, XID 10000000 IRQ 27
- r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
- r8169 0000:00:02.0: enabling Mem-Wr-Inval
- r8169 0000:00:02.0: no PCI Express capability
--eth1: RTL8169sb/8110sb at 0xe0810300, 00:14:fd:30:11:79, XID 10000000 IRQ 30
-+r8169 0000:00:02.0: MAC address found in EEPROM: 00:14:fd:10:00:00
-+eth1: RTL8169sb/8110sb at 0xe0810300, 00:00:00:00:00:00, XID 10000000 IRQ 30
- Driver 'sd' needs updating - please use bus_type methods
- sata_sil 0000:00:03.0: version 2.4
- sata_sil 0000:00:03.0: Applying R_ERR on DMA activate FIS errata fix
-@@ -242,6 +244,4 @@
- EXT3 FS on sda5, internal journal
- EXT3-fs: mounted filesystem with ordered data mode.
- Adding 2008116k swap on /dev/sda3.  Priority:-1 extents:1 across:2008116k 
--r8169: eth0: link up
--r8169: eth0: link up
- warning: `dbus-daemon' uses 32-bit capabilities (legacy support in use)
+> 
+> Discussion about this patch is settling, so I'd like to know if there 
+> are more comments, or if official ACKs could be provided.  If people 
+> agree I'd like to carry this patch in my ARM highmem patch series since 
+> a couple things depend on this.
+> 
+> Andrew: You seemed OK with the original one.  Does this one pass your 
+> grottiness test?
+> 
+> Anyone else?
+> 
+> ----- >8
+> From: Nicolas Pitre <nico@cam.org>
+> Date: Wed, 4 Mar 2009 22:49:41 -0500
+> Subject: [PATCH] atomic highmem kmap page pinning
+> 
+> Most ARM machines have a non IO coherent cache, meaning that the
+> dma_map_*() set of functions must clean and/or invalidate the affected
+> memory manually before DMA occurs.  And because the majority of those
+> machines have a VIVT cache, the cache maintenance operations must be
+> performed using virtual
+> addresses.
+> 
+> When a highmem page is kunmap'd, its mapping (and cache) remains in place
+> in case it is kmap'd again. However if dma_map_page() is then called with
+> such a page, some cache maintenance on the remaining mapping must be
+> performed. In that case, page_address(page) is non null and we can use
+> that to synchronize the cache.
+> 
+> It is unlikely but still possible for kmap() to race and recycle the
+> virtual address obtained above, and use it for another page before some
+> on-going cache invalidation loop in dma_map_page() is done. In that case,
+> the new mapping could end up with dirty cache lines for another page,
+> and the unsuspecting cache invalidation loop in dma_map_page() might
+> simply discard those dirty cache lines resulting in data loss.
+> 
+> For example, let's consider this sequence of events:
+> 
+> 	- dma_map_page(..., DMA_FROM_DEVICE) is called on a highmem page.
+> 
+> 	-->	- vaddr = page_address(page) is non null. In this case
+> 		it is likely that the page has valid cache lines
+> 		associated with vaddr. Remember that the cache is VIVT.
+> 
+> 		-->	for (i = vaddr; i < vaddr + PAGE_SIZE; i += 32)
+> 				invalidate_cache_line(i);
+> 
+> 	*** preemption occurs in the middle of the loop above ***
+> 
+> 	- kmap_high() is called for a different page.
+> 
+> 	-->	- last_pkmap_nr wraps to zero and flush_all_zero_pkmaps()
+> 		  is called.  The pkmap_count value for the page passed
+> 		  to dma_map_page() above happens to be 1, so the page
+> 		  is unmapped.  But prior to that, flush_cache_kmaps()
+> 		  cleared the cache for it.  So far so good.
+> 
+> 		- A fresh pkmap entry is assigned for this kmap request.
+> 		  The Murphy law says this pkmap entry will eventually
+> 		  happen to use the same vaddr as the one which used to
+> 		  belong to the other page being processed by
+> 		  dma_map_page() in the preempted thread above.
+> 
+> 	- The kmap_high() caller start dirtying the cache using the
+> 	  just assigned virtual mapping for its page.
+> 
+> 	*** the first thread is rescheduled ***
+> 
+> 			- The for(...) loop is resumed, but now cached
+> 			  data belonging to a different physical page is
+> 			  being discarded !
+> 
+> And this is not only a preemption issue as ARM can be SMP as well,
+> making the above scenario just as likely. Hence the need for some kind
+> of pkmap page pinning which can be used in any context, primarily for
+> the benefit of dma_map_page() on ARM.
+> 
+> This provides the necessary interface to cope with the above issue if
+> ARCH_NEEDS_KMAP_HIGH_GET is defined, otherwise the resulting code is
+> unchanged.
 
-Reverting 6709fe9a27e43a4931938fe0d7f2cc5edef31386
-"r8169: read MAC address from EEPROM on init (2nd attempt)"
-fixes the problem on this machine.
+OK by me.
 
-/Mikael
+> +/*
+> + * Most architectures have no use for kmap_high_get(), so let's abstract
+> + * the disabling of IRQ out of the locking in that case to save on a
+> + * potential useless overhead.
+> + */
+> +#ifdef ARCH_NEEDS_KMAP_HIGH_GET
+> +#define spin_lock_kmap()             spin_lock_irq(&kmap_lock)
+> +#define spin_unlock_kmap()           spin_unlock_irq(&kmap_lock)
+> +#define spin_lock_kmap_any(flags)    spin_lock_irqsave(&kmap_lock, flags)
+> +#define spin_unlock_kmap_any(flags)  spin_unlock_irqrestore(&kmap_lock, flags)
+> +#else
+> +#define spin_lock_kmap()             spin_lock(&kmap_lock)
+> +#define spin_unlock_kmap()           spin_unlock(&kmap_lock)
+> +#define spin_lock_kmap_any(flags)    \
+> +	do { spin_lock(&kmap_lock); (void)(flags); } while (0)
+> +#define spin_unlock_kmap_any(flags)  \
+> +	do { spin_unlock(&kmap_lock); (void)(flags); } while (0)
+> +#endif
+
+It's a little bit misleading to discover that a "function" called
+spin_lock_kmap() secretly does an irq_disable().  Perhaps just remove
+the "spin_" from all these identifiers?
+
+
