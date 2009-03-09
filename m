@@ -1,218 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbZCIPzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbZCIP5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbZCIPzb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 11:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZCIPzX
+	id S1753517AbZCIP5k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 11:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZCIP5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 11:55:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33410 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752176AbZCIPzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 11:55:22 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: linux-aio <linux-aio@kvack.org>, bos@pathscale.com
-Cc: zach.brown@oracle.com, bcrl@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [patch] factor out checks against the memlock rlimit
-References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Mon, 09 Mar 2009 11:54:39 -0400
-In-Reply-To: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com> (Jeff Moyer's
-	message of "Mon, 09 Mar 2009 11:49:57 -0400")
-Message-ID: <x497i2yelog.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 9 Mar 2009 11:57:30 -0400
+Received: from support.balabit.hu ([195.70.41.86]:49206 "EHLO lists.balabit.hu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751271AbZCIP5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 11:57:30 -0400
+Subject: Re: [patch] Re: scheduler oddity [bug?]
+From: Balazs Scheidler <bazsi@balabit.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Willy Tarreau <w@1wt.eu>
+In-Reply-To: <1236585731.6118.24.camel@marge.simson.net>
+References: <1236448069.16726.21.camel@bzorp.balabit>
+	 <1236505323.6281.57.camel@marge.simson.net>
+	 <1236506309.6972.8.camel@marge.simson.net> <20090308153956.GB19658@elte.hu>
+	 <1236529200.7110.16.camel@marge.simson.net>
+	 <20090308175255.GA22802@elte.hu>
+	 <1236585731.6118.24.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Mon, 09 Mar 2009 16:57:23 +0100
+Message-Id: <1236614243.8114.8.camel@bzorp.balabit>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-There are several places in the kernel where the memlock rlimit is
-checked, all duplicating code.  I added another in a recent patch and it
-made me feel dirty, so this patch factors all of that into a single
-function, can_mlock_pages.
+Just an interesting sidenote:
 
-The infiniband implementation of the rlimit check was actually broken.
-Weeding through changelogs showed that the initial implementation was
-wrong, code was #if 0'd out because it didn't work, and instead of
-fixing things, they just removed the code all together.  If my
-assessment of that is wrong, please let me know!  ;-)
+I've ported the quoted patch and
+38736f475071b80b66be28af7b44c854073699cc  (the one I've found via
+bisect) to 2.6.27 but these didn't resolve my scheduling problem, both
+my test program and my application still uses only one CPU. So probably
+the rest of the scheduling patches between 2.6.27..2.6.28 have some
+effect too.
 
-Comments, as always, are encouraged.
+On Mon, 2009-03-09 at 09:02 +0100, Mike Galbraith wrote:
+> On Sun, 2009-03-08 at 18:52 +0100, Ingo Molnar wrote:
+> > * Mike Galbraith <efault@gmx.de> wrote:
+> > 
+> > > On Sun, 2009-03-08 at 16:39 +0100, Ingo Molnar wrote:
+> > > > * Mike Galbraith <efault@gmx.de> wrote:
+> > > > 
+> > > > > The problem with your particular testcase is that while one 
+> > > > > half has an avg_overlap (what we use as affinity hint for 
+> > > > > synchronous wakeups) which triggers the affinity hint, the 
+> > > > > other half has avg_overlap of zero, what it was born with, so 
+> > > > > despite significant execution overlap, the scheduler treats 
+> > > > > them as if they were truly synchronous tasks.
+> > > > 
+> > > > hm, why does it stay on zero?
+> > > 
+> > > Wakeup preemption.  Presuming here: heavy task wakes light 
+> > > task, is preempted, light task stuffs data into pipe, heavy 
+> > > task doesn't block, so no avg_overlap is ever computed.  The 
+> > > heavy task uses 100% CPU.
+> > > 
+> > > Running as SCHED_BATCH (virgin source), it becomes sane.
+> > 
+> > ah.
+> > 
+> > I'd argue then that time spent on the rq preempted _should_ 
+> > count in avg_overlap statistics. I.e. couldnt we do something 
+> > like ... your patch? :)
+> > 
+> > > >     if (sleep && p->se.last_wakeup) {
+> > > >             update_avg(&p->se.avg_overlap,
+> > > >                        p->se.sum_exec_runtime - p->se.last_wakeup);
+> > > >             p->se.last_wakeup = 0;
+> > > > -   }
+> > > > +   } else if (p->se.avg_overlap < limit && runtime >= limit)
+> > > > +           update_avg(&p->se.avg_overlap, runtime);
+> > 
+> > Just done unconditionally, i.e. something like:
+> > 
+> > 	if (sleep) {
+> > 		runtime = p->se.sum_exec_runtime - p->se.last_wakeup;
+> > 		p->se.last_wakeup = 0;
+> > 	} else {
+> > 		runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
+> > 	}
+> > 
+> > 	update_avg(&p->se.avg_overlap, runtime);
+> > 
+> > ?
+> 
+> OK, I've not seen any problem indications yet, so find patchlet below.
+> 
+> However! Balazs has stated that this problem is _not_ present in .git,
+> and that..
+> 
+> 	commit 38736f475071b80b66be28af7b44c854073699cc
+> 	Author: Gautham R Shenoy <ego@in.ibm.com>
+> 	Date:   Sat Sep 6 14:50:23 2008 +0530
+> 
+> ..is what fixed it.  Willy Tarreau verified this as being the case on
+> his HW as well.  It is present in .git with my HW.
+> 
+> I see it as a problem, but it's your call.  Dunno if I'd apply it or
+> hold back, given these conflicting reports.
+> 
+> Anyway...
+> 
+> Given a task pair communicating via pipe, if one partner fills/drains such
+> that the other does not block for extended periods, avg_overlap can be long
+> stale, and trigger affine wakeups despite heavy CPU demand.  This can, and
+> does lead to throughput loss in the testcase posted by the reporter.
+> 
+> Fix this by unconditionally updating avg_overlap at dequeue time instead
+> of only updating when a task sleeps.
+> 
+> See http://lkml.org/lkml/2009/3/7/79 for details/testcase.
+> 
+> Reported-by: Balazs Scheidler <bazsi@balabit.hu>
+> Signed-off-by: Mike Galbraith <efault@gmx.de>
+> 
+>  kernel/sched.c |    9 +++++++--
+>  1 files changed, 7 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 8e2558c..c670050 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -1712,12 +1712,17 @@ static void enqueue_task(struct rq *rq, struct task_struct *p, int wakeup)
+>  
+>  static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
+>  {
+> +	u64 runtime;
+> +
+>  	if (sleep && p->se.last_wakeup) {
+> -		update_avg(&p->se.avg_overlap,
+> -			   p->se.sum_exec_runtime - p->se.last_wakeup);
+> +		runtime = p->se.sum_exec_runtime - p->se.last_wakeup;
+>  		p->se.last_wakeup = 0;
+> +	} else {
+> +		runtime = p->se.sum_exec_runtime - p->se.prev_sum_exec_runtime;
+>  	}
+>  
+> +	update_avg(&p->se.avg_overlap, runtime);
+> +
+>  	sched_info_dequeued(p);
+>  	p->sched_class->dequeue_task(rq, p, sleep);
+>  	p->se.on_rq = 0;
+> 
+> 
+> 
+> 
+-- 
+Bazsi
 
-Cheers,
-Jeff
 
-diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.c
-index 6f7c096..c4d4f1b 100644
---- a/drivers/infiniband/core/umem.c
-+++ b/drivers/infiniband/core/umem.c
-@@ -135,14 +135,11 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
- 
- 	down_write(&current->mm->mmap_sem);
- 
--	locked     = npages + current->mm->locked_vm;
--	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >> PAGE_SHIFT;
--
--	if ((locked > lock_limit) && !capable(CAP_IPC_LOCK)) {
-+	if (!can_mlock_pages(npages)) {
- 		ret = -ENOMEM;
- 		goto out;
- 	}
--
-+	locked = npages + current->mm->locked_vm;
- 	cur_base = addr & PAGE_MASK;
- 
- 	ret = 0;
-diff --git a/drivers/infiniband/hw/ipath/ipath_user_pages.c b/drivers/infiniband/hw/ipath/ipath_user_pages.c
-index 0190edc..9ab17e3 100644
---- a/drivers/infiniband/hw/ipath/ipath_user_pages.c
-+++ b/drivers/infiniband/hw/ipath/ipath_user_pages.c
-@@ -58,10 +58,7 @@ static int __get_user_pages(unsigned long start_page, size_t num_pages,
- 	size_t got;
- 	int ret;
- 
--	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >>
--		PAGE_SHIFT;
--
--	if (num_pages > lock_limit) {
-+	if (!can_mlock_pages(num_pages)) {
- 		ret = -ENOMEM;
- 		goto bail;
- 	}
-diff --git a/fs/aio.c b/fs/aio.c
-index 3bbda9d..0ca64eb 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -136,10 +136,7 @@ static int aio_setup_ring(struct kioctx *ctx)
- 	 * Check that the memory reserved for the completion ring does
- 	 * not exceed the memlock memory limit.
- 	 */
--	locked = nr_pages + ctx->mm->locked_vm;
--	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
--	lock_limit >>= PAGE_SHIFT;
--	if ((locked > lock_limit) && !capable(CAP_IPC_LOCK)) {
-+	if (!can_mlock_pages(nr_pages)) {
- 		up_write(&ctx->mm->mmap_sem);
- 		info->mmap_size = 0;
- 		aio_free_ring(ctx);
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 065cdf8..79c1127 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -737,6 +737,7 @@ extern unsigned long shmem_get_unmapped_area(struct file *file,
- #endif
- 
- extern int can_do_mlock(void);
-+extern int can_mlock_pages(unsigned long);
- extern int user_shm_lock(size_t, struct user_struct *);
- extern void user_shm_unlock(size_t, struct user_struct *);
- 
-diff --git a/mm/mlock.c b/mm/mlock.c
-index cbe9e05..4ec96c2 100644
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -31,6 +31,33 @@ int can_do_mlock(void)
- }
- EXPORT_SYMBOL(can_do_mlock);
- 
-+/**
-+ * can_mlock_pages() - tell whether mlocking nr_pages is possible
-+ * @nr_pages:	Number of pages to be locked in memory
-+ *
-+ * Boolean function which tells whether the MEMLOCK rlimit will prevent
-+ * locking nr_pages pages.
-+ */
-+int can_mlock_pages(unsigned long nr_pages)
-+{
-+	unsigned long locked, lock_limit;
-+
-+	if (capable(CAP_IPC_LOCK))
-+		return 1;
-+
-+	locked = nr_pages;
-+	locked += current->mm->locked_vm;
-+
-+	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
-+	lock_limit >>= PAGE_SHIFT;
-+
-+	/* check against resource limits */
-+	if (locked <= lock_limit)
-+		return 1;
-+	return 0;
-+}
-+EXPORT_SYMBOL(can_mlock_pages);
-+
- #ifdef CONFIG_UNEVICTABLE_LRU
- /*
-  * Mlocked pages are marked with PageMlocked() flag for efficient testing
-@@ -505,14 +532,8 @@ SYSCALL_DEFINE2(mlock, unsigned long, start, size_t, len)
- 	len = PAGE_ALIGN(len + (start & ~PAGE_MASK));
- 	start &= PAGE_MASK;
- 
--	locked = len >> PAGE_SHIFT;
--	locked += current->mm->locked_vm;
--
--	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
--	lock_limit >>= PAGE_SHIFT;
--
- 	/* check against resource limits */
--	if ((locked <= lock_limit) || capable(CAP_IPC_LOCK))
-+	if (can_mlock_pages(len >> PAGE_SHIFT))
- 		error = do_mlock(start, len, 1);
- 	up_write(&current->mm->mmap_sem);
- 	return error;
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 00ced3e..52d1c32 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -975,12 +975,7 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
- 
- 	/* mlock MCL_FUTURE? */
- 	if (vm_flags & VM_LOCKED) {
--		unsigned long locked, lock_limit;
--		locked = len >> PAGE_SHIFT;
--		locked += mm->locked_vm;
--		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
--		lock_limit >>= PAGE_SHIFT;
--		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+		if (!can_mlock_pages(len >> PAGE_SHIFT))
- 			return -EAGAIN;
- 	}
- 
-@@ -2006,12 +2001,7 @@ unsigned long do_brk(unsigned long addr, unsigned long len)
- 	 * mlock MCL_FUTURE?
- 	 */
- 	if (mm->def_flags & VM_LOCKED) {
--		unsigned long locked, lock_limit;
--		locked = len >> PAGE_SHIFT;
--		locked += mm->locked_vm;
--		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
--		lock_limit >>= PAGE_SHIFT;
--		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+		if (!can_mlock_pages(len>>PAGE_SHIFT))
- 			return -EAGAIN;
- 	}
- 
-diff --git a/mm/mremap.c b/mm/mremap.c
-index a39b7b9..6fb50e2 100644
---- a/mm/mremap.c
-+++ b/mm/mremap.c
-@@ -342,12 +342,8 @@ unsigned long do_mremap(unsigned long addr,
- 			goto out;
- 	}
- 	if (vma->vm_flags & VM_LOCKED) {
--		unsigned long locked, lock_limit;
--		locked = mm->locked_vm << PAGE_SHIFT;
--		lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur;
--		locked += new_len - old_len;
- 		ret = -EAGAIN;
--		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+		if (!can_mlock_pages((new_len - old_len)>>PAGE_SHIFT))
- 			goto out;
- 	}
- 	if (!may_expand_vm(mm, (new_len - old_len) >> PAGE_SHIFT)) {
