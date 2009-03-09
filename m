@@ -1,350 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752514AbZCIPYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbZCIPbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752514AbZCIPYn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 11:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZCIPYc
+	id S1752815AbZCIPbS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 11:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbZCIPbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 11:24:32 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:38510 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751182AbZCIPYa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 11:24:30 -0400
-Date: Mon, 9 Mar 2009 16:24:27 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-cc: rtc-linux@googlegroups.com, Kyle McMartin <kyle@mcmartin.ca>,
-       linux-parisc@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>, Dann Frazier <dannf@dannf.org>,
-       Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [rtc-linux] [PATCH 7/7] powerpc/ps3: Add rtc-ps3
-In-Reply-To: <20090309151216.17f13862@i1501.lan.towertech.it>
-Message-ID: <alpine.LRH.2.00.0903091622150.19484@vixen.sonytel.be>
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com> <1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com> <1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
- <20090309151216.17f13862@i1501.lan.towertech.it>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Mon, 9 Mar 2009 11:31:01 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49886 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751551AbZCIPbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 11:31:00 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19eoaAcz7deTenj/BYrx7/q8LEy+Qx4rmN6+WJt8+
+	qU9FlC+cABU/Ef
+Subject: Re: [patch] Re: scheduler oddity [bug?]
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Balazs Scheidler <bazsi@balabit.hu>,
+       linux-kernel@vger.kernel.org, Willy Tarreau <w@1wt.eu>
+In-Reply-To: <1236609711.8389.583.camel@laptop>
+References: <1236448069.16726.21.camel@bzorp.balabit>
+	 <1236505323.6281.57.camel@marge.simson.net>
+	 <1236506309.6972.8.camel@marge.simson.net> <20090308153956.GB19658@elte.hu>
+	 <1236529200.7110.16.camel@marge.simson.net>
+	 <20090308175255.GA22802@elte.hu>
+	 <1236585731.6118.24.camel@marge.simson.net>
+	 <20090309080714.GB24904@elte.hu>  <1236596664.8389.331.camel@laptop>
+	 <1236604563.6027.8.camel@marge.simson.net>
+	 <1236605870.6515.5.camel@marge.simson.net>
+	 <1236606389.8389.518.camel@laptop>
+	 <1236607083.5980.8.camel@marge.simson.net>
+	 <1236607890.6168.7.camel@marge.simson.net>
+	 <1236609711.8389.583.camel@laptop>
+Content-Type: text/plain
+Date: Mon, 09 Mar 2009 16:30:49 +0100
+Message-Id: <1236612649.6019.38.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.42
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Mar 2009, Alessandro Zummo wrote:
-> On Mon,  9 Mar 2009 14:26:23 +0100
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > +
-> > +static int ps3_get_time(struct device *dev, struct rtc_time *tm)
-> > +{
-> > +	to_tm(read_rtc() + ps3_os_area_get_rtc_diff(), tm);
-> > +	tm->tm_year -= 1900;
-> > +	tm->tm_mon -= 1;
-> > +	return 0;
-> > +}
+On Mon, 2009-03-09 at 15:41 +0100, Peter Zijlstra wrote:
+> On Mon, 2009-03-09 at 15:11 +0100, Mike Galbraith wrote:
 > 
->  this should be return rtc_valid_tm() .
-
-Fixed.
-
->  can't you use functions from rtc-lib.c instead of 
->  that to_tm ?
-
-Ah, those pesky PPC-specific functions... switched to rtc_time_to_tm() and
-rtc_tm_to_time().
-
-> > +
-> > +MODULE_AUTHOR("Sony Corporation");
+> > > Yes 2* worked fine.  Mysql+oltp was my worry spot, being a very affinity
+> > > sensitive little <bleep>, but my patchlet didn't cause any trouble, so
+> > > this one shouldn't either.  I'll do some re-test in any case, and squeak
+> > > should anything turn up.
+> > 
+> > Squeak!  Didn't even get to mysql+oltp.
+> > 
+> > marge:..local/tmp # netperf -t UDP_STREAM -l 60 -H 127.0.0.1  -- -P 15888,12384 -s 32768 -S 32768 -m 4096
+> > UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 15888 AF_INET to 127.0.0.1 (127.0.0.1) port 12384 AF_INET
+> > Socket  Message  Elapsed      Messages
+> > Size    Size     Time         Okay Errors   Throughput
+> > bytes   bytes    secs            #      #   10^6bits/sec
+> > 
+> >  65536    4096   60.00     5161103      0    2818.65
+> >  65536           60.00     5149666           2812.40
+> > 
+> >  6188 root      20   0  1040  544  324 R  100  0.0   0:31.49 0 netperf
+> >  6189 root      20   0  1044  260  164 R   48  0.0   0:15.35 3 netserver
+> > 
+> > Hurt, pain, ouch, vs...
+> > 
+> > marge:..local/tmp # netperf -t UDP_STREAM -l 60 -H 127.0.0.1 -T 0,0 -- -P 15888,12384 -s 32768 -S 32768 -m 4096
+> > UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 15888 AF_INET to 127.0.0.1 (127.0.0.1) port 12384 AF_INET : cpu bind
+> > Socket  Message  Elapsed      Messages
+> > Size    Size     Time         Okay Errors   Throughput
+> > bytes   bytes    secs            #      #   10^6bits/sec
+> > 
+> >  65536    4096   60.00     8452028      0    4615.93
+> >  65536           60.00     8442945           4610.97
+> > 
+> > Drat.
 > 
->  real name, if possible and a contact address
->  here . Just in case I need someone to bother :)
+> Bugger, so back to the drawing board it is...
 
-All PS3-specific drivers have this. But there's an official PS3 platform
-maintainer in MAINTAINERS.
+Hm.
 
->From 41020647c3e2b07e0302a905a926d6221061a128 Mon Sep 17 00:00:00 2001
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Date: Tue, 24 Feb 2009 14:04:20 +0100
-Subject: powerpc/ps3: Add rtc-ps3
+CPU utilization wise, this test is similar to pipetest.  The major
+difference is chunk size.  Netperf is waking and being preempted (if on
+the same CPU) at a very high rate, so the hog component gets cpu in tiny
+chunks, vs hefty chunks for pipetest.
 
-Create a real RTC driver for PS3, and unhook the deprecated
-ppc_md.[gs]et_rtc_time.
+Simply doing the below (will look very familiar) made both netperf and
+pipetest happy again, because of that preemption rate.  Both start life
+wanting to be affine, and due to the switch rate, pipetest becomes
+non-affine, but netperf remains affine.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Acked-by: Alessandro Zummo <a.zummo@towertech.it>
----
- arch/powerpc/include/asm/ps3.h        |    3 +
- arch/powerpc/platforms/ps3/os-area.c  |    2 +
- arch/powerpc/platforms/ps3/platform.h |    2 -
- arch/powerpc/platforms/ps3/setup.c    |    2 -
- arch/powerpc/platforms/ps3/time.c     |   26 ++++-----
- drivers/rtc/Kconfig                   |    9 +++
- drivers/rtc/Makefile                  |    1 +
- drivers/rtc/rtc-ps3.c                 |  104 +++++++++++++++++++++++++++++++++
- 8 files changed, 131 insertions(+), 18 deletions(-)
- create mode 100644 drivers/rtc/rtc-ps3.c
+Maybe we should factor in wakeup rate, and whether we're waking many vs
+one.  Wakeup is tied to data, so there is correlation to potential
+cache-miss pain, no?
 
-diff --git a/arch/powerpc/include/asm/ps3.h b/arch/powerpc/include/asm/ps3.h
-index 67f1812..cdb6fd8 100644
---- a/arch/powerpc/include/asm/ps3.h
-+++ b/arch/powerpc/include/asm/ps3.h
-@@ -50,6 +50,9 @@ enum ps3_param_av_multi_out {
+There is also evidence that your patch did in fact make the right
+decision, but that we really REALLY should try to punt to a CPU that
+shares a cache if available.  Check out the numbers when the netperf
+test runs on two CPUs that share cache.
+
+marge:..local/tmp # netperf -t UDP_STREAM -l 60 -H 127.0.0.1 -T 0,1 -- -P 15888,12384 -s 32768 -S 32768 -m 4096
+UDP UNIDIRECTIONAL SEND TEST from 0.0.0.0 (0.0.0.0) port 15888 AF_INET to 127.0.0.1 (127.0.0.1) port 12384 AF_INET : cpu bind
+Socket  Message  Elapsed      Messages
+Size    Size     Time         Okay Errors   Throughput
+bytes   bytes    secs            #      #   10^6bits/sec
+
+ 65536    4096   60.00     15325632      0    8369.84
+ 65536           60.00     15321176           8367.40
+
+(You can skip the below, nothing new there.  Just for completeness;)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 8e2558c..0f67b2a 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4508,6 +4508,24 @@ static inline void schedule_debug(struct task_struct *prev)
+ #endif
+ }
  
- enum ps3_param_av_multi_out ps3_os_area_get_av_multi_out(void);
- 
-+extern u64 ps3_os_area_get_rtc_diff(void);
-+extern void ps3_os_area_set_rtc_diff(u64 rtc_diff);
++static void put_prev_task(struct rq *rq, struct task_struct *prev)
++{
++	if (prev->state == TASK_RUNNING) {
++		u64 runtime = prev->se.sum_exec_runtime;
 +
- /* dma routines */
- 
- enum ps3_dma_page_size {
-diff --git a/arch/powerpc/platforms/ps3/os-area.c b/arch/powerpc/platforms/ps3/os-area.c
-index e1c83c2..86e392b 100644
---- a/arch/powerpc/platforms/ps3/os-area.c
-+++ b/arch/powerpc/platforms/ps3/os-area.c
-@@ -808,6 +808,7 @@ u64 ps3_os_area_get_rtc_diff(void)
- {
- 	return saved_params.rtc_diff;
- }
-+EXPORT_SYMBOL(ps3_os_area_get_rtc_diff);
- 
- /**
-  * ps3_os_area_set_rtc_diff - Set the rtc diff value.
-@@ -823,6 +824,7 @@ void ps3_os_area_set_rtc_diff(u64 rtc_diff)
- 		os_area_queue_work();
- 	}
- }
-+EXPORT_SYMBOL(ps3_os_area_set_rtc_diff);
- 
- /**
-  * ps3_os_area_get_av_multi_out - Returns the default video mode.
-diff --git a/arch/powerpc/platforms/ps3/platform.h b/arch/powerpc/platforms/ps3/platform.h
-index 235c13e..136aa06 100644
---- a/arch/powerpc/platforms/ps3/platform.h
-+++ b/arch/powerpc/platforms/ps3/platform.h
-@@ -64,8 +64,6 @@ int ps3_set_rtc_time(struct rtc_time *time);
- 
- void __init ps3_os_area_save_params(void);
- void __init ps3_os_area_init(void);
--u64 ps3_os_area_get_rtc_diff(void);
--void ps3_os_area_set_rtc_diff(u64 rtc_diff);
- 
- /* spu */
- 
-diff --git a/arch/powerpc/platforms/ps3/setup.c b/arch/powerpc/platforms/ps3/setup.c
-index 3331ccb..6618182 100644
---- a/arch/powerpc/platforms/ps3/setup.c
-+++ b/arch/powerpc/platforms/ps3/setup.c
-@@ -270,8 +270,6 @@ define_machine(ps3) {
- 	.init_IRQ			= ps3_init_IRQ,
- 	.panic				= ps3_panic,
- 	.get_boot_time			= ps3_get_boot_time,
--	.set_rtc_time			= ps3_set_rtc_time,
--	.get_rtc_time			= ps3_get_rtc_time,
- 	.set_dabr			= ps3_set_dabr,
- 	.calibrate_decr			= ps3_calibrate_decr,
- 	.progress			= ps3_progress,
-diff --git a/arch/powerpc/platforms/ps3/time.c b/arch/powerpc/platforms/ps3/time.c
-index d0daf7d..b178a1e 100644
---- a/arch/powerpc/platforms/ps3/time.c
-+++ b/arch/powerpc/platforms/ps3/time.c
-@@ -19,6 +19,7 @@
++		runtime -= prev->se.prev_sum_exec_runtime;
++		runtime = min_t(u64, runtime, 2*sysctl_sched_migration_cost);
++
++		/*
++		 * In order to avoid avg_overlap growing stale when we are
++		 * indeed overlapping and hence not getting put to sleep, grow
++		 * the avg_overlap on preemption.
++		 */
++		update_avg(&prev->se.avg_overlap, runtime);
++	}
++	prev->sched_class->put_prev_task(rq, prev);
++}
++
+ /*
+  * Pick up the highest-prio task:
   */
+@@ -4586,7 +4604,7 @@ need_resched_nonpreemptible:
+ 	if (unlikely(!rq->nr_running))
+ 		idle_balance(cpu, rq);
  
- #include <linux/kernel.h>
-+#include <linux/platform_device.h>
+-	prev->sched_class->put_prev_task(rq, prev);
++	put_prev_task(rq, prev);
+ 	next = pick_next_task(rq, prev);
  
- #include <asm/rtc.h>
- #include <asm/lv1call.h>
-@@ -74,23 +75,20 @@ static u64 read_rtc(void)
- 	return rtc_val;
- }
- 
--int ps3_set_rtc_time(struct rtc_time *tm)
-+unsigned long __init ps3_get_boot_time(void)
- {
--	u64 now = mktime(tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
--		tm->tm_hour, tm->tm_min, tm->tm_sec);
--
--	ps3_os_area_set_rtc_diff(now - read_rtc());
--	return 0;
-+	return read_rtc() + ps3_os_area_get_rtc_diff();
- }
- 
--void ps3_get_rtc_time(struct rtc_time *tm)
-+static int __init ps3_rtc_init(void)
- {
--	to_tm(read_rtc() + ps3_os_area_get_rtc_diff(), tm);
--	tm->tm_year -= 1900;
--	tm->tm_mon -= 1;
--}
-+	struct platform_device *pdev;
- 
--unsigned long __init ps3_get_boot_time(void)
--{
--	return read_rtc() + ps3_os_area_get_rtc_diff();
-+	pdev = platform_device_register_simple("rtc-ps3", -1, NULL, 0);
-+	if (IS_ERR(pdev))
-+		return PTR_ERR(pdev);
-+
-+	return 0;
- }
-+
-+module_init(ps3_rtc_init);
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 6488c50..7b6b63a 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -730,4 +730,13 @@ config RTC_DRV_MV
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-mv.
- 
-+config RTC_DRV_PS3
-+	tristate "PS3 RTC"
-+	depends on PPC_PS3
-+	help
-+	  If you say yes here you will get support for the RTC on PS3.
-+
-+	  This driver can also be built as a module. If so, the module
-+	  will be called rtc-ps3.
-+
- endif # RTC_CLASS
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index bd209a5..d161d1d 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -75,3 +75,4 @@ obj-$(CONFIG_RTC_DRV_VR41XX)	+= rtc-vr41xx.o
- obj-$(CONFIG_RTC_DRV_WM8350)	+= rtc-wm8350.o
- obj-$(CONFIG_RTC_DRV_X1205)	+= rtc-x1205.o
- obj-$(CONFIG_RTC_DRV_PCF50633)	+= rtc-pcf50633.o
-+obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
-diff --git a/drivers/rtc/rtc-ps3.c b/drivers/rtc/rtc-ps3.c
-new file mode 100644
-index 0000000..968133c
---- /dev/null
-+++ b/drivers/rtc/rtc-ps3.c
-@@ -0,0 +1,104 @@
-+/*
-+ * PS3 RTC Driver
-+ *
-+ * Copyright 2009 Sony Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 of the License.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.
-+ * If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/rtc.h>
-+
-+#include <asm/lv1call.h>
-+#include <asm/ps3.h>
-+
-+
-+static u64 read_rtc(void)
-+{
-+	int result;
-+	u64 rtc_val;
-+	u64 tb_val;
-+
-+	result = lv1_get_rtc(&rtc_val, &tb_val);
-+	BUG_ON(result);
-+
-+	return rtc_val;
-+}
-+
-+static int ps3_get_time(struct device *dev, struct rtc_time *tm)
-+{
-+	rtc_time_to_tm(read_rtc() + ps3_os_area_get_rtc_diff(), tm);
-+	return rtc_valid_tm(tm);
-+}
-+
-+static int ps3_set_time(struct device *dev, struct rtc_time *tm)
-+{
-+	unsigned long now;
-+
-+	rtc_tm_to_time(tm, &now);
-+	ps3_os_area_set_rtc_diff(now - read_rtc());
-+	return 0;
-+}
-+
-+static const struct rtc_class_ops ps3_rtc_ops = {
-+	.read_time = ps3_get_time,
-+	.set_time = ps3_set_time,
-+};
-+
-+static int __init ps3_rtc_probe(struct platform_device *dev)
-+{
-+	struct rtc_device *rtc;
-+
-+	rtc = rtc_device_register("rtc-ps3", &dev->dev, &ps3_rtc_ops,
-+				  THIS_MODULE);
-+	if (IS_ERR(rtc))
-+		return PTR_ERR(rtc);
-+
-+	platform_set_drvdata(dev, rtc);
-+	return 0;
-+}
-+
-+static int __exit ps3_rtc_remove(struct platform_device *dev)
-+{
-+	rtc_device_unregister(platform_get_drvdata(dev));
-+	return 0;
-+}
-+
-+static struct platform_driver ps3_rtc_driver = {
-+	.driver = {
-+		.name = "rtc-ps3",
-+		.owner = THIS_MODULE,
-+	},
-+	.remove = __exit_p(ps3_rtc_remove),
-+};
-+
-+static int __init ps3_rtc_init(void)
-+{
-+	return platform_driver_probe(&ps3_rtc_driver, ps3_rtc_probe);
-+}
-+
-+static void __exit ps3_rtc_fini(void)
-+{
-+	platform_driver_unregister(&ps3_rtc_driver);
-+}
-+
-+module_init(ps3_rtc_init);
-+module_exit(ps3_rtc_fini);
-+
-+MODULE_AUTHOR("Sony Corporation");
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("ps3 RTC driver");
-+MODULE_ALIAS("platform:rtc-ps3");
--- 
-1.6.0.4
+ 	if (likely(prev != next)) {
 
-With kind regards,
 
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village � Da Vincilaan 7-D1 � B-1935 Zaventem � Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 � RPR Brussels
-Fortis � BIC GEBABEBB � IBAN BE41293037680010
