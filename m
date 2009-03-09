@@ -1,43 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751509AbZCIM4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751410AbZCIM4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751509AbZCIM4e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 08:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbZCIM4Y
+	id S1751410AbZCIM4t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 08:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZCIM41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 08:56:24 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:32319 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbZCIM4Y (ORCPT
+	Mon, 9 Mar 2009 08:56:27 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36099 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751185AbZCIM4Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 08:56:24 -0400
-Message-ID: <49B511E9.8030405@nokia.com>
-Date: Mon, 09 Mar 2009 14:56:09 +0200
-From: Aaro Koskinen <aaro.koskinen@nokia.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: linux-mm@kvack.org
-CC: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 0/2] mm: tlb: unmap scalability
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+	Mon, 9 Mar 2009 08:56:25 -0400
+Subject: [PATCH] sched: optimize ttwu vs group scheduling
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 09 Mar 2009 13:56:21 +0100
+Message-Id: <1236603381.8389.455.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Mar 2009 12:56:11.0028 (UTC) FILETIME=[6BD36D40:01C9A0B6]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+We can avoid the sched domain walk on try_to_wake_up() when we know
+there are no groups.
 
-Here's a patch proposal to make unmap to scale linearly on architectures 
-that implement tlb_start_vma() and tlb_end_vma(), by adding range 
-parameters. See <http://marc.info/?l=linux-kernel&m=123610437815468&w=2> 
-for the current problem.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/sched.c |   16 +++++++++++++++-
+ 1 files changed, 15 insertions(+), 1 deletions(-)
 
-The first patch only adds the new parameters. The second one changes the 
-ARM architecture to use those parameters. A similar change should be of 
-course made also for other architectures implementing those routines.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 4414926..188ce3d 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -331,6 +331,13 @@ static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
+  */
+ static DEFINE_SPINLOCK(task_group_lock);
+ 
++#ifdef CONFIG_SMP
++static int root_task_group_empty(void)
++{
++	return list_empty(&root_task_group->children);
++}
++#endif
++
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ #ifdef CONFIG_USER_SCHED
+ # define INIT_TASK_GROUP_LOAD	(2*NICE_0_LOAD)
+@@ -391,6 +398,13 @@ static inline void set_task_rq(struct task_struct *p, unsigned int cpu)
+ 
+ #else
+ 
++#ifdef CONFIG_SMP
++static int root_task_group_empty(void)
++{
++	return 1;
++}
++#endif
++
+ static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
+ static inline struct task_group *task_group(struct task_struct *p)
+ {
+@@ -2363,7 +2377,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
+ 		sync = 0;
+ 
+ #ifdef CONFIG_SMP
+-	if (sched_feat(LB_WAKEUP_UPDATE)) {
++	if (sched_feat(LB_WAKEUP_UPDATE) && !root_task_group_empty()) {
+ 		struct sched_domain *sd;
+ 
+ 		this_cpu = raw_smp_processor_id();
 
-The patch was made for 2.6.29-rc7.
-
-A.
 
