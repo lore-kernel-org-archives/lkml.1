@@ -1,151 +1,450 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751910AbZCIM5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751331AbZCINAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751910AbZCIM5Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 08:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbZCIM5O
+	id S1751331AbZCINAk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 09:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751147AbZCINAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 08:57:14 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:53674 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbZCIM5N (ORCPT
+	Mon, 9 Mar 2009 09:00:31 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:32768 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbZCINA3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 08:57:13 -0400
-Date: Mon, 9 Mar 2009 12:56:57 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [TIP,BISECTED] Negative nice values have become big positive numbers
-Message-ID: <20090309125657.GA20369@silver.sucs.org>
-References: <20090308231850.GB24445@silver.sucs.org> <alpine.DEB.2.00.0903081944470.2203@gandalf.stny.rr.com> <20090309070824.GA9516@elte.hu> <20090309084132.GA5914@nowhere>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090309084132.GA5914@nowhere>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 9 Mar 2009 09:00:29 -0400
+From: Aaro Koskinen <Aaro.Koskinen@nokia.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC PATCH 1/2] mm: tlb: Add range to tlb_start_vma() and tlb_end_vma()
+Date: Mon,  9 Mar 2009 14:59:56 +0200
+Message-Id: <1236603597-1646-1-git-send-email-Aaro.Koskinen@nokia.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <49B511E9.8030405@nokia.com>
+References: <49B511E9.8030405@nokia.com>
+X-OriginalArrivalTime: 09 Mar 2009 12:59:58.0840 (UTC) FILETIME=[F39CC780:01C9A0B6]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 09, 2009 at 09:41:34AM +0100, Frederic Weisbecker wrote:
-> On Mon, Mar 09, 2009 at 08:08:24AM +0100, Ingo Molnar wrote:
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > On Sun, 8 Mar 2009, Sitsofe Wheeler wrote:
-> > > > Formally negative nice values have started become very big in positive
-> > > > integers in -tip kernels:
-> > > > 
-> > > >     2 root      15 2147483647     0    0    0 S  0.0  0.0   0:00.00 kthreadd    
-> > > 
-> > > Is this the output of top?
-> > 
-> > seems so.
-> > 
-> > > > I've just finished bisecting down to this commit:
-> > > > 
-> > > > commit 1427cdf0592368bdec57276edaf714040ee8744f
-> > > 
-> > > I find it hard to believe that this would cause normal nice 
-> > > values to be messed up. The only file that could could come 
-> > > close to messing with nice values in top is ftrace.h:
-> > 
-> > Correct - maybe it's these two nearby commits that cause the 
-> > problems:
-> > 
-> >  fef20d9: vsprintf: unify the format decoding layer for its 3 users
-> >  4370aa4: vsprintf: add binary printf
-> > 
-> > they do affect generic code. If we broke vsnprintf (which the 
-> > nice value output code uses) then that might be a plausible 
-> > explanation.
+Pass the range to be teared down with tlb_start_vma() and
+tlb_end_vma(). This allows architectures doing per-VMA handling to flush
+only the needed range instead of the full VMA region.
 
-OK I've just rebisected (and reverted) this down to the following:
+This patch changes the interface only, no changes in functionality.
 
-commit fef20d9c1380f04ba9492d6463148db07b413708
-Author: Frederic Weisbecker <fweisbec@gmail.com>
-Date:   Fri Mar 6 17:21:50 2009 +0100
+Signed-off-by: Aaro Koskinen <Aaro.Koskinen@nokia.com>
+---
+ arch/alpha/include/asm/tlb.h    |    4 ++--
+ arch/arm/include/asm/tlb.h      |    6 ++++--
+ arch/avr32/include/asm/tlb.h    |    4 ++--
+ arch/blackfin/include/asm/tlb.h |    4 ++--
+ arch/cris/include/asm/tlb.h     |    4 ++--
+ arch/ia64/include/asm/tlb.h     |    8 ++++----
+ arch/m68k/include/asm/tlb.h     |    4 ++--
+ arch/mips/include/asm/tlb.h     |    4 ++--
+ arch/parisc/include/asm/tlb.h   |    4 ++--
+ arch/powerpc/include/asm/tlb.h  |    4 ++--
+ arch/s390/include/asm/tlb.h     |    4 ++--
+ arch/sh/include/asm/tlb.h       |    4 ++--
+ arch/sparc/include/asm/tlb_32.h |    4 ++--
+ arch/sparc/include/asm/tlb_64.h |    4 ++--
+ arch/um/include/asm/tlb.h       |    4 ++--
+ arch/x86/include/asm/tlb.h      |    4 ++--
+ arch/xtensa/include/asm/tlb.h   |    8 ++++----
+ include/asm-frv/tlb.h           |    4 ++--
+ include/asm-m32r/tlb.h          |    4 ++--
+ include/asm-mn10300/tlb.h       |    4 ++--
+ mm/memory.c                     |   10 +++++++---
+ 21 files changed, 53 insertions(+), 47 deletions(-)
 
-    vsprintf: unify the format decoding layer for its 3 users
-
-    An new optimization is making its way to ftrace. Its purpose is to
-    make trace_printk() consuming less memory and be faster.
-
-    Written by Lai Jiangshan, the approach is to delay the formatting
-    job from tracing time to output time.
-
-    Currently, a call to trace_printk() will format the whole string and
-    insert it into the ring buffer. Then you can read it on /debug/tracing/trace
-    file.
-
-    The new implementation stores the address of the format string and
-    the binary parameters into the ring buffer, making the packet more compact
-    and faster to insert.
-    Later, when the user exports the traces, the format string is retrieved
-    with the binary parameters and the formatting job is eventually done.
-
-    The new implementation rewrites a lot of format decoding bits from
-    vsnprintf() function, making now 3 differents functions to maintain
-    in their duplicated parts of printf format decoding bits.
-
-    Suggested by Ingo Molnar, this patch tries to factorize the most
-    possible common bits from these functions.
-    The real common part between them is the format decoding. Although
-    they do somewhat similar jobs, their way to export or import the parameters
-    is very different. Thus, only the decoding layer is extracted, unless you see
-    other parts that could be worth factorized.
-
-    Changes in V2:
-
-    - Address a suggestion from Linus to group the format_decode() parameters inside
-      a structure.
-
-    Changes in v3:
-
-    - Address other cleanups suggested by Ingo and Linus such as passing the
-      printf_spec struct to the format helpers: pointer()/number()/string()
-      Note that this struct is passed by copy and not by address. This is to
-      avoid side effects because these functions often change these values and the
-      changes shoudn't be persistant when a callee helper returns.
-      It would be too risky. 
-
-    - Various cleanups (code alignement, switch/case instead of if/else fountains).
-
-    - Fix a bug that printed the first format specifier following a %p
-
-    Changes in v4:
-
-    - drop unapropriate const qualifier loss while casting fmt to a char *
-      (thanks to Vegard Nossum for having pointed this out).
-
-    Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-    Cc: Linus Torvalds <torvalds@linux-foundation.org>
-    Acked-by: Steven Rostedt <rostedt@goodmis.org>
-    LKML-Reference: <1236356510-8381-6-git-send-email-fweisbec@gmail.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-Here's the new bisect log:
-# bad: [546e5354a6e4ec760ac03ef1148e9a4762abb5f5] Merge branch 'core/printk' into tracing/ftrace
-# good: [78ff7fae04554b49d29226ed12536268c2500d1f] x86: implement atomic text_poke() via fixmap
-git bisect start '546e5354a6e4ec760ac03ef1148e9a4762abb5f5' '78ff7fae04554b49d29226ed12536268c2500d1f'
-# good: [16097439703bcd38e9fe5608c12add6dacb825ea] Merge branches 'tracing/ftrace' and 'tracing/function-graph-tracer' into tracing/core
-git bisect good 16097439703bcd38e9fe5608c12add6dacb825ea
-# good: [4370aa4aa75391a5e2e06bccb0919109f725ed8e] vsprintf: add binary printf
-git bisect good 4370aa4aa75391a5e2e06bccb0919109f725ed8e
-# good: [bc722f508a5bcbb65a7bb0c7ce8e3934f5763a1a] Merge branch 'tip/tracing/ftrace' of git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace into tracing/ftrace
-git bisect good bc722f508a5bcbb65a7bb0c7ce8e3934f5763a1a
-# bad: [fef20d9c1380f04ba9492d6463148db07b413708] vsprintf: unify the format decoding layer for its 3 users
-git bisect bad fef20d9c1380f04ba9492d6463148db07b413708
-
-Apologies for getting it wrong the first time round (I did say I hadn't
-actually reverted the commit though ;)... The problem is that doing
-blind bisection actually takes a large amount of time along with plenty
-of reboots (additionally the makefile changed enough that oldconfig need
-to have prompts answered in many cases) and I was trying to go as fast
-as possible (I found the problem late in the evening and wanted to send
-something before I fell asleep). Is there an IRC channel people testing
--tip hang out in? I tried #fedora-devel and #fedora-kernel but most of
-the folks there were asleep or not testing -tip kernels.
-
+diff --git a/arch/alpha/include/asm/tlb.h b/arch/alpha/include/asm/tlb.h
+index c136365..26991bc 100644
+--- a/arch/alpha/include/asm/tlb.h
++++ b/arch/alpha/include/asm/tlb.h
+@@ -1,8 +1,8 @@
+ #ifndef _ALPHA_TLB_H
+ #define _ALPHA_TLB_H
+ 
+-#define tlb_start_vma(tlb, vma)			do { } while (0)
+-#define tlb_end_vma(tlb, vma)			do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end)	do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end)	do { } while (0)
+ #define __tlb_remove_tlb_entry(tlb, pte, addr)	do { } while (0)
+ 
+ #define tlb_flush(tlb)				flush_tlb_mm((tlb)->mm)
+diff --git a/arch/arm/include/asm/tlb.h b/arch/arm/include/asm/tlb.h
+index 857f1df..d10c9c3 100644
+--- a/arch/arm/include/asm/tlb.h
++++ b/arch/arm/include/asm/tlb.h
+@@ -71,14 +71,16 @@ tlb_finish_mmu(struct mmu_gather *tlb, unsigned long start, unsigned long end)
+  * the vmas are adjusted to only cover the region to be torn down.
+  */
+ static inline void
+-tlb_start_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
++tlb_start_vma(struct mmu_gather *tlb, struct vm_area_struct *vma,
++	      unsigned long range_start, unsigned long range_end)
+ {
+ 	if (!tlb->fullmm)
+ 		flush_cache_range(vma, vma->vm_start, vma->vm_end);
+ }
+ 
+ static inline void
+-tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vma)
++tlb_end_vma(struct mmu_gather *tlb, struct vm_area_struct *vma,
++	    unsigned long range_start, unsigned long range_end)
+ {
+ 	if (!tlb->fullmm)
+ 		flush_tlb_range(vma, vma->vm_start, vma->vm_end);
+diff --git a/arch/avr32/include/asm/tlb.h b/arch/avr32/include/asm/tlb.h
+index 5c55f9c..41381e9 100644
+--- a/arch/avr32/include/asm/tlb.h
++++ b/arch/avr32/include/asm/tlb.h
+@@ -8,10 +8,10 @@
+ #ifndef __ASM_AVR32_TLB_H
+ #define __ASM_AVR32_TLB_H
+ 
+-#define tlb_start_vma(tlb, vma) \
++#define tlb_start_vma(tlb, vma, range_start, range_end) \
+ 	flush_cache_range(vma, vma->vm_start, vma->vm_end)
+ 
+-#define tlb_end_vma(tlb, vma) \
++#define tlb_end_vma(tlb, vma, range_start, range_end) \
+ 	flush_tlb_range(vma, vma->vm_start, vma->vm_end)
+ 
+ #define __tlb_remove_tlb_entry(tlb, pte, address) do { } while(0)
+diff --git a/arch/blackfin/include/asm/tlb.h b/arch/blackfin/include/asm/tlb.h
+index 89a12ee..cf7eb67 100644
+--- a/arch/blackfin/include/asm/tlb.h
++++ b/arch/blackfin/include/asm/tlb.h
+@@ -1,8 +1,8 @@
+ #ifndef _BLACKFIN_TLB_H
+ #define _BLACKFIN_TLB_H
+ 
+-#define tlb_start_vma(tlb, vma)	do { } while (0)
+-#define tlb_end_vma(tlb, vma)	do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end)	do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end)	do { } while (0)
+ #define __tlb_remove_tlb_entry(tlb, ptep, address)	do { } while (0)
+ 
+ /*
+diff --git a/arch/cris/include/asm/tlb.h b/arch/cris/include/asm/tlb.h
+index 77384ea..87e9879 100644
+--- a/arch/cris/include/asm/tlb.h
++++ b/arch/cris/include/asm/tlb.h
+@@ -9,8 +9,8 @@
+  * cris doesn't need any special per-pte or
+  * per-vma handling..
+  */
+-#define tlb_start_vma(tlb, vma) do { } while (0)
+-#define tlb_end_vma(tlb, vma) do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end) do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end) do { } while (0)
+ #define __tlb_remove_tlb_entry(tlb, ptep, address) do { } while (0)
+ 
+ #define tlb_flush(tlb) flush_tlb_mm((tlb)->mm)
+diff --git a/arch/ia64/include/asm/tlb.h b/arch/ia64/include/asm/tlb.h
+index 20d8a39..b1c7bbf 100644
+--- a/arch/ia64/include/asm/tlb.h
++++ b/arch/ia64/include/asm/tlb.h
+@@ -25,14 +25,14 @@
+  *	tlb <- tlb_gather_mmu(mm, full_mm_flush);	// start unmap for address space MM
+  *	{
+  *	  for each vma that needs a shootdown do {
+- *	    tlb_start_vma(tlb, vma);
++ *	    tlb_start_vma(tlb, vma, range_start, range_end);
+  *	      for each page-table-entry PTE that needs to be removed do {
+  *		tlb_remove_tlb_entry(tlb, pte, address);
+  *		if (pte refers to a normal page) {
+  *		  tlb_remove_page(tlb, page);
+  *		}
+  *	      }
+- *	    tlb_end_vma(tlb, vma);
++ *	    tlb_end_vma(tlb, vma, range_start, range_end);
+  *	  }
+  *	}
+  *	tlb_finish_mmu(tlb, start, end);	// finish unmap for address space MM
+@@ -227,8 +227,8 @@ __tlb_remove_tlb_entry (struct mmu_gather *tlb, pte_t *ptep, unsigned long addre
+ 
+ #define tlb_migrate_finish(mm)	platform_tlb_migrate_finish(mm)
+ 
+-#define tlb_start_vma(tlb, vma)			do { } while (0)
+-#define tlb_end_vma(tlb, vma)			do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end)	do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end)	do { } while (0)
+ 
+ #define tlb_remove_tlb_entry(tlb, ptep, addr)		\
+ do {							\
+diff --git a/arch/m68k/include/asm/tlb.h b/arch/m68k/include/asm/tlb.h
+index 1785cff..0363248 100644
+--- a/arch/m68k/include/asm/tlb.h
++++ b/arch/m68k/include/asm/tlb.h
+@@ -5,8 +5,8 @@
+  * m68k doesn't need any special per-pte or
+  * per-vma handling..
+  */
+-#define tlb_start_vma(tlb, vma)	do { } while (0)
+-#define tlb_end_vma(tlb, vma)	do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end)	do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end)	do { } while (0)
+ #define __tlb_remove_tlb_entry(tlb, ptep, address)	do { } while (0)
+ 
+ /*
+diff --git a/arch/mips/include/asm/tlb.h b/arch/mips/include/asm/tlb.h
+index 80d9dfc..8491179 100644
+--- a/arch/mips/include/asm/tlb.h
++++ b/arch/mips/include/asm/tlb.h
+@@ -5,12 +5,12 @@
+  * MIPS doesn't need any special per-pte or per-vma handling, except
+  * we need to flush cache for area to be unmapped.
+  */
+-#define tlb_start_vma(tlb, vma) 				\
++#define tlb_start_vma(tlb, vma, range_start, range_end) 	\
+ 	do {							\
+ 		if (!tlb->fullmm)				\
+ 			flush_cache_range(vma, vma->vm_start, vma->vm_end); \
+ 	}  while (0)
+-#define tlb_end_vma(tlb, vma) do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end) do { } while (0)
+ #define __tlb_remove_tlb_entry(tlb, ptep, address) do { } while (0)
+ 
+ /*
+diff --git a/arch/parisc/include/asm/tlb.h b/arch/parisc/include/asm/tlb.h
+index 383b1db..37c40e5 100644
+--- a/arch/parisc/include/asm/tlb.h
++++ b/arch/parisc/include/asm/tlb.h
+@@ -6,12 +6,12 @@ do {	if ((tlb)->fullmm)		\
+ 		flush_tlb_mm((tlb)->mm);\
+ } while (0)
+ 
+-#define tlb_start_vma(tlb, vma) \
++#define tlb_start_vma(tlb, vma, range_start, range_end) \
+ do {	if (!(tlb)->fullmm)	\
+ 		flush_cache_range(vma, vma->vm_start, vma->vm_end); \
+ } while (0)
+ 
+-#define tlb_end_vma(tlb, vma)	\
++#define tlb_end_vma(tlb, vma, range_start, range_end)	\
+ do {	if (!(tlb)->fullmm)	\
+ 		flush_tlb_range(vma, vma->vm_start, vma->vm_end); \
+ } while (0)
+diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
+index e20ff75..d7ab142 100644
+--- a/arch/powerpc/include/asm/tlb.h
++++ b/arch/powerpc/include/asm/tlb.h
+@@ -27,8 +27,8 @@
+ 
+ struct mmu_gather;
+ 
+-#define tlb_start_vma(tlb, vma)	do { } while (0)
+-#define tlb_end_vma(tlb, vma)	do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end)	do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end)	do { } while (0)
+ 
+ #if !defined(CONFIG_PPC_STD_MMU)
+ 
+diff --git a/arch/s390/include/asm/tlb.h b/arch/s390/include/asm/tlb.h
+index 3d8a96d..718d16f 100644
+--- a/arch/s390/include/asm/tlb.h
++++ b/arch/s390/include/asm/tlb.h
+@@ -148,8 +148,8 @@ static inline void pud_free_tlb(struct mmu_gather *tlb, pud_t *pud)
+ #endif
+ }
+ 
+-#define tlb_start_vma(tlb, vma)			do { } while (0)
+-#define tlb_end_vma(tlb, vma)			do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end)	do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end)	do { } while (0)
+ #define tlb_remove_tlb_entry(tlb, ptep, addr)	do { } while (0)
+ #define tlb_migrate_finish(mm)			do { } while (0)
+ 
+diff --git a/arch/sh/include/asm/tlb.h b/arch/sh/include/asm/tlb.h
+index 88ff1ae..84ad1f9 100644
+--- a/arch/sh/include/asm/tlb.h
++++ b/arch/sh/include/asm/tlb.h
+@@ -7,10 +7,10 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
+-#define tlb_start_vma(tlb, vma) \
++#define tlb_start_vma(tlb, vma, range_start, range_end) \
+ 	flush_cache_range(vma, vma->vm_start, vma->vm_end)
+ 
+-#define tlb_end_vma(tlb, vma)	\
++#define tlb_end_vma(tlb, vma, range_start, range_end)	\
+ 	flush_tlb_range(vma, vma->vm_start, vma->vm_end)
+ 
+ #define __tlb_remove_tlb_entry(tlb, pte, address)	do { } while (0)
+diff --git a/arch/sparc/include/asm/tlb_32.h b/arch/sparc/include/asm/tlb_32.h
+index 6d02d1c..8161627 100644
+--- a/arch/sparc/include/asm/tlb_32.h
++++ b/arch/sparc/include/asm/tlb_32.h
+@@ -1,12 +1,12 @@
+ #ifndef _SPARC_TLB_H
+ #define _SPARC_TLB_H
+ 
+-#define tlb_start_vma(tlb, vma) \
++#define tlb_start_vma(tlb, vma, range_start, range_end) \
+ do {								\
+ 	flush_cache_range(vma, vma->vm_start, vma->vm_end);	\
+ } while (0)
+ 
+-#define tlb_end_vma(tlb, vma) \
++#define tlb_end_vma(tlb, vma, range_start, range_end) \
+ do {								\
+ 	flush_tlb_range(vma, vma->vm_start, vma->vm_end);	\
+ } while (0)
+diff --git a/arch/sparc/include/asm/tlb_64.h b/arch/sparc/include/asm/tlb_64.h
+index ec81cde..e5d121e 100644
+--- a/arch/sparc/include/asm/tlb_64.h
++++ b/arch/sparc/include/asm/tlb_64.h
+@@ -105,7 +105,7 @@ static inline void tlb_remove_page(struct mmu_gather *mp, struct page *page)
+ #define pud_free_tlb(tlb,pudp) __pud_free_tlb(tlb,pudp)
+ 
+ #define tlb_migrate_finish(mm)	do { } while (0)
+-#define tlb_start_vma(tlb, vma) do { } while (0)
+-#define tlb_end_vma(tlb, vma)	do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end) do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end)	do { } while (0)
+ 
+ #endif /* _SPARC64_TLB_H */
+diff --git a/arch/um/include/asm/tlb.h b/arch/um/include/asm/tlb.h
+index 5240fa1..a2eafcc 100644
+--- a/arch/um/include/asm/tlb.h
++++ b/arch/um/include/asm/tlb.h
+@@ -7,8 +7,8 @@
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
+ 
+-#define tlb_start_vma(tlb, vma) do { } while (0)
+-#define tlb_end_vma(tlb, vma) do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end) do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end) do { } while (0)
+ #define tlb_flush(tlb) flush_tlb_mm((tlb)->mm)
+ 
+ /* struct mmu_gather is an opaque type used by the mm code for passing around
+diff --git a/arch/x86/include/asm/tlb.h b/arch/x86/include/asm/tlb.h
+index 829215f..7421c06 100644
+--- a/arch/x86/include/asm/tlb.h
++++ b/arch/x86/include/asm/tlb.h
+@@ -1,8 +1,8 @@
+ #ifndef _ASM_X86_TLB_H
+ #define _ASM_X86_TLB_H
+ 
+-#define tlb_start_vma(tlb, vma) do { } while (0)
+-#define tlb_end_vma(tlb, vma) do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end) do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end) do { } while (0)
+ #define __tlb_remove_tlb_entry(tlb, ptep, address) do { } while (0)
+ #define tlb_flush(tlb) flush_tlb_mm((tlb)->mm)
+ 
+diff --git a/arch/xtensa/include/asm/tlb.h b/arch/xtensa/include/asm/tlb.h
+index 31c220f..8f99a8e 100644
+--- a/arch/xtensa/include/asm/tlb.h
++++ b/arch/xtensa/include/asm/tlb.h
+@@ -18,18 +18,18 @@
+ 
+ /* Note, read http://lkml.org/lkml/2004/1/15/6 */
+ 
+-# define tlb_start_vma(tlb,vma)			do { } while (0)
+-# define tlb_end_vma(tlb,vma)			do { } while (0)
++# define tlb_start_vma(tlb, vma, range_start, range_end) do { } while (0)
++# define tlb_end_vma(tlb, vma, range_start, range_end) do { } while (0)
+ 
+ #else
+ 
+-# define tlb_start_vma(tlb, vma)					      \
++# define tlb_start_vma(tlb, vma, range_start, range_end)		      \
+ 	do {								      \
+ 		if (!tlb->fullmm)					      \
+ 			flush_cache_range(vma, vma->vm_start, vma->vm_end);   \
+ 	} while(0)
+ 
+-# define tlb_end_vma(tlb, vma)						      \
++# define tlb_end_vma(tlb, vma, range_start, range_end)			      \
+ 	do {								      \
+ 		if (!tlb->fullmm)					      \
+ 			flush_tlb_range(vma, vma->vm_start, vma->vm_end);     \
+diff --git a/include/asm-frv/tlb.h b/include/asm-frv/tlb.h
+index cd458eb..8553784 100644
+--- a/include/asm-frv/tlb.h
++++ b/include/asm-frv/tlb.h
+@@ -12,8 +12,8 @@ extern void check_pgt_cache(void);
+ /*
+  * we don't need any special per-pte or per-vma handling...
+  */
+-#define tlb_start_vma(tlb, vma)				do { } while (0)
+-#define tlb_end_vma(tlb, vma)				do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end)	do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end)	do { } while (0)
+ #define __tlb_remove_tlb_entry(tlb, ptep, address)	do { } while (0)
+ 
+ /*
+diff --git a/include/asm-m32r/tlb.h b/include/asm-m32r/tlb.h
+index c7ebd8d..3f4c08d 100644
+--- a/include/asm-m32r/tlb.h
++++ b/include/asm-m32r/tlb.h
+@@ -5,8 +5,8 @@
+  * x86 doesn't need any special per-pte or
+  * per-vma handling..
+  */
+-#define tlb_start_vma(tlb, vma) do { } while (0)
+-#define tlb_end_vma(tlb, vma) do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end) do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end) do { } while (0)
+ #define __tlb_remove_tlb_entry(tlb, pte, address) do { } while (0)
+ 
+ /*
+diff --git a/include/asm-mn10300/tlb.h b/include/asm-mn10300/tlb.h
+index 65d232b..89acf74 100644
+--- a/include/asm-mn10300/tlb.h
++++ b/include/asm-mn10300/tlb.h
+@@ -19,8 +19,8 @@ extern void check_pgt_cache(void);
+ /*
+  * we don't need any special per-pte or per-vma handling...
+  */
+-#define tlb_start_vma(tlb, vma)				do { } while (0)
+-#define tlb_end_vma(tlb, vma)				do { } while (0)
++#define tlb_start_vma(tlb, vma, range_start, range_end)	do { } while (0)
++#define tlb_end_vma(tlb, vma, range_start, range_end)	do { } while (0)
+ #define __tlb_remove_tlb_entry(tlb, ptep, address)	do { } while (0)
+ 
+ /*
+diff --git a/mm/memory.c b/mm/memory.c
+index baa999e..44996b6 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -896,17 +896,21 @@ static inline unsigned long zap_pud_range(struct mmu_gather *tlb,
+ 
+ static unsigned long unmap_page_range(struct mmu_gather *tlb,
+ 				struct vm_area_struct *vma,
+-				unsigned long addr, unsigned long end,
++				unsigned long range_start, unsigned long end,
+ 				long *zap_work, struct zap_details *details)
+ {
+ 	pgd_t *pgd;
+ 	unsigned long next;
++	unsigned long addr = range_start;
++	unsigned long range_end;
+ 
+ 	if (details && !details->check_mapping && !details->nonlinear_vma)
+ 		details = NULL;
+ 
+ 	BUG_ON(addr >= end);
+-	tlb_start_vma(tlb, vma);
++	BUG_ON(*zap_work <= 0);
++	range_end = addr + min(end - addr, (unsigned long)*zap_work);
++	tlb_start_vma(tlb, vma, range_start, range_end);
+ 	pgd = pgd_offset(vma->vm_mm, addr);
+ 	do {
+ 		next = pgd_addr_end(addr, end);
+@@ -917,7 +921,7 @@ static unsigned long unmap_page_range(struct mmu_gather *tlb,
+ 		next = zap_pud_range(tlb, vma, pgd, addr, next,
+ 						zap_work, details);
+ 	} while (pgd++, addr = next, (addr != end && *zap_work > 0));
+-	tlb_end_vma(tlb, vma);
++	tlb_end_vma(tlb, vma, range_start, range_end);
+ 
+ 	return addr;
+ }
 -- 
-Sitsofe | http://sucs.org/~sits/
+1.5.4.3
+
