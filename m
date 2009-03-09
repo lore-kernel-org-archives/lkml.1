@@ -1,212 +1,1247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZCIBuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbZCIBxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbZCIBuu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 21:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbZCIBul
+	id S1755114AbZCIBxx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 21:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbZCIBxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 21:50:41 -0400
-Received: from mga09.intel.com ([134.134.136.24]:65117 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754296AbZCIBuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 21:50:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,326,1233561600"; 
-   d="scan'208";a="496123097"
-Subject: Re: [RFC PATCH 00/19] Cleanup and optimise the page allocator V2
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Ingo Molnar <mingo@elte.hu>, Lin Ming <ming.m.lin@intel.com>,
-       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <20090306130317.GF9461@csn.ul.ie>
-References: <1235647139.16552.34.camel@penberg-laptop>
-	 <20090226112232.GE32756@csn.ul.ie> <1235724283.11610.212.camel@minggr>
-	 <20090302112122.GC21145@csn.ul.ie> <1236132307.2567.25.camel@ymzhang>
-	 <20090304090740.GA27043@wotan.suse.de> <1236218198.2567.119.camel@ymzhang>
-	 <20090305103403.GB32407@elte.hu>
-	 <1236328388.11608.35.camel@minggr.sh.intel.com>
-	 <20090306093918.GA20698@elte.hu>  <20090306130317.GF9461@csn.ul.ie>
-Content-Type: text/plain
-Date: Mon, 09 Mar 2009 09:50:10 +0800
-Message-Id: <1236563410.2567.282.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sun, 8 Mar 2009 21:53:44 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:50339 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753573AbZCIBxm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 21:53:42 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-s390@vger.kernel.org
+Subject: [BUG,2.6.29-rc7,s390] System goes into endless loop during boot or logon
+Date: Mon, 9 Mar 2009 02:53:32 +0100
+User-Agent: KMail/1.9.9
+Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200903080835.14032.elendil@planet.nl> <200903080853.10704.elendil@planet.nl>
+In-Reply-To: <200903080853.10704.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_eaHtJtd1JTbCc/Z"
+Message-Id: <200903090253.34173.elendil@planet.nl>
+X-OriginalArrivalTime: 09 Mar 2009 01:53:37.0702 (UTC) FILETIME=[DCFF4460:01C9A059]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-06 at 13:03 +0000, Mel Gorman wrote:
-> On Fri, Mar 06, 2009 at 10:39:18AM +0100, Ingo Molnar wrote:
-> > 
-> > * Lin Ming <ming.m.lin@intel.com> wrote:
-> > 
-> > > Thanks, I have used "perfstat -s" to collect cache misses 
-> > > data.
-> > > 
-> > > 2.6.29-rc7-tip: tip/perfcounters/core (b5e8acf)
-> > > 2.6.29-rc7-tip-mg2: v2 patches applied to tip/perfcounters/core
-> > > 
-> > > I collected 5 times netperf UDP-U-4k data with and without 
-> > > mg-v2 patches applied to tip/perfcounters/core on a 4p 
-> > > quad-core tigerton machine, as below "value" means UDP-U-4k 
-> > > test result.
-> > > 
-> > > 2.6.29-rc7-tip
-> > > ---------------
-> > > value           cache misses    CPU migrations  cachemisses/migrations
-> > > 5329.71          391094656       1710            228710
-> > > 5641.59          239552767       2138            112045
-> > > 5580.87          132474745       2172            60992
-> > > 5547.19          86911457        2099            41406
-> > > 5626.38          196751217       2050            95976
-> > > 
-> > > 2.6.29-rc7-tip-mg2
-> > > -------------------
-> > > value           cache misses    CPU migrations  cachemisses/migrations
-> > > 4749.80          649929463       1132            574142
-> > > 4327.06          484100170       1252            386661
-> > > 4649.51          374201508       1489            251310
-> > > 5655.82          405511551       1848            219432
-> > > 5571.58          90222256        2159            41788
-> > > 
-> > > Lin Ming
-> > 
-> > Hm, these numbers look really interesting and give us insight 
-> > into this workload. The workload is fluctuating but by measuring 
-> > 3 metrics at once instead of just one we see the following 
-> > patterns:
-> > 
-> >  - Less CPU migrations means more cache misses and less 
-> >    performance.
-> > 
-> 
-> I also happen to know that V2 was cache unfriendly in a number of
-> respects. I've been trying to address it in V3 but still the netperf
-> performance in general is being very tricky even though profiles tell me
-> the page allocator is lighter and incurring fewer cache misses.
-> 
-> (aside, thanks for saying how you were running netperf. It allowed me to
-> take shortcuts writing the automation as I knew what parameters to use)
-The script chooses to bind client/server to cores of different physical cpu.
-You could also try:
-1) no-binding;
-2) Start CPU_NUM clients;
+--Boundary-00=_eaHtJtd1JTbCc/Z
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> 
-> Here is the results from one x86-64 machine running an unreleased version
-> of the patchset
-> 
-> Netperf UDP_STREAM Comparison
-> ----------------------------
->                                     clean      opt-palloc   diff
-> UDP_STREAM-64                       68.63           73.15    6.18%
-> UDP_STREAM-128                     149.77          144.33   -3.77%
-> UDP_STREAM-256                     264.06          280.18    5.75%
-> UDP_STREAM-1024                   1037.81         1058.61    1.96%
-> UDP_STREAM-2048                   1790.33         1906.53    6.09%
-> UDP_STREAM-3312                   2671.34         2744.38    2.66%
-> UDP_STREAM-4096                   2722.92         2910.65    6.45%
-> UDP_STREAM-8192                   4280.14         4314.00    0.78%
-> UDP_STREAM-16384                  5384.13         5606.83    3.97%
-> Netperf TCP_STREAM Comparison
-> ----------------------------
->                                     clean      opt-palloc   diff
-> TCP_STREAM-64                      180.09          204.59   11.98%
-> TCP_STREAM-128                     297.45          812.22   63.38%
-> TCP_STREAM-256                    1315.20         1432.74    8.20%
-> TCP_STREAM-1024                   2544.73         3043.22   16.38%
-> TCP_STREAM-2048                   4157.76         4351.28    4.45%
-> TCP_STREAM-3312                   4254.53         4790.56   11.19%
-> TCP_STREAM-4096                   4773.22         4932.61    3.23%
-> TCP_STREAM-8192                   4937.03         5453.58    9.47%
-> TCP_STREAM-16384                  6003.46         6183.74    2.92%
-> 
-> WOooo, more or less awesome. Then here are the results of a second x86-64
-> machine
-> 
-> Netperf UDP_STREAM Comparison
-> ----------------------------
->                                     clean      opt-palloc   diff
-> UDP_STREAM-64                      106.50          106.98    0.45%
-> UDP_STREAM-128                     216.39          212.48   -1.84%
-> UDP_STREAM-256                     425.29          419.12   -1.47%
-> UDP_STREAM-1024                   1433.21         1449.20    1.10%
-> UDP_STREAM-2048                   2569.67         2503.73   -2.63%
-> UDP_STREAM-3312                   3685.30         3603.15   -2.28%
-> UDP_STREAM-4096                   4019.05         4252.53    5.49%
-> UDP_STREAM-8192                   6278.44         6315.58    0.59%
-> UDP_STREAM-16384                  7389.78         7162.91   -3.17%
-> Netperf TCP_STREAM Comparison
-> ----------------------------
->                                     clean      opt-palloc   diff
-> TCP_STREAM-64                      694.90          674.47   -3.03%
-> TCP_STREAM-128                    1160.13         1159.26   -0.08%
-> TCP_STREAM-256                    2016.35         2018.03    0.08%
-> TCP_STREAM-1024                   4619.41         4562.86   -1.24%
-> TCP_STREAM-2048                   5001.08         5096.51    1.87%
-> TCP_STREAM-3312                   5235.22         5276.18    0.78%
-> TCP_STREAM-4096                   5832.15         5844.42    0.21%
-> TCP_STREAM-8192                   6247.71         6287.93    0.64%
-> TCP_STREAM-16384                  7987.68         7896.17   -1.16%
-> 
-> Much less awesome and the cause of much frowny face and contemplation as to
-> whether I'd be much better off hitting the bar for a tasty beverage or 10.
-> 
-> I'm trying to pin down why there are such large differences between machines
-> but it's something with the machine themselves as the results between runs
-> is fairly consistent. Annoyingly, the second machine showed good results
-> for kernbench (allocator heavy), sysbench (not allocator heavy), was more
-> or less the same for hackbench but regressed tbench and netperf even though
-> the page allocator overhead was less. I'm doing something screwy with cache
-> but don't know what it is yet.
-> 
-> netperf is being run on different CPUs and is possibly maximising the amount
-> of cache bounces incurred by the page allocator as it splits and merges
-> buddies. I'm experimenting with the idea of delaying bulk PCP frees but it's
-> also possible the network layer is having trouble with cache line bounces when
-> the workload is run over localhost and my modifications are changing timings.
-Ingo's analysis is on the right track. Both netperf and tbench have dependency on
-process scheduler. Perhaps V2 has some impact on scheduler?
+Follow-up to an issue reported on the linux-s390 list, seen in the 
+Hercules S/390 emulator.
 
-> 
-> > The lowest-score runs had the lowest CPU migrations count, 
-> > coupled with a high amount of cachemisses.
-> > 
-> > This _probably_ means that in this workload migrations are 
-> > desired: the sooner two related tasks migrate to the same CPU 
-> > the better. If they stay separate (migration count is low) then 
-> > they interact with each other from different CPUs, creating a 
-> > lot of cachemisses and reducing performance.
-> > 
-> > You can reduce the migration barrier of the system by enabling 
-> > CONFIG_SCHED_DEBUG=y and setting sched_migration_cost to zero:
-> > 
-> >    echo 0 > /proc/sys/kernel/sched_migration_cost
-> > 
-> > This will hurt other workloads - but if this improves the 
-> > numbers then it proves that what this particular workload wants 
-> > is easy migrations.
-> > 
-> > Now the question is, why does the mg2 patchset reduce the number 
-> > of migrations? It might not be an inherent property of the mg2 
-> > patches: maybe just unlucky timings push the workload across 
-> > sched_migration_cost.
-> > 
-> > Setting sched_migration_cost to either zero or to a very high 
-> > value and repeating the test will eliminate this source of noise 
-> > and will tell us about other properties of the mg2 patchset.
-> > 
-> > There might be other effects i'm missing. For example what kind 
-> > of UDP transport is used - localhost networking? That means that 
-> > sender and receiver really wants to be coupled strongly and what 
-> > controls this workload is whether such a 'pair' of tasks can 
-> > properly migrate to the same CPU.
+On Sunday 08 March 2009, Frans Pop wrote:
+> Well, not quite. It does boot successfully and I do get a login prompt.
+> I can also login on the console or connect with SSH, but in both cases
+> the system again gets into some loop before I actually get a shell
+> prompt.
+
+During the bisection series the system would sometimes enter the loop 
+during the boot procedure, before I tried to logon. After it enters the 
+loop one processor just goes racing at 100%.
+
+I've bisected this to the following set of three patches:
+commit ca109491f612aab5c8152207631c0444f63da97f
+Author: Peter Zijlstra <peterz@infradead.org>
+Date:   Tue Nov 25 12:43:51 2008 +0100
+    hrtimer: removing all ur callback modes
+commit 37810659ea7d9572c5ac284ade272f806ef8f788
+    hrtimer: removing all ur callback modes, fix hotplug
+commit a0a99b227da57f81319dd239bc4de811b0f530ec
+    hrtimer: removing all ur callback modes, fix
+
+I've not tried to bisect between these patches as the last two are fixes. 
+If needed I can do though.
+
+Unfortunately I was unable to revert that series on top of .29-rc7.
+
+Note:
+During the bisect I had to revert 3 other commits before each iteration 
+because of issues already present in 2.6.28 (reported separately):
+commit 49b5cf34727a6c1be1568ab28e89a2d9a6bf51e0
+commit 5cd1c9c5cf30d4b33df3d3f74d8142f278d536b7
+commit 6c9bacb41c10ba84ff68f238e234d96f35fb64f7
+
+Cheers,
+FJP
 
 
+--Boundary-00=_eaHtJtd1JTbCc/Z
+Content-Type: text/plain;
+  charset="iso-8859-1";
+  name="config"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="config"
+
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.29-bisect
+# Mon Mar  9 02:06:21 2009
+#
+CONFIG_SCHED_MC=y
+CONFIG_MMU=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_BUG=y
+CONFIG_NO_IOMEM=y
+CONFIG_NO_DMA=y
+CONFIG_S390=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+# CONFIG_LOCALVERSION_AUTO is not set
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_BSD_PROCESS_ACCT=y
+CONFIG_BSD_PROCESS_ACCT_V3=y
+CONFIG_TASKSTATS=y
+CONFIG_TASK_DELAY_ACCT=y
+CONFIG_TASK_XACCT=y
+CONFIG_TASK_IO_ACCOUNTING=y
+CONFIG_AUDIT=y
+CONFIG_AUDITSYSCALL=y
+CONFIG_AUDIT_TREE=y
+# CONFIG_IKCONFIG is not set
+CONFIG_LOG_BUF_SHIFT=17
+CONFIG_CGROUPS=y
+# CONFIG_CGROUP_DEBUG is not set
+CONFIG_CGROUP_NS=y
+# CONFIG_CGROUP_FREEZER is not set
+CONFIG_CGROUP_DEVICE=y
+CONFIG_CPUSETS=y
+CONFIG_GROUP_SCHED=y
+CONFIG_FAIR_GROUP_SCHED=y
+# CONFIG_RT_GROUP_SCHED is not set
+# CONFIG_USER_SCHED is not set
+CONFIG_CGROUP_SCHED=y
+CONFIG_CGROUP_CPUACCT=y
+# CONFIG_RESOURCE_COUNTERS is not set
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_SYSFS_DEPRECATED_V2=y
+CONFIG_PROC_PID_CPUSET=y
+CONFIG_RELAY=y
+CONFIG_NAMESPACES=y
+CONFIG_UTS_NS=y
+CONFIG_IPC_NS=y
+CONFIG_USER_NS=y
+CONFIG_PID_NS=y
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+# CONFIG_EMBEDDED is not set
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+# CONFIG_KALLSYMS_ALL is not set
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+# CONFIG_COMPAT_BRK is not set
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_TIMERFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_AIO=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_SLAB=y
+# CONFIG_SLUB is not set
+# CONFIG_SLOB is not set
+CONFIG_PROFILING=y
+# CONFIG_MARKERS is not set
+# CONFIG_OPROFILE is not set
+CONFIG_HAVE_OPROFILE=y
+# CONFIG_KPROBES is not set
+CONFIG_HAVE_KPROBES=y
+CONFIG_HAVE_KRETPROBES=y
+CONFIG_HAVE_ARCH_TRACEHOOK=y
+# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+# CONFIG_TINY_SHMEM is not set
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_FORCE_LOAD=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODULE_FORCE_UNLOAD=y
+CONFIG_MODVERSIONS=y
+# CONFIG_MODULE_SRCVERSION_ALL is not set
+CONFIG_KMOD=y
+CONFIG_STOP_MACHINE=y
+CONFIG_BLOCK=y
+CONFIG_LBD=y
+CONFIG_BLK_DEV_IO_TRACE=y
+# CONFIG_LSF is not set
+CONFIG_BLK_DEV_BSG=y
+# CONFIG_BLK_DEV_INTEGRITY is not set
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+CONFIG_DEFAULT_CFQ=y
+# CONFIG_DEFAULT_NOOP is not set
+CONFIG_DEFAULT_IOSCHED="cfq"
+CONFIG_CLASSIC_RCU=y
+# CONFIG_FREEZER is not set
+
+#
+# Base setup
+#
+
+#
+# Processor type and features
+#
+CONFIG_TICK_ONESHOT=y
+CONFIG_NO_HZ=y
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+# CONFIG_64BIT is not set
+CONFIG_32BIT=y
+CONFIG_SMP=y
+CONFIG_NR_CPUS=32
+CONFIG_HOTPLUG_CPU=y
+CONFIG_MATHEMU=y
+CONFIG_AUDIT_ARCH=y
+CONFIG_S390_SWITCH_AMODE=y
+CONFIG_S390_EXEC_PROTECT=y
+
+#
+# Code generation options
+#
+CONFIG_MARCH_G5=y
+# CONFIG_MARCH_Z900 is not set
+# CONFIG_MARCH_Z990 is not set
+# CONFIG_MARCH_Z9_109 is not set
+CONFIG_PACK_STACK=y
+# CONFIG_CHECK_STACK is not set
+# CONFIG_WARN_STACK is not set
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+
+#
+# Kernel preemption
+#
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_ARCH_SPARSEMEM_DEFAULT=y
+CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
+CONFIG_SELECT_MEMORY_MODEL=y
+# CONFIG_FLATMEM_MANUAL is not set
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+CONFIG_SPARSEMEM_MANUAL=y
+CONFIG_SPARSEMEM=y
+CONFIG_HAVE_MEMORY_PRESENT=y
+CONFIG_SPARSEMEM_STATIC=y
+CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
+CONFIG_SPARSEMEM_VMEMMAP=y
+# CONFIG_MEMORY_HOTPLUG is not set
+CONFIG_PAGEFLAGS_EXTENDED=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_MIGRATION=y
+# CONFIG_RESOURCES_64BIT is not set
+# CONFIG_PHYS_ADDR_T_64BIT is not set
+CONFIG_ZONE_DMA_FLAG=0
+CONFIG_VIRT_TO_BUS=y
+CONFIG_UNEVICTABLE_LRU=y
+
+#
+# I/O subsystem configuration
+#
+CONFIG_MACHCHK_WARNING=y
+CONFIG_QDIO=y
+# CONFIG_QDIO_DEBUG is not set
+CONFIG_CHSC_SCH=m
+
+#
+# Misc
+#
+CONFIG_IPL=y
+# CONFIG_IPL_TAPE is not set
+CONFIG_IPL_VM=y
+CONFIG_BINFMT_ELF=y
+# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+# CONFIG_HAVE_AOUT is not set
+CONFIG_BINFMT_MISC=m
+CONFIG_FORCE_MAX_ZONEORDER=9
+# CONFIG_PROCESS_DEBUG is not set
+CONFIG_PFAULT=y
+# CONFIG_SHARED_KERNEL is not set
+CONFIG_CMM=y
+CONFIG_CMM_PROC=y
+# CONFIG_PAGE_STATES is not set
+# CONFIG_VIRT_TIMER is not set
+# CONFIG_HZ_100 is not set
+CONFIG_HZ_250=y
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=250
+# CONFIG_SCHED_HRTICK is not set
+CONFIG_S390_HYPFS_FS=y
+CONFIG_KEXEC=y
+# CONFIG_ZFCPDUMP is not set
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+CONFIG_PACKET_MMAP=y
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+CONFIG_XFRM_USER=m
+# CONFIG_XFRM_SUB_POLICY is not set
+# CONFIG_XFRM_MIGRATE is not set
+# CONFIG_XFRM_STATISTICS is not set
+CONFIG_XFRM_IPCOMP=m
+CONFIG_NET_KEY=m
+# CONFIG_NET_KEY_MIGRATE is not set
+CONFIG_IUCV=y
+CONFIG_AFIUCV=m
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_IP_ADVANCED_ROUTER=y
+CONFIG_ASK_IP_FIB_HASH=y
+# CONFIG_IP_FIB_TRIE is not set
+CONFIG_IP_FIB_HASH=y
+CONFIG_IP_MULTIPLE_TABLES=y
+CONFIG_IP_ROUTE_MULTIPATH=y
+CONFIG_IP_ROUTE_VERBOSE=y
+# CONFIG_IP_PNP is not set
+CONFIG_NET_IPIP=m
+CONFIG_NET_IPGRE=m
+CONFIG_NET_IPGRE_BROADCAST=y
+CONFIG_IP_MROUTE=y
+CONFIG_IP_PIMSM_V1=y
+CONFIG_IP_PIMSM_V2=y
+# CONFIG_ARPD is not set
+CONFIG_SYN_COOKIES=y
+CONFIG_INET_AH=m
+CONFIG_INET_ESP=m
+CONFIG_INET_IPCOMP=m
+CONFIG_INET_XFRM_TUNNEL=m
+CONFIG_INET_TUNNEL=m
+CONFIG_INET_XFRM_MODE_TRANSPORT=m
+CONFIG_INET_XFRM_MODE_TUNNEL=m
+CONFIG_INET_XFRM_MODE_BEET=m
+CONFIG_INET_LRO=m
+CONFIG_INET_DIAG=m
+CONFIG_INET_TCP_DIAG=m
+CONFIG_TCP_CONG_ADVANCED=y
+CONFIG_TCP_CONG_BIC=m
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_TCP_CONG_WESTWOOD=m
+CONFIG_TCP_CONG_HTCP=m
+CONFIG_TCP_CONG_HSTCP=m
+CONFIG_TCP_CONG_HYBLA=m
+CONFIG_TCP_CONG_VEGAS=m
+CONFIG_TCP_CONG_SCALABLE=m
+CONFIG_TCP_CONG_LP=m
+CONFIG_TCP_CONG_VENO=m
+CONFIG_TCP_CONG_YEAH=m
+CONFIG_TCP_CONG_ILLINOIS=m
+# CONFIG_DEFAULT_BIC is not set
+CONFIG_DEFAULT_CUBIC=y
+# CONFIG_DEFAULT_HTCP is not set
+# CONFIG_DEFAULT_VEGAS is not set
+# CONFIG_DEFAULT_WESTWOOD is not set
+# CONFIG_DEFAULT_RENO is not set
+CONFIG_DEFAULT_TCP_CONG="cubic"
+CONFIG_TCP_MD5SIG=y
+# CONFIG_IPV6 is not set
+# CONFIG_NETLABEL is not set
+CONFIG_NETWORK_SECMARK=y
+CONFIG_NETFILTER=y
+# CONFIG_NETFILTER_DEBUG is not set
+CONFIG_NETFILTER_ADVANCED=y
+CONFIG_BRIDGE_NETFILTER=y
+
+#
+# Core Netfilter Configuration
+#
+CONFIG_NETFILTER_NETLINK=m
+CONFIG_NETFILTER_NETLINK_QUEUE=m
+CONFIG_NETFILTER_NETLINK_LOG=m
+CONFIG_NF_CONNTRACK=m
+CONFIG_NF_CT_ACCT=y
+CONFIG_NF_CONNTRACK_MARK=y
+CONFIG_NF_CONNTRACK_SECMARK=y
+CONFIG_NF_CONNTRACK_EVENTS=y
+CONFIG_NF_CT_PROTO_DCCP=m
+CONFIG_NF_CT_PROTO_GRE=m
+CONFIG_NF_CT_PROTO_SCTP=m
+CONFIG_NF_CT_PROTO_UDPLITE=m
+CONFIG_NF_CONNTRACK_AMANDA=m
+CONFIG_NF_CONNTRACK_FTP=m
+CONFIG_NF_CONNTRACK_H323=m
+CONFIG_NF_CONNTRACK_IRC=m
+CONFIG_NF_CONNTRACK_NETBIOS_NS=m
+CONFIG_NF_CONNTRACK_PPTP=m
+CONFIG_NF_CONNTRACK_SANE=m
+CONFIG_NF_CONNTRACK_SIP=m
+CONFIG_NF_CONNTRACK_TFTP=m
+CONFIG_NF_CT_NETLINK=m
+# CONFIG_NETFILTER_TPROXY is not set
+CONFIG_NETFILTER_XTABLES=m
+CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
+CONFIG_NETFILTER_XT_TARGET_CONNMARK=m
+CONFIG_NETFILTER_XT_TARGET_CONNSECMARK=m
+CONFIG_NETFILTER_XT_TARGET_DSCP=m
+CONFIG_NETFILTER_XT_TARGET_MARK=m
+CONFIG_NETFILTER_XT_TARGET_NFLOG=m
+CONFIG_NETFILTER_XT_TARGET_NFQUEUE=m
+CONFIG_NETFILTER_XT_TARGET_NOTRACK=m
+CONFIG_NETFILTER_XT_TARGET_RATEEST=m
+CONFIG_NETFILTER_XT_TARGET_TRACE=m
+CONFIG_NETFILTER_XT_TARGET_SECMARK=m
+CONFIG_NETFILTER_XT_TARGET_TCPMSS=m
+CONFIG_NETFILTER_XT_TARGET_TCPOPTSTRIP=m
+CONFIG_NETFILTER_XT_MATCH_COMMENT=m
+CONFIG_NETFILTER_XT_MATCH_CONNBYTES=m
+CONFIG_NETFILTER_XT_MATCH_CONNLIMIT=m
+CONFIG_NETFILTER_XT_MATCH_CONNMARK=m
+CONFIG_NETFILTER_XT_MATCH_CONNTRACK=m
+CONFIG_NETFILTER_XT_MATCH_DCCP=m
+CONFIG_NETFILTER_XT_MATCH_DSCP=m
+CONFIG_NETFILTER_XT_MATCH_ESP=m
+CONFIG_NETFILTER_XT_MATCH_HASHLIMIT=m
+CONFIG_NETFILTER_XT_MATCH_HELPER=m
+CONFIG_NETFILTER_XT_MATCH_IPRANGE=m
+CONFIG_NETFILTER_XT_MATCH_LENGTH=m
+CONFIG_NETFILTER_XT_MATCH_LIMIT=m
+CONFIG_NETFILTER_XT_MATCH_MAC=m
+CONFIG_NETFILTER_XT_MATCH_MARK=m
+CONFIG_NETFILTER_XT_MATCH_MULTIPORT=m
+CONFIG_NETFILTER_XT_MATCH_OWNER=m
+CONFIG_NETFILTER_XT_MATCH_POLICY=m
+CONFIG_NETFILTER_XT_MATCH_PHYSDEV=m
+CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
+CONFIG_NETFILTER_XT_MATCH_QUOTA=m
+CONFIG_NETFILTER_XT_MATCH_RATEEST=m
+CONFIG_NETFILTER_XT_MATCH_REALM=m
+# CONFIG_NETFILTER_XT_MATCH_RECENT is not set
+CONFIG_NETFILTER_XT_MATCH_SCTP=m
+CONFIG_NETFILTER_XT_MATCH_STATE=m
+CONFIG_NETFILTER_XT_MATCH_STATISTIC=m
+CONFIG_NETFILTER_XT_MATCH_STRING=m
+CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
+CONFIG_NETFILTER_XT_MATCH_TIME=m
+CONFIG_NETFILTER_XT_MATCH_U32=m
+CONFIG_IP_VS=m
+# CONFIG_IP_VS_DEBUG is not set
+CONFIG_IP_VS_TAB_BITS=12
+
+#
+# IPVS transport protocol load balancing support
+#
+CONFIG_IP_VS_PROTO_TCP=y
+CONFIG_IP_VS_PROTO_UDP=y
+CONFIG_IP_VS_PROTO_AH_ESP=y
+CONFIG_IP_VS_PROTO_ESP=y
+CONFIG_IP_VS_PROTO_AH=y
+
+#
+# IPVS scheduler
+#
+CONFIG_IP_VS_RR=m
+CONFIG_IP_VS_WRR=m
+CONFIG_IP_VS_LC=m
+CONFIG_IP_VS_WLC=m
+CONFIG_IP_VS_LBLC=m
+CONFIG_IP_VS_LBLCR=m
+CONFIG_IP_VS_DH=m
+CONFIG_IP_VS_SH=m
+CONFIG_IP_VS_SED=m
+CONFIG_IP_VS_NQ=m
+
+#
+# IPVS application helper
+#
+CONFIG_IP_VS_FTP=m
+
+#
+# IP: Netfilter Configuration
+#
+CONFIG_NF_DEFRAG_IPV4=m
+CONFIG_NF_CONNTRACK_IPV4=m
+CONFIG_NF_CONNTRACK_PROC_COMPAT=y
+CONFIG_IP_NF_QUEUE=m
+CONFIG_IP_NF_IPTABLES=m
+CONFIG_IP_NF_MATCH_ADDRTYPE=m
+CONFIG_IP_NF_MATCH_AH=m
+CONFIG_IP_NF_MATCH_ECN=m
+CONFIG_IP_NF_MATCH_TTL=m
+CONFIG_IP_NF_FILTER=m
+CONFIG_IP_NF_TARGET_REJECT=m
+CONFIG_IP_NF_TARGET_LOG=m
+CONFIG_IP_NF_TARGET_ULOG=m
+CONFIG_NF_NAT=m
+CONFIG_NF_NAT_NEEDED=y
+CONFIG_IP_NF_TARGET_MASQUERADE=m
+CONFIG_IP_NF_TARGET_NETMAP=m
+CONFIG_IP_NF_TARGET_REDIRECT=m
+CONFIG_NF_NAT_SNMP_BASIC=m
+CONFIG_NF_NAT_PROTO_DCCP=m
+CONFIG_NF_NAT_PROTO_GRE=m
+CONFIG_NF_NAT_PROTO_UDPLITE=m
+CONFIG_NF_NAT_PROTO_SCTP=m
+CONFIG_NF_NAT_FTP=m
+CONFIG_NF_NAT_IRC=m
+CONFIG_NF_NAT_TFTP=m
+CONFIG_NF_NAT_AMANDA=m
+CONFIG_NF_NAT_PPTP=m
+CONFIG_NF_NAT_H323=m
+CONFIG_NF_NAT_SIP=m
+CONFIG_IP_NF_MANGLE=m
+CONFIG_IP_NF_TARGET_CLUSTERIP=m
+CONFIG_IP_NF_TARGET_ECN=m
+CONFIG_IP_NF_TARGET_TTL=m
+CONFIG_IP_NF_RAW=m
+# CONFIG_IP_NF_SECURITY is not set
+CONFIG_IP_NF_ARPTABLES=m
+CONFIG_IP_NF_ARPFILTER=m
+CONFIG_IP_NF_ARP_MANGLE=m
+CONFIG_BRIDGE_NF_EBTABLES=m
+CONFIG_BRIDGE_EBT_BROUTE=m
+CONFIG_BRIDGE_EBT_T_FILTER=m
+CONFIG_BRIDGE_EBT_T_NAT=m
+CONFIG_BRIDGE_EBT_802_3=m
+CONFIG_BRIDGE_EBT_AMONG=m
+CONFIG_BRIDGE_EBT_ARP=m
+CONFIG_BRIDGE_EBT_IP=m
+CONFIG_BRIDGE_EBT_LIMIT=m
+CONFIG_BRIDGE_EBT_MARK=m
+CONFIG_BRIDGE_EBT_PKTTYPE=m
+CONFIG_BRIDGE_EBT_STP=m
+CONFIG_BRIDGE_EBT_VLAN=m
+CONFIG_BRIDGE_EBT_ARPREPLY=m
+CONFIG_BRIDGE_EBT_DNAT=m
+CONFIG_BRIDGE_EBT_MARK_T=m
+CONFIG_BRIDGE_EBT_REDIRECT=m
+CONFIG_BRIDGE_EBT_SNAT=m
+CONFIG_BRIDGE_EBT_LOG=m
+CONFIG_BRIDGE_EBT_ULOG=m
+CONFIG_BRIDGE_EBT_NFLOG=m
+CONFIG_IP_DCCP=m
+CONFIG_INET_DCCP_DIAG=m
+CONFIG_IP_DCCP_ACKVEC=y
+
+#
+# DCCP CCIDs Configuration (EXPERIMENTAL)
+#
+CONFIG_IP_DCCP_CCID2=m
+# CONFIG_IP_DCCP_CCID2_DEBUG is not set
+# CONFIG_IP_DCCP_CCID3 is not set
+# CONFIG_IP_DCCP_TFRC_LIB is not set
+
+#
+# DCCP Kernel Hacking
+#
+# CONFIG_IP_DCCP_DEBUG is not set
+CONFIG_IP_SCTP=m
+# CONFIG_SCTP_DBG_MSG is not set
+# CONFIG_SCTP_DBG_OBJCNT is not set
+# CONFIG_SCTP_HMAC_NONE is not set
+# CONFIG_SCTP_HMAC_SHA1 is not set
+CONFIG_SCTP_HMAC_MD5=y
+CONFIG_TIPC=m
+CONFIG_TIPC_ADVANCED=y
+CONFIG_TIPC_ZONES=3
+CONFIG_TIPC_CLUSTERS=1
+CONFIG_TIPC_NODES=255
+CONFIG_TIPC_SLAVE_NODES=0
+CONFIG_TIPC_PORTS=8191
+CONFIG_TIPC_LOG=0
+# CONFIG_TIPC_DEBUG is not set
+# CONFIG_ATM is not set
+CONFIG_STP=m
+CONFIG_BRIDGE=m
+CONFIG_VLAN_8021Q=m
+# CONFIG_VLAN_8021Q_GVRP is not set
+# CONFIG_DECNET is not set
+CONFIG_LLC=m
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+CONFIG_NET_SCHED=y
+
+#
+# Queueing/Scheduling
+#
+CONFIG_NET_SCH_CBQ=m
+CONFIG_NET_SCH_HTB=m
+CONFIG_NET_SCH_HFSC=m
+CONFIG_NET_SCH_PRIO=m
+# CONFIG_NET_SCH_MULTIQ is not set
+CONFIG_NET_SCH_RED=m
+CONFIG_NET_SCH_SFQ=m
+CONFIG_NET_SCH_TEQL=m
+CONFIG_NET_SCH_TBF=m
+CONFIG_NET_SCH_GRED=m
+CONFIG_NET_SCH_DSMARK=m
+CONFIG_NET_SCH_NETEM=m
+CONFIG_NET_SCH_INGRESS=m
+
+#
+# Classification
+#
+CONFIG_NET_CLS=y
+CONFIG_NET_CLS_BASIC=m
+CONFIG_NET_CLS_TCINDEX=m
+CONFIG_NET_CLS_ROUTE4=m
+CONFIG_NET_CLS_ROUTE=y
+CONFIG_NET_CLS_FW=m
+CONFIG_NET_CLS_U32=m
+CONFIG_CLS_U32_PERF=y
+CONFIG_CLS_U32_MARK=y
+CONFIG_NET_CLS_RSVP=m
+CONFIG_NET_CLS_RSVP6=m
+CONFIG_NET_CLS_FLOW=m
+CONFIG_NET_EMATCH=y
+CONFIG_NET_EMATCH_STACK=32
+CONFIG_NET_EMATCH_CMP=m
+CONFIG_NET_EMATCH_NBYTE=m
+CONFIG_NET_EMATCH_U32=m
+CONFIG_NET_EMATCH_META=m
+CONFIG_NET_EMATCH_TEXT=m
+CONFIG_NET_CLS_ACT=y
+CONFIG_NET_ACT_POLICE=m
+CONFIG_NET_ACT_GACT=m
+CONFIG_GACT_PROB=y
+CONFIG_NET_ACT_MIRRED=m
+CONFIG_NET_ACT_IPT=m
+CONFIG_NET_ACT_NAT=m
+CONFIG_NET_ACT_PEDIT=m
+CONFIG_NET_ACT_SIMP=m
+# CONFIG_NET_ACT_SKBEDIT is not set
+CONFIG_NET_CLS_IND=y
+CONFIG_NET_SCH_FIFO=y
+
+#
+# Network testing
+#
+CONFIG_NET_PKTGEN=m
+# CONFIG_CAN is not set
+CONFIG_AF_RXRPC=m
+# CONFIG_AF_RXRPC_DEBUG is not set
+CONFIG_RXKAD=m
+# CONFIG_PHONET is not set
+CONFIG_FIB_RULES=y
+# CONFIG_RFKILL is not set
+# CONFIG_NET_9P is not set
+# CONFIG_PCMCIA is not set
+CONFIG_CCW=y
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+CONFIG_FIRMWARE_IN_KERNEL=y
+CONFIG_EXTRA_FIRMWARE=""
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+CONFIG_SYS_HYPERVISOR=y
+CONFIG_CONNECTOR=m
+CONFIG_BLK_DEV=y
+# CONFIG_BLK_DEV_COW_COMMON is not set
+CONFIG_BLK_DEV_LOOP=m
+CONFIG_BLK_DEV_CRYPTOLOOP=m
+CONFIG_BLK_DEV_NBD=m
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=24576
+# CONFIG_BLK_DEV_XIP is not set
+# CONFIG_CDROM_PKTCDVD is not set
+CONFIG_ATA_OVER_ETH=m
+
+#
+# S/390 block device drivers
+#
+CONFIG_BLK_DEV_XPRAM=m
+CONFIG_DCSSBLK=m
+CONFIG_DASD=m
+# CONFIG_DASD_PROFILE is not set
+CONFIG_DASD_ECKD=m
+CONFIG_DASD_FBA=m
+CONFIG_DASD_DIAG=m
+# CONFIG_DASD_EER is not set
+CONFIG_MISC_DEVICES=y
+CONFIG_EEPROM_93CX6=m
+CONFIG_ENCLOSURE_SERVICES=m
+# CONFIG_C2PORT is not set
+
+#
+# SCSI device support
+#
+CONFIG_RAID_ATTRS=m
+CONFIG_SCSI=m
+# CONFIG_SCSI_DMA is not set
+CONFIG_SCSI_TGT=m
+CONFIG_SCSI_NETLINK=y
+CONFIG_SCSI_PROC_FS=y
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=m
+CONFIG_CHR_DEV_ST=m
+CONFIG_CHR_DEV_OSST=m
+CONFIG_BLK_DEV_SR=m
+CONFIG_BLK_DEV_SR_VENDOR=y
+CONFIG_CHR_DEV_SG=m
+CONFIG_CHR_DEV_SCH=m
+CONFIG_SCSI_ENCLOSURE=m
+
+#
+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+#
+CONFIG_SCSI_MULTI_LUN=y
+CONFIG_SCSI_CONSTANTS=y
+CONFIG_SCSI_LOGGING=y
+CONFIG_SCSI_SCAN_ASYNC=y
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+CONFIG_SCSI_SPI_ATTRS=m
+CONFIG_SCSI_FC_ATTRS=m
+CONFIG_SCSI_FC_TGT_ATTRS=y
+CONFIG_SCSI_ISCSI_ATTRS=m
+CONFIG_SCSI_SAS_ATTRS=m
+CONFIG_SCSI_SAS_LIBSAS=m
+CONFIG_SCSI_SAS_HOST_SMP=y
+# CONFIG_SCSI_SAS_LIBSAS_DEBUG is not set
+# CONFIG_SCSI_SRP_ATTRS is not set
+CONFIG_SCSI_LOWLEVEL=y
+CONFIG_ISCSI_TCP=m
+# CONFIG_SCSI_DEBUG is not set
+CONFIG_ZFCP=m
+# CONFIG_SCSI_DH is not set
+CONFIG_MD=y
+# CONFIG_BLK_DEV_MD is not set
+CONFIG_BLK_DEV_DM=m
+# CONFIG_DM_DEBUG is not set
+CONFIG_DM_CRYPT=m
+CONFIG_DM_SNAPSHOT=m
+CONFIG_DM_MIRROR=m
+CONFIG_DM_ZERO=m
+CONFIG_DM_MULTIPATH=m
+CONFIG_DM_DELAY=m
+CONFIG_DM_UEVENT=y
+CONFIG_NETDEVICES=y
+CONFIG_IFB=m
+# CONFIG_DUMMY is not set
+CONFIG_BONDING=m
+# CONFIG_MACVLAN is not set
+CONFIG_EQUALIZER=m
+CONFIG_TUN=m
+CONFIG_VETH=m
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=m
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+# CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL is not set
+# CONFIG_IBM_NEW_EMAC_MAL_CLR_ICINTSTAT is not set
+# CONFIG_IBM_NEW_EMAC_MAL_COMMON_ERR is not set
+# CONFIG_NETDEV_1000 is not set
+# CONFIG_NETDEV_10000 is not set
+# CONFIG_TR is not set
+# CONFIG_WAN is not set
+
+#
+# S/390 network device drivers
+#
+CONFIG_LCS=m
+CONFIG_CTCM=m
+CONFIG_NETIUCV=m
+CONFIG_SMSGIUCV=m
+CONFIG_CLAW=m
+CONFIG_QETH=m
+CONFIG_QETH_L2=m
+CONFIG_QETH_L3=m
+CONFIG_CCWGROUP=m
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+# CONFIG_NETCONSOLE is not set
+# CONFIG_NETPOLL is not set
+# CONFIG_NET_POLL_CONTROLLER is not set
+
+#
+# Character devices
+#
+CONFIG_DEVKMEM=y
+CONFIG_UNIX98_PTYS=y
+# CONFIG_LEGACY_PTYS is not set
+CONFIG_HW_RANDOM=m
+# CONFIG_R3964 is not set
+# CONFIG_RAW_DRIVER is not set
+CONFIG_HANGCHECK_TIMER=m
+
+#
+# S/390 character device drivers
+#
+CONFIG_TN3270=y
+CONFIG_TN3270_TTY=y
+CONFIG_TN3270_FS=m
+CONFIG_TN3270_CONSOLE=y
+CONFIG_TN3215=y
+CONFIG_TN3215_CONSOLE=y
+CONFIG_CCW_CONSOLE=y
+CONFIG_SCLP_TTY=y
+CONFIG_SCLP_CONSOLE=y
+CONFIG_SCLP_VT220_TTY=y
+CONFIG_SCLP_VT220_CONSOLE=y
+CONFIG_SCLP_CPI=m
+CONFIG_S390_TAPE=m
+
+#
+# S/390 tape interface support
+#
+CONFIG_S390_TAPE_BLOCK=y
+
+#
+# S/390 tape hardware support
+#
+CONFIG_S390_TAPE_34XX=m
+CONFIG_S390_TAPE_3590=m
+CONFIG_VMLOGRDR=m
+CONFIG_VMCP=m
+CONFIG_MONREADER=m
+CONFIG_MONWRITER=m
+CONFIG_S390_VMUR=m
+# CONFIG_POWER_SUPPLY is not set
+# CONFIG_THERMAL is not set
+# CONFIG_THERMAL_HWMON is not set
+# CONFIG_WATCHDOG is not set
+# CONFIG_REGULATOR is not set
+# CONFIG_MEMSTICK is not set
+# CONFIG_NEW_LEDS is not set
+# CONFIG_ACCESSIBILITY is not set
+# CONFIG_STAGING is not set
+CONFIG_STAGING_EXCLUDE_BUILD=y
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=m
+CONFIG_EXT2_FS_XATTR=y
+CONFIG_EXT2_FS_POSIX_ACL=y
+CONFIG_EXT2_FS_SECURITY=y
+# CONFIG_EXT2_FS_XIP is not set
+CONFIG_EXT3_FS=m
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+CONFIG_EXT3_FS_SECURITY=y
+# CONFIG_EXT4_FS is not set
+CONFIG_JBD=m
+# CONFIG_JBD_DEBUG is not set
+CONFIG_FS_MBCACHE=m
+# CONFIG_REISERFS_FS is not set
+# CONFIG_JFS_FS is not set
+CONFIG_FS_POSIX_ACL=y
+CONFIG_FILE_LOCKING=y
+# CONFIG_XFS_FS is not set
+# CONFIG_OCFS2_FS is not set
+CONFIG_DNOTIFY=y
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+CONFIG_QUOTA=y
+CONFIG_QUOTA_NETLINK_INTERFACE=y
+CONFIG_PRINT_QUOTA_WARNING=y
+CONFIG_QFMT_V1=m
+CONFIG_QFMT_V2=m
+CONFIG_QUOTACTL=y
+CONFIG_AUTOFS_FS=m
+CONFIG_AUTOFS4_FS=m
+CONFIG_FUSE_FS=m
+CONFIG_GENERIC_ACL=y
+
+#
+# CD-ROM/DVD Filesystems
+#
+CONFIG_ISO9660_FS=m
+CONFIG_JOLIET=y
+CONFIG_ZISOFS=y
+CONFIG_UDF_FS=m
+CONFIG_UDF_NLS=y
+
+#
+# DOS/FAT/NT Filesystems
+#
+CONFIG_FAT_FS=m
+CONFIG_MSDOS_FS=m
+CONFIG_VFAT_FS=m
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="utf8"
+# CONFIG_NTFS_FS is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_PROC_PAGE_MONITOR=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_TMPFS_POSIX_ACL=y
+# CONFIG_HUGETLB_PAGE is not set
+CONFIG_CONFIGFS_FS=m
+
+#
+# Miscellaneous filesystems
+#
+# CONFIG_ADFS_FS is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_ECRYPT_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_HFSPLUS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_OMFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+CONFIG_ROMFS_FS=m
+# CONFIG_SYSV_FS is not set
+CONFIG_UFS_FS=m
+# CONFIG_UFS_FS_WRITE is not set
+# CONFIG_UFS_DEBUG is not set
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=m
+CONFIG_NFS_V3=y
+CONFIG_NFS_V3_ACL=y
+CONFIG_NFS_V4=y
+# CONFIG_NFSD is not set
+CONFIG_LOCKD=m
+CONFIG_LOCKD_V4=y
+CONFIG_NFS_ACL_SUPPORT=m
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=m
+CONFIG_SUNRPC_GSS=m
+# CONFIG_SUNRPC_REGISTER_V4 is not set
+CONFIG_RPCSEC_GSS_KRB5=m
+CONFIG_RPCSEC_GSS_SPKM3=m
+# CONFIG_SMB_FS is not set
+# CONFIG_CIFS is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_CODA_FS is not set
+# CONFIG_AFS_FS is not set
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+# CONFIG_ACORN_PARTITION is not set
+# CONFIG_OSF_PARTITION is not set
+# CONFIG_AMIGA_PARTITION is not set
+# CONFIG_ATARI_PARTITION is not set
+CONFIG_IBM_PARTITION=y
+# CONFIG_MAC_PARTITION is not set
+CONFIG_MSDOS_PARTITION=y
+CONFIG_BSD_DISKLABEL=y
+# CONFIG_MINIX_SUBPARTITION is not set
+# CONFIG_SOLARIS_X86_PARTITION is not set
+# CONFIG_UNIXWARE_DISKLABEL is not set
+# CONFIG_LDM_PARTITION is not set
+# CONFIG_SGI_PARTITION is not set
+# CONFIG_ULTRIX_PARTITION is not set
+# CONFIG_SUN_PARTITION is not set
+# CONFIG_KARMA_PARTITION is not set
+# CONFIG_EFI_PARTITION is not set
+# CONFIG_SYSV68_PARTITION is not set
+CONFIG_NLS=m
+CONFIG_NLS_DEFAULT="utf8"
+CONFIG_NLS_CODEPAGE_437=m
+# CONFIG_NLS_CODEPAGE_737 is not set
+# CONFIG_NLS_CODEPAGE_775 is not set
+CONFIG_NLS_CODEPAGE_850=m
+# CONFIG_NLS_CODEPAGE_852 is not set
+# CONFIG_NLS_CODEPAGE_855 is not set
+# CONFIG_NLS_CODEPAGE_857 is not set
+# CONFIG_NLS_CODEPAGE_860 is not set
+# CONFIG_NLS_CODEPAGE_861 is not set
+# CONFIG_NLS_CODEPAGE_862 is not set
+# CONFIG_NLS_CODEPAGE_863 is not set
+# CONFIG_NLS_CODEPAGE_864 is not set
+# CONFIG_NLS_CODEPAGE_865 is not set
+# CONFIG_NLS_CODEPAGE_866 is not set
+# CONFIG_NLS_CODEPAGE_869 is not set
+# CONFIG_NLS_CODEPAGE_936 is not set
+# CONFIG_NLS_CODEPAGE_950 is not set
+# CONFIG_NLS_CODEPAGE_932 is not set
+# CONFIG_NLS_CODEPAGE_949 is not set
+# CONFIG_NLS_CODEPAGE_874 is not set
+# CONFIG_NLS_ISO8859_8 is not set
+# CONFIG_NLS_CODEPAGE_1250 is not set
+# CONFIG_NLS_CODEPAGE_1251 is not set
+CONFIG_NLS_ASCII=m
+CONFIG_NLS_ISO8859_1=m
+# CONFIG_NLS_ISO8859_2 is not set
+# CONFIG_NLS_ISO8859_3 is not set
+# CONFIG_NLS_ISO8859_4 is not set
+# CONFIG_NLS_ISO8859_5 is not set
+# CONFIG_NLS_ISO8859_6 is not set
+# CONFIG_NLS_ISO8859_7 is not set
+# CONFIG_NLS_ISO8859_9 is not set
+# CONFIG_NLS_ISO8859_13 is not set
+# CONFIG_NLS_ISO8859_14 is not set
+CONFIG_NLS_ISO8859_15=m
+# CONFIG_NLS_KOI8_R is not set
+# CONFIG_NLS_KOI8_U is not set
+CONFIG_NLS_UTF8=m
+CONFIG_DLM=m
+CONFIG_DLM_DEBUG=y
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+# CONFIG_PRINTK_TIME is not set
+CONFIG_ENABLE_WARN_DEPRECATED=y
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_FRAME_WARN=1024
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_UNUSED_SYMBOLS=y
+CONFIG_DEBUG_FS=y
+# CONFIG_HEADERS_CHECK is not set
+CONFIG_DEBUG_KERNEL=y
+CONFIG_SCHED_DEBUG=y
+# CONFIG_SCHEDSTATS is not set
+CONFIG_TIMER_STATS=y
+# CONFIG_DEBUG_OBJECTS is not set
+# CONFIG_DEBUG_SLAB is not set
+# CONFIG_DEBUG_RT_MUTEXES is not set
+# CONFIG_RT_MUTEX_TESTER is not set
+# CONFIG_DEBUG_SPINLOCK is not set
+# CONFIG_DEBUG_MUTEXES is not set
+# CONFIG_DEBUG_LOCK_ALLOC is not set
+# CONFIG_PROVE_LOCKING is not set
+# CONFIG_LOCK_STAT is not set
+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+# CONFIG_DEBUG_KOBJECT is not set
+CONFIG_DEBUG_BUGVERBOSE=y
+# CONFIG_DEBUG_INFO is not set
+# CONFIG_DEBUG_VM is not set
+# CONFIG_DEBUG_WRITECOUNT is not set
+CONFIG_DEBUG_MEMORY_INIT=y
+# CONFIG_DEBUG_LIST is not set
+# CONFIG_DEBUG_SG is not set
+# CONFIG_FRAME_POINTER is not set
+# CONFIG_RCU_TORTURE_TEST is not set
+# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+# CONFIG_BACKTRACE_SELF_TEST is not set
+# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
+# CONFIG_FAULT_INJECTION is not set
+# CONFIG_LATENCYTOP is not set
+CONFIG_SYSCTL_SYSCALL_CHECK=y
+
+#
+# Tracers
+#
+# CONFIG_IRQSOFF_TRACER is not set
+# CONFIG_SCHED_TRACER is not set
+# CONFIG_CONTEXT_SWITCH_TRACER is not set
+# CONFIG_BOOT_TRACER is not set
+# CONFIG_DYNAMIC_PRINTK_DEBUG is not set
+# CONFIG_SAMPLES is not set
+# CONFIG_DEBUG_PAGEALLOC is not set
+
+#
+# Security options
+#
+CONFIG_KEYS=y
+# CONFIG_KEYS_DEBUG_PROC_KEYS is not set
+CONFIG_SECURITY=y
+# CONFIG_SECURITYFS is not set
+CONFIG_SECURITY_NETWORK=y
+CONFIG_SECURITY_NETWORK_XFRM=y
+CONFIG_SECURITY_FILE_CAPABILITIES=y
+CONFIG_SECURITY_DEFAULT_MMAP_MIN_ADDR=0
+CONFIG_SECURITY_SELINUX=y
+CONFIG_SECURITY_SELINUX_BOOTPARAM=y
+CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=0
+CONFIG_SECURITY_SELINUX_DISABLE=y
+CONFIG_SECURITY_SELINUX_DEVELOP=y
+CONFIG_SECURITY_SELINUX_AVC_STATS=y
+CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=1
+# CONFIG_SECURITY_SELINUX_ENABLE_SECMARK_DEFAULT is not set
+# CONFIG_SECURITY_SELINUX_POLICYDB_VERSION_MAX is not set
+CONFIG_CRYPTO=y
+
+#
+# Crypto core or helper
+#
+# CONFIG_CRYPTO_FIPS is not set
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_AEAD=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_HASH=y
+CONFIG_CRYPTO_RNG=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_GF128MUL=m
+CONFIG_CRYPTO_NULL=m
+# CONFIG_CRYPTO_CRYPTD is not set
+CONFIG_CRYPTO_AUTHENC=m
+CONFIG_CRYPTO_TEST=m
+
+#
+# Authenticated Encryption with Associated Data
+#
+CONFIG_CRYPTO_CCM=m
+CONFIG_CRYPTO_GCM=m
+CONFIG_CRYPTO_SEQIV=m
+
+#
+# Block modes
+#
+CONFIG_CRYPTO_CBC=m
+CONFIG_CRYPTO_CTR=m
+CONFIG_CRYPTO_CTS=m
+CONFIG_CRYPTO_ECB=m
+CONFIG_CRYPTO_LRW=m
+CONFIG_CRYPTO_PCBC=m
+CONFIG_CRYPTO_XTS=m
+
+#
+# Hash modes
+#
+CONFIG_CRYPTO_HMAC=y
+CONFIG_CRYPTO_XCBC=m
+
+#
+# Digest
+#
+CONFIG_CRYPTO_CRC32C=m
+CONFIG_CRYPTO_MD4=m
+CONFIG_CRYPTO_MD5=y
+CONFIG_CRYPTO_MICHAEL_MIC=m
+# CONFIG_CRYPTO_RMD128 is not set
+# CONFIG_CRYPTO_RMD160 is not set
+# CONFIG_CRYPTO_RMD256 is not set
+# CONFIG_CRYPTO_RMD320 is not set
+CONFIG_CRYPTO_SHA1=m
+CONFIG_CRYPTO_SHA256=m
+CONFIG_CRYPTO_SHA512=m
+CONFIG_CRYPTO_TGR192=m
+CONFIG_CRYPTO_WP512=m
+
+#
+# Ciphers
+#
+CONFIG_CRYPTO_AES=m
+CONFIG_CRYPTO_ANUBIS=m
+CONFIG_CRYPTO_ARC4=m
+CONFIG_CRYPTO_BLOWFISH=m
+CONFIG_CRYPTO_CAMELLIA=m
+CONFIG_CRYPTO_CAST5=m
+CONFIG_CRYPTO_CAST6=m
+CONFIG_CRYPTO_DES=m
+CONFIG_CRYPTO_FCRYPT=m
+CONFIG_CRYPTO_KHAZAD=m
+CONFIG_CRYPTO_SALSA20=m
+CONFIG_CRYPTO_SEED=m
+CONFIG_CRYPTO_SERPENT=m
+CONFIG_CRYPTO_TEA=m
+CONFIG_CRYPTO_TWOFISH=m
+CONFIG_CRYPTO_TWOFISH_COMMON=m
+
+#
+# Compression
+#
+CONFIG_CRYPTO_DEFLATE=m
+CONFIG_CRYPTO_LZO=m
+
+#
+# Random Number Generation
+#
+# CONFIG_CRYPTO_ANSI_CPRNG is not set
+CONFIG_CRYPTO_HW=y
+CONFIG_ZCRYPT=m
+# CONFIG_ZCRYPT_MONOLITHIC is not set
+CONFIG_CRYPTO_SHA1_S390=m
+CONFIG_CRYPTO_SHA256_S390=m
+CONFIG_CRYPTO_SHA512_S390=m
+CONFIG_CRYPTO_DES_S390=m
+CONFIG_CRYPTO_AES_S390=m
+CONFIG_S390_PRNG=m
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+CONFIG_CRC_CCITT=m
+CONFIG_CRC16=m
+# CONFIG_CRC_T10DIF is not set
+CONFIG_CRC_ITU_T=m
+CONFIG_CRC32=y
+CONFIG_CRC7=m
+CONFIG_LIBCRC32C=m
+CONFIG_ZLIB_INFLATE=m
+CONFIG_ZLIB_DEFLATE=m
+CONFIG_LZO_COMPRESS=m
+CONFIG_LZO_DECOMPRESS=m
+CONFIG_TEXTSEARCH=y
+CONFIG_TEXTSEARCH_KMP=m
+CONFIG_TEXTSEARCH_BM=m
+CONFIG_TEXTSEARCH_FSM=m
+CONFIG_PLIST=y
+# CONFIG_VIRTUALIZATION is not set
+
+--Boundary-00=_eaHtJtd1JTbCc/Z--
