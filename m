@@ -1,37 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752210AbZCISvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZCISwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752210AbZCISvS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 14:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZCISu5
+	id S1754768AbZCISwA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 14:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZCISvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 14:50:57 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:43203 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752780AbZCISu4 (ORCPT
+	Mon, 9 Mar 2009 14:51:24 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:10521 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754527AbZCISvU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 14:50:56 -0400
-Date: Mon, 9 Mar 2009 14:50:06 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: David Rientjes <rientjes@google.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm] cpusets: add memory_slab_hardwall flag
-In-Reply-To: <alpine.DEB.2.00.0903080917460.25207@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0903091448110.20314@qirst.com>
-References: <alpine.DEB.2.00.0903080917460.25207@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 9 Mar 2009 14:51:20 -0400
+Date: Mon, 9 Mar 2009 12:51:17 -0600
+From: Alex Chiang <achiang@hp.com>
+To: jbarnes@virtuousgeek.org
+Cc: xyzzy@speakeasy.org, djwong@us.ibm.com, shimada-yxb@necst.nec.co.jp,
+       rjw@sisk.pl, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 00/11] PCI core learns hotplug
+Message-ID: <20090309185117.GJ32589@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
+	xyzzy@speakeasy.org, djwong@us.ibm.com, shimada-yxb@necst.nec.co.jp,
+	rjw@sisk.pl, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20090309052933.3918.86601.stgit@bob.kio>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090309052933.3918.86601.stgit@bob.kio>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Again these are fastpath modifications.
+* Alex Chiang <achiang@hp.com>:
+> 
+> There is still one major bug somewhere that shows up only when using
+> the PCIe portdriver (that is, any time PCIe support is built into
+> the kernel). You get an oops during multiple remove/rescan cycles,
+> especially on devices with an internal bridge.
 
-Scanning the partial list for matching nodes is an expensive operation.
+Got it, we had a double-free in the PCIe port driver which was
+causing all sorts of problems.
 
-Adding RCU into the fast paths is also another big worry.
+I fixed that and now this patch series is stable enough for
+others to actually apply and test. As of now, there are no known
+bugs.
+
+Of course, I'm going to keep testing and try to find some more
+bugs. :)
+
+As a reminder, if you want to play with this series, you'll also
+need these two patches:
+
+> 	http://thread.gmane.org/gmane.linux.kernel.pci/3437
+> 	http://lkml.org/lkml/2009/3/7/173
+
+And now this third patch:
+
+	http://thread.gmane.org/gmane.linux.kernel.pci/3524
+
+Finally, patch 07/11 needs to be updated. I'll post a reply to
+that mail with the updated patch.
+
+Thanks.
+
+/ac
 
