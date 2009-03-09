@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbZCIUyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754525AbZCIVGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753820AbZCIUyn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 16:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZCIUyd
+	id S1754525AbZCIVGl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 17:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbZCIVGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 16:54:33 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:39082 "EHLO
+	Mon, 9 Mar 2009 17:06:33 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:42438 "EHLO
 	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751509AbZCIUyd (ORCPT
+	with ESMTP id S1752239AbZCIVGc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 16:54:33 -0400
-Message-ID: <49B581FB.7060506@freescale.com>
-Date: Mon, 09 Mar 2009 15:54:19 -0500
+	Mon, 9 Mar 2009 17:06:32 -0400
+Message-ID: <49B5813F.5040303@freescale.com>
+Date: Mon, 09 Mar 2009 15:51:11 -0500
 From: Timur Tabi <timur@freescale.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: linux-kernel@vger.kernel.org, rdreier@cisco.com, peterz@infradead.org,
-       will.newton@gmail.com
-Subject: Re: [PATCH v3] add function spin_event_timeout()
-References: <1236630740-22024-1-git-send-email-timur@freescale.com> <49B57F45.7040104@gmail.com>
-In-Reply-To: <49B57F45.7040104@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add function spin_event_timeout()
+References: <1236384801-10305-1-git-send-email-timur@freescale.com>	 <adaiqmmf87v.fsf@cisco.com> <ed82fe3e0903061725y40dc246ehd3482690ee3898fa@mail.gmail.com> <49B58076.8020703@goop.org>
+In-Reply-To: <49B58076.8020703@goop.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> On 9.3.2009 21:32, Timur Tabi wrote:
->> +#define spin_event_timeout(condition, timeout)				\
->> +({									\
->> +	int __timeout = timeout;					\
->> +	while (!(condition)&&  --__timeout) {				\
->> +		udelay(1);						\
->> +		cpu_relax();						\
-> 
-> So you don't need cpu_relax anymore...
+Jeremy Fitzhardinge wrote:
 
-I checked the udelay() code.  It varies per platform, but I didn't see
-how it always replicated the functionality of cpu_relax().  For example,
-in x86_64, cpu_relax is a "rep; nop;".  But I don't see that code
-sequence in arch/x86/lib/delay.c.
+> A jiffy is a really long time to be spinning, let alone liffies plural.  
+> In this use case are you expecting that the loop will iterate a very 
+> small number of times before returning, and the timeout case is a very 
+> unlikely error condition?
 
-So I presume that something in the delay functions makes cpu_relax()
-unnecessary.  What exactly is the purpose of cpu_relax()?
-
-> And I would make timeout UL like delay functions.
-
-I made it an integer because I don't expect anyone to pass a value
-larger than 2^31, but I'll change it.
+Yes, in version 3 of this patch, I switch to using udelay().  I might
+need to post a v4 though.
 
 -- 
 Timur Tabi
