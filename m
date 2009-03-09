@@ -1,207 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751213AbZCIMaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751284AbZCIMdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751213AbZCIMaQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 08:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbZCIM35
+	id S1751284AbZCIMdQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 08:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbZCIMc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 08:29:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35706
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751074AbZCIM34 (ORCPT
+	Mon, 9 Mar 2009 08:32:58 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:36711 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878AbZCIMc5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 08:29:56 -0400
-Date: Mon, 09 Mar 2009 05:29:41 -0700 (PDT)
-Message-Id: <20090309.052941.227857405.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 9 Mar 2009 08:32:57 -0400
+Date: Mon, 9 Mar 2009 13:31:59 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Frans Pop <elendil@planet.nl>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: [PATCH] Fix fixpoint divide exception in acct_update_integrals
+Message-ID: <20090309133159.1ef09c7b@osiris.boeblingen.de.ibm.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-1) Fix races between network object removal and sysfs accesses.
-   From Stephen Hemminger.
+Frans Pop reported the crash below when running an s390 kernel under Hercules:
 
-2) netlink_set_err() accidently returns negated error codes, from
-   Pablo Neira Ayuso.
+ 17180168.889947! Kernel BUG at 000738b4  verbose debug info unavailable!
+ 17180168.890213! fixpoint divide exception: 0009  #1! SMP
+ 17180168.890487! Modules linked in: nfs lockd nfs_acl sunrpc ctcm fsm tape_34xx
+    cu3088 tape ccwgroup tape_class ext3 jbd mbcache dm_mirror dm_log dm_snapshot
+    dm_mod dasd_eckd_mod dasd_mod
+ 17180168.891891! CPU: 0 Not tainted 2.6.27.19 #13
+ 17180168.892116! Process awk (pid: 2069, task: 0f9ed9b8, ksp: 0f4f7d18)
+ 17180168.892371! Krnl PSW : 070c1000 800738b4 (acct_update_integrals+0x4c/0x118)
+ 17180168.892830!            R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:1 PM:0
+ 17180168.893115! Krnl GPRS: 00000000 000007d0 7fffffff fffff830
+ 17180168.893376!            00000000 ffffffff 00000002 0f9ed9b8
+ 17180168.893621!            00000000 00008ca0 00000000 0f9ed9b8
+ 17180168.893873!            0f9edda4 8007386e 0f4f7ec8 0f4f7e98
+ 17180168.894881! Krnl Code: 800738aa: a71807d0         lhi     %r1,2000
+ 17180168.895245!            800738ae: 8c200001         srdl    %r2,1
+ 17180168.895563!            800738b2: 1d21             dr      %r2,%r1
+ 17180168.895936!           >800738b4: 5810d10e         l       %r1,270(%r13)
+ 17180168.896246!            800738b8: 1823             lr      %r2,%r3
+ 17180168.896598!            800738ba: 4130f060         la      %r3,96(%r15)
+ 17180168.896913!            800738be: 0de1             basr    %r14,%r1
+ 17180168.897283!            800738c0: 5800f060         l       %r0,96(%r15)
+ 17180168.897517! Call Trace:
+ 17180168.897656! ( <000000000004fdea>! blocking_notifier_call_chain+0x1e/0x2c)
+ 17180168.897987!   <0000000000038502>! do_exit+0x106/0x7c0
+ 17180168.898275!   <0000000000038c36>! do_group_exit+0x7a/0xb4
+ 17180168.898570!   <0000000000038c8e>! SyS_exit_group+0x1e/0x30
+ 17180168.898869!   <0000000000021c28>! sysc_do_restart+0x12/0x16
+ 17180168.899173!   <0000000077e7e924>! 0x77e7e924
 
-3) A bogus change added unreasonable checks to the packet scheduler
-   rate estimator config operations, fix from Jarek Poplawski.
+Reason for this is that cpu time accounting usually only happens from
+interrupt context, but acct_update_integrals gets also called from
+process context with interrupts enabled.
 
-4) Tokenring module missing license, from Meelis Roos.
+So in acct_update_integrals we may end up with the following scenario:
 
-5) tmspci driver does request_irq() before datastructures are fully
-   setup, also from Meelis Roos.
+Between reading tsk->stime/tsk->utime and tsk->acct_timexpd an interrupt
+happens which updates accouting values. This causes acct_timexpd to be
+greater than the former stime + utime.
+The subsequent calculation of
 
-6) Tigon3 5906 link handling fix from Matt Carlson.
+dtime = cputime_sub(time, tsk->acct_timexpd);
 
-7) Resolve bonding ipv6 regression, an identical situation wrt. SCTP,
-   and all such possible problems in the future.
+will be negative and the division performed by
 
-   If a module wants to do anything non-trivial with ipv6 such as
-   access the neighbour discovery cache or similar (this is what
-   the bonding ipv6 code needs to do) it has to reference symbols
-   in the ipv6 module and thus gets a dependency upon it.
+cputime_to_jiffies(dtime)
 
-   Note that these aren't the kinds of routines we can export into a
-   seperate library module, like we could (and in fact already do) for
-   ipv6 header parsing helper functions and stuff like that.  The stuff
-   we are talking about here is stateful.
+will generate an exception since the result won't fit into a 32 bit
+register.
 
-   This situation creates a problem because when people want to
-   disable IPV6 for whatever reason, they simply disable the ipv6
-   module entirely in their /etc/modules.conf They do this for a
-   number of reasons, often it's because of application issues or they
-   have a site-wide policy to disable ipv6 on their networks, etc.
-   They do it this way because distributions, of course, enable
-   everything.  So it's not a matter of "changing a kernel option."
+In order to fix this just always disable interrupts while accessing any
+of the accounting values.
 
-   Therefore, with such ipv6 dependencies, if you disable ipv6 you
-   also lose bonding and whatever else has a dependency on ipv6, which
-   is undesirable.  Like bonding, SCTP has this problem too.
+Reported by: Frans Pop <elendil@planet.nl>
+Tested by: Frans Pop <elendil@planet.nl>
+Cc: stable@kernel.org
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ kernel/tsacct.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-   So add a 'disable' module option to ipv6 which simply causes it to
-   disallow ipv6 socket creation and also makes it not add default
-   ipv6 addresses to any interfaces.
-
-   As a result it can be loaded and thus dependencies can be ipv6
-   satisfied.
-
-   We discussed alternatives like making a "bonding_ipv6.ko" module
-   but there is no way to automatically load it.  It would need to be
-   loaded by hand, which is really an awful user experience.
-
-   These changes were from Brian Haley.
-
-8) Network namespace crash fixes from Eric W. Biederman.
-
-9) vlan-in-vlan were broken by some of the netdev_ops changes,
-   with help from Patrick McHardy.
-
-10) Some new device support in smc911x, dm9601, and rt2x00 drivers.
-
-11) SCTP bug fixes from Vlad Yasevich and co.
-
-12) Several wireless fixes via John Linville and the wireless folks.
-
-Please pull, thanks a lot!
-
-The following changes since commit 7a203f3b089be4410fe065dd9927027eade94557:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../drzeus/mmc
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Brian Haley (2):
-      IPv6: add "disable" module parameter support to ipv6.ko
-      SCTP: change sctp_ctl_sock_init() to try IPv4 if IPv6 fails
-
-Christian Lamparter (1):
-      p54: fix race condition in memory management
-
-Daniel Lezcano (1):
-      netns: fix addrconf_ifdown kernel panic
-
-David S. Miller (3):
-      net: Fix missing dev->neigh_setup in register_netdevice().
-      vlan: Fix vlan-in-vlan crashes.
-      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
-
-Eric W. Biederman (3):
-      netns: Fix icmp shutdown.
-      tcp: Like icmp use register_pernet_subsys
-      netns: Remove net_alive
-
-Jarek Poplawski (1):
-      pkt_sched: act_police: Fix a rate estimator test.
-
-Matt Carlson (1):
-      tg3: Fix 5906 link problems
-
-Meelis Roos (2):
-      net: fix tokenring license
-      tmspci: fix request_irq race
-
-Pablo Neira Ayuso (1):
-      netlink: invert error code in netlink_set_err()
-
-Patrick McHardy (1):
-      bonding: Fix device passed into ->ndo_neigh_setup().
-
-Peter Korsgaard (1):
-      dm9601: new vendor/product IDs
-
-Reinette Chatre (1):
-      iwlwifi: fix error flow in iwl*_pci_probe
-
-Roel Kluin (5):
-      net: more timeouts that reach -1
-      net pcmcia: worklimit reaches -1
-      aoe: error printed 1 too early
-      sungem: another error printed one too early
-      cfg80211: test before subtraction on unsigned
-
-Russell King (1):
-      OMAP: enable smc911x support for LDP platform
-
-Stephen Hemminger (2):
-      net: Avoid race between network down and sysfs
-      ipv6: Fix sysctl unregistration deadlock
-
-Vlad Yasevich (1):
-      sctp: fix crash during module unload
-
-Wei Yongjun (1):
-      sctp: fix kernel panic with ERROR chunk containing too many error causes
-
-Xose Vazquez Perez (2):
-      rt2x00 : more devices to rt2500usb.c
-      rt2x00 : more devices to rt73usb.c
-
- Documentation/networking/ipv6.txt           |   35 +++++++++++++++
- arch/arm/mach-omap2/board-ldp.c             |    2 +-
- drivers/block/aoe/aoedev.c                  |    2 +-
- drivers/net/arm/ks8695net.c                 |    2 +-
- drivers/net/bonding/bond_main.c             |    2 +-
- drivers/net/jme.c                           |    3 +-
- drivers/net/pcmcia/3c574_cs.c               |    3 +-
- drivers/net/pcmcia/3c589_cs.c               |    3 +-
- drivers/net/smc911x.h                       |   12 +++++
- drivers/net/sungem.c                        |    2 +-
- drivers/net/tg3.c                           |    3 +-
- drivers/net/tokenring/tmspci.c              |   18 ++++----
- drivers/net/ucc_geth_mii.c                  |    4 +-
- drivers/net/usb/dm9601.c                    |    4 ++
- drivers/net/wireless/iwlwifi/iwl-agn.c      |    6 ++-
- drivers/net/wireless/iwlwifi/iwl3945-base.c |   17 +++----
- drivers/net/wireless/p54/p54common.c        |    9 +++-
- drivers/net/wireless/rt2x00/rt2500usb.c     |    8 ++++
- drivers/net/wireless/rt2x00/rt73usb.c       |   32 ++++++++++++++-
- include/linux/netdevice.h                   |    1 +
- include/net/net_namespace.h                 |   27 +++++++----
- net/802/tr.c                                |    2 +
- net/8021q/vlan_dev.c                        |    3 +-
- net/core/dev.c                              |   61 +++++++++++++++------------
- net/core/net-sysfs.c                        |    4 +-
- net/core/net_namespace.c                    |    3 -
- net/ipv4/icmp.c                             |    2 +-
- net/ipv4/tcp_ipv4.c                         |    2 +-
- net/ipv6/addrconf.c                         |   53 +++++++----------------
- net/ipv6/af_inet6.c                         |   21 +++++++--
- net/netlink/af_netlink.c                    |   10 ++++-
- net/sched/act_police.c                      |   13 +++---
- net/sctp/protocol.c                         |   16 ++++---
- net/sctp/sm_sideeffect.c                    |   60 ++++++++++++++++----------
- net/sctp/sm_statefuns.c                     |   16 +------
- net/wireless/reg.c                          |    3 +-
- 36 files changed, 289 insertions(+), 175 deletions(-)
- create mode 100644 Documentation/networking/ipv6.txt
+Index: linux-2.6/kernel/tsacct.c
+===================================================================
+--- linux-2.6.orig/kernel/tsacct.c
++++ linux-2.6/kernel/tsacct.c
+@@ -122,8 +122,10 @@ void acct_update_integrals(struct task_s
+ 	if (likely(tsk->mm)) {
+ 		cputime_t time, dtime;
+ 		struct timeval value;
++		unsigned long flags;
+ 		u64 delta;
+ 
++		local_irq_save(flags);
+ 		time = tsk->stime + tsk->utime;
+ 		dtime = cputime_sub(time, tsk->acct_timexpd);
+ 		jiffies_to_timeval(cputime_to_jiffies(dtime), &value);
+@@ -131,10 +133,12 @@ void acct_update_integrals(struct task_s
+ 		delta = delta * USEC_PER_SEC + value.tv_usec;
+ 
+ 		if (delta == 0)
+-			return;
++			goto out;
+ 		tsk->acct_timexpd = time;
+ 		tsk->acct_rss_mem1 += delta * get_mm_rss(tsk->mm);
+ 		tsk->acct_vm_mem1 += delta * tsk->mm->total_vm;
++	out:
++		local_irq_restore(flags);
+ 	}
+ }
+ 
