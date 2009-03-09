@@ -1,63 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890AbZCIIMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbZCIIRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752890AbZCIIMu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 04:12:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbZCIIMe
+	id S1752587AbZCIIRr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 04:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbZCIIRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 04:12:34 -0400
-Received: from mga02.intel.com ([134.134.136.20]:13542 "EHLO mga02.intel.com"
+	Mon, 9 Mar 2009 04:17:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35389 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751796AbZCIIMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 04:12:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,328,1233561600"; 
-   d="scan'208";a="496174710"
-Date: Mon, 9 Mar 2009 16:13:37 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v10 3/7] PCI: reserve bus range for SR-IOV device
-Message-ID: <20090309081337.GB4638@yzhao-otc.sh.intel.com>
-References: <1235112888-9524-1-git-send-email-yu.zhao@intel.com> <1235112888-9524-4-git-send-email-yu.zhao@intel.com> <20090306202024.GF25995@parisc-linux.org>
+	id S1751233AbZCIIRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 04:17:36 -0400
+Message-ID: <49B4D03D.7030205@kernel.org>
+Date: Mon, 09 Mar 2009 01:15:57 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090306202024.GF25995@parisc-linux.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: put initial_pg_tables into .bss -v4
+References: <1235785882-17580-1-git-send-email-jeremy@goop.org> <1235785882-17580-4-git-send-email-jeremy@goop.org> <86802c440902272302n3787b2bex3741b46a372a19b0@mail.gmail.com> <49A8E235.6010900@goop.org> <20090228071534.GB9351@elte.hu> <49A8EA1A.50802@kernel.org> <49A8ED3D.1060704@kernel.org> <49A8F319.3030802@goop.org> <49A9E392.6090004@kernel.org> <49AA47D2.4020804@kernel.org> <49AA5356.3050602@zytor.com> <49AACEB3.5050206@kernel.org> <49AB1A5C.6040300@zytor.com> <49AB2E69.1010201@kernel.org>
+In-Reply-To: <49AB2E69.1010201@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 07, 2009 at 04:20:24AM +0800, Matthew Wilcox wrote:
-> On Fri, Feb 20, 2009 at 02:54:44PM +0800, Yu Zhao wrote:
-> > +static inline void virtfn_bdf(struct pci_dev *dev, int id, u8 *busnr, u8 *devfn)
-> > +{
-> > +	u16 bdf;
-> > +
-> > +	bdf = (dev->bus->number << 8) + dev->devfn +
-> > +	      dev->sriov->offset + dev->sriov->stride * id;
-> > +	*busnr = bdf >> 8;
-> > +	*devfn = bdf & 0xff;
-> > +}
-> 
-> I find the interface here a bit clunky -- a function returning void
-> while having two OUT parameters.  How about this variation on the theme
-> (viewers are encouraged to come up with their own preferred
-> implementations and interfaces):
-> 
-> static inline __pure u16 virtfn_bdf(struct pci_dev *dev, int id)
-> {
-> 	return (dev->bus->number << 8) + dev->devfn + dev->sriov->offset +
-> 		dev->sriov->stride * id;
-> }
-> 
-> #define VIRT_BUS(dev, id)	(virtfn_bdf(dev, id) >> 8)
-> #define VIRT_DEVFN(dev, id)	(virtfn_bdf(dev, id) & 0xff)
-> 
-> We rely on GCC to do CSE and not actually invoke virtfn_bdf more than
-> once.
 
-Yes, that's a good idea. Will replace that function with macros.
+Impact: cleanup
+
+Don't use ram after _end blindly for pagetables. aka init pages is before _end
+put those pg table into .bss
+
+v2: keep initial page table up to 512M only.
+v4: put initial page tables just before _end
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/include/asm/page_32_types.h |    5 +++
+ arch/x86/kernel/head32.c             |    3 +
+ arch/x86/kernel/head_32.S            |   55 ++++++++++++++---------------------
+ arch/x86/kernel/vmlinux_32.lds.S     |   11 ++++++-
+ 4 files changed, 40 insertions(+), 34 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/head32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/head32.c
++++ linux-2.6/arch/x86/kernel/head32.c
+@@ -18,7 +18,8 @@ void __init i386_start_kernel(void)
+ {
+ 	reserve_trampoline_memory();
+ 
+-	reserve_early(__pa_symbol(&_text), __pa_symbol(&_end), "TEXT DATA BSS");
++	reserve_early(__pa_symbol(&_text), __pa_symbol(&__bss_stop),
++			 "TEXT DATA BSS");
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	/* Reserve INITRD */
+Index: linux-2.6/arch/x86/kernel/head_32.S
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/head_32.S
++++ linux-2.6/arch/x86/kernel/head_32.S
+@@ -38,42 +38,30 @@
+ #define X86_VENDOR_ID	new_cpu_data+CPUINFO_x86_vendor_id
+ 
+ /*
+- * This is how much memory *in addition to the memory covered up to
+- * and including _end* we need mapped initially.
+- * We need:
+- *  - one bit for each possible page, but only in low memory, which means
+- *     2^32/4096/8 = 128K worst case (4G/4G split.)
++ * This is how much memory for page table to and including _end
++ * we need mapped initially.
+  *  - enough space to map all low memory, which means
+- *     (2^32/4096) / 1024 pages (worst case, non PAE)
+- *     (2^32/4096) / 512 + 4 pages (worst case for PAE)
+- *  - a few pages for allocator use before the kernel pagetable has
+- *     been set up
++ *     (KERNEL_IMAGE_SIZE/4096) / 1024 pages (worst case, non PAE)
++ *     (KERNEL_IMAGE_SIZE/4096) / 512 + 4 pages (worst case for PAE)
+  *
+  * Modulo rounding, each megabyte assigned here requires a kilobyte of
+  * memory, which is currently unreclaimed.
+  *
+  * This should be a multiple of a page.
++ *
++ * KERNEL_IMAGE_SIZE should be greater than pa(_end)
++ * and small than max_low_pfn, otherwise will waste some page table entries
+  */
+-LOW_PAGES = 1<<(32-PAGE_SHIFT_asm)
+-
+-/*
+- * To preserve the DMA pool in PAGEALLOC kernels, we'll allocate
+- * pagetables from above the 16MB DMA limit, so we'll have to set
+- * up pagetables 16MB more (worst-case):
+- */
+-#if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KMEMCHECK)
+-LOW_PAGES = LOW_PAGES + 0x1000000
+-#endif
++LOW_PAGES = (KERNEL_IMAGE_SIZE + PAGE_SIZE_asm - 1)>>PAGE_SHIFT
+ 
+ #if PTRS_PER_PMD > 1
+ PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PMD) + PTRS_PER_PGD
+ #else
+ PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PGD)
+ #endif
+-BOOTBITMAP_SIZE = LOW_PAGES / 8
+ ALLOCATOR_SLOP = 4
+ 
+-INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE + ALLOCATOR_SLOP)*PAGE_SIZE_asm
++INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
+ 
+ /*
+  * 32-bit kernel entrypoint; only used by the boot CPU.  On entry,
+@@ -166,10 +154,9 @@ num_subarch_entries = (. - subarch_entri
+ 
+ /*
+  * Initialize page tables.  This creates a PDE and a set of page
+- * tables, which are located immediately beyond _end.  The variable
+- * init_pg_tables_end is set up to point to the first "safe" location.
++ * tables, which are located immediately beyond _end.
+  * Mappings are created both at virtual address 0 (identity mapping)
+- * and PAGE_OFFSET for up to _end+sizeof(page tables)+INIT_MAP_BEYOND_END.
++ * and PAGE_OFFSET for up to _end
+  *
+  * Note that the stack is not yet set up!
+  */
+@@ -209,14 +196,14 @@ default_entry:
+ 	loop 11b
+ 
+ 	/*
+-	 * End condition: we must map up to and including INIT_MAP_BEYOND_END
+-	 * bytes beyond the end of our own page tables.
++	 * End condition: we must map up to the end.
+ 	 */
+-	leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
++	movl $pa(_end), %ebp
++	addl PTE_IDENT_ATTR, %ebp
+ 	cmpl %ebp,%eax
+ 	jb 10b
+ 1:
+-	movl %edi,pa(init_pg_tables_end)
++	movl %edi, pa(init_pg_tables_end)
+ 	shrl $12, %eax
+ 	movl %eax, pa(max_pfn_mapped)
+ 
+@@ -242,14 +229,14 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
+ 	addl $0x1000,%eax
+ 	loop 11b
+ 	/*
+-	 * End condition: we must map up to and including INIT_MAP_BEYOND_END
+-	 * bytes beyond the end of our own page tables; the +0x007 is
++	 * End condition: we must map up to end, the +0x007 is
+ 	 * the attribute bits
+ 	 */
+-	leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
++	movl $pa(_end), %ebp
++	addl PTE_IDENT_ATTR, %ebp
+ 	cmpl %ebp,%eax
+ 	jb 10b
+-	movl %edi,pa(init_pg_tables_end)
++	movl %edi, pa(init_pg_tables_end)
+ 	shrl $12, %eax
+ 	movl %eax, pa(max_pfn_mapped)
+ 
+@@ -636,6 +623,10 @@ swapper_pg_fixmap:
+ 	.fill 1024,4,0
+ ENTRY(empty_zero_page)
+ 	.fill 4096,1,0
++
++.section ".bss.extra_page_aligned","wa"
++	.align PAGE_SIZE_asm
++	.fill INIT_MAP_SIZE,1,0
+ /*
+  * This starts the data section.
+  */
+Index: linux-2.6/arch/x86/kernel/vmlinux_32.lds.S
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/vmlinux_32.lds.S
++++ linux-2.6/arch/x86/kernel/vmlinux_32.lds.S
+@@ -189,10 +189,13 @@ SECTIONS
+ 	*(.bss)
+ 	. = ALIGN(4);
+ 	__bss_stop = .;
+-  	_end = . ;
++	/* extra_page_aligned must be last one before end*/
+ 	/* This is where the kernel creates the early boot page tables */
+ 	. = ALIGN(PAGE_SIZE);
+ 	pg0 = . ;
++	*(.bss.extra_page_aligned)
++	. = ALIGN(8);
++	_end = . ;
+   }
+ 
+   /* Sections to be discarded */
+@@ -205,6 +208,12 @@ SECTIONS
+   DWARF_DEBUG
+ }
+ 
++/*
++ * Build-time check on the image size:
++ */
++ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
++	"kernel image bigger than KERNEL_IMAGE_SIZE")
++
+ #ifdef CONFIG_KEXEC
+ /* Link time checks */
+ #include <asm/kexec.h>
+Index: linux-2.6/arch/x86/include/asm/page_32_types.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/page_32_types.h
++++ linux-2.6/arch/x86/include/asm/page_32_types.h
+@@ -39,6 +39,11 @@
+ #define __VIRTUAL_MASK_SHIFT	32
+ #endif	/* CONFIG_X86_PAE */
+ 
++/*
++ * Kernel image size is limited to 512 MB (see in arch/x86/kernel/head_32.S)
++ */
++#define KERNEL_IMAGE_SIZE	(512 * 1024 * 1024)
++
+ #ifndef __ASSEMBLY__
+ 
+ /*
