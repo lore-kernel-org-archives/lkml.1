@@ -1,1166 +1,1047 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbZCIWoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbZCIWor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbZCIWoB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 18:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbZCIWlD
+	id S1755468AbZCIWor (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 18:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbZCIWlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 18:41:03 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:50064 "EHLO
+	Mon, 9 Mar 2009 18:41:13 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:50088 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752954AbZCIWkW (ORCPT
+	with ESMTP id S1753906AbZCIWkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 18:40:22 -0400
+	Mon, 9 Mar 2009 18:40:25 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 04/20] ceph: super.c
-Date: Mon,  9 Mar 2009 15:40:23 -0700
-Message-Id: <1236638439-6753-5-git-send-email-sage@newdream.net>
+Subject: [PATCH 11/20] ceph: CRUSH mapping algorithm
+Date: Mon,  9 Mar 2009 15:40:30 -0700
+Message-Id: <1236638439-6753-12-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1236638439-6753-4-git-send-email-sage@newdream.net>
+In-Reply-To: <1236638439-6753-11-git-send-email-sage@newdream.net>
 References: <1236638439-6753-1-git-send-email-sage@newdream.net>
  <1236638439-6753-2-git-send-email-sage@newdream.net>
  <1236638439-6753-3-git-send-email-sage@newdream.net>
  <1236638439-6753-4-git-send-email-sage@newdream.net>
+ <1236638439-6753-5-git-send-email-sage@newdream.net>
+ <1236638439-6753-6-git-send-email-sage@newdream.net>
+ <1236638439-6753-7-git-send-email-sage@newdream.net>
+ <1236638439-6753-8-git-send-email-sage@newdream.net>
+ <1236638439-6753-9-git-send-email-sage@newdream.net>
+ <1236638439-6753-10-git-send-email-sage@newdream.net>
+ <1236638439-6753-11-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mount option parsing, client setup and teardown, and a few odds and
-ends (e.g., statfs).
+CRUSH is a fancy hash function designed to map inputs onto a dynamic
+hierarchy of devices while minimizing the extent to which inputs are
+remapped when the devices are added or removed.  It includes some
+features that are specifically useful for storage, most notably the
+ability to map each input onto a set of N devices that are separated
+across administrator-defined failure domains.  CRUSH is used to
+distribute data across the cluster of Ceph storage nodes.
+
+More information about CRUSH can be found in this paper:
+
+    http://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/ceph/super.c | 1120 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 1120 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/super.c
+ fs/ceph/crush/crush.c  |  139 +++++++++++++
+ fs/ceph/crush/crush.h  |  179 ++++++++++++++++
+ fs/ceph/crush/hash.h   |   80 +++++++
+ fs/ceph/crush/mapper.c |  536 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ceph/crush/mapper.h |   19 ++
+ 5 files changed, 953 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/crush/crush.c
+ create mode 100644 fs/ceph/crush/crush.h
+ create mode 100644 fs/ceph/crush/hash.h
+ create mode 100644 fs/ceph/crush/mapper.c
+ create mode 100644 fs/ceph/crush/mapper.h
 
-diff --git a/fs/ceph/super.c b/fs/ceph/super.c
+diff --git a/fs/ceph/crush/crush.c b/fs/ceph/crush/crush.c
 new file mode 100644
-index 0000000..a15790e
+index 0000000..c77c7e8
 --- /dev/null
-+++ b/fs/ceph/super.c
-@@ -0,0 +1,1120 @@
-+#include <linux/module.h>
-+#include <linux/parser.h>
-+#include <linux/fs.h>
-+#include <linux/mount.h>
-+#include <linux/rwsem.h>
-+#include <linux/seq_file.h>
-+#include <linux/sched.h>
-+#include <linux/string.h>
-+#include <linux/version.h>
-+#include <linux/backing-dev.h>
-+#include <linux/statfs.h>
++++ b/fs/ceph/crush/crush.c
+@@ -0,0 +1,139 @@
 +
-+/* debug levels; defined in super.h */
++#ifdef __KERNEL__
++# include <linux/slab.h>
++# include "../bookkeeper.h"
++#else
++# include <stdlib.h>
++# include <assert.h>
++# define kfree(x) do { if (x) free(x); } while (0)
++# define BUG_ON(x) assert(!(x))
++#endif
 +
-+#include "ceph_debug.h"
-+#include "ceph_ver.h"
-+#include "bookkeeper.h"
-+
-+/*
-+ * global debug value.
-+ *  0 = quiet.
-+ *
-+ * if the per-file debug level >= 0, then that overrides this  global
-+ * debug level.
-+ */
-+int ceph_debug __read_mostly = 1;
-+int ceph_debug_mask __read_mostly = 0xffffffff;
-+/* if true, send output to KERN_INFO (console) instead of KERN_DEBUG. */
-+int ceph_debug_console __read_mostly;
-+int ceph_debug_super __read_mostly = -1;   /* for this file */
-+
-+#define DOUT_MASK DOUT_MASK_SUPER
-+#define DOUT_VAR ceph_debug_super
-+#include "super.h"
-+
-+#include "mon_client.h"
-+
-+void ceph_dispatch(void *p, struct ceph_msg *msg);
-+void ceph_peer_reset(void *p, struct ceph_entity_addr *peer_addr,
-+		     struct ceph_entity_name *peer_name);
-+
-+/*
-+ * super ops
-+ */
-+static int ceph_write_inode(struct inode *inode, int unused)
-+{
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+
-+	if (memcmp(&ci->i_old_atime, &inode->i_atime, sizeof(struct timeval))) {
-+		dout(30, "ceph_write_inode %llx.%llx .. atime updated\n",
-+		     ceph_vinop(inode));
-+		/* maybe someday we will push this async to mds? */
-+	}
-+	return 0;
-+}
-+
-+static void ceph_put_super(struct super_block *s)
-+{
-+	struct ceph_client *cl = ceph_client(s);
-+	int rc;
-+	int seconds = 15;
-+
-+	dout(30, "put_super\n");
-+	ceph_mdsc_close_sessions(&cl->mdsc);
-+	ceph_monc_request_umount(&cl->monc);
-+
-+	if (cl->mount_state != CEPH_MOUNT_SHUTDOWN) {
-+		rc = wait_event_timeout(cl->mount_wq,
-+				(cl->mount_state == CEPH_MOUNT_UNMOUNTED),
-+				seconds*HZ);
-+		if (rc == 0)
-+			derr(0, "umount timed out after %d seconds\n", seconds);
-+	}
-+
-+	return;
-+}
-+
-+static int ceph_statfs(struct dentry *dentry, struct kstatfs *buf)
-+{
-+	struct ceph_client *client = ceph_inode_to_client(dentry->d_inode);
-+	struct ceph_monmap *monmap = client->monc.monmap;
-+	struct ceph_statfs st;
-+	__le64 fsid;
-+	int err;
-+
-+	dout(30, "statfs\n");
-+	err = ceph_monc_do_statfs(&client->monc, &st);
-+	if (err < 0)
-+		return err;
-+
-+	/* fill in kstatfs */
-+	buf->f_type = CEPH_SUPER_MAGIC;  /* ?? */
-+
-+	/*
-+	 * express utilization in terms of large blocks to avoid
-+	 * overflow on 32-bit machines.
-+	 */
-+	buf->f_bsize = 1 << CEPH_BLOCK_SHIFT;     /* 1 MB */
-+	buf->f_blocks = le64_to_cpu(st.f_total) >> (CEPH_BLOCK_SHIFT-10);
-+	buf->f_bfree = le64_to_cpu(st.f_free) >> (CEPH_BLOCK_SHIFT-10);
-+	buf->f_bavail = le64_to_cpu(st.f_avail) >> (CEPH_BLOCK_SHIFT-10);
-+
-+	buf->f_files = le64_to_cpu(st.f_objects);
-+	buf->f_ffree = -1;
-+	buf->f_namelen = PATH_MAX;
-+	buf->f_frsize = PAGE_CACHE_SIZE;
-+
-+	/* leave in little-endian, regardless of host endianness */
-+	fsid = __ceph_fsid_major(&monmap->fsid) ^ __ceph_fsid_minor(&monmap->fsid);
-+	buf->f_fsid.val[0] = le64_to_cpu(fsid) & 0xffffffff;
-+	buf->f_fsid.val[1] = le64_to_cpu(fsid) >> 32;
-+
-+	return 0;
-+}
-+
-+
-+static int ceph_syncfs(struct super_block *sb, int wait)
-+{
-+	dout(10, "sync_fs %d\n", wait);
-+	return 0;
-+}
-+
++#include "crush.h"
 +
 +/**
-+ * ceph_show_options - Show mount options in /proc/mounts
-+ * @m: seq_file to write to
-+ * @mnt: mount descriptor
++ * crush_get_bucket_item_weight - Get weight of an item in given bucket
++ * @b: bucket pointer
++ * @p: item index in bucket
 + */
-+static int ceph_show_options(struct seq_file *m, struct vfsmount *mnt)
++int crush_get_bucket_item_weight(struct crush_bucket *b, int p)
 +{
-+	struct ceph_client *client = ceph_sb_to_client(mnt->mnt_sb);
-+	struct ceph_mount_args *args = &client->mount_args;
++	if (p >= b->size)
++		return 0;
 +
-+	if (ceph_debug != 0)
-+		seq_printf(m, ",debug=%d", ceph_debug);
-+	if (args->flags & CEPH_MOUNT_FSID)
-+		seq_printf(m, ",fsidmajor=%llu,fsidminor%llu",
-+			   __ceph_fsid_major(&args->fsid), __ceph_fsid_minor(&args->fsid));
-+	if (args->flags & CEPH_MOUNT_NOSHARE)
-+		seq_puts(m, ",noshare");
-+	if (args->flags & CEPH_MOUNT_UNSAFE_WRITEBACK)
-+		seq_puts(m, ",unsafewriteback");
-+	if (args->flags & CEPH_MOUNT_DIRSTAT)
-+		seq_puts(m, ",dirstat");
-+	else
-+		seq_puts(m, ",nodirstat");
-+	if (args->flags & CEPH_MOUNT_RBYTES)
-+		seq_puts(m, ",rbytes");
-+	else
-+		seq_puts(m, ",norbytes");
-+	if (args->flags & CEPH_MOUNT_NOCRC)
-+		seq_puts(m, ",nocrc");
++ 	switch (b->alg) {
++	case CRUSH_BUCKET_UNIFORM:
++		return ((struct crush_bucket_uniform*)b)->item_weight;
++	case CRUSH_BUCKET_LIST:
++		return ((struct crush_bucket_list*)b)->item_weights[p];
++	case CRUSH_BUCKET_TREE:
++		if (p & 1)
++			return ((struct crush_bucket_tree*)b)->node_weights[p];
++		return 0;
++	case CRUSH_BUCKET_STRAW:
++		return ((struct crush_bucket_straw*)b)->item_weights[p];
++	}
 +	return 0;
 +}
++
++/**
++ * crush_calc_parents - Calculate parent vectors for the given crush map.
++ * @map: crush_map pointer
++ */
++void crush_calc_parents(struct crush_map *map)
++{
++	int i, b, c;
++
++	for (b = 0; b < map->max_buckets; b++) {
++		if (map->buckets[b] == NULL)
++			continue;
++		for (i = 0; i < map->buckets[b]->size; i++) {
++			c = map->buckets[b]->items[i];
++			BUG_ON(c >= map->max_devices ||
++			       c < -map->max_buckets);
++			if (c >= 0)
++				map->device_parents[c] = map->buckets[b]->id;
++			else
++				map->bucket_parents[-1-c] = map->buckets[b]->id;
++		}
++	}
++}
++
++void crush_destroy_bucket_uniform(struct crush_bucket_uniform *b)
++{
++	kfree(b->primes);
++	kfree(b->h.items);
++	kfree(b);
++}
++
++void crush_destroy_bucket_list(struct crush_bucket_list *b)
++{
++	kfree(b->item_weights);
++	kfree(b->sum_weights);
++	kfree(b->h.items);
++	kfree(b);
++}
++
++void crush_destroy_bucket_tree(struct crush_bucket_tree *b)
++{
++	kfree(b->node_weights);
++	kfree(b);
++}
++
++void crush_destroy_bucket_straw(struct crush_bucket_straw *b)
++{
++	kfree(b->straws);
++	kfree(b->item_weights);
++	kfree(b->h.items);
++	kfree(b);
++}
++
++void crush_destroy_bucket(struct crush_bucket *b)
++{
++	switch (b->alg) {
++	case CRUSH_BUCKET_UNIFORM:
++		crush_destroy_bucket_uniform((struct crush_bucket_uniform *)b);
++		break;
++	case CRUSH_BUCKET_LIST:
++		crush_destroy_bucket_list((struct crush_bucket_list *)b);
++		break;
++	case CRUSH_BUCKET_TREE:
++		crush_destroy_bucket_tree((struct crush_bucket_tree *)b);
++		break;
++	case CRUSH_BUCKET_STRAW:
++		crush_destroy_bucket_straw((struct crush_bucket_straw *)b);
++		break;
++	}
++}
++
++/**
++ * crush_destroy - Destroy a crush_map
++ * @map: crush_map pointer
++ */
++void crush_destroy(struct crush_map *map)
++{
++	int b;
++
++	/* buckets */
++	if (map->buckets) {
++		for (b = 0; b < map->max_buckets; b++) {
++			if (map->buckets[b] == NULL)
++				continue;
++			crush_destroy_bucket(map->buckets[b]);
++		}
++		kfree(map->buckets);
++	}
++
++	/* rules */
++	if (map->rules) {
++		for (b = 0; b < map->max_rules; b++)
++			kfree(map->rules[b]);
++		kfree(map->rules);
++	}
++
++	kfree(map->bucket_parents);
++	kfree(map->device_parents);
++	kfree(map);
++}
++
++
+diff --git a/fs/ceph/crush/crush.h b/fs/ceph/crush/crush.h
+new file mode 100644
+index 0000000..e25976b
+--- /dev/null
++++ b/fs/ceph/crush/crush.h
+@@ -0,0 +1,179 @@
++#ifndef _CRUSH_CRUSH_H
++#define _CRUSH_CRUSH_H
++
++#include <linux/types.h>
++
++/*
++ * CRUSH is a pseudo-random data distribution algorithm that
++ * efficiently distributes input values (typically, data objects)
++ * across a heterogeneous, structured storage cluster.
++ *
++ * The algorithm was originally described in detail in this paper
++ * (although the algorithm has evolved somewhat since then):
++ *
++ *     http://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf
++ *
++ * LGPL2
++ */
++
++
++#define CRUSH_MAGIC 0x00010000ul
++
++
++#define CRUSH_MAX_DEPTH 10
++#define CRUSH_MAX_SET   10
 +
 +
 +/*
-+ * inode cache
++ * CRUSH uses user-defined "rules" to describe how inputs should be
++ * mapped to devices.  A rule consists of sequence of steps to perform
++ * to generate the set of output devices.
 + */
-+struct kmem_cache *ceph_inode_cachep;
-+
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27)
-+static void init_once(void *foo)
-+#else
-+static void init_once(struct kmem_cache *cachep, void *foo)
-+#endif
-+{
-+	struct ceph_inode_info *ci = foo;
-+	inode_init_once(&ci->vfs_inode);
-+}
-+
-+static int init_inodecache(void)
-+{
-+	ceph_inode_cachep = kmem_cache_create("ceph_inode_cache",
-+					      sizeof(struct ceph_inode_info),
-+					      0, (SLAB_RECLAIM_ACCOUNT|
-+						  SLAB_MEM_SPREAD),
-+					      init_once);
-+	if (ceph_inode_cachep == NULL)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+static void destroy_inodecache(void)
-+{
-+	kmem_cache_destroy(ceph_inode_cachep);
-+}
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26)
-+static void ceph_umount_begin(struct vfsmount *vfsmnt, int flags)
-+#else
-+static void ceph_umount_begin(struct super_block *sb)
-+#endif
-+{
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26)
-+	struct ceph_client *client = ceph_sb_to_client(vfsmnt->mnt_sb);
-+#else
-+	struct ceph_client *client = ceph_sb_to_client(sb);
-+#endif
-+
-+	dout(30, "ceph_umount_begin\n");
-+
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26)
-+	if (!(flags & MNT_FORCE))
-+		return;
-+#endif
-+
-+	if (!client)
-+		return;
-+
-+	client->mount_state = CEPH_MOUNT_SHUTDOWN;
-+	return;
-+}
-+
-+
-+static const struct super_operations ceph_super_ops = {
-+	.alloc_inode	= ceph_alloc_inode,
-+	.destroy_inode	= ceph_destroy_inode,
-+	.write_inode    = ceph_write_inode,
-+	.sync_fs        = ceph_syncfs,
-+	.put_super	= ceph_put_super,
-+	.show_options   = ceph_show_options,
-+	.statfs		= ceph_statfs,
-+	.umount_begin   = ceph_umount_begin,
++struct crush_rule_step {
++	__u32 op;
++	__s32 arg1;
++	__s32 arg2;
 +};
 +
++/* step op codes */
++enum {
++	CRUSH_RULE_NOOP = 0,
++	CRUSH_RULE_TAKE = 1,          /* arg1 = value to start with */
++	CRUSH_RULE_CHOOSE_FIRSTN = 2, /* arg1 = num items to pick */
++	                              /* arg2 = type */
++	CRUSH_RULE_CHOOSE_INDEP = 3,  /* same */
++	CRUSH_RULE_EMIT = 4,          /* no args */
++	CRUSH_RULE_CHOOSE_LEAF_FIRSTN = 6,
++	CRUSH_RULE_CHOOSE_LEAF_INDEP = 7,
++};
++
++/*
++ * for specifying choose num (arg1) relative to the max parameter
++ * passed to do_rule
++ */
++#define CRUSH_CHOOSE_N            0
++#define CRUSH_CHOOSE_N_MINUS(x)   (-(x))
++
++/*
++ * The rule mask is used to describe what the rule is intended for.
++ * Given a storage pool and size of output set, we search through the
++ * rule list for a matching rule_mask.
++ */
++struct crush_rule_mask {
++	__u8 pool;
++	__u8 type;
++	__u8 min_size;
++	__u8 max_size;
++};
++
++struct crush_rule {
++	__u32 len;
++	struct crush_rule_mask mask;
++	struct crush_rule_step steps[0];
++};
++
++#define crush_rule_size(len) (sizeof(struct crush_rule) + \
++			      (len)*sizeof(struct crush_rule_step))
++
 +
 +
 +/*
-+ * the monitor responds with monmap to indicate mount success.
-+ * (or, someday, to indicate a change in the monitor cluster)
++ * A bucket is a named container of other items (either devices or
++ * other buckets).  Items within a bucket are chosen using one of a
++ * few different algorithms.  The table summarizes how the speed of
++ * each option measures up against mapping stability when items are
++ * added or removed.
++ *
++ *  Bucket Alg     Speed       Additions    Removals
++ *  ------------------------------------------------
++ *  uniform         O(1)       poor         poor
++ *  list            O(n)       optimal      poor
++ *  tree            O(log n)   good         good
++ *  straw           O(n)       optimal      optimal
 + */
-+static void handle_monmap(struct ceph_client *client, struct ceph_msg *msg)
-+{
-+	int err;
-+	int first = (client->monc.monmap->epoch == 0);
-+	struct ceph_monmap *new, *old = client->monc.monmap;
-+
-+	dout(2, "handle_monmap had epoch %d\n", client->monc.monmap->epoch);
-+	new = ceph_monmap_decode(msg->front.iov_base,
-+				 msg->front.iov_base + msg->front.iov_len);
-+	if (IS_ERR(new)) {
-+		err = PTR_ERR(new);
-+		derr(0, "problem decoding monmap, %d\n", err);
-+		return;
-+	}
-+	client->monc.monmap = new;
-+	kfree(old);
-+
-+	if (first) {
-+		client->whoami = le32_to_cpu(msg->hdr.dst.name.num);
-+		client->msgr->inst.name = msg->hdr.dst.name;
-+		dout(1, "i am client%d, fsid is %llx.%llx\n", client->whoami,
-+		    le64_to_cpu(__ceph_fsid_major(&client->monc.monmap->fsid)),
-+		    le64_to_cpu(__ceph_fsid_minor(&client->monc.monmap->fsid)));
-+		ceph_sysfs_client_init(client);
-+	}
-+}
-+
-+const char *ceph_msg_type_name(int type)
-+{
-+	switch (type) {
-+	case CEPH_MSG_SHUTDOWN: return "shutdown";
-+	case CEPH_MSG_PING: return "ping";
-+	case CEPH_MSG_MON_MAP: return "mon_map";
-+	case CEPH_MSG_MON_GET_MAP: return "mon_get_map";
-+	case CEPH_MSG_CLIENT_MOUNT: return "client_mount";
-+	case CEPH_MSG_CLIENT_UNMOUNT: return "client_unmount";
-+	case CEPH_MSG_STATFS: return "statfs";
-+	case CEPH_MSG_STATFS_REPLY: return "statfs_reply";
-+	case CEPH_MSG_MDS_GETMAP: return "mds_getmap";
-+	case CEPH_MSG_MDS_MAP: return "mds_map";
-+	case CEPH_MSG_CLIENT_SESSION: return "client_session";
-+	case CEPH_MSG_CLIENT_RECONNECT: return "client_reconnect";
-+	case CEPH_MSG_CLIENT_REQUEST: return "client_request";
-+	case CEPH_MSG_CLIENT_REQUEST_FORWARD: return "client_request_forward";
-+	case CEPH_MSG_CLIENT_REPLY: return "client_reply";
-+	case CEPH_MSG_CLIENT_CAPS: return "client_caps";
-+	case CEPH_MSG_CLIENT_SNAP: return "client_snap";
-+	case CEPH_MSG_CLIENT_LEASE: return "client_lease";
-+	case CEPH_MSG_OSD_GETMAP: return "osd_getmap";
-+	case CEPH_MSG_OSD_MAP: return "osd_map";
-+	case CEPH_MSG_OSD_OP: return "osd_op";
-+	case CEPH_MSG_OSD_OPREPLY: return "osd_opreply";
++enum {
++	CRUSH_BUCKET_UNIFORM = 1,
++	CRUSH_BUCKET_LIST = 2,
++	CRUSH_BUCKET_TREE = 3,
++	CRUSH_BUCKET_STRAW = 4
++};
++static inline const char *crush_bucket_alg_name(int alg) {
++	switch (alg) {
++	case CRUSH_BUCKET_UNIFORM: return "uniform";
++	case CRUSH_BUCKET_LIST: return "list";
++	case CRUSH_BUCKET_TREE: return "tree";
++	case CRUSH_BUCKET_STRAW: return "straw";
 +	default: return "unknown";
 +	}
 +}
 +
-+/*
-+ * Called when a message socket is explicitly reset by a peer.
-+ */
-+void ceph_peer_reset(void *p, struct ceph_entity_addr *peer_addr,
-+		     struct ceph_entity_name *peer_name)
-+{
-+	struct ceph_client *client = p;
-+
-+	dout(30, "ceph_peer_reset %s%d\n", ENTITY_NAME(*peer_name));
-+	switch (le32_to_cpu(peer_name->type)) {
-+	case CEPH_ENTITY_TYPE_MDS:
-+		ceph_mdsc_handle_reset(&client->mdsc,
-+					      le32_to_cpu(peer_name->num));
-+		break;
-+	case CEPH_ENTITY_TYPE_OSD:
-+		ceph_osdc_handle_reset(&client->osdc, peer_addr);
-+		break;
-+	}
-+}
-+
-+
-+/*
-+ * mount options
-+ */
-+enum {
-+	Opt_fsidmajor,
-+	Opt_fsidminor,
-+	Opt_debug,
-+	Opt_debug_console,
-+	Opt_debug_msgr,
-+	Opt_debug_mdsc,
-+	Opt_debug_osdc,
-+	Opt_debug_addr,
-+	Opt_debug_inode,
-+	Opt_debug_snap,
-+	Opt_debug_ioctl,
-+	Opt_debug_caps,
-+	Opt_monport,
-+	Opt_port,
-+	Opt_wsize,
-+	Opt_rsize,
-+	Opt_osdtimeout,
-+	Opt_mount_timeout,
-+	/* int args above */
-+	Opt_ip,
-+	Opt_noshare,
-+	Opt_unsafewriteback,
-+	Opt_safewriteback,
-+	Opt_dirstat,
-+	Opt_nodirstat,
-+	Opt_rbytes,
-+	Opt_norbytes,
-+	Opt_nocrc,
++struct crush_bucket {
++	__s32 id;        /* this'll be negative */
++	__u16 type;      /* non-zero; type=0 is reserved for devices */
++	__u16 alg;       /* one of CRUSH_BUCKET_* */
++	__u32 weight;    /* 16-bit fixed point */
++	__u32 size;      /* num items */
++	__s32 *items;
 +};
 +
-+static match_table_t arg_tokens = {
-+	{Opt_fsidmajor, "fsidmajor=%ld"},
-+	{Opt_fsidminor, "fsidminor=%ld"},
-+	{Opt_debug, "debug=%d"},
-+	{Opt_debug_msgr, "debug_msgr=%d"},
-+	{Opt_debug_mdsc, "debug_mdsc=%d"},
-+	{Opt_debug_osdc, "debug_osdc=%d"},
-+	{Opt_debug_addr, "debug_addr=%d"},
-+	{Opt_debug_inode, "debug_inode=%d"},
-+	{Opt_debug_snap, "debug_snap=%d"},
-+	{Opt_debug_ioctl, "debug_ioctl=%d"},
-+	{Opt_debug_caps, "debug_caps=%d"},
-+	{Opt_monport, "monport=%d"},
-+	{Opt_port, "port=%d"},
-+	{Opt_wsize, "wsize=%d"},
-+	{Opt_rsize, "rsize=%d"},
-+	{Opt_osdtimeout, "osdtimeout=%d"},
-+	{Opt_mount_timeout, "mount_timeout=%d"},
-+	/* int args above */
-+	{Opt_ip, "ip=%s"},
-+	{Opt_debug_console, "debug_console"},
-+	{Opt_noshare, "noshare"},
-+	{Opt_unsafewriteback, "unsafewriteback"},
-+	{Opt_safewriteback, "safewriteback"},
-+	{Opt_dirstat, "dirstat"},
-+	{Opt_nodirstat, "nodirstat"},
-+	{Opt_rbytes, "rbytes"},
-+	{Opt_norbytes, "norbytes"},
-+	{Opt_nocrc, "nocrc"},
-+	{-1, NULL}
++struct crush_bucket_uniform {
++	struct crush_bucket h;
++	__u32 *primes;
++	__u32 item_weight;  /* 16-bit fixed point; all items equally weighted */
 +};
 +
-+#define ADDR_DELIM(c) ((!c) || (c == ':') || (c == ','))
++struct crush_bucket_list {
++	struct crush_bucket h;
++	__u32 *item_weights;  /* 16-bit fixed point */
++	__u32 *sum_weights;   /* 16-bit fixed point.  element i is sum
++				 of weights 0..i, inclusive */
++};
++
++struct crush_bucket_tree {
++	struct crush_bucket h;  /* note: h.size is _tree_ size, not number of
++				   actual items */
++	__u32 *node_weights;
++};
++
++struct crush_bucket_straw {
++	struct crush_bucket h;
++	__u32 *item_weights;   /* 16-bit fixed point */
++	__u32 *straws;         /* 16-bit fixed point */
++};
++
++
 +
 +/*
-+ * FIXME: add error checking to ip parsing
++ * CRUSH map includes all buckets, rules, etc.
 + */
-+static int parse_ip(const char *c, int len, struct ceph_entity_addr *addr,
-+		    int max_count, int *count)
++struct crush_map {
++	struct crush_bucket **buckets;
++	struct crush_rule **rules;
++
++	/*
++	 * Parent pointers to identify the parent bucket a device or
++	 * bucket in the hierarchy.  If an item appears more than
++	 * once, this is the _last_ time it appeared (where buckets
++	 * are processed in bucket id order, from -1 on down to
++	 * -max_buckets.
++	 */
++	__u32 *bucket_parents;
++	__u32 *device_parents;
++
++	__s32 max_buckets;
++	__u32 max_rules;
++	__s32 max_devices;
++};
++
++
++/* crush.c */
++extern int crush_get_bucket_item_weight(struct crush_bucket *b, int pos);
++extern void crush_calc_parents(struct crush_map *map);
++extern void crush_destroy_bucket_uniform(struct crush_bucket_uniform *b);
++extern void crush_destroy_bucket_list(struct crush_bucket_list *b);
++extern void crush_destroy_bucket_tree(struct crush_bucket_tree *b);
++extern void crush_destroy_bucket_straw(struct crush_bucket_straw *b);
++extern void crush_destroy_bucket(struct crush_bucket *b);
++extern void crush_destroy(struct crush_map *map);
++
++#endif
+diff --git a/fs/ceph/crush/hash.h b/fs/ceph/crush/hash.h
+new file mode 100644
+index 0000000..5baf444
+--- /dev/null
++++ b/fs/ceph/crush/hash.h
+@@ -0,0 +1,80 @@
++#ifndef _CRUSH_HASH_H
++#define _CRUSH_HASH_H
++
++// Robert Jenkins' function for mixing 32-bit values
++// http://burtleburtle.net/bob/hash/evahash.html
++// a, b = random bits, c = input and output
++#define hashmix(a,b,c) \
++	a=a-b;  a=a-c;  a=a^(c>>13); \
++	b=b-c;  b=b-a;  b=b^(a<<8);  \
++	c=c-a;  c=c-b;  c=c^(b>>13); \
++	a=a-b;  a=a-c;  a=a^(c>>12); \
++	b=b-c;  b=b-a;  b=b^(a<<16); \
++	c=c-a;  c=c-b;  c=c^(b>>5);  \
++	a=a-b;  a=a-c;  a=a^(c>>3); \
++	b=b-c;  b=b-a;  b=b^(a<<10); \
++	c=c-a;  c=c-b;  c=c^(b>>15);
++
++#define crush_hash_seed 1315423911
++
++static inline unsigned crush_hash32(unsigned a) {
++	unsigned hash = crush_hash_seed ^ a;
++	unsigned b = a;
++	unsigned x = 231232;
++	unsigned y = 1232;
++	hashmix(b, x, hash);
++	hashmix(y, a, hash);
++	return (hash & 0xFFFFFFFF);
++}
++
++static inline unsigned crush_hash32_2(unsigned a, unsigned b) {
++	unsigned hash = crush_hash_seed ^ a ^ b;
++	unsigned x = 231232;
++	unsigned y = 1232;
++	hashmix(a, b, hash);
++	hashmix(x, a, hash);
++	hashmix(b, y, hash);
++	return (hash & 0xFFFFFFFF);
++}
++
++static inline unsigned crush_hash32_3(unsigned a, unsigned b, unsigned c) {
++	unsigned int hash = crush_hash_seed ^ a ^ b ^ c;
++	unsigned x = 231232;
++	unsigned y = 1232;
++	hashmix(a, b, hash);
++	hashmix(c, x, hash);
++	hashmix(y, a, hash);
++	hashmix(b, x, hash);
++	hashmix(y, c, hash);
++	return (hash & 0xFFFFFFFF);
++}
++
++static inline unsigned crush_hash32_4(unsigned a, unsigned b, unsigned c, unsigned d) {
++	unsigned int hash = crush_hash_seed ^a ^ b ^ c ^ d;
++	unsigned x = 231232;
++	unsigned y = 1232;
++	hashmix(a, b, hash);
++	hashmix(c, d, hash);
++	hashmix(a, x, hash);
++	hashmix(y, b, hash);
++	hashmix(c, x, hash);
++	hashmix(y, d, hash);
++	return (hash & 0xFFFFFFFF);
++}
++
++static inline unsigned crush_hash32_5(unsigned a, unsigned b, unsigned c, unsigned d, unsigned e) {
++	unsigned int hash = crush_hash_seed ^ a ^ b ^ c ^ d ^ e;
++	unsigned x = 231232;
++	unsigned y = 1232;
++	hashmix(a, b, hash);
++	hashmix(c, d, hash);
++	hashmix(e, x, hash);
++	hashmix(y, a, hash);
++	hashmix(b, x, hash);
++	hashmix(y, c, hash);
++	hashmix(d, x, hash);
++	hashmix(y, e, hash);
++	return (hash & 0xFFFFFFFF);
++}
++
++#endif
+diff --git a/fs/ceph/crush/mapper.c b/fs/ceph/crush/mapper.c
+new file mode 100644
+index 0000000..4752c2d
+--- /dev/null
++++ b/fs/ceph/crush/mapper.c
+@@ -0,0 +1,536 @@
++
++#ifdef __KERNEL__
++# include <linux/string.h>
++# include <linux/slab.h>
++# include <asm/bug.h>
++# include <linux/kernel.h>
++# ifndef dprintk
++#  define dprintk(args...)
++# endif
++#else
++# include <string.h>
++# include <stdio.h>
++# include <stdlib.h>
++# include <assert.h>
++# define BUG_ON(x) assert(!(x))
++# define dprintk(args...) /* printf(args) */
++# define kmalloc(x, f) malloc(x)
++# define kfree(x) free(x)
++#endif
++
++#include "crush.h"
++#include "hash.h"
++
++
++/**
++ * crush_find_rule - find a crush_rule id for a given pool, type, and size.
++ * @map: the crush_map
++ * @pool: the storage pool id (user defined)
++ * @type: storage pool type (user defined)
++ * @size: output set size
++ */
++int crush_find_rule(struct crush_map *map, int pool, int type, int size)
 +{
 +	int i;
-+	int v;
-+	int mon_count;
-+	unsigned ip = 0;
-+	const char *p = c, *numstart;
 +
-+	dout(15, "parse_ip on '%s' len %d\n", c, len);
-+	for (mon_count = 0; mon_count < max_count; mon_count++) {
-+		for (i = 0; !ADDR_DELIM(*p) && i < 4; i++) {
-+			v = 0;
-+			numstart = p;
-+			while (!ADDR_DELIM(*p) && *p != '.' && p < c+len) {
-+				if (*p < '0' || *p > '9')
-+					goto bad;
-+				v = (v * 10) + (*p - '0');
-+				p++;
-+			}
-+			if (v > 255 || numstart == p)
-+				goto bad;
-+			ip = (ip << 8) + v;
-+
-+			if (*p == '.')
-+				p++;
-+		}
-+		if (i != 4)
-+			goto bad;
-+		*(__be32 *)&addr[mon_count].ipaddr.sin_addr.s_addr = htonl(ip);
-+
-+		/* port? */
-+		if (*p == ':') {
-+			p++;
-+			numstart = p;
-+			v = 0;
-+			while (!ADDR_DELIM(*p) && *p != '.' && p < c+len) {
-+				if (*p < '0' || *p > '9')
-+					goto bad;
-+				v = (v * 10) + (*p - '0');
-+				p++;
-+			}
-+			if (v > 65535 || numstart == p)
-+				goto bad;
-+			addr[mon_count].ipaddr.sin_port = htons(v);
-+		} else
-+			addr[mon_count].ipaddr.sin_port = htons(CEPH_MON_PORT);
-+
-+		dout(15, "parse_ip got %u.%u.%u.%u:%u\n",
-+		     IPQUADPORT(addr[mon_count].ipaddr));
-+
-+		if (*p != ',')
-+			break;
-+		p++;
++	for (i = 0; i < map->max_rules; i++) {
++		if (map->rules[i] &&
++		    map->rules[i]->mask.pool == pool &&
++		    map->rules[i]->mask.type == type &&
++		    map->rules[i]->mask.min_size <= size &&
++		    map->rules[i]->mask.max_size >= size)
++			return i;
 +	}
-+
-+	if (p < c+len)
-+		goto bad;
-+
-+	if (count)
-+		*count = mon_count + 1;
-+
-+	return 0;
-+
-+bad:
-+	derr(1, "parse_ip bad ip '%s'\n", c);
-+	return -EINVAL;
-+}
-+
-+static int parse_mount_args(int flags, char *options, const char *dev_name,
-+			    struct ceph_mount_args *args, const char **path)
-+{
-+	char *c;
-+	int len, err;
-+	substring_t argstr[MAX_OPT_ARGS];
-+	int i;
-+
-+	dout(15, "parse_mount_args dev_name '%s'\n", dev_name);
-+	memset(args, 0, sizeof(*args));
-+
-+	/* defaults */
-+	args->sb_flags = flags;
-+	args->flags = CEPH_MOUNT_DEFAULT;
-+	args->osd_timeout = 5;    /* seconds */
-+	args->mount_timeout = 30; /* seconds */
-+	args->snapdir_name = ".snap";
-+
-+	/* ip1[:port1][,ip2[:port2]...]:/subdir/in/fs */
-+	c = strstr(dev_name, ":/");
-+	if (c == NULL)
-+		return -EINVAL;
-+	*c = 0;
-+
-+	/* get mon ip(s) */
-+	len = c - dev_name;
-+	err = parse_ip(dev_name, len, args->mon_addr, MAX_MON_MOUNT_ADDR,
-+		       &args->num_mon);
-+	if (err < 0)
-+		return err;
-+
-+	for (i = 0; i < args->num_mon; i++) {
-+		args->mon_addr[i].ipaddr.sin_family = AF_INET;
-+		args->mon_addr[i].erank = 0;
-+		args->mon_addr[i].nonce = 0;
-+	}
-+	args->my_addr.ipaddr.sin_family = AF_INET;
-+	args->my_addr.ipaddr.sin_addr.s_addr = htonl(0);
-+	args->my_addr.ipaddr.sin_port = htons(0);
-+
-+	/* path on server */
-+	c++;
-+	while (*c == '/')
-+		c++;  /* remove leading '/'(s) */
-+	*path = c;
-+	dout(15, "server path '%s'\n", *path);
-+
-+	/* parse mount options */
-+	while ((c = strsep(&options, ",")) != NULL) {
-+		int token, intval, ret;
-+		if (!*c)
-+			continue;
-+		token = match_token(c, arg_tokens, argstr);
-+		if (token < 0) {
-+			derr(0, "bad mount option at '%s'\n", c);
-+			return -EINVAL;
-+
-+		}
-+		if (token < Opt_ip) {
-+			ret = match_int(&argstr[0], &intval);
-+			if (ret < 0) {
-+				dout(0, "bad mount arg, not int\n");
-+				continue;
-+			}
-+			dout(30, "got token %d intval %d\n", token, intval);
-+		}
-+		switch (token) {
-+		case Opt_fsidmajor:
-+			__ceph_fsid_set_major(&args->fsid, cpu_to_le64(intval));
-+			break;
-+		case Opt_fsidminor:
-+			__ceph_fsid_set_minor(&args->fsid, cpu_to_le64(intval));
-+			break;
-+		case Opt_port:
-+			args->my_addr.ipaddr.sin_port = htons(intval);
-+			break;
-+		case Opt_ip:
-+			err = parse_ip(argstr[0].from,
-+					argstr[0].to-argstr[0].from,
-+					&args->my_addr,
-+					1, NULL);
-+			if (err < 0)
-+				return err;
-+			args->flags |= CEPH_MOUNT_MYIP;
-+			break;
-+
-+			/* debug levels */
-+		case Opt_debug:
-+			ceph_debug = intval;
-+			break;
-+		case Opt_debug_msgr:
-+			ceph_debug_msgr = intval;
-+			break;
-+		case Opt_debug_mdsc:
-+			ceph_debug_mdsc = intval;
-+			break;
-+		case Opt_debug_osdc:
-+			ceph_debug_osdc = intval;
-+			break;
-+		case Opt_debug_addr:
-+			ceph_debug_addr = intval;
-+			break;
-+		case Opt_debug_inode:
-+			ceph_debug_inode = intval;
-+			break;
-+		case Opt_debug_snap:
-+			ceph_debug_snap = intval;
-+			break;
-+		case Opt_debug_ioctl:
-+			ceph_debug_ioctl = intval;
-+			break;
-+		case Opt_debug_caps:
-+			ceph_debug_caps = intval;
-+			break;
-+		case Opt_debug_console:
-+			ceph_debug_console = 1;
-+			break;
-+
-+			/* misc */
-+		case Opt_wsize:
-+			args->wsize = intval;
-+			break;
-+		case Opt_rsize:
-+			args->rsize = intval;
-+			break;
-+		case Opt_osdtimeout:
-+			args->osd_timeout = intval;
-+			break;
-+		case Opt_mount_timeout:
-+			args->mount_timeout = intval;
-+			break;
-+
-+		case Opt_noshare:
-+			args->flags |= CEPH_MOUNT_NOSHARE;
-+			break;
-+		case Opt_unsafewriteback:
-+			args->flags |= CEPH_MOUNT_UNSAFE_WRITEBACK;
-+			break;
-+		case Opt_safewriteback:
-+			args->flags &= ~CEPH_MOUNT_UNSAFE_WRITEBACK;
-+			break;
-+
-+		case Opt_dirstat:
-+			args->flags |= CEPH_MOUNT_DIRSTAT;
-+			break;
-+		case Opt_nodirstat:
-+			args->flags &= ~CEPH_MOUNT_DIRSTAT;
-+			break;
-+		case Opt_rbytes:
-+			args->flags |= CEPH_MOUNT_RBYTES;
-+			break;
-+		case Opt_norbytes:
-+			args->flags &= ~CEPH_MOUNT_RBYTES;
-+			break;
-+		case Opt_nocrc:
-+			args->flags |= CEPH_MOUNT_NOCRC;
-+			break;
-+
-+		default:
-+			BUG_ON(token);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * create a fresh client instance
-+ */
-+static struct ceph_client *ceph_create_client(void)
-+{
-+	struct ceph_client *client;
-+	int err = -ENOMEM;
-+
-+	client = kzalloc(sizeof(*client), GFP_KERNEL);
-+	if (client == NULL)
-+		return ERR_PTR(-ENOMEM);
-+
-+	mutex_init(&client->mount_mutex);
-+
-+	init_waitqueue_head(&client->mount_wq);
-+
-+	client->sb = NULL;
-+	client->mount_state = CEPH_MOUNT_MOUNTING;
-+	client->whoami = -1;
-+
-+	client->msgr = NULL;
-+
-+	client->wb_wq = create_workqueue("ceph-writeback");
-+	if (client->wb_wq == NULL)
-+		goto fail;
-+	client->pg_inv_wq = create_workqueue("ceph-pg-invalid");
-+	if (client->pg_inv_wq == NULL)
-+		goto fail;
-+	client->trunc_wq = create_workqueue("ceph-trunc");
-+	if (client->trunc_wq == NULL)
-+		goto fail;
-+
-+	/* subsystems */
-+	err = ceph_monc_init(&client->monc, client);
-+	if (err < 0)
-+		return ERR_PTR(err);
-+	ceph_mdsc_init(&client->mdsc, client);
-+	ceph_osdc_init(&client->osdc, client);
-+
-+	return client;
-+
-+fail:
-+	return ERR_PTR(-ENOMEM);
-+}
-+
-+static void ceph_destroy_client(struct ceph_client *client)
-+{
-+	dout(10, "destroy_client %p\n", client);
-+
-+	/* unmount */
-+	ceph_mdsc_stop(&client->mdsc);
-+	ceph_monc_stop(&client->monc);
-+	ceph_osdc_stop(&client->osdc);
-+
-+	ceph_sysfs_client_cleanup(client);
-+	if (client->wb_wq)
-+		destroy_workqueue(client->wb_wq);
-+	if (client->pg_inv_wq)
-+		destroy_workqueue(client->pg_inv_wq);
-+	if (client->trunc_wq)
-+		destroy_workqueue(client->trunc_wq);
-+	if (client->msgr)
-+		ceph_messenger_destroy(client->msgr);
-+	kfree(client);
-+	dout(10, "destroy_client %p done\n", client);
-+}
-+
-+/*
-+ * true if we have the mon, osd, and mds maps, and are thus
-+ * fully "mounted".
-+ */
-+static int have_all_maps(struct ceph_client *client)
-+{
-+	return client->osdc.osdmap && client->osdc.osdmap->epoch &&
-+		client->monc.monmap && client->monc.monmap->epoch &&
-+		client->mdsc.mdsmap && client->mdsc.mdsmap->m_epoch;
-+}
-+
-+/*
-+ * Bootstrap mount by opening the root directory.  Note the mount
-+ * @started time from caller, and time out if this takes too long.
-+ */
-+static struct dentry *open_root_dentry(struct ceph_client *client,
-+				       const char *path,
-+				       unsigned long started)
-+{
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req = NULL;
-+	int err;
-+	struct dentry *root;
-+
-+	/* open dir */
-+	dout(30, "open_root_inode opening '%s'\n", path);
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_LSTAT,
-+				       NULL, NULL, path, NULL,
-+				       USE_ANY_MDS);
-+	if (IS_ERR(req))
-+		return ERR_PTR(PTR_ERR(req));
-+	req->r_started = started;
-+	req->r_timeout = client->mount_args.mount_timeout * HZ;
-+	req->r_args.stat.mask = cpu_to_le32(CEPH_STAT_CAP_INODE);
-+	err = ceph_mdsc_do_request(mdsc, NULL, req);
-+	if (err == 0) {
-+		root = req->r_dentry;
-+		dget(root);
-+		dout(30, "open_root_inode success, root dentry is %p\n", root);
-+	} else
-+		root = ERR_PTR(err);
-+	ceph_mdsc_put_request(req);
-+	return root;
-+}
-+
-+/*
-+ * mount: join the ceph cluster.
-+ */
-+static int ceph_mount(struct ceph_client *client, struct vfsmount *mnt,
-+		      const char *path)
-+{
-+	struct ceph_entity_addr *myaddr = NULL;
-+	struct ceph_msg *mount_msg;
-+	struct dentry *root;
-+	int err;
-+	int request_interval = 5 * HZ;
-+	unsigned long timeout = client->mount_args.mount_timeout * HZ;
-+	unsigned long started = jiffies;  /* note the start time */
-+	int which;
-+	unsigned char r;
-+
-+	dout(10, "mount start\n");
-+	mutex_lock(&client->mount_mutex);
-+
-+	/* initialize the messenger */
-+	if (client->msgr == NULL) {
-+		if (client->mount_args.flags & CEPH_MOUNT_MYIP)
-+			myaddr = &client->mount_args.my_addr;
-+		client->msgr = ceph_messenger_create(myaddr);
-+		if (IS_ERR(client->msgr)) {
-+			err = PTR_ERR(client->msgr);
-+			client->msgr = NULL;
-+			goto out;
-+		}
-+		client->msgr->parent = client;
-+		client->msgr->dispatch = ceph_dispatch;
-+		client->msgr->prepare_pages = ceph_osdc_prepare_pages;
-+		client->msgr->peer_reset = ceph_peer_reset;
-+	}
-+
-+	/* send mount request, and wait for mon, mds, and osd maps */
-+	while (!have_all_maps(client)) {
-+		err = -EIO;
-+		if (timeout && time_after_eq(jiffies, started + timeout))
-+			goto out;
-+		dout(10, "mount sending mount request\n");
-+		get_random_bytes(&r, 1);
-+		which = r % client->mount_args.num_mon;
-+		mount_msg = ceph_msg_new(CEPH_MSG_CLIENT_MOUNT, 0, 0, 0, NULL);
-+		if (IS_ERR(mount_msg)) {
-+			err = PTR_ERR(mount_msg);
-+			goto out;
-+		}
-+		mount_msg->hdr.dst.name.type =
-+			cpu_to_le32(CEPH_ENTITY_TYPE_MON);
-+		mount_msg->hdr.dst.name.num = cpu_to_le32(which);
-+		mount_msg->hdr.dst.addr = client->mount_args.mon_addr[which];
-+
-+		ceph_msg_send(client->msgr, mount_msg, 0);
-+
-+		/* wait */
-+		dout(10, "mount sent to mon%d, waiting for maps\n", which);
-+		err = wait_event_interruptible_timeout(client->mount_wq,
-+						       have_all_maps(client),
-+						       request_interval);
-+		if (err == -EINTR)
-+			goto out;
-+	}
-+
-+	dout(30, "mount opening base mountpoint\n");
-+	root = open_root_dentry(client, path, started);
-+	if (IS_ERR(root)) {
-+		err = PTR_ERR(root);
-+		goto out;
-+	}
-+
-+	mnt->mnt_root = root;
-+	mnt->mnt_sb = client->sb;
-+	client->mount_state = CEPH_MOUNT_MOUNTED;
-+	dout(10, "mount success\n");
-+	err = 0;
-+
-+out:
-+	mutex_unlock(&client->mount_mutex);
-+	return err;
++	return -1;
 +}
 +
 +
 +/*
-+ * Process an incoming message.
++ * bucket choose methods
 + *
-+ * This should be relatively fast and must not do any work that waits
-+ * on other messages to be received.
++ * For each bucket algorithm, we have a "choose" method that, given a
++ * crush input @x and replica position (usually, position in output set) @r,
++ * will produce an item in the bucket.
 + */
-+void ceph_dispatch(void *p, struct ceph_msg *msg)
++
++/* uniform */
++static int bucket_uniform_choose(struct crush_bucket_uniform *bucket,
++				 int x, int r, int shift)
 +{
-+	struct ceph_client *client = p;
-+	int had;
-+	int type = le16_to_cpu(msg->hdr.type);
++	unsigned o = crush_hash32_2(x, bucket->h.id) & 0xffff;
++	unsigned p = bucket->primes[crush_hash32_2(bucket->h.id, x) %
++				    bucket->h.size];
++	unsigned s = (x + o + (r+1)*p) % bucket->h.size;
++	/*dprintk("%d %d %d %d\n", x, o, r, p);*/
++	if (shift)
++		s = (s + shift) % bucket->h.size;
++	return bucket->h.items[s];
++}
 +
-+	switch (type) {
-+	case CEPH_MSG_MON_MAP:
-+		had = client->monc.monmap->epoch ? 1 : 0;
-+		handle_monmap(client, msg);
-+		if (!had && client->monc.monmap->epoch && have_all_maps(client))
-+			wake_up(&client->mount_wq);
-+		break;
++/* list */
++static int bucket_list_choose(struct crush_bucket_list *bucket,
++			      int x, int r, int shift)
++{
++	int i;
 +
-+		/* mon client */
-+	case CEPH_MSG_STATFS_REPLY:
-+		ceph_monc_handle_statfs_reply(&client->monc, msg);
-+		break;
-+	case CEPH_MSG_CLIENT_UNMOUNT:
-+		ceph_monc_handle_umount(&client->monc, msg);
-+		break;
-+
-+		/* mds client */
-+	case CEPH_MSG_MDS_MAP:
-+		had = client->mdsc.mdsmap ? 1 : 0;
-+		ceph_mdsc_handle_map(&client->mdsc, msg);
-+		if (!had && client->mdsc.mdsmap && have_all_maps(client))
-+			wake_up(&client->mount_wq);
-+		break;
-+	case CEPH_MSG_CLIENT_SESSION:
-+		ceph_mdsc_handle_session(&client->mdsc, msg);
-+		break;
-+	case CEPH_MSG_CLIENT_REPLY:
-+		ceph_mdsc_handle_reply(&client->mdsc, msg);
-+		break;
-+	case CEPH_MSG_CLIENT_REQUEST_FORWARD:
-+		ceph_mdsc_handle_forward(&client->mdsc, msg);
-+		break;
-+	case CEPH_MSG_CLIENT_CAPS:
-+		ceph_handle_caps(&client->mdsc, msg);
-+		break;
-+	case CEPH_MSG_CLIENT_SNAP:
-+		ceph_handle_snap(&client->mdsc, msg);
-+		break;
-+	case CEPH_MSG_CLIENT_LEASE:
-+		ceph_mdsc_handle_lease(&client->mdsc, msg);
-+		break;
-+
-+		/* osd client */
-+	case CEPH_MSG_OSD_MAP:
-+		had = client->osdc.osdmap ? 1 : 0;
-+		ceph_osdc_handle_map(&client->osdc, msg);
-+		if (!had && client->osdc.osdmap && have_all_maps(client))
-+			wake_up(&client->mount_wq);
-+		break;
-+	case CEPH_MSG_OSD_OPREPLY:
-+		ceph_osdc_handle_reply(&client->osdc, msg);
-+		break;
-+
-+	default:
-+		derr(0, "received unknown message type %d %s\n", type,
-+		     ceph_msg_type_name(type));
++	for (i = bucket->h.size-1; i >= 0; i--) {
++		__u64 w = crush_hash32_4(x, bucket->h.items[i], r,
++					 bucket->h.id);
++		w &= 0xffff;
++		/*dprintk("list_choose i=%d x=%d r=%d item %d weight %x sum_weight %x rand %llx",
++		  i, x, r, bucket->h.items[i], bucket->item_weights[i], bucket->sum_weights[i], w);*/
++		w *= bucket->sum_weights[i];
++		w = w >> 16;
++		/*dprintk(" scaled %llx\n", w);*/
++		if (w < bucket->item_weights[i]) {
++			if (shift)
++				i = (i + shift) % bucket->h.size;
++			return bucket->h.items[i];
++		}
 +	}
 +
-+	ceph_msg_put(msg);
++	BUG_ON(1);
++	return 0;
 +}
 +
 +
-+static int ceph_set_super(struct super_block *s, void *data)
++/* tree */
++static int height(int n) {
++	int h = 0;
++	while ((n & 1) == 0) {
++		h++;
++		n = n >> 1;
++	}
++	return h;
++}
++
++static int left(int x) {
++	int h = height(x);
++	return x - (1 << (h-1));
++}
++
++static int right(int x) {
++	int h = height(x);
++	return x + (1 << (h-1));
++}
++
++static int terminal(int x) {
++	return x & 1;
++}
++
++static int bucket_tree_choose(struct crush_bucket_tree *bucket,
++			      int x, int r, int shift)
 +{
-+	struct ceph_client *client = data;
-+	int ret;
++	int n, l;
++	__u32 w;
++	__u64 t;
 +
-+	dout(10, "set_super %p data %p\n", s, data);
++	/* start at root */
++	n = bucket->h.size >> 1;
 +
-+	s->s_flags = client->mount_args.sb_flags;
-+	s->s_maxbytes = min((u64)MAX_LFS_FILESIZE, CEPH_FILE_MAX_SIZE);
++	while (!terminal(n)) {
++		/* pick point in [0, w) */
++		w = bucket->node_weights[n];
++		t = (__u64)crush_hash32_4(x, n, r, bucket->h.id) * (__u64)w;
++		t = t >> 32;
 +
-+	s->s_fs_info = client;
-+	client->sb = s;
++		/* descend to the left or right? */
++		l = left(n);
++		if (t < bucket->node_weights[l])
++			n = l;
++		else
++			n = right(n);
++	}
 +
-+	s->s_op = &ceph_super_ops;
-+	s->s_export_op = &ceph_export_ops;
++	while (shift > 0) {
++		n = (n + 2) % bucket->h.size;
++		if (bucket->node_weights[n])
++			shift--;
++	}
 +
-+	s->s_time_gran = 1000;  /* 1000 ns == 1 us */
-+
-+	ret = set_anon_super(s, NULL);  /* what is that second arg for? */
-+	if (ret != 0)
-+		goto fail;
-+
-+	return ret;
-+
-+fail:
-+	s->s_fs_info = NULL;
-+	client->sb = NULL;
-+	return ret;
++	return bucket->h.items[n];
 +}
++
++
++/* straw */
++
++static int bucket_straw_choose(struct crush_bucket_straw *bucket,
++			       int x, int r, int shift)
++{
++	int i;
++	int high = 0;
++	__u64 high_draw = 0;
++	__u64 draw;
++
++	for (i = 0; i < bucket->h.size; i++) {
++		draw = crush_hash32_3(x, bucket->h.items[i], r);
++		draw &= 0xffff;
++		draw *= bucket->straws[i];
++		if (i == 0 || draw > high_draw) {
++			high = i;
++			high_draw = draw;
++		}
++	}
++	if (shift)
++		high = (high + shift) % bucket->h.size;
++	return bucket->h.items[high];
++}
++
++static int crush_bucket_choose(struct crush_bucket *in, int x, int r, int shift)
++{
++	switch (in->alg) {
++	case CRUSH_BUCKET_UNIFORM:
++		return bucket_uniform_choose((struct crush_bucket_uniform *)in,
++					     x, r, shift);
++	case CRUSH_BUCKET_LIST:
++		return bucket_list_choose((struct crush_bucket_list *)in,
++					   x, r, shift);
++	case CRUSH_BUCKET_TREE:
++		return bucket_tree_choose((struct crush_bucket_tree *)in,
++					  x, r, shift);
++	case CRUSH_BUCKET_STRAW:
++		return bucket_straw_choose((struct crush_bucket_straw *)in,
++					   x, r, shift);
++	default:
++		BUG_ON(1);
++		return in->items[0];
++	}
++}
++
 +
 +/*
-+ * share superblock if same fs AND options
++ * true if device is marked "out" (failed, fully offloaded)
++ * of the cluster
 + */
-+static int ceph_compare_super(struct super_block *sb, void *data)
++static int is_out(struct crush_map *map, __u32 *weight, int item, int x)
 +{
-+	struct ceph_client *new = data;
-+	struct ceph_mount_args *args = &new->mount_args;
-+	struct ceph_client *other = ceph_sb_to_client(sb);
-+	int i;
-+	dout(10, "ceph_compare_super %p\n", sb);
-+
-+	/* either compare fsid, or specified mon_hostname */
-+	if (args->flags & CEPH_MOUNT_FSID) {
-+		if (ceph_fsid_compare(&args->fsid, &other->fsid)) {
-+			dout(30, "fsid doesn't match\n");
-+			return 0;
-+		}
-+	} else {
-+		/* do we share (a) monitor? */
-+		for (i = 0; i < args->num_mon; i++)
-+			if (ceph_monmap_contains(other->monc.monmap,
-+						 &args->mon_addr[i]))
-+				break;
-+		if (i == args->num_mon) {
-+			dout(30, "mon ip not part of monmap\n");
-+			return 0;
-+		}
-+		dout(10, "mon ip matches existing sb %p\n", sb);
-+	}
-+	if (args->sb_flags != other->mount_args.sb_flags) {
-+		dout(30, "flags differ\n");
++	if (weight[item] >= 0x1000)
 +		return 0;
-+	}
++	if (weight[item] == 0)
++		return 1;
++	if ((crush_hash32_2(x, item) & 0xffff) < weight[item])
++		return 0;
 +	return 1;
 +}
 +
-+/*
-+ * construct our own bdi so we can control readahead
++/**
++ * crush_choose - choose numrep distinct items of given type
++ * @map: the crush_map
++ * @bucket: the bucket we are choose an item from
++ * @x: crush input value
++ * @numrep: the number of items to choose
++ * @type: the type of item to choose
++ * @out: pointer to output vector
++ * @outpos: our position in that vector
++ * @firstn: true if choosing "first n" items, false if choosing "indep"
++ * @recurse_to_leaf: true if we want one device under each item of given type
++ * @out2: second output vector for leaf items (if @recurse_to_leaf)
 + */
-+static int ceph_init_bdi(struct super_block *sb, struct ceph_client *client)
++static int crush_choose(struct crush_map *map,
++			struct crush_bucket *bucket,
++			__u32 *weight,
++			int x, int numrep, int type,
++			int *out, int outpos,
++			int firstn, int recurse_to_leaf,
++			int *out2)
 +{
-+	int err;
++	int rep;
++	int ftotal, flocal, shift;
++	int retry_descent, retry_bucket, skip_rep;
++	struct crush_bucket *in = bucket;
++	int r;
++	int i;
++	int item;
++	int itemtype;
++	int collide, reject;
++	dprintk("choose bucket %d x %d outpos %d\n", bucket->id, x, outpos);
 +
-+	if (client->mount_args.rsize)
-+		client->backing_dev_info.ra_pages =
-+			(client->mount_args.rsize + PAGE_CACHE_SIZE - 1)
-+			>> PAGE_SHIFT;
++	for (rep = outpos; rep < numrep; rep++) {
++		/* keep trying until we get a non-out, non-colliding item */
++		ftotal = 0;
++		shift = 0;
++		skip_rep = 0;
++		do {
++			retry_descent = 0;
++			in = bucket;               /* initial bucket */
 +
-+	if (client->backing_dev_info.ra_pages < (PAGE_CACHE_SIZE >> PAGE_SHIFT))
-+		client->backing_dev_info.ra_pages =
-+			CEPH_DEFAULT_READ_SIZE >> PAGE_SHIFT;
++			/* choose through intervening buckets */
++			flocal = 0;
++			do {
++				retry_bucket = 0;
++				r = rep;
++				if (in->alg == CRUSH_BUCKET_UNIFORM) {
++					/* be careful */
++					if (firstn || numrep >= in->size)
++						/* r' = r + f_total */
++						r += ftotal - shift;
++					else if (in->size % numrep == 0)
++						/* r'=r+(n+1)*f_local */
++						r += (numrep+1) * (flocal+ftotal- shift);
++					else
++						/* r' = r + n*f_local */
++						r += numrep * (flocal+ftotal-shift);
++				} else {
++					if (firstn)
++						/* r' = r + f_total */
++						r += ftotal - shift;
++					else
++						/* r' = r + n*f_local */
++						r += numrep * (flocal+ftotal-shift);
++				}
 +
-+	err = bdi_init(&client->backing_dev_info);
++				/* bucket choose */
++				item = crush_bucket_choose(in, x, r, shift);
++				BUG_ON(item >= map->max_devices);
 +
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 26)
-+	if (err < 0)
-+		return err;
++				/* desired type? */
++				if (item < 0)
++					itemtype = map->buckets[-1-item]->type;
++				else
++					itemtype = 0;
++				dprintk("  item %d type %d\n", item, itemtype);
 +
-+	err = bdi_register_dev(&client->backing_dev_info, sb->s_dev);
-+#endif
++				/* keep going? */
++				if (itemtype != type) {
++					BUG_ON(item >= 0 ||
++					       (-1-item) >= map->max_buckets);
++					in = map->buckets[-1-item];
++					continue;
++				}
 +
-+	return err;
-+}
++				/* collision? */
++				collide = 0;
++				for (i = 0; i < outpos; i++) {
++					if (out[i] == item) {
++						collide = 1;
++						break;
++					}
++				}
 +
-+static int ceph_get_sb(struct file_system_type *fs_type,
-+		       int flags, const char *dev_name, void *data,
-+		       struct vfsmount *mnt)
-+{
-+	struct super_block *sb;
-+	struct ceph_client *client;
-+	int err;
-+	int (*compare_super)(struct super_block *, void *) = ceph_compare_super;
-+	const char *path;
++				if (recurse_to_leaf &&
++				    item < 0 &&
++				    crush_choose(map, map->buckets[-1-item], weight,
++						 x, outpos+1, 0,
++						 out2, outpos,
++						 firstn, 0, NULL) <= outpos) {
++					reject = 1;
++				} else {
++					/* out? */
++					if (itemtype == 0)
++						reject = is_out(map, weight, item, x);
++					else
++						reject = 0;
++				}
 +
-+	dout(25, "ceph_get_sb\n");
++				if (reject || collide) {
++					ftotal++;
++					flocal++;
 +
-+	/* create client (which we may/may not use) */
-+	client = ceph_create_client();
-+	if (IS_ERR(client))
-+		return PTR_ERR(client);
++					if (ftotal > 4)
++						shift++;
 +
-+	err = parse_mount_args(flags, data, dev_name,
-+			       &client->mount_args, &path);
-+	if (err < 0)
-+		goto out;
++					if (collide && flocal < 3)
++						/* retry locally a few times */
++						retry_bucket = 1;
++					else if (ftotal < 10) {
++						/* then retry descent */
++						retry_descent = 1;
++					} else
++						/* else give up */
++						skip_rep = 1;
++					dprintk("  reject %d  collide %d  ftotal %d  flocal %d shift %d\n", reject, collide, ftotal, flocal, shift);
++				}
++			} while (retry_bucket);
++		} while (retry_descent);
 +
-+	if (client->mount_args.flags & CEPH_MOUNT_NOSHARE)
-+		compare_super = NULL;
++		if (skip_rep) {
++			dprintk("skip rep\n");
++			continue;
++		}
 +
-+	sb = sget(fs_type, compare_super, ceph_set_super, client);
-+	if (IS_ERR(sb)) {
-+		err = PTR_ERR(sb);
-+		goto out;
++		dprintk("choose got %d\n", item);
++		out[outpos] = item;
++		outpos++;
 +	}
 +
-+	if (ceph_client(sb) != client) {
-+		ceph_destroy_client(client);
-+		client = ceph_client(sb);
-+		dout(20, "get_sb got existing client %p\n", client);
-+	} else {
-+		dout(20, "get_sb using new client %p\n", client);
-+		err = ceph_init_bdi(sb, client);
-+		if (err < 0)
-+			goto out_splat;
-+	}
-+
-+	err = ceph_mount(client, mnt, path);
-+	if (err < 0)
-+		goto out_splat;
-+	dout(22, "root ino %llx.%llx\n", ceph_vinop(mnt->mnt_root->d_inode));
-+	return 0;
-+
-+out_splat:
-+	ceph_mdsc_close_sessions(&client->mdsc);
-+	up_write(&sb->s_umount);
-+	deactivate_super(sb);
-+	goto out_final;
-+out:
-+	ceph_destroy_client(client);
-+out_final:
-+	dout(25, "ceph_get_sb fail %d\n", err);
-+	return err;
-+}
-+
-+static void ceph_kill_sb(struct super_block *s)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(s);
-+	dout(1, "kill_sb %p\n", s);
-+	ceph_mdsc_pre_umount(&client->mdsc);
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 26)
-+	bdi_unregister(&client->backing_dev_info);
-+#endif
-+	kill_anon_super(s);    /* will call put_super after sb is r/o */
-+	bdi_destroy(&client->backing_dev_info);
-+	ceph_destroy_client(client);
++	dprintk("choose returns %d\n", outpos);
++	return outpos;
 +}
 +
 +
-+/************************************/
-+
-+static struct file_system_type ceph_fs_type = {
-+	.owner		= THIS_MODULE,
-+	.name		= "ceph",
-+	.get_sb		= ceph_get_sb,
-+	.kill_sb	= ceph_kill_sb,
-+	.fs_flags	= FS_RENAME_DOES_D_MOVE,
-+};
-+
-+static int __init init_ceph(void)
++/**
++ * crush_do_rule - calculate a mapping with the given input and rule
++ * @map: the crush_map
++ * @ruleno: the rule id
++ * @x: hash input
++ * @result: pointer to result vector
++ * @result_max: maximum result size
++ * @force: force initial replica choice; -1 for none
++ */
++int crush_do_rule(struct crush_map *map,
++		  int ruleno, int x, int *result, int result_max,
++		  int force, __u32 *weight)
 +{
-+	int ret = 0;
++	int result_len;
++	int *force_context = NULL;
++	int force_pos = -1;
++	int *a = NULL;
++	int *b = NULL;
++	int *c = NULL;
++	int recurse_to_leaf;
++	int *w;
++	int wsize = 0;
++	int *o;
++	int osize;
++	int *tmp;
++	struct crush_rule *rule;
++	int step;
++	int i,j;
++	int numrep;
++	int firstn;
++	int rc = -1;
 +
-+	dout(1, "init_ceph\n");
-+	dout(0, "ceph (%s)\n", STRINGIFY(CEPH_GIT_VER));
++	BUG_ON(ruleno >= map->max_rules);
 +
-+#ifdef CONFIG_CEPH_BOOKKEEPER
-+	ceph_bookkeeper_init();
-+#endif
-+
-+	ret = ceph_sysfs_init();
-+	if (ret < 0)
++	a = kmalloc(CRUSH_MAX_SET * sizeof(int), GFP_KERNEL);
++	if (!a)
++		goto out;
++	b = kmalloc(CRUSH_MAX_SET * sizeof(int), GFP_KERNEL);
++	if (!b)
++		goto out;
++	c = kmalloc(CRUSH_MAX_SET * sizeof(int), GFP_KERNEL);
++	if (!c)
++		goto out;
++	force_context = kmalloc(CRUSH_MAX_DEPTH * sizeof(int), GFP_KERNEL);
++	if (!force_context)
 +		goto out;
 +
-+	ret = ceph_msgr_init();
-+	if (ret < 0)
-+		goto out_sysfs;
++	rule = map->rules[ruleno];
++	result_len = 0;
++	w = a;
++	o = b;
 +
-+	ret = init_inodecache();
-+	if (ret)
-+		goto out_msgr;
++	/*
++	 * determine hierarchical context of force, if any.  note
++	 * that this may or may not correspond to the specific types
++	 * referenced by the crush rule.
++	 */
++	if (force >= 0) {
++		if (force >= map->max_devices ||
++		    map->device_parents[force] == 0) {
++			/*dprintk("CRUSH: forcefed device dne\n");*/
++			rc = -1;  /* force fed device dne */
++			goto out;
++		}
++		if (!is_out(map, weight, force, x)) {
++			while (1) {
++				force_context[++force_pos] = force;
++				/*dprintk("force_context[%d] = %d\n", force_pos, force);*/
++				if (force >= 0)
++					force = map->device_parents[force];
++				else
++					force = map->bucket_parents[-1-force];
++				if (force == 0)
++					break;
++			}
++		}
++	}
 +
-+	ret = register_filesystem(&ceph_fs_type);
-+	if (ret)
-+		goto out_icache;
-+	return 0;
++	for (step = 0; step < rule->len; step++) {
++		firstn = 0;
++		switch (rule->steps[step].op) {
++		case CRUSH_RULE_TAKE:
++			w[0] = rule->steps[step].arg1;
++			if (force_pos >= 0) {
++				BUG_ON(force_context[force_pos] != w[0]);
++				force_pos--;
++			}
++			wsize = 1;
++			break;
 +
-+out_icache:
-+	destroy_inodecache();
-+out_msgr:
-+	ceph_msgr_exit();
-+out_sysfs:
-+	ceph_sysfs_cleanup();
++		case CRUSH_RULE_CHOOSE_LEAF_FIRSTN:
++		case CRUSH_RULE_CHOOSE_FIRSTN:
++			firstn = 1;
++		case CRUSH_RULE_CHOOSE_LEAF_INDEP:
++		case CRUSH_RULE_CHOOSE_INDEP:
++			BUG_ON(wsize == 0);
++
++			recurse_to_leaf = 
++				rule->steps[step].op == CRUSH_RULE_CHOOSE_LEAF_FIRSTN ||
++				rule->steps[step].op == CRUSH_RULE_CHOOSE_LEAF_INDEP;				
++
++			/* reset output */
++			osize = 0;
++
++			for (i = 0; i < wsize; i++) {
++				/*
++				 * see CRUSH_N, CRUSH_N_MINUS macros.
++				 * basically, numrep <= 0 means relative to
++				 * the provided result_max
++				 */
++				numrep = rule->steps[step].arg1;
++				if (numrep <= 0) {
++					numrep += result_max;
++					if (numrep <= 0)
++						continue;
++				}
++				j = 0;
++				if (osize == 0 && force_pos >= 0) {
++					/* skip any intermediate types */
++					while (force_pos &&
++					       force_context[force_pos] < 0 &&
++					       rule->steps[step].arg2 !=
++					       map->buckets[-1-force_context[force_pos]]->type)
++						force_pos--;
++					o[osize] = force_context[force_pos];
++					if (recurse_to_leaf)
++						c[osize] = force_context[0];
++					j++;
++					force_pos--;
++				}
++				osize += crush_choose(map,
++						      map->buckets[-1-w[i]],
++						      weight,
++						      x, numrep,
++						      rule->steps[step].arg2,
++						      o+osize, j,
++						      firstn,
++						      recurse_to_leaf, c+osize);
++			}
++
++			if (recurse_to_leaf)
++				/* copy final _leaf_ values to output set */
++				memcpy(o, c, osize*sizeof(*o));
++
++			/* swap t and w arrays */
++			tmp = o;
++			o = w;
++			w = tmp;
++			wsize = osize;
++			break;
++
++
++		case CRUSH_RULE_EMIT:
++			for (i=0; i<wsize && result_len < result_max; i++) {
++				result[result_len] = w[i];
++				result_len++;
++			}
++			wsize = 0;
++			break;
++
++		default:
++			BUG_ON(1);
++		}
++	}
++	rc = result_len;
++
 +out:
-+	return ret;
++	kfree(a);
++	kfree(b);
++	kfree(c);
++	kfree(force_context);
++
++	return rc;
 +}
 +
-+static void __exit exit_ceph(void)
-+{
-+	dout(1, "exit_ceph\n");
-+	unregister_filesystem(&ceph_fs_type);
-+	destroy_inodecache();
-+	ceph_msgr_exit();
-+	ceph_sysfs_cleanup();
-+#ifdef CONFIG_CEPH_BOOKKEEPER
-+	ceph_bookkeeper_finalize();
++
+diff --git a/fs/ceph/crush/mapper.h b/fs/ceph/crush/mapper.h
+new file mode 100644
+index 0000000..9ca9cd5
+--- /dev/null
++++ b/fs/ceph/crush/mapper.h
+@@ -0,0 +1,19 @@
++#ifndef _CRUSH_MAPPER_H
++#define _CRUSH_MAPPER_H
++
++#include "crush.h"
++
++/*
++ * CRUSH functions for find rules and then mapping an input to an
++ * output set.
++ *
++ * LGPL2
++ */
++extern int crush_find_rule(struct crush_map *map, int pool, int type, int size);
++extern int crush_do_rule(struct crush_map *map,
++			 int ruleno,
++			 int x, int *result, int result_max,
++			 int forcefeed,
++			 __u32 *weights); /* -1 for none */
++
 +#endif
-+}
-+
-+module_init(init_ceph);
-+module_exit(exit_ceph);
-+
-+MODULE_AUTHOR("Patience Warnick <patience@newdream.net>");
-+MODULE_AUTHOR("Sage Weil <sage@newdream.net>");
-+MODULE_AUTHOR("Yehuda Sadeh <yehuda@hq.newdream.net>");
-+MODULE_DESCRIPTION("Ceph filesystem for Linux");
-+MODULE_LICENSE("GPL");
 -- 
 1.5.6.5
 
