@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbZCIWrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZCIWry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755908AbZCIWrX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 18:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbZCIWlx
+	id S1755973AbZCIWry (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 18:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZCIWl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 18:41:53 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:50073 "EHLO
+	Mon, 9 Mar 2009 18:41:56 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:50071 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754158AbZCIWk3 (ORCPT
+	with ESMTP id S1753912AbZCIWk2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 18:40:29 -0400
+	Mon, 9 Mar 2009 18:40:28 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 19/20] ceph: sysfs
-Date: Mon,  9 Mar 2009 15:40:38 -0700
-Message-Id: <1236638439-6753-20-git-send-email-sage@newdream.net>
+Subject: [PATCH 17/20] ceph: ioctls
+Date: Mon,  9 Mar 2009 15:40:36 -0700
+Message-Id: <1236638439-6753-18-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1236638439-6753-19-git-send-email-sage@newdream.net>
+In-Reply-To: <1236638439-6753-17-git-send-email-sage@newdream.net>
 References: <1236638439-6753-1-git-send-email-sage@newdream.net>
  <1236638439-6753-2-git-send-email-sage@newdream.net>
  <1236638439-6753-3-git-send-email-sage@newdream.net>
@@ -35,493 +35,107 @@ References: <1236638439-6753-1-git-send-email-sage@newdream.net>
  <1236638439-6753-15-git-send-email-sage@newdream.net>
  <1236638439-6753-16-git-send-email-sage@newdream.net>
  <1236638439-6753-17-git-send-email-sage@newdream.net>
- <1236638439-6753-18-git-send-email-sage@newdream.net>
- <1236638439-6753-19-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Basic state information is available via /sys/fs/ceph, including
-instances of the client, fsids, current monitor, mds and osd maps,
-and hooks to adjust debug levels.
+A few Ceph ioctls for getting and setting file layout (striping)
+parameters.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/ceph/sysfs.c |  465 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 465 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/sysfs.c
+ fs/ceph/ioctl.c |   62 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ceph/ioctl.h |   12 ++++++++++
+ 2 files changed, 74 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/ioctl.c
+ create mode 100644 fs/ceph/ioctl.h
 
-diff --git a/fs/ceph/sysfs.c b/fs/ceph/sysfs.c
+diff --git a/fs/ceph/ioctl.c b/fs/ceph/ioctl.c
 new file mode 100644
-index 0000000..fc107fd
+index 0000000..55c992e
 --- /dev/null
-+++ b/fs/ceph/sysfs.c
-@@ -0,0 +1,465 @@
-+#include <linux/ctype.h>
-+#include <linux/kobject.h>
-+
++++ b/fs/ceph/ioctl.c
+@@ -0,0 +1,62 @@
++#include "ioctl.h"
 +#include "super.h"
++#include "ceph_debug.h"
 +
-+static struct kobject ceph_kobj;
-+
-+/*
-+ * default kobject attribute operations.  duplicated here from
-+ * kobject.c
-+ */
-+
-+#define DEF_ATTR_OP(name) \
-+static ssize_t name##_attr_show(struct kobject *kobj, struct attribute *attr,\
-+				char *buf)				\
-+{									\
-+	struct name##_attr *a =						\
-+		container_of(attr, struct name##_attr, attr);		\
-+	struct name *c = container_of(kobj, struct name, kobj);		\
-+	ssize_t ret = -EIO;						\
-+									\
-+	if (a->show)							\
-+		ret = a->show(c, a, buf);				\
-+	return ret;							\
-+}									\
-+									\
-+static ssize_t name##_attr_store(struct kobject *kobj, struct attribute *attr, \
-+				 const char *buf, size_t count)		\
-+{									\
-+	struct name##_attr *a = container_of(attr, struct name##_attr, attr); \
-+	struct name *c = container_of(kobj, struct name, kobj);		\
-+	ssize_t ret = -EIO;						\
-+									\
-+	if (a->store)							\
-+		ret = a->store(c, a, buf, count);			\
-+	return ret;							\
-+}									\
-+									\
-+static struct sysfs_ops name##_sysfs_ops = {				\
-+	.show	= name##_attr_show,					\
-+	.store	= name##_attr_store,					\
-+};									\
-+									\
-+static struct kobj_type name##_ops = {					\
-+	.sysfs_ops = &name##_sysfs_ops,					\
-+};
-+
-+#define ADD_ENTITY_ATTR(ent, a, n, m, sh, st) \
-+	ent->a.attr.name = n; \
-+	ent->a.attr.mode = m; \
-+	ent->a.show = sh; \
-+	ent->a.store = st; \
-+	ret = sysfs_create_file(&ent->kobj, &ent->a.attr);
-+
-+
-+
-+DEF_ATTR_OP(ceph_client)
++int ceph_debug_ioctl __read_mostly = -1;
++#define DOUT_MASK DOUT_MASK_IOCTL
++#define DOUT_VAR ceph_debug_ioctl
 +
 +
 +/*
-+ * per-client attributes
++ * ioctls
 + */
-+#define to_client(c) container_of(c, struct ceph_client, kobj)
 +
-+static ssize_t fsid_show(struct ceph_client *client,
-+			 struct ceph_client_attr *attr, char *buf)
++static long ceph_ioctl_get_layout(struct file *file, void __user *arg)
 +{
-+	return sprintf(buf, "%llx.%llx\n",
-+	       le64_to_cpu(__ceph_fsid_major(&client->monc.monmap->fsid)),
-+	       le64_to_cpu(__ceph_fsid_minor(&client->monc.monmap->fsid)));
-+}
++	struct ceph_inode_info *ci = ceph_inode(file->f_dentry->d_inode);
++	int err;
 +
-+static ssize_t monmap_show(struct ceph_client *client,
-+			   struct ceph_client_attr *attr, char *buf)
-+{
-+	int i, pos;
-+
-+	if (client->monc.monmap == NULL)
-+		return 0;
-+
-+	pos = sprintf(buf, "epoch %d\n", client->monc.monmap->epoch);
-+	for (i = 0; i < client->monc.monmap->num_mon; i++) {
-+		struct ceph_entity_inst *inst =
-+			&client->monc.monmap->mon_inst[i];
-+
-+		if (pos > PAGE_SIZE - 128)
-+			break; /* be conservative */
-+		pos += sprintf(buf + pos, "\t%s%d\t%u.%u.%u.%u:%u\n",
-+			       ENTITY_NAME(inst->name),
-+			       IPQUADPORT(inst->addr.ipaddr));
++	err = ceph_do_getattr(file->f_dentry, CEPH_STAT_CAP_LAYOUT);
++	if (!err) {
++		if (copy_to_user(arg, &ci->i_layout, sizeof(ci->i_layout)))
++			return -EFAULT;
 +	}
-+	return pos;
++
++	return err;
 +}
 +
-+static ssize_t mdsmap_show(struct ceph_client *client,
-+			   struct ceph_client_attr *attr, char *buf)
++static long ceph_ioctl_set_layout(struct file *file, void __user *arg)
 +{
-+	int i, pos;
++	struct inode *inode = file->f_dentry->d_inode;
++	struct inode *parent_inode = file->f_dentry->d_parent->d_inode;
++	struct ceph_mds_client *mdsc = &ceph_sb_to_client(inode->i_sb)->mdsc;
++	struct ceph_mds_request *req;
++	struct ceph_file_layout layout;
++	int err;
 +
-+	if (client->mdsc.mdsmap == NULL)
-+		return 0;
-+	pos = sprintf(buf, "epoch %d\n", client->mdsc.mdsmap->m_epoch);
-+	pos += sprintf(buf + pos, "root %d\n", client->mdsc.mdsmap->m_root);
-+	pos += sprintf(buf + pos, "session_timeout %d\n",
-+		       client->mdsc.mdsmap->m_session_timeout);
-+	pos += sprintf(buf + pos, "session_autoclose %d\n",
-+		       client->mdsc.mdsmap->m_session_autoclose);
-+	for (i = 0; i < client->mdsc.mdsmap->m_max_mds; i++) {
-+		struct ceph_entity_addr *addr = &client->mdsc.mdsmap->m_addr[i];
-+		int state = client->mdsc.mdsmap->m_state[i];
++	/* copy and validate */
++	if (copy_from_user(&layout, arg, sizeof(layout)))
++		return -EFAULT;
 +
-+		if (pos > PAGE_SIZE - 128)
-+			break; /* be conservative */
-+		pos += sprintf(buf+pos, "\tmds%d\t%u.%u.%u.%u:%u\t(%s)\n",
-+			       i,
-+			       IPQUADPORT(addr->ipaddr),
-+			       ceph_mdsmap_state_str(state));
++	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_LSETLAYOUT,
++				       file->f_dentry, NULL, NULL, NULL,
++				       USE_AUTH_MDS);
++	req->r_args.setlayout.layout = layout;
++	ceph_release_caps(inode, CEPH_CAP_FILE_RDCACHE);
++	err = ceph_mdsc_do_request(mdsc, parent_inode, req);
++	ceph_mdsc_put_request(req);
++	return err;
++}
++
++long ceph_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++{
++	dout(10, "ioctl file %p cmd %u arg %lu\n", file, cmd, arg);
++	switch (cmd) {
++	case CEPH_IOC_GET_LAYOUT:
++		return ceph_ioctl_get_layout(file, (void __user *)arg);
++
++	case CEPH_IOC_SET_LAYOUT:
++		return ceph_ioctl_set_layout(file, (void __user *)arg);
 +	}
-+	return pos;
++	return -ENOTTY;
 +}
+diff --git a/fs/ceph/ioctl.h b/fs/ceph/ioctl.h
+new file mode 100644
+index 0000000..537c27b
+--- /dev/null
++++ b/fs/ceph/ioctl.h
+@@ -0,0 +1,12 @@
++#ifndef FS_CEPH_IOCTL_H
++#define FS_CEPH_IOCTL_H
 +
-+static ssize_t osdmap_show(struct ceph_client *client,
-+			   struct ceph_client_attr *attr, char *buf)
-+{
-+	int i, pos;
++#include <linux/ioctl.h>
++#include "types.h"
 +
-+	if (client->osdc.osdmap == NULL)
-+		return 0;
-+	pos = sprintf(buf, "epoch %d\n", client->osdc.osdmap->epoch);
-+	pos += sprintf(buf + pos, "pg_num %d / %d\n",
-+		       client->osdc.osdmap->pg_num,
-+		       client->osdc.osdmap->pg_num_mask);
-+	pos += sprintf(buf + pos, "lpg_num %d / %d\n",
-+		       client->osdc.osdmap->lpg_num,
-+		       client->osdc.osdmap->lpg_num_mask);
-+	pos += sprintf(buf + pos, "flags%s%s\n",
-+		       (client->osdc.osdmap->flags & CEPH_OSDMAP_NEARFULL) ?
-+		       " NEARFULL":"",
-+		       (client->osdc.osdmap->flags & CEPH_OSDMAP_FULL) ?
-+		       " FULL":"");
-+	for (i = 0; i < client->osdc.osdmap->max_osd; i++) {
-+		struct ceph_entity_addr *addr =
-+			&client->osdc.osdmap->osd_addr[i];
-+		int state = client->osdc.osdmap->osd_state[i];
-+		char sb[64];
++#define CEPH_IOCTL_MAGIC 0x97
 +
-+		if (pos > PAGE_SIZE - 128)
-+			break; /* be conservative */
-+		pos += sprintf(buf + pos,
-+		       "\tosd%d\t%u.%u.%u.%u:%u\t%3d%%\t(%s)\n",
-+		       i, IPQUADPORT(addr->ipaddr),
-+		       ((client->osdc.osdmap->osd_weight[i]*100) >> 16),
-+		       ceph_osdmap_state_str(sb, sizeof(sb), state));
-+	}
-+	return pos;
-+}
++#define CEPH_IOC_GET_LAYOUT _IOR(CEPH_IOCTL_MAGIC, 1, struct ceph_file_layout)
++#define CEPH_IOC_SET_LAYOUT _IOW(CEPH_IOCTL_MAGIC, 2, struct ceph_file_layout)
 +
-+static struct kobj_type entity_ops = {
-+	.sysfs_ops = &ceph_client_sysfs_ops,
-+};
-+
-+
-+int ceph_sysfs_client_init(struct ceph_client *client)
-+{
-+	int ret = 0;
-+
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
-+	ret = kobject_init_and_add(&client->kobj, &ceph_client_ops,
-+				   &ceph_kobj, "client%d", client->whoami);
-+	if (ret)
-+		goto out;
-+
-+	ret = kobject_init_and_add(&client->mdsc.kobj, &entity_ops,
-+				   &client->kobj, "mdsc");
-+	if (ret)
-+		goto out;
-+
-+	ADD_ENTITY_ATTR(client, k_fsid, "fsid", 0400, fsid_show, NULL);
-+	ADD_ENTITY_ATTR(client, k_monmap, "monmap", 0400, monmap_show, NULL);
-+	ADD_ENTITY_ATTR(client, k_mdsmap, "mdsmap", 0400, mdsmap_show, NULL);
-+	ADD_ENTITY_ATTR(client, k_osdmap, "osdmap", 0400, osdmap_show, NULL);
-+	return 0;
-+
-+out:
 +#endif
-+	return ret;
-+}
-+
-+void ceph_sysfs_client_cleanup(struct ceph_client *client)
-+{
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
-+	kobject_del(&client->mdsc.kobj);
-+	kobject_del(&client->kobj);
-+#endif	
-+}
-+
-+DEF_ATTR_OP(ceph_mds_request)
-+
-+static ssize_t req_mds_show(struct ceph_mds_request *req,
-+			   struct ceph_mds_request_attr *attr, char *buf)
-+{
-+	return sprintf(buf, "%u.%u.%u.%u:%u (%s%d)\n",
-+			IPQUADPORT(req->r_request->hdr.dst.addr.ipaddr),
-+			ENTITY_NAME(req->r_request->hdr.dst.name));
-+}
-+
-+static ssize_t req_op_show(struct ceph_mds_request *req,
-+			   struct ceph_mds_request_attr *attr, char *buf)
-+{
-+	int pos = 0, pathlen;
-+	u64 pathbase;
-+
-+	char *path;
-+
-+	pos += sprintf(buf, "%s", ceph_mds_op_name(req->r_op));
-+
-+	if (req->r_dentry) {
-+		path = ceph_mdsc_build_path(req->r_dentry, &pathlen, &pathbase, -1);
-+		if (path) {
-+			pos += sprintf(buf+pos, " %s", path);
-+			kfree(path);
-+		}
-+	} else if (req->r_path1) {
-+		pos += sprintf(buf+pos, " %s", req->r_path1);
-+	}
-+
-+	if (req->r_old_dentry) {
-+		path = ceph_mdsc_build_path(req->r_old_dentry, &pathlen, &pathbase, -1);
-+		if (path) {
-+			pos += sprintf(buf+pos, " %s", path);
-+			kfree(path);
-+		}
-+	} else if (req->r_path2 &&
-+		   req->r_op != CEPH_MDS_OP_FINDINODE) {
-+			pos += sprintf(buf+pos, " %s", req->r_path2);
-+	}
-+
-+	pos += sprintf(buf+pos, "\n");
-+
-+	return pos;
-+}
-+
-+int ceph_sysfs_mds_req_init(struct ceph_mds_client *mdsc, struct ceph_mds_request *req)
-+{
-+	int ret = 0;
-+
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
-+	ret = kobject_init_and_add(&req->kobj, &ceph_mds_request_ops,
-+				   &mdsc->kobj, "%d", req->r_tid);
-+	if (ret)
-+		goto out;
-+
-+	ADD_ENTITY_ATTR(req, k_mds, "mds", 0400, req_mds_show, NULL);
-+	ADD_ENTITY_ATTR(req, k_op, "op", 0400, req_op_show, NULL);
-+
-+	return 0;
-+
-+out:
-+#endif
-+	return ret;
-+}
-+
-+void ceph_sysfs_mds_req_cleanup(struct ceph_mds_request *req)
-+{
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
-+	kobject_del(&req->kobj);
-+#endif
-+}
-+
-+/*
-+ * ceph attrs
-+ */
-+struct ceph_attr {
-+	struct attribute attr;
-+	ssize_t (*show)(struct ceph_attr *, char *);
-+	ssize_t (*store)(struct ceph_attr *, const char *, size_t);
-+	int *val;
-+};
-+
-+static ssize_t ceph_attr_show(struct kobject *ko, struct attribute *a,
-+			      char *buf)
-+{
-+	struct ceph_attr *ca = container_of(a, struct ceph_attr, attr);
-+	return ca->show(ca, buf);
-+}
-+
-+static ssize_t ceph_attr_store(struct kobject *ko, struct attribute *a,
-+			       const char *buf, size_t len)
-+{
-+	struct ceph_attr *ca = container_of(a, struct ceph_attr, attr);
-+	return ca->store(ca, buf, len);
-+}
-+
-+static struct sysfs_ops ceph_sysfs_ops = {
-+	.show = ceph_attr_show,
-+	.store = ceph_attr_store,
-+};
-+
-+static struct kobj_type ceph_type = {
-+	.sysfs_ops = &ceph_sysfs_ops,
-+};
-+
-+/*
-+ * simple int attrs (debug levels)
-+ */
-+static ssize_t int_attr_show(struct ceph_attr *a, char *buf)
-+{
-+	return sprintf(buf, "%d\n", *a->val);
-+}
-+
-+static ssize_t int_attr_store(struct ceph_attr *a, const char *buf, size_t len)
-+{
-+	if (sscanf(buf, "%d", a->val) < 1)
-+		return 0;
-+	return len;
-+}
-+
-+#define DECLARE_DEBUG_ATTR(_name)					\
-+	static struct ceph_attr ceph_attr_##_name = {			\
-+		.attr = { .name = __stringify(_name), .mode = 0600 },	\
-+		.show = int_attr_show,					\
-+		.store = int_attr_store,				\
-+		.val = &ceph_##_name,					\
-+	};
-+
-+DECLARE_DEBUG_ATTR(debug);
-+DECLARE_DEBUG_ATTR(debug_msgr);
-+DECLARE_DEBUG_ATTR(debug_console);
-+
-+/*
-+ * ceph_debug_mask
-+ */
-+struct _debug_mask_name {
-+	int mask;
-+	char *name;
-+};
-+
-+static struct _debug_mask_name _debug_mask_names[] = {
-+		{DOUT_MASK_ADDR, "addr"},
-+		{DOUT_MASK_CAPS, "caps"},
-+		{DOUT_MASK_DIR, "dir"},
-+		{DOUT_MASK_EXPORT, "export"},
-+		{DOUT_MASK_FILE, "file"},
-+		{DOUT_MASK_INODE, "inode"},
-+		{DOUT_MASK_IOCTL, "ioctl"},
-+		{DOUT_MASK_MDSC, "mdsc"},
-+		{DOUT_MASK_MDSMAP, "mdsmap"},
-+		{DOUT_MASK_MSGR, "msgr"},
-+		{DOUT_MASK_MON, "mon"},
-+		{DOUT_MASK_OSDC, "osdc"},
-+		{DOUT_MASK_OSDMAP, "osdmap"},
-+		{DOUT_MASK_SNAP, "snap"},
-+		{DOUT_MASK_SUPER, "super"},
-+		{DOUT_MASK_PROTOCOL, "protocol"},
-+		{DOUT_MASK_PROC, "proc"},
-+		{DOUT_MASK_TOOLS, "tools"},
-+		{0, NULL}
-+};
-+
-+static ssize_t debug_mask_show(struct ceph_attr *a, char *buf)
-+{
-+	int i = 0, pos;
-+
-+	pos = sprintf(buf, "0x%x", ceph_debug_mask);
-+
-+	while (_debug_mask_names[i].mask) {
-+		if (ceph_debug_mask & _debug_mask_names[i].mask)
-+			pos += sprintf(buf+pos, " %s",
-+				       _debug_mask_names[i].name);
-+		i++;
-+	}
-+	pos += sprintf(buf+pos, "\n");
-+	return pos;
-+}
-+
-+static int get_debug_mask(const char *name, int len)
-+{
-+	int i = 0;
-+
-+	while (_debug_mask_names[i].name) {
-+		if (strncmp(_debug_mask_names[i].name, name, len) == 0)
-+			return _debug_mask_names[i].mask;
-+		i++;
-+	}
-+	return 0;
-+}
-+
-+static ssize_t debug_mask_store(struct ceph_attr *a, const char *buf,
-+				size_t len)
-+{
-+	const char *next = buf, *tok;
-+
-+	while (1) {
-+		tok = next;
-+		next = strpbrk(tok, " \t\r\n");
-+		if (!next)
-+			break;
-+		if (isdigit(*tok)) {
-+			ceph_debug_mask = simple_strtol(tok, NULL, 0);
-+		} else {
-+			int remove = 0;
-+			int mask;
-+
-+			if (*tok == '-') {
-+				remove = 1;
-+				tok++;
-+			} else if (*tok == '+')
-+				tok++;
-+			mask = get_debug_mask(tok, next-tok);
-+			if (mask) {
-+				if (remove)
-+					ceph_debug_mask &= ~mask;
-+				else
-+					ceph_debug_mask |= mask;
-+			}
-+		}
-+		next++;
-+	}
-+
-+	return len;
-+}
-+
-+static struct ceph_attr ceph_attr_debug_mask = {
-+	.attr = { .name = "debug_mask", .mode = 0600 },
-+	.show = debug_mask_show,
-+	.store = debug_mask_store,
-+};
-+
-+int ceph_sysfs_init(void)
-+{
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
-+	int ret;
-+
-+	ret = kobject_init_and_add(&ceph_kobj, &ceph_type, fs_kobj, "ceph");
-+	if (ret)
-+		goto out;
-+	ret = sysfs_create_file(&ceph_kobj, &ceph_attr_debug.attr);
-+	if (ret)
-+		goto out_del;
-+	ret = sysfs_create_file(&ceph_kobj, &ceph_attr_debug_msgr.attr);
-+	if (ret)
-+		goto out_del;
-+	ret = sysfs_create_file(&ceph_kobj, &ceph_attr_debug_console.attr);
-+	if (ret)
-+		goto out_del;
-+	ret = sysfs_create_file(&ceph_kobj, &ceph_attr_debug_mask.attr);
-+	if (ret)
-+		goto out_del;
-+	return 0;
-+
-+out_del:
-+	kobject_del(&ceph_kobj);
-+out:
-+	return ret;
-+#else
-+	return 0;
-+#endif
-+}
-+
-+void ceph_sysfs_cleanup(void)
-+{
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
-+	kobject_del(&ceph_kobj);
-+#endif
-+}
 -- 
 1.5.6.5
 
