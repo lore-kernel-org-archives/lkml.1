@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbZCIQwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbZCIQw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754225AbZCIQwe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 12:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZCIQwZ
+	id S1754499AbZCIQw6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 12:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbZCIQws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 12:52:25 -0400
-Received: from ns0.wincor-nixdorf.com ([80.154.98.130]:39788 "EHLO
-	mxpdbe2.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751488AbZCIQwZ (ORCPT
+	Mon, 9 Mar 2009 12:52:48 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45554 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752194AbZCIQwr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 12:52:25 -0400
-Message-ID: <49B54862.6090908@wincor-nixdorf.com>
-Date: Mon, 09 Mar 2009 17:48:34 +0100
-From: Niels de Vos <niels.devos@wincor-nixdorf.com>
-Organization: Wincor Nixdorf International
-User-Agent: Thunderbird 2.0.0.19 (X11/20090107)
-MIME-Version: 1.0
-To: fr3ddie@fr3ddie.it
-CC: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: Kernel HANGED (don't know if a kernel panic)
-References: <49B54125.6090300@fr3ddie.it>
-In-Reply-To: <49B54125.6090300@fr3ddie.it>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig094E84D29707AAA6C158547E"
-X-OriginalArrivalTime: 09 Mar 2009 16:51:57.0836 (UTC) FILETIME=[5BFB04C0:01C9A0D7]
+	Mon, 9 Mar 2009 12:52:47 -0400
+Date: Mon, 9 Mar 2009 09:53:30 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Linux* Processor Microcode Data File
+Message-ID: <20090309095330.30278385@infradead.org>
+In-Reply-To: <20090309153449.GB24213@silver.sucs.org>
+References: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com>
+	<20090309141655.GA24213@silver.sucs.org>
+	<20090309081109.376f7a7e@infradead.org>
+	<20090309153449.GB24213@silver.sucs.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig094E84D29707AAA6C158547E
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Mon, 9 Mar 2009 15:34:50 +0000
+Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
 
-Fr3ddie wrote:
-> I wasn't there.... but it seems the kernel hanged (I think it not
-> paniced) and it needed a hard-reboot (via Magic SYS-RQ), here's the
-> informations I can catch (sorry if are incomplete, I'm not a Linux
-> hacker, but I try :) )
+> On Mon, Mar 09, 2009 at 08:11:09AM -0700, Arjan van de Ven wrote:
+> > On Mon, 9 Mar 2009 14:16:55 +0000
+> > Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> > 
+> > > The kernel doesn't load microcode automatically 
+> > 
+> > it does if you have the right format; the kernel uses
+> > request_firmware() for this.
+> > The microcode on the intel website is not ready for this yet, but
+> > we're working hard to have future drops to be in the new format.
+> 
+> Wow so I was redundant AND wrong in the same email!
+> 
+> What motivated the switch to the generic request_firmware interface?
+> Is it just less messy/faster than previous methods? 
 
-Please use <https://launchpad.net/ubuntu/+bugs> for problems with
-Ubuntu packages.
+there are various cases where microcode is needed (for example, when
+you hotplug a new cpu); request_firmware() is just the right way to do
+such things, and an initscript is just the wrong way
 
-Thanks,
-Niels
-
-
---------------enig094E84D29707AAA6C158547E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFJtUhi5KAkGQPO/QoRAtbiAKDe4cpwDwGPhaeLslmZLGf7aE0sUACgubPt
-mt/92QaOPeKsuergZIb8/3A=
-=/6Zk
------END PGP SIGNATURE-----
-
---------------enig094E84D29707AAA6C158547E--
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
