@@ -1,102 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbZCIP6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZCIP7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbZCIP6r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 11:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbZCIP6g
+	id S1754290AbZCIP7k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 11:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbZCIP7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 11:58:36 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:42601 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752958AbZCIP6f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 11:58:35 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: Linux* Processor Microcode Data File
-Date: Mon, 09 Mar 2009 11:58:22 -0400
-User-Agent: KMail/1.11.0 (Linux/2.6.28.7; KDE/4.2.0; i686; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, tigran@aivazian.fsnet.co.uk
-References: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com>
- <20090309081109.376f7a7e@infradead.org>
- <20090309153449.GB24213@silver.sucs.org>
-In-reply-to: <20090309153449.GB24213@silver.sucs.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200903091158.22918.gene.heskett@verizon.net>
+	Mon, 9 Mar 2009 11:59:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36997 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751410AbZCIP7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 11:59:30 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: linux-aio <linux-aio@kvack.org>, michael.kerrisk@gmail.com
+Cc: zach.brown@oracle.com, bcrl@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [patch] man-pages: add documentation about the memlock implications of io_setup
+References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 09 Mar 2009 11:59:20 -0400
+In-Reply-To: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com> (Jeff Moyer's
+	message of "Mon, 09 Mar 2009 11:49:57 -0400")
+Message-ID: <x49zlfud6w7.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 March 2009, Sitsofe Wheeler wrote:
->On Mon, Mar 09, 2009 at 08:11:09AM -0700, Arjan van de Ven wrote:
->> On Mon, 9 Mar 2009 14:16:55 +0000
->>
->> Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
->> > The kernel doesn't load microcode automatically
->>
->> it does if you have the right format; the kernel uses
->> request_firmware() for this.
->> The microcode on the intel website is not ready for this yet, but we're
->> working hard to have future drops to be in the new format.
->
->Wow so I was redundant AND wrong in the same email!
->
->What motivated the switch to the generic request_firmware interface? Is
->it just less messy/faster than previous methods?
->
->Additionally while I remember, is it worth updating the microcode on all
->machines? At present I have an EeePC 900 and it's unclear if it would
->benefit from a microcode update (but there's a definite cost to running
->the current initscript at boot).
+Hi,
 
-Slight hijack of thread here, but...
+This patch, against man-pages-3.19, adds verbiage surrounding the newly
+proposed accounting of pinned aio completion ring pages against the
+memlock rlimit.  It also fixes up a few references to aio_context_t
+(which should be io_context_t).  Sorry for conflating the two, I can
+break it apart if needed.
 
-I'll have to admit it was with some trepidation that I might brick my 
-processor, which is a quad core AMD 9550, stepping 03 running at 2.2 ghz, but 
-the directions didn't note until the end, that it would take a 2.6.29 series 
-kernel to do it and I was running 2.6.28.7.  But when I got to the 
-modprobe -r microcode, modprobe microcode part, there was no feedback from 
-either command.  So did I, or did I not do this as I was and am running 
-2.6.28.7?  The following was reported in my log:
+Cheers,
+Jeff
 
-Mar  9 07:22:04 coyote kernel: [65725.810333] microcode: collect_cpu_info_amd : patch_id=0x1000065                                       
-Mar  9 07:22:04 coyote kernel: [65725.810338] platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
-Mar  9 07:22:04 coyote kernel: [65725.847258] microcode: size 1936, total_size 960
-Mar  9 07:22:04 coyote kernel: [65725.847265] microcode: CPU0 patch does not match (processor_rev_id: 1020, eqiv_cpu_id: 1022)
-Mar  9 07:22:04 coyote kernel: [65725.847269] microcode: size 968, total_size 960
-Mar  9 07:22:04 coyote kernel: [65725.847278] microcode: CPU0 updated from revision 0x1000065 to 0x1000083
-Mar  9 07:22:04 coyote kernel: [65725.847312] microcode: collect_cpu_info_amd : patch_id=0x1000065
-Mar  9 07:22:04 coyote kernel: [65725.847317] platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
-Mar  9 07:22:04 coyote kernel: [65725.851377] microcode: size 1936, total_size 960
-Mar  9 07:22:04 coyote kernel: [65725.851390] microcode: CPU1 patch does not match (processor_rev_id: 1020, eqiv_cpu_id: 1022)
-Mar  9 07:22:04 coyote kernel: [65725.851393] microcode: size 968, total_size 960
-Mar  9 07:22:04 coyote kernel: [65725.851403] microcode: CPU1 updated from revision 0x1000065 to 0x1000083
-Mar  9 07:22:04 coyote kernel: [65725.851421] microcode: collect_cpu_info_amd : patch_id=0x1000065
-Mar  9 07:22:04 coyote kernel: [65725.851426] platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
-Mar  9 07:22:04 coyote kernel: [65725.855323] microcode: size 1936, total_size 960
-Mar  9 07:22:04 coyote kernel: [65725.855330] microcode: CPU2 patch does not match (processor_rev_id: 1020, eqiv_cpu_id: 1022)
-Mar  9 07:22:04 coyote kernel: [65725.855333] microcode: size 968, total_size 960
-Mar  9 07:22:04 coyote kernel: [65725.855344] microcode: CPU2 updated from revision 0x1000065 to 0x1000083
-Mar  9 07:22:04 coyote kernel: [65725.855361] microcode: collect_cpu_info_amd : patch_id=0x1000065
-Mar  9 07:22:04 coyote kernel: [65725.855365] platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
-Mar  9 07:22:04 coyote kernel: [65725.863101] microcode: size 1936, total_size 960
-Mar  9 07:22:04 coyote kernel: [65725.863107] microcode: CPU3 patch does not match (processor_rev_id: 1020, eqiv_cpu_id: 1022)
-Mar  9 07:22:04 coyote kernel: [65725.863110] microcode: size 968, total_size 960
-Mar  9 07:22:04 coyote kernel: [65725.863120] microcode: CPU3 updated from revision 0x1000065 to 0x1000083
-Mar  9 07:22:04 coyote kernel: [65725.863122] Microcode Update Driver: v2.00 <tigran@aivazian.fsnet.co.uk>, Peter Oruba
-
-Inquiring minds and all that.  Comments please?
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-"I have five dollars for each of you."
--- Bernhard Goetz
-
+diff -up man-pages-3.19/man2/io_cancel.2.orig man-pages-3.19/man2/io_cancel.2
+--- man-pages-3.19/man2/io_cancel.2.orig	2009-03-08 11:57:50.000000000 -0400
++++ man-pages-3.19/man2/io_cancel.2	2009-03-08 11:58:01.000000000 -0400
+@@ -32,7 +32,7 @@ io_cancel \- cancel an outstanding async
+ .\"#include <linux/aio.h>
+ .sp
+ .\" .HP 16
+-.BI "int io_cancel(aio_context_t " ctx_id ", struct iocb *" iocb ,
++.BI "int io_cancel(io_context_t " ctx_id ", struct iocb *" iocb ,
+ .BI "              struct io_event *" result );
+ .\" .ad
+ .\" .hy
+diff -up man-pages-3.19/man2/io_destroy.2.orig man-pages-3.19/man2/io_destroy.2
+--- man-pages-3.19/man2/io_destroy.2.orig	2009-03-08 11:58:08.000000000 -0400
++++ man-pages-3.19/man2/io_destroy.2	2009-03-08 11:58:16.000000000 -0400
+@@ -31,7 +31,7 @@ io_destroy \- destroy an asynchronous I/
+ .\" #include <linux/aio.h>
+ .sp
+ .\" .HP 17
+-.BI "int io_destroy(aio_context_t " ctx );
++.BI "int io_destroy(io_context_t " ctx );
+ .\" .ad
+ .\" .hy
+ .sp
+diff -up man-pages-3.19/man2/io_setup.2.orig man-pages-3.19/man2/io_setup.2
+--- man-pages-3.19/man2/io_setup.2.orig	2009-03-08 11:53:39.000000000 -0400
++++ man-pages-3.19/man2/io_setup.2	2009-03-08 11:57:09.000000000 -0400
+@@ -31,7 +31,7 @@ io_setup \- create an asynchronous I/O c
+ .\" #include <linux/aio.h>
+ .sp
+ .\" .HP 15
+-.BI "int io_setup(unsigned " nr_events ", aio_context_t *" ctxp );
++.BI "int io_setup(unsigned " nr_events ", io_context_t *" ctxp );
+ .\" .ad
+ .\" .hy
+ .sp
+@@ -45,7 +45,9 @@ at least \fInr_events\fP.
+ \fIctxp\fP must not point to an AIO context that already exists, and must
+ be initialized to 0 prior to the call.
+ On successful creation of the AIO context, \fI*ctxp\fP is filled in
+-with the resulting handle.
++with the resulting handle.  Memory is reserved by the kernel for the completion
++ring and, because this memory is pinned, it will be charged against the
++process's memlock rlimit.
+ .SH "RETURN VALUE"
+ On success,
+ .BR io_setup ()
+@@ -54,7 +56,8 @@ For the failure return, see NOTES.
+ .SH "ERRORS"
+ .TP
+ .B EAGAIN
+-The specified \fInr_events\fP exceeds the user's limit of available events.
++The specified \fInr_events\fP exceeds the process's limit of available events.
++Try increasing the memlock rlimit for the process.
+ .TP
+ .B EFAULT
+ An invalid pointer is passed for \fIctxp\fP.
+diff -up man-pages-3.19/man2/io_submit.2.orig man-pages-3.19/man2/io_submit.2
+--- man-pages-3.19/man2/io_submit.2.orig	2009-03-08 11:58:26.000000000 -0400
++++ man-pages-3.19/man2/io_submit.2	2009-03-08 11:58:34.000000000 -0400
+@@ -31,7 +31,7 @@ io_submit \- submit asynchronous I/O blo
+ .\" #include <linux/aio.h>
+ .sp
+ .\" .HP 16
+-.BI "int io_submit(aio_context_t " ctx_id ", long " nr \
++.BI "int io_submit(io_context_t " ctx_id ", long " nr \
+ ", struct iocb **" iocbpp );
+ .\" .ad
+ .\" .hy
+@@ -63,7 +63,7 @@ The file descriptor specified in the fir
+ One of the data structures points to invalid data.
+ .TP
+ .B EINVAL
+-The \fIaio_context\fP specified by \fIctx_id\fP is invalid.
++The \fIio_context\fP specified by \fIctx_id\fP is invalid.
+ \fInr\fP is less than 0.
+ The \fIiocb\fP at *iocbpp[0] is not properly initialized,
+ or the operation specified is invalid for the file descriptor
+diff -up man-pages-3.19/man7/capabilities.7.orig man-pages-3.19/man7/capabilities.7
+--- man-pages-3.19/man7/capabilities.7.orig	2009-03-08 11:52:56.000000000 -0400
++++ man-pages-3.19/man7/capabilities.7	2009-03-08 11:53:14.000000000 -0400
+@@ -129,7 +129,8 @@ Lock memory
+ .RB ( mlock (2),
+ .BR mlockall (2),
+ .BR mmap (2),
+-.BR shmctl (2)).
++.BR shmctl (2),
++.BR io_setup (2)).
+ .TP
+ .B CAP_IPC_OWNER
+ Bypass permission checks for operations on System V IPC objects.
