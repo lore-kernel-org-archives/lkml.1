@@ -1,104 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbZCIEOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752366AbZCIE2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751959AbZCIEOT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 00:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbZCIEOH
+	id S1752366AbZCIE2a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 00:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZCIE2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 00:14:07 -0400
-Received: from ozlabs.org ([203.10.76.45]:54667 "EHLO ozlabs.org"
+	Mon, 9 Mar 2009 00:28:21 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:34509 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750918AbZCIEOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 00:14:05 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andy Henroid <andrew.d.henroid@intel.com>
-Subject: [PATCH] cpumask: convert drivers/idle/i7300_idle.c to cpumask_var_t
-Date: Mon, 9 Mar 2009 14:43:59 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org
+	id S1750936AbZCIE2U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 00:28:20 -0400
+Date: Sun, 8 Mar 2009 21:28:24 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rcu_barrier VS cpu_hotplug: Ensure callbacks in dead
+	cpu are migrated to online cpu
+Message-ID: <20090309042824.GU10625@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49B2526E.40106@cn.fujitsu.com> <20090307172907.GH10625@linux.vnet.ibm.com> <49B33463.7010300@cn.fujitsu.com> <20090308062059.GO10625@linux.vnet.ibm.com> <49B4854C.1010805@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903091444.00167.rusty@rustcorp.com.au>
+In-Reply-To: <49B4854C.1010805@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: use new API
+On Mon, Mar 09, 2009 at 10:56:12AM +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+> > On Sun, Mar 08, 2009 at 10:58:43AM +0800, Lai Jiangshan wrote:
+> >> Paul E. McKenney wrote:
+> >>> On Sat, Mar 07, 2009 at 06:54:38PM +0800, Lai Jiangshan wrote:
+> >>>> [RFC]
+> >>>> I don't like this patch, but I thought for some days and I can't
+> >>>> thought out a better one.
+> >>>>
+> >>>> I'm very hope rcu_barrier() can be called anywhere(any sleepable context).
+> >>>> But get_online_cpus() is a very large lock, it limits rcu_barrier().
+> >>>>
+> >>>> We can avoid get_online_cpus() easily for rcupreempt by using a new rcu_barrier:
+> >>>> void rcu_barrier(void)
+> >>>> {
+> >>>> 	for each rcu_data {
+> >>>> 		lock rcu_data;
+> >>>> 		if rcu_data is not empty, queue a callback for rcu_barrier;
+> >>>> 		unlock rcu_data;
+> >>>> 	}
+> >>>> }
+> >>>> But we cannot use this algorithm for rcuclassic and rcutree,
+> >>>> rcu_data in rcuclassic and rcutree have not a spinlock for queuing callback.
+> >>>>
+> >>>> From: Lai Jiangshan <laijs@cn.fujitsu.com>
+> >>>>
+> >>>> cpu hotplug may be happened asynchronously, some rcu callbacks are maybe
+> >>>> still in dead cpu, rcu_barrier() also needs to wait for these rcu callbacks
+> >>>> to complete, so we must ensure callbacks in dead cpu are migrated to
+> >>>> online cpu.
+> >>> Hmmm...  I thought that on_each_cpu() took care of interlocking with
+> >>> CPU hotplug via smp_call_function().  During a CPU-hotplug operation,
+> >>> the RCU callbacks do get migrated from the CPU going offline.  Are you
+> >>> seeing a sequence of events that finds a hole in this approach?
+> >>>
+> >>> Now, if a CPU were to go offline in the middle of smp_call_function()
+> >>> there could be trouble, but I was under the impression that the
+> >>> preempt_disable() in on_each_cpu() prevented this from happening.
+> >>>
+> >>> So, please tell me more!
+> >>>
+> >> preempt_disable() ensure online cpu is still online until preempt_enable(),
+> >> but preempt_disable()/preempt_enable() can't ensure rcu callbacks migrated.
+> >>
+> >>
+> >> rcu_barrier()			|	_cpu_down()
+> >> 				|		__cpu_die() (cpu D is dead)
+> >> 	........................|............................
+> >> 	on_each_cpu()		|
+> >> 	........................|...........................
+> >> 	wait_for_completion()	|		rcu_offline_cpu() (move cpu D's
+> >> 				|			rcu callbacks to A,B,or C)
+> >>
+> >>
+> >> on_each_cpu() does not queue rcu_barrier_callback to cpu D(it's dead).
+> >> So rcu_barrier() will not wait for callbacks which are original at cpu D.
+> >>
+> >> We need ensure callbacks in dead cpu are migrated to online cpu before
+> >> we call on_each_cpu().
+> > 
+> > Good catch!!!  I did indeed miss that possibility.  :-/
+> > 
+> > Hmmmm...  rcu_barrier() already acquires a global mutex, and is an
+> > infrequent operation, so I am not all that worried about the scalability.
+> 
+> I do not worry about the scalability either.
+> When we use get_online_cpus(), rcu_barrier() can not be called anywhere
+> (any sleepable context), this is what I worry about.
+> 
+> Most locks in kernel are locked after cpu_hotplug.lock,
+> if a path has required one of these lock, it cannot call get_online_cpus().
+> (to avoid ABBA deadlock)
+> So, if we use get_online_cpus() in rcu_barrier(), we cannot use rcu_barrier()
+> in most area in kernel.
 
-Fairly simple transformation:
-1) cpumask_t -> cpumask_var_t and alloc_cpumask_var/free_cpumask_var
-   (which are a NOOP unless CONFIG_CPUMASK_OFFSTACK=y).
-2) cpu_set -> cpumask_set_cpu
-3) cpus_weight -> cpumask_weight
-4) cpu_clear -> cpumask_clear_cpu
+Yes, that could be painful.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-To: Andy Henroid <andrew.d.henroid@intel.com>
----
- drivers/idle/i7300_idle.c |   16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+> > But I agree that there should be a better way to do this.  One approach
+> > might be to the dying CPU enqueue the rcu_barrier() callback on its
+> > own list when it goes offline, during the stop_machine() time period.
+> > This enqueuing operation would require some care -- it would be necessary
+> > to check to see if the callback was already on the list, for example,
+> > as well as to properly adjust the rcu_barrier_completion() state.
+> > 
+> > Of course, it would also be necessary to handle the case where an
+> > rcu_barrier() callback was enqueued when there was no rcu_barrier()
+> > in flight, preferably by preventing this from happening.
+> > 
+> > An entirely different approach would be to steal a trick from CPU
+> > designers, and use a count of the number of rcu_barrier() calls (this
+> > counter could be a single bit).  Have a per-CPU counter of the number
+> > of callbacks outstanding for each counter value.  Then rcu_barrier()
+> > simply increments the rcu_barrier() counter, and waits until the
+> > number of outstanding callbacks corresponding to the old value drops
+> > to zero.  This would get rid of the need for rcu_barrier() to enqueue
+> > callbacks, preventing the scenario above from arising in the first
+> > place.
+> 
+> Will you implement it with one of better ways?
 
-diff --git a/drivers/idle/i7300_idle.c b/drivers/idle/i7300_idle.c
---- a/drivers/idle/i7300_idle.c
-+++ b/drivers/idle/i7300_idle.c
-@@ -77,7 +77,7 @@ static u8 i7300_idle_thrtlow_saved;
- static u8 i7300_idle_thrtlow_saved;
- static u32 i7300_idle_mc_saved;
- 
--static cpumask_t idle_cpumask;
-+static cpumask_var_t idle_cpumask;
- static ktime_t start_ktime;
- static unsigned long avg_idle_us;
- 
-@@ -455,9 +455,9 @@ static int i7300_idle_notifier(struct no
- 	spin_lock_irqsave(&i7300_idle_lock, flags);
- 	if (val == IDLE_START) {
- 
--		cpu_set(smp_processor_id(), idle_cpumask);
-+		cpumask_set_cpu(smp_processor_id(), idle_cpumask);
- 
--		if (cpus_weight(idle_cpumask) != num_online_cpus())
-+		if (cpumask_weight(idle_cpumask) != num_online_cpus())
- 			goto end;
- 
- 		now_ktime = ktime_get();
-@@ -474,8 +474,8 @@ static int i7300_idle_notifier(struct no
- 		i7300_idle_ioat_start();
- 
- 	} else if (val == IDLE_END) {
--		cpu_clear(smp_processor_id(), idle_cpumask);
--		if (cpus_weight(idle_cpumask) == (num_online_cpus() - 1)) {
-+		cpumask_clear_cpu(smp_processor_id(), idle_cpumask);
-+		if (cpumask_weight(idle_cpumask) == (num_online_cpus() - 1)) {
- 			/* First CPU coming out of idle */
- 			u64 idle_duration_us;
- 
-@@ -549,7 +549,6 @@ static int __init i7300_idle_init(void)
- static int __init i7300_idle_init(void)
- {
- 	spin_lock_init(&i7300_idle_lock);
--	cpus_clear(idle_cpumask);
- 	total_us = 0;
- 
- 	if (i7300_idle_platform_probe(&fbd_dev, &ioat_dev))
-@@ -560,6 +559,10 @@ static int __init i7300_idle_init(void)
- 
- 	if (i7300_idle_ioat_init())
- 		return -ENODEV;
-+
-+	if (!alloc_cpumask_var(&idle_cpumask, GFP_KERNEL))
-+		return -ENOMEM;
-+	cpumask_clear(idle_cpumask);
- 
- 	debugfs_dir = debugfs_create_dir("i7300_idle", NULL);
- 	if (debugfs_dir) {
-@@ -585,6 +587,7 @@ static void __exit i7300_idle_exit(void)
- static void __exit i7300_idle_exit(void)
- {
- 	idle_notifier_unregister(&i7300_idle_nb);
-+	free_cpumask_var(idle_cpumask);
- 
- 	if (debugfs_dir) {
- 		int i = 0;
+I would start after I get the idr crash resolved -- first patch already
+done (http://lkml.org/lkml/2009/3/7/133), but problems remain.  So if
+you want to get started, I would be happy to review.  Your tail-pointer
+trick would be needed to allow the counts to be correctly maintained
+when migrating callbacks, of course.
+
+							Thanx, Paul
