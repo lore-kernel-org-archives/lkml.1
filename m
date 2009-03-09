@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752282AbZCIQvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbZCIQwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752282AbZCIQvY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 12:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZCIQvP
+	id S1754225AbZCIQwe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 12:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZCIQwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 12:51:15 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45544 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382AbZCIQvO (ORCPT
+	Mon, 9 Mar 2009 12:52:25 -0400
+Received: from ns0.wincor-nixdorf.com ([80.154.98.130]:39788 "EHLO
+	mxpdbe2.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751488AbZCIQwZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 12:51:14 -0400
-Date: Mon, 9 Mar 2009 07:27:25 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Linux* Processor Microcode Data File
-Message-ID: <20090309072725.45a895f1@linux.intel.com>
-In-Reply-To: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com>
-References: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 9 Mar 2009 12:52:25 -0400
+Message-ID: <49B54862.6090908@wincor-nixdorf.com>
+Date: Mon, 09 Mar 2009 17:48:34 +0100
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Organization: Wincor Nixdorf International
+User-Agent: Thunderbird 2.0.0.19 (X11/20090107)
+MIME-Version: 1.0
+To: fr3ddie@fr3ddie.it
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: Kernel HANGED (don't know if a kernel panic)
+References: <49B54125.6090300@fr3ddie.it>
+In-Reply-To: <49B54125.6090300@fr3ddie.it>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig094E84D29707AAA6C158547E"
+X-OriginalArrivalTime: 09 Mar 2009 16:51:57.0836 (UTC) FILETIME=[5BFB04C0:01C9A0D7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Mar 2009 10:43:57 +0100
-Dragoslav Zaric <dragoslav.zaric.kd@gmail.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig094E84D29707AAA6C158547E
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> Hello,
-> 
-> I was browsing Intel web site for my processor docs and I bumped
-> on download link "Linux* Processor Microcode Data File" and it says
-> there:
-> 
-> "The microcode data file contains the latest microcode definitions for
-> all Intel processors.
-> Intel releases microcode updates to correct processor behavior as
-> documented in the respective
-> processor specification updates. While the regular approach to getting
-> this microcode update is via
-> a BIOS upgrade, Intel realizes that this can be an administrative
-> hassle. The Linux Operating System
-> and VMware ESX products have a mechanism to update the microcode after
-> booting. For example,
-> this file will be used by the operating system mechanism if the file
-> is placed in the /etc/firmware
-> directory of the Linux system."
-> 
-> So, does new kernel versions just copy this microcode update file in
-> /etc/firmware folder
+Fr3ddie wrote:
+> I wasn't there.... but it seems the kernel hanged (I think it not
+> paniced) and it needed a hard-reboot (via Magic SYS-RQ), here's the
+> informations I can catch (sorry if are incomplete, I'm not a Linux
+> hacker, but I try :) )
 
-yup just place it there.... and it'll get picked up.
+Please use <https://launchpad.net/ubuntu/+bugs> for problems with
+Ubuntu packages.
+
+Thanks,
+Niels
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+--------------enig094E84D29707AAA6C158547E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFJtUhi5KAkGQPO/QoRAtbiAKDe4cpwDwGPhaeLslmZLGf7aE0sUACgubPt
+mt/92QaOPeKsuergZIb8/3A=
+=/6Zk
+-----END PGP SIGNATURE-----
+
+--------------enig094E84D29707AAA6C158547E--
