@@ -1,74 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbZCICiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbZCIC5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbZCICiY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 8 Mar 2009 22:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZCICiR
+	id S1754434AbZCIC5h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 8 Mar 2009 22:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZCIC51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 8 Mar 2009 22:38:17 -0400
-Received: from cmpxchg.org ([85.214.51.133]:42247 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752209AbZCICiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 8 Mar 2009 22:38:16 -0400
-Date: Mon, 9 Mar 2009 03:38:02 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Oliver Neukum <oliver@neukum.name>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [patch] hiddev: fix incorrect hiddev freeing
-Message-ID: <20090309023802.GA11709@cmpxchg.org>
-References: <20090309023151.GA11464@cmpxchg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090309023151.GA11464@cmpxchg.org>
+	Sun, 8 Mar 2009 22:57:27 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62656 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753413AbZCIC50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 8 Mar 2009 22:57:26 -0400
+Message-ID: <49B4854C.1010805@cn.fujitsu.com>
+Date: Mon, 09 Mar 2009 10:56:12 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rcu_barrier VS cpu_hotplug: Ensure callbacks in dead
+ cpu are migrated to online cpu
+References: <49B2526E.40106@cn.fujitsu.com> <20090307172907.GH10625@linux.vnet.ibm.com> <49B33463.7010300@cn.fujitsu.com> <20090308062059.GO10625@linux.vnet.ibm.com>
+In-Reply-To: <20090308062059.GO10625@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 09, 2009 at 03:31:51AM +0100, Johannes Weiner wrote:
-> When hiddev_open() fails for whatever reason, free the just allocated
-> hiddev_list structure shared hiddev potentially still in use.
-                       ^
-                   instead of
+Paul E. McKenney wrote:
+> On Sun, Mar 08, 2009 at 10:58:43AM +0800, Lai Jiangshan wrote:
+>> Paul E. McKenney wrote:
+>>> On Sat, Mar 07, 2009 at 06:54:38PM +0800, Lai Jiangshan wrote:
+>>>> [RFC]
+>>>> I don't like this patch, but I thought for some days and I can't
+>>>> thought out a better one.
+>>>>
+>>>> I'm very hope rcu_barrier() can be called anywhere(any sleepable context).
+>>>> But get_online_cpus() is a very large lock, it limits rcu_barrier().
+>>>>
+>>>> We can avoid get_online_cpus() easily for rcupreempt by using a new rcu_barrier:
+>>>> void rcu_barrier(void)
+>>>> {
+>>>> 	for each rcu_data {
+>>>> 		lock rcu_data;
+>>>> 		if rcu_data is not empty, queue a callback for rcu_barrier;
+>>>> 		unlock rcu_data;
+>>>> 	}
+>>>> }
+>>>> But we cannot use this algorithm for rcuclassic and rcutree,
+>>>> rcu_data in rcuclassic and rcutree have not a spinlock for queuing callback.
+>>>>
+>>>> From: Lai Jiangshan <laijs@cn.fujitsu.com>
+>>>>
+>>>> cpu hotplug may be happened asynchronously, some rcu callbacks are maybe
+>>>> still in dead cpu, rcu_barrier() also needs to wait for these rcu callbacks
+>>>> to complete, so we must ensure callbacks in dead cpu are migrated to
+>>>> online cpu.
+>>> Hmmm...  I thought that on_each_cpu() took care of interlocking with
+>>> CPU hotplug via smp_call_function().  During a CPU-hotplug operation,
+>>> the RCU callbacks do get migrated from the CPU going offline.  Are you
+>>> seeing a sequence of events that finds a hole in this approach?
+>>>
+>>> Now, if a CPU were to go offline in the middle of smp_call_function()
+>>> there could be trouble, but I was under the impression that the
+>>> preempt_disable() in on_each_cpu() prevented this from happening.
+>>>
+>>> So, please tell me more!
+>>>
+>> preempt_disable() ensure online cpu is still online until preempt_enable(),
+>> but preempt_disable()/preempt_enable() can't ensure rcu callbacks migrated.
+>>
+>>
+>> rcu_barrier()			|	_cpu_down()
+>> 				|		__cpu_die() (cpu D is dead)
+>> 	........................|............................
+>> 	on_each_cpu()		|
+>> 	........................|...........................
+>> 	wait_for_completion()	|		rcu_offline_cpu() (move cpu D's
+>> 				|			rcu callbacks to A,B,or C)
+>>
+>>
+>> on_each_cpu() does not queue rcu_barrier_callback to cpu D(it's dead).
+>> So rcu_barrier() will not wait for callbacks which are original at cpu D.
+>>
+>> We need ensure callbacks in dead cpu are migrated to online cpu before
+>> we call on_each_cpu().
+> 
+> Good catch!!!  I did indeed miss that possibility.  :-/
+> 
+> Hmmmm...  rcu_barrier() already acquires a global mutex, and is an
+> infrequent operation, so I am not all that worried about the scalability.
 
-Sorry, it's late (or early?)  Need a resend?
+I do not worry about the scalability either.
+When we use get_online_cpus(), rcu_barrier() can not be called anywhere
+(any sleepable context), this is what I worry about.
 
-> The hiddev is freed in device disconnect/last close of the device file
-> and must not be freed while there are possibly existing references to
-> it.
+Most locks in kernel are locked after cpu_hotplug.lock,
+if a path has required one of these lock, it cannot call get_online_cpus().
+(to avoid ABBA deadlock)
+So, if we use get_online_cpus() in rcu_barrier(), we cannot use rcu_barrier()
+in most area in kernel.
+
 > 
-> This is probably responsible for these
+> But I agree that there should be a better way to do this.  One approach
+> might be to the dying CPU enqueue the rcu_barrier() callback on its
+> own list when it goes offline, during the stop_machine() time period.
+> This enqueuing operation would require some care -- it would be necessary
+> to check to see if the callback was already on the list, for example,
+> as well as to properly adjust the rcu_barrier_completion() state.
 > 
->   http://kerneloops.org/oops.php?number=221185
->   http://kerneloops.org/oops.php?number=220365
+> Of course, it would also be necessary to handle the case where an
+> rcu_barrier() callback was enqueued when there was no rcu_barrier()
+> in flight, preferably by preventing this from happening.
 > 
-> where a reader sleeps on the waitqueue, the device gets disconnected
-> (exist -> 0) another user tries to open it, fails on the exist check
-> and frees the hiddev from the table.  The finish_wait() in the reader
-> will then dereference the hiddev to get to the waitqueue and oopses.
+> An entirely different approach would be to steal a trick from CPU
+> designers, and use a count of the number of rcu_barrier() calls (this
+> counter could be a single bit).  Have a per-CPU counter of the number
+> of callbacks outstanding for each counter value.  Then rcu_barrier()
+> simply increments the rcu_barrier() counter, and waits until the
+> number of outstanding callbacks corresponding to the old value drops
+> to zero.  This would get rid of the need for rcu_barrier() to enqueue
+> callbacks, preventing the scenario above from arising in the first
+> place.
 > 
-> This was introduced by commit 079034073faf974973baa0256b029451f6e768ad
-> "HID: hiddev cleanup -- handle all error conditions properly".
-> 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> Cc: Oliver Neukum <oliver@neukum.name>
-> ---
-> 
-> diff --git a/drivers/hid/usbhid/hiddev.c b/drivers/hid/usbhid/hiddev.c
-> index 4940e4d..00ea1ed 100644
-> --- a/drivers/hid/usbhid/hiddev.c
-> +++ b/drivers/hid/usbhid/hiddev.c
-> @@ -306,7 +306,7 @@ static int hiddev_open(struct inode *inode, struct file *file)
->  	return 0;
->  bail:
->  	file->private_data = NULL;
-> -	kfree(list->hiddev);
-> +	kfree(list);
->  	return res;
->  }
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+Will you implement it with one of better ways?
+
+Lai
