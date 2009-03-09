@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZCISRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbZCISTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbZCISRP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 14:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbZCISQ7
+	id S1754389AbZCISTo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 14:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZCISTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 14:16:59 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:37109 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751101AbZCISQ6 (ORCPT
+	Mon, 9 Mar 2009 14:19:34 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:16122
+	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751719AbZCISTd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 14:16:58 -0400
-Message-ID: <49B55D10.7060707@freescale.com>
-Date: Mon, 09 Mar 2009 13:16:48 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Mon, 9 Mar 2009 14:19:33 -0400
+X-Greylist: delayed 905 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Mar 2009 14:19:33 EDT
+X-BigFish: VPS-45(zz1432R98dR936eQ1805M936fK9371Pzzzzz2fh6bh62h)
+X-Spam-TCS-SCL: 1:0
+Message-ID: <49B55A21.2010801@am.sony.com>
+Date: Mon, 9 Mar 2009 11:04:17 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: linux-kernel@vger.kernel.org, rdreier@cisco.com, jirislaby@gmail.com
-Subject: Re: [PATCH v2] add function spin_event_timeout()
-References: <1236611904-9843-1-git-send-email-timur@freescale.com> <1236614775.8389.692.camel@laptop>
-In-Reply-To: <1236614775.8389.692.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+CC: rtc-linux@googlegroups.com, Geert.Uytterhoeven@sonycom.com,
+       Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       Dann Frazier <dannf@dannf.org>
+Subject: Re: [rtc-linux] [PATCH 7/7] powerpc/ps3: Add rtc-ps3
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com>	<1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090309151216.17f13862@i1501.lan.towertech.it>
+In-Reply-To: <20090309151216.17f13862@i1501.lan.towertech.it>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Mar 2009 18:04:18.0078 (UTC) FILETIME=[76F763E0:01C9A0E1]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
+Hi,
 
-> This changelog utterly fails to justify this interface. And to me it
-> seems a rather bad one. 
+On 03/09/2009 07:12 AM, Alessandro Zummo wrote:
+> On Mon,  9 Mar 2009 14:26:23 +0100
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+>> +
+>> +MODULE_AUTHOR("Sony Corporation");
+> 
+>  real name, if possible and a contact address
+>  here . Just in case I need someone to bother :)
 
-I'll update the commit to include a justification, but in the meantime,
-let me answer your question.
+Please look at the MAINTAINERS file, that will give
+the contact for PS3.  It is much easier to maintain
+a single place for the contact than many spread
+throughout the kernel sources.
 
-The primary purpose of this macro is to provide a way for drivers to
-poll a status register waiting for a bit to change.  In most cases, this
- bit should change very quickly, even within a few cycles.  The timeout
-is used as a way to easily deal with situations where the hardware is
-misprogrammed such that the bit never changes.
+-Geoff
 
-Too often, developers do something like this:
-
-	while (!(in_be32(&ssi->sisr) & CCSR_SSI_SISR_RFF0));
-
-If something goes wrong and RFF0 never gets set, then this loop will
-never exit.  So to encourage developers to do it the right way, and to
-make it simpler to identify code which does this sort of thing, I'm
-introducing spin_event_timeout().
-
-> Why would we ever be wanting to spin in order of
-> jiffies?
-
-I picked jiffies because it seems straightforward, but I think I see
-your point.  It has two drawbacks:
-
-1) It's too coarse of a time measurement.  Most people will probably use
-a value of 1 or 2.
-
-2) It can't be used if interrupts are disabled, because then jiffies
-won't be updated.
-
-So I can switch that to using ndelay().
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
