@@ -1,118 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758160AbZCJQ4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbZCJQ6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758160AbZCJQ4w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 12:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756576AbZCJQ41
+	id S1755951AbZCJQ6j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 12:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbZCJQ63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 12:56:27 -0400
-Received: from sh.osrg.net ([192.16.179.4]:35558 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756776AbZCJQ4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 12:56:25 -0400
-Date: Wed, 11 Mar 2009 01:55:42 +0900 (JST)
-Message-Id: <20090311.015542.118514963.ryusuke@osrg.net>
-To: Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: Asking for inclusion of nilfs2 in the mainline kernel
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 11 Mar 2009 01:55:50 +0900 (JST)
+	Tue, 10 Mar 2009 12:58:29 -0400
+Received: from dtp.xs4all.nl ([80.101.171.8]:50565 "HELO abra2.bitwizard.nl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752971AbZCJQ62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 12:58:28 -0400
+Date: Tue, 10 Mar 2009 17:58:24 +0100
+From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+To: Scott James Remnant <scott@canonical.com>
+Cc: linux-kernel@vger.kernel.org, R.E.Wolff@BitWizard.nl
+Subject: Re: [PATCH 20/31] specialix: Auto-load specialix module when device opened.
+Message-ID: <20090310165824.GB7658@bitwizard.nl>
+References: <cover.1236702228.git.scott@canonical.com> <fd9db053766bd9fa3d8ffa35daebc90cf25df6cd.1236702228.git.scott@canonical.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fd9db053766bd9fa3d8ffa35daebc90cf25df6cd.1236702228.git.scott@canonical.com>
+Organization: BitWizard.nl
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+On Mon, Mar 02, 2009 at 06:39:40PM +0000, Scott James Remnant wrote:
+> The specialix module is missing the char-major-75-* alias that would
+> cause it to be auto-loaded when a device of that type is opened.  This
+> patch adds the alias.
+> 
+> Signed-off-by: Scott James Remnant <scott@canonical.com>
+> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+Signed-off-by: Roger Wolff <R.E.Wolff@BitWizard.nl>
 
-I've been working for the past serveral months to take review comments
-and to continually solve users' problems come up in mainling list
-(thanks for all giving comments and feedbacks!).  Also, I've tried to
-stabilize API and disk format to restrict additional changes and
-ensure backward compatibility.
-
-Except adding ioctl commands for user-demanded features, I think the
-interface was almost stabilized.  Now I'd like to ask for mainline
-inclusion so that more people can try this in the tree.
-
-This file system, nilfs2, provides continuous snapshotting; it gives
-not only versioning capability of the entire file system but also
-retroactively selectable and recoverable snapshots.
-
-With nilfs2, users can even restore files and namespace mistakenly
-overwritten or destroyed just a few seconds ago.
-
-The restoration with nilfs snapshots is, for example, done as follows:
-
- # lscp
- (list checkpoints)
-
-            CNO        DATE     TIME  MODE  FLG   NBLKINC       ICNT
-          33338  2009-03-08 14:45:49   cp    -         11          3
-          33339  2009-03-08 14:50:22   cp    -     200523         81
-          33340  2009-03-08 20:40:34   cp    -        136         61
-          33341  2009-03-08 20:41:20   cp    -     187666       1604
-          33342  2009-03-08 20:41:42   cp    -         51       1634
-            ...
-
- # chcp ss 33339 ; lscp
- (select an existing checkpoint and change it into a snapshot)
-
-            CNO        DATE     TIME  MODE  FLG   NBLKINC       ICNT
-          33338  2009-03-08 14:45:49   cp    -         11          3
-          33339  2009-03-08 14:50:22   ss    -     200523         81
-          33340  2009-03-08 20:40:34   cp    -        136         61
-          33341  2009-03-08 20:41:20   cp    -     187666       1604
-          33342  2009-03-08 20:41:42   cp    -         51       1634
-            ...
-
- # mount -t nilfs2 -r -o cp=33339 /dev/sdb1 /snap
- (mount the snapshot, then it will become accessible on the mount point)
-
-Where snapshots will remain in the disk, whereas plain checkpoints
-will be reclaimed automatically after a certain (guaranteed) period.
-
-These snapshot operations are quickly performable.
-
-There is no limit on the number of checkpoints and snapshots until the
-volume gets full.  We have long term use experience of nilfs2 about
-eleven months on a server; several thousands of checkpoints are dealt
-with constantly there.
-
-On the other hand, performance tuning has left on the back burner.  I
-feel B-tree lookup routines and log writer have room for improvement
-to get better read/write throughput.  In addition, defrag should be
-applied, maybe with help from the userland cleaner daemon; a recent
-measurement on the above aged partition shows 20~25% degradation.
-These are todo items.
-
-So, we'd like to address such remaining challenges with eliminating
-user issues ongoingly and simplifying implementation at every
-opportunity.
-
-
-Nilfs userland tools:
-
- http://www.nilfs.org/en/download.html
-
-General nilfs information:
-
- http://www.nilfs.org/en/
-
-Nilfs usage:
-
- http://www.nilfs.org/en/about_nilfs.html
-
-TODO items:
-
- http://www.nilfs.org/en/current_status.html
-
-User Mailing list:
-
- https://www.nilfs.org/mailman/listinfo/users
-
-
-Thanks,
-Ryusuke Konishi
+-- 
+** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
+**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
+*-- BitWizard writes Linux device drivers for any device you may have! --*
+Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
+Does it sit on the couch all day? Is it unemployed? Please be specific! 
+Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
