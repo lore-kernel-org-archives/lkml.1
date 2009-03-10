@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbZCJFXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZCJF0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754061AbZCJFXW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 01:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbZCJFXN
+	id S1754012AbZCJF0q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 01:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbZCJF0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 01:23:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44790 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751573AbZCJFXM (ORCPT
+	Tue, 10 Mar 2009 01:26:37 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:57279 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709AbZCJF0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 01:23:12 -0400
-Date: Mon, 9 Mar 2009 22:20:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Larry Woodman <lwoodman@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/7] tracing: typecast sizeof and offsetof to unsigned
- int
-Message-Id: <20090309222033.d39c7b22.akpm@linux-foundation.org>
-In-Reply-To: <20090310045810.602528682@goodmis.org>
-References: <20090310045710.286915983@goodmis.org>
-	<20090310045810.602528682@goodmis.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Mar 2009 01:26:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=WG3daqCqowHTI9PXU45HpV6s24jK4+2astqiR4zt4PAQ2yJaAXQ+8DZAKtnizw/8E3
+         D3GWkc28Ht+YpQugzoo5YhS+rpns2PDj5MncoRFH9AjAfsQYUITsdjQIrkFku1SvJwLg
+         xm+8rRSVpX2oDapyV51wCS/Wu48PberQ7P1jw=
+MIME-Version: 1.0
+Date: Mon, 9 Mar 2009 22:26:33 -0700
+Message-ID: <43e72e890903092226xcab8569ka959a1dcc989e3fb@mail.gmail.com>
+Subject: Efforts on automatic configuration of a kernel - for lazy people
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Ahmad Reza Cheraghi <a_r_cheraghi@yahoo.com>, tiwai@suse.de
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Mar 2009 00:57:11 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
+I'm learning if there are any projects which have taken on the task of
+automatically generating a kernel .config for you. I tend to hop
+around machines and the routine of checking lspci, etc tends to drag
+on and become more of a chore. Sometimes I just get lazy and use a
+distribution's .config but that obviously is a waste of time. So I
+have done some quick digging and found some effort circa 2005 by Ahmad
+[1] and then Takashi's bash script [2]. Curious if there any others.
 
-> On x86_64 sizeof and offsetof are treated as long, where as on x86_32
-> they are int. This patch typecasts them to unsigned int to avoid
-> one arch giving warnings while the other does not.
+[1] http://lwn.net/Articles/153290/
+[2] http://lkml.org/lkml/2008/9/16/290
 
-Actually, both have type size_t.
-
->  static int trace_write_header(struct trace_seq *s)
->  {
-> @@ -457,11 +458,11 @@ static int trace_write_header(struct trace_seq *s)
->  
->  	/* struct trace_entry */
->  	return trace_seq_printf(s,
-> -				"\tfield:%s %s;\toffset:%lu;\tsize:%lu;\n"
-> -				"\tfield:%s %s;\toffset:%lu;\tsize:%lu;\n"
-> -				"\tfield:%s %s;\toffset:%lu;\tsize:%lu;\n"
-> -				"\tfield:%s %s;\toffset:%lu;\tsize:%lu;\n"
-> -				"\tfield:%s %s;\toffset:%lu;\tsize:%lu;\n"
-> +				"\tfield:%s %s;\toffset:%u;\tsize:%u;\n"
-> +				"\tfield:%s %s;\toffset:%u;\tsize:%u;\n"
-> +				"\tfield:%s %s;\toffset:%u;\tsize:%u;\n"
-> +				"\tfield:%s %s;\toffset:%u;\tsize:%u;\n"
-> +				"\tfield:%s %s;\toffset:%u;\tsize:%u;\n"
-
-Which may be printed with %z.
+  Luis
