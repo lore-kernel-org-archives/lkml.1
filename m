@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZCJWEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZCJWHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbZCJWEb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 18:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbZCJWEU
+	id S1756057AbZCJWHJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 18:07:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZCJWG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 18:04:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52327 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755080AbZCJWET (ORCPT
+	Tue, 10 Mar 2009 18:06:56 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:35786 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754870AbZCJWG4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 18:04:19 -0400
-Date: Tue, 10 Mar 2009 15:00:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: linux-kernel@vger.kernel.org, syrjala@sci.fi, johnpol@2ka.mipt.ru,
-       david-b@pacbell.net
-Subject: Re: [PATCH] drivers/w1/masters/w1-gpio.c: fix read_bit()
-Message-Id: <20090310150059.ce64548a.akpm@linux-foundation.org>
-In-Reply-To: <20090310091800.GC3263@buzzloop.caiaq.de>
-References: <1236614530-11153-1-git-send-email-daniel@caiaq.de>
-	<20090309191419.98699220.akpm@linux-foundation.org>
-	<20090310091800.GC3263@buzzloop.caiaq.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Mar 2009 18:06:56 -0400
+Date: Tue, 10 Mar 2009 22:05:06 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+cc: Matt Mackall <mpm@selenic.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       cl@linux-foundation.org, penberg@cs.helsinki.fi, linux-mm@kvack.org
+Subject: Re: PROBLEM: kernel BUG at mm/slab.c:3002!
+In-Reply-To: <49B6B72B.7070408@hp.com>
+Message-ID: <Pine.LNX.4.64.0903102148150.31262@blonde.anvils>
+References: <49B68450.9000505@hp.com> <1236705532.3205.14.camel@calx> 
+ <49B6A374.6040805@hp.com> <1236707030.3205.21.camel@calx> <49B6B72B.7070408@hp.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Mar 2009 10:18:00 +0100
-Daniel Mack <daniel@caiaq.de> wrote:
-
-> On Mon, Mar 09, 2009 at 07:14:19PM -0700, Andrew Morton wrote:
-> > > --- a/drivers/w1/masters/w1-gpio.c
-> > > +++ b/drivers/w1/masters/w1-gpio.c
-> > > @@ -39,7 +39,7 @@ static u8 w1_gpio_read_bit(void *data)
-> > >  {
-> > >  	struct w1_gpio_platform_data *pdata = data;
-> > >  
-> > > -	return gpio_get_value(pdata->pin);
-> > > +	return gpio_get_value(pdata->pin) ? 1 : 0;
-> > >  }
-> > >  
-> > >  static int __init w1_gpio_probe(struct platform_device *pdev)
+On Tue, 10 Mar 2009, Alan D. Brunelle wrote:
+> Matt Mackall wrote:
+> > On Tue, 2009-03-10 at 13:29 -0400, Alan D. Brunelle wrote:
+> >> Matt Mackall wrote:
+> >>> On Tue, 2009-03-10 at 11:16 -0400, Alan D. Brunelle wrote:
+> >>>> Running blktrace & I/O loads cause a kernel BUG at mm/slab.c:3002!.
+> >>> Pid: 11346, comm: blktrace Tainted: G    B      2.6.29-rc7 #3 ProLiant
+> >>> DL585 G5   
+> >>>
+> >>> That 'B' there indicates you've hit 'bad page' before this. That bug
+> >>> seems to be strongly correlated with some form of hardware trouble.
+> >>> Unfortunately, that makes everything after that point a little suspect.
+> >>
+> >> /If/ it were a hardware issue, that might explain the subsequent issue
+> >> when I switched to SLUB instead...
 > > 
-> > We recently merged a patch (I forget where) which fixed one
-> > gpio_get_value() implementation so that it always returns 0 or 1.
+> > Well it was almost certainly not a bug in SLAB itself (and your SLUB
+> > test is obviously quite conclusive there). We'd have lots of reports.
+> > It's probably too early to conclude it's hardware though.
 > > 
-> > From which I deduce that the correct fix for <whatever problem you're
-> > seeing> is to fix <whichever driver that is>?
+> >> How does one look for "bad page reports"?
+> > 
+> > It'll look something like this (pasted from Google):
+> > 
+> >>>     kernel: Bad page state at free_hot_cold_page (in process 'beam',
+> >>> page c1a95320)
+> >>>     kernel: flags:0x40020118 mapping:f401adc0 mapped:0 count:0
+> >>> private:0x00000000
+> > 
 > 
-> I agree those functions should return 0 and 1 only, but my patch fixes
-> the w1-gpio driver for all platforms at once, so people can use it.
-> 
-> On the other hand, I will submit a patch which modifies PXA's
-> gpio_get_value() and see what the maintainers say, but I can't go thru
-> all the implemenations of all architectures to do this.
-> 
-> So for the time being, the above patch helps many users of that driver.
-> 
+> Interestingly enough, I'm not seeing the kernel detect such things - but
+> in going into the hardware server logs, a co-worker found "unrecoverable
+> system errors" being detected at about the same times we're seeing the
+> panics.
 
-Problem is, the patch will just conceal bugs.
+In 2.6.29-rc, the "B" taint should be associated with mm/page_alloc.c's
+bad_page() KERN_ALERT "BUG: Bad page state in process %s  pfn:%05lx\n",
+but it could also now come from mm/memory.c's print_bad_pte()
+KERN_ALERT "BUG: Bad page map in process %s  pte:%08llx pmd:%08llx\n",
+which replaces the old mm/rmap.c Eeeks, and some other cases too.
 
-How about this?
-
---- a/drivers/w1/masters/w1-gpio.c~a
-+++ a/drivers/w1/masters/w1-gpio.c
-@@ -38,8 +38,12 @@ static void w1_gpio_write_bit_val(void *
- static u8 w1_gpio_read_bit(void *data)
- {
- 	struct w1_gpio_platform_data *pdata = data;
-+	u8 ret;
- 
--	return gpio_get_value(pdata->pin);
-+	ret = gpio_get_value(pdata->pin);
-+	if (WARN_ONCE(ret > 1, "gpio_get_value(): invalid return: %u\n", ret))
-+		ret = !!ret
-+	return ret;
- }
- 
- static int __init w1_gpio_probe(struct platform_device *pdev)
-_
-
+Hugh
