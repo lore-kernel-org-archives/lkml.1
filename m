@@ -1,99 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbZCJXz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751647AbZCJX4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754296AbZCJXz7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 19:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755334AbZCJXzq
+	id S1751647AbZCJX4u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 19:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbZCJX4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 19:55:46 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:7982 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755614AbZCJXzn (ORCPT
+	Tue, 10 Mar 2009 19:56:39 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53736 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750886AbZCJX4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 19:55:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=yC57LQhrpJ/3KoN38SE8FmwBhH0sqC+gSiXIEiH/lTTYxdafzBV+/WwPcKFLDkGwFA
-         us5JG4zRXePUm+TuOaVBWjwOdm2tGEnyYqwAXWV6kXlXcDR5ysKFT6RFl62AtG8WOgIM
-         57BHbkTCso31n+nMurkpePofdaVomBgawWuzw=
-Message-ID: <49B6FDF6.7000100@gmail.com>
-Date: Tue, 10 Mar 2009 17:55:34 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: n0diamond@yahoo.co.jp
-CC: linux-kernel@vger.kernel.org
-Subject: Re: LIBATA told me it's broken
-References: <20090310081325.25764.qmail@web4113.mail.ogk.yahoo.co.jp>
-In-Reply-To: <20090310081325.25764.qmail@web4113.mail.ogk.yahoo.co.jp>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 10 Mar 2009 19:56:38 -0400
+Date: Tue, 10 Mar 2009 23:56:59 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: "Altobelli, David" <david.altobelli@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tweak spin logic for hpilo
+Message-ID: <20090310235659.1fe62b2e@lxorguk.ukuu.org.uk>
+In-Reply-To: <49B6F9A9.1030803@gmail.com>
+References: <20090309225651.GA13702@ldl.fc.hp.com>
+	<20090309160437.b71041d5.akpm@linux-foundation.org>
+	<92D64232F2316045B18937D5C9996B1522834ABED6@GVW1144EXB.americas.hpqcorp.net>
+	<49B6F9A9.1030803@gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Norman Diamond wrote:
-> Sorry the kernel is 2.6.24.3 but I can't use a newer one
-> yet because TASKFILEs broke in newer ones.  This time I
-> booted with kernel parameter hda=noprobe so the hard disk
-> went to LIBATA instead of IDE.  The breakage shown below
-> is in LIBATA.
-> 
-> If LIBATA is fixed in newer kernel versions please say. 
-> If there's a version of Slax where LIBATA works then maybe
-> I can recompile its kernel without IDE.
+> You're using udelay, which is a spin loop. Nothing else can happen on 
+> that CPU while it's delaying anyway.
 
-There have been a ton of changes in libata since 2.6.24, it's hard to 
-say whether anything has changed along the way that would affect this. 
-The easiest way to find out is to try a newer kernel.
-
-> 
-> struct sg_io_hdr sg_io;
-> uint8_t cdb[16];
-> uint8_t sense[32];
-> uint8_t buffer[0x20000];  // length = 256 * 512
-> memset(&sg_io, 0, sizeof sg_io);
-> memset(&cdb, 0, sizeof cdb);
-> memset(&sense, 0, sizeof sense);
-> memset(&buffer, 0xe5, sizeof buffer);
-> cdb[0] = 0x8a;            // WRITE (16)
-> cdb[6] = 0x0f;
-> cdb[7] = 0xff;
-> cdb[8] = 0xff;
-> cdb[9] = 0x00;            // start = 0x0fffff00
-> cdb[12] = 0x01;
-> cdb[13] = 0x00;           // count = 0x0100
-> sg_io.interface_id = 'S';
-> sg_io.cmdp = cdb;
-> sg_io.cmd_len = sizeof cdb;
-> sg_io.dxferp = buffer;
-> sg_io.dxfer_len = 256 * 512;
-> sg_io.dxfer_direction = SG_DXFER_TO_DEV;
-> sg_io.sbp = sense;
-> sg_io.mx_sb_len = sizeof sense;
-> sg_io.timeout = 2000;
-> fd = open("/dev/sda", O_WRONLY);  // succeeded
-> ioctl(fd, SG_IO, &sg_io);         // ioctl succeeded
->                                   // but LIBATA failed
-> 
-> CHECK CONDITION
-> sense:
-> 72 0b 14 00 00 00 00 0c 00 0a 80 00 00 00 00 00
-> 0f ff ff 00
-
-Anything in dmesg?
-
-> 
-> /dev/sda is a 250GB SATA drive but Dell's Intel ICH7M
-> presents it as ATA.  Ranges before and after the magic
-> LBA28 boundary wrote perfectly.
-> 
-> 
-> 
-> --------------------------------------
-> Power up the Internet with Yahoo! Toolbar.
-> http://pr.mail.yahoo.co.jp/toolbar/
-
+However if your polling is doing I/O its clogging up the I/O busses (and
+quite often the bridge)
