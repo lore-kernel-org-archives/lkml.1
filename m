@@ -1,55 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756508AbZCJOhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbZCJOiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756508AbZCJOhw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 10:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZCJOh2
+	id S1756565AbZCJOiY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 10:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZCJOiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 10:37:28 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:42235 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752442AbZCJOhZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 10:37:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=G6Nl5b6+3XhXN4gef085BEyPu12QxjI5TvvtnLC1/FDEU744nnlIKAL88vySARkfZz
-         LdXAABaicTDxvzG9fALdcadbqu/kEMJ6p7QoT3vfJD5zyDwLN9Q5vdVxLiV52QiosOMq
-         p4jWgpNUV89zZLNfmwnhD+EabrVd/L7qVvLi8=
-Date: Tue, 10 Mar 2009 23:37:02 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 1/2 -mmotm] debug-pagealloc: depend on CONFIG_DEBUG_KERNEL
-Message-ID: <20090310143701.GA3151@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
+	Tue, 10 Mar 2009 10:38:08 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46027 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752442AbZCJOiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 10:38:05 -0400
+Date: Tue, 10 Mar 2009 15:38:01 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: [patch 2/2] fs: introduce mnt_clone_write
+Message-ID: <20090310143801.GC15977@wotan.suse.de>
+References: <20090310143718.GB15977@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090310143718.GB15977@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The generic debug-pagealloc should depend on CONFIG_DEBUG_KERNEL
-as well as the architecture specific one.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-arch@vger.kernel.org
+fs: introduce mnt_clone_write
+
+This patch speeds up lmbench lat_mmap test by about another 2% after the
+first patch.
+
+Before:
+ avg = 462.286
+ std = 5.46106
+
+After:
+ avg = 453.12
+ std = 9.58257
+
+(50 runs of each, stddev gives a reasonable confidence)
+
+It does this by introducing mnt_clone_write, which avoids some heavyweight
+operations of mnt_want_write if called on a vfsmount which we know already
+has a write count; and mnt_want_write_file, which can call mnt_clone_write
+if the file is open for write.
+
+After these two patches, mnt_want_write and mnt_drop_write go from 7% on
+the profile down to 1.3% (including mnt_clone_write).
+
+Cc: Dave Hansen <haveblue@us.ibm.com>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 ---
- mm/Kconfig.debug |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/file_table.c       |    3 +--
+ fs/inode.c            |    2 +-
+ fs/namespace.c        |   38 ++++++++++++++++++++++++++++++++++++++
+ fs/open.c             |    4 ++--
+ fs/xattr.c            |    4 ++--
+ include/linux/mount.h |    2 ++
+ 6 files changed, 46 insertions(+), 7 deletions(-)
 
-Index: 2.6-mmotm/mm/Kconfig.debug
+Index: linux-2.6/fs/file_table.c
 ===================================================================
---- 2.6-mmotm.orig/mm/Kconfig.debug
-+++ 2.6-mmotm/mm/Kconfig.debug
-@@ -3,7 +3,7 @@ config WANT_PAGE_DEBUG_FLAGS
+--- linux-2.6.orig/fs/file_table.c
++++ linux-2.6/fs/file_table.c
+@@ -213,8 +213,7 @@ int init_file(struct file *file, struct
+ 	 */
+ 	if ((mode & FMODE_WRITE) && !special_file(dentry->d_inode->i_mode)) {
+ 		file_take_write(file);
+-		error = mnt_want_write(mnt);
+-		WARN_ON(error);
++		mnt_clone_write(mnt);
+ 	}
+ 	return error;
+ }
+Index: linux-2.6/fs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/inode.c
++++ linux-2.6/fs/inode.c
+@@ -1362,7 +1362,7 @@ void file_update_time(struct file *file)
+ 	if (IS_NOCMTIME(inode))
+ 		return;
  
- config PAGE_POISONING
- 	bool "Debug page memory allocations"
--	depends on !ARCH_SUPPORTS_DEBUG_PAGEALLOC
-+	depends on DEBUG_KERNEL && !ARCH_SUPPORTS_DEBUG_PAGEALLOC
- 	select DEBUG_PAGEALLOC
- 	select WANT_PAGE_DEBUG_FLAGS
- 	help
+-	err = mnt_want_write(file->f_path.mnt);
++	err = mnt_want_write_file(file->f_path.mnt, file);
+ 	if (err)
+ 		return;
+ 
+Index: linux-2.6/fs/namespace.c
+===================================================================
+--- linux-2.6.orig/fs/namespace.c
++++ linux-2.6/fs/namespace.c
+@@ -264,6 +264,44 @@ out:
+ EXPORT_SYMBOL_GPL(mnt_want_write);
+ 
+ /**
++ * mnt_clone_write - get write access to a mount
++ * @mnt: the mount on which to take a write
++ *
++ * This is effectively like mnt_want_write, except
++ * it must only be used to take an extra write reference
++ * on a mountpoint that we already know has a write reference
++ * on it. This allows some optimisation.
++ *
++ * After finished, mnt_drop_write must be called as usual to
++ * drop the reference.
++ */
++void mnt_clone_write(struct vfsmount *mnt)
++{
++	preempt_disable();
++	inc_mnt_writers(mnt);
++	preempt_enable();
++}
++EXPORT_SYMBOL_GPL(mnt_clone_write);
++
++/**
++ * mnt_want_write_file - get write access to a file's mount
++ * @file: the file who's mount on which to take a write
++ *
++ * This is like mnt_want_write, but it takes a file and can
++ * do some optimisations if the file is open for write already
++ */
++int mnt_want_write_file(struct vfsmount *mnt, struct file *file)
++{
++	if (!(file->f_mode & FMODE_WRITE))
++		return mnt_want_write(mnt);
++	else {
++		mnt_clone_write(mnt);
++		return 0;
++	}
++}
++EXPORT_SYMBOL_GPL(mnt_want_write_file);
++
++/**
+  * mnt_drop_write - give up write access to a mount
+  * @mnt: the mount on which to give up write access
+  *
+Index: linux-2.6/fs/open.c
+===================================================================
+--- linux-2.6.orig/fs/open.c
++++ linux-2.6/fs/open.c
+@@ -611,7 +611,7 @@ SYSCALL_DEFINE2(fchmod, unsigned int, fd
+ 
+ 	audit_inode(NULL, dentry);
+ 
+-	err = mnt_want_write(file->f_path.mnt);
++	err = mnt_want_write_file(file->f_path.mnt, file);
+ 	if (err)
+ 		goto out_putf;
+ 	mutex_lock(&inode->i_mutex);
+@@ -760,7 +760,7 @@ SYSCALL_DEFINE3(fchown, unsigned int, fd
+ 	if (!file)
+ 		goto out;
+ 
+-	error = mnt_want_write(file->f_path.mnt);
++	error = mnt_want_write_file(file->f_path.mnt, file);
+ 	if (error)
+ 		goto out_fput;
+ 	dentry = file->f_path.dentry;
+Index: linux-2.6/fs/xattr.c
+===================================================================
+--- linux-2.6.orig/fs/xattr.c
++++ linux-2.6/fs/xattr.c
+@@ -301,7 +301,7 @@ SYSCALL_DEFINE5(fsetxattr, int, fd, cons
+ 		return error;
+ 	dentry = f->f_path.dentry;
+ 	audit_inode(NULL, dentry);
+-	error = mnt_want_write(f->f_path.mnt);
++	error = mnt_want_write_file(f->f_path.mnt, f);
+ 	if (!error) {
+ 		error = setxattr(dentry, name, value, size, flags);
+ 		mnt_drop_write(f->f_path.mnt);
+@@ -528,7 +528,7 @@ SYSCALL_DEFINE2(fremovexattr, int, fd, c
+ 		return error;
+ 	dentry = f->f_path.dentry;
+ 	audit_inode(NULL, dentry);
+-	error = mnt_want_write(f->f_path.mnt);
++	error = mnt_want_write_file(f->f_path.mnt, f);
+ 	if (!error) {
+ 		error = removexattr(dentry, name);
+ 		mnt_drop_write(f->f_path.mnt);
+Index: linux-2.6/include/linux/mount.h
+===================================================================
+--- linux-2.6.orig/include/linux/mount.h
++++ linux-2.6/include/linux/mount.h
+@@ -89,6 +89,8 @@ static inline struct vfsmount *mntget(st
+ }
+ 
+ extern int mnt_want_write(struct vfsmount *mnt);
++extern int mnt_want_write_file(struct vfsmount *mnt, struct file *file);
++extern void mnt_clone_write(struct vfsmount *mnt);
+ extern void mnt_drop_write(struct vfsmount *mnt);
+ extern void mntput_no_expire(struct vfsmount *mnt);
+ extern void mnt_pin(struct vfsmount *mnt);
