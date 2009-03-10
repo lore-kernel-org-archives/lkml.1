@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbZCJPss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbZCJPvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbZCJPss (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 11:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbZCJPsi
+	id S1755969AbZCJPvd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 11:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbZCJPvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 11:48:38 -0400
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:65000 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753821AbZCJPsh convert rfc822-to-8bit (ORCPT
+	Tue, 10 Mar 2009 11:51:24 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:44438 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753932AbZCJPvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 11:48:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=B0DyNUNQA4nn6kyWHT6D6tAF4Ys2/LIY+BZ5TZM6CuCQ9YStzq39J63WkP2enS245j
-         bLWdi7Vq5uAWqdd1vmZN83zOmqodB4/asMZHn1ILcfzZvB7ws9y2Ev6dUK4xgw11CzIO
-         Z7fwXM+T6+FbISFzK1j38ENbRNj5SWbRPa0us=
+	Tue, 10 Mar 2009 11:51:23 -0400
+Message-ID: <49B68C37.8010803@freescale.com>
+Date: Tue, 10 Mar 2009 10:50:15 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-In-Reply-To: <1236684077.25234.138.camel@laptop>
-References: <20090310045710.286915983@goodmis.org>
-	 <20090310045811.084130677@goodmis.org> <20090310105624.GD6825@nowhere>
-	 <1236684077.25234.138.camel@laptop>
-Date: Tue, 10 Mar 2009 16:48:34 +0100
-Message-ID: <c62985530903100848x45d65e02u61dbf6b972f9b840@mail.gmail.com>
-Subject: Re: [PATCH 3/7] tracing: use generic __stringify
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Larry Woodman <lwoodman@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org, rdreier@cisco.com, jirislaby@gmail.com,
+       peterz@infradead.org, will.newton@gmail.com, hancockrwd@gmail.com,
+       jeremy@goop.org
+Subject: Re: [PATCH v4] introduce macro spin_event_timeout()
+References: <1236699004-1863-1-git-send-email-timur@freescale.com> <20090310153537.5fd5d84d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090310153537.5fd5d84d@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/3/10 Peter Zijlstra <peterz@infradead.org>:
-> On Tue, 2009-03-10 at 11:56 +0100, Frederic Weisbecker wrote:
->> On Tue, Mar 10, 2009 at 12:57:13AM -0400, Steven Rostedt wrote:
->
->> > This removes the custom made STR(x) macros in the tracer and uses
->> > the generic __stringify macro instead.
->
->> Why not simply use the # ?
->
->> > -#define __STR(x) #x
->> > -#define STR(x) __STR(x)
->
-> #include <stdio.h>
->
-> #define FOO bar
->
-> #define __STR(x) #x
-> #define STR(x) __STR(x)
->
-> void main(void)
-> {
->        printf("%s %s\n", __STR(FOO), STR(FOO));
-> }
->
-> $ gcc -o str str.c; ./str
-> str.c: In function ‘main’:
-> str.c:9: warning: return type of ‘main’ is not ‘int’
-> FOO bar
+Alan Cox wrote:
 
+> NAK this - on a lot of platforms 1uS is the wrong timescale. Also we
+> shouldn't be encouraging this kind of polling by making it very easy to
+> write.
 
-Thank you both for the explanation.
+Well, I can agree that the time scale might be wrong on some platforms.
+  The original version of spin_event_timeout() used jiffies, but some
+people said that a jiffy is too long of a timescale, so I changed it to
+udelay.
+
+However, I disagree about the encouragement part.  Polling a register
+until a status bit changes is a common task that cannot be handled any
+other way.  If the status bit change does not generate an interrupt, but
+the wait for the change takes a few microseconds, what else are you
+going to do?
+
+The way I see it, I'm just extending the idea behind cpu_relax().  Just
+doing a search for cpu_relax shows dozens, maybe hundreds, of drivers
+doing stuff like this:
+
+	while((inb(ioaddr+DAYNA_CARD_STATUS)&DAYNA_TX_READY)==0)
+		cpu_relax();
+
+This code doesn't even have a timeout!  In fact, I'd say that at least
+90% of all uses of cpu_relax() are in a while loop reading some register
+without a timeout.
+
+Ironically, in the situations where there is a timeout, the drivers use
+jiffies, not a delay.
+
+Frankly, I just don't see how spin_event_timeout() is not an improvement
+ over the current code that drivers use.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
