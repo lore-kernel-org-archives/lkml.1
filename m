@@ -1,93 +1,305 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757576AbZCJUi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbZCJUjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757576AbZCJUi6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 16:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZCJUio
+	id S1757703AbZCJUjg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 16:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbZCJUjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 16:38:44 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:55412 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753154AbZCJUin (ORCPT
+	Tue, 10 Mar 2009 16:39:25 -0400
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:39012
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754259AbZCJUjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 16:38:43 -0400
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: Thomas Backlund <tmb@mandriva.org>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: BUG when unloading bonding on 2.6.29-rc7-git3
-In-reply-to: <49B6CA4A.2040506@mandriva.org>
-References: <49B6CA4A.2040506@mandriva.org>
-Comments: In-reply-to Thomas Backlund <tmb@mandriva.org>
-   message dated "Tue, 10 Mar 2009 22:15:06 +0200."
-X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
-Date: Tue, 10 Mar 2009 13:38:47 -0700
-Message-ID: <28351.1236717527@death.nxdomain.ibm.com>
+	Tue, 10 Mar 2009 16:39:24 -0400
+X-BigFish: VPS-34(zz13e6S936eQ936fKzzzz5eeeTz32i6bh63h)
+X-Spam-TCS-SCL: 2:0
+X-FB-SS: 5,
+X-WSS-ID: 0KGB5D0-02-36P-01
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>, eric@lammerts.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH][retry 3] Conform L3 Cache Index Disable to Linux standards
+Date: Tue, 10 Mar 2009 15:41:45 -0500
+User-Agent: KMail/1.9.10
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-ID: <200903101541.45739.mark.langsdorf@amd.com>
+X-OriginalArrivalTime: 10 Mar 2009 20:39:10.0432 (UTC) FILETIME=[440DD600:01C9A1C0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Backlund <tmb@mandriva.org> wrote:
->Hi,
->[pleace cc me on reply]
->
->I get this when trying to unloading the bonding module by doing:
->
->service network stop
->modprobe -r bonding
->
->Oh, and I have "options ipv6 disable=1" in /etc/modprobe.conf
 
-	It looks to be a failure when trying to unload ipv6.  I don't
-see the failure when calling rmmod bonding, but if I then do rmmod ipv6,
-I see an identical stack.
+    Add ABI Documentation entry and fix some /sys directory formating
+    issues with the L3 Cache Index Disable feature for future AMD
+    processors.  Add a check to disable it for family 0x10 models
+    that do not support it yet.
 
-	-J
+diff --git a/Documentation/ABI/testing/sysfs-devices-cache_disable b/Documentation/ABI/testing/sysfs-devices-cache_disable
+new file mode 100644
+index 0000000..c7d9174
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-devices-cache_disable
+@@ -0,0 +1,18 @@
++What:	    /sys/devices/system/cpu/cpu*/cache/index*/cache_disable_X
++Date:	    August 2008
++KernelVersion:  2.6.27
++Contact:	 mark.langsdorf@amd.com
++Description:    These files exist in every cpu's cache index directories.
++		 There are currently 2 cache_disable_# files in each
++		 directory.  Reading from these files on a supported
++		 processor will return that cache disable index value
++		 for that processor and node.  Writing to one of these
++		 files will cause the specificed cache index to be disabled.
++
++		 Currently, only AMD Family 10h Processors support cache index
++		 disable, and only for their L3 caches.  See the BIOS and
++		 Kernel Developer's Guide at
++		 http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/31116-Public-GH-BKDG_3.20_2-4-09.pdf
++		 for formatting information and other details on the
++		 cache index disable.
++Users:	   joachim.deguara@amd.com
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 72c65bc..2547807 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -81,7 +81,7 @@ obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
+ 
+ obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
+ 
+-obj-$(CONFIG_K8_NB)		+= k8.o
++obj-y				+= k8.o
+ obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
+ obj-$(CONFIG_DEBUG_RODATA_TEST)	+= test_rodata.o
+ obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 8e6ce2c..5ecac89 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -18,6 +18,9 @@
+ #include <asm/processor.h>
+ #include <asm/smp.h>
+ 
++#include <linux/pci.h>
++#include <asm/k8.h>
++
+ #define LVL_1_INST	1
+ #define LVL_1_DATA	2
+ #define LVL_2		3
+@@ -159,14 +162,6 @@ struct _cpuid4_info_regs {
+ 	unsigned long can_disable;
+ };
+ 
+-#if defined(CONFIG_PCI) && defined(CONFIG_SYSFS)
+-static struct pci_device_id k8_nb_id[] = {
+-	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x1103) },
+-	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x1203) },
+-	{}
+-};
+-#endif
+-
+ unsigned short			num_cache_leaves;
+ 
+ /* AMD doesn't have CPUID4. Emulate it here to report the same
+@@ -291,6 +286,12 @@ amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
+ {
+ 	if (index < 3)
+ 		return;
++	if (boot_cpu_data.x86 == 0x11)
++		return;
++
++	if ((boot_cpu_data.x86 == 0x10) && (boot_cpu_data.x86_model < 0x15))
++		return;
++
+ 	this_leaf->can_disable = 1;
+ }
+ 
+@@ -639,6 +640,64 @@ static ssize_t show_##file_name						\
+ 	return sprintf (buf, "%lu\n", (unsigned long)this_leaf->object + val); \
+ }
+ 
++static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
++		 unsigned int index)
++{
++	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
++	struct pci_dev *dev = k8_northbridges[node];
++	unsigned int reg = 0;
++
++	if (!this_leaf->can_disable)
++		return -EINVAL;
++
++	pci_read_config_dword(dev, 0x1BC + index * 4, &reg);
++	return sprintf(buf, "%x\n", reg);
++}
++
++#define SHOW_CACHE_DISABLE(index)					\
++static ssize_t								\
++show_cache_disable_##index(struct _cpuid4_info *this_leaf, char *buf)  	\
++{									\
++	return show_cache_disable(this_leaf, buf, index);		\
++}
++
++static ssize_t
++store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
++		 size_t count, unsigned int index)
++{
++	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
++	struct pci_dev *dev = k8_northbridges[node];
++	unsigned long val = 0;
++
++	if (!this_leaf->can_disable)
++		return -EINVAL;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	if (strict_strtoul(buf, 10, &val) < 0)
++		return -EINVAL;
++
++	val |= 0xc0000000;
++	pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
++	wbinvd();
++	pci_write_config_dword(dev, 0x1BC + index * 4, val);
++	return count;
++}
++
++#define STORE_CACHE_DISABLE(index)					\
++static ssize_t								\
++store_cache_disable_##index(struct _cpuid4_info *this_leaf,	     	\
++		 const char *buf, size_t count)			     	\
++{									\
++	return store_cache_disable(this_leaf, buf, count, index);	\
++}
++
++SHOW_CACHE_DISABLE(0)
++STORE_CACHE_DISABLE(0)
++SHOW_CACHE_DISABLE(1)
++STORE_CACHE_DISABLE(1)
++
+ show_one_plus(level, eax.split.level, 0);
+ show_one_plus(coherency_line_size, ebx.split.coherency_line_size, 1);
+ show_one_plus(physical_line_partition, ebx.split.physical_line_partition, 1);
+@@ -696,98 +755,6 @@ static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf)
+ #define to_object(k)	container_of(k, struct _index_kobject, kobj)
+ #define to_attr(a)	container_of(a, struct _cache_attr, attr)
+ 
+-#ifdef CONFIG_PCI
+-static struct pci_dev *get_k8_northbridge(int node)
+-{
+-	struct pci_dev *dev = NULL;
+-	int i;
+-
+-	for (i = 0; i <= node; i++) {
+-		do {
+-			dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
+-			if (!dev)
+-				break;
+-		} while (!pci_match_id(&k8_nb_id[0], dev));
+-		if (!dev)
+-			break;
+-	}
+-	return dev;
+-}
+-#else
+-static struct pci_dev *get_k8_northbridge(int node)
+-{
+-	return NULL;
+-}
+-#endif
+-
+-static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
+-{
+-	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
+-	int node = cpu_to_node(cpumask_first(mask));
+-	struct pci_dev *dev = NULL;
+-	ssize_t ret = 0;
+-	int i;
+-
+-	if (!this_leaf->can_disable)
+-		return sprintf(buf, "Feature not enabled\n");
+-
+-	dev = get_k8_northbridge(node);
+-	if (!dev) {
+-		printk(KERN_ERR "Attempting AMD northbridge operation on a system with no northbridge\n");
+-		return -EINVAL;
+-	}
+-
+-	for (i = 0; i < 2; i++) {
+-		unsigned int reg;
+-
+-		pci_read_config_dword(dev, 0x1BC + i * 4, &reg);
+-
+-		ret += sprintf(buf, "%sEntry: %d\n", buf, i);
+-		ret += sprintf(buf, "%sReads:  %s\tNew Entries: %s\n",  
+-			buf,
+-			reg & 0x80000000 ? "Disabled" : "Allowed",
+-			reg & 0x40000000 ? "Disabled" : "Allowed");
+-		ret += sprintf(buf, "%sSubCache: %x\tIndex: %x\n",
+-			buf, (reg & 0x30000) >> 16, reg & 0xfff);
+-	}
+-	return ret;
+-}
+-
+-static ssize_t
+-store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
+-		    size_t count)
+-{
+-	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
+-	int node = cpu_to_node(cpumask_first(mask));
+-	struct pci_dev *dev = NULL;
+-	unsigned int ret, index, val;
+-
+-	if (!this_leaf->can_disable)
+-		return 0;
+-
+-	if (strlen(buf) > 15)
+-		return -EINVAL;
+-
+-	ret = sscanf(buf, "%x %x", &index, &val);
+-	if (ret != 2)
+-		return -EINVAL;
+-	if (index > 1)
+-		return -EINVAL;
+-
+-	val |= 0xc0000000;
+-	dev = get_k8_northbridge(node);
+-	if (!dev) {
+-		printk(KERN_ERR "Attempting AMD northbridge operation on a system with no northbridge\n");
+-		return -EINVAL;
+-	}
+-
+-	pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
+-	wbinvd();
+-	pci_write_config_dword(dev, 0x1BC + index * 4, val);
+-
+-	return 1;
+-}
+-
+ struct _cache_attr {
+ 	struct attribute attr;
+ 	ssize_t (*show)(struct _cpuid4_info *, char *);
+@@ -808,7 +775,11 @@ define_one_ro(size);
+ define_one_ro(shared_cpu_map);
+ define_one_ro(shared_cpu_list);
+ 
+-static struct _cache_attr cache_disable = __ATTR(cache_disable, 0644, show_cache_disable, store_cache_disable);
++static struct _cache_attr cache_disable_0 = __ATTR(cache_disable_0, 0644,
++		 show_cache_disable_0, store_cache_disable_0);
++static struct _cache_attr cache_disable_1 = __ATTR(cache_disable_1, 0644,
++		 show_cache_disable_1, store_cache_disable_1);
++
+ 
+ static struct attribute * default_attrs[] = {
+ 	&type.attr,
+@@ -820,7 +791,8 @@ static struct attribute * default_attrs[] = {
+ 	&size.attr,
+ 	&shared_cpu_map.attr,
+ 	&shared_cpu_list.attr,
+-	&cache_disable.attr,
++	&cache_disable_0.attr,
++	&cache_disable_1.attr,
+ 	NULL
+ };
+ 
 
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
-
-
->
->> Mar 10 21:43:33 tmb kernel: BUG: unable to handle kernel NULL pointer dereference at 0000000000000028
->> Mar 10 21:43:33 tmb kernel: IP: [<ffffffffa038ad6b>] ipv6_sysctl_net_exit+0x1b/0x60 [ipv6]
->> Mar 10 21:43:33 tmb kernel: PGD 22608d067 PUD 22a813067 PMD 0 Mar 10
->> 21:43:33 tmb kernel: Oops: 0000 [#1] SMP Mar 10 21:43:33 tmb kernel:
->> last sysfs file: /sys/class/net/bond0/bonding/slaves
->> Mar 10 21:43:34 tmb kernel: CPU 3 Mar 10 21:43:34 tmb kernel: Modules
->> linked in: af_packet ipv6(-) binfmt_misc loop xfs exportfs dm_mod floppy
->> cpufreq_ondemand cpufreq_conservative cpufreq_p
->> owersave acpi_cpufreq freq_table raid0 snd_hda_codec_analog snd_hda_intel snd_hda_codec snd_hwdep snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_s
->> eq_device snd_pcm_oss iTCO_wdt sky2 skge i2c_i801 rtc_cmos iTCO_vendor_support ohci1394 i2c_core thermal snd_pcm raid1 snd_timer snd_mixer_oss ieee1394 butt
->> on processor evdev sr_mod sg snd soundcore snd_page_alloc pata_marvell ata_piix ahci libata sd_mod scsi_mod crc_t10dif raid456 async_xor async_memcpy async_tx xor raid10 ext3 jbd uhci_hcd ohci_hcd ehci_hcd usbcore [last unloaded: bonding]
->> Mar 10 21:43:34 tmb kernel: Pid: 5203, comm: modprobe Not tainted 2.6.29-0.rc7.3.1mdv #1 P5Q-E
->> Mar 10 21:43:34 tmb kernel: RIP: 0010:[<ffffffffa038ad6b>]  [<ffffffffa038ad6b>] ipv6_sysctl_net_exit+0x1b/0x60 [ipv6]
->> Mar 10 21:43:34 tmb kernel: RSP: 0018:ffff8802238dbe68  EFLAGS: 00010282
->> Mar 10 21:43:34 tmb kernel: RAX: ffffffffa038ad50 RBX: ffffffffa03a3d20 RCX: 000000000001ffff
->> Mar 10 21:43:34 tmb kernel: RDX: ffff8800a78ed000 RSI: 0000000000000086 RDI: 0000000000000000
->> Mar 10 21:43:34 tmb kernel: RBP: ffff8802238dbe88 R08: 0000000000000000 R09: 0000000000000002
->> Mar 10 21:43:34 tmb kernel: R10: ffffffff807c18a0 R11: ffff8802238dbdc8 R12: ffffffffa03a5680
->> Mar 10 21:43:34 tmb kernel: R13: 0000000000000080 R14: 0000000000000000 R15: ffff8802238dbee8
->> Mar 10 21:43:34 tmb kernel: FS:  00007f9ea27a36f0(0000) GS:ffff88022f05b580(0000) knlGS:0000000000000000
->> Mar 10 21:43:34 tmb kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
->> Mar 10 21:43:34 tmb kernel: CR2: 0000000000000028 CR3: 000000022b165000 CR4: 00000000000006e0
->> Mar 10 21:43:34 tmb kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->> Mar 10 21:43:34 tmb kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->> Mar 10 21:43:34 tmb kernel: Process modprobe (pid: 5203, threadinfo ffff8802238da000, task ffff88022242c1d0)
->> Mar 10 21:43:34 tmb kernel: Stack:
->> Mar 10 21:43:34 tmb kernel:  ffff8802238dbe88 ffffffffa03a3d20 ffffffffa03a5680 0000000000000080
->> Mar 10 21:43:34 tmb kernel:  ffff8802238dbea8 ffffffff8046b83a ffff8802238dbea8 0000000000000000
->> Mar 10 21:43:34 tmb kernel:  ffff8802238dbeb8 ffffffffa038ad4c ffff8802238dbec8 ffffffffa038debd
->> Mar 10 21:43:34 tmb kernel: Call Trace:
->> Mar 10 21:43:34 tmb kernel:  [<ffffffff8046b83a>] unregister_pernet_subsys+0x2a/0x40
->> Mar 10 21:43:34 tmb kernel:  [<ffffffffa038ad4c>] ipv6_sysctl_unregister+0x1c/0x20 [ipv6]
->> Mar 10 21:43:34 tmb kernel:  [<ffffffffa038debd>] inet6_exit+0x1d/0xf0 [ipv6]
->> Mar 10 21:43:34 tmb kernel:  [<ffffffff80278339>] sys_delete_module+0x1e9/0x2b0
->> Mar 10 21:43:34 tmb kernel:  [<ffffffff80387f78>] ? __up_write+0x68/0x140
->> Mar 10 21:43:34 tmb kernel:  [<ffffffff8020c72a>] system_call_fastpath+0x16/0x1b
->> Mar 10 21:43:34 tmb kernel: Code: 48 c7 c7 20 3d 3a a0 e8 c4 0a 0e e0 c9
->> c3 66 90 55 48 89 e5 48 83 ec 20 48 89 5d e8 4c 89 65 f0 4c 89 6d f8 48
->> 8b bf e8 02 00 00 <48> 8b 5f 28 4c 8b 63 20 4c 8b 6b 70 e8 c4 8b 16 e0
->> 48 89 df e8 Mar 10 21:43:34 tmb kernel: RIP  [<ffffffffa038ad6b>]
->> ipv6_sysctl_net_exit+0x1b/0x60 [ipv6]
->> Mar 10 21:43:34 tmb kernel:  RSP <ffff8802238dbe68>
->> Mar 10 21:43:34 tmb kernel: CR2: 0000000000000028
->> Mar 10 21:43:34 tmb kernel: ---[ end trace 08ed5752dafe6907 ]---
