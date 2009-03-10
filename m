@@ -1,52 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbZCJTFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZCJTQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbZCJTFn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 15:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbZCJTFd
+	id S1754950AbZCJTQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 15:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbZCJTQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 15:05:33 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:63568 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751770AbZCJTFd (ORCPT
+	Tue, 10 Mar 2009 15:16:44 -0400
+Received: from [213.79.90.228] ([213.79.90.228]:1831 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752674AbZCJTQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 15:05:33 -0400
-Message-ID: <49B6B9D2.8000807@freescale.com>
-Date: Tue, 10 Mar 2009 14:04:50 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
-MIME-Version: 1.0
+	Tue, 10 Mar 2009 15:16:43 -0400
+Date: Tue, 10 Mar 2009 22:16:38 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Grant Likely <grant.likely@secretlab.ca>
-CC: linux-kernel@vger.kernel.org, rdreier@cisco.com, jirislaby@gmail.com,
-       peterz@infradead.org, will.newton@gmail.com, hancockrwd@gmail.com,
-       jeremy@goop.org
-Subject: Re: [PATCH v4] introduce macro spin_event_timeout()
-References: <1236699004-1863-1-git-send-email-timur@freescale.com> <fa686aa40903101141l33fbfc7cha0d2d85f6e1cb795@mail.gmail.com>
-In-Reply-To: <fa686aa40903101141l33fbfc7cha0d2d85f6e1cb795@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: afleming@freescale.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com
+Subject: Re: [PATCH 5/5] net: make mpc5200 fec driver use of_mdio
+	infrastructure
+Message-ID: <20090310191638.GA8539@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090310150751.12455.70598.stgit@localhost.localdomain> <20090310152224.12455.99348.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20090310152224.12455.99348.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grant Likely wrote:
+On Tue, Mar 10, 2009 at 09:22:24AM -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+[...]
+> +static int mpc52xx_fec_notifier_phy_add(struct notifier_block *nb,
+> +					unsigned long event, void *_dev)
+> +{
+[...]
+> +	rc = phy_connect_direct(priv->ndev, priv->phydev,
+> +				mpc52xx_fec_adjust_link, 0, 0);
+> +	if (rc) {
+> +		dev_err(dev, "phy_connect_direct() failed\n");
+> +		return 0;
+> +	}
+> +
+> +	rc = register_netdev(priv->ndev);
+> +	if (rc) {
+> +		phy_disconnect(priv->phydev);
+> +		dev_err(dev, "register_netdev() failed\n");
+> +	}
+> +
+> +	return 0;
+> +}
+[...]
+>  static int __devinit
+>  mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+> @@ -896,7 +874,6 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+[...]
+> +	/* Register the new network device immediately if we don't need
+> +	 * to wait for a phy_device first. */
+> +	if (!priv->phy_node) {
+> +		if (priv->seven_wire_mode)
+> +			dev_info(&ndev->dev, "using 7-wire PHY mode\n");
+> +		else
+> +			dev_info(&ndev->dev, "Fixed speed MII link: %i%cD\n",
+> +				 priv->speed, priv->duplex ? 'F' : 'H');
+> +		rv = register_netdev(ndev);
+> +		if (rv < 0)
+> +			goto probe_error;
+>  	}
+[...]
 
-> I typically use something in the form of this pattern on powerpc code
-> when I absolutely have to busywait.
->     int end_ts = get_tbl() + some_delay;  /* note that this is signed */
->     while (end_ts - get_tbl() > 0)
->         if (condition)
->             break;
+Two registration points for the netdev... That's ugly. :-/
 
-Funny you mention this, because I was just about to implement the same
-thing.  Of course, it will be a PowerPC-only function, but I suppose
-that's its fate regardless.
+What problem are you trying to solve w/ these patches, btw?
 
-> This macro also looks like a tempting unbounded latency tarpit to fall
-> into when people start using it in critical regions,  but that goes
-> for code using a non-timed-out busywait also.
+`ifconfig ethX up` is safe even w/o PHY attached.
 
-I can't fix everything!
+All the (user-visible) changes is that we no longer have "ethX"
+until PHY is registered, and I can't say that this is good either.
+
+Previously you'd have ethX all the time, and `ifconfig ethX up`
+would report user-friendly "PHY not attached" error. Now we have
+to guess why ethX isn't there.
+
+I can't say that the probing code is much prettier or easier to
+understand... But maybe there are some other problems that you're
+solving, which I don't see so far?
+
+That is, can you explain why the changes are needed? Did you
+consider other solutions?
+
+
+Thanks!
+
+p.s.
+> eliminates the assumption that the PHY for the FEC is always
+> attached to the FEC's own MDIO bus. With this patch, the FEC can
+> use a PHY attached to any MDIO bus if it is described in the device
+> tree.
+
+AFAIK, Gianfar and UCC Geth drivers can do this too, so I'm assuming
+that this isn't the cause for these major changes.
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
