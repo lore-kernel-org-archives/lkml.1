@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbZCJOt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZCJOuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940AbZCJOt2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 10:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbZCJOtR
+	id S1755445AbZCJOuS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 10:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbZCJOuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 10:49:17 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:44227 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751466AbZCJOtQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 10:49:16 -0400
-Date: Tue, 10 Mar 2009 08:48:57 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [patch 1/2] fs: mnt_want_write speedup
-Message-ID: <20090310144857.GX25995@parisc-linux.org>
-References: <20090310143718.GB15977@wotan.suse.de>
+	Tue, 10 Mar 2009 10:50:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50404 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752556AbZCJOuC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 10:50:02 -0400
+Date: Tue, 10 Mar 2009 15:49:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: prasad@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [patch 06/11] Use virtual debug registers in process/thread
+	handling code
+Message-ID: <20090310144933.GH3850@elte.hu>
+References: <20090305043440.189041194@linux.vnet.ibm.com> <20090305044011.GG17747@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090310143718.GB15977@wotan.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090305044011.GG17747@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 10, 2009 at 03:37:18PM +0100, Nick Piggin wrote:
-> costly, unfortunately). It results in about 900 bytes smaller code too. It
-> does increase the size of a vfsmount, however.
 
-Only on 64-bit SMP systems, and then only by four bytes.  And, best of
-all, you can fix that if you care.  Look at this:
+* prasad@linux.vnet.ibm.com <prasad@linux.vnet.ibm.com> wrote:
 
-        /* --- cacheline 1 boundary (64 bytes) --- */
-        struct list_head           mnt_child;            /*    64    16 */
-        int                        mnt_flags;            /*    80     4 */
+> @@ -437,16 +448,6 @@ __switch_to_xtra(struct task_struct *pre
+>  	else if (next->debugctlmsr != prev->debugctlmsr)
+>  		update_debugctlmsr(next->debugctlmsr);
+>  
+> -	if (test_tsk_thread_flag(next_p, TIF_DEBUG)) {
+> -		set_debugreg(next->debugreg0, 0);
+> -		set_debugreg(next->debugreg1, 1);
+> -		set_debugreg(next->debugreg2, 2);
+> -		set_debugreg(next->debugreg3, 3);
+> -		/* no 4 and 5 */
+> -		set_debugreg(next->debugreg6, 6);
+> -		set_debugreg(next->debugreg7, 7);
+> -	}
+> -
+>  	if (test_tsk_thread_flag(prev_p, TIF_NOTSC) ^
+>  	    test_tsk_thread_flag(next_p, TIF_NOTSC)) {
+>  		/* prev and next are different */
+> @@ -595,6 +596,12 @@ __switch_to(struct task_struct *prev_p, 
+>  
+>  	percpu_write(current_task, next_p);
+>  
+> +	/*
+> +	 * Handle debug registers.  This must be done _after_ current
+> +	 * is updated.
+> +	 */
+> +	if (unlikely(test_tsk_thread_flag(next_p, TIF_DEBUG)))
+> +		switch_to_thread_hw_breakpoint(next_p);
 
-        /* XXX 4 bytes hole, try to pack */
+why does this have to be called after 'current' has been 
+updated? AFAICS switch_to_thread_hw_breakpoint() does not take a 
+look at 'current'.
 
-        const char  *              mnt_devname;          /*    88     8 */
-        struct list_head           mnt_list;             /*    96    16 */
-        struct list_head           mnt_expire;           /*   112    16 */
+Speaking of switch_to_thread_hw_breakpoint(), i dont like that 
+function at all:
 
-So move mnt_flags to later in the struct (after the pointers), and move
+- why does it have to do a list of debug registers?
 
-> +#ifdef CONFIG_SMP
-> +     int *mnt_writers;
-> +#else
-> +     int mnt_writers;
-> +#endif
+- why does it worry about IPIs arriving when context-switches on 
+  x86 are always done with interrupts disabled?
 
-to be with the other pointers.  Bonus points for putting it between
-        struct mnt_namespace *     mnt_ns;               /*   184     8 */
-and
-        int                        mnt_id;               /*   192     4 */
+- also, what do the ->installed() and ->uninstalled() callbacks 
+  do - nothing uses it!
 
-so that it doesn't become a new 4-byte hole for those incredibly common
-64-bit uniprocessor builds.  *cough*.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	Ingo
