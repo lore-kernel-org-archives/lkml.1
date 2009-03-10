@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbZCJPd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZCJPha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756703AbZCJPd6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 11:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756510AbZCJPdt
+	id S1754300AbZCJPha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 11:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZCJPhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 11:33:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43317 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Mar 2009 11:37:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38234 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753691AbZCJPds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 11:33:48 -0400
-Date: Tue, 10 Mar 2009 16:33:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
-       lethal@linux-sh.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Free setup_irq() interrupt V2
-Message-ID: <20090310153332.GB23463@elte.hu>
-References: <20090310102459.23422.80761.sendpatchset@rx1.opensource.se> <alpine.LFD.2.00.0903101510040.29264@localhost.localdomain> <20090310150415.GL3850@elte.hu> <alpine.LFD.2.00.0903101615540.29264@localhost.localdomain>
+	id S1753364AbZCJPhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 11:37:17 -0400
+Date: Tue, 10 Mar 2009 15:36:26 GMT
+From: Peter Zijlstra <peterz@infradead.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1236603381.8389.455.camel@laptop>
+References: <1236603381.8389.455.camel@laptop>
+Subject: [tip:sched/core] sched: optimize ttwu vs group scheduling
+Message-ID: <tip-6352997e4525536e8242a913362b52541c0ca67c@git.kernel.org>
+Git-Commit-ID: 6352997e4525536e8242a913362b52541c0ca67c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903101615540.29264@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 10 Mar 2009 15:36:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  6352997e4525536e8242a913362b52541c0ca67c
+Gitweb:     http://git.kernel.org/tip/6352997e4525536e8242a913362b52541c0ca67c
+Author:     "Peter Zijlstra" <peterz@infradead.org>
+AuthorDate: Mon, 9 Mar 2009 13:56:21 +0100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 10 Mar 2009 16:35:12 +0100
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+sched: optimize ttwu vs group scheduling
 
-> On Tue, 10 Mar 2009, Ingo Molnar wrote:
-> > * Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > > Magnus,
-> > > 
-> > > On Tue, 10 Mar 2009, Magnus Damm wrote:
-> > > > From: Magnus Damm <damm@igel.co.jp>
-> > > > This patch adds a __free_irq() function for releasing 
-> > > > interrupts requested with setup_irq().
-> > > 
-> > > I think there is a simpler solution than adding yet another 
-> > > function for the confusion of driver writers. See below.
-> > 
-> > Uhm, i asked for that solution ;-) 
-> 
-> Uhm, I missed that :) 
-> 
-> > To reduce the confusion in generic code with yet another IRQF flag.
-> 
-> Hmm. I still prefer a solution which confuses the few people hacking
-> on kernel/irq/* instead of having another function which confuses the
-> already confused driver writers.
-> 
-> I can live with the two functions as well, but then please let us use
-> a function name which is more intuitive than __free_irq().
-> 
-> setup_irq()   -> remove_irq()
-> request_irq() -> free_irq()
+Impact: micro-optimization
 
-Sure, that's fine with me.
+We can avoid the sched domain walk on try_to_wake_up() when we know
+there are no groups.
 
-I almost suggested shutdown_irq() to Magnus originally, then 
-went for __free_irq().
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1236603381.8389.455.camel@laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-	Ingo
+
+---
+ kernel/sched.c |   16 +++++++++++++++-
+ 1 files changed, 15 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index e0fa739..a7ecb65 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -331,6 +331,13 @@ static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
+  */
+ static DEFINE_SPINLOCK(task_group_lock);
+ 
++#ifdef CONFIG_SMP
++static int root_task_group_empty(void)
++{
++	return list_empty(&root_task_group->children);
++}
++#endif
++
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ #ifdef CONFIG_USER_SCHED
+ # define INIT_TASK_GROUP_LOAD	(2*NICE_0_LOAD)
+@@ -391,6 +398,13 @@ static inline void set_task_rq(struct task_struct *p, unsigned int cpu)
+ 
+ #else
+ 
++#ifdef CONFIG_SMP
++static int root_task_group_empty(void)
++{
++	return 1;
++}
++#endif
++
+ static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
+ static inline struct task_group *task_group(struct task_struct *p)
+ {
+@@ -2318,7 +2332,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
+ 		sync = 0;
+ 
+ #ifdef CONFIG_SMP
+-	if (sched_feat(LB_WAKEUP_UPDATE)) {
++	if (sched_feat(LB_WAKEUP_UPDATE) && !root_task_group_empty()) {
+ 		struct sched_domain *sd;
+ 
+ 		this_cpu = raw_smp_processor_id();
