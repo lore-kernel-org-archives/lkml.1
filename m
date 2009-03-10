@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbZCJSxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755744AbZCJSxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756788AbZCJSxS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 14:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZCJSxE
+	id S1755744AbZCJSxu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 14:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbZCJSxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 14:53:04 -0400
-Received: from adelie.canonical.com ([91.189.90.139]:41136 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753156AbZCJSxC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 14:53:02 -0400
-Date: Tue, 10 Mar 2009 18:52:59 +0000
-From: Andy Whitcroft <apw@canonical.com>
-To: Hannes Eder <hannes@hanneseder.net>
-Cc: Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] checkpatch: make -f alias --file, add --help, more
-	verbose help message
-Message-ID: <20090310185259.GA27061@shadowen.org>
-References: <20090112092839.GA2190@elf.ucw.cz> <496B0E5F.1020902@tremplin-utc.net> <20090116121940.GA30302@elf.ucw.cz> <20090116143404.ccf2d9ee.akpm@linux-foundation.org> <20090120103219.GK2576@elf.ucw.cz> <20090310172026.10948.10453.stgit@f10box.hanneseder.net> <20090310181023.GC28243@shadowen.org>
+	Tue, 10 Mar 2009 14:53:37 -0400
+Received: from kroah.org ([198.145.64.141]:36574 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755724AbZCJSxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 14:53:36 -0400
+Date: Tue, 10 Mar 2009 11:25:56 -0700
+From: Greg KH <greg@kroah.com>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Asking for inclusion of nilfs2 in the mainline kernel
+Message-ID: <20090310182556.GA5730@kroah.com>
+References: <20090311.015542.118514963.ryusuke@osrg.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090310181023.GC28243@shadowen.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090311.015542.118514963.ryusuke@osrg.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 10, 2009 at 06:10:23PM +0000, Andy Whitcroft wrote:
-> On Tue, Mar 10, 2009 at 06:21:23PM +0100, Hannes Eder wrote:
-> > Impact:
-> >   - More verbose help/usage message.
-> >   - Make the option -f an alias for --file.
-> >   - On -h, --help, and --version display help message and exit(0).
-> >   - With no FILE(s) given, exit(1) with "no input files".
-> >   - On invalid options display help/usage and exit(1).
-> > 
-> > Based on a patch by Pavel Machek.
+On Wed, Mar 11, 2009 at 01:55:42AM +0900, Ryusuke Konishi wrote:
+> Hi, 
 > 
-> That looks reasonable.  Will integate it into my next set of updates.
+> I've been working for the past serveral months to take review comments
+> and to continually solve users' problems come up in mainling list
+> (thanks for all giving comments and feedbacks!).  Also, I've tried to
+> stabilize API and disk format to restrict additional changes and
+> ensure backward compatibility.
+> 
+> Except adding ioctl commands for user-demanded features, I think the
+> interface was almost stabilized.  Now I'd like to ask for mainline
+> inclusion so that more people can try this in the tree.
 
-Ok, now in my testing branch.  See:
+Then submit some patches, as documented in
+Documentation/SubmittingPatches :)
 
-  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
+thanks,
 
--apw
+greg k-h
