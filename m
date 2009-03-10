@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZCJH5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbZCJH5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbZCJH5u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 03:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbZCJH43
+	id S1754221AbZCJH5e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 03:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZCJH42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 03:56:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56888 "EHLO hera.kernel.org"
+	Tue, 10 Mar 2009 03:56:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56886 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753772AbZCJH40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 03:56:26 -0400
+	id S1753365AbZCJH4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 03:56:24 -0400
 From: Tejun Heo <tj@kernel.org>
 To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
        linux-kernel@vger.kernel.org, hpa@zytor.com,
@@ -18,10 +18,10 @@ To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
        grundler@parisc-linux.org, takata@linux-m32r.org,
        benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
        schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Cc: Tejun Heo <tj@kernel.org>, Pat Gefre <pfg@sgi.com>
-Subject: [PATCH 1/5] linker script: define __per_cpu_load on all SMP capable archs
-Date: Tue, 10 Mar 2009 16:53:47 +0900
-Message-Id: <1236671631-9305-2-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 4/5] percpu: generalize embedding first chunk setup helper
+Date: Tue, 10 Mar 2009 16:53:50 +0900
+Message-Id: <1236671631-9305-5-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1236671631-9305-1-git-send-email-tj@kernel.org>
 References: <1236671631-9305-1-git-send-email-tj@kernel.org>
@@ -30,91 +30,203 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: __per_cpu_load available on all SMP capable archs
+Impact: code reorganization
 
-Percpu now requires three symbols to be defined - __per_cpu_load,
-__per_cpu_start and __per_cpu_end.  There were three archs which
-didn't have it.  Update them as follows.
-
-* powerpc: can use generic PERCPU() macro.  Compile tested for
-  powerpc32, compile/boot tested for powerpc64.
-
-* ia64: can use generic PERCPU_VADDR() macro.  __phys_per_cpu_start is
-  identical to __per_cpu_load.  Compile tested and symbol table looks
-  identical after the change except for the additional __per_cpu_load.
-
-* arm: added explicit __per_cpu_load definition.  Currently uses
-  unified .init output section so can't use the generic macro.  Dunno
-  whether the unified .init ouput section is required by arch
-  peculiarity so I left it alone.  Please break it up and use PERCPU()
-  if possible.
+Separate out embedding first chunk setup helper from x86 embedding
+first chunk allocator and put it in mm/percpu.c.  This will be used by
+the default percpu first chunk allocator and possibly by other archs.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Pat Gefre <pfg@sgi.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
 ---
- arch/arm/kernel/vmlinux.lds.S     |    1 +
- arch/ia64/kernel/vmlinux.lds.S    |   12 ++----------
- arch/powerpc/kernel/vmlinux.lds.S |    9 +--------
- 3 files changed, 4 insertions(+), 18 deletions(-)
+ arch/x86/kernel/setup_percpu.c |   54 +++----------------------
+ include/linux/percpu.h         |    4 ++
+ mm/percpu.c                    |   86 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 96 insertions(+), 48 deletions(-)
 
-diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
-index 85598f7..1602373 100644
---- a/arch/arm/kernel/vmlinux.lds.S
-+++ b/arch/arm/kernel/vmlinux.lds.S
-@@ -64,6 +64,7 @@ SECTIONS
- 		__initramfs_end = .;
- #endif
- 		. = ALIGN(4096);
-+		__per_cpu_load = .;
- 		__per_cpu_start = .;
- 			*(.data.percpu.page_aligned)
- 			*(.data.percpu)
-diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
-index f45e4e5..3765efc 100644
---- a/arch/ia64/kernel/vmlinux.lds.S
-+++ b/arch/ia64/kernel/vmlinux.lds.S
-@@ -213,17 +213,9 @@ SECTIONS
-         { *(.data.cacheline_aligned) }
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index e41c51f..400331b 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -257,31 +257,13 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
+  * Embedding allocator
+  *
+  * The first chunk is sized to just contain the static area plus
+- * module and dynamic reserves, and allocated as a contiguous area
+- * using bootmem allocator and used as-is without being mapped into
+- * vmalloc area.  This enables the first chunk to piggy back on the
+- * linear physical PMD mapping and doesn't add any additional pressure
+- * to TLB.  Note that if the needed size is smaller than the minimum
+- * unit size, the leftover is returned to the bootmem allocator.
++ * module and dynamic reserves and embedded into linear physical
++ * mapping so that it can use PMD mapping without additional TLB
++ * pressure.
+  */
+-static void *pcpue_ptr __initdata;
+-static size_t pcpue_size __initdata;
+-static size_t pcpue_unit_size __initdata;
+-
+-static struct page * __init pcpue_get_page(unsigned int cpu, int pageno)
+-{
+-	size_t off = (size_t)pageno << PAGE_SHIFT;
+-
+-	if (off >= pcpue_size)
+-		return NULL;
+-
+-	return virt_to_page(pcpue_ptr + cpu * pcpue_unit_size + off);
+-}
+-
+ static ssize_t __init setup_pcpu_embed(size_t static_size)
+ {
+-	unsigned int cpu;
+-	size_t dyn_size;
++	size_t reserve = PERCPU_MODULE_RESERVE + PERCPU_DYNAMIC_RESERVE;
  
-   /* Per-cpu data: */
--  percpu : { } :percpu
-   . = ALIGN(PERCPU_PAGE_SIZE);
--  __phys_per_cpu_start = .;
--  .data.percpu PERCPU_ADDR : AT(__phys_per_cpu_start - LOAD_OFFSET)
--	{
--		__per_cpu_start = .;
--		*(.data.percpu.page_aligned)
--		*(.data.percpu)
--		*(.data.percpu.shared_aligned)
--		__per_cpu_end = .;
--	}
-+  PERCPU_VADDR(PERCPU_ADDR, :percpu)
-+  __phys_per_cpu_start = __per_cpu_load;
-   . = __phys_per_cpu_start + PERCPU_PAGE_SIZE;	/* ensure percpu data fits
-   						 * into percpu page size
- 						 */
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 295ccc5..67f07f4 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -181,14 +181,7 @@ SECTIONS
- 		__initramfs_end = .;
- 	}
- #endif
--	. = ALIGN(PAGE_SIZE);
--	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
--		__per_cpu_start = .;
--		*(.data.percpu.page_aligned)
--		*(.data.percpu)
--		*(.data.percpu.shared_aligned)
--		__per_cpu_end = .;
--	}
-+	PERCPU(PAGE_SIZE)
+ 	/*
+ 	 * If large page isn't supported, there's no benefit in doing
+@@ -291,32 +273,8 @@ static ssize_t __init setup_pcpu_embed(size_t static_size)
+ 	if (!cpu_has_pse || pcpu_need_numa())
+ 		return -EINVAL;
  
- 	. = ALIGN(8);
- 	.machine.desc : AT(ADDR(.machine.desc) - LOAD_OFFSET) {
+-	/* allocate and copy */
+-	pcpue_size = PFN_ALIGN(static_size + PERCPU_MODULE_RESERVE +
+-			       PERCPU_DYNAMIC_RESERVE);
+-	pcpue_unit_size = max_t(size_t, pcpue_size, PCPU_MIN_UNIT_SIZE);
+-	dyn_size = pcpue_size - static_size - PERCPU_FIRST_CHUNK_RESERVE;
+-
+-	pcpue_ptr = pcpu_alloc_bootmem(0, num_possible_cpus() * pcpue_unit_size,
+-				       PAGE_SIZE);
+-	if (!pcpue_ptr)
+-		return -ENOMEM;
+-
+-	for_each_possible_cpu(cpu) {
+-		void *ptr = pcpue_ptr + cpu * pcpue_unit_size;
+-
+-		free_bootmem(__pa(ptr + pcpue_size),
+-			     pcpue_unit_size - pcpue_size);
+-		memcpy(ptr, __per_cpu_load, static_size);
+-	}
+-
+-	/* we're ready, commit */
+-	pr_info("PERCPU: Embedded %zu pages at %p, static data %zu bytes\n",
+-		pcpue_size >> PAGE_SHIFT, pcpue_ptr, static_size);
+-
+-	return pcpu_setup_first_chunk(pcpue_get_page, static_size,
+-				      PERCPU_FIRST_CHUNK_RESERVE, dyn_size,
+-				      pcpue_unit_size, pcpue_ptr, NULL);
++	return pcpu_embed_first_chunk(static_size, PERCPU_FIRST_CHUNK_RESERVE,
++				      reserve - PERCPU_FIRST_CHUNK_RESERVE, -1);
+ }
+ 
+ /*
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+index fb455dc..ee5615d 100644
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -111,6 +111,10 @@ extern size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 				void *base_addr,
+ 				pcpu_populate_pte_fn_t populate_pte_fn);
+ 
++extern ssize_t __init pcpu_embed_first_chunk(
++				size_t static_size, size_t reserved_size,
++				ssize_t dyn_size, ssize_t unit_size);
++
+ /*
+  * Use this to get to a cpu's version of the per-cpu object
+  * dynamically allocated. Non-atomic access to the current CPU's
+diff --git a/mm/percpu.c b/mm/percpu.c
+index 2f94661..1aa5d8f 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -1238,3 +1238,89 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 	pcpu_base_addr = (void *)pcpu_chunk_addr(schunk, 0, 0);
+ 	return pcpu_unit_size;
+ }
++
++/*
++ * Embedding first chunk setup helper.
++ */
++static void *pcpue_ptr __initdata;
++static size_t pcpue_size __initdata;
++static size_t pcpue_unit_size __initdata;
++
++static struct page * __init pcpue_get_page(unsigned int cpu, int pageno)
++{
++	size_t off = (size_t)pageno << PAGE_SHIFT;
++
++	if (off >= pcpue_size)
++		return NULL;
++
++	return virt_to_page(pcpue_ptr + cpu * pcpue_unit_size + off);
++}
++
++/**
++ * pcpu_embed_first_chunk - embed the first percpu chunk into bootmem
++ * @static_size: the size of static percpu area in bytes
++ * @reserved_size: the size of reserved percpu area in bytes
++ * @dyn_size: free size for dynamic allocation in bytes, -1 for auto
++ * @unit_size: unit size in bytes, must be multiple of PAGE_SIZE, -1 for auto
++ *
++ * This is a helper to ease setting up embedded first percpu chunk and
++ * can be called where pcpu_setup_first_chunk() is expected.
++ *
++ * If this function is used to setup the first chunk, it is allocated
++ * as a contiguous area using bootmem allocator and used as-is without
++ * being mapped into vmalloc area.  This enables the first chunk to
++ * piggy back on the linear physical mapping which often uses larger
++ * page size.
++ *
++ * When @dyn_size is positive, dynamic area might be larger than
++ * specified to fill page alignment.  Also, when @dyn_size is auto,
++ * @dyn_size does not fill the whole first chunk but only what's
++ * necessary for page alignment after static and reserved areas.
++ *
++ * If the needed size is smaller than the minimum or specified unit
++ * size, the leftover is returned to the bootmem allocator.
++ *
++ * RETURNS:
++ * The determined pcpu_unit_size which can be used to initialize
++ * percpu access on success, -errno on failure.
++ */
++ssize_t __init pcpu_embed_first_chunk(size_t static_size, size_t reserved_size,
++				      ssize_t dyn_size, ssize_t unit_size)
++{
++	unsigned int cpu;
++
++	/* determine parameters and allocate */
++	pcpue_size = PFN_ALIGN(static_size + reserved_size +
++			       (dyn_size >= 0 ? dyn_size : 0));
++	if (dyn_size != 0)
++		dyn_size = pcpue_size - static_size - reserved_size;
++
++	if (unit_size >= 0) {
++		BUG_ON(unit_size < pcpue_size);
++		pcpue_unit_size = unit_size;
++	} else
++		pcpue_unit_size = max_t(size_t, pcpue_size, PCPU_MIN_UNIT_SIZE);
++
++	pcpue_ptr = __alloc_bootmem_nopanic(
++					num_possible_cpus() * pcpue_unit_size,
++					PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
++	if (!pcpue_ptr)
++		return -ENOMEM;
++
++	/* return the leftover and copy */
++	for_each_possible_cpu(cpu) {
++		void *ptr = pcpue_ptr + cpu * pcpue_unit_size;
++
++		free_bootmem(__pa(ptr + pcpue_size),
++			     pcpue_unit_size - pcpue_size);
++		memcpy(ptr, __per_cpu_load, static_size);
++	}
++
++	/* we're ready, commit */
++	pr_info("PERCPU: Embedded %zu pages at %p, static data %zu bytes\n",
++		pcpue_size >> PAGE_SHIFT, pcpue_ptr, static_size);
++
++	return pcpu_setup_first_chunk(pcpue_get_page, static_size,
++				      reserved_size, dyn_size,
++				      pcpue_unit_size, pcpue_ptr, NULL);
++}
 -- 
 1.6.0.2
 
