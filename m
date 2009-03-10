@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbZCJPGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZCJPIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbZCJPGV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 11:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbZCJPGJ
+	id S1755963AbZCJPIy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 11:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbZCJPIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 11:06:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47656 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754314AbZCJPGI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 11:06:08 -0400
-Subject: Re: [PATCH 2/4] perf_counter: provide pagefault software events
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090310145915.GK3850@elte.hu>
-References: <20090310141913.961861111@chello.nl>
-	 <20090310142015.761644317@chello.nl>  <20090310145915.GK3850@elte.hu>
-Content-Type: text/plain
-Date: Tue, 10 Mar 2009 16:06:03 +0100
-Message-Id: <1236697563.25234.374.camel@laptop>
+	Tue, 10 Mar 2009 11:08:45 -0400
+Received: from ns2.suse.de ([195.135.220.15]:52958 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754410AbZCJPIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 11:08:44 -0400
+Date: Tue, 10 Mar 2009 16:08:41 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [patch 2/2] fs: introduce mnt_clone_write
+Message-ID: <20090310150841.GB8579@wotan.suse.de>
+References: <20090310143718.GB15977@wotan.suse.de> <20090310143801.GC15977@wotan.suse.de> <20090310145558.GY25995@parisc-linux.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090310145558.GY25995@parisc-linux.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-10 at 15:59 +0100, Ingo Molnar wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Tue, Mar 10, 2009 at 08:55:58AM -0600, Matthew Wilcox wrote:
+> On Tue, Mar 10, 2009 at 03:38:01PM +0100, Nick Piggin wrote:
+> > +EXPORT_SYMBOL_GPL(mnt_clone_write);
+> > +EXPORT_SYMBOL_GPL(mnt_want_write_file);
 > 
-> > Index: linux-2.6/arch/powerpc/mm/fault.c
-> > ===================================================================
-> > --- linux-2.6.orig/arch/powerpc/mm/fault.c
-> > +++ linux-2.6/arch/powerpc/mm/fault.c
-> > @@ -29,6 +29,7 @@
-> >  #include <linux/module.h>
-> >  #include <linux/kprobes.h>
-> >  #include <linux/kdebug.h>
-> > +#include <linux/perf_counter.h>
-> >  
-> >  #include <asm/firmware.h>
-> >  #include <asm/page.h>
-> > @@ -170,6 +171,8 @@ int __kprobes do_page_fault(struct pt_re
-> >  		die("Weird page fault", regs, SIGSEGV);
-> >  	}
-> >  
-> > +	perf_swcount_event(PERF_COUNT_PAGE_FAULTS, 1, regs);
-> 
-> Wow, that's really nice - this way we can display a profile of 
-> pagefault events in KernelTop - as if it was a real cycles or 
-> other hw event based profile. Have you tried it out?
+> You don't add any users of these functions in this patch ... is there a
+> good reason to export them?
 
-Yeah, but unsurprising all pagefaults I generated were in userspace, so
-kerneltop stayed empty.
+Only to encourage modular code to use them (as a replacement for
+mnt_want_write -- which itself is exported).
 
-Found that perfstat went bokers though, forgot to handle the case where
-there's no overflow interrupt.
-
-/me goes poke at the code a bit more.
+If that's not the right way to go, I don't mind waiting for a
+user to turn up.
 
 
+[I see many ioctls in btrfs (coming first in the alphabet) could
+probably easily use mnt_want_write_file (otoh probably none are
+so performance critical).]
 
