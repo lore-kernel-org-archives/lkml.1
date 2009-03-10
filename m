@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZCJQ0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZCJQ0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbZCJQ0R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 12:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbZCJQ0D
+	id S1756590AbZCJQ0q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 12:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbZCJQ0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 12:26:03 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:37884 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752114AbZCJQ0B (ORCPT
+	Tue, 10 Mar 2009 12:26:33 -0400
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:14920 "EHLO
+	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753746AbZCJQ0c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 12:26:01 -0400
-Date: Tue, 10 Mar 2009 11:20:26 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Nathan Lynch <ntl@pobox.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, Alexey@smtp1.linux-foundation.org,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Dobriyan <adobriyan@gmail.com>
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-Message-ID: <20090310162026.GA9354@us.ibm.com>
-References: <20090305163857.0C18F3FD@kernel> <20090310105702.43eb1402@thinkcentre.lan>
+	Tue, 10 Mar 2009 12:26:32 -0400
+X-BigFish: VPS-37(zz1432R62a3L98dR936eQ1805Mzzzzz32i6bh64h)
+X-Spam-TCS-SCL: 3:0
+X-FB-SS: 8,
+X-WSS-ID: 0KGATNQ-01-0AW-01
+Date: Tue, 10 Mar 2009 17:26:16 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Paul Mackerras <paulus@samba.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] Performance Counters for Linux, v6
+Message-ID: <20090310162616.GI10085@erda.amd.com>
+References: <20090121185021.GA8852@elte.hu> <20090309013902.GK10085@erda.amd.com> <18869.40904.382716.827097@cargo.ozlabs.ibm.com> <20090310094457.GU10085@erda.amd.com> <18870.21428.868208.447605@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20090310105702.43eb1402@thinkcentre.lan>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <18870.21428.868208.447605@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 10 Mar 2009 16:26:16.0684 (UTC) FILETIME=[EFCBA2C0:01C9A19C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Nathan Lynch (ntl@pobox.com):
-> Please consider this and a following patch.
+On 10.03.09 22:49:08, Paul Mackerras wrote:
+> Robert Richter writes:
 > 
-> >From a0fb96aa41c4d360559013cfd7f32f07f449c1c4 Mon Sep 17 00:00:00 2001
-> From: Nathan Lynch <ntl@pobox.com>
-> Date: Mon, 9 Mar 2009 22:23:02 -0500
-> Subject: [PATCH] checkpoint: make files_deny_checkpointing print task name and pid
+> > Ok, maybe I mixed too much the architectural with the x86 model
+> > specific implementation. My impression is that there is data in
+> > generic structures what should be better private for the model or
+> > architecture. However, I have to figure out the details here.
 > 
-> This lets the developer know *which* task performed an action that
-> prevents checkpoint.
-> 
-> 
-> Signed-off-by: Nathan Lynch <ntl@pobox.com>
-> ---
->  fs/file.c                  |    2 +-
->  fs/open.c                  |    2 +-
->  include/linux/checkpoint.h |   13 +++++++------
->  3 files changed, 9 insertions(+), 8 deletions(-)
-> 
-> diff --git a/fs/file.c b/fs/file.c
-> index 0501af6..fcb2803 100644
-> --- a/fs/file.c
-> +++ b/fs/file.c
-> @@ -299,7 +299,7 @@ static void __scan_files_for_cr(struct files_struct *files)
->  			continue;
->  		if (cr_file_supported(f))
->  			continue;
-> -		files_deny_checkpointing(files);
-> +		files_deny_checkpointing(current, files);
+> The details of the x86 support have changed quite a lot since the v6
+> patch was posted, I believe.  Are you looking at the v6 patch, or at
+> Ingo's tip:perfcounters/core branch?
 
-Ah but you can't do this, because __scan_files_for_cr is called
-from dupfd which is called during copy_files, right?
+I am using the tip branch, but took the v6 thread to discuss this.
 
-So you'll need to send the task into __scan_files_for_cr, right?
+> 
+> Ingo - maybe it's time to post a v7 patch?
 
-I do wholeheartedly agree with the idea though.
+For me it's fine to work with the branch if patches are posted to the
+mailing list for review.
 
-thanks,
--serge
+-Robert
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
