@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbZCJVLJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZCJVTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbZCJVLJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 17:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbZCJVKy
+	id S1755292AbZCJVTZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 17:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbZCJVTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 17:10:54 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:33914 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755821AbZCJVKx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 17:10:53 -0400
-Date: Tue, 10 Mar 2009 16:59:05 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: David Rientjes <rientjes@google.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm v2] cpusets: add memory_slab_hardwall flag
-In-Reply-To: <alpine.DEB.2.00.0903091920100.7539@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0903101651480.20363@qirst.com>
-References: <alpine.DEB.2.00.0903091920100.7539@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 10 Mar 2009 17:19:15 -0400
+Received: from gw.goop.org ([64.81.55.164]:35387 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753840AbZCJVTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 17:19:15 -0400
+Message-ID: <49B6D94F.9070902@goop.org>
+Date: Tue, 10 Mar 2009 14:19:11 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH] paravirt/xen: add pvop for page_is_ram
+References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <1235786365-17744-10-git-send-email-jeremy@goop.org> <49B5BD63.1090909@zytor.com>
+In-Reply-To: <49B5BD63.1090909@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Mar 2009, David Rientjes wrote:
+H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>> From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>>
+>> A guest domain may have external pages mapped into its address space,
+>> in order to share memory with other domains.  These shared pages are
+>> more akin to io mappings than real RAM, and should not pass the
+>> page_is_ram test.  Add a paravirt op for this so that a hypervisor
+>> backend can validate whether a page should be considered ram or not.
+>>
+>> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>>
+>>     
+>
+> Why are these pages mapped as RAM in the memory map?  That is the right
+> way to handle that, not by adding yet another bloody hook...
+>   
+Granted pages can turn up anywhere dynamically, since they're pages 
+borrowed from other domains for the purposes of IO.  They're not static 
+regions of non-RAM like the other cases page_is_ram() tests for,
 
-> This interface is lockless and very quick in the slab allocator fastpath
-> when not enabled because a new task flag, PF_SLAB_HARDWALL, is added to
-> determine whether or not its cpuset has mandated objects be allocated on
-> the set of allowed nodes.  If the option is not set for a task's cpuset
-> (or only a single cpuset exists), this reduces to only checking for a
-> specific bit in current->flags.
+They can't be mapped via normal pte operations (because they have 
+additional state associated with them, like the grant handle), so 
+/dev/mem can't just create an aliased mapping by copying the pte.
 
-We already have PF_SPREAD_PAGE PF_SPREAD_SLAB and PF_MEMPOLICY.
-PF_MEMPOLICY in slab can have the same role as PF_SLAB_HARDWALL. It
-attempts what you describe. One the one hand you duplicate functionality
-that is already there and on the other you want to put code in the hot
-paths that we have intentionally avoided for ages.
+page_is_ram is used to:
 
-The description is not accurate. This feature is only useful if someone
-comes up with a crummy cpuset definition in which a processor is a member
-of multiple cpusets and thus the per cpu queues of multiple subsystems get
-objects depending on which cpuset is active.
+   1. prevent /dev/mem from mapping non-RAM pages
+   2. prevent ioremap from mapping any RAM pages
+   3. testing for RAMness in PAT
 
-If a processor is only used from one cpuset (natural use) then these
-problems do not occur.
+3) isn't yet relevant to Xen; ioremap can't map granted pages either, so 
+2) isn't terribly relevent, so the main motivation for this patch is 
+1).  This allows us to reject usermode attempts to map granted pages, 
+rather than oopsing (as a failed set_pte will raise a page fault).
 
-There is still no use case for this on a NUMA platform. NUMA jobs that I
-know about where people care about latencies have cpusets that do not
-share processors and thus this problem does not occur.
+So, more cosmetic than essential, but I don't see a better way to 
+implement this functionality if its to be there at all.
 
+    J
