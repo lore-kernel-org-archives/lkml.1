@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbZCJRTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbZCJRUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756709AbZCJRTT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 13:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZCJRTE
+	id S1756896AbZCJRUw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 13:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbZCJRUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 13:19:04 -0400
-Received: from zelda.netsplit.com ([87.194.19.211]:55877 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754581AbZCJRTC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 13:19:02 -0400
-Subject: Re: [PATCH 26/31] usb: Auto-load cdc_acm module when device opened.
-From: Scott James Remnant <scott@canonical.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-In-Reply-To: <20090310170802.GA4923@kroah.com>
-References: <cover.1236702228.git.scott@canonical.com>
-	 <c9944f91c6740450d11cb26c4e8e19e2cb612abe.1236702228.git.scott@canonical.com>
-	 <20090310170802.GA4923@kroah.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-O4W+ofcJEDXT/a7qYonv"
-Date: Tue, 10 Mar 2009 17:18:58 +0000
-Message-Id: <1236705538.6339.2.camel@quest>
+	Tue, 10 Mar 2009 13:20:42 -0400
+Received: from waste.org ([66.93.16.53]:50323 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755619AbZCJRUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 13:20:40 -0400
+Subject: Re: PROBLEM: kernel BUG at mm/slab.c:3002!
+From: Matt Mackall <mpm@selenic.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       cl@linux-foundation.org, penberg@cs.helsinki.fi, linux-mm@kvack.org
+In-Reply-To: <49B68450.9000505@hp.com>
+References: <49B68450.9000505@hp.com>
+Content-Type: text/plain
+Date: Tue, 10 Mar 2009 12:18:52 -0500
+Message-Id: <1236705532.3205.14.camel@calx>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-03-10 at 11:16 -0400, Alan D. Brunelle wrote:
+> Running blktrace & I/O loads cause a kernel BUG at mm/slab.c:3002!.
 
---=-O4W+ofcJEDXT/a7qYonv
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Pid: 11346, comm: blktrace Tainted: G    B      2.6.29-rc7 #3 ProLiant
+DL585 G5   
 
-On Tue, 2009-03-10 at 10:08 -0700, Greg KH wrote:
+That 'B' there indicates you've hit 'bad page' before this. That bug
+seems to be strongly correlated with some form of hardware trouble.
+Unfortunately, that makes everything after that point a little suspect.
 
-> On Mon, Mar 02, 2009 at 06:46:15PM +0000, Scott James Remnant wrote:
-> > The cdc_acm module is missing the char-major-166-* alias that would
-> > cause it to be auto-loaded when a device of that type is opened.  This
-> > patch adds the alias.
->=20
-> You really have users that are using a static /dev that need this kind
-> of fix?  I thought we were phasing out the char-major- aliases as they
-> don't make any sense anymore.
->=20
-I don't think so.
+Both this slab BUG and the bad page issue are "shouldn't happen"
+situations that are generally caused by memory changing out from under
+the subsystem, either by some other code scribbling on the relevant
+memory or DRAM trouble or the like. If you want to pursue this further,
+please gather up a collection of any bad page reports you can find on
+your system and change the BUG code at slab.c:3002 to read something
+like:
 
-But since we had aliases to support users, I wasn't going to drop them
-without at least sending a patch upstream to see if they cared about
-such things.
+	if (slabp->inuse < 0 || slabp->inuse >= cachep->num) {
+		printk("SLAB: slabp %p inuse %d max %d\n",
+			slabp, slabp->inuse, cachep->num);
+		BUG();
+	}
 
-(and there are many modules which do have the char-major aliases, so at
-least someone is trying to put them in).
+We might find that the slab and the bad page are the same page or
+nearby. We might find that inuse has a single bit flipped (hardware
+error). Or we might find that it has a revealing value scribbled over it
+that points to the culprit. From your trace, it appears to contain 0x70,
+which is a rather large number of objects to have on a slab but as we
+don't know what slab it is, it's hard to say what happened.
 
-As noted in the cover, feel free to drop these - I can use your reply
-when a user complains <g>
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-Scott
---=20
-Scott James Remnant
-scott@canonical.com
-
---=-O4W+ofcJEDXT/a7qYonv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkm2oQIACgkQSnQiFMl4yK4X9gCgrh2Q8N27o+7aIiV/mJmKKbjl
-tOsAoIypwuK1TcWBanVUnqQ3CuhdQNCj
-=3Onx
------END PGP SIGNATURE-----
-
---=-O4W+ofcJEDXT/a7qYonv--
 
