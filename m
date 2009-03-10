@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbZCJW5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbZCJXCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637AbZCJW5X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 18:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbZCJW5H
+	id S1756400AbZCJXCh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 19:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbZCJXC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 18:57:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57636 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751170AbZCJW5E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 18:57:04 -0400
-Date: Tue, 10 Mar 2009 15:54:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Cc: hch@lst.de, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       konishi.ryusuke@lab.ntt.co.jp
-Subject: Re: Asking for inclusion of nilfs2 in the mainline kernel
-Message-Id: <20090310155459.11ffa81f.akpm@linux-foundation.org>
-In-Reply-To: <20090311.015542.118514963.ryusuke@osrg.net>
-References: <20090311.015542.118514963.ryusuke@osrg.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Mar 2009 19:02:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60932 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754176AbZCJXC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 19:02:27 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0903102105590.21727@blonde.anvils>
+References: <Pine.LNX.4.64.0903102105590.21727@blonde.anvils> <20090310180740.29065.10735.stgit@warthog.procyon.org.uk>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: dhowells@redhat.com, jmalicki@metacarta.com, chrisw@sous-sol.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] CRED: Fix check_unsafe_exec()
+Date: Tue, 10 Mar 2009 23:01:07 +0000
+Message-ID: <6503.1236726067@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009 01:55:42 +0900 (JST)
-Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp> wrote:
+Hugh Dickins <hugh@veritas.com> wrote:
 
-> I've been working for the past serveral months to take review comments
-> and to continually solve users' problems come up in mainling list
+> Surely we'd prefer to avoid the overhead of additional confusing
+> counts if they can be avoided?
 
-Yes, the maintenance has been impressive.
+As long as they are properly commented, it shouldn't be too confusing.
 
-> (thanks for all giving comments and feedbacks!).  Also, I've tried to
-> stabilize API and disk format to restrict additional changes and
-> ensure backward compatibility.
+> We already have what I think is a satisfactory patch for the struct fs
+> part of it:
 
-Well.  From the point of view of mainline linux, there is no
-back-compatibility issue, because the fs hasn't been merged yet.
+We do?
 
-You perhaps have back-compatibility concerns for existing users of the
-out-of-tree patch, but I'd encourage you to not worry about that too
-much - there will be fairly few users and they are probably pretty
-technical and will be able to cope with a migration.  It's a _bit_ hard
-on them but on the other hand, omitting back-compatibility code leads
-to a better implementation for the long term.
+> /proc can easily manage root and pwd while holding the lock
+> instead of raising fs->count.
 
-What you should be more concerned about is forward-compatibility.  What
-arrangements do you presently have in place to be able to later alter the
-on-disk format without causing too much disruption?  Having a strong
-design here will make changes easier to do and will lead to a better
-filesystem.
+I'm assume you mean by extending the time we hold task->alloc_lock until we've
+completed the path_get().
 
-Also..  Don't get _too_ concerned about freezing the on-disk format at
-this time.  You could put in a mount-time printk("the nilfs on-disk
-format may change at any time - do not place critical data on a nilfs
-filesystem") and we leave that in place for a few months while things
-stabilise.
+> I don't understand why check_unsafe_exec() needs to check
+> current->files->count at all, since do_execve() has already
+> done an unshare_files() to get its own copy - and proceeds with
+> that one if the exec succeeds.
+> 
+> My belief is that the files->count check could/should have been
+> removed when that unshare_files() was put in.  Please explain why
+> I'm wrong on that - I can quite accept that I'm muddled about it,
+> but please do explain it to me.
 
-And yes, I was planning on sending nilfs in to Linus for 2.6.30 unless
-someone has decent-sounding reasons to hold it back.
+It seems you're right about that.  I think someone else on the security list
+probably needs to answer that.
+
+David
