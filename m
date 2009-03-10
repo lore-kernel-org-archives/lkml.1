@@ -1,84 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZCJO1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495AbZCJO1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbZCJO1M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 10:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbZCJO0o
+	id S1756495AbZCJO1a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 10:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbZCJO0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 10:26:44 -0400
-Received: from ti-out-0910.google.com ([209.85.142.188]:40027 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752556AbZCJO0n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 10:26:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=h7hLVRBlIXqKQJPO3hPzhBTOTvehTrijyoifogpXtGF831dyAeh+UwzH6xaK2SS+lb
-         gCQ7bMZ+CWEchfWBaJxUe3qFeuFrt3C9bgpPMHNmx9hBOpkj7iDTMGVXVHMpivpzg0mj
-         j6OnafQKbNsz+fQjoXDiZusWX0TmjWovXiRSw=
-Date: Tue, 10 Mar 2009 22:27:10 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Renzo Davoli <renzo@cs.unibo.it>
-Cc: linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>,
-       Andrew Morton <akpm@osdl.org>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH] UML on UML fixed: it did not start
-Message-ID: <20090310142710.GF3157@hack>
-References: <20090306194921.GA2881@cs.unibo.it>
+	Tue, 10 Mar 2009 10:26:50 -0400
+Received: from www.tglx.de ([62.245.132.106]:33427 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755746AbZCJO0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 10:26:49 -0400
+Date: Tue, 10 Mar 2009 15:26:28 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Magnus Damm <magnus.damm@gmail.com>
+cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org, mingo@elte.hu,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Free setup_irq() interrupt V2
+In-Reply-To: <20090310102459.23422.80761.sendpatchset@rx1.opensource.se>
+Message-ID: <alpine.LFD.2.00.0903101510040.29264@localhost.localdomain>
+References: <20090310102459.23422.80761.sendpatchset@rx1.opensource.se>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090306194921.GA2881@cs.unibo.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 06, 2009 at 08:49:22PM +0100, Renzo Davoli wrote:
->It is currently impossible to run a user-mode linux machine inside another user-mode 
->linux (UML on UML). It breaks after a few instructions. When it tries to check
->whether SYSEMU is installed (the inner) UML receives an inconsistent result 
->(from the outer UML).
->
->This is the output of a broken attempt:
->$ ./linux mem=256m ubd0=cow
->Locating the bottom of the address space ... 0x0
->Locating the top of the address space ... 0xc0000000
->Core dump limits :
->        soft - 0
->        hard - NONE
->Checking that ptrace can change system call numbers...OK
->Checking ptrace new tags for syscall emulation...unsupported
->Checking syscall emulation patch for ptrace...check_sysemu : expected SIGTRAP, got status = 256
->$
->
->The problem is the following:
->PTRACE_SYSCALL/SINGLESTEP is currently managed inside arch_ptrace for ARCH=um.
->
->PTRACE_SYSEMU/SUSEMU_SINGLESTEP is not captured in arch_ptrace's switch, therefore
->it is erroneously passed back to ptrace_request (in kernel/ptrace).
->
->This simple patch simply forces ptrace to return an error on PTRACE_SYSEMU/SUSEMU_SINGLESTEP
->as it is unsupported on ARCH=um, and fixes the problem.
->
->I posted the same patch one month ago. I just tested it again against the latest kernel.
->
->	renzo
->
->Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
+Magnus,
 
-Cc: Andrew Morton <akpm@osdl.org>
+On Tue, 10 Mar 2009, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
+> This patch adds a __free_irq() function for releasing 
+> interrupts requested with setup_irq().
 
-Andrew, would you like to put this patch into -mm? It looks fine for me.
+I think there is a simpler solution than adding yet another function
+for the confusion of driver writers. See below.
 
-Renzo, I remember you sent some patches about PTRACE_SYSEMU support
-for UML some days ago, could you please rebase them against the latest
--git tree and resend?
+>  Why again are we not using struct list_head for the irqaction list?
 
-Thank you very much! Have a nice day!
+Why should we ? The add/remove of interrupt handlers is not a high
+frequency hot path operation.
 
+Thanks,
 
-Yours,
-Cong
+	tglx
+--------
+
+Subject: genirq: make free_irq() aware of static irqactions
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 10 Mar 2009 15:00:59 +0100
+
+Impact: enhancement
+
+Interrupts which are set up via setup_irq() with a static irqaction
+can not be released via free_irq(). The irqs set up via request_irq()
+use a kmalloc'ed irqaction. Mark them as allocated in irqaction->flags
+and check the flag in free_irq().
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ include/linux/interrupt.h |    2 ++
+ kernel/irq/manage.c       |    5 +++--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/include/linux/interrupt.h
+===================================================================
+--- linux-2.6.orig/include/linux/interrupt.h
++++ linux-2.6/include/linux/interrupt.h
+@@ -49,6 +49,7 @@
+  * IRQF_IRQPOLL - Interrupt is used for polling (only the interrupt that is
+  *                registered first in an shared interrupt is considered for
+  *                performance reasons)
++ * IRQF_ALLOCATED - Mark the irqaction as allocated by request_irq
+  */
+ #define IRQF_DISABLED		0x00000020
+ #define IRQF_SAMPLE_RANDOM	0x00000040
+@@ -58,6 +59,7 @@
+ #define IRQF_PERCPU		0x00000400
+ #define IRQF_NOBALANCING	0x00000800
+ #define IRQF_IRQPOLL		0x00001000
++#define IRQF_ALLOCATED		0x00002000
  
+ typedef irqreturn_t (*irq_handler_t)(int, void *);
+ 
+Index: linux-2.6/kernel/irq/manage.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/manage.c
++++ linux-2.6/kernel/irq/manage.c
+@@ -623,7 +623,8 @@ void free_irq(unsigned int irq, void *de
+ 				local_irq_restore(flags);
+ 			}
+ #endif
+-			kfree(action);
++			if (action->flags & IRQF_ALLOCATED)
++				kfree(action);
+ 			return;
+ 		}
+ 		printk(KERN_ERR "Trying to free already-free IRQ %d\n", irq);
+@@ -714,7 +715,7 @@ int request_irq(unsigned int irq, irq_ha
+ 		return -ENOMEM;
+ 
+ 	action->handler = handler;
+-	action->flags = irqflags;
++	action->flags = irqflags | IRQF_ALLOCATED;
+ 	cpus_clear(action->mask);
+ 	action->name = devname;
+ 	action->next = NULL;
