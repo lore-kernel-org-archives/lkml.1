@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbZCJOR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbZCJOTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755679AbZCJOR3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 10:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZCJORU
+	id S1755988AbZCJOTS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 10:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbZCJOTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 10:17:20 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:28976 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbZCJORT (ORCPT
+	Tue, 10 Mar 2009 10:19:01 -0400
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:45842 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753180AbZCJOTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 10:17:19 -0400
+	Tue, 10 Mar 2009 10:19:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :content-type:content-transfer-encoding;
-        b=gR2bruxI98iLIZaLDfy84MCP4isIw5sEFbriValI/KR1ZzLipl78TWaL3OLOsL2+TF
-         MpnUSdMB/Gehp6EVEI6gNwmJKO1UFl9zKmha2YjPQN1XNYq/H4IbB68UB1SZ7qkuvE3v
-         f1nQ4gZgK4wPNeEgAzC8lmCf86yfHL47NGeEE=
+        b=Vp1KUP28HNfdzcGFHv0PeL/OLb/OcSazY6tKPDr2CBg3uJ3KwV1DCbdu3kfcWAOcUK
+         c2hyWum4H0Ji+h9UQsu87kFZF+PPPEHiUBWTcAWIdxX6iiKZKMEpz5rFVWazNQSmyysW
+         NK2Eph+8FGn6vsP6ubp3Y4dUWx4mvzyfsyvnQ=
 MIME-Version: 1.0
-In-Reply-To: <a63d67fe0903100539r6ca3d789m4be81239eba2bf3b@mail.gmail.com>
-References: <a63d67fe0903100539r6ca3d789m4be81239eba2bf3b@mail.gmail.com>
-Date: Tue, 10 Mar 2009 17:17:16 +0300
-Message-ID: <a63d67fe0903100717o81cb5efx80faf5d787a9a9e9@mail.gmail.com>
-Subject: Re: smatch 1.51 released
-From: Dan Carpenter <error27@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       smatch-discuss <smatch-discuss@lists.sf.net>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090310124658.GE8840@mit.edu>
+References: <a4423d670903100517y42f342d4pd73c4c36f5c64dd7@mail.gmail.com>
+	 <20090310124658.GE8840@mit.edu>
+Date: Tue, 10 Mar 2009 17:18:55 +0300
+Message-ID: <a4423d670903100718w1a532143he767782ae598d0fb@mail.gmail.com>
+Subject: Re: next-20090310: ext4 hangs
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Theodore Tso <tytso@mit.edu>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/10/09, Dan Carpenter <error27@gmail.com> wrote:
-> Smatch follows the kernel naming scheme so odd numbers are devel
-> releases.  The .51 means over half finished.
+2009/3/10 Theodore Tso <tytso@mit.edu>:
+> On Tue, Mar 10, 2009 at 03:17:51PM +0300, Alexander Beregalov wrote:
+>> Hi
+>>
+>> It is similar to http://lkml.org/lkml/2009/2/6/304,
+>> http://bugzilla.kernel.org/show_bug.cgi?id=12579
+>>
+>> I run dbench on ext4 on loop on ext3 on sparc.
+>> The kernel is 2.6.29-rc7-next-20090310
+>> e2fsprogs -1.41.4
 >
-> Smatch is available from:  http://repo.or.cz/w/smatch.git/
->
-
-Sorry, a couple people complained that I didn't actually say what smatch was.
-
-It's an static analysis type error checker.  It finds different bugs
-than sparse.  It's more like the stanford checker or maybe Microsoft's
-PREfix.  It can find more complicated bugs than coccinelle but it
-can't fix them automatically.  One key selling point is how simple it
-is to write checks.
-
-The error messages look like this:
-drivers/scsi/pcmcia/nsp_cs.c +1725 nsp_cs_config(19) info: ignoring
-unreachable code.
-
-The 1725 is the line number.  nsp_cs_config(19) is the function and
-line number within the function.
-
-Most of the error messages are false positives honestly, but some are real.
-
-regards,
-dan carpenter
+> Thanks for reporting this; does it show up on stock 2.6.29-rc7?
+No, I can not reproduce it.
+It is a slow system, I would not like to bisect it, only if it is the
+last possibility.
