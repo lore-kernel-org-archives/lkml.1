@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbZCJPF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbZCJPGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756050AbZCJPF3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 11:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbZCJPFM
+	id S1756202AbZCJPGV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 11:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbZCJPGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 11:05:12 -0400
-Received: from h155.mvista.com ([63.81.120.155]:51216 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754308AbZCJPFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 11:05:11 -0400
-Message-ID: <49B681CE.2060409@ru.mvista.com>
-Date: Tue, 10 Mar 2009 18:05:50 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/10] ide: set/clear drive->waiting_for_dma flag in the
- core code
-References: <20090220171139.25429.26702.sendpatchset@localhost.localdomain> <20090220171243.25429.21171.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090220171243.25429.21171.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 10 Mar 2009 11:06:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47656 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754314AbZCJPGI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 11:06:08 -0400
+Subject: Re: [PATCH 2/4] perf_counter: provide pagefault software events
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090310145915.GK3850@elte.hu>
+References: <20090310141913.961861111@chello.nl>
+	 <20090310142015.761644317@chello.nl>  <20090310145915.GK3850@elte.hu>
+Content-Type: text/plain
+Date: Tue, 10 Mar 2009 16:06:03 +0100
+Message-Id: <1236697563.25234.374.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Tue, 2009-03-10 at 15:59 +0100, Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> 
+> > Index: linux-2.6/arch/powerpc/mm/fault.c
+> > ===================================================================
+> > --- linux-2.6.orig/arch/powerpc/mm/fault.c
+> > +++ linux-2.6/arch/powerpc/mm/fault.c
+> > @@ -29,6 +29,7 @@
+> >  #include <linux/module.h>
+> >  #include <linux/kprobes.h>
+> >  #include <linux/kdebug.h>
+> > +#include <linux/perf_counter.h>
+> >  
+> >  #include <asm/firmware.h>
+> >  #include <asm/page.h>
+> > @@ -170,6 +171,8 @@ int __kprobes do_page_fault(struct pt_re
+> >  		die("Weird page fault", regs, SIGSEGV);
+> >  	}
+> >  
+> > +	perf_swcount_event(PERF_COUNT_PAGE_FAULTS, 1, regs);
+> 
+> Wow, that's really nice - this way we can display a profile of 
+> pagefault events in KernelTop - as if it was a real cycles or 
+> other hw event based profile. Have you tried it out?
 
-Bartlomiej Zolnierkiewicz wrote:
+Yeah, but unsurprising all pagefaults I generated were in userspace, so
+kerneltop stayed empty.
 
-> Set/clear drive->waiting_for_dma flag in the core code
-> instead of in ->dma_setup and ->dma_end methods.
+Found that perfstat went bokers though, forgot to handle the case where
+there's no overflow interrupt.
 
-> There should be no functional changes caused by this patch.
+/me goes poke at the code a bit more.
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-MBR, Sergei
