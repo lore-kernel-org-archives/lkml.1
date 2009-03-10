@@ -1,196 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZCJIDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbZCJIFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbZCJIDf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 04:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbZCJIDQ
+	id S1754063AbZCJIFA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 04:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbZCJIEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 04:03:16 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:22496 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753135AbZCJIDN convert rfc822-to-8bit (ORCPT
+	Tue, 10 Mar 2009 04:04:46 -0400
+Received: from gmp-eb-inf-1.sun.com ([192.18.6.21]:34701 "EHLO
+	gmp-eb-inf-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753244AbZCJIEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 04:03:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=gtyuGKoR10I5Ix3fujx72E/kAqeppNmKZpAQrRBuP1O/vTj/KELtSGZXNty800mX7a
-         fJm7Idd1VzzmCgBfBPCKrhvByUSxxUQ2qrOPWgeE58qRuYR3JX+v/jMAEdouxAV6dXyT
-         okBqr2HXsgjlFCDl34qwb+i11P7QoiiNiuiQM=
-MIME-Version: 1.0
-In-Reply-To: <1236670166-3910-1-git-send-email-graff.yang@gmail.com>
-References: <1236670166-3910-1-git-send-email-graff.yang@gmail.com>
-Date: Tue, 10 Mar 2009 04:03:10 -0400
-Message-ID: <8bd0f97a0903100103w6fc3dfc8se6076c98dbe5d8b4@mail.gmail.com>
-Subject: Re: [PATCH] [net/irda]: new Blackfin on-chip SIR IrDA driver
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: graff.yang@gmail.com
-Cc: samuel@sortiz.org, irda-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, graf.yang@analog.com, cooloney@kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 10 Mar 2009 04:04:45 -0400
+MIME-version: 1.0
+Date: Tue, 10 Mar 2009 09:04:19 +0100
+From: Frank Mehnert <Frank.Mehnert@Sun.COM>
+Subject: Re: remap_pfn_range() not suitable for physical RAM?
+In-reply-to: <200903042025.46861.frank.mehnert@sun.com>
+To: linux-kernel@vger.kernel.org
+Cc: peterz@infradead.org, suresh.b.siddha@intel.com
+Message-id: <200903100904.22753.frank.mehnert@sun.com>
+Organization: Sun Microsystems
+Content-type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary=nextPart3251115.IUt3qJTegk
+Content-transfer-encoding: 7BIT
+References: <200903042025.46861.frank.mehnert@sun.com>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 10, 2009 at 03:29,  <graff.yang@gmail.com> wrote:
-> +config BFIN_SIR3
-> +       bool "Blackfin SIR on UART3"
-> +config BFIN_SIR1
-> +       bool "Blackfin SIR on UART1"
-> +config BFIN_SIR0
-> +       bool "Blackfin SIR on UART0"
-> +config BFIN_SIR2
-> +       bool "Blackfin SIR on UART2"
 
-looks like an odd order for things.  or maybe you count to 3
-differently from me :).
+--nextPart3251115.IUt3qJTegk
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> +static int bfin_sir_set_speed(struct bfin_sir_port *port, int speed)
-> +{
-> +       int ret = -EINVAL;
-> +       unsigned int quot;
-> +       unsigned short val, lsr, lcr = 0;
-> +
-> +       lcr = WLS(8);
+Hi,
 
-the lcr init to 0 looks pretty pointless to me ...
+sorry for re-posting this message and sorry for addressing you directly.
+Perhaps you can help me again or can you give me a pointer for a proper
+documentation of the various *remap* and *vm_insert* functions:
 
-> +               quot = (port->clk + (8 * speed)) / (16 * speed);
+On Wednesday 04 March 2009, Frank Mehnert wrote:
+> since 2.6.29-rcX it seems to be not allowed anymore to use
+> remap_pfn_range() to remap physical RAM to userland. This restriction
+> applies only if CONFIG_X86_PAT is enabled. It seems that vm_insert_page()
+> does not have this restriction. Am I correct? And what is the reason
+> for this restriction?
 
-isnt the SIR affected by the same anomalies as the UART ?  in other
-words, you just made that adjustment to the UART recently ...
+Kind regards,
 
-> +               do {
-> +                       lsr = SIR_UART_GET_LSR(port);
-> +               } while (!(lsr & TEMT));
+=46rank
+=2D-=20
+Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
 
-i'm pretty sure we determined that it is not the job of the kernel to
-make sure the line is clear before we go changing speeds.  plus, we
-had a few bugs on the UART driver when polling for bits on a
-peripheral that wasnt enabled yet ...
+--nextPart3251115.IUt3qJTegk
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> +               SIR_UART_PUT_DLL(port, quot & 0xFF);
-> +               SSYNC();
-> +               SIR_UART_PUT_DLH(port, (quot >> 8) & 0xFF);
-> +               SSYNC();
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-i'm pretty sure that first SSYNC is not needed
+iEYEABECAAYFAkm2HwMACgkQ6z8pigLf3EfwuACfVK+LGpDachLCjdUmhtJoEbrl
+i/MAniC8a1VB9eZ20zbWlocGlhkt9Ow2
+=a2YC
+-----END PGP SIGNATURE-----
 
-> +               /*printk(KERN_DEBUG "bfin_sir: Set new speed %d\n", speed);*/
-
-pr_debug() ?
-
-> +static irqreturn_t bfin_sir_dma_tx_int(int irq, void *dev_id)
-> +{
-> +       struct net_device *dev = dev_id;
-> +       struct bfin_sir_self *self = netdev_priv(dev);
-> +       struct bfin_sir_port *port = self->sir_port;
-> +
-> +       spin_lock(&self->lock);
-> +       if (!(get_dma_curr_irqstat(port->tx_dma_channel)&DMA_RUN)) {
-
-really should be whitespace around that &
-
-> +static irqreturn_t bfin_sir_dma_rx_int(int irq, void *dev_id)
-> +{
-> +....
-> +       mod_timer(&(port->rx_dma_timer), jiffies + DMA_SIR_RX_FLUSH_JIFS);
-
-those paren are unnecessary
-
-> +static int bfin_sir_startup(struct bfin_sir_port *port, struct net_device *dev)
-> +{
-> +#ifdef CONFIG_SIR_BFIN_DMA
-> +       dma_addr_t dma_handle;
-> +#endif /* CONFIG_SIR_BFIN_DMA */
-> +
-> +       if (request_dma(port->rx_dma_channel, "BFIN_UART_RX") < 0) {
-> +               printk(KERN_WARNING "bfin_sir: Unable to attach SIR RX DMA channel\n");
-
-should be dev_warn(&dev->dev, ...) ?  if so, i'd check all the places
-where printk() is used when a net_device is available ...
-
-> +static int __devinit bfin_sir_probe(struct platform_device *pdev)
-> +{
-> +       struct net_device *dev;
-> +       struct bfin_sir_self *self;
-> +       unsigned int baudrate_mask;
-> +       struct bfin_sir_port *sir_port;
-> +       int err = 0;
-> +
-> +       err = peripheral_request(per[pdev->id][0], DRIVER_NAME);
-> +       if (err)
-> +               return err;
-> +       err = peripheral_request(per[pdev->id][1], DRIVER_NAME);
-> +       if (err)
-> +               return err;
-
-the first per list was just leaked ...
-
-> +       sir_port = kmalloc(sizeof(struct bfin_sir_port), GFP_KERNEL);
-
-sizeof(*sir_port)
-
-> +       dev = alloc_irdadev(sizeof(struct bfin_sir_self));
-
-sizeof(*dev)
-
-> +       baudrate_mask = IR_9600;
-> +
-> +       switch (max_rate) {
-> +       case 115200:
-> +               baudrate_mask |= IR_115200;
-> +       case 57600:
-> +               baudrate_mask |= IR_57600;
-> +       case 38400:
-> +               baudrate_mask |= IR_38400;
-> +       case 19200:
-> +               baudrate_mask |= IR_19200;
-> +       }
-
-what if someone specified max_rate = 1231245 ?
-
-> +       if (err) {
-> +err_mem_3:
-> +               kfree(self->tx_buff.head);
-> +err_mem_2:
-> +               kfree(self->rx_buff.head);
-> +err_mem_1:
-> +               free_netdev(dev);
-> +err_mem_0:
-> +               kfree(sir_port);
-> +       }
-
-the peripheral pins are leaked here as well
-
-> +       if (err == 0)
-> +               platform_set_drvdata(pdev, sir_port);
-
-considering you tested "if (err)" right before, an "} else" would make
-more sense
-
-> +MODULE_AUTHOR("Graf.Yang <graf.yang@analog.com>");
-
-i think your name has no "." ? :)
-
-> --- /dev/null
-> +++ b/drivers/net/irda/bfin_sir.h
-> +#ifdef CONFIG_SIR_BFIN_DMA
-> +struct dma_rx_buf {
-> +       char *buf;
-> +       int head;
-> +       int tail;
-> +       };
-
-no indentation in closing brace
-
-> +static unsigned short per[][2] = {
-> +       {P_UART0_RX, P_UART0_TX},
-> +       {P_UART1_RX, P_UART1_TX},
-> +       {P_UART2_RX, P_UART2_TX},
-> +       {P_UART3_RX, P_UART3_TX},
-> +       };
-
-no indentation in closing brace and really this should be const
--mike
+--nextPart3251115.IUt3qJTegk--
