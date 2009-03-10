@@ -1,185 +1,348 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbZCJIzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZCJIz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023AbZCJIzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 04:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753027AbZCJIz3
+	id S1754128AbZCJIz6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 04:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbZCJIzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 04:55:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37168 "EHLO mx3.mail.elte.hu"
+	Tue, 10 Mar 2009 04:55:46 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45571 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752539AbZCJIz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 04:55:27 -0400
-Date: Tue, 10 Mar 2009 09:54:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Larry Woodman <lwoodman@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/7] tracing: new format for specialized trace points
-Message-ID: <20090310085418.GB3097@elte.hu>
-References: <20090310045710.286915983@goodmis.org> <20090310045811.279394388@goodmis.org> <20090310144700.A48E.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090310144700.A48E.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752539AbZCJIzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 04:55:43 -0400
+Date: Tue, 10 Mar 2009 19:55:34 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for March 10
+Message-Id: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__10_Mar_2009_19_55_34_+1100_Pu+DM_zRVm8__UNT"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Tue__10_Mar_2009_19_55_34_+1100_Pu+DM_zRVm8__UNT
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Hi all,
 
-> Hi Steven,
-> 
-> >  TRACE_EVENT(sched_switch,
-> > 
-> > 	TP_PROTO(struct rq *rq, struct task_struct *prev,
-> > 		 struct task_struct *next),
-> > 
-> > 	TP_ARGS(rq, prev, next),
-> > 
-> > 	TP_STRUCT__entry(
-> > 		__array(	char,	prev_comm,	TASK_COMM_LEN	)
-> > 		__field(	pid_t,	prev_pid			)
-> > 		__field(	int,	prev_prio			)
-> > 		__array(	char,	next_comm,	TASK_COMM_LEN	)
-> > 		__field(	pid_t,	next_pid			)
-> > 		__field(	int,	next_prio			)
-> > 	),
-> > 
-> > 	TP_printk("task %s:%d [%d] ==> %s:%d [%d]",
-> > 		__entry->prev_comm, __entry->prev_pid, __entry->prev_prio,
-> > 		__entry->next_comm, __entry->next_pid, __entry->next_prio),
-> > 
-> > 	TP_fast_assign(
-> > 		memcpy(__entry->next_comm, next->comm, TASK_COMM_LEN);
-> > 		__entry->prev_pid	= prev->pid;
-> > 		__entry->prev_prio	= prev->prio;
-> > 		memcpy(__entry->prev_comm, prev->comm, TASK_COMM_LEN);
-> > 		__entry->next_pid	= next->pid;
-> > 		__entry->next_prio	= next->prio;
-> > 	)
-> >  );
-> 
-> Could you please write the documentation how to make new 
-> tracepont and use various TP_ macro? Some developer (include 
-> me) plan to add new tracepoint. but these macro usage is a bit 
-> difficult.
+Changes since 20090306:
 
-Sure, here's a commented/annotated variant:
+Moved trees:
+	I have the driver-core tree (and the usb tree that depends
+on it) to near the end of the merge list to see if it accumulates many
+conflicts (since it contains infrastructure changes).  It seems to have
+inherited 2 conflicts (v4l-dvb, net) and a build failure (acpi).
 
-  /*
-   * We define a tracepoint, its arguments, its printk format
-   * and its 'fast binay record' layout.
-   *
-   * Firstly, name your tracepoint via TRACE_EVENT(name : the 
-   * 'subsystem_event' notation is fine.
-   *
-   * Think about this whole construct as the 
-   * 'trace_sched_switch() function' from now on.
-   */
- 
-  TRACE_EVENT(sched_switch,
+Undropped tree:
+	rr
 
-        /*
-         * A function has a regular function arguments 
-         * prototype, declare it via TP_PROTO():
-         */
- 	TP_PROTO(struct rq *rq, struct task_struct *prev,
- 		 struct task_struct *next),
- 
-        /*
-         * Define the call signature of the 'function'. 
-	 * (Design sidenote: we use this instead of a
-	 *  TP_PROTO1/TP_PROTO2/TP_PROTO3 ugliness.)
-         */
- 	TP_ARGS(rq, prev, next),
- 
-        /*
-         * Fast binary tracing: define the trace record via 
-         * TP_STRUCT__entry(). You can think about it like a 
-         * regular C structure local variable definition.
-         *
-         * This is how the trace record is structured and will
-         * be saved into the ring buffer. These are the fields
-         * that will be exposed to user-space in 
-         * /debug/tracing/events/*/format.
-         *
-         * The declared 'local variable' is called '__entry'
-         */
- 	TP_STRUCT__entry(
- 		__array(	char,	prev_comm,	TASK_COMM_LEN	)
- 		__field(	pid_t,	prev_pid			)
- 		__field(	int,	prev_prio			)
- 		__array(	char,	next_comm,	TASK_COMM_LEN	)
- 		__field(	pid_t,	next_pid			)
- 		__field(	int,	next_prio			)
- 	),
+The tracing tree gained build failure for which I reverted a commit.
 
-        /*
-         * Assign the entry into the trace record, by embedding 
-         * a full C statement block into TP_fast_assign(). You 
-         * can refer to the trace record as '__entry' - 
-         * otherwise you can put arbitrary C code in here.
-         *
-         * Note: this C code will execute every time a trace event 
-         * happens, on an active tracepoint.
-         */
- 	TP_fast_assign(
- 		memcpy(__entry->next_comm, next->comm, TASK_COMM_LEN);
- 		__entry->prev_pid	= prev->pid;
- 		__entry->prev_prio	= prev->prio;
- 		memcpy(__entry->prev_comm, prev->comm, TASK_COMM_LEN);
- 		__entry->next_pid	= next->pid;
- 		__entry->next_prio	= next->prio;
- 	)
+The xfs tree gained a build failure, so I have used the version from
+next-20090306.
 
-        /*
-         * Formatted output of a trace record via TP_printk(). 
-         * This is how the tracepoint will appear under ftrace 
-         * plugins that make use of this tracepoint.
-         *
-         * (raw-binary tracing wont actually perform this step.)
-         */
- 	TP_printk("task %s:%d [%d] ==> %s:%d [%d]",
- 		__entry->prev_comm, __entry->prev_pid, __entry->prev_prio,
- 		__entry->next_comm, __entry->next_pid, __entry->next_prio),
+The ieee1394 tree lost its conflict.
 
-  );
+The sound tree gained a conflict against the arm tree.
 
-This macro construct is thus used for the regular printk format 
-tracing setup, it is used to construct a function pointer based 
-tracepoint callback (this is used by programmatic plugins and 
-can also by used by generic instrumentation like SystemTap), and 
-it is also used to expose a structured trace record in 
-/debug/tracing/events/.
+The rr tree lost a conflict and build failures.
 
-Steve: i flipped around TP_fast_assign() and TP_printk() in the 
-example above because it makes more sense that way. (we first 
-assign the record, then we print it out) I suspect we should 
-flip it around in the code too.
+The input tree gained build failure, so I used the version from
+next-20090306.
 
-	Ingo
+The md tree gained a conflict against Linus' tree and a build failure, so
+I used the version from next-20090306.
+
+The lblnet tree gained a conflict against Linus' tree.
+
+The driver-core tree gained a build failure due to a conflict with the
+crypto tree.  I have applied a patch to the crypto tree for today.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 133 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in arch/arm/mach-at91/gpio.c
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+CONFLICT (rename/modify): Merge conflict in arch/arm/plat-pxa/dma.c
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in arch/powerpc/include/asm/elf.h
+Merging xtensa/master
+Merging tip-core/auto-core-next
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging cpus4096/auto-cpus4096-next
+Merging tracing/auto-tracing-next
+CONFLICT (content): Merge conflict in arch/x86/Kconfig
+CONFLICT (delete/modify): block/blktrace.c deleted in tracing/auto-tracing-=
+next and modified in HEAD. Version HEAD of block/blktrace.c left in tree.
+CONFLICT (content): Merge conflict in kernel/irq/handle.c
+$ git rm -f block/blktrace.c
+Applying: tracing: blktrace merge fix
+Merging genirq/auto-genirq-next
+CONFLICT (content): Merge conflict in kernel/irq/handle.c
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+CONFLICT (content): Merge conflict in lib/Makefile
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+[master]: created 2747afb: "Revert "tracing: current tip/master can't enabl=
+e ftrace""
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in drivers/pci/pcie/portdrv_pci.c
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+CONFLICT (content): Merge conflict in drivers/i2c/busses/i2c-mpc.c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+$ git reset --hard HEAD^
+Merging xfs/master from next-20090306
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+CONFLICT (content): Merge conflict in fs/ext4/inode.c
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl3945-=
+base.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/rt2x00/rt73usb.c
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+CONFLICT (content): Merge conflict in arch/arm/mach-shark/include/mach/io.h
+CONFLICT (content): Merge conflict in sound/soc/pxa/pxa2xx-i2s.c
+Merging cpufreq/next
+CONFLICT (content): Merge conflict in arch/x86/include/asm/timer.h
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/powerpc/kernel/irq.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/powernow-=
+k8.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/speedstep=
+-ich.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/speedstep=
+-lib.c
+CONFLICT (delete/modify): arch/x86/mach-default/setup.c deleted in HEAD and=
+ modified in quilt/rr. Version quilt/rr of arch/x86/mach-default/setup.c le=
+ft in tree.
+CONFLICT (delete/modify): arch/x86/mach-voyager/setup.c deleted in HEAD and=
+ modified in quilt/rr. Version quilt/rr of arch/x86/mach-voyager/setup.c le=
+ft in tree.
+CONFLICT (content): Merge conflict in drivers/firmware/dcdbas.c
+CONFLICT (content): Merge conflict in drivers/hid/hid-core.c
+CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134-c=
+ore.c
+CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134.h
+CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
+CONFLICT (content): Merge conflict in kernel/module.c
+$ git rm -f arch/x86/mach-default/setup.c
+$ git rm -f arch/x86/mach-voyager/setup.c
+Applying: rr: x86 irqaction merge fixup
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+$ git reset --hard HEAD^
+Merging input/next from next-20090306
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in firmware/Makefile
+CONFLICT (content): Merge conflict in firmware/WHENCE
+CONFLICT (content): Merge conflict in sound/isa/Kconfig
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+CONFLICT (content): Merge conflict in include/linux/slub_def.h
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging uclinux/for-next
+Merging md/for-next
+CONFLICT (content): Merge conflict in include/linux/dmaengine.h
+$ git reset --hard HEAD^
+Merging md/for-next from next-20090306
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_proc.c
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
+e.txt
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/Kconfig
+CONFLICT (content): Merge conflict in arch/x86/mm/init_32.c
+CONFLICT (content): Merge conflict in arch/x86/mm/init_64.c
+CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
+CONFLICT (content): Merge conflict in mm/Makefile
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+CONFLICT (content): Merge conflict in drivers/watchdog/orion5x_wdt.c
+CONFLICT (content): Merge conflict in drivers/watchdog/rc32434_wdt.c
+Merging proc/proc
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+CONFLICT (add/add): Merge conflict in drivers/scsi/osd/osd_initiator.c
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging squashfs/master
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in include/linux/percpu.h
+CONFLICT (content): Merge conflict in include/linux/slab.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in kernel/module.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+CONFLICT (content): Merge conflict in mm/vmalloc.c
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/media/video/v4l2-device.c
+CONFLICT (content): Merge conflict in drivers/net/wimax/i2400m/usb-notif.c
+CONFLICT (content): Merge conflict in drivers/sh/maple/maple.c
+Applying: acpi: update thermal for bus_id removal
+Applying: crypto: remove pr_fmt for now
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Tue__10_Mar_2009_19_55_34_+1100_Pu+DM_zRVm8__UNT
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkm2KwYACgkQjjKRsyhoI8w6QgCeL04tTwtz0k1rfuekPqOpbo9C
+ZUQAn20ctDic6u90o6upStytCuJqmnw3
+=d/FA
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__10_Mar_2009_19_55_34_+1100_Pu+DM_zRVm8__UNT--
