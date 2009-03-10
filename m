@@ -1,44 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZCJMbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZCJMbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754877AbZCJMbL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 08:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbZCJMax
+	id S1755217AbZCJMbb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 08:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbZCJMbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 08:30:53 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39436 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754599AbZCJMaw (ORCPT
+	Tue, 10 Mar 2009 08:31:06 -0400
+Received: from india.einfochips.com ([203.88.139.151]:12419 "EHLO
+	ahmedabad.einfochips.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754603AbZCJMbE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 08:30:52 -0400
-Date: Tue, 10 Mar 2009 13:50:07 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: suggest running a 64bit kernel on LM capable machines with plenty memory.
-Message-ID: <20090310125007.GD11935@one.firstfloor.org>
-References: <49B254C6.8010507@pardus.org.tr> <20090307193026.GA2165@x200.localdomain> <49B2CE44.4060305@pardus.org.tr> <87r617ojfi.fsf@firstfloor.org> <1236606168.8389.512.camel@laptop> <20090309191504.GB11935@one.firstfloor.org> <1236677828.25234.9.camel@laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236677828.25234.9.camel@laptop>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 10 Mar 2009 08:31:04 -0400
+Message-ID: <49B65B96.5080108@einfochips.com>
+Date: Tue, 10 Mar 2009 17:52:46 +0530
+From: Viral Mehta <viral.mehta@einfochips.com>
+Organization: eIbfochips Ltd.
+User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>, perex@perex.cz,
+       Linux audio dev <linux-audio-dev@lists.linuxaudio.org>
+CC: Clemens Ladisch <clemens@ladisch.de>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [alsa-devel] [PATCH] [SOUND] recording gain control
+References: <49B5F8F5.8040100@einfochips.com>	<49B62C1D.4080509@ladisch.de> <s5h1vt5k1xp.wl%tiwai@suse.de>
+In-Reply-To: <s5h1vt5k1xp.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 10, 2009 at 10:37:08AM +0100, Peter Zijlstra wrote:
-> On Mon, 2009-03-09 at 20:15 +0100, Andi Kleen wrote:
-> > > How about we do the below as well?
-> > 
-> > Idea looks good, but with your patch it would print two conflicting
-> > messages ("use highmem64. No, use 64bit instead"), wouldn't it? 
-> > Only one would be better.
-> 
-> Something like the below?
+Takashi Iwai wrote:
+> At Tue, 10 Mar 2009 10:00:13 +0100,
+> Clemens Ladisch wrote:
+>   
+>> (CC alsa-devel)
+>>
+>> Viral Mehta wrote:
+>>     
+>>> Hi,
+>>>
+>>> I am trying to do gain control while RECORDING for my Audio Mic device.
+>>>
+>>> My application opens /dev/mixer device and calls ioctl(fdmixer, 
+>>> MIXER_WRITE(SOUND_MIXER_MIC), ...)
+>>>
+>>> But, the call fails. It traces to sound/core/oss/mixer_oss.c file and 
+>>> snd_mixer_oss_put_volume1() function.
+>>> It never falls in "if (slot->present & SNDRV_MIXER_OSS_PRESENT_CVOLUME)" 
+>>> as condition "if (slot->present & SNDRV_MIXER_OSS_PRESENT_PVOLUME) " 
+>>> comes as false.
+>>>
+>>> I think there is a bug in kernel and I think it should be like as below,
+>>>
+>>> --- sound/core/oss/mixer_oss.c  2008-12-03 13:24:02.000000000 +0530
+>>> +++ sound/core/oss/mixer_oss.c   2009-03-09 16:22:06.548766896 +0530
+>>> @@ -688,7 +688,7 @@ static int snd_mixer_oss_put_volume1(str
+>>>
+>>>      if (slot->present & SNDRV_MIXER_OSS_PRESENT_PVOLUME) {
+>>>              snd_mixer_oss_put_volume1_vol(fmixer, pslot, 
+>>> slot->numid[SNDRV_MIXER_OSS_ITEM_PVOLUME], left, right);
+>>> -               if (slot->present & SNDRV_MIXER_OSS_PRESENT_CVOLUME)
+>>> +       } else if (slot->present & SNDRV_MIXER_OSS_PRESENT_CVOLUME) {
+>>>                      snd_mixer_oss_put_volume1_vol(fmixer, pslot, 
+>>> slot->numid[SNDRV_MIXER_OSS_ITEM_CVOLUME], left, right);
+>>>      } else if (slot->present & SNDRV_MIXER_OSS_PRESENT_GVOLUME) {
+>>>              snd_mixer_oss_put_volume1_vol(fmixer, pslot, 
+>>> slot->numid[SNDRV_MIXER_OSS_ITEM_GVOLUME], left, right);
+>>>       
+>> Your mailer mangled the patch; see linux/Documentation/email-clients.txt.
+>>     
+>
+> Also, the current code behaves intentionally so (as it's designed for
+> mic-loopback volume).
+>
+> A more feasible fix would be to add another if check for *_CVOLUME
+> instead of moving it.
+>
+>
+>   
+Oh okie. It makes sense.
+I just sent out a patch on LAD. Should I resubmit with what you proposed ?
 
-Looks good from the logic. Only nit would be missing grepability.
-
--Andi
+> Takashi
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+> Email Scanned for Virus & Dangerous Content by : www.CleanMailGateway.com
+>
+>
+>   
+-- 
+_____________________________________________________________________
+Disclaimer: This e-mail message and all attachments transmitted with it
+are intended solely for the use of the addressee and may contain legally
+privileged and confidential information. If the reader of this message
+is not the intended recipient, or an employee or agent responsible for
+delivering this message to the intended recipient, you are hereby
+notified that any dissemination, distribution, copying, or other use of
+this message or its attachments is strictly prohibited. If you have
+received this message in error, please notify the sender immediately by
+replying to this message and please delete it from your computer. Any
+views expressed in this message are those of the individual sender
+unless otherwise stated.Company has taken enough precautions to prevent
+the spread of viruses. However the company accepts no liability for any
+damage caused by any virus transmitted by this email.
+__________________________________________________________________________
+ 
