@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZCJNzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbZCJN5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbZCJNzy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 09:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZCJNzn
+	id S1756015AbZCJN5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 09:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbZCJN5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 09:55:43 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:37160 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbZCJNzm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 09:55:42 -0400
-Date: Tue, 10 Mar 2009 14:53:11 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
-       linux-next@vger.kernel.org, Jason Baron <jbaron@redhat.com>,
-       Greg Banks <gnb@sgi.com>, Herbert Xu <herbert@gondor.apana.org.au>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: driver-core tree build failure
-Message-ID: <20090310145311.6bf9d9e9@skybase>
-In-Reply-To: <alpine.LRH.2.00.0903101423200.25436@vixen.sonytel.be>
-References: <20090310192440.949884a1.sfr@canb.auug.org.au>
-	<alpine.LRH.2.00.0903101423200.25436@vixen.sonytel.be>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Mar 2009 09:57:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44682 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754112AbZCJN5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 09:57:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Eric Anholt <eric@anholt.net>
+Subject: Re: [Bug #12806] i915 broken STR
+Date: Tue, 10 Mar 2009 14:56:47 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <KiHv0irKPzE.A.l3.hUarJB@chimera> <200903072228.47358.rjw@sisk.pl> <1236651832.10190.20.camel@gaiman>
+In-Reply-To: <1236651832.10190.20.camel@gaiman>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903101456.48444.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Mar 2009 14:31:17 +0100 (CET)
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-
-> crypto/zlib.c has:
+On Tuesday 10 March 2009, Eric Anholt wrote:
+> On Sat, 2009-03-07 at 22:28 +0100, Rafael J. Wysocki wrote:
+> > On Saturday 07 March 2009, Harvey Harrison wrote:
+> > > On Tue, 2009-03-03 at 20:25 +0100, Rafael J. Wysocki wrote:
+> > > > This message has been generated automatically as a part of a report
+> > > > of recent regressions.
+> > > > 
+> > > > The following bug entry is on the current list of known regressions
+> > > > from 2.6.28.  Please verify if it still should be listed and let me know
+> > > > (either way).
+> > > > 
+> > > > 
+> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12806
+> > > > Subject		: i915 broken STR
+> > > > Submitter	: Harvey Harrison <harvey.harrison@gmail.com>
+> > > > Date		: 2009-02-28 4:20 (4 days old)
+> > > > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5669fcacc58bf3a7386057addffd280d75380858
+> > > > References	: http://marc.info/?l=linux-kernel&m=123579487801064&w=4
+> > > > 
+> > > > 
+> > > 
+> > > This looks to have been a case of old-userspace..upgrading to
+> > > xorg-intel-video 2.6.1 (ubuntu Jaunty Alpha5) fixes STR here.
+> > 
+> > Well, thanks, but I'm not really sure if this is a good news.
+> > 
+> > Jesse, Eric, does it mean we now break resume on anything earlier than 2.6.1
+> > on the Harvey's hardware?
 > 
->     #define pr_fmt(fmt)     "%s: " fmt, __func__
-> 
-> If CONFIG_DYNAMIC_DEBUG is set, include/linux/kernel.h has:
-> 
-> #define pr_debug(fmt, ...) do { \
-> 	dynamic_pr_debug(pr_fmt(fmt), ##__VA_ARGS__); \
-> 	} while (0)
-> 
-> include/linux/dynamic_debug.h has:
-> 
-> #define dynamic_pr_debug(fmt, ...) do {					\
-> 	static struct _ddebug descriptor				\
-> 	__used								\
-> 	__attribute__((section("__verbose"), aligned(8))) =		\
-> 	{ KBUILD_MODNAME, __func__, __FILE__, fmt, DEBUG_HASH,	\
-> 		DEBUG_HASH2, __LINE__, _DPRINTK_FLAGS_DEFAULT };	\
-> 	if (__dynamic_dbg_enabled(descriptor))				\
-> 		printk(KERN_DEBUG KBUILD_MODNAME ":" fmt,		\
-> 				##__VA_ARGS__);				\
-> 	} while (0)
+> There's not much information (dmesg, Xorg.0.log) with this bug -- I'm
+> guessing he's using KMS, given that that commit was where the problems
+> started.  If so, yes, you really do need good userland for KMS to work.
 
-The dynamic_pr_debug macro currently works only with pr_fmt definitions
-that do not add additional parameters. The way how we use the pr_fmt
-macro is:
+BTW, Is suspend generally supposed to work with KMS and the 2.6.1 (or later) X
+driver?
 
-#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-
-The same could be done with the problematic pr_fmt definition:
-
-#define pr_fmt(fmt)     __func__ ": " fmt
-
-> BTW, Martin: Is `#define pr_fmt(fmt)     "%s: " fmt, __func__' a valid and
-> intended usage of your pr_fmt() infrastructure?
-
-The indended use is a simple prefix to the format string. To paste an
-additional parameter is an interesting use of the pr_fmt macro ..
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Rafael
