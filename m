@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbZCJE17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbZCJEiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbZCJE17 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 00:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbZCJE1u
+	id S1753254AbZCJEiT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 00:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbZCJEiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 00:27:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41823 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751099AbZCJE1t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 00:27:49 -0400
-Date: Mon, 9 Mar 2009 21:26:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jesper Krogh <jesper@krogh.cc>
-cc: john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: Linux 2.6.29-rc6
-In-Reply-To: <49B57F3D.5030008@krogh.cc>
-Message-ID: <alpine.LFD.2.00.0903092109460.19207@localhost.localdomain>
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <49A6F39F.9040801@krogh.cc>  <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com> 
- <49A70B24.6090706@krogh.cc>  <1235685269.6811.11.camel@localhost.localdomain>  <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>  <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>  <1235766936.7402.5.camel@localhost.localdomain>
- <49ABACA0.3090300@krogh.cc>  <1236029277.7756.0.camel@localhost.localdomain> <49ACC853.8070205@krogh.cc>  <1236110026.6068.18.camel@localhost> <49AD90E2.7050209@krogh.cc>  <1236118969.6068.87.camel@localhost> <49AE9EA4.2080500@krogh.cc>  <49AECA3B.5030503@krogh.cc>
-  <1236193075.3793.63.camel@jstultz-laptop>  <1236220759.6863.7.camel@localhost.localdomain> <1236221530.6863.9.camel@localhost.localdomain> <49B57F3D.5030008@krogh.cc>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 10 Mar 2009 00:38:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:47284 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751424AbZCJEiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 00:38:08 -0400
+Subject: Re: Absolute symbols in vmlinux_64.lds.S
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Date: Mon, 09 Mar 2009 21:37:50 -0700
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-ID: <3k2vgeyfr0tl8gef3ia8o9rh.1236659870536@email.android.com>
+Content-Type: multipart/mixed; boundary="----1OVPFAVO3BM8D0ILPB1AMSHHIY47QL"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------1OVPFAVO3BM8D0ILPB1AMSHHIY47QL
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: base64
 
+CgpZaW5naGFpIEx1IDx5aW5naGFpQGtlcm5lbC5vcmc+IHdyb3RlOgoKPkplcmVteSBGaXR6aGFy
+ZGluZ2Ugd3JvdGU6DQo+PiBXaHkgZG9lcyB2bWxpbnV4XzY0Lmxkcy5TIHVzZSBhYnNvbHV0ZSBz
+eW1ib2xzIGZvciB0aGluZ3MgbGlrZQ0KPj4gX19ic3Nfc3RhcnQvc3RvcDoNCj4+IA0KPj4gIF9f
+YnNzX3N0YXJ0ID0gLjsgICAgICAgIC8qIEJTUyAqLw0KPj4gIC5ic3MgOiBBVChBRERSKC5ic3Mp
+IC0gTE9BRF9PRkZTRVQpIHsNCj4+ICAgICAqKC5ic3MucGFnZV9hbGlnbmVkKQ0KPj4gICAgICoo
+LmJzcykNCj4+ICAgICB9DQo+PiAgX19ic3Nfc3RvcCA9IC47DQo+PiANCj4+IA0KPj4gdm1saW51
+eF8zMi5sZHMuUyBwdXRzIF9fYnNzX3N0YXJ0L3N0b3AgaW50byB0aGUgLmJzcyBzZWN0aW9uIGl0
+c2VsZi4gIElzDQo+PiB0aGVyZSBzb21lIHBhcnRpY3VsYXIgcmVhc29uIHRoZXkgbmVlZCB0byBi
+ZSBhYnNvbHV0ZSBzeW1ib2xzDQo+PiAocmVsb2NhdGlvbj8pLg0KPj4gDQo+DQo+dGhleSBhcmUg
+dGhlIHNhbWUuDQoKRG8geW91IG1lYW4gaXQgbWFrZXMgbm8gZGlmZmVyZW5jZT8KCglKCi0tIApT
+ZW50IGZyb20gbXkgQW5kcm9pZCBwaG9uZSB3aXRoIEstOS4gUGxlYXNlIGV4Y3VzZSBteSBicmV2
+aXR5Lg==
 
-On Mon, 9 Mar 2009, Jesper Krogh wrote:
-> 
-> First boot.
-> [    0.000000] ref_freq: 2311825  pit_freq: 2310386
-> Second boot:
-> [    0.000000] ref_freq: 2311803  pit_freq: 2310190
-> Third boot:
-> [    0.000000] ref_freq: 2311824  pit_freq: 2310080
-> Fourth boot:
-> [    0.000000] ref_freq: 2311831  pit_freq: 2310130
+------1OVPFAVO3BM8D0ILPB1AMSHHIY47QL--
 
-It's really quite impressively stable, but the fast-PIT calibration 
-frequency is reliably about 3/4 of a promille low. Or, put another way, 
-the TSC difference over the pit calibration is just a _tad_ too small 
-compared to the value we'd expect if that loop of pit_expect_msb() would 
-really run at the expected delay of a 1.193182MHz clock divided by 256.
-
-And it's stable in that it really always seems to be off by a very similar 
-amount. It's not moving around very much.
-
-I also wonder why it seems to happen mainly just to _you_. There's 
-absolutely nothing odd in your system, neither a slow CPU or anything 
-else that would stand out.
-
-Grr. Very annoyingly non-obvious.
-
-		Linus
