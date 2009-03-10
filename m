@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZCJKDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbZCJKIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330AbZCJKDl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 06:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZCJKDc
+	id S1754047AbZCJKIs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 06:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbZCJKIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 06:03:32 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:52271 "EHLO
+	Tue, 10 Mar 2009 06:08:39 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:52774 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753567AbZCJKDb (ORCPT
+	with ESMTP id S1752247AbZCJKIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 06:03:31 -0400
+	Tue, 10 Mar 2009 06:08:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=scH91QV+xNLEZLDDgrepohVvrNoajzsVC3Vjy0e9RmayeKWCpi8rinBXAdJOFsVG9t
-         4N8WABi81HDsvPUekEsog+9GjAYe/KOA3bpiLToz/XhppsWUg1W0BVRJl/TeW68UvRxy
-         xjN6WysRzVOZmaksb6HIm+f4yQC/HyexB4lu4=
-Date: Tue, 10 Mar 2009 11:03:25 +0100
+        b=SjR42bkqKP3/NOfxBGodRZiCDx3mZpSTbyCJ0Yt7PITnjBK/CzNRsC0MlwvSDIvAoV
+         fVVoEmcj5+7a2WXL5prA2xngbwQ3HDzMkdoD1xjabUcJbh31aNNRcyov8ObFrMPIa7qH
+         5BWj2MrWRjdacUGNnPlZtDlhC4xqIQTK+FQF4=
+Date: Tue, 10 Mar 2009 11:08:32 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [TIP,BISECTED] Negative nice values have become big positive
-	numbers
-Message-ID: <20090310100321.GA6825@nowhere>
-References: <20090308231850.GB24445@silver.sucs.org> <20090309201503.GA5010@nowhere> <20090310001222.GA1843@silver.sucs.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
+Subject: Re: [RFC][PATCH 1/2] tracing/ftrace: syscall tracing infrastructure
+Message-ID: <20090310100831.GC6825@nowhere>
+References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-2-git-send-email-fweisbec@gmail.com> <20090307074917.GA5749@nowhere> <alpine.DEB.2.00.0903090947450.2203@gandalf.stny.rr.com> <20090309204748.GD5010@nowhere> <alpine.DEB.2.00.0903092050580.2203@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090310001222.GA1843@silver.sucs.org>
+In-Reply-To: <alpine.DEB.2.00.0903092050580.2203@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 10, 2009 at 12:12:22AM +0000, Sitsofe Wheeler wrote:
-> On Mon, Mar 09, 2009 at 09:15:04PM +0100, Frederic Weisbecker wrote:
-> > On Sun, Mar 08, 2009 at 11:18:50PM +0000, Sitsofe Wheeler wrote:
-> > > Formally negative nice values have started become very big in positive
-> > > integers in -tip kernels:
+On Mon, Mar 09, 2009 at 08:52:00PM -0400, Steven Rostedt wrote:
+> 
+> 
+> On Mon, 9 Mar 2009, Frederic Weisbecker wrote:
+> 
+> > On Mon, Mar 09, 2009 at 09:52:20AM -0400, Steven Rostedt wrote:
 > > > 
-> > >     2 root      15 2147483647     0    0    0 S  0.0  0.0   0:00.00 kthreadd    
+> > > On Sat, 7 Mar 2009, Frederic Weisbecker wrote:
+> > > > +
+> > > > +
+> > > > +static atomic_t refcount;
+> > > > +
+> > > > +enum print_line_t
+> > > > +print_syscall_enter(struct trace_iterator *iter, int flags)
+> > > > +{
+> > > > +	struct trace_seq *s = &iter->seq;
+> > > > +	struct trace_entry *ent = iter->ent;
+> > > > +	struct syscall_trace_enter *trace;
+> > > > +	enum syscall_trace_nr syscall;
+> > > > +	const struct syscall_trace_entry *entry;
+> > > > +	char *str = NULL;
+> > > > +	int i, ret;
+> > > > +
+> > > > +	trace_assign_type(trace, ent);
+> > > > +
+> > > > +	syscall = trace->nr;
+> > > > +
+> > > > +	if (!syscall || syscall >= __SYSCALL_TRACE_END)
+> > > 
+> > > You still need to print a "\n" otherwise the output of the next line
+> > > will start on the current line.
 > > 
-> > The weird thing here is that number: 2147483647
-> > It is 0xefffffff
-> > Which means -1 without the highest bit (the sign).
-> > I really don't know how it could have happened.
-> > 
-> > Anyway, I caught something in the signedness bits from my patch that unifies
-> > the format decoding.
-> > I've never seen your bug on my machine. But I note you have a 32 bits CPU.
-> > Mine is 64 bits with a 64 bits kernel. Perhaps some weird signedness related things
-> > happened because of the signedness bug that the following patch fixes.
-> > 
-> > Can you please give it a try?
+> > Are you sure?
+> > This entry will be ignored. And the previous one did print a newline.
+> > So the next one should not have any problem.
 > 
-> This seems to have fixed the problem (unless I'm mistaken):
->     2 root      15  -5     0    0    0 S  0.0  0.0   0:00.00 kthreadd           
+> Does this take over the printline? Otherwise we could be printing a 
+> header, (comm, timestamp, cpu, etc).
 > 
-> Thanks!
-> 
-> -- 
-> Sitsofe | http://sucs.org/~sits/
+> -- Steve
 
-
-Thanks a lot Sitsofe!
-
-Reported-and-tested-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+Ah ok, I did not think of the headers.
 
