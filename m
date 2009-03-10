@@ -1,15 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbZCJH5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZCJH62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221AbZCJH5e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 03:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZCJH42
+	id S1754552AbZCJH62 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 03:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZCJH6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 03:56:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56886 "EHLO hera.kernel.org"
+	Tue, 10 Mar 2009 03:58:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56992 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753365AbZCJH4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 03:56:24 -0400
+	id S1753719AbZCJH6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 03:58:15 -0400
+Message-ID: <49B61D68.9090908@kernel.org>
+Date: Tue, 10 Mar 2009 16:57:28 +0900
 From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
 To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
        linux-kernel@vger.kernel.org, hpa@zytor.com,
        Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
@@ -18,215 +22,237 @@ To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
        grundler@parisc-linux.org, takata@linux-m32r.org,
        benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
        schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 4/5] percpu: generalize embedding first chunk setup helper
-Date: Tue, 10 Mar 2009 16:53:50 +0900
-Message-Id: <1236671631-9305-5-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1236671631-9305-1-git-send-email-tj@kernel.org>
+Subject: test module to verify percpu allocator
 References: <1236671631-9305-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 10 Mar 2009 07:53:59 +0000 (UTC)
+In-Reply-To: <1236671631-9305-1-git-send-email-tj@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------070408040508080101070206"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 10 Mar 2009 07:57:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: code reorganization
+This is a multi-part message in MIME format.
+--------------070408040508080101070206
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Separate out embedding first chunk setup helper from x86 embedding
-first chunk allocator and put it in mm/percpu.c.  This will be used by
-the default percpu first chunk allocator and possibly by other archs.
+Hello, again.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
- arch/x86/kernel/setup_percpu.c |   54 +++----------------------
- include/linux/percpu.h         |    4 ++
- mm/percpu.c                    |   86 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 96 insertions(+), 48 deletions(-)
+Attached is the test module to test percpu allocator.  Just build as
+an external module and load/unload to perform the test.
 
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index e41c51f..400331b 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -257,31 +257,13 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
-  * Embedding allocator
-  *
-  * The first chunk is sized to just contain the static area plus
-- * module and dynamic reserves, and allocated as a contiguous area
-- * using bootmem allocator and used as-is without being mapped into
-- * vmalloc area.  This enables the first chunk to piggy back on the
-- * linear physical PMD mapping and doesn't add any additional pressure
-- * to TLB.  Note that if the needed size is smaller than the minimum
-- * unit size, the leftover is returned to the bootmem allocator.
-+ * module and dynamic reserves and embedded into linear physical
-+ * mapping so that it can use PMD mapping without additional TLB
-+ * pressure.
-  */
--static void *pcpue_ptr __initdata;
--static size_t pcpue_size __initdata;
--static size_t pcpue_unit_size __initdata;
--
--static struct page * __init pcpue_get_page(unsigned int cpu, int pageno)
--{
--	size_t off = (size_t)pageno << PAGE_SHIFT;
--
--	if (off >= pcpue_size)
--		return NULL;
--
--	return virt_to_page(pcpue_ptr + cpu * pcpue_unit_size + off);
--}
--
- static ssize_t __init setup_pcpu_embed(size_t static_size)
- {
--	unsigned int cpu;
--	size_t dyn_size;
-+	size_t reserve = PERCPU_MODULE_RESERVE + PERCPU_DYNAMIC_RESERVE;
- 
- 	/*
- 	 * If large page isn't supported, there's no benefit in doing
-@@ -291,32 +273,8 @@ static ssize_t __init setup_pcpu_embed(size_t static_size)
- 	if (!cpu_has_pse || pcpu_need_numa())
- 		return -EINVAL;
- 
--	/* allocate and copy */
--	pcpue_size = PFN_ALIGN(static_size + PERCPU_MODULE_RESERVE +
--			       PERCPU_DYNAMIC_RESERVE);
--	pcpue_unit_size = max_t(size_t, pcpue_size, PCPU_MIN_UNIT_SIZE);
--	dyn_size = pcpue_size - static_size - PERCPU_FIRST_CHUNK_RESERVE;
--
--	pcpue_ptr = pcpu_alloc_bootmem(0, num_possible_cpus() * pcpue_unit_size,
--				       PAGE_SIZE);
--	if (!pcpue_ptr)
--		return -ENOMEM;
--
--	for_each_possible_cpu(cpu) {
--		void *ptr = pcpue_ptr + cpu * pcpue_unit_size;
--
--		free_bootmem(__pa(ptr + pcpue_size),
--			     pcpue_unit_size - pcpue_size);
--		memcpy(ptr, __per_cpu_load, static_size);
--	}
--
--	/* we're ready, commit */
--	pr_info("PERCPU: Embedded %zu pages at %p, static data %zu bytes\n",
--		pcpue_size >> PAGE_SHIFT, pcpue_ptr, static_size);
--
--	return pcpu_setup_first_chunk(pcpue_get_page, static_size,
--				      PERCPU_FIRST_CHUNK_RESERVE, dyn_size,
--				      pcpue_unit_size, pcpue_ptr, NULL);
-+	return pcpu_embed_first_chunk(static_size, PERCPU_FIRST_CHUNK_RESERVE,
-+				      reserve - PERCPU_FIRST_CHUNK_RESERVE, -1);
- }
- 
- /*
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index fb455dc..ee5615d 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -111,6 +111,10 @@ extern size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
- 				void *base_addr,
- 				pcpu_populate_pte_fn_t populate_pte_fn);
- 
-+extern ssize_t __init pcpu_embed_first_chunk(
-+				size_t static_size, size_t reserved_size,
-+				ssize_t dyn_size, ssize_t unit_size);
-+
- /*
-  * Use this to get to a cpu's version of the per-cpu object
-  * dynamically allocated. Non-atomic access to the current CPU's
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 2f94661..1aa5d8f 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -1238,3 +1238,89 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
- 	pcpu_base_addr = (void *)pcpu_chunk_addr(schunk, 0, 0);
- 	return pcpu_unit_size;
- }
-+
-+/*
-+ * Embedding first chunk setup helper.
-+ */
-+static void *pcpue_ptr __initdata;
-+static size_t pcpue_size __initdata;
-+static size_t pcpue_unit_size __initdata;
-+
-+static struct page * __init pcpue_get_page(unsigned int cpu, int pageno)
-+{
-+	size_t off = (size_t)pageno << PAGE_SHIFT;
-+
-+	if (off >= pcpue_size)
-+		return NULL;
-+
-+	return virt_to_page(pcpue_ptr + cpu * pcpue_unit_size + off);
-+}
-+
-+/**
-+ * pcpu_embed_first_chunk - embed the first percpu chunk into bootmem
-+ * @static_size: the size of static percpu area in bytes
-+ * @reserved_size: the size of reserved percpu area in bytes
-+ * @dyn_size: free size for dynamic allocation in bytes, -1 for auto
-+ * @unit_size: unit size in bytes, must be multiple of PAGE_SIZE, -1 for auto
-+ *
-+ * This is a helper to ease setting up embedded first percpu chunk and
-+ * can be called where pcpu_setup_first_chunk() is expected.
-+ *
-+ * If this function is used to setup the first chunk, it is allocated
-+ * as a contiguous area using bootmem allocator and used as-is without
-+ * being mapped into vmalloc area.  This enables the first chunk to
-+ * piggy back on the linear physical mapping which often uses larger
-+ * page size.
-+ *
-+ * When @dyn_size is positive, dynamic area might be larger than
-+ * specified to fill page alignment.  Also, when @dyn_size is auto,
-+ * @dyn_size does not fill the whole first chunk but only what's
-+ * necessary for page alignment after static and reserved areas.
-+ *
-+ * If the needed size is smaller than the minimum or specified unit
-+ * size, the leftover is returned to the bootmem allocator.
-+ *
-+ * RETURNS:
-+ * The determined pcpu_unit_size which can be used to initialize
-+ * percpu access on success, -errno on failure.
-+ */
-+ssize_t __init pcpu_embed_first_chunk(size_t static_size, size_t reserved_size,
-+				      ssize_t dyn_size, ssize_t unit_size)
-+{
-+	unsigned int cpu;
-+
-+	/* determine parameters and allocate */
-+	pcpue_size = PFN_ALIGN(static_size + reserved_size +
-+			       (dyn_size >= 0 ? dyn_size : 0));
-+	if (dyn_size != 0)
-+		dyn_size = pcpue_size - static_size - reserved_size;
-+
-+	if (unit_size >= 0) {
-+		BUG_ON(unit_size < pcpue_size);
-+		pcpue_unit_size = unit_size;
-+	} else
-+		pcpue_unit_size = max_t(size_t, pcpue_size, PCPU_MIN_UNIT_SIZE);
-+
-+	pcpue_ptr = __alloc_bootmem_nopanic(
-+					num_possible_cpus() * pcpue_unit_size,
-+					PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
-+	if (!pcpue_ptr)
-+		return -ENOMEM;
-+
-+	/* return the leftover and copy */
-+	for_each_possible_cpu(cpu) {
-+		void *ptr = pcpue_ptr + cpu * pcpue_unit_size;
-+
-+		free_bootmem(__pa(ptr + pcpue_size),
-+			     pcpue_unit_size - pcpue_size);
-+		memcpy(ptr, __per_cpu_load, static_size);
-+	}
-+
-+	/* we're ready, commit */
-+	pr_info("PERCPU: Embedded %zu pages at %p, static data %zu bytes\n",
-+		pcpue_size >> PAGE_SHIFT, pcpue_ptr, static_size);
-+
-+	return pcpu_setup_first_chunk(pcpue_get_page, static_size,
-+				      reserved_size, dyn_size,
-+				      pcpue_unit_size, pcpue_ptr, NULL);
-+}
+Thanks.
+
 -- 
-1.6.0.2
+tejun
 
+--------------070408040508080101070206
+Content-Type: text/x-csrc;
+ name="test_module.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="test_module.c"
+
+#include <linux/module.h>
+#include <linux/device.h>
+#include <linux/sysfs.h>
+#include <linux/percpu.h>
+
+static inline void pcpu_dump_chunk_slots(void) {}
+
+struct alloc_cmd {
+	size_t size;
+	int marker;
+};
+
+static const struct alloc_cmd cmds[] = {
+	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
+	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
+	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
+	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
+	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
+	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
+	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
+	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },	/* 8k */
+
+	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
+	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
+	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
+	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
+	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
+	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
+	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
+	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },	/* 32k */
+
+	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
+	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
+	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
+	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
+	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
+	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
+	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
+	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },	/* 128k */
+
+	{ 0, 0 },	/* free 0s */
+
+	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
+	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
+	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
+	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
+	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
+	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
+	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
+	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
+	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },	/* 4.5k */
+
+	{ 0, 1 },	/* free 1s */
+
+	{ 1024, 5 }, { 1024, 5 }, { 1024, 5 }, { 1024, 5 },	/* 4k */
+
+	{ 0, 5 },	/* free 5s */
+	{ 0, 4 },
+	{ 0, 3 },
+	{ 0, 2 },
+};
+
+#define NR_CMDS		ARRAY_SIZE(cmds)
+
+static void *ptrs[NR_CMDS];
+
+static unsigned long seed_val(unsigned int cmdno, unsigned int cpu)
+{
+	return 0xdeadbeefbeefdeadULL
+		+ cmdno + (cmdno << 16) + (cpu << 8) + (cpu << 24);
+}
+
+static void fill_area(void *p, size_t size, unsigned int cmdno)
+{
+	unsigned int cpu;
+
+	for_each_possible_cpu(cpu) {
+		unsigned long v = seed_val(cmdno, cpu);
+		unsigned long *up = per_cpu_ptr(p, cpu);
+		size_t left = size;
+
+		while (left >= sizeof(unsigned long)) {
+			*up++ = v++;
+			left -= sizeof(unsigned long);
+		}
+	}
+}
+
+static void verify_area(void *p, size_t size, unsigned int cmdno)
+{
+	unsigned int warns = 5;
+	unsigned int cpu;
+
+	for_each_possible_cpu(cpu) {
+		unsigned long v = seed_val(cmdno, cpu);
+		unsigned long *up = per_cpu_ptr(p, cpu);
+		size_t left = size;
+
+		while (left >= sizeof(unsigned long)) {
+			if (*up != v && warns-- > 0) {
+				printk("MISMATCH: cmdno=%u size=%zu cpu=%u off=%zu p=%p\n",
+				       cmdno, size, cpu, size - left, p);
+				printk("          [%p]=%lx should be %lx\n",
+				       up, *up, v);
+			}
+			up++; v++;
+			left -= sizeof(unsigned long);
+		}
+	}
+}
+
+static void free_cmd(unsigned int cmdno)
+{
+	if (!ptrs[cmdno])
+		return;
+
+	verify_area(ptrs[cmdno], cmds[cmdno].size, cmdno);
+	free_percpu(ptrs[cmdno]);
+	ptrs[cmdno] = NULL;
+}
+
+static void run_test(void)
+{
+	unsigned int i, j;
+
+	for (i = 0; i < NR_CMDS; i++) {
+		const struct alloc_cmd *cmd = &cmds[i];
+
+		if (cmd->size) {
+			printk("ALLOC: %zu bytes marker=%d\n",
+			       cmd->size, cmd->marker);
+			ptrs[i] = __alloc_percpu(cmd->size,
+					__alignof__(unsigned long long));
+			if (ptrs[i])
+				fill_area(ptrs[i], cmd->size, i);
+			else
+				printk("failed to allocate %zu bytes\n",
+				       cmd->size);
+			continue;
+		}
+
+		printk("FREE: marker=%d\n", cmd->marker);
+		pcpu_dump_chunk_slots();
+		for (j = 0; j < i; j++)
+			if (cmds[j].marker == cmd->marker)
+				free_cmd(j);
+		printk("FREE: done\n");
+		pcpu_dump_chunk_slots();
+	}
+}
+
+struct stupid_large_alignment_struct {
+	int a;
+	int b;
+	int c;
+} __aligned(2048);
+
+struct stupid_large_struct {
+	char a[1024];
+};
+
+static DEFINE_PER_CPU(struct stupid_large_alignment_struct, blah_blah);
+DEFINE_PER_CPU(struct stupid_large_struct, blah_blah2);
+DEFINE_PER_CPU(struct stupid_large_struct, blah_blah3);
+DEFINE_PER_CPU(struct stupid_large_struct, blah_blah4);
+DEFINE_PER_CPU(struct stupid_large_struct, blah_blah5);
+DEFINE_PER_CPU(struct stupid_large_struct, blah_blah6);
+
+static int __init test_init(void)
+{
+	unsigned int cpu;
+
+	printk("XXX test_pcpu:");
+	for_each_possible_cpu(cpu)
+		printk(" %p", &per_cpu(blah_blah, cpu));
+	printk("\n");
+	pcpu_dump_chunk_slots();
+
+	run_test();
+	return 0;
+}
+
+static void __exit test_exit(void)
+{
+	unsigned int i;
+
+	printk("XXX cleaning up\n");
+	pcpu_dump_chunk_slots();
+
+	for (i = 0; i < NR_CMDS; i++)
+		free_cmd(i);
+
+	printk("XXX done\n");
+	pcpu_dump_chunk_slots();
+}
+
+module_init(test_init);
+module_exit(test_exit);
+MODULE_LICENSE("GPL");
+
+--------------070408040508080101070206--
