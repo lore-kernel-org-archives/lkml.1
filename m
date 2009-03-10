@@ -1,101 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZCJUDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756973AbZCJUFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757547AbZCJUDR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 16:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbZCJUC6
+	id S1756973AbZCJUFY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 16:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbZCJUFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 16:02:58 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51974 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755667AbZCJUC5 convert rfc822-to-8bit (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 16:02:57 -0400
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX19ui+hRO3duX0BjEv0IHgTWJn0x+N2HDDBjK6Brgo
-	VBHxYhJWToKCb9
-From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Subject: Re: [GIT PULL] Squashfs fixes for 2.6.29?
-Date: Tue, 10 Mar 2009 21:02:48 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <49AF30EC.8010205@lougher.demon.co.uk> <200903092239.13078.s.L-H@gmx.de> <49B5CCB7.5030404@lougher.demon.co.uk>
-In-Reply-To: <49B5CCB7.5030404@lougher.demon.co.uk>
+	Tue, 10 Mar 2009 16:05:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38001 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752654AbZCJUFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 16:05:06 -0400
+Date: Tue, 10 Mar 2009 16:02:00 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
+       linux-next@vger.kernel.org, Greg Banks <gnb@sgi.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: driver-core tree build failure
+Message-ID: <20090310200200.GB3091@redhat.com>
+References: <20090310192440.949884a1.sfr@canb.auug.org.au> <alpine.LRH.2.00.0903101423200.25436@vixen.sonytel.be> <20090310145311.6bf9d9e9@skybase> <alpine.LRH.2.00.0903101626450.25436@vixen.sonytel.be> <20090310170841.2257de86@skybase>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903102102.50584.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.52
+In-Reply-To: <20090310170841.2257de86@skybase>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-On Dienstag, 10. März 2009, Phillip Lougher wrote:
-> Stefan Lippers-Hollmann wrote:
+On Tue, Mar 10, 2009 at 05:08:41PM +0100, Martin Schwidefsky wrote:
+> On Tue, 10 Mar 2009 16:29:50 +0100 (CET)
+> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 > 
+> > > The same could be done with the problematic pr_fmt definition:
+> > > 
+> > > #define pr_fmt(fmt)     __func__ ": " fmt
 > > 
-> > This patch seems to break squashfs for me on i386 and amd64. 
+> > No, that also doesn't work:
 > > 
-> > Test environment is a squashed filesystem image (live CD image, but also 
-> > tested manually with a loop mounted iso9660 and loop mounted squashfs; 
-> > kernel 2.6.29-rc7-git2). The squashfs image has been created with 
-> > squashfs-tools CVS[1] as of today (latest commit 2009-03-03).
+> > | crypto/zlib.c:150: error: expected '}' before string constant
+> > | crypto/zlib.c:150: error: expected ')' before '__func__'
+> > | crypto/zlib.c:162: error: expected '}' before string constant
+> > | crypto/zlib.c:162: error: expected ')' before '__func__'
+> > | crypto/zlib.c:166: error: expected '}' before string constant
+> > | crypto/zlib.c:166: error: expected ')' before '__func__'
+> > | crypto/zlib.c:170: error: expected '}' before string constant
+> > | crypto/zlib.c:170: error: expected ')' before '__func__'
 > > 
+> > > > BTW, Martin: Is `#define pr_fmt(fmt)     "%s: " fmt, __func__' a valid and
+> > > > intended usage of your pr_fmt() infrastructure?
+> > > 
+> > > The indended use is a simple prefix to the format string. To paste an
+> > > additional parameter is an interesting use of the pr_fmt macro ..
+> > 
+> > Bummer, I was so happy I could do things like
+> > 
+> > | #define pr_fmt(fmt)	"%s:%u: " fmt, __func__, __LINE__
 > 
-> Hi,
+> Actually that seem like a nice thing to have. With the upstream version of
+> dynamic_pr_debug this works, there the format string is used only on a printk.
+> git commit 25b67b75587d43ff3f09ad88c03c70a38372d95d introduces the code
+> that pastes the format string to the _ddebug structure.
 > 
-> Can you send me a filesystem (or link to one) which exhibits this?  Zlib 
-> is obviously showing unexpected behaviour...
 
-http://sidux.com/slh/squashfs/sidux-snapshot-minimal-i386-200903101824.iso [104 MB]
+hmmm...yeah, some macro magic in include/linux/dynamic_debug.h converts
+the 'fmt' arg into a series of strings. It doesn't look as pretty in the
+dynamic debug control file:
 
-MD5:
-03475b9793134f48306fe2ba7f26ce7c *sidux-snapshot-minimal-i386-200903101824.iso
+crypto/zlib.c:333 [zlib]zlib_decompress_final - "\042%s: \042
+\042avail_in %u, avail_out %u (consumed %u, produced %u)\n\042,
+__func__"
 
-SHA256:
-6ff9ec65102af8e2277a0ec30e8db13be2313ef64c9a3a3b5febaafab37cf00f *sidux-snapshot-minimal-i386-200903101824.iso
+with all those '\042' there, which are the '"' characters, but we
+probably could live with it.
 
-The squashfs image is stored inside the ISO9660 container as 
-"sidux/sidux.686", it is bootable and the installed kernel (2.6.29-rc7-git3
-+ aufs2, it's required for the live system, but I have checked that it is 
-also reproducable with plain linux-2.6.git and without any patches, outside
-of a live environment) exposes this problem.
+patch below.
 
-Sources for all software installed inside the squashfs image is available 
-at:
-	http://sidux.com/slh/squashfs/sidux-snapshot-minimal-i386-200903101824-source/
+thanks,
 
-The (Debian-) packaged kernel source as:
-	dget http://sidux.com/slh/squashfs/sidux-snapshot-minimal-i386-200903101824-source/linux-sidux-2.6_2.6.29~rc7-1~git3.slh.0.dsc [67 MB]
-and as plain tarball with all patches pre-applied:
-	http://sidux.com/slh/squashfs/linux-source-sidux-2.6.29-rc7.tar.bz2 [51 MB]
+-Jason
 
-which consists of the following sources/ patches:
-	http://eu.kernel.org/pub/linux/kernel/v2.6/linux-2.6.28.tar.bz2 [64 MB]
-	http://eu.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.29-rc7.bz2 [12 MB]
-	http://eu.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.29-rc7-git3.bz2 [60 KB]
 
-and required for the live CD, but reproducable without these:
-	http://svn.berlios.de/svnroot/repos/fullstory/linux-sidux-2.6/trunk/debian/patches/debian/version.patch [4 KB]
-	http://svn.berlios.de/svnroot/repos/fullstory/linux-sidux-2.6/trunk/debian/patches/debian/kernelvariables.patch [4 KB]
-	http://svn.berlios.de/svnroot/repos/fullstory/linux-sidux-2.6/trunk/debian/patches/debian/doc-build-parallel.patch [4 KB]
-	http://svn.berlios.de/svnroot/repos/fullstory/linux-sidux-2.6/trunk/debian/patches/debian/scripts-kconfig-reportoldconfig.patch [12 KB]
-	http://svn.berlios.de/svnroot/repos/fullstory/linux-sidux-2.6/trunk/debian/patches/features/aufs2-20090309.diff [632 KB]
 
-used Kernel config:
-	http://sidux.com/slh/squashfs/config-2.6.29-rc7-sidux-686 [96 KB]
+Signed-off-by: Jason Baron <jbaron@redhat.com>
 
-> Thanks
-> 
-> Phillip
 
-Thank you a lot for your efforts, I'm now going to test Geert 
-Uytterhoeven's proposed patch and will report back.
+diff --git a/include/linux/dynamic_debug.h b/include/linux/dynamic_debug.h
+index 07781aa..16cf212 100644
+--- a/include/linux/dynamic_debug.h
++++ b/include/linux/dynamic_debug.h
+@@ -50,28 +50,30 @@ extern int ddebug_remove_module(char *mod_name);
+ 					__ret = 1;			     \
+ 	__ret; })
+ 
+-#define dynamic_pr_debug(fmt, ...) do {					\
+-	static struct _ddebug descriptor				\
+-	__used								\
+-	__attribute__((section("__verbose"), aligned(8))) =		\
+-	{ KBUILD_MODNAME, __func__, __FILE__, fmt, DEBUG_HASH,	\
+-		DEBUG_HASH2, __LINE__, _DPRINTK_FLAGS_DEFAULT };	\
+-	if (__dynamic_dbg_enabled(descriptor))				\
+-		printk(KERN_DEBUG KBUILD_MODNAME ":" fmt,		\
+-				##__VA_ARGS__);				\
++#define STRINGIFY(args...) #args
++
++#define dynamic_pr_debug(fmt, ...) do {					  \
++	static struct _ddebug descriptor				  \
++	__used								  \
++	__attribute__((section("__verbose"), aligned(8))) =		  \
++	{ KBUILD_MODNAME, __func__, __FILE__, STRINGIFY(fmt), DEBUG_HASH, \
++		DEBUG_HASH2, __LINE__, _DPRINTK_FLAGS_DEFAULT };	  \
++	if (__dynamic_dbg_enabled(descriptor))				  \
++		printk(KERN_DEBUG KBUILD_MODNAME ":" fmt,		  \
++				##__VA_ARGS__);				  \
+ 	} while (0)
+ 
+ 
+-#define dynamic_dev_dbg(dev, fmt, ...) do {				\
+-	static struct _ddebug descriptor				\
+-	__used								\
+-	__attribute__((section("__verbose"), aligned(8))) =		\
+-	{ KBUILD_MODNAME, __func__, __FILE__, fmt, DEBUG_HASH,	\
+-		DEBUG_HASH2, __LINE__, _DPRINTK_FLAGS_DEFAULT };	\
+-	if (__dynamic_dbg_enabled(descriptor))				\
+-			dev_printk(KERN_DEBUG, dev,			\
+-					KBUILD_MODNAME ": " fmt,	\
+-					##__VA_ARGS__);			\
++#define dynamic_dev_dbg(dev, fmt, ...) do {				  \
++	static struct _ddebug descriptor				  \
++	__used								  \
++	__attribute__((section("__verbose"), aligned(8))) =		  \
++	{ KBUILD_MODNAME, __func__, __FILE__, STRINGIFY(fmt), DEBUG_HASH, \
++		DEBUG_HASH2, __LINE__, _DPRINTK_FLAGS_DEFAULT };	  \
++	if (__dynamic_dbg_enabled(descriptor))				  \
++			dev_printk(KERN_DEBUG, dev,			  \
++					KBUILD_MODNAME ": " fmt,	  \
++					##__VA_ARGS__);			  \
+ 	} while (0)
+ 
+ #else
 
-Regards
-	Stefan Lippers-Hollmann
+
+
+
