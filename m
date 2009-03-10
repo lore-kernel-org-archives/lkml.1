@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbZCJWh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbZCJWpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756696AbZCJWh7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 18:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbZCJWhr
+	id S1755411AbZCJWpJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 18:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbZCJWo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 18:37:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58290 "EHLO mx2.mail.elte.hu"
+	Tue, 10 Mar 2009 18:44:56 -0400
+Received: from gw.goop.org ([64.81.55.164]:34298 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755891AbZCJWhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 18:37:46 -0400
-Date: Tue, 10 Mar 2009 23:37:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@linux.intel.com>
-Subject: Re: [PATCH 00/13] convert voyager over to the x86 quirks model
-Message-ID: <20090310223733.GA4016@elte.hu>
-References: <1236530906-7175-1-git-send-email-James.Bottomley@HansenPartnership.com>
+	id S1752935AbZCJWoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 18:44:55 -0400
+Message-ID: <49B6ED64.2090007@goop.org>
+Date: Tue, 10 Mar 2009 15:44:52 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236530906-7175-1-git-send-email-James.Bottomley@HansenPartnership.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH] paravirt/xen: add pvop for page_is_ram
+References: <1235786365-17744-1-git-send-email-jeremy@goop.org> <1235786365-17744-10-git-send-email-jeremy@goop.org> <49B5BD63.1090909@zytor.com> <49B6D94F.9070902@goop.org> <49B6E7EB.2040009@zytor.com>
+In-Reply-To: <49B6E7EB.2040009@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+>> 3) isn't yet relevant to Xen; ioremap can't map granted pages either, so
+>> 2) isn't terribly relevent, so the main motivation for this patch is
+>> 1).  This allows us to reject usermode attempts to map granted pages,
+>> rather than oopsing (as a failed set_pte will raise a page fault).
+>>
+>> So, more cosmetic than essential, but I don't see a better way to
+>> implement this functionality if its to be there at all.
+>>
+>>     
+>
+> OK, that is a valid usage case and I agree about repurposing the
+> existing interface.  However, it is also a definition change in the
+> interface, so it really should be renamed first.
+>
+> Would you be willing to break this patch up into one which renames the
+> interface and then a second which adds the pv hook?
+>   
 
-* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+Well, on reflection, given that the thing we're testing for is "is page 
+is allowed to be mapped by /dev/mem?", and devmem_is_allowed() already 
+exists for precisely that reason, the answer is to put the hook there...
 
-> Given the lack of feedback, I went ahead and implemented the 
-> additions to smp_ops and x86_quirks (and a dynamic mca NMI 
-> hook) to allow voyager to be plumbed in.
-> 
-> There also needs to be changes in the boot setup to make 
-> voyager work dynamically: It has to be detected first, so the 
-> a20 gate check is only executed if a voyager is not found.
-> 
-> I also completed some of the subarchitecture eliminations, so 
-> all the include file infrastructure should be gone.
-> 
-> The result is that I can boot both my PC SMP x86 boxes and 
-> voyager with the same kernel.
-> 
-> This patch series applies on the x86/apic branch of the x86 
-> tree (obviously with 965c7ecaf2e2b083d711a01ab33735a4bdeee1a4 
-> reverted)
+But, it seems I got the logic wrong anyway.  /dev/mem doesn't allow RAM 
+pages to be mapped anyway, so granted pages masquerading as RAM will not 
+be mappable via /dev/mem.  So I think we can safely drop this patch with 
+no futher ado.
 
-The question is, why would we want to merge Voyager back ever 
-again?
-
-The hardware is obsolete and is not being produced anymore, 
-nobody but you uses development kernels on it, and it caused all 
-sorts of x86 maintenance overhead all along. It did not even 
-build since August 2008, up until the point we removed it - 
-2.6.26.0 was the last time it built.
-
-	Ingo
+    J
