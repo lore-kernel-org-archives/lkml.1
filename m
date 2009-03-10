@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbZCJHPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbZCJH3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753241AbZCJHPe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 03:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZCJHPX
+	id S1753104AbZCJH3v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 03:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZCJH3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 03:15:23 -0400
-Received: from smtp.tal.de ([81.92.1.5]:49350 "EHLO smtp.tal.de"
+	Tue, 10 Mar 2009 03:29:42 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:44092 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752621AbZCJHPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 03:15:22 -0400
-From: ib@wupperonline.de (Ingo Brueckl)
-Date: Tue, 10 Mar 2009 08:00:00 +0100
-Subject: [PATCH] unnecessary SCSI module
-X-Mailer: blueMail 1.4 (SlipDoor 2.2)
-Message-ID: <49b60f4c@wupperonline.de>
-In-Reply-To: <1236633029.6029.1.camel@localhost.localdomain>
+	id S1751044AbZCJH3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 03:29:41 -0400
+Date: Tue, 10 Mar 2009 08:29:39 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] block: fix memory leak in bio_clone()
+Message-ID: <20090310072939.GC11787@kernel.dk>
+References: <49B4DD9C.5030902@cn.fujitsu.com> <20090309092407.GI11787@kernel.dk> <yq1prgqy8wc.fsf@sermon.lab.mkp.net> <20090309192122.GZ11787@kernel.dk> <yq1wsay9h6m.fsf@sermon.lab.mkp.net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq1wsay9h6m.fsf@sermon.lab.mkp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley <James.Bottomley@HansenPartnership.com> writes:
+On Mon, Mar 09 2009, Martin K. Petersen wrote:
+> >>>>> "Jens" == Jens Axboe <jens.axboe@oracle.com> writes:
+> 
+> Jens> A dedicated bio_set for the integrity stuff would be the way to
+> Jens> go, and that should provide you all the forward progress
+> Jens> guarantees you need.
+> 
+> Ok. Against your for-linus branch...
+> 
+> Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
 
->> When configuring MODULES with the kernel to be able to load external
->> drivers coming as modules, but not using anything as module in the kernel
->> itself, one would expect to end up in a module-free kernel. Currently, you
->> don't if you use SCSI. You'll get one unnecessary module.
+Great, that's also a lot less invasive and ifdef'y. Applied for 2.6.30.
 
- > This isn't right because SCSI_SCAN_ASYNC only sets the *default*
- > behaviour of the kernel.  Even if it's n the user can still boot up with
- > async scans by setting the kernel parameter.
+-- 
+Jens Axboe
 
-Ok, understood. But has it to be a module then? Why not giving the choice
-between building it directly into the kernel or as a module?
-
- > It also keeps coming up regularly:
-
-Well, then something doesn't seem to be ok, does it? ;-)
-
-Ingo
-
-Signed-off-by: Ingo Brueckl <ib@wupperonline.de>
-
---- linux-2.6.28/drivers/scsi/Kconfig.orig	2008-12-25 00:26:37.000000000 +0100
-+++ linux-2.6.28/drivers/scsi/Kconfig	2009-03-10 08:11:38.000000000 +0100
-@@ -257,10 +257,14 @@ config SCSI_SCAN_ASYNC
- 	  or async on the kernel's command line.
-
- config SCSI_WAIT_SCAN
--	tristate
--	default m
-+	tristate "SCSI wait scanning"
- 	depends on SCSI
- 	depends on MODULES
-+	help
-+	  If you are using a SCSI module and do asynchronous SCSI scanning
-+	  (either by having selected SCSI_SCAN_ASYNC or by specifying
-+	  "scsi_mod.scan=async" on the kernel's command line), you MUST say Y
-+	  here.
-
- menu "SCSI Transports"
- 	depends on SCSI
