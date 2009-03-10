@@ -1,104 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbZCJOz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbZCJO4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754756AbZCJOz0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 10:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbZCJOzN
+	id S1755380AbZCJO4U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 10:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbZCJO4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 10:55:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51526 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751531AbZCJOzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 10:55:11 -0400
-Date: Tue, 10 Mar 2009 15:54:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: prasad@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [patch 00/11] Hardware Breakpoint interfaces
-Message-ID: <20090310145420.GJ3850@elte.hu>
-References: <20090310135117.GC3850@elte.hu> <Pine.LNX.4.44L0.0903101019570.2962-100000@iolanthe.rowland.org>
+	Tue, 10 Mar 2009 10:56:03 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:46621 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbZCJO4B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 10:56:01 -0400
+Date: Tue, 10 Mar 2009 08:55:58 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [patch 2/2] fs: introduce mnt_clone_write
+Message-ID: <20090310145558.GY25995@parisc-linux.org>
+References: <20090310143718.GB15977@wotan.suse.de> <20090310143801.GC15977@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0903101019570.2962-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090310143801.GC15977@wotan.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 10, 2009 at 03:38:01PM +0100, Nick Piggin wrote:
+> +EXPORT_SYMBOL_GPL(mnt_clone_write);
+> +EXPORT_SYMBOL_GPL(mnt_want_write_file);
 
-* Alan Stern <stern@rowland.harvard.edu> wrote:
+You don't add any users of these functions in this patch ... is there a
+good reason to export them?
 
-> On Tue, 10 Mar 2009, Ingo Molnar wrote:
-> 
-> > 
-> > There's also a few checkpatch warnings that need to be 
-> > addressed:
-> > 
-> > ERROR: do not use assignment in if condition
-> > #1084: FILE: arch/x86/kernel/ptrace.c:581:
-> > +	else if ((thbi = alloc_thread_hw_breakpoint(tsk)) == 
-> > NULL)
-> 
-> Changing this to remove the assignment from within the "if" 
-> condition would make the code less readable, not more. [...]
-
-It's not just about basic readability. We dont do assignmets 
-like that because it's very easy to miss them (and their side 
-effects) and conflating them with '=='.
-
-  It's part of a long 
-> series of tests; in schematic form:
-> 
-> 	if (n == 4 || n == 5)
-> ...
-> 	else if (n == 6) {
-> ...
-> 	}
-> 	else if (!tsk->thread.hw_breakpoint_info && val == 0)
-> ...
-> 	else if ((thbi = alloc_thread_hw_breakpoint(tsk)) == NULL)
-> ...
-> 	else if (n < HB_NUM) {
-> ...
-> 	}
-> 	else
-> ...
-> 
-> If you can suggest a way to change the code without making it 
-> worse, I'm sure Prasad will be happy to adopt it.
-
-The obvious solution which we use in many other places in 
-arch/x86 is to split out that butt-ugly if else if else if else 
-maze into a helper inline function that does:
-
- 	if (n == 4 || n == 5) {
-		do stuff;
-		return;
-	}
-		
- 	if (n == 6) {
-		do stuff;
-		return;
- 	}
-
-	if (!tsk->thread.hw_breakpoint_info && val == 0) {
-		do stuff;
-		return;
-	}
-
-	thbi = alloc_thread_hw_breakpoint(tsk);
-
-	if (!tbhi)
-		...
-
-	Ingo
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
