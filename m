@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbZCJRGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbZCJRHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbZCJRGr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 13:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbZCJRGi
+	id S1757288AbZCJRHo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 13:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZCJRHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 13:06:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54153 "EHLO mx2.mail.elte.hu"
+	Tue, 10 Mar 2009 13:07:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54298 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752971AbZCJRGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 13:06:38 -0400
-Date: Tue, 10 Mar 2009 18:06:07 +0100
+	id S1755413AbZCJRHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 13:07:35 -0400
+Date: Tue, 10 Mar 2009 18:07:16 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Alan Stern <stern@rowland.harvard.edu>
 Cc: prasad@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Roland McGrath <roland@redhat.com>
-Subject: Re: [patch 04/11] Introduce virtual debug register in
-	thread_struct and wrapper-routines around process related functions
-Message-ID: <20090310170607.GB22897@elte.hu>
-References: <20090310143543.GE3850@elte.hu> <Pine.LNX.4.44L0.0903101151450.3979-100000@iolanthe.rowland.org>
+Subject: Re: [patch 06/11] Use virtual debug registers in process/thread
+	handling code
+Message-ID: <20090310170716.GC22897@elte.hu>
+References: <20090310144933.GH3850@elte.hu> <Pine.LNX.4.44L0.0903101155000.3979-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0903101151450.3979-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0903101155000.3979-100000@iolanthe.rowland.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,39 +39,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Alan Stern <stern@rowland.harvard.edu> wrote:
 
-> On Tue, 10 Mar 2009, Ingo Molnar wrote:
-> 
-> > and why is this:
+> > Speaking of switch_to_thread_hw_breakpoint(), i dont like 
+> > that function at all:
 > > 
-> > > @@ -427,13 +427,9 @@ struct thread_struct {
-> > >  	unsigned long		ip;
-> > >  	unsigned long		fs;
-> > >  	unsigned long		gs;
-> > > -	/* Hardware debugging registers: */
-> > > -	unsigned long		debugreg0;
-> > > -	unsigned long		debugreg1;
-> > > -	unsigned long		debugreg2;
-> > > -	unsigned long		debugreg3;
-> > > -	unsigned long		debugreg6;
-> > > -	unsigned long		debugreg7;
-> > > +	/* Hardware breakpoint info */
-> > > +	unsigned long	vdr6;
-> > > +	struct thread_hw_breakpoint	*hw_breakpoint_info;
-> > 
-> > detached from thread_struct? There's a lot of complications 
-> > (alloc/free, locking, etc.) from this for no good reason - the 
-> > hardware-breakpoints info structure is alway per thread and is 
-> > quite small, so there's no reason not to embedd it directly 
-> > inside thread_struct.
+> > - why does it have to do a list of debug registers?
 > 
-> The only reason for separating it out was to avoid bogging 
-> down the vast majority of threads which aren't debugged.  If 
-> you think the extra overhead isn't worth worrying about then 
-> the hw-breakpoint info structure can be embedded.
+> I'm not sure I understand the point of this question.  Are you 
+> asking why the hw_breakpoint structures are stored on a list?  
+> Because there can be an arbitrarily large number of them.
 
-yeah. This new facility is barely used, and such things should 
-always strive for 100% dumb simplicity. If the overhead of that 
-structure is ever a problem we can allocate it dynamically. (but 
-generally it's just not worth the pain)
+But that does not make much sense. There's just 4 hardware 
+registers. There's no sane way to overcommit them hence we 
+_should not_.
+
+> > - why does it worry about IPIs arriving when context-switches on 
+> >   x86 are always done with interrupts disabled?
+> 
+> The routine gets invoked at times other than during a context 
+> switch.  However you may be right that these times are all 
+> mutually exclusive.  If so then a good deal of complication 
+> can be removed.
+
+Yes.
+
+> > - also, what do the ->installed() and ->uninstalled() callbacks 
+> >   do - nothing uses it!
+> 
+> What do you mean?  They do what any callback does.  And of 
+> course nothing uses them -- the code hasn't been merged yet!
+
+No need to get testy - i'm the maintainer and you are trying to 
+get stuff into two subsystems i maintain. I ask such questions 
+when i see something added that has no immediate purpose.
+
+If a later patch needs a particular facility then submit it 
+together with that use. It's not that hard to add callbacks - 
+but right now it just distracts from the immediate purpose of 
+these patches.
+
+And please dont try to get stuff merged if you are not willing 
+to answer simple questions like that in a constructive way.
 
 	Ingo
