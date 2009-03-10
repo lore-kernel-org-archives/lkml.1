@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbZCJRnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbZCJRpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757067AbZCJRnp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 13:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbZCJRng
+	id S1757019AbZCJRpS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 13:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbZCJRpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 13:43:36 -0400
-Received: from mga03.intel.com ([143.182.124.21]:22293 "EHLO mga03.intel.com"
+	Tue, 10 Mar 2009 13:45:04 -0400
+Received: from waste.org ([66.93.16.53]:48479 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755569AbZCJRng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 13:43:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,336,1233561600"; 
-   d="scan'208";a="118784068"
-Subject: Re: 2.6.29 pat issue
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Thomas Hellstrom <thellstrom@vmware.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Nick Piggin <npiggin@suse.de>
-In-Reply-To: <49B6232B.4050503@vmware.com>
-References: <498ADFE3.9020907@vmware.com>
-	 <1233856988.4286.83.camel@localhost.localdomain>
-	 <498B5ADE.3090602@vmware.com> <m1tz78pdwy.fsf@fess.ebiederm.org>
-	 <498C062C.201@vmware.com> <20090304060857.GA18318@linux-os.sc.intel.com>
-	 <130CA3A191875048A0624FB523A55EC7075DA7CA@PA-EXMBX51.vmware.com>
-	 <20090310013953.GA11312@linux-os.sc.intel.com>
-	 <49B6232B.4050503@vmware.com>
+	id S1755140AbZCJRpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 13:45:03 -0400
+Subject: Re: PROBLEM: kernel BUG at mm/slab.c:3002!
+From: Matt Mackall <mpm@selenic.com>
+To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       cl@linux-foundation.org, penberg@cs.helsinki.fi, linux-mm@kvack.org
+In-Reply-To: <49B6A374.6040805@hp.com>
+References: <49B68450.9000505@hp.com> <1236705532.3205.14.camel@calx>
+	 <49B6A374.6040805@hp.com>
 Content-Type: text/plain
-Date: Tue, 10 Mar 2009 10:42:39 -0700
-Message-Id: <1236706959.4529.56.camel@localhost.localdomain>
+Date: Tue, 10 Mar 2009 12:43:50 -0500
+Message-Id: <1236707030.3205.21.camel@calx>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-10 at 01:22 -0700, Thomas Hellstrom wrote:
-> Pallipadi, Venkatesh wrote:
-> > On Fri, Mar 06, 2009 at 03:44:07PM -0800, Thomas Hellstrom wrote:
-> >   
-> >> We get the warning when we insert RAM pages using vm_insert_pfn().
-> >> Having normal RAM pages backing a PFN papping is a valid thing.
-> >>
-> >>     
-> >
-> > OK. Below is the updated patch that should fix this fully. Can you confirm?
-> >
-> > Thanks,
-> > Venki
-> >
-> >   
+On Tue, 2009-03-10 at 13:29 -0400, Alan D. Brunelle wrote:
+> Matt Mackall wrote:
+> > On Tue, 2009-03-10 at 11:16 -0400, Alan D. Brunelle wrote:
+> >> Running blktrace & I/O loads cause a kernel BUG at mm/slab.c:3002!.
+> > 
+> > Pid: 11346, comm: blktrace Tainted: G    B      2.6.29-rc7 #3 ProLiant
+> > DL585 G5   
+> > 
+> > That 'B' there indicates you've hit 'bad page' before this. That bug
+> > seems to be strongly correlated with some form of hardware trouble.
+> > Unfortunately, that makes everything after that point a little suspect.
 > 
-> Yes, this patch should fix the problem. I'm still concerned about the 
-> overhead of going through the
-> RAM test for each inserted page.
 > 
-> Why can't a pfn_valid() test be used in vm_insert_pfn()?
-> 
+> /If/ it were a hardware issue, that might explain the subsequent issue
+> when I switched to SLUB instead...
 
-Because we may have to track the RAM pages as well in future. We are
-changing the e820 RAM check and making it use pfn_valid. But, for that
-we have to change more things in tracking of RAM pages. Today we use one
-bit in page struct without any refcounting. But, more changes there are
-on ts way. This change here should keep the current kernel fine without
-any regression.
+Well it was almost certainly not a bug in SLAB itself (and your SLUB
+test is obviously quite conclusive there). We'd have lots of reports.
+It's probably too early to conclude it's hardware though.
 
-Thanks,
-Venki
+> How does one look for "bad page reports"?
+
+It'll look something like this (pasted from Google):
+
+>>     kernel: Bad page state at free_hot_cold_page (in process 'beam',
+>> page c1a95320)
+>>     kernel: flags:0x40020118 mapping:f401adc0 mapped:0 count:0
+>> private:0x00000000
+
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
 
