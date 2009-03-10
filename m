@@ -1,800 +1,577 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbZCJPQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbZCJPQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755036AbZCJPQG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 11:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbZCJPPx
+	id S1755945AbZCJPQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 11:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbZCJPQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 11:15:53 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:37701 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752556AbZCJPPv (ORCPT
+	Tue, 10 Mar 2009 11:16:47 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:20453 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753827AbZCJPQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 11:15:51 -0400
-Date: Tue, 10 Mar 2009 16:15:42 +0100
-From: Daniel Mack <daniel@caiaq.de>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: Jean Delvare <khali@linux-fr.org>, linux-i2c@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Added driver for ISL29003 ambient light sensor
-Message-ID: <20090310151542.GE9564@buzzloop.caiaq.de>
-References: <1235606248-13004-1-git-send-email-daniel@caiaq.de> <20090226094857.50d0710d@hyperion.delvare> <20090306160042.GA17800@buzzloop.caiaq.de> <20090306182432.338b0244@hyperion.delvare> <20090306181409.GA20135@buzzloop.caiaq.de> <20090307115449.32f0ab26@hyperion.delvare> <20090307120631.GA25276@buzzloop.caiaq.de> <20090307130818.367bcaad@hyperion.delvare> <20090309210901.GC31367@buzzloop.caiaq.de> <49B666F9.50209@cam.ac.uk>
+	Tue, 10 Mar 2009 11:16:44 -0400
+Message-ID: <49B68450.9000505@hp.com>
+Date: Tue, 10 Mar 2009 11:16:32 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B666F9.50209@cam.ac.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: cl@linux-foundation.org, penberg@cs.helsinki.fi, mpm@selenic.com,
+       linux-mm@kvack.org
+Subject: PROBLEM: kernel BUG at mm/slab.c:3002!
+Content-Type: multipart/mixed;
+ boundary="------------070006050408000404030204"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jonathan,
+This is a multi-part message in MIME format.
+--------------070006050408000404030204
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-many thanks for your review!
+Running blktrace & I/O loads cause a kernel BUG at mm/slab.c:3002!.
 
-On Tue, Mar 10, 2009 at 01:11:21PM +0000, Jonathan Cameron wrote:
-> I notice that this device is extremely similar to the ISL29004 where only
-> differences being with i2c address selection (that one has some pins to
-> allow more than one option).  Worth rolling support for that device in
-> here?
+I'm running some moderate I/O loads (using 12 devices behind a Smart
+Array on a 16-way x86_64 box, I'm doing asynchronous direct sequential
+reads to each disk in parallel), and whilst attempting to get blktrace
+data I routinely run into this.
 
-Well, the I2C address isn't coded in the driver but defined in the
-i2c_board_info array of the board support file, so there is no reason
-why it shouldn't work. Or are you talking about the names of files and
-functions that you would like to see reflecting this?
+I first started seeing this in 2.6.29-rc6, so I bumped to 2.6.29-rc7 and
+ made a couple of successful runs, then ran into it again. (I've
+attached the script I was using, but I'm not sure it's very helpful...)
 
-> This device has some interesting interrupt / timing options which will fit
-> nicely in the IIO framework.  For now the driver sensibly ignores them
-> entirely. (if you don't need them, why bother?)
+The environment the system under test is in is rather difficult to
+bisect in, but if need be, I can certainly go through the (painful)
+motions to do so...
 
-Right, I don't need them personally, and things are not connected to
-the CPU, so I can't test that. I would expect anyone who needs this
-functions to add support to the code :)
+I only ran this a couple of times on 2.6.27.7-4 (SLESS 11 b6 kernel),
+and both times it worked there - not sure how far back the problem occurs...
 
-> > +The ISL29003 does not have an ID register which could be used to identify
-> > +it, so the detection routine will just try to read from the configured I2C
-> > +addess and consider the device to be present as soon as it ACKs the
-> > +transfer.
-> This is a little nasty given the chances of something else sitting on that
-> address, but not much else you can do.
+I'm open to any SLAB debug tracing options that may help with this...
 
-True.
+Alan D.Brunelle
+Hewlett-Packard
 
-> Some of the following are acting only as documentation. It's
-> a matter of personal preference whether you specify them.
+--------------070006050408000404030204
+Content-Type: text/x-log;
+ name="seatpost.log"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline;
+ filename="seatpost.log"
 
-I defined them to make future feature additions easy ...
+------------[ cut here ]------------
+kernel BUG at mm/slab.c:3002!
+invalid opcode: 0000 [#1] SMP 
+last sysfs file: /sys/devices/system/cpu/cpu15/cache/index2/shared_cpu_map
+CPU 6 
+Modules linked in: xfs exportfs fuse ext2 loop dm_mod sd_mod crc_t10dif bnx2 ipmi_si sg qla2xxx shpchp scsi_transport_fc sr_mod rtc_cmos button container ipmi_msghandler hpilo hpwdt rtc_core pci_hotplug pcspkr rtc_lib cdrom scsi_tgt serio_raw usbhid hid ehci_hcd uhci_hcd ohci_hcd usbcore edd ext3 mbcache jbd fan ide_pci_generic amd74xx ide_core pata_amd thermal processor thermal_sys hwmon cciss ata_generic libata scsi_mod
+Pid: 11346, comm: blktrace Tainted: G    B      2.6.29-rc7 #3 ProLiant DL585 G5   
+RIP: 0010:[<ffffffff802c5099>]  [<ffffffff802c5099>] cache_alloc_refill+0x107/0x229
+RSP: 0018:ffff88081384d9e8  EFLAGS: 00010046
+RAX: 0000000000000070 RBX: ffff88187fc01340 RCX: 0000000000000015
+RDX: ffff88187c032000 RSI: ffff88187c682000 RDI: ffff88187fc01350
+RBP: ffff88081384da28 R08: ffff88187fc01360 R09: 00000000000000d2
+R10: ffff8817f4b9eabf R11: 000000000000000a R12: ffff88187c762c00
+R13: 0000000000000027 R14: ffff88087fc00040 R15: 00000000000492d0
+FS:  00007f3b2d6806f0(0000) GS:ffff88187c7671c0(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00007f3b2d022f30 CR3: 000000183c883000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process blktrace (pid: 11346, threadinfo ffff88081384c000, task ffff88082e5ae140)
+Stack:
+ ffff88081384da78 ffffffff802b7061 000000021384da18 0000000000000002
+ ffff88087fc00040 00000000000080d0 0000000000000292 ffff88181f992ec0
+ ffff88081384da68 ffffffff802c4cb1 0000000077c6c910 ffff88187a89fc80
+Call Trace:
+ [<ffffffff802b7061>] ? alloc_vmap_area+0x1fe/0x211
+ [<ffffffff802c4cb1>] kmem_cache_alloc_node+0x9a/0xe6
+ [<ffffffff80289a49>] ? relay_open_buf+0x9f/0x23c
+ [<ffffffff802c56a2>] __kmalloc_node+0x43/0x45
+ [<ffffffff802b79af>] __vmalloc_area_node+0x76/0x14b
+ [<ffffffff80289a49>] ? relay_open_buf+0x9f/0x23c
+ [<ffffffff802b7b00>] __vmalloc_node+0x7c/0x8c
+ [<ffffffff80289a49>] ? relay_open_buf+0x9f/0x23c
+ [<ffffffff802b7c34>] vmalloc+0x1f/0x21
+ [<ffffffff80289a49>] relay_open_buf+0x9f/0x23c
+ [<ffffffff8028a4b3>] relay_open+0x144/0x218
+ [<ffffffff8036a643>] do_blk_trace_setup+0x1a4/0x59b
+ [<ffffffff8036aa7e>] blk_trace_setup+0x44/0x75
+ [<ffffffff8036ad56>] blk_trace_ioctl+0x9a/0xcf
+ [<ffffffff802d4685>] ? path_put+0x2c/0x30
+ [<ffffffff80361dd8>] blkdev_ioctl+0x803/0x853
+ [<ffffffff802d615b>] ? putname+0x30/0x39
+ [<ffffffff802d80be>] ? user_path_at+0x5d/0x8c
+ [<ffffffff802e2e67>] ? mntput_no_expire+0x31/0x18f
+ [<ffffffff802d4685>] ? path_put+0x2c/0x30
+ [<ffffffff802f10f3>] block_ioctl+0x38/0x3c
+ [<ffffffff802d9690>] vfs_ioctl+0x2a/0x78
+ [<ffffffff802d9b24>] do_vfs_ioctl+0x446/0x482
+ [<ffffffff8024ff46>] ? do_sigaction+0x166/0x187
+ [<ffffffff802d9bb5>] sys_ioctl+0x55/0x77
+ [<ffffffff8020c42a>] system_call_fastpath+0x16/0x1b
+Code: 00 00 00 48 8b 33 48 39 de 75 14 48 8b 73 20 c7 43 60 01 00 00 00 4c 39 c6 0f 84 a6 00 00 00 8b 46 20 41 3b 86 18 10 00 00 72 33 <0f> 0b eb fe ff c0 41 8b 0c 24 41 8b 96 0c 10 00 00 89 46 20 8b 
+RIP  [<ffffffff802c5099>] cache_alloc_refill+0x107/0x229
+ RSP <ffff88081384d9e8>
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+hpwdt: An NMI occurred, but unable to determine source.
+Initializing cgroup subsys cpuset
+Initializing cgroup subsys cpu
+Linux version 2.6.29-rc7 (root@seatpost) (gcc version 4.3.2 [gcc-4_3-branch revision 141291] (SUSE Linux) ) #3 SMP Tue Mar 10 10:15:07 EDT 2009
+Command line: root=/dev/cciss/c0d2p3 text resume=/dev/cciss/c0d2p2  vga=0x317 console=ttyS1,115200N8 elevator=deadline sysrq=1 reset_devices irqpoll maxcpus=1  memmap=exactmap memmap=640K@0K memmap=130412K@17024K elfcorehdr=147436K memmap=32K#2095416K
+KERNEL supported cpus:
+  Intel GenuineIntel
+  AMD AuthenticAMD
+  Centaur CentaurHauls
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000100 - 000000000009f400 (usable)
+ BIOS-e820: 000000000009f400 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 000000007fe4e000 (usable)
+ BIOS-e820: 000000007fe4e000 - 000000007fe56000 (ACPI data)
+ BIOS-e820: 000000007fe56000 - 000000007fe57000 (usable)
+ BIOS-e820: 000000007fe57000 - 0000000080000000 (reserved)
+ BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+ BIOS-e820: 00000000fec00000 - 00000000fed00000 (reserved)
+ BIOS-e820: 00000000fee00000 - 00000000fee10000 (reserved)
+ BIOS-e820: 00000000ffc00000 - 0000000100000000 (reserved)
+ BIOS-e820: 0000000100000000 - 000000207ffff000 (usable)
+last_pfn = 0x207ffff max_arch_pfn = 0x100000000
+user-defined physical RAM map:
+ user: 0000000000000000 - 00000000000a0000 (usable)
+ user: 00000000010a0000 - 0000000008ffb000 (usable)
+ user: 000000007fe4e000 - 000000007fe56000 (ACPI data)
+DMI 2.4 present.
+last_pfn = 0x8ffb max_arch_pfn = 0x100000000
+x86 PAT enabled: cpu 0, old 0x7010600070106, new 0x7010600070106
+init_memory_mapping: 0000000000000000-0000000008ffb000
+Using GB pages for direct mapping
+last_map_addr: 8ffb000 end: 8ffb000
+RAMDISK: 08601000 - 08fef000
+ACPI: RSDP 000F4F00, 0024 (r2 HP    )
+ACPI: XSDT 7FE4ED00, 0074 (r1 HP     ProLiant        2   Ò     162E)
+ACPI: FACP 7FE4ED80, 00F4 (r3 HP     A07             2   Ò     162E)
+FADT: X_PM1a_EVT_BLK.bit_width (16) does not match PM1_EVT_LEN (4)
+ACPI: DSDT 7FE4EE80, 4958 (r1 HP         DSDT        1 INTL 20030228)
+ACPI: FACS 7FE4E100, 0040
+ACPI: SPCR 7FE4E140, 0050 (r1 HP     SPCRRBSU        1   Ò     162E)
+ACPI: HPET 7FE4E1C0, 0038 (r1 HP     ProLiant        2   Ò     162E)
+ACPI: SPMI 7FE4E200, 0040 (r5 HP     ProLiant        1   Ò     162E)
+ACPI: ERST 7FE4E240, 01D0 (r1 HP     ProLiant        1   Ò     162E)
+ACPI: APIC 7FE4E440, 0106 (r1 HP     ProLiant        2             0)
+ACPI: SRAT 7FE4E580, 0220 (r1 AMD    HAMMER          1 AMD         1)
+ACPI: FFFF 7FE4E980, 0176 (r1 HP     ProLiant        1   Ò     162E)
+ACPI: BERT 7FE4EB00, 0030 (r1 HP     ProLiant        1   Ò     162E)
+ACPI: HEST 7FE4EB40, 018C (r1 HP     ProLiant        1   Ò     162E)
+SRAT: PXM 0 -> APIC 0 -> Node 0
+SRAT: PXM 0 -> APIC 1 -> Node 0
+SRAT: PXM 0 -> APIC 2 -> Node 0
+SRAT: PXM 0 -> APIC 3 -> Node 0
+SRAT: PXM 1 -> APIC 4 -> Node 1
+SRAT: PXM 1 -> APIC 5 -> Node 1
+SRAT: PXM 1 -> APIC 6 -> Node 1
+SRAT: PXM 1 -> APIC 7 -> Node 1
+SRAT: PXM 2 -> APIC 8 -> Node 2
+SRAT: PXM 2 -> APIC 9 -> Node 2
+SRAT: PXM 2 -> APIC 10 -> Node 2
+SRAT: PXM 2 -> APIC 11 -> Node 2
+SRAT: PXM 3 -> APIC 12 -> Node 3
+SRAT: PXM 3 -> APIC 13 -> Node 3
+SRAT: PXM 3 -> APIC 14 -> Node 3
+SRAT: PXM 3 -> APIC 15 -> Node 3
+SRAT: Node 0 PXM 0 0-a0000
+SRAT: Node 0 PXM 0 100000-80000000
+SRAT: Node 0 PXM 0 100000000-880000000
+SRAT: Node 1 PXM 1 880000000-1080000000
+SRAT: Node 2 PXM 2 1080000000-1880000000
+SRAT: Node 3 PXM 3 1880000000-2080000000
+Bootmem setup node 0 0000000000000000-0000000008ffb000
+  NODE_DATA [000000000004a080 - 000000000006207f]
+  bootmap [0000000000063000 -  00000000000641ff] pages 2
+(7 early reservations) ==> bootmem [0000000000 - 0008ffb000]
+  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+  #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
+  #2 [0001200000 - 0001afcbac]    TEXT DATA BSS ==> [0001200000 - 0001afcbac]
+  #3 [0008601000 - 0008fef000]          RAMDISK ==> [0008601000 - 0008fef000]
+  #4 [000009f400 - 0000100000]    BIOS reserved ==> [000009f400 - 0000100000]
+  #5 [0000008000 - 0000009000]          PGTABLE ==> [0000008000 - 0000009000]
+  #6 [0000009000 - 000004a080]       MEMNODEMAP ==> [0000009000 - 000004a080]
+found SMP MP-table at [ffff8800000f4f80] 000f4f80
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00001000
+  DMA32    0x00001000 -> 0x00100000
+  Normal   0x00100000 -> 0x00100000
+Movable zone start PFN for each node
+early_node_map[2] active PFN ranges
+    0: 0x00000000 -> 0x000000a0
+    0: 0x000010a0 -> 0x00008ffb
+ACPI: PM-Timer IO Port: 0x908
+ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+ACPI: LAPIC (acpi_id[0x04] lapic_id[0x04] enabled)
+ACPI: LAPIC (acpi_id[0x08] lapic_id[0x08] enabled)
+ACPI: LAPIC (acpi_id[0x0c] lapic_id[0x0c] enabled)
+ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+ACPI: LAPIC (acpi_id[0x05] lapic_id[0x05] enabled)
+ACPI: LAPIC (acpi_id[0x09] lapic_id[0x09] enabled)
+ACPI: LAPIC (acpi_id[0x0d] lapic_id[0x0d] enabled)
+ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] enabled)
+ACPI: LAPIC (acpi_id[0x06] lapic_id[0x06] enabled)
+ACPI: LAPIC (acpi_id[0x0a] lapic_id[0x0a] enabled)
+ACPI: LAPIC (acpi_id[0x0e] lapic_id[0x0e] enabled)
+ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] enabled)
+ACPI: LAPIC (acpi_id[0x07] lapic_id[0x07] enabled)
+ACPI: LAPIC (acpi_id[0x0b] lapic_id[0x0b] enabled)
+ACPI: LAPIC (acpi_id[0x0f] lapic_id[0x0f] enabled)
+ACPI: LAPIC_NMI (acpi_id[0xff] dfl dfl lint[0x1])
+ACPI: IOAPIC (id[0x08] address[0xd97f0000] gsi_base[0])
+IOAPIC[0]: apic_id 8, version 0, address 0xd97f0000, GSI 0-23
+ACPI: IOAPIC (id[0x09] address[0xd9fd0000] gsi_base[24])
+IOAPIC[1]: apic_id 9, version 0, address 0xd9fd0000, GSI 24-30
+ACPI: IOAPIC (id[0x0a] address[0xd9fe0000] gsi_base[31])
+IOAPIC[2]: apic_id 10, version 0, address 0xd9fe0000, GSI 31-37
+ACPI: IOAPIC (id[0x0b] address[0xd9ff0000] gsi_base[38])
+IOAPIC[3]: apic_id 11, version 0, address 0xd9ff0000, GSI 38-61
+ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 0 high edge)
+ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
+ACPI: NMI_SRC (dfl dfl global_irq 28)
+ACPI: NMI_SRC (dfl dfl global_irq 35)
+Using ACPI (MADT) for SMP configuration information
+ACPI: HPET id: 0x10228201 base: 0xfed00000
+SMP: Allowing 16 CPUs, 0 hotplug CPUs
+PM: Registered nosave memory: 00000000000a0000 - 00000000010a0000
+Allocating PCI resources starting at 80000000 (gap: 7fe56000:801aa000)
+NR_CPUS:512 nr_cpumask_bits:512 nr_cpu_ids:16 nr_node_ids:1
+PERCPU: Allocating 65536 bytes of per cpu data
+Built 1 zonelists in Node order, mobility grouping on.  Total pages: 32259
+Policy zone: DMA32
+Kernel command line: root=/dev/cciss/c0d2p3 text resume=/dev/cciss/c0d2p2  vga=0x317 console=ttyS1,115200N8 elevator=deadline sysrq=1 reset_devices irqpoll maxcpus=1  memmap=exactmap memmap=640K@0K memmap=130412K@17024K elfcorehdr=147436K memmap=32K#2095416K
+Misrouted IRQ fixup and polling support enabled
+This may significantly impact system performance
+Initializing CPU#0
+PID hash table entries: 512 (order: 9, 4096 bytes)
+Extended CMOS year: 2000
+Fast TSC calibration using PIT
+Detected 2308.603 MHz processor.
+Spurious LAPIC timer interrupt on cpu 0
+Console: colour dummy device 80x25
+console [ttyS1] enabled
+allocated 2621440 bytes of page_cgroup
+please try cgroup_disable=memory option if you don't want
+Checking aperture...
+No AGP bridge found
+Node 0: aperture @ 20000000 size 64 MB
+Node 1: aperture @ 20000000 size 64 MB
+Node 2: aperture @ 20000000 size 64 MB
+Node 3: aperture @ 20000000 size 64 MB
+Memory: 103560k/147436k available (2777k kernel code, 16384k absent, 27492k reserved, 2461k data, 1500k init)
+HPET: 3 timers in total, 0 timers will be used for per-cpu timer
+Calibrating delay loop (skipped), value calculated using timer frequency.. 4617.19 BogoMIPS (lpj=9234388)
+Security Framework initialized
+SELinux:  Disabled at boot.
+Dentry cache hash table entries: 16384 (order: 5, 131072 bytes)
+Inode-cache hash table entries: 8192 (order: 4, 65536 bytes)
+Mount-cache hash table entries: 256
+Initializing cgroup subsys ns
+Initializing cgroup subsys cpuacct
+Initializing cgroup subsys memory
+Initializing cgroup subsys devices
+Initializing cgroup subsys freezer
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 512K (64 bytes/line)
+CPU 0/0x9 -> Node 0
+CPU: Physical Processor ID: 2
+CPU: Processor Core ID: 1
+using C1E aware idle routine
+SMP alternatives: switching to UP code
+ACPI: Core revision 20081204
+Setting APIC routing to physical flat
+..TIMER: vector=0x30 apic1=0 pin1=0 apic2=-1 pin2=-1
+CPU0: Quad-Core AMD Opteron(tm) Processor 8356 stepping 03
+Brought up 1 CPUs
+Total of 1 processors activated (4617.19 BogoMIPS).
+net_namespace: 1840 bytes
+Booting paravirtualized kernel on bare hardware
+NET: Registered protocol family 16
+TOM: 0000000080000000 aka 2048M
+TOM2: 0000002080000000 aka 133120M
+ACPI: bus type pci registered
+PCI: Using configuration type 1 for base access
+PCI: Using configuration type 1 for extended access
+bio: create slab <bio-0> at 0
+ACPI: Interpreter enabled
+ACPI: (supports S0 S4 S5)
+ACPI: Using IOAPIC for interrupt routing
+ACPI: No dock devices found.
+ACPI: PCI Root Bridge [PCI0] (0000:00)
+pci 0000:00:02.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:00:02.0: PME# disabled
+pci 0000:00:02.1: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:00:02.1: PME# disabled
+pci 0000:00:0c.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:00:0c.0: PME# disabled
+pci 0000:00:0d.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:00:0d.0: PME# disabled
+pci 0000:00:0e.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:00:0e.0: PME# disabled
+pci 0000:01:04.0: PME# supported from D0 D3hot D3cold
+pci 0000:01:04.0: PME# disabled
+pci 0000:01:04.2: PME# supported from D0 D3hot D3cold
+pci 0000:01:04.2: PME# disabled
+pci 0000:01:04.4: PME# supported from D0 D3hot D3cold
+pci 0000:01:04.4: PME# disabled
+pci 0000:01:04.6: PME# supported from D0 D3hot D3cold
+pci 0000:01:04.6: PME# disabled
+pci 0000:00:09.0: transparent bridge
+pci 0000:08:00.0: disabling ASPM on pre-1.1 PCIe device.  You can enable it with 'pcie_aspm=force'
+pci 0000:05:00.0: disabling ASPM on pre-1.1 PCIe device.  You can enable it with 'pcie_aspm=force'
+pci 0000:02:00.0: disabling ASPM on pre-1.1 PCIe device.  You can enable it with 'pcie_aspm=force'
+ACPI: PCI Root Bridge [PCI1] (0000:40)
+pci 0000:40:0b.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:40:0b.0: PME# disabled
+pci 0000:40:0c.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:40:0c.0: PME# disabled
+pci 0000:40:0d.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:40:0d.0: PME# disabled
+pci 0000:40:0e.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:40:0e.0: PME# disabled
+pci 0000:40:10.0: Enabling HT MSI Mapping
+pci 0000:40:11.0: Enabling HT MSI Mapping
+pci 0000:4f:00.0: disabling ASPM on pre-1.1 PCIe device.  You can enable it with 'pcie_aspm=force'
+pci 0000:4c:00.0: disabling ASPM on pre-1.1 PCIe device.  You can enable it with 'pcie_aspm=force'
+pci 0000:49:00.0: disabling ASPM on pre-1.1 PCIe device.  You can enable it with 'pcie_aspm=force'
+pci 0000:46:00.0: disabling ASPM on pre-1.1 PCIe device.  You can enable it with 'pcie_aspm=force'
+pci 0000:41:01.0: PME# supported from D3hot D3cold
+pci 0000:41:01.0: PME# disabled
+pci 0000:41:02.0: PME# supported from D3hot D3cold
+pci 0000:41:02.0: PME# disabled
+ACPI: PCI Interrupt Link [LNKW] (IRQs *16)
+ACPI: PCI Interrupt Link [LNKX] (IRQs *17)
+ACPI: PCI Interrupt Link [LNKY] (IRQs *18)
+ACPI: PCI Interrupt Link [LNKZ] (IRQs *19)
+ACPI: PCI Interrupt Link [LNU0] (IRQs *22)
+ACPI: PCI Interrupt Link [LNU2] (IRQs *23)
+ACPI: PCI Interrupt Link [LNKA] (IRQs *54)
+ACPI: PCI Interrupt Link [LNKB] (IRQs *55)
+ACPI: PCI Interrupt Link [LNKC] (IRQs *56)
+ACPI: PCI Interrupt Link [LNKD] (IRQs *57)
+PCI: Using ACPI for IRQ routing
+hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
+hpet0: 3 comparators, 32-bit 25.000000 MHz counter
+pnp: PnP ACPI init
+ACPI: bus type pnp registered
+pnp: PnP ACPI: found 15 devices
+ACPI: ACPI bus type pnp unregistered
+system 00:01: ioport range 0x408-0x40f has been reserved
+system 00:01: ioport range 0x4d0-0x4d1 has been reserved
+system 00:01: ioport range 0x700-0x73f has been reserved
+system 00:01: ioport range 0x800-0x8fe has been reserved
+system 00:01: ioport range 0x900-0x9fe has been reserved
+system 00:01: ioport range 0x9ff-0x9ff has been reserved
+system 00:01: ioport range 0xa00-0xafe has been reserved
+system 00:01: ioport range 0xaff-0xaff has been reserved
+system 00:01: ioport range 0xb00-0xbfe has been reserved
+system 00:01: ioport range 0xbff-0xbff has been reserved
+system 00:01: ioport range 0xc80-0xc83 has been reserved
+system 00:01: ioport range 0xcd4-0xcd7 has been reserved
+system 00:01: ioport range 0xcf9-0xcf9 could not be reserved
+system 00:01: ioport range 0xf50-0xf58 has been reserved
+system 00:01: ioport range 0xca0-0xca1 has been reserved
+system 00:01: ioport range 0xca4-0xca5 has been reserved
+system 00:01: ioport range 0xc00-0xc03 has been reserved
+system 00:01: ioport range 0x2f8-0x2ff has been reserved
+pci 0000:00:09.0: PCI bridge, secondary bus 0000:01
+pci 0000:00:09.0:   IO window: 0x1000-0x2fff
+pci 0000:00:09.0:   MEM window: 0xd9800000-0xd99fffff
+pci 0000:00:09.0:   PREFETCH window: 0x000000d0000000-0x000000d7ffffff
+pci 0000:00:0c.0: PCI bridge, secondary bus 0000:08
+pci 0000:00:0c.0:   IO window: 0x5000-0x5fff
+pci 0000:00:0c.0:   MEM window: 0xd9d00000-0xd9efffff
+pci 0000:00:0c.0:   PREFETCH window: 0x00000080000000-0x000000800fffff
+pci 0000:00:0d.0: PCI bridge, secondary bus 0000:05
+pci 0000:00:0d.0:   IO window: 0x4000-0x4fff
+pci 0000:00:0d.0:   MEM window: 0xd9c00000-0xd9cfffff
+pci 0000:00:0d.0:   PREFETCH window: 0x00000080100000-0x000000801fffff
+pci 0000:00:0e.0: PCI bridge, secondary bus 0000:02
+pci 0000:00:0e.0:   IO window: 0x3000-0x3fff
+pci 0000:00:0e.0:   MEM window: 0xd9a00000-0xd9bfffff
+pci 0000:00:0e.0:   PREFETCH window: 0x00000080200000-0x000000802fffff
+pci 0000:40:0b.0: PCI bridge, secondary bus 0000:4f
+pci 0000:40:0b.0:   IO window: 0x9000-0x9fff
+pci 0000:40:0b.0:   MEM window: 0xdfe00000-0xdfefffff
+pci 0000:40:0b.0:   PREFETCH window: 0x000000d9f00000-0x000000d9ffffff
+pci 0000:40:0c.0: PCI bridge, secondary bus 0000:4c
+pci 0000:40:0c.0:   IO window: 0x8000-0x8fff
+pci 0000:40:0c.0:   MEM window: 0xdfd00000-0xdfdfffff
+pci 0000:40:0c.0:   PREFETCH window: 0x000000de000000-0x000000de0fffff
+pci 0000:40:0d.0: PCI bridge, secondary bus 0000:49
+pci 0000:40:0d.0:   IO window: 0x7000-0x7fff
+pci 0000:40:0d.0:   MEM window: 0xdfc00000-0xdfcfffff
+pci 0000:40:0d.0:   PREFETCH window: 0x000000de100000-0x000000de1fffff
+pci 0000:40:0e.0: PCI bridge, secondary bus 0000:46
+pci 0000:40:0e.0:   IO window: 0x6000-0x6fff
+pci 0000:40:0e.0:   MEM window: 0xdfa00000-0xdfbfffff
+pci 0000:40:0e.0:   PREFETCH window: 0x000000de200000-0x000000de2fffff
+pci 0000:40:10.0: PCI bridge, secondary bus 0000:41
+pci 0000:40:10.0:   IO window: disabled
+pci 0000:40:10.0:   MEM window: 0xda000000-0xddffffff
+pci 0000:40:10.0:   PREFETCH window: 0x000000de300000-0x000000de3fffff
+pci 0000:40:11.0: PCI bridge, secondary bus 0000:42
+pci 0000:40:11.0:   IO window: disabled
+pci 0000:40:11.0:   MEM window: disabled
+pci 0000:40:11.0:   PREFETCH window: disabled
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 1, 8192 bytes)
+TCP established hash table entries: 4096 (order: 4, 65536 bytes)
+TCP bind hash table entries: 4096 (order: 4, 65536 bytes)
+TCP: Hash tables configured (established 4096 bind 4096)
+TCP reno registered
+NET: Registered protocol family 1
+Unpacking initramfs...<0>Kernel panic - not syncing: invalid compressed format (err=1)
 
-> > +#define ISL29003_REG_COMMAND		0x00
-> > +#define ISL29003_ADC_ENABLED		(1 << 7)
-> > +#define ISL29003_ADC_PD			(1 << 6)
-> > +#define ISL29003_TIMING_INT		(1 << 5)
-> > +#define ISL29003_MODE_SHIFT		(2)
-> > +#define ISL29003_MODE_MASK		(0x3 << ISL29003_MODE_SHIFT)
-> > +#define ISL29003_RES_SHIFT		(0)
-> > +#define ISL29003_RES_MASK		(0x3 << ISL29003_RES_SHIFT)
+--------------070006050408000404030204
+Content-Type: text/plain;
+ name="ver_linux.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ver_linux.txt"
 
-[...]
-
-> > +static int __isl29003_write_reg(struct i2c_client *client,
-> > +				u32 reg, u8 mask, u8 shift, u8 val)
-> > +{
-> > +	struct isl29003_data *data = i2c_get_clientdata(client);
-> > +	int ret = 0;
-> > +	u8 tmp;
-> > +
-> > +	mutex_lock(&data->lock);
-> > +
-> > +	tmp = data->reg_cache[reg];
-> > +	tmp &= ~mask;
-> > +	tmp |= val << shift;
-> > +
-> > +	ret = i2c_smbus_write_byte_data(client, reg, tmp);
-> As i2c_smbus_write_byte_data is defined as returning zero on success
-> this could simply be, if (!ret).
-
-Fixed.
-
-> > +}
-> > +
-> > +/* power_state */
-> > +static int isl29003_set_power_state(struct i2c_client *client, int state)
-> > +{
-> > +	int ret;
-> > +
-> > +	ret = __isl29003_write_reg(client, ISL29003_REG_COMMAND,
-> > +		ISL29003_ADC_ENABLED, 0, state);
-> As this is either 0 or less than zero, again if (ret) will suffice.
-
-Fixed.
-
-> > +	if (ret < 0)
-> > +		return ret;
-> > +
-> > +	ret = __isl29003_write_reg(client, ISL29003_REG_COMMAND,
-> > +		ISL29003_ADC_PD, 0, ~state);
-> Just return ret hence losing these 2 lines.
-
-Fixed.
-
-> > +	if (ret < 0)
-> > +		return ret;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int isl29003_get_power_state(struct i2c_client *client)
-> > +{
-> > +	struct isl29003_data *data = i2c_get_clientdata(client);
-> > +	u8 cmdreg = data->reg_cache[ISL29003_REG_COMMAND];
-> > +	return (cmdreg & ISL29003_ADC_ENABLED) && (~cmdreg & ISL29003_ADC_PD);
-> > +}
-> Unfortunately this chip has gain controlled by combination of the i2c
-> accessed registers and an external resitor.  I guess this falls
-> into the category of things to be fixed in userspace.  Perhaps
-> some documentation to indicate this issue would help?
-> (table 9 of data sheet)
-
-The resistor does not affect the value read from the register - it's
-about integration time only. Or did I get it wrong?
-
-> > +	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 3))
-> > +		return -EINVAL;
-> See as there are rather a lot of calls like this, why don't
-> you consider moving this test into the register write command.
-> If the device is powered up then it will get copied to the
-> device. If not, just store it in the cache and it will be
-> written on resume anyway (assuming my understanding of your
-> suspend resume code is right!)
-
-It's not even necessary to do that - the driver can access all registers
-while the PD bit is set. So the only check is to not read sensor data
-when this condition is matched.
-
-> > +static ssize_t isl29003_store_power_state(struct device *dev,
-> > +					  struct device_attribute *attr,
-> > +					  const char *buf, size_t count)
-> > +{
-> > +	struct i2c_client *client = to_i2c_client(dev);
-> > +	unsigned long val;
-> > +	int ret;
-> > +	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 1))
-> > +		return -EINVAL;
-> > +
-> > +	ret = isl29003_set_power_state(client, val);
-> > +	if (ret < 0)
-> > +		return ret;
-> I'd go with more concise "return ret ? ret : count;" but thats down
-> to personal preference.
-
-Fixed.
-
-> > +	/* read all the registers once to fill the cache.
-> > +	 * if one of the reads fails, we consider the init failed */
-> 
-> Why are you caching registers 4-7?  They are read only data registers
-> and those you use are read on demand anyway.  It's not a problem here,
-> but worth noting that even the first 2 are not simply read / write
-> control registers and hence any caching method has to be very careful
->   (there is a interrupt flag in control according to the data sheet.)
-
-You're right. I changed the cache to only store the first 4 registers
-for now. Interrupt handling will need some extra work anyway, so I'll
-leave that for now.
-
-> If we are restoring registers from cache, why are we reading them?
-> 
-> > +	for (i = 0; i < ARRAY_SIZE(data->reg_cache); i++)
-> > +		if (i2c_smbus_read_byte_data(client, i, data->reg_cache[i]) < 0)
-> > +			return -ENODEV;
-
-Typo - couldn't test the suspend/resume code yet. Fixed now.
-
-Please see the patch below.
-
-Thanks again,
-Daniel
-
-
->From 8ee5021834900f312ff26cd2586c18e99af31a5d Mon Sep 17 00:00:00 2001
-From: Daniel Mack <daniel@caiaq.de>
-Date: Tue, 10 Mar 2009 16:13:07 +0100
-Subject: [PATCH] Added driver for ISL29003 ambient light sensor
-
-This patch adds a driver for Intersil's ISL29003 ambient light sensor
-device plus some documentation. Inspired by tsl2550.c, a driver for a
-similar device.
-
-It is put to drivers/misc for now until the industrial I/O framework
-gets merged.
-
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
----
- New version with Jonathan Cameron's review notes addressed.
-
- Documentation/misc-devices/isl29003 |   62 +++++
- drivers/misc/Kconfig                |   10 +
- drivers/misc/Makefile               |    1 +
- drivers/misc/isl29003.c             |  470 +++++++++++++++++++++++++++++++++++
- 4 files changed, 543 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/misc-devices/isl29003
- create mode 100644 drivers/misc/isl29003.c
-
-diff --git a/Documentation/misc-devices/isl29003 b/Documentation/misc-devices/isl29003
-new file mode 100644
-index 0000000..c4ff5f3
---- /dev/null
-+++ b/Documentation/misc-devices/isl29003
-@@ -0,0 +1,62 @@
-+Kernel driver isl29003
-+=====================
-+
-+Supported chips:
-+* Intersil ISL29003
-+Prefix: 'isl29003'
-+Addresses scanned: none
-+Datasheet:
-+http://www.intersil.com/data/fn/fn7464.pdf
-+
-+Author: Daniel Mack <daniel@caiaq.de>
-+
-+
-+Description
-+-----------
-+The ISL29003 is an integrated light sensor with a 16-bit integrating type
-+ADC, I2C user programmable lux range select for optimized counts/lux, and
-+I2C multi-function control and monitoring capabilities. The internal ADC
-+provides 16-bit resolution while rejecting 50Hz and 60Hz flicker caused by
-+artificial light sources.
-+
-+The driver allows to set the lux range, the bit resolution, the operational
-+mode (see below) and the power state of device and can read the current lux
-+value, of course.
-+
-+
-+Detection
-+---------
-+
-+The ISL29003 does not have an ID register which could be used to identify
-+it, so the detection routine will just try to read from the configured I2C
-+addess and consider the device to be present as soon as it ACKs the
-+transfer.
-+
-+
-+Sysfs entries
-+-------------
-+
-+range:
-+	0: 0 lux to 1000 lux (default)
-+	1: 0 lux to 4000 lux
-+	2: 0 lux to 16,000 lux
-+	3: 0 lux to 64,000 lux
-+
-+resolution:
-+	0: 2^16 cycles (default)
-+	1: 2^12 cycles
-+	2: 2^8 cycles
-+	3: 2^4 cycles
-+
-+mode:
-+	0: diode1's current (unsigned 16bit) (default)
-+	1: diode1's current (unsigned 16bit)
-+	2: difference between diodes (l1 - l2, signed 15bit)
-+
-+power_state:
-+	0: device is disabled (default)
-+	1: device is enabled
-+
-+lux (read only):
-+	returns the value from the last sensor reading
-+
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index c64e679..b883b19 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -223,6 +223,16 @@ config DELL_LAPTOP
- 	This driver adds support for rfkill and backlight control to Dell
- 	laptops.
+If some fields are empty or look unusual you may have an old version.
+Compare to the current minimal requirements in Documentation/Changes.
  
-+config ISL29003
-+	tristate "Intersil ISL29003 ambient light sensor"
-+	depends on I2C
-+	help
-+	  If you say yes here you get support for the Intersil ISL29003
-+	  ambient light sensor.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called isl29003.
-+
- source "drivers/misc/c2port/Kconfig"
- source "drivers/misc/eeprom/Kconfig"
+Linux seatpost 2.6.29-rc7 #3 SMP Tue Mar 10 10:15:07 EDT 2009 x86_64 x86_64 x86_64 GNU/Linux
  
-diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-index bc11998..7871f05 100644
---- a/drivers/misc/Makefile
-+++ b/drivers/misc/Makefile
-@@ -18,5 +18,6 @@ obj-$(CONFIG_KGDB_TESTS)	+= kgdbts.o
- obj-$(CONFIG_SGI_XP)		+= sgi-xp/
- obj-$(CONFIG_SGI_GRU)		+= sgi-gru/
- obj-$(CONFIG_HP_ILO)		+= hpilo.o
-+obj-$(CONFIG_ISL29003)		+= isl29003.o
- obj-$(CONFIG_C2PORT)		+= c2port/
- obj-y				+= eeprom/
-diff --git a/drivers/misc/isl29003.c b/drivers/misc/isl29003.c
-new file mode 100644
-index 0000000..2e2a592
---- /dev/null
-+++ b/drivers/misc/isl29003.c
-@@ -0,0 +1,470 @@
-+/*
-+ *  isl29003.c - Linux kernel module for
-+ * 	Intersil ISL29003 ambient light sensor
-+ *
-+ *  See file:Documentation/misc-devices/isl29003
-+ *
-+ *  Copyright (c) 2009 Daniel Mack <daniel@caiaq.de>
-+ *
-+ *  Based on code written by
-+ *  	Rodolfo Giometti <giometti@linux.it>
-+ *  	Eurotech S.p.A. <info@eurotech.it>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/i2c.h>
-+#include <linux/mutex.h>
-+#include <linux/delay.h>
-+
-+#define ISL29003_DRV_NAME	"isl29003"
-+#define DRIVER_VERSION		"1.0"
-+
-+#define ISL29003_REG_COMMAND		0x00
-+#define ISL29003_ADC_ENABLED		(1 << 7)
-+#define ISL29003_ADC_PD			(1 << 6)
-+#define ISL29003_TIMING_INT		(1 << 5)
-+#define ISL29003_MODE_SHIFT		(2)
-+#define ISL29003_MODE_MASK		(0x3 << ISL29003_MODE_SHIFT)
-+#define ISL29003_RES_SHIFT		(0)
-+#define ISL29003_RES_MASK		(0x3 << ISL29003_RES_SHIFT)
-+
-+#define ISL29003_REG_CONTROL		0x01
-+#define ISL29003_INT_FLG		(1 << 5)
-+#define ISL29003_RANGE_SHIFT		(2)
-+#define ISL29003_RANGE_MASK		(0x3 << ISL29003_RANGE_SHIFT)
-+#define ISL29003_INT_PERSISTS_SHIFT	(0)
-+#define ISL29003_INT_PERSISTS_MASK	(0xf << ISL29003_INT_PERSISTS_SHIFT)
-+
-+#define ISL29003_REG_IRQ_THRESH_HI	0x02
-+#define ISL29003_REG_IRQ_THRESH_LO	0x03
-+#define ISL29003_REG_LSB_SENSOR		0x04
-+#define ISL29003_REG_MSB_SENSOR		0x05
-+#define ISL29003_REG_LSB_TIMER		0x06
-+#define ISL29003_REG_MSB_TIMER		0x07
-+
-+#define ISL29003_NUM_CACHABLE_REGS	4
-+
-+struct isl29003_data {
-+	struct i2c_client *client;
-+	struct mutex lock;
-+	u8 reg_cache[ISL29003_NUM_CACHABLE_REGS];
-+};
-+
-+static int gain_range[] = {
-+	1000, 4000, 16000, 64000
-+};
-+
-+/*
-+ * register access helpers
-+ */
-+
-+static int __isl29003_read_reg(struct i2c_client *client,
-+			       u32 reg, u8 mask, u8 shift)
-+{
-+	struct isl29003_data *data = i2c_get_clientdata(client);
-+	return (data->reg_cache[reg] & mask) >> shift;
-+}
-+
-+static int __isl29003_write_reg(struct i2c_client *client,
-+				u32 reg, u8 mask, u8 shift, u8 val)
-+{
-+	struct isl29003_data *data = i2c_get_clientdata(client);
-+	int ret = 0;
-+	u8 tmp;
-+
-+	if (reg >= ISL29003_NUM_CACHABLE_REGS)
-+		return -EINVAL;
-+
-+	mutex_lock(&data->lock);
-+
-+	tmp = data->reg_cache[reg];
-+	tmp &= ~mask;
-+	tmp |= val << shift;
-+
-+	ret = i2c_smbus_write_byte_data(client, reg, tmp);
-+	if (!ret)
-+		data->reg_cache[reg] = tmp;
-+
-+	mutex_unlock(&data->lock);
-+	return ret;
-+}
-+
-+/*
-+ * internally used functions
-+ */
-+
-+/* range */
-+static int isl29003_get_range(struct i2c_client *client)
-+{
-+	return __isl29003_read_reg(client, ISL29003_REG_CONTROL,
-+		ISL29003_RANGE_MASK, ISL29003_RANGE_SHIFT);
-+}
-+
-+static int isl29003_set_range(struct i2c_client *client, int range)
-+{
-+	return __isl29003_write_reg(client, ISL29003_REG_CONTROL,
-+		ISL29003_RANGE_MASK, ISL29003_RANGE_SHIFT, range);
-+}
-+
-+/* resolution */
-+static int isl29003_get_resolution(struct i2c_client *client)
-+{
-+	return __isl29003_read_reg(client, ISL29003_REG_COMMAND,
-+		ISL29003_RES_MASK, ISL29003_RES_SHIFT);
-+}
-+
-+static int isl29003_set_resolution(struct i2c_client *client, int res)
-+{
-+	return __isl29003_write_reg(client, ISL29003_REG_COMMAND,
-+		ISL29003_RES_MASK, ISL29003_RES_SHIFT, res);
-+}
-+
-+/* mode */
-+static int isl29003_get_mode(struct i2c_client *client)
-+{
-+	return __isl29003_read_reg(client, ISL29003_REG_COMMAND,
-+		ISL29003_RES_MASK, ISL29003_RES_SHIFT);
-+}
-+
-+static int isl29003_set_mode(struct i2c_client *client, int mode)
-+{
-+	return __isl29003_write_reg(client, ISL29003_REG_COMMAND,
-+		ISL29003_RES_MASK, ISL29003_RES_SHIFT, mode);
-+}
-+
-+/* power_state */
-+static int isl29003_set_power_state(struct i2c_client *client, int state)
-+{
-+	return __isl29003_write_reg(client, ISL29003_REG_COMMAND,
-+				ISL29003_ADC_ENABLED | ISL29003_ADC_PD, 0,
-+				state ? ISL29003_ADC_ENABLED : ISL29003_ADC_PD);
-+}
-+
-+static int isl29003_get_power_state(struct i2c_client *client)
-+{
-+	struct isl29003_data *data = i2c_get_clientdata(client);
-+	u8 cmdreg = data->reg_cache[ISL29003_REG_COMMAND];
-+	return ~cmdreg & ISL29003_ADC_PD;
-+}
-+
-+static int isl29003_get_adc_value(struct i2c_client *client)
-+{
-+	struct isl29003_data *data = i2c_get_clientdata(client);
-+	int lsb, msb, range, bitdepth;
-+
-+	mutex_lock(&data->lock);
-+	lsb = i2c_smbus_read_byte_data(client, ISL29003_REG_LSB_SENSOR);
-+
-+	if (lsb < 0) {
-+		mutex_unlock(&data->lock);
-+		return lsb;
-+	}
-+
-+	msb = i2c_smbus_read_byte_data(client, ISL29003_REG_MSB_SENSOR);
-+	mutex_unlock(&data->lock);
-+
-+	if (msb < 0)
-+		return msb;
-+
-+	range = isl29003_get_range(client);
-+	bitdepth = (4 - isl29003_get_resolution(client)) * 4;
-+	return (((msb << 8) | lsb) * gain_range[range]) >> bitdepth;
-+}
-+
-+/*
-+ * sysfs layer
-+ */
-+
-+/* range */
-+static ssize_t isl29003_show_range(struct device *dev,
-+				   struct device_attribute *attr, char *buf)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	return sprintf(buf, "%i\n", isl29003_get_range(client));
-+}
-+
-+static ssize_t isl29003_store_range(struct device *dev,
-+				    struct device_attribute *attr,
-+				    const char *buf, size_t count)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	unsigned long val;
-+	int ret;
-+
-+	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 3))
-+		return -EINVAL;
-+
-+	ret = isl29003_set_range(client, val);
-+	if (ret < 0)
-+		return ret;
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR(range, S_IWUSR | S_IRUGO,
-+		   isl29003_show_range, isl29003_store_range);
-+
-+
-+/* resolution */
-+static ssize_t isl29003_show_resolution(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	return sprintf(buf, "%d\n", isl29003_get_resolution(client));
-+}
-+
-+static ssize_t isl29003_store_resolution(struct device *dev,
-+					 struct device_attribute *attr,
-+					 const char *buf, size_t count)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	unsigned long val;
-+	int ret;
-+
-+	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 3))
-+		return -EINVAL;
-+
-+	ret = isl29003_set_resolution(client, val);
-+	if (ret < 0)
-+		return ret;
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR(resolution, S_IWUSR | S_IRUGO,
-+		   isl29003_show_resolution, isl29003_store_resolution);
-+
-+/* mode */
-+static ssize_t isl29003_show_mode(struct device *dev,
-+				  struct device_attribute *attr, char *buf)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	return sprintf(buf, "%d\n", isl29003_get_mode(client));
-+}
-+
-+static ssize_t isl29003_store_mode(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	unsigned long val;
-+	int ret;
-+
-+	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 2))
-+		return -EINVAL;
-+
-+	ret = isl29003_set_mode(client, val);
-+	if (ret < 0)
-+		return ret;
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR(mode, S_IWUSR | S_IRUGO,
-+		   isl29003_show_mode, isl29003_store_mode);
-+
-+
-+/* power state */
-+static ssize_t isl29003_show_power_state(struct device *dev,
-+					 struct device_attribute *attr,
-+					 char *buf)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	return sprintf(buf, "%d\n", isl29003_get_power_state(client));
-+}
-+
-+static ssize_t isl29003_store_power_state(struct device *dev,
-+					  struct device_attribute *attr,
-+					  const char *buf, size_t count)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	unsigned long val;
-+	int ret;
-+
-+	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 1))
-+		return -EINVAL;
-+
-+	ret = isl29003_set_power_state(client, val);
-+	return ret ? ret : count;
-+}
-+
-+static DEVICE_ATTR(power_state, S_IWUSR | S_IRUGO,
-+		   isl29003_show_power_state, isl29003_store_power_state);
-+
-+
-+/* lux */
-+static ssize_t isl29003_show_lux(struct device *dev,
-+				 struct device_attribute *attr, char *buf)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+
-+	/* No LUX data if not operational */
-+	if (!isl29003_get_power_state(client))
-+		return -EBUSY;
-+
-+	return sprintf(buf, "%d\n", isl29003_get_adc_value(client));
-+}
-+
-+static DEVICE_ATTR(lux, S_IRUGO, isl29003_show_lux, NULL);
-+
-+static struct attribute *isl29003_attributes[] = {
-+	&dev_attr_range.attr,
-+	&dev_attr_resolution.attr,
-+	&dev_attr_mode.attr,
-+	&dev_attr_power_state.attr,
-+	&dev_attr_lux.attr,
-+	NULL
-+};
-+
-+static const struct attribute_group isl29003_attr_group = {
-+	.attrs = isl29003_attributes,
-+};
-+
-+static int isl29003_init_client(struct i2c_client *client)
-+{
-+	struct isl29003_data *data = i2c_get_clientdata(client);
-+	int i;
-+
-+	/* read all the registers once to fill the cache.
-+	 * if one of the reads fails, we consider the init failed */
-+	for (i = 0; i < ARRAY_SIZE(data->reg_cache); i++) {
-+		int v = i2c_smbus_read_byte_data(client, i);
-+		if (v < 0)
-+			return -ENODEV;
-+
-+		data->reg_cache[i] = v;
-+	}
-+
-+	/* set defaults */
-+	isl29003_set_range(client, 0);
-+	isl29003_set_resolution(client, 0);
-+	isl29003_set_mode(client, 0);
-+	isl29003_set_power_state(client, 0);
-+
-+	return 0;
-+}
-+
-+/*
-+ * I2C layer
-+ */
-+
-+static int __devinit isl29003_probe(struct i2c_client *client,
-+				    const struct i2c_device_id *id)
-+{
-+	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
-+	struct isl29003_data *data;
-+	int err = 0;
-+
-+	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
-+		return -EIO;
-+
-+	data = kzalloc(sizeof(struct isl29003_data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	data->client = client;
-+	i2c_set_clientdata(client, data);
-+	mutex_init(&data->lock);
-+
-+	/* initialize the ISL29003 chip */
-+	err = isl29003_init_client(client);
-+	if (err)
-+		goto exit_kfree;
-+
-+	/* register sysfs hooks */
-+	err = sysfs_create_group(&client->dev.kobj, &isl29003_attr_group);
-+	if (err)
-+		goto exit_kfree;
-+
-+	dev_info(&client->dev, "driver version %s enabled\n", DRIVER_VERSION);
-+	return 0;
-+
-+exit_kfree:
-+	kfree(data);
-+	return err;
-+}
-+
-+static int __devexit isl29003_remove(struct i2c_client *client)
-+{
-+	sysfs_remove_group(&client->dev.kobj, &isl29003_attr_group);
-+	isl29003_set_power_state(client, 0);
-+	kfree(i2c_get_clientdata(client));
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int isl29003_suspend(struct i2c_client *client, pm_message_t mesg)
-+{
-+	return isl29003_set_power_state(client, 0);
-+}
-+
-+static int isl29003_resume(struct i2c_client *client)
-+{
-+	int i;
-+	struct isl29003_data *data = i2c_get_clientdata(client);
-+
-+	/* restore registers from cache */
-+	for (i = 0; i < ARRAY_SIZE(data->reg_cache); i++)
-+		if (!i2c_smbus_write_byte_data(client, i, data->reg_cache[i]))
-+			return -EIO;
-+
-+	return 0;
-+}
-+
-+#else
-+#define isl29003_suspend	NULL
-+#define isl29003_resume		NULL
-+#endif /* CONFIG_PM */
-+
-+static const struct i2c_device_id isl29003_id[] = {
-+	{ "isl29003", 0 },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(i2c, isl29003_id);
-+
-+static struct i2c_driver isl29003_driver = {
-+	.driver = {
-+		.name	= ISL29003_DRV_NAME,
-+		.owner	= THIS_MODULE,
-+	},
-+	.suspend = isl29003_suspend,
-+	.resume	= isl29003_resume,
-+	.probe	= isl29003_probe,
-+	.remove	= __devexit_p(isl29003_remove),
-+	.id_table = isl29003_id,
-+};
-+
-+static int __init isl29003_init(void)
-+{
-+	return i2c_add_driver(&isl29003_driver);
-+}
-+
-+static void __exit isl29003_exit(void)
-+{
-+	i2c_del_driver(&isl29003_driver);
-+}
-+
-+MODULE_AUTHOR("Daniel Mack <daniel@caiaq.de>");
-+MODULE_DESCRIPTION("ISL29003 ambient light sensor driver");
-+MODULE_LICENSE("GPL v2");
-+MODULE_VERSION(DRIVER_VERSION);
-+
-+module_init(isl29003_init);
-+module_exit(isl29003_exit);
-+
--- 
-1.6.2
+Gnu C                  4.3
+Gnu make               3.81
+binutils               2.19
+util-linux             2.14.1
+mount                  support
+module-init-tools      3.4
+e2fsprogs              1.41.1
+reiserfsprogs          3.6.19
+xfsprogs               2.10.1
+quota-tools            3.16.
+PPP                    2.4.5
+Linux C Library        2.9
+Dynamic linker (ldd)   2.9
+Procps                 3.2.7
+Net-tools              1.60
+Kbd                    1.14.1
+oprofile               0.9.4
+Sh-utils               6.12
+udev                   128
+wireless-tools         30
+Modules Loaded         fuse ext2 loop dm_mod sd_mod crc_t10dif bnx2 qla2xxx sg scsi_transport_fc rtc_cmos ipmi_si shpchp sr_mod rtc_core ipmi_msghandler pcspkr rtc_lib serio_raw hpwdt pci_hotplug cdrom button scsi_tgt container hpilo usbhid hid ehci_hcd uhci_hcd ohci_hcd usbcore edd ext3 mbcache jbd fan ide_pci_generic amd74xx ide_core pata_amd thermal processor thermal_sys hwmon cciss ata_generic libata scsi_mod
 
+--------------070006050408000404030204
+Content-Type: text/x-python;
+ name="doit.py"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="doit.py"
+
+#! /usr/bin/env python
+
+import os, sys, tempfile, time
+import parse_aiod
+
+dsfs	= 'sdy sdz sdaa sdab sdac sdad sdae sdaf sdag sdah sdai sdaj'.split()
+
+def run_aiod(bs, dsfs, rnd):
+	def gen_aiod_cmd(bs, dsfs):
+		aiod_cmd= '/usr/local/bin/aiod'
+		opts	= '-A 256 -D -I -i 10000000 -l -v'
+		xopts	= '-R -b %dk -T 30' % bs
+		cmd = '%s %s %s' % (aiod_cmd, opts, xopts)
+		if rnd:
+			cmd = '%s -z' % cmd
+		for path in ['/dev/%s' % dsf for dsf in dsfs]:
+			cmd = '%s %s' % (cmd, path)
+		return cmd
+
+	(fd, fn) = tempfile.mkstemp()
+	fo = os.fdopen(fd, 'w')
+
+	pid = os.fork()
+	if pid == 0:
+		os.dup2(fo.fileno(), sys.stdout.fileno())
+		os.dup2(fo.fileno(), sys.stderr.fileno())
+		fo.close()
+
+		cmd = gen_aiod_cmd(bs, dsfs).split(None)
+		os.execvp(cmd[0], cmd)
+		sys.exit(1)
+	else:
+		fo.close()
+		os.waitpid(pid, 0)
+
+	pa = parse_aiod.parse_aiod(fn)
+	mbps = pa.get_mb_per_sec()
+	del pa
+
+	os.unlink(fn)
+	return mbps
+
+if __name__ == '__main__':
+	def start_bt(dir, dsfs):
+		if os.path.exists(dir):
+			os.system('/bin/rm -rf ' + dir)
+		os.mkdir(dir)
+		cmd = '/usr/local/bin/blktrace -D %s -b 1024 -n 6' % dir
+		for dsf in dsfs:
+			cmd = '%s /dev/%s' % (cmd, dsf)
+
+		pid = os.fork()
+		if pid > 0:
+			time.sleep(30)
+			return pid
+
+		fo = open('%s/bt.out' % dir, 'w')
+		os.dup2(fo.fileno(), sys.stdout.fileno())
+		os.dup2(fo.fileno(), sys.stderr.fileno())
+		fo.close()
+
+		cmd = cmd.split(None)
+		os.execvp(cmd[0], cmd)
+		sys.exit(1)
+
+	def stop_bt(pid):
+		os.kill(pid, 1)
+		os.waitpid(pid, 0)
+
+	#bss = [ 4, 8, 16, 32, 64, 128, 256 ]
+	bss = [ 32, 64, 128 ]
+
+	print '%3s:' % 'run',
+	for bs in bss:
+		print '%6d ' % bs,
+	print '\n----',
+	for bs in bss:
+		print '%6s ' % '------', 
+	print ''
+	for run in range(0, 3):
+		print '%3d:' % run,
+		sys.stdout.flush()
+		for bs in bss:
+			pid = start_bt('%03dk_%03d' % (bs, run), dsfs)
+			print '%6.2f ' % run_aiod(bs, dsfs, False),
+			sys.stdout.flush()
+			stop_bt(pid)
+		print ''
+
+	sys.exit(0)
+
+--------------070006050408000404030204--
