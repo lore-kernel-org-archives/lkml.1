@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbZCJLt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZCJLt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbZCJLt1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 07:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZCJLtR
+	id S1754809AbZCJLt5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 07:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZCJLts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 07:49:17 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:54782 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751574AbZCJLtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 07:49:16 -0400
+	Tue, 10 Mar 2009 07:49:48 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:22201 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752268AbZCJLtr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 07:49:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=B1QBXCJzABjQhDdOjhNKZ/i76Rsv2qcqL4q/59eeV4LGn2JF3GLZf4h3814kw+9nnK
+         AgRyiWZzefSzc2UYyFeTNjr5pFhQsLZOAEW6DPtK7iQy4Y2taw75dx2mIzScXp7UaR+U
+         PufHWsErrFRpEB5yZHvRgMzT82J2ekLcSZjlo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 10 Mar 2009 11:49:45 +0000
+Message-ID: <b6a2d2e20903100449k7bb325eau26ad724e6303080b@mail.gmail.com>
+Subject: cgroup, balance RT bandwidth
+From: Rolando Martins <rolando.martins@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18870.21428.868208.447605@cargo.ozlabs.ibm.com>
-Date: Tue, 10 Mar 2009 22:49:08 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] Performance Counters for Linux, v6
-In-Reply-To: <20090310094457.GU10085@erda.amd.com>
-References: <20090121185021.GA8852@elte.hu>
-	<20090309013902.GK10085@erda.amd.com>
-	<18869.40904.382716.827097@cargo.ozlabs.ibm.com>
-	<20090310094457.GU10085@erda.amd.com>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Richter writes:
+Just to confirm, cpuset.sched_load_balance doesn't work with RT, right?
+You cannot have tasks for sub-domain 2 to utilize bandwidth of
+sub-domain 3, right?
 
-> Ok, maybe I mixed too much the architectural with the x86 model
-> specific implementation. My impression is that there is data in
-> generic structures what should be better private for the model or
-> architecture. However, I have to figure out the details here.
+                              __1__
+                             /        \
+                            2         3
+                      (50% rt)  (50% rt )
 
-The details of the x86 support have changed quite a lot since the v6
-patch was posted, I believe.  Are you looking at the v6 patch, or at
-Ingo's tip:perfcounters/core branch?
+For my application domain it would be interesting to have
+rt_runtime_ns as a min. of allocated rt and not a max.
+Ex. If an application of domain 2 needs to go up to 100% and domain 3
+is idle, then it would be cool to let it utilize the full bandwidth.
+(we also could have a hard upper limit in each sub-domain, like
+hard_up=0.8, i.e. even if we could get 100%, we will only utilize
+80%); in other words, rt having the same cpu bandwidth management behavior
+as the "best-effort" tasks.
 
-Ingo - maybe it's time to post a v7 patch?
+Could this be done?
 
-Paul.
+Rolando
