@@ -1,168 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbZCJU7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbZCJVFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbZCJU7o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 16:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbZCJU7f
+	id S1755931AbZCJVFt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 17:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbZCJVFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 16:59:35 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44175 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754327AbZCJU7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 16:59:35 -0400
-Subject: Re: commit "radeonfb: Fix resume from D3Cold on some platforms"
- breaks resume from RAM on PowerBook
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gaudenz Steinlin <gaudenz@soziologie.ch>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090310150126.GB5633@soziologie.ch>
-References: <20090304083859.GB6889@soziologie.ch>
-	 <20090306114149.GA5371@soziologie.ch> <1236638264.7260.192.camel@pasglop>
-	 <200903101032.58617.rjw@sisk.pl>  <20090310150126.GB5633@soziologie.ch>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 07:58:46 +1100
-Message-Id: <1236718726.7086.11.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Mar 2009 17:05:36 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:36965 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754021AbZCJVFf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 17:05:35 -0400
+Message-Id: <20090310210531.096862962@goodmis.org>
+References: <20090310210408.419131392@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Tue, 10 Mar 2009 17:04:11 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Larry Woodman <lwoodman@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 3/7] tracing: add back the available_events file
+Content-Disposition: inline; filename=0003-tracing-add-back-the-available_events-file.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-10 at 16:01 +0100, Gaudenz Steinlin wrote:
-> Hi Rafael
-> 
-> On Tue, Mar 10, 2009 at 10:32:58AM +0100, Rafael J. Wysocki wrote:
-> > 
-> > Gaudenz, I'd also like to know if the appended patch (on top of vanilla Linus'
-> > tree) makes any different.  Unfortunately, I haven't had the time to test it
-> > myself yet.
-> 
-> No, this patch does not make any difference.
+From: Steven Rostedt <srostedt@redhat.com>
 
-What about the one I sent you that removes the early wakeup ?
+The event directory files type and available_types were no longer
+needed with the new TRACE_EVENT_FORMAT macros, they were deleted.
+But by accident the available_events file was also removed.
+This patch brings it back.
 
-Cheers,
-Ben.
+Reported-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/trace_events.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
-> Gaudenz
-> 
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> > ---
-> >  drivers/pci/pci-driver.c |   42 ++++++++++++++++++++++++++++++------------
-> >  1 file changed, 30 insertions(+), 12 deletions(-)
-> > 
-> > Index: linux-2.6/drivers/pci/pci-driver.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/pci/pci-driver.c
-> > +++ linux-2.6/drivers/pci/pci-driver.c
-> > @@ -556,7 +556,7 @@ static int pci_pm_suspend_noirq(struct d
-> >  static int pci_pm_resume_noirq(struct device *dev)
-> >  {
-> >  	struct pci_dev *pci_dev = to_pci_dev(dev);
-> > -	struct device_driver *drv = dev->driver;
-> > +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> >  	int error = 0;
-> >  
-> >  	pci_pm_default_resume_noirq(pci_dev);
-> > @@ -564,8 +564,13 @@ static int pci_pm_resume_noirq(struct de
-> >  	if (pci_has_legacy_pm_support(pci_dev))
-> >  		return pci_legacy_resume_early(dev);
-> >  
-> > -	if (drv && drv->pm && drv->pm->resume_noirq)
-> > -		error = drv->pm->resume_noirq(dev);
-> > +	if (pm) {
-> > +		if (pm->resume_noirq)
-> > +			error = pm->resume_noirq(dev);
-> > +	} else {
-> > +		if (pci_is_bridge(pci_dev))
-> > +			pci_pm_reenable_device(pci_dev);
-> > +	}
-> >  
-> >  	return error;
-> >  }
-> > @@ -592,7 +597,8 @@ static int pci_pm_resume(struct device *
-> >  		if (pm->resume)
-> >  			error = pm->resume(dev);
-> >  	} else {
-> > -		pci_pm_reenable_device(pci_dev);
-> > +		if (!pci_is_bridge(pci_dev))
-> > +			pci_pm_reenable_device(pci_dev);
-> >  	}
-> >  
-> >  	return 0;
-> > @@ -662,7 +668,7 @@ static int pci_pm_freeze_noirq(struct de
-> >  static int pci_pm_thaw_noirq(struct device *dev)
-> >  {
-> >  	struct pci_dev *pci_dev = to_pci_dev(dev);
-> > -	struct device_driver *drv = dev->driver;
-> > +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> >  	int error = 0;
-> >  
-> >  	if (pci_has_legacy_pm_support(pci_dev))
-> > @@ -670,8 +676,13 @@ static int pci_pm_thaw_noirq(struct devi
-> >  
-> >  	pci_update_current_state(pci_dev, PCI_D0);
-> >  
-> > -	if (drv && drv->pm && drv->pm->thaw_noirq)
-> > -		error = drv->pm->thaw_noirq(dev);
-> > +	if (pm) {
-> > +		if (pm->thaw_noirq)
-> > +			error = pm->thaw_noirq(dev);
-> > +	} else {
-> > +		if (pci_is_bridge(pci_dev))
-> > +			pci_pm_reenable_device(pci_dev);
-> > +	}
-> >  
-> >  	return error;
-> >  }
-> > @@ -689,7 +700,8 @@ static int pci_pm_thaw(struct device *de
-> >  		if (pm->thaw)
-> >  			error = pm->thaw(dev);
-> >  	} else {
-> > -		pci_pm_reenable_device(pci_dev);
-> > +		if (!pci_is_bridge(pci_dev))
-> > +			pci_pm_reenable_device(pci_dev);
-> >  	}
-> >  
-> >  	return error;
-> > @@ -744,7 +756,7 @@ static int pci_pm_poweroff_noirq(struct 
-> >  static int pci_pm_restore_noirq(struct device *dev)
-> >  {
-> >  	struct pci_dev *pci_dev = to_pci_dev(dev);
-> > -	struct device_driver *drv = dev->driver;
-> > +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> >  	int error = 0;
-> >  
-> >  	pci_pm_default_resume_noirq(pci_dev);
-> > @@ -752,8 +764,13 @@ static int pci_pm_restore_noirq(struct d
-> >  	if (pci_has_legacy_pm_support(pci_dev))
-> >  		return pci_legacy_resume_early(dev);
-> >  
-> > -	if (drv && drv->pm && drv->pm->restore_noirq)
-> > -		error = drv->pm->restore_noirq(dev);
-> > +	if (pm) {
-> > +		if (pm->restore_noirq)
-> > +			error = pm->restore_noirq(dev);
-> > +	} else {
-> > +		if (pci_is_bridge(pci_dev))
-> > +			pci_pm_reenable_device(pci_dev);
-> > +	}
-> >  
-> >  	return error;
-> >  }
-> > @@ -780,7 +797,8 @@ static int pci_pm_restore(struct device 
-> >  		if (pm->restore)
-> >  			error = pm->restore(dev);
-> >  	} else {
-> > -		pci_pm_reenable_device(pci_dev);
-> > +		if (!pci_is_bridge(pci_dev))
-> > +			pci_pm_reenable_device(pci_dev);
-> >  	}
-> >  
-> >  	return error;
-> 
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 85ec10f..769dfd0 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -428,6 +428,13 @@ static const struct seq_operations show_set_event_seq_ops = {
+ 	.stop = t_stop,
+ };
+ 
++static const struct file_operations ftrace_avail_fops = {
++	.open = ftrace_event_seq_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = seq_release,
++};
++
+ static const struct file_operations ftrace_set_event_fops = {
+ 	.open = ftrace_event_seq_open,
+ 	.read = seq_read,
+@@ -569,6 +576,13 @@ static __init int event_trace_init(void)
+ 	if (!d_tracer)
+ 		return 0;
+ 
++	entry = debugfs_create_file("available_events", 0444, d_tracer,
++				    (void *)&show_event_seq_ops,
++				    &ftrace_avail_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'available_events' entry\n");
++
+ 	entry = debugfs_create_file("set_event", 0644, d_tracer,
+ 				    (void *)&show_set_event_seq_ops,
+ 				    &ftrace_set_event_fops);
+-- 
+1.6.1.3
 
+-- 
