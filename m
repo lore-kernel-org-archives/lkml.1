@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbZCJWDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZCJWEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757370AbZCJWDV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 18:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbZCJWDC
+	id S1756664AbZCJWEb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 18:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbZCJWEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 18:03:02 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51958 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754422AbZCJWDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 18:03:01 -0400
-Date: Tue, 10 Mar 2009 23:02:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Renzo Davoli <renzo@cs.unibo.it>
-Cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH 2/2] ptrace_vm: ptrace for syscall emulation virtual
-	machines
-Message-ID: <20090310220241.GC30475@elte.hu>
-References: <20090204080256.GC17452@cs.unibo.it> <20090310214456.GE5213@cs.unibo.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090310214456.GE5213@cs.unibo.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 10 Mar 2009 18:04:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52327 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755080AbZCJWET (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 18:04:19 -0400
+Date: Tue, 10 Mar 2009 15:00:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, syrjala@sci.fi, johnpol@2ka.mipt.ru,
+       david-b@pacbell.net
+Subject: Re: [PATCH] drivers/w1/masters/w1-gpio.c: fix read_bit()
+Message-Id: <20090310150059.ce64548a.akpm@linux-foundation.org>
+In-Reply-To: <20090310091800.GC3263@buzzloop.caiaq.de>
+References: <1236614530-11153-1-git-send-email-daniel@caiaq.de>
+	<20090309191419.98699220.akpm@linux-foundation.org>
+	<20090310091800.GC3263@buzzloop.caiaq.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 10 Mar 2009 10:18:00 +0100
+Daniel Mack <daniel@caiaq.de> wrote:
 
-* Renzo Davoli <renzo@cs.unibo.it> wrote:
+> On Mon, Mar 09, 2009 at 07:14:19PM -0700, Andrew Morton wrote:
+> > > --- a/drivers/w1/masters/w1-gpio.c
+> > > +++ b/drivers/w1/masters/w1-gpio.c
+> > > @@ -39,7 +39,7 @@ static u8 w1_gpio_read_bit(void *data)
+> > >  {
+> > >  	struct w1_gpio_platform_data *pdata = data;
+> > >  
+> > > -	return gpio_get_value(pdata->pin);
+> > > +	return gpio_get_value(pdata->pin) ? 1 : 0;
+> > >  }
+> > >  
+> > >  static int __init w1_gpio_probe(struct platform_device *pdev)
+> > 
+> > We recently merged a patch (I forget where) which fixed one
+> > gpio_get_value() implementation so that it always returns 0 or 1.
+> > 
+> > From which I deduce that the correct fix for <whatever problem you're
+> > seeing> is to fix <whichever driver that is>?
+> 
+> I agree those functions should return 0 and 1 only, but my patch fixes
+> the w1-gpio driver for all platforms at once, so people can use it.
+> 
+> On the other hand, I will submit a patch which modifies PXA's
+> gpio_get_value() and see what the maintainers say, but I can't go thru
+> all the implemenations of all architectures to do this.
+> 
+> So for the time being, the above patch helps many users of that driver.
+> 
 
-> +/* test thread code. This thread is started only to test 
-> + * which features are provided by the linux kernel */
-> +static int sysptvm_child(void *arg)
-> +{
-> +	int *featurep=arg;
-> +	int p[2]={-1,-1};
-> +	pid_t pid=os_getpid();
-> +	if(ptrace(PTRACE_TRACEME, 0, 0, 0) < 0){
-> +		perror("ptrace test_ptracemulti");
-> +		kill(pid, SIGKILL);
-> +	}
-> +	kill(pid, SIGSTOP);
-> +	*featurep=0;
-> +	os_getpid();
-> +	/* if it reaches this point in 1 stop it means that
-> +	 * PTRACE_SYSCALL_SKIPEXIT works */
-> +	*featurep=PTRACE_SYSCALL_SKIPEXIT;
-> +	pipe(p);
-> +	/* if after a PTRACE_SYSCALL_SKIPCALL p[0] is already <0 
-> +	 * pipe has been really skipped */
-> +	if (p[0] < 0)
-> +		*featurep=PTRACE_SYSCALL_SKIPCALL;
-> +	else { /* clean up everything */
-> +		close(p[0]);
-> +		close(p[1]);
-> +	}
-> +	return 0;
+Problem is, the patch will just conceal bugs.
 
-Please check Documentation/CodingStyle. Every second line above 
-violates it. scripts/checkpatch.pl can help out with the more 
-obvious ones.
+How about this?
 
-	Ingo
+--- a/drivers/w1/masters/w1-gpio.c~a
++++ a/drivers/w1/masters/w1-gpio.c
+@@ -38,8 +38,12 @@ static void w1_gpio_write_bit_val(void *
+ static u8 w1_gpio_read_bit(void *data)
+ {
+ 	struct w1_gpio_platform_data *pdata = data;
++	u8 ret;
+ 
+-	return gpio_get_value(pdata->pin);
++	ret = gpio_get_value(pdata->pin);
++	if (WARN_ONCE(ret > 1, "gpio_get_value(): invalid return: %u\n", ret))
++		ret = !!ret
++	return ret;
+ }
+ 
+ static int __init w1_gpio_probe(struct platform_device *pdev)
+_
+
