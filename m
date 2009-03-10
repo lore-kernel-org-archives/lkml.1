@@ -1,140 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbZCJONz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZCJOOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755959AbZCJONz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 10:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbZCJON2
+	id S1755963AbZCJOOg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 10:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753163AbZCJOO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 10:13:28 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:41907 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755027AbZCJON0 (ORCPT
+	Tue, 10 Mar 2009 10:14:26 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:26597 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752970AbZCJOOY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 10:13:26 -0400
+	Tue, 10 Mar 2009 10:14:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=m0OlcIW43vHukNkF9tEe3u+1Hpc3zvkDpg+YeojFaASfG7U2VfVSEX6ibva+EXyhrb
-         K3luJ5kEOJMpcZwr9OWy5ufOP2TL7kahL/PQ8l62DAKx0sgeZdBzQB9PhVfSK3DR3ops
-         WtKZ/Q5uZ6r4aHtHgLaEshn7BKt3EwycbxKN4=
-Date: Tue, 10 Mar 2009 22:13:52 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: um: WARNING: vmlinux: 'memcpy' exported twice. Previous export
-	was in vmlinux
-Message-ID: <20090310141352.GD3157@hack>
-References: <49AFC206.9080004@panasas.com> <20090305130610.GA4265@hack.private> <49AFD780.8080500@panasas.com> <20090305160447.GB4265@hack.private> <49B00B83.20400@panasas.com> <20090306075211.GN22605@hack.private> <49B3A2AC.7050701@panasas.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=IYk9EfswqiJgXrfLl+CELZSr4mS/zRWl6ZRpA6rmQtqxcJh7IboAJZPrQ9bPgy2HvQ
+         gJuDidFoPDPykU0KoNZ/icqpWLkT62pD2R2yL19uoablBJnkAxk9sKM8CUSxTHo7YyD5
+         9UloLE3fBdtVRbVuPLfOuZqSG05cBhUoYC1uM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49B3A2AC.7050701@panasas.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <395C6DBC66158B4CA921D1A81BB7BE7CD03C8E44@EXVMBX015-1.exch015.msoutlookonline.net>
+References: <AQHJoPWWqT8cj3jW/ESeGeIz5tGf9A==>
+	 <395C6DBC66158B4CA921D1A81BB7BE7CD03C8E44@EXVMBX015-1.exch015.msoutlookonline.net>
+Date: Tue, 10 Mar 2009 09:14:22 -0500
+Message-ID: <3bd6b93c0903100714h707e2c62re2c2165cde7674a7@mail.gmail.com>
+Subject: Re: Where to get a Kernel tree with KGDB patched? -- help needed
+From: Bruce Ashfield <bruce.ashfield@gmail.com>
+To: Stuart Xu <sxu@soleranetworks.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 08, 2009 at 12:49:16PM +0200, Boaz Harrosh wrote:
->AmÃ©rico Wang wrote:
->> On Thu, Mar 05, 2009 at 07:27:31PM +0200, Boaz Harrosh wrote:
->>> AmÃ©rico Wang wrote:
->>>> On Thu, Mar 05, 2009 at 03:45:36PM +0200, Boaz Harrosh wrote:
->>>>> AmÃ©rico Wang wrote:
->>>>>> On Thu, Mar 05, 2009 at 02:13:58PM +0200, Boaz Harrosh wrote:
->>>>>>> On today's linus v2.6.29-rc7-3-g559595a
->>>>>>>
->>>>>>> Doing make ARCH=um defconfig & make ARCH=um
->>>>>>> give's me:
->>>>>>>
->>>>>>> LD vmlinux.o
->>>>>>> MODPOST vmlinux.o
->>>>>>> WARNING: vmlinux: 'memcpy' exported twice. Previous export was in vmlinux
->>>>>>>
->>>>>>>
->>>>>>> Sorry if this is a duplicate report
->>>>>>>
->>>>>> Weird...
->>>>>> I tried to compile like what you said, I can't reproduce it.
->>>>>>
->>>>>> Which gcc are you using?
->>>>>>
->>>>>> Thanks.
->>>>>>
->>>>> $ gcc --version
->>>>> gcc (GCC) 4.3.2 20081105 (Red Hat 4.3.2-7)
->>>>>
->>>>> I'm running on an x86_64 Fedora10 system (updated recently)
->>>>> $ uname -o -s -r -m -p -i
->>>>> Linux 2.6.27.15-170.2.24.fc10.x86_64 x86_64 x86_64 x86_64 GNU/Linux
->>>>>
->>>> I am using the same thing, but on i386. I still can't reproduce it. :(
->>>>
->>> What can I say I just did it again from scratch
->>>
->>> $ mkdir .build_um
->>> $ make ARCH=um KBUILD_OUTPUT=.build_um defconfig
->>> $ make ARCH=um KBUILD_OUTPUT=.build_um
->>>
->>> (I'm using KBUILD_OUTPUT= because O= does not work when also using M= with
->>> external modules, so it's a habit)
->>>
->>> Thanks for your help. I will try to bisect it on Sunday
->> 
->> Hi, Boaz.
->> 
->> I am sorry that I don't have an x86_64 machine to use, but I know
->> why this happens now. :)
->> 
->> Would you like to try the following patch? Thanks!
->> 
->> -------------->
->> 
->> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
->> 
+On Mon, Mar 9, 2009 at 3:25 PM, Stuart Xu <sxu@soleranetworks.com> wrote:
 >
->Tested-by: Boaz Harrosh <bharrosh@panasas.com>
+> Hi,
+>
+> From online discussions, it seems that the linux 2.6 tree has included KGDB.  Anyone can tell me where and how to get such a kernel tree (preferably 2.6.27 ) that with KGDB patched already?
+
+Depending on your arch, the core KGDB support is
+in 2.6.27 and doesn't require additional patches. Jason
+has some development items in the kernel.org  KGDB
+trees, but they aren't strictly required.
+
+Bruce
+
+>
+> I tried to use git-checkout, but got a error:
+>
+> git-checkout git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_linus
+> fatal: Not a git repository
+>
+> Thanks,
+>
+> Stuart
+>
+> The information in this e-mail and in any attachments is confidential and may be privileged.  If you are not the intended recipient, please destroy this message, delete any copies held on your systems and notify the sender immediately.  You should not retain copy or use this e-mail for any purpose, nor disclose all or any part of its content to any other person.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 >
 
-Thank you.
 
-I will resend that patch with your Tested-by. :)
-
->> ---
->> diff --git a/arch/um/os-Linux/user_syms.c b/arch/um/os-Linux/user_syms.c
->> index 74f49bb..89b48a1 100644
->> --- a/arch/um/os-Linux/user_syms.c
->> +++ b/arch/um/os-Linux/user_syms.c
->> @@ -14,7 +14,6 @@
->>  #undef memset
->>  
->>  extern size_t strlen(const char *);
->> -extern void *memcpy(void *, const void *, size_t);
->>  extern void *memmove(void *, const void *, size_t);
->>  extern void *memset(void *, int, size_t);
->>  extern int printf(const char *, ...);
->> @@ -24,7 +23,11 @@ extern int printf(const char *, ...);
->>  EXPORT_SYMBOL(strstr);
->>  #endif
->>  
->> +#ifndef __x86_64__
->> +extern void *memcpy(void *, const void *, size_t);
->>  EXPORT_SYMBOL(memcpy);
->> +#endif
->> +
->>  EXPORT_SYMBOL(memmove);
->>  EXPORT_SYMBOL(memset);
->>  EXPORT_SYMBOL(printf);
->>  
->
->Yes this works. But it is weird, what is the difference between
->__x86_64__ and any other platform?
-
-I just saw the comments in arch/um/sys-x86_64/ksyms.c.
 
 -- 
-Do what you love, f**k the rest! F**k the regulations!
- 
+"Thou shalt not follow the NULL pointer, for chaos and madness await
+thee at its end"
