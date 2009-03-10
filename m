@@ -1,123 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbZCJV6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbZCJV7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757198AbZCJV6t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 17:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbZCJV6V
+	id S1757449AbZCJV7I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 17:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbZCJV6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 17:58:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:46933 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755598AbZCJV6T convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 17:58:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=s1BTPU866xQSRGc2Z9t182ZLpFICTzqvjUdXjVaseb79tMf8MvHc9LNXTQ1gWaGc0Y
-         +FvBJJB6Sc6Ck0Fb/IolbfiKfltNm0W/Dg4JbmELlOc/9oXIoPeTdIw2PmCMHt6trPhs
-         C2vP+J4Twlm1at2/0gUMbuQM2W3qfBazTIp3g=
-MIME-Version: 1.0
-In-Reply-To: <1236530906-7175-1-git-send-email-James.Bottomley@HansenPartnership.com>
-References: <1236530906-7175-1-git-send-email-James.Bottomley@HansenPartnership.com>
-Date: Tue, 10 Mar 2009 14:58:17 -0700
-X-Google-Sender-Auth: 5e7638f223ec9b9e
-Message-ID: <86802c440903101458yb029691h84c87cf480a7750@mail.gmail.com>
-Subject: Re: [PATCH 00/13] convert voyager over to the x86 quirks model
-From: Yinghai Lu <yinghai@kernel.org>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 10 Mar 2009 17:58:40 -0400
+Received: from 1wt.eu ([62.212.114.60]:1243 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756187AbZCJV6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 17:58:38 -0400
+Date: Tue, 10 Mar 2009 22:58:18 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Keymap 0: Permission denied
+Message-ID: <20090310215818.GA3540@1wt.eu>
+References: <1236533626.1479.8.camel@rh9.satnam> <20090308181056.GM26043@1wt.eu> <1236692166.1582.5.camel@rh9.satnam>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236692166.1582.5.camel@rh9.satnam>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 8, 2009 at 9:48 AM, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> Given the lack of feedback, I went ahead and implemented the additions
-> to smp_ops and x86_quirks (and a dynamic mca NMI hook) to allow
-> voyager to be plumbed in.
->
-> There also needs to be changes in the boot setup to make voyager work
-> dynamically: It has to be detected first, so the a20 gate check is
-> only executed if a voyager is not found.
->
-> I also completed some of the subarchitecture eliminations, so all the
-> include file infrastructure should be gone.
->
-> The result is that I can boot both my PC SMP x86 boxes and voyager
-> with the same kernel.
->
-> This patch series applies on the x86/apic branch of the x86 tree
-> (obviously with 965c7ecaf2e2b083d711a01ab33735a4bdeee1a4 reverted)
->
-> James
->
-> ---
->
->  [VOYAGER] x86: add {safe,hard}_smp_processor_id to smp_ops
->  [VOYAGER] x86/mca: make mca_nmi_hook external
->  [VOYAGER] x86: add prefill_possible_map to x86_quirks
->  [VOYAGER] x86: use boot_cpu_id instead of zero for checking boot
->    processor
->  [VOYAGER] x86/voyager: Move voyager detection to a new bootparam area
->  [VOYAGER] x86: eliminate subarchitecture file setup_arch.h
->  [VOYAGER] x86: eliminate subarchitecture file entry_arch.h
->  [VOYAGER] x86: eliminate subarchitecture file do_timer.h
->  [VOYAGER] x86: redo irq2 cascade setup
->  [VOYAGER] x86: make disabling the apics functional instead of a flag
->  [VOYAGER] x86/Voyager: add missing QIC call function single gate
->  [VOYAGER] x86/Voyager: replace inline io area reads with readX
->    accessors
->  [VOYAGER] x86/Voyager: Plumb voyager back into the build
->
->  arch/x86/Kconfig                               |    4 +-
->  arch/x86/Makefile                              |    2 +
->  arch/x86/boot/Makefile                         |    4 +-
->  arch/x86/boot/a20.c                            |   13 +-
->  arch/x86/boot/boot.h                           |    2 +-
->  arch/x86/boot/voyager.c                        |    5 +-
->  arch/x86/include/asm/apic.h                    |    6 +
->  arch/x86/include/asm/bootparam.h               |    5 +-
->  arch/x86/include/asm/do_timer.h                |   16 -
->  arch/x86/include/asm/entry_arch.h              |   57 ---
->  arch/x86/include/asm/hw_irq.h                  |   11 +
->  arch/x86/include/asm/mach-voyager/do_timer.h   |   17 -
->  arch/x86/include/asm/mach-voyager/entry_arch.h |   26 --
->  arch/x86/include/asm/mach-voyager/setup_arch.h |   12 -
+Hi Jaswinder,
 
-could remove "mach-" here.
+On Tue, Mar 10, 2009 at 07:06:06PM +0530, Jaswinder Singh Rajput wrote:
+> On Sun, 2009-03-08 at 23:40, Willy Tarreau wrote:
+> > Hi,
+> > 
+> > On Sun, Mar 08, 2009 at 11:03:46PM +0530, Jaswinder Singh Rajput wrote:
+> > > Hello Willy,
+> > > 
+> > > On Red Hat 9 With latest 2.4-git kernel, when I log in as a regular user
+> > > on a TTY, I get the following error:
+> > > 
+> > > Keymap 0: Permission denied
+> > > Keymap 1: Permission denied
+> > > Keymap 2: Permission denied
+> > > KDSKBENT: Operation not permitted
+> > > loadkeys: could not deallocate keymap 3
+> > > 
+> > > How to fix this error.
+> > 
+> > No idea yet. Could you please try "loadkey us" for instance, to ensure
+> > it is the program which fails ? If so, please send me the output of
+> > "strace loadkeys us".
+> > 
+> 
+> I am attaching the strace for your reference.
 
->  arch/x86/include/asm/mca.h                     |    3 +
->  arch/x86/include/asm/setup.h                   |    6 +-
->  arch/x86/include/asm/setup_arch.h              |    3 -
->  arch/x86/include/asm/smp.h                     |   13 +-
->  arch/x86/include/asm/voyager.h                 |   80 ++---
->  arch/x86/include/asm/voyager_bios.h            |   21 +
->  arch/x86/include/asm/voyager_boot.h            |   27 ++
->  arch/x86/include/asm/voyager_vectors.h         |   37 ++
->  arch/x86/kernel/apic/apic.c                    |    8 +-
->  arch/x86/kernel/apic/ipi.c                     |    2 +-
->  arch/x86/kernel/apic/probe_32.c                |    3 +
->  arch/x86/kernel/entry_32.S                     |   70 +++-
->  arch/x86/kernel/irqinit_32.c                   |   15 +-
->  arch/x86/kernel/mca_32.c                       |   12 +
->  arch/x86/kernel/probe_roms_32.c                |    1 -
->  arch/x86/kernel/setup.c                        |   35 +--
->  arch/x86/kernel/smp.c                          |    7 +
->  arch/x86/kernel/smpboot.c                      |    2 +-
->  arch/x86/kernel/time_32.c                      |   11 +-
->  arch/x86/kernel/visws_quirks.c                 |    7 -
->  arch/x86/mach-voyager/setup.c                  |   66 ++--
->  arch/x86/mach-voyager/voyager_basic.c          |   98 ++---
->  arch/x86/mach-voyager/voyager_smp.c            |  544 ++++++++----------------
->  arch/x86/mach-voyager/voyager_thread.c         |    5 +-
+Thanks, and indeed I agree with your analysis !
 
-same here
+> This patch solves above problem, Is this a correct way ?
 
-YH
+I'm not sure, as it approximately consists in reverting that patch in
+a different way, which I've verified is similar in 2.6 :
 
->
+commit f7d4ff67d9c7481f720885e5ec37111bb081921f
+Author: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Date:   Tue Nov 1 14:03:08 2005 -0200
+
+    [PATCH] only disallow _setting_ of function key string
+    
+    Mikael Pettersson <mikpe@csd.uu.se> noted that the current 2.6-git (and
+    2.4) patch to disallow KDSKBSENT for unpriviledged users should be less
+    restrictive allowing reading of current function key string entry, but
+    not writing.
+    
+    Signed-off-by: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+    Signed-off-by: Andrew Morton <akpm@osdl.org>
+
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 40ce683..8b8f95d 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -166,6 +166,9 @@ do_kdsk_ioctl(int cmd, struct kbentry *user_kbe, int perm, struct kbd_struct *kb
+ 	if (i >= NR_KEYS || s >= MAX_NR_KEYMAPS)
+ 		return -EINVAL;	
+ 
++	if (!capable(CAP_SYS_TTY_CONFIG))
++		perm = 0;
++
+ 	switch (cmd) {
+ 	case KDGKBENT:
+ 		key_map = key_maps[s];
+@@ -277,7 +280,7 @@ do_kdgkb_ioctl(int cmd, struct kbsentry *user_kdgkb, int perm)
+ 	int i, j, k;
+ 
+ 	if (!capable(CAP_SYS_TTY_CONFIG))
+-		return -EPERM;
++		perm = 0;
+ 
+ 	/* we mostly copy too much here (512bytes), but who cares ;) */
+ 	if (copy_from_user(&tmp, user_kdgkb, sizeof(struct kbsentry)))
+
+
+I'm now thinking that RH9 might have relied on an expected feature to
+provide per-user keymaps. I indeed have never encountered a case where
+loadkeys was performed by a user, it was always some init script at
+boot time. Granting the access to plain users causes a DoS issue where
+a user might load a crappy map and log out, waiting for the next guy
+to try to log in and have fun with the remapped chars.
+
+After a bit of googling, I found the original discussion leading to
+this patch (sorry I closed the window too fast). One of the suggestion
+was to setuid loadkeys in environments where local users were trusted
+enough to change the keymaps.
+
+You could also add them to the sudoers file so that they do "sudo loadkeys".
+
+Anyway, given the security implications around this patch, I don't want
+to revert it, eventhough they are minor. This is the first reported breakage
+in 3+ years and the workarounds are quite non-intrusive.
+
+Best regards,
+Willy
+
