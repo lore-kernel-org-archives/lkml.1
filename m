@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbZCJLWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbZCJLWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754896AbZCJLWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 07:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZCJLWE
+	id S1755171AbZCJLWt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 07:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbZCJLWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 07:22:04 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48730 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754363AbZCJLWD (ORCPT
+	Tue, 10 Mar 2009 07:22:23 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39445 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754946AbZCJLWW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 07:22:03 -0400
-Subject: Re: [PATCH 3/7] tracing: use generic __stringify
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Larry Woodman <lwoodman@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <20090310105624.GD6825@nowhere>
-References: <20090310045710.286915983@goodmis.org>
-	 <20090310045811.084130677@goodmis.org>  <20090310105624.GD6825@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 10 Mar 2009 12:21:17 +0100
-Message-Id: <1236684077.25234.138.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
-Content-Transfer-Encoding: 8bit
+	Tue, 10 Mar 2009 07:22:22 -0400
+Date: Tue, 10 Mar 2009 12:22:09 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Alexandre Rostovtsev <tetromino@gmail.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] lenovo-sl-laptop : driver for review
+Message-ID: <20090310112209.GB1337@ucw.cz>
+References: <20090216025918.66d7a466@leftboat.lan> <20090227132752.GG1482@ucw.cz> <20090228143711.GB17541@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090228143711.GB17541@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-10 at 11:56 +0100, Frederic Weisbecker wrote:
-> On Tue, Mar 10, 2009 at 12:57:13AM -0400, Steven Rostedt wrote:
- 
-> > This removes the custom made STR(x) macros in the tracer and uses
-> > the generic __stringify macro instead.
+On Sat 2009-02-28 11:37:11, Henrique de Moraes Holschuh wrote:
+> On Fri, 27 Feb 2009, Pavel Machek wrote:
+> > > +module_param(debug_ec, bool, S_IRUGO);
+> > > +MODULE_PARM_DESC(debug_ec,
+> > > +	"Present EC debugging interface in procfs. WARNING: writing to the "
+> > > +	"EC can hang your system and possibly damage your hardware.");
+> > 
+> > Sounds dangerous and clearly does not belong to /proc. Please drop it.
+> 
+> ThinkPad ACPI also has one.  OTOH, we are fairly sure one cannot damage the
+> standard ThinkPad hardware through the "IBM thinkpad-style" EC firmware, the
+> EC sanity-checks things.  I suppose you could cause the box to go away for
+> lunch and don't come back until a complete hardware reset, or hit one of the
+> crash-the-EC-firmware bugs by accident, though.
 
-> Why not simply use the # ?
+Yeah but that interface still does not belong to /proc. Please drop it
+from merge version at least. 
 
-> > -#define __STR(x) #x
-> > -#define STR(x) __STR(x)
+> > > +/*************************************************************************
+> > > +    bluetooth sysfs - copied nearly verbatim from thinkpad_acpi.c
+> > > + *************************************************************************/
+> > 
+> > That's quite a lot of code for verbatim copy; create shared helper?
+> 
+> Yeah, I am game.  But let's do it later on and not delay anything because of
+> it, please.  I will start breaking thinkpad-acpi into multiple source files,
+> and after that is done (should take a while, thinkpad-acpi is a big module
+> with a LOT of subdriver interdependencies) we can look for the best way to
+> reduce code duplication.
 
-#include <stdio.h>
+Well,  this monolith is quite long/hard to review. IMO it should be
+split to make review easy. 
 
-#define FOO bar
-
-#define __STR(x) #x
-#define STR(x) __STR(x)
-
-void main(void)
-{
-        printf("%s %s\n", __STR(FOO), STR(FOO));
-}
-
-$ gcc -o str str.c; ./str
-str.c: In function ‘main’:
-str.c:9: warning: return type of ‘main’ is not ‘int’
-FOO bar
-
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
