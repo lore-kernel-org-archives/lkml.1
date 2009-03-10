@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbZCJLYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbZCJLYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbZCJLYk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 07:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbZCJLYO
+	id S1755528AbZCJLYy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 07:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755465AbZCJLYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 07:24:14 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60183 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755397AbZCJLYN (ORCPT
+	Tue, 10 Mar 2009 07:24:32 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56859
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755475AbZCJLYb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 07:24:13 -0400
-Date: Tue, 10 Mar 2009 12:23:55 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Thanasis <thanasis@asyr.hopto.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: jffs2 and kernel config for SDHC Memory Cards
-Message-ID: <20090310112355.GF1337@ucw.cz>
-References: <49B127AB.6070202@asyr.hopto.org> <49B12B71.7030300@asyr.hopto.org> <20090306182425.GB28349@silver.sucs.org> <49B18679.4030504@asyr.hopto.org> <20090306225746.GB25593@silver.sucs.org> <49B2A7F0.1090101@asyr.hopto.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B2A7F0.1090101@asyr.hopto.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 10 Mar 2009 07:24:31 -0400
+Date: Tue, 10 Mar 2009 04:24:17 -0700 (PDT)
+Message-Id: <20090310.042417.242564481.davem@davemloft.net>
+To: adobriyan@gmail.com
+Cc: stoyboyker@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 03/25] [net] BUG to BUG_ON changes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090310102355.GB2248@x200.localdomain>
+References: <1236661850-8237-3-git-send-email-stoyboyker@gmail.com>
+	<1236661850-8237-4-git-send-email-stoyboyker@gmail.com>
+	<20090310102355.GB2248@x200.localdomain>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-03-07 18:59:28, Thanasis wrote:
-> on 03/07/2009 12:57 AM Sitsofe Wheeler wrote the following:
-> > On Fri, Mar 06, 2009 at 10:24:25PM +0200, Thanasis wrote:
-> >> on 03/06/2009 08:24 PM Sitsofe Wheeler wrote the following:
-> >>> On Fri, Mar 06, 2009 at 03:56:01PM +0200, Thanasis wrote:
-> >>>> on 03/06/2009 03:39 PM Thanasis wrote the following:
-> >>>>> I want to use two of these Transcend?s Class 6 SDHC (SD High-Capacity)
-> >>>>> Memory Cards,
-> >>>>> http://www.transcendusa.com/Products/ModDetail.asp?ModNo=147&LangNo=0&Func1No=1&Func2No=13
-> >>>>> as part of the filesystem in a netbook (Acer A110L), will mount /home on
-> >>>>> one, and /tmp and /var on the other.
-> >>>  
-> >>>> Let me rephrase my questions in order to be clearer:
-> >>>> Q1: In order to achieve wear leveling should I format them as jffs2?
-> >>> This probably won't be very effective as you are already past the
-> > 
-> >> OK. I believe I should stick to ext2, right?
-> > 
-> > If you mean compared to jffs2 then probably yes, better to stick with
-> > ext2. 
-> Right, that is what I meant.
+From: Alexey Dobriyan <adobriyan@gmail.com>
+Date: Tue, 10 Mar 2009 13:23:55 +0300
+
+> On Tue, Mar 10, 2009 at 12:10:28AM -0500, Stoyan Gaydarov wrote:
+> > --- a/drivers/net/pppol2tp.c
+> > +++ b/drivers/net/pppol2tp.c
+> > @@ -1222,8 +1222,7 @@ static void pppol2tp_tunnel_closeall(struct pppol2tp_tunnel *tunnel)
+> >  	struct pppol2tp_session *session;
+> >  	struct sock *sk;
+> >  
+> > -	if (tunnel == NULL)
+> > -		BUG();
+> > +	BUG_ON(tunnel == NULL);
 > 
-> If you mean is ext2 the best choice over anything else... well
-> > that's an open question (or so I'm told). You would need to ask a
-> > filesystem expert really but it apparently depends on the workload, the
-> > characteristics of the "disks" and whether you need journaling.
-> It is going to be a desktop (netbook) system, so, if it had a HDD, I
-> would opt for ext4 or xfs, but given the hardware (SDHC), I guess ext2
-> is the best choice.
+> NAK, should be deleted, and kernel will oops anyway.
 
-Well, maybe  ext2 is _best_ choice, but it is not good one. It will
-loose data on sudden powerdowns...
+I think in situations such as this, where someone is trying to rid the
+tree of an interface (where an exactly equivalent alternative
+expression exists) so it can be deleted, it is absolutely unreasonable
+to ask them to make non-trivial transformations like you are
+requesting on top of what can already be a quite daunting task.
 
-See
+Please rescind your NACK, thanks.
 
-(english) http://www.livejournal.com/~pavelmachek
-
-entry 'evil little cards'.
-
+This is the kind of NACK which makes me absolutely furious when I try
+to contribute to projects other than the kernel.  So please don't make
+the kernel suck as much as those projects do.  It's a deterrant to
+contributors.
