@@ -1,97 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbZCJQIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbZCJQHt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbZCJQIJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 12:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbZCJQFp
+	id S1757242AbZCJQHt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 12:07:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbZCJQFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 12:05:45 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:44975 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756871AbZCJQFo (ORCPT
+	Tue, 10 Mar 2009 12:05:35 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:28449 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756844AbZCJQFe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 12:05:44 -0400
-Date: Tue, 10 Mar 2009 12:05:42 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ingo Molnar <mingo@elte.hu>
-cc: prasad@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [patch 06/11] Use virtual debug registers in process/thread
- handling code
-In-Reply-To: <20090310144933.GH3850@elte.hu>
-Message-ID: <Pine.LNX.4.44L0.0903101155000.3979-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 10 Mar 2009 12:05:34 -0400
+From: Atal Shargorodsky <ext-atal.shargorodsky@nokia.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux@arm.linux.org.uk,
+       Atal Shargorodsky <ext-atal.shargorodsky@nokia.com>
+Subject: [PATCH 5/6] Correct manage of activation states.
+Date: Tue, 10 Mar 2009 18:03:55 +0200
+Message-Id: <6bfd4bd0c37668c409e3c2154ba2ab22c8a42800.1236609434.git.ext-atal.shargorodsky@nokia.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <0db69821a1be58e0b8889609ff2b2ee272aa3286.1236609434.git.ext-atal.shargorodsky@nokia.com>
+References: <>
+ <1236701036-19942-1-git-send-email-ext-atal.shargorodsky@nokia.com>
+ <cbbca1e42421e2ada459f0c0881f087977e34eed.1236609434.git.ext-atal.shargorodsky@nokia.com>
+ <0fe7f2934f8416e9b5f05e2f18766362560116ee.1236609434.git.ext-atal.shargorodsky@nokia.com>
+ <7992fd993e5b420f9c2aac55f6e674169b36c666.1236609434.git.ext-atal.shargorodsky@nokia.com>
+ <0db69821a1be58e0b8889609ff2b2ee272aa3286.1236609434.git.ext-atal.shargorodsky@nokia.com>
+In-Reply-To: <cbbca1e42421e2ada459f0c0881f087977e34eed.1236609434.git.ext-atal.shargorodsky@nokia.com>
+References: <cbbca1e42421e2ada459f0c0881f087977e34eed.1236609434.git.ext-atal.shargorodsky@nokia.com>
+X-OriginalArrivalTime: 10 Mar 2009 16:04:39.0484 (UTC) FILETIME=[EA9A9FC0:01C9A199]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Mar 2009, Ingo Molnar wrote:
+Needed to support CONFIG_WATCHDOG_NOWAYOUT option.
 
-> > @@ -595,6 +596,12 @@ __switch_to(struct task_struct *prev_p, 
-> >  
-> >  	percpu_write(current_task, next_p);
-> >  
-> > +	/*
-> > +	 * Handle debug registers.  This must be done _after_ current
-> > +	 * is updated.
-> > +	 */
-> > +	if (unlikely(test_tsk_thread_flag(next_p, TIF_DEBUG)))
-> > +		switch_to_thread_hw_breakpoint(next_p);
-> 
-> why does this have to be called after 'current' has been 
-> updated? AFAICS switch_to_thread_hw_breakpoint() does not take a 
-> look at 'current'.
+Signed-off-by: Atal Shargorodsky <ext-atal.shargorodsky@nokia.com>
+---
+ drivers/watchdog/omap_wdt.c |   40 ++++++++++++++++++++++++++--------------
+ 1 files changed, 26 insertions(+), 14 deletions(-)
 
-There was a discussion about this on LKML last October 17, and you were 
-in the CC list.  Here is the reason, extracted from one of those 
-messages:
-
-
-There's a problem with moving the switch_to_thread_hw_breakpoint() call 
-before current is updated.  Suppose a kernel breakpoint is triggered in 
-between the two.  The hw-breakpoint handler will see that current is 
-different from the task pointer stored in the chbi area, so it will 
-think the task pointer is leftover from an old task (lazy switching) 
-and will erase it.  Then until the next context switch, no 
-user-breakpoints will be installed.
-
-The real problem is that it's impossible to update both current and 
-chbi->bp_task at the same instant, so there will always be a window in 
-which they disagree and a breakpoint might get triggered.  Since we use 
-lazy switching, we are forced to assume that a disagreement means that 
-current is correct and chbi->bp_task is old.  But if you move the code 
-above then you'll create a window in which current is old and 
-chbi->bp_task is correct.
-
-
-> Speaking of switch_to_thread_hw_breakpoint(), i dont like that 
-> function at all:
-> 
-> - why does it have to do a list of debug registers?
-
-I'm not sure I understand the point of this question.  Are you asking
-why the hw_breakpoint structures are stored on a list?  Because there
-can be an arbitrarily large number of them.
-
-> - why does it worry about IPIs arriving when context-switches on 
->   x86 are always done with interrupts disabled?
-
-The routine gets invoked at times other than during a context switch.  
-However you may be right that these times are all mutually exclusive.  
-If so then a good deal of complication can be removed.
-
-> - also, what do the ->installed() and ->uninstalled() callbacks 
->   do - nothing uses it!
-
-What do you mean?  They do what any callback does.  And of course 
-nothing uses them -- the code hasn't been merged yet!
-
-The intention is to let programs (or kernel debuggers) know when the 
-statistics they are gathering are contaminated because the breakpoint 
-in question has been uninstalled, and when the statistics are again 
-valid because the breakpoint has been re-installed.
-
-Alan Stern
+diff --git a/drivers/watchdog/omap_wdt.c b/drivers/watchdog/omap_wdt.c
+index d033139..6f6a524 100644
+--- a/drivers/watchdog/omap_wdt.c
++++ b/drivers/watchdog/omap_wdt.c
+@@ -56,10 +56,13 @@ MODULE_PARM_DESC(timer_margin, "initial watchdog timeout (in seconds)");
+ static unsigned int wdt_trgr_pattern = 0x1234;
+ static spinlock_t wdt_lock;
+ 
++#define OMAP_WDT_STATE_OPENED_BIT	1
++#define OMAP_WDT_STATE_ACTIVATED_BIT	8
++
+ struct omap_wdt_dev {
+ 	void __iomem    *base;          /* physical */
+ 	struct device   *dev;
+-	int             omap_wdt_users;
++	int             omap_wdt_state;
+ 	struct clk      *mpu_wdt_ick;
+ 	struct clk      *mpu_wdt_fck;
+ 	struct resource *mem;
+@@ -152,19 +155,25 @@ static int omap_wdt_open(struct inode *inode, struct file *file)
+ 	struct omap_wdt_dev *wdev = platform_get_drvdata(omap_wdt_dev);
+ 	void __iomem *base = wdev->base;
+ 
+-	if (test_and_set_bit(1, (unsigned long *)&(wdev->omap_wdt_users)))
++	if (test_and_set_bit(OMAP_WDT_STATE_OPENED_BIT,
++			(unsigned long *)&(wdev->omap_wdt_state)))
+ 		return -EBUSY;
+ 
+ 	omap_wdt_ick_enable(wdev->mpu_wdt_ick, 1);
+-	clk_enable(wdev->mpu_wdt_fck);
++	if (wdev->omap_wdt_state & (1 << OMAP_WDT_STATE_ACTIVATED_BIT))
++		omap_wdt_ping(wdev);
++	else {
++		clk_enable(wdev->mpu_wdt_fck);
+ 
+-	/* initialize prescaler */
+-	while (__raw_readl(base + OMAP_WATCHDOG_WPS) & 0x01)
+-		cpu_relax();
++		/* initialize prescaler */
++		while (__raw_readl(base + OMAP_WATCHDOG_WPS) & 0x01)
++			cpu_relax();
+ 
+-	__raw_writel((1 << 5) | (PTV << 2), base + OMAP_WATCHDOG_CNTRL);
+-	while (__raw_readl(base + OMAP_WATCHDOG_WPS) & 0x01)
+-		cpu_relax();
++		__raw_writel((1 << 5) | (PTV << 2), base + OMAP_WATCHDOG_CNTRL);
++		while (__raw_readl(base + OMAP_WATCHDOG_WPS) & 0x01)
++			cpu_relax();
++		wdev->omap_wdt_state |= (1 << OMAP_WDT_STATE_ACTIVATED_BIT);
++	}
+ 
+ 	file->private_data = (void *) wdev;
+ 
+@@ -189,10 +198,13 @@ static int omap_wdt_release(struct inode *inode, struct file *file)
+ 	omap_wdt_ick_enable(wdev->mpu_wdt_ick, 0);
+ 
+ 	clk_disable(wdev->mpu_wdt_fck);
++	wdev->omap_wdt_state &= ~(1 << OMAP_WDT_STATE_ACTIVATED_BIT);
+ #else
++	/* Give the user application some time to recover in case of crash. */
++	omap_wdt_ping(wdev);
+ 	printk(KERN_CRIT "omap_wdt: Unexpected close, not stopping!\n");
+ #endif
+-	wdev->omap_wdt_users = 0;
++	wdev->omap_wdt_state &= ~(1 << OMAP_WDT_STATE_OPENED_BIT);
+ 
+ 	return 0;
+ }
+@@ -307,7 +319,7 @@ static int __init omap_wdt_probe(struct platform_device *pdev)
+ 		goto err_kzalloc;
+ 	}
+ 
+-	wdev->omap_wdt_users = 0;
++	wdev->omap_wdt_state = 0;
+ 	wdev->mem = mem;
+ 
+ 	if (cpu_is_omap16xx()) {
+@@ -417,7 +429,7 @@ static void omap_wdt_shutdown(struct platform_device *pdev)
+ {
+ 	struct omap_wdt_dev *wdev = platform_get_drvdata(pdev);
+ 
+-	if (wdev->omap_wdt_users) {
++	if (wdev->omap_wdt_state & (1<<OMAP_WDT_STATE_ACTIVATED_BIT)) {
+ 		omap_wdt_ick_enable(wdev->mpu_wdt_ick, 1);
+ 		omap_wdt_disable(wdev);
+ 		omap_wdt_ick_enable(wdev->mpu_wdt_ick, 0);
+@@ -465,7 +477,7 @@ static int omap_wdt_suspend(struct platform_device *pdev, pm_message_t state)
+ {
+ 	struct omap_wdt_dev *wdev = platform_get_drvdata(pdev);
+ 
+-	if (wdev->omap_wdt_users) {
++	if (wdev->omap_wdt_state & (1<<OMAP_WDT_STATE_ACTIVATED_BIT)) {
+ 		omap_wdt_ick_enable(wdev->mpu_wdt_ick, 1);
+ 		omap_wdt_disable(wdev);
+ 		omap_wdt_ick_enable(wdev->mpu_wdt_ick, 0);
+@@ -478,7 +490,7 @@ static int omap_wdt_resume(struct platform_device *pdev)
+ {
+ 	struct omap_wdt_dev *wdev = platform_get_drvdata(pdev);
+ 
+-	if (wdev->omap_wdt_users) {
++	if (wdev->omap_wdt_state & (1<<OMAP_WDT_STATE_ACTIVATED_BIT)) {
+ 		omap_wdt_ick_enable(wdev->mpu_wdt_ick, 1);
+ 		omap_wdt_enable(wdev);
+ 		omap_wdt_ping(wdev);
+-- 
+1.5.4.3
 
