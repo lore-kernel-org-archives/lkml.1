@@ -1,41 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757906AbZCJURZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbZCJUaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757906AbZCJURZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 16:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbZCJURQ
+	id S1756859AbZCJUaL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 16:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZCJU3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 16:17:16 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42636
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753564AbZCJURP (ORCPT
+	Tue, 10 Mar 2009 16:29:53 -0400
+Received: from [213.79.90.228] ([213.79.90.228]:2117 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753154AbZCJU3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 16:17:15 -0400
-Date: Tue, 10 Mar 2009 13:17:00 -0700 (PDT)
-Message-Id: <20090310.131700.40129006.davem@davemloft.net>
-To: randy.dunlap@oracle.com
-Cc: geert@linux-m68k.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
-       linux-crypto@vger.kernel.org
-Subject: Re: linux-next: Tree for March 10 (crypto & NLATTR)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49B6C8BF.8010105@oracle.com>
-References: <49B6B821.5050302@oracle.com>
-	<10f740e80903101256v2cfe08a8g410c297e019d8693@mail.gmail.com>
-	<49B6C8BF.8010105@oracle.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Mar 2009 16:29:52 -0400
+Date: Tue, 10 Mar 2009 23:29:49 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: afleming@freescale.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com
+Subject: Re: [PATCH 5/5] net: make mpc5200 fec driver use of_mdio
+	infrastructure
+Message-ID: <20090310202949.GA17184@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090310150751.12455.70598.stgit@localhost.localdomain> <20090310152224.12455.99348.stgit@localhost.localdomain> <20090310191638.GA8539@oksana.dev.rtsoft.ru> <fa686aa40903101248n33ee35c2o32c4b24b349b14fc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <fa686aa40903101248n33ee35c2o32c4b24b349b14fc@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Date: Tue, 10 Mar 2009 13:08:31 -0700
+On Tue, Mar 10, 2009 at 01:48:26PM -0600, Grant Likely wrote:
+[...]
+> >> eliminates the assumption that the PHY for the FEC is always
+> >> attached to the FEC's own MDIO bus. With this patch, the FEC can
+> >> use a PHY attached to any MDIO bus if it is described in the device
+> >> tree.
+> >
+> > AFAIK, Gianfar and UCC Geth drivers can do this too, so I'm assuming
+> > that this isn't the cause for these major changes.
+> 
+> Certainly the mpc5200-fec driver's original phy code certainly wasn't
+> as robust as the ucc_geth and gianfar phy handling.
+> 
+> ucc_geth open codes a solution to decode the phy_device name from
+> several nodes in the device tree and doesn't handle the case where the
+> ucc_geth is initialized before the phy_device is registered.  gianfar
+> open codes the same thing.  This solution uses common code to locate
+> the phy_device, and it works regardless of what order devices are
+> registered in.
+> 
+> That being said, the 5200 driver originally using probe() time to
+> connect to the phy.  If I change it to be connected at open time, then
+> does the registration order issue become irrelevant?
 
-> I'll have to let David or Herbert answer that.  From my quick look
-> at the code, I don't see much use for nlattr.c when CONFIG_NET
-> is not enabled.
+Yup. `ifconfig ethX up' calls ->open(). If it fails (and prints
+nice error), you can try `ifconfig ethX up' again later.
 
-We want to use the netlink attribute parsers even in non-networking
-code, that's what he's trying to do here.
+> Regardless, I
+> think all the drivers should be using common code for obtaining the
+> phy_device from the device tree.
+
+Not necessary `struct phy_device'. All we need is some common
+routine for translating PHY's "mdio_node->full_name + phy id" to
+phy_bus_id.
+
+That is, you can just factor out this code from the gianfar driver,
+
+void gfar_mdio_bus_name(char *name, struct device_node *np)
+{
+        const u32 *reg;
+
+        reg = of_get_property(np, "reg", NULL);
+
+        snprintf(name, MII_BUS_ID_SIZE, "%s@%x", np->name, reg ? *reg : 0);
+}
+
+...
+        gfar_mdio_bus_name(bus_name, mdio);
+        snprintf(priv->phy_bus_id, sizeof(priv->phy_bus_id), "%s:%02x",
+                 bus_name, *id);
+...
+
+And make sure FEC MDIO driver does mdio_bus->parent = &ofdev->dev;
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
