@@ -1,70 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbZCJQA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbZCJQDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756392AbZCJQA0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 12:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbZCJQAK
+	id S1756815AbZCJQDj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 12:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbZCJQD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 12:00:10 -0400
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:61776 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753652AbZCJQAJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 12:00:09 -0400
-Date: Tue, 10 Mar 2009 11:00:00 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-Message-ID: <20090310110000.24893e0c@thinkcentre.lan>
-In-Reply-To: <20090310105702.43eb1402@thinkcentre.lan>
-References: <20090305163857.0C18F3FD@kernel>
- <20090310105702.43eb1402@thinkcentre.lan>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-Pobox-Relay-ID: 86729BD8-0D8C-11DE-B8C9-CBE7E3B37BAC-04752483!a-sasl-quonix.pobox.com
+	Tue, 10 Mar 2009 12:03:27 -0400
+Received: from mx2.suse.de ([195.135.220.15]:55125 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754257AbZCJQD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 12:03:26 -0400
+Date: Tue, 10 Mar 2009 17:03:21 +0100
+From: Jan Kara <jack@suse.cz>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-fsdevel@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Jorge Boncompte [DTI2]" <jorge@dti2.net>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>, stable@kernel.org
+Subject: Re: [patch] fs: avoid I_NEW inodes
+Message-ID: <20090310160321.GB1190@duck.suse.cz>
+References: <20090305064554.GA11916@wotan.suse.de> <20090305100000.GA29177@duck.suse.cz> <20090305101637.GB17815@wotan.suse.de> <20090305111226.GB29531@duck.suse.cz> <20090310134106.GA15977@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090310134106.GA15977@wotan.suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 3695fbda6225d2436e4af67a4bce6984df0891be Mon Sep 17 00:00:00 2001
-From: Nathan Lynch <ntl@pobox.com>
-Date: Mon, 9 Mar 2009 22:36:40 -0500
-Subject: [PATCH] ratelimit files_deny_checkpointing output
+  Hi,
 
-Any common distribution's boot sequence causes thousands of
-"<something> performed an action that cannot be checkpointed"
-messages.  Kernels are known to produce other messages of interest at
-times, so ratelimit the output of files_deny_checkpointing.
+On Tue 10-03-09 14:41:06, Nick Piggin wrote:
+> On Thu, Mar 05, 2009 at 12:12:26PM +0100, Jan Kara wrote:
+> > On Thu 05-03-09 11:16:37, Nick Piggin wrote:
+> > > On Thu, Mar 05, 2009 at 11:00:01AM +0100, Jan Kara wrote:
+> > > > On Thu 05-03-09 07:45:54, Nick Piggin wrote:
+> > > > > after ~1hour of running. Previously, the new warnings would start immediately
+> > > > > and hang would happen in under 5 minutes.
+> > > >   A quick grep seems to indicate that you've still missed a few cases,
+> > > > haven't you? I still see the same problem in
+> > > > drop_caches.c:drop_pagecache_sb() scanning, inode.c:invalidate_inodes()
+> > > > scanning, and dquot.c:add_dquot_ref() scanning.
+> > > >   Otherwise the patch looks fine.
+> > > 
+> > > I thought they should be OK; drop_pagecache_sb doesn't play with flags,
+> > > invalidate_inodes won't if refcount is elevated, and I think add_dquot_ref
+> > > won't if writecount is not elevated...
+> >   Ah, ok, you are probably right.
+> > 
+> > > But maybe that's  abit fragile and it would be better policy to always
+> > > skip I_NEW in these traverals?
+> >   Yes, it seems too fragile to me. I'm not saying we have to forbid
+> > everything for I_NEW inodes but I think we should set clear simple rules
+> > what is protected by I_NEW and then verify that all sites which can come
+> > across such inodes obey them.
+> 
+> OK, sorry for the delay, what do you think of the following patch on top
+> of the last?
+  Thanks for the patch. I have a few comments. See below.
 
+> ---
+> 
+> To be on the safe side, it should be less fragile to exclude I_NEW inodes
+> from inode list scans by default (unless there is an important reason to
+> have them).
+> 
+> Normally they will get excluded (eg. by zero refcount or writecount etc),
+> however it is a bit fragile for list walkers to know exactly what parts of
+> the inode state is set up and valid to test when in I_NEW. So along these
+> lines, move I_NEW checks upward as well (sometimes taking I_FREEING etc
+> checks with them too -- this shouldn't be a problem should it?)
+> 
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
+> 
+> ---
+>  fs/dquot.c                  |    6 ++++--
+>  fs/drop_caches.c            |    2 +-
+>  fs/inode.c                  |    2 ++
+>  fs/notify/inotify/inotify.c |   16 ++++++++--------
+>  4 files changed, 15 insertions(+), 11 deletions(-)
+> 
+> Index: linux-2.6/fs/dquot.c
+> ===================================================================
+> --- linux-2.6.orig/fs/dquot.c
+> +++ linux-2.6/fs/dquot.c
+> @@ -789,12 +789,12 @@ static void add_dquot_ref(struct super_b
+>  
+>  	spin_lock(&inode_lock);
+>  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> +		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
+> +			continue;
+>  		if (!atomic_read(&inode->i_writecount))
+>  			continue;
+>  		if (!dqinit_needed(inode, type))
+>  			continue;
+> -		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+> -			continue;
+>  
+>  		__iget(inode);
+>  		spin_unlock(&inode_lock);
+> @@ -870,6 +870,8 @@ static void remove_dquot_ref(struct supe
+>  
+>  	spin_lock(&inode_lock);
+>  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> +		if (inode->i_state & I_NEW)
+> +			continue;
+>  		if (!IS_NOQUOTA(inode))
+>  			remove_inode_dquot_ref(inode, type, tofree_head);
+>  	}
+  Hmm, in this scan, we have to scan also I_NEW inodes because they can
+already have quota pointers initialized and so we could leave some dangling
+quota references if we skipped I_NEW inodes. Nasty. So just add a comment
+here like this one here:
+/*
+ *  We have to scan also I_NEW inodes because they can already have quota
+ *  pointer initialized. Luckily, we need to touch only quota pointers and
+ *  these have separate locking (dqptr_sem).
+ */
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
- include/linux/checkpoint.h |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+> Index: linux-2.6/fs/drop_caches.c
+> ===================================================================
+> --- linux-2.6.orig/fs/drop_caches.c
+> +++ linux-2.6/fs/drop_caches.c
+> @@ -18,7 +18,7 @@ static void drop_pagecache_sb(struct sup
+>  
+>  	spin_lock(&inode_lock);
+>  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> -		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+> +		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
+>  			continue;
+>  		if (inode->i_mapping->nrpages == 0)
+>  			continue;
+> Index: linux-2.6/fs/inode.c
+> ===================================================================
+> --- linux-2.6.orig/fs/inode.c
+> +++ linux-2.6/fs/inode.c
+> @@ -356,6 +356,8 @@ static int invalidate_list(struct list_h
+>  		if (tmp == head)
+>  			break;
+>  		inode = list_entry(tmp, struct inode, i_sb_list);
+> +		if (inode->i_state & I_NEW)
+> +			continue;
+  If somebody is setting up inodes at this point, we are in serious
+trouble I think. So WARN_ON would be more appropriate I think.
 
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 27366ac..efdb8f0 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -108,8 +108,10 @@ static inline void __files_deny_checkpointing(const struct task_struct *tsk,
- {
- 	if (!test_and_clear_bit(0, &files->may_checkpoint))
- 		return;
--	printk(KERN_INFO "%s/%i performed an action that can not be "
--	       "checkpointed at: %s:%d\n", tsk->comm, tsk->pid, file, line);
-+	if (printk_ratelimit())
-+		printk(KERN_INFO "%s/%i performed an action that can not be "
-+				"checkpointed at: %s:%d\n",
-+				tsk->comm, tsk->pid, file, line);
- }
- #define files_deny_checkpointing(tsk,f)				\
- 	__files_deny_checkpointing(tsk, f, __FILE__, __LINE__)
+>  		invalidate_inode_buffers(inode);
+>  		if (!atomic_read(&inode->i_count)) {
+>  			list_move(&inode->i_list, dispose);
+> Index: linux-2.6/fs/notify/inotify/inotify.c
+> ===================================================================
+> --- linux-2.6.orig/fs/notify/inotify/inotify.c
+> +++ linux-2.6/fs/notify/inotify/inotify.c
+> @@ -380,6 +380,14 @@ void inotify_unmount_inodes(struct list_
+>  		struct list_head *watches;
+>  
+>  		/*
+> +		 * We cannot __iget() an inode in state I_CLEAR, I_FREEING, or
+> +		 * I_WILL_FREE which is fine because by that point the inode
+> +		 * cannot have any associated watches.
+> +		 */
+  Update the comment?
+
+> +		if (inode->i_state & (I_CLEAR|I_FREEING|I_WILL_FREE|I_NEW))
+> +			continue;
+> +
+> +		/*
+>  		 * If i_count is zero, the inode cannot have any watches and
+>  		 * doing an __iget/iput with MS_ACTIVE clear would actually
+>  		 * evict all inodes with zero i_count from icache which is
+> @@ -388,14 +396,6 @@ void inotify_unmount_inodes(struct list_
+>  		if (!atomic_read(&inode->i_count))
+>  			continue;
+>  
+> -		/*
+> -		 * We cannot __iget() an inode in state I_CLEAR, I_FREEING, or
+> -		 * I_WILL_FREE which is fine because by that point the inode
+> -		 * cannot have any associated watches.
+> -		 */
+> -		if (inode->i_state & (I_CLEAR | I_FREEING | I_WILL_FREE))
+> -			continue;
+> -
+>  		need_iput_tmp = need_iput;
+>  		need_iput = NULL;
+>  		/* In case inotify_remove_watch_locked() drops a reference. */
+
+									Honza
 -- 
-1.6.0.6
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
