@@ -1,149 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZCJQ3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756844AbZCJQaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbZCJQ3K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 12:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968AbZCJQ2l
+	id S1756844AbZCJQaY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 12:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbZCJQaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 12:28:41 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55671 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753746AbZCJQ2k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 12:28:40 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 1/2] regulator: Implement list_voltage() for WM8400 DCDCs and LDOs
-Date: Tue, 10 Mar 2009 16:28:35 +0000
-Message-Id: <1236702516-30733-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.2
+	Tue, 10 Mar 2009 12:30:08 -0400
+Received: from ns2.suse.de ([195.135.220.15]:55968 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754192AbZCJQaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 12:30:07 -0400
+Date: Tue, 10 Mar 2009 17:30:02 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: "Jorge Boncompte [DTI2]" <jorge@dti2.net>
+Cc: ext-adrian.hunter@nokia.com, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Error testing ext3 on brd ramdisk
+Message-ID: <20090310163002.GC19352@wotan.suse.de>
+References: <491D7C4C.3090907@nokia.com> <49A82C2E.4030903@dti2.net> <20090228055809.GC28496@wotan.suse.de> <49AC1A7A.1070108@dti2.net> <20090305065529.GB11916@wotan.suse.de> <49AF9932.2040301@dti2.net> <20090305094623.GA17815@wotan.suse.de> <49AFAFD9.9050805@dti2.net> <49AFC1A9.90501@dti2.net> <20090310161247.GA19352@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090310161247.GA19352@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All DCDCs and LDOs are identical.
+On Tue, Mar 10, 2009 at 05:12:47PM +0100, Nick Piggin wrote:
+> On Thu, Mar 05, 2009 at 01:12:25PM +0100, Jorge Boncompte [DTI2] wrote:
+> > Jorge Boncompte [DTI2] escribió:
+> > >Ok. I have modified the script to do...
+> > >------------
+> > >mount -no remount,ro /dev/ram0
+> > >dd if=/dev/ram0 of=/tmp/config.bin bs=1k count=1000
+> > >fsck.minix -fv /tmp/config.bin
+> > >if [ $? != 0 ]; then
+> > >    echo "FATAL: Filesystem is corrupted"
+> > >    exit 2
+> > >fi
+> > >mount -no remount,rw /dev/ram0
+> > >md5sum config.bin
+> > >dd if=config.bin of=/dev/hda1
+> > >echo $md5sum | dd of=/dev/hda1 bs=1k seek=1100 count=32
+> > >------------
+> > >... after some cycles of modifying files on the filesystem and trying to 
+> > >save it to disk...
+> > >------------------
+> > >fsck.minix: BusyBox v1.8.2 (2008-12-03 14:24:56 CET)
+> > >Forcing filesystem check on /tmp/config.bin
+> > >Unused inode 198 is marked as 'used' in the bitmap.
+> > >Zone 393 is marked 'in use', but no file uses it.
+> > >Zone 394 is marked 'in use', but no file uses it.
+> > >
+> > >   198 inodes used (58%)
+> > >   395 zones used (39%)
+> > >
+> > >   163 regular files
+> > >    24 directories
+> > >     0 character device files
+> > >     0 block device files
+> > >     0 links
+> > >    10 symbolic links
+> > >------
+> > >   197 files
+> > >FATAL: Filesystem is corrupted
+> > >-------------------
+> > >
+> > 
+> > 	If after getting the "FATAL: Filesystem is corrupted" message I do 
+> > "echo 3 > /proc/sys/vm/drop_caches" and rerun the script the filesystem 
+> > somehow got magically fixed (I mean fsck.minix does not report errors 
+> > and the image gets written to disk well ;-)
+> 
+> OK, I can reproduce this. It really does seem to be due to buffercache
+> going out of coherency for some reason, so the trick is that you have
+> to fsck it while you have it mounted ro before remounting rw then modifying
+> it then remounting ro and fscking again (the first fsck must bring in
+> uptodate buffercache, and something is not being correctly invalidated).
+> 
+> It is also not brd or minix specific -- I reproduced it with loop driver
+> and ext2 too, and probably regular disk driver will have the same problem
+> (ie. it is something in the buffercache).
+> 
+> I don't know if this is the same problem as the ext3 issue -- the recipe
+> for reproducing ext3 problem includes umount, which will invalidate all
+> the buffercache unless something is holding the bdev open. But anyway I
+> am making some progress with this problem so I will try solve it first.
+> 
+> I can't think of any good reason why buffercache should be going out of
+> sync here...
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Ah, of course, it would be due to directory-in-pagecache. You need
+the following patch if you expect this to work.
+
+And that confirms the ext3 problem is a different one because it
+doesn't use directory in pagecache I think. Well, I'll look at
+that one tomorrow.
+
+Thanks,
+Nick
+
 ---
- drivers/regulator/wm8400-regulator.c |   34 ++++++++++++++++++++++++++++++----
- 1 files changed, 30 insertions(+), 4 deletions(-)
+ fs/super.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/regulator/wm8400-regulator.c b/drivers/regulator/wm8400-regulator.c
-index 6ed43b0..1574260 100644
---- a/drivers/regulator/wm8400-regulator.c
-+++ b/drivers/regulator/wm8400-regulator.c
-@@ -43,6 +43,18 @@ static int wm8400_ldo_disable(struct regulator_dev *dev)
- 			       WM8400_LDO1_ENA, 0);
- }
+Index: linux-2.6/fs/super.c
+===================================================================
+--- linux-2.6.orig/fs/super.c
++++ linux-2.6/fs/super.c
+@@ -644,6 +644,8 @@ int do_remount_sb(struct super_block *sb
+ 		acct_auto_close(sb);
+ 	shrink_dcache_sb(sb);
+ 	fsync_super(sb);
++	if (flags & MS_RDONLY)
++		invalidate_bdev(sb->s_bdev);
  
-+static int wm8400_ldo_list_voltage(struct regulator_dev *dev,
-+				   unsigned selector)
-+{
-+	if (selector > WM8400_LDO1_VSEL_MASK)
-+		return -EINVAL;
-+
-+	if (selector < 15)
-+		return 900000 + (selector * 50000);
-+	else
-+		return 1600000 + ((selector - 14) * 100000);
-+}
-+
- static int wm8400_ldo_get_voltage(struct regulator_dev *dev)
- {
- 	struct wm8400 *wm8400 = rdev_get_drvdata(dev);
-@@ -51,10 +63,7 @@ static int wm8400_ldo_get_voltage(struct regulator_dev *dev)
- 	val = wm8400_reg_read(wm8400, WM8400_LDO1_CONTROL + rdev_get_id(dev));
- 	val &= WM8400_LDO1_VSEL_MASK;
- 
--	if (val < 15)
--		return 900000 + (val * 50000);
--	else
--		return 1600000 + ((val - 14) * 100000);
-+	return wm8400_ldo_list_voltage(dev, val);
- }
- 
- static int wm8400_ldo_set_voltage(struct regulator_dev *dev,
-@@ -92,6 +101,7 @@ static struct regulator_ops wm8400_ldo_ops = {
- 	.is_enabled = wm8400_ldo_is_enabled,
- 	.enable = wm8400_ldo_enable,
- 	.disable = wm8400_ldo_disable,
-+	.list_voltage = wm8400_ldo_list_voltage,
- 	.get_voltage = wm8400_ldo_get_voltage,
- 	.set_voltage = wm8400_ldo_set_voltage,
- };
-@@ -124,6 +134,15 @@ static int wm8400_dcdc_disable(struct regulator_dev *dev)
- 			       WM8400_DC1_ENA, 0);
- }
- 
-+static int wm8400_dcdc_list_voltage(struct regulator_dev *dev,
-+				    unsigned selector)
-+{
-+	if (selector > WM8400_DC1_VSEL_MASK)
-+		return -EINVAL;
-+
-+	return 850000 + (selector * 25000);
-+}
-+
- static int wm8400_dcdc_get_voltage(struct regulator_dev *dev)
- {
- 	struct wm8400 *wm8400 = rdev_get_drvdata(dev);
-@@ -237,6 +256,7 @@ static struct regulator_ops wm8400_dcdc_ops = {
- 	.is_enabled = wm8400_dcdc_is_enabled,
- 	.enable = wm8400_dcdc_enable,
- 	.disable = wm8400_dcdc_disable,
-+	.list_voltage = wm8400_dcdc_list_voltage,
- 	.get_voltage = wm8400_dcdc_get_voltage,
- 	.set_voltage = wm8400_dcdc_set_voltage,
- 	.get_mode = wm8400_dcdc_get_mode,
-@@ -249,6 +269,7 @@ static struct regulator_desc regulators[] = {
- 		.name = "LDO1",
- 		.id = WM8400_LDO1,
- 		.ops = &wm8400_ldo_ops,
-+		.n_voltages = WM8400_LDO1_VSEL_MASK + 1,
- 		.type = REGULATOR_VOLTAGE,
- 		.owner = THIS_MODULE,
- 	},
-@@ -256,6 +277,7 @@ static struct regulator_desc regulators[] = {
- 		.name = "LDO2",
- 		.id = WM8400_LDO2,
- 		.ops = &wm8400_ldo_ops,
-+		.n_voltages = WM8400_LDO2_VSEL_MASK + 1,
- 		.type = REGULATOR_VOLTAGE,
- 		.owner = THIS_MODULE,
- 	},
-@@ -263,6 +285,7 @@ static struct regulator_desc regulators[] = {
- 		.name = "LDO3",
- 		.id = WM8400_LDO3,
- 		.ops = &wm8400_ldo_ops,
-+		.n_voltages = WM8400_LDO3_VSEL_MASK + 1,
- 		.type = REGULATOR_VOLTAGE,
- 		.owner = THIS_MODULE,
- 	},
-@@ -270,6 +293,7 @@ static struct regulator_desc regulators[] = {
- 		.name = "LDO4",
- 		.id = WM8400_LDO4,
- 		.ops = &wm8400_ldo_ops,
-+		.n_voltages = WM8400_LDO4_VSEL_MASK + 1,
- 		.type = REGULATOR_VOLTAGE,
- 		.owner = THIS_MODULE,
- 	},
-@@ -277,6 +301,7 @@ static struct regulator_desc regulators[] = {
- 		.name = "DCDC1",
- 		.id = WM8400_DCDC1,
- 		.ops = &wm8400_dcdc_ops,
-+		.n_voltages = WM8400_DC1_VSEL_MASK + 1,
- 		.type = REGULATOR_VOLTAGE,
- 		.owner = THIS_MODULE,
- 	},
-@@ -284,6 +309,7 @@ static struct regulator_desc regulators[] = {
- 		.name = "DCDC2",
- 		.id = WM8400_DCDC2,
- 		.ops = &wm8400_dcdc_ops,
-+		.n_voltages = WM8400_DC2_VSEL_MASK + 1,
- 		.type = REGULATOR_VOLTAGE,
- 		.owner = THIS_MODULE,
- 	},
--- 
-1.6.2
+ 	/* If we are remounting RDONLY and current sb is read/write,
+ 	   make sure there are no rw files opened */
+
 
