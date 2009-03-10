@@ -1,82 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbZCJIUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbZCJIWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753943AbZCJIUa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 04:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbZCJIUK
+	id S1753418AbZCJIWT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 04:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZCJIWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 04:20:10 -0400
-Received: from web4113.mail.ogk.yahoo.co.jp ([124.83.200.75]:22501 "HELO
-	web4113.mail.ogk.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753014AbZCJIUI (ORCPT
+	Tue, 10 Mar 2009 04:22:10 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:57497 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753101AbZCJIWI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 04:20:08 -0400
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Mar 2009 04:20:08 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=yj20050223; d=yahoo.co.jp;
-  h=Message-ID:Received:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type;
-  b=hYLaHzo/69DQvhQWl7sMKtGpO19t3i5Xy7WjelkWdUlaV2gRc4OPajMW4OkMG5OpK8gn/UZKTL0ghO5tLHl9CQtRXgCfkf0Am54QwA97XMyH+ZLAUE/MwF8hCeo8B3By  ;
-Message-ID: <20090310081325.25764.qmail@web4113.mail.ogk.yahoo.co.jp>
-Date: Tue, 10 Mar 2009 17:13:24 +0900 (JST)
-From: Norman Diamond <n0diamond@yahoo.co.jp>
-Reply-To: n0diamond@yahoo.co.jp
-Subject: LIBATA told me it's broken
-To: linux-kernel@vger.kernel.org
-Cc: n0diamond@yahoo.co.jp
+	Tue, 10 Mar 2009 04:22:08 -0400
+Message-ID: <49B6232B.4050503@vmware.com>
+Date: Tue, 10 Mar 2009 09:22:03 +0100
+From: Thomas Hellstrom <thellstrom@vmware.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: 2.6.29 pat issue
+References: <498ADFE3.9020907@vmware.com> <1233856988.4286.83.camel@localhost.localdomain> <498B5ADE.3090602@vmware.com> <m1tz78pdwy.fsf@fess.ebiederm.org> <498C062C.201@vmware.com> <20090304060857.GA18318@linux-os.sc.intel.com> <130CA3A191875048A0624FB523A55EC7075DA7CA@PA-EXMBX51.vmware.com> <20090310013953.GA11312@linux-os.sc.intel.com>
+In-Reply-To: <20090310013953.GA11312@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry the kernel is 2.6.24.3 but I can't use a newer one
-yet because TASKFILEs broke in newer ones.  This time I
-booted with kernel parameter hda=noprobe so the hard disk
-went to LIBATA instead of IDE.  The breakage shown below
-is in LIBATA.
+Pallipadi, Venkatesh wrote:
+> On Fri, Mar 06, 2009 at 03:44:07PM -0800, Thomas Hellstrom wrote:
+>   
+>> We get the warning when we insert RAM pages using vm_insert_pfn().
+>> Having normal RAM pages backing a PFN papping is a valid thing.
+>>
+>>     
+>
+> OK. Below is the updated patch that should fix this fully. Can you confirm?
+>
+> Thanks,
+> Venki
+>
+>   
 
-If LIBATA is fixed in newer kernel versions please say. 
-If there's a version of Slax where LIBATA works then maybe
-I can recompile its kernel without IDE.
+Yes, this patch should fix the problem. I'm still concerned about the 
+overhead of going through the
+RAM test for each inserted page.
 
-struct sg_io_hdr sg_io;
-uint8_t cdb[16];
-uint8_t sense[32];
-uint8_t buffer[0x20000];  // length = 256 * 512
-memset(&sg_io, 0, sizeof sg_io);
-memset(&cdb, 0, sizeof cdb);
-memset(&sense, 0, sizeof sense);
-memset(&buffer, 0xe5, sizeof buffer);
-cdb[0] = 0x8a;            // WRITE (16)
-cdb[6] = 0x0f;
-cdb[7] = 0xff;
-cdb[8] = 0xff;
-cdb[9] = 0x00;            // start = 0x0fffff00
-cdb[12] = 0x01;
-cdb[13] = 0x00;           // count = 0x0100
-sg_io.interface_id = 'S';
-sg_io.cmdp = cdb;
-sg_io.cmd_len = sizeof cdb;
-sg_io.dxferp = buffer;
-sg_io.dxfer_len = 256 * 512;
-sg_io.dxfer_direction = SG_DXFER_TO_DEV;
-sg_io.sbp = sense;
-sg_io.mx_sb_len = sizeof sense;
-sg_io.timeout = 2000;
-fd = open("/dev/sda", O_WRONLY);  // succeeded
-ioctl(fd, SG_IO, &sg_io);         // ioctl succeeded
-                                  // but LIBATA failed
+Why can't a pfn_valid() test be used in vm_insert_pfn()?
 
-CHECK CONDITION
-sense:
-72 0b 14 00 00 00 00 0c 00 0a 80 00 00 00 00 00
-0f ff ff 00
-
-/dev/sda is a 250GB SATA drive but Dell's Intel ICH7M
-presents it as ATA.  Ranges before and after the magic
-LBA28 boundary wrote perfectly.
+Thanks,
+Thomas
 
 
 
---------------------------------------
-Power up the Internet with Yahoo! Toolbar.
-http://pr.mail.yahoo.co.jp/toolbar/
+> From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Subject: [PATCH] VM, x86 PAT: Change implementation of is_linear_pfn_mapping
+>
+> Use of vma->vm_pgoff to identify the pfnmaps that are fully mapped at
+> mmap time is broken, as vm_pgoff can also be set when full mapping is
+> not setup at mmap time.
+> http://marc.info/?l=linux-kernel&m=123383810628583&w=2
+>
+> Change the logic to overload VM_NONLINEAR flag along with VM_PFNMAP to
+> mean full mapping setup at mmap time. This distinction is needed by
+> x86 PAT code.
+>
+> Regression reported at
+> http://bugzilla.kernel.org/show_bug.cgi?id=12800
+>
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> ---
+>  arch/x86/mm/pat.c  |    5 +++--
+>  include/linux/mm.h |    8 +++++++-
+>  mm/memory.c        |    6 ++++--
+>  3 files changed, 14 insertions(+), 5 deletions(-)
+>
+> diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+> index 2ed3715..640339e 100644
+> --- a/arch/x86/mm/pat.c
+> +++ b/arch/x86/mm/pat.c
+> @@ -677,10 +677,11 @@ static int reserve_pfn_range(u64 paddr, unsigned long size, pgprot_t *vma_prot,
+>  	is_ram = pat_pagerange_is_ram(paddr, paddr + size);
+>  
+>  	/*
+> -	 * reserve_pfn_range() doesn't support RAM pages.
+> +	 * reserve_pfn_range() doesn't support RAM pages. Maintain the current
+> +	 * behavior with RAM pages by returning success.
+>  	 */
+>  	if (is_ram != 0)
+> -		return -EINVAL;
+> +		return 0;
+>  
+>  	ret = reserve_memtype(paddr, paddr + size, want_flags, &flags);
+>  	if (ret)
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 065cdf8..6c3fc3a 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -127,6 +127,12 @@ extern unsigned int kobjsize(const void *objp);
+>  #define VM_SPECIAL (VM_IO | VM_DONTEXPAND | VM_RESERVED | VM_PFNMAP)
+>  
+>  /*
+> + * pfnmap vmas that are fully mapped at mmap time (not mapped on fault).
+> + * Used by x86 PAT to identify such PFNMAP mappings and optimize their handling.
+> + */
+> +#define VM_PFNMAP_AT_MMAP (VM_NONLINEAR | VM_PFNMAP)
+> +
+> +/*
+>   * mapping from the currently active vm_flags protection bits (the
+>   * low four bits) to a page protection mask..
+>   */
+> @@ -145,7 +151,7 @@ extern pgprot_t protection_map[16];
+>   */
+>  static inline int is_linear_pfn_mapping(struct vm_area_struct *vma)
+>  {
+> -	return ((vma->vm_flags & VM_PFNMAP) && vma->vm_pgoff);
+> +	return ((vma->vm_flags & VM_PFNMAP_AT_MMAP) == VM_PFNMAP_AT_MMAP);
+>  }
+>  
+>  static inline int is_pfn_mapping(struct vm_area_struct *vma)
+> diff --git a/mm/memory.c b/mm/memory.c
+> index baa999e..d7df5ba 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1665,9 +1665,10 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
+>  	 * behaviour that some programs depend on. We mark the "original"
+>  	 * un-COW'ed pages by matching them up with "vma->vm_pgoff".
+>  	 */
+> -	if (addr == vma->vm_start && end == vma->vm_end)
+> +	if (addr == vma->vm_start && end == vma->vm_end) {
+>  		vma->vm_pgoff = pfn;
+> -	else if (is_cow_mapping(vma->vm_flags))
+> +		vma->vm_flags |= VM_PFNMAP_AT_MMAP;
+> +	} else if (is_cow_mapping(vma->vm_flags))
+>  		return -EINVAL;
+>  
+>  	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP;
+> @@ -1679,6 +1680,7 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
+>  		 * needed from higher level routine calling unmap_vmas
+>  		 */
+>  		vma->vm_flags &= ~(VM_IO | VM_RESERVED | VM_PFNMAP);
+> +		vma->vm_flags &= ~VM_PFNMAP_AT_MMAP;
+>  		return -EINVAL;
+>  	}
+>  
+>   
+
