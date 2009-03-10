@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbZCJPUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbZCJPW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbZCJPUq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 11:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbZCJPUi
+	id S1756045AbZCJPW2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 11:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZCJPWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 11:20:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39400 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751999AbZCJPUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 11:20:37 -0400
-Date: Tue, 10 Mar 2009 16:20:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip V2] x86: cpu architecture debug code
-Message-ID: <20090310152029.GN3850@elte.hu>
-References: <1236684201.3301.11.camel@localhost.localdomain> <20090310122806.GE5794@elte.hu> <1236697752.3387.2.camel@localhost.localdomain>
+	Tue, 10 Mar 2009 11:22:03 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:39859 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbZCJPWB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 11:22:01 -0400
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 0/5] Retrieving Ethernet PHY wireup from the OF device tree
+To: afleming@freescale.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com
+Date: Tue, 10 Mar 2009 09:21:56 -0600
+Message-ID: <20090310150751.12455.70598.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236697752.3387.2.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+This series reworks some of the phylib code to allow PHY descriptions and
+connections to be extracted from the OF device tree.  MDIO bus drivers gain
+a common helper function for parsing the PHY data and registering new
+phy_devices to match.  Ethernet controller drivers gain the ability to
+resolve to a phy_device from a device tree phandle.
 
-> +#include <linux/interrupt.h>
-> +#include <linux/compiler.h>
-> +#include <linux/kprobes.h>
-> +#include <linux/signal.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/errno.h>
-> +#include <linux/sched.h>
-> +#include <linux/types.h>
-> +#include <linux/init.h>
-> +#include <linux/smp.h>
-> +#include <linux/slab.h>
-> +#include <linux/percpu.h>
-> +#include <linux/debugfs.h>
-> +#include <linux/seq_file.h>
+One notable aspect is that the Ethernet controller driver doesn't know
+if the phy_device is registered before or after the Ethernet driver.  This
+series adds a function to the device model core code to make it simple for
+the driver to register a bus notifier (mdio_bus in this case), which gets
+called both for existing devices and for future device registrations.  The
+advantage of this is that the driver doesn't need to know or care when the
+device actually shows up.  It just knows that its callback will get called
+when the device is available.  I think this is a good approach, but I'd
+appreciate some feedback on it.
 
-If you look at arch/x86/mm/fault.c, they are sorted by length, 
-and within the same length they are sorted alphabetically.
+Cheers,
+g.
 
-> +
-> +#include <asm/system.h>
-> +#include <asm/traps.h>
-> +#include <asm/apic.h>
-> +#include <asm/desc.h>
-> +#include <asm/cpu_debug.h>
+drivers/base/bus.c            |   47 +++++++++
+ drivers/net/Kconfig           |    2 +-
+ drivers/net/fec_mpc52xx.c     |  220 ++++++++++++++++++-----------------------
+ drivers/net/fec_mpc52xx_phy.c |   30 +++---
+ drivers/net/phy/mdio_bus.c    |   29 +-----
+ drivers/net/phy/phy_device.c  |  161 +++++++++++++++++++++++-------
+ drivers/of/Kconfig            |    6 +
+ drivers/of/Makefile           |    1 +
+ drivers/of/of_mdio.c          |   70 +++++++++++++
+ include/linux/device.h        |    2 +
+ include/linux/of_mdio.h       |   20 ++++
+ include/linux/phy.h           |    6 +
+ 12 files changed, 388 insertions(+), 206 deletions(-)
 
-ditto.
-
-	Ingo
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
