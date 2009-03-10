@@ -1,817 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZCJSQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756461AbZCJSTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755465AbZCJSQp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 14:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZCJSQf
+	id S1756461AbZCJSTM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 14:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbZCJSS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 14:16:35 -0400
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:39245 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751178AbZCJSQd (ORCPT
+	Tue, 10 Mar 2009 14:18:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50935 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755098AbZCJSS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 14:16:33 -0400
-X-Greylist: delayed 1632 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Mar 2009 14:16:32 EDT
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <49B6A843.3090902@cam.ac.uk>
-Date: Tue, 10 Mar 2009 17:49:55 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Daniel Mack <daniel@caiaq.de>
-CC: Jean Delvare <khali@linux-fr.org>, linux-i2c@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Added driver for ISL29003 ambient light sensor
-References: <1235606248-13004-1-git-send-email-daniel@caiaq.de> <20090226094857.50d0710d@hyperion.delvare> <20090306160042.GA17800@buzzloop.caiaq.de> <20090306182432.338b0244@hyperion.delvare> <20090306181409.GA20135@buzzloop.caiaq.de> <20090307115449.32f0ab26@hyperion.delvare> <20090307120631.GA25276@buzzloop.caiaq.de> <20090307130818.367bcaad@hyperion.delvare> <20090309210901.GC31367@buzzloop.caiaq.de> <49B666F9.50209@cam.ac.uk> <20090310151542.GE9564@buzzloop.caiaq.de>
-In-Reply-To: <20090310151542.GE9564@buzzloop.caiaq.de>
-Content-Type: text/plain; charset=us-ascii
+	Tue, 10 Mar 2009 14:18:57 -0400
+Subject: [PATCH] sched: avg_overlap decay
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 10 Mar 2009 19:18:51 +0100
+Message-Id: <1236709131.25234.576.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Mack wrote:
-> Hi Jonathan,
-> 
-> many thanks for your review!
-You are welcome.
-> 
-> On Tue, Mar 10, 2009 at 01:11:21PM +0000, Jonathan Cameron wrote:
->> I notice that this device is extremely similar to the ISL29004 where only
->> differences being with i2c address selection (that one has some pins to
->> allow more than one option).  Worth rolling support for that device in
->> here?
-> 
-> Well, the I2C address isn't coded in the driver but defined in the
-> i2c_board_info array of the board support file, so there is no reason
-> why it shouldn't work. Or are you talking about the names of files and
-> functions that you would like to see reflecting this?
-function names and filenames are fine (typically you just pick a random device
-that the driver supports and name everything after that).
-I think the only addition would be documentation of the patch and and id in
-the id table.
-> 
->> This device has some interesting interrupt / timing options which will fit
->> nicely in the IIO framework.  For now the driver sensibly ignores them
->> entirely. (if you don't need them, why bother?)
-> 
-> Right, I don't need them personally, and things are not connected to
-> the CPU, so I can't test that. I would expect anyone who needs this
-> functions to add support to the code :)
-> 
->>> +The ISL29003 does not have an ID register which could be used to identify
->>> +it, so the detection routine will just try to read from the configured I2C
->>> +addess and consider the device to be present as soon as it ACKs the
->>> +transfer.
->> This is a little nasty given the chances of something else sitting on that
->> address, but not much else you can do.
-> 
-> True.
-> 
->> Some of the following are acting only as documentation. It's
->> a matter of personal preference whether you specify them.
-> 
-> I defined them to make future feature additions easy ...
-> 
->>> +#define ISL29003_REG_COMMAND		0x00
->>> +#define ISL29003_ADC_ENABLED		(1 << 7)
->>> +#define ISL29003_ADC_PD			(1 << 6)
->>> +#define ISL29003_TIMING_INT		(1 << 5)
->>> +#define ISL29003_MODE_SHIFT		(2)
->>> +#define ISL29003_MODE_MASK		(0x3 << ISL29003_MODE_SHIFT)
->>> +#define ISL29003_RES_SHIFT		(0)
->>> +#define ISL29003_RES_MASK		(0x3 << ISL29003_RES_SHIFT)
-> 
-> [...]
-> 
->>> +static int __isl29003_write_reg(struct i2c_client *client,
->>> +				u32 reg, u8 mask, u8 shift, u8 val)
->>> +{
->>> +	struct isl29003_data *data = i2c_get_clientdata(client);
->>> +	int ret = 0;
->>> +	u8 tmp;
->>> +
->>> +	mutex_lock(&data->lock);
->>> +
->>> +	tmp = data->reg_cache[reg];
->>> +	tmp &= ~mask;
->>> +	tmp |= val << shift;
->>> +
->>> +	ret = i2c_smbus_write_byte_data(client, reg, tmp);
->> As i2c_smbus_write_byte_data is defined as returning zero on success
->> this could simply be, if (!ret).
-> 
-> Fixed.
-> 
->>> +}
->>> +
->>> +/* power_state */
->>> +static int isl29003_set_power_state(struct i2c_client *client, int state)
->>> +{
->>> +	int ret;
->>> +
->>> +	ret = __isl29003_write_reg(client, ISL29003_REG_COMMAND,
->>> +		ISL29003_ADC_ENABLED, 0, state);
->> As this is either 0 or less than zero, again if (ret) will suffice.
-> 
-> Fixed.
-> 
->>> +	if (ret < 0)
->>> +		return ret;
->>> +
->>> +	ret = __isl29003_write_reg(client, ISL29003_REG_COMMAND,
->>> +		ISL29003_ADC_PD, 0, ~state);
->> Just return ret hence losing these 2 lines.
-> 
-> Fixed.
-> 
->>> +	if (ret < 0)
->>> +		return ret;
->>> +
->>> +	return 0;
->>> +}
->>> +
->>> +static int isl29003_get_power_state(struct i2c_client *client)
->>> +{
->>> +	struct isl29003_data *data = i2c_get_clientdata(client);
->>> +	u8 cmdreg = data->reg_cache[ISL29003_REG_COMMAND];
->>> +	return (cmdreg & ISL29003_ADC_ENABLED) && (~cmdreg & ISL29003_ADC_PD);
->>> +}
->> Unfortunately this chip has gain controlled by combination of the i2c
->> accessed registers and an external resitor.  I guess this falls
->> into the category of things to be fixed in userspace.  Perhaps
->> some documentation to indicate this issue would help?
->> (table 9 of data sheet)
-> 
-> The resistor does not affect the value read from the register - it's
-> about integration time only. Or did I get it wrong?
-My reading of table 9 on the data sheet is that the full scale
-range is affected by the resistor. This is also described in the
-bit about calculating lux.
-> 
->>> +	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 3))
->>> +		return -EINVAL;
->> See as there are rather a lot of calls like this, why don't
->> you consider moving this test into the register write command.
->> If the device is powered up then it will get copied to the
->> device. If not, just store it in the cache and it will be
->> written on resume anyway (assuming my understanding of your
->> suspend resume code is right!)
-> 
-> It's not even necessary to do that - the driver can access all registers
-> while the PD bit is set. So the only check is to not read sensor data
-> when this condition is matched.
-> 
->>> +static ssize_t isl29003_store_power_state(struct device *dev,
->>> +					  struct device_attribute *attr,
->>> +					  const char *buf, size_t count)
->>> +{
->>> +	struct i2c_client *client = to_i2c_client(dev);
->>> +	unsigned long val;
->>> +	int ret;
->>> +	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 1))
->>> +		return -EINVAL;
->>> +
->>> +	ret = isl29003_set_power_state(client, val);
->>> +	if (ret < 0)
->>> +		return ret;
->> I'd go with more concise "return ret ? ret : count;" but thats down
->> to personal preference.
-> 
-> Fixed.
-> 
->>> +	/* read all the registers once to fill the cache.
->>> +	 * if one of the reads fails, we consider the init failed */
->> Why are you caching registers 4-7?  They are read only data registers
->> and those you use are read on demand anyway.  It's not a problem here,
->> but worth noting that even the first 2 are not simply read / write
->> control registers and hence any caching method has to be very careful
->>   (there is a interrupt flag in control according to the data sheet.)
-> 
-> You're right. I changed the cache to only store the first 4 registers
-> for now. Interrupt handling will need some extra work anyway, so I'll
-> leave that for now.
-> 
->> If we are restoring registers from cache, why are we reading them?
->>
->>> +	for (i = 0; i < ARRAY_SIZE(data->reg_cache); i++)
->>> +		if (i2c_smbus_read_byte_data(client, i, data->reg_cache[i]) < 0)
->>> +			return -ENODEV;
-> 
-> Typo - couldn't test the suspend/resume code yet. Fixed now.
-> 
-> Please see the patch below.
-> 
-> Thanks again,
-> Daniel
-> 
-> 
->>From 8ee5021834900f312ff26cd2586c18e99af31a5d Mon Sep 17 00:00:00 2001
-> From: Daniel Mack <daniel@caiaq.de>
-> Date: Tue, 10 Mar 2009 16:13:07 +0100
-> Subject: [PATCH] Added driver for ISL29003 ambient light sensor
-> 
-> This patch adds a driver for Intersil's ISL29003 ambient light sensor
-> device plus some documentation. Inspired by tsl2550.c, a driver for a
-> similar device.
-> 
-> It is put to drivers/misc for now until the industrial I/O framework
-> gets merged.
-> 
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> ---
->  New version with Jonathan Cameron's review notes addressed.
-> 
->  Documentation/misc-devices/isl29003 |   62 +++++
->  drivers/misc/Kconfig                |   10 +
->  drivers/misc/Makefile               |    1 +
->  drivers/misc/isl29003.c             |  470 +++++++++++++++++++++++++++++++++++
->  4 files changed, 543 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/misc-devices/isl29003
->  create mode 100644 drivers/misc/isl29003.c
-> 
-> diff --git a/Documentation/misc-devices/isl29003 b/Documentation/misc-devices/isl29003
-> new file mode 100644
-> index 0000000..c4ff5f3
-> --- /dev/null
-> +++ b/Documentation/misc-devices/isl29003
-> @@ -0,0 +1,62 @@
-> +Kernel driver isl29003
-> +=====================
-> +
-> +Supported chips:
-> +* Intersil ISL29003
-> +Prefix: 'isl29003'
-> +Addresses scanned: none
-> +Datasheet:
-> +http://www.intersil.com/data/fn/fn7464.pdf
-> +
-> +Author: Daniel Mack <daniel@caiaq.de>
-> +
-> +
-> +Description
-> +-----------
-> +The ISL29003 is an integrated light sensor with a 16-bit integrating type
-> +ADC, I2C user programmable lux range select for optimized counts/lux, and
-> +I2C multi-function control and monitoring capabilities. The internal ADC
-> +provides 16-bit resolution while rejecting 50Hz and 60Hz flicker caused by
-> +artificial light sources.
-> +
-> +The driver allows to set the lux range, the bit resolution, the operational
-> +mode (see below) and the power state of device and can read the current lux
-> +value, of course.
-> +
-> +
-> +Detection
-> +---------
-> +
-> +The ISL29003 does not have an ID register which could be used to identify
-> +it, so the detection routine will just try to read from the configured I2C
-> +addess and consider the device to be present as soon as it ACKs the
-> +transfer.
-> +
-> +
-> +Sysfs entries
-> +-------------
-> +
-> +range:
-> +	0: 0 lux to 1000 lux (default)
-> +	1: 0 lux to 4000 lux
-> +	2: 0 lux to 16,000 lux
-> +	3: 0 lux to 64,000 lux
-> +
-> +resolution:
-> +	0: 2^16 cycles (default)
-> +	1: 2^12 cycles
-> +	2: 2^8 cycles
-> +	3: 2^4 cycles
-> +
-> +mode:
-> +	0: diode1's current (unsigned 16bit) (default)
-> +	1: diode1's current (unsigned 16bit)
-> +	2: difference between diodes (l1 - l2, signed 15bit)
-> +
-> +power_state:
-> +	0: device is disabled (default)
-> +	1: device is enabled
-> +
-> +lux (read only):
-> +	returns the value from the last sensor reading
-> +
-> diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-> index c64e679..b883b19 100644
-> --- a/drivers/misc/Kconfig
-> +++ b/drivers/misc/Kconfig
-> @@ -223,6 +223,16 @@ config DELL_LAPTOP
->  	This driver adds support for rfkill and backlight control to Dell
->  	laptops.
->  
-> +config ISL29003
-> +	tristate "Intersil ISL29003 ambient light sensor"
-> +	depends on I2C
-> +	help
-> +	  If you say yes here you get support for the Intersil ISL29003
-> +	  ambient light sensor.
-> +
-> +	  This driver can also be built as a module.  If so, the module
-> +	  will be called isl29003.
-> +
->  source "drivers/misc/c2port/Kconfig"
->  source "drivers/misc/eeprom/Kconfig"
->  
-> diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
-> index bc11998..7871f05 100644
-> --- a/drivers/misc/Makefile
-> +++ b/drivers/misc/Makefile
-> @@ -18,5 +18,6 @@ obj-$(CONFIG_KGDB_TESTS)	+= kgdbts.o
->  obj-$(CONFIG_SGI_XP)		+= sgi-xp/
->  obj-$(CONFIG_SGI_GRU)		+= sgi-gru/
->  obj-$(CONFIG_HP_ILO)		+= hpilo.o
-> +obj-$(CONFIG_ISL29003)		+= isl29003.o
->  obj-$(CONFIG_C2PORT)		+= c2port/
->  obj-y				+= eeprom/
-> diff --git a/drivers/misc/isl29003.c b/drivers/misc/isl29003.c
-> new file mode 100644
-> index 0000000..2e2a592
-> --- /dev/null
-> +++ b/drivers/misc/isl29003.c
-> @@ -0,0 +1,470 @@
-> +/*
-> + *  isl29003.c - Linux kernel module for
-> + * 	Intersil ISL29003 ambient light sensor
-> + *
-> + *  See file:Documentation/misc-devices/isl29003
-> + *
-> + *  Copyright (c) 2009 Daniel Mack <daniel@caiaq.de>
-> + *
-> + *  Based on code written by
-> + *  	Rodolfo Giometti <giometti@linux.it>
-> + *  	Eurotech S.p.A. <info@eurotech.it>
-> + *
-> + *  This program is free software; you can redistribute it and/or modify
-> + *  it under the terms of the GNU General Public License as published by
-> + *  the Free Software Foundation; either version 2 of the License, or
-> + *  (at your option) any later version.
-> + *
-> + *  This program is distributed in the hope that it will be useful,
-> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + *  GNU General Public License for more details.
-> + *
-> + *  You should have received a copy of the GNU General Public License
-> + *  along with this program; if not, write to the Free Software
-> + *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/slab.h>
-> +#include <linux/i2c.h>
-> +#include <linux/mutex.h>
-> +#include <linux/delay.h>
-> +
-> +#define ISL29003_DRV_NAME	"isl29003"
-> +#define DRIVER_VERSION		"1.0"
-> +
-> +#define ISL29003_REG_COMMAND		0x00
-> +#define ISL29003_ADC_ENABLED		(1 << 7)
-> +#define ISL29003_ADC_PD			(1 << 6)
-> +#define ISL29003_TIMING_INT		(1 << 5)
-> +#define ISL29003_MODE_SHIFT		(2)
-> +#define ISL29003_MODE_MASK		(0x3 << ISL29003_MODE_SHIFT)
-> +#define ISL29003_RES_SHIFT		(0)
-> +#define ISL29003_RES_MASK		(0x3 << ISL29003_RES_SHIFT)
-> +
-> +#define ISL29003_REG_CONTROL		0x01
-> +#define ISL29003_INT_FLG		(1 << 5)
-> +#define ISL29003_RANGE_SHIFT		(2)
-> +#define ISL29003_RANGE_MASK		(0x3 << ISL29003_RANGE_SHIFT)
-> +#define ISL29003_INT_PERSISTS_SHIFT	(0)
-> +#define ISL29003_INT_PERSISTS_MASK	(0xf << ISL29003_INT_PERSISTS_SHIFT)
-> +
-> +#define ISL29003_REG_IRQ_THRESH_HI	0x02
-> +#define ISL29003_REG_IRQ_THRESH_LO	0x03
-> +#define ISL29003_REG_LSB_SENSOR		0x04
-> +#define ISL29003_REG_MSB_SENSOR		0x05
-> +#define ISL29003_REG_LSB_TIMER		0x06
-> +#define ISL29003_REG_MSB_TIMER		0x07
-> +
-> +#define ISL29003_NUM_CACHABLE_REGS	4
-> +
-> +struct isl29003_data {
-> +	struct i2c_client *client;
-> +	struct mutex lock;
-> +	u8 reg_cache[ISL29003_NUM_CACHABLE_REGS];
-> +};
-> +
-> +static int gain_range[] = {
-> +	1000, 4000, 16000, 64000
-> +};
-> +
-> +/*
-> + * register access helpers
-> + */
-> +
-> +static int __isl29003_read_reg(struct i2c_client *client,
-> +			       u32 reg, u8 mask, u8 shift)
-> +{
-> +	struct isl29003_data *data = i2c_get_clientdata(client);
-> +	return (data->reg_cache[reg] & mask) >> shift;
-> +}
-> +
-> +static int __isl29003_write_reg(struct i2c_client *client,
-> +				u32 reg, u8 mask, u8 shift, u8 val)
-> +{
-> +	struct isl29003_data *data = i2c_get_clientdata(client);
-> +	int ret = 0;
-> +	u8 tmp;
-> +
-> +	if (reg >= ISL29003_NUM_CACHABLE_REGS)
-> +		return -EINVAL;
-> +
-> +	mutex_lock(&data->lock);
-> +
-> +	tmp = data->reg_cache[reg];
-> +	tmp &= ~mask;
-> +	tmp |= val << shift;
-> +
-> +	ret = i2c_smbus_write_byte_data(client, reg, tmp);
-> +	if (!ret)
-> +		data->reg_cache[reg] = tmp;
-> +
-> +	mutex_unlock(&data->lock);
-> +	return ret;
-> +}
-> +
-> +/*
-> + * internally used functions
-> + */
-> +
-> +/* range */
-> +static int isl29003_get_range(struct i2c_client *client)
-> +{
-> +	return __isl29003_read_reg(client, ISL29003_REG_CONTROL,
-> +		ISL29003_RANGE_MASK, ISL29003_RANGE_SHIFT);
-> +}
-> +
-> +static int isl29003_set_range(struct i2c_client *client, int range)
-> +{
-> +	return __isl29003_write_reg(client, ISL29003_REG_CONTROL,
-> +		ISL29003_RANGE_MASK, ISL29003_RANGE_SHIFT, range);
-> +}
-> +
-> +/* resolution */
-> +static int isl29003_get_resolution(struct i2c_client *client)
-> +{
-> +	return __isl29003_read_reg(client, ISL29003_REG_COMMAND,
-> +		ISL29003_RES_MASK, ISL29003_RES_SHIFT);
-> +}
-> +
-> +static int isl29003_set_resolution(struct i2c_client *client, int res)
-> +{
-> +	return __isl29003_write_reg(client, ISL29003_REG_COMMAND,
-> +		ISL29003_RES_MASK, ISL29003_RES_SHIFT, res);
-> +}
-> +
-> +/* mode */
-> +static int isl29003_get_mode(struct i2c_client *client)
-> +{
-> +	return __isl29003_read_reg(client, ISL29003_REG_COMMAND,
-> +		ISL29003_RES_MASK, ISL29003_RES_SHIFT);
-> +}
-> +
-> +static int isl29003_set_mode(struct i2c_client *client, int mode)
-> +{
-> +	return __isl29003_write_reg(client, ISL29003_REG_COMMAND,
-> +		ISL29003_RES_MASK, ISL29003_RES_SHIFT, mode);
-> +}
-> +
-> +/* power_state */
-> +static int isl29003_set_power_state(struct i2c_client *client, int state)
-> +{
-> +	return __isl29003_write_reg(client, ISL29003_REG_COMMAND,
-> +				ISL29003_ADC_ENABLED | ISL29003_ADC_PD, 0,
-> +				state ? ISL29003_ADC_ENABLED : ISL29003_ADC_PD);
-> +}
-> +
-> +static int isl29003_get_power_state(struct i2c_client *client)
-> +{
-> +	struct isl29003_data *data = i2c_get_clientdata(client);
-> +	u8 cmdreg = data->reg_cache[ISL29003_REG_COMMAND];
-> +	return ~cmdreg & ISL29003_ADC_PD;
-> +}
-> +
-> +static int isl29003_get_adc_value(struct i2c_client *client)
-> +{
-> +	struct isl29003_data *data = i2c_get_clientdata(client);
-> +	int lsb, msb, range, bitdepth;
-> +
-> +	mutex_lock(&data->lock);
-> +	lsb = i2c_smbus_read_byte_data(client, ISL29003_REG_LSB_SENSOR);
-> +
-> +	if (lsb < 0) {
-> +		mutex_unlock(&data->lock);
-> +		return lsb;
-> +	}
-> +
-> +	msb = i2c_smbus_read_byte_data(client, ISL29003_REG_MSB_SENSOR);
-> +	mutex_unlock(&data->lock);
-> +
-> +	if (msb < 0)
-> +		return msb;
-> +
-> +	range = isl29003_get_range(client);
-> +	bitdepth = (4 - isl29003_get_resolution(client)) * 4;
-> +	return (((msb << 8) | lsb) * gain_range[range]) >> bitdepth;
-> +}
-> +
-> +/*
-> + * sysfs layer
-> + */
-> +
-> +/* range */
-> +static ssize_t isl29003_show_range(struct device *dev,
-> +				   struct device_attribute *attr, char *buf)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	return sprintf(buf, "%i\n", isl29003_get_range(client));
-> +}
-> +
-> +static ssize_t isl29003_store_range(struct device *dev,
-> +				    struct device_attribute *attr,
-> +				    const char *buf, size_t count)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	unsigned long val;
-> +	int ret;
-> +
-> +	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 3))
-> +		return -EINVAL;
-> +
-> +	ret = isl29003_set_range(client, val);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	return count;
-> +}
-> +
-> +static DEVICE_ATTR(range, S_IWUSR | S_IRUGO,
-> +		   isl29003_show_range, isl29003_store_range);
-> +
-> +
-> +/* resolution */
-> +static ssize_t isl29003_show_resolution(struct device *dev,
-> +					struct device_attribute *attr,
-> +					char *buf)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	return sprintf(buf, "%d\n", isl29003_get_resolution(client));
-> +}
-> +
-> +static ssize_t isl29003_store_resolution(struct device *dev,
-> +					 struct device_attribute *attr,
-> +					 const char *buf, size_t count)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	unsigned long val;
-> +	int ret;
-> +
-> +	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 3))
-> +		return -EINVAL;
-> +
-> +	ret = isl29003_set_resolution(client, val);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	return count;
-> +}
-> +
-> +static DEVICE_ATTR(resolution, S_IWUSR | S_IRUGO,
-> +		   isl29003_show_resolution, isl29003_store_resolution);
-> +
-> +/* mode */
-> +static ssize_t isl29003_show_mode(struct device *dev,
-> +				  struct device_attribute *attr, char *buf)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	return sprintf(buf, "%d\n", isl29003_get_mode(client));
-> +}
-> +
-> +static ssize_t isl29003_store_mode(struct device *dev,
-> +		struct device_attribute *attr, const char *buf, size_t count)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	unsigned long val;
-> +	int ret;
-> +
-> +	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 2))
-> +		return -EINVAL;
-> +
-> +	ret = isl29003_set_mode(client, val);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	return count;
-> +}
-> +
-> +static DEVICE_ATTR(mode, S_IWUSR | S_IRUGO,
-> +		   isl29003_show_mode, isl29003_store_mode);
-> +
-> +
-> +/* power state */
-> +static ssize_t isl29003_show_power_state(struct device *dev,
-> +					 struct device_attribute *attr,
-> +					 char *buf)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	return sprintf(buf, "%d\n", isl29003_get_power_state(client));
-> +}
-> +
-> +static ssize_t isl29003_store_power_state(struct device *dev,
-> +					  struct device_attribute *attr,
-> +					  const char *buf, size_t count)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +	unsigned long val;
-> +	int ret;
-> +
-> +	if ((strict_strtoul(buf, 10, &val) < 0) || (val > 1))
-> +		return -EINVAL;
-> +
-> +	ret = isl29003_set_power_state(client, val);
-> +	return ret ? ret : count;
-> +}
-> +
-> +static DEVICE_ATTR(power_state, S_IWUSR | S_IRUGO,
-> +		   isl29003_show_power_state, isl29003_store_power_state);
-> +
-> +
-> +/* lux */
-> +static ssize_t isl29003_show_lux(struct device *dev,
-> +				 struct device_attribute *attr, char *buf)
-> +{
-> +	struct i2c_client *client = to_i2c_client(dev);
-> +
-> +	/* No LUX data if not operational */
-> +	if (!isl29003_get_power_state(client))
-> +		return -EBUSY;
-> +
-> +	return sprintf(buf, "%d\n", isl29003_get_adc_value(client));
-> +}
-> +
-> +static DEVICE_ATTR(lux, S_IRUGO, isl29003_show_lux, NULL);
-> +
-> +static struct attribute *isl29003_attributes[] = {
-> +	&dev_attr_range.attr,
-> +	&dev_attr_resolution.attr,
-> +	&dev_attr_mode.attr,
-> +	&dev_attr_power_state.attr,
-> +	&dev_attr_lux.attr,
-> +	NULL
-> +};
-> +
-> +static const struct attribute_group isl29003_attr_group = {
-> +	.attrs = isl29003_attributes,
-> +};
-> +
-> +static int isl29003_init_client(struct i2c_client *client)
-> +{
-> +	struct isl29003_data *data = i2c_get_clientdata(client);
-> +	int i;
-> +
-> +	/* read all the registers once to fill the cache.
-> +	 * if one of the reads fails, we consider the init failed */
-> +	for (i = 0; i < ARRAY_SIZE(data->reg_cache); i++) {
-> +		int v = i2c_smbus_read_byte_data(client, i);
-> +		if (v < 0)
-> +			return -ENODEV;
-> +
-> +		data->reg_cache[i] = v;
-> +	}
-> +
-> +	/* set defaults */
-> +	isl29003_set_range(client, 0);
-> +	isl29003_set_resolution(client, 0);
-> +	isl29003_set_mode(client, 0);
-> +	isl29003_set_power_state(client, 0);
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * I2C layer
-> + */
-> +
-> +static int __devinit isl29003_probe(struct i2c_client *client,
-> +				    const struct i2c_device_id *id)
-> +{
-> +	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
-> +	struct isl29003_data *data;
-> +	int err = 0;
-> +
-> +	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
-> +		return -EIO;
-> +
-> +	data = kzalloc(sizeof(struct isl29003_data), GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
-> +	data->client = client;
-> +	i2c_set_clientdata(client, data);
-> +	mutex_init(&data->lock);
-> +
-> +	/* initialize the ISL29003 chip */
-> +	err = isl29003_init_client(client);
-> +	if (err)
-> +		goto exit_kfree;
-> +
-> +	/* register sysfs hooks */
-> +	err = sysfs_create_group(&client->dev.kobj, &isl29003_attr_group);
-> +	if (err)
-> +		goto exit_kfree;
-> +
-> +	dev_info(&client->dev, "driver version %s enabled\n", DRIVER_VERSION);
-> +	return 0;
-> +
-> +exit_kfree:
-> +	kfree(data);
-> +	return err;
-> +}
-> +
-> +static int __devexit isl29003_remove(struct i2c_client *client)
-> +{
-> +	sysfs_remove_group(&client->dev.kobj, &isl29003_attr_group);
-> +	isl29003_set_power_state(client, 0);
-> +	kfree(i2c_get_clientdata(client));
-> +	return 0;
-> +}
-> +
-> +#ifdef CONFIG_PM
-> +static int isl29003_suspend(struct i2c_client *client, pm_message_t mesg)
-> +{
-> +	return isl29003_set_power_state(client, 0);
-> +}
-> +
-> +static int isl29003_resume(struct i2c_client *client)
-> +{
-> +	int i;
-> +	struct isl29003_data *data = i2c_get_clientdata(client);
-> +
-> +	/* restore registers from cache */
-> +	for (i = 0; i < ARRAY_SIZE(data->reg_cache); i++)
-> +		if (!i2c_smbus_write_byte_data(client, i, data->reg_cache[i]))
-> +			return -EIO;
-> +
-> +	return 0;
-> +}
-> +
-> +#else
-> +#define isl29003_suspend	NULL
-> +#define isl29003_resume		NULL
-> +#endif /* CONFIG_PM */
-> +
-> +static const struct i2c_device_id isl29003_id[] = {
-> +	{ "isl29003", 0 },
-> +	{}
-> +};
-> +MODULE_DEVICE_TABLE(i2c, isl29003_id);
-> +
-> +static struct i2c_driver isl29003_driver = {
-> +	.driver = {
-> +		.name	= ISL29003_DRV_NAME,
-> +		.owner	= THIS_MODULE,
-> +	},
-> +	.suspend = isl29003_suspend,
-> +	.resume	= isl29003_resume,
-> +	.probe	= isl29003_probe,
-> +	.remove	= __devexit_p(isl29003_remove),
-> +	.id_table = isl29003_id,
-> +};
-> +
-> +static int __init isl29003_init(void)
-> +{
-> +	return i2c_add_driver(&isl29003_driver);
-> +}
-> +
-> +static void __exit isl29003_exit(void)
-> +{
-> +	i2c_del_driver(&isl29003_driver);
-> +}
-> +
-> +MODULE_AUTHOR("Daniel Mack <daniel@caiaq.de>");
-> +MODULE_DESCRIPTION("ISL29003 ambient light sensor driver");
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_VERSION(DRIVER_VERSION);
-> +
-> +module_init(isl29003_init);
-> +module_exit(isl29003_exit);
-> +
+Mike, are you good with this patch as it stands?
 
-All looks fine to me.
+---
+Subject: sched: avg_overlap decay
+From: Mike Galbraith <efault@gmx.de>
+Date: Tue Mar 10 19:08:11 CET 2009
 
-Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
+avg_overlap is used to measure the runtime overlap of the waker and wakee.
 
-Cheers,
+However, when a process changes behaviour, eg a pipe becomes un-congested
+and we don't need to go to sleep after a wakeup for a while, the avg_overlap
+value grows stale.
 
-Jonathan
+When running we use the avg runtime between preemption as a measure for
+avg_overlap since the amount of runtime can be correlated to cache footprint.
+
+The longer we run, the less likely we'll be wanting to be migrated to another
+CPU.
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/sched.c |   24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -4692,6 +4692,28 @@ static inline void schedule_debug(struct
+ #endif
+ }
+ 
++static void put_prev_task(struct rq *rq, struct task_struct *prev)
++{
++	if (prev->state == TASK_RUNNING) {
++		u64 runtime = prev->se.sum_exec_runtime;
++
++		runtime -= prev->se.prev_sum_exec_runtime;
++		runtime = min_t(u64, runtime, 2*sysctl_sched_migration_cost);
++
++		/*
++		 * In order to avoid avg_overlap growing stale when we are
++		 * indeed overlapping and hence not getting put to sleep, grow
++		 * the avg_overlap on preemption.
++		 *
++		 * We use the average preemption runtime because that
++		 * correlates to the amount of cache footprint a task can
++		 * build up.
++		 */
++		update_avg(&prev->se.avg_overlap, runtime);
++	}
++	prev->sched_class->put_prev_task(rq, prev);
++}
++
+ /*
+  * Pick up the highest-prio task:
+  */
+@@ -4768,7 +4790,7 @@ need_resched_nonpreemptible:
+ 	if (unlikely(!rq->nr_running))
+ 		idle_balance(cpu, rq);
+ 
+-	prev->sched_class->put_prev_task(rq, prev);
++	put_prev_task(rq, prev);
+ 	next = pick_next_task(rq);
+ 
+ 	if (likely(prev != next)) {
+
+
