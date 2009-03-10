@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZCJH5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZCJH5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbZCJH5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 03:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbZCJH41
+	id S1754373AbZCJH5u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 03:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbZCJH43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 03:56:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56885 "EHLO hera.kernel.org"
+	Tue, 10 Mar 2009 03:56:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56888 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753305AbZCJH4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 03:56:24 -0400
+	id S1753772AbZCJH40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 03:56:26 -0400
 From: Tejun Heo <tj@kernel.org>
 To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
        linux-kernel@vger.kernel.org, hpa@zytor.com,
@@ -18,91 +18,103 @@ To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
        grundler@parisc-linux.org, takata@linux-m32r.org,
        benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
        schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 2/5] percpu: make x86 addr <-> pcpu ptr conversion macros generic
-Date: Tue, 10 Mar 2009 16:53:48 +0900
-Message-Id: <1236671631-9305-3-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Pat Gefre <pfg@sgi.com>
+Subject: [PATCH 1/5] linker script: define __per_cpu_load on all SMP capable archs
+Date: Tue, 10 Mar 2009 16:53:47 +0900
+Message-Id: <1236671631-9305-2-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1236671631-9305-1-git-send-email-tj@kernel.org>
 References: <1236671631-9305-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 10 Mar 2009 07:54:00 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 10 Mar 2009 07:53:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: generic addr <-> pcpu ptr conversion macros
+Impact: __per_cpu_load available on all SMP capable archs
 
-There's nothing arch specific about x86 __addr_to_pcpu_ptr() and
-__pcpu_ptr_to_addr().  With proper __per_cpu_load and __per_cpu_start
-defined, they'll do the right thing regardless of actual layout.
+Percpu now requires three symbols to be defined - __per_cpu_load,
+__per_cpu_start and __per_cpu_end.  There were three archs which
+didn't have it.  Update them as follows.
 
-Move these macros from arch/x86/include/asm/percpu.h to mm/percpu.c
-and allow archs to override it as necessary.
+* powerpc: can use generic PERCPU() macro.  Compile tested for
+  powerpc32, compile/boot tested for powerpc64.
+
+* ia64: can use generic PERCPU_VADDR() macro.  __phys_per_cpu_start is
+  identical to __per_cpu_load.  Compile tested and symbol table looks
+  identical after the change except for the additional __per_cpu_load.
+
+* arm: added explicit __per_cpu_load definition.  Currently uses
+  unified .init output section so can't use the generic macro.  Dunno
+  whether the unified .init ouput section is required by arch
+  peculiarity so I left it alone.  Please break it up and use PERCPU()
+  if possible.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Pat Gefre <pfg@sgi.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
 ---
- arch/x86/include/asm/percpu.h |    8 --------
- mm/percpu.c                   |   16 +++++++++++++++-
- 2 files changed, 15 insertions(+), 9 deletions(-)
+ arch/arm/kernel/vmlinux.lds.S     |    1 +
+ arch/ia64/kernel/vmlinux.lds.S    |   12 ++----------
+ arch/powerpc/kernel/vmlinux.lds.S |    9 +--------
+ 3 files changed, 4 insertions(+), 18 deletions(-)
 
-diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
-index 8f1d2fb..aee103b 100644
---- a/arch/x86/include/asm/percpu.h
-+++ b/arch/x86/include/asm/percpu.h
-@@ -43,14 +43,6 @@
- #else /* ...!ASSEMBLY */
+diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
+index 85598f7..1602373 100644
+--- a/arch/arm/kernel/vmlinux.lds.S
++++ b/arch/arm/kernel/vmlinux.lds.S
+@@ -64,6 +64,7 @@ SECTIONS
+ 		__initramfs_end = .;
+ #endif
+ 		. = ALIGN(4096);
++		__per_cpu_load = .;
+ 		__per_cpu_start = .;
+ 			*(.data.percpu.page_aligned)
+ 			*(.data.percpu)
+diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
+index f45e4e5..3765efc 100644
+--- a/arch/ia64/kernel/vmlinux.lds.S
++++ b/arch/ia64/kernel/vmlinux.lds.S
+@@ -213,17 +213,9 @@ SECTIONS
+         { *(.data.cacheline_aligned) }
  
- #include <linux/stringify.h>
--#include <asm/sections.h>
--
--#define __addr_to_pcpu_ptr(addr)					\
--	(void *)((unsigned long)(addr) - (unsigned long)pcpu_base_addr	\
--		 + (unsigned long)__per_cpu_start)
--#define __pcpu_ptr_to_addr(ptr)						\
--	(void *)((unsigned long)(ptr) + (unsigned long)pcpu_base_addr	\
--		 - (unsigned long)__per_cpu_start)
+   /* Per-cpu data: */
+-  percpu : { } :percpu
+   . = ALIGN(PERCPU_PAGE_SIZE);
+-  __phys_per_cpu_start = .;
+-  .data.percpu PERCPU_ADDR : AT(__phys_per_cpu_start - LOAD_OFFSET)
+-	{
+-		__per_cpu_start = .;
+-		*(.data.percpu.page_aligned)
+-		*(.data.percpu)
+-		*(.data.percpu.shared_aligned)
+-		__per_cpu_end = .;
+-	}
++  PERCPU_VADDR(PERCPU_ADDR, :percpu)
++  __phys_per_cpu_start = __per_cpu_load;
+   . = __phys_per_cpu_start + PERCPU_PAGE_SIZE;	/* ensure percpu data fits
+   						 * into percpu page size
+ 						 */
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 295ccc5..67f07f4 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -181,14 +181,7 @@ SECTIONS
+ 		__initramfs_end = .;
+ 	}
+ #endif
+-	. = ALIGN(PAGE_SIZE);
+-	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
+-		__per_cpu_start = .;
+-		*(.data.percpu.page_aligned)
+-		*(.data.percpu)
+-		*(.data.percpu.shared_aligned)
+-		__per_cpu_end = .;
+-	}
++	PERCPU(PAGE_SIZE)
  
- #ifdef CONFIG_SMP
- #define __percpu_arg(x)		"%%"__stringify(__percpu_seg)":%P" #x
-diff --git a/mm/percpu.c b/mm/percpu.c
-index bfe6a3a..c6f38a2 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -46,7 +46,8 @@
-  * - define CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
-  *
-  * - define __addr_to_pcpu_ptr() and __pcpu_ptr_to_addr() to translate
-- *   regular address to percpu pointer and back
-+ *   regular address to percpu pointer and back if they need to be
-+ *   different from the default
-  *
-  * - use pcpu_setup_first_chunk() during percpu area initialization to
-  *   setup the first chunk containing the kernel static percpu area
-@@ -67,11 +68,24 @@
- #include <linux/workqueue.h>
- 
- #include <asm/cacheflush.h>
-+#include <asm/sections.h>
- #include <asm/tlbflush.h>
- 
- #define PCPU_SLOT_BASE_SHIFT		5	/* 1-31 shares the same slot */
- #define PCPU_DFL_MAP_ALLOC		16	/* start a map with 16 ents */
- 
-+/* default addr <-> pcpu_ptr mapping, override in asm/percpu.h if necessary */
-+#ifndef __addr_to_pcpu_ptr
-+#define __addr_to_pcpu_ptr(addr)					\
-+	(void *)((unsigned long)(addr) - (unsigned long)pcpu_base_addr	\
-+		 + (unsigned long)__per_cpu_start)
-+#endif
-+#ifndef __pcpu_ptr_to_addr
-+#define __pcpu_ptr_to_addr(ptr)						\
-+	(void *)((unsigned long)(ptr) + (unsigned long)pcpu_base_addr	\
-+		 - (unsigned long)__per_cpu_start)
-+#endif
-+
- struct pcpu_chunk {
- 	struct list_head	list;		/* linked to pcpu_slot lists */
- 	struct rb_node		rb_node;	/* key is chunk->vm->addr */
+ 	. = ALIGN(8);
+ 	.machine.desc : AT(ADDR(.machine.desc) - LOAD_OFFSET) {
 -- 
 1.6.0.2
 
