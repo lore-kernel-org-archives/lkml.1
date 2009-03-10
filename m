@@ -1,163 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbZCJPBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZCJPDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755652AbZCJPBm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 11:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZCJPBe
+	id S1754855AbZCJPDx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 11:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbZCJPDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 11:01:34 -0400
-Received: from ping.pong.ch ([212.103.71.101]:33084 "EHLO ping.pong.ch"
+	Tue, 10 Mar 2009 11:03:42 -0400
+Received: from mx1.suse.de ([195.135.220.2]:47157 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751802AbZCJPBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 11:01:34 -0400
-Date: Tue, 10 Mar 2009 16:01:26 +0100
-From: Gaudenz Steinlin <gaudenz@soziologie.ch>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: commit "radeonfb: Fix resume from D3Cold on some platforms"
-	breaks resume from RAM on PowerBook
-Message-ID: <20090310150126.GB5633@soziologie.ch>
-References: <20090304083859.GB6889@soziologie.ch> <20090306114149.GA5371@soziologie.ch> <1236638264.7260.192.camel@pasglop> <200903101032.58617.rjw@sisk.pl>
-MIME-Version: 1.0
+	id S1753610AbZCJPDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 11:03:41 -0400
+Date: Tue, 10 Mar 2009 16:03:38 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [patch 1/2] fs: mnt_want_write speedup
+Message-ID: <20090310150338.GA8579@wotan.suse.de>
+References: <20090310143718.GB15977@wotan.suse.de> <20090310144857.GX25995@parisc-linux.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200903101032.58617.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090310144857.GX25995@parisc-linux.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael
-
-On Tue, Mar 10, 2009 at 10:32:58AM +0100, Rafael J. Wysocki wrote:
+On Tue, Mar 10, 2009 at 08:48:57AM -0600, Matthew Wilcox wrote:
+> On Tue, Mar 10, 2009 at 03:37:18PM +0100, Nick Piggin wrote:
+> > costly, unfortunately). It results in about 900 bytes smaller code too. It
+> > does increase the size of a vfsmount, however.
 > 
-> Gaudenz, I'd also like to know if the appended patch (on top of vanilla Linus'
-> tree) makes any different.  Unfortunately, I haven't had the time to test it
-> myself yet.
-
-No, this patch does not make any difference.
-
-Gaudenz
-
+> Only on 64-bit SMP systems, and then only by four bytes.  And, best of
+> all, you can fix that if you care.  Look at this:
 > 
-> Thanks,
-> Rafael
+>         /* --- cacheline 1 boundary (64 bytes) --- */
+>         struct list_head           mnt_child;            /*    64    16 */
+>         int                        mnt_flags;            /*    80     4 */
 > 
-> ---
->  drivers/pci/pci-driver.c |   42 ++++++++++++++++++++++++++++++------------
->  1 file changed, 30 insertions(+), 12 deletions(-)
+>         /* XXX 4 bytes hole, try to pack */
 > 
-> Index: linux-2.6/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci-driver.c
-> +++ linux-2.6/drivers/pci/pci-driver.c
-> @@ -556,7 +556,7 @@ static int pci_pm_suspend_noirq(struct d
->  static int pci_pm_resume_noirq(struct device *dev)
->  {
->  	struct pci_dev *pci_dev = to_pci_dev(dev);
-> -	struct device_driver *drv = dev->driver;
-> +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->  	int error = 0;
->  
->  	pci_pm_default_resume_noirq(pci_dev);
-> @@ -564,8 +564,13 @@ static int pci_pm_resume_noirq(struct de
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_resume_early(dev);
->  
-> -	if (drv && drv->pm && drv->pm->resume_noirq)
-> -		error = drv->pm->resume_noirq(dev);
-> +	if (pm) {
-> +		if (pm->resume_noirq)
-> +			error = pm->resume_noirq(dev);
-> +	} else {
-> +		if (pci_is_bridge(pci_dev))
-> +			pci_pm_reenable_device(pci_dev);
-> +	}
->  
->  	return error;
->  }
-> @@ -592,7 +597,8 @@ static int pci_pm_resume(struct device *
->  		if (pm->resume)
->  			error = pm->resume(dev);
->  	} else {
-> -		pci_pm_reenable_device(pci_dev);
-> +		if (!pci_is_bridge(pci_dev))
-> +			pci_pm_reenable_device(pci_dev);
->  	}
->  
->  	return 0;
-> @@ -662,7 +668,7 @@ static int pci_pm_freeze_noirq(struct de
->  static int pci_pm_thaw_noirq(struct device *dev)
->  {
->  	struct pci_dev *pci_dev = to_pci_dev(dev);
-> -	struct device_driver *drv = dev->driver;
-> +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->  	int error = 0;
->  
->  	if (pci_has_legacy_pm_support(pci_dev))
-> @@ -670,8 +676,13 @@ static int pci_pm_thaw_noirq(struct devi
->  
->  	pci_update_current_state(pci_dev, PCI_D0);
->  
-> -	if (drv && drv->pm && drv->pm->thaw_noirq)
-> -		error = drv->pm->thaw_noirq(dev);
-> +	if (pm) {
-> +		if (pm->thaw_noirq)
-> +			error = pm->thaw_noirq(dev);
-> +	} else {
-> +		if (pci_is_bridge(pci_dev))
-> +			pci_pm_reenable_device(pci_dev);
-> +	}
->  
->  	return error;
->  }
-> @@ -689,7 +700,8 @@ static int pci_pm_thaw(struct device *de
->  		if (pm->thaw)
->  			error = pm->thaw(dev);
->  	} else {
-> -		pci_pm_reenable_device(pci_dev);
-> +		if (!pci_is_bridge(pci_dev))
-> +			pci_pm_reenable_device(pci_dev);
->  	}
->  
->  	return error;
-> @@ -744,7 +756,7 @@ static int pci_pm_poweroff_noirq(struct 
->  static int pci_pm_restore_noirq(struct device *dev)
->  {
->  	struct pci_dev *pci_dev = to_pci_dev(dev);
-> -	struct device_driver *drv = dev->driver;
-> +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->  	int error = 0;
->  
->  	pci_pm_default_resume_noirq(pci_dev);
-> @@ -752,8 +764,13 @@ static int pci_pm_restore_noirq(struct d
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_resume_early(dev);
->  
-> -	if (drv && drv->pm && drv->pm->restore_noirq)
-> -		error = drv->pm->restore_noirq(dev);
-> +	if (pm) {
-> +		if (pm->restore_noirq)
-> +			error = pm->restore_noirq(dev);
-> +	} else {
-> +		if (pci_is_bridge(pci_dev))
-> +			pci_pm_reenable_device(pci_dev);
-> +	}
->  
->  	return error;
->  }
-> @@ -780,7 +797,8 @@ static int pci_pm_restore(struct device 
->  		if (pm->restore)
->  			error = pm->restore(dev);
->  	} else {
-> -		pci_pm_reenable_device(pci_dev);
-> +		if (!pci_is_bridge(pci_dev))
-> +			pci_pm_reenable_device(pci_dev);
->  	}
->  
->  	return error;
+>         const char  *              mnt_devname;          /*    88     8 */
+>         struct list_head           mnt_list;             /*    96    16 */
+>         struct list_head           mnt_expire;           /*   112    16 */
+> 
+> So move mnt_flags to later in the struct (after the pointers), and move
+> 
+> > +#ifdef CONFIG_SMP
+> > +     int *mnt_writers;
+> > +#else
+> > +     int mnt_writers;
+> > +#endif
+> 
+> to be with the other pointers.  Bonus points for putting it between
+>         struct mnt_namespace *     mnt_ns;               /*   184     8 */
+> and
+>         int                        mnt_id;               /*   192     4 */
+> 
+> so that it doesn't become a new 4-byte hole for those incredibly common
+> 64-bit uniprocessor builds.  *cough*.
 
--- 
-Ever tried. Ever failed. No matter.
-Try again. Fail again. Fail better.
-~ Samuel Beckett ~
+Oh good point, although yes I was more worried about mnt_writers in
+the SMP case (yes I didn't state it very well). Basically I would be
+worried if huge machinges have huge numbers of mounts.... but I think
+a) if they did they would probably like the scalability improvements,
+b) the improvement on smaller systems is so significant that 100s of
+   CPU systems will have to find a way to cut down memory if it really
+   was a problem for them.
+
