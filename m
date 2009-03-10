@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756086AbZCJOTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbZCJOUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756086AbZCJOTc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 10:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbZCJOTP
+	id S1755908AbZCJOUB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 10:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbZCJOTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 10:19:15 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:40689 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755805AbZCJOTO (ORCPT
+	Tue, 10 Mar 2009 10:19:50 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:47219 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754951AbZCJOTt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 10:19:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FeS3d+2x0yljHYf3TXEeV+7NGFTW+wsQvW914Uj0USQTuppWvnECVEcF7QvEW70muB
-         HbVf6y9gqKHq99TSXTOoFlorfbEuKyq0Qg02swgtmN2RnHBeRmg2A8VDftVr5vWxes4l
-         icoxtrzk79d4G6R2fVkMF3MjGzSPwYWacGbF0=
-Date: Tue, 10 Mar 2009 22:19:38 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Dike <jdike@addtoit.com>, Andrew Morton <akpm@osdl.org>
-Subject: [Patch] uml: fix WARNING: vmlinux: 'memcpy' exported twice.
-Message-ID: <20090310141938.GE3157@hack>
-References: <49AFC206.9080004@panasas.com>
+	Tue, 10 Mar 2009 10:19:49 -0400
+Date: Tue, 10 Mar 2009 10:19:47 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Ingo Molnar <mingo@elte.hu>
+cc: prasad@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [patch 01/11] Introducing generic hardware breakpoint handler
+ interfaces
+In-Reply-To: <20090310135018.GB3850@elte.hu>
+Message-ID: <Pine.LNX.4.44L0.0903101017040.2962-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49AFC206.9080004@panasas.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 10 Mar 2009, Ingo Molnar wrote:
 
+> * prasad@linux.vnet.ibm.com <prasad@linux.vnet.ibm.com> wrote:
+> 
+> 
+> > +static u8			tprio[HB_NUM];	/* Thread bp max priorities */
+> > +LIST_HEAD(kernel_bps);			/* Kernel breakpoint list */
+> > +static LIST_HEAD(thread_list);			/* thread_hw_breakpoint list */
+> > +DEFINE_PER_CPU(struct cpu_hw_breakpoint, cpu_bp);
 
-This patch fixes the following warning on x86_64:
+If nobody minds, I'll answer some of these questions on Prasad's behalf 
+because they address parts of the code that were written before he took 
+over the project.
 
-LD vmlinux.o
-MODPOST vmlinux.o
-WARNING: vmlinux: 'memcpy' exported twice. Previous export was in
-vmlinux
+> hm, why do we need the whole 'priority' mechanism? It seems very 
+> over-designed to me.
 
-Reported-by: Boaz Harrosh <bharrosh@panasas.com>
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-Tested-by: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Jeff Dike <jdike@addtoit.com>
+This was done at Roland McGrath's express request.  We should see what 
+he has to say about it.
 
----
-diff --git a/arch/um/os-Linux/user_syms.c b/arch/um/os-Linux/user_syms.c
-index 74f49bb..89b48a1 100644
---- a/arch/um/os-Linux/user_syms.c
-+++ b/arch/um/os-Linux/user_syms.c
-@@ -14,7 +14,6 @@
- #undef memset
- 
- extern size_t strlen(const char *);
--extern void *memcpy(void *, const void *, size_t);
- extern void *memmove(void *, const void *, size_t);
- extern void *memset(void *, int, size_t);
- extern int printf(const char *, ...);
-@@ -24,7 +23,11 @@ extern int printf(const char *, ...);
- EXPORT_SYMBOL(strstr);
- #endif
- 
-+#ifndef __x86_64__
-+extern void *memcpy(void *, const void *, size_t);
- EXPORT_SYMBOL(memcpy);
-+#endif
-+
- EXPORT_SYMBOL(memmove);
- EXPORT_SYMBOL(memset);
- EXPORT_SYMBOL(printf);
+> The likelyhood of both user-space and kernel-space to use 
+> hw-breakpoints is very low to begin with. And if they use them, 
+> the likelyhood of there being more than 4 debugregs required in 
+> the same context is even lower.
 
- 
+Not all architectures have 4 debug registers.  Most have only one.
+
+> If that happens we shouldnt try to be too smart about them - 
+> just override user-space ones with kernel space ones and that's 
+> it. No explicit priorities are needed.
+
+Roland really did not want it done this way.
+
+Alan Stern
+
