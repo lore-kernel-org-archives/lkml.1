@@ -1,83 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZCJFur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZCJF5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbZCJFur (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 01:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZCJFuh
+	id S1754082AbZCJF5d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 01:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbZCJF5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 01:50:37 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55766 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751722AbZCJFug (ORCPT
+	Tue, 10 Mar 2009 01:57:24 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:23230 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751922AbZCJF5X convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 01:50:36 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 4/7] tracing: new format for specialized trace points
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Larry Woodman <lwoodman@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <20090310045811.279394388@goodmis.org>
-References: <20090310045710.286915983@goodmis.org> <20090310045811.279394388@goodmis.org>
-Message-Id: <20090310144700.A48E.A69D9226@jp.fujitsu.com>
+	Tue, 10 Mar 2009 01:57:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=AOji4mwmrlnnE9oEf8T7apymXNlD+bHyAKW7NmHJd93zGlX3VRWMuSe/TizZasi1PB
+         akUDEZMmAR2bFBuFJPrOrg7tG7uAQem6hF+p+AH7ozGwWvopGpzwkCn80GOuEAPgMTvz
+         5fanBeYOCaAhK1kM+JIm7Oz4TjX3XS/kJymDg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Tue, 10 Mar 2009 14:50:28 +0900 (JST)
+In-Reply-To: <20090310053721.GA25977@uranus.ravnborg.org>
+References: <49B5AD6A.2020101@goop.org> <49B5C12B.1020108@kernel.org>
+	 <20090310053721.GA25977@uranus.ravnborg.org>
+Date: Mon, 9 Mar 2009 22:57:19 -0700
+X-Google-Sender-Auth: 5f58fc83c022f000
+Message-ID: <86802c440903092257i4b95b13evaabf50409b770113@mail.gmail.com>
+Subject: Re: Absolute symbols in vmlinux_64.lds.S
+From: Yinghai Lu <yinghai@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steven,
+On Mon, Mar 9, 2009 at 10:37 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Mon, Mar 09, 2009 at 06:23:55PM -0700, Yinghai Lu wrote:
+>> Jeremy Fitzhardinge wrote:
+>> > Why does vmlinux_64.lds.S use absolute symbols for things like
+>> > __bss_start/stop:
+>> >
+>> >  __bss_start = .;        /* BSS */
+>> >  .bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+>> >     *(.bss.page_aligned)
+>> >     *(.bss)
+>> >     }
+>> >  __bss_stop = .;
+>> >
+>> >
+>> > vmlinux_32.lds.S puts __bss_start/stop into the .bss section itself.  Is
+>> > there some particular reason they need to be absolute symbols
+>> > (relocation?).
+>> >
+>>
+>> they are the same.
+>
+> Thats depends on the value of '.' where you assign __bss_start.
+> We have had several bugs where the symbol assinged outside the
+> section was less than expected because the linker aling the
+> start of the section equal to the lrgest alignment requirement
+> of a member in the section.
+>
+> So in this case if '.' equals to 0xabcd and the lagest
+> alignment requirement inside the block is 0x1000 and we have
+> __bss_start1 = .;
+> .bss : {
+>        __bss_start2 = .;
+>        *(.bss.page_aligned)
+> }
+>
+> Then you would see that:
+> __bss_start1 equals 0xabcd
+> __bss_start2 equals 0xb000
 
->  TRACE_EVENT(sched_switch,
-> 
-> 	TP_PROTO(struct rq *rq, struct task_struct *prev,
-> 		 struct task_struct *next),
-> 
-> 	TP_ARGS(rq, prev, next),
-> 
-> 	TP_STRUCT__entry(
-> 		__array(	char,	prev_comm,	TASK_COMM_LEN	)
-> 		__field(	pid_t,	prev_pid			)
-> 		__field(	int,	prev_prio			)
-> 		__array(	char,	next_comm,	TASK_COMM_LEN	)
-> 		__field(	pid_t,	next_pid			)
-> 		__field(	int,	next_prio			)
-> 	),
-> 
-> 	TP_printk("task %s:%d [%d] ==> %s:%d [%d]",
-> 		__entry->prev_comm, __entry->prev_pid, __entry->prev_prio,
-> 		__entry->next_comm, __entry->next_pid, __entry->next_prio),
-> 
-> 	TP_fast_assign(
-> 		memcpy(__entry->next_comm, next->comm, TASK_COMM_LEN);
-> 		__entry->prev_pid	= prev->pid;
-> 		__entry->prev_prio	= prev->prio;
-> 		memcpy(__entry->prev_comm, prev->comm, TASK_COMM_LEN);
-> 		__entry->next_pid	= next->pid;
-> 		__entry->next_prio	= next->prio;
-> 	)
->  );
+good to know...
 
-Could you please write the documentation how to make new tracepont and 
-use various TP_ macro?
-Some developer (include me) plan to add new tracepoint. but these macro
-usage is a bit difficult.
+anyway, more lines
+
+  . = ALIGN(PAGE_SIZE);
+  __nosave_begin = .;
+  .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
+      *(.data.nosave)
+  } :data.init2 /* use another section data.init2, see PERCPU_VADDR() above */
+  . = ALIGN(PAGE_SIZE);
+  __nosave_end = .;
+
+  __bss_start = .;              /* BSS */
+  .bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+        *(.bss.page_aligned)
+        *(.bss)
+        }
+  __bss_stop = .;
+
+  _end = . ;
 
 
+there are extra ALIGN(PAGE_SIZE) between them....
 
+YH
