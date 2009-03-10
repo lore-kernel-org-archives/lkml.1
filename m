@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbZCJSyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbZCJS4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757348AbZCJSyq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 14:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbZCJSyd
+	id S1757352AbZCJS4r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 14:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbZCJS4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 14:54:33 -0400
-Received: from sh.osrg.net ([192.16.179.4]:52638 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757222AbZCJSyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 14:54:31 -0400
-Date: Wed, 11 Mar 2009 03:54:00 +0900 (JST)
-Message-Id: <20090311.035400.12547305.ryusuke@osrg.net>
-To: sitsofe@yahoo.com
-Cc: konishi.ryusuke@lab.ntt.co.jp, akpm@linux-foundation.org, hch@lst.de,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Asking for inclusion of nilfs2 in the mainline kernel
-From: Ryusuke Konishi <ryusuke@osrg.net>
-In-Reply-To: <20090310174627.GA10667@silver.sucs.org>
-References: <20090311.015542.118514963.ryusuke@osrg.net>
-	<20090310174627.GA10667@silver.sucs.org>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 10 Mar 2009 14:56:37 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:50708 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752114AbZCJS4g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 14:56:36 -0400
+Message-ID: <49B6B821.5050302@oracle.com>
+Date: Tue, 10 Mar 2009 11:57:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       herbert@gondor.apana.org.au, David Miller <davem@davemloft.net>,
+       linux-crypto@vger.kernel.org
+Subject: Re: linux-next: Tree for March 10 (crypto & NLATTR)
+References: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
+In-Reply-To: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 11 Mar 2009 03:54:01 +0900 (JST)
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020A.49B6B7B1.015E:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-On Tue, 10 Mar 2009 17:46:27 +0000, Sitsofe Wheeler wrote:
-> Hello,
+Stephen Rothwell wrote:
+> Hi all,
 > 
-> On Wed, Mar 11, 2009 at 01:55:42AM +0900, Ryusuke Konishi wrote:
-> >  # lscp
-> >  (list checkpoints)
-> > 
-> >             CNO        DATE     TIME  MODE  FLG   NBLKINC       ICNT
-> >           33338  2009-03-08 14:45:49   cp    -         11          3
-> >           33339  2009-03-08 14:50:22   cp    -     200523         81
-> >           33340  2009-03-08 20:40:34   cp    -        136         61
-> >           33341  2009-03-08 20:41:20   cp    -     187666       1604
-> >           33342  2009-03-08 20:41:42   cp    -         51       1634
-> >             ...
+> Changes since 20090306:
 > 
-> Is there a cheaty way to get at checkpointed files (and the list of
-> checkpoints) through some sort of magic dot directory system (so you
-> wouldn't need the userland tools and the remounting)?
+> 
+> The driver-core tree gained a build failure due to a conflict with the
+> crypto tree.  I have applied a patch to the crypto tree for today.
 
-No, we don't give the special namespace extension to nilfs2.
+I had several (4 of 50) randconfig builds fail with:
 
-Instead, we have adopted out-of-filesystem solution, that is, using
-autofs to present checkpoints on namespace outside nilfs.
+lib/built-in.o: In function `__nla_reserve_nohdr':
+(.text+0xd08d): undefined reference to `skb_put'
+lib/built-in.o: In function `__nla_reserve':
+(.text+0xd121): undefined reference to `skb_put'
+lib/built-in.o: In function `nla_append':
+(.text+0xd493): undefined reference to `skb_put'
 
-Autofs is useful to presents many snapshots or checkpoints
-automatically, and it allows flexible naming rules.
+which happens with CONFIG_NET=n, CONFIG_CRYPTO=y, CONFIG_CRYPTO_ZLIB=[my].
 
-Maybe we can natively support the magic dot directory, and we may do
-that if many users demand it or we confront some kind of scalability
-issue.  But, so far it seems to work well enough.
+CRYPTO_ZLIB selects NLATTR, but obviously the build of nlattr.c fails
+when CONFIG_NET=n.  Should CRYPTO_ZLIB depend on NET?
+Please don't say that CRYPTO_ZLIB should select NET.
 
-Regards,
-Ryusuke
+
+-- 
+~Randy
