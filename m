@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbZCJFOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZCJFPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753557AbZCJFOt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 01:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbZCJFLq
+	id S1754575AbZCJFPS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 01:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbZCJFLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 01:11:46 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:35665 "EHLO
+	Tue, 10 Mar 2009 01:11:47 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:39358 "EHLO
 	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752675AbZCJFLk (ORCPT
+	with ESMTP id S1752306AbZCJFLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 01:11:40 -0400
+	Tue, 10 Mar 2009 01:11:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=B9MR3G3AtOMgcFGgNgQUrynmM7XtHBsQG5BuhcVzotALd+Gbv5X54ZnBM8mps57jxC
-         H6ENhW4wsd5ROUoyJQyAmqDjyaSSH719PySRDFciNjjnrYKociwtaTKtE1D+nphOYLoC
-         KUdBT5YH6quvFpUG3p/SzTSwnZTCfLQql4S2g=
+        b=yIcQ2DuwN4Rwl/unkiGCb5Llgo50OShV5xtuGeZoqK/zdDJrrG/znx3tqB6WUlbE3J
+         YOtj1lmBB3a51W7IU6zA7gDLQUo8JNQVyUaem+IPDXgAh4+HU9wXxjUzOxLEbvv57wt9
+         rSa7PnmrsVWoalBnf/kK/TBi6OmO1DDHqpuEU=
 From: Stoyan Gaydarov <stoyboyker@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, dhowells@redhat.com,
-       yasutake.koichi@jp.panasonic.com, linux-am33-list@redhat.com
-Subject: [PATCH 10/25] [mn10300] BUG to BUG_ON changes
-Date: Tue, 10 Mar 2009 00:10:35 -0500
-Message-Id: <1236661850-8237-11-git-send-email-stoyboyker@gmail.com>
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, rth@twiddle.net,
+       ink@jurassic.park.msu.ru
+Subject: [PATCH 11/25] [alpha] BUG to BUG_ON changes
+Date: Tue, 10 Mar 2009 00:10:36 -0500
+Message-Id: <1236661850-8237-12-git-send-email-stoyboyker@gmail.com>
 X-Mailer: git-send-email 1.6.1.3
-In-Reply-To: <1236661850-8237-10-git-send-email-stoyboyker@gmail.com>
+In-Reply-To: <1236661850-8237-11-git-send-email-stoyboyker@gmail.com>
 References: <1236661850-8237-1-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-2-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-3-git-send-email-stoyboyker@gmail.com>
@@ -35,89 +35,70 @@ References: <1236661850-8237-1-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-8-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-9-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-10-git-send-email-stoyboyker@gmail.com>
+ <1236661850-8237-11-git-send-email-stoyboyker@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
 ---
- arch/mn10300/kernel/irq.c                |    3 +--
- arch/mn10300/mm/init.c                   |    3 +--
- arch/mn10300/mm/misalignment.c           |    3 +--
- include/asm-mn10300/unit-asb2303/timex.h |    3 +--
- include/asm-mn10300/unit-asb2305/timex.h |    3 +--
- 5 files changed, 5 insertions(+), 10 deletions(-)
+ arch/alpha/kernel/pci_iommu.c |   15 +++++----------
+ 1 files changed, 5 insertions(+), 10 deletions(-)
 
-diff --git a/arch/mn10300/kernel/irq.c b/arch/mn10300/kernel/irq.c
-index 56c64cc..52b528e 100644
---- a/arch/mn10300/kernel/irq.c
-+++ b/arch/mn10300/kernel/irq.c
-@@ -159,8 +159,7 @@ asmlinkage void do_IRQ(void)
- 	int irq;
+diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
+index b9094da..9ebaca2 100644
+--- a/arch/alpha/kernel/pci_iommu.c
++++ b/arch/alpha/kernel/pci_iommu.c
+@@ -310,8 +310,7 @@ pci_map_single(struct pci_dev *pdev, void *cpu_addr, size_t size, int dir)
+ {
+ 	int dac_allowed; 
  
- 	sp = current_stack_pointer();
--	if (sp - (sp & ~(THREAD_SIZE - 1)) < STACK_WARN)
+-	if (dir == PCI_DMA_NONE)
 -		BUG();
-+	BUG_ON(sp - (sp & ~(THREAD_SIZE - 1)) < STACK_WARN);
++	BUG_ON(dir == PCI_DMA_NONE);
  
- 	/* make sure local_irq_enable() doesn't muck up the interrupt priority
- 	 * setting in EPSW */
-diff --git a/arch/mn10300/mm/init.c b/arch/mn10300/mm/init.c
-index 8cee387..ea05781 100644
---- a/arch/mn10300/mm/init.c
-+++ b/arch/mn10300/mm/init.c
-@@ -84,8 +84,7 @@ void __init mem_init(void)
- 	int codesize, reservedpages, datasize, initsize;
- 	int tmp;
+ 	dac_allowed = pdev ? pci_dac_dma_supported(pdev, pdev->dma_mask) : 0; 
+ 	return pci_map_single_1(pdev, cpu_addr, size, dac_allowed);
+@@ -324,8 +323,7 @@ pci_map_page(struct pci_dev *pdev, struct page *page, unsigned long offset,
+ {
+ 	int dac_allowed;
  
--	if (!mem_map)
+-	if (dir == PCI_DMA_NONE)
 -		BUG();
-+	BUG_ON(!mem_map);
++	BUG_ON(dir == PCI_DMA_NONE);
  
- #define START_PFN	(contig_page_data.bdata->node_min_pfn)
- #define MAX_LOW_PFN	(contig_page_data.bdata->node_low_pfn)
-diff --git a/arch/mn10300/mm/misalignment.c b/arch/mn10300/mm/misalignment.c
-index 94c4a43..eb1a290 100644
---- a/arch/mn10300/mm/misalignment.c
-+++ b/arch/mn10300/mm/misalignment.c
-@@ -450,8 +450,7 @@ found_opcode:
- 	       regs->pc, opcode, pop->opcode, pop->params[0], pop->params[1]);
+ 	dac_allowed = pdev ? pci_dac_dma_supported(pdev, pdev->dma_mask) : 0; 
+ 	return pci_map_single_1(pdev, (char *)page_address(page) + offset, 
+@@ -348,8 +346,7 @@ pci_unmap_single(struct pci_dev *pdev, dma_addr_t dma_addr, size_t size,
+ 	struct pci_iommu_arena *arena;
+ 	long dma_ofs, npages;
  
- 	tmp = format_tbl[pop->format].opsz;
--	if (tmp > noc)
--		BUG(); /* match was less complete than it ought to have been */
-+	BUG_ON(tmp > noc); /* match was less complete than it ought to have been */
+-	if (direction == PCI_DMA_NONE)
+-		BUG();
++	BUG_ON(direction == PCI_DMA_NONE);
  
- 	if (tmp < noc) {
- 		tmp = noc - tmp;
-diff --git a/include/asm-mn10300/unit-asb2303/timex.h b/include/asm-mn10300/unit-asb2303/timex.h
-index 7e54b0c..4bf620e 100644
---- a/include/asm-mn10300/unit-asb2303/timex.h
-+++ b/include/asm-mn10300/unit-asb2303/timex.h
-@@ -50,8 +50,7 @@ static inline void startup_jiffies_counter(void)
- 			md = TM0MD_SRC_IOCLK_32;
- 			rate = MN10300_JCCLK / 32 / HZ;
+ 	if (dma_addr >= __direct_map_base
+ 	    && dma_addr < __direct_map_base + __direct_map_size) {
+@@ -641,8 +638,7 @@ pci_map_sg(struct pci_dev *pdev, struct scatterlist *sg, int nents,
+ 	int dac_allowed;
+ 	struct device *dev;
  
--			if (rate > TMJCBR_MAX)
--				BUG();
-+			BUG_ON(rate > TMJCBR_MAX);
- 		}
- 	}
+-	if (direction == PCI_DMA_NONE)
+-		BUG();
++	BUG_ON(direction == PCI_DMA_NONE);
  
-diff --git a/include/asm-mn10300/unit-asb2305/timex.h b/include/asm-mn10300/unit-asb2305/timex.h
-index 10e1bfe..e51a9d1 100644
---- a/include/asm-mn10300/unit-asb2305/timex.h
-+++ b/include/asm-mn10300/unit-asb2305/timex.h
-@@ -50,8 +50,7 @@ static inline void startup_jiffies_counter(void)
- 			md = TM0MD_SRC_IOCLK_32;
- 			rate = MN10300_JCCLK / 32 / HZ;
+ 	dac_allowed = pdev ? pci_dac_dma_supported(pdev, pdev->dma_mask) : 0;
  
--			if (rate > TMJCBR_MAX)
--				BUG();
-+			BUG_ON(rate > TMJCBR_MAX);
- 		}
- 	}
+@@ -723,8 +719,7 @@ pci_unmap_sg(struct pci_dev *pdev, struct scatterlist *sg, int nents,
+ 	dma_addr_t max_dma;
+ 	dma_addr_t fbeg, fend;
  
+-	if (direction == PCI_DMA_NONE)
+-		BUG();
++	BUG_ON(direction == PCI_DMA_NONE);
+ 
+ 	if (! alpha_mv.mv_pci_tbi)
+ 		return;
 -- 
 1.6.1.3
 
