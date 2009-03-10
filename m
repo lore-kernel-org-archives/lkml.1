@@ -1,149 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757172AbZCJQH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbZCJQIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757172AbZCJQH0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 12:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756771AbZCJQF2
+	id S1757121AbZCJQIJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 12:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbZCJQFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 12:05:28 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:18933 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756789AbZCJQF0 (ORCPT
+	Tue, 10 Mar 2009 12:05:45 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:44975 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756871AbZCJQFo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 12:05:26 -0400
-From: Atal Shargorodsky <ext-atal.shargorodsky@nokia.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux@arm.linux.org.uk,
-       Atal Shargorodsky <ext-atal.shargorodsky@nokia.com>
-Subject: [PATCH 6/6] Changing NOWAYOUT behavior does not require kernel reconfiguration.
-Date: Tue, 10 Mar 2009 18:03:56 +0200
-Message-Id: <8978e7baa400a1c447914b83e17ced5313dce734.1236609434.git.ext-atal.shargorodsky@nokia.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <6bfd4bd0c37668c409e3c2154ba2ab22c8a42800.1236609434.git.ext-atal.shargorodsky@nokia.com>
-References: <>
- <1236701036-19942-1-git-send-email-ext-atal.shargorodsky@nokia.com>
- <cbbca1e42421e2ada459f0c0881f087977e34eed.1236609434.git.ext-atal.shargorodsky@nokia.com>
- <0fe7f2934f8416e9b5f05e2f18766362560116ee.1236609434.git.ext-atal.shargorodsky@nokia.com>
- <7992fd993e5b420f9c2aac55f6e674169b36c666.1236609434.git.ext-atal.shargorodsky@nokia.com>
- <0db69821a1be58e0b8889609ff2b2ee272aa3286.1236609434.git.ext-atal.shargorodsky@nokia.com>
- <6bfd4bd0c37668c409e3c2154ba2ab22c8a42800.1236609434.git.ext-atal.shargorodsky@nokia.com>
-In-Reply-To: <cbbca1e42421e2ada459f0c0881f087977e34eed.1236609434.git.ext-atal.shargorodsky@nokia.com>
-References: <cbbca1e42421e2ada459f0c0881f087977e34eed.1236609434.git.ext-atal.shargorodsky@nokia.com>
-X-OriginalArrivalTime: 10 Mar 2009 16:04:40.0984 (UTC) FILETIME=[EB7F8180:01C9A199]
-X-Nokia-AV: Clean
+	Tue, 10 Mar 2009 12:05:44 -0400
+Date: Tue, 10 Mar 2009 12:05:42 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Ingo Molnar <mingo@elte.hu>
+cc: prasad@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [patch 06/11] Use virtual debug registers in process/thread
+ handling code
+In-Reply-To: <20090310144933.GH3850@elte.hu>
+Message-ID: <Pine.LNX.4.44L0.0903101155000.3979-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By introducing additional module parameter we make the
-CONFIG_WATCHDOG_NOWAYOUT to be a mere default module behavior,
-which can be overriden by providing nowayout=[01] parameter at load time.
+On Tue, 10 Mar 2009, Ingo Molnar wrote:
 
-Signed-off-by: Atal Shargorodsky <ext-atal.shargorodsky@nokia.com>
----
- drivers/watchdog/omap_wdt.c |   48 +++++++++++++++++++++++-------------------
- 1 files changed, 26 insertions(+), 22 deletions(-)
+> > @@ -595,6 +596,12 @@ __switch_to(struct task_struct *prev_p, 
+> >  
+> >  	percpu_write(current_task, next_p);
+> >  
+> > +	/*
+> > +	 * Handle debug registers.  This must be done _after_ current
+> > +	 * is updated.
+> > +	 */
+> > +	if (unlikely(test_tsk_thread_flag(next_p, TIF_DEBUG)))
+> > +		switch_to_thread_hw_breakpoint(next_p);
+> 
+> why does this have to be called after 'current' has been 
+> updated? AFAICS switch_to_thread_hw_breakpoint() does not take a 
+> look at 'current'.
 
-diff --git a/drivers/watchdog/omap_wdt.c b/drivers/watchdog/omap_wdt.c
-index 6f6a524..6e9617c 100644
---- a/drivers/watchdog/omap_wdt.c
-+++ b/drivers/watchdog/omap_wdt.c
-@@ -53,6 +53,13 @@ static unsigned timer_margin;
- module_param(timer_margin, uint, 0);
- MODULE_PARM_DESC(timer_margin, "initial watchdog timeout (in seconds)");
- 
-+static int nowayout = WATCHDOG_NOWAYOUT;
-+module_param(nowayout, int, 0);
-+MODULE_PARM_DESC(nowayout,
-+	"Watchdog cannot be stopped once started (default="
-+		__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+
-+
- static unsigned int wdt_trgr_pattern = 0x1234;
- static spinlock_t wdt_lock;
- 
-@@ -188,22 +195,20 @@ static int omap_wdt_release(struct inode *inode, struct file *file)
- {
- 	struct omap_wdt_dev *wdev = file->private_data;
- 
--	/*
--	 *      Shut off the timer unless NOWAYOUT is defined.
--	 */
--#ifndef CONFIG_WATCHDOG_NOWAYOUT
--
- 	omap_wdt_ick_enable(wdev->mpu_wdt_ick, 1);
--	omap_wdt_disable(wdev);
--	omap_wdt_ick_enable(wdev->mpu_wdt_ick, 0);
-+	if (nowayout) {
-+		/* Give the user application some time to recover 
-+		* in case of crash. 
-+		* */
-+		omap_wdt_ping(wdev);
-+		printk(KERN_CRIT "omap_wdt: Unexpected close, not stopping!\n");
-+	} else {
-+		omap_wdt_disable(wdev);
- 
--	clk_disable(wdev->mpu_wdt_fck);
--	wdev->omap_wdt_state &= ~(1 << OMAP_WDT_STATE_ACTIVATED_BIT);
--#else
--	/* Give the user application some time to recover in case of crash. */
--	omap_wdt_ping(wdev);
--	printk(KERN_CRIT "omap_wdt: Unexpected close, not stopping!\n");
--#endif
-+		clk_disable(wdev->mpu_wdt_fck);
-+		wdev->omap_wdt_state &= ~(1 << OMAP_WDT_STATE_ACTIVATED_BIT);
-+	}
-+	omap_wdt_ick_enable(wdev->mpu_wdt_ick, 0);
- 	wdev->omap_wdt_state &= ~(1 << OMAP_WDT_STATE_OPENED_BIT);
- 
- 	return 0;
-@@ -385,9 +390,10 @@ static int __init omap_wdt_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto err_misc;
- 
--	pr_info("OMAP Watchdog Timer Rev 0x%02x: initial timeout %d sec\n",
-+	pr_info("OMAP Watchdog Timer Rev 0x%02x: initial "
-+		"timeout %d sec, nowayout is %s\n",
- 		__raw_readl(wdev->base + OMAP_WATCHDOG_REV) & 0xFF,
--		timer_margin);
-+		timer_margin, (nowayout ? "on" : "off"));
- 
- 	/* autogate OCP interface clock */
- 	__raw_writel(0x01, wdev->base + OMAP_WATCHDOG_SYS_CONFIG);
-@@ -467,12 +473,6 @@ static int omap_wdt_remove(struct platform_device *pdev)
- 
- #ifdef	CONFIG_PM
- 
--/* REVISIT ... not clear this is the best way to handle system suspend; and
-- * it's very inappropriate for selective device suspend (e.g. suspending this
-- * through sysfs rather than by stopping the watchdog daemon).  Also, this
-- * may not play well enough with NOWAYOUT...
-- */
--
- static int omap_wdt_suspend(struct platform_device *pdev, pm_message_t state)
- {
- 	struct omap_wdt_dev *wdev = platform_get_drvdata(pdev);
-@@ -481,6 +481,8 @@ static int omap_wdt_suspend(struct platform_device *pdev, pm_message_t state)
- 		omap_wdt_ick_enable(wdev->mpu_wdt_ick, 1);
- 		omap_wdt_disable(wdev);
- 		omap_wdt_ick_enable(wdev->mpu_wdt_ick, 0);
-+		clk_disable(wdev->mpu_wdt_fck);
-+printk (KERN_EMERG "omap_wdt: suspend \n");
- 	}
- 
- 	return 0;
-@@ -491,10 +493,12 @@ static int omap_wdt_resume(struct platform_device *pdev)
- 	struct omap_wdt_dev *wdev = platform_get_drvdata(pdev);
- 
- 	if (wdev->omap_wdt_state & (1<<OMAP_WDT_STATE_ACTIVATED_BIT)) {
-+		clk_enable(wdev->mpu_wdt_fck);
- 		omap_wdt_ick_enable(wdev->mpu_wdt_ick, 1);
- 		omap_wdt_enable(wdev);
- 		omap_wdt_ping(wdev);
- 		omap_wdt_ick_enable(wdev->mpu_wdt_ick, 0);
-+printk (KERN_EMERG "omap_wdt: resume\n");
- 	}
- 
- 	return 0;
--- 
-1.5.4.3
+There was a discussion about this on LKML last October 17, and you were 
+in the CC list.  Here is the reason, extracted from one of those 
+messages:
+
+
+There's a problem with moving the switch_to_thread_hw_breakpoint() call 
+before current is updated.  Suppose a kernel breakpoint is triggered in 
+between the two.  The hw-breakpoint handler will see that current is 
+different from the task pointer stored in the chbi area, so it will 
+think the task pointer is leftover from an old task (lazy switching) 
+and will erase it.  Then until the next context switch, no 
+user-breakpoints will be installed.
+
+The real problem is that it's impossible to update both current and 
+chbi->bp_task at the same instant, so there will always be a window in 
+which they disagree and a breakpoint might get triggered.  Since we use 
+lazy switching, we are forced to assume that a disagreement means that 
+current is correct and chbi->bp_task is old.  But if you move the code 
+above then you'll create a window in which current is old and 
+chbi->bp_task is correct.
+
+
+> Speaking of switch_to_thread_hw_breakpoint(), i dont like that 
+> function at all:
+> 
+> - why does it have to do a list of debug registers?
+
+I'm not sure I understand the point of this question.  Are you asking
+why the hw_breakpoint structures are stored on a list?  Because there
+can be an arbitrarily large number of them.
+
+> - why does it worry about IPIs arriving when context-switches on 
+>   x86 are always done with interrupts disabled?
+
+The routine gets invoked at times other than during a context switch.  
+However you may be right that these times are all mutually exclusive.  
+If so then a good deal of complication can be removed.
+
+> - also, what do the ->installed() and ->uninstalled() callbacks 
+>   do - nothing uses it!
+
+What do you mean?  They do what any callback does.  And of course 
+nothing uses them -- the code hasn't been merged yet!
+
+The intention is to let programs (or kernel debuggers) know when the 
+statistics they are gathering are contaminated because the breakpoint 
+in question has been uninstalled, and when the statistics are again 
+valid because the breakpoint has been re-installed.
+
+Alan Stern
 
