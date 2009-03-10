@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145AbZCJT5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbZCJT5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756145AbZCJT5R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 15:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbZCJT46
+	id S1756450AbZCJT5c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 15:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbZCJT5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 15:56:58 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:32973 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754207AbZCJT45 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 15:56:57 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip V2] x86: cpu architecture debug code
-In-Reply-To: Your message of "Tue, 10 Mar 2009 16:20:29 BST."
-             <20090310152029.GN3850@elte.hu>
-From: Valdis.Kletnieks@vt.edu
-References: <1236684201.3301.11.camel@localhost.localdomain> <20090310122806.GE5794@elte.hu> <1236697752.3387.2.camel@localhost.localdomain>
-            <20090310152029.GN3850@elte.hu>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1236714808_3963P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 10 Mar 2009 15:53:28 -0400
-Message-ID: <36674.1236714808@turing-police.cc.vt.edu>
+	Tue, 10 Mar 2009 15:57:06 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:10329 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756635AbZCJT5C convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 15:57:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=l2lLXH/0N683Cq2SJ8OaIXvKT0UuhTTrJIyZHECeypSEGBUMd+SAzGWQoMxAYbMfxH
+         Dp8QzvzyKm4YWY/MosDTE5UiSGOCAee+ms0LnA77btl4MCFdr3rD06tR/wAxJdbVrwSN
+         eFLX2q/2YHW+hrYuH5e8oFBUuEcV+S3z8ff0o=
+MIME-Version: 1.0
+In-Reply-To: <49B6B821.5050302@oracle.com>
+References: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
+	 <49B6B821.5050302@oracle.com>
+Date: Tue, 10 Mar 2009 20:56:59 +0100
+X-Google-Sender-Auth: 075ad9d6f3007b07
+Message-ID: <10f740e80903101256v2cfe08a8g410c297e019d8693@mail.gmail.com>
+Subject: Re: linux-next: Tree for March 10 (crypto & NLATTR)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, herbert@gondor.apana.org.au,
+       David Miller <davem@davemloft.net>, linux-crypto@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1236714808_3963P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <36658.1236714794.1@turing-police.cc.vt.edu>
+On Tue, Mar 10, 2009 at 19:57, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> Stephen Rothwell wrote:
+>> Changes since 20090306:
+>>
+>>
+>> The driver-core tree gained a build failure due to a conflict with the
+>> crypto tree.  I have applied a patch to the crypto tree for today.
+>
+> I had several (4 of 50) randconfig builds fail with:
+>
+> lib/built-in.o: In function `__nla_reserve_nohdr':
+> (.text+0xd08d): undefined reference to `skb_put'
+> lib/built-in.o: In function `__nla_reserve':
+> (.text+0xd121): undefined reference to `skb_put'
+> lib/built-in.o: In function `nla_append':
+> (.text+0xd493): undefined reference to `skb_put'
+>
+> which happens with CONFIG_NET=n, CONFIG_CRYPTO=y, CONFIG_CRYPTO_ZLIB=[my].
+>
+> CRYPTO_ZLIB selects NLATTR, but obviously the build of nlattr.c fails
+> when CONFIG_NET=n.  Should CRYPTO_ZLIB depend on NET?
+> Please don't say that CRYPTO_ZLIB should select NET.
 
-On Tue, 10 Mar 2009 16:20:29 BST, Ingo Molnar said:
+Bummer, my fault (commit e9cc8bddaea3944fabfebb968bc88d603239beed,
+netlink: Move netlink attribute parsing support to lib).
 
-> If you look at arch/x86/mm/fault.c, they are sorted by length, 
-> and within the same length they are sorted alphabetically.
+Obviously I was only worried about crypto/zlib.c needing nlattr.c
+without pulling in the whole networking code, not about nlattr.c
+itself needing networking functionality. But still, how could I have
+missed this compile failure?
 
-Huh? I just did a 'git pull' of Linus's tree, and I see fault.c looking like:
+Does it sound sane to protect the routines that do call skb_put() by
+#ifdef CONFIG_NET?
 
-#include <linux/signal.h>
-#include <linux/sched.h>
-#include <linux/kernel.h>
-#include <linux/errno.h>
-#include <linux/string.h>
-#include <linux/types.h>
-#include <linux/ptrace.h>
-#include <linux/mmiotrace.h>
-#include <linux/mman.h>
-#include <linux/mm.h>
-#include <linux/smp.h>
-#include <linux/interrupt.h>
+Gr{oetje,eeting}s,
 
-Not sure how it's sorted, but it's appparently not by length first.  Also,
-wouldn't logical interdependency count for something here, including stuff
-in the order needed?
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---==_Exmh_1236714808_3963P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJtsU4cC3lWbTT17ARAjLDAKC7ETQUtaNqkR5Z11DT71W+NqoIPQCgtI+w
-MqE8L5qP7eeJwBcqqQBjRQM=
-=SV1g
------END PGP SIGNATURE-----
-
---==_Exmh_1236714808_3963P--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
