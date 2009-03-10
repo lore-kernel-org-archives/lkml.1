@@ -1,42 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbZCJJdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbZCJJea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437AbZCJJdm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 05:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZCJJd3
+	id S1754490AbZCJJea (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 05:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbZCJJeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 05:33:29 -0400
-Received: from mailrelay010.isp.belgacom.be ([195.238.6.177]:17610 "EHLO
-	mailrelay010.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754173AbZCJJd1 (ORCPT
+	Tue, 10 Mar 2009 05:34:18 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:15113 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753574AbZCJJeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 05:33:27 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAPjPtUlR9cZI/2dsb2JhbADSdgeDfgY
-Date: Tue, 10 Mar 2009 10:33:24 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for March 10
-Message-ID: <20090310093324.GA26779@infomag.iguana.be>
-References: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
+	Tue, 10 Mar 2009 05:34:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=QHO+j8FqBiZx3e9QO2q5NDHS+x/7w57UftJ6/UolMf0lhDo5EytB7ZQTmhNXeYVK3Q
+         GTkDmi/beFUE9hGfJxNw+qEM7kAvdYoNqNd8xCjBz5LJAy0kjHnTh6A/wN5DqoKHIsJx
+         csEMI7tj9vLZNNEkTSC71Rr3swnvAKivXmtCY=
+Date: Tue, 10 Mar 2009 17:34:47 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Roland McGrath <roland@redhat.com>
+Subject: [Patch] ptrace: remove a useless goto
+Message-ID: <20090310093447.GC3179@hack>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
 
-> Merging watchdog/master
-> CONFLICT (content): Merge conflict in drivers/watchdog/orion5x_wdt.c
-> CONFLICT (content): Merge conflict in drivers/watchdog/rc32434_wdt.c
+Obviously, this goto is useless. Remove it.
 
-I redid the linux-2.6-watchdog-next tree. Should be fixed next time.
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Roland McGrath <roland@redhat.com>
 
-Kind regards,
-Wim.
+---
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index c9cf48b..1379559 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -612,8 +612,6 @@ SYSCALL_DEFINE4(ptrace, long, request, long, pid, long, addr, long, data)
+ 		goto out_put_task_struct;
+ 
+ 	ret = arch_ptrace(child, request, addr, data);
+-	if (ret < 0)
+-		goto out_put_task_struct;
+ 
+  out_put_task_struct:
+ 	put_task_struct(child);
 
+ 
