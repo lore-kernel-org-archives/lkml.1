@@ -1,107 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbZCJJhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbZCJJkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754599AbZCJJhb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 05:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZCJJhW
+	id S1754282AbZCJJkK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 05:40:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZCJJj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 05:37:22 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58757 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753460AbZCJJhV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 05:37:21 -0400
-Subject: Re: [PATCH] x86: suggest running a 64bit kernel on LM capable
- machines with plenty memory.
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ozan =?UTF-8?Q?=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090309191504.GB11935@one.firstfloor.org>
-References: <49B254C6.8010507@pardus.org.tr>
-	 <20090307193026.GA2165@x200.localdomain> <49B2CE44.4060305@pardus.org.tr>
-	 <87r617ojfi.fsf@firstfloor.org> <1236606168.8389.512.camel@laptop>
-	 <20090309191504.GB11935@one.firstfloor.org>
-Content-Type: text/plain
-Date: Tue, 10 Mar 2009 10:37:08 +0100
-Message-Id: <1236677828.25234.9.camel@laptop>
+	Tue, 10 Mar 2009 05:39:56 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:49009 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753510AbZCJJjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 05:39:54 -0400
+Date: Tue, 10 Mar 2009 10:39:48 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Cc: Geert.Uytterhoeven@sonycom.com, Geoff Levand <geoffrey.levand@am.sony.com>,
+       Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       Dann Frazier <dannf@dannf.org>
+Subject: Re: [rtc-linux] Re: [PATCH 7/7] powerpc/ps3: Add rtc-ps3
+Message-ID: <20090310103948.6e180eea@i1501.lan.towertech.it>
+In-Reply-To: <alpine.LRH.2.00.0903101015470.24318@vixen.sonytel.be>
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
+	<49B5618E.9050501@am.sony.com>
+	<alpine.LRH.2.00.0903101015470.24318@vixen.sonytel.be>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
 Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-09 at 20:15 +0100, Andi Kleen wrote:
-> > How about we do the below as well?
+On Tue, 10 Mar 2009 10:21:14 +0100 (CET)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+
+> Alessandro prefers not to have generic RTC drivers on top of some other
+> abstraction, but wants platform/chip-specific drivers under drivers/rtc/
+> instead. The goal is to convert all RTC drivers buried in platform code
+> to separate RTC drivers.
 > 
-> Idea looks good, but with your patch it would print two conflicting
-> messages ("use highmem64. No, use 64bit instead"), wouldn't it? 
-> Only one would be better.
+> (Alessandro, please correct me if I'm wrong)
 
-Something like the below?
+ yes, that's my dream :)
 
+-- 
 
----
- arch/x86/mm/init_32.c |   26 ++++++++++++++++++++++----
- 1 files changed, 22 insertions(+), 4 deletions(-)
+ Best regards,
 
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 34ef5c7..e759107 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -713,13 +713,19 @@ void __init lowmem_pfn_init(void)
- 	"only %luMB highmem pages available, ignoring highmem size of %luMB!\n"
- 
- #define MSG_HIGHMEM_TRIMMED \
--	"Warning: only 4GB will be used. Use a HIGHMEM64G enabled kernel!\n"
-+	"Warning: only 4GB will be used. Use a %s kernel!\n"
-+
-+#define MSG_LM_TRIMMED \
-+	"Warning: instead of using a 32bit %s kernel, Use a 64bit kernel!\n"
-+
-+
- /*
-  * We have more RAM than fits into lowmem - we try to put it into
-  * highmem, also taking the highmem=x boot parameter into account:
-  */
- void __init highmem_pfn_init(void)
- {
-+	char *highmem;
- 	max_low_pfn = MAXMEM_PFN;
- 
- 	if (highmem_pages == -1)
-@@ -737,16 +743,28 @@ void __init highmem_pfn_init(void)
- #ifndef CONFIG_HIGHMEM
- 	/* Maximum memory usable is what is directly addressable */
- 	printk(KERN_WARNING "Warning only %ldMB will be used.\n", MAXMEM>>20);
-+
- 	if (max_pfn > MAX_NONPAE_PFN)
--		printk(KERN_WARNING "Use a HIGHMEM64G enabled kernel.\n");
-+		highmem = "HIGHMEM64G";
- 	else
--		printk(KERN_WARNING "Use a HIGHMEM enabled kernel.\n");
-+		highmem = "HIGHMEM";
-+
-+	if (boot_cpu_has(X86_FEATURE_LM))
-+		printk(KERN_WARNING MSG_LM_TRIMMED, highmem);
-+	else 
-+		printk(KERN_WARNING "Use a %s enabled kernel.\n", highmem);
-+
- 	max_pfn = MAXMEM_PFN;
- #else /* !CONFIG_HIGHMEM */
- #ifndef CONFIG_HIGHMEM64G
- 	if (max_pfn > MAX_NONPAE_PFN) {
- 		max_pfn = MAX_NONPAE_PFN;
--		printk(KERN_WARNING MSG_HIGHMEM_TRIMMED);
-+		if (boot_cpu_has(X86_FEATURE_LM))
-+			highmem = "64bit";
-+		else
-+			highmem = "HIGHMEM64G enabled";
-+
-+		printk(KERN_WARNING MSG_HIGHMEM_TRIMMED, highmem);
- 	}
- #endif /* !CONFIG_HIGHMEM64G */
- #endif /* !CONFIG_HIGHMEM */
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
 
+  http://www.towertech.it
 
