@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbZCJR3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbZCJRcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757883AbZCJR3m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 13:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbZCJR3d
+	id S1757582AbZCJRcU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 13:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbZCJRcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 13:29:33 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:14706 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755555AbZCJR3c (ORCPT
+	Tue, 10 Mar 2009 13:32:08 -0400
+Received: from mga03.intel.com ([143.182.124.21]:48042 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753238AbZCJRcG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 13:29:32 -0400
-Message-ID: <49B6A374.6040805@hp.com>
-Date: Tue, 10 Mar 2009 13:29:24 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 10 Mar 2009 13:32:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,336,1233561600"; 
+   d="scan'208";a="118779032"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Frank Mehnert <Frank.Mehnert@Sun.COM>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "peterz@infradead.org" <peterz@infradead.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Date: Tue, 10 Mar 2009 10:33:31 -0700
+Subject: RE: remap_pfn_range() not suitable for physical RAM?
+Thread-Topic: remap_pfn_range() not suitable for physical RAM?
+Thread-Index: AcmhVvdWyK7bCXS1SdixO/B+IdWCVAATyUkA
+Message-ID: <7E82351C108FA840AB1866AC776AEC464FD82A88@orsmsx505.amr.corp.intel.com>
+References: <200903042025.46861.frank.mehnert@sun.com>
+ <200903100904.22753.frank.mehnert@sun.com>
+In-Reply-To: <200903100904.22753.frank.mehnert@sun.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       cl@linux-foundation.org, penberg@cs.helsinki.fi, linux-mm@kvack.org
-Subject: Re: PROBLEM: kernel BUG at mm/slab.c:3002!
-References: <49B68450.9000505@hp.com> <1236705532.3205.14.camel@calx>
-In-Reply-To: <1236705532.3205.14.camel@calx>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Tue, 2009-03-10 at 11:16 -0400, Alan D. Brunelle wrote:
->> Running blktrace & I/O loads cause a kernel BUG at mm/slab.c:3002!.
-> 
-> Pid: 11346, comm: blktrace Tainted: G    B      2.6.29-rc7 #3 ProLiant
-> DL585 G5   
-> 
-> That 'B' there indicates you've hit 'bad page' before this. That bug
-> seems to be strongly correlated with some form of hardware trouble.
-> Unfortunately, that makes everything after that point a little suspect.
 
+Frank,
 
-/If/ it were a hardware issue, that might explain the subsequent issue
-when I switched to SLUB instead...
+Patch here should eliminate the restriction.
+http://marc.info/?l=linux-kernel&m=123664923030126&w=1
 
-How does one look for "bad page reports"?
+Thanks,
+Venki
+ 
 
-I /will/ go back and change mm/slab.c as suggested - that will help some
-I'm sure (and switch back to SLAB, of course).
-
-> 
-> Both this slab BUG and the bad page issue are "shouldn't happen"
-> situations that are generally caused by memory changing out from under
-> the subsystem, either by some other code scribbling on the relevant
-> memory or DRAM trouble or the like. If you want to pursue this further,
-> please gather up a collection of any bad page reports you can find on
-> your system and change the BUG code at slab.c:3002 to read something
-> like:
-> 
-> 	if (slabp->inuse < 0 || slabp->inuse >= cachep->num) {
-> 		printk("SLAB: slabp %p inuse %d max %d\n",
-> 			slabp, slabp->inuse, cachep->num);
-> 		BUG();
-> 	}
-> 
-> We might find that the slab and the bad page are the same page or
-> nearby. We might find that inuse has a single bit flipped (hardware
-> error). Or we might find that it has a revealing value scribbled over it
-> that points to the culprit. From your trace, it appears to contain 0x70,
-> which is a rather large number of objects to have on a slab but as we
-> don't know what slab it is, it's hard to say what happened.
-> 
-
+>-----Original Message-----
+>From: linux-kernel-owner@vger.kernel.org 
+>[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Frank Mehnert
+>Sent: Tuesday, March 10, 2009 1:04 AM
+>To: linux-kernel@vger.kernel.org
+>Cc: peterz@infradead.org; Siddha, Suresh B
+>Subject: Re: remap_pfn_range() not suitable for physical RAM?
+>
+>Hi,
+>
+>sorry for re-posting this message and sorry for addressing you 
+>directly.
+>Perhaps you can help me again or can you give me a pointer for a proper
+>documentation of the various *remap* and *vm_insert* functions:
+>
+>On Wednesday 04 March 2009, Frank Mehnert wrote:
+>> since 2.6.29-rcX it seems to be not allowed anymore to use
+>> remap_pfn_range() to remap physical RAM to userland. This restriction
+>> applies only if CONFIG_X86_PAT is enabled. It seems that 
+>vm_insert_page()
+>> does not have this restriction. Am I correct? And what is the reason
+>> for this restriction?
+>
+>Kind regards,
+>
+>Frank
+>-- 
+>Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
+>
