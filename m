@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441AbZCJC3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbZCJCdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754441AbZCJC3T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 22:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbZCJC3J
+	id S1754279AbZCJCdh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 22:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbZCJCd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 22:29:09 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:26002 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754069AbZCJC3I (ORCPT
+	Mon, 9 Mar 2009 22:33:27 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:3735 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbZCJCd0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 22:29:08 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=GvjD1Hon1hOPnG0ykoi9BnSnEG831aOQ//a2MLlVzt/w9uq5nMVWsxVgKeM5t6nrs
-	c4nm5pUaW2ex5bOlxRIWA==
-Date: Mon, 9 Mar 2009 19:28:15 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm v2] cpusets: add memory_slab_hardwall flag
-In-Reply-To: <alpine.DEB.2.00.0903091920100.7539@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.0903091927410.10097@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903091920100.7539@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Mon, 9 Mar 2009 22:33:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=TL8Xz1o/CqViDF5jmhV9eZL07B1PDPEf7bUilOAWu93bjCqCSWbUMUd2RWwa21DlR9
+         waTutN1+TiCKHksMdgg/Y7jrnRS1fyQ2ve5Q/bnrocR+lMWlbO8d8TN7KDwckTP7A1k7
+         tWDAPNEKBcEL0i2/Gu+5xkqYHoMWufXOmsExw=
+Subject: Re: [Bug #12806] i915 broken STR
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Eric Anholt <eric@anholt.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <1236651832.10190.20.camel@gaiman>
+References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
+	 <SLCXkuHtxAO.A.QeB.sUarJB@chimera> <1236405187.7409.2.camel@brick>
+	 <200903072228.47358.rjw@sisk.pl>  <1236651832.10190.20.camel@gaiman>
+Content-Type: text/plain
+Date: Mon, 09 Mar 2009 19:33:22 -0700
+Message-Id: <1236652402.12423.6.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Mar 2009, David Rientjes wrote:
+On Mon, 2009-03-09 at 19:23 -0700, Eric Anholt wrote:
+> On Sat, 2009-03-07 at 22:28 +0100, Rafael J. Wysocki wrote:
+> > On Saturday 07 March 2009, Harvey Harrison wrote:
+> > > On > > This looks to have been a case of old-userspace..upgrading to
+> > > xorg-intel-video 2.6.1 (ubuntu Jaunty Alpha5) fixes STR here.
+> > 
+> > Well, thanks, but I'm not really sure if this is a good news.
+> > 
+> > Jesse, Eric, does it mean we now break resume on anything earlier than 2.6.1
+> > on the Harvey's hardware?
+> 
+> There's not much information (dmesg, Xorg.0.log) with this bug -- I'm
+> guessing he's using KMS, given that that commit was where the problems
+> started.  If so, yes, you really do need good userland for KMS to work.
+> 
 
-> diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
-> --- a/include/linux/cpuset.h
-> +++ b/include/linux/cpuset.h
-> @@ -86,6 +86,12 @@ static inline int cpuset_do_slab_mem_spread(void)
->  	return current->flags & PF_SPREAD_SLAB;
->  }
->  
-> +static inline int current_cpuset_object_allowed(int node, gfp_t flags)
-> +{
-> +	return !(current->flags & PF_SPREAD_SLAB) ||
-> +	       cpuset_node_allowed_hardwall(node, flags);
-> +}
-> +
->  extern int current_cpuset_is_being_rebound(void);
->  
->  extern void rebuild_sched_domains(void);
+Yep, turns out I had KMS turned on in my config...I thought I'd disabled
+it, sorry for the noise.
 
-That should be PF_SLAB_HARDWALL.
----
- include/linux/cpuset.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Harvey
 
-diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
-index d255e68..4db22d1 100644
---- a/include/linux/cpuset.h
-+++ b/include/linux/cpuset.h
-@@ -88,7 +88,7 @@ static inline int cpuset_do_slab_mem_spread(void)
- 
- static inline int current_cpuset_object_allowed(int node, gfp_t flags)
- {
--	return !(current->flags & PF_SPREAD_SLAB) ||
-+	return !(current->flags & PF_SLAB_HARDWALL) ||
- 	       cpuset_node_allowed_hardwall(node, flags);
- }
- 
