@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbZCJTs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZCJTyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756896AbZCJTs4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 15:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbZCJTsc
+	id S1755814AbZCJTyu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 15:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZCJTyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 15:48:32 -0400
-Received: from waldorf.bytemark.co.uk ([212.110.162.22]:41705 "EHLO
-	waldorf.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754536AbZCJTs3 (ORCPT
+	Tue, 10 Mar 2009 15:54:38 -0400
+Received: from mga09.intel.com ([134.134.136.24]:29717 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753097AbZCJTyh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 15:48:29 -0400
-X-Greylist: delayed 4328 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Mar 2009 15:48:29 EDT
-Date: Tue, 10 Mar 2009 18:36:10 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Joel Schopp <jschopp@austin.ibm.com>, Randy Dunlap <rdunlap@xenotime.net>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: checkpatch and pr_fmt()?
-Message-ID: <20090310183610.GE28243@shadowen.org>
-References: <Pine.LNX.4.64.0812181718250.1445@vixen.sonytel.be>
+	Tue, 10 Mar 2009 15:54:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,337,1233561600"; 
+   d="scan'208";a="496688615"
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: Stoyan Gaydarov <stoyboyker@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Date: Tue, 10 Mar 2009 12:54:33 -0700
+Subject: RE: [PATCH 03/25] [net] BUG to BUG_ON changes
+Thread-Topic: [PATCH 03/25] [net] BUG to BUG_ON changes
+Thread-Index: AcmhPucW/8gZlShnSBeIS6J0AdEZ/wAergfA
+Message-ID: <F169D4F5E1F1974DBFAFABF47F60C10A1E7589DC@orsmsx507.amr.corp.intel.com>
+References: <1236661850-8237-1-git-send-email-stoyboyker@gmail.com>
+ <1236661850-8237-2-git-send-email-stoyboyker@gmail.com>
+ <1236661850-8237-3-git-send-email-stoyboyker@gmail.com>
+ <1236661850-8237-4-git-send-email-stoyboyker@gmail.com>
+In-Reply-To: <1236661850-8237-4-git-send-email-stoyboyker@gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812181718250.1445@vixen.sonytel.be>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 18, 2008 at 05:24:06PM +0100, Geert Uytterhoeven wrote:
-> When using the recently introduced pr_fmt() infrastructure (commit
-> d091c2f58ba32029495a933b721e8e02fbd12caa, "Add 'pr_fmt()' format modifier to
-> pr_xyz macros."), checkpatch spits out the following annoying error:
+Stoyan Gaydarov wrote:
+> Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
+> ---
+>  drivers/net/atl1e/atl1e_main.c    |    3 +--
+>  drivers/net/chelsio/sge.c         |    3 +--
+>  drivers/net/ixgb/ixgb_osdep.h     |    2 +-
+>  drivers/net/pppol2tp.c            |    3 +--
+>  drivers/net/wireless/ath9k/core.h |    6 +-----
+>  5 files changed, 5 insertions(+), 12 deletions(-)
 > 
-> | ERROR: Macros with complex values should be enclosed in parenthesis
-> | +#define pr_fmt(fmt)    "%s: " fmt, __func__
+> diff --git a/drivers/net/ixgb/ixgb_osdep.h
+> b/drivers/net/ixgb/ixgb_osdep.h 
+> index d92e72b..371a6be 100644
+> --- a/drivers/net/ixgb/ixgb_osdep.h
+> +++ b/drivers/net/ixgb/ixgb_osdep.h
+> @@ -40,7 +40,7 @@
+>  #include <linux/sched.h>
 > 
-> Unfortunately, adding parentheses is not a solution, as it creates illegal C
-> code.
+>  #undef ASSERT
+> -#define ASSERT(x)	if (!(x)) BUG()
+> +#define ASSERT(x)	BUG_ON(!(x))
+>  #define MSGOUT(S, A, B)	printk(KERN_DEBUG S "\n", A, B)
+> 
+>  #ifdef DBG
 
-Yeah that one looks like something we should avoid.  Fixed in my next
-update which can be tested here:
+ack the ixgb portion
 
-  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
-
--apw
+Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
