@@ -1,146 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbZCJOXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbZCJOYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbZCJOXq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 10:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbZCJOWa
+	id S1756361AbZCJOYh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 10:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbZCJOY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 10:22:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48795 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755770AbZCJOW3 (ORCPT
+	Tue, 10 Mar 2009 10:24:26 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:47227 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755560AbZCJOYZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 10:22:29 -0400
-Message-Id: <20090310142015.761644317@chello.nl>
-References: <20090310141913.961861111@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Tue, 10 Mar 2009 15:19:15 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: mingo@elte.hu, paulus@samba.org
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 2/4] perf_counter: provide pagefault software events
-Content-Disposition: inline; filename=perf_swcounter_pgfault.patch
-X-Bad-Reply: References but no 'Re:' in Subject.
+	Tue, 10 Mar 2009 10:24:25 -0400
+Date: Tue, 10 Mar 2009 10:24:24 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Ingo Molnar <mingo@elte.hu>
+cc: prasad@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [patch 00/11] Hardware Breakpoint interfaces
+In-Reply-To: <20090310135117.GC3850@elte.hu>
+Message-ID: <Pine.LNX.4.44L0.0903101019570.2962-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We use the generic software counter infrastructure to provide page fault
-events.
+On Tue, 10 Mar 2009, Ingo Molnar wrote:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- arch/powerpc/mm/fault.c |    3 ++
- arch/x86/mm/fault.c     |    3 ++
- kernel/perf_counter.c   |   53 ++----------------------------------------------
- 3 files changed, 9 insertions(+), 50 deletions(-)
+> 
+> There's also a few checkpatch warnings that need to be 
+> addressed:
+> 
+> ERROR: do not use assignment in if condition
+> #1084: FILE: arch/x86/kernel/ptrace.c:581:
+> +	else if ((thbi = alloc_thread_hw_breakpoint(tsk)) == 
+> NULL)
 
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c
-+++ linux-2.6/kernel/perf_counter.c
-@@ -1601,57 +1601,10 @@ static const struct hw_perf_counter_ops 
-  * Software counter: page faults
-  */
- 
--#ifdef CONFIG_VM_EVENT_COUNTERS
--#define cpu_page_faults()	__get_cpu_var(vm_event_states).event[PGFAULT]
--#else
--#define cpu_page_faults()	0
--#endif
--
--static u64 get_page_faults(struct perf_counter *counter)
--{
--	struct task_struct *curr = counter->ctx->task;
--
--	if (curr)
--		return curr->maj_flt + curr->min_flt;
--	return cpu_page_faults();
--}
--
--static void page_faults_perf_counter_update(struct perf_counter *counter)
--{
--	u64 prev, now;
--	s64 delta;
--
--	prev = atomic64_read(&counter->hw.prev_count);
--	now = get_page_faults(counter);
--
--	atomic64_set(&counter->hw.prev_count, now);
--
--	delta = now - prev;
--
--	atomic64_add(delta, &counter->count);
--}
--
--static void page_faults_perf_counter_read(struct perf_counter *counter)
--{
--	page_faults_perf_counter_update(counter);
--}
--
--static int page_faults_perf_counter_enable(struct perf_counter *counter)
--{
--	if (counter->prev_state <= PERF_COUNTER_STATE_OFF)
--		atomic64_set(&counter->hw.prev_count, get_page_faults(counter));
--	return 0;
--}
--
--static void page_faults_perf_counter_disable(struct perf_counter *counter)
--{
--	page_faults_perf_counter_update(counter);
--}
--
- static const struct hw_perf_counter_ops perf_ops_page_faults = {
--	.enable		= page_faults_perf_counter_enable,
--	.disable	= page_faults_perf_counter_disable,
--	.read		= page_faults_perf_counter_read,
-+	.enable		= perf_swcounter_enable,
-+	.disable	= perf_swcounter_disable,
-+	.read		= perf_swcounter_read,
- };
- 
- /*
-Index: linux-2.6/arch/powerpc/mm/fault.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/mm/fault.c
-+++ linux-2.6/arch/powerpc/mm/fault.c
-@@ -29,6 +29,7 @@
- #include <linux/module.h>
- #include <linux/kprobes.h>
- #include <linux/kdebug.h>
-+#include <linux/perf_counter.h>
- 
- #include <asm/firmware.h>
- #include <asm/page.h>
-@@ -170,6 +171,8 @@ int __kprobes do_page_fault(struct pt_re
- 		die("Weird page fault", regs, SIGSEGV);
- 	}
- 
-+	perf_swcount_event(PERF_COUNT_PAGE_FAULTS, 1, regs);
-+
- 	/* When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
- 	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
-Index: linux-2.6/arch/x86/mm/fault.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/fault.c
-+++ linux-2.6/arch/x86/mm/fault.c
-@@ -27,6 +27,7 @@
- #include <linux/tty.h>
- #include <linux/smp.h>
- #include <linux/mm.h>
-+#include <linux/perf_counter.h>
- 
- #include <asm-generic/sections.h>
- 
-@@ -1056,6 +1057,8 @@ do_page_fault(struct pt_regs *regs, unsi
- 	if (unlikely(error_code & PF_RSVD))
- 		pgtable_bad(regs, error_code, address);
- 
-+	perf_swcounter_event(PERF_COUNT_PAGE_FAULTS, 1, regs);
-+
- 	/*
- 	 * If we're in an interrupt, have no user context or are running
- 	 * in an atomic region then we must not take the fault:
+Changing this to remove the assignment from within the "if" condition 
+would make the code less readable, not more.  It's part of a long 
+series of tests; in schematic form:
 
--- 
+	if (n == 4 || n == 5)
+...
+	else if (n == 6) {
+...
+	}
+	else if (!tsk->thread.hw_breakpoint_info && val == 0)
+...
+	else if ((thbi = alloc_thread_hw_breakpoint(tsk)) == NULL)
+...
+	else if (n < HB_NUM) {
+...
+	}
+	else
+...
+
+If you can suggest a way to change the code without making it worse,
+I'm sure Prasad will be happy to adopt it.
+
+Alan Stern
 
