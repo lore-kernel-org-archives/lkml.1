@@ -1,38 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751647AbZCJX4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbZCJX5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751647AbZCJX4u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 19:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbZCJX4j
+	id S1753085AbZCJX5c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 19:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbZCJX5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 19:56:39 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53736 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750886AbZCJX4i (ORCPT
+	Tue, 10 Mar 2009 19:57:22 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:44871 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750930AbZCJX5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 19:56:38 -0400
-Date: Tue, 10 Mar 2009 23:56:59 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: "Altobelli, David" <david.altobelli@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tweak spin logic for hpilo
-Message-ID: <20090310235659.1fe62b2e@lxorguk.ukuu.org.uk>
-In-Reply-To: <49B6F9A9.1030803@gmail.com>
-References: <20090309225651.GA13702@ldl.fc.hp.com>
-	<20090309160437.b71041d5.akpm@linux-foundation.org>
-	<92D64232F2316045B18937D5C9996B1522834ABED6@GVW1144EXB.americas.hpqcorp.net>
-	<49B6F9A9.1030803@gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Mar 2009 19:57:21 -0400
+Subject: s3cmci: fix s3c2410_dma_config() arguments.
+Message-Id: <20090310235711.185285440@fluff.org.uk>
+User-Agent: quilt/0.46-1
+From: Ben Dooks <ben@simtec.co.uk>
+To: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx
+Content-Disposition: inline; filename=dma/dma-fix-s3cmci-dma-config.patch
+Date: Tue, 10 Mar 2009 23:57:11 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You're using udelay, which is a spin loop. Nothing else can happen on 
-> that CPU while it's delaying anyway.
+From: Ben Dooks <ben@simtec.co.uk>
 
-However if your polling is doing I/O its clogging up the I/O busses (and
-quite often the bridge)
+The s3cmci driver is calling s3c2410_dma_config with incorrect data
+for the DCON register. The S3C2410_DCON_HWTRIG is implicit in the
+channel configuration and the device selection of S3C2410_DCON_CH0_SDI
+is incorrect as the DMA system may not select channel 0.
+
+Signed-off-by: Ben Dooks <ben@simtec.co.uk>
+
+Index: linux.git/drivers/mmc/host/s3cmci.c
+===================================================================
+--- linux.git.orig/drivers/mmc/host/s3cmci.c	2009-01-20 09:07:50.000000000 +0000
++++ linux.git/drivers/mmc/host/s3cmci.c	2009-01-20 09:08:11.000000000 +0000
+@@ -793,8 +793,7 @@ static void s3cmci_dma_setup(struct s3cm
+ 			      host->mem->start + host->sdidata);
+ 
+ 	if (!setup_ok) {
+-		s3c2410_dma_config(host->dma, 4,
+-			(S3C2410_DCON_HWTRIG | S3C2410_DCON_CH0_SDI));
++		s3c2410_dma_config(host->dma, 4, 0);
+ 		s3c2410_dma_set_buffdone_fn(host->dma,
+ 					    s3cmci_dma_done_callback);
+ 		s3c2410_dma_setflags(host->dma, S3C2410_DMAF_AUTOSTART);
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
