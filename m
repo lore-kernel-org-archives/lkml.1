@@ -1,99 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZCJFMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZCJFM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbZCJFMG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 01:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZCJFLa
+	id S1754111AbZCJFM3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 01:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbZCJFLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 01:11:30 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:28246 "EHLO
+	Tue, 10 Mar 2009 01:11:33 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:28373 "EHLO
 	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbZCJFLZ (ORCPT
+	with ESMTP id S1752036AbZCJFL0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 01:11:25 -0400
+	Tue, 10 Mar 2009 01:11:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=TSXqFz3OnNAH+MxsW5iPb7pS9pWfiWqCOi0R41ghsuJZfIgIQu5itz5v74m1VhJJLi
-         PmmvGyGcmFCoJOhVcBtpT8DrI0L+kTTkAjk+dnlA6oA2tDm9q57I/GJHK5SiaPqAEBhI
-         97inxdvk/PSObdBAfl2t0a6pyrd5O5YqX1yZk=
+        b=cSqNkIYy31Eb6HEymqI6bCyVGTXTV/Itr1ECRaFZC/loaMrKNtPq53kVLk+FR09tpC
+         /Dh72Dt3wI1C1x2++CWsBY8HUQwkgqhlqxM1szznFsGLa/9gNniyQhfdStrPd+fOMrCT
+         DvoQrrj54oPFELwxnvwpKn2w4WcROh6er+Mc4=
 From: Stoyan Gaydarov <stoyboyker@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, chris.mason@oracle.com,
-       linux-btrfs@vger.kernel.org
-Subject: [PATCH 01/25] [btrfs] BUG to BUG_ON changes
-Date: Tue, 10 Mar 2009 00:10:26 -0500
-Message-Id: <1236661850-8237-2-git-send-email-stoyboyker@gmail.com>
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, gregkh@suse.de
+Subject: [PATCH 02/25] [staging] BUG to BUG_ON changes
+Date: Tue, 10 Mar 2009 00:10:27 -0500
+Message-Id: <1236661850-8237-3-git-send-email-stoyboyker@gmail.com>
 X-Mailer: git-send-email 1.6.1.3
-In-Reply-To: <1236661850-8237-1-git-send-email-stoyboyker@gmail.com>
+In-Reply-To: <1236661850-8237-2-git-send-email-stoyboyker@gmail.com>
 References: <1236661850-8237-1-git-send-email-stoyboyker@gmail.com>
+ <1236661850-8237-2-git-send-email-stoyboyker@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
 ---
- fs/btrfs/ctree.c            |    3 +--
- fs/btrfs/extent-tree.c      |    3 +--
- fs/btrfs/free-space-cache.c |    3 +--
- fs/btrfs/tree-log.c         |    3 +--
- 4 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/staging/comedi/drivers.c      |    6 ++----
+ drivers/staging/otus/wwrap.c          |    3 +--
+ drivers/staging/usbip/vhci_sysfs.c    |    3 +--
+ drivers/staging/wlan-ng/hfa384x_usb.c |    4 +---
+ 4 files changed, 5 insertions(+), 11 deletions(-)
 
-diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
-index 37f31b5..2c590b0 100644
---- a/fs/btrfs/ctree.c
-+++ b/fs/btrfs/ctree.c
-@@ -2174,8 +2174,7 @@ static int insert_ptr(struct btrfs_trans_handle *trans, struct btrfs_root
- 	BUG_ON(!path->nodes[level]);
- 	lower = path->nodes[level];
- 	nritems = btrfs_header_nritems(lower);
--	if (slot > nritems)
--		BUG();
-+	BUG_ON(slot > nritems);
- 	if (nritems == BTRFS_NODEPTRS_PER_BLOCK(root))
- 		BUG();
- 	if (slot != nritems) {
-diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
-index 9abf81f..0314ab6 100644
---- a/fs/btrfs/extent-tree.c
-+++ b/fs/btrfs/extent-tree.c
-@@ -672,8 +672,7 @@ static noinline int insert_extents(struct btrfs_trans_handle *trans,
- 					      keys+i, data_size+i, total-i);
- 		BUG_ON(ret < 0);
+diff --git a/drivers/staging/comedi/drivers.c b/drivers/staging/comedi/drivers.c
+index 36a93b9..0b3a0f4 100644
+--- a/drivers/staging/comedi/drivers.c
++++ b/drivers/staging/comedi/drivers.c
+@@ -545,8 +545,7 @@ unsigned int comedi_buf_munge(comedi_async * async, unsigned int num_bytes)
  
--		if (last && ret > 1)
+ 	if (s->munge == NULL || (async->cmd.flags & CMDF_RAWDATA)) {
+ 		async->munge_count += num_bytes;
+-		if ((int)(async->munge_count - async->buf_write_count) > 0)
 -			BUG();
-+		BUG_ON(last && ret > 1);
- 
- 		leaf = path->nodes[0];
- 		for (c = 0; c < ret; c++) {
-diff --git a/fs/btrfs/free-space-cache.c b/fs/btrfs/free-space-cache.c
-index d1e5f0e..b0c7661 100644
---- a/fs/btrfs/free-space-cache.c
-+++ b/fs/btrfs/free-space-cache.c
-@@ -267,8 +267,7 @@ static int __btrfs_add_free_space(struct btrfs_block_group_cache *block_group,
- out:
- 	if (ret) {
- 		printk(KERN_ERR "btrfs: unable to add free space :%d\n", ret);
--		if (ret == -EEXIST)
--			BUG();
-+		BUG_ON(ret == -EEXIST);
++		BUG_ON((int)(async->munge_count - async->buf_write_count) > 0);
+ 		return num_bytes;
  	}
- 
- 	kfree(alloc_info);
-diff --git a/fs/btrfs/tree-log.c b/fs/btrfs/tree-log.c
-index 9c462fb..2c892f6 100644
---- a/fs/btrfs/tree-log.c
-+++ b/fs/btrfs/tree-log.c
-@@ -1150,8 +1150,7 @@ insert:
- 	ret = insert_one_name(trans, root, path, key->objectid, key->offset,
- 			      name, name_len, log_type, &log_key);
- 
--	if (ret && ret != -ENOENT)
+ 	/* don't munge partial samples */
+@@ -576,8 +575,7 @@ unsigned int comedi_buf_munge(comedi_async * async, unsigned int num_bytes)
+ 		async->munge_ptr %= async->prealloc_bufsz;
+ 		count += block_size;
+ 	}
+-	if ((int)(async->munge_count - async->buf_write_count) > 0)
 -		BUG();
-+	BUG_ON(ret && ret != -ENOENT);
- 	goto out;
++	BUG_ON((int)(async->munge_count - async->buf_write_count) > 0);
+ 	return count;
  }
  
+diff --git a/drivers/staging/otus/wwrap.c b/drivers/staging/otus/wwrap.c
+index 1bb5f59..a2d1389 100644
+--- a/drivers/staging/otus/wwrap.c
++++ b/drivers/staging/otus/wwrap.c
+@@ -350,8 +350,7 @@ void zfLnxUsbDataIn_callback(urb_t *urb)
+     buf->len = 0;
+ #endif
+ 
+-    if ((buf->tail + urb->actual_length) > buf->end)
+-        BUG();
++    BUG_ON((buf->tail + urb->actual_length) > buf->end);
+ 
+     skb_put(buf, urb->actual_length);
+ 
+diff --git a/drivers/staging/usbip/vhci_sysfs.c b/drivers/staging/usbip/vhci_sysfs.c
+index 0fd33a6..e4c7143 100644
+--- a/drivers/staging/usbip/vhci_sysfs.c
++++ b/drivers/staging/usbip/vhci_sysfs.c
+@@ -31,8 +31,7 @@ static ssize_t show_status(struct device *dev, struct device_attribute *attr,
+ 	char *s = out;
+ 	int i = 0;
+ 
+-	if (!the_controller || !out)
+-		BUG();
++	BUG_ON(!the_controller || !out);
+ 
+ 	spin_lock(&the_controller->lock);
+ 
+diff --git a/drivers/staging/wlan-ng/hfa384x_usb.c b/drivers/staging/wlan-ng/hfa384x_usb.c
+index 8a75b50..7cb3825 100644
+--- a/drivers/staging/wlan-ng/hfa384x_usb.c
++++ b/drivers/staging/wlan-ng/hfa384x_usb.c
+@@ -3612,9 +3612,7 @@ static void hfa384x_usbin_callback(struct urb *urb)
+ 		goto exit;
+ 
+ 	skb = hw->rx_urb_skb;
+-	if (!skb || (skb->data != urb->transfer_buffer)) {
+-		BUG();
+-	}
++	BUG_ON(!skb || (skb->data != urb->transfer_buffer));
+ 	hw->rx_urb_skb = NULL;
+ 
+ 	/* Check for error conditions within the URB */
 -- 
 1.6.1.3
 
