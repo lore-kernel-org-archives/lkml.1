@@ -1,97 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZCJNLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbZCJNLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693AbZCJNLL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 09:11:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbZCJNK5
+	id S1755050AbZCJNLd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 09:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZCJNLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 09:10:57 -0400
-Received: from cmpxchg.org ([85.214.51.133]:57659 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753079AbZCJNK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 09:10:56 -0400
-Message-Id: <20090310115643.653120649@emlix.com>
-From: Johannes Weiner <jw@emlix.com>
-Subject: [patch 0/8] xtensa: s6000 & s6105
-To: Chris Zankel <chris@zankel.net>
-Cc: Oskar Schirmer <os@emlix.com>, Daniel Gloeckner <dg@emlix.com>,
-       linux-kernel@vger.kernel.org
-Date: Tue, 10 Mar 2009 14:11:34 +0100
+	Tue, 10 Mar 2009 09:11:21 -0400
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:62904 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753181AbZCJNLU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 09:11:20 -0400
+Date: Tue, 10 Mar 2009 09:11:17 -0400 (EDT)
+From: Steve Rottinger <steve@www.rottinger.net>
+Subject: Re: Direct transfer between SCSI and PCI
+In-reply-to: <49B5A212.1040300@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Steve Rottinger <steve@www.rottinger.net>, linux-kernel@vger.kernel.org
+Message-id: <52936.12.35.250.145.1236690677.squirrel@www.rottinger.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Importance: Normal
+X-Priority: 3 (Normal)
+References: <36600.12.35.250.145.1236605376.squirrel@www.rottinger.net>
+ <49B5A212.1040300@gmail.com>
+User-Agent: SquirrelMail/1.4.8-1.fc5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The SCSI device would use it's DMA controller to copy the data, just as it
+would if the buffer was in the processor's RAM.  If I understand
+correctly, if I open up the SCSI device using the O_DIRECT option, the
+driver will DMA directly to/from the user buffer specified by the
+write()/read() functions. Instead, of that buffer being an address
+pointing to the processors RAM, I would like that buffer to point to the
+PCI address of the buffer on my PCI device. Currently, when I try this on
+an mmapped buffer to my PCI device, the write() routine returns a "Bad
+address" error.
 
-here is the core series of our s6000 port.
+-Steve
 
-First comes the nommu patch.  Right now we use CONFIG_MMU for
-everything that separates the S6000 from existing ports, memorywise.
-This is a lot easier and can still be broken up by newer ports when
-they have requirements with finer granularity.  Furthermore, we have
-only this one nommu box here, so we couldn't test an MMU architecture
-and therefor not say for sure we didn't break anything ;)
 
-Then comes the core variant stuff.  We are the first variant that
-needs to ship code files, so there is a prereq patch that allows that.
+> On 9.3.2009 14:29, Steve Rottinger wrote:
+>>As part
+>> of my project, I need to be able to directly transfer data from a large
+>> buffer that resides on
+>> a custom PCI communications device to a SCSI disk without going through
+>> the CPU's main
+>> memory.  Initially, it seemed like opening up the raw SCSI device in
+>> O_DIRECT mode would
+>> be the perfect solution.  However, through some experimentation, and
+>> reading some posts from
+>> a few years back, it appears that O_DIRECT only works on buffer's that
+>> reside in processor's
+>> main memory.   Does anyone have any suggestions as to how to get this to
+>> work?
+>
+> How would you want your scsi device to get the data? I suppose they are
+> stored somewhere on the PCI device memory connected to its local bus or
+> alike. At best it can be visible as a PCI bar but I doubt it is. As you
+> described it here, there is no way, how would the SCSI device see the
+> data.
+>
+> Or do you want to move the data from the PCI device via DMA implemented
+> in it directly to the SCSI device? How would you do this? I guess SCSI
+> devices do standard S/G DMA so that they read data from host memory by
+> themselves.
+>
+> Maybe if you elaborate on what exactly do you mean by the idea?
+>
 
-The inclusion of the GPIO driver is a bit arbitrary.  It was the only
-one left after stripping out all real peripheral support because we
-initially used GPIO in platform_setup().  I send it now to have an
-example on variant-specific code and conceptual improvements can then
-be excercised on it.
-
-The platform patch is fairly trivial.  One more requirement is that
-our platform can define the kernel text offset.  We can not use a
-fixed virtual address (nommu, remember? ;)) but have to provide a
-physical one that is within bounds of our actual RAM.
-
-The diffstat looks a bit overwhelming, but note that most of it is the
-defconfig, the tensilica core definitions and address definitions
-where the core has registers mapped.
-
-        Hannes
-
- arch/xtensa/Kconfig                                |   15 +
- arch/xtensa/Makefile                               |    5 +
- arch/xtensa/configs/s6105_defconfig                |  530 ++++++++++++++++++++
- arch/xtensa/include/asm/cacheflush.h               |   10 +-
- arch/xtensa/include/asm/dma.h                      |    3 +-
- arch/xtensa/include/asm/gpio.h                     |   56 ++
- arch/xtensa/include/asm/io.h                       |    9 +-
- arch/xtensa/include/asm/irq.h                      |    7 +
- arch/xtensa/include/asm/mmu.h                      |    5 +
- arch/xtensa/include/asm/mmu_context.h              |    5 +
- arch/xtensa/include/asm/nommu.h                    |    3 +
- arch/xtensa/include/asm/nommu_context.h            |   25 +
- arch/xtensa/include/asm/page.h                     |    9 +-
- arch/xtensa/include/asm/pgtable.h                  |   13 +-
- arch/xtensa/include/asm/processor.h                |    6 +
- arch/xtensa/kernel/entry.S                         |    3 +-
- arch/xtensa/kernel/head.S                          |    3 +-
- arch/xtensa/kernel/irq.c                           |   14 +
- arch/xtensa/kernel/setup.c                         |    7 +
- arch/xtensa/kernel/traps.c                         |    2 +
- arch/xtensa/kernel/vectors.S                       |    4 +
- arch/xtensa/kernel/vmlinux.lds.S                   |    3 +
- arch/xtensa/mm/Makefile                            |    3 +-
- arch/xtensa/mm/init.c                              |   62 +---
- arch/xtensa/mm/misc.S                              |    2 +
- arch/xtensa/mm/mmu.c                               |   70 +++
- arch/xtensa/platforms/s6105/Makefile               |    3 +
- arch/xtensa/platforms/s6105/device.c               |   67 +++
- .../xtensa/platforms/s6105/include/platform/gpio.h |   27 +
- .../platforms/s6105/include/platform/hardware.h    |   11 +
- .../platforms/s6105/include/platform/serial.h      |    8 +
- arch/xtensa/platforms/s6105/setup.c                |   61 +++
- arch/xtensa/variants/dc232b/Makefile               |    1 +
- arch/xtensa/variants/fsf/Makefile                  |    1 +
- arch/xtensa/variants/s6000/Makefile                |    3 +
- arch/xtensa/variants/s6000/gpio.c                  |   71 +++
- arch/xtensa/variants/s6000/include/variant/core.h  |  431 ++++++++++++++++
- .../variants/s6000/include/variant/hardware.h      |  259 ++++++++++
- arch/xtensa/variants/s6000/include/variant/irq.h   |    9 +
- .../variants/s6000/include/variant/tie-asm.h       |  304 +++++++++++
- arch/xtensa/variants/s6000/include/variant/tie.h   |  191 +++++++
- arch/xtensa/variants/s6000/irq.c                   |   74 +++
- 42 files changed, 2320 insertions(+), 75 deletions(-)
 
