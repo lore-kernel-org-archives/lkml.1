@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbZCJRpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbZCJRpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbZCJRpS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 13:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbZCJRpE
+	id S1757868AbZCJRpp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 13:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbZCJRpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 13:45:04 -0400
-Received: from waste.org ([66.93.16.53]:48479 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755140AbZCJRpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 13:45:03 -0400
-Subject: Re: PROBLEM: kernel BUG at mm/slab.c:3002!
-From: Matt Mackall <mpm@selenic.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       cl@linux-foundation.org, penberg@cs.helsinki.fi, linux-mm@kvack.org
-In-Reply-To: <49B6A374.6040805@hp.com>
-References: <49B68450.9000505@hp.com> <1236705532.3205.14.camel@calx>
-	 <49B6A374.6040805@hp.com>
-Content-Type: text/plain
-Date: Tue, 10 Mar 2009 12:43:50 -0500
-Message-Id: <1236707030.3205.21.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Mar 2009 13:45:36 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:54387 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755265AbZCJRpf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 13:45:35 -0400
+Date: Tue, 10 Mar 2009 12:45:17 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Nathan Lynch <ntl@pobox.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       containers <containers@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
+Message-ID: <20090310174517.GA12101@us.ibm.com>
+References: <20090305163857.0C18F3FD@kernel> <20090310105702.43eb1402@thinkcentre.lan> <20090310162026.GA9354@us.ibm.com> <20090310122320.313491ce@thinkcentre.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090310122320.313491ce@thinkcentre.lan>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-10 at 13:29 -0400, Alan D. Brunelle wrote:
-> Matt Mackall wrote:
-> > On Tue, 2009-03-10 at 11:16 -0400, Alan D. Brunelle wrote:
-> >> Running blktrace & I/O loads cause a kernel BUG at mm/slab.c:3002!.
+Quoting Nathan Lynch (ntl@pobox.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+> > Quoting Nathan Lynch (ntl@pobox.com):
+> > > Please consider this and a following patch.
+> > > 
+> > > >From a0fb96aa41c4d360559013cfd7f32f07f449c1c4 Mon Sep 17 00:00:00 2001
+> > > From: Nathan Lynch <ntl@pobox.com>
+> > > Date: Mon, 9 Mar 2009 22:23:02 -0500
+> > > Subject: [PATCH] checkpoint: make files_deny_checkpointing print task name and pid
+> > > 
+> > > This lets the developer know *which* task performed an action that
+> > > prevents checkpoint.
+> > > 
+> > > 
+> > > Signed-off-by: Nathan Lynch <ntl@pobox.com>
+> > > ---
+> > >  fs/file.c                  |    2 +-
+> > >  fs/open.c                  |    2 +-
+> > >  include/linux/checkpoint.h |   13 +++++++------
+> > >  3 files changed, 9 insertions(+), 8 deletions(-)
+> > > 
+> > > diff --git a/fs/file.c b/fs/file.c
+> > > index 0501af6..fcb2803 100644
+> > > --- a/fs/file.c
+> > > +++ b/fs/file.c
+> > > @@ -299,7 +299,7 @@ static void __scan_files_for_cr(struct files_struct *files)
+> > >  			continue;
+> > >  		if (cr_file_supported(f))
+> > >  			continue;
+> > > -		files_deny_checkpointing(files);
+> > > +		files_deny_checkpointing(current, files);
 > > 
-> > Pid: 11346, comm: blktrace Tainted: G    B      2.6.29-rc7 #3 ProLiant
-> > DL585 G5   
-> > 
-> > That 'B' there indicates you've hit 'bad page' before this. That bug
-> > seems to be strongly correlated with some form of hardware trouble.
-> > Unfortunately, that makes everything after that point a little suspect.
+> > Ah but you can't do this, because __scan_files_for_cr is called
+> > from dupfd which is called during copy_files, right?
 > 
-> 
-> /If/ it were a hardware issue, that might explain the subsequent issue
-> when I switched to SLUB instead...
+> Are you saying that the message should identify the child instead of
+> the parent as the uncheckpointable task?
 
-Well it was almost certainly not a bug in SLAB itself (and your SLUB
-test is obviously quite conclusive there). We'd have lots of reports.
-It's probably too early to conclude it's hardware though.
+Yes.  The parent may have opened the fd (or, importantly, may NOT have)
+but the child is the one now getting that 'dirty' fd and being newly
+marked uncheckpointable.
 
-> How does one look for "bad page reports"?
-
-It'll look something like this (pasted from Google):
-
->>     kernel: Bad page state at free_hot_cold_page (in process 'beam',
->> page c1a95320)
->>     kernel: flags:0x40020118 mapping:f401adc0 mapped:0 count:0
->> private:0x00000000
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+-serge
