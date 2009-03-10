@@ -1,109 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbZCJFNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbZCJFNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbZCJFNh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 01:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZCJFLl
+	id S1754580AbZCJFNX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 01:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZCJFLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 01:11:41 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:51849 "EHLO
+	Tue, 10 Mar 2009 01:11:39 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:53984 "EHLO
 	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752561AbZCJFLd (ORCPT
+	with ESMTP id S1752777AbZCJFLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 01:11:33 -0400
+	Tue, 10 Mar 2009 01:11:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=GMLpsBDs+C6JLiTkzBIiB8MtHOLh0YsNhWB8lTCfZHgwTZXjQQ6xP1GyCHboptPTao
-         M4T5Tc+4njjPJdS2YhvaHfWSTK9OpA0Q2Ssn1QETIMKaxOKaB4FLRPBOMtOhHdKV4wvo
-         QnErs76c1iJtvol1AjxzkZFTkRXtxB2siQmss=
+        b=K6M9MB8/naRKNmaRISQQNPoNto9Yk7k4tU7aZSKtilIfPET/uA/X1C3g3dve+EZQ6n
+         L07FD3bfaKRYY+Tklav80UwBiE+uo7Q2PI6fCH6wmHgx7WD8ENZEufKMK2Ev4U7JlJyf
+         Z2xEzCYVXUP/sG+LdxJauoTWaMst/FE59Mov8=
 From: Stoyan Gaydarov <stoyboyker@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, ralf@linux-mips.org,
-       linux-mips@linux-mips.org
-Subject: [PATCH 06/25] [mips] BUG to BUG_ON changes
-Date: Tue, 10 Mar 2009 00:10:31 -0500
-Message-Id: <1236661850-8237-7-git-send-email-stoyboyker@gmail.com>
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>
+Subject: [PATCH 04/25] [arm] BUG to BUG_ON changes
+Date: Tue, 10 Mar 2009 00:10:29 -0500
+Message-Id: <1236661850-8237-5-git-send-email-stoyboyker@gmail.com>
 X-Mailer: git-send-email 1.6.1.3
-In-Reply-To: <1236661850-8237-6-git-send-email-stoyboyker@gmail.com>
+In-Reply-To: <1236661850-8237-4-git-send-email-stoyboyker@gmail.com>
 References: <1236661850-8237-1-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-2-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-3-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-4-git-send-email-stoyboyker@gmail.com>
- <1236661850-8237-5-git-send-email-stoyboyker@gmail.com>
- <1236661850-8237-6-git-send-email-stoyboyker@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
 ---
- arch/mips/jazz/jazzdma.c |    3 +--
- arch/mips/kernel/traps.c |    3 +--
- arch/mips/mm/ioremap.c   |    9 +++------
- 3 files changed, 5 insertions(+), 10 deletions(-)
+ arch/arm/common/gic.c             |    9 +++------
+ arch/arm/mach-ebsa110/io.c        |   24 ++++++++----------------
+ arch/arm/mach-integrator/pci_v3.c |    9 +++------
+ arch/arm/mach-rpc/dma.c           |    3 +--
+ arch/arm/mach-versatile/pci.c     |    9 +++------
+ arch/arm/mm/init.c                |    3 +--
+ 6 files changed, 19 insertions(+), 38 deletions(-)
 
-diff --git a/arch/mips/jazz/jazzdma.c b/arch/mips/jazz/jazzdma.c
-index c672c08..f0fd636 100644
---- a/arch/mips/jazz/jazzdma.c
-+++ b/arch/mips/jazz/jazzdma.c
-@@ -68,8 +68,7 @@ static int __init vdma_init(void)
+diff --git a/arch/arm/common/gic.c b/arch/arm/common/gic.c
+index c6884ba..3b230a7 100644
+--- a/arch/arm/common/gic.c
++++ b/arch/arm/common/gic.c
+@@ -166,8 +166,7 @@ static struct irq_chip gic_chip = {
+ 
+ void __init gic_cascade_irq(unsigned int gic_nr, unsigned int irq)
+ {
+-	if (gic_nr >= MAX_GIC_NR)
+-		BUG();
++	BUG_ON(gic_nr >= MAX_GIC_NR);
+ 	if (set_irq_data(irq, &gic_data[gic_nr]) != 0)
+ 		BUG();
+ 	set_irq_chained_handler(irq, gic_handle_cascade_irq);
+@@ -179,8 +178,7 @@ void __init gic_dist_init(unsigned int gic_nr, void __iomem *base,
+ 	unsigned int max_irq, i;
+ 	u32 cpumask = 1 << smp_processor_id();
+ 
+-	if (gic_nr >= MAX_GIC_NR)
+-		BUG();
++	BUG_ON(gic_nr >= MAX_GIC_NR);
+ 
+ 	cpumask |= cpumask << 8;
+ 	cpumask |= cpumask << 16;
+@@ -243,8 +241,7 @@ void __init gic_dist_init(unsigned int gic_nr, void __iomem *base,
+ 
+ void __cpuinit gic_cpu_init(unsigned int gic_nr, void __iomem *base)
+ {
+-	if (gic_nr >= MAX_GIC_NR)
+-		BUG();
++	BUG_ON(gic_nr >= MAX_GIC_NR);
+ 
+ 	gic_data[gic_nr].cpu_base = base;
+ 
+diff --git a/arch/arm/mach-ebsa110/io.c b/arch/arm/mach-ebsa110/io.c
+index c52e304..0a6ec5b 100644
+--- a/arch/arm/mach-ebsa110/io.c
++++ b/arch/arm/mach-ebsa110/io.c
+@@ -79,8 +79,7 @@ u16 __readw(const volatile void __iomem *addr)
+ {
+ 	void __iomem *a = __isamem_convert_addr(addr);
+ 
+-	if ((unsigned long)addr & 1)
+-		BUG();
++	BUG_ON((unsigned long)addr & 1);
+ 
+ 	return __raw_readw(a);
+ }
+@@ -90,8 +89,7 @@ u32 __readl(const volatile void __iomem *addr)
+ 	void __iomem *a = __isamem_convert_addr(addr);
+ 	u32 ret;
+ 
+-	if ((unsigned long)addr & 3)
+-		BUG();
++	BUG_ON((unsigned long)addr & 3);
+ 
+ 	ret = __raw_readw(a);
+ 	ret |= __raw_readw(a + 4) << 16;
+@@ -136,8 +134,7 @@ void __writew(u16 val, void __iomem *addr)
+ {
+ 	void __iomem *a = __isamem_convert_addr(addr);
+ 
+-	if ((unsigned long)addr & 1)
+-		BUG();
++	BUG_ON((unsigned long)addr & 1);
+ 
+ 	__raw_writew(val, a);
+ }
+@@ -146,8 +143,7 @@ void __writel(u32 val, void __iomem *addr)
+ {
+ 	void __iomem *a = __isamem_convert_addr(addr);
+ 
+-	if ((unsigned long)addr & 3)
+-		BUG();
++	BUG_ON((unsigned long)addr & 3);
+ 
+ 	__raw_writew(val, a);
+ 	__raw_writew(val >> 16, a + 4);
+@@ -333,8 +329,7 @@ void outsb(unsigned int port, const void *from, int len)
+ 		off = port << 2;
+ 	else {
+ 		off = (port & ~1) << 1;
+-		if (port & 1)
+-			BUG();
++		BUG_ON(port & 1);
+ 	}
+ 
+ 	__raw_writesb((void __iomem *)ISAIO_BASE + off, from, len);
+@@ -348,8 +343,7 @@ void insb(unsigned int port, void *from, int len)
+ 		off = port << 2;
+ 	else {
+ 		off = (port & ~1) << 1;
+-		if (port & 1)
+-			BUG();
++		BUG_ON(port & 1);
+ 	}
+ 
+ 	__raw_readsb((void __iomem *)ISAIO_BASE + off, from, len);
+@@ -366,8 +360,7 @@ void outsw(unsigned int port, const void *from, int len)
+ 		off = port << 2;
+ 	else {
+ 		off = (port & ~1) << 1;
+-		if (port & 1)
+-			BUG();
++		BUG_ON(port & 1);
+ 	}
+ 
+ 	__raw_writesw((void __iomem *)ISAIO_BASE + off, from, len);
+@@ -381,8 +374,7 @@ void insw(unsigned int port, void *from, int len)
+ 		off = port << 2;
+ 	else {
+ 		off = (port & ~1) << 1;
+-		if (port & 1)
+-			BUG();
++		BUG_ON(port & 1);
+ 	}
+ 
+ 	__raw_readsw((void __iomem *)ISAIO_BASE + off, from, len);
+diff --git a/arch/arm/mach-integrator/pci_v3.c b/arch/arm/mach-integrator/pci_v3.c
+index f1d72b2..f8514fb 100644
+--- a/arch/arm/mach-integrator/pci_v3.c
++++ b/arch/arm/mach-integrator/pci_v3.c
+@@ -190,12 +190,9 @@ static unsigned long v3_open_config_window(struct pci_bus *bus,
+ 	/*
+ 	 * Trap out illegal values
  	 */
- 	pgtbl = (VDMA_PGTBL_ENTRY *)__get_free_pages(GFP_KERNEL | GFP_DMA,
- 						    get_order(VDMA_PGTBL_SIZE));
--	if (!pgtbl)
+-	if (offset > 255)
 -		BUG();
-+	BUG_ON(!pgtbl);
- 	dma_cache_wback_inv((unsigned long)pgtbl, VDMA_PGTBL_SIZE);
- 	pgtbl = (VDMA_PGTBL_ENTRY *)KSEG1ADDR(pgtbl);
+-	if (busnr > 255)
+-		BUG();
+-	if (devfn > 255)
+-		BUG();
++	BUG_ON(offset > 255);
++	BUG_ON(busnr > 255);
++	BUG_ON(devfn > 255);
  
-diff --git a/arch/mips/kernel/traps.c b/arch/mips/kernel/traps.c
-index b2d7041..89956d5 100644
---- a/arch/mips/kernel/traps.c
-+++ b/arch/mips/kernel/traps.c
-@@ -1277,8 +1277,7 @@ static void *set_vi_srs_handler(int n, vi_handler_t addr, int srs)
- 	u32 *w;
- 	unsigned char *b;
+ 	if (busnr == 0) {
+ 		int slot = PCI_SLOT(devfn);
+diff --git a/arch/arm/mach-rpc/dma.c b/arch/arm/mach-rpc/dma.c
+index 7958a30..3fc0232 100644
+--- a/arch/arm/mach-rpc/dma.c
++++ b/arch/arm/mach-rpc/dma.c
+@@ -242,8 +242,7 @@ static void floppy_enable_dma(dmach_t channel, dma_t *dma)
+ 	unsigned int fiqhandler_length;
+ 	struct pt_regs regs;
  
--	if (!cpu_has_veic && !cpu_has_vint)
+-	if (dma->sg)
 -		BUG();
-+	BUG_ON(!cpu_has_veic && !cpu_has_vint);
++	BUG_ON(dma->sg);
  
- 	if (addr == NULL) {
- 		handler = (unsigned long) do_default_vi;
-diff --git a/arch/mips/mm/ioremap.c b/arch/mips/mm/ioremap.c
-index 59945b9..0c43248 100644
---- a/arch/mips/mm/ioremap.c
-+++ b/arch/mips/mm/ioremap.c
-@@ -27,8 +27,7 @@ static inline void remap_area_pte(pte_t * pte, unsigned long address,
- 	end = address + size;
- 	if (end > PMD_SIZE)
- 		end = PMD_SIZE;
--	if (address >= end)
+ 	if (dma->dma_mode == DMA_MODE_READ) {
+ 		extern unsigned char floppy_fiqin_start, floppy_fiqin_end;
+diff --git a/arch/arm/mach-versatile/pci.c b/arch/arm/mach-versatile/pci.c
+index 7161ba2..ba910ab 100644
+--- a/arch/arm/mach-versatile/pci.c
++++ b/arch/arm/mach-versatile/pci.c
+@@ -84,12 +84,9 @@ static void __iomem *__pci_addr(struct pci_bus *bus,
+ 	/*
+ 	 * Trap out illegal values
+ 	 */
+-	if (offset > 255)
 -		BUG();
-+	BUG_ON(address >= end);
- 	pfn = phys_addr >> PAGE_SHIFT;
- 	do {
- 		if (!pte_none(*pte)) {
-@@ -52,8 +51,7 @@ static inline int remap_area_pmd(pmd_t * pmd, unsigned long address,
- 	if (end > PGDIR_SIZE)
- 		end = PGDIR_SIZE;
- 	phys_addr -= address;
--	if (address >= end)
+-	if (busnr > 255)
 -		BUG();
-+	BUG_ON(address >= end);
- 	do {
- 		pte_t * pte = pte_alloc_kernel(pmd, address);
- 		if (!pte)
-@@ -75,8 +73,7 @@ static int remap_area_pages(unsigned long address, phys_t phys_addr,
- 	phys_addr -= address;
- 	dir = pgd_offset(&init_mm, address);
- 	flush_cache_all();
--	if (address >= end)
+-	if (devfn > 255)
 -		BUG();
-+	BUG_ON(address >= end);
- 	do {
- 		pud_t *pud;
- 		pmd_t *pmd;
++	BUG_ON(offset > 255);
++	BUG_ON(busnr > 255);
++	BUG_ON(devfn > 255);
+ 
+ 	return VERSATILE_PCI_CFG_VIRT_BASE + ((busnr << 16) |
+ 		(PCI_SLOT(devfn) << 11) | (PCI_FUNC(devfn) << 8) | offset);
+diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
+index 34df4d9..67eba64 100644
+--- a/arch/arm/mm/init.c
++++ b/arch/arm/mm/init.c
+@@ -155,8 +155,7 @@ find_bootmap_pfn(int node, struct meminfo *mi, unsigned int bootmap_pages)
+ 		}
+ 	}
+ 
+-	if (bootmap_pfn == 0)
+-		BUG();
++	BUG_ON(bootmap_pfn == 0);
+ 
+ 	return bootmap_pfn;
+ }
 -- 
 1.6.1.3
 
