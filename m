@@ -1,107 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495AbZCJO1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756526AbZCJO3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756495AbZCJO1a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 10:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbZCJO0u
+	id S1756526AbZCJO3S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 10:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbZCJO3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 10:26:50 -0400
-Received: from www.tglx.de ([62.245.132.106]:33427 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755746AbZCJO0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 10:26:49 -0400
-Date: Tue, 10 Mar 2009 15:26:28 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Magnus Damm <magnus.damm@gmail.com>
-cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org, mingo@elte.hu,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Free setup_irq() interrupt V2
-In-Reply-To: <20090310102459.23422.80761.sendpatchset@rx1.opensource.se>
-Message-ID: <alpine.LFD.2.00.0903101510040.29264@localhost.localdomain>
-References: <20090310102459.23422.80761.sendpatchset@rx1.opensource.se>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 10 Mar 2009 10:29:05 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:41492 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754959AbZCJO3D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 10:29:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uT9O3oeZoDa95ST7RlbV7iw99wkavrFuF4EhRKhGsAXfyJKtPzNv84eZKOgDYHkPXd
+         tcjNNZHz46ptrgREEY5ouC++DgxHSgf3zRjEIiT2rgKi3JkI4xa4a9Vp+kCMj8tXHZ6Z
+         /4uL/PpbYw45iZl37rKxhUinrKw8FXBhToCj0=
+Date: Tue, 10 Mar 2009 22:29:29 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Am??rico Wang <xiyou.wangcong@gmail.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Rob Landley <rob@landley.net>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix ARCH=um segfault on x86-64.
+Message-ID: <20090310142929.GG3157@hack>
+References: <200903060042.19084.rob@landley.net> <20090306084848.GO22605@hack.private> <10f740e80903060150p565e9703u81d4fe47cb599ab@mail.gmail.com> <10f740e80903060151w779bbd11ld2fcc437ac7ac321@mail.gmail.com> <20090306111834.GC8991@hack.private> <20090306143543.GA6983@c2.user-mode-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090306143543.GA6983@c2.user-mode-linux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Magnus,
+On Fri, Mar 06, 2009 at 09:35:43AM -0500, Jeff Dike wrote:
+>On Fri, Mar 06, 2009 at 07:18:34PM +0800, Am??rico Wang wrote:
+>> It does work well x86_64, but my question is that whether this will
+>> break i386 or not, since before, CONFIG_3_LEVEL_PGTABLES depends on
+>> EXPERIMENTAL on i386, this patch removes it.
+>
+>As long as CONFIG_3_LEVEL_PGTABLES is off on 32-bit, it should be fine.
+>
+>It did work, last I checked, but 3-level page tables on 32-bit is a
+>very rarely used combination, and not useful.
+>
 
-On Tue, 10 Mar 2009, Magnus Damm wrote:
-> From: Magnus Damm <damm@igel.co.jp>
-> This patch adds a __free_irq() function for releasing 
-> interrupts requested with setup_irq().
+So this patch should be fine, right? :)
 
-I think there is a simpler solution than adding yet another function
-for the confusion of driver writers. See below.
+Thanks for your comments!
 
->  Why again are we not using struct list_head for the irqaction list?
-
-Why should we ? The add/remove of interrupt handlers is not a high
-frequency hot path operation.
-
-Thanks,
-
-	tglx
---------
-
-Subject: genirq: make free_irq() aware of static irqactions
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 10 Mar 2009 15:00:59 +0100
-
-Impact: enhancement
-
-Interrupts which are set up via setup_irq() with a static irqaction
-can not be released via free_irq(). The irqs set up via request_irq()
-use a kmalloc'ed irqaction. Mark them as allocated in irqaction->flags
-and check the flag in free_irq().
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- include/linux/interrupt.h |    2 ++
- kernel/irq/manage.c       |    5 +++--
- 2 files changed, 5 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/include/linux/interrupt.h
-===================================================================
---- linux-2.6.orig/include/linux/interrupt.h
-+++ linux-2.6/include/linux/interrupt.h
-@@ -49,6 +49,7 @@
-  * IRQF_IRQPOLL - Interrupt is used for polling (only the interrupt that is
-  *                registered first in an shared interrupt is considered for
-  *                performance reasons)
-+ * IRQF_ALLOCATED - Mark the irqaction as allocated by request_irq
-  */
- #define IRQF_DISABLED		0x00000020
- #define IRQF_SAMPLE_RANDOM	0x00000040
-@@ -58,6 +59,7 @@
- #define IRQF_PERCPU		0x00000400
- #define IRQF_NOBALANCING	0x00000800
- #define IRQF_IRQPOLL		0x00001000
-+#define IRQF_ALLOCATED		0x00002000
+-- 
+Do what you love, f**k the rest! F**k the regulations!
  
- typedef irqreturn_t (*irq_handler_t)(int, void *);
- 
-Index: linux-2.6/kernel/irq/manage.c
-===================================================================
---- linux-2.6.orig/kernel/irq/manage.c
-+++ linux-2.6/kernel/irq/manage.c
-@@ -623,7 +623,8 @@ void free_irq(unsigned int irq, void *de
- 				local_irq_restore(flags);
- 			}
- #endif
--			kfree(action);
-+			if (action->flags & IRQF_ALLOCATED)
-+				kfree(action);
- 			return;
- 		}
- 		printk(KERN_ERR "Trying to free already-free IRQ %d\n", irq);
-@@ -714,7 +715,7 @@ int request_irq(unsigned int irq, irq_ha
- 		return -ENOMEM;
- 
- 	action->handler = handler;
--	action->flags = irqflags;
-+	action->flags = irqflags | IRQF_ALLOCATED;
- 	cpus_clear(action->mask);
- 	action->name = devname;
- 	action->next = NULL;
