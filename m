@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZCJE1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbZCJE17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752412AbZCJE1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 00:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZCJE1G
+	id S1753383AbZCJE17 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 00:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbZCJE1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 00:27:06 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:32215 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbZCJE1F (ORCPT
+	Tue, 10 Mar 2009 00:27:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41823 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751099AbZCJE1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 00:27:05 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=B6P4pu+iYm3PfljMvtHVO/GVwjKaTlkKaryZ7Etiaynm2HV63SbzRC0ob6UuDixWm
-	ibSc0SRUuGNq6PKJ0C39w==
-Date: Mon, 9 Mar 2009 21:26:11 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Matt Mackall <mpm@selenic.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Menage <menage@google.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm] cpusets: add memory_slab_hardwall flag
-In-Reply-To: <1236657954.4192.523.camel@calx>
-Message-ID: <alpine.DEB.2.00.0903092112100.26081@chino.kir.corp.google.com>
-References: <alpine.DEB.1.10.0903091448110.20314@qirst.com>  <alpine.DEB.2.00.0903091307570.27253@chino.kir.corp.google.com>  <20090310102926.A47E.A69D9226@jp.fujitsu.com>  <alpine.DEB.2.00.0903091853000.25296@chino.kir.corp.google.com>
- <1236657954.4192.523.camel@calx>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 10 Mar 2009 00:27:49 -0400
+Date: Mon, 9 Mar 2009 21:26:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jesper Krogh <jesper@krogh.cc>
+cc: john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: Linux 2.6.29-rc6
+In-Reply-To: <49B57F3D.5030008@krogh.cc>
+Message-ID: <alpine.LFD.2.00.0903092109460.19207@localhost.localdomain>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <49A6F39F.9040801@krogh.cc>  <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com> 
+ <49A70B24.6090706@krogh.cc>  <1235685269.6811.11.camel@localhost.localdomain>  <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>  <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>  <1235766936.7402.5.camel@localhost.localdomain>
+ <49ABACA0.3090300@krogh.cc>  <1236029277.7756.0.camel@localhost.localdomain> <49ACC853.8070205@krogh.cc>  <1236110026.6068.18.camel@localhost> <49AD90E2.7050209@krogh.cc>  <1236118969.6068.87.camel@localhost> <49AE9EA4.2080500@krogh.cc>  <49AECA3B.5030503@krogh.cc>
+  <1236193075.3793.63.camel@jstultz-laptop>  <1236220759.6863.7.camel@localhost.localdomain> <1236221530.6863.9.camel@localhost.localdomain> <49B57F3D.5030008@krogh.cc>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Mar 2009, Matt Mackall wrote:
 
-> But we are still extremely sensitive to adding potential branches to one
-> of the most important fast-paths in the kernel, especially for a feature
-> with a fairly narrow use case. We've invested an awful lot of time into
-> micro-optimizing SLAB (by rewriting it as SLUB/SLQB) so any steps
-> backward at this stage are cause for concern. Also, remember 99%+ of
-> users will never care about this feature.
+
+On Mon, 9 Mar 2009, Jesper Krogh wrote:
 > 
+> First boot.
+> [    0.000000] ref_freq: 2311825  pit_freq: 2310386
+> Second boot:
+> [    0.000000] ref_freq: 2311803  pit_freq: 2310190
+> Third boot:
+> [    0.000000] ref_freq: 2311824  pit_freq: 2310080
+> Fourth boot:
+> [    0.000000] ref_freq: 2311831  pit_freq: 2310130
 
-My latest proposal simply checks for !(current->flags & PF_SLAB_HARDWALL) 
-before determining whether the set of allowable nodes needs to be checked.  
-For slub, this is in addition to the prexisting logic that checks whether 
-the object can be from any node (node == -1) in slab_alloc() or the cpu 
-slab is from the node requested for kmalloc_node() users for CONFIG_NUMA 
-kernels.
+It's really quite impressively stable, but the fast-PIT calibration 
+frequency is reliably about 3/4 of a promille low. Or, put another way, 
+the TSC difference over the pit calibration is just a _tad_ too small 
+compared to the value we'd expect if that loop of pit_expect_msb() would 
+really run at the expected delay of a 1.193182MHz clock divided by 256.
 
-You could argue that, in the slub example, check_node() should do this:
+And it's stable in that it really always seems to be off by a very similar 
+amount. It's not moving around very much.
 
-	static inline int check_node(struct kmem_cache_cpu *c, int node,
-				     gfp_t flags)
-	{
-	#ifdef CONFIG_NUMA
-		if (node != -1 && c->node != node)
-			return 0;
-		if (likely(!(current->flags & PF_SLAB_HARDWALL)))
-			return 1;
-	#endif
-		return current_cpuset_object_allowed(node, flags);
-	}
+I also wonder why it seems to happen mainly just to _you_. There's 
+absolutely nothing odd in your system, neither a slow CPU or anything 
+else that would stand out.
 
-Although this would penalize the case where current's cpuset has 
-memory_slab_hardwall enabled, yet the cpu slab is still allowed because it 
-originated from current->mems_allowed.
+Grr. Very annoyingly non-obvious.
 
-If checking for the PF_SLAB_HARDWALL bit in current->flags really is 
-unacceptable in my latest proposal, then a viable solution probably 
-doesn't exist for such workloads that want hardwall object allocations.
+		Linus
