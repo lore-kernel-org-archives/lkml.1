@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbZCJPEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbZCJPF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755899AbZCJPEn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 11:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbZCJPEc
+	id S1756050AbZCJPF3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 11:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbZCJPFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 11:04:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37918 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754410AbZCJPEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 11:04:32 -0400
-Date: Tue, 10 Mar 2009 16:04:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
-       lethal@linux-sh.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Free setup_irq() interrupt V2
-Message-ID: <20090310150415.GL3850@elte.hu>
-References: <20090310102459.23422.80761.sendpatchset@rx1.opensource.se> <alpine.LFD.2.00.0903101510040.29264@localhost.localdomain>
+	Tue, 10 Mar 2009 11:05:12 -0400
+Received: from h155.mvista.com ([63.81.120.155]:51216 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754308AbZCJPFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 11:05:11 -0400
+Message-ID: <49B681CE.2060409@ru.mvista.com>
+Date: Tue, 10 Mar 2009 18:05:50 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903101510040.29264@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/10] ide: set/clear drive->waiting_for_dma flag in the
+ core code
+References: <20090220171139.25429.26702.sendpatchset@localhost.localdomain> <20090220171243.25429.21171.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090220171243.25429.21171.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+Bartlomiej Zolnierkiewicz wrote:
 
-> Magnus,
-> 
-> On Tue, 10 Mar 2009, Magnus Damm wrote:
-> > From: Magnus Damm <damm@igel.co.jp>
-> > This patch adds a __free_irq() function for releasing 
-> > interrupts requested with setup_irq().
-> 
-> I think there is a simpler solution than adding yet another 
-> function for the confusion of driver writers. See below.
+> Set/clear drive->waiting_for_dma flag in the core code
+> instead of in ->dma_setup and ->dma_end methods.
 
-Uhm, i asked for that solution ;-) To reduce the confusion in 
-generic code with yet another IRQF flag.
+> There should be no functional changes caused by this patch.
 
-	Ingo
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
