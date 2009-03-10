@@ -1,30 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbZCJCYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753625AbZCJC2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753574AbZCJCYU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 22:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZCJCYH
+	id S1753625AbZCJC2W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 22:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbZCJC2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 22:24:07 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:50138 "EHLO
+	Mon, 9 Mar 2009 22:28:14 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:50147 "EHLO
 	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752390AbZCJCYE (ORCPT
+	with ESMTP id S1751400AbZCJC2N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 22:24:04 -0400
-Subject: Re: [Bug #12806] i915 broken STR
+	Mon, 9 Mar 2009 22:28:13 -0400
+Subject: Re: X200: Brightness broken since 2.6.29-rc4-58-g4c098bc
 From: Eric Anholt <eric@anholt.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <200903072228.47358.rjw@sisk.pl>
-References: <KiHv0irKPzE.A.l3.hUarJB@chimera>
-	 <SLCXkuHtxAO.A.QeB.sUarJB@chimera> <1236405187.7409.2.camel@brick>
-	 <200903072228.47358.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-oLmvj+c538rHKWMeI61D"
-Date: Mon, 09 Mar 2009 19:23:52 -0700
-Message-Id: <1236651832.10190.20.camel@gaiman>
+To: Nico Schottelius <nico-linux-20090213@schottelius.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090213094048.GC10175@denkbrett.schottelius.org>
+References: <20090213093354.GA10175@denkbrett.schottelius.org>
+	 <20090213094048.GC10175@denkbrett.schottelius.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-SHCuZ9TYT9Ispt9qanaC"
+Date: Mon, 09 Mar 2009 19:28:11 -0700
+Message-Id: <1236652091.10190.23.camel@gaiman>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,45 +27,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-oLmvj+c538rHKWMeI61D
+--=-SHCuZ9TYT9Ispt9qanaC
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2009-03-07 at 22:28 +0100, Rafael J. Wysocki wrote:
-> On Saturday 07 March 2009, Harvey Harrison wrote:
-> > On Tue, 2009-03-03 at 20:25 +0100, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > >=20
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.28.  Please verify if it still should be listed and let me k=
-now
-> > > (either way).
-> > >=20
-> > >=20
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D12806
-> > > Subject		: i915 broken STR
-> > > Submitter	: Harvey Harrison <harvey.harrison@gmail.com>
-> > > Date		: 2009-02-28 4:20 (4 days old)
-> > > First-Bad-Commit: http://git.kernel.org/?p=3Dlinux/kernel/git/torvald=
-s/linux-2.6.git;a=3Dcommit;h=3D5669fcacc58bf3a7386057addffd280d75380858
-> > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D123579487801064&w=
-=3D4
-> > >=20
-> > >=20
-> >=20
-> > This looks to have been a case of old-userspace..upgrading to
-> > xorg-intel-video 2.6.1 (ubuntu Jaunty Alpha5) fixes STR here.
+On Fri, 2009-02-13 at 10:40 +0100, Nico Schottelius wrote:
+> Nico Schottelius [Fri, Feb 13, 2009 at 10:33:54AM +0100]:
+> > [...]
 >=20
-> Well, thanks, but I'm not really sure if this is a good news.
->=20
-> Jesse, Eric, does it mean we now break resume on anything earlier than 2.=
-6.1
-> on the Harvey's hardware?
+> dmesg:
 
-There's not much information (dmesg, Xorg.0.log) with this bug -- I'm
-guessing he's using KMS, given that that commit was where the problems
-started.  If so, yes, you really do need good userland for KMS to work.
+> [  129.846561] [drm] Initialized drm 1.1.0 20060810
+> [  129.877658] pci 0000:00:02.0: power state changed by ACPI to D0
+> [  129.877678] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ =
+16
+> [  129.877687] pci 0000:00:02.0: setting latency timer to 64
+> [  129.934945] pci 0000:00:02.0: irq 30 for MSI/MSI-X
+> [  129.935021] [drm] Initialized i915 1.6.0 20080730 on minor 0
+> [  129.988541] [drm:i915_initialize] *ERROR* can not ioremap virtual addr=
+ess for ring buffer
+
+This is bad -- without the ringbuffer, initialization fails, so the DRM
+support for opregion shouldn't work.
+
+There have been fixes in later kernels for ioremap issues, which may or
+may not affect what you're seeing.  Also, are you using KMS or not?
 
 --=20
 Eric Anholt
@@ -78,16 +59,17 @@ eric@anholt.net                         eric.anholt@intel.com
 
 
 
---=-oLmvj+c538rHKWMeI61D
+--=-SHCuZ9TYT9Ispt9qanaC
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkm1zzgACgkQHUdvYGzw6vdFbQCgkFO/IraVFg3cqoZxBp2sCL92
-lX8An2tURqrVOuxy7TieG7WKjTKC1No6
-=HC7T
+iEYEABECAAYFAkm10DsACgkQHUdvYGzw6vccIgCfXQdig9Dq+IkcrN2ORHKW2N3o
+OaIAn2XOtYTdCX1zjI0Mxvh5Q2NN/nKf
+=aYJ3
 -----END PGP SIGNATURE-----
 
---=-oLmvj+c538rHKWMeI61D--
+--=-SHCuZ9TYT9Ispt9qanaC--
+
