@@ -1,124 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753693AbZCJJCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbZCJJRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753693AbZCJJCN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 05:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZCJJB6
+	id S1753821AbZCJJRH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 05:17:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZCJJQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 05:01:58 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:21699 "EHLO
-	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753347AbZCJJB4 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 05:01:56 -0400
-X-BigFish: VPS-36(zz1432R98dR936eQ1805M936fKzzzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KGA92E-01-6X1-01
-Date: Tue, 10 Mar 2009 10:01:17 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] x86: cpu architecture debug code
-Message-ID: <20090310090117.GC20716@alberich.amd.com>
-References: <1236494945.2807.2.camel@ht.satnam> <1236582769.2585.4.camel@ht.satnam>
+	Tue, 10 Mar 2009 05:16:53 -0400
+Received: from mail-qy0-f122.google.com ([209.85.221.122]:62860 "EHLO
+	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753567AbZCJJQv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 05:16:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=nqFxyQsAyBHuU5JOGwr0lP+Zv2AmKHkHKPkpkjNbAcNkNWB+KdknYwXUfpc5cJG4ww
+         ME90lrVmzA6150hXkRBh7dDzY+day/0CZ3ItEQMhozU0JDIAafxBpTZQdKvlemlUzzbL
+         i/CnxaFGHd2jezCFuV/Yl+hpaSVkGa3GLJXuA=
+Message-ID: <49B62FF2.7020607@gmail.com>
+Date: Tue, 10 Mar 2009 14:46:34 +0530
+From: David John <davidjonx@gmail.com>
+Reply-To: davidjonx@gmail.com
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1236582769.2585.4.camel@ht.satnam>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 10 Mar 2009 09:01:26.0434 (UTC) FILETIME=[CB2AB020:01C9A15E]
-Content-Transfer-Encoding: 8BIT
+To: Stoyan Gaydarov <stoyboyker@gmail.com>
+CC: linux-kernel@vger.kernel.org, chris.mason@oracle.com,
+       linux-btrfs@vger.kernel.org
+Subject: Re: [PATCH 01/25] [btrfs] BUG to BUG_ON changes
+References: <1236661850-8237-1-git-send-email-stoyboyker@gmail.com> <1236661850-8237-2-git-send-email-stoyboyker@gmail.com>
+In-Reply-To: <1236661850-8237-2-git-send-email-stoyboyker@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 09, 2009 at 12:42:49PM +0530, Jaswinder Singh Rajput wrote:
-> On Sun, 2009-03-08 at 12:19 +0530, Jaswinder Singh Rajput wrote:
-> > The following changes since commit cb553adb4e83bc5314b5a0c397e546a215b19307:
-> >   Ingo Molnar (1):
-> >         Merge branch 'tracing/printk'
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip-cpu.git master
-> > 
-> > Jaswinder Singh Rajput (1):
-> >       x86: cpu architecture debug code
-> > 
+Stoyan Gaydarov wrote:
+> Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
+> ---
+>  fs/btrfs/ctree.c            |    3 +--
+>  fs/btrfs/extent-tree.c      |    3 +--
+>  fs/btrfs/free-space-cache.c |    3 +--
+>  fs/btrfs/tree-log.c         |    3 +--
+>  4 files changed, 4 insertions(+), 8 deletions(-)
+> 
+> diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
+> index 37f31b5..2c590b0 100644
+> --- a/fs/btrfs/ctree.c
+> +++ b/fs/btrfs/ctree.c
+> @@ -2174,8 +2174,7 @@ static int insert_ptr(struct btrfs_trans_handle *trans, struct btrfs_root
+>  	BUG_ON(!path->nodes[level]);
+>  	lower = path->nodes[level];
+>  	nritems = btrfs_header_nritems(lower);
+> -	if (slot > nritems)
+> -		BUG();
+> +	BUG_ON(slot > nritems);
+>  	if (nritems == BTRFS_NODEPTRS_PER_BLOCK(root))
+>  		BUG();
 
-I still doubt that this is going to be useful (I don't see use cases for it).
-Nevertheless I have some comments.
+^ You seem to have missed one.
 
-> diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
-> index c381330..6427a84 100644
-> --- a/arch/x86/kernel/cpu/Makefile
-> +++ b/arch/x86/kernel/cpu/Makefile
-> @@ -9,7 +9,7 @@ endif
+>  	if (slot != nritems) {
+> diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+> index 9abf81f..0314ab6 100644
+> --- a/fs/btrfs/extent-tree.c
+> +++ b/fs/btrfs/extent-tree.c
+> @@ -672,8 +672,7 @@ static noinline int insert_extents(struct btrfs_trans_handle *trans,
+>  					      keys+i, data_size+i, total-i);
+>  		BUG_ON(ret < 0);
 >  
->  obj-y			:= intel_cacheinfo.o addon_cpuid_features.o
->  obj-y			+= proc.o capflags.o powerflags.o common.o
-> -obj-y			+= vmware.o hypervisor.o
-> +obj-y			+= vmware.o hypervisor.o cpu_debug.o
+> -		if (last && ret > 1)
+> -			BUG();
+> +		BUG_ON(last && ret > 1);
 >  
->  obj-$(CONFIG_X86_32)	+= bugs.o cmpxchg.o
->  obj-$(CONFIG_X86_64)	+= bugs_64.o
-
-There is no kernel config option and this code will always be
-compiled in. Why?
-
-> diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
-> new file mode 100755
-> index 0000000..e50d73b
-> --- /dev/null
-> +++ b/arch/x86/kernel/cpu/cpu_debug.c
-> @@ -0,0 +1,692 @@
-
-   ...
-
-> +static int cpu_seq_show(struct seq_file *seq, void *v)
-> +{
-> +	struct cpu_private *priv = seq->private;
-> +
-> +	if (priv == NULL)
-> +		return -EINVAL;
-> +
-> +	switch (cpu_base[priv->type].flag) {
-> +	case CPU_TSS:
-> +		smp_call_function_single(priv->cpu, print_stdreg, seq, 1);
-> +		break;
-> +	case CPU_CR:
-> +		smp_call_function_single(priv->cpu, print_cr, seq, 1);
-> +		break;
-> +	case CPU_DT:
-> +		smp_call_function_single(priv->cpu, print_dt, seq, 1);
-> +		break;
-> +	default:
-> +		print_msr(seq, priv->cpu, cpu_base[priv->type].flag);
-> +		break;
-> +	}
-> +	seq_printf(seq, "\n");
-
-(As one example.) Please don't print empty lines.
-
-General thoughts/questions:
-
-Your code is not cpu-hotpluggable. The complete debugfs subtree shows up
-for all CPUs - including CPUs that are offline. Was this your intention?
-
-How does this (especially dumping of register state) fit into other
-kernel debugging facilities, ie.
- - kgdb
- - sysrq
-
-
-Regards,
-Andreas
-
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+>  		leaf = path->nodes[0];
+>  		for (c = 0; c < ret; c++) {
+> diff --git a/fs/btrfs/free-space-cache.c b/fs/btrfs/free-space-cache.c
+> index d1e5f0e..b0c7661 100644
+> --- a/fs/btrfs/free-space-cache.c
+> +++ b/fs/btrfs/free-space-cache.c
+> @@ -267,8 +267,7 @@ static int __btrfs_add_free_space(struct btrfs_block_group_cache *block_group,
+>  out:
+>  	if (ret) {
+>  		printk(KERN_ERR "btrfs: unable to add free space :%d\n", ret);
+> -		if (ret == -EEXIST)
+> -			BUG();
+> +		BUG_ON(ret == -EEXIST);
+>  	}
+>  
+>  	kfree(alloc_info);
+> diff --git a/fs/btrfs/tree-log.c b/fs/btrfs/tree-log.c
+> index 9c462fb..2c892f6 100644
+> --- a/fs/btrfs/tree-log.c
+> +++ b/fs/btrfs/tree-log.c
+> @@ -1150,8 +1150,7 @@ insert:
+>  	ret = insert_one_name(trans, root, path, key->objectid, key->offset,
+>  			      name, name_len, log_type, &log_key);
+>  
+> -	if (ret && ret != -ENOENT)
+> -		BUG();
+> +	BUG_ON(ret && ret != -ENOENT);
+>  	goto out;
+>  }
+>  
 
