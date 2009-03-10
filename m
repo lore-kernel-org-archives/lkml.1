@@ -1,97 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbZCJDNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752247AbZCJDRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752919AbZCJDNf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 9 Mar 2009 23:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbZCJDNZ
+	id S1752247AbZCJDRV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 9 Mar 2009 23:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZCJDRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 9 Mar 2009 23:13:25 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:59133 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751497AbZCJDNY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 9 Mar 2009 23:13:24 -0400
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
-From: John Stultz <johnstul@us.ibm.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200903080230.10099.elendil@planet.nl>
-References: <200903080230.10099.elendil@planet.nl>
+	Mon, 9 Mar 2009 23:17:12 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60320 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752044AbZCJDRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 9 Mar 2009 23:17:11 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19kTbwCMIVkFU5Qw5Xq2Jvr8JuObDTqdaj95j6Spc
+	uXBjuiuL8DGd5f
+Subject: Re: [patch] Re: scheduler oddity [bug?]
+From: Mike Galbraith <efault@gmx.de>
+To: Balazs Scheidler <bazsi@balabit.hu>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Willy Tarreau <w@1wt.eu>
+In-Reply-To: <1236614243.8114.8.camel@bzorp.balabit>
+References: <1236448069.16726.21.camel@bzorp.balabit>
+	 <1236505323.6281.57.camel@marge.simson.net>
+	 <1236506309.6972.8.camel@marge.simson.net> <20090308153956.GB19658@elte.hu>
+	 <1236529200.7110.16.camel@marge.simson.net>
+	 <20090308175255.GA22802@elte.hu>
+	 <1236585731.6118.24.camel@marge.simson.net>
+	 <1236614243.8114.8.camel@bzorp.balabit>
 Content-Type: text/plain
-Date: Mon, 09 Mar 2009 20:09:42 -0700
-Message-Id: <1236654582.3792.7.camel@jstultz-laptop>
+Date: Tue, 10 Mar 2009 04:16:44 +0100
+Message-Id: <1236655004.5672.3.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.63
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-08 at 03:30 +0100, Frans Pop wrote:
-> Kernels after 2.6.27 fail to boot in the Hercules S/390 emulator, quite
-> early in the boot process:
->      0.000000! Initializing cgroup subsys cpuset
->      0.000000! Initializing cgroup subsys cpu
->      0.000000! Linux version 2.6.29-rc7 (root@aragorn) (gcc version 4.2.4 (Debian 4.2.4-4)) #11 SMP Thu Mar 5 20:02:03 CET 2009
->      0.000000! setup: Linux is running natively in 31-bit mode
->      0.000000! setup: The hardware system has IEEE compatible floating point units
->      0.000000! Zone PFN ranges:
->      0.000000!   Normal   0x00000000 -> 0x00010000
->      0.000000! Movable zone start PFN for each node
->      0.000000! early_node_map 1! active PFN ranges
->      0.000000!     0: 0x00000000 -> 0x00010000
->      0.000000! Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 65024
->      0.000000! Kernel command line: ro vmpoff="LOGOFF" root=/dev/disk/by-path/ccw-0.0.0120-part1 BOOT_IMAGE=4
->      0.000000! PID hash table entries: 1024 (order: 10, 4096 bytes)
->      0.000503! console  ttyS0! enabled
->      0.002333! Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
->      0.012841! Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
->      0.129660! Memory: 252032k/262144k available (2271k kernel code, 0k reserved, 922k data, 164k init)
->      0.130086! Write protected kernel read-only data: 0x12000 - 0x2fbfff
->      0.133887! Security Framework initialized
->      0.134064! SELinux:  Disabled at boot.
->      0.134996! Mount-cache hash table entries: 512
->      0.141419! Initializing cgroup subsys ns
->      0.141605! Initializing cgroup subsys cpuacct
->      0.142009! Initializing cgroup subsys devices
->      0.180403! cpu: 2 configured CPUs, 0 standby CPUs
-> [... here the boot stops, normally followed by: ...]
->      17179568.691707! cpu 0 phys_idx=0 vers=00 ident=002623 machine=3090 unused=0000
->      17179568.699479! cpu 1 phys_idx=1 vers=00 ident=102623 machine=3090 unused=0000
->      17179568.699636! Brought up 2 CPUs
+On Mon, 2009-03-09 at 16:57 +0100, Balazs Scheidler wrote:
+> Hi,
 > 
-> I've bisected this to the following commit:
-> commit 5cd1c9c5cf30d4b33df3d3f74d8142f278d536b7
-> Author: Roman Zippel <zippel@linux-m68k.org>
-> Date:   Mon Sep 22 14:42:43 2008 -0700
->     timekeeping: fix rounding problem during clock update
+> Just an interesting sidenote:
 > 
-> After reverting 5cd1c9c5cf30 and the somewhat related 6c9bacb41c10 on top
-> of 2.6.28.7, the system boots OK again [1].
+> I've ported the quoted patch and
+> 38736f475071b80b66be28af7b44c854073699cc  (the one I've found via
+> bisect) to 2.6.27 but these didn't resolve my scheduling problem, both
+> my test program and my application still uses only one CPU. So probably
+> the rest of the scheduling patches between 2.6.27..2.6.28 have some
+> effect too.
 
-Huh. No clue right off. What clocksource is in use on this system?
+It's probably the changes to wake_affine().  27 doesn't have the disable
+sync if avg_overlap is too large tests.
 
-cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-
-
-Also can you provide the output with the following patch?
-
-thanks
--john
-
-
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 900f1b6..e832ffc 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -547,6 +547,7 @@ void update_wall_time(void)
- 	 * add the remainder to the error difference.
- 	 */
- 	xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
-+	printk("xtime.tv_nsec: %ld  clock->xtime_nsec: %lld shift: %ld\n", xtime.tv_nsec, clock->xtime_nsec, clock->shift);
- 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
- 	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
- 
-
+	-Mike
 
