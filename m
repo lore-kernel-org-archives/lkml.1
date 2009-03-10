@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbZCJFRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbZCJFSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbZCJFRk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 01:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbZCJFL4
+	id S1755485AbZCJFSW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 01:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbZCJFMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 01:11:56 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:35665 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753683AbZCJFLy (ORCPT
+	Tue, 10 Mar 2009 01:12:05 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:28373 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753872AbZCJFMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 01:11:54 -0400
+	Tue, 10 Mar 2009 01:12:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=CJu5euNNLYI8YsbTxx0uNrQ/PpVuIy6skFE3CDjghJh5dyLWGQ7/wpyStfcDtmdMjo
-         LC376KnDcr5M29cMLQcxYk82XWABdUI/8On/x2qYZNhn7vnRIzui18kBot2T59libwTw
-         eB1xKVfMY6+4I76DdgSykDNHOUEeVCdj5q7UU=
+        b=jQkB30KvzA5rH+AMHlEMtZ1TKuoL2cKREbV9pKgDiotIk1AbPNagRRLkGrHfWhnG+6
+         Icta75xY4GnX571qFsVWZpfAcLBQzPItH/MvwLBOf9QxYo2ZBGImojbIGMJPVslCIqZ1
+         q3/G4G7j3EL8GJur/GH4bQKZO8FGNqE0xdT4Q=
 From: Stoyan Gaydarov <stoyboyker@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, chris@zankel.net
-Subject: [PATCH 18/25] [xtensa] BUG to BUG_ON changes
-Date: Tue, 10 Mar 2009 00:10:43 -0500
-Message-Id: <1236661850-8237-19-git-send-email-stoyboyker@gmail.com>
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, linux-scsi@vger.kernel.org
+Subject: [PATCH 20/25] [scsi] BUG to BUG_ON changes
+Date: Tue, 10 Mar 2009 00:10:45 -0500
+Message-Id: <1236661850-8237-21-git-send-email-stoyboyker@gmail.com>
 X-Mailer: git-send-email 1.6.1.3
-In-Reply-To: <1236661850-8237-18-git-send-email-stoyboyker@gmail.com>
+In-Reply-To: <1236661850-8237-20-git-send-email-stoyboyker@gmail.com>
 References: <1236661850-8237-1-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-2-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-3-git-send-email-stoyboyker@gmail.com>
@@ -42,42 +42,31 @@ References: <1236661850-8237-1-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-16-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-17-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-18-git-send-email-stoyboyker@gmail.com>
+ <1236661850-8237-19-git-send-email-stoyboyker@gmail.com>
+ <1236661850-8237-20-git-send-email-stoyboyker@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
 ---
- arch/xtensa/kernel/pci-dma.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ drivers/scsi/lpfc/lpfc_els.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/arch/xtensa/kernel/pci-dma.c b/arch/xtensa/kernel/pci-dma.c
-index f5319d7..3677bd0 100644
---- a/arch/xtensa/kernel/pci-dma.c
-+++ b/arch/xtensa/kernel/pci-dma.c
-@@ -47,10 +47,8 @@ dma_alloc_coherent(struct device *dev,size_t size,dma_addr_t *handle,gfp_t flag)
- 
- 	/* We currently don't support coherent memory outside KSEG */
- 
--	if (ret < XCHAL_KSEG_CACHED_VADDR
--	    || ret >= XCHAL_KSEG_CACHED_VADDR + XCHAL_KSEG_SIZE)
--		BUG();
--
-+	BUG_ON(ret < XCHAL_KSEG_CACHED_VADDR
-+	    || ret >= XCHAL_KSEG_CACHED_VADDR + XCHAL_KSEG_SIZE);
- 
- 	if (ret != 0) {
- 		memset((void*) ret, 0, size);
-@@ -67,8 +65,7 @@ void dma_free_coherent(struct device *hwdev, size_t size,
+diff --git a/drivers/scsi/lpfc/lpfc_els.c b/drivers/scsi/lpfc/lpfc_els.c
+index a730248..ccdc1eb 100644
+--- a/drivers/scsi/lpfc/lpfc_els.c
++++ b/drivers/scsi/lpfc/lpfc_els.c
+@@ -6343,8 +6343,7 @@ lpfc_cmpl_fabric_iocb(struct lpfc_hba *phba, struct lpfc_iocbq *cmdiocb,
  {
- 	long addr=(long)vaddr+XCHAL_KSEG_CACHED_VADDR-XCHAL_KSEG_BYPASS_VADDR;
+ 	struct ls_rjt stat;
  
--	if (addr < 0 || addr >= XCHAL_KSEG_SIZE)
+-	if ((cmdiocb->iocb_flag & LPFC_IO_FABRIC) != LPFC_IO_FABRIC)
 -		BUG();
-+	BUG_ON(addr < 0 || addr >= XCHAL_KSEG_SIZE);
++	BUG_ON((cmdiocb->iocb_flag & LPFC_IO_FABRIC) != LPFC_IO_FABRIC);
  
- 	free_pages(addr, get_order(size));
- }
+ 	switch (rspiocb->iocb.ulpStatus) {
+ 		case IOSTAT_NPORT_RJT:
 -- 
 1.6.1.3
 
