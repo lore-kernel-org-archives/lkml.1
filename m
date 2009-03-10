@@ -1,78 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbZCJUPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757906AbZCJURZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757263AbZCJUPd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 16:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbZCJUPT
+	id S1757906AbZCJURZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 16:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbZCJURQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 16:15:19 -0400
-Received: from mbox2.netikka.net ([213.250.81.203]:51451 "EHLO
-	mbox2.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753154AbZCJUPR (ORCPT
+	Tue, 10 Mar 2009 16:17:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42636
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753564AbZCJURP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 16:15:17 -0400
-Message-ID: <49B6CA4A.2040506@mandriva.org>
-Date: Tue, 10 Mar 2009 22:15:06 +0200
-From: Thomas Backlund <tmb@mandriva.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081231)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: netdev@vger.kernel.org
-Subject: BUG when unloading bonding on 2.6.29-rc7-git3
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 10 Mar 2009 16:17:15 -0400
+Date: Tue, 10 Mar 2009 13:17:00 -0700 (PDT)
+Message-Id: <20090310.131700.40129006.davem@davemloft.net>
+To: randy.dunlap@oracle.com
+Cc: geert@linux-m68k.org, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
+       linux-crypto@vger.kernel.org
+Subject: Re: linux-next: Tree for March 10 (crypto & NLATTR)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49B6C8BF.8010105@oracle.com>
+References: <49B6B821.5050302@oracle.com>
+	<10f740e80903101256v2cfe08a8g410c297e019d8693@mail.gmail.com>
+	<49B6C8BF.8010105@oracle.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-[pleace cc me on reply]
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Date: Tue, 10 Mar 2009 13:08:31 -0700
 
-I get this when trying to unloading the bonding module by doing:
+> I'll have to let David or Herbert answer that.  From my quick look
+> at the code, I don't see much use for nlattr.c when CONFIG_NET
+> is not enabled.
 
-service network stop
-modprobe -r bonding
-
-Oh, and I have "options ipv6 disable=1" in /etc/modprobe.conf
-
-
-> Mar 10 21:43:33 tmb kernel: BUG: unable to handle kernel NULL pointer dereference at 0000000000000028
-> Mar 10 21:43:33 tmb kernel: IP: [<ffffffffa038ad6b>] ipv6_sysctl_net_exit+0x1b/0x60 [ipv6]
-> Mar 10 21:43:33 tmb kernel: PGD 22608d067 PUD 22a813067 PMD 0 
-> Mar 10 21:43:33 tmb kernel: Oops: 0000 [#1] SMP 
-> Mar 10 21:43:33 tmb kernel: last sysfs file: /sys/class/net/bond0/bonding/slaves
-> Mar 10 21:43:34 tmb kernel: CPU 3 
-> Mar 10 21:43:34 tmb kernel: Modules linked in: af_packet ipv6(-) binfmt_misc loop xfs exportfs dm_mod floppy cpufreq_ondemand cpufreq_conservative cpufreq_p
-> owersave acpi_cpufreq freq_table raid0 snd_hda_codec_analog snd_hda_intel snd_hda_codec snd_hwdep snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_s
-> eq_device snd_pcm_oss iTCO_wdt sky2 skge i2c_i801 rtc_cmos iTCO_vendor_support ohci1394 i2c_core thermal snd_pcm raid1 snd_timer snd_mixer_oss ieee1394 butt
-> on processor evdev sr_mod sg snd soundcore snd_page_alloc pata_marvell ata_piix ahci libata sd_mod scsi_mod crc_t10dif raid456 async_xor async_memcpy async_tx xor raid10 ext3 jbd uhci_hcd ohci_hcd ehci_hcd usbcore [last unloaded: bonding]
-> Mar 10 21:43:34 tmb kernel: Pid: 5203, comm: modprobe Not tainted 2.6.29-0.rc7.3.1mdv #1 P5Q-E
-> Mar 10 21:43:34 tmb kernel: RIP: 0010:[<ffffffffa038ad6b>]  [<ffffffffa038ad6b>] ipv6_sysctl_net_exit+0x1b/0x60 [ipv6]
-> Mar 10 21:43:34 tmb kernel: RSP: 0018:ffff8802238dbe68  EFLAGS: 00010282
-> Mar 10 21:43:34 tmb kernel: RAX: ffffffffa038ad50 RBX: ffffffffa03a3d20 RCX: 000000000001ffff
-> Mar 10 21:43:34 tmb kernel: RDX: ffff8800a78ed000 RSI: 0000000000000086 RDI: 0000000000000000
-> Mar 10 21:43:34 tmb kernel: RBP: ffff8802238dbe88 R08: 0000000000000000 R09: 0000000000000002
-> Mar 10 21:43:34 tmb kernel: R10: ffffffff807c18a0 R11: ffff8802238dbdc8 R12: ffffffffa03a5680
-> Mar 10 21:43:34 tmb kernel: R13: 0000000000000080 R14: 0000000000000000 R15: ffff8802238dbee8
-> Mar 10 21:43:34 tmb kernel: FS:  00007f9ea27a36f0(0000) GS:ffff88022f05b580(0000) knlGS:0000000000000000
-> Mar 10 21:43:34 tmb kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> Mar 10 21:43:34 tmb kernel: CR2: 0000000000000028 CR3: 000000022b165000 CR4: 00000000000006e0
-> Mar 10 21:43:34 tmb kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> Mar 10 21:43:34 tmb kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Mar 10 21:43:34 tmb kernel: Process modprobe (pid: 5203, threadinfo ffff8802238da000, task ffff88022242c1d0)
-> Mar 10 21:43:34 tmb kernel: Stack:
-> Mar 10 21:43:34 tmb kernel:  ffff8802238dbe88 ffffffffa03a3d20 ffffffffa03a5680 0000000000000080
-> Mar 10 21:43:34 tmb kernel:  ffff8802238dbea8 ffffffff8046b83a ffff8802238dbea8 0000000000000000
-> Mar 10 21:43:34 tmb kernel:  ffff8802238dbeb8 ffffffffa038ad4c ffff8802238dbec8 ffffffffa038debd
-> Mar 10 21:43:34 tmb kernel: Call Trace:
-> Mar 10 21:43:34 tmb kernel:  [<ffffffff8046b83a>] unregister_pernet_subsys+0x2a/0x40
-> Mar 10 21:43:34 tmb kernel:  [<ffffffffa038ad4c>] ipv6_sysctl_unregister+0x1c/0x20 [ipv6]
-> Mar 10 21:43:34 tmb kernel:  [<ffffffffa038debd>] inet6_exit+0x1d/0xf0 [ipv6]
-> Mar 10 21:43:34 tmb kernel:  [<ffffffff80278339>] sys_delete_module+0x1e9/0x2b0
-> Mar 10 21:43:34 tmb kernel:  [<ffffffff80387f78>] ? __up_write+0x68/0x140
-> Mar 10 21:43:34 tmb kernel:  [<ffffffff8020c72a>] system_call_fastpath+0x16/0x1b
-> Mar 10 21:43:34 tmb kernel: Code: 48 c7 c7 20 3d 3a a0 e8 c4 0a 0e e0 c9 c3 66 90 55 48 89 e5 48 83 ec 20 48 89 5d e8 4c 89 65 f0 4c 89 6d f8 48 8b bf e8 02 00 00 <48> 8b 5f 28 4c 8b 63 20 4c 8b 6b 70 e8 c4 8b 16 e0 48 89 df e8 
-> Mar 10 21:43:34 tmb kernel: RIP  [<ffffffffa038ad6b>] ipv6_sysctl_net_exit+0x1b/0x60 [ipv6]
-> Mar 10 21:43:34 tmb kernel:  RSP <ffff8802238dbe68>
-> Mar 10 21:43:34 tmb kernel: CR2: 0000000000000028
-> Mar 10 21:43:34 tmb kernel: ---[ end trace 08ed5752dafe6907 ]---
-
+We want to use the netlink attribute parsers even in non-networking
+code, that's what he's trying to do here.
