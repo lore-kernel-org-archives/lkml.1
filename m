@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbZCJJkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZCJJmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754282AbZCJJkK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 05:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZCJJj4
+	id S1754060AbZCJJmv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 05:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbZCJJmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 05:39:56 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:49009 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753510AbZCJJjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 05:39:54 -0400
-Date: Tue, 10 Mar 2009 10:39:48 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: Geert.Uytterhoeven@sonycom.com, Geoff Levand <geoffrey.levand@am.sony.com>,
-       Kyle McMartin <kyle@mcmartin.ca>, linux-parisc@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       Dann Frazier <dannf@dannf.org>
-Subject: Re: [rtc-linux] Re: [PATCH 7/7] powerpc/ps3: Add rtc-ps3
-Message-ID: <20090310103948.6e180eea@i1501.lan.towertech.it>
-In-Reply-To: <alpine.LRH.2.00.0903101015470.24318@vixen.sonytel.be>
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-6-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-7-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<1236605183-22718-8-git-send-email-Geert.Uytterhoeven@sonycom.com>
-	<49B5618E.9050501@am.sony.com>
-	<alpine.LRH.2.00.0903101015470.24318@vixen.sonytel.be>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Mar 2009 05:42:43 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:52112 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753020AbZCJJmm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 05:42:42 -0400
+X-IronPort-AV: E=Sophos;i="4.38,335,1233550800"; 
+   d="scan'208";a="67623975"
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [alsa-devel] [PATCH 1/5] ASoC: Blackfin: fix bug - kernelwillcrash when record and play in bf527-ezkit
+Date: Tue, 10 Mar 2009 17:45:44 +0800
+Message-ID: <0F1B54C89D5F954D8535DB252AF412FA03AF7CAA@chinexm1.ad.analog.com>
+In-Reply-To: <20090309112127.GB13593@sirena.org.uk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [alsa-devel] [PATCH 1/5] ASoC: Blackfin: fix bug - kernelwillcrash when record and play in bf527-ezkit
+Thread-Index: AcmgqTMbEAoOK+SiQ1K6ObMmwty/zAAurz5A
+References: <1236326010-683-1-git-send-email-cooloney@kernel.org> <1236326010-683-2-git-send-email-cooloney@kernel.org> <20090306120145.GF6493@sirena.org.uk> <0F1B54C89D5F954D8535DB252AF412FA03AB85F5@chinexm1.ad.analog.com> <20090309112127.GB13593@sirena.org.uk>
+From: "Cai, Cliff" <Cliff.Cai@analog.com>
+To: "Mark Brown" <broonie@sirena.org.uk>
+Cc: "Bryan Wu" <cooloney@kernel.org>, <alsa-devel@alsa-project.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 10 Mar 2009 09:42:40.0051 (UTC) FILETIME=[8D8EB030:01C9A164]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Mar 2009 10:21:14 +0100 (CET)
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+ 
 
-> Alessandro prefers not to have generic RTC drivers on top of some other
-> abstraction, but wants platform/chip-specific drivers under drivers/rtc/
-> instead. The goal is to convert all RTC drivers buried in platform code
-> to separate RTC drivers.
-> 
-> (Alessandro, please correct me if I'm wrong)
+>-----Original Message-----
+>From: Mark Brown [mailto:broonie@sirena.org.uk] 
+>Sent: Monday, March 09, 2009 7:21 PM
+>To: Cai, Cliff
+>Cc: Bryan Wu; alsa-devel@alsa-project.org; linux-kernel@vger.kernel.org
+>Subject: Re: [alsa-devel] [PATCH 1/5] ASoC: Blackfin: fix bug 
+>- kernelwillcrash when record and play in bf527-ezkit
+>
+>On Mon, Mar 09, 2009 at 06:58:19PM +0800, Cai, Cliff wrote:
+>
+>> This patch should be named : change the configuring way for sport, 
+>> Because I found that the previous way is not reliable sometimes.
+>> Application like "tone" ,will call starup() twice before entering
+>> hw_params() to configure SPORT.  
+>> in this case SPORT won't be configured at all.
+>
+>This doesn't address the concerns I raised with the patch:
+>
+>> >Won't this mean that if a second data format is played the 
+>audio will 
+>> >be mishandled since the hardware will not have been configured for 
+>> >the new audio format?
+>
 
- yes, that's my dream :)
+I think I understand your concerns,I will send a new patch if I'm free.
 
--- 
+Thanks
 
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Cliff 
