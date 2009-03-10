@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756554AbZCJS0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZCJSbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756554AbZCJS0W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 14:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbZCJS0N
+	id S1756570AbZCJSbs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 14:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbZCJSbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 14:26:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50689 "EHLO mx2.mail.elte.hu"
+	Tue, 10 Mar 2009 14:31:39 -0400
+Received: from b-mail.com.ua ([195.68.202.242]:54787 "EHLO b-mail.com.ua"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754532AbZCJS0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 14:26:12 -0400
-Date: Tue, 10 Mar 2009 19:25:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [git pull] x86 fix
-Message-ID: <20090310182550.GA19222@elte.hu>
+	id S1755133AbZCJSbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 14:31:39 -0400
+Message-ID: <49B6B240.8030701@lebon.org.ua>
+Date: Tue, 10 Mar 2009 20:32:32 +0200
+From: Mikhail Zolotaryov <lebon@lebon.org.ua>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org
+CC: linuxppc-dev@ozlabs.org, Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc 4xx EMAC driver: device name reported on timeout
+ is not correct
+Content-Type: multipart/mixed;
+ boundary="------------050304050205060400050305"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+This is a multi-part message in MIME format.
+--------------050304050205060400050305
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Please pull the latest x86-fixes-for-linus git tree from:
+Hi,
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+not critical problem here.
 
- Thanks,
+IBM EMAC driver performs device reset (drivers/net/ibm_newemac/core.c: 
+emac_probe() -> emac_init_phy() -> emac_reset()) before registering 
+appropriate net_device (emac_probe() -> register_netdev()), so 
+net_device name contains raw format string during EMAC reset ("eth%d").
 
-	Ingo
+If the case of reset timeout, emac_report_timeout_error() function is 
+called to report an error. The problem is this function uses net_device 
+name to report device related, which is not correct, as a result in the 
+kernel log buffer we see:
 
------------------->
-Stuart Bennett (1):
-      x86 mmiotrace: fix remove_kmmio_fault_pages()
+eth%d: reset timeout
+
+The solution is to print device_node full_name instead. After applying 
+the patch proposed, error string is like the following:
+
+/plb/opb/ethernet@ef600e00: reset timeout
 
 
- arch/x86/mm/kmmio.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
+Signed-off-by: Mikhail Zolotaryov <lebon@lebon.org.ua>
 
-diff --git a/arch/x86/mm/kmmio.c b/arch/x86/mm/kmmio.c
-index 9f20503..6a518dd 100644
---- a/arch/x86/mm/kmmio.c
-+++ b/arch/x86/mm/kmmio.c
-@@ -451,23 +451,24 @@ static void rcu_free_kmmio_fault_pages(struct rcu_head *head)
- 
- static void remove_kmmio_fault_pages(struct rcu_head *head)
- {
--	struct kmmio_delayed_release *dr = container_of(
--						head,
--						struct kmmio_delayed_release,
--						rcu);
-+	struct kmmio_delayed_release *dr =
-+		container_of(head, struct kmmio_delayed_release, rcu);
- 	struct kmmio_fault_page *p = dr->release_list;
- 	struct kmmio_fault_page **prevp = &dr->release_list;
- 	unsigned long flags;
-+
- 	spin_lock_irqsave(&kmmio_lock, flags);
- 	while (p) {
--		if (!p->count)
-+		if (!p->count) {
- 			list_del_rcu(&p->list);
--		else
-+			prevp = &p->release_next;
-+		} else {
- 			*prevp = p->release_next;
--		prevp = &p->release_next;
-+		}
- 		p = p->release_next;
- 	}
- 	spin_unlock_irqrestore(&kmmio_lock, flags);
-+
- 	/* This is the real RCU destroy call. */
- 	call_rcu(&dr->rcu, rcu_free_kmmio_fault_pages);
- }
+
+
+--------------050304050205060400050305
+Content-Type: text/plain;
+ name="emac_report_timeout_error.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="emac_report_timeout_error.patch"
+
+LS0tIGxpbnV4LTIuNi9kcml2ZXJzL25ldC9pYm1fbmV3ZW1hYy9jb3JlLmMub3JpZwkyMDA5
+LTAzLTEwIDIwOjI0OjEyLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42L2RyaXZlcnMv
+bmV0L2libV9uZXdlbWFjL2NvcmUuYwkJMjAwOS0wMy0xMCAyMDoyOToxMi4wMDAwMDAwMDAg
+KzAyMDAKQEAgLTEzNCw3ICsxMzQsNyBAQAogCQkJCSAgRU1BQ19GVFJfNDQwRVBfUEhZX0NM
+S19GSVgpKQogCQlEQkcoZGV2LCAiJXMiIE5MLCBlcnJvcik7CiAJZWxzZSBpZiAobmV0X3Jh
+dGVsaW1pdCgpKQotCQlwcmludGsoS0VSTl9FUlIgIiVzOiAlc1xuIiwgZGV2LT5uZGV2LT5u
+YW1lLCBlcnJvcik7CisJCXByaW50ayhLRVJOX0VSUiAiJXM6ICVzXG4iLCBkZXYtPm9mZGV2
+LT5ub2RlLT5mdWxsX25hbWUsIGVycm9yKTsKIH0KIAogLyogRU1BQyBQSFkgY2xvY2sgd29y
+a2Fyb3VuZDoK
+--------------050304050205060400050305--
