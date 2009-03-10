@@ -1,69 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbZCJTYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbZCJTZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756519AbZCJTYl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 15:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbZCJTYb
+	id S1756781AbZCJTZo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 15:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbZCJTZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 15:24:31 -0400
-Received: from sh.osrg.net ([192.16.179.4]:60118 "EHLO sh.osrg.net"
+	Tue, 10 Mar 2009 15:25:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46370 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752862AbZCJTYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 15:24:30 -0400
-Date: Wed, 11 Mar 2009 04:23:56 +0900 (JST)
-Message-Id: <20090311.042356.42852970.ryusuke@osrg.net>
-To: greg@kroah.com
-Cc: konishi.ryusuke@lab.ntt.co.jp, akpm@linux-foundation.org, hch@lst.de,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Asking for inclusion of nilfs2 in the mainline kernel
-From: Ryusuke Konishi <ryusuke@osrg.net>
-In-Reply-To: <20090310182556.GA5730@kroah.com>
-References: <20090311.015542.118514963.ryusuke@osrg.net>
-	<20090310182556.GA5730@kroah.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1753305AbZCJTZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 15:25:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Eric Anholt <eric@anholt.net>
+Subject: Re: [Bug #12806] i915 broken STR
+Date: Tue, 10 Mar 2009 20:25:18 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <KiHv0irKPzE.A.l3.hUarJB@chimera> <200903101456.48444.rjw@sisk.pl> <1236706348.10190.65.camel@gaiman>
+In-Reply-To: <1236706348.10190.65.camel@gaiman>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 11 Mar 2009 04:23:56 +0900 (JST)
+Content-Disposition: inline
+Message-Id: <200903102025.18838.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-On Tue, 10 Mar 2009 11:25:56 -0700, Greg KH wrote:
-> On Wed, Mar 11, 2009 at 01:55:42AM +0900, Ryusuke Konishi wrote:
-> > Hi, 
+On Tuesday 10 March 2009, Eric Anholt wrote:
+> On Tue, 2009-03-10 at 14:56 +0100, Rafael J. Wysocki wrote:
+> > On Tuesday 10 March 2009, Eric Anholt wrote:
+> > > On Sat, 2009-03-07 at 22:28 +0100, Rafael J. Wysocki wrote:
+> > > > On Saturday 07 March 2009, Harvey Harrison wrote:
+> > > > > On Tue, 2009-03-03 at 20:25 +0100, Rafael J. Wysocki wrote:
+> > > > > > This message has been generated automatically as a part of a report
+> > > > > > of recent regressions.
+> > > > > > 
+> > > > > > The following bug entry is on the current list of known regressions
+> > > > > > from 2.6.28.  Please verify if it still should be listed and let me know
+> > > > > > (either way).
+> > > > > > 
+> > > > > > 
+> > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12806
+> > > > > > Subject		: i915 broken STR
+> > > > > > Submitter	: Harvey Harrison <harvey.harrison@gmail.com>
+> > > > > > Date		: 2009-02-28 4:20 (4 days old)
+> > > > > > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5669fcacc58bf3a7386057addffd280d75380858
+> > > > > > References	: http://marc.info/?l=linux-kernel&m=123579487801064&w=4
+> > > > > > 
+> > > > > > 
+> > > > > 
+> > > > > This looks to have been a case of old-userspace..upgrading to
+> > > > > xorg-intel-video 2.6.1 (ubuntu Jaunty Alpha5) fixes STR here.
+> > > > 
+> > > > Well, thanks, but I'm not really sure if this is a good news.
+> > > > 
+> > > > Jesse, Eric, does it mean we now break resume on anything earlier than 2.6.1
+> > > > on the Harvey's hardware?
+> > > 
+> > > There's not much information (dmesg, Xorg.0.log) with this bug -- I'm
+> > > guessing he's using KMS, given that that commit was where the problems
+> > > started.  If so, yes, you really do need good userland for KMS to work.
 > > 
-> > I've been working for the past serveral months to take review comments
-> > and to continually solve users' problems come up in mainling list
-> > (thanks for all giving comments and feedbacks!).  Also, I've tried to
-> > stabilize API and disk format to restrict additional changes and
-> > ensure backward compatibility.
-> > 
-> > Except adding ioctl commands for user-demanded features, I think the
-> > interface was almost stabilized.  Now I'd like to ask for mainline
-> > inclusion so that more people can try this in the tree.
+> > BTW, Is suspend generally supposed to work with KMS and the 2.6.1 (or later) X
+> > driver?
 > 
-> Then submit some patches, as documented in
-> Documentation/SubmittingPatches :)
+> I pulled a giant pile of KMS bugfixes into 2.6.2, so I'm not sure about
+> 2.6.1.
 > 
-> thanks,
+> We've still got some work to do with making our suspend/resume path
+> really complete for KMS.  We're missing some register setup that UMS
+> does, so behavior can be a bit random.  The current plan is to switch to
+> using the KMS modeset paths for resume, so we hopefully have reliable
+> (or at least consistent) mode setting behavior, and then fill those
+> remaining register writes in around it.  Basically, a separate
+> suspend/resume path for KMS, when we have full control of the device.
 
-Sorry for my insufficient explanation.
+OK, thanks.
 
-In my case, the patches are maintained in the -mm tree :)
-
-  http://userweb.kernel.org/~akpm/mmotm/
-
-My original post was found in
-
-  http://marc.info/?l=linux-fsdevel&m=122141951118758
-
-and
-
-  http://marc.info/?l=linux-fsdevel&m=121920195516073  (undivided first post)
-
-Additional patches have been posted to these mailing list, too.
-
-
-Thanks,
-Ryusuke
+Best,
+Rafael
