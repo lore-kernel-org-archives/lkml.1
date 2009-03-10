@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757066AbZCJRXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbZCJR0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757066AbZCJRXl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 13:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZCJRXb
+	id S1756217AbZCJR0H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 13:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbZCJRZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 13:23:31 -0400
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:37940 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754755AbZCJRXa (ORCPT
+	Tue, 10 Mar 2009 13:25:52 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:57245 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbZCJRZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 13:23:30 -0400
-Date: Tue, 10 Mar 2009 12:23:20 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-Message-ID: <20090310122320.313491ce@thinkcentre.lan>
-In-Reply-To: <20090310162026.GA9354@us.ibm.com>
-References: <20090305163857.0C18F3FD@kernel>
- <20090310105702.43eb1402@thinkcentre.lan> <20090310162026.GA9354@us.ibm.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 10 Mar 2009 13:25:51 -0400
+Message-ID: <49B6A253.8040004@s5r6.in-berlin.de>
+Date: Tue, 10 Mar 2009 18:24:35 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Ingo Brueckl <ib@wupperonline.de>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] unnecessary SCSI module
+References: <49b5689f@wupperonline.de> <1236633029.6029.1.camel@localhost.localdomain>
+In-Reply-To: <1236633029.6029.1.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Pobox-Relay-ID: 2B7613FC-0D98-11DE-B904-CBE7E3B37BAC-04752483!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> wrote:
-> Quoting Nathan Lynch (ntl@pobox.com):
-> > Please consider this and a following patch.
-> > 
-> > >From a0fb96aa41c4d360559013cfd7f32f07f449c1c4 Mon Sep 17 00:00:00 2001
-> > From: Nathan Lynch <ntl@pobox.com>
-> > Date: Mon, 9 Mar 2009 22:23:02 -0500
-> > Subject: [PATCH] checkpoint: make files_deny_checkpointing print task name and pid
-> > 
-> > This lets the developer know *which* task performed an action that
-> > prevents checkpoint.
-> > 
-> > 
-> > Signed-off-by: Nathan Lynch <ntl@pobox.com>
-> > ---
-> >  fs/file.c                  |    2 +-
-> >  fs/open.c                  |    2 +-
-> >  include/linux/checkpoint.h |   13 +++++++------
-> >  3 files changed, 9 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/fs/file.c b/fs/file.c
-> > index 0501af6..fcb2803 100644
-> > --- a/fs/file.c
-> > +++ b/fs/file.c
-> > @@ -299,7 +299,7 @@ static void __scan_files_for_cr(struct files_struct *files)
-> >  			continue;
-> >  		if (cr_file_supported(f))
-> >  			continue;
-> > -		files_deny_checkpointing(files);
-> > +		files_deny_checkpointing(current, files);
+James Bottomley wrote:
+> On Mon, 2009-03-09 at 20:06 +0100, Ingo Brueckl wrote:
+>> When configuring MODULES with the kernel to be able to load external drivers
+>> coming as modules, but not using anything as module in the kernel itself, one
+>> would expect to end up in a module-free kernel. Currently, you don't if you
+>> use SCSI. You'll get one unnecessary module.
+>> 
+>> Please consider the attached patch.
+>> 
+>> Signed-off-by: Ingo Brueckl <ib@wupperonline.de>
+>> 
+>> --- linux-2.6.28/drivers/scsi/Kconfig.orig	2008-12-25 00:26:37.000000000 +0100
+>> +++ linux-2.6.28/drivers/scsi/Kconfig	2009-03-06 22:49:40.000000000 +0100
+>> @@ -259,7 +259,7 @@ config SCSI_SCAN_ASYNC
+>>  config SCSI_WAIT_SCAN
+>>  	tristate
+>>  	default m
+>> -	depends on SCSI
+>> +	depends on SCSI = m || SCSI_SCAN_ASYNC = y
 > 
-> Ah but you can't do this, because __scan_files_for_cr is called
-> from dupfd which is called during copy_files, right?
+> This isn't right because SCSI_SCAN_ASYNC only sets the *default*
+> behaviour of the kernel.  Even if it's n the user can still boot up with
+> async scans by setting the kernel parameter.
 
-Are you saying that the message should identify the child instead of
-the parent as the uncheckpointable task?
+Indeed.  Also, the issue is not with /how/ SCSI_WAIT_SCAN is switched
+on, it is perhaps with /that/ SCSI_WAIT_SCAN is switched on.
 
+SCSI_WAIT_SCAN is a Kconfig variable which does not have a prompt ---
+like a large number of other Kconfig variables.  Like most of these
+other hidden Kconfig variables, SCSI_WAIT_SCAN controls a very compact
+part of kernel functionality.  Its only difference to most if not all of
+these variables is that it is a tristate variable which controls
+building of a .ko.
+
+> It also keeps coming up regularly:
+> 
+> http://marc.info/?t=122658550300002
+> 
+> James
+
+And it will keep coming up because the reasons for these choices
+(default to m instead of n, no prompt) are not at all obvious.  Perhaps
+you should add a comment to drivers/scsi/Kconfig.
+
+Actually while I superficially searched the archive right now I did not
+find the reason for not prompting for this variable, other than "it
+doesn't hurt to build this module".  Could be that there is an
+assumption that people who want the wait scan module in their initrd
+were unable to find a respective Kconfig prompt.
+-- 
+Stefan Richter
+-=====-==--= --== -=-=-
+http://arcgraph.de/sr/
