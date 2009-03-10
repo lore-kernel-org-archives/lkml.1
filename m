@@ -1,109 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbZCJJAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753693AbZCJJCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753772AbZCJJAp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 05:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbZCJJAY
+	id S1753693AbZCJJCN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 05:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751730AbZCJJB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 05:00:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43288 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753639AbZCJJAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 05:00:23 -0400
-Date: Tue, 10 Mar 2009 09:59:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Larry Woodman <lwoodman@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>
-Subject: Re: [PATCH 0/7] [GIT PULL] enhancements for tracing in tip
-Message-ID: <20090310085946.GC3097@elte.hu>
-References: <20090310045710.286915983@goodmis.org>
+	Tue, 10 Mar 2009 05:01:58 -0400
+Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:21699 "EHLO
+	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753347AbZCJJB4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 05:01:56 -0400
+X-BigFish: VPS-36(zz1432R98dR936eQ1805M936fKzzzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KGA92E-01-6X1-01
+Date: Tue, 10 Mar 2009 10:01:17 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: cpu architecture debug code
+Message-ID: <20090310090117.GC20716@alberich.amd.com>
+References: <1236494945.2807.2.camel@ht.satnam> <1236582769.2585.4.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090310045710.286915983@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1236582769.2585.4.camel@ht.satnam>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 10 Mar 2009 09:01:26.0434 (UTC) FILETIME=[CB2AB020:01C9A15E]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 09, 2009 at 12:42:49PM +0530, Jaswinder Singh Rajput wrote:
+> On Sun, 2009-03-08 at 12:19 +0530, Jaswinder Singh Rajput wrote:
+> > The following changes since commit cb553adb4e83bc5314b5a0c397e546a215b19307:
+> >   Ingo Molnar (1):
+> >         Merge branch 'tracing/printk'
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip-cpu.git master
+> > 
+> > Jaswinder Singh Rajput (1):
+> >       x86: cpu architecture debug code
+> > 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+I still doubt that this is going to be useful (I don't see use cases for it).
+Nevertheless I have some comments.
 
-> 
-> Ingo,
-> 
-> This patch series replaces the TRACE_EVENT_FORMAT with the new 
-> TRACE_EVENT
-> 
-> NOTE: I started with a pull from tip/tracing/printk. It does 
-> not show up as a merge since I did the pull at the point where 
-> it forked. But by pulling this branch, you will also receive 
-> your changes from tracing/printk. I rebased my changes off of 
-> this pull so that my changes would be after the pull, making 
-> this patch series cleaner.
+> diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
+> index c381330..6427a84 100644
+> --- a/arch/x86/kernel/cpu/Makefile
+> +++ b/arch/x86/kernel/cpu/Makefile
+> @@ -9,7 +9,7 @@ endif
+>  
+>  obj-y			:= intel_cacheinfo.o addon_cpuid_features.o
+>  obj-y			+= proc.o capflags.o powerflags.o common.o
+> -obj-y			+= vmware.o hypervisor.o
+> +obj-y			+= vmware.o hypervisor.o cpu_debug.o
+>  
+>  obj-$(CONFIG_X86_32)	+= bugs.o cmpxchg.o
+>  obj-$(CONFIG_X86_64)	+= bugs_64.o
 
-(that's OK - tracing/printk is still an active branch.)
+There is no kernel config option and this code will always be
+compiled in. Why?
 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (7):
->       tracing: typecast sizeof and offsetof to unsigned int
->       tracing: replace TP<var> with TP_<var>
->       tracing: use generic __stringify
->       tracing: new format for specialized trace points
->       tracing: convert the sched trace points to the TRACE_EVENT macros
->       tracing: convert irq trace points to new macros
->       tracing: remove obsolete TRACE_EVENT_FORMAT macro
-> 
-> ----
->  Documentation/tracepoints.txt          |    8 +-
->  include/linux/tracepoint.h             |   10 +-
->  include/trace/block.h                  |   70 +++---
->  include/trace/irq_event_types.h        |   46 ++--
->  include/trace/lockdep_event_types.h    |   26 +-
->  include/trace/power.h                  |   12 +-
->  include/trace/sched_event_types.h      |  442 +++++++++++++++++++++++---------
->  include/trace/workqueue.h              |   16 +-
->  kernel/trace/events.c                  |    4 +-
->  kernel/trace/trace.h                   |    5 -
->  kernel/trace/trace_event_types.h       |   29 +-
->  kernel/trace/trace_events.c            |  174 +------------
->  kernel/trace/trace_events_stage_1.h    |   27 +-
->  kernel/trace/trace_events_stage_2.h    |   91 +++++--
->  kernel/trace/trace_events_stage_3.h    |   42 +---
->  kernel/trace/trace_export.c            |   41 +++-
->  kernel/trace/trace_format.h            |   55 ----
->  kernel/trace/trace_selftest.c          |    6 +-
->  samples/tracepoints/tp-samples-trace.h |    8 +-
->  19 files changed, 575 insertions(+), 537 deletions(-)
+> diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
+> new file mode 100755
+> index 0000000..e50d73b
+> --- /dev/null
+> +++ b/arch/x86/kernel/cpu/cpu_debug.c
+> @@ -0,0 +1,692 @@
 
-Pulled, thanks Steve! (i suspect you'll fix the %z thing Andrew 
-noticed in the next drop.)
+   ...
 
-	Ingo
+> +static int cpu_seq_show(struct seq_file *seq, void *v)
+> +{
+> +	struct cpu_private *priv = seq->private;
+> +
+> +	if (priv == NULL)
+> +		return -EINVAL;
+> +
+> +	switch (cpu_base[priv->type].flag) {
+> +	case CPU_TSS:
+> +		smp_call_function_single(priv->cpu, print_stdreg, seq, 1);
+> +		break;
+> +	case CPU_CR:
+> +		smp_call_function_single(priv->cpu, print_cr, seq, 1);
+> +		break;
+> +	case CPU_DT:
+> +		smp_call_function_single(priv->cpu, print_dt, seq, 1);
+> +		break;
+> +	default:
+> +		print_msr(seq, priv->cpu, cpu_base[priv->type].flag);
+> +		break;
+> +	}
+> +	seq_printf(seq, "\n");
+
+(As one example.) Please don't print empty lines.
+
+General thoughts/questions:
+
+Your code is not cpu-hotpluggable. The complete debugfs subtree shows up
+for all CPUs - including CPUs that are offline. Was this your intention?
+
+How does this (especially dumping of register state) fit into other
+kernel debugging facilities, ie.
+ - kgdb
+ - sysrq
+
+
+Regards,
+Andreas
+
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
+
