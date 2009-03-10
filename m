@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751647AbZCJE60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbZCJE6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751647AbZCJE60 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 00:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbZCJE6O
+	id S1752146AbZCJE6m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 00:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZCJE6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 00:58:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:50104 "EHLO
+	Tue, 10 Mar 2009 00:58:15 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49318 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751466AbZCJE6N (ORCPT
+	with ESMTP id S1751505AbZCJE6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Mar 2009 00:58:13 -0400
-Message-Id: <20090310045710.286915983@goodmis.org>
+Message-Id: <20090310045810.602528682@goodmis.org>
+References: <20090310045710.286915983@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 10 Mar 2009 00:57:10 -0400
+Date: Tue, 10 Mar 2009 00:57:11 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -30,58 +31,115 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Tom Zanussi <tzanussi@gmail.com>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Christoph Hellwig <hch@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>
-Subject: [PATCH 0/7] [GIT PULL] enhancements for tracing in tip
+       Jiaying Zhang <jiayingz@google.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 1/7] tracing: typecast sizeof and offsetof to unsigned int
+Content-Disposition: inline; filename=0001-tracing-typecast-sizeof-and-offsetof-to-unsigned-in.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Steven Rostedt <srostedt@redhat.com>
 
-Ingo,
+Impact: fix compiler warnings
 
-This patch series replaces the TRACE_EVENT_FORMAT with the new
-TRACE_EVENT
+On x86_64 sizeof and offsetof are treated as long, where as on x86_32
+they are int. This patch typecasts them to unsigned int to avoid
+one arch giving warnings while the other does not.
 
-NOTE: I started with a pull from tip/tracing/printk. It does not
-show up as a merge since I did the pull at the point where it forked.
-But by pulling this branch, you will also receive your changes from
-tracing/printk. I rebased my changes off of this pull so that my changes
-would be after the pull, making this patch series cleaner.
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/trace_events.c |   15 ++++++++-------
+ kernel/trace/trace_export.c |   10 +++++-----
+ kernel/trace/trace_format.h |   12 ++++++------
+ 3 files changed, 19 insertions(+), 18 deletions(-)
 
-Please pull the latest tip/tracing/ftrace tree, which can be found at:
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 4488d90..fa32ca3 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -448,8 +448,9 @@ event_available_types_read(struct file *filp, char __user *ubuf, size_t cnt,
+ }
+ 
+ #undef FIELD
+-#define FIELD(type, name) \
+-	#type, #name, offsetof(typeof(field), name), sizeof(field.name)
++#define FIELD(type, name)						\
++	#type, #name, (unsigned int)offsetof(typeof(field), name),	\
++		(unsigned int)sizeof(field.name)
+ 
+ static int trace_write_header(struct trace_seq *s)
+ {
+@@ -457,11 +458,11 @@ static int trace_write_header(struct trace_seq *s)
+ 
+ 	/* struct trace_entry */
+ 	return trace_seq_printf(s,
+-				"\tfield:%s %s;\toffset:%lu;\tsize:%lu;\n"
+-				"\tfield:%s %s;\toffset:%lu;\tsize:%lu;\n"
+-				"\tfield:%s %s;\toffset:%lu;\tsize:%lu;\n"
+-				"\tfield:%s %s;\toffset:%lu;\tsize:%lu;\n"
+-				"\tfield:%s %s;\toffset:%lu;\tsize:%lu;\n"
++				"\tfield:%s %s;\toffset:%u;\tsize:%u;\n"
++				"\tfield:%s %s;\toffset:%u;\tsize:%u;\n"
++				"\tfield:%s %s;\toffset:%u;\tsize:%u;\n"
++				"\tfield:%s %s;\toffset:%u;\tsize:%u;\n"
++				"\tfield:%s %s;\toffset:%u;\tsize:%u;\n"
+ 				"\n",
+ 				FIELD(unsigned char, type),
+ 				FIELD(unsigned char, flags),
+diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+index 0fb7be7..7162ab4 100644
+--- a/kernel/trace/trace_export.c
++++ b/kernel/trace/trace_export.c
+@@ -18,11 +18,11 @@
+ #include "trace_format.h"
+ 
+ #undef TRACE_FIELD_ZERO_CHAR
+-#define TRACE_FIELD_ZERO_CHAR(item)				\
+-	ret = trace_seq_printf(s, "\tfield: char " #item ";\t"	\
+-			       "offset:%lu;\tsize:0;\n",	\
+-			       offsetof(typeof(field), item));	\
+-	if (!ret)						\
++#define TRACE_FIELD_ZERO_CHAR(item)					\
++	ret = trace_seq_printf(s, "\tfield: char " #item ";\t"		\
++			       "offset:%u;\tsize:0;\n",			\
++			       (unsigned int)offsetof(typeof(field), item)); \
++	if (!ret)							\
+ 		return 0;
+ 
+ 
+diff --git a/kernel/trace/trace_format.h b/kernel/trace/trace_format.h
+index 03f9a4c..97e59a9 100644
+--- a/kernel/trace/trace_format.h
++++ b/kernel/trace/trace_format.h
+@@ -22,9 +22,9 @@
+ #undef TRACE_FIELD
+ #define TRACE_FIELD(type, item, assign)					\
+ 	ret = trace_seq_printf(s, "\tfield:" #type " " #item ";\t"	\
+-			       "offset:%lu;\tsize:%lu;\n",		\
+-			       offsetof(typeof(field), item),		\
+-			       sizeof(field.item));			\
++			       "offset:%u;\tsize:%u;\n",		\
++			       (unsigned int)offsetof(typeof(field), item), \
++			       (unsigned int)sizeof(field.item));	\
+ 	if (!ret)							\
+ 		return 0;
+ 
+@@ -32,9 +32,9 @@
+ #undef TRACE_FIELD_SPECIAL
+ #define TRACE_FIELD_SPECIAL(type_item, item, cmd)			\
+ 	ret = trace_seq_printf(s, "\tfield special:" #type_item ";\t"	\
+-			       "offset:%lu;\tsize:%lu;\n",		\
+-			       offsetof(typeof(field), item),		\
+-			       sizeof(field.item));			\
++			       "offset:%u;\tsize:%u;\n",		\
++			       (unsigned int)offsetof(typeof(field), item), \
++			       (unsigned int)sizeof(field.item));	\
+ 	if (!ret)							\
+ 		return 0;
+ 
+-- 
+1.6.1.3
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/ftrace
-
-
-Steven Rostedt (7):
-      tracing: typecast sizeof and offsetof to unsigned int
-      tracing: replace TP<var> with TP_<var>
-      tracing: use generic __stringify
-      tracing: new format for specialized trace points
-      tracing: convert the sched trace points to the TRACE_EVENT macros
-      tracing: convert irq trace points to new macros
-      tracing: remove obsolete TRACE_EVENT_FORMAT macro
-
-----
- Documentation/tracepoints.txt          |    8 +-
- include/linux/tracepoint.h             |   10 +-
- include/trace/block.h                  |   70 +++---
- include/trace/irq_event_types.h        |   46 ++--
- include/trace/lockdep_event_types.h    |   26 +-
- include/trace/power.h                  |   12 +-
- include/trace/sched_event_types.h      |  442 +++++++++++++++++++++++---------
- include/trace/workqueue.h              |   16 +-
- kernel/trace/events.c                  |    4 +-
- kernel/trace/trace.h                   |    5 -
- kernel/trace/trace_event_types.h       |   29 +-
- kernel/trace/trace_events.c            |  174 +------------
- kernel/trace/trace_events_stage_1.h    |   27 +-
- kernel/trace/trace_events_stage_2.h    |   91 +++++--
- kernel/trace/trace_events_stage_3.h    |   42 +---
- kernel/trace/trace_export.c            |   41 +++-
- kernel/trace/trace_format.h            |   55 ----
- kernel/trace/trace_selftest.c          |    6 +-
- samples/tracepoints/tp-samples-trace.h |    8 +-
- 19 files changed, 575 insertions(+), 537 deletions(-)
 -- 
