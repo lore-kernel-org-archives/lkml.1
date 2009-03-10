@@ -1,258 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZCJH62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZCJIDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754552AbZCJH62 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 03:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZCJH6Q
+	id S1753335AbZCJIDf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 04:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbZCJIDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 03:58:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56992 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753719AbZCJH6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 03:58:15 -0400
-Message-ID: <49B61D68.9090908@kernel.org>
-Date: Tue, 10 Mar 2009 16:57:28 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 10 Mar 2009 04:03:16 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:22496 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753135AbZCJIDN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 04:03:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gtyuGKoR10I5Ix3fujx72E/kAqeppNmKZpAQrRBuP1O/vTj/KELtSGZXNty800mX7a
+         fJm7Idd1VzzmCgBfBPCKrhvByUSxxUQ2qrOPWgeE58qRuYR3JX+v/jMAEdouxAV6dXyT
+         okBqr2HXsgjlFCDl34qwb+i11P7QoiiNiuiQM=
 MIME-Version: 1.0
-To: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Subject: test module to verify percpu allocator
-References: <1236671631-9305-1-git-send-email-tj@kernel.org>
-In-Reply-To: <1236671631-9305-1-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------070408040508080101070206"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 10 Mar 2009 07:57:32 +0000 (UTC)
+In-Reply-To: <1236670166-3910-1-git-send-email-graff.yang@gmail.com>
+References: <1236670166-3910-1-git-send-email-graff.yang@gmail.com>
+Date: Tue, 10 Mar 2009 04:03:10 -0400
+Message-ID: <8bd0f97a0903100103w6fc3dfc8se6076c98dbe5d8b4@mail.gmail.com>
+Subject: Re: [PATCH] [net/irda]: new Blackfin on-chip SIR IrDA driver
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: graff.yang@gmail.com
+Cc: samuel@sortiz.org, irda-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, graf.yang@analog.com, cooloney@kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070408040508080101070206
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Tue, Mar 10, 2009 at 03:29,  <graff.yang@gmail.com> wrote:
+> +config BFIN_SIR3
+> +       bool "Blackfin SIR on UART3"
+> +config BFIN_SIR1
+> +       bool "Blackfin SIR on UART1"
+> +config BFIN_SIR0
+> +       bool "Blackfin SIR on UART0"
+> +config BFIN_SIR2
+> +       bool "Blackfin SIR on UART2"
 
-Hello, again.
+looks like an odd order for things.  or maybe you count to 3
+differently from me :).
 
-Attached is the test module to test percpu allocator.  Just build as
-an external module and load/unload to perform the test.
+> +static int bfin_sir_set_speed(struct bfin_sir_port *port, int speed)
+> +{
+> +       int ret = -EINVAL;
+> +       unsigned int quot;
+> +       unsigned short val, lsr, lcr = 0;
+> +
+> +       lcr = WLS(8);
 
-Thanks.
+the lcr init to 0 looks pretty pointless to me ...
 
--- 
-tejun
+> +               quot = (port->clk + (8 * speed)) / (16 * speed);
 
---------------070408040508080101070206
-Content-Type: text/x-csrc;
- name="test_module.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="test_module.c"
+isnt the SIR affected by the same anomalies as the UART ?  in other
+words, you just made that adjustment to the UART recently ...
 
-#include <linux/module.h>
-#include <linux/device.h>
-#include <linux/sysfs.h>
-#include <linux/percpu.h>
+> +               do {
+> +                       lsr = SIR_UART_GET_LSR(port);
+> +               } while (!(lsr & TEMT));
 
-static inline void pcpu_dump_chunk_slots(void) {}
+i'm pretty sure we determined that it is not the job of the kernel to
+make sure the line is clear before we go changing speeds.  plus, we
+had a few bugs on the UART driver when polling for bits on a
+peripheral that wasnt enabled yet ...
 
-struct alloc_cmd {
-	size_t size;
-	int marker;
-};
+> +               SIR_UART_PUT_DLL(port, quot & 0xFF);
+> +               SSYNC();
+> +               SIR_UART_PUT_DLH(port, (quot >> 8) & 0xFF);
+> +               SSYNC();
 
-static const struct alloc_cmd cmds[] = {
-	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
-	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
-	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
-	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
-	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
-	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
-	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },
-	{  256, 0 }, {  256, 1 }, {  256, 0 }, {  256, 1 },	/* 8k */
+i'm pretty sure that first SSYNC is not needed
 
-	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
-	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
-	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
-	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
-	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
-	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
-	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },
-	{ 1024, 2 }, { 1024, 2 }, { 1024, 2 }, { 1024, 2 },	/* 32k */
+> +               /*printk(KERN_DEBUG "bfin_sir: Set new speed %d\n", speed);*/
 
-	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
-	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
-	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
-	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
-	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
-	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
-	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },
-	{ 8192, 3 }, { 8192, 3 }, { 8192, 3 }, { 8192, 3 },	/* 128k */
+pr_debug() ?
 
-	{ 0, 0 },	/* free 0s */
+> +static irqreturn_t bfin_sir_dma_tx_int(int irq, void *dev_id)
+> +{
+> +       struct net_device *dev = dev_id;
+> +       struct bfin_sir_self *self = netdev_priv(dev);
+> +       struct bfin_sir_port *port = self->sir_port;
+> +
+> +       spin_lock(&self->lock);
+> +       if (!(get_dma_curr_irqstat(port->tx_dma_channel)&DMA_RUN)) {
 
-	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
-	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
-	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
-	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
-	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
-	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
-	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
-	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },
-	{  128, 4 }, {  128, 4 }, {  128, 4 }, {  128, 4 },	/* 4.5k */
+really should be whitespace around that &
 
-	{ 0, 1 },	/* free 1s */
+> +static irqreturn_t bfin_sir_dma_rx_int(int irq, void *dev_id)
+> +{
+> +....
+> +       mod_timer(&(port->rx_dma_timer), jiffies + DMA_SIR_RX_FLUSH_JIFS);
 
-	{ 1024, 5 }, { 1024, 5 }, { 1024, 5 }, { 1024, 5 },	/* 4k */
+those paren are unnecessary
 
-	{ 0, 5 },	/* free 5s */
-	{ 0, 4 },
-	{ 0, 3 },
-	{ 0, 2 },
-};
+> +static int bfin_sir_startup(struct bfin_sir_port *port, struct net_device *dev)
+> +{
+> +#ifdef CONFIG_SIR_BFIN_DMA
+> +       dma_addr_t dma_handle;
+> +#endif /* CONFIG_SIR_BFIN_DMA */
+> +
+> +       if (request_dma(port->rx_dma_channel, "BFIN_UART_RX") < 0) {
+> +               printk(KERN_WARNING "bfin_sir: Unable to attach SIR RX DMA channel\n");
 
-#define NR_CMDS		ARRAY_SIZE(cmds)
+should be dev_warn(&dev->dev, ...) ?  if so, i'd check all the places
+where printk() is used when a net_device is available ...
 
-static void *ptrs[NR_CMDS];
+> +static int __devinit bfin_sir_probe(struct platform_device *pdev)
+> +{
+> +       struct net_device *dev;
+> +       struct bfin_sir_self *self;
+> +       unsigned int baudrate_mask;
+> +       struct bfin_sir_port *sir_port;
+> +       int err = 0;
+> +
+> +       err = peripheral_request(per[pdev->id][0], DRIVER_NAME);
+> +       if (err)
+> +               return err;
+> +       err = peripheral_request(per[pdev->id][1], DRIVER_NAME);
+> +       if (err)
+> +               return err;
 
-static unsigned long seed_val(unsigned int cmdno, unsigned int cpu)
-{
-	return 0xdeadbeefbeefdeadULL
-		+ cmdno + (cmdno << 16) + (cpu << 8) + (cpu << 24);
-}
+the first per list was just leaked ...
 
-static void fill_area(void *p, size_t size, unsigned int cmdno)
-{
-	unsigned int cpu;
+> +       sir_port = kmalloc(sizeof(struct bfin_sir_port), GFP_KERNEL);
 
-	for_each_possible_cpu(cpu) {
-		unsigned long v = seed_val(cmdno, cpu);
-		unsigned long *up = per_cpu_ptr(p, cpu);
-		size_t left = size;
+sizeof(*sir_port)
 
-		while (left >= sizeof(unsigned long)) {
-			*up++ = v++;
-			left -= sizeof(unsigned long);
-		}
-	}
-}
+> +       dev = alloc_irdadev(sizeof(struct bfin_sir_self));
 
-static void verify_area(void *p, size_t size, unsigned int cmdno)
-{
-	unsigned int warns = 5;
-	unsigned int cpu;
+sizeof(*dev)
 
-	for_each_possible_cpu(cpu) {
-		unsigned long v = seed_val(cmdno, cpu);
-		unsigned long *up = per_cpu_ptr(p, cpu);
-		size_t left = size;
+> +       baudrate_mask = IR_9600;
+> +
+> +       switch (max_rate) {
+> +       case 115200:
+> +               baudrate_mask |= IR_115200;
+> +       case 57600:
+> +               baudrate_mask |= IR_57600;
+> +       case 38400:
+> +               baudrate_mask |= IR_38400;
+> +       case 19200:
+> +               baudrate_mask |= IR_19200;
+> +       }
 
-		while (left >= sizeof(unsigned long)) {
-			if (*up != v && warns-- > 0) {
-				printk("MISMATCH: cmdno=%u size=%zu cpu=%u off=%zu p=%p\n",
-				       cmdno, size, cpu, size - left, p);
-				printk("          [%p]=%lx should be %lx\n",
-				       up, *up, v);
-			}
-			up++; v++;
-			left -= sizeof(unsigned long);
-		}
-	}
-}
+what if someone specified max_rate = 1231245 ?
 
-static void free_cmd(unsigned int cmdno)
-{
-	if (!ptrs[cmdno])
-		return;
+> +       if (err) {
+> +err_mem_3:
+> +               kfree(self->tx_buff.head);
+> +err_mem_2:
+> +               kfree(self->rx_buff.head);
+> +err_mem_1:
+> +               free_netdev(dev);
+> +err_mem_0:
+> +               kfree(sir_port);
+> +       }
 
-	verify_area(ptrs[cmdno], cmds[cmdno].size, cmdno);
-	free_percpu(ptrs[cmdno]);
-	ptrs[cmdno] = NULL;
-}
+the peripheral pins are leaked here as well
 
-static void run_test(void)
-{
-	unsigned int i, j;
+> +       if (err == 0)
+> +               platform_set_drvdata(pdev, sir_port);
 
-	for (i = 0; i < NR_CMDS; i++) {
-		const struct alloc_cmd *cmd = &cmds[i];
+considering you tested "if (err)" right before, an "} else" would make
+more sense
 
-		if (cmd->size) {
-			printk("ALLOC: %zu bytes marker=%d\n",
-			       cmd->size, cmd->marker);
-			ptrs[i] = __alloc_percpu(cmd->size,
-					__alignof__(unsigned long long));
-			if (ptrs[i])
-				fill_area(ptrs[i], cmd->size, i);
-			else
-				printk("failed to allocate %zu bytes\n",
-				       cmd->size);
-			continue;
-		}
+> +MODULE_AUTHOR("Graf.Yang <graf.yang@analog.com>");
 
-		printk("FREE: marker=%d\n", cmd->marker);
-		pcpu_dump_chunk_slots();
-		for (j = 0; j < i; j++)
-			if (cmds[j].marker == cmd->marker)
-				free_cmd(j);
-		printk("FREE: done\n");
-		pcpu_dump_chunk_slots();
-	}
-}
+i think your name has no "." ? :)
 
-struct stupid_large_alignment_struct {
-	int a;
-	int b;
-	int c;
-} __aligned(2048);
+> --- /dev/null
+> +++ b/drivers/net/irda/bfin_sir.h
+> +#ifdef CONFIG_SIR_BFIN_DMA
+> +struct dma_rx_buf {
+> +       char *buf;
+> +       int head;
+> +       int tail;
+> +       };
 
-struct stupid_large_struct {
-	char a[1024];
-};
+no indentation in closing brace
 
-static DEFINE_PER_CPU(struct stupid_large_alignment_struct, blah_blah);
-DEFINE_PER_CPU(struct stupid_large_struct, blah_blah2);
-DEFINE_PER_CPU(struct stupid_large_struct, blah_blah3);
-DEFINE_PER_CPU(struct stupid_large_struct, blah_blah4);
-DEFINE_PER_CPU(struct stupid_large_struct, blah_blah5);
-DEFINE_PER_CPU(struct stupid_large_struct, blah_blah6);
+> +static unsigned short per[][2] = {
+> +       {P_UART0_RX, P_UART0_TX},
+> +       {P_UART1_RX, P_UART1_TX},
+> +       {P_UART2_RX, P_UART2_TX},
+> +       {P_UART3_RX, P_UART3_TX},
+> +       };
 
-static int __init test_init(void)
-{
-	unsigned int cpu;
-
-	printk("XXX test_pcpu:");
-	for_each_possible_cpu(cpu)
-		printk(" %p", &per_cpu(blah_blah, cpu));
-	printk("\n");
-	pcpu_dump_chunk_slots();
-
-	run_test();
-	return 0;
-}
-
-static void __exit test_exit(void)
-{
-	unsigned int i;
-
-	printk("XXX cleaning up\n");
-	pcpu_dump_chunk_slots();
-
-	for (i = 0; i < NR_CMDS; i++)
-		free_cmd(i);
-
-	printk("XXX done\n");
-	pcpu_dump_chunk_slots();
-}
-
-module_init(test_init);
-module_exit(test_exit);
-MODULE_LICENSE("GPL");
-
---------------070408040508080101070206--
+no indentation in closing brace and really this should be const
+-mike
