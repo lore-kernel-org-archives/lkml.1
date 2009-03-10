@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbZCJFPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbZCJFOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755035AbZCJFPq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 01:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbZCJFLs
+	id S1754506AbZCJFOe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 01:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbZCJFLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 01:11:48 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:28373 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753206AbZCJFLo (ORCPT
+	Tue, 10 Mar 2009 01:11:45 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:53984 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbZCJFLi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 01:11:44 -0400
+	Tue, 10 Mar 2009 01:11:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=nHtb7d+lXju4LzA4RdkVjsNVho0VOCvFfxbnZ65rgBCO6VOedT/S0SGKezWe3kl3vK
-         0z539WC6M0rxXjDID7LoOd9SedDMSXggFRueKEJ0fRfoaXOZ0CNQVVoPl+NAgqBBoS7r
-         vABZkoVoxDn1a+C3bcTo25OwY21dEybwLudJQ=
+        b=eI5CgWTfGCmBIpb1yaBZAfLjJqkOFyZwHrHzZ3oIzZzxkwCz3y1WyMTQ53/RsachPS
+         6EofdEN40kKtbcnOEurWViaQX94TtgvVTiC/702VyI5FacrT2vzqJH9Q2p30WJe4ULw2
+         y+u3pzo4h/+H6tkawWrtMlpv0Ye0yxBjR87Bs=
 From: Stoyan Gaydarov <stoyboyker@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, dhowells@redhat.com
-Subject: [PATCH 12/25] [frv] BUG to BUG_ON changes
-Date: Tue, 10 Mar 2009 00:10:37 -0500
-Message-Id: <1236661850-8237-13-git-send-email-stoyboyker@gmail.com>
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux-s390@vger.kernel.org
+Subject: [PATCH 09/25] [s390] BUG to BUG_ON changes
+Date: Tue, 10 Mar 2009 00:10:34 -0500
+Message-Id: <1236661850-8237-10-git-send-email-stoyboyker@gmail.com>
 X-Mailer: git-send-email 1.6.1.3
-In-Reply-To: <1236661850-8237-12-git-send-email-stoyboyker@gmail.com>
+In-Reply-To: <1236661850-8237-9-git-send-email-stoyboyker@gmail.com>
 References: <1236661850-8237-1-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-2-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-3-git-send-email-stoyboyker@gmail.com>
@@ -33,118 +34,100 @@ References: <1236661850-8237-1-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-7-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-8-git-send-email-stoyboyker@gmail.com>
  <1236661850-8237-9-git-send-email-stoyboyker@gmail.com>
- <1236661850-8237-10-git-send-email-stoyboyker@gmail.com>
- <1236661850-8237-11-git-send-email-stoyboyker@gmail.com>
- <1236661850-8237-12-git-send-email-stoyboyker@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
 ---
- arch/frv/kernel/uaccess.c             |    6 ++----
- arch/frv/mb93090-mb00/pci-dma-nommu.c |    6 ++----
- arch/frv/mb93090-mb00/pci-dma.c       |    6 ++----
- include/asm-frv/pci.h                 |    7 ++-----
- 4 files changed, 8 insertions(+), 17 deletions(-)
+ arch/s390/kernel/debug.c      |    3 +--
+ arch/s390/kernel/setup.c      |    3 +--
+ drivers/s390/char/tape_3590.c |    3 +--
+ drivers/s390/char/tape_core.c |    6 ++----
+ drivers/s390/char/tape_std.c  |    4 ++--
+ 5 files changed, 7 insertions(+), 12 deletions(-)
 
-diff --git a/arch/frv/kernel/uaccess.c b/arch/frv/kernel/uaccess.c
-index 9fb771a..374f88d 100644
---- a/arch/frv/kernel/uaccess.c
-+++ b/arch/frv/kernel/uaccess.c
-@@ -23,8 +23,7 @@ long strncpy_from_user(char *dst, const char __user *src, long count)
- 	char *p, ch;
- 	long err = -EFAULT;
- 
--	if (count < 0)
+diff --git a/arch/s390/kernel/debug.c b/arch/s390/kernel/debug.c
+index ba03fc0..39137b9 100644
+--- a/arch/s390/kernel/debug.c
++++ b/arch/s390/kernel/debug.c
+@@ -698,8 +698,7 @@ debug_info_t *debug_register_mode(const char *name, int pages_per_area,
+ 	if ((uid != 0) || (gid != 0))
+ 		pr_warning("Root becomes the owner of all s390dbf files "
+ 			   "in sysfs\n");
+-	if (!initialized)
 -		BUG();
-+	BUG_ON(count < 0);
++	BUG_ON(!initialized);
+ 	mutex_lock(&debug_mutex);
  
- 	p = dst;
+         /* create new debug_info */
+diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
+index c5cfb61..bfbbd19 100644
+--- a/arch/s390/kernel/setup.c
++++ b/arch/s390/kernel/setup.c
+@@ -125,8 +125,7 @@ void __cpuinit cpu_init(void)
  
-@@ -76,8 +75,7 @@ long strnlen_user(const char __user *src, long count)
- 	long err = 0;
- 	char ch;
- 
--	if (count < 0)
--		BUG();
-+	BUG_ON(count < 0);
- 
- #ifndef CONFIG_MMU
- 	if ((unsigned long) src < memory_start)
-diff --git a/arch/frv/mb93090-mb00/pci-dma-nommu.c b/arch/frv/mb93090-mb00/pci-dma-nommu.c
-index 52ff9ae..4e1ba0b 100644
---- a/arch/frv/mb93090-mb00/pci-dma-nommu.c
-+++ b/arch/frv/mb93090-mb00/pci-dma-nommu.c
-@@ -116,8 +116,7 @@ EXPORT_SYMBOL(dma_free_coherent);
- dma_addr_t dma_map_single(struct device *dev, void *ptr, size_t size,
- 			  enum dma_data_direction direction)
- {
--	if (direction == DMA_NONE)
+ 	atomic_inc(&init_mm.mm_count);
+ 	current->active_mm = &init_mm;
+-        if (current->mm)
 -                BUG();
-+	BUG_ON(direction == DMA_NONE);
- 
- 	frv_cache_wback_inv((unsigned long) ptr, (unsigned long) ptr + size);
- 
-@@ -151,8 +150,7 @@ int dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
- 		frv_cache_wback_inv(sg_dma_address(&sg[i]),
- 				    sg_dma_address(&sg[i]) + sg_dma_len(&sg[i]));
- 
--	if (direction == DMA_NONE)
--                BUG();
-+	BUG_ON(direction == DMA_NONE);
- 
- 	return nents;
++        BUG_ON(current->mm);
+         enter_lazy_tlb(&init_mm, current);
  }
-diff --git a/arch/frv/mb93090-mb00/pci-dma.c b/arch/frv/mb93090-mb00/pci-dma.c
-index 3ddedeb..45954f0 100644
---- a/arch/frv/mb93090-mb00/pci-dma.c
-+++ b/arch/frv/mb93090-mb00/pci-dma.c
-@@ -48,8 +48,7 @@ EXPORT_SYMBOL(dma_free_coherent);
- dma_addr_t dma_map_single(struct device *dev, void *ptr, size_t size,
- 			  enum dma_data_direction direction)
+ 
+diff --git a/drivers/s390/char/tape_3590.c b/drivers/s390/char/tape_3590.c
+index 71605a1..cdb5222 100644
+--- a/drivers/s390/char/tape_3590.c
++++ b/drivers/s390/char/tape_3590.c
+@@ -661,8 +661,7 @@ tape_3590_bread(struct tape_device *device, struct request *req)
+ 			ccw++;
+ 			dst += TAPEBLOCK_HSEC_SIZE;
+ 		}
+-		if (off > bv->bv_len)
+-			BUG();
++		BUG_ON(off > bv->bv_len);
+ 	}
+ 	ccw = tape_ccw_end(ccw, NOP, 0, NULL);
+ 	DBF_EVENT(6, "xBREDccwg\n");
+diff --git a/drivers/s390/char/tape_core.c b/drivers/s390/char/tape_core.c
+index f9bb51f..bb04f9a 100644
+--- a/drivers/s390/char/tape_core.c
++++ b/drivers/s390/char/tape_core.c
+@@ -639,8 +639,7 @@ tape_alloc_request(int cplength, int datasize)
  {
--	if (direction == DMA_NONE)
--                BUG();
-+	BUG_ON(direction == DMA_NONE);
+ 	struct tape_request *request;
  
- 	frv_cache_wback_inv((unsigned long) ptr, (unsigned long) ptr + size);
+-	if (datasize > PAGE_SIZE || (cplength*sizeof(struct ccw1)) > PAGE_SIZE)
+-		BUG();
++	BUG_ON(datasize > PAGE_SIZE || (cplength*sizeof(struct ccw1)) > PAGE_SIZE);
  
-@@ -81,8 +80,7 @@ int dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
- 	void *vaddr;
- 	int i;
+ 	DBF_LH(6, "tape_alloc_request(%d, %d)\n", cplength, datasize);
  
--	if (direction == DMA_NONE)
--                BUG();
-+	BUG_ON(direction == DMA_NONE);
+@@ -797,8 +796,7 @@ static void tape_long_busy_timeout(unsigned long data)
+ 	device = (struct tape_device *) data;
+ 	spin_lock_irq(get_ccwdev_lock(device->cdev));
+ 	request = list_entry(device->req_queue.next, struct tape_request, list);
+-	if (request->status != TAPE_REQUEST_LONG_BUSY)
+-		BUG();
++	BUG_ON(request->status != TAPE_REQUEST_LONG_BUSY);
+ 	DBF_LH(6, "%08x: Long busy timeout.\n", device->cdev_id);
+ 	__tape_start_next_request(device);
+ 	device->lb_timeout.data = (unsigned long) tape_put_device(device);
+diff --git a/drivers/s390/char/tape_std.c b/drivers/s390/char/tape_std.c
+index 5bd573d..37c4447 100644
+--- a/drivers/s390/char/tape_std.c
++++ b/drivers/s390/char/tape_std.c
+@@ -39,8 +39,8 @@ tape_std_assign_timeout(unsigned long data)
+ 	int rc;
  
- 	dampr2 = __get_DAMPR(2);
+ 	request = (struct tape_request *) data;
+-	if ((device = request->device) == NULL)
+-		BUG();
++	device = request->device;
++	BUG_ON(device == NULL);
  
-diff --git a/include/asm-frv/pci.h b/include/asm-frv/pci.h
-index 585d9b4..cc685e6 100644
---- a/include/asm-frv/pci.h
-+++ b/include/asm-frv/pci.h
-@@ -87,8 +87,7 @@ static inline void pci_dma_sync_single(struct pci_dev *hwdev,
- 				       dma_addr_t dma_handle,
- 				       size_t size, int direction)
- {
--	if (direction == PCI_DMA_NONE)
--                BUG();
-+	BUG_ON(direction == PCI_DMA_NONE);
- 
- 	frv_cache_wback_inv((unsigned long)bus_to_virt(dma_handle),
- 			    (unsigned long)bus_to_virt(dma_handle) + size);
-@@ -105,9 +104,7 @@ static inline void pci_dma_sync_sg(struct pci_dev *hwdev,
- 				   int nelems, int direction)
- {
- 	int i;
--
--	if (direction == PCI_DMA_NONE)
--                BUG();
-+	BUG_ON(direction == PCI_DMA_NONE);
- 
- 	for (i = 0; i < nelems; i++)
- 		frv_cache_wback_inv(sg_dma_address(&sg[i]),
+ 	DBF_EVENT(3, "%08x: Assignment timeout. Device busy.\n",
+ 			device->cdev_id);
 -- 
 1.6.1.3
 
