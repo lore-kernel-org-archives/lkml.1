@@ -1,98 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZCJPha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbZCJPjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbZCJPha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 11:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZCJPhT
+	id S1756276AbZCJPjq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 11:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbZCJPjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 11:37:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38234 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753364AbZCJPhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 11:37:17 -0400
-Date: Tue, 10 Mar 2009 15:36:26 GMT
-From: Peter Zijlstra <peterz@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1236603381.8389.455.camel@laptop>
-References: <1236603381.8389.455.camel@laptop>
-Subject: [tip:sched/core] sched: optimize ttwu vs group scheduling
-Message-ID: <tip-6352997e4525536e8242a913362b52541c0ca67c@git.kernel.org>
-Git-Commit-ID: 6352997e4525536e8242a913362b52541c0ca67c
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 10 Mar 2009 15:36:28 +0000 (UTC)
+	Tue, 10 Mar 2009 11:39:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55269 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751044AbZCJPjh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 11:39:37 -0400
+Date: Tue, 10 Mar 2009 15:35:37 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Timur Tabi <timur@freescale.com>
+Cc: linux-kernel@vger.kernel.org, rdreier@cisco.com, jirislaby@gmail.com,
+       peterz@infradead.org, will.newton@gmail.com, hancockrwd@gmail.com,
+       jeremy@goop.org
+Subject: Re: [PATCH v4] introduce macro spin_event_timeout()
+Message-ID: <20090310153537.5fd5d84d@lxorguk.ukuu.org.uk>
+In-Reply-To: <1236699004-1863-1-git-send-email-timur@freescale.com>
+References: <1236699004-1863-1-git-send-email-timur@freescale.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6352997e4525536e8242a913362b52541c0ca67c
-Gitweb:     http://git.kernel.org/tip/6352997e4525536e8242a913362b52541c0ca67c
-Author:     "Peter Zijlstra" <peterz@infradead.org>
-AuthorDate: Mon, 9 Mar 2009 13:56:21 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 10 Mar 2009 16:35:12 +0100
+> This primary purpose of this macro is to poll on a hardware register until a
+> status bit changes.  The timeout ensures that the loop still terminates if the
+> bit doesn't change as expected.  This macro makes it easier for driver
+> developers to perform this kind of operation properly.
 
-sched: optimize ttwu vs group scheduling
+NAK this - on a lot of platforms 1uS is the wrong timescale. Also we
+shouldn't be encouraging this kind of polling by making it very easy to
+write.
 
-Impact: micro-optimization
+It might be a useful internal macro for some freescale drivers but if so
+it doesn't belong in the core headers
 
-We can avoid the sched domain walk on try_to_wake_up() when we know
-there are no groups.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1236603381.8389.455.camel@laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/sched.c |   16 +++++++++++++++-
- 1 files changed, 15 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e0fa739..a7ecb65 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -331,6 +331,13 @@ static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
-  */
- static DEFINE_SPINLOCK(task_group_lock);
- 
-+#ifdef CONFIG_SMP
-+static int root_task_group_empty(void)
-+{
-+	return list_empty(&root_task_group->children);
-+}
-+#endif
-+
- #ifdef CONFIG_FAIR_GROUP_SCHED
- #ifdef CONFIG_USER_SCHED
- # define INIT_TASK_GROUP_LOAD	(2*NICE_0_LOAD)
-@@ -391,6 +398,13 @@ static inline void set_task_rq(struct task_struct *p, unsigned int cpu)
- 
- #else
- 
-+#ifdef CONFIG_SMP
-+static int root_task_group_empty(void)
-+{
-+	return 1;
-+}
-+#endif
-+
- static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
- static inline struct task_group *task_group(struct task_struct *p)
- {
-@@ -2318,7 +2332,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
- 		sync = 0;
- 
- #ifdef CONFIG_SMP
--	if (sched_feat(LB_WAKEUP_UPDATE)) {
-+	if (sched_feat(LB_WAKEUP_UPDATE) && !root_task_group_empty()) {
- 		struct sched_domain *sd;
- 
- 		this_cpu = raw_smp_processor_id();
+Alan
