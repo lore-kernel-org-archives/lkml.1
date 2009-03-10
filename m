@@ -1,98 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZCJPqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbZCJPsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbZCJPqV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 11:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbZCJPqG
+	id S1755497AbZCJPsE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 11:48:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbZCJPrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 11:46:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51924 "EHLO hera.kernel.org"
+	Tue, 10 Mar 2009 11:47:51 -0400
+Received: from THUNK.ORG ([69.25.196.29]:52872 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777AbZCJPqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 11:46:04 -0400
-Date: Tue, 10 Mar 2009 15:45:27 GMT
-From: Peter Zijlstra <peterz@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1236603381.8389.455.camel@laptop>
-References: <1236603381.8389.455.camel@laptop>
-Subject: [tip:sched/core] sched: optimize ttwu vs group scheduling
-Message-ID: <tip-57310a98a354e84279d7c8af2f48805a62372e53@git.kernel.org>
-Git-Commit-ID: 57310a98a354e84279d7c8af2f48805a62372e53
-X-Mailer: tip-git-log-daemon
+	id S1751777AbZCJPru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 11:47:50 -0400
+Date: Tue, 10 Mar 2009 11:47:45 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: next-20090310: ext4 hangs
+Message-ID: <20090310154745.GF23075@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Alexander Beregalov <a.beregalov@gmail.com>,
+	"linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+	linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <a4423d670903100517y42f342d4pd73c4c36f5c64dd7@mail.gmail.com> <20090310124658.GE8840@mit.edu> <a4423d670903100718w1a532143he767782ae598d0fb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 10 Mar 2009 15:45:29 +0000 (UTC)
+In-Reply-To: <a4423d670903100718w1a532143he767782ae598d0fb@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  57310a98a354e84279d7c8af2f48805a62372e53
-Gitweb:     http://git.kernel.org/tip/57310a98a354e84279d7c8af2f48805a62372e53
-Author:     "Peter Zijlstra" <peterz@infradead.org>
-AuthorDate: Mon, 9 Mar 2009 13:56:21 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 10 Mar 2009 16:43:36 +0100
+On Tue, Mar 10, 2009 at 05:18:55PM +0300, Alexander Beregalov wrote:
+> > Thanks for reporting this; does it show up on stock 2.6.29-rc7?
+> No, I can not reproduce it.
+> It is a slow system, I would not like to bisect it, only if it is the
+> last possibility.
 
-sched: optimize ttwu vs group scheduling
+Just to be clear; you weren't able to reproduce it on stock 2.6.29-rc7
+---- does it reproduce easily on linux-next?
 
-Impact: micro-optimization
+Next question --- does the system hang completely, or just the dbench
+process (and probably any process that tries touching the filesystem
+that's hung up)?  Do you have a serial console, or someone of
+recording all of the dumps coming from sysrq-t?  The two stack traces
+you gave weren't the ones causing the problem, but rather the ones
+waiting for the journal lock.  
 
-We can avoid the sched domain walk on try_to_wake_up() when we know
-there are no groups.
+I don't think is related to BZ #12579, although some of the symptoms
+look superficially the same.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1236603381.8389.455.camel@laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+							- Ted
 
-
----
- kernel/sched.c |   16 +++++++++++++++-
- 1 files changed, 15 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e0fa739..af5cd1b 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -331,6 +331,13 @@ static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
-  */
- static DEFINE_SPINLOCK(task_group_lock);
- 
-+#ifdef CONFIG_SMP
-+static int root_task_group_empty(void)
-+{
-+	return list_empty(&root_task_group.children);
-+}
-+#endif
-+
- #ifdef CONFIG_FAIR_GROUP_SCHED
- #ifdef CONFIG_USER_SCHED
- # define INIT_TASK_GROUP_LOAD	(2*NICE_0_LOAD)
-@@ -391,6 +398,13 @@ static inline void set_task_rq(struct task_struct *p, unsigned int cpu)
- 
- #else
- 
-+#ifdef CONFIG_SMP
-+static int root_task_group_empty(void)
-+{
-+	return 1;
-+}
-+#endif
-+
- static inline void set_task_rq(struct task_struct *p, unsigned int cpu) { }
- static inline struct task_group *task_group(struct task_struct *p)
- {
-@@ -2318,7 +2332,7 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
- 		sync = 0;
- 
- #ifdef CONFIG_SMP
--	if (sched_feat(LB_WAKEUP_UPDATE)) {
-+	if (sched_feat(LB_WAKEUP_UPDATE) && !root_task_group_empty()) {
- 		struct sched_domain *sd;
- 
- 		this_cpu = raw_smp_processor_id();
+P.S.  What are your dbench parameters, and how big is your filesystem,
+so I can try to reproduce it on my side?  And how long do you
+typically need to run before this triggers?  Thanks!
