@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZCJSbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbZCJSeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbZCJSbs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 14:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbZCJSbj
+	id S1755670AbZCJSeV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 14:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbZCJSeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 14:31:39 -0400
-Received: from b-mail.com.ua ([195.68.202.242]:54787 "EHLO b-mail.com.ua"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755133AbZCJSbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 14:31:39 -0400
-Message-ID: <49B6B240.8030701@lebon.org.ua>
-Date: Tue, 10 Mar 2009 20:32:32 +0200
-From: Mikhail Zolotaryov <lebon@lebon.org.ua>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090209)
+	Tue, 10 Mar 2009 14:34:10 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:43697 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754755AbZCJSeJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 14:34:09 -0400
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: linuxppc-dev@ozlabs.org, Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc 4xx EMAC driver: device name reported on timeout
- is not correct
-Content-Type: multipart/mixed;
- boundary="------------050304050205060400050305"
+In-Reply-To: <1236705538.6339.2.camel@quest>
+References: <cover.1236702228.git.scott@canonical.com>
+	 <c9944f91c6740450d11cb26c4e8e19e2cb612abe.1236702228.git.scott@canonical.com>
+	 <20090310170802.GA4923@kroah.com> <1236705538.6339.2.camel@quest>
+Date: Tue, 10 Mar 2009 19:34:05 +0100
+Message-ID: <ac3eb2510903101134x7ab7dd8q2b958419625cae9@mail.gmail.com>
+Subject: Re: [PATCH 26/31] usb: Auto-load cdc_acm module when device opened.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Scott James Remnant <scott@canonical.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050304050205060400050305
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Mar 10, 2009 at 18:18, Scott James Remnant <scott@canonical.com> wrote:
+> On Tue, 2009-03-10 at 10:08 -0700, Greg KH wrote:
+>> On Mon, Mar 02, 2009 at 06:46:15PM +0000, Scott James Remnant wrote:
+>> > The cdc_acm module is missing the char-major-166-* alias that would
+>> > cause it to be auto-loaded when a device of that type is opened.  This
+>> > patch adds the alias.
+>>
+>> You really have users that are using a static /dev that need this kind
+>> of fix?  I thought we were phasing out the char-major- aliases as they
+>> don't make any sense anymore.
+>>
+> I don't think so.
+>
+> But since we had aliases to support users, I wasn't going to drop them
+> without at least sending a patch upstream to see if they cared about
+> such things.
+>
+> (and there are many modules which do have the char-major aliases, so at
+> least someone is trying to put them in).
+>
+> As noted in the cover, feel free to drop these - I can use your reply
+> when a user complains <g>
 
-Hi,
+Yeah, we should put them into the module, where they belong, or just
+remove them all. :) They surely do not belong into disconnected
+userspace config files.
 
-not critical problem here.
+We are going to delete all kernel module configurations from the
+userspace packages, and the only alternative for the kernel to provide
+the autoload-by-open facility to users who like to use that, would be
+that the kernel installs a modprobe config file which is maintained by
+the kernel maintainers. Not sure if someone wants to do that instead.
+:)
 
-IBM EMAC driver performs device reset (drivers/net/ibm_newemac/core.c: 
-emac_probe() -> emac_init_phy() -> emac_reset()) before registering 
-appropriate net_device (emac_probe() -> register_netdev()), so 
-net_device name contains raw format string during EMAC reset ("eth%d").
+The new modprobe does not really care how many aliases we have, the
+time to lookup the aliases depends mainly on the length of the alias
+lookup string, not the number of strings to match against, so this
+should all be fine.
 
-If the case of reset timeout, emac_report_timeout_error() function is 
-called to report an error. The problem is this function uses net_device 
-name to report device related, which is not correct, as a result in the 
-kernel log buffer we see:
-
-eth%d: reset timeout
-
-The solution is to print device_node full_name instead. After applying 
-the patch proposed, error string is like the following:
-
-/plb/opb/ethernet@ef600e00: reset timeout
-
-
-Signed-off-by: Mikhail Zolotaryov <lebon@lebon.org.ua>
-
-
-
---------------050304050205060400050305
-Content-Type: text/plain;
- name="emac_report_timeout_error.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="emac_report_timeout_error.patch"
-
-LS0tIGxpbnV4LTIuNi9kcml2ZXJzL25ldC9pYm1fbmV3ZW1hYy9jb3JlLmMub3JpZwkyMDA5
-LTAzLTEwIDIwOjI0OjEyLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42L2RyaXZlcnMv
-bmV0L2libV9uZXdlbWFjL2NvcmUuYwkJMjAwOS0wMy0xMCAyMDoyOToxMi4wMDAwMDAwMDAg
-KzAyMDAKQEAgLTEzNCw3ICsxMzQsNyBAQAogCQkJCSAgRU1BQ19GVFJfNDQwRVBfUEhZX0NM
-S19GSVgpKQogCQlEQkcoZGV2LCAiJXMiIE5MLCBlcnJvcik7CiAJZWxzZSBpZiAobmV0X3Jh
-dGVsaW1pdCgpKQotCQlwcmludGsoS0VSTl9FUlIgIiVzOiAlc1xuIiwgZGV2LT5uZGV2LT5u
-YW1lLCBlcnJvcik7CisJCXByaW50ayhLRVJOX0VSUiAiJXM6ICVzXG4iLCBkZXYtPm9mZGV2
-LT5ub2RlLT5mdWxsX25hbWUsIGVycm9yKTsKIH0KIAogLyogRU1BQyBQSFkgY2xvY2sgd29y
-a2Fyb3VuZDoK
---------------050304050205060400050305--
+Thanks,
+Kay
