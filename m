@@ -1,86 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbZCJTZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495AbZCJTbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbZCJTZo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 15:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbZCJTZf
+	id S1756495AbZCJTbc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 15:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754257AbZCJTbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 15:25:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46370 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753305AbZCJTZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 15:25:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Eric Anholt <eric@anholt.net>
-Subject: Re: [Bug #12806] i915 broken STR
-Date: Tue, 10 Mar 2009 20:25:18 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <KiHv0irKPzE.A.l3.hUarJB@chimera> <200903101456.48444.rjw@sisk.pl> <1236706348.10190.65.camel@gaiman>
-In-Reply-To: <1236706348.10190.65.camel@gaiman>
+	Tue, 10 Mar 2009 15:31:20 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:47864 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754150AbZCJTbU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 15:31:20 -0400
+Date: Tue, 10 Mar 2009 12:31:18 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, viro@zeniv.linux.org.uk, adilger@sun.com,
+       yehuda@newdream.net
+Subject: Re: [PATCH] vfs: make real_lookup do dentry revalidation with i_mutex
+ held
+In-Reply-To: <E1Lh7XK-0000QO-DT@pomaz-ex.szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0903101228490.14713@cobra.newdream.net>
+References: <Pine.LNX.4.64.0903091118210.2773@cobra.newdream.net>
+ <E1Lh7XK-0000QO-DT@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903102025.18838.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 March 2009, Eric Anholt wrote:
-> On Tue, 2009-03-10 at 14:56 +0100, Rafael J. Wysocki wrote:
-> > On Tuesday 10 March 2009, Eric Anholt wrote:
-> > > On Sat, 2009-03-07 at 22:28 +0100, Rafael J. Wysocki wrote:
-> > > > On Saturday 07 March 2009, Harvey Harrison wrote:
-> > > > > On Tue, 2009-03-03 at 20:25 +0100, Rafael J. Wysocki wrote:
-> > > > > > This message has been generated automatically as a part of a report
-> > > > > > of recent regressions.
-> > > > > > 
-> > > > > > The following bug entry is on the current list of known regressions
-> > > > > > from 2.6.28.  Please verify if it still should be listed and let me know
-> > > > > > (either way).
-> > > > > > 
-> > > > > > 
-> > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12806
-> > > > > > Subject		: i915 broken STR
-> > > > > > Submitter	: Harvey Harrison <harvey.harrison@gmail.com>
-> > > > > > Date		: 2009-02-28 4:20 (4 days old)
-> > > > > > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5669fcacc58bf3a7386057addffd280d75380858
-> > > > > > References	: http://marc.info/?l=linux-kernel&m=123579487801064&w=4
-> > > > > > 
-> > > > > > 
-> > > > > 
-> > > > > This looks to have been a case of old-userspace..upgrading to
-> > > > > xorg-intel-video 2.6.1 (ubuntu Jaunty Alpha5) fixes STR here.
-> > > > 
-> > > > Well, thanks, but I'm not really sure if this is a good news.
-> > > > 
-> > > > Jesse, Eric, does it mean we now break resume on anything earlier than 2.6.1
-> > > > on the Harvey's hardware?
-> > > 
-> > > There's not much information (dmesg, Xorg.0.log) with this bug -- I'm
-> > > guessing he's using KMS, given that that commit was where the problems
-> > > started.  If so, yes, you really do need good userland for KMS to work.
-> > 
-> > BTW, Is suspend generally supposed to work with KMS and the 2.6.1 (or later) X
-> > driver?
-> 
-> I pulled a giant pile of KMS bugfixes into 2.6.2, so I'm not sure about
-> 2.6.1.
-> 
-> We've still got some work to do with making our suspend/resume path
-> really complete for KMS.  We're missing some register setup that UMS
-> does, so behavior can be a bit random.  The current plan is to switch to
-> using the KMS modeset paths for resume, so we hopefully have reliable
-> (or at least consistent) mode setting behavior, and then fill those
-> remaining register writes in around it.  Basically, a separate
-> suspend/resume path for KMS, when we have full control of the device.
+On Tue, 10 Mar 2009, Miklos Szeredi wrote:
 
-OK, thanks.
+> The patch is wrong in case ->d_revalidate is NULL.
+> 
+> Something like this should fix it up:
+> 
+> Index: linux-2.6/fs/namei.c
+> ===================================================================
+> --- linux-2.6.orig/fs/namei.c	2009-03-10 20:03:58.000000000 +0100
+> +++ linux-2.6/fs/namei.c	2009-03-10 20:19:29.000000000 +0100
+> @@ -501,6 +501,8 @@ static struct dentry * real_lookup(struc
+>  			 * The dentry was left behind invalid.  Just
+>  			 * do the lookup.
+>  			 */
+> +		} else {
+> +			goto out_unlock;
+>  		}
+>  	}
+>  
+> Otherwise looks OK.
 
-Best,
-Rafael
+Good catch.  Here is an updated patch (fixing the checkpatch error as 
+well).
+
+Thanks!
+sage
+
+---
+
+>From d33ad281f3e6a3bb172a39a55824ce69187903be Mon Sep 17 00:00:00 2001
+From: Sage Weil <sage@newdream.net>
+Date: Tue, 10 Mar 2009 12:26:37 -0700
+Subject: [PATCH] vfs: make real_lookup do dentry revalidation with i_mutex held
+
+real_lookup() is called by do_lookup() if dentry revalidation fails.  If
+the cache is re-populated while waiting for i_mutex, it may find that
+a d_lookup() subsequently succeeds (see the "Uhhuh! Nasty case" comment).
+
+Previously, real_lookup() would drop i_mutex and do_revalidate() again. If
+revalidate failed _again_, however, it would give up with -ENOENT.  The
+problem here that network file systems may be invalidating dentries via
+server callbacks, e.g. due to concurrent access from another client, and
+-ENOENT is frequently the wrong answer.
+
+This problem has been seen with both Lustre and Ceph.  It seems possible
+to hit this case with NFS as well if the cache lifetime is very short.
+
+Instead, we should do_revalidate() while i_mutex is still held.  If
+revalidation fails, we can move on to a ->lookup() and ensure a correct
+result without worrying about any subsequent races.
+
+Note that do_revalidate() is called with i_mutex held elsewhere.  For
+example, do_filp_open(), lookup_create(), do_unlinkat(), do_rmdir(),
+and possibly others all take the directory i_mutex, and then
+
+-> lookup_hash
+        -> __lookup_hash
+                -> cached_lookup
+                        -> do_revalidate
+
+so this does not introduce any new locking rules for d_revalidate
+implementations.
+
+Signed-off-by: Yehuda Sadeh <yehuda@newdream.net>
+Signed-off-by: Sage Weil <sage@newdream.net>
+---
+ fs/namei.c |   58 +++++++++++++++++++++++++++++++---------------------------
+ 1 files changed, 31 insertions(+), 27 deletions(-)
+
+diff --git a/fs/namei.c b/fs/namei.c
+index c30e33d..64cf927 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -469,6 +469,7 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
+ {
+ 	struct dentry * result;
+ 	struct inode *dir = parent->d_inode;
++	struct dentry *dentry;
+ 
+ 	mutex_lock(&dir->i_mutex);
+ 	/*
+@@ -486,38 +487,41 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
+ 	 * so doing d_lookup() (with seqlock), instead of lockfree __d_lookup
+ 	 */
+ 	result = d_lookup(parent, name);
+-	if (!result) {
+-		struct dentry *dentry;
+-
+-		/* Don't create child dentry for a dead directory. */
+-		result = ERR_PTR(-ENOENT);
+-		if (IS_DEADDIR(dir))
+-			goto out_unlock;
+-
+-		dentry = d_alloc(parent, name);
+-		result = ERR_PTR(-ENOMEM);
+-		if (dentry) {
+-			result = dir->i_op->lookup(dir, dentry, nd);
++	if (result) {
++		/*
++		 * The cache was re-populated while we waited on the
++		 * mutex.  We need to revalidate, this time while
++		 * holding i_mutex (to avoid another race).
++		 */
++		if (result->d_op && result->d_op->d_revalidate) {
++			result = do_revalidate(result, nd);
+ 			if (result)
+-				dput(dentry);
+-			else
+-				result = dentry;
++				goto out_unlock;
++			/*
++			 * The dentry was left behind invalid.  Just
++			 * do the lookup.
++			 */
++		} else {
++			goto out_unlock;
+ 		}
+-out_unlock:
+-		mutex_unlock(&dir->i_mutex);
+-		return result;
+ 	}
+ 
+-	/*
+-	 * Uhhuh! Nasty case: the cache was re-populated while
+-	 * we waited on the semaphore. Need to revalidate.
+-	 */
+-	mutex_unlock(&dir->i_mutex);
+-	if (result->d_op && result->d_op->d_revalidate) {
+-		result = do_revalidate(result, nd);
+-		if (!result)
+-			result = ERR_PTR(-ENOENT);
++	/* Don't create child dentry for a dead directory. */
++	result = ERR_PTR(-ENOENT);
++	if (IS_DEADDIR(dir))
++		goto out_unlock;
++
++	dentry = d_alloc(parent, name);
++	result = ERR_PTR(-ENOMEM);
++	if (dentry) {
++		result = dir->i_op->lookup(dir, dentry, nd);
++		if (result)
++			dput(dentry);
++		else
++			result = dentry;
+ 	}
++out_unlock:
++	mutex_unlock(&dir->i_mutex);
+ 	return result;
+ }
+ 
+-- 
+1.5.6.5
+
