@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZCJQ0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbZCJQ2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756590AbZCJQ0q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 12:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbZCJQ0d
+	id S1756739AbZCJQ2t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 12:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbZCJQ2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 12:26:33 -0400
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:14920 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753746AbZCJQ0c (ORCPT
+	Tue, 10 Mar 2009 12:28:41 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55670 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754112AbZCJQ2k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 12:26:32 -0400
-X-BigFish: VPS-37(zz1432R62a3L98dR936eQ1805Mzzzzz32i6bh64h)
-X-Spam-TCS-SCL: 3:0
-X-FB-SS: 8,
-X-WSS-ID: 0KGATNQ-01-0AW-01
-Date: Tue, 10 Mar 2009 17:26:16 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Paul Mackerras <paulus@samba.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] Performance Counters for Linux, v6
-Message-ID: <20090310162616.GI10085@erda.amd.com>
-References: <20090121185021.GA8852@elte.hu> <20090309013902.GK10085@erda.amd.com> <18869.40904.382716.827097@cargo.ozlabs.ibm.com> <20090310094457.GU10085@erda.amd.com> <18870.21428.868208.447605@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <18870.21428.868208.447605@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 10 Mar 2009 16:26:16.0684 (UTC) FILETIME=[EFCBA2C0:01C9A19C]
+	Tue, 10 Mar 2009 12:28:40 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 2/2] regulator: Don't warn on omitted voltage constraints
+Date: Tue, 10 Mar 2009 16:28:36 +0000
+Message-Id: <1236702516-30733-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.2
+In-Reply-To: <1236702516-30733-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1236702516-30733-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10.03.09 22:49:08, Paul Mackerras wrote:
-> Robert Richter writes:
-> 
-> > Ok, maybe I mixed too much the architectural with the x86 model
-> > specific implementation. My impression is that there is data in
-> > generic structures what should be better private for the model or
-> > architecture. However, I have to figure out the details here.
-> 
-> The details of the x86 support have changed quite a lot since the v6
-> patch was posted, I believe.  Are you looking at the v6 patch, or at
-> Ingo's tip:perfcounters/core branch?
+Specifying voltage constraints is optional (and only needed if the
+consumer is allowed to change the voltage) so don't complain unless
+a voltage has been specified.
 
-I am using the tip branch, but took the v6 thread to discuss this.
+Also avoid surprises with a dangling else while we're here.
 
-> 
-> Ingo - maybe it's time to post a v7 patch?
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/core.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-For me it's fine to work with the branch if patches are posted to the
-mailing list for review.
-
--Robert
-
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 464e9b1..08441e2 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -709,8 +709,12 @@ static int set_machine_constraints(struct regulator_dev *rdev,
+ 			cmax = INT_MAX;
+ 		}
+ 
++		/* voltage constraints are optional */
++		if ((cmin == 0) && (cmax == 0))
++			goto out;
++
+ 		/* else require explicit machine-level constraints */
+-		else if (cmin <= 0 || cmax <= 0 || cmax < cmin) {
++		if (cmin <= 0 || cmax <= 0 || cmax < cmin) {
+ 			pr_err("%s: %s '%s' voltage constraints\n",
+ 				       __func__, "invalid", name);
+ 			ret = -EINVAL;
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+1.6.2
 
