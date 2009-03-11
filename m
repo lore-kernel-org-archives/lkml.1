@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbZCKNK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbZCKNNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755976AbZCKNK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 09:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZCKNKr
+	id S1755779AbZCKNNi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 09:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbZCKNNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 09:10:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39760 "EHLO mx2.mail.elte.hu"
+	Wed, 11 Mar 2009 09:13:30 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57700 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753974AbZCKNKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 09:10:46 -0400
-Date: Wed, 11 Mar 2009 14:10:07 +0100
+	id S1752844AbZCKNN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 09:13:29 -0400
+Date: Wed, 11 Mar 2009 14:13:21 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [patch 02/11] x86 architecture implementation of Hardware
-	Breakpoint interfaces
-Message-ID: <20090311131007.GB1074@elte.hu>
-References: <20090310172605.GA28767@elte.hu> <Pine.LNX.4.44L0.0903101620390.4325-100000@iolanthe.rowland.org> <20090311121220.GI2282@elte.hu> <20090311125013.GA9547@in.ibm.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip V2] x86: cpu architecture debug code
+Message-ID: <20090311131321.GC1074@elte.hu>
+References: <1236684201.3301.11.camel@localhost.localdomain> <20090310122806.GE5794@elte.hu> <1236697752.3387.2.camel@localhost.localdomain> <20090310152029.GN3850@elte.hu> <1236701373.3387.4.camel@localhost.localdomain> <20090310174535.GA2963@elte.hu> <1236772478.2836.12.camel@ht.satnam> <1236775518.2836.14.camel@ht.satnam> <20090311125049.GA1074@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090311125013.GA9547@in.ibm.com>
+In-Reply-To: <20090311125049.GA1074@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,40 +35,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* K.Prasad <prasad@linux.vnet.ibm.com> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> Even if #3 was implemented as described, we would still retain 
-> a majority of the complexity in balance_kernel_vs_user() to 
-> check newer tasks with requests for breakpoint registers.
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> 
+> > @@ -472,7 +473,7 @@ static void print_dt(void *seq)
+> >  	print_desc_ptr("GDT", seq, dt);
+> >  
+> >  	/* LDT */
+> > -	store_ldt(ldt);
+> > +	asm volatile("sldt %0" : "=m" (ldt));
+> 
+> this is still wrong.
 
-Not if it's implemented in a really simple way:
+As i pointed it out before, we should not open-code an assembly 
+primitive - especially since store_ldt() is available in 
+arch/x86/include/asm/desc.h.
 
-Kernel gets debug registers in db4..db3..db2..db1 order, and its 
-allocation is essentially hardcoded - i.e. we dont try to be 
-fancy.
+True, that primitive is not available on CONFIG_PARAVIRT, but 
+that is a bug: the fix is to move the store_ldt() definition 
+outside the CONFIG_PARAVIRT section in desc.h, not to hack 
+around the problem by open-coding assembly code.
 
-User-space (gdb) on the other hand will try to allocate in the 
-db1..db2..db3..db4 order.
-
-Maintain a 'max debug register index' value driven by ptrace and 
-maintain a 'min debug register index' driven by kernel-space 
-hw-breakpoint allocations.
-
-If they meet somewhere inbetween then we have overcommit which 
-we dont allow. In all other cases (which i proffer covers 100% 
-of the sane cases) they will mix amicably.
-
-Sure, user-space can in principle do db4..db3..db2..db1 
-allocations as well, but it would be silly and GDB does not do 
-that.
-
-So there's no real overlap between register usage - hence no 
-need for any complex scheduling smarts. Keep it simple first, 
-and only add complexity when it's justified.
-
-[ for the special case of an architecture having just a single 
-  debug register this will bring the expected behavior of either 
-  allowing gdb to use the breakpoint or allowing the kernel to 
-  use it. ]
+I.e. dont let an uncleanliness and incomplete primitive spread 
+to other code. Fix the primitive and remove the uncleanliness 
+that way.
 
 	Ingo
