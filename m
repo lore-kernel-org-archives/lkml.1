@@ -1,88 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbZCKN3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbZCKN3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbZCKN3F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 09:29:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbZCKN2y
+	id S1756469AbZCKN3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 09:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbZCKN3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 09:28:54 -0400
-Received: from mx1.auerswald.de ([212.185.163.234]:2167 "EHLO
-	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752344AbZCKN2y convert rfc822-to-8bit (ORCPT
+	Wed, 11 Mar 2009 09:29:05 -0400
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:63957 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752195AbZCKN3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 09:28:54 -0400
-From: Wolfgang =?iso-8859-15?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Organization: Auerswald GmbH & Co. KG
-To: Pierre Ossman <drzeus@drzeus.cx>
-Subject: [PATCH 5/7] mmc_spi: allow higher timeouts for SPI mode
-Date: Wed, 11 Mar 2009 14:28:39 +0100
-User-Agent: KMail/1.9.10
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+	Wed, 11 Mar 2009 09:29:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=NQN7hhJcj/XqHA3AcZGoAKvR+rvk2FPTaauFWRfh2Rx1PcC09lRbsegJ8jdNel6U+m
+         YfU6+axc19u6ZWHh0pyasbvZglroFB3Zu0tSxsEY2wGuoDDYQbOjH00Hh8IubN/NIcEv
+         77PRBdPI5GXtBBVnCnevooHwQVL0Yb991IZcU=
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200903111428.39831.wolfgang.mues@auerswald.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Date: Wed, 11 Mar 2009 14:28:59 +0100
+Message-ID: <5b9cce670903110628p45248032u50dc253ed18b6e46@mail.gmail.com>
+Subject: pci express bar over 4gb
+From: protagora27 protagora27 <protagora27@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wolfgang Muees <wolfgang.mues@auerswald.de>
+Hello Folks,
 
-o Some SD cards have very high timeouts in SPI mode.
-  So adjust the timeouts from theory to practice.
+I have intel desktop board dx48bt2. I'm developing sw under linux
+2.6.24  x86_64  for a pci express card ( pci express 2.0 compliant).
+I have to setup pci bar over 4 gb but bios uses value e0000000 as base
+address for pcie boards.
+I have seen that pciexbar is a register ( x48 chipset)  that decides
+where pcie boards are mapped inside memory map.
+My goal is rewriting pcibar 0 e pcibar 1 with a value above 4gb. Maybe
+ I have  to rewrite pciexbar and then rewrite pci bar in my board.
+Questions:
+1) can I rewrite  pciexbar  and where ?
+2) can i rewrite pcibar 0 and 1 with a value over 4 gb
+3) If i change bar 0 and bar 1 after linux startup have i to use hotplugging ?
 
-Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
+Thanks
 
----
-This is one of a line of patches to enhance the usability of
-the mmc spi host port driver from "don't work with most SD cards"
-to "work with nearly all SD cards" (including those ugly cards
-with non-byte-aligned responses).
-
-diff -uprN 2_6_29_rc7_patch4_no_crc_on_CID_CSD/drivers/mmc/core/core.c 2_6_29_rc7_patch5_extra_spi_timeouts/drivers/mmc/core/core.c
---- 2_6_29_rc7_patch4_no_crc_on_CID_CSD/drivers/mmc/core/core.c	2009-03-04 02:05:22.000000000 +0100
-+++ 2_6_29_rc7_patch5_extra_spi_timeouts/drivers/mmc/core/core.c	2009-03-10 12:06:16.000000000 +0100
-@@ -297,6 +297,21 @@ void mmc_set_data_timeout(struct mmc_dat
- 			data->timeout_clks = 0;
- 		}
- 	}
-+	/*
-+	 * Some cards need very high timeouts if driven in SPI mode.
-+	 * The worst observed timeout was 900ms after writing a
-+	 * continuous stream of data until the internal logic
-+	 * overflowed.
-+	 */
-+	if (mmc_host_is_spi(card->host)) {
-+		if (data->flags & MMC_DATA_WRITE) {
-+			if (data->timeout_ns < 1000000000)
-+				data->timeout_ns = 1000000000;	/* 1s */
-+		} else {
-+			if (data->timeout_ns < 100000000)
-+				data->timeout_ns =  100000000;	/* 100ms */
-+		}
-+	}
- }
- EXPORT_SYMBOL(mmc_set_data_timeout);
-
----
-regards
-
-i. A. Wolfgang Mües
--- 
-Auerswald GmbH & Co. KG
-Hardware Development
-Telefon: +49 (0)5306 9219 0
-Telefax: +49 (0)5306 9219 94 
-E-Mail: Wolfgang.Mues@Auerswald.de
-Web: http://www.auerswald.de
- 
---------------------------------------------------------------
-Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
-Registriert beim AG Braunschweig HRA 13289
-p.h.G Auerswald Geschäftsführungsges. mbH
-Registriert beim AG Braunschweig HRB 7463
-Geschäftsführer: Dipl-Ing. Gerhard Auerswald
+Luca
