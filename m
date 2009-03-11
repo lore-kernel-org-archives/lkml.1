@@ -1,421 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZCKDk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbZCKDlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbZCKDk3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 23:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbZCKDiq
+	id S1756079AbZCKDlJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 23:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbZCKDis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 23:38:46 -0400
-Received: from mail.windriver.com ([147.11.1.11]:40111 "EHLO mail.wrs.com"
+	Tue, 10 Mar 2009 23:38:48 -0400
+Received: from mail.windriver.com ([147.11.1.11]:40113 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754073AbZCKDip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 23:38:45 -0400
+	id S1754627AbZCKDiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 23:38:46 -0400
 From: Harry Ciao <qingtao.cao@windriver.com>
 To: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
-Subject: [v2 PATCH 6/7] EDAC: AMD8131 driver source file
-Date: Wed, 11 Mar 2009 11:25:56 +0800
-Message-Id: <1236741957-3570-7-git-send-email-qingtao.cao@windriver.com>
+Subject: [v2 PATCH 7/7] EDAC: AMD8131 driver Kconfig and Makefile
+Date: Wed, 11 Mar 2009 11:25:57 +0800
+Message-Id: <1236741957-3570-8-git-send-email-qingtao.cao@windriver.com>
 X-Mailer: git-send-email 1.5.6.2
-In-Reply-To: <1236741957-3570-6-git-send-email-qingtao.cao@windriver.com>
+In-Reply-To: <1236741957-3570-7-git-send-email-qingtao.cao@windriver.com>
 References: <1236741957-3570-1-git-send-email-qingtao.cao@windriver.com>
  <1236741957-3570-2-git-send-email-qingtao.cao@windriver.com>
  <1236741957-3570-3-git-send-email-qingtao.cao@windriver.com>
  <1236741957-3570-4-git-send-email-qingtao.cao@windriver.com>
  <1236741957-3570-5-git-send-email-qingtao.cao@windriver.com>
  <1236741957-3570-6-git-send-email-qingtao.cao@windriver.com>
-X-OriginalArrivalTime: 11 Mar 2009 03:38:33.0648 (UTC) FILETIME=[DA7FE300:01C9A1FA]
+ <1236741957-3570-7-git-send-email-qingtao.cao@windriver.com>
+X-OriginalArrivalTime: 11 Mar 2009 03:38:35.0116 (UTC) FILETIME=[DB5FE2C0:01C9A1FA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce AMD8131 EDAC driver source file, which makes use of error
-detections on the PCI-X Bridge Controllers on the AMD8131 HyperTransport
-PCI-X Tunnel.
+Introduce Kconfig and Makefile options for AMD8131 EDAC driver.
 
 Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
 ---
- drivers/edac/amd8131_edac.c |  379 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 379 insertions(+)
- create mode 100644 drivers/edac/amd8131_edac.c
+ drivers/edac/Kconfig  |    7 +++++++
+ drivers/edac/Makefile |    1 +
+ 2 files changed, 8 insertions(+), 0 deletions(-)
 
---- /dev/null
-+++ b/drivers/edac/amd8131_edac.c
-@@ -0,0 +1,379 @@
-+/*
-+ * amd8131_edac.c, AMD8131 hypertransport chip EDAC kernel module
-+ *
-+ * Copyright (c) 2008 Wind River Systems, Inc.
-+ *
-+ * Authors:	Cao Qingtao <qingtao.cao@windriver.com>
-+ * 		Benjamin Walsh <benjamin.walsh@windriver.com>
-+ * 		Hu Yongqi <yongqi.hu@windriver.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+ * See the GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ */
+diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
+index 46f8e77..13ccec6 100644
+--- a/drivers/edac/Kconfig
++++ b/drivers/edac/Kconfig
+@@ -181,4 +181,11 @@ config EDAC_AMD8111
+ 	  Support for error detection and correction on the
+ 	  AMD8111 HyperTransport I/O Hub chip.
+ 
++config EDAC_AMD8131
++	tristate "AMD8131 HyperTransport PCI-X Tunnel"
++	depends on EDAC_MM_EDAC && PCI
++	help
++	  Support for error detection and correction on the
++	  AMD8131 HyperTransport PCI-X Tunnel chip.
 +
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/bitops.h>
-+#include <linux/edac.h>
-+#include <linux/pci_ids.h>
-+
-+#include "edac_core.h"
-+#include "edac_module.h"
-+#include "amd8131_edac.h"
-+
-+#define AMD8131_EDAC_REVISION	" Ver: 1.0.0 " __DATE__
-+#define AMD8131_EDAC_MOD_STR	"amd8131_edac"
-+
-+/* Wrapper functions for accessing PCI configuration space */
-+static void edac_pci_read_dword(struct pci_dev *dev, int reg, u32 *val32)
-+{
-+	int ret;
-+
-+	ret = pci_read_config_dword(dev, reg, val32);
-+	if (ret != 0)
-+		printk(KERN_ERR AMD8131_EDAC_MOD_STR
-+			" PCI Access Read Error at 0x%x\n", reg);
-+}
-+
-+static void edac_pci_write_dword(struct pci_dev *dev, int reg, u32 val32)
-+{
-+	int ret;
-+
-+	ret = pci_write_config_dword(dev, reg, val32);
-+	if (ret != 0)
-+		printk(KERN_ERR AMD8131_EDAC_MOD_STR
-+			" PCI Access Write Error at 0x%x\n", reg);
-+}
-+
-+static char * const bridge_str[] = {
-+	[NORTH_A] = "NORTH A",
-+	[NORTH_B] = "NORTH B",
-+	[SOUTH_A] = "SOUTH A",
-+	[SOUTH_B] = "SOUTH B",
-+	[NO_BRIDGE] = "NO BRIDGE",
-+};
-+
-+/* Support up to two AMD8131 chipsets on a platform */
-+static struct amd8131_dev_info amd8131_devices[] = {
-+	{
-+	.inst = NORTH_A,
-+	.devfn = DEVFN_PCIX_BRIDGE_NORTH_A,
-+	.ctl_name = "AMD8131_PCIX_NORTH_A",
-+	},
-+	{
-+	.inst = NORTH_B,
-+	.devfn = DEVFN_PCIX_BRIDGE_NORTH_B,
-+	.ctl_name = "AMD8131_PCIX_NORTH_B",
-+	},
-+	{
-+	.inst = SOUTH_A,
-+	.devfn = DEVFN_PCIX_BRIDGE_SOUTH_A,
-+	.ctl_name = "AMD8131_PCIX_SOUTH_A",
-+	},
-+	{
-+	.inst = SOUTH_B,
-+	.devfn = DEVFN_PCIX_BRIDGE_SOUTH_B,
-+	.ctl_name = "AMD8131_PCIX_SOUTH_B",
-+	},
-+	{.inst = NO_BRIDGE,},
-+};
-+
-+static void amd8131_pcix_init(struct amd8131_dev_info *dev_info)
-+{
-+	u32 val32;
-+	struct pci_dev *dev = dev_info->dev;
-+
-+	/* First clear error detection flags */
-+	edac_pci_read_dword(dev, REG_MEM_LIM, &val32);
-+	if (val32 & MEM_LIMIT_MASK)
-+		edac_pci_write_dword(dev, REG_MEM_LIM, val32);
-+
-+	/* Clear Discard Timer Timedout flag */
-+	edac_pci_read_dword(dev, REG_INT_CTLR, &val32);
-+	if (val32 & INT_CTLR_DTS)
-+		edac_pci_write_dword(dev, REG_INT_CTLR, val32);
-+
-+	/* Clear CRC Error flag on link side A */
-+	edac_pci_read_dword(dev, REG_LNK_CTRL_A, &val32);
-+	if (val32 & LNK_CTRL_CRCERR_A)
-+		edac_pci_write_dword(dev, REG_LNK_CTRL_A, val32);
-+
-+	/* Clear CRC Error flag on link side B */
-+	edac_pci_read_dword(dev, REG_LNK_CTRL_B, &val32);
-+	if (val32 & LNK_CTRL_CRCERR_B)
-+		edac_pci_write_dword(dev, REG_LNK_CTRL_B, val32);
-+
-+	/*
-+	 * Then enable all error detections.
-+	 *
-+	 * Setup Discard Timer Sync Flood Enable,
-+	 * System Error Enable and Parity Error Enable.
-+	 */
-+	edac_pci_read_dword(dev, REG_INT_CTLR, &val32);
-+	val32 |= INT_CTLR_PERR | INT_CTLR_SERR | INT_CTLR_DTSE;
-+	edac_pci_write_dword(dev, REG_INT_CTLR, val32);
-+
-+	/* Enable overall SERR Error detection */
-+	edac_pci_read_dword(dev, REG_STS_CMD, &val32);
-+	val32 |= STS_CMD_SERREN;
-+	edac_pci_write_dword(dev, REG_STS_CMD, val32);
-+
-+	/* Setup CRC Flood Enable for link side A */
-+	edac_pci_read_dword(dev, REG_LNK_CTRL_A, &val32);
-+	val32 |= LNK_CTRL_CRCFEN;
-+	edac_pci_write_dword(dev, REG_LNK_CTRL_A, val32);
-+
-+	/* Setup CRC Flood Enable for link side B */
-+	edac_pci_read_dword(dev, REG_LNK_CTRL_B, &val32);
-+	val32 |= LNK_CTRL_CRCFEN;
-+	edac_pci_write_dword(dev, REG_LNK_CTRL_B, val32);
-+}
-+
-+static void amd8131_pcix_exit(struct amd8131_dev_info *dev_info)
-+{
-+	u32 val32;
-+	struct pci_dev *dev = dev_info->dev;
-+
-+	/* Disable SERR, PERR and DTSE Error detection */
-+	edac_pci_read_dword(dev, REG_INT_CTLR, &val32);
-+	val32 &= ~(INT_CTLR_PERR | INT_CTLR_SERR | INT_CTLR_DTSE);
-+	edac_pci_write_dword(dev, REG_INT_CTLR, val32);
-+
-+	/* Disable overall System Error detection */
-+	edac_pci_read_dword(dev, REG_STS_CMD, &val32);
-+	val32 &= ~STS_CMD_SERREN;
-+	edac_pci_write_dword(dev, REG_STS_CMD, val32);
-+
-+	/* Disable CRC Sync Flood on link side A */
-+	edac_pci_read_dword(dev, REG_LNK_CTRL_A, &val32);
-+	val32 &= ~LNK_CTRL_CRCFEN;
-+	edac_pci_write_dword(dev, REG_LNK_CTRL_A, val32);
-+
-+	/* Disable CRC Sync Flood on link side B */
-+	edac_pci_read_dword(dev, REG_LNK_CTRL_B, &val32);
-+	val32 &= ~LNK_CTRL_CRCFEN;
-+	edac_pci_write_dword(dev, REG_LNK_CTRL_B, val32);
-+}
-+
-+static void amd8131_pcix_check(struct edac_pci_ctl_info *edac_dev)
-+{
-+	struct amd8131_dev_info *dev_info = edac_dev->pvt_info;
-+	struct pci_dev *dev = dev_info->dev;
-+	u32 val32;
-+
-+	/* Check PCI-X Bridge Memory Base-Limit Register for errors */
-+	edac_pci_read_dword(dev, REG_MEM_LIM, &val32);
-+	if (val32 & MEM_LIMIT_MASK) {
-+		printk(KERN_INFO "Error(s) in mem limit register "
-+			"on %s bridge\n", dev_info->ctl_name);
-+		printk(KERN_INFO "DPE: %d, RSE: %d, RMA: %d\n"
-+			"RTA: %d, STA: %d, MDPE: %d\n",
-+			val32 & MEM_LIMIT_DPE,
-+			val32 & MEM_LIMIT_RSE,
-+			val32 & MEM_LIMIT_RMA,
-+			val32 & MEM_LIMIT_RTA,
-+			val32 & MEM_LIMIT_STA,
-+			val32 & MEM_LIMIT_MDPE);
-+
-+		val32 |= MEM_LIMIT_MASK;
-+		edac_pci_write_dword(dev, REG_MEM_LIM, val32);
-+
-+		edac_pci_handle_npe(edac_dev, edac_dev->ctl_name);
-+	}
-+
-+	/* Check if Discard Timer timed out */
-+	edac_pci_read_dword(dev, REG_INT_CTLR, &val32);
-+	if (val32 & INT_CTLR_DTS) {
-+		printk(KERN_INFO "Error(s) in interrupt and control register "
-+			"on %s bridge\n", dev_info->ctl_name);
-+		printk(KERN_INFO "DTS: %d\n", val32 & INT_CTLR_DTS);
-+
-+		val32 |= INT_CTLR_DTS;
-+		edac_pci_write_dword(dev, REG_INT_CTLR, val32);
-+
-+		edac_pci_handle_npe(edac_dev, edac_dev->ctl_name);
-+	}
-+
-+	/* Check if CRC error happens on link side A */
-+	edac_pci_read_dword(dev, REG_LNK_CTRL_A, &val32);
-+	if (val32 & LNK_CTRL_CRCERR_A) {
-+		printk(KERN_INFO "Error(s) in link conf and control register "
-+			"on %s bridge\n", dev_info->ctl_name);
-+		printk(KERN_INFO "CRCERR: %d\n", val32 & LNK_CTRL_CRCERR_A);
-+
-+		val32 |= LNK_CTRL_CRCERR_A;
-+		edac_pci_write_dword(dev, REG_LNK_CTRL_A, val32);
-+
-+		edac_pci_handle_npe(edac_dev, edac_dev->ctl_name);
-+	}
-+
-+	/* Check if CRC error happens on link side B */
-+	edac_pci_read_dword(dev, REG_LNK_CTRL_B, &val32);
-+	if (val32 & LNK_CTRL_CRCERR_B) {
-+		printk(KERN_INFO "Error(s) in link conf and control register "
-+			"on %s bridge\n", dev_info->ctl_name);
-+		printk(KERN_INFO "CRCERR: %d\n", val32 & LNK_CTRL_CRCERR_B);
-+
-+		val32 |= LNK_CTRL_CRCERR_B;
-+		edac_pci_write_dword(dev, REG_LNK_CTRL_B, val32);
-+
-+		edac_pci_handle_npe(edac_dev, edac_dev->ctl_name);
-+	}
-+}
-+
-+static struct amd8131_info amd8131_chipset = {
-+	.err_dev = PCI_DEVICE_ID_AMD_8131_APIC,
-+	.devices = amd8131_devices,
-+	.init = amd8131_pcix_init,
-+	.exit = amd8131_pcix_exit,
-+	.check = amd8131_pcix_check,
-+};
-+
-+/*
-+ * There are 4 PCIX Bridges on ATCA-6101 that share the same PCI Device ID,
-+ * so amd8131_probe() would be called by kernel 4 times, with different
-+ * address of pci_dev for each of them each time.
-+ */
-+static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
-+{
-+	struct amd8131_dev_info *dev_info;
-+
-+	for (dev_info = amd8131_chipset.devices; dev_info->inst != NO_BRIDGE;
-+		dev_info++)
-+		if (dev_info->devfn == dev->devfn)
-+			break;
-+
-+	if (dev_info->inst == NO_BRIDGE) /* should never happen */
-+		return -ENODEV;
-+
-+	/*
-+	 * We can't call pci_get_device() as we are used to do because
-+	 * there are 4 of them but pci_dev_get() instead.
-+	 */
-+	dev_info->dev = pci_dev_get(dev);
-+
-+	if (pci_enable_device(dev_info->dev)) {
-+		pci_dev_put(dev_info->dev);
-+		printk(KERN_ERR "failed to enable:"
-+			"vendor %x, device %x, devfn %x, name %s\n",
-+			PCI_VENDOR_ID_AMD, amd8131_chipset.err_dev,
-+			dev_info->devfn, dev_info->ctl_name);
-+		return -ENODEV;
-+	}
-+
-+	/*
-+	 * we do not allocate extra private structure for
-+	 * edac_pci_ctl_info, but make use of existing
-+	 * one instead.
-+	 */
-+	dev_info->edac_idx = edac_pci_alloc_index();
-+	dev_info->edac_dev = edac_pci_alloc_ctl_info(0, dev_info->ctl_name);
-+	if (!dev_info->edac_dev)
-+		return -ENOMEM;
-+
-+	dev_info->edac_dev->pvt_info = dev_info;
-+	dev_info->edac_dev->dev = &dev_info->dev->dev;
-+	dev_info->edac_dev->mod_name = AMD8131_EDAC_MOD_STR;
-+	dev_info->edac_dev->ctl_name = dev_info->ctl_name;
-+	dev_info->edac_dev->dev_name = dev_info->dev->dev.bus_id;
-+
-+	if (edac_op_state == EDAC_OPSTATE_POLL)
-+		dev_info->edac_dev->edac_check = amd8131_chipset.check;
-+
-+	if (amd8131_chipset.init)
-+		amd8131_chipset.init(dev_info);
-+
-+	if (edac_pci_add_device(dev_info->edac_dev, dev_info->edac_idx) > 0) {
-+		printk(KERN_ERR "failed edac_pci_add_device() for %s\n",
-+			dev_info->ctl_name);
-+		edac_pci_free_ctl_info(dev_info->edac_dev);
-+		return -ENODEV;
-+	}
-+
-+	printk(KERN_INFO "added one device on AMD8131 "
-+		"vendor %x, device %x, devfn %x, name %s\n",
-+		PCI_VENDOR_ID_AMD, amd8131_chipset.err_dev,
-+		dev_info->devfn, dev_info->ctl_name);
-+
-+	return 0;
-+}
-+
-+static void amd8131_remove(struct pci_dev *dev)
-+{
-+	struct amd8131_dev_info *dev_info;
-+
-+	for (dev_info = amd8131_chipset.devices; dev_info->inst != NO_BRIDGE;
-+		dev_info++)
-+		if (dev_info->devfn == dev->devfn)
-+			break;
-+
-+	if (dev_info->inst == NO_BRIDGE) /* should never happen */
-+		return;
-+
-+	if (dev_info->edac_dev) {
-+		edac_pci_del_device(dev_info->edac_dev->dev);
-+		edac_pci_free_ctl_info(dev_info->edac_dev);
-+	}
-+
-+	if (amd8131_chipset.exit)
-+		amd8131_chipset.exit(dev_info);
-+
-+	pci_dev_put(dev_info->dev);
-+}
-+
-+static const struct pci_device_id amd8131_edac_pci_tbl[] = {
-+	{
-+	PCI_VEND_DEV(AMD, 8131_BRIDGE),
-+	.subvendor = PCI_ANY_ID,
-+	.subdevice = PCI_ANY_ID,
-+	.class = 0,
-+	.class_mask = 0,
-+	.driver_data = 0,
-+	},
-+	{
-+	0,
-+	}			/* table is NULL-terminated */
-+};
-+MODULE_DEVICE_TABLE(pci, amd8131_edac_pci_tbl);
-+
-+static struct pci_driver amd8131_edac_driver = {
-+	.name = AMD8131_EDAC_MOD_STR,
-+	.probe = amd8131_probe,
-+	.remove = amd8131_remove,
-+	.id_table = amd8131_edac_pci_tbl,
-+};
-+
-+static int __init amd8131_edac_init(void)
-+{
-+	printk(KERN_INFO "AMD8131 EDAC driver " AMD8131_EDAC_REVISION "\n");
-+	printk(KERN_INFO "\t(c) 2008 Wind River Systems, Inc.\n");
-+
-+	/* Only POLL mode supported so far */
-+	edac_op_state = EDAC_OPSTATE_POLL;
-+
-+	return pci_register_driver(&amd8131_edac_driver);
-+}
-+
-+static void __exit amd8131_edac_exit(void)
-+{
-+	pci_unregister_driver(&amd8131_edac_driver);
-+}
-+
-+module_init(amd8131_edac_init);
-+module_exit(amd8131_edac_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Cao Qingtao <qingtao.cao@windriver.com>\n");
-+MODULE_DESCRIPTION("AMD8131 HyperTransport PCI-X Tunnel EDAC kernel module");
+ endif # EDAC
+diff --git a/drivers/edac/Makefile b/drivers/edac/Makefile
+index c324956..407601f 100644
+--- a/drivers/edac/Makefile
++++ b/drivers/edac/Makefile
+@@ -35,4 +35,5 @@ obj-$(CONFIG_EDAC_MPC85XX)		+= mpc85xx_edac.o
+ obj-$(CONFIG_EDAC_MV64X60)		+= mv64x60_edac.o
+ obj-$(CONFIG_EDAC_CELL)			+= cell_edac.o
+ obj-$(CONFIG_EDAC_AMD8111)		+= amd8111_edac.o
++obj-$(CONFIG_EDAC_AMD8131)		+= amd8131_edac.o
+ 
+-- 
+1.5.6.2
+
