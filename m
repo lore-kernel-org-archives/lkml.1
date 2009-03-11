@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbZCKPZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288AbZCKP0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753533AbZCKPZn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 11:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZCKPZe
+	id S1754288AbZCKP0z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 11:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZCKP0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 11:25:34 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:58786 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751956AbZCKPZe (ORCPT
+	Wed, 11 Mar 2009 11:26:46 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:1467 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751956AbZCKP0p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 11:25:34 -0400
+	Wed, 11 Mar 2009 11:26:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=C+4l3dsrHNGtHJ7pDm/TUVfP70AtcN21ttgWdhx+VOPyzoVc2LYdSRCEXIVRp/wI9n
-         41ssYoaVYkQRNyHJBhm+n2AaiQL8UxLfxkjHqy4YoSe6zW+KuVKhxJ7GnlPSLRHDkgfh
-         sS+6U174PBA25KPx2yLPIAmG2Qj+W8LzhyCkI=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=gYGqkJyh445deVNJ9VNM99qA0XYZzYoK1eNhtPe4cUfNKuhhcLrSwqLRXfH+q0O9Is
+         I6YuUlYjWxCTX+i0G34wvLTqJZ3kSpvQeWFdd0TWxiq0fTEPgDkBOWVMfnIk5VSKCBK9
+         CVgMsiepoGfuEi4J4TCy4mOZc3pJvPi7DHkz0=
+Message-ID: <49B7D830.10601@gmail.com>
+Date: Wed, 11 Mar 2009 16:26:40 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0903111606350.29264@localhost.localdomain>
-References: <20090311143317.GA22244@localhost.localdomain>
-	 <alpine.LFD.2.00.0903111606350.29264@localhost.localdomain>
-Date: Thu, 12 Mar 2009 00:25:32 +0900
-Message-ID: <961aa3350903110825y1af77709q49d6328703081afb@mail.gmail.com>
-Subject: Re: [PATCH 1/2] x86: unify kmap_atomic_pfn() and iomap_atomic_prot_pfn()
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Breno Leitao <leitao@linux.vnet.ibm.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 1/1] icom: Removing unused variables and converting space
+ to tabs
+References: <49B7D63E.9050006@linux.vnet.ibm.com>
+In-Reply-To: <49B7D63E.9050006@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/3/12 Thomas Gleixner <tglx@linutronix.de>:
-> On Wed, 11 Mar 2009, Akinobu Mita wrote:
->> kmap_atomic_pfn() and iomap_atomic_prot_pfn() are almost same except
->> pgprot. This patch removes the code duplication for these two functions.
+On 11.3.2009 16:18, Breno Leitao wrote:
+> --- a/drivers/serial/icom.c
+> +++ b/drivers/serial/icom.c
+> @@ -1022,7 +1022,6 @@ static void icom_send_xchar(struct uart_port *port, char ch)
+>   			writeb(ch,&ICOM_PORT->dram->xchar);
 >
-> How exaclty does this compile with CONFIG_HIGHMEM=n ?
->
+>   			/* flush write operation */
+> -			xdata = readb(&ICOM_PORT->dram->xchar);
 
-Oh, I didn't try without CONFIG_HIGHMEM.
+NACK. Did you read the comment above?
