@@ -1,183 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbZCKGlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752899AbZCKGou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753240AbZCKGlB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 02:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZCKGkh
+	id S1752899AbZCKGou (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 02:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZCKGom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 02:40:37 -0400
-Received: from ozlabs.org ([203.10.76.45]:33812 "EHLO ozlabs.org"
+	Wed, 11 Mar 2009 02:44:42 -0400
+Received: from ozlabs.org ([203.10.76.45]:33897 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120AbZCKGkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 02:40:36 -0400
-CC: linux-kernel@vger.kernel.org
-To: James.Bottomley@HansenPartnership.com
-CC: Ingo Molnar <mingo@redhat.com>
+	id S1751002AbZCKGol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 02:44:41 -0400
 From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Wed, 11 Mar 2009 17:02:07 +1030
-Subject: [PATCH 2/2] cpumask: use modern cpumask methods in arch/x86/mach-voyager/voyager_smp.c
-Message-Id: <20090311064033.CA31DDE154@ozlabs.org>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Subject: Re: x86-microcode: get rid of set_cpus_allowed()
+Date: Wed, 11 Mar 2009 17:14:37 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Andreas Herrmann <andreas.herrmann3@amd.com>,
+       linux-kernel@vger.kernel.org
+References: <1236627539.5168.48.camel@earth>
+In-Reply-To: <1236627539.5168.48.camel@earth>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903111714.37444.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 10 March 2009 06:08:59 Dmitry Adamushko wrote:
+> 
+> Hi,
+> 
+> 
+> here is a possible candidate for Rusty's cpumask-refactored series.
+> Note the [*] remark below though.
 
-Impact: cleanup
+Ah, OK, I'll drop my version then (below) in favor of this, and will
+push to Ingo with the others if he doesn't take it directly.
 
-1) cpus_addr() -> cpumask_bits()
-2) cpu_online_map -> cpu_online_mask
-3) init_cpu_online & set_cpu_online
-4) smp_commenced_mask is an unsigned long, not a cpumask_t (easier than
-   a cpumask_var_t).
+Thanks!
+Rusty.
+
+cpumask: use work_on_cpu in arch/x86/kernel/microcode_core.c
+
+Impact: don't play with current's cpumask
+
+Straightforward indirection through work_on_cpu().  One change is that
+the error code from microcode_update_cpu() is now actually plumbed back
+to microcode_init_cpu(), so now we printk if it fails on cpu hotplug.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-To: James.Bottomley@HansenPartnership.com
 ---
- arch/x86/mach-voyager/voyager_smp.c |   45 +++++++++++++++++-------------------
- 1 file changed, 22 insertions(+), 23 deletions(-)
+ arch/x86/kernel/microcode_core.c |  106 ++++++++++++++++++++++-----------------
+ 1 file changed, 61 insertions(+), 45 deletions(-)
 
-diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
---- a/arch/x86/mach-voyager/voyager_smp.c
-+++ b/arch/x86/mach-voyager/voyager_smp.c
-@@ -132,7 +132,7 @@ static inline void send_CPI_allbutself(_
- static inline void send_CPI_allbutself(__u8 cpi)
+diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
+--- a/arch/x86/kernel/microcode_core.c
++++ b/arch/x86/kernel/microcode_core.c
+@@ -108,29 +108,40 @@ EXPORT_SYMBOL_GPL(ucode_cpu_info);
+ EXPORT_SYMBOL_GPL(ucode_cpu_info);
+ 
+ #ifdef CONFIG_MICROCODE_OLD_INTERFACE
++struct update_for_cpu {
++	const void __user *buf;
++	size_t size;
++};
++
++static long update_for_cpu(void *_ufc)
++{
++	struct update_for_cpu *ufc = _ufc;
++	int error;
++
++	error = microcode_ops->request_microcode_user(smp_processor_id(),
++						      ufc->buf, ufc->size);
++	if (error < 0)
++		return error;
++	if (!error)
++		microcode_ops->apply_microcode(smp_processor_id());
++	return error;
++}
++
+ static int do_microcode_update(const void __user *buf, size_t size)
  {
- 	__u8 cpu = smp_processor_id();
--	__u32 mask = cpus_addr(cpu_online_map)[0] & ~(1 << cpu);
-+	__u32 mask = cpumask_bits(cpu_online_mask)[0] & ~(1 << cpu);
- 	send_CPI(mask, cpi);
- }
- 
-@@ -207,7 +207,7 @@ static __u32 cpu_booted_map;
- 
- /* the synchronize flag used to hold all secondary CPUs spinning in
-  * a tight loop until the boot sequence is ready for them */
--static cpumask_t smp_commenced_mask = CPU_MASK_NONE;
-+static unsigned long smp_commenced_mask;
- 
- /* This is for the new dynamic CPU boot code */
- 
-@@ -357,7 +357,7 @@ void __init find_smp_config(void)
- 	/* initialize the CPU structures (moved from smp_boot_cpus) */
- 	for (i = 0; i < nr_cpu_ids; i++)
- 		cpu_irq_affinity[i] = ~0;
--	cpu_online_map = cpumask_of_cpu(boot_cpu_id);
-+	init_cpu_online(cpumask_of(boot_cpu_id));
- 
- 	/* The boot CPU must be extended */
- 	voyager_extended_vic_processors = 1 << boot_cpu_id;
-@@ -471,18 +471,18 @@ static void __init start_secondary(void 
- 	 * permission to proceed.  Without this, the new per CPU stuff
- 	 * in the softirqs will fail */
- 	local_irq_disable();
--	cpu_set(cpuid, cpu_callin_map);
-+	cpumask_set_cpu(cpuid, cpu_callin_mask);
- 
- 	/* signal that we're done */
- 	cpu_booted_map = 1;
- 
--	while (!cpu_isset(cpuid, smp_commenced_mask))
-+	while (!test_bit(cpuid, &smp_commenced_mask))
- 		rep_nop();
- 	local_irq_enable();
- 
- 	local_flush_tlb();
- 
--	cpu_set(cpuid, cpu_online_map);
-+	set_cpu_online(cpuid, true);
- 	wmb();
- 	cpu_idle();
- }
-@@ -605,8 +605,8 @@ static void __init do_boot_cpu(__u8 cpu)
- 		printk("CPU%d: ", cpu);
- 		print_cpu_info(&cpu_data(cpu));
- 		wmb();
--		cpu_set(cpu, cpu_callout_map);
--		cpu_set(cpu, cpu_present_map);
-+		cpumask_set_cpu(cpu, cpu_callout_mask);
-+		set_cpu_present(cpu, true);
- 	} else {
- 		printk("CPU%d FAILED TO BOOT: ", cpu);
- 		if (*
-@@ -668,8 +668,8 @@ void __init smp_boot_cpus(void)
- 	/* enable our own CPIs */
- 	vic_enable_cpi();
- 
--	cpu_set(boot_cpu_id, cpu_online_map);
--	cpu_set(boot_cpu_id, cpu_callout_map);
-+	set_cpu_online(boot_cpu_id, true);
-+	cpumask_set_cpu(boot_cpu_id, cpu_callout_mask);
- 
- 	/* loop over all the extended VIC CPUs and boot them.  The
- 	 * Quad CPUs must be bootstrapped by their extended VIC cpu */
-@@ -832,7 +832,7 @@ voyager_flush_tlb_others(unsigned long c
- 
- 	if (!cpumask)
- 		BUG();
--	if ((cpumask & cpus_addr(cpu_online_map)[0]) != cpumask)
-+	if ((cpumask & cpumask_bits(cpu_online_mask)[0]) != cpumask)
- 		BUG();
- 	if (cpumask & (1 << smp_processor_id()))
- 		BUG();
-@@ -951,7 +951,7 @@ static void smp_stop_cpu_function(void *
- static void smp_stop_cpu_function(void *dummy)
- {
- 	VDEBUG(("VOYAGER SMP: CPU%d is STOPPING\n", smp_processor_id()));
--	cpu_clear(smp_processor_id(), cpu_online_map);
-+	set_cpu_online(smp_processor_id(), false);
- 	local_irq_disable();
- 	for (;;)
- 		halt();
-@@ -1608,9 +1608,9 @@ void set_vic_irq_affinity(unsigned int i
- 	unsigned long irq_mask = 1 << irq;
+-	cpumask_t old;
+ 	int error = 0;
  	int cpu;
- 
--	real_mask = cpus_addr(*mask)[0] & voyager_extended_vic_processors;
-+	real_mask = cpumask_bits(mask)[0] & voyager_extended_vic_processors;
- 
--	if (cpus_addr(*mask)[0] == 0)
-+	if (cpumask_bits(mask)[0] == 0)
- 		/* can't have no CPUs to accept the interrupt -- extremely
- 		 * bad things will happen */
- 		return;
-@@ -1752,24 +1752,23 @@ static void __cpuinit voyager_smp_prepar
- 	init_gdt(smp_processor_id());
- 	switch_to_new_gdt();
- 
--	cpu_online_map = cpumask_of_cpu(smp_processor_id());
--	cpu_callout_map = cpumask_of_cpu(smp_processor_id());
--	cpu_callin_map = CPU_MASK_NONE;
--	cpu_present_map = cpumask_of_cpu(smp_processor_id());
 -
-+	init_cpu_online(cpumask_of(smp_processor_id()));
-+	cpumask_copy(cpu_callout_mask, cpumask_of(smp_processor_id()));
-+	cpumask_clear(cpu_callin_mask);
-+	init_cpu_present(cpumask_of(smp_processor_id()));
+-	old = current->cpus_allowed;
++	struct update_for_cpu ufc = { .buf = buf, .size = size };
+ 
+ 	for_each_online_cpu(cpu) {
+ 		struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+ 
+ 		if (!uci->valid)
+ 			continue;
+-
+-		set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-		error = microcode_ops->request_microcode_user(cpu, buf, size);
++		error = work_on_cpu(cpu, update_for_cpu, &ufc);
+ 		if (error < 0)
+-			goto out;
+-		if (!error)
+-			microcode_ops->apply_microcode(cpu);
++			break;
+ 	}
+-out:
+-	set_cpus_allowed_ptr(current, &old);
+ 	return error;
  }
  
- static int __cpuinit voyager_cpu_up(unsigned int cpu)
- {
- 	/* This only works at boot for x86.  See "rewrite" above. */
--	if (cpu_isset(cpu, smp_commenced_mask))
-+	if (test_bit(cpu, &smp_commenced_mask))
- 		return -ENOSYS;
+@@ -205,11 +216,26 @@ MODULE_ALIAS_MISCDEV(MICROCODE_MINOR);
+ /* fake device for request_firmware */
+ static struct platform_device *microcode_pdev;
  
- 	/* In case one didn't come up */
--	if (!cpu_isset(cpu, cpu_callin_map))
-+	if (!cpumask_test_cpu(cpu, cpu_callin_mask))
- 		return -EIO;
- 	/* Unleash the CPU! */
--	cpu_set(cpu, smp_commenced_mask);
-+	set_bit(cpu, &smp_commenced_mask);
- 	while (!cpu_online(cpu))
- 		mb();
++static long reload_for_cpu(void *unused)
++{
++	struct ucode_cpu_info *uci = ucode_cpu_info + smp_processor_id();
++	int err = 0;
++
++	mutex_lock(&microcode_mutex);
++	if (uci->valid) {
++		err = microcode_ops->request_microcode_fw(smp_processor_id(),
++							  &microcode_pdev->dev);
++		if (!err)
++			microcode_ops->apply_microcode(smp_processor_id());
++	}
++	mutex_unlock(&microcode_mutex);
++	return err;
++}
++
+ static ssize_t reload_store(struct sys_device *dev,
+ 			    struct sysdev_attribute *attr,
+ 			    const char *buf, size_t sz)
+ {
+-	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
+ 	char *end;
+ 	unsigned long val = simple_strtoul(buf, &end, 0);
+ 	int err = 0;
+@@ -218,21 +244,9 @@ static ssize_t reload_store(struct sys_d
+ 	if (end == buf)
+ 		return -EINVAL;
+ 	if (val == 1) {
+-		cpumask_t old = current->cpus_allowed;
+-
+ 		get_online_cpus();
+-		if (cpu_online(cpu)) {
+-			set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-			mutex_lock(&microcode_mutex);
+-			if (uci->valid) {
+-				err = microcode_ops->request_microcode_fw(cpu,
+-						&microcode_pdev->dev);
+-				if (!err)
+-					microcode_ops->apply_microcode(cpu);
+-			}
+-			mutex_unlock(&microcode_mutex);
+-			set_cpus_allowed_ptr(current, &old);
+-		}
++		if (cpu_online(cpu))
++			err = work_on_cpu(cpu, reload_for_cpu, NULL);
+ 		put_online_cpus();
+ 	}
+ 	if (err)
+@@ -328,9 +342,9 @@ static int microcode_resume_cpu(int cpu)
  	return 0;
-@@ -1788,7 +1787,7 @@ void __init smp_setup_processor_id(void)
- 
- static void voyager_send_call_func(const struct cpumask *callmask)
- {
--	__u32 mask = cpus_addr(*callmask)[0] & ~(1 << smp_processor_id());
-+	__u32 mask = cpumask_bits(callmask)[0] & ~(1 << smp_processor_id());
- 	send_CPI(mask, VIC_CALL_FUNCTION_CPI);
  }
  
+-static void microcode_update_cpu(int cpu)
++static long microcode_update_cpu(void *unused)
+ {
+-	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
++	struct ucode_cpu_info *uci = ucode_cpu_info + smp_processor_id();
+ 	int err = 0;
+ 
+ 	/*
+@@ -338,30 +352,27 @@ static void microcode_update_cpu(int cpu
+ 	 * otherwise just request a firmware:
+ 	 */
+ 	if (uci->valid) {
+-		err = microcode_resume_cpu(cpu);
++		err = microcode_resume_cpu(smp_processor_id());
+ 	} else {	
+-		collect_cpu_info(cpu);
++		collect_cpu_info(smp_processor_id());
+ 		if (uci->valid && system_state == SYSTEM_RUNNING)
+-			err = microcode_ops->request_microcode_fw(cpu,
++			err = microcode_ops->request_microcode_fw(
++					smp_processor_id(),
+ 					&microcode_pdev->dev);
+ 	}
+ 	if (!err)
+-		microcode_ops->apply_microcode(cpu);
++		microcode_ops->apply_microcode(smp_processor_id());
++	return err;
+ }
+ 
+-static void microcode_init_cpu(int cpu)
++static int microcode_init_cpu(int cpu)
+ {
+-	cpumask_t old = current->cpus_allowed;
+-
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-	/* We should bind the task to the CPU */
+-	BUG_ON(raw_smp_processor_id() != cpu);
+-
++	int err;
+ 	mutex_lock(&microcode_mutex);
+-	microcode_update_cpu(cpu);
++	err = work_on_cpu(cpu, microcode_update_cpu, NULL);
+ 	mutex_unlock(&microcode_mutex);
+ 
+-	set_cpus_allowed_ptr(current, &old);
++	return err;
+ }
+ 
+ static int mc_sysdev_add(struct sys_device *sys_dev)
+@@ -379,8 +390,11 @@ static int mc_sysdev_add(struct sys_devi
+ 	if (err)
+ 		return err;
+ 
+-	microcode_init_cpu(cpu);
+-	return 0;
++	err = microcode_init_cpu(cpu);
++	if (err)
++		sysfs_remove_group(&sys_dev->kobj, &mc_attr_group);
++
++	return err;
+ }
+ 
+ static int mc_sysdev_remove(struct sys_device *sys_dev)
+@@ -404,7 +418,7 @@ static int mc_sysdev_resume(struct sys_d
+ 		return 0;
+ 
+ 	/* only CPU 0 will apply ucode here */
+-	microcode_update_cpu(0);
++	microcode_update_cpu(NULL);
+ 	return 0;
+ }
+ 
+@@ -424,7 +438,9 @@ mc_cpu_callback(struct notifier_block *n
+ 	switch (action) {
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+-		microcode_init_cpu(cpu);
++		if (microcode_init_cpu(cpu))
++			printk(KERN_ERR "microcode: failed to init CPU%d\n",
++			       cpu);
+ 	case CPU_DOWN_FAILED:
+ 	case CPU_DOWN_FAILED_FROZEN:
+ 		pr_debug("microcode: CPU%d added\n", cpu);
+
 
