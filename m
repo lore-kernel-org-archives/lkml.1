@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbZCKPui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbZCKPxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752140AbZCKPui (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 11:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750921AbZCKPu3
+	id S1752503AbZCKPxq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 11:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbZCKPxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 11:50:29 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:56509 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750752AbZCKPu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 11:50:28 -0400
-Date: Wed, 11 Mar 2009 08:50:24 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Dmitriy V'jukov" <dvyukov@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RCU: Number of grace-periods
-Message-ID: <20090311155024.GB7086@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <loom.20090311T104939-544@post.gmane.org>
+	Wed, 11 Mar 2009 11:53:37 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:61973 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750769AbZCKPxh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 11:53:37 -0400
+Date: Wed, 11 Mar 2009 16:53:34 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+In-Reply-To: <alpine.LFD.2.00.0903110835020.32478@localhost.localdomain>
+Message-ID: <alpine.LRH.2.00.0903111652070.1040@vixen.sonytel.be>
+References: <1236729444.7086.24.camel@pasglop> <alpine.LRH.2.00.0903111028480.1040@vixen.sonytel.be> <1236769025.7086.46.camel@pasglop> <alpine.LFD.2.00.0903110835020.32478@localhost.localdomain>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <loom.20090311T104939-544@post.gmane.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 10:58:41AM +0000, Dmitriy V'jukov wrote:
-> In the article "The design of preemptible read-copy-update":
-> http://lwn.net/Articles/253651
-> 
-> Paul McKenney explains why number of grace periods before executing callbacks is
-> set to 2:
-> #define GP_STAGES 2
-> 
-> There are following statements in the reasoning:
-> "Note that because rcu_read_lock() does not contain any memory barriers, the
-> contents of the critical section might be executed early by the CPU"
-> and:
-> "However, because rcu_read_unlock() contains no memory barriers, the contents of
-> the corresponding RCU read-side critical section (possibly including a reference
-> to the item deleted by CPU 0) can be executed late by CPU 1"
-> 
-> But on some architectures (IA-32, Intel 64, SPARC TSO) acquire and release
-> fences are implied with every load/store (read - costless), so isn't it possible
-> to reduce the number of required grace periods before executing callbacks on
-> these architectures?
-> I.e. something like:
-> #ifdef ACQUIRE_RELEASE_FENCES_ARE_IMPLIED_ON_ARCH // defined for x86 etc
-> #define GP_STAGES 1
-> #else
-> #define GP_STAGES 2
-> #endif
-> Have someone considered such variant? Is it worth doing?
-> Thank you.
+	Hi Linus,
 
-Interesting thought -- but please keep in mind that acquire/release fences
-still allow subsequent stores to be reordered to precede earlier loads.
-This means that the first loads in the RCU critical section could be
-reordered to precede the final store of the rcu_read_lock() primitive.
-My guess is there would be some resistance to the new #define, but if
-there were enough uses, perhaps such resistence could be overcome.
+On Wed, 11 Mar 2009, Linus Torvalds wrote:
+> On Wed, 11 Mar 2009, Benjamin Herrenschmidt wrote:
+> > I'd like to have Andrew or Linus opinion on doing this driver swap that
+> > late in the process.
+> 
+> Quite franklly, no. 
+> 
+> If it was a totally _new_ driver, there's no chance of regression, which 
+> is why we allow those drivers.
+> 
+> But switching an old one for a new one does not match that pattern. We can 
+> clearly get regressions. As such, we don't do it late in the -rc series.
 
-So, have you tried running this through Relacy?  If so, what happened?
+Are you aware the old one was introduced in 2.6.29-rc1? So there cannot be a
+regression from 2.6.28 or older.
 
-							Thanx, Paul
+Thanks!
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
