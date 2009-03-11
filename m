@@ -1,102 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZCKIgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbZCKIi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbZCKIgd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 04:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZCKIgW
+	id S1753426AbZCKIi7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 04:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZCKIiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 04:36:22 -0400
-Received: from sh.osrg.net ([192.16.179.4]:41375 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751627AbZCKIgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 04:36:20 -0400
-Date: Wed, 11 Mar 2009 17:35:48 +0900 (JST)
-Message-Id: <20090311.173548.59681981.ryusuke@osrg.net>
-To: akpm@linux-foundation.org
-Cc: konishi.ryusuke@lab.ntt.co.jp, hch@lst.de, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Asking for inclusion of nilfs2 in the mainline kernel
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <20090310155459.11ffa81f.akpm@linux-foundation.org>
-References: <20090311.015542.118514963.ryusuke@osrg.net>
-	<20090310155459.11ffa81f.akpm@linux-foundation.org>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 11 Mar 2009 17:35:49 +0900 (JST)
+	Wed, 11 Mar 2009 04:38:50 -0400
+Received: from web4112.mail.ogk.yahoo.co.jp ([124.83.200.74]:42840 "HELO
+	web4112.mail.ogk.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752005AbZCKIit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 04:38:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=yj20050223; d=yahoo.co.jp;
+  h=Message-ID:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
+  b=tNnFZ7NNeOMEct7aZbUMZDMgSn5rdhmxOBXu43LGki5rx1Y8WXrVnIJPYV3caG52M9yJkyx6IjOvRAXMglX+X4aXmj96VVjIvw4nYWsJTxFIU6sp5Q/QADZwqBND0b3I  ;
+Message-ID: <20090311083846.5137.qmail@web4112.mail.ogk.yahoo.co.jp>
+Date: Wed, 11 Mar 2009 17:38:46 +0900 (JST)
+From: Norman Diamond <n0diamond@yahoo.co.jp>
+Reply-To: n0diamond@yahoo.co.jp
+Subject: Re: Off-by-one in both LIBATA and IDE drivers
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       n0diamond@yahoo.co.jp
+In-Reply-To: <20090311082725.37cb1883@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-2022-jp
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
-On Tue, 10 Mar 2009 15:54:59 -0700, Andrew Morton wrote:
-> On Wed, 11 Mar 2009 01:55:42 +0900 (JST)
-> Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp> wrote:
+Alan Cox wrote:
+> Norman Diamond <n0diamond@yahoo.co.jp> wrote:
 > 
-> > I've been working for the past serveral months to take review comments
-> > and to continually solve users' problems come up in mainling list
+>> It looks like both LIBATA and the old IDE drivers
+>> have an off-by-one error in deciding whether to use
+>> READ SECTOR(S) instead of READ SECTOR(S) EXT.
 > 
-> Yes, the maintenance has been impressive.
+> This was fixed some time ago, you need a newer
+> kernel.
 
-Thanks for picking up additional patches at all times!
- 
-> > (thanks for all giving comments and feedbacks!).  Also, I've tried to
-> > stabilize API and disk format to restrict additional changes and
-> > ensure backward compatibility.
-> 
-> Well.  From the point of view of mainline linux, there is no
-> back-compatibility issue, because the fs hasn't been merged yet.
+Well, either that or I need an older kernel.  It was also
+fixed in 2.6.20, for which I think there was a ready-made
+Slax distribution.
 
-Oops, sorry, I mistook; it meant forward-compatibility.
+On another topic, trying 2.6.20 in whatever Slax
+distribution it was, an Intel ICH7M had DMA enabled on
+both /dev/hda and /dev/hdc.  I understand that the change
+which was made shortly after that is considered to be by
+design not a bug.  In 2.6.20 I didn't even have to type a
+"combined_mode" parameter, it just worked.  I understand
+that the addition and subsequent deletion of the
+"combined_mode" parameter are considered to be by design
+not bugs.  But it is not at all pleasant that my /dev/hda
+runs at 1.3 megabytes per second in 2.6.24.3 and later,
+when it used to run at 45 megabytes per second in 2.6.20. 
+Yeah I know libata is supposed to solve all this stuff. 
+Removed some bugs and added others.
 
-My recent patch series and the recent userland tasks were intended to
-give better support for future extensions though I even tried to keep
-backward compatibility.
+I can't go newer than 2.6.24.3 until I find a version
+where TASKFILEs start working again.  There might not be
+one.  Yeah I know libata is supposed to solve all this
+stuff.  I wonder how much time I'll need and how many
+varieties of hardware I'll have to buy to see if it's
+really fixed.
 
-> You perhaps have back-compatibility concerns for existing users of the
-> out-of-tree patch, but I'd encourage you to not worry about that too
-> much - there will be fairly few users and they are probably pretty
-> technical and will be able to cope with a migration.  It's a _bit_ hard
-> on them but on the other hand, omitting back-compatibility code leads
-> to a better implementation for the long term.
 
-Thanks for the advice.  I'll keep this comment in mind and will handle
-matters more flexibly with considering long term merits and trade-off.
-
-> What you should be more concerned about is forward-compatibility.  What
-> arrangements do you presently have in place to be able to later alter the
-> on-disk format without causing too much disruption?  Having a strong
-> design here will make changes easier to do and will lead to a better
-> filesystem.
-
-Yes, I recognize the importance of this.  For example, I've carefully
-converted both userland and kernel code so that they refer to ``size''
-fields embeded in on-disk structures instead of calculating with
-sizeof().  In addition, I paid attention to initialization of reserved
-fields not to break the forward compatibility.
-
-We arranged various size fields: size of super block, size of segment
-header, size of on-disk items in meta data files such as inode on
-ifile, checkpoint entry on cpfile, segment usage entry on sufile, and
-so forth.  All those fields are for handling possible future
-extensions.
-
-Further, each log of nilfs2 is designed so that it can have additional
-blocks in the tail.  They may be used, for instance, to write
-additional copies of superblock.
- 
-> Also..  Don't get _too_ concerned about freezing the on-disk format at
-> this time.  You could put in a mount-time printk("the nilfs on-disk
-> format may change at any time - do not place critical data on a nilfs
-> filesystem") and we leave that in place for a few months while things
-> stabilise.
-
-Got it.  So, I will do the message insertion  :)
-
-> And yes, I was planning on sending nilfs in to Linus for 2.6.30 unless
-> someone has decent-sounding reasons to hold it back.
-
-Great!
-
-Regards,
-Ryusuke Konishi
+--------------------------------------
+Power up the Internet with Yahoo! Toolbar.
+http://pr.mail.yahoo.co.jp/toolbar/
