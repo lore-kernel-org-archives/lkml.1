@@ -1,228 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbZCKI1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752306AbZCKIdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753179AbZCKI1Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 04:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZCKI0h
+	id S1752306AbZCKIdU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 04:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZCKIdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 04:26:37 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:56011 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751223AbZCKI0e (ORCPT
+	Wed, 11 Mar 2009 04:33:05 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:57853 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbZCKIdE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 04:26:34 -0400
-Message-ID: <49B775B4.1040800@free.fr>
-Date: Wed, 11 Mar 2009 09:26:28 +0100
-From: Cedric Le Goater <legoater@free.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 11 Mar 2009 04:33:04 -0400
+Date: Wed, 11 Mar 2009 09:32:52 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jonathan Cameron <jic23@cam.ac.uk>, Jean Delvare <khali@linux-fr.org>,
+       linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Added driver for ISL29003 ambient light sensor
+Message-ID: <20090311083252.GB25824@buzzloop.caiaq.de>
+References: <20090306181409.GA20135@buzzloop.caiaq.de> <20090307115449.32f0ab26@hyperion.delvare> <20090307120631.GA25276@buzzloop.caiaq.de> <20090307130818.367bcaad@hyperion.delvare> <20090309210901.GC31367@buzzloop.caiaq.de> <49B666F9.50209@cam.ac.uk> <20090310151542.GE9564@buzzloop.caiaq.de> <49B6A843.3090902@cam.ac.uk> <20090311003155.GB21160@buzzloop.caiaq.de> <20090310212826.7d8b3d4e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, mpm@selenic.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, tglx@linutronix.de,
-       viro@zeniv.linux.org.uk, hpa@zytor.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, mingo@elte.hu, xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
- do?
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>	<1234285547.30155.6.camel@nimitz>	<20090211141434.dfa1d079.akpm@linux-foundation.org>	<1234462282.30155.171.camel@nimitz>	<1234467035.3243.538.camel@calx>	<20090212114207.e1c2de82.akpm@linux-foundation.org>	<1234475483.30155.194.camel@nimitz>	<20090212141014.2cd3d54d.akpm@linux-foundation.org>	<1234479845.30155.220.camel@nimitz>	<20090226155755.GA1456@x200.localdomain> <20090310215305.GA2078@x200.localdomain>
-In-Reply-To: <20090310215305.GA2078@x200.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090310212826.7d8b3d4e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Thu, Feb 26, 2009 at 06:57:55PM +0300, Alexey Dobriyan wrote:
->> On Thu, Feb 12, 2009 at 03:04:05PM -0800, Dave Hansen wrote:
->>> dave@nimitz:~/kernels/linux-2.6-openvz$ git diff v2.6.27.10... kernel/cpt/ | diffstat 
+On Tue, Mar 10, 2009 at 09:28:26PM -0700, Andrew Morton wrote:
+> On Wed, 11 Mar 2009 01:31:55 +0100 Daniel Mack <daniel@caiaq.de> wrote:
+> > > All looks fine to me.
+> > > 
+> > > Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
 > 
->>>  47 files changed, 20702 insertions(+)
->>>
->>> One important thing that leaves out is the interaction that this code
->>> has with the rest of the kernel.  That's critically important when
->>> considering long-term maintenance, and I'd be curious how the OpenVZ
->>> folks view it. 
->> OpenVZ as-is in some cases wants some functions to be made global
->> (and if C/R code will be modular, exported). Or probably several
->> iterators added.
->>
->> But it's negligible amount of changes compared to main code.
+> I cannot find this review which Jonathan performed.  Fumbled
+> reply-to-all, or did vger break?
+
+Jonathan replied to the posting on linux-i2c and linux-kernel wasn't in
+the loop, sorry. Find his posting here:
+
+	http://marc.info/?l=linux-i2c&m=123669064909549&w=2
+
+> I can take care of it.
 > 
-> Here is what C/R code wants from pid allocator.
-> 
-> With the introduction of hierarchical PID namespaces, struct pid can
-> have not one but many numbers -- tuple (pid_0, pid_1, ..., pid_N),
-> where pid_i is pid number in pid_ns which has level i.
-> 
-> Now root pid_ns of container has level n -- numbers from level n to N
-> inclusively should be dumped and restored.
-> 
-> During struct pid creation first n-1 numbers can be anything, because the're
-> outside of pid_ns, but the rest should be the same.
-> 
-> Code will be ifdeffed and commented, but anyhow, this is an example of
-> change C/R will require from the rest of the kernel.
-> 
-> 
-> 
-> --- a/kernel/pid.c
-> +++ b/kernel/pid.c
-> @@ -182,6 +182,34 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
->  	return -1;
->  }
->  
-> +static int set_pidmap(struct pid_namespace *pid_ns, pid_t pid)
-> +{
-> +	int offset;
-> +	struct pidmap *map;
-> +
-> +	offset = pid & BITS_PER_PAGE_MASK;
-> +	map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
-> +	if (unlikely(!map->page)) {
-> +		void *page = kzalloc(PAGE_SIZE, GFP_KERNEL);
-> +		/*
-> +		 * Free the page if someone raced with us
-> +		 * installing it:
-> +		 */
-> +		spin_lock_irq(&pidmap_lock);
-> +		if (map->page)
-> +			kfree(page);
-> +		else
-> +			map->page = page;
-> +		spin_unlock_irq(&pidmap_lock);
-> +		if (unlikely(!map->page))
-> +			return -ENOMEM;
-> +	}
-> +	if (test_and_set_bit(offset, map->page))
-> +		return -EBUSY;
-> +	atomic_dec(&map->nr_free);
-> +	return pid;
-> +}
-> +
->  int next_pidmap(struct pid_namespace *pid_ns, int last)
->  {
->  	int offset;
-> @@ -239,7 +267,7 @@ void free_pid(struct pid *pid)
->  	call_rcu(&pid->rcu, delayed_put_pid);
->  }
->  
-> -struct pid *alloc_pid(struct pid_namespace *ns)
-> +struct pid *alloc_pid(struct pid_namespace *ns, int *cr_nr, unsigned int cr_level)
->  {
->  	struct pid *pid;
->  	enum pid_type type;
-> @@ -253,7 +281,10 @@ struct pid *alloc_pid(struct pid_namespace *ns)
->  
->  	tmp = ns;
->  	for (i = ns->level; i >= 0; i--) {
-> -		nr = alloc_pidmap(tmp);
-> +		if (cr_nr && ns->level - i <= cr_level)
-> +			nr = set_pidmap(tmp, cr_nr[ns->level - i]);
-> +		else
-> +			nr = alloc_pidmap(tmp);
->  		if (nr < 0)
->  			goto out_free;
+> Was any thought given to the CONFIG_SYSFS=n situation?
 
-This patch supposes that the process is restored in a state which took several 
-clone(CLONE_NEWPID) to reach. if you replay these clone(), which is what restart
-is at the end : an optimized replay, you would only need something like below. 
+You're right, it should depend on that. You want me so send a patch on
+top of the other or one that replaces it?
 
+Thanks,
+Daniel
 
-
-Index: 2.6.git/kernel/pid.c
-===================================================================
---- 2.6.git.orig/kernel/pid.c
-+++ 2.6.git/kernel/pid.c
-@@ -122,12 +122,12 @@ static void free_pidmap(struct upid *upi
- 	atomic_inc(&map->nr_free);
- }
- 
--static int alloc_pidmap(struct pid_namespace *pid_ns)
-+static int alloc_pidmap(struct pid_namespace *pid_ns, pid_t upid)
- {
- 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
- 	struct pidmap *map;
- 
--	pid = last + 1;
-+	pid = upid ? upid : last + 1;
- 	if (pid >= pid_max)
- 		pid = RESERVED_PIDS;
- 	offset = pid & BITS_PER_PAGE_MASK;
-@@ -239,7 +239,7 @@ void free_pid(struct pid *pid)
- 	call_rcu(&pid->rcu, delayed_put_pid);
- }
- 
--struct pid *alloc_pid(struct pid_namespace *ns)
-+struct pid *alloc_pid(struct pid_namespace *ns, pid_t next_pid)
- {
- 	struct pid *pid;
- 	enum pid_type type;
-@@ -253,10 +253,15 @@ struct pid *alloc_pid(struct pid_namespa
- 
- 	tmp = ns;
- 	for (i = ns->level; i >= 0; i--) {
--		nr = alloc_pidmap(tmp);
-+		nr = alloc_pidmap(tmp, next_pid);
- 		if (nr < 0)
- 			goto out_free;
- 
-+		/* The next_pid is only applicable for the ns namespace, not
-+		 * its parents.
-+		 */
-+		next_pid = 0;
-+
- 		pid->numbers[i].nr = nr;
- 		pid->numbers[i].ns = tmp;
- 		tmp = tmp->parent;
-
-
-
-
-
-Well, that's how we do it but I'm not against your patch. It fits our need also. 
-It's just a bit intrusive for the pid bitmap. if we mix both path, we get something
-like this fake patch, which is a bit less intrusive IMO. not tested though.
-
- 
-
-@@ -122,12 +122,12 @@ static void free_pidmap(struct upid *upi
- 	atomic_inc(&map->nr_free);
- }
- 
--static int alloc_pidmap(struct pid_namespace *pid_ns)
-+static int alloc_pidmap(struct pid_namespace *pid_ns, pid_t upid)
- {
- 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
- 	struct pidmap *map;
- 
--	pid = last + 1;
-+	pid = upid ? upid : last + 1;
- 	if (pid >= pid_max)
- 		pid = RESERVED_PIDS;
- 	offset = pid & BITS_PER_PAGE_MASK;
-
-
-@@ -239,7 +267,7 @@ void free_pid(struct pid *pid)
- 	call_rcu(&pid->rcu, delayed_put_pid);
- }
- 
--struct pid *alloc_pid(struct pid_namespace *ns)
-+struct pid *alloc_pid(struct pid_namespace *ns, int *cr_nr, unsigned int cr_level)
- {
- 	struct pid *pid;
- 	enum pid_type type;
-@@ -253,7 +281,10 @@ struct pid *alloc_pid(struct pid_namespace *ns)
- 
- 	tmp = ns;
- 	for (i = ns->level; i >= 0; i--) {
--		nr = alloc_pidmap(tmp);
-+		if (cr_nr && ns->level - i <= cr_level)
-+			nr = alloc_pidmap(tmp, cr_nr[ns->level - i]);
-+			if (nr != cr_nr[ns->level - i])
-+				return -EBUSY;
-+		else
-+			nr = alloc_pidmap(tmp);
- 		if (nr < 0)
- 			goto out_free;
- 
