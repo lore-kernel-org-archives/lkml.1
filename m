@@ -1,239 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZCKJio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbZCKJrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbZCKJio (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 05:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbZCKJid
+	id S1753623AbZCKJrU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 05:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZCKJrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 05:38:33 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:61145 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754345AbZCKJic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 05:38:32 -0400
-Message-ID: <49B7863F.6020804@cn.fujitsu.com>
-Date: Wed, 11 Mar 2009 17:37:03 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@osdl.org>, Steven Rostedt <srostedt@redhat.com>,
+	Wed, 11 Mar 2009 05:47:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36737 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751947AbZCKJrJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 05:47:09 -0400
+Date: Wed, 11 Mar 2009 10:46:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@osdl.org>,
+       Steven Rostedt <srostedt@redhat.com>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] kallsyms, tracing: output more proper symbol name
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] kallsyms, tracing: output more proper symbol name
+Message-ID: <20090311094621.GA13543@elte.hu>
+References: <49B7863F.6020804@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49B7863F.6020804@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: bugfix, output reliable result
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-Debug tools(dump_stack(), ftrace...) are like to print out symbols.
-But it is always print out the first aliased symbol.(Aliased symbols
-are symbols with the same address), and the first aliased symbol is
-sometime not proper.
+> +#define VMLINUX_SYMBOL(_sym_) #_sym_
+> +
+> +static const char *hide_symbols[] = {
+> +	/* misc symbols */
+> +	"_text",
+> +	"_stext",
+> +	"_etext",
+> +	"_sinittext",
+> +	"_einittext",
+> +
+> +	/* symbols from include/asm-generic/vmlinux.lds.h */
+> +	VMLINUX_SYMBOL(__start_mcount_loc),
+> +	VMLINUX_SYMBOL(__stop_mcount_loc),
+> +	VMLINUX_SYMBOL(__start_annotated_branch_profile),
+> +	VMLINUX_SYMBOL(__stop_annotated_branch_profile),
+> +	VMLINUX_SYMBOL(__start_branch_profile),
+> +	VMLINUX_SYMBOL(__stop_branch_profile),
+> +	VMLINUX_SYMBOL(__start___markers),
+> +	VMLINUX_SYMBOL(__stop___markers),
+> +	VMLINUX_SYMBOL(__start___tracepoints),
+> +	VMLINUX_SYMBOL(__stop___tracepoints),
+> +	VMLINUX_SYMBOL(__start_rodata),
+> +	VMLINUX_SYMBOL(__start_pci_fixups_early),
+> +	VMLINUX_SYMBOL(__end_pci_fixups_early),
+> +	VMLINUX_SYMBOL(__start_pci_fixups_header),
+> +	VMLINUX_SYMBOL(__end_pci_fixups_header),
+> +	VMLINUX_SYMBOL(__start_pci_fixups_final),
+> +	VMLINUX_SYMBOL(__end_pci_fixups_final),
+> +	VMLINUX_SYMBOL(__start_pci_fixups_enable),
+> +	VMLINUX_SYMBOL(__end_pci_fixups_enable),
+> +	VMLINUX_SYMBOL(__start_pci_fixups_resume),
+> +	VMLINUX_SYMBOL(__end_pci_fixups_resume),
+> +	VMLINUX_SYMBOL(__start_pci_fixups_resume_early),
+> +	VMLINUX_SYMBOL(__end_pci_fixups_resume_early),
+> +	VMLINUX_SYMBOL(__start_pci_fixups_suspend),
+> +	VMLINUX_SYMBOL(__end_pci_fixups_suspend),
+> +	VMLINUX_SYMBOL(__start_builtin_fw),
+> +	VMLINUX_SYMBOL(__end_builtin_fw),
+> +	VMLINUX_SYMBOL(__start_rio_route_ops),
+> +	VMLINUX_SYMBOL(__end_rio_route_ops),
+> +	VMLINUX_SYMBOL(__start___ksymtab),
+> +	VMLINUX_SYMBOL(__stop___ksymtab),
+> +	VMLINUX_SYMBOL(__start___ksymtab_gpl),
+> +	VMLINUX_SYMBOL(__stop___ksymtab_gpl),
+> +	VMLINUX_SYMBOL(__start___ksymtab_unused),
+> +	VMLINUX_SYMBOL(__stop___ksymtab_unused),
+> +	VMLINUX_SYMBOL(__start___ksymtab_unused_gpl),
+> +	VMLINUX_SYMBOL(__stop___ksymtab_unused_gpl),
+> +	VMLINUX_SYMBOL(__start___ksymtab_gpl_future),
+> +	VMLINUX_SYMBOL(__stop___ksymtab_gpl_future),
+> +	VMLINUX_SYMBOL(__start___kcrctab),
+> +	VMLINUX_SYMBOL(__stop___kcrctab),
+> +	VMLINUX_SYMBOL(__start___kcrctab_gpl),
+> +	VMLINUX_SYMBOL(__stop___kcrctab_gpl),
+> +	VMLINUX_SYMBOL(__start___kcrctab_unused),
+> +	VMLINUX_SYMBOL(__stop___kcrctab_unused),
+> +	VMLINUX_SYMBOL(__start___kcrctab_unused_gpl),
+> +	VMLINUX_SYMBOL(__stop___kcrctab_unused_gpl),
+> +	VMLINUX_SYMBOL(__start___kcrctab_gpl_future),
+> +	VMLINUX_SYMBOL(__stop___kcrctab_gpl_future),
+> +	VMLINUX_SYMBOL(__start___param),
+> +	VMLINUX_SYMBOL(__stop___param),
+> +	VMLINUX_SYMBOL(__end_rodata),
+> +	VMLINUX_SYMBOL(__security_initcall_start),
+> +	VMLINUX_SYMBOL(__security_initcall_end),
+> +	VMLINUX_SYMBOL(__sched_text_start),
+> +	VMLINUX_SYMBOL(__sched_text_end),
+> +	VMLINUX_SYMBOL(__lock_text_start),
+> +	VMLINUX_SYMBOL(__lock_text_end),
+> +	VMLINUX_SYMBOL(__kprobes_text_start),
+> +	VMLINUX_SYMBOL(__kprobes_text_end),
+> +	VMLINUX_SYMBOL(__irqentry_text_start),
+> +	VMLINUX_SYMBOL(__irqentry_text_end),
+> +	VMLINUX_SYMBOL(__start___verbose_strings),
+> +	VMLINUX_SYMBOL(__stop___verbose_strings),
+> +	VMLINUX_SYMBOL(__start___verbose),
+> +	VMLINUX_SYMBOL(__stop___verbose),
+> +	VMLINUX_SYMBOL(__start___bug_table),
+> +	VMLINUX_SYMBOL(__stop___bug_table),
+> +	VMLINUX_SYMBOL(__tracedata_start),
+> +	VMLINUX_SYMBOL(__tracedata_end),
+> +	VMLINUX_SYMBOL(__start_notes),
+> +	VMLINUX_SYMBOL(__stop_notes),
+> +	VMLINUX_SYMBOL(__early_initcall_end),
+> +	VMLINUX_SYMBOL(__per_cpu_start),
+> +	VMLINUX_SYMBOL(__per_cpu_end)
+> +};
 
-# echo function_graph > current_tracer
-# cat trace
-......
- 1)   1.923 us    |    select_nohz_load_balancer();
- 1) + 76.692 us   |  }
- 1)               |  default_idle() {
- 1)   ==========> |    __irqentry_text_start() {
- 1)   0.000 us    |      native_apic_mem_write();
- 1)               |      irq_enter() {
- 1)   0.000 us    |        idle_cpu();
- 1)               |        tick_check_idle() {
- 1)   0.000 us    |          tick_check_oneshot_broadcast();
- 1)               |          tick_nohz_stop_idle() {
-......
+I like how you try to solve this at symbol table generation 
+time.
 
-It's very embarrassing, it ouputs "__irqentry_text_start()",
-*actually, it should output "smp_apic_timer_interrupt()"*.
-(these two symbol are the same address, but "__irqentry_text_start"
-is deemed to the first aliased symbol by scripts/kallsyms)
+Instead of this hardcoded table, couldnt we use some more 
+flexible and more future-proof method? Such as ordering 
+same-address symbols by underscores:
 
-This patch puts symbols like "__irqentry_text_start" to the second
-aliased symbols. And a more proper symbol name becomes the first.
+  [same address]
 
-A table is added in scripts/kallsyms.c, and the symbols in this table
-have lower priority than other symbols(which are the same address).
+  non-underscore symbols first        XYZ
+  single-undescroe symbols second     _XYZ
+  double-underscore symbols third     __XYZ
 
-This table is statically defined in scripts/kallsyms.c, is not
-automatically generated by a script when kernel is being built.
-It's for these reasons:
-	This table is(will be) updated very infrequently.
-	This table is short.
-	I don't want to add complexity to kernel-building
+that way the scheme would be more or less self-maintaining as an 
+underscore already carries a "this is a special, internal 
+symbol" notion.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
-index ad2434b..96717dd 100644
---- a/scripts/kallsyms.c
-+++ b/scripts/kallsyms.c
-@@ -500,11 +500,14 @@ static void optimize_token_table(void)
- 	optimize_result();
- }
- 
-+static void prepare_hide_symbols(void);
-+static int is_hide_symbol(const char *symbol);
-+
- static int compare_symbols(const void *a, const void *b)
- {
- 	const struct sym_entry *sa;
- 	const struct sym_entry *sb;
--	int wa, wb;
-+	int wa, wb, ha, hb;
- 
- 	sa = a;
- 	sb = b;
-@@ -521,12 +524,18 @@ static int compare_symbols(const void *a, const void *b)
- 	if (wa != wb)
- 		return wa - wb;
- 
-+	ha = is_hide_symbol((char *)sa->sym + 1);
-+	hb = is_hide_symbol((char *)sb->sym + 1);
-+	if (ha != hb)
-+		return ha - hb;
-+
- 	/* sort by initial order, so that other symbols are left undisturbed */
- 	return sa->start_pos - sb->start_pos;
- }
- 
- static void sort_symbols(void)
- {
-+	prepare_hide_symbols();
- 	qsort(table, table_cnt, sizeof(struct sym_entry), compare_symbols);
- }
- 
-@@ -556,3 +565,125 @@ int main(int argc, char **argv)
- 
- 	return 0;
- }
-+
-+#define VMLINUX_SYMBOL(_sym_) #_sym_
-+
-+static const char *hide_symbols[] = {
-+	/* misc symbols */
-+	"_text",
-+	"_stext",
-+	"_etext",
-+	"_sinittext",
-+	"_einittext",
-+
-+	/* symbols from include/asm-generic/vmlinux.lds.h */
-+	VMLINUX_SYMBOL(__start_mcount_loc),
-+	VMLINUX_SYMBOL(__stop_mcount_loc),
-+	VMLINUX_SYMBOL(__start_annotated_branch_profile),
-+	VMLINUX_SYMBOL(__stop_annotated_branch_profile),
-+	VMLINUX_SYMBOL(__start_branch_profile),
-+	VMLINUX_SYMBOL(__stop_branch_profile),
-+	VMLINUX_SYMBOL(__start___markers),
-+	VMLINUX_SYMBOL(__stop___markers),
-+	VMLINUX_SYMBOL(__start___tracepoints),
-+	VMLINUX_SYMBOL(__stop___tracepoints),
-+	VMLINUX_SYMBOL(__start_rodata),
-+	VMLINUX_SYMBOL(__start_pci_fixups_early),
-+	VMLINUX_SYMBOL(__end_pci_fixups_early),
-+	VMLINUX_SYMBOL(__start_pci_fixups_header),
-+	VMLINUX_SYMBOL(__end_pci_fixups_header),
-+	VMLINUX_SYMBOL(__start_pci_fixups_final),
-+	VMLINUX_SYMBOL(__end_pci_fixups_final),
-+	VMLINUX_SYMBOL(__start_pci_fixups_enable),
-+	VMLINUX_SYMBOL(__end_pci_fixups_enable),
-+	VMLINUX_SYMBOL(__start_pci_fixups_resume),
-+	VMLINUX_SYMBOL(__end_pci_fixups_resume),
-+	VMLINUX_SYMBOL(__start_pci_fixups_resume_early),
-+	VMLINUX_SYMBOL(__end_pci_fixups_resume_early),
-+	VMLINUX_SYMBOL(__start_pci_fixups_suspend),
-+	VMLINUX_SYMBOL(__end_pci_fixups_suspend),
-+	VMLINUX_SYMBOL(__start_builtin_fw),
-+	VMLINUX_SYMBOL(__end_builtin_fw),
-+	VMLINUX_SYMBOL(__start_rio_route_ops),
-+	VMLINUX_SYMBOL(__end_rio_route_ops),
-+	VMLINUX_SYMBOL(__start___ksymtab),
-+	VMLINUX_SYMBOL(__stop___ksymtab),
-+	VMLINUX_SYMBOL(__start___ksymtab_gpl),
-+	VMLINUX_SYMBOL(__stop___ksymtab_gpl),
-+	VMLINUX_SYMBOL(__start___ksymtab_unused),
-+	VMLINUX_SYMBOL(__stop___ksymtab_unused),
-+	VMLINUX_SYMBOL(__start___ksymtab_unused_gpl),
-+	VMLINUX_SYMBOL(__stop___ksymtab_unused_gpl),
-+	VMLINUX_SYMBOL(__start___ksymtab_gpl_future),
-+	VMLINUX_SYMBOL(__stop___ksymtab_gpl_future),
-+	VMLINUX_SYMBOL(__start___kcrctab),
-+	VMLINUX_SYMBOL(__stop___kcrctab),
-+	VMLINUX_SYMBOL(__start___kcrctab_gpl),
-+	VMLINUX_SYMBOL(__stop___kcrctab_gpl),
-+	VMLINUX_SYMBOL(__start___kcrctab_unused),
-+	VMLINUX_SYMBOL(__stop___kcrctab_unused),
-+	VMLINUX_SYMBOL(__start___kcrctab_unused_gpl),
-+	VMLINUX_SYMBOL(__stop___kcrctab_unused_gpl),
-+	VMLINUX_SYMBOL(__start___kcrctab_gpl_future),
-+	VMLINUX_SYMBOL(__stop___kcrctab_gpl_future),
-+	VMLINUX_SYMBOL(__start___param),
-+	VMLINUX_SYMBOL(__stop___param),
-+	VMLINUX_SYMBOL(__end_rodata),
-+	VMLINUX_SYMBOL(__security_initcall_start),
-+	VMLINUX_SYMBOL(__security_initcall_end),
-+	VMLINUX_SYMBOL(__sched_text_start),
-+	VMLINUX_SYMBOL(__sched_text_end),
-+	VMLINUX_SYMBOL(__lock_text_start),
-+	VMLINUX_SYMBOL(__lock_text_end),
-+	VMLINUX_SYMBOL(__kprobes_text_start),
-+	VMLINUX_SYMBOL(__kprobes_text_end),
-+	VMLINUX_SYMBOL(__irqentry_text_start),
-+	VMLINUX_SYMBOL(__irqentry_text_end),
-+	VMLINUX_SYMBOL(__start___verbose_strings),
-+	VMLINUX_SYMBOL(__stop___verbose_strings),
-+	VMLINUX_SYMBOL(__start___verbose),
-+	VMLINUX_SYMBOL(__stop___verbose),
-+	VMLINUX_SYMBOL(__start___bug_table),
-+	VMLINUX_SYMBOL(__stop___bug_table),
-+	VMLINUX_SYMBOL(__tracedata_start),
-+	VMLINUX_SYMBOL(__tracedata_end),
-+	VMLINUX_SYMBOL(__start_notes),
-+	VMLINUX_SYMBOL(__stop_notes),
-+	VMLINUX_SYMBOL(__early_initcall_end),
-+	VMLINUX_SYMBOL(__per_cpu_start),
-+	VMLINUX_SYMBOL(__per_cpu_end)
-+};
-+
-+
-+static int cmp_str(const void *p1, const void *p2)
-+{
-+	const char *str1 = *(const char * const *)p1;
-+	const char *str2 = *(const char * const *)p2;
-+
-+	return strcmp(str1, str2);
-+}
-+
-+static void prepare_hide_symbols(void)
-+{
-+	qsort(hide_symbols, sizeof(hide_symbols) / sizeof(hide_symbols[0]),
-+			sizeof(hide_symbols[0]), cmp_str);
-+}
-+
-+static int is_hide_symbol(const char *symbol)
-+{
-+	int low = 0;
-+	int high = sizeof(hide_symbols) / sizeof(hide_symbols[0]);
-+
-+	while (high - low > 0) {
-+		int mid = low + (high - low) / 2;
-+		int eq = strcmp(hide_symbols[mid], symbol);
-+		if (eq == 0)
-+			return 1;
-+		else if (eq < 0)
-+			low = mid + 1;
-+		else
-+			high = mid;
-+	}
-+	return 0;
-+}
-+
-
-
-
-
+	Ingo
