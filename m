@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZCKSaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZCKSci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755392AbZCKSaq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 14:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZCKSae
+	id S1755465AbZCKSci (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 14:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZCKSc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 14:30:34 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:33233 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753745AbZCKSad (ORCPT
+	Wed, 11 Mar 2009 14:32:29 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64233 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753425AbZCKSc2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 14:30:33 -0400
-Date: Wed, 11 Mar 2009 14:19:36 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Gabor Juhos <juhosg@openwrt.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: linux-next: Tree for March 6 (ath9k)
-Message-ID: <20090311181935.GD8761@tuxdriver.com>
-References: <20090306191311.697e7b97.sfr@canb.auug.org.au> <49B17320.8010000@oracle.com> <49B17B12.3050200@openwrt.org> <49B17C4E.3000004@oracle.com> <20090306194045.GE3712@tuxdriver.com> <49B7F2B0.1000702@oracle.com>
+	Wed, 11 Mar 2009 14:32:28 -0400
+Date: Wed, 11 Mar 2009 14:32:25 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] tracing: use raw spinlocks for trace_vprintk
+In-Reply-To: <20090311182656.GA23739@elte.hu>
+Message-ID: <alpine.DEB.2.00.0903111431080.3062@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0903102125250.16494@gandalf.stny.rr.com> <1236754764.22914.3680.camel@twins> <20090311182656.GA23739@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49B7F2B0.1000702@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 10:19:44AM -0700, Randy Dunlap wrote:
-> John W. Linville wrote:
-> > On Fri, Mar 06, 2009 at 11:41:02AM -0800, Randy Dunlap wrote:
-> >> Gabor Juhos wrote:
-> >>> Randy Dunlap írta:
-> >>>> Stephen Rothwell wrote:
-> >>>>> Hi all,
-> >>>>>
-> >>>>> Linus' release of -rc7 seems to have stirred people up a bit ...
-> >>>>>
-> >>>>> Changes since 20090305:
-> >>>> when CONFIG_RFKILL=n, ath9k/virtual.c causes:
-> >>>>
-> >>>> (.text+0x224e83): undefined reference to `ath_radio_disable'
-> >>>> (.text+0x224e8b): undefined reference to `ath_radio_enable'
-> >>>>
-> >>>>
-> >>> Hi,
-> >>>
-> >>> I have submitted a patch for this already:
-> >>> http://marc.info/?l=linux-wireless&m=123633468314970&w=2
-> >>>
-> >>> Should I send it to somewhere else as well?
-> >> It hasn't propagated into the linux-next merging yet...
-> > 
-> > He just sent it today (or overnight).  I'll get it into wireless-next.
-> > 
-> > John
-> > 
-> > P.S.  I'm starting to think that RFKILL should just be mandatory...
-> 
-> 
-> This build error still happens in linux-next-20090311.
 
-That fix is in wireless-next-2.6 as of yesterday.  I guess it was a
-little too late for yesterday's linux-next build -- sorry!
+On Wed, 11 Mar 2009, Ingo Molnar wrote:
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+> 
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Tue, 2009-03-10 at 21:26 -0400, Steven Rostedt wrote:
+> > 
+> > > commit 80370cb758e7ca2692cd9fb5e413d970b1f4b2b2
+> > > Author: Steven Rostedt <srostedt@redhat.com>
+> > > Date:   Tue Mar 10 17:16:35 2009 -0400
+> > > 
+> > >     tracing: use raw spinlocks for trace_vprintk
+> > >     
+> > >     Impact: prevent locking up by lockdep tracer
+> > >     
+> > >     The lockdep tracer uses trace_vprintk and thus trace_vprintk can not
+> > >     call back into lockdep without locking up.
+> > 
+> > Hmm, I did this when I posted the lockdep tracepoints, so someone then
+> > did a bad copy/paste job when renaming ftrace_printk or something?
+> > 
+> > See efed792d6738964f399a508ef9e831cd60fa4657
+> 
+> What's the conclusion in this thread? I'm holding the pull 
+> until there's agreement.
+
+I believe the conclusion is that Peter's changes got removed when Frederic 
+removed the old printk version. But his new version did not have the 
+changes.
+
+My changes are basically the same as Peter's except that I did not do 
+anything with the local_irq_save, since I do not think those are needed.
+
+Peter,
+
+Are you fine with the change? I guess it's up to you now.
+
+-- Steve
+
