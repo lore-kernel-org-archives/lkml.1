@@ -1,88 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754408AbZCKOzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbZCKOzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754408AbZCKOzf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 10:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbZCKOz0
+	id S1755525AbZCKOzu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 10:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbZCKOz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 10:55:26 -0400
-Received: from mx1.auerswald.de ([212.185.163.234]:2421 "EHLO
-	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751623AbZCKOz0 convert rfc822-to-8bit (ORCPT
+	Wed, 11 Mar 2009 10:55:29 -0400
+Received: from hawking.rebel.net.au ([203.20.69.83]:42646 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752811AbZCKOz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 10:55:26 -0400
-From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Organization: Auerswald GmbH & Co. KG
-To: "Matt Fleming" <matt@console-pimps.org>
-Subject: Re: [PATCH 5/7] mmc_spi: allow higher timeouts for SPI mode
-Date: Wed, 11 Mar 2009 15:55:00 +0100
-User-Agent: KMail/1.9.10
-Cc: "Pierre Ossman" <drzeus@drzeus.cx>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-References: <20090311140219.GA1475@console-pimps.org>
-In-Reply-To: <20090311140219.GA1475@console-pimps.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200903111555.00982.wolfgang.mues@auerswald.de>
+	Wed, 11 Mar 2009 10:55:28 -0400
+Message-ID: <49B7D0D5.9070001@davidnewall.com>
+Date: Thu, 12 Mar 2009 01:25:17 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=_hawking.rebel.net.au-9018-1236783324-0001-2"
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] make dequeue_task less confusing
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt,
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Am Mittwoch, 11. März 2009 schrieb Matt Fleming:
-> I am correct in thinking that this patch, in conjuction with your other
-> patch, "[PATCH 6/7] mmc_spi: convert timeout handling to jiffies and avoid
-> busy waiting", will now penalize my working card and mandate a timeout
-> of 1 second?
->
-> Without your patch 6 at least mmc_spi_skip() would busy-wait for the
-> response, and if my card completed in less than 1 second then it'd just
-> return quicker.
->
-> It seems you've introduced a performance hit on all MMC over SPI cards.
+--=_hawking.rebel.net.au-9018-1236783324-0001-2
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 
-No.
+The dequeue_patch function in kernel/sched.c is complicated by including
+a sleep parameter.  This parameter is always zero except in one
+instance.  This patch clarifies the task of dequeue_patch by removing
+the sleep parameter and moving the code that handles non-zero sleep to
+that one place where it is needed.
 
-A timeout is a maximum time to wait, not a minimum time.
-Waiting is terminated by a response or by the timeout, whichever comes sooner.
+--=_hawking.rebel.net.au-9018-1236783324-0001-2
+Content-Type: text/x-patch; name="sched.patch"; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="sched.patch"
 
-My patch 6 in mmc_spi_skip() is doing a busy-wait for a short while ( less 
-than 1 jiffie), and starts to call schedule() inside the loop if the card is 
-slower.
+--- linux-2.6.27.19/kernel/sched.c	2009-02-21 09:09:34.000000000 +1030
++++ linux-2.6.27.19/kernel/sched.c.dn	2009-03-12 01:01:48.000000000 +1030
+@@ -1645,16 +1645,10 @@
+ 	p->se.on_rq = 1;
+ }
+ 
+-static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
++static void dequeue_task(struct rq *rq, struct task_struct *p)
+ {
+-	if (sleep && p->se.last_wakeup) {
+-		update_avg(&p->se.avg_overlap,
+-			   p->se.sum_exec_runtime - p->se.last_wakeup);
+-		p->se.last_wakeup = 0;
+-	}
+-
+ 	sched_info_dequeued(p);
+-	p->sched_class->dequeue_task(rq, p, sleep);
++	p->sched_class->dequeue_task(rq, p, 0);
+ 	p->se.on_rq = 0;
+ }
+ 
+@@ -1724,7 +1718,17 @@
+ 	if (task_contributes_to_load(p))
+ 		rq->nr_uninterruptible++;
+ 
+-	dequeue_task(rq, p, sleep);
++	if (sleep && p->se.last_wakeup) {
++		update_avg(&p->se.avg_overlap,
++			   p->se.sum_exec_runtime - p->se.last_wakeup);
++		p->se.last_wakeup = 0;
++	}
++
++	/*dequeue_task(rq, p, sleep);*/
++	sched_info_dequeued(p);
++	p->sched_class->dequeue_task(rq, p, sleep);
++	p->se.on_rq = 0;
++
+ 	dec_nr_running(rq);
+ }
+ 
+@@ -4848,7 +4852,7 @@
+ 	on_rq = p->se.on_rq;
+ 	running = task_current(rq, p);
+ 	if (on_rq)
+-		dequeue_task(rq, p, 0);
++		dequeue_task(rq, p);
+ 	if (running)
+ 		p->sched_class->put_prev_task(rq, p);
+ 
+@@ -4897,7 +4901,7 @@
+ 	}
+ 	on_rq = p->se.on_rq;
+ 	if (on_rq)
+-		dequeue_task(rq, p, 0);
++		dequeue_task(rq, p);
+ 
+ 	p->static_prio = NICE_TO_PRIO(nice);
+ 	set_load_weight(p);
+@@ -8637,7 +8641,7 @@
+ 	on_rq = tsk->se.on_rq;
+ 
+ 	if (on_rq)
+-		dequeue_task(rq, tsk, 0);
++		dequeue_task(rq, tsk);
+ 	if (unlikely(running))
+ 		tsk->sched_class->put_prev_task(rq, tsk);
+ 
 
-My goal was to avoid the long-lasting busy waiting. I have measured times up 
-to 900ms! With my patch, the longest busy waiting will be 1 jiffie. 
-
-And yes, if the SD card is sending its response after 5 jiffies, it is 
-recognized only after the scheduler schedules this process, which will incure 
-a delay to the data transfer. The amount of delay is determined by the number 
-of running processes and the number of HZ.
-
-The typical case for this is a series of data block writes to the SD card. 
-Until the internal card buffers are full, such writes will be acknowledged by 
-a fast response. But if the card buffers are full, you will get one long 
-delay until the card controller has written most of the pending data to 
-flash.
-
-best regards
- 
-i. A. Wolfgang Mües
--- 
-Auerswald GmbH & Co. KG
-Hardware Development
-Telefon: +49 (0)5306 9219 0
-Telefax: +49 (0)5306 9219 94 
-E-Mail: Wolfgang.Mues@Auerswald.de
-Web: http://www.auerswald.de
- 
---------------------------------------------------------------
-Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
-Registriert beim AG Braunschweig HRA 13289
-p.h.G Auerswald Geschäftsführungsges. mbH
-Registriert beim AG Braunschweig HRB 7463
-Geschäftsführer: Dipl-Ing. Gerhard Auerswald
+--=_hawking.rebel.net.au-9018-1236783324-0001-2--
