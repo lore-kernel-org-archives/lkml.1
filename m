@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbZCKJd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbZCKJiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754380AbZCKJd5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 05:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZCKJdt
+	id S1753598AbZCKJiT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 05:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZCKJiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 05:33:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44713 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752527AbZCKJds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 05:33:48 -0400
-Date: Wed, 11 Mar 2009 10:33:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Hellstrom <thellstrom@vmware.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: 2.6.29 pat issue
-Message-ID: <20090311093338.GC12814@elte.hu>
-References: <1233856988.4286.83.camel@localhost.localdomain> <498B5ADE.3090602@vmware.com> <m1tz78pdwy.fsf@fess.ebiederm.org> <498C062C.201@vmware.com> <20090304060857.GA18318@linux-os.sc.intel.com> <130CA3A191875048A0624FB523A55EC7075DA7CA@PA-EXMBX51.vmware.com> <20090310013953.GA11312@linux-os.sc.intel.com> <49B6232B.4050503@vmware.com> <1236706959.4529.56.camel@localhost.localdomain> <49B781B6.3060704@vmware.com>
+	Wed, 11 Mar 2009 05:38:03 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:53174 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751947AbZCKJiD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 05:38:03 -0400
+Date: Wed, 11 Mar 2009 10:37:58 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+In-Reply-To: <1236729444.7086.24.camel@pasglop>
+Message-ID: <alpine.LRH.2.00.0903111028480.1040@vixen.sonytel.be>
+References: <1236729444.7086.24.camel@pasglop>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B781B6.3060704@vmware.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 11 Mar 2009, Benjamin Herrenschmidt wrote:
+> Here are some late fixes for 2.6.29. I've included a radeonfb/aty128fb commit
 
-* Thomas Hellstrom <thellstrom@vmware.com> wrote:
+Will you also take care of the new ps3vram driver, which has been ack'ed by
+Jens for 2.6.29?
+Or do you prefer it to go in by email through Geoff (as PS3 maintainer), or
+from me directly?
 
-> Pallipadi, Venkatesh wrote:
->> On Tue, 2009-03-10 at 01:22 -0700, Thomas Hellstrom wrote:
->>   
->>> Pallipadi, Venkatesh wrote:
->>>     
->>>> On Fri, Mar 06, 2009 at 03:44:07PM -0800, Thomas Hellstrom wrote:
->>>>         
->>>>> We get the warning when we insert RAM pages using vm_insert_pfn().
->>>>> Having normal RAM pages backing a PFN papping is a valid thing.
->>>>>
->>>>>             
->>>> OK. Below is the updated patch that should fix this fully. Can you confirm?
->>>>
->>>> Thanks,
->>>> Venki
->>>>
->>>>         
->>> Yes, this patch should fix the problem. I'm still concerned about the 
->>> overhead of going through the
->>> RAM test for each inserted page.
->>>
->>> Why can't a pfn_valid() test be used in vm_insert_pfn()?
->>>
->>>     
->>
->> Because we may have to track the RAM pages as well in future. We are
->> changing the e820 RAM check and making it use pfn_valid. But, for that
->> we have to change more things in tracking of RAM pages. Today we use one
->> bit in page struct without any refcounting. But, more changes there are
->> on ts way. This change here should keep the current kernel fine without
->> any regression.
->>
->> Thanks,
->> Venki
->>
->>   
-> Ok, I understand.
-> and yes, the regression should be fixed with the patch.
+Thanks!
 
-Good. Venki, mind resending the patch against tip:master, with a 
-proper subject line, changelog and Acked-by in place? Thanks,
+With kind regards,
 
-	Ingo
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
