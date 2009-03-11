@@ -1,88 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZCKGzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbZCKHAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbZCKGzj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 02:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZCKGza
+	id S1753391AbZCKHAO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 03:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZCKG77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 02:55:30 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:48643 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751700AbZCKGz3 (ORCPT
+	Wed, 11 Mar 2009 02:59:59 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36785 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962AbZCKG76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 02:55:29 -0400
-Message-ID: <49B7605A.7000604@snapgear.com>
-Date: Wed, 11 Mar 2009 16:55:22 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for March 10 (m68k/tlbflush.h)
-References: <10f740e80903101307v70000e0cm61e261050411a715@mail.gmail.com>
-In-Reply-To: <10f740e80903101307v70000e0cm61e261050411a715@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 11 Mar 2009 02:59:58 -0400
+Subject: Re: [GIT PULL] tracing: use raw spinlocks for trace_vprintk
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0903102125250.16494@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0903102125250.16494@gandalf.stny.rr.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 11 Mar 2009 07:59:24 +0100
+Message-Id: <1236754764.22914.3680.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Geert,
+On Tue, 2009-03-10 at 21:26 -0400, Steven Rostedt wrote:
 
-Geert Uytterhoeven wrote:
-> Hi Greg,
+> commit 80370cb758e7ca2692cd9fb5e413d970b1f4b2b2
+> Author: Steven Rostedt <srostedt@redhat.com>
+> Date:   Tue Mar 10 17:16:35 2009 -0400
 > 
-> http://kisskb.ellerman.id.au/kisskb/buildresult/180587/
-> | arch/m68k/kernel/traps.c:274: error: implicit declaration of
-> function '__flush_tlb040_one'
-> 
-> http://kisskb.ellerman.id.au/kisskb/buildresult/180591/
-> | mm/vmalloc.c:555: error: implicit declaration of function
-> 'flush_tlb_kernel_range'
-> 
-> Caused by:
-> 
-> | commit 7fa69761ea82752b97502383f7f2d3fdfa509115
-> | Author: Greg Ungerer <gerg@uclinux.org>
-> | Date:   Tue Feb 17 14:40:47 2009 +1000
-> |
-> |     m68k: merge the mmu and non-mmu versions of tlbflush.h
-> |
-> |     Simple merge of the mmu and non-mmu versions of tlbflush.h
-> |
-> |     Signed-off-by: Greg Ungerer <gerg@uclinux.org>
-> 
-> Seems like you merged the wrong way:
-> 
-> | diff --git a/arch/m68k/include/asm/tlbflush.h
-> b/arch/m68k/include/asm/tlbflush.h
-> | index b6f93b3..79050d0 100644
-> | --- a/arch/m68k/include/asm/tlbflush.h
-> | +++ b/arch/m68k/include/asm/tlbflush.h
-> | @@ -1,5 +1,267 @@
-> | -#ifdef __uClinux__
-> | -#include "tlbflush_no.h"
-> | +#ifndef _M68K_TLBFLUSH_H
-> | +#define _M68K_TLBFLUSH_H
-> | +
-> | +#ifndef CONFIG_MMU
->     ^^^^^
->     ifdef
-> 
-> | +#ifndef CONFIG_SUN3
+>     tracing: use raw spinlocks for trace_vprintk
+>     
+>     Impact: prevent locking up by lockdep tracer
+>     
+>     The lockdep tracer uses trace_vprintk and thus trace_vprintk can not
+>     call back into lockdep without locking up.
 
-Yep, your absolutely right. Oddly enough it didn't stop non-mmu
-builds from compiling or working...
+Hmm, I did this when I posted the lockdep tracepoints, so someone then
+did a bad copy/paste job when renaming ftrace_printk or something?
 
-I have fixed that patch, and pushed it into the m68knommu git
-tree (for-next branch).
+See efed792d6738964f399a508ef9e831cd60fa4657
 
-Thanks
-Greg
+>     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> 
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 8c6a902..4c97947 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -1176,7 +1176,8 @@ void trace_graph_return(struct ftrace_graph_ret *trace)
+>   */
+>  int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+>  {
+> -	static DEFINE_SPINLOCK(trace_buf_lock);
+> +	static raw_spinlock_t trace_buf_lock =
+> +		(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
+>  	static u32 trace_buf[TRACE_BUF_SIZE];
+>  
+>  	struct ring_buffer_event *event;
+> @@ -1201,7 +1202,9 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+>  	if (unlikely(atomic_read(&data->disabled)))
+>  		goto out;
+>  
+> -	spin_lock_irqsave(&trace_buf_lock, flags);
+> +	/* Lockdep uses trace_printk for lock tracing */
+> +	local_irq_save(flags);
 
+Shouldn't you also use raw_local_irq_save() and friends?
 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+> +	__raw_spin_lock(&trace_buf_lock);
+>  	len = vbin_printf(trace_buf, TRACE_BUF_SIZE, fmt, args);
+>  
+>  	if (len > TRACE_BUF_SIZE || len < 0)
+> @@ -1220,7 +1223,8 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+>  	ring_buffer_unlock_commit(tr->buffer, event);
+>  
+>  out_unlock:
+> -	spin_unlock_irqrestore(&trace_buf_lock, flags);
+> +	__raw_spin_unlock(&trace_buf_lock);
+> +	local_irq_restore(flags);
+>  
+>  out:
+>  	ftrace_preempt_enable(resched);
+> 
