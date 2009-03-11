@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZCKSyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbZCKS74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbZCKSyH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 14:54:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZCKSxz
+	id S1753356AbZCKS74 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 14:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbZCKS7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 14:53:55 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:49313 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751698AbZCKSxy (ORCPT
+	Wed, 11 Mar 2009 14:59:47 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46538 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbZCKS7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 14:53:54 -0400
-Subject: Re: [PATCH 00/13] convert voyager over to the x86 quirks model
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@linux.intel.com>
-In-Reply-To: <49B7F42C.40006@zytor.com>
-References: <1236530906-7175-1-git-send-email-James.Bottomley@HansenPartnership.com>
-	 <20090310223733.GA4016@elte.hu>
-	 <1236786082.3270.20.camel@localhost.localdomain> <49B7F42C.40006@zytor.com>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 18:53:48 +0000
-Message-Id: <1236797629.3270.67.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Mar 2009 14:59:46 -0400
+Date: Wed, 11 Mar 2009 14:59:42 -0400
+From: Kyle McMartin <kyle@infradead.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Kyle McMartin <kyle@infradead.org>, linux-kernel@vger.kernel.org,
+       jakub@redhat.com, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] scripts/unifdef.c: rename getline symbol to something
+	else
+Message-ID: <20090311185942.GA11433@bombadil.infradead.org>
+References: <20090311161733.GE5448@bombadil.infradead.org> <20090311183735.GA2832@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090311183735.GA2832@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-11 at 10:26 -0700, H. Peter Anvin wrote:
-> James Bottomley wrote:
+On Wed, Mar 11, 2009 at 07:37:35PM +0100, Sam Ravnborg wrote:
+> > Rawhide builds are currently failing to build unifdef.c, as the next
+> > version of glibc changes the default _POSIX_C_SOURCE level, which
+> > exposes getline() from <stdio.h>
 > > 
-> > That goes for a huge number of drivers we have in the kernel currently,
-> > and several whole architectures, so it's not a barrier to keeping
-> > something maintained.
+> > scripts/unifdef.c:209: error: conflicting types for 'getline'
+> > /usr/include/stdio.h:653: note: previous declaration of 'getline' was
+> > here
+> > make[2]: *** [scripts/unifdef] Error 1
+> > make[1]: *** [__headers] Error 2
+> > make: *** [vmlinux] Error 2
 > > 
-> >> nobody but you uses development kernels on it,
-> > 
-> > I don't think we've ever had a problem with a downstream community being
-> > supported by a single upstream developer.
-> > 
+> > Rename the symbol in unifdef.c to parseline to avoid this conflicting
+> > declaration.
 > 
-> What "downstream community"?  There is none, and you know it.
+> I have a similar patch queued in kbuild-fixes.git.
+> 
 
-There are actually two ... as you've heard me say before.  However,
-upstream development is driven by willing maintainers, not by user
-popularity contests.
+Great, thanks. Is this going to go into the next -rc?
 
-> That is the whole point.  Voyager isn't just a driver -- it's an
-> odd-man-out variant of the most used architecture in the world.  If it
-> was just a driver, it would make sense.  However, its very existence
-> forces constraints on the upstream x86 architecture, and it imposes a
-> real and considerable workload on the upstream maintainers -- and that
-> is not you, but on us.  When that happens with drivers for obsolete
-> hardware, we remove them.
-
-The last I heard from you was that the Subarchitecture infrastructure
-was the cause of your increased workload.  Fine, it's gone.  Let me ask
-again, what is the *current* problem?  This patch set moves voyager to
-the x86_quirks setup as you x86 maintainers requested with the given
-reason of reducing your workload.
-
-> Hence, Ingo rather logically asks you to justify this impact on our
-> workload.  I would like to know as well.  I'm personally sick of the
-> extra overhead this museum piece imposes.
-
-Well, I've already answered your workload above, but given the general
-question, there are at least three reasons
-
-     1. It's a currently supported architecture.
-     2. It works.
-     3. It has a committed maintainer.
-
-It's also important to demonstrate that Linux development is based on
-technical merit not personal prejudice.
-
-James
-
-
+regards, Kyle
