@@ -1,84 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZCKPlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750921AbZCKPp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858AbZCKPlg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 11:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZCKPl1
+	id S1750921AbZCKPp2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 11:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbZCKPpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 11:41:27 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:35578 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752344AbZCKPl1 (ORCPT
+	Wed, 11 Mar 2009 11:45:12 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40523 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750728AbZCKPpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 11:41:27 -0400
-Subject: Re: [PATCH 00/13] convert voyager over to the x86 quirks model
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@linux.intel.com>
-In-Reply-To: <20090310223733.GA4016@elte.hu>
-References: <1236530906-7175-1-git-send-email-James.Bottomley@HansenPartnership.com>
-	 <20090310223733.GA4016@elte.hu>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 10:41:22 -0500
-Message-Id: <1236786082.3270.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Mar 2009 11:45:11 -0400
+Date: Wed, 11 Mar 2009 11:45:05 -0400
+From: Kyle McMartin <kyle@infradead.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>,
+       Alessandro Zummo <alessandro.zummo@towertech.it>,
+       linux-m68k@vger.kernel.org, rtc-linux@googlegroups.com,
+       linux-parisc@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Paul Mundt <lethal@linux-sh.org>, Dann Frazier <dannf@dannf.org>
+Subject: Re: [PATCH 0/7] Generic RTC class driver
+Message-ID: <20090311154505.GB5448@bombadil.infradead.org>
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <alpine.LRH.2.00.0903111134270.1040@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.0903111134270.1040@vixen.sonytel.be>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-10 at 23:37 +0100, Ingo Molnar wrote: 
-> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Wed, Mar 11, 2009 at 11:36:02AM +0100, Geert Uytterhoeven wrote:
+> Is it OK for you to take it through your PA-RISC tree?
+> If yes, I can resend the patch series with the collected acks.
 > 
-> > Given the lack of feedback, I went ahead and implemented the 
-> > additions to smp_ops and x86_quirks (and a dynamic mca NMI 
-> > hook) to allow voyager to be plumbed in.
-> > 
-> > There also needs to be changes in the boot setup to make 
-> > voyager work dynamically: It has to be detected first, so the 
-> > a20 gate check is only executed if a voyager is not found.
-> > 
-> > I also completed some of the subarchitecture eliminations, so 
-> > all the include file infrastructure should be gone.
-> > 
-> > The result is that I can boot both my PC SMP x86 boxes and 
-> > voyager with the same kernel.
-> > 
-> > This patch series applies on the x86/apic branch of the x86 
-> > tree (obviously with 965c7ecaf2e2b083d711a01ab33735a4bdeee1a4 
-> > reverted)
-> 
-> The question is, why would we want to merge Voyager back ever 
-> again?
 
-What do you mean merge back?  It's an existing and supported
-architecture in git head.
+That's fine with me, just hit me up with a git tree address and I'll
+suck it all into the rtc-parisc tree?
 
-> The hardware is obsolete and is not being produced anymore,
-
-That goes for a huge number of drivers we have in the kernel currently,
-and several whole architectures, so it's not a barrier to keeping
-something maintained.
-
-> nobody but you uses development kernels on it,
-
-I don't think we've ever had a problem with a downstream community being
-supported by a single upstream developer.
-
->  and it caused all 
-> sorts of x86 maintenance overhead all along. It did not even 
-> build since August 2008, up until the point we removed it - 
-> 2.6.26.0 was the last time it built.
-
-2.6.29-rc7 builds and boots just fine from git head.
-
-Your prior statement was that you wanted it moved to the x86 quirks
-infrastructure to make it easily maintainable, which this patch series
-does ... I don't quite see what your problem is now ... are you saying
-that x86 quirks isn't as maintainable as you previously thought?  In
-which case, how can I help?
-
-James
-
-
+regards, Kyle
