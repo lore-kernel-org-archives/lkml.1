@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbZCKAsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbZCKAsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754011AbZCKAsc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 20:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbZCKAqv
+	id S1755452AbZCKAsN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 20:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZCKAqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 20:46:51 -0400
-Received: from www.tglx.de ([62.245.132.106]:40039 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754605AbZCKAqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 10 Mar 2009 20:46:50 -0400
-Message-Id: <20090311003236.015120391@linutronix.de>
+Received: from www.tglx.de ([62.245.132.106]:40037 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754225AbZCKAqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 20:46:49 -0400
+Message-Id: <20090311003235.900502055@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Wed, 11 Mar 2009 00:45:44 -0000
+Date: Wed, 11 Mar 2009 00:45:39 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 06/18] drivers/mfd: convert obsolete irq_desc_t to struct
-	irq_desc
+       Tony Luck <tony.luck@intel.com>
+Subject: [patch 05/18] ia64: convert obsolete irq_desc_t to struct irq_desc
 References: <20090311003204.592133594@linutronix.de>
 Content-Disposition: inline;
-	filename=mfd-convert-obsolete-irq-desc-t-typedef.patch
+	filename=ia64-convert-obsolete-irq-desc-t-typedef.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -30,23 +29,163 @@ Impact: cleanup
 Convert the last remaining users to struct irq_desc.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-CC: David Brownell <dbrownell@users.sourceforge.net>
----
- drivers/mfd/twl4030-irq.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+CC: Tony Luck <tony.luck@intel.com>
 
-Index: linux-2.6/drivers/mfd/twl4030-irq.c
+---
+ arch/ia64/hp/sim/hpsim_irq.c   |    2 +-
+ arch/ia64/include/asm/hw_irq.h |    2 +-
+ arch/ia64/kernel/iosapic.c     |    6 +++---
+ arch/ia64/kernel/irq.c         |    2 +-
+ arch/ia64/kernel/irq_ia64.c    |    2 +-
+ arch/ia64/kernel/mca.c         |    2 +-
+ arch/ia64/kernel/smpboot.c     |    2 +-
+ arch/ia64/sn/kernel/irq.c      |    4 ++--
+ arch/ia64/xen/irq_xen.c        |    2 +-
+ 9 files changed, 12 insertions(+), 12 deletions(-)
+
+Index: linux-2.6/arch/ia64/hp/sim/hpsim_irq.c
 ===================================================================
---- linux-2.6.orig/drivers/mfd/twl4030-irq.c
-+++ linux-2.6/drivers/mfd/twl4030-irq.c
-@@ -255,7 +255,7 @@ static int twl4030_irq_thread(void *data
-  * thread.  All we do here is acknowledge and mask the interrupt and wakeup
-  * the kernel thread.
-  */
--static void handle_twl4030_pih(unsigned int irq, irq_desc_t *desc)
-+static void handle_twl4030_pih(unsigned int irq, struct irq_desc *desc)
+--- linux-2.6.orig/arch/ia64/hp/sim/hpsim_irq.c
++++ linux-2.6/arch/ia64/hp/sim/hpsim_irq.c
+@@ -40,7 +40,7 @@ static struct hw_interrupt_type irq_type
+ void __init
+ hpsim_irq_init (void)
  {
- 	/* Acknowledge, clear *AND* mask the interrupt... */
- 	desc->chip->ack(irq);
+-	irq_desc_t *idesc;
++	struct irq_desc *idesc;
+ 	int i;
+ 
+ 	for (i = 0; i < NR_IRQS; ++i) {
+Index: linux-2.6/arch/ia64/include/asm/hw_irq.h
+===================================================================
+--- linux-2.6.orig/arch/ia64/include/asm/hw_irq.h
++++ linux-2.6/arch/ia64/include/asm/hw_irq.h
+@@ -146,7 +146,7 @@ static inline void ia64_native_resend_ir
+  * Default implementations for the irq-descriptor API:
+  */
+ 
+-extern irq_desc_t irq_desc[NR_IRQS];
++extern struct irq_desc irq_desc[NR_IRQS];
+ 
+ #ifndef CONFIG_IA64_GENERIC
+ static inline ia64_vector __ia64_irq_to_vector(int irq)
+Index: linux-2.6/arch/ia64/kernel/iosapic.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/iosapic.c
++++ linux-2.6/arch/ia64/kernel/iosapic.c
+@@ -449,7 +449,7 @@ iosapic_startup_edge_irq (unsigned int i
+ static void
+ iosapic_ack_edge_irq (unsigned int irq)
+ {
+-	irq_desc_t *idesc = irq_desc + irq;
++	struct irq_desc *idesc = irq_desc + irq;
+ 
+ 	irq_complete_move(irq);
+ 	move_native_irq(irq);
+@@ -598,7 +598,7 @@ static int
+ register_intr (unsigned int gsi, int irq, unsigned char delivery,
+ 	       unsigned long polarity, unsigned long trigger)
+ {
+-	irq_desc_t *idesc;
++	struct irq_desc *idesc;
+ 	struct hw_interrupt_type *irq_type;
+ 	int index;
+ 	struct iosapic_rte_info *rte;
+@@ -826,7 +826,7 @@ iosapic_unregister_intr (unsigned int gs
+ {
+ 	unsigned long flags;
+ 	int irq, index;
+-	irq_desc_t *idesc;
++	struct irq_desc *idesc;
+ 	u32 low32;
+ 	unsigned long trigger, polarity;
+ 	unsigned int dest;
+Index: linux-2.6/arch/ia64/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/irq.c
++++ linux-2.6/arch/ia64/kernel/irq.c
+@@ -130,7 +130,7 @@ unsigned int vectors_in_migration[NR_IRQ
+  */
+ static void migrate_irqs(void)
+ {
+-	irq_desc_t *desc;
++	struct irq_desc *desc;
+ 	int 		irq, new_cpu;
+ 
+ 	for (irq=0; irq < NR_IRQS; irq++) {
+Index: linux-2.6/arch/ia64/kernel/irq_ia64.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/irq_ia64.c
++++ linux-2.6/arch/ia64/kernel/irq_ia64.c
+@@ -624,7 +624,7 @@ static struct irqaction tlb_irqaction = 
+ void
+ ia64_native_register_percpu_irq (ia64_vector vec, struct irqaction *action)
+ {
+-	irq_desc_t *desc;
++	struct irq_desc *desc;
+ 	unsigned int irq;
+ 
+ 	irq = vec;
+Index: linux-2.6/arch/ia64/kernel/mca.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/mca.c
++++ linux-2.6/arch/ia64/kernel/mca.c
+@@ -2093,7 +2093,7 @@ ia64_mca_late_init(void)
+ 	cpe_poll_timer.function = ia64_mca_cpe_poll;
+ 
+ 	{
+-		irq_desc_t *desc;
++		struct irq_desc *desc;
+ 		unsigned int irq;
+ 
+ 		if (cpe_vector >= 0) {
+Index: linux-2.6/arch/ia64/kernel/smpboot.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/smpboot.c
++++ linux-2.6/arch/ia64/kernel/smpboot.c
+@@ -681,7 +681,7 @@ extern void fixup_irqs(void);
+ int migrate_platform_irqs(unsigned int cpu)
+ {
+ 	int new_cpei_cpu;
+-	irq_desc_t *desc = NULL;
++	struct irq_desc *desc = NULL;
+ 	const struct cpumask *mask;
+ 	int 		retval = 0;
+ 
+Index: linux-2.6/arch/ia64/sn/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/sn/kernel/irq.c
++++ linux-2.6/arch/ia64/sn/kernel/irq.c
+@@ -293,7 +293,7 @@ unsigned int sn_local_vector_to_irq(u8 v
+ void sn_irq_init(void)
+ {
+ 	int i;
+-	irq_desc_t *base_desc = irq_desc;
++	struct irq_desc *base_desc = irq_desc;
+ 
+ 	ia64_first_device_vector = IA64_SN2_FIRST_DEVICE_VECTOR;
+ 	ia64_last_device_vector = IA64_SN2_LAST_DEVICE_VECTOR;
+@@ -375,7 +375,7 @@ void sn_irq_fixup(struct pci_dev *pci_de
+ 	int cpu = nasid_slice_to_cpuid(nasid, slice);
+ #ifdef CONFIG_SMP
+ 	int cpuphys;
+-	irq_desc_t *desc;
++	struct irq_desc *desc;
+ #endif
+ 
+ 	pci_dev_get(pci_dev);
+Index: linux-2.6/arch/ia64/xen/irq_xen.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/xen/irq_xen.c
++++ linux-2.6/arch/ia64/xen/irq_xen.c
+@@ -138,7 +138,7 @@ static void
+ __xen_register_percpu_irq(unsigned int cpu, unsigned int vec,
+ 			struct irqaction *action, int save)
+ {
+-	irq_desc_t *desc;
++	struct irq_desc *desc;
+ 	int irq = 0;
+ 
+ 	if (xen_slab_ready) {
 
 
