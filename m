@@ -1,272 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZCKPRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZCKPSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbZCKPRd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 11:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZCKPRY
+	id S1756043AbZCKPSi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 11:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbZCKPS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 11:17:24 -0400
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:48720 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752117AbZCKPRX (ORCPT
+	Wed, 11 Mar 2009 11:18:29 -0400
+Received: from e24smtp02.br.ibm.com ([32.104.18.86]:41934 "EHLO
+	e24smtp02.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753201AbZCKPS2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 11:17:23 -0400
-Date: Wed, 11 Mar 2009 20:46:57 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC PATCH] cpuacct: per-cgroup utime/stime statistics - v1
-Message-ID: <20090311151657.GA16769@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090310124208.GC3902@in.ibm.com>
+	Wed, 11 Mar 2009 11:18:28 -0400
+Message-ID: <49B7D63E.9050006@linux.vnet.ibm.com>
+Date: Wed, 11 Mar 2009 12:18:22 -0300
+From: Breno Leitao <leitao@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090310124208.GC3902@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [PATCH 1/1] icom: Removing unused variables and converting space
+ to tabs
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bharata B Rao <bharata@linux.vnet.ibm.com> [2009-03-10 18:12:08]:
+Currently icom has some spaces instead of tabs and some variables
+declared, assigned but not used.
 
-> Hi,
-> 
-> Based on the comments received during my last post
-> (http://lkml.org/lkml/2009/2/25/129), here is a fresh attempt
-> to get per-cgroup utime/stime statistics as part of cpuacct controller.
-> 
-> This patch adds a new file cpuacct.stat which displays two stats:
-> utime and stime. I wasn't too sure about the usefulness of providing
-> per-cgroup guest and steal times and hence not including them here.
-> 
-> Note that I am using percpu_counter for collecting these two stats.
-> Since percpu_counter subsystem doesn't protect the readside, readers could
-> theoritically obtain incorrect values for these stats on 32bit systems.
-> I hope occasional wrong values is not too much of a concern for
-> statistics like this. If it is a problem, we have to either fix
-> percpu_counter or do it all by ourselves as Kamezawa attempted
-> for cpuacct.usage (http://lkml.org/lkml/2009/3/4/14)
-> 
-> Regards,
-> Bharata.
-> 
-> cpuacct: Add stime and utime statistics
-> 
-> Add per-cgroup cpuacct controller statistics like the system and user
-> time consumed by the group of tasks.
-> 
-> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> Signed-off-by: Balaji Rao <balajirrao@gmail.com>
-> ---
->  Documentation/cgroups/cpuacct.txt |    8 +++
->  kernel/sched.c                    |   87 +++++++++++++++++++++++++++++++++++---
->  2 files changed, 89 insertions(+), 6 deletions(-)
-> 
-> --- a/Documentation/cgroups/cpuacct.txt
-> +++ b/Documentation/cgroups/cpuacct.txt
-> @@ -30,3 +30,11 @@ The above steps create a new group g1 an
->  process (bash) into it. CPU time consumed by this bash and its children
->  can be obtained from g1/cpuacct.usage and the same is accumulated in
->  /cgroups/cpuacct.usage also.
-> +
-> +cpuacct.stat file lists a few statistics which further divide the
-> +CPU time obtained by the cgroup into user and system times. Currently
-> +the following statistics are supported:
-> +
-> +utime: Time in milliseconds spent by tasks of the cgroup in user mode.
-> +stime: Time in milliseconds spent by tasks of the cgroup in kernel mode.
-> +
+This patch fixes the spaces and also remove those unused variables.
 
-Hi, Bharata,
+Signed-off-by: Breno Leitao <leitao@linux.vnet.ibm.com>
 
-I did a quick run of the patch on my machine. The patch applied and
-compile cleanly, here are a few comments?
+---
+ drivers/serial/icom.c |   69 ++++++++++++++++++++-----------------------------
+ 1 files changed, 28 insertions(+), 41 deletions(-)
 
-1. We could consider enhancing the patch to account for irq, softirq,
-etc time like cpustat does. Not right away, but iteratively
-2. The accounting is converted to milliseconds, I would much rather
-export it in cputime to be consistent with other cpu accounting.
-I remember we used to return nanosecond accurate accounting and then
-moved to cputime based accounting for cpuacct.
-3. How do we deal with CPU hotplug. Since we use a per-cpu counter,
-any hotplug would mean that the data related to the offlined CPU is
-lost. That is how the current CPU accounting system seems to work.
-
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -1393,10 +1393,22 @@ iter_move_one_task(struct rq *this_rq, i
->  		   struct rq_iterator *iterator);
->  #endif
-> 
-> +/* Time spent by the tasks of the cpu accounting group executing in ... */
-> +enum cpuacct_stat_index {
-> +	CPUACCT_STAT_UTIME,	/* ... user mode */
-> +	CPUACCT_STAT_STIME,	/* ... kernel mode */
-> +
-> +	CPUACCT_STAT_NSTATS,
-> +};
-> +
->  #ifdef CONFIG_CGROUP_CPUACCT
->  static void cpuacct_charge(struct task_struct *tsk, u64 cputime);
-> +static void cpuacct_update_stats(struct task_struct *tsk,
-> +		enum cpuacct_stat_index idx, int val);
->  #else
->  static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
-> +static void cpuacct_update_stats(struct task_struct *tsk,
-> +		enum cpuacct_stat_index idx, int val) {}
->  #endif
-> 
->  static inline void inc_cpu_load(struct rq *rq, unsigned long load)
-> @@ -4182,6 +4194,8 @@ void account_user_time(struct task_struc
->  		cpustat->nice = cputime64_add(cpustat->nice, tmp);
->  	else
->  		cpustat->user = cputime64_add(cpustat->user, tmp);
-> +
-> +	cpuacct_update_stats(p, CPUACCT_STAT_UTIME, cputime_to_msecs(cputime));
->  	/* Account for user time used */
->  	acct_update_integrals(p);
->  }
-> @@ -4243,6 +4257,8 @@ void account_system_time(struct task_str
->  	else
->  		cpustat->system = cputime64_add(cpustat->system, tmp);
-> 
-> +	cpuacct_update_stats(p, CPUACCT_STAT_STIME, cputime_to_msecs(cputime));
-> +
->  	/* Account for system time used */
->  	acct_update_integrals(p);
->  }
-> @@ -9438,6 +9454,7 @@ struct cpuacct {
->  	struct cgroup_subsys_state css;
->  	/* cpuusage holds pointer to a u64-type object on every cpu */
->  	u64 *cpuusage;
-> +	struct percpu_counter cpustat[CPUACCT_STAT_NSTATS];
->  	struct cpuacct *parent;
->  };
-> 
-> @@ -9462,20 +9479,33 @@ static struct cgroup_subsys_state *cpuac
->  	struct cgroup_subsys *ss, struct cgroup *cgrp)
->  {
->  	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
-> +	int i;
-> 
->  	if (!ca)
-> -		return ERR_PTR(-ENOMEM);
-> +		goto out1;
-> 
->  	ca->cpuusage = alloc_percpu(u64);
-> -	if (!ca->cpuusage) {
-> -		kfree(ca);
-> -		return ERR_PTR(-ENOMEM);
-> -	}
-> +	if (!ca->cpuusage)
-> +		goto out2;
-> +
-> +	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
-> +		if (percpu_counter_init(&ca->cpustat[i], 0))
-> +			goto out3;
-> 
->  	if (cgrp->parent)
->  		ca->parent = cgroup_ca(cgrp->parent);
-> 
->  	return &ca->css;
-> +
-> +out3:
-> +	i--;
-> +	while (i-- >= 0)
-> +		percpu_counter_destroy(&ca->cpustat[i]);
-> +	free_percpu(ca->cpuusage);
-> +out2:
-> +	kfree(ca);
-> +out1:
-> +	return ERR_PTR(-ENOMEM);
->  }
->
-
-Don't like out* as labels, please let us have more meaningful labels.
+diff --git a/drivers/serial/icom.c b/drivers/serial/icom.c
+index 2b7531d..08fa269 100644
+--- a/drivers/serial/icom.c
++++ b/drivers/serial/icom.c
+@@ -302,7 +302,7 @@ static void stop_processor(struct icom_port *icom_port)
+ 	if (port < 4) {
+ 		temp = readl(stop_proc[port].global_control_reg);
+ 		temp =
+-	    		(temp & ~start_proc[port].processor_id) | stop_proc[port].processor_id;
++			(temp & ~start_proc[port].processor_id) | stop_proc[port].processor_id;
+ 		writel(temp, stop_proc[port].global_control_reg);
  
->  /* destroy an existing cpu accounting group */
-> @@ -9483,7 +9513,10 @@ static void
->  cpuacct_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
->  {
->  	struct cpuacct *ca = cgroup_ca(cgrp);
-> +	int i;
-> 
-> +	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
-> +		percpu_counter_destroy(&ca->cpustat[i]);
->  	free_percpu(ca->cpuusage);
->  	kfree(ca);
->  }
-> @@ -9570,6 +9603,28 @@ static int cpuacct_percpu_seq_read(struc
->  	return 0;
->  }
-> 
-> +static const struct cpuacct_stat_desc {
-> +	const char *msg;
-> +	u64 unit;
-> +} cpuacct_stat_desc[] = {
-> +	[CPUACCT_STAT_UTIME] = { "utime", 1, },
-> +	[CPUACCT_STAT_STIME] = { "stime", 1, },
-> +};
-> +
-> +static int cpuacct_stats_show(struct cgroup *cgrp, struct cftype *cft,
-> +		struct cgroup_map_cb *cb)
-> +{
-> +	struct cpuacct *ca = cgroup_ca(cgrp);
-> +	int i;
-> +
-> +	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
-> +		s64 val = percpu_counter_read(&ca->cpustat[i]);
-> +		val *= cpuacct_stat_desc[i].unit;
-> +		cb->fill(cb, cpuacct_stat_desc[i].msg, val);
-> +	}
-> +	return 0;
-> +}
-> +
->  static struct cftype files[] = {
->  	{
->  		.name = "usage",
-> @@ -9580,7 +9635,10 @@ static struct cftype files[] = {
->  		.name = "usage_percpu",
->  		.read_seq_string = cpuacct_percpu_seq_read,
->  	},
-> -
-> +	{
-> +		.name = "stat",
-> +		.read_map = cpuacct_stats_show,
-> +	},
->  };
-> 
->  static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
-> @@ -9610,6 +9668,23 @@ static void cpuacct_charge(struct task_s
->  	}
->  }
-> 
-> +/*
-> + * Account the system/user time to the task's accounting group.
-> + */
-> +static void cpuacct_update_stats(struct task_struct *tsk,
-> +		enum cpuacct_stat_index idx, int val)
-> +{
-> +	struct cpuacct *ca;
-> +
-> +	if (!cpuacct_subsys.active)
-> +		return;
-> +
-> +	ca = task_ca(tsk);
-> +
-> +	for (; ca; ca = ca->parent)
-> +		percpu_counter_add(&ca->cpustat[idx], val);
-> +}
-> +
->  struct cgroup_subsys cpuacct_subsys = {
->  	.name = "cpuacct",
->  	.create = cpuacct_create,
-> 
-
+ 		/* write flush */
+@@ -331,7 +331,7 @@ static void start_processor(struct icom_port *icom_port)
+ 	if (port < 4) {
+ 		temp = readl(start_proc[port].global_control_reg);
+ 		temp =
+-	    		(temp & ~stop_proc[port].processor_id) | start_proc[port].processor_id;
++			(temp & ~stop_proc[port].processor_id) | start_proc[port].processor_id;
+ 		writel(temp, start_proc[port].global_control_reg);
+ 
+ 		/* write flush */
+@@ -504,8 +504,8 @@ static void load_code(struct icom_port *icom_port)
+ 		dev_err(&icom_port->adapter->pci_dev->dev,"Port not opertional\n");
+ 	}
+ 
+-      if (new_page != NULL)
+-	      pci_free_consistent(dev, 4096, new_page, temp_pci);
++	if (new_page != NULL)
++		pci_free_consistent(dev, 4096, new_page, temp_pci);
+ }
+ 
+ static int startup(struct icom_port *icom_port)
+@@ -1022,7 +1022,6 @@ static void icom_send_xchar(struct uart_port *port, char ch)
+ 			writeb(ch, &ICOM_PORT->dram->xchar);
+ 
+ 			/* flush write operation */
+-			xdata = readb(&ICOM_PORT->dram->xchar);
+ 			spin_unlock_irqrestore(&port->lock, flags);
+ 			break;
+ 		}
+@@ -1098,7 +1097,6 @@ static void icom_set_termios(struct uart_port *port,
+ {
+ 	int baud;
+ 	unsigned cflag, iflag;
+-	int bits;
+ 	char new_config2;
+ 	char new_config3 = 0;
+ 	char tmp_byte;
+@@ -1119,34 +1117,27 @@ static void icom_set_termios(struct uart_port *port,
+ 	switch (cflag & CSIZE) {
+ 	case CS5:		/* 5 bits/char */
+ 		new_config2 |= ICOM_ACFG_5BPC;
+-		bits = 7;
+ 		break;
+ 	case CS6:		/* 6 bits/char */
+ 		new_config2 |= ICOM_ACFG_6BPC;
+-		bits = 8;
+ 		break;
+ 	case CS7:		/* 7 bits/char */
+ 		new_config2 |= ICOM_ACFG_7BPC;
+-		bits = 9;
+ 		break;
+ 	case CS8:		/* 8 bits/char */
+ 		new_config2 |= ICOM_ACFG_8BPC;
+-		bits = 10;
+ 		break;
+ 	default:
+-		bits = 10;
+ 		break;
+ 	}
+ 	if (cflag & CSTOPB) {
+ 		/* 2 stop bits */
+ 		new_config2 |= ICOM_ACFG_2STOP_BIT;
+-		bits++;
+ 	}
+ 	if (cflag & PARENB) {
+ 		/* parity bit enabled */
+ 		new_config2 |= ICOM_ACFG_PARITY_ENAB;
+ 		trace(ICOM_PORT, "PARENB", 0);
+-		bits++;
+ 	}
+ 	if (cflag & PARODD) {
+ 		/* odd parity */
+@@ -1322,7 +1313,6 @@ static struct uart_driver icom_uart_driver = {
+ static int __devinit icom_init_ports(struct icom_adapter *icom_adapter)
+ {
+ 	u32 subsystem_id = icom_adapter->subsystem_id;
+-	int retval = 0;
+ 	int i;
+ 	struct icom_port *icom_port;
+ 
+@@ -1368,7 +1358,7 @@ static int __devinit icom_init_ports(struct icom_adapter *icom_adapter)
+ 		}
+ 	}
+ 
+-	return retval;
++	return 0;
+ }
+ 
+ static void icom_port_active(struct icom_port *icom_port, struct icom_adapter *icom_adapter, int port_num)
+@@ -1391,7 +1381,6 @@ static int __devinit icom_load_ports(struct icom_adapter *icom_adapter)
+ {
+ 	struct icom_port *icom_port;
+ 	int port_num;
+-	int retval;
+ 
+ 	for (port_num = 0; port_num < icom_adapter->numb_ports; port_num++) {
+ 
+@@ -1405,7 +1394,7 @@ static int __devinit icom_load_ports(struct icom_adapter *icom_adapter)
+ 			icom_port->adapter = icom_adapter;
+ 
+ 			/* get port memory */
+-			if ((retval = get_port_memory(icom_port)) != 0) {
++			if (get_port_memory(icom_port) != 0) {
+ 				dev_err(&icom_port->adapter->pci_dev->dev,
+ 					"Memory allocation for port FAILED\n");
+ 			}
+@@ -1498,15 +1487,15 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 				const struct pci_device_id *ent)
+ {
+ 	int index;
+-        unsigned int command_reg;
+-        int retval;
+-        struct icom_adapter *icom_adapter;
+-        struct icom_port *icom_port;
++	unsigned int command_reg;
++	int retval;
++	struct icom_adapter *icom_adapter;
++	struct icom_port *icom_port;
+ 
+-        retval = pci_enable_device(dev);
+-        if (retval) {
++	retval = pci_enable_device(dev);
++	if (retval) {
+ 		dev_err(&dev->dev, "Device enable FAILED\n");
+-                return retval;
++		return retval;
+ 	}
+ 
+ 	if ( (retval = pci_request_regions(dev, "icom"))) {
+@@ -1515,23 +1504,23 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 		 return retval;
+ 	 }
+ 
+-        pci_set_master(dev);
++	pci_set_master(dev);
+ 
+-        if ( (retval = pci_read_config_dword(dev, PCI_COMMAND, &command_reg))) {
++	if ( (retval = pci_read_config_dword(dev, PCI_COMMAND, &command_reg))) {
+ 		dev_err(&dev->dev, "PCI Config read FAILED\n");
+-                return retval;
+-        }
++		return retval;
++	}
+ 
+ 	pci_write_config_dword(dev, PCI_COMMAND,
+ 		command_reg | PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER
+  		| PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
+ 
+-        if (ent->driver_data == ADAPTER_V1) {
++	if (ent->driver_data == ADAPTER_V1) {
+ 		pci_write_config_dword(dev, 0x44, 0x8300830A);
+-	 } else {
++	} else {
+ 		pci_write_config_dword(dev, 0x44, 0x42004200);
+ 		pci_write_config_dword(dev, 0x48, 0x42004200);
+-         }
++	}
+ 
+ 
+ 	retval = icom_alloc_adapter(&icom_adapter);
+@@ -1541,10 +1530,10 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 		 goto probe_exit0;
+ 	}
+ 
+-	 icom_adapter->base_addr_pci = pci_resource_start(dev, 0);
+-	 icom_adapter->pci_dev = dev;
+-	 icom_adapter->version = ent->driver_data;
+-	 icom_adapter->subsystem_id = ent->subdevice;
++	icom_adapter->base_addr_pci = pci_resource_start(dev, 0);
++	icom_adapter->pci_dev = dev;
++	icom_adapter->version = ent->driver_data;
++	icom_adapter->subsystem_id = ent->subdevice;
+ 
+ 
+ 	retval = icom_init_ports(icom_adapter);
+@@ -1553,7 +1542,7 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 		goto probe_exit1;
+ 	}
+ 
+-	 icom_adapter->base_addr = ioremap(icom_adapter->base_addr_pci,
++	icom_adapter->base_addr = ioremap(icom_adapter->base_addr_pci,
+ 						pci_resource_len(dev, 0));
+ 
+ 	if (!icom_adapter->base_addr)
+@@ -1568,7 +1557,7 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 
+ 	retval = icom_load_ports(icom_adapter);
+ 
+-        for (index = 0; index < icom_adapter->numb_ports; index++) {
++	for (index = 0; index < icom_adapter->numb_ports; index++) {
+ 		icom_port = &icom_adapter->port_info[index];
+ 
+ 		if (icom_port->status == ICOM_PORT_ACTIVE) {
+@@ -1585,7 +1574,7 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 				icom_port->status = ICOM_PORT_OFF;
+ 				dev_err(&dev->dev, "Device add failed\n");
+ 			 } else
+-			        dev_info(&dev->dev, "Device added\n");
++				dev_info(&dev->dev, "Device added\n");
+ 		}
+ 	}
+ 
+@@ -1601,9 +1590,7 @@ probe_exit0:
+ 	pci_release_regions(dev);
+ 	pci_disable_device(dev);
+ 
+-        return retval;
+-
+-
++	return retval;
+ }
+ 
+ static void __devexit icom_remove(struct pci_dev *dev)
 -- 
-	Balbir
+1.6.0.2
+
