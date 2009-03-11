@@ -1,145 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZCKD3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbZCKDcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbZCKD3g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 23:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZCKD30
+	id S1754296AbZCKDcf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 23:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbZCKDcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 23:29:26 -0400
-Received: from mx2.suse.de ([195.135.220.15]:43817 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752076AbZCKD3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 23:29:25 -0400
-Date: Wed, 11 Mar 2009 04:29:18 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-fsdevel@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Jorge Boncompte [DTI2]" <jorge@dti2.net>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>, stable@kernel.org
-Subject: Re: [patch] fs: avoid I_NEW inodes
-Message-ID: <20090311032918.GE16561@wotan.suse.de>
-References: <20090305064554.GA11916@wotan.suse.de> <20090305100000.GA29177@duck.suse.cz> <20090305101637.GB17815@wotan.suse.de> <20090305111226.GB29531@duck.suse.cz> <20090310134106.GA15977@wotan.suse.de> <20090310160321.GB1190@duck.suse.cz>
-Mime-Version: 1.0
+	Tue, 10 Mar 2009 23:32:25 -0400
+Received: from kroah.org ([198.145.64.141]:35775 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753589AbZCKDcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 23:32:24 -0400
+Date: Tue, 10 Mar 2009 20:30:11 -0700
+From: Greg KH <greg@kroah.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Greg Banks <gnb@sgi.com>, Herbert Xu <herbert@gondor.apana.org.au>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: driver-core tree build failure
+Message-ID: <20090311033011.GA28527@kroah.com>
+References: <20090310192440.949884a1.sfr@canb.auug.org.au> <alpine.LRH.2.00.0903101423200.25436@vixen.sonytel.be> <20090310145311.6bf9d9e9@skybase> <alpine.LRH.2.00.0903101626450.25436@vixen.sonytel.be> <20090310170841.2257de86@skybase> <20090310200200.GB3091@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090310160321.GB1190@duck.suse.cz>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090310200200.GB3091@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How about this?
+On Tue, Mar 10, 2009 at 04:02:00PM -0400, Jason Baron wrote:
+> On Tue, Mar 10, 2009 at 05:08:41PM +0100, Martin Schwidefsky wrote:
+> > On Tue, 10 Mar 2009 16:29:50 +0100 (CET)
+> > Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > 
+> > > > The same could be done with the problematic pr_fmt definition:
+> > > > 
+> > > > #define pr_fmt(fmt)     __func__ ": " fmt
+> > > 
+> > > No, that also doesn't work:
+> > > 
+> > > | crypto/zlib.c:150: error: expected '}' before string constant
+> > > | crypto/zlib.c:150: error: expected ')' before '__func__'
+> > > | crypto/zlib.c:162: error: expected '}' before string constant
+> > > | crypto/zlib.c:162: error: expected ')' before '__func__'
+> > > | crypto/zlib.c:166: error: expected '}' before string constant
+> > > | crypto/zlib.c:166: error: expected ')' before '__func__'
+> > > | crypto/zlib.c:170: error: expected '}' before string constant
+> > > | crypto/zlib.c:170: error: expected ')' before '__func__'
+> > > 
+> > > > > BTW, Martin: Is `#define pr_fmt(fmt)     "%s: " fmt, __func__' a valid and
+> > > > > intended usage of your pr_fmt() infrastructure?
+> > > > 
+> > > > The indended use is a simple prefix to the format string. To paste an
+> > > > additional parameter is an interesting use of the pr_fmt macro ..
+> > > 
+> > > Bummer, I was so happy I could do things like
+> > > 
+> > > | #define pr_fmt(fmt)	"%s:%u: " fmt, __func__, __LINE__
+> > 
+> > Actually that seem like a nice thing to have. With the upstream version of
+> > dynamic_pr_debug this works, there the format string is used only on a printk.
+> > git commit 25b67b75587d43ff3f09ad88c03c70a38372d95d introduces the code
+> > that pastes the format string to the _ddebug structure.
+> > 
+> 
+> hmmm...yeah, some macro magic in include/linux/dynamic_debug.h converts
+> the 'fmt' arg into a series of strings. It doesn't look as pretty in the
+> dynamic debug control file:
+> 
+> crypto/zlib.c:333 [zlib]zlib_decompress_final - "\042%s: \042
+> \042avail_in %u, avail_out %u (consumed %u, produced %u)\n\042,
+> __func__"
+> 
+> with all those '\042' there, which are the '"' characters, but we
+> probably could live with it.
+> 
+> patch below.
 
---
-To be on the safe side, it should be less fragile to exclude I_NEW inodes
-from inode list scans by default (unless there is an important reason to
-have them).
+Can you resend this with a description of what the patch does so I can
+apply it?
 
-Normally they will get excluded (eg. by zero refcount or writecount etc),
-however it is a bit fragile for list walkers to know exactly what parts of
-the inode state is set up and valid to test when in I_NEW. So along these
-lines, move I_NEW checks upward as well (sometimes taking I_FREEING etc
-checks with them too -- this shouldn't be a problem should it?)
+thanks,
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-
----
- fs/dquot.c                  |   10 ++++++++--
- fs/drop_caches.c            |    2 +-
- fs/inode.c                  |    2 ++
- fs/notify/inotify/inotify.c |   16 ++++++++--------
- 4 files changed, 19 insertions(+), 11 deletions(-)
-
-Index: linux-2.6/fs/dquot.c
-===================================================================
---- linux-2.6.orig/fs/dquot.c
-+++ linux-2.6/fs/dquot.c
-@@ -789,12 +789,12 @@ static void add_dquot_ref(struct super_b
- 
- 	spin_lock(&inode_lock);
- 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
-+		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
-+			continue;
- 		if (!atomic_read(&inode->i_writecount))
- 			continue;
- 		if (!dqinit_needed(inode, type))
- 			continue;
--		if (inode->i_state & (I_FREEING|I_WILL_FREE))
--			continue;
- 
- 		__iget(inode);
- 		spin_unlock(&inode_lock);
-@@ -870,6 +870,12 @@ static void remove_dquot_ref(struct supe
- 
- 	spin_lock(&inode_lock);
- 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
-+		/*
-+		 *  We have to scan also I_NEW inodes because they can already
-+		 *  have quota pointer initialized. Luckily, we need to touch
-+		 *  only quota pointers and these have separate locking
-+		 *  (dqptr_sem).
-+		 */
- 		if (!IS_NOQUOTA(inode))
- 			remove_inode_dquot_ref(inode, type, tofree_head);
- 	}
-Index: linux-2.6/fs/drop_caches.c
-===================================================================
---- linux-2.6.orig/fs/drop_caches.c
-+++ linux-2.6/fs/drop_caches.c
-@@ -18,7 +18,7 @@ static void drop_pagecache_sb(struct sup
- 
- 	spin_lock(&inode_lock);
- 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
--		if (inode->i_state & (I_FREEING|I_WILL_FREE))
-+		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
- 			continue;
- 		if (inode->i_mapping->nrpages == 0)
- 			continue;
-Index: linux-2.6/fs/inode.c
-===================================================================
---- linux-2.6.orig/fs/inode.c
-+++ linux-2.6/fs/inode.c
-@@ -356,6 +356,8 @@ static int invalidate_list(struct list_h
- 		if (tmp == head)
- 			break;
- 		inode = list_entry(tmp, struct inode, i_sb_list);
-+		if (inode->i_state & I_NEW)
-+			continue;
- 		invalidate_inode_buffers(inode);
- 		if (!atomic_read(&inode->i_count)) {
- 			list_move(&inode->i_list, dispose);
-Index: linux-2.6/fs/notify/inotify/inotify.c
-===================================================================
---- linux-2.6.orig/fs/notify/inotify/inotify.c
-+++ linux-2.6/fs/notify/inotify/inotify.c
-@@ -380,6 +380,14 @@ void inotify_unmount_inodes(struct list_
- 		struct list_head *watches;
- 
- 		/*
-+		 * We cannot __iget() an inode in state I_CLEAR, I_FREEING,
-+		 * I_WILL_FREE, or I_NEW which is fine because by that point
-+		 * the inode cannot have any associated watches.
-+		 */
-+		if (inode->i_state & (I_CLEAR|I_FREEING|I_WILL_FREE|I_NEW))
-+			continue;
-+
-+		/*
- 		 * If i_count is zero, the inode cannot have any watches and
- 		 * doing an __iget/iput with MS_ACTIVE clear would actually
- 		 * evict all inodes with zero i_count from icache which is
-@@ -388,14 +396,6 @@ void inotify_unmount_inodes(struct list_
- 		if (!atomic_read(&inode->i_count))
- 			continue;
- 
--		/*
--		 * We cannot __iget() an inode in state I_CLEAR, I_FREEING, or
--		 * I_WILL_FREE which is fine because by that point the inode
--		 * cannot have any associated watches.
--		 */
--		if (inode->i_state & (I_CLEAR | I_FREEING | I_WILL_FREE))
--			continue;
--
- 		need_iput_tmp = need_iput;
- 		need_iput = NULL;
- 		/* In case inotify_remove_watch_locked() drops a reference. */
+greg k-h
