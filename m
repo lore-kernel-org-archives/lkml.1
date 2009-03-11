@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbZCKOnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZCKOsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752998AbZCKOnk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 10:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZCKOnb
+	id S1754503AbZCKOsA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 10:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbZCKOrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 10:43:31 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:56070 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751513AbZCKOna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 10:43:30 -0400
-Date: Wed, 11 Mar 2009 07:43:27 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Dmitriy V'jukov" <dvyukov@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: SRCU: Number of outstanding callbacks
-Message-ID: <20090311144327.GA7086@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <loom.20090311T104615-980@post.gmane.org>
+	Wed, 11 Mar 2009 10:47:49 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:21837 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750766AbZCKOrs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 10:47:48 -0400
+Message-ID: <49B7CEF2.2000409@hp.com>
+Date: Wed, 11 Mar 2009 10:47:14 -0400
+From: Brian Haley <brian.haley@hp.com>
+Organization: Open Source and Linux Organization
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <loom.20090311T104615-980@post.gmane.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: John Dykstra <john.dykstra1@gmail.com>
+CC: Thomas Backlund <tmb@mandriva.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: BUG when unloading bonding on 2.6.29-rc7-git3
+References: <49B6CA4A.2040506@mandriva.org> <1236727393.7958.38.camel@Maple>
+In-Reply-To: <1236727393.7958.38.camel@Maple>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 10:48:24AM +0000, Dmitriy V'jukov wrote:
-> I've read Paul McKenney's article about SRCU:
-> http://lwn.net/Articles/202847
+John Dykstra wrote:
+> ipv6:  Fix BUG when disabled ipv6 module is unloaded
 > 
-> And I am curious as to why only single outstanding SRCU callback per
-> thread is allowed. The problem with RCU is that it allows basically
-> unbounded number of outstanding callbacks, so why just not bound
-> number of outstanding callbacks in SRCU? Memory blocks are frequently
-> quite small, so that subsystem can tolerate up to let's say 1000
-> pending memory blocks. Restriction on single pending callback looks
-> quite severe (may cause unnecessary blocking), so why not provide:
-> int init_srcu_struct(struct srcu_struct *sp, int
-> limit_of_pending_callbacks);
-> ?
-> While limit is not reached call_srcu() is non blocking, otherwise it
-> waits for grace period (behaves like synchronize_srcu()). I think in
-> many situations call_srcu() will be practically non-blocking (in
-> common case), while still guaranteeing bounded memory consumption.
-> Note that currently number of outstanding SRCU callbacks is
-> "unbounded" anyway (equal to number_of_threads), so changing number_of_threads
-> to number_of_threads+N must not have any bad consequences.
-> Or it's just not worth doing (because of the additional implementation
-> complexity)?
-> Thanks.
+> Do not try to "uninitialize" ipv6 if its initialization had been skipped
+> because module parameter disable=1 had been specified.
+> 
+> Reported-by:  Thomas Backlund <tmb@mandriva.org>
+> Signed-off-by: John Dykstra <john.dykstra1@gmail.com>
+> ---
+> net/ipv6/af_inet6.c |    3 +++
+> 1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/net/ipv6/af_inet6.c b/net/ipv6/af_inet6.c
+> index da944ec..a0f1798 100644
+> --- a/net/ipv6/af_inet6.c
+> +++ b/net/ipv6/af_inet6.c
+> @@ -1192,6 +1192,9 @@ module_init(inet6_init);
+> 
+> static void __exit inet6_exit(void)
+> {
+> +       if (disable_ipv6)
+> +               return;
+> +
+>         /* First of all disallow new sockets creation. */
+>         sock_unregister(PF_INET6);
+>         /* Disallow any further netlink messages */
 
-The short answer is, as you guessed, because it is not (yet) worth doing.
-This is at least in part because SRCU is not heavily used.
+Acked-by: Brian Haley <brian.haley@hp.com>
 
-The philosophy behind the limitation is that the memory overhead of
-the blocks is a small fraction of the memory required to represent
-a thread.  As you say, there are a number of other strategies that can
-be pursued, but the current strategy has the advantage of simplicity.
-In particular, the current strategy does not require a failure return
-from an as-yet-nonexistent call_srcu().  Handling such a failure return
-is certainly possible, but someone would have to show me an extremely
-good reason for putting up with this.  ;-)
+Thanks for fixing this John.
 
-							Thanx, Paul
+Sorry, this was in the original patch I tested here, but somehow didn't make it
+into what I sent to Dave.
+
+-Brian
