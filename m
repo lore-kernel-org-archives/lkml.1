@@ -1,73 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751638AbZCKOxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754408AbZCKOzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751638AbZCKOxX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 10:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbZCKOxO
+	id S1754408AbZCKOzf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 10:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbZCKOz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 10:53:14 -0400
-Received: from peruna.fi ([62.220.235.200]:52596 "EHLO peruna.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751623AbZCKOxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 10:53:13 -0400
-X-Greylist: delayed 597 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Mar 2009 10:53:13 EDT
-From: Mika Tiainen <mikat@iki.fi>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, linux-kernel@vger.kernel.org
-Subject: Re: Slow clock on AMD 740G chipset
-References: <874ozu2hcl.fsf@divinity.mikat.iki.fi>
-	<20090310101807.GD20716@alberich.amd.com>
-	<20090311100525.GE20716@alberich.amd.com>
-	<49B7A79A.6090008@msgid.tls.msk.ru>
-Date: Wed, 11 Mar 2009 16:43:11 +0200
-In-Reply-To: <49B7A79A.6090008@msgid.tls.msk.ru> (Michael Tokarev's message
- of
-	"Wed, 11 Mar 2009 14:59:22 +0300")
-Message-ID: <87ocw8qfwg.fsf@divinity.mikat.iki.fi>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) XEmacs/21.4.22 (linux)
+	Wed, 11 Mar 2009 10:55:26 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:2421 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751623AbZCKOz0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 10:55:26 -0400
+From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: "Matt Fleming" <matt@console-pimps.org>
+Subject: Re: [PATCH 5/7] mmc_spi: allow higher timeouts for SPI mode
+Date: Wed, 11 Mar 2009 15:55:00 +0100
+User-Agent: KMail/1.9.10
+Cc: "Pierre Ossman" <drzeus@drzeus.cx>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+References: <20090311140219.GA1475@console-pimps.org>
+In-Reply-To: <20090311140219.GA1475@console-pimps.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200903111555.00982.wolfgang.mues@auerswald.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11 Mar 2009, Michael Tokarev wrote:
+Matt,
 
->> On Tue, Mar 10, 2009 at 11:18:07AM +0100, Andreas Herrmann wrote:
->>> On Tue, Jan 20, 2009 at 04:16:10PM +0200, Mika Tiainen wrote:
->>>> Hi,
->>>>
->>>> I built a new machine with Gigabyte GA-MA74GM-S2H motherboard that
->>>> ntpd can't keep synced. Could this be a kernel bug or is it a
->>>> hardware problem?
->>>>
->>>> Installed with Debian 2.6.27 kernel and currently running a self
->>>> built 2.6.28.1, both have the problem. It's falling behind over
->>>> 2s/15min:
+Am Mittwoch, 11. März 2009 schrieb Matt Fleming:
+> I am correct in thinking that this patch, in conjuction with your other
+> patch, "[PATCH 6/7] mmc_spi: convert timeout handling to jiffies and avoid
+> busy waiting", will now penalize my working card and mandate a timeout
+> of 1 second?
 >
->>> That's annoying but I can't really help you with this. Maybe using
->>> adjtimex as described in section 9.1.6 in
->>> http://support.ntp.org/bin/view/Support/KnownHardwareIssues is an
->>> option for you.
+> Without your patch 6 at least mmc_spi_skip() would busy-wait for the
+> response, and if my card completed in less than 1 second then it'd just
+> return quicker.
 >
-> And adjtimex helped me on all 3 machines.
-> Running it in self-calibrate mode (that 70 sec thing)
-> plus running ntpd was enough for me for now.
+> It seems you've introduced a performance hit on all MMC over SPI cards.
 
-Yes, I'm also using adjtimex+ntpd now with 10024 tick for adjtimex.
+No.
 
-> What's interesting is that some time ago it worked just fine,
-> and, which is even more interesting, windows on this very
-> hardware shows quite good time stability (WITHOUT setting
-> the time using [s]ntp, its ntp client is disabled).
+A timeout is a maximum time to wait, not a minimum time.
+Waiting is terminated by a response or by the timeout, whichever comes sooner.
 
-Something weird is definitely going on under Linux. I got it working by
-chance in 2.6.28 _exactly_ once. Just booted normally and ntpd kept it
-in time without any resets for the week that it was up, next boot with
-the same kernel and it was again falling behind so I installed adjtimex.
+My patch 6 in mmc_spi_skip() is doing a busy-wait for a short while ( less 
+than 1 jiffie), and starts to call schedule() inside the loop if the card is 
+slower.
 
-There was no difference in dmesg between working and not working.
+My goal was to avoid the long-lasting busy waiting. I have measured times up 
+to 900ms! With my patch, the longest busy waiting will be 1 jiffie. 
 
+And yes, if the SD card is sending its response after 5 jiffies, it is 
+recognized only after the scheduler schedules this process, which will incure 
+a delay to the data transfer. The amount of delay is determined by the number 
+of running processes and the number of HZ.
+
+The typical case for this is a series of data block writes to the SD card. 
+Until the internal card buffers are full, such writes will be acknowledged by 
+a fast response. But if the card buffers are full, you will get one long 
+delay until the card controller has written most of the pending data to 
+flash.
+
+best regards
+ 
+i. A. Wolfgang Mües
 -- 
-Mika Tiainen		Always be wary of any helpful item that
-mikat@iki.fi		weighs less than its operating manual.
-http://mikat.iki.fi	-- (Terry Pratchett, Jingo)
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
