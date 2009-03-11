@@ -1,93 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZCKTOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZCKTQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbZCKTOS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 15:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbZCKTOH
+	id S1755319AbZCKTQT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 15:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbZCKTQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 15:14:07 -0400
-Received: from web50112.mail.re2.yahoo.com ([206.190.39.149]:28846 "HELO
-	web50112.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752191AbZCKTOH convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 15:14:07 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Mar 2009 15:14:06 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=shC74c3h7mo2teEX4vbsp+wfitMv1xYum60jHbg54BjTkXMdW6Uch1ZJnv3qoDh+kzfIG0KCagAGfFerlzhwYqlmlBviIHpDrUFeMbEnmx4TcrtVMIrNMSWFsYYu55JDsRYyTnLBMbA8OYQwaWsb8gO1nh/Ax8ezg/nc8EX1vK0=;
-Message-ID: <964156.19042.qm@web50112.mail.re2.yahoo.com>
-X-YMail-OSG: D.YbDoAVM1knJCpYGV6UaccUPZN2TMCvux1A0QZ00cqE5d6ZG14YjuxwX_rg_lkJ80OU.mi8DoiEpHYvZsmHqfJSWwdSDXtYK_OckCi3DEJW4Apuh779cJriW5GxdG_w07AiQ2bCkSYhyeMGEKzxz.gCc3rT_crvwviCwBlsEAa8ZPU4IJfEtHqqB6Iap04sn6VCeHDVcsHv5aZS6PLMHvpa.w9MzS5lQdk-
-X-Mailer: YahooMailClassic/5.1.19 YahooMailWebService/0.7.289.4
-Date: Wed, 11 Mar 2009 12:07:23 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [v2 PATCH 0/7] Add AMD8111 and AMD8131 EDAC drivers
-To: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net,
-       Harry Ciao <qingtao.cao@windriver.com>
+	Wed, 11 Mar 2009 15:16:09 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:25547 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752415AbZCKTQI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 15:16:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=cXnr3+qpi+GWgslNQMz0DnUsmk9nqPaMjUYmDR9N1B0K2IO7HDbu/ekv3lhZylxYnP
+         aTC0rKMeg+Fs9zjIBspPU7EV6FNDHfFWazK2lv+z0gNJlLjEqmgdvEnHdAdix31IUnp+
+         iRxFxSKRcOQXN/sylmvOJ4TXzMLHPKTyPz4GU=
+Message-ID: <49B80DF6.6070407@gmail.com>
+Date: Wed, 11 Mar 2009 20:16:06 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Observe wrapping variables in while loops
+References: <49B3481E.5080108@gmail.com> <alpine.DEB.2.00.0903091119090.2203@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0903091119090.2203@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Steven Rostedt wrote:
+> 
+> 
+> On Sun, 8 Mar 2009, Roel Kluin wrote:
+> 
+>> Inspired by your definition of 'if', I came up with something to test variable
+>> wrapping in while loops, and was wondering if this was useful for the linux
+>> kernel:
 
---- On Tue, 3/10/09, Harry Ciao <qingtao.cao@windriver.com> wrote:
+> Interesting variation. Now the question is, how many bugs are we aware of 
+> that were caused by wraps? If there are a few, then I would say this is 
+> definitely something to look at. Otherwise, it may not be worth putting 
+> this in mainline.
+> 
+> -- Steve
 
-> From: Harry Ciao <qingtao.cao@windriver.com>
-> Subject: [v2 PATCH 0/7] Add AMD8111 and AMD8131 EDAC drivers
-> To: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
-> Date: Tuesday, March 10, 2009, 9:25 PM
-> 
-> Hi,
-> 
-> This is the v2 series of patches for EDAC AMD8111 &
-> AMD8131 drivers.
-> I have integrated suggestions from Bert, Greg and Andrew.
-> Tests all passed on Maple platform, these modules could be
-> properly
-> loaded/unloaded, with their sysfs interfaces
-> created/cleaned.
-> 
-> Any suggestions are warmly welcomed!
-> 
-> Best regards,
-> 
-> Harry
-> 
-> 
-> Comments:        
-> ---------
-> Introduce AMD8111 EDAC driver, which makes use of error
-> detections 
-> on the LPC Bridge Controller and PCI Bridge Controller on
-> the AMD8111 
-> HyperTransport I/O Hub.
-> 
-> Introduce AMD8131 EDAC driver source file, which makes use
-> of error
-> detections on the PCI-X Bridge Controllers on the AMD8131
-> HyperTransport
-> PCI-X Tunnel.
-> 
-> Since both AMD8111 and AMD8131 EDAC drivers would use
-> edac_pci_ctl_info
-> structures, EDAC core has to take the responsibility to
-> allocate a unique
-> "edac_pci_idx" for each of them, by newly added
-> edac_pci_alloc_index().
-> 
-> Note, by far only POLL mode is supported, and they have
-> been tested on 
-> MAPLE platform, from below test logs we can tell that they
-> could be 
-> correctly installed and removed, and export proper sysfs
-> interfaces.
+Hi Steve, Andrew,
 
-harry,
+Below is a extended version, that does some more tests. it obviously isn't
+finished, it requires more work done, but I think it may eventually provide very
+interesting runtime debugging observations.
 
-thanks for the new edac_pci_alloc_index(). I have been meaning to solve that issue for sometime, but didn't have a pressing need to do so. You brought one and solved it.
+Roel
+------------------------------>8-------------8<---------------------------------
 
-thanks again
+/* (C) Roel Kluin, 2009 GPL v.2 */
 
-doug t
+#include <stdio.h>
+#include <string.h>
+
+#define ULONG_MAX       (~0UL)
+typedef enum {false, true} bool;
+#define NULL ((void *)0)
+
+struct while_data {
+        const char *func;
+        const char *file;
+        const char *str;
+        unsigned line;
+	bool signd;
+	bool postfix;
+	bool incr;
+        unsigned long last;
+	bool printed;
+	struct while_data *next;
+};
+
+static struct while_data *while_data_head;
+
+int while_unsigned(struct while_data *w, int val)
+{
+	if (!(w->printed & 1)) {
+		w->next = while_data_head;
+		while_data_head = w;
+		w->signd = false;
+
+		const char* decrstr = strstr(w->str, "--");
+		if (decrstr != NULL) {
+			if (strcmp(decrstr, "--") == 0) {
+				w->incr = false;
+				w->postfix = true;
+			} else if (strcmp(decrstr, w->str) == 0) {
+				/* FIXME: we have to ensure that
+				   the first part is a variable name
+				   and nothing else */
+				w->incr = false;
+				w->postfix = false;
+			} else {
+				printf("decrement not recognized.\n");
+			}
+		}
+		else
+			printf("no decrement found.\n");
+		w->printed |= 1;
+	}
+	if (w->last < val && !(w->printed & 2)) {
+		printf("variable wraps at %s:%u:%s()!\n", w->file, w->line, w->func);
+		printf("while(%s) with a variable that is %d!\n", w->str, val);
+		w->printed |= 2;
+		return 0;
+	}
+	return val;
+}
+
+
+int while_int(struct while_data *w, int val)
+{
+	if (!(w->printed & 1)) {
+		w->next = while_data_head;
+		while_data_head = w;
+		w->signd = true;
+
+		const char* decrstr = strstr(w->str, "--");
+		if (decrstr != NULL) {
+			if (strcmp(decrstr, "--") == 0) {
+				w->incr = false;
+				w->postfix = true;
+			} else if (strcmp(decrstr, w->str) == 0) {
+				/* FIXME: we have to ensure that
+				   the first part is a variable name
+				   and nothing else */
+				w->incr = false;
+				w->postfix = false;
+			} else {
+				printf("decrement not recognized.\n");
+			}
+		}
+		else
+			printf("no decrement found.\n");
+		w->printed |= 1;
+	}
+	/* other test for wrapping here */
+	return val;
+}
+
+#define __while_check__(x) ({						\
+	static struct while_data ______w = {				\
+		.func = __func__,					\
+		.file = __FILE__,					\
+		.str = #x,						\
+		.line = __LINE__,					\
+		.last = ULONG_MAX,					\
+		.printed = 0,						\
+	};								\
+	__builtin_choose_expr(						\
+		__builtin_constant_p(x),				\
+		(x),							\
+	__builtin_choose_expr(						\
+		__builtin_types_compatible_p(typeof(x), int),		\
+		while_int(&______w, (x)),				\
+	__builtin_choose_expr(						\
+		__builtin_types_compatible_p(typeof(x), unsigned),	\
+		while_unsigned(&______w, (x)),				\
+		(x)							\
+	)));								\
+})
+
+#define while(x)	while(__while_check__(x))
+
+
+int check_if(int val, const char* test, const char* func, int line)
+{
+	struct while_data *w = while_data_head;
+
+	if (strcmp(func, while_data_head->func) != 0)
+		goto end;
+
+	/* FIXME: we have to verify that the variable
+	to the left is the same as the one used in
+	the while loop */
+	/* TODO: also test "!= 0", "== 0" (and variants)*/
+	if (w->incr ) {
+		if(w->postfix) {
+			if (w->signd) {
+				;
+			} else {
+				;
+			}
+		} else {
+			if (w->signd) {
+				;
+			} else {
+				;
+			}
+		}
+	} else {
+		if(w->postfix) {
+			if (w->signd) {
+				if (strstr(test, "< 0") != 0) {
+					printf("after while(%s) at %s:%u:%s()\n", w->str,
+					w->file, w->line, w->func);
+					printf("if(%s) at line %u is off by one.\n", test, line);
+				} else if (strstr(test, ">= 0") != 0){
+					printf("after while(%s) at %s:%u:%s()\n", w->str,
+					w->file, w->line, w->func);
+					printf("if(%s) at line %u is off by one.\n", test, line);
+				}
+			} else {
+				if (strstr(test, "< 0") != 0) {
+					printf("if(%s) at line %u is always false, since variable is unsigned.\n", test, line);
+				} else if (strstr(test, ">= 0") != 0){
+					printf("if(%s) at line %u is always true, since variable is unsigned.\n", test, line);
+				}
+			}
+		} else {
+			if (w->signd) {
+				if (strstr(test, "<= 0") != 0) {
+					printf("after while(%s) at %s:%u:%s()\n", w->str,
+					w->file, w->line, w->func);
+					printf("if(%s) at line %u is off by one.\n", test, line);
+				} else if (strstr(test, "> 0") != 0){
+					printf("after while(%s) at %s:%u:%s()\n", w->str,
+					w->file, w->line, w->func);
+					printf("if(%s) at line %u is off by one.\n", test, line);
+				}
+			} else {
+				if (strstr(test, "< 0") != 0) {
+					printf("if(%s) at line %u is always false, since variable is unsigned.\n", test, line);
+				} else if (strstr(test, ">= 0") != 0){
+					printf("if(%s) at line %u is always true, since variable is unsigned.\n", test, line);
+				} else if (strstr(test, "> 0") != 0){
+					printf("if(%s) at line %u is off by one.\n", test, line);
+				}
+			}
+		}
+	}
+end:
+	return val;
+}
+
+#define __if_check__(x) ({						\
+	check_if((x), #x, __func__, __LINE__);				\
+})
+
+#define if(x)	if(__if_check__(x))
+
+int main(int argc, char* argv[])
+{
+	//#define x 0
+	unsigned x = 10;
+	int y;
+	// these alternatives, should work
+
+	while (x--)
+		/*printf("in loop:%d\n", x)*/;
+
+	if (x < 0)
+		printf("won't print!\n");
+
+	x = 10;
+	while (--x)
+		/*printf("in loop:%d\n", x)*/;
+
+	printf("after loop:%d\n", x);
+
+	if (x < 0)
+		printf("won't print!\n");
+
+	y = 10;
+	while (y--)
+		/*printf("in loop:%d\n", x)*/;
+
+	if (y < 0)
+		printf("will print.\n");
+
+	y = 10;
+	while (--y)
+		/*printf("in loop:%d\n", x)*/;
+
+	if (y < 0)
+		printf("won't print!\n");
+
+	return 0;
+}
 
