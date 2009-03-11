@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbZCKQRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbZCKQVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753273AbZCKQRq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZCKQRh
+	id S1753280AbZCKQVn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbZCKQVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:17:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35577 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750870AbZCKQRg (ORCPT
+	Wed, 11 Mar 2009 12:21:34 -0400
+Received: from mail-ausfall.charite.de ([193.175.70.131]:34376 "EHLO
+	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751256AbZCKQVe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:17:36 -0400
-Date: Wed, 11 Mar 2009 12:17:33 -0400
-From: Kyle McMartin <kyle@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: sam@ravnborg.org, jakub@redhat.com, linux-kbuild@vger.kernel.org
-Subject: [PATCH] scripts/unifdef.c: rename getline symbol to something else
-Message-ID: <20090311161733.GE5448@bombadil.infradead.org>
+	Wed, 11 Mar 2009 12:21:34 -0400
+Date: Wed, 11 Mar 2009 17:21:31 +0100
+From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Something is leaking, but what?
+Message-ID: <20090311162131.GN11298@charite.de>
+Mail-Followup-To: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kyle McMartin <kyle@redhat.com>
+Linux postamt.charite.de 2.6.29-rc6-git2 #1 SMP Wed Feb 25 17:34:39 CET 2009 i686 GNU/Linux
 
-Rawhide builds are currently failing to build unifdef.c, as the next
-version of glibc changes the default _POSIX_C_SOURCE level, which
-exposes getline() from <stdio.h>
+...
+[929292.829382] TCP: Peer 91.37.194.125:57734/993 unexpectedly shrunk window 3527254444:3527303709 (repaired)
+[935101.972818] Leak r=1 1
+[935124.185293] Leak r=1 1
+[935157.494875] Leak r=3 1
+[935160.944177] Leak r=1 1
+[935204.125721] Leak r=1 1
+[935219.851815] Leak r=1 1
+[943812.876384] TCP: Peer 84.190.201.56:1136/993 unexpectedly shrunk window 3545663355:3545676423 (repaired)
+...
 
-scripts/unifdef.c:209: error: conflicting types for 'getline'
-/usr/include/stdio.h:653: note: previous declaration of 'getline' was
-here
-make[2]: *** [scripts/unifdef] Error 1
-make[1]: *** [__headers] Error 2
-make: *** [vmlinux] Error 2
+What is it?
 
-Rename the symbol in unifdef.c to parseline to avoid this conflicting
-declaration.
-
-Otherwise Jakub says we could add a -D_POSIX_C_SOURCE=200112L as a
-workaround to unifdef CFLAGS, but this seems like it would be less
-desirable in the long term.
-
-Signed-off-by: Kyle McMartin <kyle@redhat.com>
-
----
-diff --git a/scripts/unifdef.c b/scripts/unifdef.c
-index 552025e..977e682 100644
---- a/scripts/unifdef.c
-+++ b/scripts/unifdef.c
-@@ -206,7 +206,7 @@ static void             done(void);
- static void             error(const char *);
- static int              findsym(const char *);
- static void             flushline(bool);
--static Linetype         getline(void);
-+static Linetype         parseline(void);
- static Linetype         ifeval(const char **);
- static void             ignoreoff(void);
- static void             ignoreon(void);
-@@ -512,7 +512,7 @@ process(void)
- 
- 	for (;;) {
- 		linenum++;
--		lineval = getline();
-+		lineval = parseline();
- 		trans_table[ifstate[depth]][lineval]();
- 		debug("process %s -> %s depth %d",
- 		    linetype_name[lineval],
-@@ -526,7 +526,7 @@ process(void)
-  * help from skipcomment().
-  */
- static Linetype
--getline(void)
-+parseline(void)
- {
- 	const char *cp;
- 	int cursym;
+-- 
+Ralf Hildebrandt                                Ralf.Hildebrandt@charite.de
+Charite - Universitätsmedizin Berlin            Tel.  +49 (0)30-450 570-155
+Geschäftsbereich IT | Abt. Netzwerk             Fax.  +49 (0)30-450 570-962
+Hindenburgdamm 30 | 12200 Berlin
