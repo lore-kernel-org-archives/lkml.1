@@ -1,113 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZCKJOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbZCKJR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753079AbZCKJOm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 05:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZCKJOd
+	id S1753311AbZCKJR4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 05:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZCKJRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 05:14:33 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54838 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbZCKJOc (ORCPT
+	Wed, 11 Mar 2009 05:17:47 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:59631 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751347AbZCKJRq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 05:14:32 -0400
-Date: Wed, 11 Mar 2009 18:13:02 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: bharata@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH] cpuacct: per-cgroup utime/stime statistics - v1
-Message-Id: <20090311181302.77c1de0b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090311085316.GA5592@in.ibm.com>
-References: <20090310124208.GC3902@in.ibm.com>
-	<20090311093812.298a0b21.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090311085316.GA5592@in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Mar 2009 05:17:46 -0400
+Message-ID: <49B781B6.3060704@vmware.com>
+Date: Wed, 11 Mar 2009 10:17:42 +0100
+From: Thomas Hellstrom <thellstrom@vmware.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
+MIME-Version: 1.0
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: 2.6.29 pat issue
+References: <498ADFE3.9020907@vmware.com>	 <1233856988.4286.83.camel@localhost.localdomain>	 <498B5ADE.3090602@vmware.com> <m1tz78pdwy.fsf@fess.ebiederm.org>	 <498C062C.201@vmware.com> <20090304060857.GA18318@linux-os.sc.intel.com>	 <130CA3A191875048A0624FB523A55EC7075DA7CA@PA-EXMBX51.vmware.com>	 <20090310013953.GA11312@linux-os.sc.intel.com>	 <49B6232B.4050503@vmware.com> <1236706959.4529.56.camel@localhost.localdomain>
+In-Reply-To: <1236706959.4529.56.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009 14:23:16 +0530
-Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
-
-> On Wed, Mar 11, 2009 at 09:38:12AM +0900, KAMEZAWA Hiroyuki wrote:
-> > On Tue, 10 Mar 2009 18:12:08 +0530
-> > Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > Based on the comments received during my last post
-> > > (http://lkml.org/lkml/2009/2/25/129), here is a fresh attempt
-> > > to get per-cgroup utime/stime statistics as part of cpuacct controller.
-> > > 
-> > > This patch adds a new file cpuacct.stat which displays two stats:
-> > > utime and stime. I wasn't too sure about the usefulness of providing
-> > > per-cgroup guest and steal times and hence not including them here.
-> > > 
-> > > Note that I am using percpu_counter for collecting these two stats.
-> > > Since percpu_counter subsystem doesn't protect the readside, readers could
-> > > theoritically obtain incorrect values for these stats on 32bit systems.
-> > 
-> > Using percpu_counter_read() means that .. but is it okay to ignore "batch"
-> > number ? (see FBC_BATCH)
-> 
-> I would think it might be ok with the understanding that read is not
-> a frequent operation. The default value of percpu_counter_batch is 32.
-> Ideally it should have been possible to set this value independently
-> for each percpu_counter. That way, users could have chosen an appropriate
-> batch value for their counter based on the usage pattern of their
-> counters.
+Pallipadi, Venkatesh wrote:
+> On Tue, 2009-03-10 at 01:22 -0700, Thomas Hellstrom wrote:
+>   
+>> Pallipadi, Venkatesh wrote:
+>>     
+>>> On Fri, Mar 06, 2009 at 03:44:07PM -0800, Thomas Hellstrom wrote:
+>>>   
+>>>       
+>>>> We get the warning when we insert RAM pages using vm_insert_pfn().
+>>>> Having normal RAM pages backing a PFN papping is a valid thing.
+>>>>
+>>>>     
+>>>>         
+>>> OK. Below is the updated patch that should fix this fully. Can you confirm?
+>>>
+>>> Thanks,
+>>> Venki
+>>>
+>>>   
+>>>       
+>> Yes, this patch should fix the problem. I'm still concerned about the 
+>> overhead of going through the
+>> RAM test for each inserted page.
+>>
+>> Why can't a pfn_valid() test be used in vm_insert_pfn()?
+>>
+>>     
 >
-Hmm, in my point of view, stime/utime's unit is mili second and it's enough
-big to be expected as "correct" value.
-If read is not frequent, I love precise value.
-
-
-> > 
-> > 
-> > > I hope occasional wrong values is not too much of a concern for
-> > > statistics like this. If it is a problem, we have to either fix
-> > > percpu_counter or do it all by ourselves as Kamezawa attempted
-> > > for cpuacct.usage (http://lkml.org/lkml/2009/3/4/14)
-> > > 
-> > Hmm, percpu_counter_sum() is bad ?
-> 
-> It is slow and it doesn't do exactly what we want. It just adds the
-> 32bit percpu counters to the global 64bit counter under lock and returns
-> the result. But it doesn't clear the 32bit percpu counters after accummulating
-> them in the 64bit counter.
-> 
-> If it is ok to be a bit slower on the read side, we could have something
-> like percpu_counter_read_slow() which would do what percpu_counter_sum()
-> does and in addition clear the 32bit percpu counters. Will this be
-> acceptable ? It slows down the read side, but will give accurate count.
-> This might slow down the write side also(due to contention b/n readers
-> and writers), but I guess due to batching the effect might not be too
-> pronounced. Should we be going this way ?
-> 
-I like precise one.  Maybe measuring overhead and comparing them and making a
-decision is a usual way to go.
-This accounting is once-a-tick event. (right?) So, how about measuring read-side
-over head ?
-
-> > 
-> > BTW, I'm not sure but don't we need special handling if
-> > CONFIG_VIRT_CPU_ACCOUNTING=y ?
-> 
-> AFAICS no. Architectures which define CONFIG_VIRT_CPU_ACCOUNTING end up calling
-> account_{system,user}_time() where we have placed our hooks for
-> cpuacct charging. So even on such architectures we should be able to
-> get correct per-cgroup stime and utime.
-> 
-ok,
+> Because we may have to track the RAM pages as well in future. We are
+> changing the e820 RAM check and making it use pfn_valid. But, for that
+> we have to change more things in tracking of RAM pages. Today we use one
+> bit in page struct without any refcounting. But, more changes there are
+> on ts way. This change here should keep the current kernel fine without
+> any regression.
+>
+> Thanks,
+> Venki
+>
+>   
+Ok, I understand.
+and yes, the regression should be fixed with the patch.
 
 Thanks,
--Kame
+Thomas
+
 
