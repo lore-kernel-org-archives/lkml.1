@@ -1,70 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZCKTYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZCKT0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbZCKTYS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 15:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZCKTYC
+	id S1755319AbZCKT0A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 15:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZCKTZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 15:24:02 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56821 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753883AbZCKTYA (ORCPT
+	Wed, 11 Mar 2009 15:25:51 -0400
+Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:52442 "EHLO
+	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753165AbZCKTZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 15:24:00 -0400
-Date: Wed, 11 Mar 2009 12:22:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Matthew Wilcox <matthew@wil.cx>
-cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] PCI fixes for 2.6.29
-In-Reply-To: <20090311043659.GC25995@parisc-linux.org>
-Message-ID: <alpine.LFD.2.00.0903111220200.32478@localhost.localdomain>
-References: <20090311043659.GC25995@parisc-linux.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
-Content-Transfer-Encoding: 8BIT
+	Wed, 11 Mar 2009 15:25:50 -0400
+To: torvalds@linux-foundation.org
+Subject: [GIT-PULL] More Squashfs fixes for 2.6.29?
+Cc: akpm@linux-foundation.org, Geert.Uytterhoeven@sonycom.com,
+       linux-kernel@vger.kernel.org, phillip@lougher.demon.co.uk, s.L-H@gmx.de
+Message-Id: <E1LhU3m-0001f1-Cw@dylan.lougher.demon.co.uk>
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date: Wed, 11 Mar 2009 19:25:46 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
+Please consider pulling the following Squashfs commit. It fixes an important
+mistake in a previous patch which flags some valid filesystems as corrupted.
 
-On Tue, 10 Mar 2009, Matthew Wilcox wrote:
-> 
-> These are the PCI fixes that have been piling up for the last week while
-> Jesse's been on vacation.  I don't think there's anything questionable
-> here.  All the patches have been posted to linux-pci.
+Please pull from
 
-Grrr. It doesn't even compile cleanly:
+git://git.kernel.org/pub/scm/linux/kernel/git/pkl/squashfs-linus.git 
 
-drivers/pci/quirks.c: In function ¡ht_check_msi_mapping¢:
-drivers/pci/quirks.c:2142: warning: ¡return¢ with no value, in function returning non-void
+Thanks
 
-and yes, it's a real bug.
+Phillip
 
-I'm not happy.
+commit 7dacdd0d86a70564cd56e49cd9432d68e0a58916
+Author: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date:   Wed Mar 11 17:55:28 2009 +0000
 
-I assume the proper fix is this trivial one-liner, but people should 
-double-check.
+Squashfs: Valid filesystems are flagged as bad by the corrupted fs patch
 
-Not pulled.
+The problem arises due to an unexpected corner-case with zlib which the
+corrupted filesystems patch didn't address.  Very occasionally zlib
+exits needing a couple of extra bytes of input (up to 6 seen bytes in the
+test filesystems), but with avail_out == 0 and no more output buffer
+space available.  This situation was incorrectly flagged as an output buffer
+overrun by the corrupted filesystems patch.
 
-		Linus
-
+Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+Reported-by: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+Tested-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/pci/quirks.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/squashfs/block.c |   29 ++++++++++++++++-------------
+ 1 files changed, 16 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index a13f3d7..4ba55d0 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -2139,7 +2139,7 @@ static int __devinit ht_check_msi_mapping(struct pci_dev *dev)
+diff --git a/fs/squashfs/block.c b/fs/squashfs/block.c
+index 321728f..b85173f 100644
+--- a/fs/squashfs/block.c
++++ b/fs/squashfs/block.c
+@@ -166,6 +166,22 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
  
- 	/* Enabling HT MSI mapping on this device breaks MCP51 */
- 	if (dev->device == 0x270)
--		return;
-+		return 0;
+ 		bytes = length;
+ 		do {
++			if (msblk->stream.avail_out == 0) {
++				if (page < pages) {
++					msblk->stream.next_out = buffer[page++];
++					msblk->stream.avail_out =
++								PAGE_CACHE_SIZE;
++				} else if (msblk->stream.avail_in > 0
++								|| bytes == 0) {
++					ERROR("zlib_inflate tried to "
++						"decompress too much data, "
++						"expected %d bytes.  Zlib "
++						"data probably corrupt\n",
++						srclength);
++					goto release_mutex;
++				}
++			}
++
+ 			if (msblk->stream.avail_in == 0 && k < b) {
+ 				avail = min(bytes, msblk->devblksize - offset);
+ 				bytes -= avail;
+@@ -184,19 +200,6 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
+ 				offset = 0;
+ 			}
  
- 	/* check if there is HT MSI cap or enabled on this device */
- 	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
+-			if (msblk->stream.avail_out == 0) {
+-				if (page == pages) {
+-					ERROR("zlib_inflate tried to "
+-						"decompress too much data, "
+-						"expected %d bytes.  Zlib "
+-						"data probably corrupt\n",
+-						srclength);
+-					goto release_mutex;
+-				}
+-				msblk->stream.next_out = buffer[page++];
+-				msblk->stream.avail_out = PAGE_CACHE_SIZE;
+-			}
+-
+ 			if (!zlib_init) {
+ 				zlib_err = zlib_inflateInit(&msblk->stream);
+ 				if (zlib_err != Z_OK) {
+-- 
+1.5.6.3
+
