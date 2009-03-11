@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbZCKVEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbZCKVE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753156AbZCKVEM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 17:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbZCKVD6
+	id S1753682AbZCKVE2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 17:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbZCKVEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 17:03:58 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:27688 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750886AbZCKVD5 (ORCPT
+	Wed, 11 Mar 2009 17:04:11 -0400
+Received: from smtp10.mail.tnz.yahoo.co.jp ([203.216.226.138]:46363 "HELO
+	smtp10.mail.tnz.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752592AbZCKVEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 17:03:57 -0400
+	Wed, 11 Mar 2009 17:04:09 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=rLZxZJqkMnFBocZ4gZN4gUPs4GznVcSI4WjwyXNp0MPFLzwLi61RkaQQBFreH2RHNxeXgdpp4/I9/7iANcfrM4Ltc3kVOB/NlwXfTgjjW4O6rv3qRmtFNdm1DORTEf15HiGC5Q6zP8ekybdt3xfjDikD2LgWXWU9DyiEm3cl9Y8=  ;
-X-YMail-OSG: 9qzMrgQVM1kvaGAkuLhNoidVMcgoDjXAwjHaRS_7GHBy2B.NRu25EhIzcG0I_58bgZ9_aM6qkY4uW_1W36R3b_vxPRPflykUzwmRDb5mC0QRTMR01zRRKoJ1N0eNfzjPSvzi0NsaHKp1KEiG6XIz7eUrWeaGmmRyaIJgpC_tpd_DEAjhhpguTk4yShMN
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Subject: Re: [PATCH 7/7] mmc_spi: support for non-byte-aligned cards
-Date: Wed, 11 Mar 2009 13:03:53 -0800
-User-Agent: KMail/1.9.10
-Cc: "Will Newton" <will.newton@gmail.com>, "Pierre Ossman" <drzeus@drzeus.cx>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-References: <87a5b0800903110656x7000e0c8q23ceae7e87483bf7@mail.gmail.com> <200903111534.34340.wolfgang.mues@auerswald.de>
-In-Reply-To: <200903111534.34340.wolfgang.mues@auerswald.de>
+  s=yj20050223; d=yahoo.co.jp;
+  h=Received:X-Apparently-From:Message-ID:From:To:Cc:References:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE;
+  b=I9LHo8BKwwkv7CcUwXTM2UcqwLaRqGXn/+XzF7aa4oywNk1dA3OshcOdt3QvU5zOKsB45vBCRaBM8nUc0/f+Lp4uc2ALCIhI/H3o1b2c/zqG+161imzJivGLZNOJZ2kY  ;
+X-Apparently-From: <n0diamond@yahoo.co.jp>
+Message-ID: <065A106FBB5F41B18A030BD2C87570FA@DIAMOND8600>
+From: "Norman Diamond" <n0diamond@yahoo.co.jp>
+To: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
+       "Norman Diamond" <n0diamond@yahoo.co.jp>
+References: <20090311032805.3120.qmail@web4114.mail.ogk.yahoo.co.jp> <49B78859.5050807@ru.mvista.com>
+Subject: Re: Off-by-one in both LIBATA and IDE drivers
+Date: Thu, 12 Mar 2009 06:03:33 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200903111403.54407.david-b@pacbell.net>
+	format=flowed;
+	charset="iso-2022-jp";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 March 2009, Wolfgang Mües wrote:
-> The SD protocoll ist NOT byte-aligned. Messages are starting with a 
-> leading "0" bit. I think some chip vendors have adapted the SPI mode
-> from SD mode and forgotten to do propper byte alignment. 
-
-Please capture that information in comments somewhere, so the
-next folk updating the driver won't have to be guessing as much
-about the low-level protocol bugs that are being coped with.
-
-Comments listing concrete examples of such cards (or even
-just a compatibility list posted to an archived mailing
-list so a websearch can find it) would be nice too.  Who
-knows, maybe the vendors would even fix the next rev of
-their silicon (or firmware, whatever).  ;)
-
-
-> Am Mittwoch, 11. März 2009 schrieb Will Newton:
-> > I have not seen these problems or seen them reported by others.
+Sergei Shtylyov wrote:
+> Norman Diamond wrote:
+>> [attribution stolen:]
+>>> [Norman Diamond:]
+>>>> It looks like both LIBATA and the old IDE drivers
+>>>> have an off-by-one error in deciding whether to use
+>>>> READ SECTOR(S) instead of READ SECTOR(S) EXT.
+>>>>
+>>> This was fixed here:
+>>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=97b697a11b07e2ebfa69c488132596cc5eb24119
+>>
+>> Thank you.
+>> I will see if I can port that fix to 2.6.24.3, because
+>> Slax 6.0.3 and kernel 2.6.24.3 avoided some other bugs of
+>> later kernels.
 >
-> Yes, it is hard to believe that such a design error is present in today SD
-> cards. But spi mode is used only by some devices which do not have a SD
-> host controller on board.
+> Note that this doesn't fix it for the IDE core.
 
-I think that's it exactly.  Some of the newer MMC-derived
-specifications even desupported SPI mode, as I recall.
+That helps explain my subsequent testing.  I'm still having problems.
 
-In practice, I can't see it going away for a very long time,
-but mid- and high-end systems tend to have real MMC/SD/SDIO
-controllers they use for media cards as well as eMMC and
-other "managed NAND" solutions (iNAND etc); and presumably
-CE-ATA isn't entirely a paper tiger.
+> The ide-disk driver however seems to use LBA48 regardless of the sector 
+> address.
 
-- Dave
+But that doesn't explain my subsequent testing.  That behaviour would cause 
+it to work in one of my present cases, but it still fails.
 
+> But still there are incorrect capacity checks, and it can fails with 
+> drivers not supporting LBA48 with DMA...
 
+Yeah that could be part of it.  2.6.20 turned on DMA more often than later 
+kernels, so I'm now thinking of reverting to 2.6.20.  I've heard (but 
+couldn't test personally) that 2.6.20 gave abysmal performance to users of 
+AMD chipsets.  Since Intel users outnumber them, I'm inclined to revert to a 
+version that worked for Intel even though AMD suffers. 
+
+--------------------------------------
+Power up the Internet with Yahoo! Toolbar.
+http://pr.mail.yahoo.co.jp/toolbar/
