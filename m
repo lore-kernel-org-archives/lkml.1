@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbZCKPOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZCKPOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755709AbZCKPOg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 11:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbZCKPOQ
+	id S1755907AbZCKPOx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 11:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbZCKPOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 11:14:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55920 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755455AbZCKPOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 11:14:15 -0400
-Date: Wed, 11 Mar 2009 11:12:51 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Greg Banks <gnb@sgi.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
-       linux-next@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: driver-core tree build failure
-Message-ID: <20090311151251.GA3150@redhat.com>
-References: <20090310192440.949884a1.sfr@canb.auug.org.au> <alpine.LRH.2.00.0903101423200.25436@vixen.sonytel.be> <20090310145311.6bf9d9e9@skybase> <alpine.LRH.2.00.0903101626450.25436@vixen.sonytel.be> <20090310170841.2257de86@skybase> <20090310200200.GB3091@redhat.com> <49B78D60.2070402@sgi.com>
+	Wed, 11 Mar 2009 11:14:42 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:2468 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755754AbZCKPOk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 11:14:40 -0400
+From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: "Will Newton" <will.newton@gmail.com>
+Subject: Re: [PATCH 7/7] mmc_spi: support for non-byte-aligned cards
+Date: Wed, 11 Mar 2009 16:14:19 +0100
+User-Agent: KMail/1.9.10
+Cc: "Pierre Ossman" <drzeus@drzeus.cx>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+References: <87a5b0800903110803k5e8a8ee4m50c572d845a38cb0@mail.gmail.com>
+In-Reply-To: <87a5b0800903110803k5e8a8ee4m50c572d845a38cb0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <49B78D60.2070402@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903111614.19727.wolfgang.mues@auerswald.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 09:07:28PM +1100, Greg Banks wrote:
-> 
-> I think this patch does the same thing more cleanly.
-> 
-> When CONFIG_DYNAMIC_DEBUG is enabled, allow callers of pr_debug()
-> to provide their own definition of pr_fmt() even if that definition
-> uses tricks like
-> 
-> #define pr_fmt(fmt) "%s:" fmt, __func__
-> 
+Will,
 
-patch looks good. I agree its simpler than what I proposed. However, I
-don't think we want to add pr_fmt() in the dynamic_dev_dbg() path, since
-dev_dbg() isn't doing that to start with. Other than that, I ack it.
+Am Mittwoch, 11. März 2009 schrieb Will Newton:
+> I have not seen these problems or seen them reported by others.
 
-thanks,
+Yes, it is hard to believe that such a design error is present in today SD 
+cards. But spi mode is used only by some devices which do not have a SD host 
+controller on board.
 
--Jason
+I know a commercial FAT/SD card software package, and I found that inside 
+their spi driver, there is support for non-byte-aligned cards too. So I am 
+not the only one who has knowlegde about this problem.
 
+Should I send you one of these cards so you can verify this problem?
+
+best regards
+ 
+i. A. Wolfgang Mües
+-- 
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
