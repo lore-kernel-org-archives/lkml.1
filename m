@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbZCKWCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZCKWDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755905AbZCKWCk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 18:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754451AbZCKV61
+	id S1754630AbZCKWDW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 18:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbZCKWBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 17:58:27 -0400
-Received: from smtp106.biz.mail.mud.yahoo.com ([68.142.200.254]:33345 "HELO
-	smtp106.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754532AbZCKV60 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 17:58:26 -0400
-X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
-X-YMail-OSG: .XbSjN8VM1mgbuDTnEsLkYTUY3MAUg38fT6n8DkJP_H8D7ZvHZakMYLWF.B5YlVcHU5UE04721I61X205kLjELHhX5m.jrbuj2rqhldceFK8SQWknwyka7HXfTIu1WW_3oa8Ye5VJQG07db9juDdjPSEbNA0wsdYvzmeTMWtVQ5Kk_cjzySEQFEvBMVUu_NnWj2fob8jU3yARkDqIb2IPimhXC_5L36ru064rYr7FvjYimA-
-X-Yahoo-Newman-Property: ymail-3
-From: Steven King <sfking@fdwdc.com>
-To: uClinux development list <uclinux-dev@uclinux.org>
-Subject: [RFC 13/14] Coldfire generic GPIO (m68knommu)
-Date: Wed, 11 Mar 2009 13:56:13 -0800
-User-Agent: KMail/1.9.10
-Organization: fdwdc.com
-Cc: linux-kernel@vger.kernel.org, Greg Ungerer <gerg@snapgear.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 11 Mar 2009 18:01:08 -0400
+Received: from gate.crashing.org ([63.228.1.57]:46126 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755499AbZCKWBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 18:01:07 -0400
+Subject: Re: [PATCH v4] introduce macro spin_event_timeout()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       rdreier@cisco.com, jirislaby@gmail.com, peterz@infradead.org,
+       will.newton@gmail.com, hancockrwd@gmail.com, jeremy@goop.org
+In-Reply-To: <49B80081.5060703@freescale.com>
+References: <1236699004-1863-1-git-send-email-timur@freescale.com>
+	 <20090310153537.5fd5d84d@lxorguk.ukuu.org.uk>
+	 <1236729711.7086.28.camel@pasglop>
+	 <20090311003756.25ffa6f4@lxorguk.ukuu.org.uk>
+	 <ed82fe3e0903110948w542a864dj821106900755f14e@mail.gmail.com>
+	 <20090311165806.0b6838ab@lxorguk.ukuu.org.uk>
+	 <49B80081.5060703@freescale.com>
+Content-Type: text/plain
+Date: Thu, 12 Mar 2009 08:58:42 +1100
+Message-Id: <1236808722.7086.66.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200903111456.13909.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Steven King <sfking@fdwdc.com>
+On Wed, 2009-03-11 at 13:18 -0500, Timur Tabi wrote:
+> Alan Cox wrote:
+> >> Are you talking about the udelay() inside the loop?  If so, I agree
+> >> that this is bad and have removed it in the PowerPC-specific version:
+> > 
+> > The behaviour you want there is system specific - 10uS is a minimum
+> > politeness value for x86 PCI bus for example.
+> 
+> So we need to allow for delays between successive rights?  We can
+> provide that with a third parameter to the macro.
 
-diff --git a/arch/m68k/include/asm/m5407sim.h b/arch/m68k/include/asm/m5407sim.h
-index cc22c4a..2519475 100644
---- a/arch/m68k/include/asm/m5407sim.h
-+++ b/arch/m68k/include/asm/m5407sim.h
-@@ -73,9 +73,15 @@
- #define MCFSIM_DACR1		0x110		/* DRAM 1 Addr and Ctrl (r/w) */
- #define MCFSIM_DMR1		0x114		/* DRAM 1 Mask reg (r/w) */
- 
--#define	MCFSIM_PADDR		0x244		/* Parallel Direction (r/w) */
--#define	MCFSIM_PADAT		0x248		/* Parallel Data (r/w) */
-+#define	MCFSIM_PADDR		(MCF_MBAR + 0x244)
-+#define	MCFSIM_PADAT		(MCF_MBAR + 0x248)
- 
-+/*
-+ * Generic GPIO support
-+ */
-+#define MCFGPIO_PIN_MAX			16
-+#define MCFGPIO_IRQ_MAX			-1
-+#define MCFGPIO_IRQ_VECBASE		-1
- 
- /*
-  *	Some symbol defines for the above...
+I prefer Alan's method of having the macro be followed by { and } so we
+can add things in there. The delay between access will often be somewhat
+platform or device specific, and some drivers might be able to do useful
+things while spinning.
+
+The other big advantage of that approach is that drivers that aren't in
+an atomic section can use msleep() and allow the kernel to schedule on
+that processor.
+
+> Is there an architecture-independent method for reading a timebase
+> register that's not jiffies?
+
+Not really since there isn't an architecture independent "timebase
+register" anyway. But Jiffies for the timeout value doesn't sound
+necessarily -that- bad.
+
+Cheers,
+Ben.
+
+
