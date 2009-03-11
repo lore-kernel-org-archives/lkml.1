@@ -1,89 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbZCKMvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZCKMxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbZCKMvd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 08:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbZCKMvT
+	id S1755467AbZCKMxq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 08:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbZCKMxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 08:51:19 -0400
-Received: from smtpfb2-g21.free.fr ([212.27.42.10]:39541 "EHLO
-	smtpfb2-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755225AbZCKMvS (ORCPT
+	Wed, 11 Mar 2009 08:53:37 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:49521 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753021AbZCKMxg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 08:51:18 -0400
-Date: Wed, 11 Mar 2009 13:51:08 +0100 (CET)
-From: yann.poupet@free.fr
-To: linux-kernel@vger.kernel.org
-Message-ID: <3848726.1723791236775868071.JavaMail.root@spooler2-g27.priv.proxad.net>
-Subject: [PROBLEM]: potential unaligned memory access in
- drivers/usb/gadget/rndis.c
+	Wed, 11 Mar 2009 08:53:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=HltnvKQURFf5AJfYPOd7GB1eRqIjQ9+NmV7xP+FfVPiC1a4IiF6vkxCt7XdFbt/PWf
+         7HbJWDbS//g1N6AW7hiqReRv4iIpGAwL+3L1+9fjjUJDEXo7KTmdiiqUPBKEYldAulLS
+         CfHkA9TzR+txxX9JKI7zx3Z2a8Qq1d+SrDwX0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Date: Wed, 11 Mar 2009 15:53:34 +0300
+Message-ID: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com>
+Subject: VFS, NFS security bug? Should CAP_MKNOD and CAP_LINUX_IMMUTABLE be 
+	added to CAP_FS_MASK?
+From: Igor Zhbanov <izh1979@gmail.com>
+To: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       bfields@fieldses.org, neilb@suse.de, Trond.Myklebust@netapp.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [172.20.243.41]
-X-Mailer: Zimbra 5.0.11_GA_2627.UBUNTU8 (zclient/5.0.11_GA_2627.UBUNTU8)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hello!
 
-while working on a 2.6.18.2 kernel on ARM9 arch., I noticed RNDIS module might trigger lots of unaligned access exceptions.
-Looks like it comes from rndis_add_hdr() function, which uses pointer from skb_pull as if it is aligned on a 4bytes boundary.
+It seems that CAP_MKNOD and CAP_LINUX_IMMUTABLE were forgotten to be
+added to CAP_FS_MASK_B0 in linux-2.6.x and to CAP_FS_MASK in
+linux-2.4.x. Both capabilities affects file system and can be
+considered file system capabilities.
 
-void rndis_add_hdr (struct sk_buff *skb)
-{
-    struct rndis_packet_msg_type    *header;
+Let's look at linux-2.6.x.
 
-    if (!skb)
-        return;
-    header = (void *) skb_push (skb, sizeof *header);
-    memset (header, 0, sizeof *header);
-    header->MessageType = __constant_cpu_to_le32(REMOTE_NDIS_PACKET_MSG);
-    header->MessageLength = cpu_to_le32(skb->len);
-    header->DataOffset = __constant_cpu_to_le32 (36);
-    header->DataLength = cpu_to_le32(skb->len - sizeof *header);
-}
+In include/linux/capability.h CAP_FS_SET is defined to contain
+following capabilities:
+CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_DAC_READ_SEARCH, CAP_FOWNER,
+CAP_FSETID and CAP_MAC_OVERRIDE.
 
+And CAP_NFSD_SET is defined to be the same plus CAP_SYS_RESOURCE.
 
-It happened to me that skb_pull() returns a pointer to a location not aligned on a 4 bytes boundary.
+So, both CAP_FS_SET and CAP_NFSD_SET doesn't include CAP_MKNOD and
+CAP_LINUX_IMMUTABLE.
 
-As a quick workaround, I modified the code to:
+Also include/linux/capability.h there are cap_drop_fs_set(...),
+cap_raise_fs_set(...),
+cap_drop_nfsd_set(...) and cap_raise_nfsd_set(...) inline functions that return
+corresponding capabilities sets.
 
-void rndis_add_hdr (struct sk_buff *skb)
-{
-    struct rndis_packet_msg_type    *header;
-    static struct rndis_packet_msg_type new = {
-    __constant_cpu_to_le32(REMOTE_NDIS_PACKET_MSG), /*  MessageType         */
-    0,                                              /*  MessageLength       */
-    __constant_cpu_to_le32 (36),                    /*  DataOffset          */
-    0,                                              /*  DataLength          */
-    0,                                              /*  OOBDataOffset       */
-    0,                                              /*  OOBDataLength       */
-    0,                                              /*  NumOOBDataElements  */
-    0,                                              /*  PerPacketInfoOffset */
-    0,                                              /*  PerPacketInfoLength */
-    0,                                              /*  VcHandle            */
-    0,                                              /*  Reserved            */
-    };
+Let's look how these functions are used.
 
-    if (!skb)
-        return;
-    header = (void *) skb_push (skb, sizeof *header);
-    memset (header, 0, sizeof *header); /* probably not necessary */
-    new.MessageLength = cpu_to_le32(skb->len);
-    new.DataLength = cpu_to_le32(skb->len - sizeof *header);
-    memcpy((u8*)header,(u8*)&new,sizeof(new));
-}
+In file fs/nfsd/auth.c function nfsd_setuser(...) calls
+cap_raise_nfsd_set(...) and
+cap_drop_nfsd_set(...) to add/exclude corresponding capabilities to/from
+effective set of current nfsd process.
 
+And in file security/commoncap.c function cap_task_post_setuid(...) calls
+cap_drop_fs_set(...) and cap_raise_fs_set(...) to change effective set
+of current task
+when (current->fsuid != old_ruid).
 
-and did not have the unaligned exceptions anymore.
+In linux-2.4.x the story is the same.
 
-I had a look at rndis.c in latest kernel version (2.6.28.7), the rndis_add_hdr() function is the same as for 2.6.18.2.
+In file include/linux/capability.h CAP_FS_MASK is defined to contain
+CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_DAC_READ_SEARCH, CAP_FOWNER, CAP_FSETID
+capabilities.
 
+And in file fs/nfsd/auth.c CAP_NFSD_MASK is defined to be same as CAP_FS_MASK
+plus CAP_SYS_RESOURCE.
 
-Hope this helps.
+In file fs/nfsd/auth.c function nfsd_setuser(...) uses CAP_NFSD_MASK
+to add/exclude corresponding capabilities to/from effective set of current
+nfsd process.
 
+And CAP_FS_MASK used in file kernel/sys.c in function sys_setfsuid(...)
+to add/exclude corresponding capabilities to/from effective set of current task.
 
-Regards,
+This can be exploited (and I have succesfully tried it).
 
-Yann Poupet.
+Suppose you have NFS-share exported even with root_squash option.
+If one client was compromised, local root can set CAP_MKNOD to some
+local user's process. Then that user can execute mknod to create a device
+that will be owned by that user, e.g. block device file for /dev/hda hard drive.
+
+And he can create that device file on NFS-share (even exported with root_squash
+option). After that he can someway (ssh, cgi) execute code on another nfs client
+or the server to modify it's filesystem. It will be possible because
+he owns that
+device file on nfs share.
+
+The problem is because CAP_MKNOD allows that user to successfully execute
+vfs_mknod(...) function on local host, and that function will call corresponding
+function in nfs module which sends request to NFS server. And nfsd will not
+drop CAP_MKNOD in nfsd_setuser(...) function when impersonating to that user.
+
+Of course, NFS-shares can be mounted with nodev option, but they should be
+placed on separate partition on NFS-server, so even on server that partition
+is mounted with nodev option too.
+
+So I suggest to add CAP_MKNOD and CAP_LINUX_IMMUTABLE to CAP_FS_MASK
+in linux-2.4.x and to CAP_FS_MASK_B0 in linux-2.6.x.
