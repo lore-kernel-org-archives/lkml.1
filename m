@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbZCKPzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751995AbZCKQCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752831AbZCKPzT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 11:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZCKPzC
+	id S1751995AbZCKQCp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbZCKQCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 11:55:02 -0400
-Received: from ns1.suse.de ([195.135.220.2]:59104 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752107AbZCKPzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 11:55:01 -0400
-Date: Wed, 11 Mar 2009 16:54:57 +0100
-From: Jan Kara <jack@suse.cz>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] udf: fix novrs mount option
-Message-ID: <20090311155457.GG24590@duck.suse.cz>
-References: <49B0DBF1.1060800@ladisch.de>
+	Wed, 11 Mar 2009 12:02:36 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:19672 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750941AbZCKQCf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 12:02:35 -0400
+Message-ID: <49B7E01C.9010403@caviumnetworks.com>
+Date: Wed, 11 Mar 2009 09:00:28 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B0DBF1.1060800@ladisch.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [patch 07/18] mips: convert obsolete irq_desc_t to struct irq_desc
+References: <20090311003204.592133594@linutronix.de> <20090311003236.133903965@linutronix.de>
+In-Reply-To: <20090311003236.133903965@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Mar 2009 16:00:28.0562 (UTC) FILETIME=[7F74B720:01C9A262]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 06-03-09 09:16:49, Clemens Ladisch wrote:
-> The novrs mount option was broken due to a missing break.
+Thomas Gleixner wrote:
+> Impact: cleanup
 > 
-> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+> Convert the last remaining users to struct irq_desc.
 > 
-> --- linux-2.6.orig/fs/udf/super.c
-> +++ linux-2.6/fs/udf/super.c
-> @@ -428,6 +428,7 @@ static int udf_parse_options(char *optio
->  		switch (token) {
->  		case Opt_novrs:
->  			uopt->novrs = 1;
-> +			break;
->  		case Opt_bs:
->  			if (match_int(&args[0], &option))
->  				return 0;
-  Thanks for the patch. Merged into UDF tree.
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> CC: Ralf Baechle <ralf@linux-mips.org>
 
-								Honza
+Signed-off-by: David Daney <ddaney@caviumnetworks.com>
 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+My boards still boot with this patch.
+
+Thanks,
+David Daney
+
+> 
+> ---
+>  arch/mips/cavium-octeon/octeon-irq.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6/arch/mips/cavium-octeon/octeon-irq.c
+> ===================================================================
+> --- linux-2.6.orig/arch/mips/cavium-octeon/octeon-irq.c
+> +++ linux-2.6/arch/mips/cavium-octeon/octeon-irq.c
+> @@ -31,7 +31,7 @@ static void octeon_irq_core_ack(unsigned
+>  
+>  static void octeon_irq_core_eoi(unsigned int irq)
+>  {
+> -	irq_desc_t *desc = irq_desc + irq;
+> +	struct irq_desc *desc = irq_desc + irq;
+>  	unsigned int bit = irq - OCTEON_IRQ_SW0;
+>  	/*
+>  	 * If an IRQ is being processed while we are disabling it the
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
