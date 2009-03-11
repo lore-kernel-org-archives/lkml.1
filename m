@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbZCKIyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZCKIyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754749AbZCKIyg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 04:54:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZCKIyR
+	id S1754930AbZCKIyw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 04:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbZCKIyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 04:54:17 -0400
-Received: from mga05.intel.com ([192.55.52.89]:60823 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752174AbZCKIyP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 04:54:15 -0400
+	Wed, 11 Mar 2009 04:54:23 -0400
+Received: from mga09.intel.com ([134.134.136.24]:18531 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753520AbZCKIyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 04:54:21 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,341,1233561600"; 
-   d="scan'208";a="672027516"
-Subject: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to submit
+   d="scan'208";a="496843672"
+Subject: [RFC v2: Patch 2/3] net: hand off skb list to other cpu to submit
 	to upper layer
 From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
 Cc: herbert@gondor.apana.org.au, jesse.brandeburg@intel.com,
        shemminger@vyatta.com, David Miller <davem@davemloft.net>
 Content-Type: text/plain; charset=UTF-8
-Date: Wed, 11 Mar 2009 16:53:44 +0800
-Message-Id: <1236761624.2567.442.camel@ymzhang>
+Date: Wed, 11 Mar 2009 16:53:50 +0800
+Message-Id: <1236761630.2567.443.camel@ymzhang>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 8bit
@@ -29,296 +28,282 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got some comments. Special thanks to ﻿Stephen Hemminger for teaching me on
-what reorder is and some other comments. Also thank other guys who raised comments.
+Subject: net: hand off skb list to other cpu to submit to upper layer
+From: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>﻿
 
-v2 has some improvements.
-1) Add new sysfs interface /sys/class/net/ethXXX/rx_queueXXX/processing_cpu. Admin
+Add new sysfs interface /sys/class/net/ethXXX/rx_queueXXX/processing_cpu. Admin
 could use it to configure the binding between RX and cpu number. So it's convenient
-for drivers to use the new capability.
-2) Delete function netif_rx_queue;
-3) Optimize ipi notification. There is no new notification when destination's
-input_pkt_alien_queue isn't empty.
-4) Did lots of testing, mostly focusing on slab allocator (slab/slub/slqb) and use
-SLUB with big slub_max_order currently.
+for driver to use the new capability.
 
----
-
-﻿﻿Subject: net: hand off skb list to other cpu to submit to upper layer
-From: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
-
-﻿Recently, I am investigating an ip_forward performance issue with 10G IXGBE NIC.
-I start the testing on 2 machines. Every machine has 2 10G NICs. The 1st one seconds
-packets by pktgen. The 2nd receives the packets from one NIC and forwards them out
-from the 2nd NIC. 
-
-Initial testing showed cpu cache sharing has impact on speed. As NICs supports
-multi-queue, I bind the queues to different logical cpu of different physical cpu
-while considering cache sharing carefully. I could get about 30~40% improvement;
-
-Comparing with sending speed on the 1st machine, the forward speed is still not good,
-only about 60% of sending speed. As a matter of fact, IXGBE driver starts NAPI when
-interrupt arrives. When ip_forward=1, receiver collects a packet and forwards it out
-immediately. So although IXGBE collects packets with NAPI, the forwarding really has
-much impact on collection. As IXGBE runs very fast, it drops packets quickly. The better
-way for receiving cpu is doing nothing than just collecting packets.
-
-Currently kernel has backlog to support a similar capability, but process_backlog still
-runs on the receiving cpu. I enhance backlog by adding a new input_pkt_alien_queue to
-softnet_data. Receving cpu collects packets and link them into skb list, then delivers
-the list to the ﻿input_pkt_alien_queue of other cpu. process_backlog picks up the skb list
-from ﻿input_pkt_alien_queue when ﻿input_pkt_queue is empty.
-
+Function﻿ alloc_netdev_rxtx_mq is called by drivers to initiate netdev with RX queue.
 ﻿
-I tested my patch on top of 2.6.28.5. The improvement is about 43%.
-
-Some questions:
-
-1) Reorder: My method wouldn't introduce reorder issue, because we use N:1 mapping between
-RX queue and cpu number.
-2) If there is no free cpu to work on packet collection: It depends on cpu resource
-allocation. We could allocate more RX queue to the same cpu. With my new testing, the
-forwarding speed could be at about 4.8M pps (packets per second and packet size is 60Byte)
-on Nehalem machine, and 8 packet processing cpus almost have no idle time while receiving cpu
-idle is about 50%. I just have 4 old NIC and couldn't test more on this question.
-3) packet delaying: I didn't calculate it or measure it and might measure it later. The
-forwarding speed is close to 270M bytes/s. At least sar shows mostly receiving matches
-forwarding. But at sending side, the sending speed is bigger than forwarding speed, although
-my method decreases the difference largely.
-4) 10G NICs other than IXGBE: I have no other 10G NICs now.
-5) Other kinds of machines working as forwarder: I test it between 1 2*4 stoakley and
-2*4*2 Nehalem. I reversed the testing and found the improvement on stoakley is less than 30%,
-not so big as on Nehalem.
-﻿6) Memory utilization: ﻿My nehalem machine has 12GB memory. To reach the maximum speed,
-I tried netdev_max_backlog=400000. That consumes 10GB memory sometimes.
-7) Any impact if driver enables the new capability but admin doesn't configure it: I didn't
-measure the speed difference now.
-8) If receiving cpu collects packets very fast and processing cpu is slow: We can start many
-RX queues on the receiving cpu and bind them to different processing cpu.
-
-
-Current patch is against 2.6.29-rc7.
-
 Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
 
 ---
 
---- linux-2.6.29-rc7/include/linux/netdevice.h	2009-03-09 15:20:49.000000000 +0800
-+++ linux-2.6.29-rc7_backlog/include/linux/netdevice.h	2009-03-11 10:17:08.000000000 +0800
-@@ -1119,6 +1119,9 @@ static inline int unregister_gifconf(uns
+--- linux-2.6.29-rc7_backlog/include/linux/netdevice.h	2009-03-11 10:17:08.000000000 +0800
++++ linux-2.6.29-rc7_rxqueue_sysfs/include/linux/netdevice.h	2009-03-11 13:26:23.000000000 +0800
+@@ -443,6 +443,10 @@ struct netdev_queue {
+ 	struct Qdisc		*qdisc_sleeping;
+ } ____cacheline_aligned_in_smp;
+ 
++struct netdev_queue_attr {
++	struct kobject		kobj;
++	int			processing_cpu;
++};
+ 
  /*
-  * Incoming packets are placed on per-cpu queues so that
-  * no locking is needed.
-+ * To speed up fast network, sometimes place incoming packets
-+ * to other cpu queues. Use input_pkt_alien_queue.lock to
-+ * protect input_pkt_alien_queue.
+  * This structure defines the management hooks for network devices.
+@@ -760,6 +764,10 @@ struct net_device
+ 
+ 	struct netdev_queue	rx_queue;
+ 
++	/* Export by sysfs */
++	struct netdev_queue_attr *_rx_attr;
++	unsigned int		num_rx_queues;
++
+ 	struct netdev_queue	*_tx ____cacheline_aligned_in_smp;
+ 
+ 	/* Number of TX queues allocated at alloc_netdev_mq() time  */
+@@ -770,6 +778,7 @@ struct net_device
+ 
+ 	unsigned long		tx_queue_len;	/* Max frames per queue allowed */
+ 	spinlock_t		tx_global_lock;
++
+ /*
+  * One part is mostly used on xmit path (device)
   */
- struct softnet_data
- {
-@@ -1127,6 +1130,7 @@ struct softnet_data
- 	struct list_head	poll_list;
- 	struct sk_buff		*completion_queue;
+@@ -1773,10 +1782,28 @@ static inline void netif_addr_unlock_bh(
  
-+	struct sk_buff_head	input_pkt_alien_queue;
- 	struct napi_struct	backlog;
+ extern void		ether_setup(struct net_device *dev);
+ 
++static inline int netif_rx_processing_cpu(struct net_device *dev, int rx_num)
++{
++	int cpu = -1;
++
++	if (rx_num >= 0 && rx_num < dev->num_rx_queues)
++		cpu = dev->_rx_attr[rx_num].processing_cpu;
++
++	if (cpu == -1)
++		cpu = smp_processor_id();
++
++	return cpu;
++}
++
+ /* Support for loadable net-drivers */
+ extern struct net_device *alloc_netdev_mq(int sizeof_priv, const char *name,
+ 				       void (*setup)(struct net_device *),
+ 				       unsigned int queue_count);
++extern struct net_device *alloc_netdev_rxtx_mq(int sizeof_priv,
++				const char *name,
++				void (*setup)(struct net_device *),
++				unsigned int rx_queue_count,
++				unsigned int tx_queue_count);
+ #define alloc_netdev(sizeof_priv, name, setup) \
+ 	alloc_netdev_mq(sizeof_priv, name, setup, 1)
+ extern int		register_netdev(struct net_device *dev);
+--- linux-2.6.29-rc7_backlog/include/linux/etherdevice.h	2009-03-11 10:16:16.000000000 +0800
++++ linux-2.6.29-rc7_rxqueue_sysfs/include/linux/etherdevice.h	2009-03-10 12:53:59.000000000 +0800
+@@ -51,6 +51,9 @@ extern int eth_validate_addr(struct net_
+ extern struct net_device *alloc_etherdev_mq(int sizeof_priv, unsigned int queue_count);
+ #define alloc_etherdev(sizeof_priv) alloc_etherdev_mq(sizeof_priv, 1)
+ 
++extern struct net_device *alloc_etherdev_rxtx_mq(int sizeof_priv,
++		unsigned int rx_queue_count, unsigned int tx_queue_count);
++
+ /**
+  * is_zero_ether_addr - Determine if give Ethernet address is all zeros.
+  * @addr: Pointer to a six-byte array containing the Ethernet address
+--- linux-2.6.29-rc7_backlog/net/core/dev.c	2009-03-11 10:27:57.000000000 +0800
++++ linux-2.6.29-rc7_rxqueue_sysfs/net/core/dev.c	2009-03-11 13:26:23.000000000 +0800
+@@ -4862,6 +4862,39 @@ struct net_device *alloc_netdev_mq(int s
+ }
+ EXPORT_SYMBOL(alloc_netdev_mq);
+ 
++struct net_device *alloc_netdev_rxtx_mq(int sizeof_priv,
++		const char *name,
++		void (*setup)(struct net_device *),
++		unsigned int rx_queue_count,
++		unsigned int tx_queue_count)
++{
++	struct netdev_queue_attr *rx;
++	struct net_device *dev;
++	int i;
++
++	dev = alloc_netdev_mq(sizeof_priv, name, setup, tx_queue_count);
++	if (dev && rx_queue_count) {
++		rx = kcalloc(rx_queue_count,
++			sizeof(struct netdev_queue_attr),
++			GFP_KERNEL);
++		if (!rx) {
++			printk(KERN_ERR "alloc_netdev: Unable to allocate "
++					"rx attributes.\n");
++			free_netdev(dev);
++			return NULL;
++		}
++
++		for (i = 0; i < rx_queue_count; i ++)
++			rx[i].processing_cpu = -1;
++
++		dev->_rx_attr = rx;
++		dev->num_rx_queues = rx_queue_count;
++	}
++
++	return dev;
++}
++EXPORT_SYMBOL(alloc_netdev_rxtx_mq);
++
+ /**
+  *	free_netdev - free network device
+  *	@dev: device
+@@ -4877,6 +4910,7 @@ void free_netdev(struct net_device *dev)
+ 	release_net(dev_net(dev));
+ 
+ 	kfree(dev->_tx);
++	kfree(dev->_rx_attr);
+ 
+ 	list_for_each_entry_safe(p, n, &dev->napi_list, dev_list)
+ 		netif_napi_del(p);
+--- linux-2.6.29-rc7_backlog/net/core/net-sysfs.c	2009-03-11 10:15:23.000000000 +0800
++++ linux-2.6.29-rc7_rxqueue_sysfs/net/core/net-sysfs.c	2009-03-11 13:18:45.000000000 +0800
+@@ -419,6 +419,83 @@ static struct attribute_group wireless_g
  };
+ #endif
  
-@@ -1368,6 +1372,8 @@ extern void dev_kfree_skb_irq(struct sk_
- extern void dev_kfree_skb_any(struct sk_buff *skb);
- 
- #define HAVE_NETIF_RX 1
-+extern int		raise_netif_irq(int cpu,
-+					struct sk_buff_head *skb_queue);
- extern int		netif_rx(struct sk_buff *skb);
- extern int		netif_rx_ni(struct sk_buff *skb);
- #define HAVE_NETIF_RECEIVE_SKB 1
---- linux-2.6.29-rc7/net/core/dev.c	2009-03-09 15:20:50.000000000 +0800
-+++ linux-2.6.29-rc7_backlog/net/core/dev.c	2009-03-11 10:27:57.000000000 +0800
-@@ -1997,6 +1997,114 @@ int netif_rx_ni(struct sk_buff *skb)
- 
- EXPORT_SYMBOL(netif_rx_ni);
- 
-+static void net_drop_skb(struct sk_buff_head *skb_queue)
-+{
-+	struct sk_buff *skb = __skb_dequeue(skb_queue);
++#define to_rx_queue_attr(k)	container_of(k, struct netdev_queue_attr, kobj)
++#define RX_QUEUE_ATTR(name)				\
++static struct kobj_attribute name##_attr =		\
++	__ATTR(name, 0644, show_##name, store_##name);
 +
-+	while (skb) {
-+		__get_cpu_var(netdev_rx_stat).dropped++;
-+		kfree_skb(skb);
-+		skb = __skb_dequeue(skb_queue);
-+	}
++static ssize_t show_processing_cpu(struct kobject *kobj,
++			struct kobj_attribute *attr,
++			char *buf)
++{
++	return sprintf(buf, "%d", to_rx_queue_attr(kobj)->processing_cpu);
 +}
 +
-+static int net_backlog_local_merge(struct sk_buff_head *skb_queue)
++static ssize_t store_processing_cpu(struct kobject *kobj,
++		struct kobj_attribute *attr,
++		const char *buf,
++		size_t count)
 +{
-+	struct softnet_data *queue;
-+	unsigned long flags;
-+
-+	queue = &__get_cpu_var(softnet_data);
-+	if (queue->input_pkt_queue.qlen + skb_queue->qlen <=
-+		netdev_max_backlog) {
-+
-+		local_irq_save(flags);
-+		if (!queue->input_pkt_queue.qlen)
-+			napi_schedule(&queue->backlog);
-+		skb_queue_splice_tail_init(skb_queue, &queue->input_pkt_queue);
-+		local_irq_restore(flags);
-+
-+		return  0;
-+	} else {
-+		net_drop_skb(skb_queue);
-+		return 1;
-+	}
++	int var;
++	sscanf(buf, "%d", &var);
++	if ((var >= 0 && var < nr_cpu_ids) || var == -1) {
++		to_rx_queue_attr(kobj)->processing_cpu = var;
++		return count;
++	} else
++		return -EINVAL;
 +}
 +
-+static void net_napi_backlog(void *data)
++RX_QUEUE_ATTR(processing_cpu);
++
++static struct attribute *rx_queue_attrs[] = {
++	&processing_cpu_attr.attr,
++	NULL
++};
++
++static struct kobj_type ktype_rx_queue = {
++	.sysfs_ops      = &kobj_sysfs_ops,
++	.default_attrs  = rx_queue_attrs
++};
++
++static int sysfs_net_remove_rx_queue(struct net_device *net,
++		int rx_queue_count)
 +{
-+	struct softnet_data *queue = &__get_cpu_var(softnet_data);
++	int i;
 +
-+	napi_schedule(&queue->backlog);
-+	kfree(data);
-+}
-+
-+static int net_backlog_notify_cpu(int cpu)
-+{
-+	struct call_single_data *data;
-+
-+	data = kmalloc(sizeof(struct call_single_data), GFP_ATOMIC);
-+	if (!data)
-+		return -1;
-+
-+	data->func = net_napi_backlog;
-+	data->info = data;
-+	data->flags = 0;
-+	__smp_call_function_single(cpu, data);
++	for (i = 0; i < rx_queue_count; i ++)
++		kobject_put(&net->_rx_attr[i].kobj);
 +
 +	return 0;
 +}
 +
-+int raise_netif_irq(int cpu, struct sk_buff_head *skb_queue)
++int sysfs_net_add_rx_queue(struct net_device *net)
 +{
-+	unsigned long flags;
-+	struct softnet_data *queue;
-+	int retval, need_notify=0;
++	char *queue_name;
++	int retval = 0;
++	int i;
 +
-+	if (!skb_queue || skb_queue_empty(skb_queue))
++	if (!net->num_rx_queues)
 +		return 0;
 +
-+	/*
-+	 * If cpu is offline, we queue skb back to
-+	 * the queue on current cpu.
-+	 */
-+	if ((unsigned)cpu >= nr_cpu_ids ||
-+		!cpu_online(cpu) ||
-+		cpu == smp_processor_id()) {
-+		net_backlog_local_merge(skb_queue);
-+		return 0;
++	queue_name = kmalloc(4096, GFP_KERNEL);
++	if (!queue_name)
++		return -ENOMEM;
++
++	for (i = 0; i < net->num_rx_queues; i ++) {
++		sprintf(queue_name, "rx_queue%d", i);
++		retval = kobject_init_and_add(&net->_rx_attr[i].kobj,
++				&ktype_rx_queue,
++				&net->dev.kobj, "%s", queue_name);
++		if (retval < 0) {
++			sysfs_net_remove_rx_queue(net, i);
++			break;
++		}
 +	}
 +
-+	queue = &per_cpu(softnet_data, cpu);
-+	if (queue->input_pkt_alien_queue.qlen > netdev_max_backlog)
-+		goto failed1;
-+
-+	spin_lock_irqsave(&queue->input_pkt_alien_queue.lock, flags);
-+	if (skb_queue_empty(&queue->input_pkt_alien_queue))
-+		need_notify = 1;
-+	skb_queue_splice_tail_init(skb_queue,
-+			&queue->input_pkt_alien_queue);
-+	spin_unlock_irqrestore(&queue->input_pkt_alien_queue.lock,
-+			flags);
-+
-+	if (need_notify) {
-+		retval = net_backlog_notify_cpu(cpu);
-+		if (unlikely(retval))
-+			goto failed2;
-+	}
-+
-+	return 0;
-+
-+failed2:
-+	spin_lock_irqsave(&queue->input_pkt_alien_queue.lock, flags);
-+	skb_queue_splice_tail_init(&queue->input_pkt_alien_queue, skb_queue);
-+	spin_unlock_irqrestore(&queue->input_pkt_alien_queue.lock,
-+			flags);
-+failed1:
-+	net_drop_skb(skb_queue);
-+
-+	return 1;
++	kfree(queue_name);
++	return retval;
 +}
 +
- static void net_tx_action(struct softirq_action *h)
+ #endif /* CONFIG_SYSFS */
+ 
+ #ifdef CONFIG_HOTPLUG
+@@ -482,6 +559,10 @@ void netdev_unregister_kobject(struct ne
+ 	if (dev_net(net) != &init_net)
+ 		return;
+ 
++#ifdef CONFIG_SYSFS
++	sysfs_net_remove_rx_queue(net, net->num_rx_queues);
++#endif
++
+ 	device_del(dev);
+ }
+ 
+@@ -490,6 +571,7 @@ int netdev_register_kobject(struct net_d
  {
- 	struct softnet_data *sd = &__get_cpu_var(softnet_data);
-@@ -2336,6 +2444,13 @@ static void flush_backlog(void *arg)
- 	struct net_device *dev = arg;
- 	struct softnet_data *queue = &__get_cpu_var(softnet_data);
- 	struct sk_buff *skb, *tmp;
-+	unsigned long flags;
+ 	struct device *dev = &(net->dev);
+ 	struct attribute_group **groups = net->sysfs_groups;
++	int retval;
+ 
+ 	dev->class = &net_class;
+ 	dev->platform_data = net;
+@@ -510,7 +592,17 @@ int netdev_register_kobject(struct net_d
+ 	if (dev_net(net) != &init_net)
+ 		return 0;
+ 
+-	return device_add(dev);
++	retval =  device_add(dev);
 +
-+	spin_lock_irqsave(&queue->input_pkt_alien_queue.lock, flags);
-+	skb_queue_splice_tail_init(
-+			&queue->input_pkt_alien_queue,
-+			&queue->input_pkt_queue );
-+	spin_unlock_irqrestore(&queue->input_pkt_alien_queue.lock, flags);
- 
- 	skb_queue_walk_safe(&queue->input_pkt_queue, skb, tmp)
- 		if (skb->dev == dev) {
-@@ -2594,9 +2709,19 @@ static int process_backlog(struct napi_s
- 		local_irq_disable();
- 		skb = __skb_dequeue(&queue->input_pkt_queue);
- 		if (!skb) {
--			__napi_complete(napi);
--			local_irq_enable();
--			break;
-+			if (!skb_queue_empty(&queue->input_pkt_alien_queue)) {
-+				spin_lock(&queue->input_pkt_alien_queue.lock);
-+				skb_queue_splice_tail_init(
-+						&queue->input_pkt_alien_queue,
-+						&queue->input_pkt_queue );
-+				spin_unlock(&queue->input_pkt_alien_queue.lock);
++#ifdef CONFIG_SYSFS
++	if (!retval) {
++		retval = sysfs_net_add_rx_queue(net);
++		if (retval)
++			device_del(dev);
++	}
++#endif
 +
-+				skb = __skb_dequeue(&queue->input_pkt_queue);
-+			} else {
-+				__napi_complete(napi);
-+				local_irq_enable();
-+				break;
-+			}
- 		}
- 		local_irq_enable();
++	return retval;
+ }
  
-@@ -4985,6 +5110,11 @@ static int dev_cpu_callback(struct notif
- 	local_irq_enable();
+ int netdev_class_create_file(struct class_attribute *class_attr)
+--- linux-2.6.29-rc7_backlog/net/ethernet/eth.c	2009-03-11 10:15:22.000000000 +0800
++++ linux-2.6.29-rc7_rxqueue_sysfs/net/ethernet/eth.c	2009-03-10 12:55:26.000000000 +0800
+@@ -374,6 +374,14 @@ struct net_device *alloc_etherdev_mq(int
+ }
+ EXPORT_SYMBOL(alloc_etherdev_mq);
  
- 	/* Process offline CPU's input_pkt_queue */
-+	spin_lock(&oldsd->input_pkt_alien_queue.lock);
-+	skb_queue_splice_tail_init(&oldsd->input_pkt_alien_queue,
-+			&oldsd->input_pkt_queue);
-+	spin_unlock(&oldsd->input_pkt_alien_queue.lock);
++struct net_device *alloc_etherdev_rxtx_mq(int sizeof_priv,
++		unsigned int rx_queue_count, unsigned int tx_queue_count)
++{
++	return alloc_netdev_rxtx_mq(sizeof_priv, "eth%d", ether_setup,
++			rx_queue_count, tx_queue_count);
++}
++EXPORT_SYMBOL(alloc_etherdev_rxtx_mq);
 +
- 	while ((skb = __skb_dequeue(&oldsd->input_pkt_queue)))
- 		netif_rx(skb);
- 
-@@ -5184,10 +5314,13 @@ static int __init net_dev_init(void)
- 		struct softnet_data *queue;
- 
- 		queue = &per_cpu(softnet_data, i);
-+
- 		skb_queue_head_init(&queue->input_pkt_queue);
- 		queue->completion_queue = NULL;
- 		INIT_LIST_HEAD(&queue->poll_list);
- 
-+		skb_queue_head_init(&queue->input_pkt_alien_queue);
-+
- 		queue->backlog.poll = process_backlog;
- 		queue->backlog.weight = weight_p;
- 		queue->backlog.gro_list = NULL;
-@@ -5247,6 +5380,7 @@ EXPORT_SYMBOL(netdev_set_master);
- EXPORT_SYMBOL(netdev_state_change);
- EXPORT_SYMBOL(netif_receive_skb);
- EXPORT_SYMBOL(netif_rx);
-+EXPORT_SYMBOL(raise_netif_irq);
- EXPORT_SYMBOL(register_gifconf);
- EXPORT_SYMBOL(register_netdevice);
- EXPORT_SYMBOL(register_netdevice_notifier);
+ static size_t _format_mac_addr(char *buf, int buflen,
+ 				const unsigned char *addr, int len)
+ {
 
 
