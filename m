@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZCKRCB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZCKRC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755002AbZCKRCB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 13:02:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbZCKRBE
+	id S1755673AbZCKRC3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 13:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbZCKRBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 13:01:04 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:64794 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753886AbZCKRA7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 13:00:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=C9xYtM1sxYXh+Ykmcn0wft7p5TRb2LgZzd7zFuUUmPgWKlDJKptrlSPrj28skiAEmL
-         NOxwNrq5L+NNb3fdL/ROOI+URkG+L9kkaw3sC3Cml9UulvY0p28JcUmI5Nfr9px0tTR4
-         RvFiuJedkf96FqVKFvc49ERqEXmNnh2oQNZR0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 08/10] ide: move ide_map_sg() call out from ->dma_setup method
-Date: Wed, 11 Mar 2009 17:36:25 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7-next-20090310; KDE/4.2.0; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090220171139.25429.26702.sendpatchset@localhost.localdomain> <20090220171236.25429.25264.sendpatchset@localhost.localdomain> <49B52AE3.1030209@ru.mvista.com>
-In-Reply-To: <49B52AE3.1030209@ru.mvista.com>
+	Wed, 11 Mar 2009 13:01:25 -0400
+Received: from mail.tpi.com ([70.99.223.143]:4245 "EHLO mail.tpi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755246AbZCKRBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 13:01:24 -0400
+Message-ID: <49B7EE5F.2090803@canonical.com>
+Date: Wed, 11 Mar 2009 10:01:19 -0700
+From: Tim Gardner <tim.gardner@canonical.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200903111736.26177.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org, arobinso@nyx.net
+Subject: Re: [PATCH 29/31] esp: Auto-load esp module when device opened.
+References: <cover.1236702228.git.scott@canonical.com>	<6a6e566959d30a7e03d677bcb5f68f71d1988e9d.1236702228.git.scott@canonical.com> <20090311134649.00e77e2e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090311134649.00e77e2e@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 March 2009, Sergei Shtylyov wrote:
-> Bartlomiej Zolnierkiewicz wrote:
+Alan Cox wrote:
+> On Wed, 4 Mar 2009 20:55:52 -0700
+> Tim Gardner <tim.gardner@canonical.com> wrote:
 > 
-> > Move ide_map_sg() call from ->dma_setup implementations
-> > and ide_destroy_dmatable() one from *_build_dmatable() to
-> > ide_dma_prepare().
-> >
-> > There should be no functional changes caused by this patch.
-> >
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >   
-> [...]
-> > Index: b/drivers/ide/au1xxx-ide.c
-> > ===================================================================
-> > --- a/drivers/ide/au1xxx-ide.c
-> > +++ b/drivers/ide/au1xxx-ide.c
-> > @@ -272,9 +272,7 @@ static int auide_build_dmatable(ide_driv
-> >  	if (count)
-> >  		return 1;
-> >  
-> > - use_pio_instead:
-> > -	ide_destroy_dmatable(drive);
-> > -
-> > +use_pio_instead:
-> >   
+>> The esp module is missing the char-major-57-* alias that would cause it
+>> to be auto-loaded when a device of that type is opened.  This patch adds
+>> the alias.
 > 
->    Could you please get rid of goto and label too, while at it?
+> NAK - the default esp behaviour is to do unsafe ISA probes to find the
+> ports. We don't want it autoloading therefore.
+> 
 
-Sorry but since this patch has been already merged it would be too much
-work/noise for too little gain IMO.
+Good point. Its been awhile since I had to think about ISA probing.
+
+-- 
+Tim Gardner tim.gardner@canonical.com
