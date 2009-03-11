@@ -1,48 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752326AbZCKITT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752556AbZCKI0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752326AbZCKITT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 04:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbZCKITG
+	id S1752556AbZCKI0v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 04:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbZCKI0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 04:19:06 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56915 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751077AbZCKITF (ORCPT
+	Wed, 11 Mar 2009 04:26:35 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40480 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751218AbZCKI0e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 04:19:05 -0400
-Date: Wed, 11 Mar 2009 09:18:54 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Hannes Eder <hannes@hanneseder.net>
-Cc: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] checkpatch: make -f alias --file, add --help, more
-	verbose help message
-Message-ID: <20090311081854.GA1533@ucw.cz>
-References: <20090112092839.GA2190@elf.ucw.cz> <496B0E5F.1020902@tremplin-utc.net> <20090116121940.GA30302@elf.ucw.cz> <20090116143404.ccf2d9ee.akpm@linux-foundation.org> <20090120103219.GK2576@elf.ucw.cz> <20090310172026.10948.10453.stgit@f10box.hanneseder.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090310172026.10948.10453.stgit@f10box.hanneseder.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 11 Mar 2009 04:26:34 -0400
+Date: Wed, 11 Mar 2009 08:27:25 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: n0diamond@yahoo.co.jp
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Off-by-one in both LIBATA and IDE drivers
+Message-ID: <20090311082725.37cb1883@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090311015039.42922.qmail@web4115.mail.ogk.yahoo.co.jp>
+References: <20090311015039.42922.qmail@web4115.mail.ogk.yahoo.co.jp>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-03-10 18:21:23, Hannes Eder wrote:
-> Impact:
->   - More verbose help/usage message.
->   - Make the option -f an alias for --file.
->   - On -h, --help, and --version display help message and exit(0).
->   - With no FILE(s) given, exit(1) with "no input files".
->   - On invalid options display help/usage and exit(1).
-> 
-> Based on a patch by Pavel Machek.
-> 
-> Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-> Cc: Pavel Machek <pavel@suse.cz>
+On Wed, 11 Mar 2009 10:50:39 +0900 (JST)
+Norman Diamond <n0diamond@yahoo.co.jp> wrote:
 
+> It looks like both LIBATA and the old IDE drivers have an
+> off-by-one error in deciding whether to use READ SECTOR(S)
+> instead of READ SECTOR(S) EXT.
 
-ACK and thanks...
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This was fixed some time ago, you need a newer kernel.
