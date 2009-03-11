@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbZCKQzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbZCKQ6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755002AbZCKQzr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZCKQzS
+	id S1752140AbZCKQ6x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbZCKQ6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:55:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44878 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751829AbZCKQzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:55:15 -0400
-Date: Wed, 11 Mar 2009 16:54:35 GMT
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akinobu.mita@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, akinobu.mita@gmail.com, mingo@elte.hu
-In-Reply-To: <20090311143449.GB22244@localhost.localdomain>
-References: <20090311143449.GB22244@localhost.localdomain>
-Subject: [tip:x86/mm] x86: debug check for kmap_atomic_pfn and iomap_atomic_prot_pfn()
-Message-ID: <tip-12074fa1073013dd11f1cff41db018d5cff4ecd9@git.kernel.org>
-Git-Commit-ID: 12074fa1073013dd11f1cff41db018d5cff4ecd9
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Mar 2009 16:54:37 +0000 (UTC)
+	Wed, 11 Mar 2009 12:58:44 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54926 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751009AbZCKQ6o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 12:58:44 -0400
+Date: Wed, 11 Mar 2009 16:58:06 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Timur Tabi <timur@freescale.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, rdreier@cisco.com, jirislaby@gmail.com,
+       peterz@infradead.org, will.newton@gmail.com, hancockrwd@gmail.com,
+       jeremy@goop.org
+Subject: Re: [PATCH v4] introduce macro spin_event_timeout()
+Message-ID: <20090311165806.0b6838ab@lxorguk.ukuu.org.uk>
+In-Reply-To: <ed82fe3e0903110948w542a864dj821106900755f14e@mail.gmail.com>
+References: <1236699004-1863-1-git-send-email-timur@freescale.com>
+	<20090310153537.5fd5d84d@lxorguk.ukuu.org.uk>
+	<1236729711.7086.28.camel@pasglop>
+	<20090311003756.25ffa6f4@lxorguk.ukuu.org.uk>
+	<ed82fe3e0903110948w542a864dj821106900755f14e@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  12074fa1073013dd11f1cff41db018d5cff4ecd9
-Gitweb:     http://git.kernel.org/tip/12074fa1073013dd11f1cff41db018d5cff4ecd9
-Author:     "Akinobu Mita" <akinobu.mita@gmail.com>
-AuthorDate: Wed, 11 Mar 2009 23:34:50 +0900
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 11 Mar 2009 15:47:46 +0100
+> Are you talking about the udelay() inside the loop?  If so, I agree
+> that this is bad and have removed it in the PowerPC-specific version:
 
-x86: debug check for kmap_atomic_pfn and iomap_atomic_prot_pfn()
+The behaviour you want there is system specific - 10uS is a minimum
+politeness value for x86 PCI bus for example.
 
-It may be useful for kmap_atomic_pfn() and iomap_atomic_prot_pfn()
-to check invalid kmap usage as well as kmap_atomic.
+> rdtsc instruction.  In this case, we're not adding arbitrary delays
+> into the loop, and we're not using jiffies, but we are
+> architecture-dependent.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-LKML-Reference: <20090311143449.GB22244@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+and not useful
 
+A macro of this form really needs to be able to look like
 
----
- arch/x86/mm/highmem_32.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+	spin_until_timeout(readb(foo) & 0x80, 30 * HZ) {
+		udelay(10);
+		/* Maybe do other stuff */
+	}
 
-diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
-index ae4c8da..f256e73 100644
---- a/arch/x86/mm/highmem_32.c
-+++ b/arch/x86/mm/highmem_32.c
-@@ -128,6 +128,8 @@ void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
- 
- 	pagefault_disable();
- 
-+	debug_kmap_atomic_prot(type);
-+
- 	idx = type + KM_TYPE_NR * smp_processor_id();
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
- 	set_pte(kmap_pte - idx, pfn_pte(pfn, prot));
+to be more generally useful
