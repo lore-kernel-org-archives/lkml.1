@@ -1,437 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbZCKQFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbZCKQHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753284AbZCKQFF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZCKQEx
+	id S1753379AbZCKQHn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbZCKQHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:04:53 -0400
-Received: from ns2.suse.de ([195.135.220.15]:34400 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751115AbZCKQEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:04:52 -0400
-Date: Wed, 11 Mar 2009 17:04:48 +0100
-From: Jan Kara <jack@suse.cz>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] udf: use hardware sector size
-Message-ID: <20090311160448.GH24590@duck.suse.cz>
-References: <49B4D758.8000304@ladisch.de>
+	Wed, 11 Mar 2009 12:07:32 -0400
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:57580 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750945AbZCKQHa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 12:07:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=m04CGLzP6U86OeHBjE7icydvy7MmLIPO+PmKKffJpfmSnNL839z5js68JEOWqT1i3q
+         2nB18OO7hBDi72YBM04RIdgV8pB2l/ErMnUs4hfJOLYmLEILGnLE+V7oyTDbrpyWprCH
+         qn+OuWXnAF6v0/hFpuo4uHVWwEq+FfbXInicE=
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="9jxsPFA5p3P2qPhR"
-Content-Disposition: inline
-In-Reply-To: <49B4D758.8000304@ladisch.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090310154745.GF23075@mit.edu>
+References: <a4423d670903100517y42f342d4pd73c4c36f5c64dd7@mail.gmail.com>
+	 <20090310124658.GE8840@mit.edu>
+	 <a4423d670903100718w1a532143he767782ae598d0fb@mail.gmail.com>
+	 <20090310154745.GF23075@mit.edu>
+Date: Wed, 11 Mar 2009 19:07:26 +0300
+Message-ID: <a4423d670903110907o7041f4eof92278835aa0c71c@mail.gmail.com>
+Subject: Re: next-20090310: ext4 hangs
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Theodore Tso <tytso@mit.edu>, Alexander Beregalov <a.beregalov@gmail.com>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/3/10 Theodore Tso <tytso@mit.edu>:
+> On Tue, Mar 10, 2009 at 05:18:55PM +0300, Alexander Beregalov wrote:
+>> > Thanks for reporting this; does it show up on stock 2.6.29-rc7?
+>> No, I can not reproduce it.
+>> It is a slow system, I would not like to bisect it, only if it is the
+>> last possibility.
+>
+> Just to be clear; you weren't able to reproduce it on stock 2.6.29-rc7
+> ---- does it reproduce easily on linux-next?
+Right.
+But now I am not sure 2.6.29-rc7 is not affected, I will try to
+reproduce it again.
 
---9jxsPFA5p3P2qPhR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+>
+> Next question --- does the system hang completely, or just the dbench
+> process (and probably any process that tries touching the filesystem
+System is responsible.
+> that's hung up)?  Do you have a serial console, or someone of
+> recording all of the dumps coming from sysrq-t?  The two stack traces
+I can read dmesg.
+> you gave weren't the ones causing the problem, but rather the ones
+> waiting for the journal lock.
 
-  Hi,
+SysRq : Show State
 
-On Mon 09-03-09 09:46:16, Clemens Ladisch wrote:
-> This patch makes the UDF FS driver use the hardware sector size as the
-> default logical block size, which is required by the UDF specifications.
-  Hmm, I've checked the standard and you're right.
+<..>
 
-> While the previous default of 2048 bytes was correct for optical disks,
-> it was not for hard disks or USB storage devices, and made it impossible
-> to use such a device with the default mount options.  (The Linux mkudffs
-> tool uses a default block size of 2048 bytes even on devices with
-> smaller hardware sectors, so this bug is unlikely to be noticed unless
-> UDF-formatted USB storage devices are exchanged with other OSs.)
-> 
-> To avoid regressions for people who use loopback optical disk images or
-> who used the (sometimes wrong) defaults of mkudffs, we also try with
-> a block size of 2048 bytes if no anchor was found with the hardware
-> sector size.
-  OK, probably makes sence. Thanks for the fix. I've merged the patch with
-a few cosmetic changes:
-  1) We don't call udf_check_valid() with 'silent' set when checking
-with the hardware sector size. It's not like we're going to flood logs
-with error messages so it should be fine and user knows what's happening.
-  2) I've added a message that we're rescanning the volume with new
-blocksize.
-  3) I've changed udf_check_blocksize() to udf_check_volume() which IMO
-better describes what the function does.
-  4) udf_check_blocksize() returned 0 when it succeeded and 1 when it
-failed. I know some UDF functions do this but the other way around is more
-logical (and usual in the rest of the kernel) and I try to convert the
-functions to this style when I find them. So I've changed the function
-to return 1 when it succeeds finding the anchor and 0 when it fails.
-  The resulting patch is attached.
-
-								Honza
-
-> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-> 
-> --- linux-2.6.orig/fs/udf/udf_sb.h
-> +++ linux-2.6/fs/udf/udf_sb.h
-> @@ -30,6 +30,7 @@
->  #define UDF_FLAG_GID_SET	16
->  #define UDF_FLAG_SESSION_SET	17
->  #define UDF_FLAG_LASTBLOCK_SET	18
-> +#define UDF_FLAG_BLOCKSIZE_SET	19
->  
->  #define UDF_PART_FLAG_UNALLOC_BITMAP	0x0001
->  #define UDF_PART_FLAG_UNALLOC_TABLE	0x0002
-> --- linux-2.6.orig/fs/udf/super.c
-> +++ linux-2.6/fs/udf/super.c
-> @@ -86,7 +86,7 @@ static int udf_remount_fs(struct super_b
->  static int udf_check_valid(struct super_block *, int, int);
->  static int udf_vrs(struct super_block *sb, int silent);
->  static void udf_load_logicalvolint(struct super_block *, kernel_extent_ad);
-> -static void udf_find_anchor(struct super_block *);
-> +static int udf_find_anchor(struct super_block *);
->  static int udf_find_fileset(struct super_block *, kernel_lb_addr *,
->  			    kernel_lb_addr *);
->  static void udf_load_fileset(struct super_block *, struct buffer_head *,
-> @@ -258,7 +258,7 @@ static int udf_show_options(struct seq_f
->  
->  	if (!UDF_QUERY_FLAG(sb, UDF_FLAG_STRICT))
->  		seq_puts(seq, ",nostrict");
-> -	if (sb->s_blocksize != UDF_DEFAULT_BLOCKSIZE)
-> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_BLOCKSIZE_SET))
->  		seq_printf(seq, ",bs=%lu", sb->s_blocksize);
->  	if (UDF_QUERY_FLAG(sb, UDF_FLAG_UNHIDE))
->  		seq_puts(seq, ",unhide");
-> @@ -405,7 +405,6 @@ static int udf_parse_options(char *optio
->  	int option;
->  
->  	uopt->novrs = 0;
-> -	uopt->blocksize = UDF_DEFAULT_BLOCKSIZE;
->  	uopt->partition = 0xFFFF;
->  	uopt->session = 0xFFFFFFFF;
->  	uopt->lastblock = 0;
-> @@ -433,6 +432,7 @@ static int udf_parse_options(char *optio
->  			if (match_int(&args[0], &option))
->  				return 0;
->  			uopt->blocksize = option;
-> +			uopt->flags |= (1 << UDF_FLAG_BLOCKSIZE_SET);
->  			break;
->  		case Opt_unhide:
->  			uopt->flags |= (1 << UDF_FLAG_UNHIDE);
-> @@ -761,12 +761,13 @@ static sector_t udf_scan_anchors(struct 
->   * Return 1 if not found, 0 if ok
->   *
->   */
-> -static void udf_find_anchor(struct super_block *sb)
-> +static int udf_find_anchor(struct super_block *sb)
->  {
->  	sector_t lastblock;
->  	struct buffer_head *bh = NULL;
->  	uint16_t ident;
->  	int i;
-> +	int anchor_found = 0;
->  	struct udf_sb_info *sbi = UDF_SB(sb);
->  
->  	lastblock = udf_scan_anchors(sb, sbi->s_last_block);
-> @@ -804,10 +805,13 @@ check_anchor:
->  			brelse(bh);
->  			if (ident != TAG_IDENT_AVDP)
->  				sbi->s_anchor[i] = 0;
-> +			else
-> +				anchor_found = 1;
->  		}
->  	}
->  
->  	sbi->s_last_block = lastblock;
-> +	return !anchor_found;
->  }
->  
->  static int udf_find_fileset(struct super_block *sb,
-> @@ -1679,6 +1683,32 @@ static int udf_check_valid(struct super_
->  	return !block;
->  }
->  
-> +static int udf_check_blocksize(struct super_block *sb,
-> +			       struct udf_options *uopt, int silent)
-> +{
-> +	struct udf_sb_info *sbi = UDF_SB(sb);
-> +
-> +	if (!sb_set_blocksize(sb, uopt->blocksize)) {
-> +		if (!silent)
-> +			printk(KERN_WARNING "UDF-fs: Bad block size\n");
-> +		return 1;
-> +	}
-> +	sbi->s_last_block = uopt->lastblock;
-> +	if (udf_check_valid(sb, uopt->novrs, silent)) {
-> +		if (!silent)
-> +			printk(KERN_WARNING "UDF-fs: No VRS found\n");
-> +		return 1;
-> +	}
-> +	sbi->s_anchor[0] = sbi->s_anchor[1] = 0;
-> +	sbi->s_anchor[2] = uopt->anchor;
-> +	if (udf_find_anchor(sb)) {
-> +		if (!silent)
-> +			printk(KERN_WARNING "UDF-fs: No anchor found\n");
-> +		return 1;
-> +	}
-> +	return 0;
-> +}
-> +
->  static int udf_load_sequence(struct super_block *sb, kernel_lb_addr *fileset)
->  {
->  	struct anchorVolDescPtr *anchor;
-> @@ -1847,6 +1877,8 @@ static void udf_free_partition(struct ud
->  static int udf_fill_super(struct super_block *sb, void *options, int silent)
->  {
->  	int i;
-> +	int no_anchor;
-> +	int is_default_blocksize;
->  	struct inode *inode = NULL;
->  	struct udf_options uopt;
->  	kernel_lb_addr rootdir, fileset;
-> @@ -1895,13 +1927,6 @@ static int udf_fill_super(struct super_b
->  	sbi->s_umask = uopt.umask;
->  	sbi->s_nls_map = uopt.nls_map;
->  
-> -	/* Set the block size for all transfers */
-> -	if (!sb_min_blocksize(sb, uopt.blocksize)) {
-> -		udf_debug("Bad block size (%d)\n", uopt.blocksize);
-> -		printk(KERN_ERR "udf: bad block size (%d)\n", uopt.blocksize);
-> -		goto error_out;
-> -	}
-> -
->  	if (uopt.session == 0xFFFFFFFF)
->  		sbi->s_session = udf_get_last_session(sb);
->  	else
-> @@ -1909,17 +1934,20 @@ static int udf_fill_super(struct super_b
->  
->  	udf_debug("Multi-session=%d\n", sbi->s_session);
->  
-> -	sbi->s_last_block = uopt.lastblock;
-> -	sbi->s_anchor[0] = sbi->s_anchor[1] = 0;
-> -	sbi->s_anchor[2] = uopt.anchor;
-> -
-> -	if (udf_check_valid(sb, uopt.novrs, silent)) {
-> -		/* read volume recognition sequences */
-> -		printk(KERN_WARNING "UDF-fs: No VRS found\n");
-> -		goto error_out;
-> +	if (uopt.flags & (1 << UDF_FLAG_BLOCKSIZE_SET)) {
-> +		no_anchor = udf_check_blocksize(sb, &uopt, silent);
-> +	} else {
-> +		uopt.blocksize = bdev_hardsect_size(sb->s_bdev);
-> +		is_default_blocksize = uopt.blocksize == UDF_DEFAULT_BLOCKSIZE;
-> +		no_anchor = udf_check_blocksize(sb, &uopt, silent ||
-> +						!is_default_blocksize);
-> +		if (no_anchor && !is_default_blocksize) {
-> +			uopt.blocksize = UDF_DEFAULT_BLOCKSIZE;
-> +			no_anchor = udf_check_blocksize(sb, &uopt, silent);
-> +		}
->  	}
-> -
-> -	udf_find_anchor(sb);
-> +	if (no_anchor)
-> +		goto error_out;
->  
->  	/* Fill in the rest of the superblock */
->  	sb->s_op = &udf_sb_ops;
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
-
---9jxsPFA5p3P2qPhR
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="0001-udf-use-hardware-sector-size.patch"
-
->From 41debf4e7959b8e537880a8ed04fd770ee4bd67f Mon Sep 17 00:00:00 2001
-From: Clemens Ladisch <clemens@ladisch.de>
-Date: Wed, 11 Mar 2009 15:57:47 +0100
-Subject: [PATCH] udf: use hardware sector size
-
-This patch makes the UDF FS driver use the hardware sector size as the
-default logical block size, which is required by the UDF specifications.
-While the previous default of 2048 bytes was correct for optical disks,
-it was not for hard disks or USB storage devices, and made it impossible
-to use such a device with the default mount options.  (The Linux mkudffs
-tool uses a default block size of 2048 bytes even on devices with
-smaller hardware sectors, so this bug is unlikely to be noticed unless
-UDF-formatted USB storage devices are exchanged with other OSs.)
-
-To avoid regressions for people who use loopback optical disk images or
-who used the (sometimes wrong) defaults of mkudffs, we also try with
-a block size of 2048 bytes if no anchor was found with the hardware
-sector size.
-
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/udf/super.c  |   70 ++++++++++++++++++++++++++++++++++++++----------------
- fs/udf/udf_sb.h |    1 +
- 2 files changed, 50 insertions(+), 21 deletions(-)
-
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index 36a467c..f8fece4 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -86,7 +86,6 @@ static int udf_remount_fs(struct super_block *, int *, char *);
- static int udf_check_valid(struct super_block *, int, int);
- static int udf_vrs(struct super_block *sb, int silent);
- static void udf_load_logicalvolint(struct super_block *, struct kernel_extent_ad);
--static void udf_find_anchor(struct super_block *);
- static int udf_find_fileset(struct super_block *, struct kernel_lb_addr *,
- 			    struct kernel_lb_addr *);
- static void udf_load_fileset(struct super_block *, struct buffer_head *,
-@@ -260,7 +259,7 @@ static int udf_show_options(struct seq_file *seq, struct vfsmount *mnt)
- 
- 	if (!UDF_QUERY_FLAG(sb, UDF_FLAG_STRICT))
- 		seq_puts(seq, ",nostrict");
--	if (sb->s_blocksize != UDF_DEFAULT_BLOCKSIZE)
-+	if (UDF_QUERY_FLAG(sb, UDF_FLAG_BLOCKSIZE_SET))
- 		seq_printf(seq, ",bs=%lu", sb->s_blocksize);
- 	if (UDF_QUERY_FLAG(sb, UDF_FLAG_UNHIDE))
- 		seq_puts(seq, ",unhide");
-@@ -416,7 +415,6 @@ static int udf_parse_options(char *options, struct udf_options *uopt,
- 	int option;
- 
- 	uopt->novrs = 0;
--	uopt->blocksize = UDF_DEFAULT_BLOCKSIZE;
- 	uopt->partition = 0xFFFF;
- 	uopt->session = 0xFFFFFFFF;
- 	uopt->lastblock = 0;
-@@ -444,6 +442,7 @@ static int udf_parse_options(char *options, struct udf_options *uopt,
- 			if (match_int(&args[0], &option))
- 				return 0;
- 			uopt->blocksize = option;
-+			uopt->flags |= (1 << UDF_FLAG_BLOCKSIZE_SET);
- 			break;
- 		case Opt_unhide:
- 			uopt->flags |= (1 << UDF_FLAG_UNHIDE);
-@@ -789,12 +788,13 @@ static sector_t udf_scan_anchors(struct super_block *sb, sector_t lastblock)
-  * Return 1 if not found, 0 if ok
-  *
-  */
--static void udf_find_anchor(struct super_block *sb)
-+static int udf_find_anchor(struct super_block *sb)
- {
- 	sector_t lastblock;
- 	struct buffer_head *bh = NULL;
- 	uint16_t ident;
- 	int i;
-+	int anchor_found = 0;
- 	struct udf_sb_info *sbi = UDF_SB(sb);
- 
- 	lastblock = udf_scan_anchors(sb, sbi->s_last_block);
-@@ -832,10 +832,13 @@ check_anchor:
- 			brelse(bh);
- 			if (ident != TAG_IDENT_AVDP)
- 				sbi->s_anchor[i] = 0;
-+			else
-+				anchor_found = 1;
- 		}
- 	}
- 
- 	sbi->s_last_block = lastblock;
-+	return anchor_found;
- }
- 
- static int udf_find_fileset(struct super_block *sb,
-@@ -1721,6 +1724,32 @@ static int udf_check_valid(struct super_block *sb, int novrs, int silent)
- 	return !block;
- }
- 
-+static int udf_check_volume(struct super_block *sb,
-+			    struct udf_options *uopt, int silent)
-+{
-+	struct udf_sb_info *sbi = UDF_SB(sb);
-+
-+	if (!sb_set_blocksize(sb, uopt->blocksize)) {
-+		if (!silent)
-+			printk(KERN_WARNING "UDF-fs: Bad block size\n");
-+		return 0;
-+	}
-+	sbi->s_last_block = uopt->lastblock;
-+	if (udf_check_valid(sb, uopt->novrs, silent)) {
-+		if (!silent)
-+			printk(KERN_WARNING "UDF-fs: No VRS found\n");
-+		return 0;
-+	}
-+	sbi->s_anchor[0] = sbi->s_anchor[1] = 0;
-+	sbi->s_anchor[2] = uopt->anchor;
-+	if (!udf_find_anchor(sb)) {
-+		if (!silent)
-+			printk(KERN_WARNING "UDF-fs: No anchor found\n");
-+		return 0;
-+	}
-+	return 1;
-+}
-+
- static int udf_load_sequence(struct super_block *sb, struct kernel_lb_addr *fileset)
- {
- 	struct anchorVolDescPtr *anchor;
-@@ -1889,6 +1918,7 @@ static void udf_free_partition(struct udf_part_map *map)
- static int udf_fill_super(struct super_block *sb, void *options, int silent)
- {
- 	int i;
-+	int found_anchor;
- 	struct inode *inode = NULL;
- 	struct udf_options uopt;
- 	struct kernel_lb_addr rootdir, fileset;
-@@ -1941,13 +1971,6 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
- 	sbi->s_dmode = uopt.dmode;
- 	sbi->s_nls_map = uopt.nls_map;
- 
--	/* Set the block size for all transfers */
--	if (!sb_min_blocksize(sb, uopt.blocksize)) {
--		udf_debug("Bad block size (%d)\n", uopt.blocksize);
--		printk(KERN_ERR "udf: bad block size (%d)\n", uopt.blocksize);
--		goto error_out;
--	}
--
- 	if (uopt.session == 0xFFFFFFFF)
- 		sbi->s_session = udf_get_last_session(sb);
- 	else
-@@ -1955,17 +1978,22 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
- 
- 	udf_debug("Multi-session=%d\n", sbi->s_session);
- 
--	sbi->s_last_block = uopt.lastblock;
--	sbi->s_anchor[0] = sbi->s_anchor[1] = 0;
--	sbi->s_anchor[2] = uopt.anchor;
--
--	if (udf_check_valid(sb, uopt.novrs, silent)) {
--		/* read volume recognition sequences */
--		printk(KERN_WARNING "UDF-fs: No VRS found\n");
--		goto error_out;
-+	if (uopt.flags & (1 << UDF_FLAG_BLOCKSIZE_SET)) {
-+		found_anchor = udf_check_volume(sb, &uopt, silent);
-+	} else {
-+		uopt.blocksize = bdev_hardsect_size(sb->s_bdev);
-+		found_anchor = udf_check_volume(sb, &uopt, silent);
-+		if (!found_anchor && uopt.blocksize != UDF_DEFAULT_BLOCKSIZE) {
-+			if (!silent)
-+				printk(KERN_NOTICE
-+				       "UDF-fs: Rescanning with blocksize "
-+				       "%d\n", UDF_DEFAULT_BLOCKSIZE);
-+			uopt.blocksize = UDF_DEFAULT_BLOCKSIZE;
-+			found_anchor = udf_check_volume(sb, &uopt, silent);
-+		}
- 	}
--
--	udf_find_anchor(sb);
-+	if (!found_anchor)
-+		goto error_out;
- 
- 	/* Fill in the rest of the superblock */
- 	sb->s_op = &udf_sb_ops;
-diff --git a/fs/udf/udf_sb.h b/fs/udf/udf_sb.h
-index 158221e..2dd9219 100644
---- a/fs/udf/udf_sb.h
-+++ b/fs/udf/udf_sb.h
-@@ -30,6 +30,7 @@
- #define UDF_FLAG_GID_SET	16
- #define UDF_FLAG_SESSION_SET	17
- #define UDF_FLAG_LASTBLOCK_SET	18
-+#define UDF_FLAG_BLOCKSIZE_SET	19
- 
- #define UDF_PART_FLAG_UNALLOC_BITMAP	0x0001
- #define UDF_PART_FLAG_UNALLOC_TABLE	0x0002
--- 
-1.6.0.2
+kjournald2    D 0000000000557a0c     0  1547      2
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [0000000000557a0c] jbd2_journal_commit_transaction+0x208/0x1718
+ [000000000055d758] kjournald2+0x14c/0x318
+ [0000000000465d34] kthread+0x48/0x7c
+ [000000000042b364] kernel_thread+0x3c/0x54
+ [0000000000465c88] kthreadd+0xc8/0x12c
+pdflush       D 000000000055716c     0  2021      2
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [000000000055716c] start_this_handle+0x374/0x508
+ [0000000000557500] jbd2_journal_start+0xbc/0x11c
+ [000000000053a438] ext4_journal_start_sb+0x5c/0x84
+ [000000000052dd84] ext4_da_writepages+0x1a8/0x404
+ [0000000000490ec0] do_writepages+0x40/0x78
+ [00000000004d0ff8] __writeback_single_inode+0x198/0x330
+ [00000000004d15d8] generic_sync_sb_inodes+0x238/0x3c4
+ [00000000004d1984] writeback_inodes+0xb0/0x114
+ [00000000004915c0] background_writeout+0xc8/0x114
+ [0000000000492004] pdflush+0x128/0x1e0
+ [0000000000465d34] kthread+0x48/0x7c
+ [000000000042b364] kernel_thread+0x3c/0x54
+ [0000000000465c88] kthreadd+0xc8/0x12c
+dbench        D 000000000055716c     0  2024      1
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [000000000055716c] start_this_handle+0x374/0x508
+ [0000000000557500] jbd2_journal_start+0xbc/0x11c
+ [000000000053a438] ext4_journal_start_sb+0x5c/0x84
+ [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
+ [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
+ [00000000004c7714] touch_atime+0x160/0x178
+ [00000000004c2a3c] vfs_readdir+0x88/0xb0
+ [00000000004eab90] compat_sys_getdents+0x3c/0x8c
+ [0000000000406154] linux_sparc_syscall32+0x34/0x40
+dbench        D 000000000055716c     0  2025      1
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [000000000055716c] start_this_handle+0x374/0x508
+ [0000000000557500] jbd2_journal_start+0xbc/0x11c
+ [000000000053a438] ext4_journal_start_sb+0x5c/0x84
+ [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
+ [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
+ [00000000004c7714] touch_atime+0x160/0x178
+ [00000000004c2a3c] vfs_readdir+0x88/0xb0
+ [00000000004eab90] compat_sys_getdents+0x3c/0x8c
+ [0000000000406154] linux_sparc_syscall32+0x34/0x40
+dbench        D 000000000055716c     0  2026      1
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [000000000055716c] start_this_handle+0x374/0x508
+ [0000000000557500] jbd2_journal_start+0xbc/0x11c
+ [000000000053a438] ext4_journal_start_sb+0x5c/0x84
+ [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
+ [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
+ [00000000004c7714] touch_atime+0x160/0x178
+ [000000000048b56c] generic_file_aio_read+0x578/0x620
+ [00000000004b5254] do_sync_read+0x90/0xe0
+ [00000000004b5c40] vfs_read+0x7c/0x11c
+ [00000000004b5d30] SyS_pread64+0x50/0x7c
+ [000000000043f778] sys32_pread64+0x20/0x34
+ [0000000000406154] linux_sparc_syscall32+0x34/0x40
+dbench        D 000000000055716c     0  2027      1
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [000000000055716c] start_this_handle+0x374/0x508
+ [0000000000557500] jbd2_journal_start+0xbc/0x11c
+ [000000000053a438] ext4_journal_start_sb+0x5c/0x84
+ [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
+ [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
+ [00000000004c757c] file_update_time+0xe0/0x118
+ [000000000048aef4] __generic_file_aio_write_nolock+0x280/0x380
+ [000000000048b930] generic_file_aio_write+0x58/0xc8
+ [0000000000526274] ext4_file_write+0xa8/0x15c
+ [00000000004b5174] do_sync_write+0x90/0xe0
+ [00000000004b5a40] vfs_write+0x7c/0x11c
+ [00000000004b5b30] SyS_pwrite64+0x50/0x7c
+ [000000000043f744] sys32_pwrite64+0x20/0x34
+ [0000000000406154] linux_sparc_syscall32+0x34/0x40
+dbench        D 000000000055716c     0  2028      1
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [000000000055716c] start_this_handle+0x374/0x508
+ [0000000000557500] jbd2_journal_start+0xbc/0x11c
+ [000000000053a438] ext4_journal_start_sb+0x5c/0x84
+ [000000000052b958] ext4_da_write_begin+0x98/0x1a0
+ [000000000048a8dc] generic_file_buffered_write+0xe4/0x2b8
+ [000000000048afd0] __generic_file_aio_write_nolock+0x35c/0x380
+ [000000000048b930] generic_file_aio_write+0x58/0xc8
+ [0000000000526274] ext4_file_write+0xa8/0x15c
+ [00000000004b5174] do_sync_write+0x90/0xe0
+ [00000000004b5a40] vfs_write+0x7c/0x11c
+ [00000000004b5b30] SyS_pwrite64+0x50/0x7c
+ [000000000043f744] sys32_pwrite64+0x20/0x34
+ [0000000000406154] linux_sparc_syscall32+0x34/0x40
+dbench        D 000000000055c010     0  2029      1
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [000000000055c010] jbd2_journal_release_jbd_inode+0x94/0xd8
+ [0000000000535bb4] ext4_clear_inode+0x2c/0x3c
+ [00000000004c7b1c] clear_inode+0xac/0x124
+ [0000000000527e48] ext4_free_inode+0x7c/0x3d4
+ [000000000052f884] ext4_delete_inode+0x218/0x29c
+ [00000000004c86b4] generic_delete_inode+0x8c/0x124
+ [00000000004c876c] generic_drop_inode+0x20/0x19c
+ [00000000004c77a4] iput+0x78/0x88
+ [00000000004c0200] do_unlinkat+0xf8/0x154
+ [00000000004c0270] SyS_unlink+0x14/0x24
+ [0000000000406154] linux_sparc_syscall32+0x34/0x40
+dbench        D 000000000055cf84     0  2030      1
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [000000000055cf84] jbd2_log_wait_commit+0x144/0x1a8
+ [0000000000555cdc] jbd2_journal_stop+0x32c/0x37c
+ [0000000000557594] jbd2_journal_force_commit+0x34/0x48
+ [0000000000536d14] ext4_force_commit+0x30/0x50
+ [00000000005296b8] ext4_write_inode+0x80/0xa0
+ [00000000004d1044] __writeback_single_inode+0x1e4/0x330
+ [00000000004d11b0] sync_inode+0x20/0x40
+ [00000000005263ec] ext4_sync_file+0xc4/0x118
+ [00000000004d46f0] vfs_fsync+0x6c/0xa0
+ [00000000004d474c] do_fsync+0x28/0x44
+ [00000000004d47a4] SyS_fsync+0x14/0x28
+ [0000000000406154] linux_sparc_syscall32+0x34/0x40
+dbench        D 000000000055716c     0  2031      1
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [000000000055716c] start_this_handle+0x374/0x508
+ [0000000000557500] jbd2_journal_start+0xbc/0x11c
+ [000000000053a438] ext4_journal_start_sb+0x5c/0x84
+ [000000000052b958] ext4_da_write_begin+0x98/0x1a0
+ [000000000048a8dc] generic_file_buffered_write+0xe4/0x2b8
+ [000000000048afd0] __generic_file_aio_write_nolock+0x35c/0x380
+ [000000000048b930] generic_file_aio_write+0x58/0xc8
+ [0000000000526274] ext4_file_write+0xa8/0x15c
+ [00000000004b5174] do_sync_write+0x90/0xe0
+ [00000000004b5a40] vfs_write+0x7c/0x11c
+ [00000000004b5b30] SyS_pwrite64+0x50/0x7c
+ [000000000043f744] sys32_pwrite64+0x20/0x34
+ [0000000000406154] linux_sparc_syscall32+0x34/0x40
+dbench        D 000000000055716c     0  2032      1
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [000000000055716c] start_this_handle+0x374/0x508
+ [0000000000557500] jbd2_journal_start+0xbc/0x11c
+ [000000000053a438] ext4_journal_start_sb+0x5c/0x84
+ [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
+ [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
+ [00000000004c7714] touch_atime+0x160/0x178
+ [00000000004c2a3c] vfs_readdir+0x88/0xb0
+ [00000000004eab90] compat_sys_getdents+0x3c/0x8c
+ [0000000000406154] linux_sparc_syscall32+0x34/0x40
+dbench        D 000000000055716c     0  2033      1
+Call Trace:
+ [0000000000768bcc] schedule+0x18/0x40
+ [000000000055716c] start_this_handle+0x374/0x508
+ [0000000000557500] jbd2_journal_start+0xbc/0x11c
+ [000000000053a438] ext4_journal_start_sb+0x5c/0x84
+ [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
+ [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
+ [00000000004c7714] touch_atime+0x160/0x178
+ [000000000048b56c] generic_file_aio_read+0x578/0x620
+ [00000000004b5254] do_sync_read+0x90/0xe0
+ [00000000004b5c40] vfs_read+0x7c/0x11c
+ [00000000004b5d30] SyS_pread64+0x50/0x7c
+ [000000000043f778] sys32_pread64+0x20/0x34
+ [0000000000406154] linux_sparc_syscall32+0x34/0x40
 
 
---9jxsPFA5p3P2qPhR--
+>
+> I don't think is related to BZ #12579, although some of the symptoms
+> look superficially the same.
+>
+>                                                        - Ted
+>
+> P.S.  What are your dbench parameters, and how big is your filesystem,
+> so I can try to reproduce it on my side?  And how long do you
+> typically need to run before this triggers?  Thanks!
+
+It is 2G filesystem, I run
+`dbench -c /usr/share/dbench/client.txt 10` or 5 clients.
+
+Yesterday it happened when I run it for the first time, but today I
+run it 10 times before I got the deadlock.
+
+So, I think I need to try it on 2.6.29-rc7 again.
