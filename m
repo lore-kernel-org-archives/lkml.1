@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbZCKGuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZCKGzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752833AbZCKGuk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 02:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbZCKGub
+	id S1753335AbZCKGzj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 02:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZCKGza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 02:50:31 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:41714 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751567AbZCKGua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 02:50:30 -0400
-Date: Wed, 11 Mar 2009 07:50:24 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: David Brownell <david-b@pacbell.net>
-Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Kim Kyuwon <chammoru@gmail.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "=?UTF-8?B?6rmA6rec7JuQ?=" <q1.kim@samsung.com>,
-       "=?UTF-8?B?67CV6rK966+8?=" <kyungmin.park@samsung.com>
-Subject: Re: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when
- resuming
-Message-ID: <20090311075024.5b5fa28a@mjolnir.ossman.eu>
-In-Reply-To: <200903102033.51026.david-b@pacbell.net>
-References: <4d34a0a70902200400s252f48ddvfd6e0d83e91fa291@mail.gmail.com>
-	<4d34a0a70902222141y345a7bc3g314e6de5df156f2d@mail.gmail.com>
-	<49A258A2.2020408@nokia.com>
-	<200903102033.51026.david-b@pacbell.net>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Mar 2009 02:55:30 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:48643 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751700AbZCKGz3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 02:55:29 -0400
+Message-ID: <49B7605A.7000604@snapgear.com>
+Date: Wed, 11 Mar 2009 16:55:22 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for March 10 (m68k/tlbflush.h)
+References: <10f740e80903101307v70000e0cm61e261050411a715@mail.gmail.com>
+In-Reply-To: <10f740e80903101307v70000e0cm61e261050411a715@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 10 Mar 2009 19:33:50 -0800
-David Brownell <david-b@pacbell.net> wrote:
+Hi Geert,
 
+Geert Uytterhoeven wrote:
+> Hi Greg,
 > 
-> It'd be nice to have a nice unambiguous set_voltage()
-> request from the MMC core.  The set_ios() thing has
-> always been confusing.
+> http://kisskb.ellerman.id.au/kisskb/buildresult/180587/
+> | arch/m68k/kernel/traps.c:274: error: implicit declaration of
+> function '__flush_tlb040_one'
 > 
+> http://kisskb.ellerman.id.au/kisskb/buildresult/180591/
+> | mm/vmalloc.c:555: error: implicit declaration of function
+> 'flush_tlb_kernel_range'
+> 
+> Caused by:
+> 
+> | commit 7fa69761ea82752b97502383f7f2d3fdfa509115
+> | Author: Greg Ungerer <gerg@uclinux.org>
+> | Date:   Tue Feb 17 14:40:47 2009 +1000
+> |
+> |     m68k: merge the mmu and non-mmu versions of tlbflush.h
+> |
+> |     Simple merge of the mmu and non-mmu versions of tlbflush.h
+> |
+> |     Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+> 
+> Seems like you merged the wrong way:
+> 
+> | diff --git a/arch/m68k/include/asm/tlbflush.h
+> b/arch/m68k/include/asm/tlbflush.h
+> | index b6f93b3..79050d0 100644
+> | --- a/arch/m68k/include/asm/tlbflush.h
+> | +++ b/arch/m68k/include/asm/tlbflush.h
+> | @@ -1,5 +1,267 @@
+> | -#ifdef __uClinux__
+> | -#include "tlbflush_no.h"
+> | +#ifndef _M68K_TLBFLUSH_H
+> | +#define _M68K_TLBFLUSH_H
+> | +
+> | +#ifndef CONFIG_MMU
+>     ^^^^^
+>     ifdef
+> 
+> | +#ifndef CONFIG_SUN3
 
-set_ios() should be taken out back. But someone has to have the time to
-reimplement things. :/
+Yep, your absolutely right. Oddly enough it didn't stop non-mmu
+builds from compiling or working...
 
--- 
-     -- Pierre Ossman
+I have fixed that patch, and pushed it into the m68knommu git
+tree (for-next branch).
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+Thanks
+Greg
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
