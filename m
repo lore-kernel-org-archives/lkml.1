@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbZCKVoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751931AbZCKVtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753476AbZCKVoX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 17:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbZCKVoO
+	id S1751931AbZCKVtk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 17:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZCKVtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 17:44:14 -0400
-Received: from www.tglx.de ([62.245.132.106]:41319 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751417AbZCKVoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 17:44:13 -0400
-Date: Wed, 11 Mar 2009 22:42:09 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>,
-       =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [PATCH 1/10] PM: Rework handling of interrupts during suspend-resume
- (rev. 5)
-In-Reply-To: <200903112159.21166.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0903112238280.29264@localhost.localdomain>
-References: <200902221837.49396.rjw@sisk.pl> <200903111036.02482.rjw@sisk.pl> <alpine.LFD.2.00.0903111106450.29264@localhost.localdomain> <200903112159.21166.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 11 Mar 2009 17:49:31 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:32720 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbZCKVta (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 17:49:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZzDCutlsCzoX9i/MeuZVLXrXlsXWvqRuuVZ/P7ObD6irfCZrjICN6uNoHJrCL2kvT4
+         O9XmxeW8red7JJqnomkzXRimmMzsVMpv8EWUcRQwSIwxylRqwG1gaqidVhXK+4eeqp+K
+         yiqUhV2/NhH1+oXx+eddBinm25MaHM2mQ1RC8=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090311200411.WPUP4619.eastrmmtao102.cox.net@eastrmimpo02.cox.net>
+References: <20090311200411.WPUP4619.eastrmmtao102.cox.net@eastrmimpo02.cox.net>
+Date: Wed, 11 Mar 2009 21:49:27 +0000
+Message-ID: <ef1cd66f0903111449m59c3a29fq5fbd13a682cc2e8b@mail.gmail.com>
+Subject: Re: [PATCH] /dev/time for Linux, inspired by Plan 9
+From: =?ISO-8859-1?Q?Jochen_Vo=DF?= <jochen.voss@googlemail.com>
+To: Christopher Brannon <cmbrannon@cox.net>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009, Rafael J. Wysocki wrote:
-> On Wednesday 11 March 2009, Thomas Gleixner wrote:
-> > > +EXPORT_SYMBOL_GPL(suspend_device_irqs);
-> > 
-> >   I'm not too enthusiastic about this open coded implementation of
-> >   disable_irq() with slightly different semantics.
-> 
-> The difference in semantics is important IMO, otherwise I woulndn't have
-> done that.  In particular, IMO, the condition should be under the spinlock IMO
-> and I'd rather not synchronize all interrupts we don't really disable here.
+Hi Christopher,
 
-I don't say that the difference is not relevant. But the code is
-almost the same and disable_irq() could have the sync_irq optimization
-as well.
- 
-> >   Can we please move the fiddling with desc->* into
-> >   kernel/irq/manage.c and share the code there ?
-> 
-> Can you please discuss that with Ingo?  I moved that from manage.c at his
-> request.
+2009/3/11 Christopher Brannon <cmbrannon@cox.net>:
+> +/dev/time provides a file-based interface to the system clock.
+> +Using this interface, one can query or set the system clock by reading or
+> +writing text strings.  A read of /dev/time yields four decimal integers:
+> +seconds since start of epoch, nanoseconds since start of epoch,
+> +nanoseconds since boot, and nanoseconds per second.
+> [...]
+> +Examples
+> +--------
+> +cat /dev/time
+> +# Produces: 1236121128 123612012877063000 495497 300,
+> +# at time of writing on a test machine.
 
-Hmrpf. Will do. I just want to avoid that we have scattered functions
-which deal with the guts of the irq code all over the place. I'm fine
-with your loop in irq/pm.c, but the actual handling of the irq
-internals should remain in manage.c.
+The last two numbers in the example seem suspicous to me.  300
+nanoseconds per second?
 
-I'll have a closer look how to solve this.
-
-Thanks,
-
-	tglx
+I hope this helps,
+Jochen
+-- 
+http://seehuhn.de/
