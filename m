@@ -1,72 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452AbZCKHUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbZCKHZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752452AbZCKHUl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 03:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZCKHUc
+	id S1753654AbZCKHZS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 03:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZCKHYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 03:20:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60709 "EHLO hera.kernel.org"
+	Wed, 11 Mar 2009 03:24:51 -0400
+Received: from mga02.intel.com ([134.134.136.20]:53272 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752085AbZCKHUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 03:20:31 -0400
-Message-ID: <49B76640.6010109@kernel.org>
-Date: Wed, 11 Mar 2009 16:20:32 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       jbarnes@virtuousgeek.org, tj@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] sysfs: only allow one scheduled removal callback
- per kobj
-References: <20090310232027.GC25665@ldl.fc.hp.com> <20090311044151.GB25840@suse.de> <20090311070359.GF25665@ldl.fc.hp.com>
-In-Reply-To: <20090311070359.GF25665@ldl.fc.hp.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Mar 2009 07:20:06 +0000 (UTC)
+	id S1751982AbZCKHYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 03:24:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,340,1233561600"; 
+   d="scan'208";a="496827117"
+From: Yu Zhao <yu.zhao@intel.com>
+To: jbarnes@virtuousgeek.org
+Cc: linux-pci@vger.kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>
+Subject: [PATCH v11 0/8] PCI: Linux kernel SR-IOV support
+Date: Wed, 11 Mar 2009 15:25:41 +0800
+Message-Id: <1236756349-18892-1-git-send-email-yu.zhao@intel.com>
+X-Mailer: git-send-email 1.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> * Greg KH <gregkh@suse.de>:
->> On Tue, Mar 10, 2009 at 05:20:27PM -0600, Alex Chiang wrote:
->>> Hi Vegard, sysfs folks,
->>>
->>> Vegard was nice enough to test my PCI remove/rescan patches under
->>> kmemcheck. Maybe "torture" is a more appropriate term. ;)
->>>
->>> My patch series introduces a sysfs "remove" attribute for PCI
->>> devices, which will remove that device (and child devices).
->>>
->>> 	http://thread.gmane.org/gmane.linux.kernel.pci/3495
->>>
->>> Vegard decided that he wanted to do something like:
->>>
->>> 	# while true ; do echo 1 > /sys/bus/pci/devices/.../remove ; done
->>>
->>> which caused a nasty oops in my code. You can see the results of
->>> his testing in the thread I referenced above.
->>>
->>> After looking at my code for a bit, I decided that maybe it
->>> wasn't completely my fault. ;) See, I'm using device_schedule_callback()
->> why?  Are you really in interrupt context here to need to do the remove
->> at a later time?
-> 
-> What other interface can I use to remove objects from sysfs?
+Greetings,
 
-I haven't read your code yet but I seem to recall doing something
-similar.  Ah.. okay, this one didn't get in and I forgot about this.
+Following patches are intended to support SR-IOV capability in the
+Linux kernel. With these patches, people can turn a PCI device with
+the capability into multiple ones from software perspective, which
+will benefit KVM and achieve other purposes such as QoS, security,
+and etc.
 
-  http://thread.gmane.org/gmane.linux.kernel/582130
+SR-IOV specification can be found at:
+  http://www.pcisig.com/members/downloads/specifications/iov/sr-iov1.0_11Sep07.pdf
+(it requires membership.)
 
-But, yeah, committing suicide is currently quite hariy.  I tought SCSI
-did it correctly with all the grab/release dances.  Does SCSI have the
-problem too?
+Devices that support SR-IOV are available from following vendors:
+  http://download.intel.com/design/network/ProdBrf/320025.pdf
+  http://www.myri.com/vlsi/Lanai_Z8ES_Datasheet.pdf
+  http://www.neterion.com/products/pdfs/X3100ProductBrief.pdf
 
-Thanks.
+The patches to enable the SR-IOV capability of Intel 82576 NIC are
+available at (a.k.a Physical Function driver):
+  http://patchwork.kernel.org/patch/8063/
+  http://patchwork.kernel.org/patch/8064/
+  http://patchwork.kernel.org/patch/8065/
+  http://patchwork.kernel.org/patch/8066/
+And the driver for Intel 82576 Virtual Function are available at:
+  http://patchwork.kernel.org/patch/11029/
+  http://patchwork.kernel.org/patch/11028/
 
--- 
-tejun
+
+Major changes from v10 to v11:
+  1, use pci_setup_device() to setup Virtual Function (Matthew Wilcox)
+  2, various coding style fixes (Matthew Wilcox)
+  3, wording and grammar fixes (Randy Dunlap)
+
+  v9 -> v10:
+  1, minor fix in pci_restore_iov_state().
+  2, respin against the latest tree.
+
+  v8 -> v9:
+  1, put a might_sleep() into SR-IOV API which sleeps (Andi Kleen)
+  2, block user config accesses before clearing VF Enable bit (Matthew Wilcox)
+
+
+Yu Zhao (8):
+  PCI: initialize and release SR-IOV capability
+  PCI: restore saved SR-IOV state
+  PCI: reserve bus range for SR-IOV device
+  PCI: centralize device setup code into pci_setup_device()
+  PCI: add SR-IOV API for Physical Function driver
+  PCI: handle SR-IOV Virtual Function Migration
+  PCI: document SR-IOV sysfs entries
+  PCI: manual for SR-IOV user and driver developer
+
+ Documentation/ABI/testing/sysfs-bus-pci |   27 ++
+ Documentation/DocBook/kernel-api.tmpl   |    1 +
+ Documentation/PCI/pci-iov-howto.txt     |   99 +++++
+ drivers/pci/Kconfig                     |   10 +
+ drivers/pci/Makefile                    |    2 +
+ drivers/pci/iov.c                       |  677 +++++++++++++++++++++++++++++++
+ drivers/pci/pci.c                       |    8 +
+ drivers/pci/pci.h                       |   53 +++
+ drivers/pci/probe.c                     |   86 +++--
+ include/linux/pci.h                     |   32 ++
+ include/linux/pci_regs.h                |   33 ++
+ 11 files changed, 989 insertions(+), 39 deletions(-)
+ create mode 100644 Documentation/PCI/pci-iov-howto.txt
+ create mode 100644 drivers/pci/iov.c
+
