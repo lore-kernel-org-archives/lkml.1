@@ -1,30 +1,37 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756776AbZCJQCL (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 10 Mar 2009 12:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613AbZCJQBe
+	id S1755846AbZCKByc (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Tue, 10 Mar 2009 21:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZCKByW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 12:01:34 -0400
-Received: from eastrmmtao104.cox.net ([68.230.240.46]:55381 "EHLO
-	eastrmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756257AbZCJQBc (ORCPT
+	Tue, 10 Mar 2009 21:54:22 -0400
+Received: from hrndva-commlb.mail.rr.com ([71.74.57.8]:63540 "EHLO
+	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751260AbZCKByV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 12:01:32 -0400
-X-Authority-Analysis: v=1.0 c=1 p=fjpsELknCwEA:10 a=SIapg4jNq7wA:10
- a=9rmTus7Pyml7TIhgWpkA:9 a=tS1r48QmNPq52JtVfHjPiaPMmZsA:4 a=gv1PULAwEqkA:10
-X-CM-Score: 91.00
-Message-ID: <20090310120130.B9OYW.180074.imail@eastrmwml43>
-Date: Tue, 10 Mar 2009 12:01:30 -0400
-From: OXFAM GB <tom43@cox.net>
-Reply-To: natsec_oxfam@live.com
-Subject: 
+	Tue, 10 Mar 2009 21:54:21 -0400
+X-Greylist: delayed 472 seconds by postgrey-1.27 at vger.kernel.org; Tue, 10 Mar 2009 21:54:21 EDT
+Message-Id: <7h9gbp$cdc54v@rrcs-agw-01b.hrndva.rr.com>
+X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
+From: Online Notification <laquinta@yuma.twcbc.com>
+Reply-To: contact_siemens@rocketmail.com
+Organization: Online Notification
+To: <info@lely.co.uk>
+Subject: info: (siemens3@onlineclaimsdept.com)
+Date: Tue, 10 Mar 2009 20:46:28 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-oxfam GB has choosen you to redeem $850,000.00,contat the national sec 
+Your email ID has been awarded £750,000,00 GBP in the  Siemens Promo, Reply us with your info: ()
+
+Name:....................
+Country:.................   
+Sex:.....................
+Age: .....................   
+Addres:...................
+
+Regards
+Mrs Sarah Wilson
