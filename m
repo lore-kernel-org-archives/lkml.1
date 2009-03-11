@@ -1,113 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbZCKNWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbZCKNZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756055AbZCKNWX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 09:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbZCKNWO
+	id S1755648AbZCKNZZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 09:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbZCKNZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 09:22:14 -0400
-Received: from mx1.auerswald.de ([212.185.163.234]:2143 "EHLO
-	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754022AbZCKNWN convert rfc822-to-8bit (ORCPT
+	Wed, 11 Mar 2009 09:25:10 -0400
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:49212 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753721AbZCKNZJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 09:22:13 -0400
-From: Wolfgang =?iso-8859-15?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Organization: Auerswald GmbH & Co. KG
-To: Pierre Ossman <drzeus@drzeus.cx>
-Subject: [PATCH 3/7] mmc_spi: adjust for delayed data token response
-Date: Wed, 11 Mar 2009 14:21:56 +0100
-User-Agent: KMail/1.9.10
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+	Wed, 11 Mar 2009 09:25:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Bn6GlYG6DC+9OjEiIfhdG1F9G0VYwRxXq1H+01796CQawcVk1TU8hp0NvMG5qdOImp
+         Pu4+hqI7tSS5rLcHlwb8l3S1X2/arer8pqcd3kcshzXCRgl/KJvThjRYb5qGoagoq10l
+         Q2qSGHPmnJzFz5kkmVKwlSklRJhXglRgyBHf0=
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200903111421.56295.wolfgang.mues@auerswald.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
+In-Reply-To: <200903112254.56764.nickpiggin@yahoo.com.au>
+References: <8c5a844a0903110255q45b7cdf4u1453ce40d495ee2c@mail.gmail.com>
+	 <200903112254.56764.nickpiggin@yahoo.com.au>
+Date: Wed, 11 Mar 2009 15:25:05 +0200
+Message-ID: <8c5a844a0903110625y416e7a3ft448a44b1bf70c990@mail.gmail.com>
+Subject: Re: [PATCH 1/2] mm: use list.h for vma list
+From: Daniel Lowengrub <lowdanie@gmail.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wolfgang Muees <wolfgang.mues@auerswald.de>
+On Wed, Mar 11, 2009 at 1:54 PM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> On Wednesday 11 March 2009 20:55:48 Daniel Lowengrub wrote:
+>> diff -uNr linux-2.6.28.7.vanilla/arch/arm/mm/mmap.c
+>> linux-2.6.28.7/arch/arm/mm/mmap.c
+>>.....
+>> -     for (vma = find_vma(mm, addr); ; vma = vma->vm_next) {
+>> +     for (vma = find_vma(mm, addr); ; vma = vma->vma_next(vma)) {
+>>               /* At this point:  (!vma || addr < vma->vm_end). */
+>>               if (TASK_SIZE - len < addr) {
+>>                       /*
+>
+> Careful with your replacements. I'd suggest a mechanical search &
+> replace might be less error prone.
 
-o some cards are not able to send the data token in time, but
-  miss the time frame for some bits(!). So synchronize to the
-  start of the token.
+Thanks for pointing that out.  The code compiled and ran on my x86 machine
+so I'll take an extra look at the other architectures.
 
-Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
+>> linux-2.6.28.7/include/linux/mm.h
+>> --- linux-2.6.28.7.vanilla/include/linux/mm.h 2009-03-06
+>>...
+>> +/* Interface for the list_head prev and next pointers.  They
+>> + * don't let you wrap around the vm_list.
+>> + */
+>
+> Hmm, I don't think these are really appropriate replacements for
+> vma->vm_next. 2 branches and a lot of extra icache.
+>
+> A non circular list like hlist might work better, but I suspect if
+> callers are converted properly to have conditions ensuring that it
+> doesn't wrap and doesn't get NULL vmas passed in, then it could
+> avoid both those branches and just be a wrapper around
+> list_entry(vma->vm_list.next)
+>
+The main place I can think of where "list_entry(vma->vm_list.next)"
+can be used without the extra conditionals is inside a loop where
+we're going through every vma in the
+list.  This is usually done  with "list_for_each_entry" which uses
+"list_entry(...)" anyway.
+But in all the places that we start from some point inside the list
+(usually with a find_vma)
+a regular "for" list is used with "vma_next" as the last parameter.
+In this case it would
+probably be better to use "list_for_each_entry_continue" which would
+lower the amount of pointless calls to "vma_next".
+The first condition in vma_next also does away with the excessive use
+of the ternary operator in the mmap.c file.  Where else in the code
+would it be faster to use
+"list_entry(...)" together with conditionals?
+I'll look through the code again with all this in mind and see if
+calls to the vma_next function can be minimized to the point of
+removing it like
+you said.
 
----
-This is one of a line of patches to enhance the usability of
-the mmc spi host port driver from "don't work with most SD cards"
-to "work with nearly all SD cards" (including those ugly cards
-with non-byte-aligned responses).
+>>  struct mm_struct {
+>> -     struct vm_area_struct * mmap;           /* list of VMAs */
+>> +     struct list_head mm_vmas;               /* list of VMAs */
 
-diff -uprN 2_6_29_rc7_patch2_wait_16bytes_response/drivers/mmc/host/mmc_spi.c 2_6_29_rc7_patch3_delayed_data_response/drivers/mmc/host/mmc_spi.c
---- 2_6_29_rc7_patch2_wait_16bytes_response/drivers/mmc/host/mmc_spi.c	2009-03-11 13:00:06.000000000 +0100
-+++ 2_6_29_rc7_patch3_delayed_data_response/drivers/mmc/host/mmc_spi.c	2009-03-11 13:42:48.000000000 +0100
-@@ -612,6 +612,7 @@ mmc_spi_writeblock(struct mmc_spi_host *
- 	struct spi_device	*spi = host->spi;
- 	int			status, i;
- 	struct scratch		*scratch = host->data;
-+	u32			pattern;
- 
- 	if (host->mmc->use_spi_crc)
- 		scratch->crc_val = cpu_to_be16(
-@@ -639,8 +640,23 @@ mmc_spi_writeblock(struct mmc_spi_host *
- 	 * doesn't necessarily tell whether the write operation succeeded;
- 	 * it just says if the transmission was ok and whether *earlier*
- 	 * writes succeeded; see the standard.
--	 */
--	switch (SPI_MMC_RESPONSE_CODE(scratch->status[0])) {
-+	 *
-+	 * In practice, there are (even modern SDHC-)Cards which need
-+	 * some bits to send the response, so we have to cope with this
-+	 * situation and check the response bit-by-bit. Arggh!!!
-+	 */
-+	pattern  = scratch->status[0] << 24;
-+	pattern |= scratch->status[1] << 16;
-+	pattern |= scratch->status[2] << 8;
-+	pattern |= scratch->status[3];
-+
-+	/* left-adjust to leading 0 bit */
-+	while (pattern & 0x80000000)
-+		pattern <<= 1;
-+	/* right-adjust for pattern matching. Code is in bit 4..0 now. */
-+	pattern >>= 27;
-+
-+	switch (pattern) {
- 	case SPI_RESPONSE_ACCEPTED:
- 		status = 0;
- 		break;
-@@ -671,8 +687,8 @@ mmc_spi_writeblock(struct mmc_spi_host *
- 	/* Return when not busy.  If we didn't collect that status yet,
- 	 * we'll need some more I/O.
- 	 */
--	for (i = 1; i < sizeof(scratch->status); i++) {
--		if (scratch->status[i] != 0)
-+	for (i = 4; i < sizeof(scratch->status); i++) {
-+		if (scratch->status[i] & 0x01)
- 			return 0;
- 	}
- 	return mmc_spi_wait_unbusy(host, timeout);
+>.... like this nice name change ;)
+This and other parts of the patch are based on a previous attempt by
+Paul Zijlstra.
 
----
-regards
-
-i. A. Wolfgang Mües
--- 
-Auerswald GmbH & Co. KG
-Hardware Development
-Telefon: +49 (0)5306 9219 0
-Telefax: +49 (0)5306 9219 94 
-E-Mail: Wolfgang.Mues@Auerswald.de
-Web: http://www.auerswald.de
- 
---------------------------------------------------------------
-Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
-Registriert beim AG Braunschweig HRA 13289
-p.h.G Auerswald Geschäftsführungsges. mbH
-Registriert beim AG Braunschweig HRB 7463
-Geschäftsführer: Dipl-Ing. Gerhard Auerswald
+>> @@ -988,7 +989,8 @@
+>>       lru_add_drain();
+>>       tlb = tlb_gather_mmu(mm, 0);
+>>       update_hiwater_rss(mm);
+>> -     end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
+>> +     end = unmap_vmas(&tlb, &mm->mm_vmas, vma, address, end,
+>> +                     &nr_accounted, details);
+>
+> Why do you change this if the caller knows where the list head is
+> anyway, and extracts it from the mm? I'd prefer to keep changes to
+> calling convention to a minimum (and I hope with the changes to
+> vma_next I suggested then it wouldn't be needed to carry the list
+> head around everywhere anyway).
+>
+The unmap_vmas was changed because sometimes (in exit_mmap for example)
+"unmap_vmas" is used right after "detach_vmas_to_be_unmapped" which
+now returns a list of the vmas we want to unmap.  Now that we already
+have this list for free it seems like a good idea to be able to pass
+it to "unmap_vmas".  Do you think that this causes
+more damage than it's worth?
+After reading what you said before, it looks like we could take better
+advantage of this
+if we use "list_entry(...) in unmap_vmas's main loop instead of a
+regular for loop
+with __vma_next.
+Thank you for the helpful suggestions.
