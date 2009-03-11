@@ -1,70 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbZCKJsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbZCKJue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbZCKJsR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 05:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZCKJsD
+	id S1753658AbZCKJue (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 05:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZCKJuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 05:48:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36834 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752676AbZCKJsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 05:48:00 -0400
-Date: Wed, 11 Mar 2009 10:47:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Menage <menage@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpuacct: reduce one NULL check in fast-path
-Message-ID: <20090311094744.GB13543@elte.hu>
-References: <49B71EB5.1030608@cn.fujitsu.com>
+	Wed, 11 Mar 2009 05:50:25 -0400
+Received: from mail-gx0-f167.google.com ([209.85.217.167]:44523 "EHLO
+	mail-gx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751914AbZCKJuY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 05:50:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YJtcfzGgJlCkEh0MGmmRsjFs0DYtaxhiXdRGyMo1Wryx7yRy6vlBJHN0/p+QtfXnlZ
+         /ALIMapiOZgGYglcYJSNTZVh7cSPwnIUuFBsfw0LYh7L8g6q9wcg18aUlhGi8a0ygrYd
+         lt3HgvR4XQ756egvV0L/rSG4h98mgakNyX074=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B71EB5.1030608@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090310094810.2ffe1f63.akpm@linux-foundation.org>
+References: <1236321780-28718-1-git-send-email-cooloney@kernel.org>
+	 <1236321780-28718-3-git-send-email-cooloney@kernel.org>
+	 <20090306143756.738db0ee.akpm@linux-foundation.org>
+	 <1236679631.5183.72.camel@dy>
+	 <8bd0f97a0903100325k6cbcf73ek8e5f3723b2c4bb0a@mail.gmail.com>
+	 <20090310094810.2ffe1f63.akpm@linux-foundation.org>
+Date: Wed, 11 Mar 2009 17:50:21 +0800
+Message-ID: <7d86d44a0903110250l9bcccd7led5558068f153522@mail.gmail.com>
+Subject: Re: [PATCH 02/18] Blackfin Serial Driver: use barrier instead of 
+	cpu_relax for Blackfin SMP like patch
+From: graff yang <graff.yang@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, gyang <graf.yang@analog.com>,
+       Bryan Wu <cooloney@kernel.org>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 11, 2009 at 12:48 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+>
+> On Tue, 10 Mar 2009 06:25:08 -0400 Mike Frysinger <vapier.adi@gmail.com> wrote:
+>
+> > On Tue, Mar 10, 2009 at 06:07, gyang wrote:
+> > > On Fri, 2009-03-06 at 14:37 -0800, Andrew Morton wrote:
+> > >> On Fri,  6 Mar 2009 14:42:44 +0800
+> > >> Bryan Wu <cooloney@kernel.org> wrote:
+> > >>
+> > >> > From: Graf Yang <graf.yang@analog.com>
+> > >> >
+> > >> > We are making a SMP like patch to blackfin, cpu_relax() is replaced by a
+> > >> > data cache flush function which will count it to a per-cpu counter.
+> > >> > If this serial function is called too early, the per-cpu data area have
+> > >> > not been initialized, this call will cause crash.
+> > >>
+> > >> That's a bug in blackfin architecture support.  The kernel should be
+> > >> able to call cpu_relax() at any time, surely.  It's a very low-level
+> > >> and simple thing.
+> > >>
+> > >> > So we'd like to use barrier() instead of cpu_relax().
+> > >> >
+> > >>
+> > >> barrier() is purely a compiler concept.  We might as well just remove
+> > >> the cpu_relax() altogether.
+> > >
+> > > Do you mean remove cpu_relax(), and either not add barrier() here?
+> >
+> > afaik, early printk all runs before SMP is setup, so having it be a
+> > 100% busy wait is fine
+>
+> No, blackfin is busted, please fix this bug in blackfin core.
+>
+> What happens if core kernel code decides to run cpu_relax() prior to
+> initialising per-cpu data?
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+cpu_relax() will call smp_mb(), and it need to invalidate data-cache
+in blackfin smp-like kernel,
+the cache flush number is increased and recorded into a per-cpu data.
 
-> In cpuacct_charge(), task_ca() will never return NULL, so change
-> for(...) to do{}while(...) to save one NULL check.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/sched.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 9bb6d24..bc8a91e 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -9768,10 +9768,11 @@ static void cpuacct_charge(struct task_struct *tsk, u64 cputime)
->  	cpu = task_cpu(tsk);
->  	ca = task_ca(tsk);
->  
-> -	for (; ca; ca = ca->parent) {
-> +	do {
->  		u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
->  		*cpuusage += cputime;
-> -	}
-> +		ca = ca->parent;
-> +	} while (ca);
+When cpu_relax() is called from early-printk functions, the per-cpu
+data areas have not
+been initialized.
 
-This patch does not apply cleanly to the latest scheduler tree:
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
- http://people.redhat.com/mingo/tip.git/README
 
-	Ingo
+
+--
+-Graff
