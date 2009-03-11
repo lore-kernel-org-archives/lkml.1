@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbZCKS74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZCKTCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753356AbZCKS74 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 14:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbZCKS7r
+	id S1753691AbZCKTCS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 15:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZCKTCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 14:59:47 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46538 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbZCKS7q (ORCPT
+	Wed, 11 Mar 2009 15:02:03 -0400
+Received: from mx3.schottelius.org ([77.109.138.221]:36562 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752202AbZCKTCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 14:59:46 -0400
-Date: Wed, 11 Mar 2009 14:59:42 -0400
-From: Kyle McMartin <kyle@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Kyle McMartin <kyle@infradead.org>, linux-kernel@vger.kernel.org,
-       jakub@redhat.com, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] scripts/unifdef.c: rename getline symbol to something
-	else
-Message-ID: <20090311185942.GA11433@bombadil.infradead.org>
-References: <20090311161733.GE5448@bombadil.infradead.org> <20090311183735.GA2832@uranus.ravnborg.org>
+	Wed, 11 Mar 2009 15:02:01 -0400
+Date: Wed, 11 Mar 2009 20:01:54 +0100
+From: Nico Schottelius <nico-linux-20090311@schottelius.org>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Nico Schottelius <nico-linux-20090311@schottelius.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       ipw3945-devel@lists.sourceforge.net,
+       Linux Next Mailing List <linux-next@vger.kernel.org>
+Subject: Re: X200 suspend status on -wl and -next
+Message-ID: <20090311190154.GA28042@denkbrett.schottelius.org>
+Mail-Followup-To: Nico Schottelius <nico-linux-20090311@schottelius.org>,
+	"John W. Linville" <linville@tuxdriver.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	LKML <linux-kernel@vger.kernel.org>,
+	ipw3945-devel@lists.sourceforge.net,
+	Linux Next Mailing List <linux-next@vger.kernel.org>
+References: <20090311073030.GA5284@denkbrett.schottelius.org> <200903110946.23280.rjw@sisk.pl> <20090311085229.GB4495@denkbrett.schottelius.org> <20090311184407.GG8761@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
 Content-Disposition: inline
-In-Reply-To: <20090311183735.GA2832@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090311184407.GG8761@tuxdriver.com>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.29-rc7-next-20090306-ikn x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 07:37:35PM +0100, Sam Ravnborg wrote:
-> > Rawhide builds are currently failing to build unifdef.c, as the next
-> > version of glibc changes the default _POSIX_C_SOURCE level, which
-> > exposes getline() from <stdio.h>
-> > 
-> > scripts/unifdef.c:209: error: conflicting types for 'getline'
-> > /usr/include/stdio.h:653: note: previous declaration of 'getline' was
-> > here
-> > make[2]: *** [scripts/unifdef] Error 1
-> > make[1]: *** [__headers] Error 2
-> > make: *** [vmlinux] Error 2
-> > 
-> > Rename the symbol in unifdef.c to parseline to avoid this conflicting
-> > declaration.
-> 
-> I have a similar patch queued in kbuild-fixes.git.
-> 
 
-Great, thanks. Is this going to go into the next -rc?
+--azLHFNyN32YCQGCU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-regards, Kyle
+John W. Linville [Wed, Mar 11, 2009 at 02:44:07PM -0400]:
+> > ikn% grep url .git/config=20
+> >   url =3D git://git.kernel.org/pub/scm/linux/kernel/git/iwlwifi/iwlwifi=
+-2.6.git
+>=20
+> Any chance you'd like to try wireless-testing to help to isolate
+> possible sources of this problem?
+>=20
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing.=
+git
+
+Sure, why not. It's just another git-clone & make & wait :-)
+
+Btw, next bug-report in linux-next will come in next minutes (for iwlagn).
+
+Sincerly,
+
+Nico
+
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--azLHFNyN32YCQGCU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkm4CqIACgkQuL75KpiFGIzrugCg4arBbmPBDMAEKMmv2sf/4Z87
+CnsAoJZaKPO0pwXIejV6ci0++sZh+cT2
+=c/7g
+-----END PGP SIGNATURE-----
+
+--azLHFNyN32YCQGCU--
