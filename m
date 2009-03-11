@@ -1,57 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZCKUt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751623AbZCKU7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693AbZCKUt2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 16:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbZCKUr4
+	id S1751623AbZCKU7m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 16:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbZCKU7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 16:47:56 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:51013 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753373AbZCKUrz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 16:47:55 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: gregkh@suse.de
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, Simon Arlott <cxacru@fire.lp0.eu>
-Subject: [PATCH 1/5] USB: atm/cxacru, fix lock imbalance
-Date: Wed, 11 Mar 2009 21:47:36 +0100
-Message-Id: <1236804460-1432-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.2
+	Wed, 11 Mar 2009 16:59:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54891 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751022AbZCKU7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 16:59:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/10] PM: Rework handling of interrupts during suspend-resume (rev. 5)
+Date: Wed, 11 Mar 2009 21:59:19 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+References: <200902221837.49396.rjw@sisk.pl> <200903111036.02482.rjw@sisk.pl> <alpine.LFD.2.00.0903111106450.29264@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903111106450.29264@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903112159.21166.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We do not hold mutex in one place in cxacru_cm, but unlock it on fail path.
-Fix this.
+On Wednesday 11 March 2009, Thomas Gleixner wrote:
+> Rafael,
+> 
+> On Wed, 11 Mar 2009, Rafael J. Wysocki wrote:
+> 
+> > Index: linux-2.6/kernel/irq/pm.c
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-2.6/kernel/irq/pm.c
+> > @@ -0,0 +1,89 @@
+> > +/*
+> > + * linux/kernel/irq/pm.c
+> > + *
+> > + * Copyright (C) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
+> > + *
+> > + * This file contains power management functions related to interrupts.
+> > + */
+> > +
+> > +#include <linux/irq.h>
+> > +#include <linux/module.h>
+> > +#include <linux/interrupt.h>
+> > +
+> > +#include "internals.h"
+> > +
+> > +/**
+> > + * suspend_device_irqs - disable all currently enabled interrupt lines
+> > + *
+> > + * During system-wide suspend or hibernation device interrupts need to be
+> > + * disabled at the chip level and this function is provided for this purpose.
+> > + * It disables all interrupt lines that are enabled at the moment and sets the
+> > + * IRQ_SUSPENDED flag for them.
+> > + */
+> > +void suspend_device_irqs(void)
+> > +{
+> > +	struct irq_desc *desc;
+> > +	int irq;
+> > +
+> > +	for_each_irq_desc(irq, desc) {
+> > +		unsigned long flags;
+> > +		bool sync = false;
+> > +
+> > +		spin_lock_irqsave(&desc->lock, flags);
+> > +
+> > +		if (desc->action && !(desc->action->flags & IRQF_TIMER)) {
+> > +			if (!desc->depth++) {
+> > +				desc->status |= IRQ_DISABLED;
+> > +				desc->chip->disable(irq);
+> > +				sync = true;
+> > +			}
+> > +			desc->status |= IRQ_SUSPENDED;
+> 
+>   This flag needs to be checked in __enable_irq().
+> 
+> > +		}
+> > +
+> > +		spin_unlock_irqrestore(&desc->lock, flags);
+> > +
+> > +		if (sync)
+> > +			synchronize_irq(irq);
+> > +	}
+> > +}
+> > +EXPORT_SYMBOL_GPL(suspend_device_irqs);
+> 
+>   I'm not too enthusiastic about this open coded implementation of
+>   disable_irq() with slightly different semantics.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Simon Arlott <cxacru@fire.lp0.eu>
----
- drivers/usb/atm/cxacru.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+The difference in semantics is important IMO, otherwise I woulndn't have
+done that.  In particular, IMO, the condition should be under the spinlock IMO
+and I'd rather not synchronize all interrupts we don't really disable here.
 
-diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
-index 5ed4ae0..6789089 100644
---- a/drivers/usb/atm/cxacru.c
-+++ b/drivers/usb/atm/cxacru.c
-@@ -485,7 +485,7 @@ static int cxacru_cm(struct cxacru_data *instance, enum cxacru_cm_request cm,
- 			usb_err(instance->usbatm, "requested transfer size too large (%d, %d)\n",
- 				wbuflen, rbuflen);
- 		ret = -ENOMEM;
--		goto fail;
-+		goto err;
- 	}
- 
- 	mutex_lock(&instance->cm_serialize);
-@@ -565,6 +565,7 @@ static int cxacru_cm(struct cxacru_data *instance, enum cxacru_cm_request cm,
- 	dbg("cm %#x", cm);
- fail:
- 	mutex_unlock(&instance->cm_serialize);
-+err:
- 	return ret;
- }
- 
--- 
-1.6.2
-caught by stanse
+>   Can we please move the fiddling with desc->* into
+>   kernel/irq/manage.c and share the code there ?
+
+Can you please discuss that with Ingo?  I moved that from manage.c at his
+request.
+
+Thanks,
+Rafael
