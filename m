@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbZCKKdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbZCKKgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754452AbZCKKdb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 06:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZCKKdW
+	id S1754893AbZCKKgV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 06:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbZCKKgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 06:33:22 -0400
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:40988 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753011AbZCKKdW (ORCPT
+	Wed, 11 Mar 2009 06:36:08 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:54677 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754147AbZCKKgF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 06:33:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YP40pxIdGKosIusaZ9+5JYb0ZUxe7E8Avyp34DlL3emHBX0aJzKQibaib9CtxFfUfE
-         +YGaG4gl/P6PZUPDN38gtMGAJhWDq21FFkinp1lA1SN4P76mzc2iSvzIcbH11eS4/6Lp
-         ms2sqgMlTt+bIQDyaLfgiIBeRKte+zW4cty3w=
-Date: Wed, 11 Mar 2009 13:40:18 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Daniel Lowengrub <lowdanie@gmail.com>
-Cc: linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] mm: use list.h for vma list
-Message-ID: <20090311104018.GA2376@x200.localdomain>
-References: <8c5a844a0903110255q45b7cdf4u1453ce40d495ee2c@mail.gmail.com>
+	Wed, 11 Mar 2009 06:36:05 -0400
+Date: Wed, 11 Mar 2009 11:36:02 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Kyle McMartin <kyle@mcmartin.ca>
+cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       linux-m68k@vger.kernel.org, rtc-linux@googlegroups.com,
+       linux-parisc@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Paul Mundt <lethal@linux-sh.org>, Dann Frazier <dannf@dannf.org>
+Subject: Re: [PATCH 0/7] Generic RTC class driver
+In-Reply-To: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Message-ID: <alpine.LRH.2.00.0903111134270.1040@vixen.sonytel.be>
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8c5a844a0903110255q45b7cdf4u1453ce40d495ee2c@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 11:55:48AM +0200, Daniel Lowengrub wrote:
-> Use the linked list defined list.h for the list of vmas that's stored
-> in the mm_struct structure.  Wrapper functions "vma_next" and
-> "vma_prev" are also implemented.  Functions that operate on more than
-> one vma are now given a list of vmas as input.
+	Hi Kyle,
 
-> Signed-off-by: Daniel Lowengrub
+On Mon, 9 Mar 2009, Geert Uytterhoeven wrote:
+> These patches are relative to the "rtc-parisc" branch of Kyle's PA-RISC git
+> repository, which already contains some cleanups for the rtc-parisc driver by
+> Dann, which already have been ack'ed by Alessandro:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/kyle/parisc-2.6.git;a=shortlog;h=rtc-parisc
+> 
+> Paul: Feel free to add your SuperH support.
+> 
+> I suppose the easiest way for this to go in is through Kyle's PA-RISC tree, as
+> he already has the preceding patches? Can I have your acks, please?
 
-That's not how S-o-b line should look like.
+Is it OK for you to take it through your PA-RISC tree?
+If yes, I can resend the patch series with the collected acks.
 
-> --- linux-2.6.28.7.vanilla/arch/alpha/kernel/osf_sys.c
-> +++ linux-2.6.28.7/arch/alpha/kernel/osf_sys.c
-> @@ -1197,7 +1197,7 @@
->  		if (!vma || addr + len <= vma->vm_start)
->  			return addr;
->  		addr = vma->vm_end;
-> -		vma = vma->vm_next;
-> +		vma = vma_next(vma);
+Thanks!
 
-Well, this bloats both mm_struct and vm_area_struct.
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
