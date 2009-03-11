@@ -1,92 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbZCKMI1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbZCKMIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbZCKMI1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 08:08:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbZCKMIR
+	id S1756129AbZCKMIu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 08:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbZCKMIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 08:08:17 -0400
-Received: from hobbit.corpit.ru ([81.13.33.150]:21587 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755040AbZCKMIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 08:08:16 -0400
-X-Greylist: delayed 529 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Mar 2009 08:08:16 EDT
-Message-ID: <49B7A79A.6090008@msgid.tls.msk.ru>
-Date: Wed, 11 Mar 2009 14:59:22 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 11 Mar 2009 08:08:39 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:43771 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755123AbZCKMIh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 08:08:37 -0400
+Date: Wed, 11 Mar 2009 12:07:54 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: "John W. Linville" <linville@tuxdriver.com>
+cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: 2.6.29-rc "TKIP: replay detected" regression
+Message-ID: <Pine.LNX.4.64.0903111114510.22922@blonde.anvils>
 MIME-Version: 1.0
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-CC: Mika Tiainen <mikat@iki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: Slow clock on AMD 740G chipset
-References: <874ozu2hcl.fsf@divinity.mikat.iki.fi> <20090310101807.GD20716@alberich.amd.com> <20090311100525.GE20716@alberich.amd.com>
-In-Reply-To: <20090311100525.GE20716@alberich.amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Herrmann wrote:
-> On Tue, Mar 10, 2009 at 11:18:07AM +0100, Andreas Herrmann wrote:
->> On Tue, Jan 20, 2009 at 04:16:10PM +0200, Mika Tiainen wrote:
->>> Hi,
->>>
->>> I built a new machine with Gigabyte GA-MA74GM-S2H motherboard that ntpd
->>> can't keep synced. Could this be a kernel bug or is it a hardware
->>> problem?
->>>
->>> Installed with Debian 2.6.27 kernel and currently running a self built
->>> 2.6.28.1, both have the problem. It's falling behind over 2s/15min:
->>>
->>> Jan 19 22:08:23 aeon ntpd[31468]: time reset +2.226349 s
->>> Jan 19 22:24:11 aeon ntpd[31468]: time reset +2.185085 s
->>> Jan 19 22:40:08 aeon ntpd[31468]: time reset +2.308958 s
->>> Jan 19 22:56:23 aeon ntpd[31468]: time reset +2.253836 s
->>> Jan 19 23:13:03 aeon ntpd[31468]: time reset +2.291917 s
->>> Jan 19 23:28:14 aeon ntpd[31468]: time reset +2.091014 s
->>> Jan 19 23:43:47 aeon ntpd[31468]: time reset +2.209660 s
->>> Jan 19 23:59:09 aeon ntpd[31468]: time reset +2.150145 s
->>> Jan 20 00:15:44 aeon ntpd[31468]: time reset +2.256261 s
->>> Jan 20 00:31:47 aeon ntpd[31468]: time reset +2.253873 s
->>>
->>> I have tried different clocksources. The machine defaults to hpet,
->>> acpi_pm makes no difference and
+Prior to 2.6.29-rc1's 274bfb8dc5ffa16cb073801bebe76ab7f4e2e73d
+"lib80211: absorb crypto bits from net/ieee80211", the TKIP and CCMP
+"replay detected" messages were subject to the IEEE80211_DEBUG_DROP()
+macro, neither I nor my distro had CONFIG_IEEE80211_DEBUG set, I never
+glimpsed such messages, and ThinkPad T43p ipw2200 wireless worked fine.
 
-Same here, also on 740G, but on other 2 machines with 780G
-it also happens.
+-		if (ieee80211_ratelimit_debug(IEEE80211_DL_DROP)) {
+-			IEEE80211_DEBUG_DROP("TKIP: replay detected: STA=%pM"
++		if (net_ratelimit()) {
++			printk(KERN_DEBUG "TKIP: replay detected: STA=%pM"
 
->> That's annoying but I can't really help you with this. Maybe using
->> adjtimex as described in section 9.1.6 in
->> http://support.ntp.org/bin/view/Support/KnownHardwareIssues is an
->> option for you.
+Wireless is still working fine - thank you - but now that such messages
+are not CONFIG'ed out, my /var/log/messages is getting cluttered with
+"TKIP: replay detected"s, and more unpleasantly (because I have WARNINGs
+to screen) occasional "__ratelimit: NN callbacks suppressed" appearing.
 
-And adjtimex helped me on all 3 machines.
-Running it in self-calibrate mode (that 70 sec thing)
-plus running ntpd was enough for me for now.
+Messages from the last day appended below: only one CCMP, but two
+kinds of TKIP message - sometimes it's just the same TSC repeated,
+but more irritating are the sequences when it gets a reset to zero
+"previous TSC 000000000dbb received TSC 000000000000" followed by
+message (or suppression) as it goes on to receive 1, 2, 3, ...
+The AP here, if it's of any interest, is a Siemens Gigaset SE587.
 
-What's interesting is that some time ago it worked just fine,
-and, which is even more interesting, windows on this very
-hardware shows quite good time stability (WITHOUT setting
-the time using [s]ntp, its ntp client is disabled).
+I've not correlated these bursts with any bad behaviour at all,
+reception seems fine even amidst these sequences: so I'd be glad
+just to have those messages suppressed again - and of course can
+patch them out of my own kernel builds, but others may suffer too.
 
-[]
-> So it's "mere a question" of calibration on your system. AFAIK
-> you have to increase the tick value to not fall behind ntp-time, e.g.
-> increasing tick value from 10000 to 10025
+Hugh
 
-Well, sorta.  Given the amount of hardware that exposes this
-behavour, AND the fact that it worked fine with previous
-kernels (I think it was ok with 2.6.26), AND that windows
-works just fine, it's not "calibration of your system"
-question anymore.  It's now kernel bug question... ;)
-
-BTW, the same Gigabyte GA-MA74GM-S2H mobo is here.
-Other motherboards that exposes the same issue here:
-
-   M3A78-EM (Asus, AMD780G)
-   M3A-H/HDMI (Asus, AMD780G)
-
-It never happened (so far) on M2N-SLI DELUXE (also Asus,
-nVidia MCP55) and on M2N-VM DVI (nVidia MCP67).
-
-/mjt
+Mar 10 12:47:27 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000380 received TSC 000000000380
+Mar 10 17:44:42 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 0000000009fd received TSC 0000000009fd
+Mar 10 17:50:51 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000a5b received TSC 000000000a5b
+Mar 10 18:07:27 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000aec received TSC 000000000aec
+Mar 10 18:17:24 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000b36 received TSC 000000000b36
+Mar 10 20:18:54 blonde kernel: CCMP: replay detected: STA=00:21:04:13:08:d3 previous PN 000000000527 received PN 000000000526
+Mar 10 20:22:10 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000e8e received TSC 000000000e8e
+Mar 10 23:27:26 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 00000000015f received TSC 00000000015f
+Mar 11 10:17:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000000
+Mar 11 10:17:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000001
+Mar 11 10:17:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000002
+Mar 11 10:17:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000003
+Mar 11 10:17:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000004
+Mar 11 10:17:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000005
+Mar 11 10:17:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000006
+Mar 11 10:17:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000007
+Mar 11 10:17:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000008
+Mar 11 10:17:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000009
+Mar 11 10:27:23 blonde kernel: __ratelimit: 30 callbacks suppressed
+Mar 11 10:27:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000002d
+Mar 11 10:27:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000002e
+Mar 11 10:27:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000002f
+Mar 11 10:27:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000031
+Mar 11 10:27:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000032
+Mar 11 10:27:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000033
+Mar 11 10:27:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000034
+Mar 11 10:27:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000035
+Mar 11 10:27:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000036
+Mar 11 10:27:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000037
+Mar 11 10:29:23 blonde kernel: __ratelimit: 32 callbacks suppressed
+Mar 11 10:29:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000005a
+Mar 11 10:37:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000005b
+Mar 11 10:37:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000005c
+Mar 11 10:37:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000005d
+Mar 11 10:37:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000005e
+Mar 11 10:37:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000005f
+Mar 11 10:37:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000060
+Mar 11 10:37:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000061
+Mar 11 10:37:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000062
+Mar 11 10:37:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000063
+Mar 11 10:47:23 blonde kernel: __ratelimit: 33 callbacks suppressed
+Mar 11 10:47:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000088
+Mar 11 10:47:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000089
+Mar 11 10:47:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000008a
+Mar 11 10:47:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000008c
+Mar 11 10:47:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000008d
+Mar 11 10:47:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000008e
+Mar 11 10:47:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 00000000008f
+Mar 11 10:47:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000090
+Mar 11 10:47:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000091
+Mar 11 10:47:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 000000000092
+Mar 11 10:57:23 blonde kernel: __ratelimit: 30 callbacks suppressed
+Mar 11 10:57:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000b5
+Mar 11 10:57:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000b6
+Mar 11 10:57:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000b7
+Mar 11 10:57:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000b8
+Mar 11 10:57:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000b9
+Mar 11 10:57:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000ba
+Mar 11 10:57:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000bb
+Mar 11 10:57:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000bc
+Mar 11 10:57:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000bd
+Mar 11 10:57:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000c1
+Mar 11 11:07:23 blonde kernel: __ratelimit: 30 callbacks suppressed
+Mar 11 11:07:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000e2
+Mar 11 11:07:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000e3
+Mar 11 11:07:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000e4
+Mar 11 11:07:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000e5
+Mar 11 11:07:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000e6
+Mar 11 11:07:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000e7
+Mar 11 11:07:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000e8
+Mar 11 11:07:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000e9
+Mar 11 11:07:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000ea
+Mar 11 11:07:23 blonde kernel: TKIP: replay detected: STA=00:21:04:13:08:d3 previous TSC 000000000dbb received TSC 0000000000eb
