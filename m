@@ -1,92 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbZCKQwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbZCKQwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755117AbZCKQwA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:52:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbZCKQvv
+	id S1755167AbZCKQwx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbZCKQwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:51:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40228 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751062AbZCKQvu (ORCPT
+	Wed, 11 Mar 2009 12:52:45 -0400
+Received: from 42.mail-out.ovh.net ([213.251.189.42]:56722 "HELO
+	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751022AbZCKQwo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:51:50 -0400
-Date: Wed, 11 Mar 2009 09:48:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: graff yang <graff.yang@gmail.com>
-Cc: Mike Frysinger <vapier.adi@gmail.com>, gyang <graf.yang@analog.com>,
-       Bryan Wu <cooloney@kernel.org>, alan@lxorguk.ukuu.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/18] Blackfin Serial Driver: use barrier instead of 
- cpu_relax for Blackfin SMP like patch
-Message-Id: <20090311094823.38ec1e17.akpm@linux-foundation.org>
-In-Reply-To: <7d86d44a0903110250l9bcccd7led5558068f153522@mail.gmail.com>
-References: <1236321780-28718-1-git-send-email-cooloney@kernel.org>
-	<1236321780-28718-3-git-send-email-cooloney@kernel.org>
-	<20090306143756.738db0ee.akpm@linux-foundation.org>
-	<1236679631.5183.72.camel@dy>
-	<8bd0f97a0903100325k6cbcf73ek8e5f3723b2c4bb0a@mail.gmail.com>
-	<20090310094810.2ffe1f63.akpm@linux-foundation.org>
-	<7d86d44a0903110250l9bcccd7led5558068f153522@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 11 Mar 2009 12:52:44 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Mar 2009 12:52:44 EDT
+Subject: Re: [2.6.29-rc5][BUG] swapon on vfat file gets stuck on inode lock
+From: Laurent GUERBY <laurent@guerby.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+In-Reply-To: <alpine.LFD.2.00.0903110837590.32478@localhost.localdomain>
+References: <1236779832.11347.2082.camel@localhost>
+	 <alpine.LFD.2.00.0903110837590.32478@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 11 Mar 2009 17:45:59 +0100
+Message-Id: <1236789959.11347.2107.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 16919179376069713466
+X-Ovh-Remote: 79.90.156.46 (46.156.90-79.rev.gaoland.net)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|H 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009 17:50:21 +0800 graff yang <graff.yang@gmail.com> wrote:
-
-> On Wed, Mar 11, 2009 at 12:48 AM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> >
-> > On Tue, 10 Mar 2009 06:25:08 -0400 Mike Frysinger <vapier.adi@gmail.com> wrote:
-> >
-> > > On Tue, Mar 10, 2009 at 06:07, gyang wrote:
-> > > > On Fri, 2009-03-06 at 14:37 -0800, Andrew Morton wrote:
-> > > >> On Fri, __6 Mar 2009 14:42:44 +0800
-> > > >> Bryan Wu <cooloney@kernel.org> wrote:
-> > > >>
-> > > >> > From: Graf Yang <graf.yang@analog.com>
-> > > >> >
-> > > >> > We are making a SMP like patch to blackfin, cpu_relax() is replaced by a
-> > > >> > data cache flush function which will count it to a per-cpu counter.
-> > > >> > If this serial function is called too early, the per-cpu data area have
-> > > >> > not been initialized, this call will cause crash.
-> > > >>
-> > > >> That's a bug in blackfin architecture support. __The kernel should be
-> > > >> able to call cpu_relax() at any time, surely. __It's a very low-level
-> > > >> and simple thing.
-> > > >>
-> > > >> > So we'd like to use barrier() instead of cpu_relax().
-> > > >> >
-> > > >>
-> > > >> barrier() is purely a compiler concept. __We might as well just remove
-> > > >> the cpu_relax() altogether.
-> > > >
-> > > > Do you mean remove cpu_relax(), and either not add barrier() here?
-> > >
-> > > afaik, early printk all runs before SMP is setup, so having it be a
-> > > 100% busy wait is fine
-> >
-> > No, blackfin is busted, please fix this bug in blackfin core.
-> >
-> > What happens if core kernel code decides to run cpu_relax() prior to
-> > initialising per-cpu data?
+On Wed, 2009-03-11 at 08:53 -0700, Linus Torvalds wrote:
+> On Wed, 11 Mar 2009, Laurent GUERBY wrote:
+> > With 2.6.29-rc5 (on an ARM platform but I don't think it's significant)
+> > when I try to enable swap on a file which is on an USB mounted vfat
+> > partition the swapon syscall gets stuck:
 > 
-> cpu_relax() will call smp_mb(), and it need to invalidate data-cache
-> in blackfin smp-like kernel,
-> the cache flush number is increased and recorded into a per-cpu data.
-> 
-> When cpu_relax() is called from early-printk functions, the per-cpu
-> data areas have not
-> been initialized.
+> Oh wow. Are you _sure_ you want to do that? That's crazy.
 
-Right.  And we've demonstrated here that this was a bad idea.
+I was testing a device with no swap (root over NFS) and GCC bootstrap
+failed because of lack of RAM. So I first tried to add swap on file over
+NFS, judging from various warnings on the net and that the system froze
+after about 4 hours it was in the "crazy" category. After that I grabbed
+an USB HDD which happened to be vfat formated, hence second freeze but
+on swapon process this time.
 
-So I suggest that the blackfin maintainers delete that code.
+I promise next time I'll stick to local ext3 on x86 :).
 
-If it's really valuable (which I doubt) then it could be reimplemented
-via a statically-allocated array of longs and local_irq_save()
-protection.  Or a statically allocated array of atomic_long_t's.
+Laurent
+
 
