@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbZCKHwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZCKH5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752206AbZCKHwH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 03:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZCKHvz
+	id S1752842AbZCKH5u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 03:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbZCKH5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 03:51:55 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:59516 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750835AbZCKHvy (ORCPT
+	Wed, 11 Mar 2009 03:57:40 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:46202 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbZCKH5j convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 03:51:54 -0400
-Message-ID: <49B76D91.1020807@free.fr>
-Date: Wed, 11 Mar 2009 08:51:45 +0100
-From: Cedric Le Goater <legoater@free.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 11 Mar 2009 03:57:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=GM/7w/ljKSQVoiBrygZkYbgHF6EBNwU3KpAXTI4UokpgI/Lp5SLbhh5tO/XF+qUl38
+         XOU84Tz17J2NAOxxpsIwBJLc2zXxACxNLFguZF5ybAwL2CS/FEtqECqXyHcN3lGSwgwV
+         5EdwUg64wHAp9W1Q4qHaohnJAoK9hWy/X7tJc=
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Greg Kurz <gkurz@fr.ibm.com>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [RFC][PATCH 00/11] track files for checkpointability
-References: <20090305163857.0C18F3FD@kernel> <20090305174037.GA2274@x200.localdomain> <1236280567.22399.99.camel@nimitz> <20090305210840.GA2499@x200.localdomain> <1236288427.22399.122.camel@nimitz> <20090305220044.GA2819@x200.localdomain> <1236352121.5732.80.camel@bahia> <20090306153549.GA898@us.ibm.com> <49B15F35.2010909@free.fr> <20090306183055.GA6729@us.ibm.com>
-In-Reply-To: <20090306183055.GA6729@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1236756563-20633-1-git-send-email-graff.yang@gmail.com>
+References: <1236756563-20633-1-git-send-email-graff.yang@gmail.com>
+Date: Wed, 11 Mar 2009 03:57:37 -0400
+Message-ID: <8bd0f97a0903110057x46cb2aa9p43dd8e12a28be67a@mail.gmail.com>
+Subject: Re: [PATCH] [net/irda]: new Blackfin on-chip SIR IrDA driver
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: graff.yang@gmail.com
+Cc: samuel@sortiz.org, irda-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, graf.yang@analog.com, cooloney@kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> And if Ingo's requirement is fulfilled, would any C/R patchset be acceptable ?
-> 
-> Yup, no matter how hideous  :)  Ok not really.
-> 
-> But the point was that it wasn't Dave not understanding Alexey's
-> suggestion, but Greg not understanding Ingo's.  If you think Ingo's
-> goal isn't worthwhile or achievable, then argue that (as I am), don't
-> keep elaborating on something we all agree will be needed (Alexey's
-> suggestion or some other way of doing a true may-be-checkpointed test).
+On Wed, Mar 11, 2009 at 03:29,  <graff.yang@gmail.com> wrote:
+> +static int __devinit bfin_sir_probe(struct platform_device *pdev)
+> +{
+> +       struct net_device *dev;
+> +       struct bfin_sir_self *self;
+> +       unsigned int baudrate_mask;
+> +       struct bfin_sir_port *sir_port;
+> +       int err;
+> +
+> +       err = peripheral_request_list(per[pdev->id], DRIVER_NAME);
 
-I rather spend my time on enabling things rather than forbid them. 
+what if pdev->id is set to 12512 ?
 
-C.
+> +       switch (max_rate) {
+> +       default:
+> +               printk(KERN_WARNING "bfin_sir: Invalid maximum baud rate, using 9600\n");
+
+dev_warn(&dev->dev,....) ?
+-mike
