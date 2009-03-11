@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbZCKRD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbZCKREY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755760AbZCKRD2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 13:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbZCKRDS
+	id S1754696AbZCKREY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 13:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZCKREO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 13:03:18 -0400
-Received: from mail.suse.de ([195.135.220.2]:33306 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752086AbZCKRDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 13:03:17 -0400
-Date: Wed, 11 Mar 2009 10:00:57 -0700
-From: Greg KH <gregkh@suse.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [RFC] drivers/base: Add bus_register_notifier_alldev() variant
-Message-ID: <20090311170057.GA24113@suse.de>
-References: <20090306160818.404.92700.stgit@localhost.localdomain> <20090311162623.GE21831@suse.de> <fa686aa40903110935g155fbf7m83f4aead71d72488@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <fa686aa40903110935g155fbf7m83f4aead71d72488@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 11 Mar 2009 13:04:14 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:10476 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751306AbZCKREN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 13:04:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=T/M5zgWMsbO7wcZNTRCk2+aJlUOSJr2u06KlOJZkI3jtl+ZWKcleJ1QzwZdgbxVyEF
+         oFUL1gT0YRYMDYmfJLeHNkadR1ZANYh3vCWIbgZLJV1iztow9gAdhCBBKhgxPUZYyVQR
+         AOMj+bn1XR+V1NqpK7ik14iElU1HuN3c6642k=
+Subject: Re: XFS kernel BUG at fs/buffer.c:470! with 2.6.28.4
+From: Alessandro Bono <alessandro.bono@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Dave Chinner <david@fromorbit.com>, Christoph Hellwig <hch@infradead.org>,
+       linux-xfs <linux-xfs@oss.sgi.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090302133609.GD23880@duck.suse.cz>
+References: <1234011974.7435.11.camel@champagne.cantina>
+	 <20090208222859.GA2532@infradead.org>
+	 <1234132752.12370.0.camel@champagne.cantina>
+	 <20090208224249.GA11931@infradead.org>
+	 <1234133120.12370.7.camel@champagne.cantina>
+	 <20090209075308.GA7360@infradead.org> <20090210104304.GP8830@disturbed>
+	 <1234432077.9204.15.camel@champagne.cantina>
+	 <20090226165838.GA9602@atrey.karlin.mff.cuni.cz>
+	 <1235763895.5743.3.camel@champagne>  <20090302133609.GD23880@duck.suse.cz>
+Content-Type: text/plain
+Date: Wed, 11 Mar 2009 18:04:06 +0100
+Message-Id: <1236791046.5814.12.camel@champagne>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 10:35:29AM -0600, Grant Likely wrote:
-> On Wed, Mar 11, 2009 at 10:26 AM, Greg KH <gregkh@suse.de> wrote:
-> > On Fri, Mar 06, 2009 at 09:10:19AM -0700, Grant Likely wrote:
-> >> From: Grant Likely <grant.likely@secretlab.ca>
-> >>
-> >> bus_register_notifier_alldev() is a variation on bus_register_notifier()
-> >> which also triggers the notifier callback for devices already on the bus
-> >> and already bound to drivers.
-> >>
-> >> This function is useful for the case where a driver needs to get a
-> >> reference to a struct device other than the one it is bound to and
-> >> it is not known if the device will be bound before or after this
-> >> function is called.  For example, an Ethernet device connected to
-> >> a PHY that is probed separately.
-> >
-> > Can't you just walk the list of all devices already on the bus to get
-> > "notified" of them, and then register your notifier handler as well (or
-> > register it first, and then walk the list, which is pretty much what
-> > your patch does)?
-> 
-> Yes, and I originally did, but it looks to me like a useful common
-> pattern that is less error prone than open coding it.
+On Mon, 2009-03-02 at 14:36 +0100, Jan Kara wrote:
+.....
 
-How about we wait, and if someone else does the same thing, we then add
-it to the core like this?
+>   Such bit flips are usually caused by faulty memory or other HW (io
+> controler etc.) so I suggest trying to shuffle the hardware somehow -
+> change memory DIMMs as a starter, running memtest if you don't have a spare
+> DIMMs but it is not an exception that even though memtest runs just fine
+> for a long time, memory is really at fault.
 
-Actually, wouldn't it make more sense to just change the default
-"bus_register_notifier" to do this?  Is there some reason that the
-caller would not want this kind of thing to happen?
+Hi
 
-thanks,
+I changed DIMMs on my laptop and after that I can't reproduce bug
+So at the end it's an hardware problem
 
-greg k-h
+Many thanks to you, Dave and Christoph for your time and patience 
+
+-- 
+Cordiali Saluti
+Alessandro Bono
+
