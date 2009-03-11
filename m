@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754318AbZCKRrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZCKRvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754318AbZCKRrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 13:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZCKRrd
+	id S1754575AbZCKRvB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 13:51:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZCKRux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 13:47:33 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:63991 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbZCKRrd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 13:47:33 -0400
-Date: Wed, 11 Mar 2009 18:47:29 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Alex Chiang <achiang@hp.com>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       jbarnes@virtuousgeek.org, tj@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] sysfs: only allow one scheduled removal callback
- per kobj
-Message-ID: <20090311184729.110761e4@gondolin>
-In-Reply-To: <20090311153228.GA21217@suse.de>
-References: <20090310232027.GC25665@ldl.fc.hp.com>
-	<20090311044151.GB25840@suse.de>
-	<20090311070359.GF25665@ldl.fc.hp.com>
-	<20090311153228.GA21217@suse.de>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+	Wed, 11 Mar 2009 13:50:53 -0400
+Received: from main.gmane.org ([80.91.229.2]:51229 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751282AbZCKRuw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 13:50:52 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: "Dmitriy V'jukov" <dvyukov@gmail.com>
+Subject: Re: RCU: Number of grace-periods
+Date: Wed, 11 Mar 2009 17:50:35 +0000 (UTC)
+Message-ID: <loom.20090311T173526-125@post.gmane.org>
+References: <loom.20090311T104939-544@post.gmane.org> <20090311155024.GB7086@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 209.3.12.206 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009 08:32:28 -0700,
-Greg KH <gregkh@suse.de> wrote:
-
-> Why can't you use device_unregister()?  Or, you could use device_del(),
-> which lets you rely on the fact that the device structure is still
-> around for a bit, but it will disappear from sysfs.  Just don't forget
-> to do the final put_device() on it to free the memory and "really"
-> release it.
+Paul E. McKenney <paulmck <at> linux.vnet.ibm.com> writes:
 > 
-> Or am I missing something else here?
+> Interesting thought -- but please keep in mind that acquire/release fences
+> still allow subsequent stores to be reordered to precede earlier loads.
+> This means that the first loads in the RCU critical section could be
+> reordered to precede the final store of the rcu_read_lock() primitive.
 
-You can't unregister a device from one of its attribute callbacks, it
-locks up in sysfs (removing the sysfs dir waits for all active
-references to be dropped, but the reference obtained before calling
-->store won't be dropped until after ->store returned...)
-device_schedule_callback() was introduced to solve exactly that problem.
 
-(For the original oops, I'd rather solve the problem by making sure the
-caller doesn't trigger removal several times - should probably be less
-code than the proposed patch?)
+Hmmm... Yes, I've missed this moment. I think you are right. The critical
+synchronizing action of the __rcu_read_lock() is the store to the
+__get_cpu_var(rcu_flipctr) (not a load!). So some code from the critical section
+can hoist above the store to the __get_cpu_var(rcu_flipctr).
+However the good question is how many grace-periods is required if code can
+hoist above read_lock(), but can't sink below read_unlock()?
+Good work for Relacy :) Nope, I've not yet tried to apply it...
+
+
+--
+Best regards,
+Dmitriy V'jukov
+
