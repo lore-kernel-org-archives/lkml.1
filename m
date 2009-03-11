@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZCKVFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbZCKVNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691AbZCKVFV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 17:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbZCKVFF
+	id S1753816AbZCKVNS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 17:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbZCKVNC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 17:05:05 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:58838 "EHLO relay.sgi.com"
+	Wed, 11 Mar 2009 17:13:02 -0400
+Received: from kroah.org ([198.145.64.141]:56830 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750770AbZCKVFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 17:05:04 -0400
-Date: Wed, 11 Mar 2009 16:04:55 -0500
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.29-rc8
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090311210455.236A514167101@attica.americas.sgi.com>
-From: felixb@sgi.com (Felix Blyakher)
+	id S1751178AbZCKVNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 17:13:01 -0400
+Subject: patch staging-remove-some-pointless-conditionals-before-kfree_skb.patch added to gregkh-2.6 tree
+To: yjwei@cn.fujitsu.com, gregkh@suse.de, linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Wed, 11 Mar 2009 14:10:02 -0700
+In-Reply-To: <49A51CD9.4060408@cn.fujitsu.com>
+Message-ID: <12368058023242@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 559595a985e106d2fa9f0c79b7f5805453fed593:
-  Linus Torvalds (1):
-        Merge branch 'merge' of git://git.kernel.org/.../benh/powerpc
 
-are available in the git repository at:
+This is a note to let you know that I've just added the patch titled
 
-  git://oss.sgi.com/xfs/xfs for-linus
+    Subject: Staging: remove some pointless conditionals before kfree_skb()
 
-Christoph Hellwig (3):
-      xfs: prevent kernel crash due to corrupted inode log format
-      xfs: prevent lockdep false positive in xfs_iget_cache_miss
-      xfs: only issues a cache flush on unmount if barriers are enabled
+to my gregkh-2.6 tree.  Its filename is
 
- fs/xfs/linux-2.6/xfs_buf.c   |   12 ++++++++++--
- fs/xfs/linux-2.6/xfs_buf.h   |    2 +-
- fs/xfs/linux-2.6/xfs_super.c |   10 +++++-----
- fs/xfs/xfs_iget.c            |   15 ++++++++++-----
- fs/xfs/xfs_log_recover.c     |   17 +++++++++++++----
- 5 files changed, 39 insertions(+), 17 deletions(-)
+    staging-remove-some-pointless-conditionals-before-kfree_skb.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From yjwei@cn.fujitsu.com  Wed Mar 11 13:27:24 2009
+From: Wei Yongjun <yjwei@cn.fujitsu.com>
+Date: Wed, 25 Feb 2009 18:26:33 +0800
+Subject: Staging: remove some pointless conditionals before kfree_skb()
+To: Greg Kroah-Hartman <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Message-ID: <49A51CD9.4060408@cn.fujitsu.com>
+
+
+Remove some pointless conditionals before kfree_skb().
+
+Signed-off-by: Wei Yongjun <yjwei@cn.fujitsu.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/staging/at76_usb/at76_usb.c |    3 +--
+ drivers/staging/otus/wwrap.c        |    3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+--- a/drivers/staging/at76_usb/at76_usb.c
++++ b/drivers/staging/at76_usb/at76_usb.c
+@@ -5370,8 +5370,7 @@ static void at76_delete_device(struct at
+ 
+ 	at76_dbg(DBG_PROC_ENTRY, "%s: unlinked urbs", __func__);
+ 
+-	if (priv->rx_skb)
+-		kfree_skb(priv->rx_skb);
++	kfree_skb(priv->rx_skb);
+ 
+ 	at76_free_bss_list(priv);
+ 	del_timer_sync(&priv->bss_list_timer);
+--- a/drivers/staging/otus/wwrap.c
++++ b/drivers/staging/otus/wwrap.c
+@@ -971,8 +971,7 @@ int zfLnxCencSendMsg(struct sock *netlin
+ out:
+ 	return ret;
+ nlmsg_failure: /*NLMSG_PUT Ê§°Ü£¬Ôò³·ÏúÌ×½Ó×Ö»º´æ*/
+-  	if(skb)
+-    		kfree_skb(skb);
++	kfree_skb(skb);
+ 	goto out;
+ 
+ #undef COMMTYPE_GROUP
+
