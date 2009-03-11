@@ -1,109 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZCKMxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbZCKM5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbZCKMxq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 08:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbZCKMxh
+	id S1755370AbZCKM5d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 08:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZCKM5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 08:53:37 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:49521 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753021AbZCKMxg (ORCPT
+	Wed, 11 Mar 2009 08:57:19 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:37024 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752604AbZCKM5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 08:53:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=HltnvKQURFf5AJfYPOd7GB1eRqIjQ9+NmV7xP+FfVPiC1a4IiF6vkxCt7XdFbt/PWf
-         7HbJWDbS//g1N6AW7hiqReRv4iIpGAwL+3L1+9fjjUJDEXo7KTmdiiqUPBKEYldAulLS
-         CfHkA9TzR+txxX9JKI7zx3Z2a8Qq1d+SrDwX0=
+	Wed, 11 Mar 2009 08:57:18 -0400
+Date: Wed, 11 Mar 2009 18:27:05 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [patch 01/11] Introducing generic hardware breakpoint handler
+	interfaces
+Message-ID: <20090311125705.GB9547@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090310135018.GB3850@elte.hu> <Pine.LNX.4.44L0.0903101017040.2962-100000@iolanthe.rowland.org> <20090310145036.GI3850@elte.hu>
 MIME-Version: 1.0
-Date: Wed, 11 Mar 2009 15:53:34 +0300
-Message-ID: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com>
-Subject: VFS, NFS security bug? Should CAP_MKNOD and CAP_LINUX_IMMUTABLE be 
-	added to CAP_FS_MASK?
-From: Igor Zhbanov <izh1979@gmail.com>
-To: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       bfields@fieldses.org, neilb@suse.de, Trond.Myklebust@netapp.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090310145036.GI3850@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Tue, Mar 10, 2009 at 03:50:36PM +0100, Ingo Molnar wrote:
+> 
+> * Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> > On Tue, 10 Mar 2009, Ingo Molnar wrote:
+> > 
+> > > * prasad@linux.vnet.ibm.com <prasad@linux.vnet.ibm.com> wrote:
+> > > 
+> > > 
+> > > > +static u8			tprio[HB_NUM];	/* Thread bp max priorities */
+> > > > +LIST_HEAD(kernel_bps);			/* Kernel breakpoint list */
+> > > > +static LIST_HEAD(thread_list);			/* thread_hw_breakpoint list */
+> > > > +DEFINE_PER_CPU(struct cpu_hw_breakpoint, cpu_bp);
+> > 
+> > If nobody minds, I'll answer some of these questions on 
+> > Prasad's behalf because they address parts of the code that 
+> > were written before he took over the project.
+> > 
+> > > hm, why do we need the whole 'priority' mechanism? It seems 
+> > > very over-designed to me.
+> > 
+> > This was done at Roland McGrath's express request.  We should 
+> > see what he has to say about it.
+> > 
+> > > The likelyhood of both user-space and kernel-space to use 
+> > > hw-breakpoints is very low to begin with. And if they use 
+> > > them, the likelyhood of there being more than 4 debugregs 
+> > > required in the same context is even lower.
+> > 
+> > Not all architectures have 4 debug registers.  Most have only 
+> > one.
+> >
+> > > If that happens we shouldnt try to be too smart about them - 
+> > > just override user-space ones with kernel space ones and 
+> > > that's it. No explicit priorities are needed.
+> > 
+> > Roland really did not want it done this way.
+> 
+> Well i guess i'll have to wait for Roland's reply then.
+> 
+> 	Ingo
 
-It seems that CAP_MKNOD and CAP_LINUX_IMMUTABLE were forgotten to be
-added to CAP_FS_MASK_B0 in linux-2.6.x and to CAP_FS_MASK in
-linux-2.4.x. Both capabilities affects file system and can be
-considered file system capabilities.
+For the benefit of continuing discussion on this topic, here's an
+extract from an old mail (http://lkml.org/lkml/2007/2/5/465) from
+Roland, explaining the need for prioritisation of requests. It must have
+been utrace as a potential user that made him suggest this.
 
-Let's look at linux-2.6.x.
+"I am all in favor of a facility to manage shared use of the debug
+registers, such as your debugreg.h additions.  I just think it needs to be
+a little more flexible.  An unobtrusive kernel facility has to get out of
+the way when user-mode decides to use all its debug registers.  It's not
+immediately important what it's going to about it when contention arises,
+but there has to be a way for the user-mode facilities to say they need to
+allocate debugregs with priority and evict other squatters.  So, something
+like code allocating a debugreg can supply a callback that's made when its
+allocation has to taken by something with higher priority.  
 
-In include/linux/capability.h CAP_FS_SET is defined to contain
-following capabilities:
-CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_DAC_READ_SEARCH, CAP_FOWNER,
-CAP_FSETID and CAP_MAC_OVERRIDE.
+Even after utrace, there will always be the possibility of a traditional
+uncoordinated user of the raw debug registers, if nothing else ptrace
+compatibility will always be there for old users.  So anything new and
+fancy needs to be prepared to back out of the way gracefully.  In the case
+of kwatch, it can just have a handler function given by the caller to start
+with.  It's OK if individual callers can specially declare "I am not
+well-behaved" and eat debugregs so that well-behaved high-priority users
+like ptrace just have to lose (breaking compatibility).  But no
+well-behaved caller of kwatch will do that.
 
-And CAP_NFSD_SET is defined to be the same plus CAP_SYS_RESOURCE.
+I certainly intend for later features based on utrace to include
+higher-level treatment of watchpoints so that user debugging facilities can
+also become responsive to debugreg allocation pressure.  (Eventually, the
+user facilities might have easier ways of falling back to other methods and
+getting out of the way of kernel debugreg consumers, than can be done for
+the kernel-mode-tracing facilities.)  To that end, I'd like to see a clear
+and robust interface for debugreg sharing, below the level of kwatch."
 
-So, both CAP_FS_SET and CAP_NFSD_SET doesn't include CAP_MKNOD and
-CAP_LINUX_IMMUTABLE.
+Thanks,
+K.Prasad
 
-Also include/linux/capability.h there are cap_drop_fs_set(...),
-cap_raise_fs_set(...),
-cap_drop_nfsd_set(...) and cap_raise_nfsd_set(...) inline functions that return
-corresponding capabilities sets.
 
-Let's look how these functions are used.
-
-In file fs/nfsd/auth.c function nfsd_setuser(...) calls
-cap_raise_nfsd_set(...) and
-cap_drop_nfsd_set(...) to add/exclude corresponding capabilities to/from
-effective set of current nfsd process.
-
-And in file security/commoncap.c function cap_task_post_setuid(...) calls
-cap_drop_fs_set(...) and cap_raise_fs_set(...) to change effective set
-of current task
-when (current->fsuid != old_ruid).
-
-In linux-2.4.x the story is the same.
-
-In file include/linux/capability.h CAP_FS_MASK is defined to contain
-CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_DAC_READ_SEARCH, CAP_FOWNER, CAP_FSETID
-capabilities.
-
-And in file fs/nfsd/auth.c CAP_NFSD_MASK is defined to be same as CAP_FS_MASK
-plus CAP_SYS_RESOURCE.
-
-In file fs/nfsd/auth.c function nfsd_setuser(...) uses CAP_NFSD_MASK
-to add/exclude corresponding capabilities to/from effective set of current
-nfsd process.
-
-And CAP_FS_MASK used in file kernel/sys.c in function sys_setfsuid(...)
-to add/exclude corresponding capabilities to/from effective set of current task.
-
-This can be exploited (and I have succesfully tried it).
-
-Suppose you have NFS-share exported even with root_squash option.
-If one client was compromised, local root can set CAP_MKNOD to some
-local user's process. Then that user can execute mknod to create a device
-that will be owned by that user, e.g. block device file for /dev/hda hard drive.
-
-And he can create that device file on NFS-share (even exported with root_squash
-option). After that he can someway (ssh, cgi) execute code on another nfs client
-or the server to modify it's filesystem. It will be possible because
-he owns that
-device file on nfs share.
-
-The problem is because CAP_MKNOD allows that user to successfully execute
-vfs_mknod(...) function on local host, and that function will call corresponding
-function in nfs module which sends request to NFS server. And nfsd will not
-drop CAP_MKNOD in nfsd_setuser(...) function when impersonating to that user.
-
-Of course, NFS-shares can be mounted with nodev option, but they should be
-placed on separate partition on NFS-server, so even on server that partition
-is mounted with nodev option too.
-
-So I suggest to add CAP_MKNOD and CAP_LINUX_IMMUTABLE to CAP_FS_MASK
-in linux-2.4.x and to CAP_FS_MASK_B0 in linux-2.6.x.
