@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZCKJ6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZCKJ7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755344AbZCKJ6g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 05:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbZCKJ5q
+	id S1755534AbZCKJ7L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 05:59:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825AbZCKJ5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 05:57:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49313 "EHLO ogre.sisk.pl"
+	Wed, 11 Mar 2009 05:57:48 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49324 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753787AbZCKJ5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 05:57:43 -0400
+	id S1754380AbZCKJ5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 05:57:44 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 2/10] PM: Change suspend code ordering
-Date: Wed, 11 Mar 2009 10:37:07 +0100
+Subject: [PATCH 4/10] kexec: Change kexec jump code ordering
+Date: Wed, 11 Mar 2009 10:39:01 +0100
 User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -30,90 +30,72 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903111037.08897.rjw@sisk.pl>
+Message-Id: <200903111039.02582.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Change the ordering of the suspend core code so that the platform
-"prepare" callback is executed and the nonboot CPUs are disabled
-after calling device drivers' "late suspend" methods.
+Change the ordering of the kexec jump code so that the nonboot CPUs
+are disabled after calling device drivers' "late suspend" methods.
 
-This change will allow us to rework the PCI PM core so that the power
-state of devices is changed in the "late" phase of suspend (and
-analogously in the "early" phase of resume), which in turn will allow
-us to avoid the race condition where a device using shared interrupts
-is put into a low power state with interrupts enabled and then an
-interrupt (for another device) comes in and confuses its driver.
+This change reflects the recent modifications of the power management
+code that is also used by kexec jump.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/main.c |   38 ++++++++++++++++++++++----------------
- 1 file changed, 22 insertions(+), 16 deletions(-)
+ kernel/kexec.c |   19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/kernel/power/main.c
+Index: linux-2.6/kernel/kexec.c
 ===================================================================
---- linux-2.6.orig/kernel/power/main.c
-+++ linux-2.6/kernel/power/main.c
-@@ -297,6 +297,19 @@ static int suspend_enter(suspend_state_t
- 		goto Done;
- 	}
- 
-+	if (suspend_ops->prepare) {
-+		error = suspend_ops->prepare();
-+		if (error)
-+			goto Power_up_devices;
-+	}
-+
-+	if (suspend_test(TEST_PLATFORM))
-+		goto Platfrom_finish;
-+
-+	error = disable_nonboot_cpus();
-+	if (error || suspend_test(TEST_CPUS))
-+		goto Enable_cpus;
-+
- 	arch_suspend_disable_irqs();
- 	BUG_ON(!irqs_disabled());
- 
-@@ -310,6 +323,14 @@ static int suspend_enter(suspend_state_t
- 	arch_suspend_enable_irqs();
- 	BUG_ON(irqs_disabled());
- 
-+ Enable_cpus:
-+	enable_nonboot_cpus();
-+
-+ Platfrom_finish:
-+	if (suspend_ops->finish)
-+		suspend_ops->finish();
-+
-+ Power_up_devices:
- 	device_power_up(PMSG_RESUME);
- 
-  Done:
-@@ -346,23 +367,8 @@ int suspend_devices_and_enter(suspend_st
- 	if (suspend_test(TEST_DEVICES))
- 		goto Recover_platform;
- 
--	if (suspend_ops->prepare) {
--		error = suspend_ops->prepare();
+--- linux-2.6.orig/kernel/kexec.c
++++ linux-2.6/kernel/kexec.c
+@@ -1450,9 +1450,6 @@ int kernel_kexec(void)
+ 		error = device_suspend(PMSG_FREEZE);
+ 		if (error)
+ 			goto Resume_console;
+-		error = disable_nonboot_cpus();
 -		if (error)
 -			goto Resume_devices;
--	}
+ 		device_pm_lock();
+ 		/* At this point, device_suspend() has been called,
+ 		 * but *not* device_power_down(). We *must*
+@@ -1463,13 +1460,15 @@ int kernel_kexec(void)
+ 		 */
+ 		error = device_power_down(PMSG_FREEZE);
+ 		if (error)
+-			goto Unlock_pm;
 -
--	if (suspend_test(TEST_PLATFORM))
--		goto Finish;
-+	suspend_enter(state);
- 
--	error = disable_nonboot_cpus();
--	if (!error && !suspend_test(TEST_CPUS))
--		suspend_enter(state);
--
--	enable_nonboot_cpus();
-- Finish:
--	if (suspend_ops->finish)
--		suspend_ops->finish();
++			goto Resume_devices;
++		error = disable_nonboot_cpus();
++		if (error)
++			goto Enable_cpus;
+ 		local_irq_disable();
+ 		/* Suspend system devices */
+ 		error = sysdev_suspend(PMSG_FREEZE);
+ 		if (error)
+-			goto Power_up_devices;
++			goto Enable_irqs;
+ 	} else
+ #endif
+ 	{
+@@ -1483,13 +1482,13 @@ int kernel_kexec(void)
+ #ifdef CONFIG_KEXEC_JUMP
+ 	if (kexec_image->preserve_context) {
+ 		sysdev_resume();
+- Power_up_devices:
++ Enable_irqs:
+ 		local_irq_enable();
+-		device_power_up(PMSG_RESTORE);
+- Unlock_pm:
+-		device_pm_unlock();
++ Enable_cpus:
+ 		enable_nonboot_cpus();
++		device_power_up(PMSG_RESTORE);
   Resume_devices:
- 	suspend_test_start();
- 	device_resume(PMSG_RESUME);
++		device_pm_unlock();
+ 		device_resume(PMSG_RESTORE);
+  Resume_console:
+ 		resume_console();
