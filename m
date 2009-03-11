@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbZCKREy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbZCKRFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754513AbZCKREy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 13:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbZCKREo
+	id S1755824AbZCKRFl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 13:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbZCKRFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 13:04:44 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:56412 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751858AbZCKREn (ORCPT
+	Wed, 11 Mar 2009 13:05:31 -0400
+Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:50574 "EHLO
+	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753045AbZCKRFa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 13:04:43 -0400
-Message-ID: <49B7EEEA.3080203@zytor.com>
-Date: Wed, 11 Mar 2009 10:03:38 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 11 Mar 2009 13:05:30 -0400
+From: Frans Pop <elendil@planet.nl>
+To: john stultz <johnstul@us.ibm.com>
+Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
+Date: Wed, 11 Mar 2009 18:05:24 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200903080230.10099.elendil@planet.nl> <1236733226.6080.28.camel@localhost> <200903111703.41663.elendil@planet.nl>
+In-Reply-To: <200903111703.41663.elendil@planet.nl>
 MIME-Version: 1.0
-To: Woody Suwalski <woodys@xandros.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: x86: removing zImage support?
-References: <49B703D4.1000008@zytor.com> <49B7C729.5080301@xandros.com>
-In-Reply-To: <49B7C729.5080301@xandros.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903111805.26832.elendil@planet.nl>
+X-OriginalArrivalTime: 11 Mar 2009 17:05:27.0658 (UTC) FILETIME=[937F8CA0:01C9A26B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Woody Suwalski wrote:
->>   
-> If x86-only - OK.
-> 
-> However zImage is the format used on ARM quite often... So any "kernel
-> complexity removal" need to happen only on x86 side.
-> 
+On Wednesday 11 March 2009, Frans Pop wrote:
+> From this I conclude that clock->error is getting buggered somewhere
+> else: we get a completely different value back from what is calculated
+> here.
 
-I have no idea about ARM zImage... the whole zImage vs bzImage is pretty
-x86-specific in the first place, so yes, I was referring to x86
-specifically.
+Some extra printks at least close the loop:
 
-	-hpa
+0: scale/shift: 32/8, xtime_ns old: 168555264000, new: 168555264256
+     tv_ns: 658419001, rem: -256, old_err: 0, error: -4294867296
+bigadjust: adj: 2097152, int: 260046848, offs: 4194304
+CS adjust: -4294867296 -> -4292487689804800
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+1: scale/shift: 32/8, xtime_ns old: 168551069952, new: 168551070208
+     tv_ns: 658402618, rem: -256, old_err: -4292487689804800, error: -4292501984672096
+bigadjust: adj: 4194304, int: 520093696, offs: 12582912
+CS adjust: -4292501984672096 -> -12807120030269440
 
+2: scale/shift: 32/8, xtime_ns old: 168538487296, new: 168538487552
+    tv_ns: 658353467, rem: -256, old_err: -12807120030269440, error: -12807124325236736
+bigadjust: adj: 1048576, int: 130023424, offs: 4194304
+CS adjust: -12807124325236736 -> -14918186650466656
+
+"bigadjust" is from just before the return in clocksource_bigadjust.
+"CS adjust" is from after clock->error gets calculated in clocksource_adjust.
