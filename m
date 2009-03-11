@@ -1,67 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbZCKJ5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZCKJ55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753841AbZCKJ5Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 05:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZCKJ5A
+	id S1754848AbZCKJ55 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 05:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbZCKJ5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 05:57:00 -0400
-Received: from mail-gx0-f167.google.com ([209.85.217.167]:61169 "EHLO
-	mail-gx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752527AbZCKJ47 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 05:56:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ealOr1blSRKKwTBMht8AEpWZbOc6FzbNB0YOippZRy195XF0PefwAeMpPk2qtNbLHU
-         6ytuHM+zg+8a3EJ72T4UdxJE1FLnrWsWpA2VfLcxLW9ZGjbq/iAWs7qe9/nP2pPawbVr
-         amdeR8QZmfCc2s2Wnpa/fq3cA0s38QJ1Z4XLg=
+	Wed, 11 Mar 2009 05:57:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49305 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752527AbZCKJ5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 05:57:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: pm list <linux-pm@lists.linux-foundation.org>
+Subject: [PATCH 0/10] PM: Rework suspend-resume ordering to avoid problems with shared interrupts (updated)
+Date: Wed, 11 Mar 2009 10:30:37 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Frans Pop <elendil@planet.nl>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+References: <200902221837.49396.rjw@sisk.pl>
+In-Reply-To: <200902221837.49396.rjw@sisk.pl>
 MIME-Version: 1.0
-In-Reply-To: <8bd0f97a0903110057x46cb2aa9p43dd8e12a28be67a@mail.gmail.com>
-References: <1236756563-20633-1-git-send-email-graff.yang@gmail.com>
-	 <8bd0f97a0903110057x46cb2aa9p43dd8e12a28be67a@mail.gmail.com>
-Date: Wed, 11 Mar 2009 17:56:56 +0800
-Message-ID: <7d86d44a0903110256t11edeff5qfd21055ef047dc2a@mail.gmail.com>
-Subject: Re: [PATCH] [net/irda]: new Blackfin on-chip SIR IrDA driver
-From: graff yang <graff.yang@gmail.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: samuel@sortiz.org, irda-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, graf.yang@analog.com, cooloney@kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903111030.39371.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 3:57 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Wed, Mar 11, 2009 at 03:29,  <graff.yang@gmail.com> wrote:
->> +static int __devinit bfin_sir_probe(struct platform_device *pdev)
->> +{
->> +       struct net_device *dev;
->> +       struct bfin_sir_self *self;
->> +       unsigned int baudrate_mask;
->> +       struct bfin_sir_port *sir_port;
->> +       int err;
->> +
->> +       err = peripheral_request_list(per[pdev->id], DRIVER_NAME);
->
-> what if pdev->id is set to 12512 ?
+Hi,
 
-The pdev->id is defined in board files, for example, uart0 should be 0.
->
->> +       switch (max_rate) {
->> +       default:
->> +               printk(KERN_WARNING "bfin_sir: Invalid maximum baud rate, using 9600\n");
->
-> dev_warn(&dev->dev,....) ?
+The last iteration of this series of patches didn't draw comments except for
+the discussion about the "wake-up" interrupts, so here's an update that I'd
+like to consider as more-or-less final.  I would also like to use a separate
+'suspend' git tree for merging these patches, if you don't mind.
 
-Here the netdev has not been registered.
+The following patches modifiy the way in which we handle disabling interrupts
+during suspend and enabling them during resume.  They also change the ordering
+of the core suspend and hibernation code to take advantage of the new approach
+to the interrupts and modify the PCI PM core to avoid a few problems.
 
-> -mike
->
+Namely, interrupts are currently disabled on the boot CPU as soon as the
+nonboot CPUs have been disabled, which doesn't allow device drivers' "late"
+suspend and "early" resume callbacks to sleep.  Among other things this means
+they cannot execute ACPI AML routines, which leads to problems with
+suspend-resume of PCI devices, as recently discussed.
 
+1/10 modifies the [suspend|hibernation] and resume code, as well as the other
+code using the device PM framework, so that device drivers will not receive
+interrupts during the "late" suspend phase, although interrupts will only be
+disabled on the CPU right before calling sysdev_suspend() (and analogously
+during resume).
 
+2/10 - 4/10 modify the suspend, hibernation and kexec jump code, respectively,
+so that the "late" phase of suspending devices will happen before executing the
+platform "prepare" callback and disabling nonboot CPUs (and analogously during
+resume).
 
--- 
--Graff
+5/10 is a patch that's already in the PCI linux-next tree and I included it in
+the series, because the next patches depend on it.
+
+6/10 makes the PCI PM core use pci_set_power_state() to put devices into
+D0 during early resume, which allows the platform-specific operations to be
+carried out at that time, if necessary.
+
+7/10 uses the opportunity to move pci_restore_standard_config() to pci-driver.c,
+where it belongs IMO.
+
+8/10 makes the PCI PM core code put devices into low power states during the
+"late" phase of suspend which allows us to avoid a long-standing race related
+to shared interrupts and to handle devices that require some platform-specific
+operations to be put into low power states appropriately at the same time.
+[The second rev of the patch retains the current behavior during the
+"power-off" phase of hibernation, which is that the devices without drivers or
+without PM support in the drivers are not power managed by the core.]
+
+9/10 fixes pci_set_power_state() so that it doesn't return error code when
+attempting to put a PCI device without PM support (either native or through the
+platform) into D0 (such devices are always in D0).
+
+10/10 makes the PCI PM core save and restore the configuration spaces of
+devices that have no drivers or no PM support in the drivers during suspend and
+resume, respectively.
+
+Thanks,
+Rafael
+
