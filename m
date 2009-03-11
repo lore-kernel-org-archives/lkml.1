@@ -1,55 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZCKBB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZCKBHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162AbZCKBB3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 21:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbZCKBBU
+	id S1754574AbZCKBHj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 21:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753766AbZCKBH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 21:01:20 -0400
-Received: from mga03.intel.com ([143.182.124.21]:25222 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752965AbZCKBBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 21:01:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,338,1233561600"; 
-   d="scan'208";a="118934607"
-Date: Wed, 11 Mar 2009 09:00:04 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [PATCH] proc: fix kflags to uflags copying in /proc/kpageflags
-Message-ID: <20090311010004.GA8237@localhost>
+	Tue, 10 Mar 2009 21:07:28 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:48997 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753647AbZCKBH1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 21:07:27 -0400
+Date: Wed, 11 Mar 2009 09:07:05 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: randy.dunlap@oracle.com, geert@linux-m68k.org, sfr@canb.auug.org.au,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: linux-next: Tree for March 10 (crypto & NLATTR)
+Message-ID: <20090311010705.GA17260@gondor.apana.org.au>
+References: <49B6B821.5050302@oracle.com> <10f740e80903101256v2cfe08a8g410c297e019d8693@mail.gmail.com> <49B6C8BF.8010105@oracle.com> <20090310.131700.40129006.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090310.131700.40129006.davem@davemloft.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix kpf_copy_bit(src,dst) to be kpf_copy_bit(dst,src) to match the
-actual call patterns, e.g. kpf_copy_bit(kflags, KPF_LOCKED, PG_locked).
+On Tue, Mar 10, 2009 at 01:17:00PM -0700, David Miller wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> Date: Tue, 10 Mar 2009 13:08:31 -0700
+> 
+> > I'll have to let David or Herbert answer that.  From my quick look
+> > at the code, I don't see much use for nlattr.c when CONFIG_NET
+> > is not enabled.
+> 
+> We want to use the netlink attribute parsers even in non-networking
+> code, that's what he's trying to do here.
 
-This misplacement of src/dst only affected reporting of PG_writeback,
-PG_reclaim and PG_buddy. For others kflags==uflags so not affected.
+OK the nlattr construction code really wants to depend on NET
+because they're skb-oriented.  We could either move them back
+or just wrap them in ifdef CONFIG_NET.
 
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
+I think the latter is probably the simplest.
 
-This is a tested and trivial no-side-effect fix.
-I'd suggest it for 2.6.29-rc7 and 2.6.28.X kernels.
+How does this patch look? And Randy, does it fix the problem for
+you?
 
-diff --git a/fs/proc/page.c b/fs/proc/page.c
-index 2d13451..e998383 100644
---- a/fs/proc/page.c
-+++ b/fs/proc/page.c
-@@ -80,7 +80,7 @@ static const struct file_operations proc_kpagecount_operations = {
- #define KPF_RECLAIM    9
- #define KPF_BUDDY     10
+nlattr: Fix build error with NET off
+
+We moved the netlink attribute support from net to lib in order
+for it to be available for general consumption.  However, parts
+of the code (the bits that we don't need :) really depends on
+NET because the target object is sk_buff.
+
+This patch fixes this by wrapping them in CONFIG_NET.
+
+Some EXPORTs have been moved to make this work.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+diff --git a/lib/nlattr.c b/lib/nlattr.c
+index 56c3ce7..80009a2 100644
+--- a/lib/nlattr.c
++++ b/lib/nlattr.c
+@@ -281,6 +281,7 @@ int nla_strcmp(const struct nlattr *nla, const char *str)
+ 	return d;
+ }
  
--#define kpf_copy_bit(flags, srcpos, dstpos) (((flags >> srcpos) & 1) << dstpos)
-+#define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
++#ifdef CONFIG_NET
+ /**
+  * __nla_reserve - reserve room for attribute on the skb
+  * @skb: socket buffer to reserve room on
+@@ -305,6 +306,7 @@ struct nlattr *__nla_reserve(struct sk_buff *skb, int attrtype, int attrlen)
  
- static ssize_t kpageflags_read(struct file *file, char __user *buf,
- 			     size_t count, loff_t *ppos)
+ 	return nla;
+ }
++EXPORT_SYMBOL(__nla_reserve);
+ 
+ /**
+  * __nla_reserve_nohdr - reserve room for attribute without header
+@@ -325,6 +327,7 @@ void *__nla_reserve_nohdr(struct sk_buff *skb, int attrlen)
+ 
+ 	return start;
+ }
++EXPORT_SYMBOL(__nla_reserve_nohdr);
+ 
+ /**
+  * nla_reserve - reserve room for attribute on the skb
+@@ -345,6 +348,7 @@ struct nlattr *nla_reserve(struct sk_buff *skb, int attrtype, int attrlen)
+ 
+ 	return __nla_reserve(skb, attrtype, attrlen);
+ }
++EXPORT_SYMBOL(nla_reserve);
+ 
+ /**
+  * nla_reserve_nohdr - reserve room for attribute without header
+@@ -363,6 +367,7 @@ void *nla_reserve_nohdr(struct sk_buff *skb, int attrlen)
+ 
+ 	return __nla_reserve_nohdr(skb, attrlen);
+ }
++EXPORT_SYMBOL(nla_reserve_nohdr);
+ 
+ /**
+  * __nla_put - Add a netlink attribute to a socket buffer
+@@ -382,6 +387,7 @@ void __nla_put(struct sk_buff *skb, int attrtype, int attrlen,
+ 	nla = __nla_reserve(skb, attrtype, attrlen);
+ 	memcpy(nla_data(nla), data, attrlen);
+ }
++EXPORT_SYMBOL(__nla_put);
+ 
+ /**
+  * __nla_put_nohdr - Add a netlink attribute without header
+@@ -399,6 +405,7 @@ void __nla_put_nohdr(struct sk_buff *skb, int attrlen, const void *data)
+ 	start = __nla_reserve_nohdr(skb, attrlen);
+ 	memcpy(start, data, attrlen);
+ }
++EXPORT_SYMBOL(__nla_put_nohdr);
+ 
+ /**
+  * nla_put - Add a netlink attribute to a socket buffer
+@@ -418,6 +425,7 @@ int nla_put(struct sk_buff *skb, int attrtype, int attrlen, const void *data)
+ 	__nla_put(skb, attrtype, attrlen, data);
+ 	return 0;
+ }
++EXPORT_SYMBOL(nla_put);
+ 
+ /**
+  * nla_put_nohdr - Add a netlink attribute without header
+@@ -436,6 +444,7 @@ int nla_put_nohdr(struct sk_buff *skb, int attrlen, const void *data)
+ 	__nla_put_nohdr(skb, attrlen, data);
+ 	return 0;
+ }
++EXPORT_SYMBOL(nla_put_nohdr);
+ 
+ /**
+  * nla_append - Add a netlink attribute without header or padding
+@@ -454,20 +463,13 @@ int nla_append(struct sk_buff *skb, int attrlen, const void *data)
+ 	memcpy(skb_put(skb, attrlen), data, attrlen);
+ 	return 0;
+ }
++EXPORT_SYMBOL(nla_append);
++#endif
+ 
+ EXPORT_SYMBOL(nla_validate);
+ EXPORT_SYMBOL(nla_parse);
+ EXPORT_SYMBOL(nla_find);
+ EXPORT_SYMBOL(nla_strlcpy);
+-EXPORT_SYMBOL(__nla_reserve);
+-EXPORT_SYMBOL(__nla_reserve_nohdr);
+-EXPORT_SYMBOL(nla_reserve);
+-EXPORT_SYMBOL(nla_reserve_nohdr);
+-EXPORT_SYMBOL(__nla_put);
+-EXPORT_SYMBOL(__nla_put_nohdr);
+-EXPORT_SYMBOL(nla_put);
+-EXPORT_SYMBOL(nla_put_nohdr);
+ EXPORT_SYMBOL(nla_memcpy);
+ EXPORT_SYMBOL(nla_memcmp);
+ EXPORT_SYMBOL(nla_strcmp);
+-EXPORT_SYMBOL(nla_append);
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
