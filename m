@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZCKWBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755594AbZCKWBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755754AbZCKWBz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 18:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZCKV6W
+	id S1755594AbZCKWBg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 18:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbZCKV6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 17:58:22 -0400
-Received: from smtp107.biz.mail.mud.yahoo.com ([68.142.200.255]:41063 "HELO
-	smtp107.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754421AbZCKV6V (ORCPT
+	Wed, 11 Mar 2009 17:58:19 -0400
+Received: from smtp108.biz.mail.mud.yahoo.com ([68.142.201.177]:39275 "HELO
+	smtp108.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754368AbZCKV6Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 17:58:21 -0400
+	Wed, 11 Mar 2009 17:58:16 -0400
 X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
-X-YMail-OSG: 4yuRgCYVM1kCrGhS6eczvKFNzRQokWphP95_IESINLnh1g5K4QqtTyKqn1hcunEPUiAk1dmj2IYIAUKzPegPImquU33aY83ASGBCepk0m5DMYhXaSN.JgboQ8.5mqmmoVcwqK6VBym1aPHIuFOE5g4YEKR46c7UkmDe29C_p_0ySg5sixQRH6rAY4GQA3QTYe7IoqnKQ7.ukiEIAAKXN09ZAvjf5.f8OuEO_x0EF7tnGT1w-
+X-YMail-OSG: y4.DuH0VM1lYvA2T397GuvWANjIlIhv56FbPUjNDKEACav2jUQzdwiYBiediMCu1mzbejeiDPHZGcUXbXo844WZqgTw0rHmeyU.HS3OSDlnYQa6.rE2jVIbwAvyjzDjUsWtqBvItz_wFnwoM9jo9_vmmSvhJk5h8OU_7ACvX_YuC2zBjOyI3ZnRr1pKV4kGcNXTWZq5Qq6BQaW80R4o7kSyDPlQ2p1jvmlT6XSvAXvDQgME-
 X-Yahoo-Newman-Property: ymail-3
 From: Steven King <sfking@fdwdc.com>
 To: uClinux development list <uclinux-dev@uclinux.org>
-Subject: [RFC 11/14] Coldfire generic GPIO (m68knommu)
-Date: Wed, 11 Mar 2009 13:56:08 -0800
+Subject: [RFC 10/14] Coldfire generic GPIO (m68knommu)
+Date: Wed, 11 Mar 2009 13:56:05 -0800
 User-Agent: KMail/1.9.10
 Organization: fdwdc.com
 Cc: linux-kernel@vger.kernel.org, Greg Ungerer <gerg@snapgear.com>
@@ -25,197 +25,32 @@ Content-Disposition: inline
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200903111456.08231.sfking@fdwdc.com>
+Message-Id: <200903111456.05282.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Steven King <sfking@fdwdc.com>
 
-diff --git a/arch/m68k/include/asm/m532xsim.h b/arch/m68k/include/asm/m532xsim.h
-index 1835fd2..931cf5f 100644
---- a/arch/m68k/include/asm/m532xsim.h
-+++ b/arch/m68k/include/asm/m532xsim.h
-@@ -16,6 +16,7 @@
- #define MCFINT_VECBASE      64
- #define MCFINT_UART0        26          /* Interrupt number for UART0 */
- #define MCFINT_UART1        27          /* Interrupt number for UART1 */
-+#define MCFINT_UART2        28          /* Interrupt number for UART2 */
+diff --git a/arch/m68k/include/asm/m5307sim.h b/arch/m68k/include/asm/m5307sim.h
+index 5886728..6a1870c 100644
+--- a/arch/m68k/include/asm/m5307sim.h
++++ b/arch/m68k/include/asm/m5307sim.h
+@@ -90,8 +90,15 @@
+ #define MCFSIM_DACR1		0x110		/* DRAM 1 Addr and Ctrl (r/w) */
+ #define MCFSIM_DMR1		0x114		/* DRAM 1 Mask reg (r/w) */
  
- #define MCF_WTM_WCR	MCF_REG16(0xFC098000)
- 
-@@ -409,70 +410,70 @@
-  *********************************************************************/
- 
- /* Register read/write macros */
--#define MCF_GPIO_PODR_FECH		MCF_REG08(0xFC0A4000)
--#define MCF_GPIO_PODR_FECL		MCF_REG08(0xFC0A4001)
--#define MCF_GPIO_PODR_SSI		MCF_REG08(0xFC0A4002)
--#define MCF_GPIO_PODR_BUSCTL		MCF_REG08(0xFC0A4003)
--#define MCF_GPIO_PODR_BE		MCF_REG08(0xFC0A4004)
--#define MCF_GPIO_PODR_CS		MCF_REG08(0xFC0A4005)
--#define MCF_GPIO_PODR_PWM		MCF_REG08(0xFC0A4006)
--#define MCF_GPIO_PODR_FECI2C		MCF_REG08(0xFC0A4007)
--#define MCF_GPIO_PODR_UART		MCF_REG08(0xFC0A4009)
--#define MCF_GPIO_PODR_QSPI		MCF_REG08(0xFC0A400A)
--#define MCF_GPIO_PODR_TIMER		MCF_REG08(0xFC0A400B)
--#define MCF_GPIO_PODR_LCDDATAH		MCF_REG08(0xFC0A400D)
--#define MCF_GPIO_PODR_LCDDATAM		MCF_REG08(0xFC0A400E)
--#define MCF_GPIO_PODR_LCDDATAL		MCF_REG08(0xFC0A400F)
--#define MCF_GPIO_PODR_LCDCTLH		MCF_REG08(0xFC0A4010)
--#define MCF_GPIO_PODR_LCDCTLL		MCF_REG08(0xFC0A4011)
--#define MCF_GPIO_PDDR_FECH		MCF_REG08(0xFC0A4014)
--#define MCF_GPIO_PDDR_FECL		MCF_REG08(0xFC0A4015)
--#define MCF_GPIO_PDDR_SSI		MCF_REG08(0xFC0A4016)
--#define MCF_GPIO_PDDR_BUSCTL		MCF_REG08(0xFC0A4017)
--#define MCF_GPIO_PDDR_BE		MCF_REG08(0xFC0A4018)
--#define MCF_GPIO_PDDR_CS		MCF_REG08(0xFC0A4019)
--#define MCF_GPIO_PDDR_PWM		MCF_REG08(0xFC0A401A)
--#define MCF_GPIO_PDDR_FECI2C		MCF_REG08(0xFC0A401B)
--#define MCF_GPIO_PDDR_UART		MCF_REG08(0xFC0A401C)
--#define MCF_GPIO_PDDR_QSPI		MCF_REG08(0xFC0A401E)
--#define MCF_GPIO_PDDR_TIMER		MCF_REG08(0xFC0A401F)
--#define MCF_GPIO_PDDR_LCDDATAH		MCF_REG08(0xFC0A4021)
--#define MCF_GPIO_PDDR_LCDDATAM		MCF_REG08(0xFC0A4022)
--#define MCF_GPIO_PDDR_LCDDATAL		MCF_REG08(0xFC0A4023)
--#define MCF_GPIO_PDDR_LCDCTLH		MCF_REG08(0xFC0A4024)
--#define MCF_GPIO_PDDR_LCDCTLL		MCF_REG08(0xFC0A4025)
--#define MCF_GPIO_PPDSDR_FECH		MCF_REG08(0xFC0A4028)
--#define MCF_GPIO_PPDSDR_FECL		MCF_REG08(0xFC0A4029)
--#define MCF_GPIO_PPDSDR_SSI		MCF_REG08(0xFC0A402A)
--#define MCF_GPIO_PPDSDR_BUSCTL		MCF_REG08(0xFC0A402B)
--#define MCF_GPIO_PPDSDR_BE		MCF_REG08(0xFC0A402C)
--#define MCF_GPIO_PPDSDR_CS		MCF_REG08(0xFC0A402D)
--#define MCF_GPIO_PPDSDR_PWM		MCF_REG08(0xFC0A402E)
--#define MCF_GPIO_PPDSDR_FECI2C		MCF_REG08(0xFC0A402F)
--#define MCF_GPIO_PPDSDR_UART		MCF_REG08(0xFC0A4031)
--#define MCF_GPIO_PPDSDR_QSPI		MCF_REG08(0xFC0A4032)
--#define MCF_GPIO_PPDSDR_TIMER		MCF_REG08(0xFC0A4033)
--#define MCF_GPIO_PPDSDR_LCDDATAH	MCF_REG08(0xFC0A4035)
--#define MCF_GPIO_PPDSDR_LCDDATAM	MCF_REG08(0xFC0A4036)
--#define MCF_GPIO_PPDSDR_LCDDATAL	MCF_REG08(0xFC0A4037)
--#define MCF_GPIO_PPDSDR_LCDCTLH		MCF_REG08(0xFC0A4038)
--#define MCF_GPIO_PPDSDR_LCDCTLL		MCF_REG08(0xFC0A4039)
--#define MCF_GPIO_PCLRR_FECH		MCF_REG08(0xFC0A403C)
--#define MCF_GPIO_PCLRR_FECL		MCF_REG08(0xFC0A403D)
--#define MCF_GPIO_PCLRR_SSI		MCF_REG08(0xFC0A403E)
--#define MCF_GPIO_PCLRR_BUSCTL		MCF_REG08(0xFC0A403F)
--#define MCF_GPIO_PCLRR_BE		MCF_REG08(0xFC0A4040)
--#define MCF_GPIO_PCLRR_CS		MCF_REG08(0xFC0A4041)
--#define MCF_GPIO_PCLRR_PWM		MCF_REG08(0xFC0A4042)
--#define MCF_GPIO_PCLRR_FECI2C		MCF_REG08(0xFC0A4043)
--#define MCF_GPIO_PCLRR_UART		MCF_REG08(0xFC0A4045)
--#define MCF_GPIO_PCLRR_QSPI		MCF_REG08(0xFC0A4046)
--#define MCF_GPIO_PCLRR_TIMER		MCF_REG08(0xFC0A4047)
--#define MCF_GPIO_PCLRR_LCDDATAH		MCF_REG08(0xFC0A4049)
--#define MCF_GPIO_PCLRR_LCDDATAM		MCF_REG08(0xFC0A404A)
--#define MCF_GPIO_PCLRR_LCDDATAL		MCF_REG08(0xFC0A404B)
--#define MCF_GPIO_PCLRR_LCDCTLH		MCF_REG08(0xFC0A404C)
--#define MCF_GPIO_PCLRR_LCDCTLL		MCF_REG08(0xFC0A404D)
-+#define MCFGPIO_PODR_FECH		(0xFC0A4000)
-+#define MCFGPIO_PODR_FECL		(0xFC0A4001)
-+#define MCFGPIO_PODR_SSI		(0xFC0A4002)
-+#define MCFGPIO_PODR_BUSCTL		(0xFC0A4003)
-+#define MCFGPIO_PODR_BE			(0xFC0A4004)
-+#define MCFGPIO_PODR_CS			(0xFC0A4005)
-+#define MCFGPIO_PODR_PWM		(0xFC0A4006)
-+#define MCFGPIO_PODR_FECI2C		(0xFC0A4007)
-+#define MCFGPIO_PODR_UART		(0xFC0A4009)
-+#define MCFGPIO_PODR_QSPI		(0xFC0A400A)
-+#define MCFGPIO_PODR_TIMER		(0xFC0A400B)
-+#define MCFGPIO_PODR_LCDDATAH		(0xFC0A400D)
-+#define MCFGPIO_PODR_LCDDATAM		(0xFC0A400E)
-+#define MCFGPIO_PODR_LCDDATAL		(0xFC0A400F)
-+#define MCFGPIO_PODR_LCDCTLH		(0xFC0A4010)
-+#define MCFGPIO_PODR_LCDCTLL		(0xFC0A4011)
-+#define MCFGPIO_PDDR_FECH		(0xFC0A4014)
-+#define MCFGPIO_PDDR_FECL		(0xFC0A4015)
-+#define MCFGPIO_PDDR_SSI		(0xFC0A4016)
-+#define MCFGPIO_PDDR_BUSCTL		(0xFC0A4017)
-+#define MCFGPIO_PDDR_BE			(0xFC0A4018)
-+#define MCFGPIO_PDDR_CS			(0xFC0A4019)
-+#define MCFGPIO_PDDR_PWM		(0xFC0A401A)
-+#define MCFGPIO_PDDR_FECI2C		(0xFC0A401B)
-+#define MCFGPIO_PDDR_UART		(0xFC0A401C)
-+#define MCFGPIO_PDDR_QSPI		(0xFC0A401E)
-+#define MCFGPIO_PDDR_TIMER		(0xFC0A401F)
-+#define MCFGPIO_PDDR_LCDDATAH		(0xFC0A4021)
-+#define MCFGPIO_PDDR_LCDDATAM		(0xFC0A4022)
-+#define MCFGPIO_PDDR_LCDDATAL		(0xFC0A4023)
-+#define MCFGPIO_PDDR_LCDCTLH		(0xFC0A4024)
-+#define MCFGPIO_PDDR_LCDCTLL		(0xFC0A4025)
-+#define MCFGPIO_PPDSDR_FECH		(0xFC0A4028)
-+#define MCFGPIO_PPDSDR_FECL		(0xFC0A4029)
-+#define MCFGPIO_PPDSDR_SSI		(0xFC0A402A)
-+#define MCFGPIO_PPDSDR_BUSCTL		(0xFC0A402B)
-+#define MCFGPIO_PPDSDR_BE		(0xFC0A402C)
-+#define MCFGPIO_PPDSDR_CS		(0xFC0A402D)
-+#define MCFGPIO_PPDSDR_PWM		(0xFC0A402E)
-+#define MCFGPIO_PPDSDR_FECI2C		(0xFC0A402F)
-+#define MCFGPIO_PPDSDR_UART		(0xFC0A4031)
-+#define MCFGPIO_PPDSDR_QSPI		(0xFC0A4032)
-+#define MCFGPIO_PPDSDR_TIMER		(0xFC0A4033)
-+#define MCFGPIO_PPDSDR_LCDDATAH		(0xFC0A4035)
-+#define MCFGPIO_PPDSDR_LCDDATAM		(0xFC0A4036)
-+#define MCFGPIO_PPDSDR_LCDDATAL		(0xFC0A4037)
-+#define MCFGPIO_PPDSDR_LCDCTLH		(0xFC0A4038)
-+#define MCFGPIO_PPDSDR_LCDCTLL		(0xFC0A4039)
-+#define MCFGPIO_PCLRR_FECH		(0xFC0A403C)
-+#define MCFGPIO_PCLRR_FECL		(0xFC0A403D)
-+#define MCFGPIO_PCLRR_SSI		(0xFC0A403E)
-+#define MCFGPIO_PCLRR_BUSCTL		(0xFC0A403F)
-+#define MCFGPIO_PCLRR_BE		(0xFC0A4040)
-+#define MCFGPIO_PCLRR_CS		(0xFC0A4041)
-+#define MCFGPIO_PCLRR_PWM		(0xFC0A4042)
-+#define MCFGPIO_PCLRR_FECI2C		(0xFC0A4043)
-+#define MCFGPIO_PCLRR_UART		(0xFC0A4045)
-+#define MCFGPIO_PCLRR_QSPI		(0xFC0A4046)
-+#define MCFGPIO_PCLRR_TIMER		(0xFC0A4047)
-+#define MCFGPIO_PCLRR_LCDDATAH		(0xFC0A4049)
-+#define MCFGPIO_PCLRR_LCDDATAM		(0xFC0A404A)
-+#define MCFGPIO_PCLRR_LCDDATAL		(0xFC0A404B)
-+#define MCFGPIO_PCLRR_LCDCTLH		(0xFC0A404C)
-+#define MCFGPIO_PCLRR_LCDCTLL		(0xFC0A404D)
- #define MCF_GPIO_PAR_FEC		MCF_REG08(0xFC0A4050)
- #define MCF_GPIO_PAR_PWM		MCF_REG08(0xFC0A4051)
- #define MCF_GPIO_PAR_BUSCTL		MCF_REG08(0xFC0A4052)
-@@ -1174,6 +1175,20 @@
- /* Bit definitions and macros for MCF_GPIO_DSCR_IRQ */
- #define MCF_GPIO_DSCR_IRQ_IRQ_DSE(x)               (((x)&0x03)<<0)
- 
+-#define	MCFSIM_PADDR		0x244		/* Parallel Direction (r/w) */
+-#define	MCFSIM_PADAT		0x248		/* Parallel Data (r/w) */
++#define	MCFSIM_PADDR		(MCF_MBAR + 0x244)
++#define	MCFSIM_PADAT		(MCF_MBAR + 0x248)
++
 +/*
 + * Generic GPIO support
 + */
-+#define MCFGPIO_PODR			MCFGPIO_PODR_FECH
-+#define MCFGPIO_PDDR			MCFGPIO_PDDR_FECH
-+#define MCFGPIO_PPDR			MCFGPIO_PPDSDR_FECH
-+#define MCFGPIO_SETR			MCFGPIO_PPDSDR_FECH
-+#define MCFGPIO_CLRR			MCFGPIO_PCLRR_FECH
-+
-+#define MCFGPIO_PIN_MAX			136
-+#define MCFGPIO_IRQ_MAX			8
-+#define MCFGPIO_IRQ_VECBASE		MCFINT_VECBASE
-+
-+
- /*********************************************************************
-  *
-  * Interrupt Controller (INTC)
-@@ -2141,12 +2156,12 @@
-  *********************************************************************/
++#define MCFGPIO_PIN_MAX			16
++#define MCFGPIO_IRQ_MAX			-1
++#define MCFGPIO_IRQ_VECBASE		-1
  
- /* Register read/write macros */
--#define MCF_EPORT_EPPAR                MCF_REG16(0xFC094000)
--#define MCF_EPORT_EPDDR                MCF_REG08(0xFC094002)
--#define MCF_EPORT_EPIER                MCF_REG08(0xFC094003)
--#define MCF_EPORT_EPDR                 MCF_REG08(0xFC094004)
--#define MCF_EPORT_EPPDR                MCF_REG08(0xFC094005)
--#define MCF_EPORT_EPFR                 MCF_REG08(0xFC094006)
-+#define MCFEPORT_EPPAR                (0xFC094000)
-+#define MCFEPORT_EPDDR                (0xFC094002)
-+#define MCFEPORT_EPIER                (0xFC094003)
-+#define MCFEPORT_EPDR                 (0xFC094004)
-+#define MCFEPORT_EPPDR                (0xFC094005)
-+#define MCFEPORT_EPFR                 (0xFC094006)
  
- /* Bit definitions and macros for MCF_EPORT_EPPAR */
- #define MCF_EPORT_EPPAR_EPPA1(x)       (((x)&0x0003)<<2)
+ /* Definition offset address for CS2-7  -- old mask 5307 */
