@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZCKWDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZCKWDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbZCKWDW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 18:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbZCKWBI
+	id S1756040AbZCKWDk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 18:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbZCKWCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 18:01:08 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46126 "EHLO gate.crashing.org"
+	Wed, 11 Mar 2009 18:02:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55161 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755499AbZCKWBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 18:01:07 -0400
-Subject: Re: [PATCH v4] introduce macro spin_event_timeout()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       rdreier@cisco.com, jirislaby@gmail.com, peterz@infradead.org,
-       will.newton@gmail.com, hancockrwd@gmail.com, jeremy@goop.org
-In-Reply-To: <49B80081.5060703@freescale.com>
-References: <1236699004-1863-1-git-send-email-timur@freescale.com>
-	 <20090310153537.5fd5d84d@lxorguk.ukuu.org.uk>
-	 <1236729711.7086.28.camel@pasglop>
-	 <20090311003756.25ffa6f4@lxorguk.ukuu.org.uk>
-	 <ed82fe3e0903110948w542a864dj821106900755f14e@mail.gmail.com>
-	 <20090311165806.0b6838ab@lxorguk.ukuu.org.uk>
-	 <49B80081.5060703@freescale.com>
-Content-Type: text/plain
-Date: Thu, 12 Mar 2009 08:58:42 +1100
-Message-Id: <1236808722.7086.66.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	id S1755722AbZCKWCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 18:02:07 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/10] PM: Rework handling of interrupts during suspend-resume (rev. 5)
+Date: Wed, 11 Mar 2009 23:01:50 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+References: <200902221837.49396.rjw@sisk.pl> <200903112159.21166.rjw@sisk.pl> <alpine.LFD.2.00.0903112238280.29264@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903112238280.29264@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903112301.51594.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-11 at 13:18 -0500, Timur Tabi wrote:
-> Alan Cox wrote:
-> >> Are you talking about the udelay() inside the loop?  If so, I agree
-> >> that this is bad and have removed it in the PowerPC-specific version:
+On Wednesday 11 March 2009, Thomas Gleixner wrote:
+> On Wed, 11 Mar 2009, Rafael J. Wysocki wrote:
+> > On Wednesday 11 March 2009, Thomas Gleixner wrote:
+> > > > +EXPORT_SYMBOL_GPL(suspend_device_irqs);
+> > > 
+> > >   I'm not too enthusiastic about this open coded implementation of
+> > >   disable_irq() with slightly different semantics.
 > > 
-> > The behaviour you want there is system specific - 10uS is a minimum
-> > politeness value for x86 PCI bus for example.
+> > The difference in semantics is important IMO, otherwise I woulndn't have
+> > done that.  In particular, IMO, the condition should be under the spinlock IMO
+> > and I'd rather not synchronize all interrupts we don't really disable here.
 > 
-> So we need to allow for delays between successive rights?  We can
-> provide that with a third parameter to the macro.
+> I don't say that the difference is not relevant. But the code is
+> almost the same and disable_irq() could have the sync_irq optimization
+> as well.
 
-I prefer Alan's method of having the macro be followed by { and } so we
-can add things in there. The delay between access will often be somewhat
-platform or device specific, and some drivers might be able to do useful
-things while spinning.
+Agreed.
 
-The other big advantage of that approach is that drivers that aren't in
-an atomic section can use msleep() and allow the kernel to schedule on
-that processor.
+> > >   Can we please move the fiddling with desc->* into
+> > >   kernel/irq/manage.c and share the code there ?
+> > 
+> > Can you please discuss that with Ingo?  I moved that from manage.c at his
+> > request.
+> 
+> Hmrpf. Will do. I just want to avoid that we have scattered functions
+> which deal with the guts of the irq code all over the place.
 
-> Is there an architecture-independent method for reading a timebase
-> register that's not jiffies?
+I understand your concern, I'd prefer to avoid that too.
 
-Not really since there isn't an architecture independent "timebase
-register" anyway. But Jiffies for the timeout value doesn't sound
-necessarily -that- bad.
+> I'm fine with your loop in irq/pm.c, but the actual handling of the irq
+> internals should remain in manage.c.
 
-Cheers,
-Ben.
+Well, perhaps we can add a parameter to disable_irq_nosync() telling it not
+to disable the interrupt if it's a timer one?  Something like
 
+void disable_irq_nosync(unsigned int irq, bool skip_timer) etc.?
 
+Also, it could return a value meaning whether or not the interrupt has been
+actually disabled.
+
+> I'll have a closer look how to solve this.
+
+Thanks!
+
+Best,
+Rafael
