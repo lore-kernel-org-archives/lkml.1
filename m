@@ -1,115 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbZCKKBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbZCKKBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbZCKKBZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 06:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbZCKJ55
+	id S1756197AbZCKKBk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 06:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbZCKKBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 05:57:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49389 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754817AbZCKJ5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 05:57:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 10/10] PCI PM: Restore config spaces of all devices during early resume
-Date: Wed, 11 Mar 2009 10:56:51 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Frans Pop <elendil@planet.nl>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-References: <200902221837.49396.rjw@sisk.pl> <200903111030.39371.rjw@sisk.pl>
-In-Reply-To: <200903111030.39371.rjw@sisk.pl>
+	Wed, 11 Mar 2009 06:01:14 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:18209 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756107AbZCKKBL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 06:01:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=wMW9Yzo6nHyic9jOOzO03p2OYEbOu5RMaE5+SugMM7JpAUVA9yyEzvcbgHlqrmY6rc
+         ugjcUGk/C3oCiU2h6IBI0TUtCJzr8lmJU8RzFMl5lwnkju+d0zDUfoczE1vFaeeKor0+
+         dr3qs4sX7XMhMdGHcZ3lohKrx2+UNCimA5jWU=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Date: Wed, 11 Mar 2009 12:01:09 +0200
+Message-ID: <8c5a844a0903110301w57c1d3e7k5e76d371ae33147d@mail.gmail.com>
+Subject: [PATCH 2/2] mm: use list.h for vma list
+From: Daniel Lowengrub <lowdanie@gmail.com>
+To: linux-mm@kvack.org
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903111056.52716.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Now that the vmas are stored as a doubly linked list the find_vma
+function can be optimized by using the cache
+more efficiently.
 
-At present the configuration spaces of PCI devices that have no drivers
-or no PM support in the drivers (either legacy or through a pm object) are not
-saved during suspend and, consequently, they are not restored during resume.
-This generally may lead to the state of the system being slightly inconsistent
-after the resume, so it's better to save and restore the configuration spaces
-of these devices as well.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Daniel Lowengrub
 ---
- drivers/pci/pci-driver.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+diff -uNr linux-2.6.28.7.vanilla/mm/mmap.c linux-2.6.28.7/mm/mmap.c
+--- linux-2.6.28.7.vanilla/mm/mmap.c	2009-03-11 11:32:02.000000000 +0200
++++ linux-2.6.28.7/mm/mmap.c	2009-03-11 11:37:35.000000000 +0200
+@@ -1461,37 +1461,52 @@
 
-Index: linux-2.6/drivers/pci/pci-driver.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -516,13 +516,13 @@ static int pci_pm_suspend(struct device 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_SUSPEND);
- 
-+	pci_dev->state_saved = false;
-+
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		goto Fixup;
- 	}
- 
--	pci_dev->state_saved = false;
--
- 	if (pm->suspend) {
- 		pci_power_t prev = pci_dev->current_state;
- 		int error;
-@@ -554,8 +554,10 @@ static int pci_pm_suspend_noirq(struct d
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
- 
--	if (!pm)
-+	if (!pm) {
-+		pci_save_state(pci_dev);
- 		return 0;
+ EXPORT_SYMBOL(get_unmapped_area);
+
++/* Checks if this is the first VMA which satisfies addr < vm_end */
++static inline int after_addr(struct vm_area_struct *vma, unsigned long addr)
++{
++	if (!vma)
++		return 0;
++	if (vma->vm_end > addr) {
++		if (!vma_prev(vma))
++			return 1;
++		if (vma_prev(vma)->vm_end <= addr)
++			return 1;
 +	}
- 
- 	if (pm->suspend_noirq) {
- 		pci_power_t prev = pci_dev->current_state;
-@@ -650,13 +652,13 @@ static int pci_pm_freeze(struct device *
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_FREEZE);
- 
-+	pci_dev->state_saved = false;
++	return 0;
++}
 +
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		return 0;
- 	}
- 
--	pci_dev->state_saved = false;
+ /* Look up the first VMA which satisfies  addr < vm_end,  NULL if none. */
+ struct vm_area_struct * find_vma(struct mm_struct * mm, unsigned long addr)
+ {
+ 	struct vm_area_struct *vma = NULL;
 -
- 	if (pm->freeze) {
- 		int error;
- 
-@@ -738,13 +740,13 @@ static int pci_pm_poweroff(struct device
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
- 
-+	pci_dev->state_saved = false;
++	struct rb_node * rb_node;
+ 	if (mm) {
+ 		/* Check the cache first. */
+ 		/* (Cache hit rate is typically around 35%.) */
+ 		vma = mm->mmap_cache;
+-		if (!(vma && vma->vm_end > addr && vma->vm_start <= addr)) {
+-			struct rb_node * rb_node;
+-
+-			rb_node = mm->mm_rb.rb_node;
+-			vma = NULL;
+-
+-			while (rb_node) {
+-				struct vm_area_struct * vma_tmp;
+-
+-				vma_tmp = rb_entry(rb_node,
+-						struct vm_area_struct, vm_rb);
+-
+-				if (vma_tmp->vm_end > addr) {
+-					vma = vma_tmp;
+-					if (vma_tmp->vm_start <= addr)
+-						break;
+-					rb_node = rb_node->rb_left;
+-				} else
+-					rb_node = rb_node->rb_right;
+-			}
+-			if (vma)
+-				mm->mmap_cache = vma;
++		
++		if (after_addr(vma, addr))
++			return vma;
 +
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		goto Fixup;
++		rb_node = mm->mm_rb.rb_node;
++		vma = NULL;
++
++		while (rb_node) {
++			struct vm_area_struct * vma_tmp;
++
++			vma_tmp = rb_entry(rb_node,
++					struct vm_area_struct, vm_rb);
++
++			if (vma_tmp->vm_end > addr) {
++				vma = vma_tmp;
++				if (vma_tmp->vm_start <= addr)
++					break;
++				rb_node = rb_node->rb_left;
++			} else
++				rb_node = rb_node->rb_right;
++		}
++		if (vma)
++			mm->mmap_cache = vma;
+ 		}
  	}
- 
--	pci_dev->state_saved = false;
--
- 	if (pm->poweroff) {
- 		int error;
- 
+ 	return vma;
