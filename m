@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbZCKRZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZCKR00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbZCKRZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 13:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZCKRZT
+	id S1754195AbZCKR00 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 13:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbZCKR0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 13:25:19 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:34196 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751172AbZCKRZS (ORCPT
+	Wed, 11 Mar 2009 13:26:16 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:64022 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752604AbZCKR0P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 13:25:18 -0400
-Date: Wed, 11 Mar 2009 22:55:06 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [patch 00/11] Hardware Breakpoint interfaces
-Message-ID: <20090311172506.GC9547@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090311121007.GC13835@in.ibm.com> <Pine.LNX.4.44L0.0903111232300.2692-100000@iolanthe.rowland.org>
+	Wed, 11 Mar 2009 13:26:15 -0400
+Date: Wed, 11 Mar 2009 18:26:12 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Kyle McMartin <kyle@infradead.org>
+cc: Kyle McMartin <kyle@mcmartin.ca>,
+       Alessandro Zummo <alessandro.zummo@towertech.it>,
+       linux-m68k@vger.kernel.org, rtc-linux@googlegroups.com,
+       linux-parisc@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+       Paul Mundt <lethal@linux-sh.org>, Dann Frazier <dannf@dannf.org>
+Subject: Re: [PATCH 0/7] Generic RTC class driver
+In-Reply-To: <20090311154505.GB5448@bombadil.infradead.org>
+Message-ID: <alpine.LRH.2.00.0903111825040.1040@vixen.sonytel.be>
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <alpine.LRH.2.00.0903111134270.1040@vixen.sonytel.be> <20090311154505.GB5448@bombadil.infradead.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0903111232300.2692-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 12:34:43PM -0400, Alan Stern wrote:
-> On Wed, 11 Mar 2009, K.Prasad wrote:
-> 
-> > The hardware breakpoint interfaces haven't been put under any CONFIG_
-> > till now, but I think we should bring them under a new config, say
-> > CONFIG_HW_BREAKPOINT. It would help create a dependancy for
-> > CONFIG_KSYM_TRACER too.
-> 
-> With these patches, ptrace is dependent on hw-breakpoint.  You can't 
-> disable CONFIG_HW_BREAKPOINT without breaking ptrace.
-> 
-> Alan Stern
-> 
+	Hi Kyle,
 
-Agreed. We might have to retain the old code for ptrace and put the new
-implementation under #ifdef CONFIG_HW_BREAKPOINT to get them working.
-What do you think?
+On Wed, 11 Mar 2009, Kyle McMartin wrote:
+> On Wed, Mar 11, 2009 at 11:36:02AM +0100, Geert Uytterhoeven wrote:
+> > Is it OK for you to take it through your PA-RISC tree?
+> > If yes, I can resend the patch series with the collected acks.
+> 
+> That's fine with me, just hit me up with a git tree address and I'll
+> suck it all into the rtc-parisc tree?
 
-Thanks,
-K.Prasad
+I put it up at:
 
+master.kernel.org:/pub/scm/linux/kernel/git/geert/linux-rtc-generic.git
+
+The master branch should be a descendant of your rtc-parisc branch.
+
+Thanks!
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
