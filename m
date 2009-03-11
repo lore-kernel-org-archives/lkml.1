@@ -1,107 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbZCKBAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZCKBB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411AbZCKBAl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 21:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbZCKBAb
+	id S1755162AbZCKBB3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 21:01:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbZCKBBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 21:00:31 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:59412 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752140AbZCKBAa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 21:00:30 -0400
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
-From: john stultz <johnstul@us.ibm.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200903091604.56455.elendil@planet.nl>
-References: <200903080230.10099.elendil@planet.nl>
-	 <200903091604.56455.elendil@planet.nl>
-Content-Type: text/plain
-Date: Tue, 10 Mar 2009 18:00:26 -0700
-Message-Id: <1236733226.6080.28.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Mar 2009 21:01:20 -0400
+Received: from mga03.intel.com ([143.182.124.21]:25222 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752965AbZCKBBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 21:01:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,338,1233561600"; 
+   d="scan'208";a="118934607"
+Date: Wed, 11 Mar 2009 09:00:04 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: [PATCH] proc: fix kflags to uflags copying in /proc/kpageflags
+Message-ID: <20090311010004.GA8237@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-09 at 16:04 +0100, Frans Pop wrote:
-> On Sunday 08 March 2009, Frans Pop wrote:
-> > Kernels after 2.6.27 fail to boot in the Hercules S/390 emulator, quite
-> > early in the boot process:
-> [...]
-> >      0.141419! Initializing cgroup subsys ns
-> >      0.141605! Initializing cgroup subsys cpuacct
-> >      0.142009! Initializing cgroup subsys devices
-> >      0.180403! cpu: 2 configured CPUs, 0 standby CPUs
-> >
-> > I've bisected this to the following commit:
-> > commit 5cd1c9c5cf30d4b33df3d3f74d8142f278d536b7
-> > Author: Roman Zippel <zippel@linux-m68k.org>
-> > Date:   Mon Sep 22 14:42:43 2008 -0700
-> >     timekeeping: fix rounding problem during clock update
-> 
-> After staring at this commit for a while I decided to try the following
-> patch:
-> --- a/kernel/time/timekeeping.c
-> +++ b/kernel/time/timekeeping.c
-> @@ -547,5 +547,11 @@ void update_wall_time(void)
->  	* add the remainder to the error difference.
->  	*/
->  	xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
-> +	if (unlikely(clock->xtime_nsec < ((s64)xtime.tv_nsec << clock->shift))) {
-> +		printk("Negative result: %llu - %lld\n",
-> +			(unsigned long long)clock->xtime_nsec,
-> +			(long long)((s64)xtime.tv_nsec << clock->shift));
-> +		BUG_ON(1);
-> +	}
->  	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
->  	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
-> 
-> And that resulted in:
->      0.004175! Negative result: 166039808000 - 166039808256
+Fix kpf_copy_bit(src,dst) to be kpf_copy_bit(dst,src) to match the
+actual call patterns, e.g. kpf_copy_bit(kflags, KPF_LOCKED, PG_locked).
 
-Hrm. That doesn't make sense.
+This misplacement of src/dst only affected reporting of PG_writeback,
+PG_reclaim and PG_buddy. For others kflags==uflags so not affected.
 
-xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
 
-I'm assuming clock->shift == 12 (from the clocksource_tod definition).
+This is a tested and trivial no-side-effect fix.
+I'd suggest it for 2.6.29-rc7 and 2.6.28.X kernels.
 
-If clock->xtime_nsec == 166039808000, then xtime.tv_nsec should be
-40537063, so xtime_tv_nsec << clock->shift would be 166039810048.
-
-So not sure whats going on with the output you got.
-
-Also the negative conditional you add doesn't really make sense either,
-as we expect the xtime.tv_nsec << clock->shift to be larger then
-clock->xtime_nsec, as we've rounded it up by one. We then accumulate the
-negative difference between them into clock->error. 
-
-Hmm.. Does the following explicit casting help?
-
-thanks
--john
-
-
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 900f1b6..acd130b 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -548,7 +548,7 @@ void update_wall_time(void)
- 	 */
- 	xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
- 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
--	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
-+	clock->error += (s64)clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
+diff --git a/fs/proc/page.c b/fs/proc/page.c
+index 2d13451..e998383 100644
+--- a/fs/proc/page.c
++++ b/fs/proc/page.c
+@@ -80,7 +80,7 @@ static const struct file_operations proc_kpagecount_operations = {
+ #define KPF_RECLAIM    9
+ #define KPF_BUDDY     10
  
- 	update_xtime_cache(cyc2ns(clock, offset));
+-#define kpf_copy_bit(flags, srcpos, dstpos) (((flags >> srcpos) & 1) << dstpos)
++#define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
  
-
-
-
-
-
+ static ssize_t kpageflags_read(struct file *file, char __user *buf,
+ 			     size_t count, loff_t *ppos)
