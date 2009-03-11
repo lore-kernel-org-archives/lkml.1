@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452AbZCKGsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbZCKGuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752452AbZCKGsa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 02:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZCKGsU
+	id S1752833AbZCKGuk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 02:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbZCKGub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 02:48:20 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:49414 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbZCKGsU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 02:48:20 -0400
-Message-ID: <49B75EAE.4080708@in.ibm.com>
-Date: Wed, 11 Mar 2009 12:18:14 +0530
-From: "Sachin P. Sant" <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: linux-next@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RESEND GIT PATCH tj-percpu] percpu: fix spurious alignment WARN
- in legacy SMP percpu allocator
-References: <20090310195534.8f8f3c7a.sfr@canb.auug.org.au> <49B67552.5070307@in.ibm.com> <49B73B15.3040101@in.ibm.com> <49B75215.5010707@kernel.org>
-In-Reply-To: <49B75215.5010707@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 11 Mar 2009 02:50:31 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:41714 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751567AbZCKGua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 02:50:30 -0400
+Date: Wed, 11 Mar 2009 07:50:24 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: David Brownell <david-b@pacbell.net>
+Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Kim Kyuwon <chammoru@gmail.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "=?UTF-8?B?6rmA6rec7JuQ?=" <q1.kim@samsung.com>,
+       "=?UTF-8?B?67CV6rK966+8?=" <kyungmin.park@samsung.com>
+Subject: Re: [PATCH] OMAP: HSMMC: Initialize hsmmc controller registers when
+ resuming
+Message-ID: <20090311075024.5b5fa28a@mjolnir.ossman.eu>
+In-Reply-To: <200903102033.51026.david-b@pacbell.net>
+References: <4d34a0a70902200400s252f48ddvfd6e0d83e91fa291@mail.gmail.com>
+	<4d34a0a70902222141y345a7bc3g314e6de5df156f2d@mail.gmail.com>
+	<49A258A2.2020408@nokia.com>
+	<200903102033.51026.david-b@pacbell.net>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Impact: remove spurious WARN on legacy SMP percpu allocator
->
-> Commit f2a8205c4ef1af917d175c36a4097ae5587791c8 incorrectly added too
-> tight WARN_ON_ONCE() on alignments for UP and legacy SMP percpu
-> allocator.  Commit e317603694bfd17b28a40de9d65e1a4ec12f816e fixed it
-> for UP but legacy SMP allocator was forgotten.  Fix it.
->
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Reported-by: Sachin P. Sant <sachinp@in.ibm.com>
-> ---
-Thanks. The patch fixes the warning.
+On Tue, 10 Mar 2009 19:33:50 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-Tested-by : Sachin Sant <sachinp@in.ibm.com>
+> 
+> It'd be nice to have a nice unambiguous set_voltage()
+> request from the MMC core.  The set_ios() thing has
+> always been confusing.
+> 
 
+set_ios() should be taken out back. But someone has to have the time to
+reimplement things. :/
 
 -- 
+     -- Pierre Ossman
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
