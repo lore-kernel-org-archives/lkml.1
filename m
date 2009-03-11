@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180AbZCKQ3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbZCKQ3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752180AbZCKQ3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbZCKQ3G
+	id S1753165AbZCKQ3f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZCKQ3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:29:06 -0400
-Received: from mx1.suse.de ([195.135.220.2]:60204 "EHLO mx1.suse.de"
+	Wed, 11 Mar 2009 12:29:12 -0400
+Received: from ns2.suse.de ([195.135.220.15]:35118 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751345AbZCKQ3E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:29:04 -0400
-Date: Wed, 11 Mar 2009 09:22:03 -0700
+	id S1752798AbZCKQ3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 12:29:11 -0400
+Date: Wed, 11 Mar 2009 09:26:23 -0700
 From: Greg KH <gregkh@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: build issue #592 for v2.6.29-rc7-3-g559595a :multiple
-	definition of `ieee80211_xmit'
-Message-ID: <20090311162203.GC21831@suse.de>
-References: <200903081151.40006.toralf.foerster@gmx.de> <20090308110942.GC27811@elte.hu>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [RFC] drivers/base: Add bus_register_notifier_alldev() variant
+Message-ID: <20090311162623.GE21831@suse.de>
+References: <20090306160818.404.92700.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090308110942.GC27811@elte.hu>
+In-Reply-To: <20090306160818.404.92700.stgit@localhost.localdomain>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 08, 2009 at 12:09:42PM +0100, Ingo Molnar wrote:
+On Fri, Mar 06, 2009 at 09:10:19AM -0700, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
 > 
-> (Cc: line extended)
+> bus_register_notifier_alldev() is a variation on bus_register_notifier()
+> which also triggers the notifier callback for devices already on the bus
+> and already bound to drivers.
 > 
-> * Toralf Förster <toralf.foerster@gmx.de> wrote:
-> 
-> > Hello,
-> > 
-> > the build (.config attached) failed, make ends with :
-> > ...
-> >   CC [M]  drivers/watchdog/wm8350_wdt.o
-> >   CC [M]  drivers/watchdog/softdog.o
-> >   LD      drivers/built-in.o
-> > drivers/staging/built-in.o: In function `ieee80211_xmit':
-> > (.text+0x6bc3d): multiple definition of `ieee80211_xmit'
-> > drivers/net/built-in.o:(.text+0x19a7f): first defined here
-> > make[1]: *** [drivers/built-in.o] Error 1
-> > make: *** [drivers] Error 2
+> This function is useful for the case where a driver needs to get a
+> reference to a struct device other than the one it is bound to and
+> it is not known if the device will be bound before or after this
+> function is called.  For example, an Ethernet device connected to
+> a PHY that is probed separately.
 
-Yes, some of the staging drivers can't all be built into the kernel at
-this time due to duplicated symbols.  I'm working on fixing this up, but
-for now, it's recommended that you just build them as modules wherever
-possible.
+Can't you just walk the list of all devices already on the bus to get
+"notified" of them, and then register your notifier handler as well (or
+register it first, and then walk the list, which is pretty much what
+your patch does)?
+
+I see this api addition as just confusing people as to which one they
+should register for :)
 
 thanks,
 
