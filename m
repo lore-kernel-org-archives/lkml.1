@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbZCKAvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbZCKAuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756596AbZCKAvP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 20:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbZCKAr2
+	id S1755296AbZCKAuw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 20:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbZCKArT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 20:47:28 -0400
-Received: from www.tglx.de ([62.245.132.106]:40103 "EHLO www.tglx.de"
+	Tue, 10 Mar 2009 20:47:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:40085 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755077AbZCKAr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 20:47:28 -0400
-Message-Id: <20090311003237.415656241@linutronix.de>
+	id S1754826AbZCKArS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 20:47:18 -0400
+Message-Id: <20090311003236.816143734@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Wed, 11 Mar 2009 00:46:38 -0000
+Date: Wed, 11 Mar 2009 00:46:16 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Dike <jdike@addtoit.com>
-Subject: [patch 18/18] um: convert obsolete hw_interrupt_type to struct
+       Tony Luck <tony.luck@intel.com>
+Subject: [patch 13/18] ia64: convert obsolete hw_interrupt_type to struct
 	irq_chip
 References: <20090311003204.592133594@linutronix.de>
 Content-Disposition: inline;
-	filename=um-convert-obsolete-hw-interrupt-type.patch
+	filename=ia64-convert-obsolete-hw-interrupt-type.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -30,41 +30,66 @@ Impact: cleanup
 Convert the last remaining users to struct irq_chip.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-CC: Jeff Dike <jdike@addtoit.com>
----
- arch/um/kernel/irq.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+CC: Tony Luck <tony.luck@intel.com>
 
-Index: linux-2.6/arch/um/kernel/irq.c
+---
+ arch/ia64/hp/sim/hpsim_irq.c   |    2 +-
+ arch/ia64/include/asm/hw_irq.h |    2 +-
+ arch/ia64/kernel/iosapic.c     |    2 +-
+ arch/ia64/kernel/irq_lsapic.c  |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/arch/ia64/hp/sim/hpsim_irq.c
 ===================================================================
---- linux-2.6.orig/arch/um/kernel/irq.c
-+++ linux-2.6/arch/um/kernel/irq.c
-@@ -358,7 +358,7 @@ EXPORT_SYMBOL(um_request_irq);
- EXPORT_SYMBOL(reactivate_fd);
- 
- /*
-- * hw_interrupt_type must define (startup || enable) &&
-+ * irq_chip must define (startup || enable) &&
-  * (shutdown || disable) && end
-  */
- static void dummy(unsigned int irq)
-@@ -366,7 +366,7 @@ static void dummy(unsigned int irq)
+--- linux-2.6.orig/arch/ia64/hp/sim/hpsim_irq.c
++++ linux-2.6/arch/ia64/hp/sim/hpsim_irq.c
+@@ -26,7 +26,7 @@ hpsim_set_affinity_noop(unsigned int a, 
+ {
  }
  
- /* This is used for everything else than the timer. */
--static struct hw_interrupt_type normal_irq_type = {
-+static struct irq_chip normal_irq_type = {
- 	.typename = "SIGIO",
- 	.release = free_irq_by_irq_and_dev,
- 	.disable = dummy,
-@@ -375,7 +375,7 @@ static struct hw_interrupt_type normal_i
- 	.end = dummy
- };
+-static struct hw_interrupt_type irq_type_hp_sim = {
++static struct irq_chip irq_type_hp_sim = {
+ 	.name =		"hpsim",
+ 	.startup =	hpsim_irq_startup,
+ 	.shutdown =	hpsim_irq_noop,
+Index: linux-2.6/arch/ia64/include/asm/hw_irq.h
+===================================================================
+--- linux-2.6.orig/arch/ia64/include/asm/hw_irq.h
++++ linux-2.6/arch/ia64/include/asm/hw_irq.h
+@@ -106,7 +106,7 @@ extern struct irq_cfg irq_cfg[NR_IRQS];
+ #define irq_to_domain(x)	irq_cfg[(x)].domain
+ DECLARE_PER_CPU(int[IA64_NUM_VECTORS], vector_irq);
  
--static struct hw_interrupt_type SIGVTALRM_irq_type = {
-+static struct irq_chip SIGVTALRM_irq_type = {
- 	.typename = "SIGVTALRM",
- 	.release = free_irq_by_irq_and_dev,
- 	.shutdown = dummy, /* never called */
+-extern struct hw_interrupt_type irq_type_ia64_lsapic;	/* CPU-internal interrupt controller */
++extern struct irq_chip irq_type_ia64_lsapic;	/* CPU-internal interrupt controller */
+ 
+ #ifdef CONFIG_PARAVIRT_GUEST
+ #include <asm/paravirt.h>
+Index: linux-2.6/arch/ia64/kernel/iosapic.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/iosapic.c
++++ linux-2.6/arch/ia64/kernel/iosapic.c
+@@ -599,7 +599,7 @@ register_intr (unsigned int gsi, int irq
+ 	       unsigned long polarity, unsigned long trigger)
+ {
+ 	struct irq_desc *idesc;
+-	struct hw_interrupt_type *irq_type;
++	struct irq_chip *irq_type;
+ 	int index;
+ 	struct iosapic_rte_info *rte;
+ 
+Index: linux-2.6/arch/ia64/kernel/irq_lsapic.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/irq_lsapic.c
++++ linux-2.6/arch/ia64/kernel/irq_lsapic.c
+@@ -33,7 +33,7 @@ static int lsapic_retrigger(unsigned int
+ 	return 1;
+ }
+ 
+-struct hw_interrupt_type irq_type_ia64_lsapic = {
++struct irq_chip irq_type_ia64_lsapic = {
+ 	.name =		"LSAPIC",
+ 	.startup =	lsapic_noop_startup,
+ 	.shutdown =	lsapic_noop,
 
 
