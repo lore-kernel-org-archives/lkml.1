@@ -1,62 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbZCKN5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbZCKN6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755526AbZCKN5a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 09:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbZCKN5V
+	id S1756388AbZCKN6F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 09:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518AbZCKN5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 09:57:21 -0400
-Received: from 30.mail-out.ovh.net ([213.186.62.213]:58437 "HELO
-	30.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752427AbZCKN5U (ORCPT
+	Wed, 11 Mar 2009 09:57:53 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51230 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755348AbZCKN5w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 09:57:20 -0400
-Subject: [2.6.29-rc5][BUG] swapon on vfat file gets stuck on inode lock
-From: Laurent GUERBY <laurent@guerby.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 14:57:12 +0100
-Message-Id: <1236779832.11347.2082.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 14067837861572582936
-X-Ovh-Remote: 79.90.156.46 (46.156.90-79.rev.gaoland.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+	Wed, 11 Mar 2009 09:57:52 -0400
+Date: Wed, 11 Mar 2009 09:57:48 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] tracing: use raw spinlocks for trace_vprintk
+In-Reply-To: <1236754764.22914.3680.camel@twins>
+Message-ID: <alpine.DEB.2.00.0903110956190.16494@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0903102125250.16494@gandalf.stny.rr.com> <1236754764.22914.3680.camel@twins>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-With 2.6.29-rc5 (on an ARM platform but I don't think it's significant)
-when I try to enable swap on a file which is on an USB mounted vfat
-partition the swapon syscall gets stuck:
+On Wed, 11 Mar 2009, Peter Zijlstra wrote:
 
-swapon        D c03780d4     0 22361      1
-[<c0377db0>] (schedule+0x0/0x3ac) from [<c0378e50>] (__mutex_lock_slowpath+0x94/0xf4)
-[<c0378dbc>] (__mutex_lock_slowpath+0x0/0xf4) from [<c0378c40>] (mutex_lock+0x20/0x24)
- r6:df49e808 r5:00000000 r4:00000000
-[<c0378c20>] (mutex_lock+0x0/0x24) from [<c013bb2c>] (_fat_bmap+0x28/0x68)
-[<c013bb04>] (_fat_bmap+0x0/0x68) from [<c00af910>] (bmap+0x2c/0x40)
- r6:0005ffff r5:00000000 r4:00000000
-[<c00af8e4>] (bmap+0x0/0x40) from [<c0094b84>] (sys_swapon+0x630/0xcbc)
- r5:c0541510 r4:00300000
-[<c0094554>] (sys_swapon+0x0/0xcbc) from [<c0029960>] (ret_fast_syscall+0x0/0x2c)
+> On Tue, 2009-03-10 at 21:26 -0400, Steven Rostedt wrote:
+> 
+> > commit 80370cb758e7ca2692cd9fb5e413d970b1f4b2b2
+> > Author: Steven Rostedt <srostedt@redhat.com>
+> > Date:   Tue Mar 10 17:16:35 2009 -0400
+> > 
+> >     tracing: use raw spinlocks for trace_vprintk
+> >     
+> >     Impact: prevent locking up by lockdep tracer
+> >     
+> >     The lockdep tracer uses trace_vprintk and thus trace_vprintk can not
+> >     call back into lockdep without locking up.
+> 
+> Hmm, I did this when I posted the lockdep tracepoints, so someone then
+> did a bad copy/paste job when renaming ftrace_printk or something?
+> 
+> See efed792d6738964f399a508ef9e831cd60fa4657
+> 
+> >     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> > 
+> > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> > index 8c6a902..4c97947 100644
+> > --- a/kernel/trace/trace.c
+> > +++ b/kernel/trace/trace.c
+> > @@ -1176,7 +1176,8 @@ void trace_graph_return(struct ftrace_graph_ret *trace)
+> >   */
+> >  int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+> >  {
+> > -	static DEFINE_SPINLOCK(trace_buf_lock);
+> > +	static raw_spinlock_t trace_buf_lock =
+> > +		(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
+> >  	static u32 trace_buf[TRACE_BUF_SIZE];
+> >  
+> >  	struct ring_buffer_event *event;
+> > @@ -1201,7 +1202,9 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+> >  	if (unlikely(atomic_read(&data->disabled)))
+> >  		goto out;
+> >  
+> > -	spin_lock_irqsave(&trace_buf_lock, flags);
+> > +	/* Lockdep uses trace_printk for lock tracing */
+> > +	local_irq_save(flags);
+> 
+> Shouldn't you also use raw_local_irq_save() and friends?
 
-Looking around in the kernel sources it looks like the inode mutex is
-taken both by mm/swapfile.c and by fs/fat/inode.c, the latter one since
-this patch from november 2008:
+I found that the raw_local_irq_save() causes a lot more headaches with 
+lockdep complaining that irqs are disabled and it did not know about it. 
+Those checks seem everywhere, so I only use the raw_local_irq_save when I 
+absolutely need to. Here, it works without it.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=fa93ca18a8b0da4e26bd9491ad144cd14d22f8ec
+-- Steve
 
-When I use a loopback device on the very same file the swapon call works
-so there's an easy workaround for this issue.
 
-Sincerely,
-
-Laurent
-http://guerby.org/blog
-
+> 
+> > +	__raw_spin_lock(&trace_buf_lock);
+> >  	len = vbin_printf(trace_buf, TRACE_BUF_SIZE, fmt, args);
+> >  
+> >  	if (len > TRACE_BUF_SIZE || len < 0)
+> > @@ -1220,7 +1223,8 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+> >  	ring_buffer_unlock_commit(tr->buffer, event);
+> >  
+> >  out_unlock:
+> > -	spin_unlock_irqrestore(&trace_buf_lock, flags);
+> > +	__raw_spin_unlock(&trace_buf_lock);
+> > +	local_irq_restore(flags);
+> >  
+> >  out:
+> >  	ftrace_preempt_enable(resched);
+> > 
+> 
