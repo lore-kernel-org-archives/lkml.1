@@ -1,128 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbZCKNlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZCKNli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755501AbZCKNlT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 09:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZCKNlI
+	id S1754930AbZCKNli (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 09:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZCKNl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 09:41:08 -0400
-Received: from leb.cs.unibo.it ([130.136.1.102]:42960 "EHLO leb.cs.unibo.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751395AbZCKNlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 09:41:07 -0400
-Date: Wed, 11 Mar 2009 14:41:03 +0100
-From: Renzo Davoli <renzo@cs.unibo.it>
-To: Am??rico Wang <xiyou.wangcong@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH 1/2] ptrace_vm: ptrace for syscall emulation virtual
-	machines
-Message-ID: <20090311134103.GC12753@cs.unibo.it>
-References: <20090204080248.GB17452@cs.unibo.it> <20090310214450.GD5213@cs.unibo.it>
+	Wed, 11 Mar 2009 09:41:27 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:2198 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754517AbZCKNl0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 09:41:26 -0400
+From: Wolfgang =?iso-8859-15?q?M=FCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: Pierre Ossman <drzeus@drzeus.cx>
+Subject: [PATCH 7/7] mmc_spi: support for non-byte-aligned cards
+Date: Wed, 11 Mar 2009 14:40:56 +0100
+User-Agent: KMail/1.9.10
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090310214450.GD5213@cs.unibo.it>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200903111440.56720.wolfgang.mues@auerswald.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am re-submitting the two patches. Now they should be (more)
-consistent with the Coding Style specifications.
+From: Wolfgang Muees <wolfgang.mues@auerswald.de>
 
-This patch adds the new PTRACE_VM_SKIPCALL and PTRACE_VM_SKIPEXIT
-tags for ptrace's addr parameter.
-In this way it is possible to (eventually) get rid of PTRACE_SYSEMU
-PTRACE_SYSEMU_SINGLESTEP, while providing not only the same features
-but a more general support for Virtual Machines.
-Part#1: tracehook based architecture independent support
+o A very large subset of SD cards in the market send their
+  responses and data non-byte-aligned. So add logic to the
+  mmc spi driver to handle this mess.
 
-renzo
+Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
 
-Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
 ---
-diff -Naur linux-2.6.29-rc7-umluml/include/linux/ptrace.h linux-2.6.29-rc7-vm1/include/linux/ptrace.h
---- linux-2.6.29-rc7-umluml/include/linux/ptrace.h	2009-03-06 20:26:13.000000000 +0100
-+++ linux-2.6.29-rc7-vm1/include/linux/ptrace.h	2009-03-06 20:31:11.000000000 +0100
-@@ -46,6 +46,11 @@
- #define PTRACE_EVENT_VFORK_DONE	5
- #define PTRACE_EVENT_EXIT	6
+This is one of a line of patches to enhance the usability of
+the mmc spi host port driver from "don't work with most SD cards"
+to "work with nearly all SD cards" (including those ugly cards
+with non-byte-aligned responses).
+
+diff -uprN 2_6_29_rc7_patch6_jiffies_and_scheduling/drivers/mmc/host/mmc_spi.c 2_6_29_rc7_patch7_unaligned_responses/drivers/mmc/host/mmc_spi.c
+--- 2_6_29_rc7_patch6_jiffies_and_scheduling/drivers/mmc/host/mmc_spi.c	2009-03-11 13:49:53.000000000 +0100
++++ 2_6_29_rc7_patch7_unaligned_responses/drivers/mmc/host/mmc_spi.c	2009-03-11 13:51:25.000000000 +0100
+@@ -254,6 +254,10 @@ static int mmc_spi_response_get(struct m
+ 	u8	*cp = host->data->status;
+ 	u8	*end = cp + host->t.len;
+ 	int	value = 0;
++	int	bitshift;
++	u8 	leftover = 0;
++	unsigned short rotator;
++	int 	i;
+ 	char	tag[32];
  
-+/* options for new PTRACE_SYSCALL syntax*/
-+#define PTRACE_SYSCALL_SKIPEXIT  0x2
-+#define PTRACE_SYSCALL_SKIPCALL  0x6
-+#define PTRACE_SYSCALL_MASK    0x00000006
-+
- #include <asm/ptrace.h>
+ 	snprintf(tag, sizeof(tag), "  ... CMD%d response SPI_%s",
+@@ -271,9 +275,8 @@ static int mmc_spi_response_get(struct m
  
- #ifdef __KERNEL__
-@@ -68,6 +73,10 @@
- #define PT_TRACE_VFORK_DONE	0x00000100
- #define PT_TRACE_EXIT	0x00000200
+ 	/* Data block reads (R1 response types) may need more data... */
+ 	if (cp == end) {
+-		unsigned	i;
+-
+ 		cp = host->data->status;
++		end = cp+1;
  
-+#define PT_SYSCALL_SKIPEXIT  0x60000000
-+#define PT_SYSCALL_SKIPCALL  0x40000000
-+#define PT_SYSCALL_MASK      0x60000000
-+
- #define PT_TRACE_MASK	0x000003f4
+ 		/* Card sends N(CR) (== 1..8) bytes of all-ones then one
+ 		 * status byte ... and we already scanned 2 bytes.
+@@ -298,20 +301,34 @@ static int mmc_spi_response_get(struct m
+ 	}
  
- /* single stepping state bits (used on ARM and PA-RISC) */
-diff -Naur linux-2.6.29-rc7-umluml/include/linux/tracehook.h linux-2.6.29-rc7-vm1/include/linux/tracehook.h
---- linux-2.6.29-rc7-umluml/include/linux/tracehook.h	2009-03-06 20:26:13.000000000 +0100
-+++ linux-2.6.29-rc7-vm1/include/linux/tracehook.h	2009-03-06 20:31:11.000000000 +0100
-@@ -112,7 +112,7 @@
- 	struct pt_regs *regs)
- {
- 	ptrace_report_syscall(regs);
--	return 0;
-+	return (task_ptrace(current) & PT_SYSCALL_SKIPCALL) ? 1 : 0;
- }
+ checkstatus:
+-	if (*cp & 0x80) {
+-		dev_dbg(&host->spi->dev, "%s: INVALID RESPONSE, %02x\n",
+-					tag, *cp);
+-		value = -EBADR;
+-		goto done;
++	bitshift = 0;
++	if (*cp & 0x80)	{
++		/* Houston, we have an ugly card with a bit-shifted response */
++		rotator = *cp++ << 8;
++		/* read the next byte */
++		if (cp == end) {
++			value = mmc_spi_readbytes(host, 1);
++			if (value < 0)
++				goto done;
++			cp = host->data->status;
++			end = cp+1;
++		}
++		rotator |= *cp++;
++		while (rotator & 0x8000) {
++			bitshift++;
++			rotator <<= 1;
++		}
++		cmd->resp[0] = rotator >> 8;
++		leftover = rotator;
++	} else {
++		cmd->resp[0] = *cp++;
+ 	}
+-
+-	cmd->resp[0] = *cp++;
+ 	cmd->error = 0;
  
- /**
-@@ -134,7 +134,8 @@
-  */
- static inline void tracehook_report_syscall_exit(struct pt_regs *regs, int step)
- {
--	ptrace_report_syscall(regs);
-+	if (!(task_ptrace(current) & PT_SYSCALL_SKIPEXIT))
-+		ptrace_report_syscall(regs);
- }
- 
- /**
-diff -Naur linux-2.6.29-rc7-umluml/kernel/ptrace.c linux-2.6.29-rc7-vm1/kernel/ptrace.c
---- linux-2.6.29-rc7-umluml/kernel/ptrace.c	2009-03-06 20:26:15.000000000 +0100
-+++ linux-2.6.29-rc7-vm1/kernel/ptrace.c	2009-03-06 20:31:11.000000000 +0100
-@@ -396,7 +396,7 @@
- #define is_sysemu_singlestep(request)	0
- #endif
- 
--static int ptrace_resume(struct task_struct *child, long request, long data)
-+static int ptrace_resume(struct task_struct *child, long request, long addr, long data)
- {
- 	if (!valid_signal(data))
- 		return -EIO;
-@@ -425,6 +425,9 @@
- 	else
- 		user_disable_single_step(child);
- 
-+	child->ptrace &= ~PT_SYSCALL_MASK;
-+	child->ptrace |= (addr & PTRACE_SYSCALL_MASK) << 28;
-+
- 	child->exit_code = data;
- 	wake_up_process(child);
- 
-@@ -486,12 +489,12 @@
- #endif
- 	case PTRACE_SYSCALL:
- 	case PTRACE_CONT:
--		return ptrace_resume(child, request, data);
-+		return ptrace_resume(child, request, addr, data);
- 
- 	case PTRACE_KILL:
- 		if (child->exit_state)	/* already dead */
- 			return 0;
--		return ptrace_resume(child, request, SIGKILL);
-+		return ptrace_resume(child, request, addr, SIGKILL);
- 
- 	default:
+ 	/* Status byte: the entire seven-bit R1 response.  */
+ 	if (cmd->resp[0] != 0) {
+ 		if ((R1_SPI_PARAMETER | R1_SPI_ADDRESS
+-					| R1_SPI_ILLEGAL_COMMAND)
++				      | R1_SPI_ILLEGAL_COMMAND)
+ 				& cmd->resp[0])
+ 			value = -EINVAL;
+ 		else if (R1_SPI_COM_CRC & cmd->resp[0])
+@@ -339,12 +356,45 @@ checkstatus:
+ 	 * SPI R5 == R1 + data byte; IO_RW_DIRECT
+ 	 */
+ 	case MMC_RSP_SPI_R2:
+-		cmd->resp[0] |= *cp << 8;
++		/* read the next byte */
++		if (cp == end) {
++			value = mmc_spi_readbytes(host, 1);
++			if (value < 0)
++				goto done;
++			cp = host->data->status;
++			end = cp+1;
++		}
++		if (bitshift) {
++			rotator = leftover << 8;
++			rotator |= *cp << bitshift;
++			cmd->resp[0] |= (rotator & 0xFF00);
++		} else {
++			cmd->resp[0] |= *cp << 8;
++		}
  		break;
+ 
+ 	/* SPI R3, R4, or R7 == R1 + 4 bytes */
+ 	case MMC_RSP_SPI_R3:
+-		cmd->resp[1] = get_unaligned_be32(cp);
++		rotator = leftover << 8;
++		cmd->resp[1] = 0;
++		for (i = 0; i < 4; i++) {
++			cmd->resp[1] <<= 8;
++			/* read the next byte */
++			if (cp == end) {
++				value = mmc_spi_readbytes(host, 1);
++				if (value < 0)
++					goto done;
++				cp = host->data->status;
++				end = cp+1;
++			}
++			if (bitshift) {
++				rotator |= *cp++ << bitshift;
++				cmd->resp[1] |= (rotator >> 8);
++				rotator <<= 8;
++			} else {
++				cmd->resp[1] |= *cp++;
++			}
++		}
+ 		break;
+ 
+ 	/* SPI R1 == just one status byte */
+@@ -720,6 +770,8 @@ mmc_spi_readblock(struct mmc_spi_host *h
+ 	struct spi_device	*spi = host->spi;
+ 	int			status;
+ 	struct scratch		*scratch = host->data;
++	unsigned int 		bitshift;
++	u8			leftover;
+ 
+ 	/* At least one SD card sends an all-zeroes byte when N(CX)
+ 	 * applies, before the all-ones bytes ... just cope with that.
+@@ -731,38 +783,60 @@ mmc_spi_readblock(struct mmc_spi_host *h
+ 	if (status == 0xff || status == 0)
+ 		status = mmc_spi_readtoken(host, timeout);
+ 
+-	if (status == SPI_TOKEN_SINGLE) {
+-		if (host->dma_dev) {
+-			dma_sync_single_for_device(host->dma_dev,
+-					host->data_dma, sizeof(*scratch),
+-					DMA_BIDIRECTIONAL);
+-			dma_sync_single_for_device(host->dma_dev,
+-					t->rx_dma, t->len,
+-					DMA_FROM_DEVICE);
+-		}
++	if (status < 0) {
++		dev_dbg(&spi->dev, "read error %02x (%d)\n", status, status);
++		return status;
++	}
+ 
+-		status = spi_sync(spi, &host->m);
++	/* The token may be bit-shifted...
++	 * the first 0-bit precedes the data stream.
++	 */
++	bitshift = 7;
++	while (status & 0x80) {
++		status <<= 1;
++		bitshift--;
++	}
++	leftover = status << 1;
+ 
+-		if (host->dma_dev) {
+-			dma_sync_single_for_cpu(host->dma_dev,
+-					host->data_dma, sizeof(*scratch),
+-					DMA_BIDIRECTIONAL);
+-			dma_sync_single_for_cpu(host->dma_dev,
+-					t->rx_dma, t->len,
+-					DMA_FROM_DEVICE);
+-		}
++	if (host->dma_dev) {
++		dma_sync_single_for_device(host->dma_dev,
++				host->data_dma, sizeof(*scratch),
++				DMA_BIDIRECTIONAL);
++		dma_sync_single_for_device(host->dma_dev,
++				t->rx_dma, t->len,
++				DMA_FROM_DEVICE);
++	}
+ 
+-	} else {
+-		dev_dbg(&spi->dev, "read error %02x (%d)\n", status, status);
++	status = spi_sync(spi, &host->m);
+ 
+-		/* we've read extra garbage, timed out, etc */
+-		if (status < 0)
+-			return status;
++	if (host->dma_dev) {
++		dma_sync_single_for_cpu(host->dma_dev,
++				host->data_dma, sizeof(*scratch),
++				DMA_BIDIRECTIONAL);
++		dma_sync_single_for_cpu(host->dma_dev,
++				t->rx_dma, t->len,
++				DMA_FROM_DEVICE);
++	}
+ 
+-		/* low four bits are an R2 subset, fifth seems to be
+-		 * vendor specific ... map them all to generic error..
++	if (bitshift) {
++		/* Walk through the data and the crc and do
++		 * all the magic to get byte-aligned data.
+ 		 */
+-		return -EIO;
++		u8 *cp = t->rx_buf;
++		unsigned int len;
++		unsigned int bitright = 8 - bitshift;
++		u8 temp;
++		for (len = t->len; len; len--) {
++			temp = *cp;
++			*cp++ = leftover | (temp >> bitshift);
++			leftover = temp << bitright;
++		}
++		cp = (u8 *) &scratch->crc_val;
++		temp = *cp;
++		*cp++ = leftover | (temp >> bitshift);
++		leftover = temp << bitright;
++		temp = *cp;
++		*cp = leftover | (temp >> bitshift);
+ 	}
+ 
+ 	/* Omitt the CRC check for CID and CSD reads. There are some SDHC
+
+---
+regards
+
+i. A. Wolfgang Mües
+-- 
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
