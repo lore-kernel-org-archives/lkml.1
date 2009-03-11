@@ -1,86 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZCKTCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbZCKTCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691AbZCKTCS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 15:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZCKTCD
+	id S1754498AbZCKTCd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 15:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754550AbZCKTCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 15:02:03 -0400
-Received: from mx3.schottelius.org ([77.109.138.221]:36562 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752202AbZCKTCB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 15:02:01 -0400
-Date: Wed, 11 Mar 2009 20:01:54 +0100
-From: Nico Schottelius <nico-linux-20090311@schottelius.org>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Nico Schottelius <nico-linux-20090311@schottelius.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       ipw3945-devel@lists.sourceforge.net,
-       Linux Next Mailing List <linux-next@vger.kernel.org>
-Subject: Re: X200 suspend status on -wl and -next
-Message-ID: <20090311190154.GA28042@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090311@schottelius.org>,
-	"John W. Linville" <linville@tuxdriver.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	LKML <linux-kernel@vger.kernel.org>,
-	ipw3945-devel@lists.sourceforge.net,
-	Linux Next Mailing List <linux-next@vger.kernel.org>
-References: <20090311073030.GA5284@denkbrett.schottelius.org> <200903110946.23280.rjw@sisk.pl> <20090311085229.GB4495@denkbrett.schottelius.org> <20090311184407.GG8761@tuxdriver.com>
+	Wed, 11 Mar 2009 15:02:20 -0400
+Received: from web50101.mail.re2.yahoo.com ([206.190.38.29]:38034 "HELO
+	web50101.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754423AbZCKTCT convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 15:02:19 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Mar 2009 15:02:18 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=1/r++0yXjSEBOkOETe9mNJ9y5WKXH/Z+g8KFt1XT+U1vJe0XkX+gAzBJEMmd1zApME2+M18OiNNZOUmobzVZBNuSNPU4Xux9nzXWMIReAj1E7GeTsa/LnPJQ+zLlDTQwkUkYPqI56N1llwmyURhEMDM6EDDfJ4hpv9HOXsF66GU=;
+Message-ID: <918342.94228.qm@web50101.mail.re2.yahoo.com>
+X-YMail-OSG: J2e3wkIVM1lDsO5sMhpfXjmhOEzINx.vK_yWVxuS_jfZQmaERA.0GBc4vZJyNsYU3a8VGYI7MglYyqPfxmP26OsMR.ZIXHla8_BYFQgnXMVyg7_5IjlfZ6yDrmNQOa6Z_YbXr2ac9yKDGuxjVuxAwwatcw3f9O1sxMcm2kVbvpT_CqVW6V9InV97COurxQ6khmlco4qrqzSdyVgeGal90qLQ1Qoc
+X-Mailer: YahooMailClassic/5.1.19 YahooMailWebService/0.7.289.4
+Date: Wed, 11 Mar 2009 11:55:36 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: [v1 PATCH 3/8] EDAC: AMD8111 driver source file
+To: Harry Ciao <qingtao.cao@windriver.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
-Content-Disposition: inline
-In-Reply-To: <20090311184407.GG8761@tuxdriver.com>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.29-rc7-next-20090306-ikn x86_64)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--- On Tue, 3/10/09, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-John W. Linville [Wed, Mar 11, 2009 at 02:44:07PM -0400]:
-> > ikn% grep url .git/config=20
-> >   url =3D git://git.kernel.org/pub/scm/linux/kernel/git/iwlwifi/iwlwifi=
--2.6.git
->=20
-> Any chance you'd like to try wireless-testing to help to isolate
-> possible sources of this problem?
->=20
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing.=
-git
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Subject: Re: [v1 PATCH 3/8] EDAC: AMD8111 driver source file
+> To: "Harry Ciao" <qingtao.cao@windriver.com>
+> Cc: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
+> Date: Tuesday, March 10, 2009, 2:46 PM
+> On Mon,  9 Mar 2009 16:08:12
+> +0800
+> Harry Ciao <qingtao.cao@windriver.com>
+> wrote:
 
-Sure, why not. It's just another git-clone & make & wait :-)
+<snip>
 
-Btw, next bug-report in linux-next will come in next minutes (for iwlagn).
+> > +static void edac_pci_write_dword(struct pci_dev *dev,
+> int reg, u32 val32)
+> > +{
+> > +    int ret;
+> > +
+> > +    ret = pci_write_config_dword(dev,
+> reg, val32);
+> > +    if (ret > 0)
+> > +        printk(KERN_ERR
+> AMD8111_EDAC_MOD_STR
+> > +       
+>     " PCI Access Write Error at 0x%x\n",
+> reg);
+> > +}
+> > +
+> > +static void edac_pci_write_byte(struct pci_dev *dev,
+> int reg, u8 val8)
+> > +{
+> > +    int ret;
+> > +
+> > +    ret = pci_write_config_byte(dev,
+> reg, val8);
+> > +    if (ret > 0)
+> > +        printk(KERN_ERR
+> AMD8111_EDAC_MOD_STR
+> > +       
+>     " PCI Access Write Error at 0x%x\n",
+> reg);
+> > +}
+> 
+> 
+> <spends a while trying to work out what the return value
+> of
+> pci_read_config_dword() means>
+> 
+> <gets frustrated and gives up>
+> 
+> Is it correct that all of these functions treat a +ve
+> return value as
+> an error?
 
-Sincerly,
+Yes, the config APIs do return an error code on an operation error. I found that before and during the transition to the AMD IOCF8 IO-Space config transition - the 12 bits of config space vs the 8 bits of config space and where AMD started using the PCI reserved bits to access the their extended config space.
 
-Nico
+The yet to be pushed upstream AMD64 EDAC driver required the extended config space access for the Family 10h CPUs
 
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
+Now, I bracketed such error processing with #DEFINE DEBUG printouts to provide some type of signal during development of an error. This is not in the kernel yet.
 
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+I suppose these lines here are similar to provide some useless notice of an error
 
---azLHFNyN32YCQGCU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+doug t
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkm4CqIACgkQuL75KpiFGIzrugCg4arBbmPBDMAEKMmv2sf/4Z87
-CnsAoJZaKPO0pwXIejV6ci0++sZh+cT2
-=c/7g
------END PGP SIGNATURE-----
-
---azLHFNyN32YCQGCU--
