@@ -1,73 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751995AbZCKQCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZCKQDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751995AbZCKQCp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbZCKQCg
+	id S1752638AbZCKQDz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbZCKQDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:02:36 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:19672 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750941AbZCKQCf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:02:35 -0400
-Message-ID: <49B7E01C.9010403@caviumnetworks.com>
-Date: Wed, 11 Mar 2009 09:00:28 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 11 Mar 2009 12:03:46 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:62087 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750769AbZCKQDp convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 12:03:45 -0400
+From: Frans Pop <elendil@planet.nl>
+To: john stultz <johnstul@us.ibm.com>
+Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
+Date: Wed, 11 Mar 2009 17:03:39 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200903080230.10099.elendil@planet.nl> <200903091604.56455.elendil@planet.nl> <1236733226.6080.28.camel@localhost>
+In-Reply-To: <1236733226.6080.28.camel@localhost>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [patch 07/18] mips: convert obsolete irq_desc_t to struct irq_desc
-References: <20090311003204.592133594@linutronix.de> <20090311003236.133903965@linutronix.de>
-In-Reply-To: <20090311003236.133903965@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Mar 2009 16:00:28.0562 (UTC) FILETIME=[7F74B720:01C9A262]
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200903111703.41663.elendil@planet.nl>
+X-OriginalArrivalTime: 11 Mar 2009 16:03:42.0859 (UTC) FILETIME=[F34415B0:01C9A262]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> Impact: cleanup
-> 
-> Convert the last remaining users to struct irq_desc.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> CC: Ralf Baechle <ralf@linux-mips.org>
+OK, I think I've gotten a lot further now.
 
-Signed-off-by: David Daney <ddaney@caviumnetworks.com>
+On Wednesday 11 March 2009, john stultz wrote:
+> Also the negative conditional you add doesn't really make sense either,
+> as we expect the xtime.tv_nsec << clock->shift to be larger then
+> clock->xtime_nsec, as we've rounded it up by one. We then accumulate
+> the negative difference between them into clock->error.
 
-My boards still boot with this patch.
+I'm not at all fluent in casts, bit shifting and stuff, so it took a
+while for the quarter to drop. But AFAICT what you're saying here is
+exactly the problem.
 
-Thanks,
-David Daney
+Indeed you do round xtime.tv_nsec up, so when you do
+   clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+or
+   clock->xtime_nsec = clock->xtime_nsec - ((s64)xtime.tv_nsec << clock->shift);
+the second argument is always going to be bigger than the first, so you
+always end up with a negative value.
 
-> 
-> ---
->  arch/mips/cavium-octeon/octeon-irq.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/arch/mips/cavium-octeon/octeon-irq.c
-> ===================================================================
-> --- linux-2.6.orig/arch/mips/cavium-octeon/octeon-irq.c
-> +++ linux-2.6/arch/mips/cavium-octeon/octeon-irq.c
-> @@ -31,7 +31,7 @@ static void octeon_irq_core_ack(unsigned
->  
->  static void octeon_irq_core_eoi(unsigned int irq)
->  {
-> -	irq_desc_t *desc = irq_desc + irq;
-> +	struct irq_desc *desc = irq_desc + irq;
->  	unsigned int bit = irq - OCTEON_IRQ_SW0;
->  	/*
->  	 * If an IRQ is being processed while we are disabling it the
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> Hmm.. Does the following explicit casting help?
 
+Even with the cast you're just papering over the issue that we're moving a
+negative value into a field that is defined as unsigned:
+include/linux/clocksource.h:    u64 xtime_nsec;
+
+Why does clock->xtime_nsec get set to the _difference_ (-=) at all? It
+almost seems to me as if that field is getting abused as a temporary
+variable. We're also not doing as the comment says:
+        /* store full nanoseconds into xtime after rounding it up and
+         * add the remainder to the error difference.
+What we are actually doing is storing the _remainder_ in xtime.
+
+The patch included below gives me saner values, but still leaves a
+problem with the calculation of clock->error. Here are the first
+wall_update calls after a reboot. This is with the patch and some
+debugging code, but *without* actually changing clock->error.
+
+With that the system boots correctly!
+
+0: scale/shift: 32/8, xtime_ns old: 155790080000, new: 155790080256
+    tv_ns: 608555001, rem: -256, old_err: 0, error: -4294867296
+1: scale/shift: 32/8, xtime_ns old: 155790080256, new: 155790080512
+    tv_ns: 608555002, rem: -256, old_err: 0, error: -4294867296
+2: scale/shift: 32/8, xtime_ns old: 155790080512, new: 155790080768
+    tv_ns: 608555003, rem: -256, old_err: 0, error: -4294867296
+3: scale/shift: 32/8, xtime_ns old: 155790080768, new: 155790081024
+    tv_ns: 608555004, rem: -256, old_err: 0, error: -4294867296
+4: scale/shift: 32/8, xtime_ns old: 155790081024, new: 155790081280
+    tv_ns: 608555005, rem: -256, old_err: 0, error: -4294867296
+5: scale/shift: 32/8, xtime_ns old: 155790081280, new: 155790081536
+    tv_ns: 608555006, rem: -256, old_err: 0, error: -4294867296
+
+First observation is that clock->shift is not 12, but 8! This explains
+the "strange" values we got for xtime.tv_nsec. But I agree with you that
+from the code in arch/s390/time.c it looks like the value should be 12
+for the tod clocksource. No idea what mangles it. It also means that
+clock->error gets shifted by 24 (!) as NTP_SCALE_SHIFT is 32.
+
+Second observation is that clock->error (old_err) remains at 0. So
+apparently it's not getting set anywhere else if we don't set it here
+first. The calculated new error is correct given the shift.
+
+So, lets look next what happens if I allow clock->error to be changed
+here. This makes the boot fail and I believe that this is the critical
+change in 5cd1c9c5cf30.
+
+0: scale/shift: 32/8, xtime_ns old: 496319488000, new: 496319488256
+    tv_ns: 1938748001, rem: -256, old_err: 0, error: -4294867296
+1: scale/shift: 32/8, xtime_ns old: 496315293952, new: 496315294208
+    tv_ns: 1938731618, rem: -256, old_err: -4292487689804800, error: -4292501984672096
+2: scale/shift: 32/8, xtime_ns old: 496302611296, new: 496302611552
+    tv_ns: 1938682467, rem: -256, old_err: -12807120030269440, error: -12807124325236736
+3: scale/shift: 32/8, xtime_ns old: 496298417248, new: 496298417504
+    tv_ns: 1938666084, rem: -256, old_err: -14918186650466656, error: -14918180945433952
+4: scale/shift: 32/8, xtime_ns old: 496295896064, new: 496295896320
+    tv_ns: 1938655845, rem: -256, old_err: -15964926015076704, error: -15964920310044000
+5: scale/shift: 32/8, xtime_ns old: 496294223456, new: 496294223712
+    tv_ns: 1938649702, rem: -256, old_err: -16483889798454272, error: -16483904093421568
+
+Note that clock->xtime_nsec is now running backwards and the crazy values
+for clock->error.
+
+>From this I conclude that clock->error is getting buggered somewhere
+else: we get a completely different value back from what is calculated
+here. The calculation here is still correct:
+$ echo $(( -4292487689804800 + (-256 << 24) ))
+-4292491984772096
+
+I suspect that clock->error running back is what causes my hang.
+
+I hope that I'm at least somewhat on the right track here?
+I keep wondering why I'm the only one seeing problems...
+
+Cheers,
+FJP
+
+---
+Partial fix. This makes clock->xtime_nsec have sane values and gives
+correct remainders.
+
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 900f1b6..fb048cc 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -480,6 +480,7 @@ static void clocksource_adjust(s64 offset)
+ void update_wall_time(void)
+ {
+ 	cycle_t offset;
++	s64 remainder;
+ 
+ 	/* Make sure we're fully resumed: */
+ 	if (unlikely(timekeeping_suspended))
+@@ -547,8 +548,9 @@ void update_wall_time(void)
+ 	 * add the remainder to the error difference.
+ 	 */
+ 	xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
+-	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+-	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
++	remainder = clock->xtime_nsec - ((s64)xtime.tv_nsec << clock->shift);
++	clock->xtime_nsec = (s64)xtime.tv_nsec << clock->shift;
++	clock->error += remainder << (NTP_SCALE_SHIFT - clock->shift);
+ 
+ 	update_xtime_cache(cyc2ns(clock, offset));
+ 
