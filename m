@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZCKBPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbZCKBSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162AbZCKBPw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 21:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbZCKBPn
+	id S1754934AbZCKBSU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 21:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZCKBSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 21:15:43 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:61710 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752140AbZCKBPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 21:15:42 -0400
-Message-ID: <49B710C4.8040401@cn.fujitsu.com>
-Date: Wed, 11 Mar 2009 09:15:48 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 10 Mar 2009 21:18:09 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54127 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752363AbZCKBSI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 21:18:08 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH] proc: fix kflags to uflags copying in /proc/kpageflags
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20090311010004.GA8237@localhost>
+References: <20090311010004.GA8237@localhost>
+Message-Id: <20090311101612.A7FD.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: bharata@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC PATCH] cpuacct: per-cgroup utime/stime statistics - v1
-References: <20090310124208.GC3902@in.ibm.com>
-In-Reply-To: <20090310124208.GC3902@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Wed, 11 Mar 2009 10:17:58 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static const struct cpuacct_stat_desc {
-> +	const char *msg;
-> +	u64 unit;
-> +} cpuacct_stat_desc[] = {
-> +	[CPUACCT_STAT_UTIME] = { "utime", 1, },
-> +	[CPUACCT_STAT_STIME] = { "stime", 1, },
-> +};
-> +
+> Fix kpf_copy_bit(src,dst) to be kpf_copy_bit(dst,src) to match the
+> actual call patterns, e.g. kpf_copy_bit(kflags, KPF_LOCKED, PG_locked).
+> 
+> This misplacement of src/dst only affected reporting of PG_writeback,
+> PG_reclaim and PG_buddy. For others kflags==uflags so not affected.
+> 
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+> 
+> This is a tested and trivial no-side-effect fix.
+> I'd suggest it for 2.6.29-rc7 and 2.6.28.X kernels.
+> 
+> diff --git a/fs/proc/page.c b/fs/proc/page.c
+> index 2d13451..e998383 100644
+> --- a/fs/proc/page.c
+> +++ b/fs/proc/page.c
+> @@ -80,7 +80,7 @@ static const struct file_operations proc_kpagecount_operations = {
+>  #define KPF_RECLAIM    9
+>  #define KPF_BUDDY     10
+>  
+> -#define kpf_copy_bit(flags, srcpos, dstpos) (((flags >> srcpos) & 1) << dstpos)
+> +#define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
 
-I think we can just remove 'unit'.
+Good catch! :)
+	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-> +static int cpuacct_stats_show(struct cgroup *cgrp, struct cftype *cft,
-> +		struct cgroup_map_cb *cb)
-> +{
-> +	struct cpuacct *ca = cgroup_ca(cgrp);
-> +	int i;
-> +
-> +	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
-> +		s64 val = percpu_counter_read(&ca->cpustat[i]);
-> +		val *= cpuacct_stat_desc[i].unit;
-> +		cb->fill(cb, cpuacct_stat_desc[i].msg, val);
-> +	}
-> +	return 0;
-> +}
-> +
-...
-> +/*
-> + * Account the system/user time to the task's accounting group.
-> + */
-> +static void cpuacct_update_stats(struct task_struct *tsk,
-> +		enum cpuacct_stat_index idx, int val)
-> +{
-> +	struct cpuacct *ca;
-> +
-> +	if (!cpuacct_subsys.active)
 
-if (unlikely(!cpuacct_subsys.active)))
+but don't worry. the number of this interface user is very few.
 
-> +		return;
-> +
-> +	ca = task_ca(tsk);
-> +
-> +	for (; ca; ca = ca->parent)
-> +		percpu_counter_add(&ca->cpustat[idx], val);
-> +}
-> +
 
-We can reduce one NULL check:
-
-do (
-	percpu_counter_add();
-	ca = ca->parent;
-} while (ca);
 
