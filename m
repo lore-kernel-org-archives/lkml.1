@@ -1,61 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbZCKTVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbZCKTWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755498AbZCKTVV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 15:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZCKTVL
+	id S1755376AbZCKTWU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 15:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZCKTWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 15:21:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36936 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754008AbZCKTVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 15:21:10 -0400
-Message-ID: <49B80E9D.3@sandeen.net>
-Date: Wed, 11 Mar 2009 14:18:53 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-CC: linux-kernel@vger.kernel.org, davem@davemloft.net, tony.luck@intel.com,
-       ralf@linux-mips.org, kyle@mcmartin.ca, schwidefsky@de.ibm.com
-Subject: Re: [PATCH] generic compat_sys_ustat
-References: <20081121084105.GA7155@lst.de> <20081128090909.GA28299@lst.de>
-In-Reply-To: <20081128090909.GA28299@lst.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Mar 2009 15:22:08 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:57133 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751995AbZCKTWH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 15:22:07 -0400
+Date: Wed, 11 Mar 2009 20:24:02 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Kyle McMartin <kyle@infradead.org>,
+       Gilles Espinasse <g.esp@free.fr>, Josh Hunt <josh@scalex86.org>,
+       "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: [GIT] kbuild
+Message-ID: <20090311192402.GA3148@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> Due to a different size of ino_t ustat needs a compat handler, but
-> currently only x86 and mips provide one.  Add a generic compat_sys_ustat
-> and switch all architectures over to it.  Instead of doing various
-> user copy hacks compat_sys_ustat just reimplements sys_ustat as
-> it's trivial.  This was suggested by Arnd Bergmann.
-> 
-> Found by Eric Sandeen when running xfstests/017 on ppc64, which causes
-> stack smashing warnings on RHEL/Fedora due to the too large amount of
-> data writen by the syscall.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Hi Linus.
 
-Looks like this got lost?
+A few late kbuild related fixes.
 
--Eric
+1) Fix unidef to build on latest RAWHIDE. They have doen some changes that
+   casued unifdef to fail.
 
-> 
-> Index: linux-2.6/arch/x86/ia32/ia32entry.S
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/ia32/ia32entry.S	2008-11-28 14:09:01.000000000 +0530
-> +++ linux-2.6/arch/x86/ia32/ia32entry.S	2008-11-28 14:09:16.000000000 +0530
-> @@ -555,7 +555,7 @@ ia32_sys_call_table:
->  	.quad sys32_olduname
->  	.quad sys_umask		/* 60 */
->  	.quad sys_chroot
-> -	.quad sys32_ustat
-> +	.quad compat_sys_ustat
->  	.quad sys_dup2
->  	.quad sys_getppid
->  	.quad sys_getpgrp		/* 65 */
+2) Remove unused option to depmod. This is not fixing a real bug but
+   gives us better busybox compatibility.
 
-....
+3) Two fixes for make rpm - it should be working again after long time
+   suffering.
+
+Please pull,
+
+	Thanks - Sam
+
+
+The following changes since commit 559595a985e106d2fa9f0c79b7f5805453fed593:
+  Linus Torvalds (1):
+        Merge branch 'merge' of git://git.kernel.org/.../benh/powerpc
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
+
+Gilles Espinasse (1):
+      kbuild: remove unused -r option for module-init-tool depmod
+
+Josh Hunt (2):
+      kbuild: fix mkspec to cleanup RPM_BUILD_ROOT
+      kbuild: fix 'make rpm' when CONFIG_LOCALVERSION_AUTO=y and using SCM tree
+
+Justin P. Mattock (1):
+      kbuild: fix C libary confusion in unifdef.c due to getline()
+
+ Makefile                 |   18 ++++++++++++------
+ scripts/package/Makefile |    3 ++-
+ scripts/package/mkspec   |    2 +-
+ scripts/unifdef.c        |    6 +++---
+ 4 files changed, 18 insertions(+), 11 deletions(-)
+
+Full diff for reference.
+
+diff --git a/Makefile b/Makefile
+index d04ee0a..5a5b82e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -904,12 +904,18 @@ localver = $(subst $(space),, $(string) \
+ # and if the SCM is know a tag from the SCM is appended.
+ # The appended tag is determined by the SCM used.
+ #
+-# Currently, only git is supported.
+-# Other SCMs can edit scripts/setlocalversion and add the appropriate
+-# checks as needed.
++# .scmversion is used when generating rpm packages so we do not loose
++# the version information from the SCM when we do the build of the kernel
++# from the copied source
+ ifdef CONFIG_LOCALVERSION_AUTO
+-	_localver-auto = $(shell $(CONFIG_SHELL) \
+-	                  $(srctree)/scripts/setlocalversion $(srctree))
++
++ifeq ($(wildcard .scmversion),)
++        _localver-auto = $(shell $(CONFIG_SHELL) \
++                         $(srctree)/scripts/setlocalversion $(srctree))
++else
++        _localver-auto = $(shell cat .scmversion 2> /dev/null)
++endif
++
+ 	localver-auto  = $(LOCALVERSION)$(_localver-auto)
+ endif
+ 
+@@ -1537,7 +1543,7 @@ quiet_cmd_depmod = DEPMOD  $(KERNELRELEASE)
+       cmd_depmod = \
+ 	if [ -r System.map -a -x $(DEPMOD) ]; then                              \
+ 		$(DEPMOD) -ae -F System.map                                     \
+-		$(if $(strip $(INSTALL_MOD_PATH)), -b $(INSTALL_MOD_PATH) -r)   \
++		$(if $(strip $(INSTALL_MOD_PATH)), -b $(INSTALL_MOD_PATH) )     \
+ 		$(KERNELRELEASE);                                               \
+ 	fi
+ 
+diff --git a/scripts/package/Makefile b/scripts/package/Makefile
+index 8c6b7b0..fa4a0a1 100644
+--- a/scripts/package/Makefile
++++ b/scripts/package/Makefile
+@@ -35,9 +35,10 @@ $(objtree)/kernel.spec: $(MKSPEC) $(srctree)/Makefile
+ rpm-pkg rpm: $(objtree)/kernel.spec FORCE
+ 	$(MAKE) clean
+ 	$(PREV) ln -sf $(srctree) $(KERNELPATH)
++	$(CONFIG_SHELL) $(srctree)/scripts/setlocalversion > $(objtree)/.scmversion
+ 	$(PREV) tar -cz $(RCS_TAR_IGNORE) -f $(KERNELPATH).tar.gz $(KERNELPATH)/.
+ 	$(PREV) rm $(KERNELPATH)
+-
++	rm -f $(objtree)/.scmversion
+ 	set -e; \
+ 	$(CONFIG_SHELL) $(srctree)/scripts/mkversion > $(objtree)/.tmp_version
+ 	set -e; \
+diff --git a/scripts/package/mkspec b/scripts/package/mkspec
+index ee448cd..3d93f8c 100755
+--- a/scripts/package/mkspec
++++ b/scripts/package/mkspec
+@@ -96,7 +96,7 @@ echo "%endif"
+ 
+ echo ""
+ echo "%clean"
+-echo '#echo -rf $RPM_BUILD_ROOT'
++echo 'rm -rf $RPM_BUILD_ROOT'
+ echo ""
+ echo "%files"
+ echo '%defattr (-, root, root)'
+diff --git a/scripts/unifdef.c b/scripts/unifdef.c
+index 552025e..05a31a6 100644
+--- a/scripts/unifdef.c
++++ b/scripts/unifdef.c
+@@ -206,7 +206,7 @@ static void             done(void);
+ static void             error(const char *);
+ static int              findsym(const char *);
+ static void             flushline(bool);
+-static Linetype         getline(void);
++static Linetype         get_line(void);
+ static Linetype         ifeval(const char **);
+ static void             ignoreoff(void);
+ static void             ignoreon(void);
+@@ -512,7 +512,7 @@ process(void)
+ 
+ 	for (;;) {
+ 		linenum++;
+-		lineval = getline();
++		lineval = get_line();
+ 		trans_table[ifstate[depth]][lineval]();
+ 		debug("process %s -> %s depth %d",
+ 		    linetype_name[lineval],
+@@ -526,7 +526,7 @@ process(void)
+  * help from skipcomment().
+  */
+ static Linetype
+-getline(void)
++get_line(void)
+ {
+ 	const char *cp;
+ 	int cursym;
