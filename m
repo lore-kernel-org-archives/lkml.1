@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbZCKPcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbZCKPez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754278AbZCKPcy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 11:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbZCKPcp
+	id S1754316AbZCKPez (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 11:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZCKPeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 11:32:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34006 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753631AbZCKPco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 11:32:44 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may get
-	wrongly discarded
-To: torvalds@osdl.org, akpm@linux-foundation.org, peterz@infradead.org
-Cc: Enrik.Berkhan@ge.com, dhowells@redhat.com, uclinux-dev@uclinux.org,
-       linux-kernel@vger.kernel.org
-Date: Wed, 11 Mar 2009 15:30:35 +0000
-Message-ID: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Wed, 11 Mar 2009 11:34:46 -0400
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:44144 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752415AbZCKPep (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 11:34:45 -0400
+Date: Wed, 11 Mar 2009 21:04:34 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC PATCH] cpuacct: per-cgroup utime/stime statistics - v1
+Message-ID: <20090311153434.GB16769@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090310124208.GC3902@in.ibm.com> <20090311093812.298a0b21.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090311093812.298a0b21.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Enrik Berkhan <Enrik.Berkhan@ge.com>
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-11 09:38:12]:
 
-The pages attached to a ramfs inode's pagecache by truncation from nothing - as
-done by SYSV SHM for example - may get discarded under memory pressure.
+> On Tue, 10 Mar 2009 18:12:08 +0530
+> Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+> 
+> > Hi,
+> > 
+> > Based on the comments received during my last post
+> > (http://lkml.org/lkml/2009/2/25/129), here is a fresh attempt
+> > to get per-cgroup utime/stime statistics as part of cpuacct controller.
+> > 
+> > This patch adds a new file cpuacct.stat which displays two stats:
+> > utime and stime. I wasn't too sure about the usefulness of providing
+> > per-cgroup guest and steal times and hence not including them here.
+> > 
+> > Note that I am using percpu_counter for collecting these two stats.
+> > Since percpu_counter subsystem doesn't protect the readside, readers could
+> > theoritically obtain incorrect values for these stats on 32bit systems.
+> 
+> Using percpu_counter_read() means that .. but is it okay to ignore "batch"
+> number ? (see FBC_BATCH)
+>
 
-The problem is that the pages are not marked dirty.  Anything that creates data
-in an MMU-based ramfs will cause the pages holding that data will cause the
-set_page_dirty() aop to be called.
-
-For the NOMMU-based mmap, set_page_dirty() may be called by write(), but it
-won't be called by page-writing faults on writable mmaps, and it isn't called
-by ramfs_nommu_expand_for_mapping() when a file is being truncated from nothing
-to allocate a contiguous run.
-
-The solution is to mark the pages dirty at the point of allocation by
-the truncation code.
-
-Signed-off-by: Enrik Berkhan <Enrik.Berkhan@ge.com>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- fs/ramfs/file-nommu.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-
-diff --git a/fs/ramfs/file-nommu.c b/fs/ramfs/file-nommu.c
-index b9b567a..90d72be 100644
---- a/fs/ramfs/file-nommu.c
-+++ b/fs/ramfs/file-nommu.c
-@@ -114,6 +114,9 @@ int ramfs_nommu_expand_for_mapping(struct inode *inode, size_t newsize)
- 		if (!pagevec_add(&lru_pvec, page))
- 			__pagevec_lru_add_file(&lru_pvec);
+FBC_BATCH? Thats gone..no? We have dynamic batches now, IIRC. Could
+you please elaborate on your comment?
  
-+		/* prevent the page from being discarded on memory pressure */
-+		SetPageDirty(page);
-+
- 		unlock_page(page);
- 	}
- 
+> 
+> > I hope occasional wrong values is not too much of a concern for
+> > statistics like this. If it is a problem, we have to either fix
+> > percpu_counter or do it all by ourselves as Kamezawa attempted
+> > for cpuacct.usage (http://lkml.org/lkml/2009/3/4/14)
+> > 
+> Hmm, percpu_counter_sum() is bad ?
+> 
 
+Yes, but we need to sum somewhere..  user space summing will not be
+atomic, we'll get several snapshots of per CPU data and summing it
+might not yield the correct answers.
+
+> BTW, I'm not sure but don't we need special handling if
+> CONFIG_VIRT_CPU_ACCOUNTING=y ?
+
+Good point. Bharata, with CONFIG_VIRT_CPU_ACCOUNTING, utime and stime
+is accounted for within the architecture.
+
+-- 
+	Balbir
