@@ -1,97 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbZCKUH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZCKUOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755157AbZCKUH6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 16:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbZCKUHg
+	id S1754192AbZCKUOL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 16:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbZCKUN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 16:07:36 -0400
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:39296 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751688AbZCKUHf (ORCPT
+	Wed, 11 Mar 2009 16:13:56 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:50838 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751920AbZCKUNz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 16:07:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4hN5+/IdhB46nCG4riN5pMrlwcv6bTo/l35ozt/hhAEpAKmhtLTqjgoL6Z8ny77zZb0wslKzPmY6X+dLwkSbh6Sc33dKuXoXzCwjvgwQRiifdY6UnlCUKDDVwVam28ypQI19f8cvbRA0C/hduizmwe76+oNZz4OJyTLVU/Z+V/w=  ;
-X-YMail-OSG: ogulb4IVM1lhITFKDsnNuYoZQ.L5FuNOLHZVbLbWFiI76yDYZY8OoAvJf3_PFsuwCbty7NMgH8awcxb4UDREHVIHprLiC4c7ZUa7vM3bkeakrr1594cFaLsq1IQpPrbIFH4uOGMfVKMneR0tyUtvnVLOR8DE2gmDbNooVzaSC4nR_A0R0QTcCzpQuwdA19EJNw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Subject: Re: [PATCH 4/7] mmc_spi: do not check CID and CSD blocks with CRC16
-Date: Wed, 11 Mar 2009 12:07:30 -0800
-User-Agent: KMail/1.9.10
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-References: <200903111425.48656.wolfgang.mues@auerswald.de>
-In-Reply-To: <200903111425.48656.wolfgang.mues@auerswald.de>
+	Wed, 11 Mar 2009 16:13:55 -0400
+Date: Wed, 11 Mar 2009 14:13:38 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] PCI fixes for 2.6.29
+Message-ID: <20090311201337.GI25995@parisc-linux.org>
+References: <20090311043659.GC25995@parisc-linux.org> <alpine.LFD.2.00.0903111220200.32478@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903111307.31199.david-b@pacbell.net>
+In-Reply-To: <alpine.LFD.2.00.0903111220200.32478@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 March 2009, Wolfgang Mües wrote:
-> From: Wolfgang Muees <wolfgang.mues@auerswald.de>
+On Wed, Mar 11, 2009 at 12:22:56PM -0700, Linus Torvalds wrote:
+> On Tue, 10 Mar 2009, Matthew Wilcox wrote:
+> > These are the PCI fixes that have been piling up for the last week while
+> > Jesse's been on vacation.  I don't think there's anything questionable
+> > here.  All the patches have been posted to linux-pci.
 > 
-> o Some cards are not able to calculate a valid CRC16 value
->   for CID and CSD reads (CRC for 512 byte data blocks is OK).
->   So ommit the check for CRC16, as CID and CSD have a checksum
->   inside the block.
+> Grrr. It doesn't even compile cleanly:
 > 
-> Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
+> drivers/pci/quirks.c: In function ?ht_check_msi_mapping?:
+> drivers/pci/quirks.c:2142: warning: ?return? with no value, in function returning non-void
+> 
+> and yes, it's a real bug.
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+Agreed, it's a real bug.  I also think it should return 0, but I want
+Prakash to verify that, since I don't have a system of this nature.
 
-> 
-> ---
-> This is one of a line of patches to enhance the usability of
-> the mmc spi host port driver from "don't work with most SD cards"
-> to "work with nearly all SD cards" (including those ugly cards
-> with non-byte-aligned responses).
-> 
-> diff -uprN 2_6_29_rc7_patch3_delayed_data_response/drivers/mmc/host/mmc_spi.c 2_6_29_rc7_patch4_no_crc_on_CID_CSD/drivers/mmc/host/mmc_spi.c
-> --- 2_6_29_rc7_patch3_delayed_data_response/drivers/mmc/host/mmc_spi.c	2009-03-11 13:42:48.000000000 +0100
-> +++ 2_6_29_rc7_patch4_no_crc_on_CID_CSD/drivers/mmc/host/mmc_spi.c	2009-03-11 13:43:13.000000000 +0100
-> @@ -762,7 +762,11 @@ mmc_spi_readblock(struct mmc_spi_host *h
->  		return -EIO;
->  	}
->  
-> -	if (host->mmc->use_spi_crc) {
-> +	/* Omitt the CRC check for CID and CSD reads. There are some SDHC
-> +	 * cards which don't supply a valid CRC after CID reads.
-> +	 * Note that the CID has it's own CRC7 value inside the data block.
-> +	 */
-> +	if (host->mmc->use_spi_crc && (t->len == MMC_SPI_BLOCKSIZE)) {
->  		u16 crc = crc_itu_t(0, t->rx_buf, t->len);
->  
->  		be16_to_cpus(&scratch->crc_val);
-> 
-> ---
-> regards
-> 
-> i. A. Wolfgang Mües
-> -- 
-> Auerswald GmbH & Co. KG
-> Hardware Development
-> Telefon: +49 (0)5306 9219 0
-> Telefax: +49 (0)5306 9219 94 
-> E-Mail: Wolfgang.Mues@Auerswald.de
-> Web: http://www.auerswald.de
->  
-> --------------------------------------------------------------
-> Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
-> Registriert beim AG Braunschweig HRA 13289
-> p.h.G Auerswald Geschäftsführungsges. mbH
-> Registriert beim AG Braunschweig HRB 7463
-> Geschäftsführer: Dipl-Ing. Gerhard Auerswald
-> 
-> 
+I wish this warning were an error.  According to the GCC docs,
+-Werror=return-type should do this, but it seems to have no effect.
 
+> I'm not happy.
 
+Me neither.  I'm sorry I didn't catch the warning.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
