@@ -1,62 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbZCKOCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZCKOFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756185AbZCKOCf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 10:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbZCKOCZ
+	id S1755568AbZCKOFR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 10:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZCKOFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 10:02:25 -0400
-Received: from cs20.apochromatic.org ([204.152.189.161]:58806 "EHLO
-	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754046AbZCKOCY (ORCPT
+	Wed, 11 Mar 2009 10:05:04 -0400
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:60874 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752344AbZCKOFA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 10:02:24 -0400
-Date: Wed, 11 Mar 2009 14:02:19 +0000
-From: Matt Fleming <matt@console-pimps.org>
-To: Wolfgang =?iso-8859-1?Q?M=FCes?= <wolfgang.mues@auerswald.de>
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/7] mmc_spi: allow higher timeouts for SPI mode
-Message-ID: <20090311140219.GA1475@console-pimps.org>
-References: <200903111428.39831.wolfgang.mues@auerswald.de>
+	Wed, 11 Mar 2009 10:05:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YOQMdzTTnJ646DuGNZequUN/s6fgpd3NudWGtDWo4BsVXe/Mq/mbc6hsDfpGShM4bo
+         vmXwPDh+/eIR10LsLKl/+NdvP9bRdgTYJbVpmDR9Vr7aSXFgZFQqZZN3VpftRfgpqEi4
+         IkVtoH57Vey/ogbC/kchGlS0KFJiwgzlKVga4=
+Date: Wed, 11 Mar 2009 15:04:54 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] tracing: use raw spinlocks for trace_vprintk
+Message-ID: <20090311140453.GA5120@nowhere>
+References: <alpine.DEB.2.00.0903102125250.16494@gandalf.stny.rr.com> <1236754764.22914.3680.camel@twins> <20090311071808.GA5090@nowhere> <alpine.DEB.2.00.0903110958000.16494@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200903111428.39831.wolfgang.mues@auerswald.de>
+In-Reply-To: <alpine.DEB.2.00.0903110958000.16494@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 02:28:39PM +0100, Wolfgang Mües wrote:
-> From: Wolfgang Muees <wolfgang.mues@auerswald.de>
+On Wed, Mar 11, 2009 at 10:00:51AM -0400, Steven Rostedt wrote:
 > 
-> o Some SD cards have very high timeouts in SPI mode.
->   So adjust the timeouts from theory to practice.
+> On Wed, 11 Mar 2009, Frederic Weisbecker wrote:
 > 
+> > On Wed, Mar 11, 2009 at 07:59:24AM +0100, Peter Zijlstra wrote:
+> > > On Tue, 2009-03-10 at 21:26 -0400, Steven Rostedt wrote:
+> > > 
+> > > > commit 80370cb758e7ca2692cd9fb5e413d970b1f4b2b2
+> > > > Author: Steven Rostedt <srostedt@redhat.com>
+> > > > Date:   Tue Mar 10 17:16:35 2009 -0400
+> > > > 
+> > > >     tracing: use raw spinlocks for trace_vprintk
+> > > >     
+> > > >     Impact: prevent locking up by lockdep tracer
+> > > >     
+> > > >     The lockdep tracer uses trace_vprintk and thus trace_vprintk can not
+> > > >     call back into lockdep without locking up.
+> > > 
+> > > Hmm, I did this when I posted the lockdep tracepoints, so someone then
+> > > did a bad copy/paste job when renaming ftrace_printk or something?
+> > > 
+> > > See efed792d6738964f399a508ef9e831cd60fa4657
+> > 
+> > 
+> > 
+> > Must be my bad :-s
+> > I think I lost this modification that was done on the old trace_vprintf
+> > between two iterations of the bprintk patchset.
+> > 
+> > BTW, Ingo reported one or two monthes ago that ftrace_printk was not NMI safe
+> > because of this spinlock.
+> > 
+> > He suggested to drop the spinlock and then make trace_buf per_cpu.
+> > 
+> > By disabling the irq we prevent from race with maskable irqs. And in
+> > case of racy accesses to trace_buf because of an nmi, then the buffer
+> > might be mixed up but it must be harmless compared to a hardlockup that
+> > can occur now. On the worst case, the trace will be weird and that's it.
+> 
+> But the lock is only used in this function, and the function can not 
+> recurse. It is NMI safe. see below.
+> 
+> > 
+> > Frederic.
+> > 
+> > 
+> > > >     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> > > > 
+> > > > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> > > > index 8c6a902..4c97947 100644
+> > > > --- a/kernel/trace/trace.c
+> > > > +++ b/kernel/trace/trace.c
+> > > > @@ -1176,7 +1176,8 @@ void trace_graph_return(struct ftrace_graph_ret *trace)
+> > > >   */
+> > > >  int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+> > > >  {
+> > > > -	static DEFINE_SPINLOCK(trace_buf_lock);
+> > > > +	static raw_spinlock_t trace_buf_lock =
+> > > > +		(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
+> > > >  	static u32 trace_buf[TRACE_BUF_SIZE];
+> > > >  
+> > > >  	struct ring_buffer_event *event;
+> > > > @@ -1201,7 +1202,9 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+> > > >  	if (unlikely(atomic_read(&data->disabled)))
+> > > >  		goto out;
+> 
+> The above disable is exactly for NMIs. We should have preemption disabled 
+> here, and we disable this per cpu. If an NMI comes in after this point, it 
+> will exit the function without taking the lock. If it runs on another CPU, 
+> we really don't care. That's what NMIs are for ;-)
 
-[...]
 
-> +	/*
-> +	 * Some cards need very high timeouts if driven in SPI mode.
-> +	 * The worst observed timeout was 900ms after writing a
-> +	 * continuous stream of data until the internal logic
-> +	 * overflowed.
-> +	 */
-> +	if (mmc_host_is_spi(card->host)) {
-> +		if (data->flags & MMC_DATA_WRITE) {
-> +			if (data->timeout_ns < 1000000000)
-> +				data->timeout_ns = 1000000000;	/* 1s */
+Aaah, ok :-)
 
-I am correct in thinking that this patch, in conjuction with your other
-patch, "[PATCH 6/7] mmc_spi: convert timeout handling to jiffies and avoid 
-busy waiting", will now penalize my working card and mandate a timeout
-of 1 second?
+ 
+> -- Steve
+> 
+> 
+> 
+> > > >  
+> > > > -	spin_lock_irqsave(&trace_buf_lock, flags);
+> > > > +	/* Lockdep uses trace_printk for lock tracing */
+> > > > +	local_irq_save(flags);
+> > > 
+> > > Shouldn't you also use raw_local_irq_save() and friends?
+> > > 
+> > > > +	__raw_spin_lock(&trace_buf_lock);
+> > > >  	len = vbin_printf(trace_buf, TRACE_BUF_SIZE, fmt, args);
+> > > >  
+> > > >  	if (len > TRACE_BUF_SIZE || len < 0)
+> > > > @@ -1220,7 +1223,8 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+> > > >  	ring_buffer_unlock_commit(tr->buffer, event);
+> > > >  
+> > > >  out_unlock:
+> > > > -	spin_unlock_irqrestore(&trace_buf_lock, flags);
+> > > > +	__raw_spin_unlock(&trace_buf_lock);
+> > > > +	local_irq_restore(flags);
+> > > >  
+> > > >  out:
+> > > >  	ftrace_preempt_enable(resched);
+> > > > 
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> > 
 
-Without your patch 6 at least mmc_spi_skip() would busy-wait for the
-response, and if my card completed in less than 1 second then it'd just
-return quicker.
-
-It seems you've introduced a performance hit on all MMC over SPI cards.
