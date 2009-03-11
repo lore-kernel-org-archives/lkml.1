@@ -1,70 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbZCKUgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380AbZCKUiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752570AbZCKUgU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 16:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbZCKUgJ
+	id S1752380AbZCKUiK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 16:38:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZCKUh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 16:36:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:19975 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979AbZCKUgH convert rfc822-to-8bit (ORCPT
+	Wed, 11 Mar 2009 16:37:56 -0400
+Received: from po-out-1718.google.com ([72.14.252.156]:57107 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbZCKUhy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 16:36:07 -0400
+	Wed, 11 Mar 2009 16:37:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=uoJbWi8qYLT+CB2NSiSdXyXv7jajza7azi9k0ITtQak86UVDrEW+phxrkgnuQ4dwD1
-         U5XpIvbC7E+BMajDRc8BtwIJcnCrteh44j7dwj8ghp5TPEGja1ygsdeXRfUZEYAnOzN9
-         BeYAyyg1f+avy7Po9kI03eVa4NAC/ALEKIq6s=
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=t0L5NRP54ohHFJMjDFQROxvw3ieEvXp9yocb5zdoRgUtBiHxO27jqIjr1QUsdFGMj/
+         epf1IXW8wRay7W+k/itWD4ACkNdEeHIBQLYnI6fWPKaSTRuVz6x0V3aDxwMAxDi3HaY9
+         UPnM6skXqaGm4gAGM2xZy3BIGdGng1iWNyUM0=
 MIME-Version: 1.0
-In-Reply-To: <20090311201337.GI25995@parisc-linux.org>
-References: <20090311043659.GC25995@parisc-linux.org>
-	 <alpine.LFD.2.00.0903111220200.32478@localhost.localdomain>
-	 <20090311201337.GI25995@parisc-linux.org>
-Date: Wed, 11 Mar 2009 13:36:05 -0700
-X-Google-Sender-Auth: 490b5c53d0b546f9
-Message-ID: <86802c440903111336v7b5c3e3jc5bb3afd9da8f42e@mail.gmail.com>
-Subject: Re: [GIT PULL] PCI fixes for 2.6.29
-From: Yinghai Lu <yinghai@kernel.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+Reply-To: mtk.manpages@gmail.com
+In-Reply-To: <49B70A21.7070400@gmail.com>
+References: <49B70A21.7070400@gmail.com>
+Date: Thu, 12 Mar 2009 09:37:52 +1300
+Message-ID: <cfd18e0f0903111337l7d423903t70afee6e5a987bfa@mail.gmail.com>
+Subject: Re: [patch] MAINTAINERS: downgrade support for man-pages
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "linux-man@vger.kernel.org" <linux-man@vger.kernel.org>,
+       linux-api@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 1:13 PM, Matthew Wilcox <matthew@wil.cx> wrote:
-> On Wed, Mar 11, 2009 at 12:22:56PM -0700, Linus Torvalds wrote:
->> On Tue, 10 Mar 2009, Matthew Wilcox wrote:
->> > These are the PCI fixes that have been piling up for the last week while
->> > Jesse's been on vacation.  I don't think there's anything questionable
->> > here.  All the patches have been posted to linux-pci.
->>
->> Grrr. It doesn't even compile cleanly:
->>
->> drivers/pci/quirks.c: In function ?ht_check_msi_mapping?:
->> drivers/pci/quirks.c:2142: warning: ?return? with no value, in function returning non-void
->>
->> and yes, it's a real bug.
->
-> Agreed, it's a real bug.  I also think it should return 0, but I want
-> Prakash to verify that, since I don't have a system of this nature.
->
-> I wish this warning were an error.  According to the GCC docs,
-> -Werror=return-type should do this, but it seems to have no effect.
->
->> I'm not happy.
->
-> Me neither.  I'm sorry I didn't catch the warning.
->
+[Looks as though vger didn't like my long CC list, and didn't carry
+the message to the lists, so resending a slightly edited version to
+just the lists.]
 
-please don't use that one. and use "pci: don't disable too many HT MSI
-mapping -v4" instead
+---------- Forwarded message ----------
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
+Date: Wed, Mar 11, 2009 at 1:47 PM
+Subject: [patch] MAINTAINERS: downgrade support for man-pages
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Linus Torvalds
+<torvalds@linux-foundation.org>, Jonathan Corbet <corbet@lwn.net>,
+Davide Libenzi <davidel@xmailserver.org>, Jim Zemlin
+<jzemlin@linux-foundation.org>, Randy Dunlap <rdunlap@xenotime.net>,
+Oleg Nesterov <oleg@tv-sign.ru>, Arnd Bergmann <arndb@de.ibm.com>,
+Jeff Licquia <licquia@linux-foundation.org>, David Miller
+<davem@davemloft.net>, Stephen Hemminger
+<shemminger@linux-foundation.org>, Mats Wichmann
+<mats.d.wichmann@intel.com>, Roland McGrath <roland@redhat.com>,
+Ulrich Drepper <drepper@redhat.com>, Petr Baudis <pasky@suse.cz>, "H.
+Peter Anvin" <hpa@zytor.com>, Theodore T'so <tytso@mit.edu>, James
+Bottomley <James.Bottomley@hansenpartnership.com>, Ulrich Drepper
+<drepper@redhat.com>, Christoph Hellwig <hch@lst.de>, Alain Portal
+<alain.portal@univ-montp2.fr>, Greg KH <gregkh@suse.de>, Andi Kleen
+<andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>, Andries
+Brouwer <Andries.Brouwer@cwi.nl>, hohndel@infradead.org,
+"linux-man@vger.kernel.org" <linux-man@vger.kernel.org>,
+linux-api@vger.kernel.org
 
-http://lkml.org/lkml/2009/3/5/458
 
-YH
+Hi Andrew,
+
+Unfortunately, Linux Foundation funding for my work
+on man-pages/testing/doc under the auspices of the
+LF documentation fellowship ran out a
+short while ago (after earlier attempts to seek funding,
+only Google stepped forward with a bit of further
+funding for the position), so the patch below
+acknowledges something closer to reality.
+
+There will (probably very) soon be a further
+downgrade from "Maintained" to "Odd Fixes" or "Orphan",
+unless some funding miracle occurs.  So, if anyone is
+looking to become man-pages maintainer, there may soon be
+an opening (okay, don't trample me in the rush ;-).)
+
+Cheers,
+
+Michael
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1c2ca1d..61aeb5a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1469,8 +1469,6 @@ L:        linux-acpi@vger.kernel.org
+ S:     Supported
+
+ DOCUMENTATION (/Documentation directory)
+-P:     Michael Kerrisk
+-M:     mtk.manpages@gmail.com
+ P:     Randy Dunlap
+ M:     rdunlap@xenotime.net
+ L:     linux-doc@vger.kernel.org
+@@ -2879,7 +2877,7 @@ P:        Michael Kerrisk
+ M:     mtk.manpages@gmail.com
+ W:     http://www.kernel.org/doc/man-pages
+ L:     linux-man@vger.kernel.org
+-S:     Supported
++S:     Maintained
+
+ MARVELL LIBERTAS WIRELESS DRIVER
+ P:     Dan Williams
+
+
+
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
