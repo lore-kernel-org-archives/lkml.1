@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZCKH1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZCKH1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbZCKH1W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 03:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZCKHZK
+	id S1755336AbZCKH1h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 03:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbZCKHZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 03:25:10 -0400
-Received: from mga02.intel.com ([134.134.136.20]:53996 "EHLO mga02.intel.com"
+	Wed, 11 Mar 2009 03:25:13 -0400
+Received: from mga02.intel.com ([134.134.136.20]:11907 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753028AbZCKHY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 03:24:58 -0400
+	id S1752694AbZCKHZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 03:25:00 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,340,1233561600"; 
-   d="scan'208";a="496827163"
+   d="scan'208";a="496827168"
 From: Yu Zhao <yu.zhao@intel.com>
 To: jbarnes@virtuousgeek.org
 Cc: linux-pci@vger.kernel.org, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>
-Subject: [PATCH v11 7/8] PCI: document SR-IOV sysfs entries
-Date: Wed, 11 Mar 2009 15:25:48 +0800
-Message-Id: <1236756349-18892-8-git-send-email-yu.zhao@intel.com>
+Subject: [PATCH v11 8/8] PCI: manual for SR-IOV user and driver developer
+Date: Wed, 11 Mar 2009 15:25:49 +0800
+Message-Id: <1236756349-18892-9-git-send-email-yu.zhao@intel.com>
 X-Mailer: git-send-email 1.6.1
 In-Reply-To: <1236756349-18892-1-git-send-email-yu.zhao@intel.com>
 References: <1236756349-18892-1-git-send-email-yu.zhao@intel.com>
@@ -28,44 +28,128 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 ---
- Documentation/ABI/testing/sysfs-bus-pci |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
+ Documentation/DocBook/kernel-api.tmpl |    1 +
+ Documentation/PCI/pci-iov-howto.txt   |   99 +++++++++++++++++++++++++++++++++
+ 2 files changed, 100 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/PCI/pci-iov-howto.txt
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
-index e638e15..36edf03 100644
---- a/Documentation/ABI/testing/sysfs-bus-pci
-+++ b/Documentation/ABI/testing/sysfs-bus-pci
-@@ -52,3 +52,30 @@ Description:
- 		that some devices may have malformatted data.  If the
- 		underlying VPD has a writable section then the
- 		corresponding section of this file will be writable.
+diff --git a/Documentation/DocBook/kernel-api.tmpl b/Documentation/DocBook/kernel-api.tmpl
+index bc962cd..58c1945 100644
+--- a/Documentation/DocBook/kernel-api.tmpl
++++ b/Documentation/DocBook/kernel-api.tmpl
+@@ -199,6 +199,7 @@ X!Edrivers/pci/hotplug.c
+ -->
+ !Edrivers/pci/probe.c
+ !Edrivers/pci/rom.c
++!Edrivers/pci/iov.c
+      </sect1>
+      <sect1><title>PCI Hotplug Support Library</title>
+ !Edrivers/pci/hotplug/pci_hotplug_core.c
+diff --git a/Documentation/PCI/pci-iov-howto.txt b/Documentation/PCI/pci-iov-howto.txt
+new file mode 100644
+index 0000000..fc73ef5
+--- /dev/null
++++ b/Documentation/PCI/pci-iov-howto.txt
+@@ -0,0 +1,99 @@
++		PCI Express I/O Virtualization Howto
++		Copyright (C) 2009 Intel Corporation
++		    Yu Zhao <yu.zhao@intel.com>
 +
-+What:		/sys/bus/pci/devices/.../virtfnN
-+Date:		March 2009
-+Contact:	Yu Zhao <yu.zhao@intel.com>
-+Description:
-+		This symbolic link appears when hardware supports the SR-IOV
-+		capability and the Physical Function driver has enabled it.
-+		The symbolic link points to the PCI device sysfs entry of the
-+		Virtual Function whose index is N (0...MaxVFs-1).
 +
-+What:		/sys/bus/pci/devices/.../dep_link
-+Date:		March 2009
-+Contact:	Yu Zhao <yu.zhao@intel.com>
-+Description:
-+		This symbolic link appears when hardware supports the SR-IOV
-+		capability and the Physical Function driver has enabled it,
-+		and this device has vendor specific dependencies with others.
-+		The symbolic link points to the PCI device sysfs entry of
-+		Physical Function this device depends on.
++1. Overview
 +
-+What:		/sys/bus/pci/devices/.../physfn
-+Date:		March 2009
-+Contact:	Yu Zhao <yu.zhao@intel.com>
-+Description:
-+		This symbolic link appears when a device is a Virtual Function.
-+		The symbolic link points to the PCI device sysfs entry of the
-+		Physical Function this device associates with.
++1.1 What is SR-IOV
++
++Single Root I/O Virtualization (SR-IOV) is a PCI Express Extended
++capability which makes one physical device appear as multiple virtual
++devices. The physical device is referred to as Physical Function (PF)
++while the virtual devices are referred to as Virtual Functions (VF).
++Allocation of the VF can be dynamically controlled by the PF via
++registers encapsulated in the capability. By default, this feature is
++not enabled and the PF behaves as traditional PCIe device. Once it's
++turned on, each VF's PCI configuration space can be accessed by its own
++Bus, Device and Function Number (Routing ID). And each VF also has PCI
++Memory Space, which is used to map its register set. VF device driver
++operates on the register set so it can be functional and appear as a
++real existing PCI device.
++
++2. User Guide
++
++2.1 How can I enable SR-IOV capability
++
++The device driver (PF driver) will control the enabling and disabling
++of the capability via API provided by SR-IOV core. If the hardware
++has SR-IOV capability, loading its PF driver would enable it and all
++VFs associated with the PF.
++
++2.2 How can I use the Virtual Functions
++
++The VF is treated as hot-plugged PCI devices in the kernel, so they
++should be able to work in the same way as real PCI devices. The VF
++requires device driver that is same as a normal PCI device's.
++
++3. Developer Guide
++
++3.1 SR-IOV API
++
++To enable SR-IOV capability:
++	int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
++	'nr_virtfn' is number of VFs to be enabled.
++
++To disable SR-IOV capability:
++	void pci_disable_sriov(struct pci_dev *dev);
++
++To notify SR-IOV core of Virtual Function Migration:
++	irqreturn_t pci_sriov_migration(struct pci_dev *dev);
++
++3.2 Usage example
++
++Following piece of code illustrates the usage of the SR-IOV API.
++
++static int __devinit dev_probe(struct pci_dev *dev, const struct pci_device_id *id)
++{
++	pci_enable_sriov(dev, NR_VIRTFN);
++
++	...
++
++	return 0;
++}
++
++static void __devexit dev_remove(struct pci_dev *dev)
++{
++	pci_disable_sriov(dev);
++
++	...
++}
++
++static int dev_suspend(struct pci_dev *dev, pm_message_t state)
++{
++	...
++
++	return 0;
++}
++
++static int dev_resume(struct pci_dev *dev)
++{
++	...
++
++	return 0;
++}
++
++static void dev_shutdown(struct pci_dev *dev)
++{
++	...
++}
++
++static struct pci_driver dev_driver = {
++	.name =		"SR-IOV Physical Function driver",
++	.id_table =	dev_id_table,
++	.probe =	dev_probe,
++	.remove =	__devexit_p(dev_remove),
++	.suspend =	dev_suspend,
++	.resume =	dev_resume,
++	.shutdown =	dev_shutdown,
++};
 -- 
 1.6.1
 
