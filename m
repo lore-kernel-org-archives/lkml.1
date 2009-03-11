@@ -1,77 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbZCKQn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZCKQoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753231AbZCKQn3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZCKQnT
+	id S1751956AbZCKQoj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbZCKQoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:43:19 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:39562 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751009AbZCKQnS (ORCPT
+	Wed, 11 Mar 2009 12:44:30 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:38750 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751082AbZCKQo3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:43:18 -0400
-Date: Wed, 11 Mar 2009 17:43:11 +0100
-From: Daniel Mack <daniel@caiaq.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jonathan Cameron <jic23@cam.ac.uk>, Jean Delvare <khali@linux-fr.org>,
-       linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Added driver for ISL29003 ambient light sensor
-Message-ID: <20090311164311.GC29871@buzzloop.caiaq.de>
-References: <20090307120631.GA25276@buzzloop.caiaq.de> <20090307130818.367bcaad@hyperion.delvare> <20090309210901.GC31367@buzzloop.caiaq.de> <49B666F9.50209@cam.ac.uk> <20090310151542.GE9564@buzzloop.caiaq.de> <49B6A843.3090902@cam.ac.uk> <20090311003155.GB21160@buzzloop.caiaq.de> <20090310212826.7d8b3d4e.akpm@linux-foundation.org> <20090311083252.GB25824@buzzloop.caiaq.de> <20090311093234.7e8e5416.akpm@linux-foundation.org>
+	Wed, 11 Mar 2009 12:44:29 -0400
+Date: Wed, 11 Mar 2009 22:14:16 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC PATCH] cpuacct: per-cgroup utime/stime statistics - v1
+Message-ID: <20090311164416.GD16769@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090310124208.GC3902@in.ibm.com> <20090311151657.GA16769@balbir.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090311093234.7e8e5416.akpm@linux-foundation.org>
+In-Reply-To: <20090311151657.GA16769@balbir.in.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 09:32:34AM -0700, Andrew Morton wrote:
-> > Jonathan replied to the posting on linux-i2c and linux-kernel wasn't in
-> > the loop, sorry. Find his posting here:
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-03-11 20:46:57]:
+
+> * Bharata B Rao <bharata@linux.vnet.ibm.com> [2009-03-10 18:12:08]:
+> 
+> > Hi,
 > > 
-> > 	http://marc.info/?l=linux-i2c&m=123669064909549&w=2
+> > Based on the comments received during my last post
+> > (http://lkml.org/lkml/2009/2/25/129), here is a fresh attempt
+> > to get per-cgroup utime/stime statistics as part of cpuacct controller.
+> > 
+> > This patch adds a new file cpuacct.stat which displays two stats:
+> > utime and stime. I wasn't too sure about the usefulness of providing
+> > per-cgroup guest and steal times and hence not including them here.
+> > 
+> > Note that I am using percpu_counter for collecting these two stats.
+> > Since percpu_counter subsystem doesn't protect the readside, readers could
+> > theoritically obtain incorrect values for these stats on 32bit systems.
+> > I hope occasional wrong values is not too much of a concern for
+> > statistics like this. If it is a problem, we have to either fix
+> > percpu_counter or do it all by ourselves as Kamezawa attempted
+> > for cpuacct.usage (http://lkml.org/lkml/2009/3/4/14)
+> > 
+> > Regards,
+> > Bharata.
+> > 
+> > cpuacct: Add stime and utime statistics
+> > 
+> > Add per-cgroup cpuacct controller statistics like the system and user
+> > time consumed by the group of tasks.
+> > 
+> > Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> > Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+> > ---
+> >  Documentation/cgroups/cpuacct.txt |    8 +++
+> >  kernel/sched.c                    |   87 +++++++++++++++++++++++++++++++++++---
+> >  2 files changed, 89 insertions(+), 6 deletions(-)
+> > 
+> > --- a/Documentation/cgroups/cpuacct.txt
+> > +++ b/Documentation/cgroups/cpuacct.txt
+> > @@ -30,3 +30,11 @@ The above steps create a new group g1 an
+> >  process (bash) into it. CPU time consumed by this bash and its children
+> >  can be obtained from g1/cpuacct.usage and the same is accumulated in
+> >  /cgroups/cpuacct.usage also.
+> > +
+> > +cpuacct.stat file lists a few statistics which further divide the
+> > +CPU time obtained by the cgroup into user and system times. Currently
+> > +the following statistics are supported:
+> > +
+> > +utime: Time in milliseconds spent by tasks of the cgroup in user mode.
+> > +stime: Time in milliseconds spent by tasks of the cgroup in kernel mode.
+> > +
 > 
-> OK.  Please always use reply-to-all, guys.
-
-The thread moved from linux-i2c to linux-kernel, hence the trouble.
-
-> > You're right, it should depend on that. You want me so send a patch on
-> > top of the other or one that replaces it?
+> Hi, Bharata,
 > 
-> Either way is OK by me at this time.
+> I did a quick run of the patch on my machine. The patch applied and
+> compile cleanly, here are a few comments?
+> 
+> 1. We could consider enhancing the patch to account for irq, softirq,
+> etc time like cpustat does. Not right away, but iteratively
+> 2. The accounting is converted to milliseconds, I would much rather
+> export it in cputime to be consistent with other cpu accounting.
+> I remember we used to return nanosecond accurate accounting and then
+> moved to cputime based accounting for cpuacct.
+> 3. How do we deal with CPU hotplug. Since we use a per-cpu counter,
+> any hotplug would mean that the data related to the offlined CPU is
+> lost. That is how the current CPU accounting system seems to work.
+>
 
-Ok, I chose the shorter variant :) See the patch below.
+Bharata,
 
-Thanks,
-Daniel
+I tried the diff below and saw what I was looking for
 
-
->From 9143c849682280ca3b0544e580bc90241c385927 Mon Sep 17 00:00:00 2001
-From: Daniel Mack <daniel@caiaq.de>
-Date: Wed, 11 Mar 2009 17:39:13 +0100
-Subject: [PATCH] make isl29003 depend on sysfs
-
-
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
----
- drivers/misc/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index b883b19..16e1815 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -225,7 +225,7 @@ config DELL_LAPTOP
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 015155d..fadd17f 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4195,7 +4195,7 @@ void account_user_time(struct task_struct *p, cputime_t cputime,
+ 	else
+ 		cpustat->user = cputime64_add(cpustat->user, tmp);
  
- config ISL29003
- 	tristate "Intersil ISL29003 ambient light sensor"
--	depends on I2C
-+	depends on I2C && SYSFS
- 	help
- 	  If you say yes here you get support for the Intersil ISL29003
- 	  ambient light sensor.
--- 
-1.6.2
+-	cpuacct_update_stats(p, CPUACCT_STAT_UTIME, cputime_to_msecs(cputime));
++	cpuacct_update_stats(p, CPUACCT_STAT_UTIME, cputime);
+ 	/* Account for user time used */
+ 	acct_update_integrals(p);
+ }
+@@ -4257,7 +4257,7 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
+ 	else
+ 		cpustat->system = cputime64_add(cpustat->system, tmp);
+ 
+-	cpuacct_update_stats(p, CPUACCT_STAT_STIME, cputime_to_msecs(cputime));
++	cpuacct_update_stats(p, CPUACCT_STAT_STIME, cputime);
+ 
+ 	/* Account for system time used */
+ 	acct_update_integrals(p);
+@@ -9611,6 +9611,7 @@ static int cpuacct_stats_show(struct cgroup *cgrp, struct cftype *cft,
+ 	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
+ 		s64 val = percpu_counter_read(&ca->cpustat[i]);
+ 		val *= cpuacct_stat_desc[i].unit;
++		val = cputime_to_clock_t(val);
+ 		cb->fill(cb, cpuacct_stat_desc[i].msg, val);
+ 	}
+ 	return 0;
 
+1. The data is returned in clock_t
+2. CPU hotplug seems to be already correctly handled by per_cpu
+counters
+
+ 
+-- 
+	Balbir
