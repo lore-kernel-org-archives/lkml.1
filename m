@@ -1,77 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbZCKWAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZCKWAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755194AbZCKWAP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 18:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbZCKV6L
+	id S1755330AbZCKWAk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 18:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbZCKV6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 17:58:11 -0400
-Received: from smtp106.biz.mail.mud.yahoo.com ([68.142.200.254]:33240 "HELO
-	smtp106.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754257AbZCKV6J (ORCPT
+	Wed, 11 Mar 2009 17:58:15 -0400
+Received: from smtp107.biz.mail.mud.yahoo.com ([68.142.200.255]:40994 "HELO
+	smtp107.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754287AbZCKV6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 17:58:09 -0400
+	Wed, 11 Mar 2009 17:58:13 -0400
 X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
-X-YMail-OSG: WSAf4pMVM1la9MXLOFCBsqSiRgTOw1xhbBJ8WKr6JWc6VSxcY4CrtYC0LYkHIDEIa_O8HMeQvbd10YxQxTrwRiuaEVQYmU4NDkl58WFtE5yoynabtAYGyIm4OWO2H4o0o1PcbWDbLUiWfxQ84PGsyBQ1yP_qdWWsduh0AYVZID_oIaBRYFEYEV5udy0AXTog9sny.jqfCuhtYttFm7M7hT7RDQ--
+X-YMail-OSG: l6xS9HIVM1mA_j2UM46vw50u_q.sE4rlXv.EtQwzGncfkjFA9e1Qlqf8dNCCELkLvUBzhENfO9456PLaVyoGGJRb8Idy5BcUoccbJzEO183XS4X.AnC486owTaJBQ5uH_tLmYxnMYXJME.DCd28Plg0.aPyu0VPLt2Od6qNO.ou0mvxVua89AQprXcjLa3CDtf8VWU1QXJ4O0Nu9Otro143C8bGr13.7mpb2Vpp8sBKghjE-
 X-Yahoo-Newman-Property: ymail-3
 From: Steven King <sfking@fdwdc.com>
 To: uClinux development list <uclinux-dev@uclinux.org>
-Subject: [RFC 06/14] Coldfire generic GPIO (m68knommu)
-Date: Wed, 11 Mar 2009 13:55:58 -0800
+Subject: [RFC 07/14] Coldfire generic GPIO (m68knommu)
+Date: Wed, 11 Mar 2009 13:56:00 -0800
 User-Agent: KMail/1.9.10
+Organization: fdwdc.com
 Cc: linux-kernel@vger.kernel.org, Greg Ungerer <gerg@snapgear.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-Organization: fdwdc.com
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200903111455.58549.sfking@fdwdc.com>
+Message-Id: <200903111456.00314.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Steven King <sfking@fdwdc.com>
 
-diff --git a/arch/m68k/include/asm/m5249sim.h b/arch/m68k/include/asm/m5249sim.h
-index 366eb86..2c23a83 100644
---- a/arch/m68k/include/asm/m5249sim.h
-+++ b/arch/m68k/include/asm/m5249sim.h
-@@ -73,14 +73,14 @@
- /*
-  *	General purpose IO registers (in MBAR2).
-  */
--#define	MCFSIM2_GPIOREAD	0x0		/* GPIO read values */
--#define	MCFSIM2_GPIOWRITE	0x4		/* GPIO write values */
--#define	MCFSIM2_GPIOENABLE	0x8		/* GPIO enabled */
--#define	MCFSIM2_GPIOFUNC	0xc		/* GPIO function */
--#define	MCFSIM2_GPIO1READ	0xb0		/* GPIO1 read values */
--#define	MCFSIM2_GPIO1WRITE	0xb4		/* GPIO1 write values */
--#define	MCFSIM2_GPIO1ENABLE	0xb8		/* GPIO1 enabled */
--#define	MCFSIM2_GPIO1FUNC	0xbc		/* GPIO1 function */
-+#define	MCFSIM2_GPIOREAD	(MCF_MBAR2 + 0x000)	/* GPIO read values */
-+#define	MCFSIM2_GPIOWRITE	(MCF_MBAR2 + 0x004)	/* GPIO write values */
-+#define	MCFSIM2_GPIOENABLE	(MCF_MBAR2 + 0x008)	/* GPIO enabled */
-+#define	MCFSIM2_GPIOFUNC	(MCF_MBAR2 + 0x00C)	/* GPIO function */
-+#define	MCFSIM2_GPIO1READ	(MCF_MBAR2 + 0x0B0)	/* GPIO1 read values */
-+#define	MCFSIM2_GPIO1WRITE	(MCF_MBAR2 + 0x0B4)	/* GPIO1 write values */
-+#define	MCFSIM2_GPIO1ENABLE	(MCF_MBAR2 + 0x0B8)	/* GPIO1 enabled */
-+#define	MCFSIM2_GPIO1FUNC	(MCF_MBAR2 + 0x0BC)	/* GPIO1 function */
+diff --git a/arch/m68k/include/asm/m527xsim.h b/arch/m68k/include/asm/m527xsim.h
+index 1f63ab3..8471ead 100644
+--- a/arch/m68k/include/asm/m527xsim.h
++++ b/arch/m68k/include/asm/m527xsim.h
+@@ -54,6 +54,175 @@
+ #define	MCFSIM_DMR1		0x5c		/* SDRAM address mask 1 */
+ #endif
  
- #define	MCFSIM2_GPIOINTSTAT	0xc0		/* GPIO interrupt status */
- #define	MCFSIM2_GPIOINTCLEAR	0xc0		/* GPIO interrupt clear */
-@@ -100,7 +100,12 @@
- #define	MCFSIM2_IDECONFIG1	0x18c		/* IDEconfig1 */
- #define	MCFSIM2_IDECONFIG2	0x190		/* IDEconfig2 */
- 
--
++
++#ifdef CONFIG_M5271
++#define MCFGPIO_PODR_ADDR	(MCF_IPSBAR + 0x100000)
++#define MCFGPIO_PODR_DATAH	(MCF_IPSBAR + 0x100001)
++#define MCFGPIO_PODR_DATAL	(MCF_IPSBAR + 0x100002)
++#define MCFGPIO_PODR_BUSCTL	(MCF_IPSBAR + 0x100003)
++#define MCFGPIO_PODR_BS		(MCF_IPSBAR + 0x100004)
++#define MCFGPIO_PODR_CS		(MCF_IPSBAR + 0x100005)
++#define MCFGPIO_PODR_SDRAM	(MCF_IPSBAR + 0x100006)
++#define MCFGPIO_PODR_FECI2C	(MCF_IPSBAR + 0x100007)
++#define MCFGPIO_PODR_UARTH	(MCF_IPSBAR + 0x100008)
++#define MCFGPIO_PODR_UARTL	(MCF_IPSBAR + 0x100009)
++#define MCFGPIO_PODR_QSPI	(MCF_IPSBAR + 0x10000A)
++#define MCFGPIO_PODR_TIMER	(MCF_IPSBAR + 0x10000B)
++
++#define MCFGPIO_PDDR_ADDR	(MCF_IPSBAR + 0x100010)
++#define MCFGPIO_PDDR_DATAH	(MCF_IPSBAR + 0x100011)
++#define MCFGPIO_PDDR_DATAL	(MCF_IPSBAR + 0x100012)
++#define MCFGPIO_PDDR_BUSCTL	(MCF_IPSBAR + 0x100013)
++#define MCFGPIO_PDDR_BS		(MCF_IPSBAR + 0x100014)
++#define MCFGPIO_PDDR_CS		(MCF_IPSBAR + 0x100015)
++#define MCFGPIO_PDDR_SDRAM	(MCF_IPSBAR + 0x100016)
++#define MCFGPIO_PDDR_FECI2C	(MCF_IPSBAR + 0x100017)
++#define MCFGPIO_PDDR_UARTH	(MCF_IPSBAR + 0x100018)
++#define MCFGPIO_PDDR_UARTL	(MCF_IPSBAR + 0x100019)
++#define MCFGPIO_PDDR_QSPI	(MCF_IPSBAR + 0x10001A)
++#define MCFGPIO_PDDR_TIMER	(MCF_IPSBAR + 0x10001B)
++
++#define MCFGPIO_PPDSDR_ADDR	(MCF_IPSBAR + 0x100020)
++#define MCFGPIO_PPDSDR_DATAH	(MCF_IPSBAR + 0x100021)
++#define MCFGPIO_PPDSDR_DATAL	(MCF_IPSBAR + 0x100022)
++#define MCFGPIO_PPDSDR_BUSCTL	(MCF_IPSBAR + 0x100023)
++#define MCFGPIO_PPDSDR_BS	(MCF_IPSBAR + 0x100024)
++#define MCFGPIO_PPDSDR_CS	(MCF_IPSBAR + 0x100025)
++#define MCFGPIO_PPDSDR_SDRAM	(MCF_IPSBAR + 0x100026)
++#define MCFGPIO_PPDSDR_FECI2C	(MCF_IPSBAR + 0x100027)
++#define MCFGPIO_PPDSDR_UARTH	(MCF_IPSBAR + 0x100028)
++#define MCFGPIO_PPDSDR_UARTL	(MCF_IPSBAR + 0x100029)
++#define MCFGPIO_PPDSDR_QSPI	(MCF_IPSBAR + 0x10002A)
++#define MCFGPIO_PPDSDR_TIMER	(MCF_IPSBAR + 0x10002B)
++
++#define MCFGPIO_PCLRR_ADDR	(MCF_IPSBAR + 0x100030)
++#define MCFGPIO_PCLRR_DATAH	(MCF_IPSBAR + 0x100031)
++#define MCFGPIO_PCLRR_DATAL	(MCF_IPSBAR + 0x100032)
++#define MCFGPIO_PCLRR_BUSCTL	(MCF_IPSBAR + 0x100033)
++#define MCFGPIO_PCLRR_BS	(MCF_IPSBAR + 0x100034)
++#define MCFGPIO_PCLRR_CS	(MCF_IPSBAR + 0x100035)
++#define MCFGPIO_PCLRR_SDRAM	(MCF_IPSBAR + 0x100036)
++#define MCFGPIO_PCLRR_FECI2C	(MCF_IPSBAR + 0x100037)
++#define MCFGPIO_PCLRR_UARTH	(MCF_IPSBAR + 0x100038)
++#define MCFGPIO_PCLRR_UARTL	(MCF_IPSBAR + 0x100039)
++#define MCFGPIO_PCLRR_QSPI	(MCF_IPSBAR + 0x10003A)
++#define MCFGPIO_PCLRR_TIMER	(MCF_IPSBAR + 0x10003B)
++
 +/*
 + * Generic GPIO support
 + */
-+#define MCFGPIO_PIN_MAX		64
-+#define MCFGPIO_IRQ_MAX		-1
-+#define MCFGPIO_IRQ_VECBASE	-1
++#define MCFGPIO_PODR			MCFGPIO_PODR_ADDR
++#define MCFGPIO_PDDR			MCFGPIO_PDDR_ADDR
++#define MCFGPIO_PPDR			MCFGPIO_PPDSDR_ADDR
++#define MCFGPIO_SETR			MCFGPIO_PPDSDR_ADDR
++#define MCFGPIO_CLRR			MCFGPIO_PCLRR_ADDR
++
++#define MCFGPIO_PIN_MAX			100
++#define MCFGPIO_IRQ_MAX			8
++#define MCFGPIO_IRQ_VECBASE		MCFINT_VECBASE
++#endif
++
++#ifdef CONFIG_M5275
++#define MCFGPIO_PODR_BUSCTL	(MCF_IPSBAR + 0x100004)
++#define MCFGPIO_PODR_ADDR	(MCF_IPSBAR + 0x100005)
++#define MCFGPIO_PODR_CS		(MCF_IPSBAR + 0x100008)
++#define MCFGPIO_PODR_FEC0H	(MCF_IPSBAR + 0x10000A)
++#define MCFGPIO_PODR_FEC0L	(MCF_IPSBAR + 0x10000B)
++#define MCFGPIO_PODR_FECI2C	(MCF_IPSBAR + 0x10000C)
++#define MCFGPIO_PODR_QSPI	(MCF_IPSBAR + 0x10000D)
++#define MCFGPIO_PODR_SDRAM	(MCF_IPSBAR + 0x10000E)
++#define MCFGPIO_PODR_TIMERH	(MCF_IPSBAR + 0x10000F)
++#define MCFGPIO_PODR_TIMERL	(MCF_IPSBAR + 0x100010)
++#define MCFGPIO_PODR_UARTL	(MCF_IPSBAR + 0x100011)
++#define MCFGPIO_PODR_FEC1H	(MCF_IPSBAR + 0x100012)
++#define MCFGPIO_PODR_FEC1L	(MCF_IPSBAR + 0x100013)
++#define MCFGPIO_PODR_BS		(MCF_IPSBAR + 0x100014)
++#define MCFGPIO_PODR_IRQ	(MCF_IPSBAR + 0x100015)
++#define MCFGPIO_PODR_USBH	(MCF_IPSBAR + 0x100016)
++#define MCFGPIO_PODR_USBL	(MCF_IPSBAR + 0x100017)
++#define MCFGPIO_PODR_UARTH	(MCF_IPSBAR + 0x100018)
++
++#define MCFGPIO_PDDR_BUSCTL	(MCF_IPSBAR + 0x100020)
++#define MCFGPIO_PDDR_ADDR	(MCF_IPSBAR + 0x100021)
++#define MCFGPIO_PDDR_CS		(MCF_IPSBAR + 0x100024)
++#define MCFGPIO_PDDR_FEC0H	(MCF_IPSBAR + 0x100026)
++#define MCFGPIO_PDDR_FEC0L	(MCF_IPSBAR + 0x100027)
++#define MCFGPIO_PDDR_FECI2C	(MCF_IPSBAR + 0x100028)
++#define MCFGPIO_PDDR_QSPI	(MCF_IPSBAR + 0x100029)
++#define MCFGPIO_PDDR_SDRAM	(MCF_IPSBAR + 0x10002A)
++#define MCFGPIO_PDDR_TIMERH	(MCF_IPSBAR + 0x10002B)
++#define MCFGPIO_PDDR_TIMERL	(MCF_IPSBAR + 0x10002C)
++#define MCFGPIO_PDDR_UARTL	(MCF_IPSBAR + 0x10002D)
++#define MCFGPIO_PDDR_FEC1H	(MCF_IPSBAR + 0x10002E)
++#define MCFGPIO_PDDR_FEC1L	(MCF_IPSBAR + 0x10002F)
++#define MCFGPIO_PDDR_BS		(MCF_IPSBAR + 0x100030)
++#define MCFGPIO_PDDR_IRQ	(MCF_IPSBAR + 0x100031)
++#define MCFGPIO_PDDR_USBH	(MCF_IPSBAR + 0x100032)
++#define MCFGPIO_PDDR_USBL	(MCF_IPSBAR + 0x100033)
++#define MCFGPIO_PDDR_UARTH	(MCF_IPSBAR + 0x100034)
++
++#define MCFGPIO_PPDSDR_BUSCTL	(MCF_IPSBAR + 0x10003C)
++#define MCFGPIO_PPDSDR_ADDR	(MCF_IPSBAR + 0x10003D)
++#define MCFGPIO_PPDSDR_CS	(MCF_IPSBAR + 0x100040)
++#define MCFGPIO_PPDSDR_FEC0H	(MCF_IPSBAR + 0x100042)
++#define MCFGPIO_PPDSDR_FEC0L	(MCF_IPSBAR + 0x100043)
++#define MCFGPIO_PPDSDR_FECI2C	(MCF_IPSBAR + 0x100044)
++#define MCFGPIO_PPDSDR_QSPI	(MCF_IPSBAR + 0x100045)
++#define MCFGPIO_PPDSDR_SDRAM	(MCF_IPSBAR + 0x100046)
++#define MCFGPIO_PPDSDR_TIMERH	(MCF_IPSBAR + 0x100047)
++#define MCFGPIO_PPDSDR_TIMERL	(MCF_IPSBAR + 0x100048)
++#define MCFGPIO_PPDSDR_UARTL	(MCF_IPSBAR + 0x100049)
++#define MCFGPIO_PPDSDR_FEC1H	(MCF_IPSBAR + 0x10004A)
++#define MCFGPIO_PPDSDR_FEC1L	(MCF_IPSBAR + 0x10004B)
++#define MCFGPIO_PPDSDR_BS	(MCF_IPSBAR + 0x10004C)
++#define MCFGPIO_PPDSDR_IRQ	(MCF_IPSBAR + 0x10004D)
++#define MCFGPIO_PPDSDR_USBH	(MCF_IPSBAR + 0x10004E)
++#define MCFGPIO_PPDSDR_USBL	(MCF_IPSBAR + 0x10004F)
++#define MCFGPIO_PPDSDR_UARTH	(MCF_IPSBAR + 0x100050)
++
++#define MCFGPIO_PCLRR_BUSCTL	(MCF_IPSBAR + 0x100058)
++#define MCFGPIO_PCLRR_ADDR	(MCF_IPSBAR + 0x100059)
++#define MCFGPIO_PCLRR_CS	(MCF_IPSBAR + 0x10005C)
++#define MCFGPIO_PCLRR_FEC0H	(MCF_IPSBAR + 0x10005E)
++#define MCFGPIO_PCLRR_FEC0L	(MCF_IPSBAR + 0x10005F)
++#define MCFGPIO_PCLRR_FECI2C	(MCF_IPSBAR + 0x100060)
++#define MCFGPIO_PCLRR_QSPI	(MCF_IPSBAR + 0x100061)
++#define MCFGPIO_PCLRR_SDRAM	(MCF_IPSBAR + 0x100062)
++#define MCFGPIO_PCLRR_TIMERH	(MCF_IPSBAR + 0x100063)
++#define MCFGPIO_PCLRR_TIMERL	(MCF_IPSBAR + 0x100064)
++#define MCFGPIO_PCLRR_UARTL	(MCF_IPSBAR + 0x100065)
++#define MCFGPIO_PCLRR_FEC1H	(MCF_IPSBAR + 0x100066)
++#define MCFGPIO_PCLRR_FEC1L	(MCF_IPSBAR + 0x100067)
++#define MCFGPIO_PCLRR_BS	(MCF_IPSBAR + 0x100068)
++#define MCFGPIO_PCLRR_IRQ	(MCF_IPSBAR + 0x100069)
++#define MCFGPIO_PCLRR_USBH	(MCF_IPSBAR + 0x10006A)
++#define MCFGPIO_PCLRR_USBL	(MCF_IPSBAR + 0x10006B)
++#define MCFGPIO_PCLRR_UARTH	(MCF_IPSBAR + 0x10006C)
++
++
++/*
++ * Generic GPIO support
++ */
++#define MCFGPIO_PODR			MCFGPIO_PODR_BUSCTL
++#define MCFGPIO_PDDR			MCFGPIO_PDDR_BUSCTL
++#define MCFGPIO_PPDR			MCFGPIO_PPDSDR_BUSCTL
++#define MCFGPIO_SETR			MCFGPIO_PPDSDR_BUSCTL
++#define MCFGPIO_CLRR			MCFGPIO_PCLRR_BUSCTL
++
++#define MCFGPIO_PIN_MAX			148
++#define MCFGPIO_IRQ_MAX			8
++#define MCFGPIO_IRQ_VECBASE		MCFINT_VECBASE
++#endif
++
++/*
++ * EPort
++ */
++
++#define MCFEPORT_EPDDR		(MCF_IPSBAR + 0x130002)
++#define MCFEPORT_EPDR		(MCF_IPSBAR + 0x130004)
++#define MCFEPORT_EPPDR		(MCF_IPSBAR + 0x130005)
++
++
  /*
-  *	Macro to set IMR register. It is 32 bits on the 5249.
+  *	GPIO pins setups to enable the UARTs.
   */
--- 
-Steven King -- sfking at fdwdc dot com
