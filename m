@@ -1,114 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751623AbZCKU7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbZCKVAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751623AbZCKU7m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 16:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbZCKU7d
+	id S1752570AbZCKVAr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 17:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbZCKVAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 16:59:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54891 "EHLO ogre.sisk.pl"
+	Wed, 11 Mar 2009 17:00:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34702 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbZCKU7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 16:59:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/10] PM: Rework handling of interrupts during suspend-resume (rev. 5)
-Date: Wed, 11 Mar 2009 21:59:19 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-References: <200902221837.49396.rjw@sisk.pl> <200903111036.02482.rjw@sisk.pl> <alpine.LFD.2.00.0903111106450.29264@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903111106450.29264@localhost.localdomain>
+	id S1751250AbZCKVAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 17:00:37 -0400
+Message-ID: <49B8261D.7020805@kernel.org>
+Date: Wed, 11 Mar 2009 13:59:09 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] PCI fixes for 2.6.29
+References: <20090311043659.GC25995@parisc-linux.org> <alpine.LFD.2.00.0903111220200.32478@localhost.localdomain> <20090311201337.GI25995@parisc-linux.org> <86802c440903111336v7b5c3e3jc5bb3afd9da8f42e@mail.gmail.com> <20090311204834.GJ25995@parisc-linux.org>
+In-Reply-To: <20090311204834.GJ25995@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903112159.21166.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 March 2009, Thomas Gleixner wrote:
-> Rafael,
+Matthew Wilcox wrote:
+> On Wed, Mar 11, 2009 at 01:36:05PM -0700, Yinghai Lu wrote:
+>> please don't use that one. and use "pci: don't disable too many HT MSI
+>> mapping -v4" instead
 > 
-> On Wed, 11 Mar 2009, Rafael J. Wysocki wrote:
+> I already said I'm not comfortable applying a patch that intrusive at
+> this stage of -rc7.  I don't understand it nearly well enough, and given
+> that v1 ended up *not* solving the problem, and neither did v2 or v3,
+> I'm not convinced you understand it well enough either.  I think v4 is
+> appropriate for applying during the 2.6.30 merge window.
 > 
-> > Index: linux-2.6/kernel/irq/pm.c
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6/kernel/irq/pm.c
-> > @@ -0,0 +1,89 @@
-> > +/*
-> > + * linux/kernel/irq/pm.c
-> > + *
-> > + * Copyright (C) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
-> > + *
-> > + * This file contains power management functions related to interrupts.
-> > + */
-> > +
-> > +#include <linux/irq.h>
-> > +#include <linux/module.h>
-> > +#include <linux/interrupt.h>
-> > +
-> > +#include "internals.h"
-> > +
-> > +/**
-> > + * suspend_device_irqs - disable all currently enabled interrupt lines
-> > + *
-> > + * During system-wide suspend or hibernation device interrupts need to be
-> > + * disabled at the chip level and this function is provided for this purpose.
-> > + * It disables all interrupt lines that are enabled at the moment and sets the
-> > + * IRQ_SUSPENDED flag for them.
-> > + */
-> > +void suspend_device_irqs(void)
-> > +{
-> > +	struct irq_desc *desc;
-> > +	int irq;
-> > +
-> > +	for_each_irq_desc(irq, desc) {
-> > +		unsigned long flags;
-> > +		bool sync = false;
-> > +
-> > +		spin_lock_irqsave(&desc->lock, flags);
-> > +
-> > +		if (desc->action && !(desc->action->flags & IRQF_TIMER)) {
-> > +			if (!desc->depth++) {
-> > +				desc->status |= IRQ_DISABLED;
-> > +				desc->chip->disable(irq);
-> > +				sync = true;
-> > +			}
-> > +			desc->status |= IRQ_SUSPENDED;
+> If you can find someone who really does understand it to review it and
+> agree it's OK for a post-rc7 merge, I'll consider changing my mind.
 > 
->   This flag needs to be checked in __enable_irq().
-> 
-> > +		}
-> > +
-> > +		spin_unlock_irqrestore(&desc->lock, flags);
-> > +
-> > +		if (sync)
-> > +			synchronize_irq(irq);
-> > +	}
-> > +}
-> > +EXPORT_SYMBOL_GPL(suspend_device_irqs);
-> 
->   I'm not too enthusiastic about this open coded implementation of
->   disable_irq() with slightly different semantics.
 
-The difference in semantics is important IMO, otherwise I woulndn't have
-done that.  In particular, IMO, the condition should be under the spinlock IMO
-and I'd rather not synchronize all interrupts we don't really disable here.
+OK
+v4 for 2.6.30. and later could push that back to 29 stabe later if needed.
 
->   Can we please move the fiddling with desc->* into
->   kernel/irq/manage.c and share the code there ?
-
-Can you please discuss that with Ingo?  I moved that from manage.c at his
-request.
-
-Thanks,
-Rafael
+YH
