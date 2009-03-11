@@ -1,162 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbZCKTdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753048AbZCKTm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752952AbZCKTdg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 15:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbZCKTd0
+	id S1753048AbZCKTm5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 15:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZCKTmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 15:33:26 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:35637 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbZCKTdZ convert rfc822-to-8bit (ORCPT
+	Wed, 11 Mar 2009 15:42:47 -0400
+Received: from e24smtp05.br.ibm.com ([32.104.18.26]:33975 "EHLO
+	e24smtp05.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022AbZCKTmq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 15:33:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=R/Titt52thDfiRqpGMUvAM1Xgw6yFry9ygowO7iO+U2HTAAH5vcLmDmgJFwcio5lHr
-         kTbSSp+vGHcToSexeB170NAMD9o36xL9CEnVAEm06yMA1cVc+buBG/0lyRZ288aviWF6
-         J9xb4wrGEgE2/eUVnI7KFnB5R2yr0pNdvKR7c=
+	Wed, 11 Mar 2009 15:42:46 -0400
+Message-ID: <49B81430.70606@linux.vnet.ibm.com>
+Date: Wed, 11 Mar 2009 16:42:40 -0300
+From: Breno Leitao <leitao@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <20090311160208.GA21561@kroah.com>
-References: <43e72e890903022314o44ae710u834d6207403fd4a2@mail.gmail.com>
-	 <1236514065.4205.9.camel@johannes.local>
-	 <20090308223304.GB11513@kroah.com>
-	 <1236583282.4205.71.camel@johannes.local>
-	 <20090309194132.GB15011@kroah.com>
-	 <1236633633.9658.23.camel@johannes.local>
-	 <20090311050018.GB26202@kroah.com>
-	 <1236762491.9658.85.camel@johannes.local>
-	 <20090311160208.GA21561@kroah.com>
-Date: Wed, 11 Mar 2009 15:33:21 -0400
-Message-ID: <3aaafc130903111233n577cf501gc843982bd3882960@mail.gmail.com>
-Subject: Re: Staging, place holder for better company/community development 
-	model
-From: "J.R. Mauro" <jrm8005@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jouni Malinen <j@w1.fi>, Sujith <m.sujith@gmail.com>,
-       Sujith <Sujith.Manoharan@atheros.com>,
-       Senthilkumar Balasubramanian 
-	<Senthilkumar.Balasubramanian@atheros.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Vasanthakumar Thiagarajan <vasanth@atheros.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [PATCH 1/2] icom: Converting space to tabs
+References: <49B7D63E.9050006@linux.vnet.ibm.com> <49B7D830.10601@gmail.com>
+In-Reply-To: <49B7D830.10601@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 12:02 PM, Greg KH <greg@kroah.com> wrote:
-> On Wed, Mar 11, 2009 at 10:08:11AM +0100, Johannes Berg wrote:
->> On Tue, 2009-03-10 at 22:00 -0700, Greg KH wrote:
->>
->> > > Except it doesn't work for most of the wireless drivers you've sucked in
->> > > without asking any wireless developers whether that makes any sense or
->> > > not.
+Converting spaces to tabs and removing wrong spaces
 
-That doesn't mean staging is useless, nor does it imply that no one
-wants the drivers or wants to work on them. A lot of the drivers in
-staging are getting the attention they need, it's not like things are
-just getting dropped in there and abandoned. Staging has only been
-around for a few months now, so it's really too early to say whether
-it will work or not... and hey, maybe it won't work out, but I think
-it has a lot of promise, and has already had real results. It's just
-lacking momentum and autonomy because it's a new thing.
+Signed-off-by: Breno Leitao <leitao@linux.vnet.ibm.com>
+---
+ drivers/serial/icom.c |   54 +++++++++++++++++++++++-------------------------
+ 1 files changed, 26 insertions(+), 28 deletions(-)
 
-It looks like the solution to your particular problem would be a
-mailing list devoted to staging. I know I'd like to see one just
-because I miss a lot of patches that go in until I pull from Greg, and
-it would be nice for the discussion to be centralized. You could steer
-clear of such a list, and we could work on all the drivers until we
-think they're ready, and only then pass it by the relevant
-maintainers.
+diff --git a/drivers/serial/icom.c b/drivers/serial/icom.c
+index 2b7531d..60d87db 100644
+--- a/drivers/serial/icom.c
++++ b/drivers/serial/icom.c
+@@ -302,7 +302,7 @@ static void stop_processor(struct icom_port *icom_port)
+ 	if (port < 4) {
+ 		temp = readl(stop_proc[port].global_control_reg);
+ 		temp =
+-	    		(temp & ~start_proc[port].processor_id) | stop_proc[port].processor_id;
++			(temp & ~start_proc[port].processor_id) | stop_proc[port].processor_id;
+ 		writel(temp, stop_proc[port].global_control_reg);
+ 
+ 		/* write flush */
+@@ -331,7 +331,7 @@ static void start_processor(struct icom_port *icom_port)
+ 	if (port < 4) {
+ 		temp = readl(start_proc[port].global_control_reg);
+ 		temp =
+-	    		(temp & ~stop_proc[port].processor_id) | start_proc[port].processor_id;
++			(temp & ~stop_proc[port].processor_id) | start_proc[port].processor_id;
+ 		writel(temp, start_proc[port].global_control_reg);
+ 
+ 		/* write flush */
+@@ -504,8 +504,8 @@ static void load_code(struct icom_port *icom_port)
+ 		dev_err(&icom_port->adapter->pci_dev->dev,"Port not opertional\n");
+ 	}
+ 
+-      if (new_page != NULL)
+-	      pci_free_consistent(dev, 4096, new_page, temp_pci);
++	if (new_page != NULL)
++		pci_free_consistent(dev, 4096, new_page, temp_pci);
+ }
+ 
+ static int startup(struct icom_port *icom_port)
+@@ -1498,15 +1498,15 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 				const struct pci_device_id *ent)
+ {
+ 	int index;
+-        unsigned int command_reg;
+-        int retval;
+-        struct icom_adapter *icom_adapter;
+-        struct icom_port *icom_port;
++	unsigned int command_reg;
++	int retval;
++	struct icom_adapter *icom_adapter;
++	struct icom_port *icom_port;
+ 
+-        retval = pci_enable_device(dev);
+-        if (retval) {
++	retval = pci_enable_device(dev);
++	if (retval) {
+ 		dev_err(&dev->dev, "Device enable FAILED\n");
+-                return retval;
++		return retval;
+ 	}
+ 
+ 	if ( (retval = pci_request_regions(dev, "icom"))) {
+@@ -1515,23 +1515,23 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 		 return retval;
+ 	 }
+ 
+-        pci_set_master(dev);
++	pci_set_master(dev);
+ 
+-        if ( (retval = pci_read_config_dword(dev, PCI_COMMAND, &command_reg))) {
++	if ( (retval = pci_read_config_dword(dev, PCI_COMMAND, &command_reg))) {
+ 		dev_err(&dev->dev, "PCI Config read FAILED\n");
+-                return retval;
+-        }
++		return retval;
++	}
+ 
+ 	pci_write_config_dword(dev, PCI_COMMAND,
+ 		command_reg | PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER
+  		| PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
+ 
+-        if (ent->driver_data == ADAPTER_V1) {
++	if (ent->driver_data == ADAPTER_V1) {
+ 		pci_write_config_dword(dev, 0x44, 0x8300830A);
+-	 } else {
++	} else {
+ 		pci_write_config_dword(dev, 0x44, 0x42004200);
+ 		pci_write_config_dword(dev, 0x48, 0x42004200);
+-         }
++	}
+ 
+ 
+ 	retval = icom_alloc_adapter(&icom_adapter);
+@@ -1541,10 +1541,10 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 		 goto probe_exit0;
+ 	}
+ 
+-	 icom_adapter->base_addr_pci = pci_resource_start(dev, 0);
+-	 icom_adapter->pci_dev = dev;
+-	 icom_adapter->version = ent->driver_data;
+-	 icom_adapter->subsystem_id = ent->subdevice;
++	icom_adapter->base_addr_pci = pci_resource_start(dev, 0);
++	icom_adapter->pci_dev = dev;
++	icom_adapter->version = ent->driver_data;
++	icom_adapter->subsystem_id = ent->subdevice;
+ 
+ 
+ 	retval = icom_init_ports(icom_adapter);
+@@ -1553,7 +1553,7 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 		goto probe_exit1;
+ 	}
+ 
+-	 icom_adapter->base_addr = ioremap(icom_adapter->base_addr_pci,
++	icom_adapter->base_addr = ioremap(icom_adapter->base_addr_pci,
+ 						pci_resource_len(dev, 0));
+ 
+ 	if (!icom_adapter->base_addr)
+@@ -1568,7 +1568,7 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 
+ 	retval = icom_load_ports(icom_adapter);
+ 
+-        for (index = 0; index < icom_adapter->numb_ports; index++) {
++	for (index = 0; index < icom_adapter->numb_ports; index++) {
+ 		icom_port = &icom_adapter->port_info[index];
+ 
+ 		if (icom_port->status == ICOM_PORT_ACTIVE) {
+@@ -1585,7 +1585,7 @@ static int __devinit icom_probe(struct pci_dev *dev,
+ 				icom_port->status = ICOM_PORT_OFF;
+ 				dev_err(&dev->dev, "Device add failed\n");
+ 			 } else
+-			        dev_info(&dev->dev, "Device added\n");
++				dev_info(&dev->dev, "Device added\n");
+ 		}
+ 	}
+ 
+@@ -1601,9 +1601,7 @@ probe_exit0:
+ 	pci_release_regions(dev);
+ 	pci_disable_device(dev);
+ 
+-        return retval;
+-
+-
++	return retval;
+ }
+ 
+ static void __devexit icom_remove(struct pci_dev *dev)
+-- 
+1.6.0.2
 
-Greg, does a special list sound like a good idea? The driverdev list
-seems really low-traffic, maybe we could use that?
-
->> >
->> > Any specific examples?
->>
->> wlan-ng is the largest example, it's a load of crap, much of it being a
->> driver for hardware we already have drivers for, and the remaining
->> hardware being mostly unavailable these days. The driver served it's
->> purpose at a time, but the authors had years and years of time to bring
->> it in and never bothered. It needs to be incorporated into a
->> rearchitectured orinoco driver, or so.
->
-> So you are objecting to the fact that some people are spending their own
-> time cleaning up this driver, which is only enabled for the devices that
-> are not supported by any other Linux wireless driver, because the
-> original developers never took the time to do the cleaning up
-> themselves?
->
-> Why do you want to tell others how to spend their time, when they are
-> trying to get devices to work properly with Linux that otherwise would
-> not?
->
->> I also remember objecting to rt2860/rt2870, and the only good thing that
->> has come out of adding those is a spatch that might otherwise not have
->> been applied to those drivers. Afaict, no new people have helped with
->> rt2800, the rt2x00 based driver for this hardware, because they've come
->> in contact with rt2860/rt2870.
->
-> So you think that the staging tree is pulling away developer help for
-> the other "proper" kernel drivers?
->
->> I don't remember any discussion about rtl8187se either.
->
-> Was there supposed to be some?
->
-> I sure discussed it, as I have hardware here that needs it, yet trying
-> to get it working in the in-kernel driver was pretty much impossible.
-> So I added the staging driver and lots of users are now happy that Linux
-> works on their hardware and they don't have to go download some random
-> driver to get it to work.
->
->> All of those bring their own 802.11 stack, and changing to the Linux one
->> will /necessarily/ require an entire rewrite of the drivers because the
->> stacks operate /completely/ differently.
->
-> I agree, and don't see how this is a problem.
->
->> Even the clean, in-kernel bcm43xx driver was rewritten to b43 for
->> mac80211, and rtl8187se ships the old ieee80211_softmac code that I
->> and a few others wrote...
->
-> Yes, these drivers are going to take a lot of work to get into "proper"
-> mergable shape.  But that's the whole point of the staging tree!  To do
-> this work, in the kernel, with lots of other developers, all the while
-> letting real people use their hardware with Linux today.
-
-And it /is/ working to attract people both to help and to encourage
-people to get their drivers in. Staging would be really nice for
-bringing in new drivers so that we can prevent things like wonky 80211
-stacks being used and not ported simply because outside driver project
-don't have the time and manpower for it. It's entirely too early to
-see some of the benefits that staging hasn't yet brought to the table
-that I think it will. The two problems I see are that a lot of people
-don't know about it yet, and we just obviously need to sort out the
-logistics to avoid impacting people who don't want to be impacted.
-
-Hopefully making staging a little more autonomous with its own mailing
-list would help; people who want to pitch in know where to find it,
-people who don't want to look at code until its ready don't even have
-to know it exists. In the meantime, we can get old, crappy drivers
-into shape (eventually), and prevent new drivers from going down the
-wrong path or dying out. And in the meantime, people don't have to
-scrounge for support for their devices.
-
->
-> thanks,
->
-> greg k-h
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
