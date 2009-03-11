@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbZCKIi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbZCKIqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753426AbZCKIi7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 04:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZCKIiu
+	id S1753319AbZCKIqQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 04:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZCKIqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 04:38:50 -0400
-Received: from web4112.mail.ogk.yahoo.co.jp ([124.83.200.74]:42840 "HELO
-	web4112.mail.ogk.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752005AbZCKIit (ORCPT
+	Wed, 11 Mar 2009 04:46:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:30978 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751567AbZCKIp6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 04:38:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=yj20050223; d=yahoo.co.jp;
-  h=Message-ID:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
-  b=tNnFZ7NNeOMEct7aZbUMZDMgSn5rdhmxOBXu43LGki5rx1Y8WXrVnIJPYV3caG52M9yJkyx6IjOvRAXMglX+X4aXmj96VVjIvw4nYWsJTxFIU6sp5Q/QADZwqBND0b3I  ;
-Message-ID: <20090311083846.5137.qmail@web4112.mail.ogk.yahoo.co.jp>
-Date: Wed, 11 Mar 2009 17:38:46 +0900 (JST)
-From: Norman Diamond <n0diamond@yahoo.co.jp>
-Reply-To: n0diamond@yahoo.co.jp
-Subject: Re: Off-by-one in both LIBATA and IDE drivers
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       n0diamond@yahoo.co.jp
-In-Reply-To: <20090311082725.37cb1883@lxorguk.ukuu.org.uk>
+	Wed, 11 Mar 2009 04:45:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=sJHk9vTzyJ+EBw8CELo0XMh4FXD9qoKLQr8nWSDcEFqPrSUIBB6VeNQ0J+HiSeeQKQ
+         PQvNxHJ1uTZ+xoXIP071KZtVyd60yBhMCREqkAfhjnd/GRPiGzdN+Dd3US4YsSvcZwmo
+         +kk5cawHdrRjEho9dyJ9ssvXRDQY4scYXDD/4=
+Message-ID: <49B77A42.5060106@gmail.com>
+Date: Wed, 11 Mar 2009 09:45:54 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
+To: Ingo Molnar <mingo@elte.hu>
+CC: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       yinghai@kernel.org, andi@firstfloor.org
+Subject: cpu_mask_to_apicid: Not a valid mask! [was: x86_32: summit_32, use
+ BAD_APICID]
+References: <20090224175518.GA15616@elte.hu> <1235508093-18063-1-git-send-email-jirislaby@gmail.com> <49A524D3.3090408@gmail.com> <20090225111002.GA15453@elte.hu> <49A71105.4050001@gmail.com> <20090228082120.GA11425@elte.hu> <49B3F9A5.4060506@gmail.com>
+In-Reply-To: <49B3F9A5.4060506@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> Norman Diamond <n0diamond@yahoo.co.jp> wrote:
-> 
->> It looks like both LIBATA and the old IDE drivers
->> have an off-by-one error in deciding whether to use
->> READ SECTOR(S) instead of READ SECTOR(S) EXT.
-> 
-> This was fixed some time ago, you need a newer
-> kernel.
+Adding Yinghai and Andi to CCs, maybe they can help? And changing subject.
 
-Well, either that or I need an older kernel.  It was also
-fixed in 2.6.20, for which I think there was a ready-made
-Slax distribution.
-
-On another topic, trying 2.6.20 in whatever Slax
-distribution it was, an Intel ICH7M had DMA enabled on
-both /dev/hda and /dev/hdc.  I understand that the change
-which was made shortly after that is considered to be by
-design not a bug.  In 2.6.20 I didn't even have to type a
-"combined_mode" parameter, it just worked.  I understand
-that the addition and subsequent deletion of the
-"combined_mode" parameter are considered to be by design
-not bugs.  But it is not at all pleasant that my /dev/hda
-runs at 1.3 megabytes per second in 2.6.24.3 and later,
-when it used to run at 45 megabytes per second in 2.6.20. 
-Yeah I know libata is supposed to solve all this stuff. 
-Removed some bugs and added others.
-
-I can't go newer than 2.6.24.3 until I find a version
-where TASKFILEs start working again.  There might not be
-one.  Yeah I know libata is supposed to solve all this
-stuff.  I wonder how much time I'll need and how many
-varieties of hardware I'll have to buy to see if it's
-really fixed.
-
-
---------------------------------------
-Power up the Internet with Yahoo! Toolbar.
-http://pr.mail.yahoo.co.jp/toolbar/
+On 8.3.2009 18:00, Jiri Slaby wrote:
+> On 28.2.2009 09:21, Ingo Molnar wrote:
+>>> I've sent 4 more patches, but there are still issues:
+>>> * es7000 + summit: I haven't solved calling with all bits set (only all
+>>> online is sufficient to trigger this). Some of the processors needn't be
+>>> on the same apic cluster. It will scream now (again -- it did before
+>>> adding the "optimisation"). Actually I don't know how to solve this. How
+>>> the caller would know the correct mask, ANDing with a apic->target_cpus
+>>> retval?
+>
+> Anybody, please? This is not a theoretical issue, this is a real problem
+> we hit...
