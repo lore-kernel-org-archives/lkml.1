@@ -1,110 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbZCKR1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZCKR16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754905AbZCKR1o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 13:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZCKR1e
+	id S1755457AbZCKR16 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 13:27:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbZCKR1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 13:27:34 -0400
-Received: from cmpxchg.org ([85.214.51.133]:48617 "EHLO cmpxchg.org"
+	Wed, 11 Mar 2009 13:27:42 -0400
+Received: from waste.org ([66.93.16.53]:39894 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751342AbZCKR1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 13:27:34 -0400
-Date: Wed, 11 Mar 2009 18:26:00 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, peterz@infradead.org,
-       Enrik.Berkhan@ge.com, uclinux-dev@uclinux.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may get wrongly discarded
-Message-ID: <20090311172600.GA1580@cmpxchg.org>
-References: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk>
+	id S1754705AbZCKR1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 13:27:42 -0400
+Subject: Re: [PATCH] fix/improve generic page table walker
+From: Matt Mackall <mpm@selenic.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>, akpm@linux-foundation.org
+In-Reply-To: <20090311144951.58c6ab60@skybase>
+References: <20090311144951.58c6ab60@skybase>
+Content-Type: text/plain
+Date: Wed, 11 Mar 2009 12:24:23 -0500
+Message-Id: <1236792263.3205.45.camel@calx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk>
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 03:30:35PM +0000, David Howells wrote:
-> From: Enrik Berkhan <Enrik.Berkhan@ge.com>
+On Wed, 2009-03-11 at 14:49 +0100, Martin Schwidefsky wrote:
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > 
-> The pages attached to a ramfs inode's pagecache by truncation from nothing - as
-> done by SYSV SHM for example - may get discarded under memory pressure.
-> 
-> The problem is that the pages are not marked dirty.  Anything that creates data
-> in an MMU-based ramfs will cause the pages holding that data will cause the
-> set_page_dirty() aop to be called.
-> 
-> For the NOMMU-based mmap, set_page_dirty() may be called by write(), but it
-> won't be called by page-writing faults on writable mmaps, and it isn't called
-> by ramfs_nommu_expand_for_mapping() when a file is being truncated from nothing
-> to allocate a contiguous run.
-> 
-> The solution is to mark the pages dirty at the point of allocation by
-> the truncation code.
-> 
-> Signed-off-by: Enrik Berkhan <Enrik.Berkhan@ge.com>
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
-> 
->  fs/ramfs/file-nommu.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/fs/ramfs/file-nommu.c b/fs/ramfs/file-nommu.c
-> index b9b567a..90d72be 100644
-> --- a/fs/ramfs/file-nommu.c
-> +++ b/fs/ramfs/file-nommu.c
-> @@ -114,6 +114,9 @@ int ramfs_nommu_expand_for_mapping(struct inode *inode, size_t newsize)
->  		if (!pagevec_add(&lru_pvec, page))
->  			__pagevec_lru_add_file(&lru_pvec);
->  
-> +		/* prevent the page from being discarded on memory pressure */
-> +		SetPageDirty(page);
-> +
->  		unlock_page(page);
->  	}
+> On s390 the /proc/pid/pagemap interface is currently broken. This is
+> caused by the unconditional loop over all pgd/pud entries as specified
+> by the address range passed to walk_page_range. The tricky bit here
+> is that the pgd++ in the outer loop may only be done if the page table
+> really has 4 levels. For the pud++ in the second loop the page table needs
+> to have at least 3 levels. With the dynamic page tables on s390 we can have
+> page tables with 2, 3 or 4 levels. Which means that the pgd and/or the
+> pud pointer can get out-of-bounds causing all kinds of mayhem.
 
-Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
+Not sure why this should be a problem without delving into the S390
+code. After all, x86 has 2, 3, or 4 levels as well (at compile time) in
+a way that's transparent to the walker.
 
-I think the attached patch is also needed, though unrelated to the
-above.
+> The proposed solution is to fast-forward over the hole between the start
+> address and the first vma and the hole between the last vma and the end
+> address. The pgd/pud/pmd/pte loops are used only for the address range
+> between the first and last vma. This guarantees that the page table
+> pointers stay in range for s390. For the other architectures this is
+> a small optimization.
 
-	Hannes
+I've gone to lengths to keep VMAs out of the equation, so I can't say
+I'm excited about this solution.
 
----
->From bfa7bc5f884bbc01c5e10faba7ca17160befd61e Mon Sep 17 00:00:00 2001
-From: Johannes Weiner <hannes@cmpxchg.org>
-Date: Wed, 11 Mar 2009 18:13:34 +0100
-Subject: [PATCH] ramfs: don't leak pages when adding to page cache fails
-
-When a ramfs nommu mapping is expanded, contiguous pages are allocated
-and added to the pagecache.  The caller's reference is then passed on
-by moving whole pagevecs to the file lru list.
-
-If the page cache adding fails, make sure that the error path also
-moves the pagevec contents which might still contain up to
-PAGEVEC_SIZE successfully added pages, of which we would leak
-references otherwise.
-
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
----
- fs/ramfs/file-nommu.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/fs/ramfs/file-nommu.c b/fs/ramfs/file-nommu.c
-index b9b567a..6d1624e 100644
---- a/fs/ramfs/file-nommu.c
-+++ b/fs/ramfs/file-nommu.c
-@@ -126,6 +126,7 @@ int ramfs_nommu_expand_for_mapping(struct inode *inode, size_t newsize)
- 	return -EFBIG;
- 
-  add_error:
-+	pagevec_lru_add_file(&lru_pvec);
- 	page_cache_release(pages + loop);
- 	for (loop++; loop < npages; loop++)
- 		__free_page(pages + loop);
 -- 
-1.6.1.3
+http://selenic.com : development and support for Mercurial and Linux
+
 
