@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZCKQfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbZCKQgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbZCKQfc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:35:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbZCKQfW
+	id S1753868AbZCKQgO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbZCKQf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:35:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42406 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751928AbZCKQfV (ORCPT
+	Wed, 11 Mar 2009 12:35:57 -0400
+Received: from mail-gx0-f167.google.com ([209.85.217.167]:42571 "EHLO
+	mail-gx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752397AbZCKQf4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:35:21 -0400
-Date: Wed, 11 Mar 2009 09:32:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: Jonathan Cameron <jic23@cam.ac.uk>, Jean Delvare <khali@linux-fr.org>,
-       linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Added driver for ISL29003 ambient light sensor
-Message-Id: <20090311093234.7e8e5416.akpm@linux-foundation.org>
-In-Reply-To: <20090311083252.GB25824@buzzloop.caiaq.de>
-References: <20090306181409.GA20135@buzzloop.caiaq.de>
-	<20090307115449.32f0ab26@hyperion.delvare>
-	<20090307120631.GA25276@buzzloop.caiaq.de>
-	<20090307130818.367bcaad@hyperion.delvare>
-	<20090309210901.GC31367@buzzloop.caiaq.de>
-	<49B666F9.50209@cam.ac.uk>
-	<20090310151542.GE9564@buzzloop.caiaq.de>
-	<49B6A843.3090902@cam.ac.uk>
-	<20090311003155.GB21160@buzzloop.caiaq.de>
-	<20090310212826.7d8b3d4e.akpm@linux-foundation.org>
-	<20090311083252.GB25824@buzzloop.caiaq.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Mar 2009 12:35:56 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090311162623.GE21831@suse.de>
+References: <20090306160818.404.92700.stgit@localhost.localdomain>
+	 <20090311162623.GE21831@suse.de>
+Date: Wed, 11 Mar 2009 10:35:29 -0600
+Message-ID: <fa686aa40903110935g155fbf7m83f4aead71d72488@mail.gmail.com>
+Subject: Re: [RFC] drivers/base: Add bus_register_notifier_alldev() variant
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009 09:32:52 +0100 Daniel Mack <daniel@caiaq.de> wrote:
+On Wed, Mar 11, 2009 at 10:26 AM, Greg KH <gregkh@suse.de> wrote:
+> On Fri, Mar 06, 2009 at 09:10:19AM -0700, Grant Likely wrote:
+>> From: Grant Likely <grant.likely@secretlab.ca>
+>>
+>> bus_register_notifier_alldev() is a variation on bus_register_notifier()
+>> which also triggers the notifier callback for devices already on the bus
+>> and already bound to drivers.
+>>
+>> This function is useful for the case where a driver needs to get a
+>> reference to a struct device other than the one it is bound to and
+>> it is not known if the device will be bound before or after this
+>> function is called.  For example, an Ethernet device connected to
+>> a PHY that is probed separately.
+>
+> Can't you just walk the list of all devices already on the bus to get
+> "notified" of them, and then register your notifier handler as well (or
+> register it first, and then walk the list, which is pretty much what
+> your patch does)?
 
-> On Tue, Mar 10, 2009 at 09:28:26PM -0700, Andrew Morton wrote:
-> > On Wed, 11 Mar 2009 01:31:55 +0100 Daniel Mack <daniel@caiaq.de> wrote:
-> > > > All looks fine to me.
-> > > > 
-> > > > Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
-> > 
-> > I cannot find this review which Jonathan performed.  Fumbled
-> > reply-to-all, or did vger break?
-> 
-> Jonathan replied to the posting on linux-i2c and linux-kernel wasn't in
-> the loop, sorry. Find his posting here:
-> 
-> 	http://marc.info/?l=linux-i2c&m=123669064909549&w=2
+Yes, and I originally did, but it looks to me like a useful common
+pattern that is less error prone than open coding it.
 
-OK.  Please always use reply-to-all, guys.
+g.
 
-> > I can take care of it.
-> > 
-> > Was any thought given to the CONFIG_SYSFS=n situation?
-> 
-> You're right, it should depend on that. You want me so send a patch on
-> top of the other or one that replaces it?
-
-Either way is OK by me at this time.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
