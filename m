@@ -1,89 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZCKMQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbZCKMTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755465AbZCKMQv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 08:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbZCKMQm
+	id S1755987AbZCKMTe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 08:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZCKMTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 08:16:42 -0400
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:45098 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754359AbZCKMQl convert rfc822-to-8bit (ORCPT
+	Wed, 11 Mar 2009 08:19:24 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51604 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754494AbZCKMTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 08:16:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Ls0nvu4t5uWYw1Z37QjiuY3oaQTEx+ckXrSL3SJXh+nL4zx4yRK9tt/+vHcdEakXtT
-         lvARsrhxXMDpTuIvcmRG8UWJYpgPb/ilHP2oQAr5nbuQVtbi4sNEb3h5+CuvXdCHr67p
-         Mu3+x0qY1mdvoaRDaAAPTKrhjG6Mp1kv1In64=
-MIME-Version: 1.0
-In-Reply-To: <20090311121123.GA7656@localhost>
-References: <e2dc2c680903110341g6c9644b8j87ce3b364807e37f@mail.gmail.com>
-	 <20090311114353.GA759@localhost>
-	 <e2dc2c680903110451m3cfa35d9s7a9fd942bcee39eb@mail.gmail.com>
-	 <20090311121123.GA7656@localhost>
-Date: Wed, 11 Mar 2009 13:16:38 +0100
-Message-ID: <e2dc2c680903110516v2c66d4a4h6a422cffceb12e2@mail.gmail.com>
-Subject: Re: Memory usage per memory zone
-From: jack marrow <jackmarrow2@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 11 Mar 2009 08:19:24 -0400
+Date: Wed, 11 Mar 2009 13:38:45 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86: suggest running a 64bit kernel on LM capable machines with plenty memory.
+Message-ID: <20090311123845.GF11935@one.firstfloor.org>
+References: <49B254C6.8010507@pardus.org.tr> <20090307193026.GA2165@x200.localdomain> <49B2CE44.4060305@pardus.org.tr> <87r617ojfi.fsf@firstfloor.org> <1236606168.8389.512.camel@laptop> <20090309191504.GB11935@one.firstfloor.org> <1236677828.25234.9.camel@laptop> <20090310062134.704d2c7e@infradead.org> <1236772885.8192.241.camel@laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236772885.8192.241.camel@laptop>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/3/11 Wu Fengguang <fengguang.wu@intel.com>:
-> On Wed, Mar 11, 2009 at 01:51:32PM +0200, jack marrow wrote:
->> 2009/3/11 Wu Fengguang <fengguang.wu@intel.com>:
->> > Hi jack,
->> >
->> > On Wed, Mar 11, 2009 at 11:41:43AM +0100, jack marrow wrote:
->> >> Hello,
->> >>
->> >> I have a box where the oom-killer is killing processes due to running
->> >> out of memory in zone_normal. I can see using slabtop that the inode
->> >
->> > How do you know that the memory pressure on zone normal stand out alone?
->>
->> For the normal zone only, I see "all_unreclaimable: yes" and 3 megs of free ram:
->>
->> kernel: Normal free:2576kB min:3728kB low:7456kB high:11184kB
->> active:1304kB inactive:128kB present:901120kB pages_scanned:168951
->> all_unreclaimable? yes
->
-> It's normal behavior.  Linux kernel tries hard to utilize most of
-> the free memory for caching files :)
+> Esp on x86_64 machines with >=4G of memory its insane to run i386-PAE.
 
-With all_unreclaimable = yes is normal?
+Not sure I would apply insane to 4GB, but it definitely applies 
+to >= 16GB, likely >= 8GB. Enough known deadlocks in this case.
+I would consider >=16GB on 32bit at least a kerneloops worthy condition.
 
->
->> >> caches are using up lots of memory and guess this is the problem, so
->> >> have cleared them using an echo to drop_caches.
->> >
->> > It would better be backed by concrete numbers...
->> >
->> >>
->> >> I would quite like to not guess though - is it possible to use slabtop
->> >> (or any other way) to view ram usage per zone so I can pick out the
->> >> culprit?
->> >
->> > /proc/zoneinfo and /proc/vmstat do have some per-zone numbers.
->> > Some of them deal with slabs.
->>
->> Thanks, I'll read up on how to interpret these.
->>
->> Do you recommend these two files for tracking down memory usage per
->> process per zone?
->
-> No, the two interfaces provide system wide counters.  We have the well
-> known tools "ps" and "top" for per-process numbers, hehe.
+Perhaps the warnings should vary in urgency.  e.g. if it's >= 16GB and 
+not 2:2 split we know that the system will have problems and it should
+strongly suggest, otherwise weakly.
 
-ps and top do not have per-zone numbers. How do I get those?
+Or perhaps it should be measured in percentage of mem_map
+in lowmem?
 
->
-> Thanks,
-> Fengguang
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
