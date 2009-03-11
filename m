@@ -1,62 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbZCKGEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbZCKGEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155AbZCKGEB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 02:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbZCKGDw
+	id S1753861AbZCKGEZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 02:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZCKGEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 02:03:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58997 "EHLO hera.kernel.org"
+	Wed, 11 Mar 2009 02:04:13 -0400
+Received: from ozlabs.org ([203.10.76.45]:59752 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751587AbZCKGDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 02:03:51 -0400
-Message-ID: <49B75425.1050804@kernel.org>
-Date: Wed, 11 Mar 2009 15:03:17 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751728AbZCKGEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 02:04:12 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Pekka Paalanen <pq@iki.fi>
+Subject: [PATCH] cpumask: x86 mmio-mod.c use cpumask_var_t for downed_cpus.
+Date: Wed, 11 Mar 2009 16:33:55 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, lethal@linux-sh.org,
-       rmk@arm.linux.org.uk, starvik@axis.com, ralf@linux-mips.org,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com
-Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
- percpu allocator
-References: <1236671631-9305-1-git-send-email-tj@kernel.org> <20090310.035915.149277356.davem@davemloft.net>
-In-Reply-To: <20090310.035915.149277356.davem@davemloft.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Mar 2009 06:02:54 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200903111633.55952.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Impact: cleanup, reduce memory usage for CONFIG_CPUMASK_OFFSTACK=y
 
-David Miller wrote:
-> The one thing sparc64 does is calculate the base of the per-cpu
-> area using a base (contained in a fixed global register) a shift.
-> 
->>From arch/sparc/include/asm/percpu_64.h
-> 
-> register unsigned long __local_per_cpu_offset asm("g5");
-> extern unsigned long __per_cpu_base;
-> extern unsigned long __per_cpu_shift;
-> #define __per_cpu_offset(__cpu) \
-> 	(__per_cpu_base + ((unsigned long)(__cpu) << __per_cpu_shift))
-> #define per_cpu_offset(x) (__per_cpu_offset(x))
-> #define __my_cpu_offset __local_per_cpu_offset
-> 
-> I hope this won't cause problems for what you're trying to accomplish.
+Part of the "getting rid of obsolete cpumask_t" patch:
+1) Use cpumask_var_t: this is a pointer if CONFIG_CPUMASK_OFFSTACK=y
+2) Call alloc_cpumask_var() on first entry into enter_uniprocessor()
+3) Use modern cpumask_* functions.
 
-It won't at all.  I'll be converting the remaining three once the
-default conversion is settled and I'm getting my very first sun
-workstation this weekend, so no worries.  :-)
+To: Pekka Paalanen <pq@iki.fi>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/x86/mm/mmio-mod.c |   19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
 
-Thanks.
-
--- 
-tejun
+diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
+--- a/arch/x86/mm/mmio-mod.c
++++ b/arch/x86/mm/mmio-mod.c
+@@ -378,27 +378,34 @@ static void clear_trace_list(void)
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-static cpumask_t downed_cpus;
++static cpumask_var_t downed_cpus;
+ 
+ static void enter_uniprocessor(void)
+ {
+ 	int cpu;
+ 	int err;
+ 
++	if (downed_cpus == NULL &&
++	    !alloc_cpumask_var(&downed_cpus, GFP_KERNEL)) {
++		pr_notice(NAME "Failed to allocate mask\n");
++		goto out;
++	}
++
+ 	get_online_cpus();
+-	downed_cpus = cpu_online_map;
+-	cpu_clear(first_cpu(cpu_online_map), downed_cpus);
++	cpumask_copy(downed_cpus, cpu_online_mask);
++	cpumask_clear_cpu(cpumask_first(cpu_online_mask), downed_cpus);
+ 	if (num_online_cpus() > 1)
+ 		pr_notice(NAME "Disabling non-boot CPUs...\n");
+ 	put_online_cpus();
+ 
+-	for_each_cpu_mask(cpu, downed_cpus) {
++	for_each_cpu(cpu, downed_cpus) {
+ 		err = cpu_down(cpu);
+ 		if (!err)
+ 			pr_info(NAME "CPU%d is down.\n", cpu);
+ 		else
+ 			pr_err(NAME "Error taking CPU%d down: %d\n", cpu, err);
+ 	}
++out:
+ 	if (num_online_cpus() > 1)
+ 		pr_warning(NAME "multiple CPUs still online, "
+ 						"may miss events.\n");
+@@ -411,10 +418,10 @@ static void __ref leave_uniprocessor(voi
+ 	int cpu;
+ 	int err;
+ 
+-	if (cpus_weight(downed_cpus) == 0)
++	if (downed_cpus == NULL || cpumask_weight(downed_cpus) == 0)
+ 		return;
+ 	pr_notice(NAME "Re-enabling CPUs...\n");
+-	for_each_cpu_mask(cpu, downed_cpus) {
++	for_each_cpu(cpu, downed_cpus) {
+ 		err = cpu_up(cpu);
+ 		if (!err)
+ 			pr_info(NAME "enabled CPU%d.\n", cpu);
