@@ -1,220 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752630AbZCKHEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbZCKHSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752630AbZCKHEX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 03:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbZCKHEG
+	id S1753460AbZCKHSY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 03:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbZCKHSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 03:04:06 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:5382 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbZCKHEF (ORCPT
+	Wed, 11 Mar 2009 03:18:14 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:30037 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751923AbZCKHSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 03:04:05 -0400
-Date: Wed, 11 Mar 2009 01:03:59 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       jbarnes@virtuousgeek.org, tj@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] sysfs: only allow one scheduled removal callback
-	per kobj
-Message-ID: <20090311070359.GF25665@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>, Greg KH <gregkh@suse.de>,
-	Vegard Nossum <vegard.nossum@gmail.com>,
-	Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-	jbarnes@virtuousgeek.org, tj@kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20090310232027.GC25665@ldl.fc.hp.com> <20090311044151.GB25840@suse.de>
+	Wed, 11 Mar 2009 03:18:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=R1Pe4XtmV0k3W6Rr/jiZ7QRJtWcmBOf8On4k50s5Xcg+tKEBLzn/M9pH6kqja/0PyC
+         Rk+/Juiaq2dNQK8wwTeHVYTq+PnWxzbzjEMVP1uZ19wOwBK6syueVBEqOu3W14nAbAPH
+         GOeTC4Suyz+OXO7FR7TQwuJow/4BUF+iYWxj4=
+Date: Wed, 11 Mar 2009 08:18:09 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] tracing: use raw spinlocks for trace_vprintk
+Message-ID: <20090311071808.GA5090@nowhere>
+References: <alpine.DEB.2.00.0903102125250.16494@gandalf.stny.rr.com> <1236754764.22914.3680.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090311044151.GB25840@suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1236754764.22914.3680.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH <gregkh@suse.de>:
-> On Tue, Mar 10, 2009 at 05:20:27PM -0600, Alex Chiang wrote:
-> > Hi Vegard, sysfs folks,
-> > 
-> > Vegard was nice enough to test my PCI remove/rescan patches under
-> > kmemcheck. Maybe "torture" is a more appropriate term. ;)
-> > 
-> > My patch series introduces a sysfs "remove" attribute for PCI
-> > devices, which will remove that device (and child devices).
-> > 
-> > 	http://thread.gmane.org/gmane.linux.kernel.pci/3495
-> > 
-> > Vegard decided that he wanted to do something like:
-> > 
-> > 	# while true ; do echo 1 > /sys/bus/pci/devices/.../remove ; done
-> > 
-> > which caused a nasty oops in my code. You can see the results of
-> > his testing in the thread I referenced above.
-> > 
-> > After looking at my code for a bit, I decided that maybe it
-> > wasn't completely my fault. ;) See, I'm using device_schedule_callback()
+On Wed, Mar 11, 2009 at 07:59:24AM +0100, Peter Zijlstra wrote:
+> On Tue, 2009-03-10 at 21:26 -0400, Steven Rostedt wrote:
 > 
-> why?  Are you really in interrupt context here to need to do the remove
-> at a later time?
-
-What other interface can I use to remove objects from sysfs?
-
-Demo:
-
-Here's the topology of my machine. Sorry about the long line, but
-device 0000:04 is a complex device with an internal bridge and 4
-PCI functions.
-
-[root@tahitifp1 ~]# lspci -vt
- +-[0000:03]---00.0-[0000:04-07]----00.0-[0000:05-07]--+-02.0-[0000:06]--+-00.0  Intel Corporation 82571EB Quad Port Gigabit Mezzanine Adapter
- |                                                     |                 \-00.1  Intel Corporation 82571EB Quad Port Gigabit Mezzanine Adapter
- |                                                     \-04.0-[0000:07]--+-00.0  Intel Corporation 82571EB Quad Port Gigabit Mezzanine Adapter
- |                                                                       \-00.1  Intel Corporation 82571EB Quad Port Gigabit Mezzanine Adapter
-
-Here's the state of my machine before I do anything.
-
-[root@tahitifp1 ~]# ls /sys/bus/pci/devices/
-0000:00:01.0  0000:00:02.2  0000:02:02.0  0000:05:04.0 0000:08:00.0
-0000:00:01.1  0000:00:04.0  0000:02:02.1  0000:06:00.0 0000:0a:00.0
-0000:00:01.2  0000:01:01.0  0000:03:00.0  0000:06:00.1
-0000:00:02.0  0000:01:01.1  0000:04:00.0  0000:07:00.0
-0000:00:02.1  0000:02:01.0  0000:05:02.0  0000:07:00.1
-
-We see the following PCI buses.
-
-[root@tahitifp1 ~]# ls /sys/class/pci_bus/
-0000:00  0000:02  0000:04  0000:06  0000:08  0000:0a
-0000:01  0000:03  0000:05  0000:07  0000:09  0000:0b
-
-Use my shiny new patch set. :)
-
-[root@tahitifp1 ~]# echo 1 > /sys/bus/pci/devices/0000\:04\:00.0/remove 
-
-Now device 0000:04:00.0 is gone, as are all the devices below it.
-Just as we expect.
-
-[root@tahitifp1 ~]# ls /sys/bus/pci/devices/
-0000:00:01.0  0000:00:02.0  0000:00:04.0  0000:02:01.0 0000:03:00.0
-0000:00:01.1  0000:00:02.1  0000:01:01.0  0000:02:02.0 0000:08:00.0
-0000:00:01.2  0000:00:02.2  0000:01:01.1  0000:02:02.1 0000:0a:00.0
-
-And the PCI buses are gone too.
-
-[root@tahitifp1 ~]# ls /sys/class/pci_bus/
-0000:00  0000:01  0000:02  0000:03  0000:08  0000:09  0000:0a 0000:0b
-
-Let's get them back with the 2nd part of my shiny patch set.
-
-[root@tahitifp1 ~]# echo 1 > /sys/bus/pci/rescan
-
-All the devices came back:
-
-[root@tahitifp1 ~]# ls /sys/bus/pci/devices/
-0000:00:01.0  0000:00:02.2  0000:02:02.0  0000:05:04.0 0000:08:00.0
-0000:00:01.1  0000:00:04.0  0000:02:02.1  0000:06:00.0 0000:0a:00.0
-0000:00:01.2  0000:01:01.0  0000:03:00.0  0000:06:00.1
-0000:00:02.0  0000:01:01.1  0000:04:00.0  0000:07:00.0
-0000:00:02.1  0000:02:01.0  0000:05:02.0  0000:07:00.1
-
-And so did our PCI buses.
-
-[root@tahitifp1 ~]# ls /sys/class/pci_bus/
-0000:00  0000:02  0000:04  0000:06  0000:08  0000:0a
-0000:01  0000:03  0000:05  0000:07  0000:09  0000:0b
-
-
-What other internal API should I be using for something like the
-above to work? Especially if someone does something crazy like
-that while loop that Vegard showed?
-
-As I understand it, attempting to allow device 0000:04:00.0 to
-directly remove itself in the sysfs attribute's store method will
-result in deadlock, is that not the case?
-
-And if it will result in deadlock, then I have to use the
-device_schedule_callback() API, right?
-
-> > which really is a wrapper around sysfs_schedule_callback() which
-> > is the way that a sysfs attribute is supposed to remove itself to
-> > prevent deadlock.
+> > commit 80370cb758e7ca2692cd9fb5e413d970b1f4b2b2
+> > Author: Steven Rostedt <srostedt@redhat.com>
+> > Date:   Tue Mar 10 17:16:35 2009 -0400
+> > 
+> >     tracing: use raw spinlocks for trace_vprintk
+> >     
+> >     Impact: prevent locking up by lockdep tracer
+> >     
+> >     The lockdep tracer uses trace_vprintk and thus trace_vprintk can not
+> >     call back into lockdep without locking up.
 > 
-> Yeah, it's the scsi code that needed this mess :(
+> Hmm, I did this when I posted the lockdep tracepoints, so someone then
+> did a bad copy/paste job when renaming ftrace_printk or something?
 > 
-> If at all possible, I would recommend not using it.
+> See efed792d6738964f399a508ef9e831cd60fa4657
+
+
+
+Must be my bad :-s
+I think I lost this modification that was done on the old trace_vprintf
+between two iterations of the bprintk patchset.
+
+BTW, Ingo reported one or two monthes ago that ftrace_printk was not NMI safe
+because of this spinlock.
+
+He suggested to drop the spinlock and then make trace_buf per_cpu.
+
+By disabling the irq we prevent from race with maskable irqs. And in
+case of racy accesses to trace_buf because of an nmi, then the buffer
+might be mixed up but it must be harmless compared to a hardlockup that
+can occur now. On the worst case, the trace will be weird and that's it.
+
+Frederic.
+
+
+> >     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> > 
+> > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> > index 8c6a902..4c97947 100644
+> > --- a/kernel/trace/trace.c
+> > +++ b/kernel/trace/trace.c
+> > @@ -1176,7 +1176,8 @@ void trace_graph_return(struct ftrace_graph_ret *trace)
+> >   */
+> >  int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+> >  {
+> > -	static DEFINE_SPINLOCK(trace_buf_lock);
+> > +	static raw_spinlock_t trace_buf_lock =
+> > +		(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
+> >  	static u32 trace_buf[TRACE_BUF_SIZE];
+> >  
+> >  	struct ring_buffer_event *event;
+> > @@ -1201,7 +1202,9 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+> >  	if (unlikely(atomic_read(&data->disabled)))
+> >  		goto out;
+> >  
+> > -	spin_lock_irqsave(&trace_buf_lock, flags);
+> > +	/* Lockdep uses trace_printk for lock tracing */
+> > +	local_irq_save(flags);
 > 
-> > The problem that Vegard's test exposed is that if you repeatedly
-> > call a sysfs attribute that's supposed to remove itself using
-> > device_schedule_callback, we'll keep scheduling work queue tasks
-> > with a kobj that we really want to release.
-> > 
-> > [nb, I bet that /sys/bus/scsi/devices/.../delete will exhibit the
-> > same problems]
+> Shouldn't you also use raw_local_irq_save() and friends?
 > 
-> I think it's harder to remove devices multiple times, as it isn't done
-> through sysfs, but from another external request.  But I could be wrong.
-
-I'm not sure I understand what you mean by this.
-
-> > This is very racy, and at some point, whatever remove handler
-> > we've scheduled with device_schedule_callback will end up
-> > referencing a freed kobj.
+> > +	__raw_spin_lock(&trace_buf_lock);
+> >  	len = vbin_printf(trace_buf, TRACE_BUF_SIZE, fmt, args);
+> >  
+> >  	if (len > TRACE_BUF_SIZE || len < 0)
+> > @@ -1220,7 +1223,8 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
+> >  	ring_buffer_unlock_commit(tr->buffer, event);
+> >  
+> >  out_unlock:
+> > -	spin_unlock_irqrestore(&trace_buf_lock, flags);
+> > +	__raw_spin_unlock(&trace_buf_lock);
+> > +	local_irq_restore(flags);
+> >  
+> >  out:
+> >  	ftrace_preempt_enable(resched);
 > > 
-> > I came up with the below patch which changes the semantics of
-> > device/sysfs_schedule_callback. We now only allow one in-flight
-> > callback per kobj, and return -EBUSY if that kobj already has a
-> > callback scheduled for it.
-> > 
-> > This patch, along with my updated 07/11 patch in my series,
-> > prevents at least the first oops that Vegard reported, and I
-> > suspect it prevents the second kmemcheck error too, although I
-> > haven't tested under kmemcheck (yet*).
-> > 
-> > I'm looking for comments on the approach I took, specifically:
-> > 
-> > 	- are we ok with the new restriction I imposed?
-> > 	- is it ok to return -EBUSY to our callers?
-> > 	- is the simple linked list proof of concept
-> > 	  implementation going to scale too poorly?
-> > 
-> > To answer my own first two questions, I checked for callers of
-> > both device_ and sysfs_schedule_callback, and it looks like
-> > everyone is using it the same way: to schedule themselves for
-> > removal. That is, although the interface could be used to
-> > schedule any sort of callback, the only use case is the removal
-> > use case. I don't think it will be a problem to limit ourselves
-> > to one remove callback per kobj.
-> 
-> I agree.
-> 
-> > Maybe this patch really wants to be a new interface called
-> > sysfs_schedule_callback_once or _single, where we check for an
-> > already-scheduled callback for a kobj, and if we pass, then we
-> > simply continue on to the existing, unchanged
-> > sysfs_schedule_callback. I don't feel too strongly about creating
-> > a new interface, but my belief is that changing the semantics of
-> > the existing interface is probably the better solution.
-> > 
-> > My opinion on my own third question is that removing a device is
-> > not in the performance path, so a simple linked list is
-> > sufficient.
-> > 
-> > Depending on the feedback here, I'll resend this patch with a
-> > full changelog (and giving credit to Vegard/kmemcheck as Ingo
-> > requested I do) or I can rework it.
-> 
-> I have no objection to this change.  But I really would recommend not
-> using this interface at all if possible.
-
-I'm open to other suggestions, but my imagination (or grepping
-skills) must be limited. :)
-
-If, as I suspect, that I really do need to use that interface,
-please let me know and I'll re-submit my patch with proper
-changelog, etc.
-
-Thanks.
-
-/ac
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
