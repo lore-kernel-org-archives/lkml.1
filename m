@@ -1,111 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbZCKLOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbZCKLPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710AbZCKLOv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 07:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbZCKLOk
+	id S1755183AbZCKLPO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 07:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbZCKLOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 07:14:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51391 "EHLO hera.kernel.org"
+	Wed, 11 Mar 2009 07:14:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51392 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753364AbZCKLOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 07:14:39 -0400
-Date: Wed, 11 Mar 2009 11:14:06 GMT
-From: Mike Galbraith <efault@gmx.de>
+	id S1753624AbZCKLOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 07:14:40 -0400
+Date: Wed, 11 Mar 2009 11:13:59 GMT
+From: Rusty Russell <rusty@rustcorp.com.au>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
+       rusty@rustcorp.com.au, pq@iki.fi, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1236709131.25234.576.camel@laptop>
-References: <1236709131.25234.576.camel@laptop>
-Subject: [tip:sched/core] sched: add avg_overlap decay
-Message-ID: <tip-df1c99d416500da8d26a4d78777467c53ee7689e@git.kernel.org>
-Git-Commit-ID: df1c99d416500da8d26a4d78777467c53ee7689e
+       rusty@rustcorp.com.au, pq@iki.fi, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <200903111633.55952.rusty@rustcorp.com.au>
+References: <200903111633.55952.rusty@rustcorp.com.au>
+Subject: [tip:cpus4096] x86: cpumask: x86 mmio-mod.c use cpumask_var_t for downed_cpus
+Message-ID: <tip-f5c14fe200f4315b305ae44e5633cbe62070aaea@git.kernel.org>
+Git-Commit-ID: f5c14fe200f4315b305ae44e5633cbe62070aaea
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Mar 2009 11:14:08 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Mar 2009 11:14:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  df1c99d416500da8d26a4d78777467c53ee7689e
-Gitweb:     http://git.kernel.org/tip/df1c99d416500da8d26a4d78777467c53ee7689e
-Author:     "Mike Galbraith" <efault@gmx.de>
-AuthorDate: Tue, 10 Mar 2009 19:08:11 +0100
+Commit-ID:  f5c14fe200f4315b305ae44e5633cbe62070aaea
+Gitweb:     http://git.kernel.org/tip/f5c14fe200f4315b305ae44e5633cbe62070aaea
+Author:     "Rusty Russell" <rusty@rustcorp.com.au>
+AuthorDate: Wed, 11 Mar 2009 16:33:55 +1030
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 11 Mar 2009 11:31:50 +0100
+CommitDate: Wed, 11 Mar 2009 11:19:47 +0100
 
-sched: add avg_overlap decay
+x86: cpumask: x86 mmio-mod.c use cpumask_var_t for downed_cpus
 
-Impact: more precise avg_overlap metric - better load-balancing
+Impact: cleanup, reduce memory usage for CONFIG_CPUMASK_OFFSTACK=y
 
-avg_overlap is used to measure the runtime overlap of the waker and
-wakee.
+Part of the "getting rid of obsolete cpumask_t" patch:
 
-However, when a process changes behaviour, eg a pipe becomes
-un-congested and we don't need to go to sleep after a wakeup
-for a while, the avg_overlap value grows stale.
+ 1) Use cpumask_var_t: this is a pointer if CONFIG_CPUMASK_OFFSTACK=y
+ 2) Call alloc_cpumask_var() on first entry into enter_uniprocessor()
+ 3) Use modern cpumask_* functions.
 
-When running we use the avg runtime between preemption as a
-measure for avg_overlap since the amount of runtime can be
-correlated to cache footprint.
-
-The longer we run, the less likely we'll be wanting to be
-migrated to another CPU.
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1236709131.25234.576.camel@laptop>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Pekka Paalanen <pq@iki.fi>
+LKML-Reference: <200903111633.55952.rusty@rustcorp.com.au>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/sched.c |   24 +++++++++++++++++++++++-
- 1 files changed, 23 insertions(+), 1 deletions(-)
+ arch/x86/mm/mmio-mod.c |   19 +++++++++++++------
+ 1 files changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index af5cd1b..2f28351 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4620,6 +4620,28 @@ static inline void schedule_debug(struct task_struct *prev)
- #endif
+diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
+index 2c4baa8..c9342ed 100644
+--- a/arch/x86/mm/mmio-mod.c
++++ b/arch/x86/mm/mmio-mod.c
+@@ -378,27 +378,34 @@ static void clear_trace_list(void)
  }
  
-+static void put_prev_task(struct rq *rq, struct task_struct *prev)
-+{
-+	if (prev->state == TASK_RUNNING) {
-+		u64 runtime = prev->se.sum_exec_runtime;
-+
-+		runtime -= prev->se.prev_sum_exec_runtime;
-+		runtime = min_t(u64, runtime, 2*sysctl_sched_migration_cost);
-+
-+		/*
-+		 * In order to avoid avg_overlap growing stale when we are
-+		 * indeed overlapping and hence not getting put to sleep, grow
-+		 * the avg_overlap on preemption.
-+		 *
-+		 * We use the average preemption runtime because that
-+		 * correlates to the amount of cache footprint a task can
-+		 * build up.
-+		 */
-+		update_avg(&prev->se.avg_overlap, runtime);
+ #ifdef CONFIG_HOTPLUG_CPU
+-static cpumask_t downed_cpus;
++static cpumask_var_t downed_cpus;
+ 
+ static void enter_uniprocessor(void)
+ {
+ 	int cpu;
+ 	int err;
+ 
++	if (downed_cpus == NULL &&
++	    !alloc_cpumask_var(&downed_cpus, GFP_KERNEL)) {
++		pr_notice(NAME "Failed to allocate mask\n");
++		goto out;
 +	}
-+	prev->sched_class->put_prev_task(rq, prev);
-+}
 +
- /*
-  * Pick up the highest-prio task:
-  */
-@@ -4698,7 +4720,7 @@ need_resched_nonpreemptible:
- 	if (unlikely(!rq->nr_running))
- 		idle_balance(cpu, rq);
+ 	get_online_cpus();
+-	downed_cpus = cpu_online_map;
+-	cpu_clear(first_cpu(cpu_online_map), downed_cpus);
++	cpumask_copy(downed_cpus, cpu_online_mask);
++	cpumask_clear_cpu(cpumask_first(cpu_online_mask), downed_cpus);
+ 	if (num_online_cpus() > 1)
+ 		pr_notice(NAME "Disabling non-boot CPUs...\n");
+ 	put_online_cpus();
  
--	prev->sched_class->put_prev_task(rq, prev);
-+	put_prev_task(rq, prev);
- 	next = pick_next_task(rq);
+-	for_each_cpu_mask(cpu, downed_cpus) {
++	for_each_cpu(cpu, downed_cpus) {
+ 		err = cpu_down(cpu);
+ 		if (!err)
+ 			pr_info(NAME "CPU%d is down.\n", cpu);
+ 		else
+ 			pr_err(NAME "Error taking CPU%d down: %d\n", cpu, err);
+ 	}
++out:
+ 	if (num_online_cpus() > 1)
+ 		pr_warning(NAME "multiple CPUs still online, "
+ 						"may miss events.\n");
+@@ -411,10 +418,10 @@ static void __ref leave_uniprocessor(void)
+ 	int cpu;
+ 	int err;
  
- 	if (likely(prev != next)) {
+-	if (cpus_weight(downed_cpus) == 0)
++	if (downed_cpus == NULL || cpumask_weight(downed_cpus) == 0)
+ 		return;
+ 	pr_notice(NAME "Re-enabling CPUs...\n");
+-	for_each_cpu_mask(cpu, downed_cpus) {
++	for_each_cpu(cpu, downed_cpus) {
+ 		err = cpu_up(cpu);
+ 		if (!err)
+ 			pr_info(NAME "enabled CPU%d.\n", cpu);
