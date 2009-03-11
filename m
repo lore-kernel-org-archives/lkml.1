@@ -1,52 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbZCKD2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZCKD3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbZCKD2W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 23:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZCKD2K
+	id S1754789AbZCKD3g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 23:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZCKD30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 23:28:10 -0400
-Received: from web4114.mail.ogk.yahoo.co.jp ([124.83.200.76]:38508 "HELO
-	web4114.mail.ogk.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753530AbZCKD2J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 23:28:09 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=yj20050223; d=yahoo.co.jp;
-  h=Message-ID:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
-  b=YFnUavnstetaaI0tuENhaj35rZ+oC4kO4XLPSg1zT/tycdSY4wFSJ9iS1c86TyrpucnUisbK8a74W+l8U6JHgwlIv2GEwSSnjMhBaKlnJWpDp4+j+8YV9aTzqNOY/DVJ  ;
-Message-ID: <20090311032805.3120.qmail@web4114.mail.ogk.yahoo.co.jp>
-Date: Wed, 11 Mar 2009 12:28:05 +0900 (JST)
-From: Norman Diamond <n0diamond@yahoo.co.jp>
-Reply-To: n0diamond@yahoo.co.jp
-Subject: Re: Off-by-one in both LIBATA and IDE drivers
-To: Jim Paris <jim@jtan.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       n0diamond@yahoo.co.jp
-In-Reply-To: <20090311030340.GA617@psychosis.jim.sh>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
+	Tue, 10 Mar 2009 23:29:26 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43817 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752076AbZCKD3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 23:29:25 -0400
+Date: Wed, 11 Mar 2009 04:29:18 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-fsdevel@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Jorge Boncompte [DTI2]" <jorge@dti2.net>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>, stable@kernel.org
+Subject: Re: [patch] fs: avoid I_NEW inodes
+Message-ID: <20090311032918.GE16561@wotan.suse.de>
+References: <20090305064554.GA11916@wotan.suse.de> <20090305100000.GA29177@duck.suse.cz> <20090305101637.GB17815@wotan.suse.de> <20090305111226.GB29531@duck.suse.cz> <20090310134106.GA15977@wotan.suse.de> <20090310160321.GB1190@duck.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090310160321.GB1190@duck.suse.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jim Paris wrote:
-> Norman Diamond wrote:
->>
->> It looks like both LIBATA and the old IDE drivers
->> have an off-by-one error in deciding whether to use
->> READ SECTOR(S) instead of READ SECTOR(S) EXT.
-> 
-> This was fixed here:
->
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=97b697a11b07e2ebfa69c488132596cc5eb24119
+How about this?
 
-Thank you.
+--
+To be on the safe side, it should be less fragile to exclude I_NEW inodes
+from inode list scans by default (unless there is an important reason to
+have them).
 
-I will see if I can port that fix to 2.6.24.3, because
-Slax 6.0.3 and kernel 2.6.24.3 avoided some other bugs of
-later kernels.
+Normally they will get excluded (eg. by zero refcount or writecount etc),
+however it is a bit fragile for list walkers to know exactly what parts of
+the inode state is set up and valid to test when in I_NEW. So along these
+lines, move I_NEW checks upward as well (sometimes taking I_FREEING etc
+checks with them too -- this shouldn't be a problem should it?)
 
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 
---------------------------------------
-Power up the Internet with Yahoo! Toolbar.
-http://pr.mail.yahoo.co.jp/toolbar/
+---
+ fs/dquot.c                  |   10 ++++++++--
+ fs/drop_caches.c            |    2 +-
+ fs/inode.c                  |    2 ++
+ fs/notify/inotify/inotify.c |   16 ++++++++--------
+ 4 files changed, 19 insertions(+), 11 deletions(-)
+
+Index: linux-2.6/fs/dquot.c
+===================================================================
+--- linux-2.6.orig/fs/dquot.c
++++ linux-2.6/fs/dquot.c
+@@ -789,12 +789,12 @@ static void add_dquot_ref(struct super_b
+ 
+ 	spin_lock(&inode_lock);
+ 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
++		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
++			continue;
+ 		if (!atomic_read(&inode->i_writecount))
+ 			continue;
+ 		if (!dqinit_needed(inode, type))
+ 			continue;
+-		if (inode->i_state & (I_FREEING|I_WILL_FREE))
+-			continue;
+ 
+ 		__iget(inode);
+ 		spin_unlock(&inode_lock);
+@@ -870,6 +870,12 @@ static void remove_dquot_ref(struct supe
+ 
+ 	spin_lock(&inode_lock);
+ 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
++		/*
++		 *  We have to scan also I_NEW inodes because they can already
++		 *  have quota pointer initialized. Luckily, we need to touch
++		 *  only quota pointers and these have separate locking
++		 *  (dqptr_sem).
++		 */
+ 		if (!IS_NOQUOTA(inode))
+ 			remove_inode_dquot_ref(inode, type, tofree_head);
+ 	}
+Index: linux-2.6/fs/drop_caches.c
+===================================================================
+--- linux-2.6.orig/fs/drop_caches.c
++++ linux-2.6/fs/drop_caches.c
+@@ -18,7 +18,7 @@ static void drop_pagecache_sb(struct sup
+ 
+ 	spin_lock(&inode_lock);
+ 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+-		if (inode->i_state & (I_FREEING|I_WILL_FREE))
++		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
+ 			continue;
+ 		if (inode->i_mapping->nrpages == 0)
+ 			continue;
+Index: linux-2.6/fs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/inode.c
++++ linux-2.6/fs/inode.c
+@@ -356,6 +356,8 @@ static int invalidate_list(struct list_h
+ 		if (tmp == head)
+ 			break;
+ 		inode = list_entry(tmp, struct inode, i_sb_list);
++		if (inode->i_state & I_NEW)
++			continue;
+ 		invalidate_inode_buffers(inode);
+ 		if (!atomic_read(&inode->i_count)) {
+ 			list_move(&inode->i_list, dispose);
+Index: linux-2.6/fs/notify/inotify/inotify.c
+===================================================================
+--- linux-2.6.orig/fs/notify/inotify/inotify.c
++++ linux-2.6/fs/notify/inotify/inotify.c
+@@ -380,6 +380,14 @@ void inotify_unmount_inodes(struct list_
+ 		struct list_head *watches;
+ 
+ 		/*
++		 * We cannot __iget() an inode in state I_CLEAR, I_FREEING,
++		 * I_WILL_FREE, or I_NEW which is fine because by that point
++		 * the inode cannot have any associated watches.
++		 */
++		if (inode->i_state & (I_CLEAR|I_FREEING|I_WILL_FREE|I_NEW))
++			continue;
++
++		/*
+ 		 * If i_count is zero, the inode cannot have any watches and
+ 		 * doing an __iget/iput with MS_ACTIVE clear would actually
+ 		 * evict all inodes with zero i_count from icache which is
+@@ -388,14 +396,6 @@ void inotify_unmount_inodes(struct list_
+ 		if (!atomic_read(&inode->i_count))
+ 			continue;
+ 
+-		/*
+-		 * We cannot __iget() an inode in state I_CLEAR, I_FREEING, or
+-		 * I_WILL_FREE which is fine because by that point the inode
+-		 * cannot have any associated watches.
+-		 */
+-		if (inode->i_state & (I_CLEAR | I_FREEING | I_WILL_FREE))
+-			continue;
+-
+ 		need_iput_tmp = need_iput;
+ 		need_iput = NULL;
+ 		/* In case inotify_remove_watch_locked() drops a reference. */
