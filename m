@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbZCKWh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbZCKWnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755078AbZCKWh4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 18:37:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZCKWhm
+	id S1754404AbZCKWnd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 18:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbZCKWnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 18:37:42 -0400
-Received: from cmpxchg.org ([85.214.51.133]:36891 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752415AbZCKWhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 18:37:39 -0400
-Date: Wed, 11 Mar 2009 23:36:15 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
+	Wed, 11 Mar 2009 18:43:23 -0400
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:59379 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753045AbZCKWnW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 18:43:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=r34DL4mkEtmjtBmOEswnc4vFWqEGRpkKnowna5sVqYK67mssExu7byec9dimFHlq0w
+         J+YGN6fx1u+wAFi4SOpGh3ihIzvCzRbVG9K3aw5bMs5j+mor1Xg0KF/HlDrWUyM9VYpW
+         PmlSd6sOAlNdBVbqeQCuer8ePoinlYOIRof5I=
+MIME-Version: 1.0
+In-Reply-To: <20090311152000.8a3db19c.akpm@linux-foundation.org>
+References: <1228430755-4221-1-git-send-email-felipe.contreras@gmail.com>
+	 <5d5443650903111017n9c818b0y2119d06ea84c3abf@mail.gmail.com>
+	 <20090311152000.8a3db19c.akpm@linux-foundation.org>
+Date: Thu, 12 Mar 2009 00:43:18 +0200
+Message-ID: <94a0d4530903111543y4745ade0ofac867ef43e7ab1b@mail.gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] omapfb: Fix argument of blank 
+	operation.
+From: Felipe Contreras <felipe.contreras@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       peterz@infradead.org, Enrik.Berkhan@ge.com, uclinux-dev@uclinux.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may get wrongly discarded
-Message-ID: <20090311223615.GA3284@cmpxchg.org>
-References: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk> <20090311150302.0ae76cf1.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090311150302.0ae76cf1.akpm@linux-foundation.org>
+Cc: Trilok Soni <soni.trilok@gmail.com>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-omap@vger.kernel.org,
+       felipe.contreras@nokia.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 03:03:02PM -0700, Andrew Morton wrote:
-> On Wed, 11 Mar 2009 15:30:35 +0000
-> David Howells <dhowells@redhat.com> wrote:
-> 
-> > From: Enrik Berkhan <Enrik.Berkhan@ge.com>
-> > 
-> > The pages attached to a ramfs inode's pagecache by truncation from nothing - as
-> > done by SYSV SHM for example - may get discarded under memory pressure.
-> 
-> Something has gone wrong in core VM.
-> 
-> > The problem is that the pages are not marked dirty.  Anything that creates data
-> > in an MMU-based ramfs will cause the pages holding that data will cause the
-> > set_page_dirty() aop to be called.
-> > 
-> > For the NOMMU-based mmap, set_page_dirty() may be called by write(), but it
-> > won't be called by page-writing faults on writable mmaps, and it isn't called
-> > by ramfs_nommu_expand_for_mapping() when a file is being truncated from nothing
-> > to allocate a contiguous run.
-> > 
-> > The solution is to mark the pages dirty at the point of allocation by
-> > the truncation code.
-> 
-> Page reclaim shouldn't be even attempting to reclaim or write back
-> ramfs pagecache pages - reclaim can't possibly do anything with these
-> pages!
-> 
-> Arguably those pages shouldn't be on the LRU at all, but we haven't
-> done that yet.
-> 
-> Now, my problem is that I can't 100% be sure that we _ever_ implemented
-> this properly.  I _think_ we did, in which case we later broke it.  If
-> we've always been (stupidly) trying to pageout these pages then OK, I
-> guess your patch is a suitable 2.6.29 stopgap.
-> 
-> If, however, we broke it then we've probably broken other filesystems
-> and we should fix the regression instead.
-> 
-> Running bdi_cap_writeback_dirty() in may_write_to_queue() might be the
-> way to fix all this.
+On Thu, Mar 12, 2009 at 12:20 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Wed, 11 Mar 2009 22:47:41 +0530
+> Trilok Soni <soni.trilok@gmail.com> wrote:
+>
+>> Hi Felipe,
+>>
+>> On Fri, Dec 5, 2008 at 4:15 AM, Felipe Contreras
+>
+> I bet he thought we'd forgotten.
 
-The pages are not dirty, so no pageout() which says PAGE_KEEP.  It
-will just go through and reclaim the clean, unmapped pages.
+You bet correctly :)
+
+>> <felipe.contreras@gmail.com> wrote:
+>> > From: Felipe Contreras <felipe.contreras@nokia.com>
+>> >
+>> > The blank operation should receive FB_BLANK_POWERDOWN, not
+>> > VESA_POWERDOWN.
+>> >
+>>
+>> Thanks. Looks good.
+>>
+>> Signed-off-by: Trilok Soni <soni.trilok@gmail.com>
+>>
+>
+> Unfortunately the changelog didn't give me any hint as to the
+> seriousness of the problem which was fixed.  So I queued it for 2.6.30,
+> perhaps inappropriately.
+
+I noticed because of another bug in omapfb which required blanking in
+order to actually see something (PM stuff?). If user-space tries to
+blank the usual way, it wouldn't work.
+
+My guess is that it's not a big issue, in part because nobody has
+noticed, but perhaps I'm wrong. I was hoping the fbdev guys would know
+better.
+
+-- 
+Felipe Contreras
