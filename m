@@ -1,84 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZCKTFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbZCKTKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612AbZCKTFw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 15:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZCKTFm
+	id S1754264AbZCKTKe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 15:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZCKTK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 15:05:42 -0400
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:53149 "EHLO
-	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752415AbZCKTFl (ORCPT
+	Wed, 11 Mar 2009 15:10:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50823 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753154AbZCKTKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 15:05:41 -0400
-From: Frans Pop <elendil@planet.nl>
-To: john stultz <johnstul@us.ibm.com>
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
-Date: Wed, 11 Mar 2009 20:05:36 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200903080230.10099.elendil@planet.nl> <1236733226.6080.28.camel@localhost> <200903111703.41663.elendil@planet.nl>
-In-Reply-To: <200903111703.41663.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 11 Mar 2009 15:10:25 -0400
+Date: Wed, 11 Mar 2009 12:08:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Doug Thompson <norsk5@yahoo.com>
+Cc: qingtao.cao@windriver.com, linux-kernel@vger.kernel.org,
+       bluesmoke-devel@lists.sourceforge.net
+Subject: Re: [v1 PATCH 3/8] EDAC: AMD8111 driver source file
+Message-Id: <20090311120813.456762f1.akpm@linux-foundation.org>
+In-Reply-To: <918342.94228.qm@web50101.mail.re2.yahoo.com>
+References: <918342.94228.qm@web50101.mail.re2.yahoo.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903112005.38181.elendil@planet.nl>
-X-OriginalArrivalTime: 11 Mar 2009 19:05:39.0262 (UTC) FILETIME=[5DF2FDE0:01C9A27C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the mail flood. This is the last one and then I'm going to wait for some reactions.
+On Wed, 11 Mar 2009 11:55:36 -0700 (PDT)
+Doug Thompson <norsk5@yahoo.com> wrote:
 
-On Wednesday 11 March 2009, Frans Pop wrote:
-> So, lets look next what happens if I allow clock->error to be changed
-> here. This makes the boot fail and I believe that this is the critical
-> change in 5cd1c9c5cf30.
-[...]
-> Note that clock->xtime_nsec is now running backwards and the crazy
-> values for clock->error.
->
-> From this I conclude that clock->error is getting buggered somewhere
-> else: we get a completely different value back from what is calculated
-> here. The calculation here is still correct:
-> $ echo $(( -4292487689804800 + (-256 << 24) ))
-> -4292491984772096
->
-> I suspect that clock->error running back is what causes my hang.
+> 
+> --- On Tue, 3/10/09, Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > From: Andrew Morton <akpm@linux-foundation.org>
+> > Subject: Re: [v1 PATCH 3/8] EDAC: AMD8111 driver source file
+> > To: "Harry Ciao" <qingtao.cao@windriver.com>
+> > Cc: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
+> > Date: Tuesday, March 10, 2009, 2:46 PM
+> > On Mon,__ 9 Mar 2009 16:08:12
+> > +0800
+> > Harry Ciao <qingtao.cao@windriver.com>
+> > wrote:
+> 
+> <snip>
+> 
+> > > +static void edac_pci_write_dword(struct pci_dev *dev,
+> > int reg, u32 val32)
+> > > +{
+> > > +______ int ret;
+> > > +
+> > > +______ ret = pci_write_config_dword(dev,
+> > reg, val32);
+> > > +______ if (ret > 0)
+> > > +______ ______ printk(KERN_ERR
+> > AMD8111_EDAC_MOD_STR
+> > > +______ ______
+> > ______ " PCI Access Write Error at 0x%x\n",
+> > reg);
+> > > +}
+> > > +
+> > > +static void edac_pci_write_byte(struct pci_dev *dev,
+> > int reg, u8 val8)
+> > > +{
+> > > +______ int ret;
+> > > +
+> > > +______ ret = pci_write_config_byte(dev,
+> > reg, val8);
+> > > +______ if (ret > 0)
+> > > +______ ______ printk(KERN_ERR
+> > AMD8111_EDAC_MOD_STR
+> > > +______ ______
+> > ______ " PCI Access Write Error at 0x%x\n",
+> > reg);
+> > > +}
+> > 
+> > 
+> > <spends a while trying to work out what the return value
+> > of
+> > pci_read_config_dword() means>
+> > 
+> > <gets frustrated and gives up>
+> > 
+> > Is it correct that all of these functions treat a +ve
+> > return value as
+> > an error?
+> 
+> Yes, the config APIs do return an error code on an operation error.
 
-s/clock->error/clock->xtime_nsec/ of course.
+OK, but presumably they're negative error codes, so
 
-Looking a bit closer at what Roman's patch 5cd1c9c5cf30 does, I see this:
+	if (ret > 0)
+		error()
 
--       clock->xtime_nsec += (s64)xtime.tv_nsec << clock->shift;
-+       clock->xtime_nsec = (s64)xtime.tv_nsec << clock->shift;
-[...]
-        clocksource_adjust(offset);
--       xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
-+       xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
-        clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
-+       clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
+isn't right.
 
-So, in the old situation the code first added xtime.tv_nsec to
-clock->xtime_nsec and later subtracted it again, so there's symmetry.
+<checks>
 
-In the new code we no longer do the first, but still do the second. That
-seems strange and probably upsets assumptions in the code in between, which
-includes the call to clocksource_adjust(). AFAICT this is the root cause of
-the overflow visible in my earliest traces.
-I've done some tries to correct that, but did not find anything that really
-worked.
+Harry has turned that into
 
-I also do now know with near certainty where the system hangs with the
-vanilla 2.6.28.7: in the 'while (offset >= clock->cycle_interval)' loop in
-update_wall_time. That loop should probably have some mechanism to warn if
-it's running wild...
+	if (ret != 0)
+		error();
 
-This whole code is pretty tricky, but I'm convinced Roman's patch is
-structurally broken.
+which looks better.
 
-Cheers,
-FJP
