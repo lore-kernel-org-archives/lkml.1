@@ -1,238 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752804AbZCKIzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbZCKIzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752804AbZCKIzQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 04:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbZCKIy1
+	id S1755428AbZCKIzx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 04:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754780AbZCKIyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 04:54:27 -0400
-Received: from mga10.intel.com ([192.55.52.92]:52370 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754600AbZCKIyX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 04:54:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,341,1233561600"; 
-   d="scan'208";a="437969704"
-Subject: [RFC v2: Patch 3/3] net: hand off skb list to other cpu to submit
-	to upper layer
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Cc: herbert@gondor.apana.org.au, jesse.brandeburg@intel.com,
-       shemminger@vyatta.com, David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 11 Mar 2009 16:53:53 +0800
-Message-Id: <1236761633.2567.444.camel@ymzhang>
+	Wed, 11 Mar 2009 04:54:37 -0400
+Received: from cmpxchg.org ([85.214.51.133]:34331 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753656AbZCKIyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 04:54:35 -0400
+Date: Wed, 11 Mar 2009 09:54:07 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, eric@lammerts.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH][retry 3] Conform L3 Cache Index Disable to Linux standards
+Message-ID: <20090311085407.GA1783@cmpxchg.org>
+References: <200903101541.45739.mark.langsdorf@amd.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903101541.45739.mark.langsdorf@amd.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 3rd patch is totally example on ixgbe driver. Pls. doesn't apply
-it. It's just for a demo.
-﻿
-NIC driver could use this capability like below steps:
-1) Call ﻿alloc_etherdev_rxtx_mq when probe the NIC to initiate;
+On Tue, Mar 10, 2009 at 03:41:45PM -0500, Mark Langsdorf wrote:
+> 
+>     Add ABI Documentation entry and fix some /sys directory formating
+>     issues with the L3 Cache Index Disable feature for future AMD
+>     processors.  Add a check to disable it for family 0x10 models
+>     that do not support it yet.
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-devices-cache_disable b/Documentation/ABI/testing/sysfs-devices-cache_disable
+> new file mode 100644
+> index 0000000..c7d9174
+> --- /dev/null
+> +++ b/Documentation/ABI/testing/sysfs-devices-cache_disable
+> @@ -0,0 +1,18 @@
+> +What:	    /sys/devices/system/cpu/cpu*/cache/index*/cache_disable_X
+> +Date:	    August 2008
+> +KernelVersion:  2.6.27
+> +Contact:	 mark.langsdorf@amd.com
+> +Description:    These files exist in every cpu's cache index directories.
+> +		 There are currently 2 cache_disable_# files in each
+> +		 directory.  Reading from these files on a supported
+> +		 processor will return that cache disable index value
+> +		 for that processor and node.  Writing to one of these
+> +		 files will cause the specificed cache index to be disabled.
+> +
+> +		 Currently, only AMD Family 10h Processors support cache index
+> +		 disable, and only for their L3 caches.  See the BIOS and
+> +		 Kernel Developer's Guide at
+> +		 http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/31116-Public-GH-BKDG_3.20_2-4-09.pdf
+> +		 for formatting information and other details on the
+> +		 cache index disable.
+> +Users:	   joachim.deguara@amd.com
+> diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+> index 72c65bc..2547807 100644
+> --- a/arch/x86/kernel/Makefile
+> +++ b/arch/x86/kernel/Makefile
+> @@ -81,7 +81,7 @@ obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
+>  
+>  obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
+>  
+> -obj-$(CONFIG_K8_NB)		+= k8.o
+> +obj-y				+= k8.o
 
-In NAPI RX cleanup function:
-2) Initiate a local var struct sk_buff_head skb_head;
-3) get the cpu number by calling netif_rx_processing_cpu;
-4) In the packet collection loop, just calls __skb_queue_tail(skb_head, skb)
-to add skb to the list;
-5) Before exiting, calls raise_netif_irq to submit the skb list to the specific cpu.
+This affects all configurations that don't have a k8 northbridge as
+well:
 
-We can add another step after 3) to check input_pkt_alien_queue.qlen. If qlen is
-bigger than ﻿netdev_max_backlog, exit the function instead of collecting packets,
-so NIC hardware could drop packets. It's better than dropping packets by ﻿software.
+   text    data     bss     dec     hex filename
+3277392  330356  327680 3935428  3c0cc4 vmlinux
+   text    data     bss     dec     hex filename
+3277891  330452  327680 3936023  3c0f17 vmlinux.with.k8.c
 
-Below _SAMPLE_ patch (has some garbage codes) is against the latest IXGBE driver.
+Please consider leaving that conditional compilation as is and define
+dummy accessors for when this code is disabled.
 
----
+>  obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
+>  obj-$(CONFIG_DEBUG_RODATA_TEST)	+= test_rodata.o
+>  obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
+> diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+> index 8e6ce2c..5ecac89 100644
+> --- a/arch/x86/kernel/cpu/intel_cacheinfo.c
+> +++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+> @@ -18,6 +18,9 @@
+>  #include <asm/processor.h>
+>  #include <asm/smp.h>
+>  
+> +#include <linux/pci.h>
+> +#include <asm/k8.h>
+> +
+>  #define LVL_1_INST	1
+>  #define LVL_1_DATA	2
+>  #define LVL_2		3
+> @@ -159,14 +162,6 @@ struct _cpuid4_info_regs {
+>  	unsigned long can_disable;
+>  };
+>  
+> -#if defined(CONFIG_PCI) && defined(CONFIG_SYSFS)
+> -static struct pci_device_id k8_nb_id[] = {
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x1103) },
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x1203) },
+> -	{}
+> -};
+> -#endif
+> -
+>  unsigned short			num_cache_leaves;
+>  
+>  /* AMD doesn't have CPUID4. Emulate it here to report the same
+> @@ -291,6 +286,12 @@ amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
+>  {
+>  	if (index < 3)
+>  		return;
+> +	if (boot_cpu_data.x86 == 0x11)
+> +		return;
+> +
+> +	if ((boot_cpu_data.x86 == 0x10) && (boot_cpu_data.x86_model < 0x15))
+> +		return;
+> +
+>  	this_leaf->can_disable = 1;
+>  }
+>  
+> @@ -639,6 +640,64 @@ static ssize_t show_##file_name						\
+>  	return sprintf (buf, "%lu\n", (unsigned long)this_leaf->object + val); \
+>  }
+>  
+> +static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
+> +		 unsigned int index)
+> +{
+> +	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
+> +	struct pci_dev *dev = k8_northbridges[node];
+> +	unsigned int reg = 0;
+> +
+> +	if (!this_leaf->can_disable)
+> +		return -EINVAL;
+> +
+> +	pci_read_config_dword(dev, 0x1BC + index * 4, &reg);
+> +	return sprintf(buf, "%x\n", reg);
+> +}
+> +
+> +#define SHOW_CACHE_DISABLE(index)					\
+> +static ssize_t								\
+> +show_cache_disable_##index(struct _cpuid4_info *this_leaf, char *buf)  	\
+> +{									\
+> +	return show_cache_disable(this_leaf, buf, index);		\
+> +}
+> +
+> +static ssize_t
+> +store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
+> +		 size_t count, unsigned int index)
+> +{
+> +	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
+> +	struct pci_dev *dev = k8_northbridges[node];
+> +	unsigned long val = 0;
+> +
+> +	if (!this_leaf->can_disable)
+> +		return -EINVAL;
+> +
+> +	if (!capable(CAP_SYS_ADMIN))
+> +		return -EPERM;
 
---- ixgbe-1.3.58_route/src/ixgbe_main.c	2009-03-03 08:09:35.000000000 +0800
-+++ ixgbe-1.3.58_route_backlog/src/ixgbe_main.c	2009-03-10 08:01:06.000000000 +0800
-@@ -443,7 +443,8 @@ static int __ixgbe_notify_dca(struct dev
- static void ixgbe_receive_skb(struct ixgbe_adapter *adapter,
-                               struct sk_buff *skb, u8 status,
-                               struct ixgbe_ring *ring,
--                              union ixgbe_adv_rx_desc *rx_desc)
-+                              union ixgbe_adv_rx_desc *rx_desc,
-+                              struct sk_buff_head *skb_head)
- {
- 	int ret;
- 	bool is_vlan = (status & IXGBE_RXD_STAT_VP);
-@@ -469,7 +470,9 @@ static void ixgbe_receive_skb(struct ixg
- 			if (adapter->vlgrp && is_vlan && (tag != 0))
- 				vlan_hwaccel_receive_skb(skb, adapter->vlgrp, tag);
- 			else
--				netif_receive_skb(skb);
-+				__skb_queue_tail(skb_head, skb);
-+				//netif_rx_queue(skb, skb_head);
-+				//YMZHANG netif_receive_skb(skb);
- #else
- 			netif_receive_skb(skb);
- #endif
-@@ -664,7 +667,8 @@ static void ixgbe_lro_ring_flush(struct 
-                                  struct ixgbe_adapter *adapter,
-                                  struct ixgbe_lro_desc *lrod, u8 status,
-                                  struct ixgbe_ring *rx_ring,
--                                 union ixgbe_adv_rx_desc *rx_desc)
-+                                 union ixgbe_adv_rx_desc *rx_desc,
-+                                 struct sk_buff_head *skb_head)
- {
- 	struct iphdr *iph;
- 	struct tcphdr *th;
-@@ -701,7 +705,7 @@ static void ixgbe_lro_ring_flush(struct 
- #ifdef NETIF_F_TSO
- 	skb_shinfo(skb)->gso_size = lrod->mss;
- #endif
--	ixgbe_receive_skb(adapter, skb, status, rx_ring, rx_desc);
-+	ixgbe_receive_skb(adapter, skb, status, rx_ring, rx_desc, skb_head);
- 
- 	netdev->last_rx = jiffies;
- 	lro_data->stats.coal += lrod->append_cnt + 1;
-@@ -718,14 +722,15 @@ static void ixgbe_lro_ring_flush(struct 
- static void ixgbe_lro_ring_flush_all(struct ixgbe_lro_list *lrolist,
-                                      struct ixgbe_adapter *adapter, u8 status,
-                                      struct ixgbe_ring *rx_ring,
--                                     union ixgbe_adv_rx_desc *rx_desc)
-+                                     union ixgbe_adv_rx_desc *rx_desc,
-+                                     struct sk_buff_head *skb_head)
- {
- 	struct ixgbe_lro_desc *lrod;
- 	struct hlist_node *node, *node2;
- 
- 	hlist_for_each_entry_safe(lrod, node, node2, &lrolist->active, lro_node)
- 		ixgbe_lro_ring_flush(lrolist, adapter, lrod, status, rx_ring,
--		                     rx_desc);
-+		                     rx_desc, skb_head);
- }
- 
- /*
-@@ -855,14 +860,14 @@ static int ixgbe_lro_ring_queue(struct i
- 
- 			if (!header_ok) {
- 				ixgbe_lro_ring_flush(lrolist, adapter, lrod,
--				                     status, rx_ring, rx_desc);
-+				                     status, rx_ring, rx_desc, skb_head);
- 				return -1;
- 			}
- 
- 			if (seq != lrod->next_seq) {
- 				/* out of order packet */
- 				ixgbe_lro_ring_flush(lrolist, adapter, lrod,
--				                     status, rx_ring, rx_desc);
-+				                     status, rx_ring, rx_desc, skb_head);
- 				return -1;
- 			}
- 
-@@ -872,7 +877,7 @@ static int ixgbe_lro_ring_queue(struct i
- 				if (lrod->tsval > tsval || *(ts_ptr + 2) == 0) {
- 					ixgbe_lro_ring_flush(lrolist, adapter,
- 					                     lrod, status,
--					                     rx_ring, rx_desc);
-+					                     rx_ring, rx_desc, skb_head);
- 					return -1;
- 				}
- 				lrod->tsval = tsval;
-@@ -911,13 +916,13 @@ static int ixgbe_lro_ring_queue(struct i
- 				(struct tcphdr *)(lro_skb->data + sizeof(*iph));
- 				header_th->psh |= th->psh;
- 				ixgbe_lro_ring_flush(lrolist, adapter, lrod,
--				                     status, rx_ring, rx_desc);
-+				                     status, rx_ring, rx_desc, skb_head);
- 				return 0;
- 			}
- 
- 			if (lrod->append_cnt >= lro_data->max)
- 				ixgbe_lro_ring_flush(lrolist, adapter, lrod,
--				                     status, rx_ring, rx_desc);
-+				                     status, rx_ring, rx_desc, skb_head);
- 
- 			return 0;
- 		} /*End of if*/
-@@ -1001,13 +1006,14 @@ static void ixgbe_lro_ring_init(struct i
- 
- #endif /* IXGBE_NO_LRO */
- 
-+
- #ifdef CONFIG_IXGBE_NAPI
- static bool ixgbe_clean_rx_irq(struct ixgbe_adapter *adapter,
--                               struct ixgbe_ring *rx_ring,
--                               int *work_done, int work_to_do)
-+		struct ixgbe_ring *rx_ring,
-+		int *work_done, int work_to_do)
- #else
- static bool ixgbe_clean_rx_irq(struct ixgbe_adapter *adapter,
--                               struct ixgbe_ring *rx_ring)
-+		struct ixgbe_ring *rx_ring)
- #endif
- {
- 	struct pci_dev *pdev = adapter->pdev;
-@@ -1019,12 +1025,17 @@ static bool ixgbe_clean_rx_irq(struct ix
- 	u16 hdr_info;
- 	bool cleaned = false;
- 	int cleaned_count = 0;
-+	struct sk_buff_head skb_head;
-+	int cpu = netif_rx_processing_cpu(adapter->netdev, rx_ring->queue_index);
-+
- #ifndef CONFIG_IXGBE_NAPI
- 	int work_to_do = rx_ring->work_limit, local_work_done = 0;
- 	int *work_done = &local_work_done;
- #endif
- 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
- 
-+	skb_queue_head_init(&skb_head);
-+
- 	i = rx_ring->next_to_clean;
- 	rx_desc = IXGBE_RX_DESC_ADV(*rx_ring, i);
- 	staterr = le32_to_cpu(rx_desc->wb.upper.status_error);
-@@ -1135,7 +1146,7 @@ static bool ixgbe_clean_rx_irq(struct ix
- 			goto next_desc;
- 		}
- #endif
--		ixgbe_receive_skb(adapter, skb, staterr, rx_ring, rx_desc);
-+		ixgbe_receive_skb(adapter, skb, staterr, rx_ring, rx_desc, &skb_head);
- 		adapter->netdev->last_rx = jiffies;
- 
- next_desc:
-@@ -1157,7 +1168,7 @@ next_desc:
- 	rx_ring->next_to_clean = i;
- #ifndef IXGBE_NO_LRO
- 	ixgbe_lro_ring_flush_all(rx_ring->lrolist, adapter,
--                            staterr, rx_ring, rx_desc);
-+                            staterr, rx_ring, rx_desc, skb_head);
- #endif /* IXGBE_NO_LRO */
- 	cleaned_count = IXGBE_DESC_UNUSED(rx_ring);
- #ifndef IXGBE_NO_INET_LRO
-@@ -1180,6 +1191,9 @@ next_desc:
- 	if (*work_done >= work_to_do)
- 		IXGBE_WRITE_REG(&adapter->hw, IXGBE_EICS, rx_ring->v_idx);
- #endif
-+
-+	raise_netif_irq(cpu, &skb_head);
-+
- 	return cleaned;
- }
- 
-@@ -4103,6 +4117,8 @@ void ixgbe_napi_add_all(struct ixgbe_ada
- 	for (q_idx = 0; q_idx < q_vectors; q_idx++) {
- 		struct ixgbe_q_vector *q_vector = &adapter->q_vector[q_idx];
- 		netif_napi_add(adapter->netdev, &q_vector->napi, (*poll), 64);
-+		/*YMZ*/
-+		//netif_napi_add(adapter->netdev, &q_vector->napi, (*poll), 32);
- 	}
- }
- 
-@@ -4998,7 +5014,7 @@ static int __devinit ixgbe_probe(struct 
- 	pci_set_master(pdev);
- 
- #ifdef HAVE_TX_MQ
--	netdev = alloc_etherdev_mq(sizeof(struct ixgbe_adapter), MAX_TX_QUEUES);
-+	netdev = alloc_etherdev_rxtx_mq(sizeof(struct ixgbe_adapter), MAX_RX_QUEUES, MAX_TX_QUEUES);
- #else
- 	netdev = alloc_etherdev(sizeof(struct ixgbe_adapter));
- #endif
+This means a user that is never allowed to write sometimes gets an
+'Invalid argument' instead of the 'Permission denied'.  Perhaps it's
+better to do that permission check first?
 
-
+	Hannes
