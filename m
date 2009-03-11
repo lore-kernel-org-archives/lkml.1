@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbZCKQwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbZCKQxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755167AbZCKQwx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbZCKQwp
+	id S1754652AbZCKQxi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZCKQxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:52:45 -0400
-Received: from 42.mail-out.ovh.net ([213.251.189.42]:56722 "HELO
-	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751022AbZCKQwo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:52:44 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Mar 2009 12:52:44 EDT
-Subject: Re: [2.6.29-rc5][BUG] swapon on vfat file gets stuck on inode lock
-From: Laurent GUERBY <laurent@guerby.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-In-Reply-To: <alpine.LFD.2.00.0903110837590.32478@localhost.localdomain>
-References: <1236779832.11347.2082.camel@localhost>
-	 <alpine.LFD.2.00.0903110837590.32478@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 17:45:59 +0100
-Message-Id: <1236789959.11347.2107.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 16919179376069713466
-X-Ovh-Remote: 79.90.156.46 (46.156.90-79.rev.gaoland.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+	Wed, 11 Mar 2009 12:53:30 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42516 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751106AbZCKQx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 12:53:29 -0400
+Date: Wed, 11 Mar 2009 17:52:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org
+Subject: Re: [PATCH 1/2] x86: unify kmap_atomic_pfn() and
+	iomap_atomic_prot_pfn()
+Message-ID: <20090311165252.GB30777@elte.hu>
+References: <20090311143317.GA22244@localhost.localdomain> <alpine.LFD.2.00.0903111606350.29264@localhost.localdomain> <961aa3350903110825y1af77709q49d6328703081afb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <961aa3350903110825y1af77709q49d6328703081afb@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-11 at 08:53 -0700, Linus Torvalds wrote:
-> On Wed, 11 Mar 2009, Laurent GUERBY wrote:
-> > With 2.6.29-rc5 (on an ARM platform but I don't think it's significant)
-> > when I try to enable swap on a file which is on an USB mounted vfat
-> > partition the swapon syscall gets stuck:
+
+* Akinobu Mita <akinobu.mita@gmail.com> wrote:
+
+> 2009/3/12 Thomas Gleixner <tglx@linutronix.de>:
+> > On Wed, 11 Mar 2009, Akinobu Mita wrote:
+> >> kmap_atomic_pfn() and iomap_atomic_prot_pfn() are almost same except
+> >> pgprot. This patch removes the code duplication for these two functions.
+> >
+> > How exaclty does this compile with CONFIG_HIGHMEM=n ?
+> >
 > 
-> Oh wow. Are you _sure_ you want to do that? That's crazy.
+> Oh, I didn't try without CONFIG_HIGHMEM.
 
-I was testing a device with no swap (root over NFS) and GCC bootstrap
-failed because of lack of RAM. So I first tried to add swap on file over
-NFS, judging from various warnings on the net and that the system froze
-after about 4 hours it was in the "crazy" category. After that I grabbed
-an USB HDD which happened to be vfat formated, hence second freeze but
-on swapon process this time.
+i had it applied in testing locally and didnt see problems so 
+far. Let me know if you can see any problems.
 
-I promise next time I'll stick to local ext3 on x86 :).
-
-Laurent
-
-
+	Ingo
