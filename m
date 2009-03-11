@@ -1,40 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZCKQez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZCKQfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbZCKQez (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285AbZCKQeq
+	id S1754161AbZCKQfc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbZCKQfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:34:46 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:45417 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752202AbZCKQeq (ORCPT
+	Wed, 11 Mar 2009 12:35:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42406 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751928AbZCKQfV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:34:46 -0400
-Date: Wed, 11 Mar 2009 12:34:43 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [patch 00/11] Hardware Breakpoint interfaces
-In-Reply-To: <20090311121007.GC13835@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0903111232300.2692-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 11 Mar 2009 12:35:21 -0400
+Date: Wed, 11 Mar 2009 09:32:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: Jonathan Cameron <jic23@cam.ac.uk>, Jean Delvare <khali@linux-fr.org>,
+       linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Added driver for ISL29003 ambient light sensor
+Message-Id: <20090311093234.7e8e5416.akpm@linux-foundation.org>
+In-Reply-To: <20090311083252.GB25824@buzzloop.caiaq.de>
+References: <20090306181409.GA20135@buzzloop.caiaq.de>
+	<20090307115449.32f0ab26@hyperion.delvare>
+	<20090307120631.GA25276@buzzloop.caiaq.de>
+	<20090307130818.367bcaad@hyperion.delvare>
+	<20090309210901.GC31367@buzzloop.caiaq.de>
+	<49B666F9.50209@cam.ac.uk>
+	<20090310151542.GE9564@buzzloop.caiaq.de>
+	<49B6A843.3090902@cam.ac.uk>
+	<20090311003155.GB21160@buzzloop.caiaq.de>
+	<20090310212826.7d8b3d4e.akpm@linux-foundation.org>
+	<20090311083252.GB25824@buzzloop.caiaq.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009, K.Prasad wrote:
+On Wed, 11 Mar 2009 09:32:52 +0100 Daniel Mack <daniel@caiaq.de> wrote:
 
-> The hardware breakpoint interfaces haven't been put under any CONFIG_
-> till now, but I think we should bring them under a new config, say
-> CONFIG_HW_BREAKPOINT. It would help create a dependancy for
-> CONFIG_KSYM_TRACER too.
+> On Tue, Mar 10, 2009 at 09:28:26PM -0700, Andrew Morton wrote:
+> > On Wed, 11 Mar 2009 01:31:55 +0100 Daniel Mack <daniel@caiaq.de> wrote:
+> > > > All looks fine to me.
+> > > > 
+> > > > Acked-by: Jonathan Cameron <jic23@cam.ac.uk>
+> > 
+> > I cannot find this review which Jonathan performed.  Fumbled
+> > reply-to-all, or did vger break?
+> 
+> Jonathan replied to the posting on linux-i2c and linux-kernel wasn't in
+> the loop, sorry. Find his posting here:
+> 
+> 	http://marc.info/?l=linux-i2c&m=123669064909549&w=2
 
-With these patches, ptrace is dependent on hw-breakpoint.  You can't 
-disable CONFIG_HW_BREAKPOINT without breaking ptrace.
+OK.  Please always use reply-to-all, guys.
 
-Alan Stern
+> > I can take care of it.
+> > 
+> > Was any thought given to the CONFIG_SYSFS=n situation?
+> 
+> You're right, it should depend on that. You want me so send a patch on
+> top of the other or one that replaces it?
 
+Either way is OK by me at this time.
