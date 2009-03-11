@@ -1,274 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbZCKOOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439AbZCKOTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752941AbZCKOOX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 10:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZCKOOO
+	id S1754439AbZCKOTE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 10:19:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbZCKOSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 10:14:14 -0400
-Received: from msxmx04.webde.de ([217.72.192.159]:51143 "EHLO msxmx04.webde.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752604AbZCKOON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 10:14:13 -0400
-X-Greylist: delayed 2049 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Mar 2009 10:14:13 EDT
-From: "Thomas Schoebel-Theuer" <thomas.schoebel-theuer@1und1.de>
-Organization: 1und1 Internet AG
-To: jack marrow <jackmarrow2@gmail.com>
-Subject: Re: Memory usage per memory zone
-Date: Wed, 11 Mar 2009 14:39:56 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <e2dc2c680903110341g6c9644b8j87ce3b364807e37f@mail.gmail.com>
-In-Reply-To: <e2dc2c680903110341g6c9644b8j87ce3b364807e37f@mail.gmail.com>
+	Wed, 11 Mar 2009 10:18:53 -0400
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:42229
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750766AbZCKOSw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 10:18:52 -0400
+X-BigFish: VPS-34(zz13e6S936eQ936fKzzzz5eeeTz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KGCIES-02-ATS-01
+Content-Disposition: inline
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>, eric@lammerts.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH][retry 4] Conform L3 Cache Index Disable to Linux standards
+Date: Wed, 11 Mar 2009 09:21:16 -0500
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_t87tJFqozkjl6dj"
-Message-Id: <200903111439.57510.thomas.schoebel-theuer@1und1.de>
-X-OriginalArrivalTime: 11 Mar 2009 13:40:00.0267 (UTC) FILETIME=[DFCCF5B0:01C9A24E]
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-ID: <200903110921.16755.mark.langsdorf@amd.com>
+X-OriginalArrivalTime: 11 Mar 2009 14:18:34.0503 (UTC) FILETIME=[43315970:01C9A254]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_t87tJFqozkjl6dj
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Am Mittwoch, 11. M=E4rz 2009 11:41:43 schrieb jack marrow:
-> I have a box where the oom-killer is killing processes due to running
-> out of memory in zone_normal. I can see using slabtop that the inode
-> caches are using up lots of memory and guess this is the problem, so
-> have cleared them using an echo to drop_caches.
+    Add ABI Documentation entry and fix some /sys directory formating
+    issues with the L3 Cache Index Disable feature for future AMD
+    processors.  Add a check to disable it for family 0x10 models
+    that do not support it yet.
 
-Hi Jack,
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
-my experience with plain old 2.6.24 on 32bit _production_ boxes was that un=
-der=20
-heavy load and after >30days uptime we saw an sudden inflation of oom-kille=
-rs=20
-on some of them until those boxes died. The standard kernel statistics abou=
-t=20
-memory looked much the same as yours (and I suspect they could have been=20
-wrong or at least misleading, but I have neither checked nor tried to fix).
-
-> is it possible to use slabtop
-> (or any other way) to view ram usage per zone so I can pick out the
-> culprit?
-
-Try the attached experimental hack which can provide you with some insight=
-=20
-about whats really going on in the _physical_ memory. Since it does not=20
-allocate any memory for the purpose of displaying those memory patterns it=
-=20
-wants to examine, you have to allocate a large enough buffer in userspace.=
-=20
-Don't use cat, but something like dd with parameters such as bs=3D4M (as=20
-mentioned in the comment). Probably you have to adjust the patch to some=20
-newer kernel versions, and/or to fix some sysctl table checks if you want t=
-o=20
-get it upstreams (I will not). And, of course, you can visualize more/other=
-=20
-flags as well.
-
-After gaining some insight with /proc/sys/vm/mempattern and some developmen=
-t=20
-of further experimental patches which successfully reduced fragmentation (b=
-ut=20
-finally only _delayed_ the oom problems without being able to _fundamentall=
-y_=20
-resolve them), the ultimate solution was just to use CONFIG_VMSPLIT_2G or=20
-even CONFIG_VMSPLIT_1G in order to overcome the artificial shortening of=20
-zone_normal.
-
-This supports old wisdom that an OS cannot give you resources it just does =
-not=20
-possess... Just make sure you have enough resources for your working set.=20
-Thats all.
-
-In the hope of being helpful,
-
-Thomas
-
---Boundary-00=_t87tJFqozkjl6dj
-Content-Type: text/x-diff;
-  charset="iso 8859-15";
-  name="fragmentation-visualisation-v2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="fragmentation-visualisation-v2.patch"
-
-diff -urw linux-2.6.24.fragmentation-base/include/linux/mmzone.h linux-2.6.24.fragmentation-info/include/linux/mmzone.h
---- linux-2.6.24.fragmentation-base/include/linux/mmzone.h	2008-09-30 12:50:05.000000000 +0200
-+++ linux-2.6.24.fragmentation-info/include/linux/mmzone.h	2009-01-27 14:27:42.000000000 +0100
-@@ -687,6 +687,11 @@
- 			struct file *, void __user *, size_t *, loff_t *);
- extern char numa_zonelist_order[];
- #define NUMA_ZONELIST_ORDER_LEN 16	/* string buffer size */
-+int sysctl_mempattern(struct ctl_table *table, int __user *name, int nlen,
-+		      void __user *oldval, size_t __user *oldlenp,
-+		      void __user *newval, size_t newlen);
-+int mempattern_sysctl_handler(struct ctl_table *, int, struct file *, 
-+			      void __user *, size_t *, loff_t *);
+diff --git a/Documentation/ABI/testing/sysfs-devices-cache_disable b/Documentation/ABI/testing/sysfs-devices-cache_disable
+new file mode 100644
+index 0000000..c7d9174
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-devices-cache_disable
+@@ -0,0 +1,18 @@
++What:	    /sys/devices/system/cpu/cpu*/cache/index*/cache_disable_X
++Date:	    August 2008
++KernelVersion:  2.6.27
++Contact:	 mark.langsdorf@amd.com
++Description:    These files exist in every cpu's cache index directories.
++		 There are currently 2 cache_disable_# files in each
++		 directory.  Reading from these files on a supported
++		 processor will return that cache disable index value
++		 for that processor and node.  Writing to one of these
++		 files will cause the specificed cache index to be disabled.
++
++		 Currently, only AMD Family 10h Processors support cache index
++		 disable, and only for their L3 caches.  See the BIOS and
++		 Kernel Developer's Guide at
++		 http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/31116-Public-GH-BKDG_3.20_2-4-09.pdf
++		 for formatting information and other details on the
++		 cache index disable.
++Users:	   joachim.deguara@amd.com
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 72c65bc..2547807 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -81,7 +81,7 @@ obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
  
- #include <linux/topology.h>
- /* Returns the number of the current Node. */
-diff -urw linux-2.6.24.fragmentation-base/include/linux/sysctl.h linux-2.6.24.fragmentation-info/include/linux/sysctl.h
---- linux-2.6.24.fragmentation-base/include/linux/sysctl.h	2008-11-12 12:41:47.000000000 +0100
-+++ linux-2.6.24.fragmentation-info/include/linux/sysctl.h	2009-01-27 14:05:17.000000000 +0100
-@@ -225,6 +225,7 @@
- 	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
- 	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
- 	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
-+	VM_MEMPATTERN=36,	 /* output physical memory patterns */
+ obj-$(CONFIG_HPET_TIMER) 	+= hpet.o
+ 
+-obj-$(CONFIG_K8_NB)		+= k8.o
++obj-y				+= k8.o
+ obj-$(CONFIG_MGEODE_LX)		+= geode_32.o mfgpt_32.o
+ obj-$(CONFIG_DEBUG_RODATA_TEST)	+= test_rodata.o
+ obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 8e6ce2c..5ecac89 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -18,6 +18,9 @@
+ #include <asm/processor.h>
+ #include <asm/smp.h>
+ 
++#include <linux/pci.h>
++#include <asm/k8.h>
++
+ #define LVL_1_INST	1
+ #define LVL_1_DATA	2
+ #define LVL_2		3
+@@ -159,14 +162,6 @@ struct _cpuid4_info_regs {
+ 	unsigned long can_disable;
  };
  
+-#if defined(CONFIG_PCI) && defined(CONFIG_SYSFS)
+-static struct pci_device_id k8_nb_id[] = {
+-	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x1103) },
+-	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x1203) },
+-	{}
+-};
+-#endif
+-
+ unsigned short			num_cache_leaves;
  
-diff -urw linux-2.6.24.fragmentation-base/kernel/sysctl.c linux-2.6.24.fragmentation-info/kernel/sysctl.c
---- linux-2.6.24.fragmentation-base/kernel/sysctl.c	2008-11-12 12:41:47.000000000 +0100
-+++ linux-2.6.24.fragmentation-info/kernel/sysctl.c	2009-01-27 14:43:08.000000000 +0100
-@@ -987,6 +987,13 @@
- 		.extra1		= &zero,
- 	},
- 	{
-+		.ctl_name	= VM_MEMPATTERN,
-+		.procname	= "mempattern",
-+		.mode		= 0444,
-+		.proc_handler	= &mempattern_sysctl_handler,
-+		.strategy	= &sysctl_mempattern,
-+	},
-+	{
- 		.ctl_name	= VM_PERCPU_PAGELIST_FRACTION,
- 		.procname	= "percpu_pagelist_fraction",
- 		.data		= &percpu_pagelist_fraction,
-diff -urw linux-2.6.24.fragmentation-base/mm/page_alloc.c linux-2.6.24.fragmentation-info/mm/page_alloc.c
---- linux-2.6.24.fragmentation-base/mm/page_alloc.c	2008-09-30 12:50:05.000000000 +0200
-+++ linux-2.6.24.fragmentation-info/mm/page_alloc.c	2009-01-29 15:54:31.000000000 +0100
-@@ -1947,6 +1947,126 @@
- 	show_swap_cache_info();
+ /* AMD doesn't have CPUID4. Emulate it here to report the same
+@@ -291,6 +286,12 @@ amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
+ {
+ 	if (index < 3)
+ 		return;
++	if (boot_cpu_data.x86 == 0x11)
++		return;
++
++	if ((boot_cpu_data.x86 == 0x10) && (boot_cpu_data.x86_model < 0x15))
++		return;
++
+ 	this_leaf->can_disable = 1;
  }
  
-+/* Strategy routine for dumping memory patterns.
-+ * It does not allocate kernel memory, but rather copies everything
-+ * directly to userspace.
-+ * The userspace buffer should be large enough, otherwise output is
-+ * truncated.
-+ * Use something like "dd if=/proc/sys/vm/mempattern bs=1M"
-+ * to reserve such a large buffer in userspace.
-+ */
-+size_t do_mempattern(void __user *buf, size_t bufsize)
+@@ -639,6 +640,64 @@ static ssize_t show_##file_name						\
+ 	return sprintf (buf, "%lu\n", (unsigned long)this_leaf->object + val); \
+ }
+ 
++static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
++		 unsigned int index)
 +{
-+	struct zone *zone;
-+        size_t pos = 0;
++	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
++	struct pci_dev *dev = k8_northbridges[node];
++	unsigned int reg = 0;
 +
-+#define WRITE_CHAR(out,order,pfn)				\
-+        if(bufsize -  pos <= (1 << (order)))			\
-+	          goto done;					\
-+        if(!((pfn) % 64)) {					\
-+	        put_user('\n', (char __user *)(buf + pos));	\
-+		pos++;						\
-+	}							\
-+        put_user((out), (char __user *)(buf + pos));		\
-+        pos++;
++	if (!this_leaf->can_disable)
++		return -EINVAL;
 +
-+        //printk("called do_mempattern bufsize=%ld\n", bufsize);
-+	for_each_zone(zone) {
-+	        size_t len = strlen(zone->name);
-+		int pfn;
-+
-+		if(bufsize -  pos <= len+7)
-+		        goto done;
-+		if(copy_to_user(buf + pos, "Zone: ", 6))
-+		        return -EFAULT;
-+		pos += 6;
-+		if(copy_to_user(buf + pos, zone->name, len))
-+		        return -EFAULT;
-+		pos += len;
-+		WRITE_CHAR('\n', 0, -1);
-+
-+		for(pfn = zone->zone_start_pfn; pfn < zone->zone_start_pfn+zone->spanned_pages; pfn++) {
-+			struct page *page;
-+			int order = 0;
-+			int i;
-+			char out;
-+		        if(!pfn_valid(pfn))
-+			        continue;
-+			page = pfn_to_page(pfn);
-+			if(PageBuddy(page)) {
-+			        order = page_order(page);
-+				out = 'X';
-+			} else if(PageSlab(page)) {
-+				out = 's';
-+			} else if(PageDirty(page)) {
-+				out = '#';
-+				if(PageLRU(page)) {
-+				        out = '@';
-+				}
-+			} else if(PageLRU(page)) {
-+				out = ':';
-+			} else {
-+				out = '.';
-+			}
-+			WRITE_CHAR(out, order, pfn);
-+			for(i = 1; i < (1 << order); i++) {
-+				pfn++;
-+			        WRITE_CHAR('x', 0, pfn);
-+			}
-+		}
-+		WRITE_CHAR('\n', 0, -1);
-+	}
-+ done:
-+	return pos;
++	pci_read_config_dword(dev, 0x1BC + index * 4, &reg);
++	return sprintf(buf, "%x\n", reg);
 +}
 +
-+int sysctl_mempattern(struct ctl_table *table, int __user *name, int nlen,
-+		  void __user *oldval, size_t __user *oldlenp,
-+		  void __user *newval, size_t newlen)
-+{
-+        size_t res;
-+        size_t bufsize;
-+        printk("called sysctl_mempattern\n");
-+
-+	if (!table->data || !table->maxlen) 
-+		return -ENOTDIR;
-+
-+	if(!oldval || !oldlenp) {
-+	        return 0;
-+	}
-+
-+	if (get_user(bufsize, oldlenp))
-+		return -EFAULT;
-+
-+	res = do_mempattern(oldval, bufsize);
-+	if(res >= 0) {
-+		if (put_user(res, oldlenp))
-+		        return -EFAULT;
-+	        return 1;
-+	}
-+	return res;
++#define SHOW_CACHE_DISABLE(index)					\
++static ssize_t								\
++show_cache_disable_##index(struct _cpuid4_info *this_leaf, char *buf)  	\
++{									\
++	return show_cache_disable(this_leaf, buf, index);		\
 +}
 +
-+int mempattern_sysctl_handler(ctl_table *table, int write, 
-+	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
++static ssize_t
++store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
++		 size_t count, unsigned int index)
 +{
-+        size_t res;
-+        //printk("called mempattern_sysctl_handler write=%d length=%ld\n", write, *length);
-+	if (!*length || *ppos) {
-+	        *length = 0;
-+		return 0;
-+	}
-+	res = do_mempattern(buffer, *length);
-+        //printk("res=%ld\n", res);
-+	if(res > 0) {
-+	        *ppos += res;
-+		*length = res;
-+		return 0;
-+	}
-+	return res;
++	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
++	struct pci_dev *dev = k8_northbridges[node];
++	unsigned long val = 0;
++
++	if (!this_leaf->can_disable)
++		return -EINVAL;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	if (strict_strtoul(buf, 10, &val) < 0)
++		return -EINVAL;
++
++	val |= 0xc0000000;
++	pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
++	wbinvd();
++	pci_write_config_dword(dev, 0x1BC + index * 4, val);
++	return count;
 +}
 +
++#define STORE_CACHE_DISABLE(index)					\
++static ssize_t								\
++store_cache_disable_##index(struct _cpuid4_info *this_leaf,	     	\
++		 const char *buf, size_t count)			     	\
++{									\
++	return store_cache_disable(this_leaf, buf, count, index);	\
++}
 +
- /*
-  * Builds allocation fallback zone lists.
-  *
++SHOW_CACHE_DISABLE(0)
++STORE_CACHE_DISABLE(0)
++SHOW_CACHE_DISABLE(1)
++STORE_CACHE_DISABLE(1)
++
+ show_one_plus(level, eax.split.level, 0);
+ show_one_plus(coherency_line_size, ebx.split.coherency_line_size, 1);
+ show_one_plus(physical_line_partition, ebx.split.physical_line_partition, 1);
+@@ -696,98 +755,6 @@ static ssize_t show_type(struct _cpuid4_info *this_leaf, char *buf)
+ #define to_object(k)	container_of(k, struct _index_kobject, kobj)
+ #define to_attr(a)	container_of(a, struct _cache_attr, attr)
+ 
+-#ifdef CONFIG_PCI
+-static struct pci_dev *get_k8_northbridge(int node)
+-{
+-	struct pci_dev *dev = NULL;
+-	int i;
+-
+-	for (i = 0; i <= node; i++) {
+-		do {
+-			dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev);
+-			if (!dev)
+-				break;
+-		} while (!pci_match_id(&k8_nb_id[0], dev));
+-		if (!dev)
+-			break;
+-	}
+-	return dev;
+-}
+-#else
+-static struct pci_dev *get_k8_northbridge(int node)
+-{
+-	return NULL;
+-}
+-#endif
+-
+-static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf)
+-{
+-	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
+-	int node = cpu_to_node(cpumask_first(mask));
+-	struct pci_dev *dev = NULL;
+-	ssize_t ret = 0;
+-	int i;
+-
+-	if (!this_leaf->can_disable)
+-		return sprintf(buf, "Feature not enabled\n");
+-
+-	dev = get_k8_northbridge(node);
+-	if (!dev) {
+-		printk(KERN_ERR "Attempting AMD northbridge operation on a system with no northbridge\n");
+-		return -EINVAL;
+-	}
+-
+-	for (i = 0; i < 2; i++) {
+-		unsigned int reg;
+-
+-		pci_read_config_dword(dev, 0x1BC + i * 4, &reg);
+-
+-		ret += sprintf(buf, "%sEntry: %d\n", buf, i);
+-		ret += sprintf(buf, "%sReads:  %s\tNew Entries: %s\n",  
+-			buf,
+-			reg & 0x80000000 ? "Disabled" : "Allowed",
+-			reg & 0x40000000 ? "Disabled" : "Allowed");
+-		ret += sprintf(buf, "%sSubCache: %x\tIndex: %x\n",
+-			buf, (reg & 0x30000) >> 16, reg & 0xfff);
+-	}
+-	return ret;
+-}
+-
+-static ssize_t
+-store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
+-		    size_t count)
+-{
+-	const struct cpumask *mask = to_cpumask(this_leaf->shared_cpu_map);
+-	int node = cpu_to_node(cpumask_first(mask));
+-	struct pci_dev *dev = NULL;
+-	unsigned int ret, index, val;
+-
+-	if (!this_leaf->can_disable)
+-		return 0;
+-
+-	if (strlen(buf) > 15)
+-		return -EINVAL;
+-
+-	ret = sscanf(buf, "%x %x", &index, &val);
+-	if (ret != 2)
+-		return -EINVAL;
+-	if (index > 1)
+-		return -EINVAL;
+-
+-	val |= 0xc0000000;
+-	dev = get_k8_northbridge(node);
+-	if (!dev) {
+-		printk(KERN_ERR "Attempting AMD northbridge operation on a system with no northbridge\n");
+-		return -EINVAL;
+-	}
+-
+-	pci_write_config_dword(dev, 0x1BC + index * 4, val & ~0x40000000);
+-	wbinvd();
+-	pci_write_config_dword(dev, 0x1BC + index * 4, val);
+-
+-	return 1;
+-}
+-
+ struct _cache_attr {
+ 	struct attribute attr;
+ 	ssize_t (*show)(struct _cpuid4_info *, char *);
+@@ -808,7 +775,11 @@ define_one_ro(size);
+ define_one_ro(shared_cpu_map);
+ define_one_ro(shared_cpu_list);
+ 
+-static struct _cache_attr cache_disable = __ATTR(cache_disable, 0644, show_cache_disable, store_cache_disable);
++static struct _cache_attr cache_disable_0 = __ATTR(cache_disable_0, 0644,
++		 show_cache_disable_0, store_cache_disable_0);
++static struct _cache_attr cache_disable_1 = __ATTR(cache_disable_1, 0644,
++		 show_cache_disable_1, store_cache_disable_1);
++
+ 
+ static struct attribute * default_attrs[] = {
+ 	&type.attr,
+@@ -820,7 +791,8 @@ static struct attribute * default_attrs[] = {
+ 	&size.attr,
+ 	&shared_cpu_map.attr,
+ 	&shared_cpu_list.attr,
+-	&cache_disable.attr,
++	&cache_disable_0.attr,
++	&cache_disable_1.attr,
+ 	NULL
+ };
+ 
 
---Boundary-00=_t87tJFqozkjl6dj--
+-------------------------------------------------------
+
