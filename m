@@ -1,177 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZCKQyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbZCKQzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbZCKQyt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZCKQyj
+	id S1755293AbZCKQzb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZCKQzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:54:39 -0400
-Received: from rcsinet13.oracle.com ([148.87.113.125]:61783 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750909AbZCKQyi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:54:38 -0400
-Message-ID: <49B7ED07.6000609@oracle.com>
-Date: Wed, 11 Mar 2009 09:55:35 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 11 Mar 2009 12:55:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44876 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751723AbZCKQzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 12:55:14 -0400
+Date: Wed, 11 Mar 2009 16:54:27 GMT
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       akinobu.mita@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, akinobu.mita@gmail.com, mingo@elte.hu
+In-Reply-To: <20090311143317.GA22244@localhost.localdomain>
+References: <20090311143317.GA22244@localhost.localdomain>
+Subject: [tip:x86/mm] x86: unify kmap_atomic_pfn() and iomap_atomic_prot_pfn()
+Message-ID: <tip-bb6d59ca927d855ffac567b35c0a790c67016103@git.kernel.org>
+Git-Commit-ID: bb6d59ca927d855ffac567b35c0a790c67016103
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: David Miller <davem@davemloft.net>, geert@linux-m68k.org,
-       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: linux-next: Tree for March 10 (crypto & NLATTR)
-References: <49B6B821.5050302@oracle.com> <10f740e80903101256v2cfe08a8g410c297e019d8693@mail.gmail.com> <49B6C8BF.8010105@oracle.com> <20090310.131700.40129006.davem@davemloft.net> <20090311010705.GA17260@gondor.apana.org.au>
-In-Reply-To: <20090311010705.GA17260@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.49B7EC95.0080:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 11 Mar 2009 16:54:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> On Tue, Mar 10, 2009 at 01:17:00PM -0700, David Miller wrote:
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->> Date: Tue, 10 Mar 2009 13:08:31 -0700
->>
->>> I'll have to let David or Herbert answer that.  From my quick look
->>> at the code, I don't see much use for nlattr.c when CONFIG_NET
->>> is not enabled.
->> We want to use the netlink attribute parsers even in non-networking
->> code, that's what he's trying to do here.
-> 
-> OK the nlattr construction code really wants to depend on NET
-> because they're skb-oriented.  We could either move them back
-> or just wrap them in ifdef CONFIG_NET.
-> 
-> I think the latter is probably the simplest.
-> 
-> How does this patch look? And Randy, does it fix the problem for
-> you?
-> 
-> nlattr: Fix build error with NET off
-> 
-> We moved the netlink attribute support from net to lib in order
-> for it to be available for general consumption.  However, parts
-> of the code (the bits that we don't need :) really depends on
-> NET because the target object is sk_buff.
-> 
-> This patch fixes this by wrapping them in CONFIG_NET.
-> 
-> Some EXPORTs have been moved to make this work.
-> 
-> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Commit-ID:  bb6d59ca927d855ffac567b35c0a790c67016103
+Gitweb:     http://git.kernel.org/tip/bb6d59ca927d855ffac567b35c0a790c67016103
+Author:     "Akinobu Mita" <akinobu.mita@gmail.com>
+AuthorDate: Wed, 11 Mar 2009 23:33:18 +0900
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 11 Mar 2009 15:47:46 +0100
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-Tested-by: Randy Dunlap <randy.dunlap@oracle.com>
+x86: unify kmap_atomic_pfn() and iomap_atomic_prot_pfn()
 
-Thanks.
+kmap_atomic_pfn() and iomap_atomic_prot_pfn() are almost same
+except pgprot. This patch removes the code duplication for these
+two functions.
 
-> diff --git a/lib/nlattr.c b/lib/nlattr.c
-> index 56c3ce7..80009a2 100644
-> --- a/lib/nlattr.c
-> +++ b/lib/nlattr.c
-> @@ -281,6 +281,7 @@ int nla_strcmp(const struct nlattr *nla, const char *str)
->  	return d;
->  }
->  
-> +#ifdef CONFIG_NET
->  /**
->   * __nla_reserve - reserve room for attribute on the skb
->   * @skb: socket buffer to reserve room on
-> @@ -305,6 +306,7 @@ struct nlattr *__nla_reserve(struct sk_buff *skb, int attrtype, int attrlen)
->  
->  	return nla;
->  }
-> +EXPORT_SYMBOL(__nla_reserve);
->  
->  /**
->   * __nla_reserve_nohdr - reserve room for attribute without header
-> @@ -325,6 +327,7 @@ void *__nla_reserve_nohdr(struct sk_buff *skb, int attrlen)
->  
->  	return start;
->  }
-> +EXPORT_SYMBOL(__nla_reserve_nohdr);
->  
->  /**
->   * nla_reserve - reserve room for attribute on the skb
-> @@ -345,6 +348,7 @@ struct nlattr *nla_reserve(struct sk_buff *skb, int attrtype, int attrlen)
->  
->  	return __nla_reserve(skb, attrtype, attrlen);
->  }
-> +EXPORT_SYMBOL(nla_reserve);
->  
->  /**
->   * nla_reserve_nohdr - reserve room for attribute without header
-> @@ -363,6 +367,7 @@ void *nla_reserve_nohdr(struct sk_buff *skb, int attrlen)
->  
->  	return __nla_reserve_nohdr(skb, attrlen);
->  }
-> +EXPORT_SYMBOL(nla_reserve_nohdr);
->  
->  /**
->   * __nla_put - Add a netlink attribute to a socket buffer
-> @@ -382,6 +387,7 @@ void __nla_put(struct sk_buff *skb, int attrtype, int attrlen,
->  	nla = __nla_reserve(skb, attrtype, attrlen);
->  	memcpy(nla_data(nla), data, attrlen);
->  }
-> +EXPORT_SYMBOL(__nla_put);
->  
->  /**
->   * __nla_put_nohdr - Add a netlink attribute without header
-> @@ -399,6 +405,7 @@ void __nla_put_nohdr(struct sk_buff *skb, int attrlen, const void *data)
->  	start = __nla_reserve_nohdr(skb, attrlen);
->  	memcpy(start, data, attrlen);
->  }
-> +EXPORT_SYMBOL(__nla_put_nohdr);
->  
->  /**
->   * nla_put - Add a netlink attribute to a socket buffer
-> @@ -418,6 +425,7 @@ int nla_put(struct sk_buff *skb, int attrtype, int attrlen, const void *data)
->  	__nla_put(skb, attrtype, attrlen, data);
->  	return 0;
->  }
-> +EXPORT_SYMBOL(nla_put);
->  
->  /**
->   * nla_put_nohdr - Add a netlink attribute without header
-> @@ -436,6 +444,7 @@ int nla_put_nohdr(struct sk_buff *skb, int attrlen, const void *data)
->  	__nla_put_nohdr(skb, attrlen, data);
->  	return 0;
->  }
-> +EXPORT_SYMBOL(nla_put_nohdr);
->  
->  /**
->   * nla_append - Add a netlink attribute without header or padding
-> @@ -454,20 +463,13 @@ int nla_append(struct sk_buff *skb, int attrlen, const void *data)
->  	memcpy(skb_put(skb, attrlen), data, attrlen);
->  	return 0;
->  }
-> +EXPORT_SYMBOL(nla_append);
-> +#endif
->  
->  EXPORT_SYMBOL(nla_validate);
->  EXPORT_SYMBOL(nla_parse);
->  EXPORT_SYMBOL(nla_find);
->  EXPORT_SYMBOL(nla_strlcpy);
-> -EXPORT_SYMBOL(__nla_reserve);
-> -EXPORT_SYMBOL(__nla_reserve_nohdr);
-> -EXPORT_SYMBOL(nla_reserve);
-> -EXPORT_SYMBOL(nla_reserve_nohdr);
-> -EXPORT_SYMBOL(__nla_put);
-> -EXPORT_SYMBOL(__nla_put_nohdr);
-> -EXPORT_SYMBOL(nla_put);
-> -EXPORT_SYMBOL(nla_put_nohdr);
->  EXPORT_SYMBOL(nla_memcpy);
->  EXPORT_SYMBOL(nla_memcmp);
->  EXPORT_SYMBOL(nla_strcmp);
-> -EXPORT_SYMBOL(nla_append);
-> 
-> Thanks,
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+LKML-Reference: <20090311143317.GA22244@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
--- 
-~Randy
+---
+ arch/x86/include/asm/highmem.h |    1 +
+ arch/x86/mm/highmem_32.c       |   17 +++++++++++------
+ arch/x86/mm/iomap_32.c         |   13 ++-----------
+ 3 files changed, 14 insertions(+), 17 deletions(-)
+
+diff --git a/arch/x86/include/asm/highmem.h b/arch/x86/include/asm/highmem.h
+index bf9276b..014c2b8 100644
+--- a/arch/x86/include/asm/highmem.h
++++ b/arch/x86/include/asm/highmem.h
+@@ -63,6 +63,7 @@ void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot);
+ void *kmap_atomic(struct page *page, enum km_type type);
+ void kunmap_atomic(void *kvaddr, enum km_type type);
+ void *kmap_atomic_pfn(unsigned long pfn, enum km_type type);
++void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot);
+ struct page *kmap_atomic_to_page(void *ptr);
+ 
+ #ifndef CONFIG_PARAVIRT
+diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+index d117453..ae4c8da 100644
+--- a/arch/x86/mm/highmem_32.c
++++ b/arch/x86/mm/highmem_32.c
+@@ -121,23 +121,28 @@ void kunmap_atomic(void *kvaddr, enum km_type type)
+ 	pagefault_enable();
+ }
+ 
+-/* This is the same as kmap_atomic() but can map memory that doesn't
+- * have a struct page associated with it.
+- */
+-void *kmap_atomic_pfn(unsigned long pfn, enum km_type type)
++void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
+ {
+ 	enum fixed_addresses idx;
+ 	unsigned long vaddr;
+ 
+ 	pagefault_disable();
+ 
+-	idx = type + KM_TYPE_NR*smp_processor_id();
++	idx = type + KM_TYPE_NR * smp_processor_id();
+ 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+-	set_pte(kmap_pte-idx, pfn_pte(pfn, kmap_prot));
++	set_pte(kmap_pte - idx, pfn_pte(pfn, prot));
+ 	arch_flush_lazy_mmu_mode();
+ 
+ 	return (void*) vaddr;
+ }
++
++/* This is the same as kmap_atomic() but can map memory that doesn't
++ * have a struct page associated with it.
++ */
++void *kmap_atomic_pfn(unsigned long pfn, enum km_type type)
++{
++	return kmap_atomic_prot_pfn(pfn, type, kmap_prot);
++}
+ EXPORT_SYMBOL_GPL(kmap_atomic_pfn); /* temporarily in use by i915 GEM until vmap */
+ 
+ struct page *kmap_atomic_to_page(void *ptr)
+diff --git a/arch/x86/mm/iomap_32.c b/arch/x86/mm/iomap_32.c
+index 04102d4..592984e 100644
+--- a/arch/x86/mm/iomap_32.c
++++ b/arch/x86/mm/iomap_32.c
+@@ -18,6 +18,7 @@
+ 
+ #include <asm/iomap.h>
+ #include <asm/pat.h>
++#include <asm/highmem.h>
+ #include <linux/module.h>
+ 
+ int is_io_mapping_possible(resource_size_t base, unsigned long size)
+@@ -36,11 +37,6 @@ EXPORT_SYMBOL_GPL(is_io_mapping_possible);
+ void *
+ iomap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
+ {
+-	enum fixed_addresses idx;
+-	unsigned long vaddr;
+-
+-	pagefault_disable();
+-
+ 	/*
+ 	 * For non-PAT systems, promote PAGE_KERNEL_WC to PAGE_KERNEL_UC_MINUS.
+ 	 * PAGE_KERNEL_WC maps to PWT, which translates to uncached if the
+@@ -50,12 +46,7 @@ iomap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
+ 	if (!pat_enabled && pgprot_val(prot) == pgprot_val(PAGE_KERNEL_WC))
+ 		prot = PAGE_KERNEL_UC_MINUS;
+ 
+-	idx = type + KM_TYPE_NR*smp_processor_id();
+-	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+-	set_pte(kmap_pte-idx, pfn_pte(pfn, prot));
+-	arch_flush_lazy_mmu_mode();
+-
+-	return (void*) vaddr;
++	return kmap_atomic_prot_pfn(pfn, type, prot);
+ }
+ EXPORT_SYMBOL_GPL(iomap_atomic_prot_pfn);
+ 
