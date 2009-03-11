@@ -1,82 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZCKIwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZCKIxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbZCKIwp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 04:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZCKIwe
+	id S1754575AbZCKIxK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 04:53:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZCKIwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 04:52:34 -0400
-Received: from mx3.schottelius.org ([77.109.138.221]:48998 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752563AbZCKIwc (ORCPT
+	Wed, 11 Mar 2009 04:52:54 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:51236 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752922AbZCKIwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 04:52:32 -0400
-Date: Wed, 11 Mar 2009 09:52:29 +0100
-From: Nico Schottelius <nico-linux-20090311@schottelius.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nico Schottelius <nico-linux-20090311@schottelius.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ipw3945-devel@lists.sourceforge.net,
-       Linux Next Mailing List <linux-next@vger.kernel.org>
-Subject: Re: X200 suspend status on -wl and -next
-Message-ID: <20090311085229.GB4495@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-20090311@schottelius.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	LKML <linux-kernel@vger.kernel.org>,
-	ipw3945-devel@lists.sourceforge.net,
-	Linux Next Mailing List <linux-next@vger.kernel.org>
-References: <20090311073030.GA5284@denkbrett.schottelius.org> <200903110946.23280.rjw@sisk.pl>
+	Wed, 11 Mar 2009 04:52:53 -0400
+Date: Wed, 11 Mar 2009 14:23:16 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC PATCH] cpuacct: per-cgroup utime/stime statistics - v1
+Message-ID: <20090311085316.GA5592@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20090310124208.GC3902@in.ibm.com> <20090311093812.298a0b21.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="GPJrCs/72TxItFYR"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200903110946.23280.rjw@sisk.pl>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.29-rc7-next-20090306-ikn x86_64)
+In-Reply-To: <20090311093812.298a0b21.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 11, 2009 at 09:38:12AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Tue, 10 Mar 2009 18:12:08 +0530
+> Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+> 
+> > Hi,
+> > 
+> > Based on the comments received during my last post
+> > (http://lkml.org/lkml/2009/2/25/129), here is a fresh attempt
+> > to get per-cgroup utime/stime statistics as part of cpuacct controller.
+> > 
+> > This patch adds a new file cpuacct.stat which displays two stats:
+> > utime and stime. I wasn't too sure about the usefulness of providing
+> > per-cgroup guest and steal times and hence not including them here.
+> > 
+> > Note that I am using percpu_counter for collecting these two stats.
+> > Since percpu_counter subsystem doesn't protect the readside, readers could
+> > theoritically obtain incorrect values for these stats on 32bit systems.
+> 
+> Using percpu_counter_read() means that .. but is it okay to ignore "batch"
+> number ? (see FBC_BATCH)
 
---GPJrCs/72TxItFYR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I would think it might be ok with the understanding that read is not
+a frequent operation. The default value of percpu_counter_batch is 32.
+Ideally it should have been possible to set this value independently
+for each percpu_counter. That way, users could have chosen an appropriate
+batch value for their counter based on the usage pattern of their
+counters.
 
-Rafael J. Wysocki [Wed, Mar 11, 2009 at 09:46:22AM +0100]:
-> On Wednesday 11 March 2009, Nico Schottelius wrote:
-> > Good morning!
-> >=20
-> > vmlinuz-2.6.29-rc7-wl-ikn-32831-g98c5597:
->=20
-> Does -wl stand for 'wireless'?
+> 
+> 
+> > I hope occasional wrong values is not too much of a concern for
+> > statistics like this. If it is a problem, we have to either fix
+> > percpu_counter or do it all by ourselves as Kamezawa attempted
+> > for cpuacct.usage (http://lkml.org/lkml/2009/3/4/14)
+> > 
+> Hmm, percpu_counter_sum() is bad ?
 
-Yep:
+It is slow and it doesn't do exactly what we want. It just adds the
+32bit percpu counters to the global 64bit counter under lock and returns
+the result. But it doesn't clear the 32bit percpu counters after accummulating
+them in the 64bit counter.
 
-ikn% grep url .git/config=20
-  url =3D git://git.kernel.org/pub/scm/linux/kernel/git/iwlwifi/iwlwifi-2.6=
-=2Egit
+If it is ok to be a bit slower on the read side, we could have something
+like percpu_counter_read_slow() which would do what percpu_counter_sum()
+does and in addition clear the 32bit percpu counters. Will this be
+acceptable ? It slows down the read side, but will give accurate count.
+This might slow down the write side also(due to contention b/n readers
+and writers), but I guess due to batching the effect might not be too
+pronounced. Should we be going this way ?
 
-Nico
+> 
+> BTW, I'm not sure but don't we need special handling if
+> CONFIG_VIRT_CPU_ACCOUNTING=y ?
 
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
+AFAICS no. Architectures which define CONFIG_VIRT_CPU_ACCOUNTING end up calling
+account_{system,user}_time() where we have placed our hooks for
+cpuacct charging. So even on such architectures we should be able to
+get correct per-cgroup stime and utime.
 
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---GPJrCs/72TxItFYR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkm3e80ACgkQuL75KpiFGIxTMgCdFYrgt1Sdv6Eu+RgHV5zYmE8D
-LigAnjqBSWFa/u500mXrIEHoxZjLh5/K
-=P8y9
------END PGP SIGNATURE-----
-
---GPJrCs/72TxItFYR--
+Regards,
+Bharata.
