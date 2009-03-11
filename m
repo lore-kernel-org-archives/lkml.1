@@ -1,144 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZCKQoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbZCKQqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751956AbZCKQoj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbZCKQoa
+	id S1754546AbZCKQqR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZCKQqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:44:30 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:38750 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751082AbZCKQo3 (ORCPT
+	Wed, 11 Mar 2009 12:46:01 -0400
+Received: from n77.bullet.mail.sp1.yahoo.com ([98.136.44.45]:36594 "HELO
+	n77.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751790AbZCKQqA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:44:29 -0400
-Date: Wed, 11 Mar 2009 22:14:16 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC PATCH] cpuacct: per-cgroup utime/stime statistics - v1
-Message-ID: <20090311164416.GD16769@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090310124208.GC3902@in.ibm.com> <20090311151657.GA16769@balbir.in.ibm.com>
+	Wed, 11 Mar 2009 12:46:00 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 824434.74892.bm@omp109.mail.gq1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
+  b=nIQf8xrZrLcJxGKvNsgTjWxgmwggvXm3Pngt1awFncPiyjhgh5Mmv22n7l1hnRw6oaqWIDfwMqi7D7U3sZ0T1xyu5a6aekSxsafunStfspcVK/7TwY9HI5fMnmGThYBt98Do8eeotDpP8lTr4jFHBDW0l2AMMlQFN3OxfZbT9jg=;
+Message-ID: <708656.28228.qm@web112203.mail.gq1.yahoo.com>
+X-YMail-OSG: 9TiTBusVM1krbTh7FvP5NhYpNnDVGyGKeZqfg9wba14vmeYM3D83pRK.gmpibNRjqH5sBCV0DgotVhYl15LEhCiK_5iR34QTN50lnbAjjhnyrQsMXN0qjFP8J2mObIchKRlri9n.AXylYrApKD.CmOs_wFF5dzRIYLUcu6pPVX2YYwoR0qoSI367OHs3RPtQ.GSZQI.4bKGF3VPGV8YSfPsf7zi6zP9hv398F9ap.I3yAeVQ.iZCQNemMmmHhKsaxuMjqkCAATV.hnSBrMAFxz1QQd17n_c.kZ2TMqpl.ZoeLW2Ac3.eM5GPAQ--
+X-Mailer: YahooMailClassic/5.1.19 YahooMailWebService/0.7.289.1
+Date: Wed, 11 Mar 2009 09:45:58 -0700 (PDT)
+From: We La <w.landgraf@yahoo.com>
+Subject: kernel regression ref networking
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090311151657.GA16769@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-03-11 20:46:57]:
 
-> * Bharata B Rao <bharata@linux.vnet.ibm.com> [2009-03-10 18:12:08]:
-> 
-> > Hi,
-> > 
-> > Based on the comments received during my last post
-> > (http://lkml.org/lkml/2009/2/25/129), here is a fresh attempt
-> > to get per-cgroup utime/stime statistics as part of cpuacct controller.
-> > 
-> > This patch adds a new file cpuacct.stat which displays two stats:
-> > utime and stime. I wasn't too sure about the usefulness of providing
-> > per-cgroup guest and steal times and hence not including them here.
-> > 
-> > Note that I am using percpu_counter for collecting these two stats.
-> > Since percpu_counter subsystem doesn't protect the readside, readers could
-> > theoritically obtain incorrect values for these stats on 32bit systems.
-> > I hope occasional wrong values is not too much of a concern for
-> > statistics like this. If it is a problem, we have to either fix
-> > percpu_counter or do it all by ourselves as Kamezawa attempted
-> > for cpuacct.usage (http://lkml.org/lkml/2009/3/4/14)
-> > 
-> > Regards,
-> > Bharata.
-> > 
-> > cpuacct: Add stime and utime statistics
-> > 
-> > Add per-cgroup cpuacct controller statistics like the system and user
-> > time consumed by the group of tasks.
-> > 
-> > Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> > Signed-off-by: Balaji Rao <balajirrao@gmail.com>
-> > ---
-> >  Documentation/cgroups/cpuacct.txt |    8 +++
-> >  kernel/sched.c                    |   87 +++++++++++++++++++++++++++++++++++---
-> >  2 files changed, 89 insertions(+), 6 deletions(-)
-> > 
-> > --- a/Documentation/cgroups/cpuacct.txt
-> > +++ b/Documentation/cgroups/cpuacct.txt
-> > @@ -30,3 +30,11 @@ The above steps create a new group g1 an
-> >  process (bash) into it. CPU time consumed by this bash and its children
-> >  can be obtained from g1/cpuacct.usage and the same is accumulated in
-> >  /cgroups/cpuacct.usage also.
-> > +
-> > +cpuacct.stat file lists a few statistics which further divide the
-> > +CPU time obtained by the cgroup into user and system times. Currently
-> > +the following statistics are supported:
-> > +
-> > +utime: Time in milliseconds spent by tasks of the cgroup in user mode.
-> > +stime: Time in milliseconds spent by tasks of the cgroup in kernel mode.
-> > +
-> 
-> Hi, Bharata,
-> 
-> I did a quick run of the patch on my machine. The patch applied and
-> compile cleanly, here are a few comments?
-> 
-> 1. We could consider enhancing the patch to account for irq, softirq,
-> etc time like cpustat does. Not right away, but iteratively
-> 2. The accounting is converted to milliseconds, I would much rather
-> export it in cputime to be consistent with other cpu accounting.
-> I remember we used to return nanosecond accurate accounting and then
-> moved to cputime based accounting for cpuacct.
-> 3. How do we deal with CPU hotplug. Since we use a per-cpu counter,
-> any hotplug would mean that the data related to the offlined CPU is
-> lost. That is how the current CPU accounting system seems to work.
->
+I reported since 2.6.27 that there has any kernel regression, because networking isn't working with ethernet cards, on all my computers, I supposed the problem has to do with some new features or parameters of the kernel config.
 
-Bharata,
+Meanwhile I found more narrow what can be the reason.   For example, last night I compiled 2.6.29-rc7-git4 one time with an 'old' configuration sucessful since 2.6.29-rc6-git5, where internet / eth-cards still are working, and with a slightly changed new config, where it's not more working.
 
-I tried the diff below and saw what I was looking for
+Below the differences between the two configs.   One of these different parameters / new features causes that internet / eth dont work more at all, beginning with that ping 192.168.1.1 (modem directly connected with the computer via eth0) dont get response.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 015155d..fadd17f 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4195,7 +4195,7 @@ void account_user_time(struct task_struct *p, cputime_t cputime,
- 	else
- 		cpustat->user = cputime64_add(cpustat->user, tmp);
- 
--	cpuacct_update_stats(p, CPUACCT_STAT_UTIME, cputime_to_msecs(cputime));
-+	cpuacct_update_stats(p, CPUACCT_STAT_UTIME, cputime);
- 	/* Account for user time used */
- 	acct_update_integrals(p);
- }
-@@ -4257,7 +4257,7 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
- 	else
- 		cpustat->system = cputime64_add(cpustat->system, tmp);
- 
--	cpuacct_update_stats(p, CPUACCT_STAT_STIME, cputime_to_msecs(cputime));
-+	cpuacct_update_stats(p, CPUACCT_STAT_STIME, cputime);
- 
- 	/* Account for system time used */
- 	acct_update_integrals(p);
-@@ -9611,6 +9611,7 @@ static int cpuacct_stats_show(struct cgroup *cgrp, struct cftype *cft,
- 	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
- 		s64 val = percpu_counter_read(&ca->cpustat[i]);
- 		val *= cpuacct_stat_desc[i].unit;
-+		val = cputime_to_clock_t(val);
- 		cb->fill(cb, cpuacct_stat_desc[i].msg, val);
- 	}
- 	return 0;
+With this, someone of the specialists perhaps can quickly see what of the new parameters / options causes the total inoperability of networking, and throw this new feature out from the kernel, because its completely useless.
 
-1. The data is returned in clock_t
-2. CPU hotplug seems to be already correctly handled by per_cpu
-counters
+It should be something included at the time of 2.6.27 because at that time the problem begun. 
 
- 
--- 
-	Balbir
+
+Werner Landgraf
+w.landgraf@yahoo.com
+
+Linux SYS : http://ftp.tu-chemnitz.de/pub/linux/SYS/
+===========
+
+3,4c3,4
+< # Linux kernel version: 2.6.29-rc6-git5
+< # Sat Feb 28 05:46:44 2009
+---
+> # Linux kernel version: 2.6.29-rc7-git4
+> # Wed Mar 11 01:53:24 2009
+98a99
+> CONFIG_ANON_INODES=y
+109d109
+< CONFIG_COMPAT_BRK=y
+112d111
+< CONFIG_ANON_INODES=y
+121a121
+> CONFIG_COMPAT_BRK=y
+184c184
+< # CONFIG_X86_RDC321X is not set
+---
+> CONFIG_X86_RDC321X=y
+186c186,192
+< # CONFIG_PARAVIRT_GUEST is not set
+---
+> CONFIG_PARAVIRT_GUEST=y
+> CONFIG_VMI=y
+> CONFIG_KVM_CLOCK=y
+> CONFIG_KVM_GUEST=y
+> CONFIG_LGUEST_GUEST=y
+> CONFIG_PARAVIRT=y
+> CONFIG_PARAVIRT_CLOCK=y
+250c256
+< # CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS is not set
+---
+> CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS=y
+289c295,296
+< # CONFIG_X86_CHECK_BIOS_CORRUPTION is not set
+---
+> CONFIG_X86_CHECK_BIOS_CORRUPTION=y
+> CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK=y
+347c354
+< # CONFIG_ACPI_SBS is not set
+---
+> CONFIG_ACPI_SBS=m
+423c430
+< # CONFIG_PCI_MSI is not set
+---
+> CONFIG_PCI_MSI=y
+434c441,443
+< # CONFIG_MCA is not set
+---
+> CONFIG_MCA=y
+> CONFIG_MCA_LEGACY=y
+> CONFIG_MCA_PROC_FS=y
+468c477,479
+< # CONFIG_HOTPLUG_PCI_CPCI is not set
+---
+> CONFIG_HOTPLUG_PCI_CPCI=y
+> CONFIG_HOTPLUG_PCI_CPCI_ZT5550=m
+> CONFIG_HOTPLUG_PCI_CPCI_GENERIC=m
+1451a1463
+> # CONFIG_SCSI_FD_MCS is not set
+1455a1468
+> # CONFIG_SCSI_IBMMCA is not set
+1464a1478
+> # CONFIG_SCSI_NCR_D700 is not set
+1473a1488
+> # CONFIG_SCSI_NCR_Q720 is not set
+1687a1703,1704
+> # CONFIG_ELMC is not set
+> # CONFIG_ELMC_II is not set
+1692a1710
+> # CONFIG_ULTRAMCA is not set
+1726a1745,1746
+> # CONFIG_NE2_MCA is not set
+> # CONFIG_IBMLANA is not set
+1834a1855
+> # CONFIG_MADGEMC is not set
+2431a2453
+> # CONFIG_SERIAL_8250_MCA is not set
+2447c2469
+< CONFIG_VIRTIO_CONSOLE=m
+---
+> CONFIG_VIRTIO_CONSOLE=y
+2734a2757
+> # CONFIG_RDC321X_WDT is not set
+4630,4631c4653,4654
+< CONFIG_VIRTIO=m
+< CONFIG_VIRTIO_RING=m
+---
+> CONFIG_VIRTIO=y
+> CONFIG_VIRTIO_RING=y
+
+
+
+
+      
+
