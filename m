@@ -1,145 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZCKOFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbZCKOOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbZCKOFR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 10:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZCKOFE
+	id S1752941AbZCKOOX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 10:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZCKOOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 10:05:04 -0400
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:60874 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752344AbZCKOFA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 10:05:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YOQMdzTTnJ646DuGNZequUN/s6fgpd3NudWGtDWo4BsVXe/Mq/mbc6hsDfpGShM4bo
-         vmXwPDh+/eIR10LsLKl/+NdvP9bRdgTYJbVpmDR9Vr7aSXFgZFQqZZN3VpftRfgpqEi4
-         IkVtoH57Vey/ogbC/kchGlS0KFJiwgzlKVga4=
-Date: Wed, 11 Mar 2009 15:04:54 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] tracing: use raw spinlocks for trace_vprintk
-Message-ID: <20090311140453.GA5120@nowhere>
-References: <alpine.DEB.2.00.0903102125250.16494@gandalf.stny.rr.com> <1236754764.22914.3680.camel@twins> <20090311071808.GA5090@nowhere> <alpine.DEB.2.00.0903110958000.16494@gandalf.stny.rr.com>
+	Wed, 11 Mar 2009 10:14:14 -0400
+Received: from msxmx04.webde.de ([217.72.192.159]:51143 "EHLO msxmx04.webde.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752604AbZCKOON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 10:14:13 -0400
+X-Greylist: delayed 2049 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Mar 2009 10:14:13 EDT
+From: "Thomas Schoebel-Theuer" <thomas.schoebel-theuer@1und1.de>
+Organization: 1und1 Internet AG
+To: jack marrow <jackmarrow2@gmail.com>
+Subject: Re: Memory usage per memory zone
+Date: Wed, 11 Mar 2009 14:39:56 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <e2dc2c680903110341g6c9644b8j87ce3b364807e37f@mail.gmail.com>
+In-Reply-To: <e2dc2c680903110341g6c9644b8j87ce3b364807e37f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903110958000.16494@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_t87tJFqozkjl6dj"
+Message-Id: <200903111439.57510.thomas.schoebel-theuer@1und1.de>
+X-OriginalArrivalTime: 11 Mar 2009 13:40:00.0267 (UTC) FILETIME=[DFCCF5B0:01C9A24E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 10:00:51AM -0400, Steven Rostedt wrote:
-> 
-> On Wed, 11 Mar 2009, Frederic Weisbecker wrote:
-> 
-> > On Wed, Mar 11, 2009 at 07:59:24AM +0100, Peter Zijlstra wrote:
-> > > On Tue, 2009-03-10 at 21:26 -0400, Steven Rostedt wrote:
-> > > 
-> > > > commit 80370cb758e7ca2692cd9fb5e413d970b1f4b2b2
-> > > > Author: Steven Rostedt <srostedt@redhat.com>
-> > > > Date:   Tue Mar 10 17:16:35 2009 -0400
-> > > > 
-> > > >     tracing: use raw spinlocks for trace_vprintk
-> > > >     
-> > > >     Impact: prevent locking up by lockdep tracer
-> > > >     
-> > > >     The lockdep tracer uses trace_vprintk and thus trace_vprintk can not
-> > > >     call back into lockdep without locking up.
-> > > 
-> > > Hmm, I did this when I posted the lockdep tracepoints, so someone then
-> > > did a bad copy/paste job when renaming ftrace_printk or something?
-> > > 
-> > > See efed792d6738964f399a508ef9e831cd60fa4657
-> > 
-> > 
-> > 
-> > Must be my bad :-s
-> > I think I lost this modification that was done on the old trace_vprintf
-> > between two iterations of the bprintk patchset.
-> > 
-> > BTW, Ingo reported one or two monthes ago that ftrace_printk was not NMI safe
-> > because of this spinlock.
-> > 
-> > He suggested to drop the spinlock and then make trace_buf per_cpu.
-> > 
-> > By disabling the irq we prevent from race with maskable irqs. And in
-> > case of racy accesses to trace_buf because of an nmi, then the buffer
-> > might be mixed up but it must be harmless compared to a hardlockup that
-> > can occur now. On the worst case, the trace will be weird and that's it.
-> 
-> But the lock is only used in this function, and the function can not 
-> recurse. It is NMI safe. see below.
-> 
-> > 
-> > Frederic.
-> > 
-> > 
-> > > >     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> > > > 
-> > > > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> > > > index 8c6a902..4c97947 100644
-> > > > --- a/kernel/trace/trace.c
-> > > > +++ b/kernel/trace/trace.c
-> > > > @@ -1176,7 +1176,8 @@ void trace_graph_return(struct ftrace_graph_ret *trace)
-> > > >   */
-> > > >  int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
-> > > >  {
-> > > > -	static DEFINE_SPINLOCK(trace_buf_lock);
-> > > > +	static raw_spinlock_t trace_buf_lock =
-> > > > +		(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
-> > > >  	static u32 trace_buf[TRACE_BUF_SIZE];
-> > > >  
-> > > >  	struct ring_buffer_event *event;
-> > > > @@ -1201,7 +1202,9 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
-> > > >  	if (unlikely(atomic_read(&data->disabled)))
-> > > >  		goto out;
-> 
-> The above disable is exactly for NMIs. We should have preemption disabled 
-> here, and we disable this per cpu. If an NMI comes in after this point, it 
-> will exit the function without taking the lock. If it runs on another CPU, 
-> we really don't care. That's what NMIs are for ;-)
+--Boundary-00=_t87tJFqozkjl6dj
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+Am Mittwoch, 11. M=E4rz 2009 11:41:43 schrieb jack marrow:
+> I have a box where the oom-killer is killing processes due to running
+> out of memory in zone_normal. I can see using slabtop that the inode
+> caches are using up lots of memory and guess this is the problem, so
+> have cleared them using an echo to drop_caches.
 
-Aaah, ok :-)
+Hi Jack,
 
+my experience with plain old 2.6.24 on 32bit _production_ boxes was that un=
+der=20
+heavy load and after >30days uptime we saw an sudden inflation of oom-kille=
+rs=20
+on some of them until those boxes died. The standard kernel statistics abou=
+t=20
+memory looked much the same as yours (and I suspect they could have been=20
+wrong or at least misleading, but I have neither checked nor tried to fix).
+
+> is it possible to use slabtop
+> (or any other way) to view ram usage per zone so I can pick out the
+> culprit?
+
+Try the attached experimental hack which can provide you with some insight=
+=20
+about whats really going on in the _physical_ memory. Since it does not=20
+allocate any memory for the purpose of displaying those memory patterns it=
+=20
+wants to examine, you have to allocate a large enough buffer in userspace.=
+=20
+Don't use cat, but something like dd with parameters such as bs=3D4M (as=20
+mentioned in the comment). Probably you have to adjust the patch to some=20
+newer kernel versions, and/or to fix some sysctl table checks if you want t=
+o=20
+get it upstreams (I will not). And, of course, you can visualize more/other=
+=20
+flags as well.
+
+After gaining some insight with /proc/sys/vm/mempattern and some developmen=
+t=20
+of further experimental patches which successfully reduced fragmentation (b=
+ut=20
+finally only _delayed_ the oom problems without being able to _fundamentall=
+y_=20
+resolve them), the ultimate solution was just to use CONFIG_VMSPLIT_2G or=20
+even CONFIG_VMSPLIT_1G in order to overcome the artificial shortening of=20
+zone_normal.
+
+This supports old wisdom that an OS cannot give you resources it just does =
+not=20
+possess... Just make sure you have enough resources for your working set.=20
+Thats all.
+
+In the hope of being helpful,
+
+Thomas
+
+--Boundary-00=_t87tJFqozkjl6dj
+Content-Type: text/x-diff;
+  charset="iso 8859-15";
+  name="fragmentation-visualisation-v2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="fragmentation-visualisation-v2.patch"
+
+diff -urw linux-2.6.24.fragmentation-base/include/linux/mmzone.h linux-2.6.24.fragmentation-info/include/linux/mmzone.h
+--- linux-2.6.24.fragmentation-base/include/linux/mmzone.h	2008-09-30 12:50:05.000000000 +0200
++++ linux-2.6.24.fragmentation-info/include/linux/mmzone.h	2009-01-27 14:27:42.000000000 +0100
+@@ -687,6 +687,11 @@
+ 			struct file *, void __user *, size_t *, loff_t *);
+ extern char numa_zonelist_order[];
+ #define NUMA_ZONELIST_ORDER_LEN 16	/* string buffer size */
++int sysctl_mempattern(struct ctl_table *table, int __user *name, int nlen,
++		      void __user *oldval, size_t __user *oldlenp,
++		      void __user *newval, size_t newlen);
++int mempattern_sysctl_handler(struct ctl_table *, int, struct file *, 
++			      void __user *, size_t *, loff_t *);
  
-> -- Steve
-> 
-> 
-> 
-> > > >  
-> > > > -	spin_lock_irqsave(&trace_buf_lock, flags);
-> > > > +	/* Lockdep uses trace_printk for lock tracing */
-> > > > +	local_irq_save(flags);
-> > > 
-> > > Shouldn't you also use raw_local_irq_save() and friends?
-> > > 
-> > > > +	__raw_spin_lock(&trace_buf_lock);
-> > > >  	len = vbin_printf(trace_buf, TRACE_BUF_SIZE, fmt, args);
-> > > >  
-> > > >  	if (len > TRACE_BUF_SIZE || len < 0)
-> > > > @@ -1220,7 +1223,8 @@ int trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args)
-> > > >  	ring_buffer_unlock_commit(tr->buffer, event);
-> > > >  
-> > > >  out_unlock:
-> > > > -	spin_unlock_irqrestore(&trace_buf_lock, flags);
-> > > > +	__raw_spin_unlock(&trace_buf_lock);
-> > > > +	local_irq_restore(flags);
-> > > >  
-> > > >  out:
-> > > >  	ftrace_preempt_enable(resched);
-> > > > 
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> > 
+ #include <linux/topology.h>
+ /* Returns the number of the current Node. */
+diff -urw linux-2.6.24.fragmentation-base/include/linux/sysctl.h linux-2.6.24.fragmentation-info/include/linux/sysctl.h
+--- linux-2.6.24.fragmentation-base/include/linux/sysctl.h	2008-11-12 12:41:47.000000000 +0100
++++ linux-2.6.24.fragmentation-info/include/linux/sysctl.h	2009-01-27 14:05:17.000000000 +0100
+@@ -225,6 +225,7 @@
+ 	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
+ 	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
+ 	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
++	VM_MEMPATTERN=36,	 /* output physical memory patterns */
+ };
+ 
+ 
+diff -urw linux-2.6.24.fragmentation-base/kernel/sysctl.c linux-2.6.24.fragmentation-info/kernel/sysctl.c
+--- linux-2.6.24.fragmentation-base/kernel/sysctl.c	2008-11-12 12:41:47.000000000 +0100
++++ linux-2.6.24.fragmentation-info/kernel/sysctl.c	2009-01-27 14:43:08.000000000 +0100
+@@ -987,6 +987,13 @@
+ 		.extra1		= &zero,
+ 	},
+ 	{
++		.ctl_name	= VM_MEMPATTERN,
++		.procname	= "mempattern",
++		.mode		= 0444,
++		.proc_handler	= &mempattern_sysctl_handler,
++		.strategy	= &sysctl_mempattern,
++	},
++	{
+ 		.ctl_name	= VM_PERCPU_PAGELIST_FRACTION,
+ 		.procname	= "percpu_pagelist_fraction",
+ 		.data		= &percpu_pagelist_fraction,
+diff -urw linux-2.6.24.fragmentation-base/mm/page_alloc.c linux-2.6.24.fragmentation-info/mm/page_alloc.c
+--- linux-2.6.24.fragmentation-base/mm/page_alloc.c	2008-09-30 12:50:05.000000000 +0200
++++ linux-2.6.24.fragmentation-info/mm/page_alloc.c	2009-01-29 15:54:31.000000000 +0100
+@@ -1947,6 +1947,126 @@
+ 	show_swap_cache_info();
+ }
+ 
++/* Strategy routine for dumping memory patterns.
++ * It does not allocate kernel memory, but rather copies everything
++ * directly to userspace.
++ * The userspace buffer should be large enough, otherwise output is
++ * truncated.
++ * Use something like "dd if=/proc/sys/vm/mempattern bs=1M"
++ * to reserve such a large buffer in userspace.
++ */
++size_t do_mempattern(void __user *buf, size_t bufsize)
++{
++	struct zone *zone;
++        size_t pos = 0;
++
++#define WRITE_CHAR(out,order,pfn)				\
++        if(bufsize -  pos <= (1 << (order)))			\
++	          goto done;					\
++        if(!((pfn) % 64)) {					\
++	        put_user('\n', (char __user *)(buf + pos));	\
++		pos++;						\
++	}							\
++        put_user((out), (char __user *)(buf + pos));		\
++        pos++;
++
++        //printk("called do_mempattern bufsize=%ld\n", bufsize);
++	for_each_zone(zone) {
++	        size_t len = strlen(zone->name);
++		int pfn;
++
++		if(bufsize -  pos <= len+7)
++		        goto done;
++		if(copy_to_user(buf + pos, "Zone: ", 6))
++		        return -EFAULT;
++		pos += 6;
++		if(copy_to_user(buf + pos, zone->name, len))
++		        return -EFAULT;
++		pos += len;
++		WRITE_CHAR('\n', 0, -1);
++
++		for(pfn = zone->zone_start_pfn; pfn < zone->zone_start_pfn+zone->spanned_pages; pfn++) {
++			struct page *page;
++			int order = 0;
++			int i;
++			char out;
++		        if(!pfn_valid(pfn))
++			        continue;
++			page = pfn_to_page(pfn);
++			if(PageBuddy(page)) {
++			        order = page_order(page);
++				out = 'X';
++			} else if(PageSlab(page)) {
++				out = 's';
++			} else if(PageDirty(page)) {
++				out = '#';
++				if(PageLRU(page)) {
++				        out = '@';
++				}
++			} else if(PageLRU(page)) {
++				out = ':';
++			} else {
++				out = '.';
++			}
++			WRITE_CHAR(out, order, pfn);
++			for(i = 1; i < (1 << order); i++) {
++				pfn++;
++			        WRITE_CHAR('x', 0, pfn);
++			}
++		}
++		WRITE_CHAR('\n', 0, -1);
++	}
++ done:
++	return pos;
++}
++
++int sysctl_mempattern(struct ctl_table *table, int __user *name, int nlen,
++		  void __user *oldval, size_t __user *oldlenp,
++		  void __user *newval, size_t newlen)
++{
++        size_t res;
++        size_t bufsize;
++        printk("called sysctl_mempattern\n");
++
++	if (!table->data || !table->maxlen) 
++		return -ENOTDIR;
++
++	if(!oldval || !oldlenp) {
++	        return 0;
++	}
++
++	if (get_user(bufsize, oldlenp))
++		return -EFAULT;
++
++	res = do_mempattern(oldval, bufsize);
++	if(res >= 0) {
++		if (put_user(res, oldlenp))
++		        return -EFAULT;
++	        return 1;
++	}
++	return res;
++}
++
++int mempattern_sysctl_handler(ctl_table *table, int write, 
++	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
++{
++        size_t res;
++        //printk("called mempattern_sysctl_handler write=%d length=%ld\n", write, *length);
++	if (!*length || *ppos) {
++	        *length = 0;
++		return 0;
++	}
++	res = do_mempattern(buffer, *length);
++        //printk("res=%ld\n", res);
++	if(res > 0) {
++	        *ppos += res;
++		*length = res;
++		return 0;
++	}
++	return res;
++}
++
++
+ /*
+  * Builds allocation fallback zone lists.
+  *
 
+--Boundary-00=_t87tJFqozkjl6dj--
