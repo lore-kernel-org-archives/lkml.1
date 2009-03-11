@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZCKJ6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZCKJ6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbZCKJ6u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 05:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbZCKJ5r
+	id S1755344AbZCKJ6g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 05:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbZCKJ5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 05:57:47 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49320 "EHLO ogre.sisk.pl"
+	Wed, 11 Mar 2009 05:57:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49313 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754126AbZCKJ5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 05:57:44 -0400
+	id S1753787AbZCKJ5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 05:57:43 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 3/10] PM: Change hibernation code ordering
-Date: Wed, 11 Mar 2009 10:38:05 +0100
+Subject: [PATCH 2/10] PM: Change suspend code ordering
+Date: Wed, 11 Mar 2009 10:37:07 +0100
 User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -30,19 +30,18 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903111038.07273.rjw@sisk.pl>
+Message-Id: <200903111037.08897.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Change the ordering of the hibernation core code so that the platform
-"prepare" callbacks are executed and the nonboot CPUs are disabled
+Change the ordering of the suspend core code so that the platform
+"prepare" callback is executed and the nonboot CPUs are disabled
 after calling device drivers' "late suspend" methods.
 
-This change (along with the previous analogous change of the suspend
-core code) will allow us to rework the PCI PM core so that the power
+This change will allow us to rework the PCI PM core so that the power
 state of devices is changed in the "late" phase of suspend (and
 analogously in the "early" phase of resume), which in turn will allow
 us to avoid the race condition where a device using shared interrupts
@@ -51,209 +50,70 @@ interrupt (for another device) comes in and confuses its driver.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/disk.c |  109 +++++++++++++++++++++++++++++-----------------------
- 1 file changed, 61 insertions(+), 48 deletions(-)
+ kernel/power/main.c |   38 ++++++++++++++++++++++----------------
+ 1 file changed, 22 insertions(+), 16 deletions(-)
 
-Index: linux-2.6/kernel/power/disk.c
+Index: linux-2.6/kernel/power/main.c
 ===================================================================
---- linux-2.6.orig/kernel/power/disk.c
-+++ linux-2.6/kernel/power/disk.c
-@@ -228,13 +228,22 @@ static int create_image(int platform_mod
- 		goto Unlock;
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -297,6 +297,19 @@ static int suspend_enter(suspend_state_t
+ 		goto Done;
  	}
  
-+	error = platform_pre_snapshot(platform_mode);
-+	if (error || hibernation_test(TEST_PLATFORM))
-+		goto Platform_finish;
++	if (suspend_ops->prepare) {
++		error = suspend_ops->prepare();
++		if (error)
++			goto Power_up_devices;
++	}
++
++	if (suspend_test(TEST_PLATFORM))
++		goto Platfrom_finish;
 +
 +	error = disable_nonboot_cpus();
-+	if (error || hibernation_test(TEST_CPUS)
-+	    || hibernation_testmode(HIBERNATION_TEST))
++	if (error || suspend_test(TEST_CPUS))
 +		goto Enable_cpus;
 +
- 	local_irq_disable();
+ 	arch_suspend_disable_irqs();
+ 	BUG_ON(!irqs_disabled());
  
- 	sysdev_suspend(PMSG_FREEZE);
- 	if (error) {
- 		printk(KERN_ERR "PM: Some devices failed to power down, "
- 			"aborting hibernation\n");
--		goto Power_up_devices;
-+		goto Enable_irqs;
- 	}
- 
- 	if (hibernation_test(TEST_CORE))
-@@ -250,15 +259,22 @@ static int create_image(int platform_mod
- 	restore_processor_state();
- 	if (!in_suspend)
- 		platform_leave(platform_mode);
-+
-  Power_up:
- 	sysdev_resume();
- 	/* NOTE:  device_power_up() is just a resume() for devices
- 	 * that suspended with irqs off ... no overall powerup.
- 	 */
- 
-- Power_up_devices:
-+ Enable_irqs:
- 	local_irq_enable();
+@@ -310,6 +323,14 @@ static int suspend_enter(suspend_state_t
+ 	arch_suspend_enable_irqs();
+ 	BUG_ON(irqs_disabled());
  
 + Enable_cpus:
 +	enable_nonboot_cpus();
 +
-+ Platform_finish:
-+	platform_finish(platform_mode);
++ Platfrom_finish:
++	if (suspend_ops->finish)
++		suspend_ops->finish();
 +
- 	device_power_up(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
++ Power_up_devices:
+ 	device_power_up(PMSG_RESUME);
  
-@@ -298,25 +314,9 @@ int hibernation_snapshot(int platform_mo
- 	if (hibernation_test(TEST_DEVICES))
+  Done:
+@@ -346,23 +367,8 @@ int suspend_devices_and_enter(suspend_st
+ 	if (suspend_test(TEST_DEVICES))
  		goto Recover_platform;
  
--	error = platform_pre_snapshot(platform_mode);
--	if (error || hibernation_test(TEST_PLATFORM))
--		goto Finish;
--
--	error = disable_nonboot_cpus();
--	if (!error) {
--		if (hibernation_test(TEST_CPUS))
--			goto Enable_cpus;
--
--		if (hibernation_testmode(HIBERNATION_TEST))
--			goto Enable_cpus;
-+	error = create_image(platform_mode);
-+	/* Control returns here after successful restore */
- 
--		error = create_image(platform_mode);
--		/* Control returns here after successful restore */
+-	if (suspend_ops->prepare) {
+-		error = suspend_ops->prepare();
+-		if (error)
+-			goto Resume_devices;
 -	}
-- Enable_cpus:
+-
+-	if (suspend_test(TEST_PLATFORM))
+-		goto Finish;
++	suspend_enter(state);
+ 
+-	error = disable_nonboot_cpus();
+-	if (!error && !suspend_test(TEST_CPUS))
+-		suspend_enter(state);
+-
 -	enable_nonboot_cpus();
 - Finish:
--	platform_finish(platform_mode);
+-	if (suspend_ops->finish)
+-		suspend_ops->finish();
   Resume_devices:
- 	device_resume(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-@@ -338,7 +338,7 @@ int hibernation_snapshot(int platform_mo
-  *	kernel.
-  */
- 
--static int resume_target_kernel(void)
-+static int resume_target_kernel(bool platform_mode)
- {
- 	int error;
- 
-@@ -351,9 +351,20 @@ static int resume_target_kernel(void)
- 		goto Unlock;
- 	}
- 
-+	error = platform_pre_restore(platform_mode);
-+	if (error)
-+		goto Cleanup;
-+
-+	error = disable_nonboot_cpus();
-+	if (error)
-+		goto Enable_cpus;
-+
- 	local_irq_disable();
- 
--	sysdev_suspend(PMSG_QUIESCE);
-+	error = sysdev_suspend(PMSG_QUIESCE);
-+	if (error)
-+		goto Enable_irqs;
-+
- 	/* We'll ignore saved state, but this gets preempt count (etc) right */
- 	save_processor_state();
- 	error = restore_highmem();
-@@ -379,8 +390,15 @@ static int resume_target_kernel(void)
- 
- 	sysdev_resume();
- 
-+ Enable_irqs:
- 	local_irq_enable();
- 
-+ Enable_cpus:
-+	enable_nonboot_cpus();
-+
-+ Cleanup:
-+	platform_restore_cleanup(platform_mode);
-+
- 	device_power_up(PMSG_RECOVER);
- 
-  Unlock:
-@@ -405,19 +423,10 @@ int hibernation_restore(int platform_mod
- 	pm_prepare_console();
- 	suspend_console();
- 	error = device_suspend(PMSG_QUIESCE);
--	if (error)
--		goto Finish;
--
--	error = platform_pre_restore(platform_mode);
- 	if (!error) {
--		error = disable_nonboot_cpus();
--		if (!error)
--			error = resume_target_kernel();
--		enable_nonboot_cpus();
-+		error = resume_target_kernel(platform_mode);
-+		device_resume(PMSG_RECOVER);
- 	}
--	platform_restore_cleanup(platform_mode);
--	device_resume(PMSG_RECOVER);
-- Finish:
- 	resume_console();
- 	pm_restore_console();
- 	return error;
-@@ -453,34 +462,38 @@ int hibernation_platform_enter(void)
- 		goto Resume_devices;
- 	}
- 
-+	device_pm_lock();
-+
-+	error = device_power_down(PMSG_HIBERNATE);
-+	if (error)
-+		goto Unlock;
-+
- 	error = hibernation_ops->prepare();
- 	if (error)
--		goto Resume_devices;
-+		goto Platofrm_finish;
- 
- 	error = disable_nonboot_cpus();
- 	if (error)
--		goto Finish;
--
--	device_pm_lock();
--
--	error = device_power_down(PMSG_HIBERNATE);
--	if (!error) {
--		local_irq_disable();
--		sysdev_suspend(PMSG_HIBERNATE);
--		hibernation_ops->enter();
--		/* We should never get here */
--		while (1);
--	}
-+		goto Platofrm_finish;
- 
--	device_pm_unlock();
-+	local_irq_disable();
-+	sysdev_suspend(PMSG_HIBERNATE);
-+	hibernation_ops->enter();
-+	/* We should never get here */
-+	while (1);
- 
- 	/*
- 	 * We don't need to reenable the nonboot CPUs or resume consoles, since
- 	 * the system is going to be halted anyway.
- 	 */
-- Finish:
-+ Platofrm_finish:
- 	hibernation_ops->finish();
- 
-+	device_power_up(PMSG_RESTORE);
-+
-+ Unlock:
-+	device_pm_unlock();
-+
-  Resume_devices:
- 	entering_platform_hibernation = false;
- 	device_resume(PMSG_RESTORE);
+ 	suspend_test_start();
+ 	device_resume(PMSG_RESUME);
