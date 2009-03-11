@@ -1,215 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbZCKLa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbZCKLfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754260AbZCKLa7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 07:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZCKLas
+	id S1755123AbZCKLfU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 07:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbZCKLfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 07:30:48 -0400
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:43076 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752390AbZCKLar (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 07:30:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=CLJ3L9xrhUXCEFe4uZC376shXcjTRnPAAm5RJCUuvwpLKDu4fwaGOCXSHnUpCXJAnVLdPoW4gB6e5hK3nq85AEHTz4qoiPU+vSydADfwF3fiPs9bivh5fll9v3NGOhvH4DYMfG163tqrDVJRTV0y2/DMHxnbsVavngHy7ILv+UE=  ;
-X-YMail-OSG: S4oSmGYVM1lIHR4dQY63OkGuvncCwzWV00bvJNFu48UWGaOpc0IxItalXZO97DA08aj43_bShhTVdu.Qer4fe0BrjlbgSV3jtShIq2SiG_PkI.QY4MS3CkOWagfGakB_bFBG6uxieVAVVFVOz81_X9a60VyAHLm6VezvsgZKno6JSPW.CijxJ76ynUU6RAH1s8k9prJ.8V.LGYPsTahhClprQ_8h4w--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: Re: [patch 2.6.29-rc6+misc] MMC: regulator utilities
-Date: Wed, 11 Mar 2009 03:30:43 -0800
-User-Agent: KMail/1.9.10
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>, Mark Brown <broonie@sirena.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>, OMAP <linux-omap@vger.kernel.org>
-References: <200902081037.06645.david-b@pacbell.net> <20090308224907.62e9d9d5@mjolnir.ossman.eu> <1236599566.6781.87.camel@vega.slimlogic.co.uk>
-In-Reply-To: <1236599566.6781.87.camel@vega.slimlogic.co.uk>
+	Wed, 11 Mar 2009 07:35:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45084 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753288AbZCKLfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 07:35:03 -0400
+Date: Wed, 11 Mar 2009 12:34:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip V2] x86: cpu architecture debug code
+Message-ID: <20090311113450.GE2282@elte.hu>
+References: <1236684201.3301.11.camel@localhost.localdomain> <20090310122806.GE5794@elte.hu> <1236697752.3387.2.camel@localhost.localdomain> <20090310152029.GN3850@elte.hu> <1236701373.3387.4.camel@localhost.localdomain> <20090310174535.GA2963@elte.hu> <1236729310.7004.2.camel@localhost.localdomain> <20090311105333.GC2282@elte.hu> <1236770749.2836.10.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200903110430.44198.david-b@pacbell.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1236770749.2836.10.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 09 March 2009, Liam Girdwood wrote:
-> > > From: David Brownell <dbrownell@users.sourceforge.net>
-> > > 
-> > > Glue between MMC and regulator stacks ... verified with
-> > > some OMAP3 boards using adjustable and configured-as-fixed
-> > > regulators on several MMC controllers.
-> > > 
-> > > ...
+
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+> On Wed, 2009-03-11 at 11:53 +0100, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > > 
-> > Acked-by: Pierre Ossman <drzeus@drzeus.cx>
+> > > On Tue, 2009-03-10 at 18:45 +0100, Ingo Molnar wrote:
+> > > > Thanks - picked it up into tip:x86/debug. (Note that i 
+> > > > rearranged the Makefile details a bit so that it does not 
+> > > > conflict with tip:perfcounters)
+> > > > 
+> > > > Not yet in tip:master, because it triggers this build failure:
+> > > > 
+> > > > arch/x86/kernel/cpu/cpu_debug.c: In function ‘print_dt’:
+> > > > arch/x86/kernel/cpu/cpu_debug.c:475: error: implicit declaration of function ‘store_ldt’
+> > > > 
+> > > 
+> > > Here is the fix.
+> > > 
+> > > The following changes since commit 259ef6fcea4046fe24495b1e3631c1b905c531c1:
+> > >   Jaswinder Singh Rajput (1):
+> > >         x86: cpu architecture debug code
+> > > 
+> > > are available in the git repository at:
+> > > 
+> > >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip-cpu.git master
+> > > 
+> > > Jaswinder Singh Rajput (1):
+> > >       x86: cpu_debug.c remove some dependency
+> > > 
+> > >  arch/x86/kernel/cpu/cpu_debug.c |    8 ++++----
+> > >  1 files changed, 4 insertions(+), 4 deletions(-)
+> > > 
+> > > Complete diff:
+> > > diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
+> > > index 0bdf4da..08c365a 100755
+> > > --- a/arch/x86/kernel/cpu/cpu_debug.c
+> > > +++ b/arch/x86/kernel/cpu/cpu_debug.c
+> > > @@ -464,19 +464,19 @@ static void print_dt(void *seq)
+> > >  	unsigned long ldt;
+> > >  
+> > >  	/* IDT */
+> > > -	store_idt((struct desc_ptr *)&dt);
+> > > +	native_store_idt((struct desc_ptr *)&dt);
+> > 
+> > hm, this wont work on Xen then.
 > > 
 > 
-> Applied.
+> Strange it should work for Xen, Are you getting any error.
 
-... actually you applied an old version, not the one that
-was verified, with mmc_regulator_set_ocr() fixes and with
-Pierre's ACK.  The comment is in your GIT tree is wrong,
-for starters...
+s/Xen/virtualization
 
-Please use this one instead.
+Look at how the native_*() primitives are used. They are not 
+there to be open-coded in generic code. They are there for 
+paravirt-internal reasons: they are the native version but a 
+guest implementation might decide to override it.
 
-- Dave
+> > >  	print_desc_ptr("IDT", seq, dt);
+> > >  
+> > >  	/* GDT */
+> > > -	store_gdt((struct desc_ptr *)&dt);
+> > > +	native_store_gdt((struct desc_ptr *)&dt);
+> > >  	print_desc_ptr("GDT", seq, dt);
+> > >  
+> > >  	/* LDT */
+> > > -	store_ldt(ldt);
+> > > +	asm volatile("sldt %0" : "=m" (ldt));
+> > >  	seq_printf(seq, " LDT\t: %016lx\n", ldt);
+> > >  
+> > >  	/* TR */
+> > > -	store_tr(ldt);
+> > > +	asm volatile("str %0" : "=r" (ldt));
+> > >  	seq_printf(seq, " TR\t: %016lx\n", ldt);
+> > 
+> > we do have a store_tr() primitive - why open code the assembly?
+> > 
+> 
+> It is a single line code to avoid further conflicts, so i 
+> moved it here.
 
-========== CUT HERE
-From: David Brownell <dbrownell@users.sourceforge.net>
+and that's wrong.
 
-Glue between MMC and regulator stacks ... verified with
-some OMAP3 boards using adjustable and configured-as-fixed
-regulators on several MMC controllers.
-
-These calls are intended to be used by MMC host adapters
-using at least one regulator per host.  Examples include
-slots with regulators supporting multiple voltages and
-ones using multiple voltage rails (e.g. DAT4..DAT7 using a
-separate supply, or a split rail chip like certain SDIO
-WLAN or eMMC solutions).
-
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Acked-by: Pierre Ossman <drzeus@drzeus.cx>
----
-Changes since previous version:  simplified set_ocr() calling
-convention, fixed an off-by-100mA error in that code, and don't
-set voltage on regulators that don't need (and may disallow) it.
-
- drivers/mmc/core/core.c  |  100 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/mmc/host.h |    5 ++
- 2 files changed, 105 insertions(+)
-
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -21,6 +21,7 @@
- #include <linux/leds.h>
- #include <linux/scatterlist.h>
- #include <linux/log2.h>
-+#include <linux/regulator/consumer.h>
- 
- #include <linux/mmc/card.h>
- #include <linux/mmc/host.h>
-@@ -523,6 +524,105 @@ u32 mmc_vddrange_to_ocrmask(int vdd_min,
- }
- EXPORT_SYMBOL(mmc_vddrange_to_ocrmask);
- 
-+#ifdef CONFIG_REGULATOR
-+
-+/**
-+ * mmc_regulator_get_ocrmask - return mask of supported voltages
-+ * @supply: regulator to use
-+ *
-+ * This returns either a negative errno, or a mask of voltages that
-+ * can be provided to MMC/SD/SDIO devices using the specified voltage
-+ * regulator.  This would normally be called before registering the
-+ * MMC host adapter.
-+ */
-+int mmc_regulator_get_ocrmask(struct regulator *supply)
-+{
-+	int			result = 0;
-+	int			count;
-+	int			i;
-+
-+	count = regulator_count_voltages(supply);
-+	if (count < 0)
-+		return count;
-+
-+	for (i = 0; i < count; i++) {
-+		int		vdd_uV;
-+		int		vdd_mV;
-+
-+		vdd_uV = regulator_list_voltage(supply, i);
-+		if (vdd_uV <= 0)
-+			continue;
-+
-+		vdd_mV = vdd_uV / 1000;
-+		result |= mmc_vddrange_to_ocrmask(vdd_mV, vdd_mV);
-+	}
-+
-+	return result;
-+}
-+EXPORT_SYMBOL(mmc_regulator_get_ocrmask);
-+
-+/**
-+ * mmc_regulator_set_ocr - set regulator to match host->ios voltage
-+ * @vdd_bit: zero for power off, else a bit number (host->ios.vdd)
-+ * @supply: regulator to use
-+ *
-+ * Returns zero on success, else negative errno.
-+ *
-+ * MMC host drivers may use this to enable or disable a regulator using
-+ * a particular supply voltage.  This would normally be called from the
-+ * set_ios() method.
-+ */
-+int mmc_regulator_set_ocr(struct regulator *supply, unsigned short vdd_bit)
-+{
-+	int			result = 0;
-+	int			min_uV, max_uV;
-+	int			enabled;
-+
-+	enabled = regulator_is_enabled(supply);
-+	if (enabled < 0)
-+		return enabled;
-+
-+	if (vdd_bit) {
-+		int		tmp;
-+		int		voltage;
-+
-+		/* REVISIT mmc_vddrange_to_ocrmask() may have set some
-+		 * bits this regulator doesn't quite support ... don't
-+		 * be too picky, most cards and regulators are OK with
-+		 * a 0.1V range goof (it's a small error percentage).
-+		 */
-+		tmp = vdd_bit - ilog2(MMC_VDD_165_195);
-+		if (tmp == 0) {
-+			min_uV = 1650 * 1000;
-+			max_uV = 1950 * 1000;
-+		} else {
-+			min_uV = 1900 * 1000 + tmp * 100 * 1000;
-+			max_uV = min_uV + 100 * 1000;
-+		}
-+
-+		/* avoid needless changes to this voltage; the regulator
-+		 * might not allow this operation
-+		 */
-+		voltage = regulator_get_voltage(supply);
-+		if (voltage < 0)
-+			result = voltage;
-+		else if (voltage < min_uV || voltage > max_uV)
-+			result = regulator_set_voltage(supply, min_uV, max_uV);
-+		else
-+			result = 0;
-+
-+		if (result == 0 && !enabled)
-+			result = regulator_enable(supply);
-+	} else if (enabled) {
-+		result = regulator_disable(supply);
-+	}
-+
-+	return result;
-+}
-+EXPORT_SYMBOL(mmc_regulator_set_ocr);
-+
-+#endif
-+
- /*
-  * Mask off any voltages we don't support and select
-  * the lowest voltage
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -192,5 +192,10 @@ static inline void mmc_signal_sdio_irq(s
- 	wake_up_process(host->sdio_irq_thread);
- }
- 
-+struct regulator;
-+
-+int mmc_regulator_get_ocrmask(struct regulator *supply);
-+int mmc_regulator_set_ocr(struct regulator *supply, unsigned short vdd_bit);
-+
- #endif
- 
-
+	Ingo
