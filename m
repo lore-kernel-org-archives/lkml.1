@@ -1,107 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbZCKWC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbZCKWHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755961AbZCKWC4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 18:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZCKV6c
+	id S1752827AbZCKWHB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 18:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbZCKWGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 17:58:32 -0400
-Received: from smtp107.biz.mail.mud.yahoo.com ([68.142.200.255]:41120 "HELO
-	smtp107.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754448AbZCKV6a (ORCPT
+	Wed, 11 Mar 2009 18:06:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48815 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751306AbZCKWGu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 17:58:30 -0400
-X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
-X-YMail-OSG: h0pvubkVM1mpDJATf1hoNymV9Bez9Mid.xwc2dfcOo4XzxyQ.nTlDFdF6RL8bZ89dmpXPuh0CKfsUPCFjyRhWIXGm5awQyJJThN8RKIpAIEfktW9s.FRoeLIpsQY798yL3SPHnDr9_ajQ8FZx.f0gOBiE4poY3w00Cm0.Zj_UhlmxXJqbxTTy2Q..7sP9x0K85XyuiY8YeGcUFePQTffBAUZTusimMTqSi5qbJIe6WsVVKU-
-X-Yahoo-Newman-Property: ymail-3
-From: Steven King <sfking@fdwdc.com>
-To: uClinux development list <uclinux-dev@uclinux.org>
-Subject: [RFC 14/14] Coldfire generic GPIO (m68knommu)
-Date: Wed, 11 Mar 2009 13:56:17 -0800
-User-Agent: KMail/1.9.10
-Organization: fdwdc.com
-Cc: linux-kernel@vger.kernel.org, Greg Ungerer <gerg@snapgear.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 11 Mar 2009 18:06:50 -0400
+Date: Wed, 11 Mar 2009 15:03:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, peterz@infradead.org, Enrik.Berkhan@ge.com,
+       dhowells@redhat.com, uclinux-dev@uclinux.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may
+ get wrongly discarded
+Message-Id: <20090311150302.0ae76cf1.akpm@linux-foundation.org>
+In-Reply-To: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk>
+References: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200903111456.17972.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hooks for implementing pinmux...
+On Wed, 11 Mar 2009 15:30:35 +0000
+David Howells <dhowells@redhat.com> wrote:
 
-Signed-off-by: Steven King <sfking@fdwdc.com>
+> From: Enrik Berkhan <Enrik.Berkhan@ge.com>
+> 
+> The pages attached to a ramfs inode's pagecache by truncation from nothing - as
+> done by SYSV SHM for example - may get discarded under memory pressure.
 
-diff --git a/arch/m68k/include/asm/pinmux.h b/arch/m68k/include/asm/pinmux.h
-new file mode 100644
-index 0000000..80e86aa
---- /dev/null
-+++ b/arch/m68k/include/asm/pinmux.h
-@@ -0,0 +1,30 @@
-+/*
-+ * Coldfire generic GPIO pinmux support.
-+ *
-+ * (C) Copyright 2009, Steven King <sfking@fdwdc.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 of the License.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#ifndef pinmux_h
-+#define pinmux_h
-+
-+#define MCFPINMUX_NONE		-1
-+
-+extern int mcf_pinmux_request(unsigned, unsigned);
-+extern void mcf_pinmux_release(unsigned, unsigned);
-+
-+static inline int mcf_pinmux_is_valid(unsigned pinmux)
-+{
-+	return pinmux != MCFPINMUX_NONE;
-+}
-+
-+#endif 
-+
-diff --git a/arch/m68knommu/platform/coldfire/pinmux.c 
-b/arch/m68knommu/platform/coldfire/pinmux.c
-new file mode 100644
-index 0000000..8c62b82
---- /dev/null
-+++ b/arch/m68knommu/platform/coldfire/pinmux.c
-@@ -0,0 +1,28 @@
-+/*
-+ * Coldfire generic GPIO pinmux support.
-+ *
-+ * (C) Copyright 2009, Steven King <sfking@fdwdc.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; version 2 of the License.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+
-+#include <asm/pinmux.h>
-+
-+int mcf_pinmux_request(unsigned pinmux, unsigned func)
-+{
-+	return 0;
-+}
-+
-+void mcf_pinmux_release(unsigned pinmux, unsigned func)
-+{
-+}
+Something has gone wrong in core VM.
+
+> The problem is that the pages are not marked dirty.  Anything that creates data
+> in an MMU-based ramfs will cause the pages holding that data will cause the
+> set_page_dirty() aop to be called.
+> 
+> For the NOMMU-based mmap, set_page_dirty() may be called by write(), but it
+> won't be called by page-writing faults on writable mmaps, and it isn't called
+> by ramfs_nommu_expand_for_mapping() when a file is being truncated from nothing
+> to allocate a contiguous run.
+> 
+> The solution is to mark the pages dirty at the point of allocation by
+> the truncation code.
+
+Page reclaim shouldn't be even attempting to reclaim or write back
+ramfs pagecache pages - reclaim can't possibly do anything with these
+pages!
+
+Arguably those pages shouldn't be on the LRU at all, but we haven't
+done that yet.
+
+Now, my problem is that I can't 100% be sure that we _ever_ implemented
+this properly.  I _think_ we did, in which case we later broke it.  If
+we've always been (stupidly) trying to pageout these pages then OK, I
+guess your patch is a suitable 2.6.29 stopgap.
+
+If, however, we broke it then we've probably broken other filesystems
+and we should fix the regression instead.
+
+Running bdi_cap_writeback_dirty() in may_write_to_queue() might be the
+way to fix all this.
+
+Peter touched it last :)
+
