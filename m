@@ -1,146 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbZCKAwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbZCKBAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757105AbZCKAwm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 20:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbZCKAr7
+	id S1754411AbZCKBAl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 21:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbZCKBAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 20:47:59 -0400
-Received: from www.tglx.de ([62.245.132.106]:60933 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755521AbZCKAr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 20:47:58 -0400
-Message-Id: <20090311003237.052629175@linutronix.de>
-User-Agent: quilt/0.47-1
-Date: Wed, 11 Mar 2009 00:46:26 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Kyle McMartin <kyle@mcmartin.ca>
-Subject: [patch 15/18] parisc: convert obsolete hw_interrupt_type to struct
-	irq_chip
-References: <20090311003204.592133594@linutronix.de>
-Content-Disposition: inline;
-	filename=parisc-convert-obsolete-hw-interrupt-type.patch
+	Tue, 10 Mar 2009 21:00:31 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:59412 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752140AbZCKBAa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 21:00:30 -0400
+Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
+From: john stultz <johnstul@us.ibm.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200903091604.56455.elendil@planet.nl>
+References: <200903080230.10099.elendil@planet.nl>
+	 <200903091604.56455.elendil@planet.nl>
+Content-Type: text/plain
+Date: Tue, 10 Mar 2009 18:00:26 -0700
+Message-Id: <1236733226.6080.28.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+On Mon, 2009-03-09 at 16:04 +0100, Frans Pop wrote:
+> On Sunday 08 March 2009, Frans Pop wrote:
+> > Kernels after 2.6.27 fail to boot in the Hercules S/390 emulator, quite
+> > early in the boot process:
+> [...]
+> >      0.141419! Initializing cgroup subsys ns
+> >      0.141605! Initializing cgroup subsys cpuacct
+> >      0.142009! Initializing cgroup subsys devices
+> >      0.180403! cpu: 2 configured CPUs, 0 standby CPUs
+> >
+> > I've bisected this to the following commit:
+> > commit 5cd1c9c5cf30d4b33df3d3f74d8142f278d536b7
+> > Author: Roman Zippel <zippel@linux-m68k.org>
+> > Date:   Mon Sep 22 14:42:43 2008 -0700
+> >     timekeeping: fix rounding problem during clock update
+> 
+> After staring at this commit for a while I decided to try the following
+> patch:
+> --- a/kernel/time/timekeeping.c
+> +++ b/kernel/time/timekeeping.c
+> @@ -547,5 +547,11 @@ void update_wall_time(void)
+>  	* add the remainder to the error difference.
+>  	*/
+>  	xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
+> +	if (unlikely(clock->xtime_nsec < ((s64)xtime.tv_nsec << clock->shift))) {
+> +		printk("Negative result: %llu - %lld\n",
+> +			(unsigned long long)clock->xtime_nsec,
+> +			(long long)((s64)xtime.tv_nsec << clock->shift));
+> +		BUG_ON(1);
+> +	}
+>  	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+>  	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
+> 
+> And that resulted in:
+>      0.004175! Negative result: 166039808000 - 166039808256
 
-Convert the last remaining users to struct irq_chip.
+Hrm. That doesn't make sense.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-CC: Kyle McMartin <kyle@mcmartin.ca>
+xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
 
----
- arch/parisc/kernel/irq.c |    2 +-
- drivers/parisc/dino.c    |    2 +-
- drivers/parisc/eisa.c    |    2 +-
- drivers/parisc/gsc.c     |    4 ++--
- drivers/parisc/gsc.h     |    2 +-
- drivers/parisc/iosapic.c |    2 +-
- drivers/parisc/superio.c |    2 +-
- 7 files changed, 8 insertions(+), 8 deletions(-)
+I'm assuming clock->shift == 12 (from the clocksource_tod definition).
 
-Index: linux-2.6/arch/parisc/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/parisc/kernel/irq.c
-+++ linux-2.6/arch/parisc/kernel/irq.c
-@@ -140,7 +140,7 @@ static void cpu_set_affinity_irq(unsigne
- }
- #endif
+If clock->xtime_nsec == 166039808000, then xtime.tv_nsec should be
+40537063, so xtime_tv_nsec << clock->shift would be 166039810048.
+
+So not sure whats going on with the output you got.
+
+Also the negative conditional you add doesn't really make sense either,
+as we expect the xtime.tv_nsec << clock->shift to be larger then
+clock->xtime_nsec, as we've rounded it up by one. We then accumulate the
+negative difference between them into clock->error. 
+
+Hmm.. Does the following explicit casting help?
+
+thanks
+-john
+
+
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 900f1b6..acd130b 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -548,7 +548,7 @@ void update_wall_time(void)
+ 	 */
+ 	xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
+ 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+-	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
++	clock->error += (s64)clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
  
--static struct hw_interrupt_type cpu_interrupt_type = {
-+static struct irq_chip cpu_interrupt_type = {
- 	.typename	= "CPU",
- 	.startup	= cpu_startup_irq,
- 	.shutdown	= cpu_disable_irq,
-Index: linux-2.6/drivers/parisc/dino.c
-===================================================================
---- linux-2.6.orig/drivers/parisc/dino.c
-+++ linux-2.6/drivers/parisc/dino.c
-@@ -353,7 +353,7 @@ static unsigned int dino_startup_irq(uns
- 	return 0;
- }
+ 	update_xtime_cache(cyc2ns(clock, offset));
  
--static struct hw_interrupt_type dino_interrupt_type = {
-+static struct irq_chip dino_interrupt_type = {
- 	.typename	= "GSC-PCI",
- 	.startup	= dino_startup_irq,
- 	.shutdown	= dino_disable_irq,
-Index: linux-2.6/drivers/parisc/eisa.c
-===================================================================
---- linux-2.6.orig/drivers/parisc/eisa.c
-+++ linux-2.6/drivers/parisc/eisa.c
-@@ -188,7 +188,7 @@ static unsigned int eisa_startup_irq(uns
- 	return 0;
- }
- 
--static struct hw_interrupt_type eisa_interrupt_type = {
-+static struct irq_chip eisa_interrupt_type = {
- 	.typename =	"EISA",
- 	.startup =	eisa_startup_irq,
- 	.shutdown =	eisa_disable_irq,
-Index: linux-2.6/drivers/parisc/gsc.c
-===================================================================
---- linux-2.6.orig/drivers/parisc/gsc.c
-+++ linux-2.6/drivers/parisc/gsc.c
-@@ -148,7 +148,7 @@ static unsigned int gsc_asic_startup_irq
- 	return 0;
- }
- 
--static struct hw_interrupt_type gsc_asic_interrupt_type = {
-+static struct irq_chip gsc_asic_interrupt_type = {
- 	.typename =	"GSC-ASIC",
- 	.startup =	gsc_asic_startup_irq,
- 	.shutdown =	gsc_asic_disable_irq,
-@@ -158,7 +158,7 @@ static struct hw_interrupt_type gsc_asic
- 	.end =		no_end_irq,
- };
- 
--int gsc_assign_irq(struct hw_interrupt_type *type, void *data)
-+int gsc_assign_irq(struct irq_chip *type, void *data)
- {
- 	static int irq = GSC_IRQ_BASE;
- 	struct irq_desc *desc;
-Index: linux-2.6/drivers/parisc/gsc.h
-===================================================================
---- linux-2.6.orig/drivers/parisc/gsc.h
-+++ linux-2.6/drivers/parisc/gsc.h
-@@ -38,7 +38,7 @@ struct gsc_asic {
- int gsc_common_setup(struct parisc_device *parent, struct gsc_asic *gsc_asic);
- int gsc_alloc_irq(struct gsc_irq *dev);			/* dev needs an irq */
- int gsc_claim_irq(struct gsc_irq *dev, int irq);	/* dev needs this irq */
--int gsc_assign_irq(struct hw_interrupt_type *type, void *data);
-+int gsc_assign_irq(struct irq_chip *type, void *data);
- int gsc_find_local_irq(unsigned int irq, int *global_irq, int limit);
- void gsc_fixup_irqs(struct parisc_device *parent, void *ctrl,
- 		void (*choose)(struct parisc_device *child, void *ctrl));
-Index: linux-2.6/drivers/parisc/iosapic.c
-===================================================================
---- linux-2.6.orig/drivers/parisc/iosapic.c
-+++ linux-2.6/drivers/parisc/iosapic.c
-@@ -725,7 +725,7 @@ static void iosapic_set_affinity_irq(uns
- }
- #endif
- 
--static struct hw_interrupt_type iosapic_interrupt_type = {
-+static struct irq_chip iosapic_interrupt_type = {
- 	.typename =	"IO-SAPIC-level",
- 	.startup =	iosapic_startup_irq,
- 	.shutdown =	iosapic_disable_irq,
-Index: linux-2.6/drivers/parisc/superio.c
-===================================================================
---- linux-2.6.orig/drivers/parisc/superio.c
-+++ linux-2.6/drivers/parisc/superio.c
-@@ -325,7 +325,7 @@ static unsigned int superio_startup_irq(
- 	return 0;
- }
- 
--static struct hw_interrupt_type superio_interrupt_type = {
-+static struct irq_chip superio_interrupt_type = {
- 	.typename =	SUPERIO,
- 	.startup =	superio_startup_irq,
- 	.shutdown =	superio_disable_irq,
+
+
+
 
 
