@@ -1,100 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbZCKS3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZCKSaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753373AbZCKS3u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 14:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbZCKS3k
+	id S1755392AbZCKSaq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 14:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZCKSae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 14:29:40 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:46846 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752898AbZCKS3j (ORCPT
+	Wed, 11 Mar 2009 14:30:34 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:33233 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753745AbZCKSad (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 14:29:39 -0400
-Subject: [GIT PULL] drm-intel pull request for 2.6.29-rc7
-From: Eric Anholt <eric@anholt.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-W0xCWllzdZJhzXR1S8nr"
-Date: Wed, 11 Mar 2009 11:29:35 -0700
-Message-Id: <1236796175.9354.28.camel@gaiman>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Wed, 11 Mar 2009 14:30:33 -0400
+Date: Wed, 11 Mar 2009 14:19:36 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Gabor Juhos <juhosg@openwrt.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+Subject: Re: linux-next: Tree for March 6 (ath9k)
+Message-ID: <20090311181935.GD8761@tuxdriver.com>
+References: <20090306191311.697e7b97.sfr@canb.auug.org.au> <49B17320.8010000@oracle.com> <49B17B12.3050200@openwrt.org> <49B17C4E.3000004@oracle.com> <20090306194045.GE3712@tuxdriver.com> <49B7F2B0.1000702@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49B7F2B0.1000702@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 11, 2009 at 10:19:44AM -0700, Randy Dunlap wrote:
+> John W. Linville wrote:
+> > On Fri, Mar 06, 2009 at 11:41:02AM -0800, Randy Dunlap wrote:
+> >> Gabor Juhos wrote:
+> >>> Randy Dunlap írta:
+> >>>> Stephen Rothwell wrote:
+> >>>>> Hi all,
+> >>>>>
+> >>>>> Linus' release of -rc7 seems to have stirred people up a bit ...
+> >>>>>
+> >>>>> Changes since 20090305:
+> >>>> when CONFIG_RFKILL=n, ath9k/virtual.c causes:
+> >>>>
+> >>>> (.text+0x224e83): undefined reference to `ath_radio_disable'
+> >>>> (.text+0x224e8b): undefined reference to `ath_radio_enable'
+> >>>>
+> >>>>
+> >>> Hi,
+> >>>
+> >>> I have submitted a patch for this already:
+> >>> http://marc.info/?l=linux-wireless&m=123633468314970&w=2
+> >>>
+> >>> Should I send it to somewhere else as well?
+> >> It hasn't propagated into the linux-next merging yet...
+> > 
+> > He just sent it today (or overnight).  I'll get it into wireless-next.
+> > 
+> > John
+> > 
+> > P.S.  I'm starting to think that RFKILL should just be mandatory...
+> 
+> 
+> This build error still happens in linux-next-20090311.
 
---=-W0xCWllzdZJhzXR1S8nr
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+That fix is in wireless-next-2.6 as of yesterday.  I guess it was a
+little too late for yesterday's linux-next build -- sorry!
 
-You suggested at OSTS that I send pull requests to you directly, so here
-goes.  Hopefully I'm doing it right (in particular, I'm not rebasing to
-the very latest since you suggested you didn't want to see that having
-happened just before the pull request, and I checked that nothing
-conflicting has happened since the rebase).
-
-There's a bunch of fencing fixes in here, which helps 915 and 945 3D
-(especially 945 with my fix).  The fencing code could still use some
-more love, but I know Chris Wilson's been exercising this fencing code
-more than the actual released drivers do by a significant margin, and
-the fixes do look good.  There's also the resume fix that we tested a
-variant of at OSTS.
-
-The following changes since commit 16b71fdf97599f1b1b7f38418ee9922d9f117396=
-:
-  Samuel CUELLA (1):
-        i810: fix kernel crash fix when struct fb_var_screeninfo is supplie=
-d
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel for-linus
-
-Chris Wilson (4):
-      drm/i915: First recheck for an empty fence register.
-      drm/i915: Check fence status on every pin.
-      drm/i915: Check to see if we've pinned all available fences
-      drm/i915: Protect active fences on i915
-
-Eric Anholt (2):
-      drm/i915: Fix bad \n in MTRR failure notice.
-      drm/i915: fix 945 fence register writes for fence 8 and above.
-
-Kristian H=C3=B8gsberg (1):
-      drm: Return EINVAL on duplicate objects in execbuffer object list
-
-Kyle McMartin (1):
-      i915: add newline to i915_gem_object_pin failure msg
-
-Pierre Willenbrock (1):
-      drm/i915: Don't restore palettes through VGA registers.
-
- drivers/gpu/drm/i915/i915_dma.c     |    2 +-
- drivers/gpu/drm/i915/i915_drv.h     |    7 ++-
- drivers/gpu/drm/i915/i915_gem.c     |  115 +++++++++++++++++++++++++++----=
----
- drivers/gpu/drm/i915/i915_reg.h     |    1 +
- drivers/gpu/drm/i915/i915_suspend.c |   11 ---
- 5 files changed, 99 insertions(+), 37 deletions(-)
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-W0xCWllzdZJhzXR1S8nr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkm4Aw8ACgkQHUdvYGzw6veVvgCdGTmhg2PF5Fr/IBUk9lA6ja/l
-ACYAoIsyFak1PmSR1UcHKoELZNcHbaO4
-=pKrH
------END PGP SIGNATURE-----
-
---=-W0xCWllzdZJhzXR1S8nr--
-
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
