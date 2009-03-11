@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbZCKBUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbZCKBZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755549AbZCKBUA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 21:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbZCKBTs
+	id S1754916AbZCKBZU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 21:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZCKBZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 21:19:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45756 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751989AbZCKBTs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 21:19:48 -0400
-Date: Tue, 10 Mar 2009 18:17:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: linux-kernel@vger.kernel.org, syrjala@sci.fi, johnpol@2ka.mipt.ru,
-       david-b@pacbell.net
-Subject: Re: [PATCH] drivers/w1/masters/w1-gpio.c: fix read_bit()
-Message-Id: <20090310181713.4420d488.akpm@linux-foundation.org>
-In-Reply-To: <20090311001048.GA21160@buzzloop.caiaq.de>
-References: <1236614530-11153-1-git-send-email-daniel@caiaq.de>
-	<20090309191419.98699220.akpm@linux-foundation.org>
-	<20090310091800.GC3263@buzzloop.caiaq.de>
-	<20090310150059.ce64548a.akpm@linux-foundation.org>
-	<20090311001048.GA21160@buzzloop.caiaq.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 10 Mar 2009 21:25:05 -0400
+Received: from mga03.intel.com ([143.182.124.21]:47301 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751223AbZCKBZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 21:25:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,338,1233561600"; 
+   d="scan'208";a="118940513"
+Date: Wed, 11 Mar 2009 09:23:58 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH] proc: fix kflags to uflags copying in /proc/kpageflags
+Message-ID: <20090311012358.GA9011@localhost>
+References: <20090311010004.GA8237@localhost> <20090311101612.A7FD.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090311101612.A7FD.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009 01:10:48 +0100 Daniel Mack <daniel@caiaq.de> wrote:
-
-> On Tue, Mar 10, 2009 at 03:00:59PM -0700, Andrew Morton wrote:
-> > > > We recently merged a patch (I forget where) which fixed one
-> > > > gpio_get_value() implementation so that it always returns 0 or 1.
-> > > > 
-> > > > From which I deduce that the correct fix for <whatever problem you're
-> > > > seeing> is to fix <whichever driver that is>?
-> > > 
-> > > I agree those functions should return 0 and 1 only, but my patch fixes
-> > > the w1-gpio driver for all platforms at once, so people can use it.
-> > > 
-> > > On the other hand, I will submit a patch which modifies PXA's
-> > > gpio_get_value() and see what the maintainers say, but I can't go thru
-> > > all the implemenations of all architectures to do this.
-> > > 
-> > > So for the time being, the above patch helps many users of that driver.
-> > > 
+On Wed, Mar 11, 2009 at 03:17:58AM +0200, KOSAKI Motohiro wrote:
+> > Fix kpf_copy_bit(src,dst) to be kpf_copy_bit(dst,src) to match the
+> > actual call patterns, e.g. kpf_copy_bit(kflags, KPF_LOCKED, PG_locked).
 > > 
-> > Problem is, the patch will just conceal bugs.
+> > This misplacement of src/dst only affected reporting of PG_writeback,
+> > PG_reclaim and PG_buddy. For others kflags==uflags so not affected.
+> > 
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> > 
+> > This is a tested and trivial no-side-effect fix.
+> > I'd suggest it for 2.6.29-rc7 and 2.6.28.X kernels.
+> > 
+> > diff --git a/fs/proc/page.c b/fs/proc/page.c
+> > index 2d13451..e998383 100644
+> > --- a/fs/proc/page.c
+> > +++ b/fs/proc/page.c
+> > @@ -80,7 +80,7 @@ static const struct file_operations proc_kpagecount_operations = {
+> >  #define KPF_RECLAIM    9
+> >  #define KPF_BUDDY     10
+> >  
+> > -#define kpf_copy_bit(flags, srcpos, dstpos) (((flags >> srcpos) & 1) << dstpos)
+> > +#define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
 > 
-> There is a small discussion about that on the arm-linux mailing list and
-> what people pointed out there is that gpio_get_value() is _not_ supposed
-> to return 0 or 1 only, also according to Documentation/gpio.txt:
-> 
-> 	Use these calls to access such GPIOs:
-> 
->         /* GPIO INPUT:  return zero or nonzero */
-> 	int gpio_get_value(unsigned gpio);
-> 
-> Hence, any implementation of gpio_get_value() which returns 0 and 1 only
-> is conform to the docs, but PXA's (which doesn't follow that rule) is as
-> well. And that means that any driver using that function has to deal
-> with values > 1 being returned by it, right?
-> 
-> Correct me if I missed the point, but I don't see how my patch will
-> conceal any bug?
-> 
+> Good catch! :)
+> 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-Actually, I misremembered the discussion: http://lkml.org/lkml/2009/2/15/114
+Thank you :)
 
-This "optimisation" has caused two bugs so far.  And it's forcing
-callers of the "optimised" function to perform a test-n-branch for
-something which the low-level function could have done with a shift.
+> 
+> but don't worry. the number of this interface user is very few.
 
-Sigh, what a crock.  I'll go dig out your original fix.
+Yeah, so few users that I have to write the tools by myself ;-)
+
+Thanks,
+Fengguang
+
