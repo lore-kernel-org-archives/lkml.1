@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbZCKAuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbZCKAvp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755296AbZCKAuw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 20:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754885AbZCKArT
+	id S1756771AbZCKAvp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 20:51:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754793AbZCKArb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 20:47:19 -0400
-Received: from www.tglx.de ([62.245.132.106]:40085 "EHLO www.tglx.de"
+	Tue, 10 Mar 2009 20:47:31 -0400
+Received: from www.tglx.de ([62.245.132.106]:40108 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754826AbZCKArS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 20:47:18 -0400
-Message-Id: <20090311003236.816143734@linutronix.de>
+	id S1755180AbZCKAra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 20:47:30 -0400
+Message-Id: <20090311003237.169865866@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Wed, 11 Mar 2009 00:46:16 -0000
+Date: Wed, 11 Mar 2009 00:46:30 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Tony Luck <tony.luck@intel.com>
-Subject: [patch 13/18] ia64: convert obsolete hw_interrupt_type to struct
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org
+Subject: [patch 16/18] powerpc: convert obsolete hw_interrupt_type to struct
 	irq_chip
 References: <20090311003204.592133594@linutronix.de>
 Content-Disposition: inline;
-	filename=ia64-convert-obsolete-hw-interrupt-type.patch
+	filename=powerpc-convert-obsolete-hw-interrupt-type.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -30,66 +31,38 @@ Impact: cleanup
 Convert the last remaining users to struct irq_chip.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-CC: Tony Luck <tony.luck@intel.com>
-
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@ozlabs.org
 ---
- arch/ia64/hp/sim/hpsim_irq.c   |    2 +-
- arch/ia64/include/asm/hw_irq.h |    2 +-
- arch/ia64/kernel/iosapic.c     |    2 +-
- arch/ia64/kernel/irq_lsapic.c  |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/hw_irq.h     |    2 +-
+ arch/powerpc/platforms/powermac/pic.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/arch/ia64/hp/sim/hpsim_irq.c
+Index: linux-2.6/arch/powerpc/include/asm/hw_irq.h
 ===================================================================
---- linux-2.6.orig/arch/ia64/hp/sim/hpsim_irq.c
-+++ linux-2.6/arch/ia64/hp/sim/hpsim_irq.c
-@@ -26,7 +26,7 @@ hpsim_set_affinity_noop(unsigned int a, 
- {
- }
+--- linux-2.6.orig/arch/powerpc/include/asm/hw_irq.h
++++ linux-2.6/arch/powerpc/include/asm/hw_irq.h
+@@ -129,7 +129,7 @@ static inline int irqs_disabled_flags(un
+  * interrupt-retrigger: should we handle this via lost interrupts and IPIs
+  * or should we not care like we do now ? --BenH.
+  */
+-struct hw_interrupt_type;
++struct irq_chip;
  
--static struct hw_interrupt_type irq_type_hp_sim = {
-+static struct irq_chip irq_type_hp_sim = {
- 	.name =		"hpsim",
- 	.startup =	hpsim_irq_startup,
- 	.shutdown =	hpsim_irq_noop,
-Index: linux-2.6/arch/ia64/include/asm/hw_irq.h
+ #endif	/* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_HW_IRQ_H */
+Index: linux-2.6/arch/powerpc/platforms/powermac/pic.h
 ===================================================================
---- linux-2.6.orig/arch/ia64/include/asm/hw_irq.h
-+++ linux-2.6/arch/ia64/include/asm/hw_irq.h
-@@ -106,7 +106,7 @@ extern struct irq_cfg irq_cfg[NR_IRQS];
- #define irq_to_domain(x)	irq_cfg[(x)].domain
- DECLARE_PER_CPU(int[IA64_NUM_VECTORS], vector_irq);
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/pic.h
++++ linux-2.6/arch/powerpc/platforms/powermac/pic.h
+@@ -3,7 +3,7 @@
  
--extern struct hw_interrupt_type irq_type_ia64_lsapic;	/* CPU-internal interrupt controller */
-+extern struct irq_chip irq_type_ia64_lsapic;	/* CPU-internal interrupt controller */
+ #include <linux/irq.h>
  
- #ifdef CONFIG_PARAVIRT_GUEST
- #include <asm/paravirt.h>
-Index: linux-2.6/arch/ia64/kernel/iosapic.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/iosapic.c
-+++ linux-2.6/arch/ia64/kernel/iosapic.c
-@@ -599,7 +599,7 @@ register_intr (unsigned int gsi, int irq
- 	       unsigned long polarity, unsigned long trigger)
- {
- 	struct irq_desc *idesc;
--	struct hw_interrupt_type *irq_type;
-+	struct irq_chip *irq_type;
- 	int index;
- 	struct iosapic_rte_info *rte;
+-extern struct hw_interrupt_type pmac_pic;
++extern struct irq_chip pmac_pic;
  
-Index: linux-2.6/arch/ia64/kernel/irq_lsapic.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/irq_lsapic.c
-+++ linux-2.6/arch/ia64/kernel/irq_lsapic.c
-@@ -33,7 +33,7 @@ static int lsapic_retrigger(unsigned int
- 	return 1;
- }
- 
--struct hw_interrupt_type irq_type_ia64_lsapic = {
-+struct irq_chip irq_type_ia64_lsapic = {
- 	.name =		"LSAPIC",
- 	.startup =	lsapic_noop_startup,
- 	.shutdown =	lsapic_noop,
+ extern void pmac_pic_init(void);
+ extern int pmac_get_irq(void);
 
 
