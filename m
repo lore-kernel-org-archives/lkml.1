@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZCKWN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZCKWXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755174AbZCKWN5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 18:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbZCKWNt
+	id S1753811AbZCKWXm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 18:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbZCKWXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 18:13:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55252 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbZCKWNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 18:13:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/10] PM: Rework handling of interrupts during suspend-resume (rev. 5)
-Date: Wed, 11 Mar 2009 23:13:36 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-References: <200902221837.49396.rjw@sisk.pl> <alpine.LFD.2.00.0903112251150.29264@localhost.localdomain> <alpine.LFD.2.00.0903111459210.32478@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903111459210.32478@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 11 Mar 2009 18:23:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48684 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752270AbZCKWXb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 18:23:31 -0400
+Date: Wed, 11 Mar 2009 15:20:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Trilok Soni <soni.trilok@gmail.com>
+Cc: felipe.contreras@gmail.com, linux-fbdev-devel@lists.sourceforge.net,
+       linux-omap@vger.kernel.org, felipe.contreras@nokia.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH] omapfb: Fix argument of blank 
+ operation.
+Message-Id: <20090311152000.8a3db19c.akpm@linux-foundation.org>
+In-Reply-To: <5d5443650903111017n9c818b0y2119d06ea84c3abf@mail.gmail.com>
+References: <1228430755-4221-1-git-send-email-felipe.contreras@gmail.com>
+	<5d5443650903111017n9c818b0y2119d06ea84c3abf@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903112313.37628.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 11 March 2009, Linus Torvalds wrote:
-> 
-> On Wed, 11 Mar 2009, Thomas Gleixner wrote:
-> > 
-> > I'm not worried about nested ones.
-> 
-> Then you shouldn't be worried about IRQ_SUSPENDED at all, since that one 
-> increments the disabled depth count.
-> 
-> So _all_ disable/enable_irq calls will by definition be nested inside 
-> IRQ_SUSPENDED. 
+On Wed, 11 Mar 2009 22:47:41 +0530
+Trilok Soni <soni.trilok@gmail.com> wrote:
 
-Still, if there's an unbalanced irq_enable() between suspend_device_irqs()
-and resume_device_irqs(), we'll not detect it immediately, but only in
-resume_device_irqs().  It would be better if the unbalanced call failed in that
-case IMHO.
+> Hi Felipe,
+> 
+> On Fri, Dec 5, 2008 at 4:15 AM, Felipe Contreras
 
-Rafael
+I bet he thought we'd forgotten.
+
+> <felipe.contreras@gmail.com> wrote:
+> > From: Felipe Contreras <felipe.contreras@nokia.com>
+> >
+> > The blank operation should receive FB_BLANK_POWERDOWN, not
+> > VESA_POWERDOWN.
+> >
+> 
+> Thanks. Looks good.
+> 
+> Signed-off-by: Trilok Soni <soni.trilok@gmail.com>
+> 
+
+Unfortunately the changelog didn't give me any hint as to the
+seriousness of the problem which was fixed.  So I queued it for 2.6.30,
+perhaps inappropriately.
+
+
