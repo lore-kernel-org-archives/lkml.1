@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZCKCWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbZCKCYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbZCKCWd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 22:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbZCKCWN
+	id S1755131AbZCKCYA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 22:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbZCKCXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 22:22:13 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42996 "EHLO gate.crashing.org"
+	Tue, 10 Mar 2009 22:23:51 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:57556 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754994AbZCKCWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 22:22:12 -0400
-Subject: Re: [patch 16/18] powerpc: convert obsolete hw_interrupt_type to
- struct irq_chip
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <20090311003237.169865866@linutronix.de>
-References: <20090311003204.592133594@linutronix.de>
-	 <20090311003237.169865866@linutronix.de>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 13:19:49 +1100
-Message-Id: <1236737989.7086.36.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1751021AbZCKCXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 22:23:51 -0400
+Date: Wed, 11 Mar 2009 02:23:48 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: [git pull] drm edid parser fix
+Message-ID: <alpine.DEB.2.00.0903110222520.28485@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-11 at 00:46 +0000, Thomas Gleixner wrote:
-> plain text document attachment
-> (powerpc-convert-obsolete-hw-interrupt-type.patch)
-> Impact: cleanup
-> 
-> Convert the last remaining users to struct irq_chip.
 
-Ack too, same comment, happy to have that one in powerpc.
+Hi Linus,
 
-Ben.
+Please pull the 'drm-fixes' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: linuxppc-dev@ozlabs.org
-> ---
->  arch/powerpc/include/asm/hw_irq.h     |    2 +-
->  arch/powerpc/platforms/powermac/pic.h |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/arch/powerpc/include/asm/hw_irq.h
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/include/asm/hw_irq.h
-> +++ linux-2.6/arch/powerpc/include/asm/hw_irq.h
-> @@ -129,7 +129,7 @@ static inline int irqs_disabled_flags(un
->   * interrupt-retrigger: should we handle this via lost interrupts and IPIs
->   * or should we not care like we do now ? --BenH.
->   */
-> -struct hw_interrupt_type;
-> +struct irq_chip;
->  
->  #endif	/* __KERNEL__ */
->  #endif	/* _ASM_POWERPC_HW_IRQ_H */
-> Index: linux-2.6/arch/powerpc/platforms/powermac/pic.h
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/platforms/powermac/pic.h
-> +++ linux-2.6/arch/powerpc/platforms/powermac/pic.h
-> @@ -3,7 +3,7 @@
->  
->  #include <linux/irq.h>
->  
-> -extern struct hw_interrupt_type pmac_pic;
-> +extern struct irq_chip pmac_pic;
->  
->  extern void pmac_pic_init(void);
->  extern int pmac_get_irq(void);
-> 
+Just a single line fix for backwards syncs, X had this wrong for years, 
+don't believe wikipedia.
 
+Dave.
+
+ include/drm/drm_edid.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+commit 260cf8a2cbe022131a4850ea6175ed716dc2663c
+Author: Pantelis Koukousoulas <pktoss@gmail.com>
+Date:   Tue Mar 10 13:16:14 2009 +0200
+
+    drm: fix EDID parser problem with positive/negative hsync/vsync
+    
+    Comparing the layouts of struct detail_pixel_timing with
+    x.org's struct detailed_timings and how those are handled,
+    it appears that the hsync_positive and vsync_positive
+    fields are backwards.
+    
+    This patch fixes https://bugs.freedesktop.org/show_bug.cgi?id=20019
+    for me. It was tested on 2 monitors, LG FLATRON L225WS 22" and
+    a YAKUMO 17" for which more details are unknown.
+    
+    Signed-off-by: Pantelis Koukousoulas <pktoss@gmail.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
