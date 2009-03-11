@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZCKUOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbZCKUR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbZCKUOL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 16:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbZCKUN4
+	id S1754171AbZCKUR6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 16:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbZCKURs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 16:13:56 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:50838 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751920AbZCKUNz (ORCPT
+	Wed, 11 Mar 2009 16:17:48 -0400
+Received: from n13.bullet.mail.mud.yahoo.com ([68.142.206.40]:35051 "HELO
+	n13.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750854AbZCKURs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 16:13:55 -0400
-Date: Wed, 11 Mar 2009 14:13:38 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] PCI fixes for 2.6.29
-Message-ID: <20090311201337.GI25995@parisc-linux.org>
-References: <20090311043659.GC25995@parisc-linux.org> <alpine.LFD.2.00.0903111220200.32478@localhost.localdomain>
+	Wed, 11 Mar 2009 16:17:48 -0400
+X-Yahoo-Newman-Id: 703341.84077.bm@omp405.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=WWIN3gGk50clR3oDTIGrBvxZvXOkowpjrKB8C7IQ3WnfOwAf0Y7RE2gilkDJHD9IGUatpAwdcKdCjft7HlG4RVMk4TxTram60oBRlyYKKO8CwoB4ERPJTwQveAu72cim7nuJJo+7+M9FulKMmytE+FL+E9ZAkFx8LqGIQOFUZjw=  ;
+X-YMail-OSG: 8uDqbM8VM1kLz5HtfMkJC4NNpfJfapyX7y8wt5j6.zY9YS91CLhwSq03FW2ygn_u6ibuTIyxEjrGzfGf85eQylUYSPKjks_Yl4LxYfI5C9KiCTNHT424UQdQYIFKyo7.js8yhWJU27Nv_XCcFleH4HSj
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
+Subject: Re: [PATCH 5/7] mmc_spi: allow higher timeouts for SPI mode
+Date: Wed, 11 Mar 2009 12:17:42 -0800
+User-Agent: KMail/1.9.10
+Cc: "Matt Fleming" <matt@console-pimps.org>,
+       "Pierre Ossman" <drzeus@drzeus.cx>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+References: <20090311154605.GD1475@console-pimps.org> <200903111714.15911.wolfgang.mues@auerswald.de>
+In-Reply-To: <200903111714.15911.wolfgang.mues@auerswald.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903111220200.32478@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200903111317.42696.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 12:22:56PM -0700, Linus Torvalds wrote:
-> On Tue, 10 Mar 2009, Matthew Wilcox wrote:
-> > These are the PCI fixes that have been piling up for the last week while
-> > Jesse's been on vacation.  I don't think there's anything questionable
-> > here.  All the patches have been posted to linux-pci.
+On Wednesday 11 March 2009, Wolfgang Mües wrote:
+> > Is there a reason that you didn't implement this with msleep()
+> > as was noted in the comment above the timeout?
 > 
-> Grrr. It doesn't even compile cleanly:
-> 
-> drivers/pci/quirks.c: In function ?ht_check_msi_mapping?:
-> drivers/pci/quirks.c:2142: warning: ?return? with no value, in function returning non-void
-> 
-> and yes, it's a real bug.
+> Yes. msleep() is a busy waiting. It is implemented in terms of usleep(),
+> which is also busy waiting. The old comment is wrong.
 
-Agreed, it's a real bug.  I also think it should return 0, but I want
-Prakash to verify that, since I don't have a system of this nature.
+I think you're confused.  A *delay() call will busy-wait.
+But a *sleep() call like msleep() will schedule.
 
-I wish this warning were an error.  According to the GCC docs,
--Werror=return-type should do this, but it seems to have no effect.
+(These speed concerns apply primarily to patch #6, not
+this one ...)
 
-> I'm not happy.
-
-Me neither.  I'm sorry I didn't catch the warning.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
