@@ -1,153 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbZCKMYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbZCKMZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756221AbZCKMYg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 08:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbZCKMYY
+	id S1756240AbZCKMZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 08:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbZCKMZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 08:24:24 -0400
-Received: from mx2.suse.de ([195.135.220.15]:54919 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753040AbZCKMYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 08:24:23 -0400
-Date: Wed, 11 Mar 2009 13:24:20 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-fsdevel@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Jorge Boncompte [DTI2]" <jorge@dti2.net>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>, stable@kernel.org
-Subject: Re: [patch] fs: avoid I_NEW inodes
-Message-ID: <20090311122420.GB24590@duck.suse.cz>
-References: <20090305064554.GA11916@wotan.suse.de> <20090305100000.GA29177@duck.suse.cz> <20090305101637.GB17815@wotan.suse.de> <20090305111226.GB29531@duck.suse.cz> <20090310134106.GA15977@wotan.suse.de> <20090310160321.GB1190@duck.suse.cz> <20090311032918.GE16561@wotan.suse.de>
+	Wed, 11 Mar 2009 08:25:14 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:56803 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755140AbZCKMZM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 08:25:12 -0400
+Date: Wed, 11 Mar 2009 13:25:09 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: David Miller <davem@davemloft.net>, randy.dunlap@oracle.com,
+       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: linux-next: Tree for March 10 (crypto & NLATTR)
+In-Reply-To: <20090311010705.GA17260@gondor.apana.org.au>
+Message-ID: <alpine.LRH.2.00.0903111324400.1040@vixen.sonytel.be>
+References: <49B6B821.5050302@oracle.com> <10f740e80903101256v2cfe08a8g410c297e019d8693@mail.gmail.com> <49B6C8BF.8010105@oracle.com> <20090310.131700.40129006.davem@davemloft.net> <20090311010705.GA17260@gondor.apana.org.au>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090311032918.GE16561@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 11-03-09 04:29:18, Nick Piggin wrote:
-> How about this?
-  Looks fine to me.
-
-> --
-> To be on the safe side, it should be less fragile to exclude I_NEW inodes
-> from inode list scans by default (unless there is an important reason to
-> have them).
+On Wed, 11 Mar 2009, Herbert Xu wrote:
+> On Tue, Mar 10, 2009 at 01:17:00PM -0700, David Miller wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > Date: Tue, 10 Mar 2009 13:08:31 -0700
+> > 
+> > > I'll have to let David or Herbert answer that.  From my quick look
+> > > at the code, I don't see much use for nlattr.c when CONFIG_NET
+> > > is not enabled.
+> > 
+> > We want to use the netlink attribute parsers even in non-networking
+> > code, that's what he's trying to do here.
 > 
-> Normally they will get excluded (eg. by zero refcount or writecount etc),
-> however it is a bit fragile for list walkers to know exactly what parts of
-> the inode state is set up and valid to test when in I_NEW. So along these
-> lines, move I_NEW checks upward as well (sometimes taking I_FREEING etc
-> checks with them too -- this shouldn't be a problem should it?)
+> OK the nlattr construction code really wants to depend on NET
+> because they're skb-oriented.  We could either move them back
+> or just wrap them in ifdef CONFIG_NET.
 > 
-> Signed-off-by: Nick Piggin <npiggin@suse.de>
-  Acked-by: Jan Kara <jack@suse.cz>
-
-									Honza
-
-> ---
->  fs/dquot.c                  |   10 ++++++++--
->  fs/drop_caches.c            |    2 +-
->  fs/inode.c                  |    2 ++
->  fs/notify/inotify/inotify.c |   16 ++++++++--------
->  4 files changed, 19 insertions(+), 11 deletions(-)
+> I think the latter is probably the simplest.
 > 
-> Index: linux-2.6/fs/dquot.c
-> ===================================================================
-> --- linux-2.6.orig/fs/dquot.c
-> +++ linux-2.6/fs/dquot.c
-> @@ -789,12 +789,12 @@ static void add_dquot_ref(struct super_b
+> How does this patch look? And Randy, does it fix the problem for
+> you?
+> 
+> nlattr: Fix build error with NET off
+> 
+> We moved the netlink attribute support from net to lib in order
+> for it to be available for general consumption.  However, parts
+> of the code (the bits that we don't need :) really depends on
+> NET because the target object is sk_buff.
+> 
+> This patch fixes this by wrapping them in CONFIG_NET.
+> 
+> Some EXPORTs have been moved to make this work.
+> 
+> Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Thanks for taking care of this!
+
+Tested-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+> diff --git a/lib/nlattr.c b/lib/nlattr.c
+> index 56c3ce7..80009a2 100644
+> --- a/lib/nlattr.c
+> +++ b/lib/nlattr.c
+> @@ -281,6 +281,7 @@ int nla_strcmp(const struct nlattr *nla, const char *str)
+>  	return d;
+>  }
 >  
->  	spin_lock(&inode_lock);
->  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
-> +		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
-> +			continue;
->  		if (!atomic_read(&inode->i_writecount))
->  			continue;
->  		if (!dqinit_needed(inode, type))
->  			continue;
-> -		if (inode->i_state & (I_FREEING|I_WILL_FREE))
-> -			continue;
+> +#ifdef CONFIG_NET
+>  /**
+>   * __nla_reserve - reserve room for attribute on the skb
+>   * @skb: socket buffer to reserve room on
+> @@ -305,6 +306,7 @@ struct nlattr *__nla_reserve(struct sk_buff *skb, int attrtype, int attrlen)
 >  
->  		__iget(inode);
->  		spin_unlock(&inode_lock);
-> @@ -870,6 +870,12 @@ static void remove_dquot_ref(struct supe
+>  	return nla;
+>  }
+> +EXPORT_SYMBOL(__nla_reserve);
 >  
->  	spin_lock(&inode_lock);
->  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
-> +		/*
-> +		 *  We have to scan also I_NEW inodes because they can already
-> +		 *  have quota pointer initialized. Luckily, we need to touch
-> +		 *  only quota pointers and these have separate locking
-> +		 *  (dqptr_sem).
-> +		 */
->  		if (!IS_NOQUOTA(inode))
->  			remove_inode_dquot_ref(inode, type, tofree_head);
->  	}
-> Index: linux-2.6/fs/drop_caches.c
-> ===================================================================
-> --- linux-2.6.orig/fs/drop_caches.c
-> +++ linux-2.6/fs/drop_caches.c
-> @@ -18,7 +18,7 @@ static void drop_pagecache_sb(struct sup
+>  /**
+>   * __nla_reserve_nohdr - reserve room for attribute without header
+> @@ -325,6 +327,7 @@ void *__nla_reserve_nohdr(struct sk_buff *skb, int attrlen)
 >  
->  	spin_lock(&inode_lock);
->  	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
-> -		if (inode->i_state & (I_FREEING|I_WILL_FREE))
-> +		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
->  			continue;
->  		if (inode->i_mapping->nrpages == 0)
->  			continue;
-> Index: linux-2.6/fs/inode.c
-> ===================================================================
-> --- linux-2.6.orig/fs/inode.c
-> +++ linux-2.6/fs/inode.c
-> @@ -356,6 +356,8 @@ static int invalidate_list(struct list_h
->  		if (tmp == head)
->  			break;
->  		inode = list_entry(tmp, struct inode, i_sb_list);
-> +		if (inode->i_state & I_NEW)
-> +			continue;
->  		invalidate_inode_buffers(inode);
->  		if (!atomic_read(&inode->i_count)) {
->  			list_move(&inode->i_list, dispose);
-> Index: linux-2.6/fs/notify/inotify/inotify.c
-> ===================================================================
-> --- linux-2.6.orig/fs/notify/inotify/inotify.c
-> +++ linux-2.6/fs/notify/inotify/inotify.c
-> @@ -380,6 +380,14 @@ void inotify_unmount_inodes(struct list_
->  		struct list_head *watches;
+>  	return start;
+>  }
+> +EXPORT_SYMBOL(__nla_reserve_nohdr);
 >  
->  		/*
-> +		 * We cannot __iget() an inode in state I_CLEAR, I_FREEING,
-> +		 * I_WILL_FREE, or I_NEW which is fine because by that point
-> +		 * the inode cannot have any associated watches.
-> +		 */
-> +		if (inode->i_state & (I_CLEAR|I_FREEING|I_WILL_FREE|I_NEW))
-> +			continue;
-> +
-> +		/*
->  		 * If i_count is zero, the inode cannot have any watches and
->  		 * doing an __iget/iput with MS_ACTIVE clear would actually
->  		 * evict all inodes with zero i_count from icache which is
-> @@ -388,14 +396,6 @@ void inotify_unmount_inodes(struct list_
->  		if (!atomic_read(&inode->i_count))
->  			continue;
+>  /**
+>   * nla_reserve - reserve room for attribute on the skb
+> @@ -345,6 +348,7 @@ struct nlattr *nla_reserve(struct sk_buff *skb, int attrtype, int attrlen)
 >  
-> -		/*
-> -		 * We cannot __iget() an inode in state I_CLEAR, I_FREEING, or
-> -		 * I_WILL_FREE which is fine because by that point the inode
-> -		 * cannot have any associated watches.
-> -		 */
-> -		if (inode->i_state & (I_CLEAR | I_FREEING | I_WILL_FREE))
-> -			continue;
-> -
->  		need_iput_tmp = need_iput;
->  		need_iput = NULL;
->  		/* In case inotify_remove_watch_locked() drops a reference. */
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+>  	return __nla_reserve(skb, attrtype, attrlen);
+>  }
+> +EXPORT_SYMBOL(nla_reserve);
+>  
+>  /**
+>   * nla_reserve_nohdr - reserve room for attribute without header
+> @@ -363,6 +367,7 @@ void *nla_reserve_nohdr(struct sk_buff *skb, int attrlen)
+>  
+>  	return __nla_reserve_nohdr(skb, attrlen);
+>  }
+> +EXPORT_SYMBOL(nla_reserve_nohdr);
+>  
+>  /**
+>   * __nla_put - Add a netlink attribute to a socket buffer
+> @@ -382,6 +387,7 @@ void __nla_put(struct sk_buff *skb, int attrtype, int attrlen,
+>  	nla = __nla_reserve(skb, attrtype, attrlen);
+>  	memcpy(nla_data(nla), data, attrlen);
+>  }
+> +EXPORT_SYMBOL(__nla_put);
+>  
+>  /**
+>   * __nla_put_nohdr - Add a netlink attribute without header
+> @@ -399,6 +405,7 @@ void __nla_put_nohdr(struct sk_buff *skb, int attrlen, const void *data)
+>  	start = __nla_reserve_nohdr(skb, attrlen);
+>  	memcpy(start, data, attrlen);
+>  }
+> +EXPORT_SYMBOL(__nla_put_nohdr);
+>  
+>  /**
+>   * nla_put - Add a netlink attribute to a socket buffer
+> @@ -418,6 +425,7 @@ int nla_put(struct sk_buff *skb, int attrtype, int attrlen, const void *data)
+>  	__nla_put(skb, attrtype, attrlen, data);
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL(nla_put);
+>  
+>  /**
+>   * nla_put_nohdr - Add a netlink attribute without header
+> @@ -436,6 +444,7 @@ int nla_put_nohdr(struct sk_buff *skb, int attrlen, const void *data)
+>  	__nla_put_nohdr(skb, attrlen, data);
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL(nla_put_nohdr);
+>  
+>  /**
+>   * nla_append - Add a netlink attribute without header or padding
+> @@ -454,20 +463,13 @@ int nla_append(struct sk_buff *skb, int attrlen, const void *data)
+>  	memcpy(skb_put(skb, attrlen), data, attrlen);
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL(nla_append);
+> +#endif
+>  
+>  EXPORT_SYMBOL(nla_validate);
+>  EXPORT_SYMBOL(nla_parse);
+>  EXPORT_SYMBOL(nla_find);
+>  EXPORT_SYMBOL(nla_strlcpy);
+> -EXPORT_SYMBOL(__nla_reserve);
+> -EXPORT_SYMBOL(__nla_reserve_nohdr);
+> -EXPORT_SYMBOL(nla_reserve);
+> -EXPORT_SYMBOL(nla_reserve_nohdr);
+> -EXPORT_SYMBOL(__nla_put);
+> -EXPORT_SYMBOL(__nla_put_nohdr);
+> -EXPORT_SYMBOL(nla_put);
+> -EXPORT_SYMBOL(nla_put_nohdr);
+>  EXPORT_SYMBOL(nla_memcpy);
+>  EXPORT_SYMBOL(nla_memcmp);
+>  EXPORT_SYMBOL(nla_strcmp);
+> -EXPORT_SYMBOL(nla_append);
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village � Da Vincilaan 7-D1 � B-1935 Zaventem � Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 � RPR Brussels
+Fortis � BIC GEBABEBB � IBAN BE41293037680010
