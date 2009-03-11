@@ -1,35 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbZCKLhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZCKLou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755733AbZCKLhN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 07:37:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZCKLg4
+	id S1754951AbZCKLou (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 07:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbZCKLoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 07:36:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33910 "EHLO mx2.redhat.com"
+	Wed, 11 Mar 2009 07:44:38 -0400
+Received: from mga14.intel.com ([143.182.124.37]:31768 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753590AbZCKLgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 07:36:55 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090311003235.677690312@linutronix.de>
-References: <20090311003235.677690312@linutronix.de> <20090311003204.592133594@linutronix.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: dhowells@redhat.com, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch 03/18] mn10300: convert obsolete no_irq_type to no_irq_chip
-Date: Wed, 11 Mar 2009 11:35:45 +0000
-Message-ID: <18205.1236771345@redhat.com>
+	id S1753889AbZCKLoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 07:44:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,342,1233561600"; 
+   d="scan'208";a="119085729"
+Date: Wed, 11 Mar 2009 19:43:53 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: jack marrow <jackmarrow2@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: Memory usage per memory zone
+Message-ID: <20090311114353.GA759@localhost>
+References: <e2dc2c680903110341g6c9644b8j87ce3b364807e37f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e2dc2c680903110341g6c9644b8j87ce3b364807e37f@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner <tglx@linutronix.de> wrote:
+Hi jack,
 
-> convert the last remaining users to no_irq_chip
+On Wed, Mar 11, 2009 at 11:41:43AM +0100, jack marrow wrote:
+> Hello,
 > 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> I have a box where the oom-killer is killing processes due to running
+> out of memory in zone_normal. I can see using slabtop that the inode
 
-Acked-by: David Howells <dhowells@redhat.com>
+How do you know that the memory pressure on zone normal stand out alone?
+
+> caches are using up lots of memory and guess this is the problem, so
+> have cleared them using an echo to drop_caches.
+
+It would better be backed by concrete numbers...
+
+> 
+> I would quite like to not guess though - is it possible to use slabtop
+> (or any other way) to view ram usage per zone so I can pick out the
+> culprit?
+
+/proc/zoneinfo and /proc/vmstat do have some per-zone numbers.
+Some of them deal with slabs.
+
+Thanks,
+Fengguang
+
