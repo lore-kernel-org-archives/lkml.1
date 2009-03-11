@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbZCKIve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZCKIwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752697AbZCKIve (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 04:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZCKIvZ
+	id S1754205AbZCKIwp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 04:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZCKIwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 04:51:25 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:56320 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751567AbZCKIvY (ORCPT
+	Wed, 11 Mar 2009 04:52:34 -0400
+Received: from mx3.schottelius.org ([77.109.138.221]:48998 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752563AbZCKIwc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 04:51:24 -0400
-Date: Wed, 11 Mar 2009 09:47:19 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: akataria@vmware.com
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Process accounting in interrupt diabled cases
-Message-ID: <20090311094719.0fe3de82@skybase>
-In-Reply-To: <1236416374.23222.52.camel@alok-dev1>
-References: <1236380615.4637.67.camel@alok-dev1>
-	<49B1C1D1.4070603@goop.org>
-	<1236387583.4558.22.camel@alok-dev1>
-	<49B1CD54.8070805@goop.org>
-	<1236416374.23222.52.camel@alok-dev1>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Mar 2009 04:52:32 -0400
+Date: Wed, 11 Mar 2009 09:52:29 +0100
+From: Nico Schottelius <nico-linux-20090311@schottelius.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nico Schottelius <nico-linux-20090311@schottelius.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ipw3945-devel@lists.sourceforge.net,
+       Linux Next Mailing List <linux-next@vger.kernel.org>
+Subject: Re: X200 suspend status on -wl and -next
+Message-ID: <20090311085229.GB4495@denkbrett.schottelius.org>
+Mail-Followup-To: Nico Schottelius <nico-linux-20090311@schottelius.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	LKML <linux-kernel@vger.kernel.org>,
+	ipw3945-devel@lists.sourceforge.net,
+	Linux Next Mailing List <linux-next@vger.kernel.org>
+References: <20090311073030.GA5284@denkbrett.schottelius.org> <200903110946.23280.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="GPJrCs/72TxItFYR"
+Content-Disposition: inline
+In-Reply-To: <200903110946.23280.rjw@sisk.pl>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.29-rc7-next-20090306-ikn x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 07 Mar 2009 00:59:33 -0800
-Alok Kataria <akataria@vmware.com> wrote:
 
-> Yes that's alright, all that time when vcpu was idle and scheduled out
-> will anyways be accounted as idle time, as mentioned in my earlier mail
-> ( and if my understanding is not wrong) this is handled by
-> tick_nohz_restart_sched_tick.
-> 
-> But i was talking about a case, where we have this code
-> 	local_irq_disable()
-> 	some_work()
-> 	local_irq_enable()
-> 
-> If this some_work() executed for say 2 ticks, shouldn't the process
-> executing this be accounted 2 ticks of system time ? According to my
-> understanding, we will account a single tick for this, right ? 
+--GPJrCs/72TxItFYR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Don't know too much about x86 and Xen but on s390 the tick is just a
-convenient way to transfer the accumulated cpu time to the process and
-the cpustat fields. The cpu time that has been used is determined by
-the cpu timer. This would still work without any ticks at all, although
-then you'd have to wait for the next context switch until the
-accumulated cpu time gets visible in the process and cpustat.
-In short: the above example just works fine for us.
+Rafael J. Wysocki [Wed, Mar 11, 2009 at 09:46:22AM +0100]:
+> On Wednesday 11 March 2009, Nico Schottelius wrote:
+> > Good morning!
+> >=20
+> > vmlinuz-2.6.29-rc7-wl-ikn-32831-g98c5597:
+>=20
+> Does -wl stand for 'wireless'?
 
--- 
-blue skies,
-   Martin.
+Yep:
 
-"Reality continues to ruin my life." - Calvin.
+ikn% grep url .git/config=20
+  url =3D git://git.kernel.org/pub/scm/linux/kernel/git/iwlwifi/iwlwifi-2.6=
+=2Egit
 
+Nico
+
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--GPJrCs/72TxItFYR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkm3e80ACgkQuL75KpiFGIxTMgCdFYrgt1Sdv6Eu+RgHV5zYmE8D
+LigAnjqBSWFa/u500mXrIEHoxZjLh5/K
+=P8y9
+-----END PGP SIGNATURE-----
+
+--GPJrCs/72TxItFYR--
