@@ -1,39 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbZCKCVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbZCKCWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbZCKCVU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 22:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZCKCVL
+	id S1755399AbZCKCWS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 22:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZCKCWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 22:21:11 -0400
-Received: from mx1.suse.de ([195.135.220.2]:38568 "EHLO mx1.suse.de"
+	Tue, 10 Mar 2009 22:22:05 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42993 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752287AbZCKCVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 22:21:10 -0400
-Date: Wed, 11 Mar 2009 03:21:07 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, mpm@selenic.com,
-       linux-mm@kvack.org
-Subject: Re: PROBLEM: kernel BUG at mm/slab.c:3002!
-Message-ID: <20090311022107.GB16561@wotan.suse.de>
-References: <49B68450.9000505@hp.com> <alpine.DEB.1.10.0903101339210.9350@qirst.com>
+	id S1751921AbZCKCWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 22:22:04 -0400
+Subject: Re: [patch 08/18] powerpc: convert obsolete irq_desc_t to struct
+ irq_desc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linuxppc-dev@ozlabs.org
+In-Reply-To: <20090311003236.263019667@linutronix.de>
+References: <20090311003204.592133594@linutronix.de>
+	 <20090311003236.263019667@linutronix.de>
+Content-Type: text/plain
+Date: Wed, 11 Mar 2009 13:19:22 +1100
+Message-Id: <1236737962.7086.35.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0903101339210.9350@qirst.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 10, 2009 at 01:40:02PM -0400, Christoph Lameter wrote:
-> Oh nice memory corruption. May have something to do with the vmap work by
-> Nick.
+On Wed, 2009-03-11 at 00:45 +0000, Thomas Gleixner wrote:
+> plain text document attachment
+> (powerpc-convert-obsolete-irq-desc-t-typedef.patch)
+> Impact: cleanup
+> 
+> Convert the last remaining users.
 
-Hmm, it might but I can't really tell. It happens in the vmap code
-when kmallocing something, but it isn't obviously causing it AFAIKS.
+Ack. This would be more easily carried in my -next tree if that's ok
+with you.
 
-Could you print out the values of the fields involved in the BUG()?
-That might give some clues...
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: linuxppc-dev@ozlabs.org
+> ---
+>  arch/powerpc/kernel/irq.c            |    4 ++--
+>  arch/powerpc/platforms/iseries/irq.c |    2 +-
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6/arch/powerpc/kernel/irq.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/kernel/irq.c
+> +++ linux-2.6/arch/powerpc/kernel/irq.c
+> @@ -171,7 +171,7 @@ int show_interrupts(struct seq_file *p, 
+>  {
+>  	int i = *(loff_t *)v, j;
+>  	struct irqaction *action;
+> -	irq_desc_t *desc;
+> +	struct irq_desc *desc;
+>  	unsigned long flags;
+>  
+>  	if (i == 0) {
+> @@ -1038,7 +1038,7 @@ arch_initcall(irq_late_init);
+>  static int virq_debug_show(struct seq_file *m, void *private)
+>  {
+>  	unsigned long flags;
+> -	irq_desc_t *desc;
+> +	struct irq_desc *desc;
+>  	const char *p;
+>  	char none[] = "none";
+>  	int i;
+> Index: linux-2.6/arch/powerpc/platforms/iseries/irq.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/platforms/iseries/irq.c
+> +++ linux-2.6/arch/powerpc/platforms/iseries/irq.c
+> @@ -214,7 +214,7 @@ void __init iSeries_activate_IRQs()
+>  	unsigned long flags;
+>  
+>  	for_each_irq (irq) {
+> -		irq_desc_t *desc = get_irq_desc(irq);
+> +		struct irq_desc *desc = get_irq_desc(irq);
+>  
+>  		if (desc && desc->chip && desc->chip->startup) {
+>  			spin_lock_irqsave(&desc->lock, flags);
+> 
+
