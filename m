@@ -1,157 +1,437 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZCKQDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbZCKQFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbZCKQDz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 12:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbZCKQDq
+	id S1753284AbZCKQFF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 12:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751529AbZCKQEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 12:03:46 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:62087 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750769AbZCKQDp convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 12:03:45 -0400
-From: Frans Pop <elendil@planet.nl>
-To: john stultz <johnstul@us.ibm.com>
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
-Date: Wed, 11 Mar 2009 17:03:39 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200903080230.10099.elendil@planet.nl> <200903091604.56455.elendil@planet.nl> <1236733226.6080.28.camel@localhost>
-In-Reply-To: <1236733226.6080.28.camel@localhost>
+	Wed, 11 Mar 2009 12:04:53 -0400
+Received: from ns2.suse.de ([195.135.220.15]:34400 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751115AbZCKQEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 12:04:52 -0400
+Date: Wed, 11 Mar 2009 17:04:48 +0100
+From: Jan Kara <jack@suse.cz>
+To: Clemens Ladisch <clemens@ladisch.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] udf: use hardware sector size
+Message-ID: <20090311160448.GH24590@duck.suse.cz>
+References: <49B4D758.8000304@ladisch.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/mixed; boundary="9jxsPFA5p3P2qPhR"
 Content-Disposition: inline
-Message-Id: <200903111703.41663.elendil@planet.nl>
-X-OriginalArrivalTime: 11 Mar 2009 16:03:42.0859 (UTC) FILETIME=[F34415B0:01C9A262]
+In-Reply-To: <49B4D758.8000304@ladisch.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK, I think I've gotten a lot further now.
 
-On Wednesday 11 March 2009, john stultz wrote:
-> Also the negative conditional you add doesn't really make sense either,
-> as we expect the xtime.tv_nsec << clock->shift to be larger then
-> clock->xtime_nsec, as we've rounded it up by one. We then accumulate
-> the negative difference between them into clock->error.
+--9jxsPFA5p3P2qPhR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I'm not at all fluent in casts, bit shifting and stuff, so it took a
-while for the quarter to drop. But AFAICT what you're saying here is
-exactly the problem.
+  Hi,
 
-Indeed you do round xtime.tv_nsec up, so when you do
-   clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
-or
-   clock->xtime_nsec = clock->xtime_nsec - ((s64)xtime.tv_nsec << clock->shift);
-the second argument is always going to be bigger than the first, so you
-always end up with a negative value.
+On Mon 09-03-09 09:46:16, Clemens Ladisch wrote:
+> This patch makes the UDF FS driver use the hardware sector size as the
+> default logical block size, which is required by the UDF specifications.
+  Hmm, I've checked the standard and you're right.
 
-> Hmm.. Does the following explicit casting help?
+> While the previous default of 2048 bytes was correct for optical disks,
+> it was not for hard disks or USB storage devices, and made it impossible
+> to use such a device with the default mount options.  (The Linux mkudffs
+> tool uses a default block size of 2048 bytes even on devices with
+> smaller hardware sectors, so this bug is unlikely to be noticed unless
+> UDF-formatted USB storage devices are exchanged with other OSs.)
+> 
+> To avoid regressions for people who use loopback optical disk images or
+> who used the (sometimes wrong) defaults of mkudffs, we also try with
+> a block size of 2048 bytes if no anchor was found with the hardware
+> sector size.
+  OK, probably makes sence. Thanks for the fix. I've merged the patch with
+a few cosmetic changes:
+  1) We don't call udf_check_valid() with 'silent' set when checking
+with the hardware sector size. It's not like we're going to flood logs
+with error messages so it should be fine and user knows what's happening.
+  2) I've added a message that we're rescanning the volume with new
+blocksize.
+  3) I've changed udf_check_blocksize() to udf_check_volume() which IMO
+better describes what the function does.
+  4) udf_check_blocksize() returned 0 when it succeeded and 1 when it
+failed. I know some UDF functions do this but the other way around is more
+logical (and usual in the rest of the kernel) and I try to convert the
+functions to this style when I find them. So I've changed the function
+to return 1 when it succeeds finding the anchor and 0 when it fails.
+  The resulting patch is attached.
 
-Even with the cast you're just papering over the issue that we're moving a
-negative value into a field that is defined as unsigned:
-include/linux/clocksource.h:    u64 xtime_nsec;
+								Honza
 
-Why does clock->xtime_nsec get set to the _difference_ (-=) at all? It
-almost seems to me as if that field is getting abused as a temporary
-variable. We're also not doing as the comment says:
-        /* store full nanoseconds into xtime after rounding it up and
-         * add the remainder to the error difference.
-What we are actually doing is storing the _remainder_ in xtime.
+> Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+> 
+> --- linux-2.6.orig/fs/udf/udf_sb.h
+> +++ linux-2.6/fs/udf/udf_sb.h
+> @@ -30,6 +30,7 @@
+>  #define UDF_FLAG_GID_SET	16
+>  #define UDF_FLAG_SESSION_SET	17
+>  #define UDF_FLAG_LASTBLOCK_SET	18
+> +#define UDF_FLAG_BLOCKSIZE_SET	19
+>  
+>  #define UDF_PART_FLAG_UNALLOC_BITMAP	0x0001
+>  #define UDF_PART_FLAG_UNALLOC_TABLE	0x0002
+> --- linux-2.6.orig/fs/udf/super.c
+> +++ linux-2.6/fs/udf/super.c
+> @@ -86,7 +86,7 @@ static int udf_remount_fs(struct super_b
+>  static int udf_check_valid(struct super_block *, int, int);
+>  static int udf_vrs(struct super_block *sb, int silent);
+>  static void udf_load_logicalvolint(struct super_block *, kernel_extent_ad);
+> -static void udf_find_anchor(struct super_block *);
+> +static int udf_find_anchor(struct super_block *);
+>  static int udf_find_fileset(struct super_block *, kernel_lb_addr *,
+>  			    kernel_lb_addr *);
+>  static void udf_load_fileset(struct super_block *, struct buffer_head *,
+> @@ -258,7 +258,7 @@ static int udf_show_options(struct seq_f
+>  
+>  	if (!UDF_QUERY_FLAG(sb, UDF_FLAG_STRICT))
+>  		seq_puts(seq, ",nostrict");
+> -	if (sb->s_blocksize != UDF_DEFAULT_BLOCKSIZE)
+> +	if (UDF_QUERY_FLAG(sb, UDF_FLAG_BLOCKSIZE_SET))
+>  		seq_printf(seq, ",bs=%lu", sb->s_blocksize);
+>  	if (UDF_QUERY_FLAG(sb, UDF_FLAG_UNHIDE))
+>  		seq_puts(seq, ",unhide");
+> @@ -405,7 +405,6 @@ static int udf_parse_options(char *optio
+>  	int option;
+>  
+>  	uopt->novrs = 0;
+> -	uopt->blocksize = UDF_DEFAULT_BLOCKSIZE;
+>  	uopt->partition = 0xFFFF;
+>  	uopt->session = 0xFFFFFFFF;
+>  	uopt->lastblock = 0;
+> @@ -433,6 +432,7 @@ static int udf_parse_options(char *optio
+>  			if (match_int(&args[0], &option))
+>  				return 0;
+>  			uopt->blocksize = option;
+> +			uopt->flags |= (1 << UDF_FLAG_BLOCKSIZE_SET);
+>  			break;
+>  		case Opt_unhide:
+>  			uopt->flags |= (1 << UDF_FLAG_UNHIDE);
+> @@ -761,12 +761,13 @@ static sector_t udf_scan_anchors(struct 
+>   * Return 1 if not found, 0 if ok
+>   *
+>   */
+> -static void udf_find_anchor(struct super_block *sb)
+> +static int udf_find_anchor(struct super_block *sb)
+>  {
+>  	sector_t lastblock;
+>  	struct buffer_head *bh = NULL;
+>  	uint16_t ident;
+>  	int i;
+> +	int anchor_found = 0;
+>  	struct udf_sb_info *sbi = UDF_SB(sb);
+>  
+>  	lastblock = udf_scan_anchors(sb, sbi->s_last_block);
+> @@ -804,10 +805,13 @@ check_anchor:
+>  			brelse(bh);
+>  			if (ident != TAG_IDENT_AVDP)
+>  				sbi->s_anchor[i] = 0;
+> +			else
+> +				anchor_found = 1;
+>  		}
+>  	}
+>  
+>  	sbi->s_last_block = lastblock;
+> +	return !anchor_found;
+>  }
+>  
+>  static int udf_find_fileset(struct super_block *sb,
+> @@ -1679,6 +1683,32 @@ static int udf_check_valid(struct super_
+>  	return !block;
+>  }
+>  
+> +static int udf_check_blocksize(struct super_block *sb,
+> +			       struct udf_options *uopt, int silent)
+> +{
+> +	struct udf_sb_info *sbi = UDF_SB(sb);
+> +
+> +	if (!sb_set_blocksize(sb, uopt->blocksize)) {
+> +		if (!silent)
+> +			printk(KERN_WARNING "UDF-fs: Bad block size\n");
+> +		return 1;
+> +	}
+> +	sbi->s_last_block = uopt->lastblock;
+> +	if (udf_check_valid(sb, uopt->novrs, silent)) {
+> +		if (!silent)
+> +			printk(KERN_WARNING "UDF-fs: No VRS found\n");
+> +		return 1;
+> +	}
+> +	sbi->s_anchor[0] = sbi->s_anchor[1] = 0;
+> +	sbi->s_anchor[2] = uopt->anchor;
+> +	if (udf_find_anchor(sb)) {
+> +		if (!silent)
+> +			printk(KERN_WARNING "UDF-fs: No anchor found\n");
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+>  static int udf_load_sequence(struct super_block *sb, kernel_lb_addr *fileset)
+>  {
+>  	struct anchorVolDescPtr *anchor;
+> @@ -1847,6 +1877,8 @@ static void udf_free_partition(struct ud
+>  static int udf_fill_super(struct super_block *sb, void *options, int silent)
+>  {
+>  	int i;
+> +	int no_anchor;
+> +	int is_default_blocksize;
+>  	struct inode *inode = NULL;
+>  	struct udf_options uopt;
+>  	kernel_lb_addr rootdir, fileset;
+> @@ -1895,13 +1927,6 @@ static int udf_fill_super(struct super_b
+>  	sbi->s_umask = uopt.umask;
+>  	sbi->s_nls_map = uopt.nls_map;
+>  
+> -	/* Set the block size for all transfers */
+> -	if (!sb_min_blocksize(sb, uopt.blocksize)) {
+> -		udf_debug("Bad block size (%d)\n", uopt.blocksize);
+> -		printk(KERN_ERR "udf: bad block size (%d)\n", uopt.blocksize);
+> -		goto error_out;
+> -	}
+> -
+>  	if (uopt.session == 0xFFFFFFFF)
+>  		sbi->s_session = udf_get_last_session(sb);
+>  	else
+> @@ -1909,17 +1934,20 @@ static int udf_fill_super(struct super_b
+>  
+>  	udf_debug("Multi-session=%d\n", sbi->s_session);
+>  
+> -	sbi->s_last_block = uopt.lastblock;
+> -	sbi->s_anchor[0] = sbi->s_anchor[1] = 0;
+> -	sbi->s_anchor[2] = uopt.anchor;
+> -
+> -	if (udf_check_valid(sb, uopt.novrs, silent)) {
+> -		/* read volume recognition sequences */
+> -		printk(KERN_WARNING "UDF-fs: No VRS found\n");
+> -		goto error_out;
+> +	if (uopt.flags & (1 << UDF_FLAG_BLOCKSIZE_SET)) {
+> +		no_anchor = udf_check_blocksize(sb, &uopt, silent);
+> +	} else {
+> +		uopt.blocksize = bdev_hardsect_size(sb->s_bdev);
+> +		is_default_blocksize = uopt.blocksize == UDF_DEFAULT_BLOCKSIZE;
+> +		no_anchor = udf_check_blocksize(sb, &uopt, silent ||
+> +						!is_default_blocksize);
+> +		if (no_anchor && !is_default_blocksize) {
+> +			uopt.blocksize = UDF_DEFAULT_BLOCKSIZE;
+> +			no_anchor = udf_check_blocksize(sb, &uopt, silent);
+> +		}
+>  	}
+> -
+> -	udf_find_anchor(sb);
+> +	if (no_anchor)
+> +		goto error_out;
+>  
+>  	/* Fill in the rest of the superblock */
+>  	sb->s_op = &udf_sb_ops;
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
 
-The patch included below gives me saner values, but still leaves a
-problem with the calculation of clock->error. Here are the first
-wall_update calls after a reboot. This is with the patch and some
-debugging code, but *without* actually changing clock->error.
+--9jxsPFA5p3P2qPhR
+Content-Type: text/x-patch; charset=us-ascii
+Content-Disposition: attachment; filename="0001-udf-use-hardware-sector-size.patch"
 
-With that the system boots correctly!
+>From 41debf4e7959b8e537880a8ed04fd770ee4bd67f Mon Sep 17 00:00:00 2001
+From: Clemens Ladisch <clemens@ladisch.de>
+Date: Wed, 11 Mar 2009 15:57:47 +0100
+Subject: [PATCH] udf: use hardware sector size
 
-0: scale/shift: 32/8, xtime_ns old: 155790080000, new: 155790080256
-    tv_ns: 608555001, rem: -256, old_err: 0, error: -4294867296
-1: scale/shift: 32/8, xtime_ns old: 155790080256, new: 155790080512
-    tv_ns: 608555002, rem: -256, old_err: 0, error: -4294867296
-2: scale/shift: 32/8, xtime_ns old: 155790080512, new: 155790080768
-    tv_ns: 608555003, rem: -256, old_err: 0, error: -4294867296
-3: scale/shift: 32/8, xtime_ns old: 155790080768, new: 155790081024
-    tv_ns: 608555004, rem: -256, old_err: 0, error: -4294867296
-4: scale/shift: 32/8, xtime_ns old: 155790081024, new: 155790081280
-    tv_ns: 608555005, rem: -256, old_err: 0, error: -4294867296
-5: scale/shift: 32/8, xtime_ns old: 155790081280, new: 155790081536
-    tv_ns: 608555006, rem: -256, old_err: 0, error: -4294867296
+This patch makes the UDF FS driver use the hardware sector size as the
+default logical block size, which is required by the UDF specifications.
+While the previous default of 2048 bytes was correct for optical disks,
+it was not for hard disks or USB storage devices, and made it impossible
+to use such a device with the default mount options.  (The Linux mkudffs
+tool uses a default block size of 2048 bytes even on devices with
+smaller hardware sectors, so this bug is unlikely to be noticed unless
+UDF-formatted USB storage devices are exchanged with other OSs.)
 
-First observation is that clock->shift is not 12, but 8! This explains
-the "strange" values we got for xtime.tv_nsec. But I agree with you that
-from the code in arch/s390/time.c it looks like the value should be 12
-for the tod clocksource. No idea what mangles it. It also means that
-clock->error gets shifted by 24 (!) as NTP_SCALE_SHIFT is 32.
+To avoid regressions for people who use loopback optical disk images or
+who used the (sometimes wrong) defaults of mkudffs, we also try with
+a block size of 2048 bytes if no anchor was found with the hardware
+sector size.
 
-Second observation is that clock->error (old_err) remains at 0. So
-apparently it's not getting set anywhere else if we don't set it here
-first. The calculated new error is correct given the shift.
-
-So, lets look next what happens if I allow clock->error to be changed
-here. This makes the boot fail and I believe that this is the critical
-change in 5cd1c9c5cf30.
-
-0: scale/shift: 32/8, xtime_ns old: 496319488000, new: 496319488256
-    tv_ns: 1938748001, rem: -256, old_err: 0, error: -4294867296
-1: scale/shift: 32/8, xtime_ns old: 496315293952, new: 496315294208
-    tv_ns: 1938731618, rem: -256, old_err: -4292487689804800, error: -4292501984672096
-2: scale/shift: 32/8, xtime_ns old: 496302611296, new: 496302611552
-    tv_ns: 1938682467, rem: -256, old_err: -12807120030269440, error: -12807124325236736
-3: scale/shift: 32/8, xtime_ns old: 496298417248, new: 496298417504
-    tv_ns: 1938666084, rem: -256, old_err: -14918186650466656, error: -14918180945433952
-4: scale/shift: 32/8, xtime_ns old: 496295896064, new: 496295896320
-    tv_ns: 1938655845, rem: -256, old_err: -15964926015076704, error: -15964920310044000
-5: scale/shift: 32/8, xtime_ns old: 496294223456, new: 496294223712
-    tv_ns: 1938649702, rem: -256, old_err: -16483889798454272, error: -16483904093421568
-
-Note that clock->xtime_nsec is now running backwards and the crazy values
-for clock->error.
-
->From this I conclude that clock->error is getting buggered somewhere
-else: we get a completely different value back from what is calculated
-here. The calculation here is still correct:
-$ echo $(( -4292487689804800 + (-256 << 24) ))
--4292491984772096
-
-I suspect that clock->error running back is what causes my hang.
-
-I hope that I'm at least somewhat on the right track here?
-I keep wondering why I'm the only one seeing problems...
-
-Cheers,
-FJP
-
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Signed-off-by: Jan Kara <jack@suse.cz>
 ---
-Partial fix. This makes clock->xtime_nsec have sane values and gives
-correct remainders.
+ fs/udf/super.c  |   70 ++++++++++++++++++++++++++++++++++++++----------------
+ fs/udf/udf_sb.h |    1 +
+ 2 files changed, 50 insertions(+), 21 deletions(-)
 
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 900f1b6..fb048cc 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -480,6 +480,7 @@ static void clocksource_adjust(s64 offset)
- void update_wall_time(void)
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index 36a467c..f8fece4 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -86,7 +86,6 @@ static int udf_remount_fs(struct super_block *, int *, char *);
+ static int udf_check_valid(struct super_block *, int, int);
+ static int udf_vrs(struct super_block *sb, int silent);
+ static void udf_load_logicalvolint(struct super_block *, struct kernel_extent_ad);
+-static void udf_find_anchor(struct super_block *);
+ static int udf_find_fileset(struct super_block *, struct kernel_lb_addr *,
+ 			    struct kernel_lb_addr *);
+ static void udf_load_fileset(struct super_block *, struct buffer_head *,
+@@ -260,7 +259,7 @@ static int udf_show_options(struct seq_file *seq, struct vfsmount *mnt)
+ 
+ 	if (!UDF_QUERY_FLAG(sb, UDF_FLAG_STRICT))
+ 		seq_puts(seq, ",nostrict");
+-	if (sb->s_blocksize != UDF_DEFAULT_BLOCKSIZE)
++	if (UDF_QUERY_FLAG(sb, UDF_FLAG_BLOCKSIZE_SET))
+ 		seq_printf(seq, ",bs=%lu", sb->s_blocksize);
+ 	if (UDF_QUERY_FLAG(sb, UDF_FLAG_UNHIDE))
+ 		seq_puts(seq, ",unhide");
+@@ -416,7 +415,6 @@ static int udf_parse_options(char *options, struct udf_options *uopt,
+ 	int option;
+ 
+ 	uopt->novrs = 0;
+-	uopt->blocksize = UDF_DEFAULT_BLOCKSIZE;
+ 	uopt->partition = 0xFFFF;
+ 	uopt->session = 0xFFFFFFFF;
+ 	uopt->lastblock = 0;
+@@ -444,6 +442,7 @@ static int udf_parse_options(char *options, struct udf_options *uopt,
+ 			if (match_int(&args[0], &option))
+ 				return 0;
+ 			uopt->blocksize = option;
++			uopt->flags |= (1 << UDF_FLAG_BLOCKSIZE_SET);
+ 			break;
+ 		case Opt_unhide:
+ 			uopt->flags |= (1 << UDF_FLAG_UNHIDE);
+@@ -789,12 +788,13 @@ static sector_t udf_scan_anchors(struct super_block *sb, sector_t lastblock)
+  * Return 1 if not found, 0 if ok
+  *
+  */
+-static void udf_find_anchor(struct super_block *sb)
++static int udf_find_anchor(struct super_block *sb)
  {
- 	cycle_t offset;
-+	s64 remainder;
+ 	sector_t lastblock;
+ 	struct buffer_head *bh = NULL;
+ 	uint16_t ident;
+ 	int i;
++	int anchor_found = 0;
+ 	struct udf_sb_info *sbi = UDF_SB(sb);
  
- 	/* Make sure we're fully resumed: */
- 	if (unlikely(timekeeping_suspended))
-@@ -547,8 +548,9 @@ void update_wall_time(void)
- 	 * add the remainder to the error difference.
- 	 */
- 	xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
--	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
--	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
-+	remainder = clock->xtime_nsec - ((s64)xtime.tv_nsec << clock->shift);
-+	clock->xtime_nsec = (s64)xtime.tv_nsec << clock->shift;
-+	clock->error += remainder << (NTP_SCALE_SHIFT - clock->shift);
+ 	lastblock = udf_scan_anchors(sb, sbi->s_last_block);
+@@ -832,10 +832,13 @@ check_anchor:
+ 			brelse(bh);
+ 			if (ident != TAG_IDENT_AVDP)
+ 				sbi->s_anchor[i] = 0;
++			else
++				anchor_found = 1;
+ 		}
+ 	}
  
- 	update_xtime_cache(cyc2ns(clock, offset));
+ 	sbi->s_last_block = lastblock;
++	return anchor_found;
+ }
  
+ static int udf_find_fileset(struct super_block *sb,
+@@ -1721,6 +1724,32 @@ static int udf_check_valid(struct super_block *sb, int novrs, int silent)
+ 	return !block;
+ }
+ 
++static int udf_check_volume(struct super_block *sb,
++			    struct udf_options *uopt, int silent)
++{
++	struct udf_sb_info *sbi = UDF_SB(sb);
++
++	if (!sb_set_blocksize(sb, uopt->blocksize)) {
++		if (!silent)
++			printk(KERN_WARNING "UDF-fs: Bad block size\n");
++		return 0;
++	}
++	sbi->s_last_block = uopt->lastblock;
++	if (udf_check_valid(sb, uopt->novrs, silent)) {
++		if (!silent)
++			printk(KERN_WARNING "UDF-fs: No VRS found\n");
++		return 0;
++	}
++	sbi->s_anchor[0] = sbi->s_anchor[1] = 0;
++	sbi->s_anchor[2] = uopt->anchor;
++	if (!udf_find_anchor(sb)) {
++		if (!silent)
++			printk(KERN_WARNING "UDF-fs: No anchor found\n");
++		return 0;
++	}
++	return 1;
++}
++
+ static int udf_load_sequence(struct super_block *sb, struct kernel_lb_addr *fileset)
+ {
+ 	struct anchorVolDescPtr *anchor;
+@@ -1889,6 +1918,7 @@ static void udf_free_partition(struct udf_part_map *map)
+ static int udf_fill_super(struct super_block *sb, void *options, int silent)
+ {
+ 	int i;
++	int found_anchor;
+ 	struct inode *inode = NULL;
+ 	struct udf_options uopt;
+ 	struct kernel_lb_addr rootdir, fileset;
+@@ -1941,13 +1971,6 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
+ 	sbi->s_dmode = uopt.dmode;
+ 	sbi->s_nls_map = uopt.nls_map;
+ 
+-	/* Set the block size for all transfers */
+-	if (!sb_min_blocksize(sb, uopt.blocksize)) {
+-		udf_debug("Bad block size (%d)\n", uopt.blocksize);
+-		printk(KERN_ERR "udf: bad block size (%d)\n", uopt.blocksize);
+-		goto error_out;
+-	}
+-
+ 	if (uopt.session == 0xFFFFFFFF)
+ 		sbi->s_session = udf_get_last_session(sb);
+ 	else
+@@ -1955,17 +1978,22 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
+ 
+ 	udf_debug("Multi-session=%d\n", sbi->s_session);
+ 
+-	sbi->s_last_block = uopt.lastblock;
+-	sbi->s_anchor[0] = sbi->s_anchor[1] = 0;
+-	sbi->s_anchor[2] = uopt.anchor;
+-
+-	if (udf_check_valid(sb, uopt.novrs, silent)) {
+-		/* read volume recognition sequences */
+-		printk(KERN_WARNING "UDF-fs: No VRS found\n");
+-		goto error_out;
++	if (uopt.flags & (1 << UDF_FLAG_BLOCKSIZE_SET)) {
++		found_anchor = udf_check_volume(sb, &uopt, silent);
++	} else {
++		uopt.blocksize = bdev_hardsect_size(sb->s_bdev);
++		found_anchor = udf_check_volume(sb, &uopt, silent);
++		if (!found_anchor && uopt.blocksize != UDF_DEFAULT_BLOCKSIZE) {
++			if (!silent)
++				printk(KERN_NOTICE
++				       "UDF-fs: Rescanning with blocksize "
++				       "%d\n", UDF_DEFAULT_BLOCKSIZE);
++			uopt.blocksize = UDF_DEFAULT_BLOCKSIZE;
++			found_anchor = udf_check_volume(sb, &uopt, silent);
++		}
+ 	}
+-
+-	udf_find_anchor(sb);
++	if (!found_anchor)
++		goto error_out;
+ 
+ 	/* Fill in the rest of the superblock */
+ 	sb->s_op = &udf_sb_ops;
+diff --git a/fs/udf/udf_sb.h b/fs/udf/udf_sb.h
+index 158221e..2dd9219 100644
+--- a/fs/udf/udf_sb.h
++++ b/fs/udf/udf_sb.h
+@@ -30,6 +30,7 @@
+ #define UDF_FLAG_GID_SET	16
+ #define UDF_FLAG_SESSION_SET	17
+ #define UDF_FLAG_LASTBLOCK_SET	18
++#define UDF_FLAG_BLOCKSIZE_SET	19
+ 
+ #define UDF_PART_FLAG_UNALLOC_BITMAP	0x0001
+ #define UDF_PART_FLAG_UNALLOC_TABLE	0x0002
+-- 
+1.6.0.2
+
+
+--9jxsPFA5p3P2qPhR--
