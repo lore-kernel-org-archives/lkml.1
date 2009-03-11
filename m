@@ -1,47 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbZCKBSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbZCKBUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755306AbZCKBSm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 10 Mar 2009 21:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZCKBSc
+	id S1755549AbZCKBUA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 10 Mar 2009 21:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbZCKBTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 10 Mar 2009 21:18:32 -0400
-Received: from mail.windriver.com ([147.11.1.11]:54440 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753732AbZCKBSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 10 Mar 2009 21:18:32 -0400
-Message-ID: <49B70E70.1060508@windriver.com>
-Date: Wed, 11 Mar 2009 09:05:52 +0800
-From: Harry Ciao <qingtao.cao@windriver.com>
-Reply-To: qingtao.cao@windriver.com
-Organization: Wind River, CDC
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Bert Wesarg <bert.wesarg@googlemail.com>
-CC: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
-Subject: Re: [v1 PATCH 1/8] EDAC: AMD8111 driver Kconfig & Makefile
-References: <1236586097-3830-1-git-send-email-qingtao.cao@windriver.com>	 <1236586097-3830-2-git-send-email-qingtao.cao@windriver.com> <36ca99e90903090204o20ae8021n1b7407ab0c049d27@mail.gmail.com>
-In-Reply-To: <36ca99e90903090204o20ae8021n1b7407ab0c049d27@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 11 Mar 2009 01:18:17.0791 (UTC) FILETIME=[424204F0:01C9A1E7]
+	Tue, 10 Mar 2009 21:19:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45756 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751989AbZCKBTs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 10 Mar 2009 21:19:48 -0400
+Date: Tue, 10 Mar 2009 18:17:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, syrjala@sci.fi, johnpol@2ka.mipt.ru,
+       david-b@pacbell.net
+Subject: Re: [PATCH] drivers/w1/masters/w1-gpio.c: fix read_bit()
+Message-Id: <20090310181713.4420d488.akpm@linux-foundation.org>
+In-Reply-To: <20090311001048.GA21160@buzzloop.caiaq.de>
+References: <1236614530-11153-1-git-send-email-daniel@caiaq.de>
+	<20090309191419.98699220.akpm@linux-foundation.org>
+	<20090310091800.GC3263@buzzloop.caiaq.de>
+	<20090310150059.ce64548a.akpm@linux-foundation.org>
+	<20090311001048.GA21160@buzzloop.caiaq.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bert Wesarg 写道:
-> On Mon, Mar 9, 2009 at 09:08, Harry Ciao <qingtao.cao@windriver.com> wrote:
->   
->> Introduce Kconfig and Makefile options for AMD8111 EDAC driver.
->>     
-> This is not git bisactable. this patch should be after 2/8 and 3/8.
->
-> Bert
->
->   
-Thanks Bert,
+On Wed, 11 Mar 2009 01:10:48 +0100 Daniel Mack <daniel@caiaq.de> wrote:
 
-I will correct this in v2 series of patches.
+> On Tue, Mar 10, 2009 at 03:00:59PM -0700, Andrew Morton wrote:
+> > > > We recently merged a patch (I forget where) which fixed one
+> > > > gpio_get_value() implementation so that it always returns 0 or 1.
+> > > > 
+> > > > From which I deduce that the correct fix for <whatever problem you're
+> > > > seeing> is to fix <whichever driver that is>?
+> > > 
+> > > I agree those functions should return 0 and 1 only, but my patch fixes
+> > > the w1-gpio driver for all platforms at once, so people can use it.
+> > > 
+> > > On the other hand, I will submit a patch which modifies PXA's
+> > > gpio_get_value() and see what the maintainers say, but I can't go thru
+> > > all the implemenations of all architectures to do this.
+> > > 
+> > > So for the time being, the above patch helps many users of that driver.
+> > > 
+> > 
+> > Problem is, the patch will just conceal bugs.
+> 
+> There is a small discussion about that on the arm-linux mailing list and
+> what people pointed out there is that gpio_get_value() is _not_ supposed
+> to return 0 or 1 only, also according to Documentation/gpio.txt:
+> 
+> 	Use these calls to access such GPIOs:
+> 
+>         /* GPIO INPUT:  return zero or nonzero */
+> 	int gpio_get_value(unsigned gpio);
+> 
+> Hence, any implementation of gpio_get_value() which returns 0 and 1 only
+> is conform to the docs, but PXA's (which doesn't follow that rule) is as
+> well. And that means that any driver using that function has to deal
+> with values > 1 being returned by it, right?
+> 
+> Correct me if I missed the point, but I don't see how my patch will
+> conceal any bug?
+> 
 
-Regards,
+Actually, I misremembered the discussion: http://lkml.org/lkml/2009/2/15/114
 
-Harry
+This "optimisation" has caused two bugs so far.  And it's forcing
+callers of the "optimised" function to perform a test-n-branch for
+something which the low-level function could have done with a shift.
+
+Sigh, what a crock.  I'll go dig out your original fix.
