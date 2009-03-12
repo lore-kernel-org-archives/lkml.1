@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbZCLR3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbZCLRkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755652AbZCLR3T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 13:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbZCLR3K
+	id S1755741AbZCLRkh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 13:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZCLRk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 13:29:10 -0400
-Received: from vms173009pub.verizon.net ([206.46.173.9]:61789 "EHLO
-	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753241AbZCLR3J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 13:29:09 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: David Newall <davidn@davidnewall.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: I just got got another Oops
-Date: Thu, 12 Mar 2009 13:28:51 -0400
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7; KDE/4.2.0; i686; ; )
-References: <200903120133.11583.gene.heskett@gmail.com>
- <49B8C98D.3020309@davidnewall.com>
-In-reply-to: <49B8C98D.3020309@davidnewall.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200903121328.51881.gene.heskett@gmail.com>
+	Thu, 12 Mar 2009 13:40:27 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:27997 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751700AbZCLRk0 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 13:40:26 -0400
+X-BigFish: VPS-24(za62sz1432R9370P98dR1805M936fKzz1202hzzz32i6bh64h)
+X-Spam-TCS-SCL: 3:0
+X-FB-SS: 5,
+X-WSS-ID: 0KGEMET-02-5NL-01
+Date: Thu, 12 Mar 2009 18:40:10 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: x86-microcode: get rid of set_cpus_allowed()
+Message-ID: <20090312174010.GI20716@alberich.amd.com>
+References: <1236627539.5168.48.camel@earth> <200903111714.37444.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <200903111714.37444.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 12 Mar 2009 17:40:12.0396 (UTC) FILETIME=[988312C0:01C9A339]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 March 2009, David Newall wrote:
->Gene Heskett wrote:
->> Mar 12 01:15:01 coyote xinetd[2583]: START: amanda pid=8970
->> from=::ffff:192.168.71.3 Mar 12 01:16:21 coyote kernel: [10353.910914]
->> BUG: unable to handle kernel NULL pointer dereference at 00000006 Mar 12
->> 01:16:21 coyote kernel: [10353.910921] IP: [<c046520b>]
->> get_page_from_freelist+0x24b/0x4c0 Mar 12 01:16:21 coyote kernel:
->> [10353.910929] *pdpt = 0000000000b38001 *pde = 0000000000000000 Mar 12
->> 01:16:21 coyote kernel: [10353.910934] Oops: 0000 [#1] PREEMPT SMP
->
->I think there must be a zone at 0x0.  Try adding
->
->		if (!zone) goto try_next_zone;
->
->
->in mm/page_alloc.c, (near line 1469), before
->
->		if (NUMA_BUILD && zlc_active &&
+On Wed, Mar 11, 2009 at 07:44:37AM +0100, Rusty Russell wrote:
+> On Tuesday 10 March 2009 06:08:59 Dmitry Adamushko wrote:
+> > 
+> > Hi,
+> > 
+> > 
+> > here is a possible candidate for Rusty's cpumask-refactored series.
+> > Note the [*] remark below though.
+> 
+> Ah, OK, I'll drop my version then (below) in favor of this, and will
+> push to Ingo with the others if he doesn't take it directly.
 
-This line is at #1417 in my mm/page_alloc.c, (in 2.6.29-rc7) but I have added 
-it, and a rebuild is in progress.  I'll post again if I see it again.  The 
-machine is still up, and functioning apparently only semi-normally ATM.  I 
-don't know it its related, but setroubleshoot's daemon is also exiting 
-frequently.  And can't be restarted with the 'service' utility.  Off to reboot 
-next.
+Sorry guys -- for the late reply --
+but I missed Dmitry's mail due to some silly mail filtering and had to
+restore his mail ...
 
-Thanks David.
+Now I've tested both patches and both seem to reliably prevent
+microcode updates on CPU1 and CPU2 of an Phenom X3 after
+suspend/resume. (Just CPU0 was updated.)
+
+Then I've tested mainline kernel w/o your patches and I've observed
+similar problems. I've seen that sometimes ucode of CPU0 was not
+updated and sometimes CPU1 and CPU2 were not updated.
+
+I'll look into this asap.
+
+
+Regards,
+Andreas
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-You're dead, Jim.
-		-- McCoy, "Amok Time", stardate 3372.7
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
 
