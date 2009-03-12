@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbZCLMcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbZCLMcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbZCLMcj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 08:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZCLMc1
+	id S1756702AbZCLMcx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 08:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756476AbZCLMcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 08:32:27 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:37256 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752416AbZCLMc0 convert rfc822-to-8bit (ORCPT
+	Thu, 12 Mar 2009 08:32:35 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:50290 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756385AbZCLMcd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 08:32:26 -0400
-Message-Id: <49B90F12.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Thu, 12 Mar 2009 12:33:06 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH, resend] i386: also limit NODES_HIGH_SHIFT here
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 12 Mar 2009 08:32:33 -0400
+Date: Thu, 12 Mar 2009 06:32:30 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-fsdevel@vger.kernel.org,
+       tux3@tux3.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
+Message-ID: <20090312123230.GA14425@parisc-linux.org>
+References: <200903110925.37614.phillips@phunq.net> <200903120315.07610.phillips@phunq.net> <200903122203.31502.nickpiggin@yahoo.com.au> <200903120524.34150.phillips@phunq.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200903120524.34150.phillips@phunq.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: configuration bug fix
+On Thu, Mar 12, 2009 at 05:24:33AM -0700, Daniel Phillips wrote:
+> On Thursday 12 March 2009, Nick Piggin wrote:
+> > That's interesting. Do you handle 1K block sizes with 64K page size? :)
+> 
+> Not in its current incarnation.  That would require 32 bytes worth of
+> state while the current code just has a 4 byte map (4 bits X 8 blocks).
+> I suppose a reasonable way to extend it would be 4 x 8 byte maps.  Has
+> somebody spotted a 64K page?
 
-Just like for x86-64, the range of widths valid for NODE_SHIFT is not
-unbounded. The upper bound 64-bit uses is definitely also an upper
-bound for 32-bit.
+I believe SGI ship their ia64 kernels configured this way.  Certainly
+16k ia64 kernels are common, which would (if I understand your scheme
+correctly) be 8 bytes worth of state in your scheme.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-
----
- arch/x86/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.29-rc7/arch/x86/Kconfig	2009-03-04 09:10:19.000000000 +0100
-+++ 2.6.29-rc7-i386-nodes-shift-limit/arch/x86/Kconfig	2009-03-06 10:24:22.000000000 +0100
-@@ -1087,7 +1087,7 @@ config NUMA_EMU
- 
- config NODES_SHIFT
- 	int "Maximum NUMA Nodes (as a power of 2)" if !MAXSMP
--	range 1 9   if X86_64
-+	range 1 9
- 	default "9" if MAXSMP
- 	default "6" if X86_64
- 	default "4" if X86_NUMAQ
-
-
-
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
