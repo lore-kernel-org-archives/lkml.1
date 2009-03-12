@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZCLBAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbZCLBBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755414AbZCLBAN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 21:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbZCLA75
+	id S1755521AbZCLBBq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 21:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbZCLBBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 20:59:57 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42155 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752804AbZCLA74 (ORCPT
+	Wed, 11 Mar 2009 21:01:37 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37120 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753846AbZCLBBg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 20:59:56 -0400
-Date: Thu, 12 Mar 2009 09:58:31 +0900
+	Wed, 11 Mar 2009 21:01:36 -0400
+Date: Thu, 12 Mar 2009 10:00:08 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
@@ -18,8 +18,8 @@ Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
        "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
        "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: [RFC][PATCH 4/5] memcg softlimit_priority
-Message-Id: <20090312095831.e88b4556.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [RFC][PATCH 5/5] memcg softlimit hooks to kswapd
+Message-Id: <20090312100008.aa8379d7.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: FUJITSU Co. LTD.
@@ -31,88 +31,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch needs MORE investigation...
+
+==
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-An iterface to set/read softlimit priority of cgroup.
+This patch adds hooks for memcg's softlimit to kswapd().
 
-Changelog: v2->v3
- - removed complicated handling of hierarchy.
-   i.e. Changes in priority doesn't affect children.
+Softlimit handler is called...
+  - before generic shrink_zone() is called.
+  - # of pages to be scanned depends on priority.
+  - If not enough progress, selected memcg will be moved to UNUSED queue.
+  - at each call for balance_pgdat(), softlimit queue is rebalanced.
+
+Changelog: v3 -> v4
+ - move "sc" as local variable
 
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- mm/memcontrol.c |   31 +++++++++++++++++++++++++++++--
- 1 file changed, 29 insertions(+), 2 deletions(-)
+ mm/vmscan.c |   52 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
 
-Index: mmotm-2.6.29-Mar10/mm/memcontrol.c
+Index: mmotm-2.6.29-Mar10/mm/vmscan.c
 ===================================================================
---- mmotm-2.6.29-Mar10.orig/mm/memcontrol.c
-+++ mmotm-2.6.29-Mar10/mm/memcontrol.c
-@@ -217,6 +217,8 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
- #define MEMFILE_TYPE(val)	(((val) >> 16) & 0xffff)
- #define MEMFILE_ATTR(val)	((val) & 0xffff)
- 
-+#define MEM_SOFTLIMIT_PRIO     (0x10)
-+
- static void mem_cgroup_get(struct mem_cgroup *mem);
- static void mem_cgroup_put(struct mem_cgroup *mem);
- static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
-@@ -2187,7 +2189,14 @@ static u64 mem_cgroup_read(struct cgroup
- 	name = MEMFILE_ATTR(cft->private);
- 	switch (type) {
- 	case _MEM:
--		val = res_counter_read_u64(&mem->res, name);
-+		switch (name) {
-+		case MEM_SOFTLIMIT_PRIO:
-+			val = mem->softlimit_priority;
-+			break;
-+		default:
-+			val = res_counter_read_u64(&mem->res, name);
-+			break;
-+		}
- 		break;
- 	case _MEMSWAP:
- 		if (do_swap_account)
-@@ -2290,6 +2299,18 @@ static int mem_cgroup_reset(struct cgrou
- 	return 0;
+--- mmotm-2.6.29-Mar10.orig/mm/vmscan.c
++++ mmotm-2.6.29-Mar10/mm/vmscan.c
+@@ -1733,6 +1733,49 @@ unsigned long try_to_free_mem_cgroup_pag
  }
+ #endif
  
-+static int mem_cgroup_write_softlimit_priority(struct cgroup *cgrp,
-+					struct cftype *cft,
-+					u64 val)
++static void shrink_zone_softlimit(struct zone *zone, int order, int priority,
++			   int target, int end_zone)
 +{
-+	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-+	int priority = (int)val;
++	int scan = SWAP_CLUSTER_MAX;
++	int nid = zone->zone_pgdat->node_id;
++	int zid = zone_idx(zone);
++	struct mem_cgroup *mem;
++	struct scan_control sc =  {
++		.gfp_mask = GFP_KERNEL,
++		.may_writepage = !laptop_mode,
++		.swap_cluster_max = SWAP_CLUSTER_MAX,
++		.may_unmap = 1,
++		.swappiness = vm_swappiness,
++		.order = order,
++		.mem_cgroup = NULL,
++		.isolate_pages = mem_cgroup_isolate_pages,
++	};
 +
-+	if ((priority < 0) || (priority > SOFTLIMIT_MAXPRI))
-+		return -EINVAL;
-+	memcg_softlimit_requeue(memcg, priority);
-+	return 0;
++	scan = target * 2;
++
++	sc.nr_scanned = 0;
++	sc.nr_reclaimed = 0;
++	while (scan > 0) {
++		if (zone_watermark_ok(zone, order, target, end_zone, 0))
++			break;
++		mem = mem_cgroup_schedule(nid, zid);
++		if (!mem)
++			return;
++		sc.mem_cgroup = mem;
++
++		sc.nr_reclaimed = 0;
++		shrink_zone(priority, zone, &sc);
++
++		if (sc.nr_reclaimed >= SWAP_CLUSTER_MAX/2)
++			mem_cgroup_schedule_end(nid, zid, mem, true);
++		else
++			mem_cgroup_schedule_end(nid, zid, mem, false);
++
++		scan -= sc.nr_scanned;
++	}
++
++	return;
 +}
+ /*
+  * For kswapd, balance_pgdat() will work across all this node's zones until
+  * they are all at pages_high.
+@@ -1776,6 +1819,8 @@ static unsigned long balance_pgdat(pg_da
+ 	 */
+ 	int temp_priority[MAX_NR_ZONES];
  
- /* For read statistics */
- enum {
-@@ -2485,6 +2506,12 @@ static struct cftype mem_cgroup_files[] 
- 		.read_u64 = mem_cgroup_read,
- 	},
- 	{
-+		.name = "softlimit_priority",
-+		.private = MEMFILE_PRIVATE(_MEM, MEM_SOFTLIMIT_PRIO),
-+		.write_u64 = mem_cgroup_write_softlimit_priority,
-+		.read_u64 = mem_cgroup_read,
-+	},
-+	{
- 		.name = "failcnt",
- 		.private = MEMFILE_PRIVATE(_MEM, RES_FAILCNT),
- 		.trigger = mem_cgroup_reset,
-@@ -2711,8 +2738,8 @@ mem_cgroup_create(struct cgroup_subsys *
- 		res_counter_init(&mem->res, NULL);
- 		res_counter_init(&mem->memsw, NULL);
- 	}
--	mem->last_scanned_child = 0;
- 	mem->softlimit_priority = SOFTLIMIT_MAXPRI;
-+	mem->last_scanned_child = 0;
- 	mutex_init(&mem->softlimit_mutex);
- 	spin_lock_init(&mem->reclaim_param_lock);
- 
++	/* Refill softlimit queue */
++	mem_cgroup_reschedule_all(pgdat->node_id);
+ loop_again:
+ 	total_scanned = 0;
+ 	sc.nr_reclaimed = 0;
+@@ -1856,6 +1901,13 @@ loop_again:
+ 					       end_zone, 0))
+ 				all_zones_ok = 0;
+ 			temp_priority[i] = priority;
++
++			/*
++			 * Try soft limit at first.  This reclaims page
++			 * with regard to user's hint.
++			 */
++			shrink_zone_softlimit(zone, order, priority,
++					       8 * zone->pages_high, end_zone);
+ 			sc.nr_scanned = 0;
+ 			note_zone_scanning_priority(zone, priority);
+ 			/*
 
