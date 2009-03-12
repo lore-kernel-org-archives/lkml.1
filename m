@@ -1,89 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbZCLJMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbZCLJNB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbZCLJMh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 05:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbZCLJMX
+	id S1754688AbZCLJNB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 05:13:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZCLJMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 05:12:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33987 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751659AbZCLJMU (ORCPT
+	Thu, 12 Mar 2009 05:12:50 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:48121 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751659AbZCLJMu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 05:12:20 -0400
-Subject: Re: [tip:perfcounters/core] perfcounters: IRQ and NMI support on
- AMD CPUs
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090312014415.GD10105@erda.amd.com>
-References: <1236273633.5187.286.camel@laptop>
-	 <tip-b0f3f28e0f14eb335f67bfaae33ce8b8d74fd58b@git.kernel.org>
-	 <20090312014415.GD10105@erda.amd.com>
-Content-Type: text/plain
-Date: Thu, 12 Mar 2009 10:12:14 +0100
-Message-Id: <1236849134.5090.26.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
+	Thu, 12 Mar 2009 05:12:50 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ocnF1+8njtadaReQTYfmnEMI4M1WW9xm/j5d1THVKEhvhzkhWUIVHnILmn7UGqg6oX0liDxX04zaW6x7Q8hLFTLdaUuQ/BLTDfkRZoenOyz/mojpG5cBgO/rrB1gSshR1FdtGNFi2J10QS4vWYbdsfUUWHiNUVMZQZe6UfWKeV4=  ;
+X-YMail-OSG: jcm57NQVM1nBr1P8ch8QdXLYAe6APRomnNR6vrAUUcYw7CG2DsONrUfLLMj9y1Ld.qN9w4zBB189YsTdf4t9G7HKXIsb1fdv0s3YCZ3LN2jg8Cmb5_.Jor6vrNZdjbVmLYrsmerzUWacVhwkvNsXt6ZXA4zoqi0EXvOM8aihArvFhdwGgNo04VKhl5iZszWOSvT0P2aPUOKoqjl_GfJOChBMeX0aCP55QYI-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Francis Moreau <francis.moro@gmail.com>
+Subject: Re: Question regarding concurrent accesses through block device and fs
+Date: Thu, 12 Mar 2009 20:12:45 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <m2hc2yulrw.fsf@gmail.com> <200903121922.53529.nickpiggin@yahoo.com.au> <38b2ab8a0903120200h2f586c41s58d6a1520cba5ea8@mail.gmail.com>
+In-Reply-To: <38b2ab8a0903120200h2f586c41s58d6a1520cba5ea8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903122012.45607.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-12 at 02:44 +0100, Robert Richter wrote:
-> On 05.03.09 17:27:29, Peter Zijlstra wrote:
-> > Commit-ID:  b0f3f28e0f14eb335f67bfaae33ce8b8d74fd58b
-> > Gitweb:     http://git.kernel.org/tip/b0f3f28e0f14eb335f67bfaae33ce8b8d74fd58b
-> > Author:     "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-> > AuthorDate: Thu, 5 Mar 2009 18:08:27 +0100
-> > Commit:     Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Thu, 5 Mar 2009 18:25:16 +0100
-> > 
-> > perfcounters: IRQ and NMI support on AMD CPUs
-> > 
-> > The below completes the K7+ performance counter support:
-> > 
-> >  - IRQ support
-> >  - NMI support
-> > 
-> > KernelTop output works now as well.
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > LKML-Reference: <1236273633.5187.286.camel@laptop>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
-> > 
-> > ---
-> >  arch/x86/kernel/cpu/perf_counter.c |  272 ++++++++++++++++++++++++++++++------
-> >  1 files changed, 228 insertions(+), 44 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-> > index 3b65f19..6ebe9ab 100644
-> > --- a/arch/x86/kernel/cpu/perf_counter.c
-> > +++ b/arch/x86/kernel/cpu/perf_counter.c
-> 
-> [...]
-> 
-> > @@ -205,18 +243,24 @@ static u64 pmc_intel_save_disable_all(void)
-> >  
-> >  static u64 pmc_amd_save_disable_all(void)
-> >  {
-> > -	int idx;
-> > -	u64 val, ctrl = 0;
-> > +	struct cpu_hw_counters *cpuc = &__get_cpu_var(cpu_hw_counters);
-> > +	int enabled, idx;
-> > +
-> > +	enabled = cpuc->enabled;
-> > +	cpuc->enabled = 0;
-> > +	barrier();
-> 
-> Peter,
-> 
-> please add comments to all barrier()s you added to this file. Is it
-> sufficient in hw_perf_save_disable() to stop NMI's only on the current
-> core?
+On Thursday 12 March 2009 20:00:38 Francis Moreau wrote:
+> On Thu, Mar 12, 2009 at 9:22 AM, Nick Piggin <nickpiggin@yahoo.com.au> 
+wrote:
+> > Ignore details like crashes, direct IO and coherency between data
+> > mappings and buffercache where things get a bit hairy, and it's just a
+> > writeback cache. The last thing you write to some location will be what
+> > you get back if you read from that location -- regardless of whether it
+> > is dirty or clean or not present when you ask for it (and has to be read
+> > from disk).
+>
+> Well yes but I was wondering in the special where the kernel crash or
+> the power supply is down how the kernel is minimizing the risk of file
+> system inconsistency. Hence my questions about metadata handling.
 
-Yes, counters are fundamentally per cpu. But you're right, I'll go
-through the code and add comments and fix up some barriers.
+Well, journalling filesystems, other filesystems can do synchronous
+metadata updates (write through) which can help too. There is really
+nothing that the generic pagecache/buffercache code does to try to
+handle this because it is far to filesystem specific.
 
