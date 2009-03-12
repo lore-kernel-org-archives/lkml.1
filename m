@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbZCLUq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbZCLUrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755687AbZCLUq4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 16:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZCLUqq
+	id S1756628AbZCLUrk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 16:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZCLUrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 16:46:46 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:54552 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbZCLUqq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 16:46:46 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: phillips@phunq.net, tux3@tux3.org, linux-kernel@vger.kernel.org
-Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
-References: <200903110925.37614.phillips@phunq.net>
-	<20090311114211.89eed5b8.akpm@linux-foundation.org>
-	<87vdqeogtm.fsf@devron.myhome.or.jp>
-	<20090312130222.b149cf36.akpm@linux-foundation.org>
-Date: Fri, 13 Mar 2009 05:46:39 +0900
-In-Reply-To: <20090312130222.b149cf36.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Thu, 12 Mar 2009 13:02:22 -0700")
-Message-ID: <87k56ulb9s.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Thu, 12 Mar 2009 16:47:31 -0400
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:47053
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753343AbZCLUrb convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 16:47:31 -0400
+X-Greylist: delayed 904 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 16:47:31 EDT
+X-BigFish: VPS3(zz4015Mzz1202hzzz2dh6bh95p61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,8,
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: FW: level interrupt handling in the Kernel
+Date: Thu, 12 Mar 2009 14:32:09 -0600
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: level interrupt handling in the Kernel
+Thread-Index: AcmjRKcB+XeldVHNTWyUVcTB6CLahgADJg/w
+From: Julie Zhu <julie.zhu@xilinx.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 12 Mar 2009 20:32:04.0802 (UTC) FILETIME=[9B2F5A20:01C9A351]
+Message-ID: <20090312203206.0113C1A3009D@mail92-va3.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Hello,
 
-> On Fri, 13 Mar 2009 01:18:29 +0900
-> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
->
->> Andrew Morton <akpm@linux-foundation.org> writes:
->> 
->> > - When 'bh' is known to be non-NULL, use put_bh() rather than brelse().
->> 
->> It sounds strange. Almost all bh is non-NULL. This means we are going to
->> replace almost all brelse() by put_bh()?
->> 
->
-> Well..  you can make up your own mind about this.  If you see benefit
-> in the NULL-checking and extra debugging which brelse() provides then
-> continue to use brelse().
+We found that level interrupts are handled in the following way in the
+Linux
+kernel:
+1. mask irq, disable it
+2. ack irq, clear it in interrupt controller.
+3. move irq, handle it in handler for the source.
+4. unmask irq, reenable it.
 
-I thought someone started to convert it. Ok, personally, I think
-NULL-check is just not needed always, and if it is needed, check it
-explicitly.
+This sequnce results in bogus interrupts in the system. The reason is
+that, after step 2 but before step 3, interrupt controller sees that the
+interrupt source is high, and will re-assert the interrupt after step 4.
+This will be a bogus interrupt, because the interrupt handler for the
+source has cleared the interrupt.
+
+We solve this issue by changing the interrupt controller to do nothing
+in step 2, ack irq, if it is a level interrupt. In step 4, unmask irq,
+we ack the interrupt controller, and then re-enable the interrupt. Since
+interrupt
+is level, and source interrupt handler only clears interrupts once in
+the
+handler, nothing will be missed.
+
+I am not sure whether we are doing the right thing, and why the Linux
+kernel
+chooses to handle level interrupt in that sequence.
+
+Thanks,
+Julie.
+
+Thanks,
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+View this message in context:
+http://www.nabble.com/level-interrupt-handling-in-the-Kernel-tp22481320p
+22481320.html
+Sent from the linux-newbie mailing list archive at Nabble.com.
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-newbie"
+in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at http://www.linux-learn.org/faqs
+
+
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
+
+
