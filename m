@@ -1,62 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbZCLNj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbZCLNoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757037AbZCLNj5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 09:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756494AbZCLNjr
+	id S1756235AbZCLNoU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 09:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbZCLNoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 09:39:47 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:47613 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755922AbZCLNjq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 09:39:46 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 12 Mar 2009 06:39:16 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Eric Dumazet <dada1@cosmosbay.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Avi Kivity <avi@redhat.com>, linux-aio <linux-aio@kvack.org>,
-       zach.brown@oracle.com, Benjamin LaHaise <bcrl@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH] fs: fput() can be called from interrupt context
-In-Reply-To: <20090311233903.f036027a.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0903120625340.6040@makko.or.mcafeemobile.com>
-References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com> <49B54143.1010607@redhat.com> <x49sklmd1fo.fsf@segfault.boston.devel.redhat.com> <49B57CB0.5020300@cosmosbay.com> <49B875F7.3030305@cosmosbay.com> <49B87CFE.4000701@cosmosbay.com>
- <49B89B22.7080303@cosmosbay.com> <20090311224712.fb8db075.akpm@linux-foundation.org> <49B8A75E.6040409@cosmosbay.com> <20090311233903.f036027a.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 12 Mar 2009 09:44:10 -0400
+Received: from www.tglx.de ([62.245.132.106]:46538 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755225AbZCLNoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 09:44:09 -0400
+Date: Thu, 12 Mar 2009 14:42:43 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Darren Hart <dvhltc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 2/6] Additional (get|put)_futex_key() fixes
+In-Reply-To: <20090312101636.GB7157@elte.hu>
+Message-ID: <alpine.LFD.2.00.0903121207520.29264@localhost.localdomain>
+References: <20090312075349.9856.83687.stgit@Aeon> <20090312075545.9856.75152.stgit@Aeon> <20090312101636.GB7157@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009, Andrew Morton wrote:
-
-> > Take the time to check how fs/aio.c handle the fput(req->ki_filp) case
-> > (or read my 2nd patch, it should spot the thing)
+On Thu, 12 Mar 2009, Ingo Molnar wrote:
 > 
-> Well yes, a kludge like that seems a bit safer.
+> * Darren Hart <dvhltc@us.ibm.com> wrote:
 > 
-> It's somewhat encouraging that we're apparently already doing fput()
-> from within keventd (although how frequently?).  There might be
-> problems with file locking, security code, etc from doing fput() from
-> an unexpected thread.  And then there are all the usual weird problem
-> with using the keventd queues which take a long time to get discovered.
+> > futex_requeue and futex_lock_pi still had some bad 
+> > (get|put)_futex_key() usage. This patch adds the missing 
+> > put_futex_keys() and corrects a goto in futex_lock_pi() to 
+> > avoid a double get.
+> > 
+> > Build and boot tested on a 4 way Intel x86_64 workstation.  
+> > Passes basic pthread_mutex and PI tests out of 
+> > ltp/testcases/realtime.
+> 
+> hm, how bad is the impact - do we need this in v2.6.29?
 
-Would it be a huge problem, performance-wise, to stop making ->f_count 
-tricks in __aio_put_req, and always offload to fput_work the task of 
-releasing the requests?
-If that's a huge problem, IMO the lower impact fix would be to use 
-aio_fput_routine to loop into a second list, releasing the eventual 
-eventfd file*. There's no need, IMO, to turn the whole fput() into 
-IRQ-callable just for this case, when we can contain it into the 
-particular KAIO+eventfd usage.
+I think so. We leak key references in some of the error/retry code
+pathes.  Darrens patch does not apply to mainline. Backport below.
 
+Thanks,
 
-- Davide
+	tglx
+---
+Subject: futex: fix key reference leaks
+From: Darren Hart <dvhltc@us.ibm.com>
+Date: Thu, 12 Mar 2009 12:10:01 +0100
 
+Impact: bugfix
 
+futex_wake_op, futex_requeue, futex_lock_pi and futex_unlock_pi still
+had some bad (get|put)_futex_key() usage. This patch adds the missing
+put_futex_keys() and corrects a goto in futex_lock_pi() to avoid a
+double get.
+
+[ tglx: backport to mainline ]
+
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+---
+
+ kernel/futex.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/kernel/futex.c
+===================================================================
+--- linux-2.6.orig/kernel/futex.c
++++ linux-2.6/kernel/futex.c
+@@ -803,6 +803,9 @@ retry:
+ 			goto retry;
+ 		}
+ 
++		put_futex_key(fshared, &key2);
++		put_futex_key(fshared, &key1);
++
+ 		ret = get_user(dummy, uaddr2);
+ 		if (ret)
+ 			return ret;
+@@ -881,12 +884,15 @@ retry:
+ 			if (hb1 != hb2)
+ 				spin_unlock(&hb2->lock);
+ 
++			put_futex_key(fshared, &key2);
++			put_futex_key(fshared, &key1);
++
+ 			ret = get_user(curval, uaddr1);
+ 
+ 			if (!ret)
+ 				goto retry;
+ 
+-			goto out_put_keys;
++			return ret;
+ 		}
+ 		if (curval != *cmpval) {
+ 			ret = -EAGAIN;
+@@ -1459,7 +1465,7 @@ retry_locked:
+ 			 */
+ 			queue_unlock(&q, hb);
+ 			cond_resched();
+-			goto retry;
++			goto retry_unlocked;
+ 
+ 		case -ESRCH:
+ 			/*
+@@ -1598,6 +1604,7 @@ uaddr_faulted:
+ 		goto retry_unlocked;
+ 	}
+ 
++	put_futex_key(fshared, &q.key);
+ 	ret = get_user(uval, uaddr);
+ 	if (!ret)
+ 		goto retry;
+@@ -1709,6 +1716,8 @@ pi_faulted:
+ 		goto retry_unlocked;
+ 	}
+ 
++	put_futex_key(fshared, &key);
++
+ 	ret = get_user(uval, uaddr);
+ 	if (!ret)
+ 		goto retry;
