@@ -1,117 +1,897 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbZCLAdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZCLAd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065AbZCLAdI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 20:33:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZCLAcy
+	id S1754575AbZCLAd2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 20:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbZCLAc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 20:32:54 -0400
-Received: from mga11.intel.com ([192.55.52.93]:52475 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750752AbZCLAcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 20:32:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,346,1233561600"; 
-   d="scan'208";a="672250743"
-Subject: Re: [PATCH] VM, x86, PAT: Change implementation of
- is_linear_pfn_mapping
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: "mingo@elte.hu" <mingo@elte.hu>,
-       "thellstrom@vmware.com" <thellstrom@vmware.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>
-In-Reply-To: <200903112309.40145.elendil@planet.nl>
-References: <498B5ADE.3090602@vmware.com> <m1tz78pdwy.fsf@fess.ebiederm.org>
-	 <498C062C.201@vmware.com> <20090304060857.GA18318@linux-os.sc.intel.com>
-	 <130CA3A191875048A0624FB523A55EC7075DA7CA@PA-EXMBX51.vmware.com>
-	 <20090310013953.GA11312@linux-os.sc.intel.com>
-	 <49B6232B.4050503@vmware.com>
-	 <1236706959.4529.56.camel@localhost.localdomain>
-	 <49B781B6.3060704@vmware.com> <20090311093338.GC12814@elte.hu>
-	 <20090311093338.GC12814@elte.hu>
-	 <20090311175452.GA1702@linux-os.sc.intel.com>
-	 <200903112309.40145.elendil@planet.nl>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 17:31:52 -0700
-Message-Id: <1236817912.4529.76.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Mar 2009 20:32:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:16665 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754044AbZCLAc4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 20:32:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=UTTgjSaZpaOVMQECX7lw+nCuJr9F6PGsSFnOsAdzqtGuMbkassDAIJTguNi0q8g6L3
+         6snQVmdG4ClrIl6QNhVOe6TYUzT1gLVN1JSq7UTH0VlA4Wu4avUUDr4KKI1qECb6H1Nq
+         JHZpAHVWMF7+gS5OrVL2sEqr9AVLNs+b0rlMc=
+Date: Thu, 12 Mar 2009 03:32:45 +0300
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <greg@kroah.com>,
+       Steve Underwood <steveu@coppice.org>, David Rowe <david@rowetel.com>
+Subject: [PATCH] Staging: echo cleanup
+Message-ID: <20090312003245.GA12794@orion>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-11 at 15:09 -0700, Frans Pop wrote:
-> Pallipadi, Venkatesh wrote:
-> > Use of vma->vm_pgoff to identify the pfnmaps that are fully
-> > mapped at mmap time is broke. vm_pgoff is set by generic mmap
-> > code even for cases where drivers are setting up the mappings
-> > at the fault time.
-> > 
-> > The problem was originally reported here.
-> > http://marc.info/?l=linux-kernel&m=123383810628583&w=2
-> > 
-> > Change is_linear_pfn_mapping logic to overload VM_NONLINEAR
-> > flag along with VM_PFNMAP to mean full PFNMAP setup at mmap
-> > time.
-> > 
-> > Acked-by: Thomas Hellstrom <thellstrom@vmware.com>
-> > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> > Signed-off-by: Suresh Siddha <suresh.b.siddha>@intel.com>
-> 
-> I've applied this patch on top of v2.6.29-rc7-143-g99adcd9 [1] and since 
-> then I've had my system, or rather X/KDE, hang several times. The last 
-> time the problem seems to have been KDE's kicker. I was running a kernel 
-> compile in a konsole window and that just continued and finished, but the 
-> keyboard was completely dead.
-> I could still ssh in from another box. 'ps' would show the top processes, 
-> but hang as well at some point (in the middle of listing KDE processes.
-> 
-> The hang was with pat enabled. I've now booted with nopat.
 
-Frans,
+before:
+			errors	lines of code	errors/KLOC
+drivers/staging/echo/	213		1701	125.2
 
-Thanks for testing this. I don't seem to reproduce this on any of my
-test systems with this patch on either tip or latest git. Do you see the
-hang on every boot or once in a while? Are things stable with nopat?
+after:
+			errors	lines of code	errors/KLOC
+drivers/staging/echo/	8		1685	4.7
 
-> The log shows (full log attached):
-> kernel: BUG: unable to handle kernel NULL pointer dereference at
-> 0000000000000008
-> kernel: IP: [<ffffffff80322504>] prio_tree_remove+0x9c/0xcc
-> kernel: PGD 7cab1067 PUD 7d644067 PMD 0
-> kernel: Oops: 0000 [#1] SMP
-> kernel: last sysfs file: /sys/class/power_supply/C23D/charge_full
-> kernel: CPU 1
-> kernel: Pid: 5415, comm: kicker Not tainted 2.6.29-rc7 #4 HP Comp
-> aq 2510p Notebook PC
-> kernel: RIP: 0010:[<ffffffff80322504>]  [<ffffffff80322504>] prio
-> _tree_remove+0x9c/0xcc
-> [...]
-> kernel: Call Trace:
-> kernel:  [<ffffffff803225df>] prio_tree_insert+0xab/0x22a
-> kernel:  [<ffffffff8027e90d>] vma_prio_tree_insert+0x23/0xc2
-> kernel:  [<ffffffff802864af>] __vma_link_file+0x70/0x72
-> kernel:  [<ffffffff80286c15>] vma_link+0x7d/0xab
-> kernel:  [<ffffffff802881ea>] mmap_region+0x313/0x479
-> kernel:  [<ffffffff80288646>] do_mmap_pgoff+0x2f6/0x35c
-> kernel:  [<ffffffff802ea99a>] do_shmat+0x28a/0x36c
-> kernel:  [<ffffffff802eaa8d>] sys_shmat+0x11/0x1c
-> kernel:  [<ffffffff8020c25b>] system_call_fastpath+0x16/0x1b
-> 
-> From the symptoms I strongly suspect this patch to be the culprit.
-> 
-> [1] Together with some other patches (mainly Rafael's latest patchset 
-> for "Rework disabling of interrupts during suspend-resume"), but I doubt 
-> any of those are related to this issue.
-> 
+Compile tested.
 
-Nothing obvious strikes me with this patch and above OOPs. Can you
-please try this patch alone on latest git and check whether you still
-see the failures?
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-Thanks,
-Venki
+ drivers/staging/echo/bit_operations.h |   30 ++--
+ drivers/staging/echo/echo.c           |   42 ++--
+ drivers/staging/echo/echo.h           |    2 -
+ drivers/staging/echo/fir.h            |   28 +--
+ drivers/staging/echo/mmx.h            |  408 ++++++++++++++++----------------
+ 5 files changed, 247 insertions(+), 263 deletions(-)
 
+diff --git a/drivers/staging/echo/bit_operations.h b/drivers/staging/echo/bit_operations.h
+index cecdcf3..4c4ccbc 100644
+--- a/drivers/staging/echo/bit_operations.h
++++ b/drivers/staging/echo/bit_operations.h
+@@ -21,8 +21,6 @@
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- * $Id: bit_operations.h,v 1.11 2006/11/28 15:37:03 steveu Exp $
+  */
+ 
+ /*! \file */
+@@ -34,7 +32,7 @@
+ /*! \brief Find the bit position of the highest set bit in a word
+     \param bits The word to be searched
+     \return The bit number of the highest set bit, or -1 if the word is zero. */
+-static __inline__ int top_bit(unsigned int bits)
++static inline int top_bit(unsigned int bits)
+ {
+ 	int res;
+ 
+@@ -50,7 +48,7 @@ static __inline__ int top_bit(unsigned int bits)
+ /*! \brief Find the bit position of the lowest set bit in a word
+     \param bits The word to be searched
+     \return The bit number of the lowest set bit, or -1 if the word is zero. */
+-static __inline__ int bottom_bit(unsigned int bits)
++static inline int bottom_bit(unsigned int bits)
+ {
+ 	int res;
+ 
+@@ -63,7 +61,7 @@ static __inline__ int bottom_bit(unsigned int bits)
+ 	return res;
+ }
+ #else
+-static __inline__ int top_bit(unsigned int bits)
++static inline int top_bit(unsigned int bits)
+ {
+ 	int i;
+ 
+@@ -93,7 +91,7 @@ static __inline__ int top_bit(unsigned int bits)
+ 	return i;
+ }
+ 
+-static __inline__ int bottom_bit(unsigned int bits)
++static inline int bottom_bit(unsigned int bits)
+ {
+ 	int i;
+ 
+@@ -127,7 +125,7 @@ static __inline__ int bottom_bit(unsigned int bits)
+ /*! \brief Bit reverse a byte.
+     \param data The byte to be reversed.
+     \return The bit reversed version of data. */
+-static __inline__ uint8_t bit_reverse8(uint8_t x)
++static inline uint8_t bit_reverse8(uint8_t x)
+ {
+ #if defined(__i386__)  ||  defined(__x86_64__)
+ 	/* If multiply is fast */
+@@ -172,32 +170,32 @@ uint32_t make_mask32(uint32_t x);
+ uint16_t make_mask16(uint16_t x);
+ 
+ /*! \brief Find the least significant one in a word, and return a word
+-           with just that bit set.
++	    with just that bit set.
+     \param x The word to be searched.
+     \return The word with the single set bit. */
+-static __inline__ uint32_t least_significant_one32(uint32_t x)
++static inline uint32_t least_significant_one32(uint32_t x)
+ {
+-	return (x & (-(int32_t) x));
++	return x & (-(int32_t) x);
+ }
+ 
+ /*! \brief Find the most significant one in a word, and return a word
+-           with just that bit set.
++	    with just that bit set.
+     \param x The word to be searched.
+     \return The word with the single set bit. */
+-static __inline__ uint32_t most_significant_one32(uint32_t x)
++static inline uint32_t most_significant_one32(uint32_t x)
+ {
+ #if defined(__i386__)  ||  defined(__x86_64__)
+ 	return 1 << top_bit(x);
+ #else
+ 	x = make_mask32(x);
+-	return (x ^ (x >> 1));
++	return x ^ (x >> 1);
+ #endif
+ }
+ 
+ /*! \brief Find the parity of a byte.
+     \param x The byte to be checked.
+     \return 1 for odd, or 0 for even. */
+-static __inline__ int parity8(uint8_t x)
++static inline int parity8(uint8_t x)
+ {
+ 	x = (x ^ (x >> 4)) & 0x0F;
+ 	return (0x6996 >> x) & 1;
+@@ -206,7 +204,7 @@ static __inline__ int parity8(uint8_t x)
+ /*! \brief Find the parity of a 16 bit word.
+     \param x The word to be checked.
+     \return 1 for odd, or 0 for even. */
+-static __inline__ int parity16(uint16_t x)
++static inline int parity16(uint16_t x)
+ {
+ 	x ^= (x >> 8);
+ 	x = (x ^ (x >> 4)) & 0x0F;
+@@ -216,7 +214,7 @@ static __inline__ int parity16(uint16_t x)
+ /*! \brief Find the parity of a 32 bit word.
+     \param x The word to be checked.
+     \return 1 for odd, or 0 for even. */
+-static __inline__ int parity32(uint32_t x)
++static inline int parity32(uint32_t x)
+ {
+ 	x ^= (x >> 16);
+ 	x ^= (x >> 8);
+diff --git a/drivers/staging/echo/echo.c b/drivers/staging/echo/echo.c
+index fd4007e..6d7217e 100644
+--- a/drivers/staging/echo/echo.c
++++ b/drivers/staging/echo/echo.c
+@@ -27,8 +27,6 @@
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- * $Id: echo.c,v 1.20 2006/12/01 18:00:48 steveu Exp $
+  */
+ 
+ /*! \file */
+@@ -113,17 +111,17 @@
+ 
+ #define MIN_TX_POWER_FOR_ADAPTION   64
+ #define MIN_RX_POWER_FOR_ADAPTION   64
+-#define DTD_HANGOVER               600	/* 600 samples, or 75ms     */
+-#define DC_LOG2BETA                  3	/* log2() of DC filter Beta */
++#define DTD_HANGOVER		 600	/* 600 samples, or 75ms     */
++#define DC_LOG2BETA		    3	/* log2() of DC filter Beta */
+ 
+ /*-----------------------------------------------------------------------*\
+-                               FUNCTIONS
++				   FUNCTIONS
+ \*-----------------------------------------------------------------------*/
+ 
+ /* adapting coeffs using the traditional stochastic descent (N)LMS algorithm */
+ 
+ #ifdef __bfin__
+-static void __inline__ lms_adapt_bg(struct oslec_state *ec, int clean,
++static inline void lms_adapt_bg(struct oslec_state *ec, int clean,
+ 				    int shift)
+ {
+ 	int i, j;
+@@ -147,13 +145,13 @@ static void __inline__ lms_adapt_bg(struct oslec_state *ec, int clean,
+ 
+ 	/* st: and en: help us locate the assembler in echo.s */
+ 
+-	//asm("st:");
++	/* asm("st:"); */
+ 	n = ec->taps;
+ 	for (i = 0, j = offset2; i < n; i++, j++) {
+ 		exp = *phist++ * factor;
+ 		ec->fir_taps16[1][i] += (int16_t) ((exp + (1 << 14)) >> 15);
+ 	}
+-	//asm("en:");
++	/* asm("en:"); */
+ 
+ 	/* Note the asm for the inner loop above generated by Blackfin gcc
+ 	   4.1.1 is pretty good (note even parallel instructions used):
+@@ -195,7 +193,7 @@ static void __inline__ lms_adapt_bg(struct oslec_state *ec, int clean,
+ */
+ 
+ #else
+-static __inline__ void lms_adapt_bg(struct oslec_state *ec, int clean,
++static inline void lms_adapt_bg(struct oslec_state *ec, int clean,
+ 				    int shift)
+ {
+ 	int i;
+@@ -249,9 +247,8 @@ struct oslec_state *oslec_create(int len, int adaption_mode)
+ 	fir16_create(&ec->fir_state, ec->fir_taps16[0], ec->taps);
+ 	fir16_create(&ec->fir_state_bg, ec->fir_taps16[1], ec->taps);
+ 
+-	for (i = 0; i < 5; i++) {
++	for (i = 0; i < 5; i++)
+ 		ec->xvtx[i] = ec->yvtx[i] = ec->xvrx[i] = ec->yvrx[i] = 0;
+-	}
+ 
+ 	ec->cng_level = 1000;
+ 	oslec_adaption_mode(ec, adaption_mode);
+@@ -271,14 +268,13 @@ struct oslec_state *oslec_create(int len, int adaption_mode)
+ 
+ 	return ec;
+ 
+-      error_oom:
++error_oom:
+ 	for (i = 0; i < 2; i++)
+ 		kfree(ec->fir_taps16[i]);
+ 
+ 	kfree(ec);
+ 	return NULL;
+ }
+-
+ EXPORT_SYMBOL_GPL(oslec_create);
+ 
+ void oslec_free(struct oslec_state *ec)
+@@ -292,14 +288,12 @@ void oslec_free(struct oslec_state *ec)
+ 	kfree(ec->snapshot);
+ 	kfree(ec);
+ }
+-
+ EXPORT_SYMBOL_GPL(oslec_free);
+ 
+ void oslec_adaption_mode(struct oslec_state *ec, int adaption_mode)
+ {
+ 	ec->adaption_mode = adaption_mode;
+ }
+-
+ EXPORT_SYMBOL_GPL(oslec_adaption_mode);
+ 
+ void oslec_flush(struct oslec_state *ec)
+@@ -326,14 +320,12 @@ void oslec_flush(struct oslec_state *ec)
+ 	ec->curr_pos = ec->taps - 1;
+ 	ec->Pstates = 0;
+ }
+-
+ EXPORT_SYMBOL_GPL(oslec_flush);
+ 
+ void oslec_snapshot(struct oslec_state *ec)
+ {
+ 	memcpy(ec->snapshot, ec->fir_taps16[0], ec->taps * sizeof(int16_t));
+ }
+-
+ EXPORT_SYMBOL_GPL(oslec_snapshot);
+ 
+ /* Dual Path Echo Canceller ------------------------------------------------*/
+@@ -399,7 +391,7 @@ int16_t oslec_update(struct oslec_state *ec, int16_t tx, int16_t rx)
+ 		/* efficient "out with the old and in with the new" algorithm so
+ 		   we don't have to recalculate over the whole block of
+ 		   samples. */
+-		new = (int)tx *(int)tx;
++		new = (int)tx * (int)tx;
+ 		old = (int)ec->fir_state.history[ec->fir_state.curr_pos] *
+ 		    (int)ec->fir_state.history[ec->fir_state.curr_pos];
+ 		ec->Pstates +=
+@@ -498,15 +490,15 @@ int16_t oslec_update(struct oslec_state *ec, int16_t tx, int16_t rx)
+ 
+ 	if ((ec->adaption_mode & ECHO_CAN_USE_ADAPTION) &&
+ 	    (ec->nonupdate_dwell == 0) &&
+-	    (8 * ec->Lclean_bg <
+-	     7 * ec->Lclean) /* (ec->Lclean_bg < 0.875*ec->Lclean) */ &&
+-	    (8 * ec->Lclean_bg <
+-	     ec->Ltx) /* (ec->Lclean_bg < 0.125*ec->Ltx)    */ ) {
++	    /* (ec->Lclean_bg < 0.875*ec->Lclean) */
++	    (8 * ec->Lclean_bg < 7 * ec->Lclean) &&
++	    /* (ec->Lclean_bg < 0.125*ec->Ltx) */
++	    (8 * ec->Lclean_bg < ec->Ltx)) {
+ 		if (ec->cond_met == 6) {
+ 			/* BG filter has had better results for 6 consecutive samples */
+ 			ec->adapt = 1;
+ 			memcpy(ec->fir_taps16[0], ec->fir_taps16[1],
+-			       ec->taps * sizeof(int16_t));
++				ec->taps * sizeof(int16_t));
+ 		} else
+ 			ec->cond_met++;
+ 	} else
+@@ -580,7 +572,6 @@ int16_t oslec_update(struct oslec_state *ec, int16_t tx, int16_t rx)
+ 
+ 	return (int16_t) ec->clean_nlp << 1;
+ }
+-
+ EXPORT_SYMBOL_GPL(oslec_update);
+ 
+ /* This function is seperated from the echo canceller is it is usually called
+@@ -604,7 +595,7 @@ EXPORT_SYMBOL_GPL(oslec_update);
+    precision, which noise shapes things, giving very clean DC removal.
+ */
+ 
+-int16_t oslec_hpf_tx(struct oslec_state * ec, int16_t tx)
++int16_t oslec_hpf_tx(struct oslec_state *ec, int16_t tx)
+ {
+ 	int tmp, tmp1;
+ 
+@@ -629,7 +620,6 @@ int16_t oslec_hpf_tx(struct oslec_state * ec, int16_t tx)
+ 
+ 	return tx;
+ }
+-
+ EXPORT_SYMBOL_GPL(oslec_hpf_tx);
+ 
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/staging/echo/echo.h b/drivers/staging/echo/echo.h
+index 34fb816..c835e5c 100644
+--- a/drivers/staging/echo/echo.h
++++ b/drivers/staging/echo/echo.h
+@@ -23,8 +23,6 @@
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- * $Id: echo.h,v 1.9 2006/10/24 13:45:28 steveu Exp $
+  */
+ 
+ #ifndef __ECHO_H
+diff --git a/drivers/staging/echo/fir.h b/drivers/staging/echo/fir.h
+index d35f168..ac6c553 100644
+--- a/drivers/staging/echo/fir.h
++++ b/drivers/staging/echo/fir.h
+@@ -21,8 +21,6 @@
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- * $Id: fir.h,v 1.8 2006/10/24 13:45:28 steveu Exp $
+  */
+ 
+ /*! \page fir_page FIR filtering
+@@ -102,8 +100,8 @@ struct fir_float_state_t {
+ 	float *history;
+ };
+ 
+-static __inline__ const int16_t *fir16_create(struct fir16_state_t *fir,
+-					      const int16_t * coeffs, int taps)
++static inline const int16_t *fir16_create(struct fir16_state_t *fir,
++					      const int16_t *coeffs, int taps)
+ {
+ 	fir->taps = taps;
+ 	fir->curr_pos = taps - 1;
+@@ -116,7 +114,7 @@ static __inline__ const int16_t *fir16_create(struct fir16_state_t *fir,
+ 	return fir->history;
+ }
+ 
+-static __inline__ void fir16_flush(struct fir16_state_t *fir)
++static inline void fir16_flush(struct fir16_state_t *fir)
+ {
+ #if defined(USE_MMX)  ||  defined(USE_SSE2) || defined(__bfin__)
+ 	memset(fir->history, 0, 2 * fir->taps * sizeof(int16_t));
+@@ -125,7 +123,7 @@ static __inline__ void fir16_flush(struct fir16_state_t *fir)
+ #endif
+ }
+ 
+-static __inline__ void fir16_free(struct fir16_state_t *fir)
++static inline void fir16_free(struct fir16_state_t *fir)
+ {
+ 	kfree(fir->history);
+ }
+@@ -148,16 +146,16 @@ static inline int32_t dot_asm(short *x, short *y, int len)
+ 		"A0 += R0.L*R1.L (IS);\n\t"
+ 		"R0 = A0;\n\t"
+ 		"%0 = R0;\n\t"
+-		:"=&d"(dot)
+-		:"a"(x), "a"(y), "a"(len)
+-		:"I0", "I1", "A1", "A0", "R0", "R1"
++		: "=&d"(dot)
++		: "a"(x), "a"(y), "a"(len)
++		: "I0", "I1", "A1", "A0", "R0", "R1"
+ 	);
+ 
+ 	return dot;
+ }
+ #endif
+ 
+-static __inline__ int16_t fir16(struct fir16_state_t *fir, int16_t sample)
++static inline int16_t fir16(struct fir16_state_t *fir, int16_t sample)
+ {
+ 	int32_t y;
+ #if defined(USE_MMX)
+@@ -250,8 +248,8 @@ static __inline__ int16_t fir16(struct fir16_state_t *fir, int16_t sample)
+ 	return (int16_t) (y >> 15);
+ }
+ 
+-static __inline__ const int16_t *fir32_create(struct fir32_state_t *fir,
+-					      const int32_t * coeffs, int taps)
++static inline const int16_t *fir32_create(struct fir32_state_t *fir,
++					      const int32_t *coeffs, int taps)
+ {
+ 	fir->taps = taps;
+ 	fir->curr_pos = taps - 1;
+@@ -260,17 +258,17 @@ static __inline__ const int16_t *fir32_create(struct fir32_state_t *fir,
+ 	return fir->history;
+ }
+ 
+-static __inline__ void fir32_flush(struct fir32_state_t *fir)
++static inline void fir32_flush(struct fir32_state_t *fir)
+ {
+ 	memset(fir->history, 0, fir->taps * sizeof(int16_t));
+ }
+ 
+-static __inline__ void fir32_free(struct fir32_state_t *fir)
++static inline void fir32_free(struct fir32_state_t *fir)
+ {
+ 	kfree(fir->history);
+ }
+ 
+-static __inline__ int16_t fir32(struct fir32_state_t *fir, int16_t sample)
++static inline int16_t fir32(struct fir32_state_t *fir, int16_t sample)
+ {
+ 	int i;
+ 	int32_t y;
+diff --git a/drivers/staging/echo/mmx.h b/drivers/staging/echo/mmx.h
+index 44e5cfe..c1dcd72 100644
+--- a/drivers/staging/echo/mmx.h
++++ b/drivers/staging/echo/mmx.h
+@@ -44,238 +44,238 @@ union xmm_t {
+ 	char b[16];
+ };
+ 
+-#define         mmx_i2r(op,imm,reg) \
+-        __asm__ __volatile__ (#op " %0, %%" #reg \
+-                              : /* nothing */ \
+-                              : "i" (imm) )
+-
+-#define         mmx_m2r(op,mem,reg) \
+-        __asm__ __volatile__ (#op " %0, %%" #reg \
+-                              : /* nothing */ \
+-                              : "m" (mem))
+-
+-#define         mmx_r2m(op,reg,mem) \
+-        __asm__ __volatile__ (#op " %%" #reg ", %0" \
+-                              : "=m" (mem) \
+-                              : /* nothing */ )
+-
+-#define         mmx_r2r(op,regs,regd) \
+-        __asm__ __volatile__ (#op " %" #regs ", %" #regd)
+-
+-#define         emms() __asm__ __volatile__ ("emms")
+-
+-#define         movd_m2r(var,reg)           mmx_m2r (movd, var, reg)
+-#define         movd_r2m(reg,var)           mmx_r2m (movd, reg, var)
+-#define         movd_r2r(regs,regd)         mmx_r2r (movd, regs, regd)
+-
+-#define         movq_m2r(var,reg)           mmx_m2r (movq, var, reg)
+-#define         movq_r2m(reg,var)           mmx_r2m (movq, reg, var)
+-#define         movq_r2r(regs,regd)         mmx_r2r (movq, regs, regd)
+-
+-#define         packssdw_m2r(var,reg)       mmx_m2r (packssdw, var, reg)
+-#define         packssdw_r2r(regs,regd)     mmx_r2r (packssdw, regs, regd)
+-#define         packsswb_m2r(var,reg)       mmx_m2r (packsswb, var, reg)
+-#define         packsswb_r2r(regs,regd)     mmx_r2r (packsswb, regs, regd)
+-
+-#define         packuswb_m2r(var,reg)       mmx_m2r (packuswb, var, reg)
+-#define         packuswb_r2r(regs,regd)     mmx_r2r (packuswb, regs, regd)
+-
+-#define         paddb_m2r(var,reg)          mmx_m2r (paddb, var, reg)
+-#define         paddb_r2r(regs,regd)        mmx_r2r (paddb, regs, regd)
+-#define         paddd_m2r(var,reg)          mmx_m2r (paddd, var, reg)
+-#define         paddd_r2r(regs,regd)        mmx_r2r (paddd, regs, regd)
+-#define         paddw_m2r(var,reg)          mmx_m2r (paddw, var, reg)
+-#define         paddw_r2r(regs,regd)        mmx_r2r (paddw, regs, regd)
+-
+-#define         paddsb_m2r(var,reg)         mmx_m2r (paddsb, var, reg)
+-#define         paddsb_r2r(regs,regd)       mmx_r2r (paddsb, regs, regd)
+-#define         paddsw_m2r(var,reg)         mmx_m2r (paddsw, var, reg)
+-#define         paddsw_r2r(regs,regd)       mmx_r2r (paddsw, regs, regd)
+-
+-#define         paddusb_m2r(var,reg)        mmx_m2r (paddusb, var, reg)
+-#define         paddusb_r2r(regs,regd)      mmx_r2r (paddusb, regs, regd)
+-#define         paddusw_m2r(var,reg)        mmx_m2r (paddusw, var, reg)
+-#define         paddusw_r2r(regs,regd)      mmx_r2r (paddusw, regs, regd)
+-
+-#define         pand_m2r(var,reg)           mmx_m2r (pand, var, reg)
+-#define         pand_r2r(regs,regd)         mmx_r2r (pand, regs, regd)
+-
+-#define         pandn_m2r(var,reg)          mmx_m2r (pandn, var, reg)
+-#define         pandn_r2r(regs,regd)        mmx_r2r (pandn, regs, regd)
+-
+-#define         pcmpeqb_m2r(var,reg)        mmx_m2r (pcmpeqb, var, reg)
+-#define         pcmpeqb_r2r(regs,regd)      mmx_r2r (pcmpeqb, regs, regd)
+-#define         pcmpeqd_m2r(var,reg)        mmx_m2r (pcmpeqd, var, reg)
+-#define         pcmpeqd_r2r(regs,regd)      mmx_r2r (pcmpeqd, regs, regd)
+-#define         pcmpeqw_m2r(var,reg)        mmx_m2r (pcmpeqw, var, reg)
+-#define         pcmpeqw_r2r(regs,regd)      mmx_r2r (pcmpeqw, regs, regd)
+-
+-#define         pcmpgtb_m2r(var,reg)        mmx_m2r (pcmpgtb, var, reg)
+-#define         pcmpgtb_r2r(regs,regd)      mmx_r2r (pcmpgtb, regs, regd)
+-#define         pcmpgtd_m2r(var,reg)        mmx_m2r (pcmpgtd, var, reg)
+-#define         pcmpgtd_r2r(regs,regd)      mmx_r2r (pcmpgtd, regs, regd)
+-#define         pcmpgtw_m2r(var,reg)        mmx_m2r (pcmpgtw, var, reg)
+-#define         pcmpgtw_r2r(regs,regd)      mmx_r2r (pcmpgtw, regs, regd)
+-
+-#define         pmaddwd_m2r(var,reg)        mmx_m2r (pmaddwd, var, reg)
+-#define         pmaddwd_r2r(regs,regd)      mmx_r2r (pmaddwd, regs, regd)
+-
+-#define         pmulhw_m2r(var,reg)         mmx_m2r (pmulhw, var, reg)
+-#define         pmulhw_r2r(regs,regd)       mmx_r2r (pmulhw, regs, regd)
+-
+-#define         pmullw_m2r(var,reg)         mmx_m2r (pmullw, var, reg)
+-#define         pmullw_r2r(regs,regd)       mmx_r2r (pmullw, regs, regd)
+-
+-#define         por_m2r(var,reg)            mmx_m2r (por, var, reg)
+-#define         por_r2r(regs,regd)          mmx_r2r (por, regs, regd)
+-
+-#define         pslld_i2r(imm,reg)          mmx_i2r (pslld, imm, reg)
+-#define         pslld_m2r(var,reg)          mmx_m2r (pslld, var, reg)
+-#define         pslld_r2r(regs,regd)        mmx_r2r (pslld, regs, regd)
+-#define         psllq_i2r(imm,reg)          mmx_i2r (psllq, imm, reg)
+-#define         psllq_m2r(var,reg)          mmx_m2r (psllq, var, reg)
+-#define         psllq_r2r(regs,regd)        mmx_r2r (psllq, regs, regd)
+-#define         psllw_i2r(imm,reg)          mmx_i2r (psllw, imm, reg)
+-#define         psllw_m2r(var,reg)          mmx_m2r (psllw, var, reg)
+-#define         psllw_r2r(regs,regd)        mmx_r2r (psllw, regs, regd)
+-
+-#define         psrad_i2r(imm,reg)          mmx_i2r (psrad, imm, reg)
+-#define         psrad_m2r(var,reg)          mmx_m2r (psrad, var, reg)
+-#define         psrad_r2r(regs,regd)        mmx_r2r (psrad, regs, regd)
+-#define         psraw_i2r(imm,reg)          mmx_i2r (psraw, imm, reg)
+-#define         psraw_m2r(var,reg)          mmx_m2r (psraw, var, reg)
+-#define         psraw_r2r(regs,regd)        mmx_r2r (psraw, regs, regd)
+-
+-#define         psrld_i2r(imm,reg)          mmx_i2r (psrld, imm, reg)
+-#define         psrld_m2r(var,reg)          mmx_m2r (psrld, var, reg)
+-#define         psrld_r2r(regs,regd)        mmx_r2r (psrld, regs, regd)
+-#define         psrlq_i2r(imm,reg)          mmx_i2r (psrlq, imm, reg)
+-#define         psrlq_m2r(var,reg)          mmx_m2r (psrlq, var, reg)
+-#define         psrlq_r2r(regs,regd)        mmx_r2r (psrlq, regs, regd)
+-#define         psrlw_i2r(imm,reg)          mmx_i2r (psrlw, imm, reg)
+-#define         psrlw_m2r(var,reg)          mmx_m2r (psrlw, var, reg)
+-#define         psrlw_r2r(regs,regd)        mmx_r2r (psrlw, regs, regd)
+-
+-#define         psubb_m2r(var,reg)          mmx_m2r (psubb, var, reg)
+-#define         psubb_r2r(regs,regd)        mmx_r2r (psubb, regs, regd)
+-#define         psubd_m2r(var,reg)          mmx_m2r (psubd, var, reg)
+-#define         psubd_r2r(regs,regd)        mmx_r2r (psubd, regs, regd)
+-#define         psubw_m2r(var,reg)          mmx_m2r (psubw, var, reg)
+-#define         psubw_r2r(regs,regd)        mmx_r2r (psubw, regs, regd)
+-
+-#define         psubsb_m2r(var,reg)         mmx_m2r (psubsb, var, reg)
+-#define         psubsb_r2r(regs,regd)       mmx_r2r (psubsb, regs, regd)
+-#define         psubsw_m2r(var,reg)         mmx_m2r (psubsw, var, reg)
+-#define         psubsw_r2r(regs,regd)       mmx_r2r (psubsw, regs, regd)
+-
+-#define         psubusb_m2r(var,reg)        mmx_m2r (psubusb, var, reg)
+-#define         psubusb_r2r(regs,regd)      mmx_r2r (psubusb, regs, regd)
+-#define         psubusw_m2r(var,reg)        mmx_m2r (psubusw, var, reg)
+-#define         psubusw_r2r(regs,regd)      mmx_r2r (psubusw, regs, regd)
+-
+-#define         punpckhbw_m2r(var,reg)      mmx_m2r (punpckhbw, var, reg)
+-#define         punpckhbw_r2r(regs,regd)    mmx_r2r (punpckhbw, regs, regd)
+-#define         punpckhdq_m2r(var,reg)      mmx_m2r (punpckhdq, var, reg)
+-#define         punpckhdq_r2r(regs,regd)    mmx_r2r (punpckhdq, regs, regd)
+-#define         punpckhwd_m2r(var,reg)      mmx_m2r (punpckhwd, var, reg)
+-#define         punpckhwd_r2r(regs,regd)    mmx_r2r (punpckhwd, regs, regd)
+-
+-#define         punpcklbw_m2r(var,reg)      mmx_m2r (punpcklbw, var, reg)
+-#define         punpcklbw_r2r(regs,regd)    mmx_r2r (punpcklbw, regs, regd)
+-#define         punpckldq_m2r(var,reg)      mmx_m2r (punpckldq, var, reg)
+-#define         punpckldq_r2r(regs,regd)    mmx_r2r (punpckldq, regs, regd)
+-#define         punpcklwd_m2r(var,reg)      mmx_m2r (punpcklwd, var, reg)
+-#define         punpcklwd_r2r(regs,regd)    mmx_r2r (punpcklwd, regs, regd)
+-
+-#define         pxor_m2r(var,reg)           mmx_m2r (pxor, var, reg)
+-#define         pxor_r2r(regs,regd)         mmx_r2r (pxor, regs, regd)
++#define	mmx_i2r(op, imm, reg) \
++	__asm__ __volatile__ (#op " %0, %%" #reg \
++				: /* nothing */ \
++				: "i" (imm))
++
++#define	mmx_m2r(op, mem, reg) \
++	__asm__ __volatile__ (#op " %0, %%" #reg \
++				: /* nothing */ \
++				: "m" (mem))
++
++#define	mmx_r2m(op, reg, mem) \
++	__asm__ __volatile__ (#op " %%" #reg ", %0" \
++				: "=m" (mem) \
++				: /* nothing */)
++
++#define	mmx_r2r(op, regs, regd) \
++	__asm__ __volatile__ (#op " %" #regs ", %" #regd)
++
++#define	emms() __asm__ __volatile__ ("emms")
++
++#define	movd_m2r(var, reg)	mmx_m2r(movd, var, reg)
++#define	movd_r2m(reg, var)	mmx_r2m(movd, reg, var)
++#define	movd_r2r(regs, regd)	mmx_r2r(movd, regs, regd)
++
++#define	movq_m2r(var, reg)	mmx_m2r(movq, var, reg)
++#define	movq_r2m(reg, var)	mmx_r2m(movq, reg, var)
++#define	movq_r2r(regs, regd)	mmx_r2r(movq, regs, regd)
++
++#define	packssdw_m2r(var, reg)		mmx_m2r(packssdw, var, reg)
++#define	packssdw_r2r(regs, regd)	mmx_r2r(packssdw, regs, regd)
++#define	packsswb_m2r(var, reg)		mmx_m2r(packsswb, var, reg)
++#define	packsswb_r2r(regs, regd)	mmx_r2r(packsswb, regs, regd)
++
++#define	packuswb_m2r(var, reg)		mmx_m2r(packuswb, var, reg)
++#define	packuswb_r2r(regs, regd)	mmx_r2r(packuswb, regs, regd)
++
++#define	paddb_m2r(var, reg)	mmx_m2r(paddb, var, reg)
++#define	paddb_r2r(regs, regd)	mmx_r2r(paddb, regs, regd)
++#define	paddd_m2r(var, reg)	mmx_m2r(paddd, var, reg)
++#define	paddd_r2r(regs, regd)	mmx_r2r(paddd, regs, regd)
++#define	paddw_m2r(var, reg)	mmx_m2r(paddw, var, reg)
++#define	paddw_r2r(regs, regd)	mmx_r2r(paddw, regs, regd)
++
++#define	paddsb_m2r(var, reg)	mmx_m2r(paddsb, var, reg)
++#define	paddsb_r2r(regs, regd)	mmx_r2r(paddsb, regs, regd)
++#define	paddsw_m2r(var, reg)	mmx_m2r(paddsw, var, reg)
++#define	paddsw_r2r(regs, regd)	mmx_r2r(paddsw, regs, regd)
++
++#define	paddusb_m2r(var, reg)	mmx_m2r(paddusb, var, reg)
++#define	paddusb_r2r(regs, regd)	mmx_r2r(paddusb, regs, regd)
++#define	paddusw_m2r(var, reg)	mmx_m2r(paddusw, var, reg)
++#define	paddusw_r2r(regs, regd)	mmx_r2r(paddusw, regs, regd)
++
++#define	pand_m2r(var, reg)	mmx_m2r(pand, var, reg)
++#define	pand_r2r(regs, regd)	mmx_r2r(pand, regs, regd)
++
++#define	pandn_m2r(var, reg)	mmx_m2r(pandn, var, reg)
++#define	pandn_r2r(regs, regd)	mmx_r2r(pandn, regs, regd)
++
++#define	pcmpeqb_m2r(var, reg)	mmx_m2r(pcmpeqb, var, reg)
++#define	pcmpeqb_r2r(regs, regd)	mmx_r2r(pcmpeqb, regs, regd)
++#define	pcmpeqd_m2r(var, reg)	mmx_m2r(pcmpeqd, var, reg)
++#define	pcmpeqd_r2r(regs, regd)	mmx_r2r(pcmpeqd, regs, regd)
++#define	pcmpeqw_m2r(var, reg)	mmx_m2r(pcmpeqw, var, reg)
++#define	pcmpeqw_r2r(regs, regd)	mmx_r2r(pcmpeqw, regs, regd)
++
++#define	pcmpgtb_m2r(var, reg)	mmx_m2r(pcmpgtb, var, reg)
++#define	pcmpgtb_r2r(regs, regd)	mmx_r2r(pcmpgtb, regs, regd)
++#define	pcmpgtd_m2r(var, reg)	mmx_m2r(pcmpgtd, var, reg)
++#define	pcmpgtd_r2r(regs, regd)	mmx_r2r(pcmpgtd, regs, regd)
++#define	pcmpgtw_m2r(var, reg)	mmx_m2r(pcmpgtw, var, reg)
++#define	pcmpgtw_r2r(regs, regd)	mmx_r2r(pcmpgtw, regs, regd)
++
++#define	pmaddwd_m2r(var, reg)	mmx_m2r(pmaddwd, var, reg)
++#define	pmaddwd_r2r(regs, regd)	mmx_r2r(pmaddwd, regs, regd)
++
++#define	pmulhw_m2r(var, reg)	mmx_m2r(pmulhw, var, reg)
++#define	pmulhw_r2r(regs, regd)	mmx_r2r(pmulhw, regs, regd)
++
++#define	pmullw_m2r(var, reg)	mmx_m2r(pmullw, var, reg)
++#define	pmullw_r2r(regs, regd)	mmx_r2r(pmullw, regs, regd)
++
++#define	por_m2r(var, reg)	mmx_m2r(por, var, reg)
++#define	por_r2r(regs, regd)	mmx_r2r(por, regs, regd)
++
++#define	pslld_i2r(imm, reg)	mmx_i2r(pslld, imm, reg)
++#define	pslld_m2r(var, reg)	mmx_m2r(pslld, var, reg)
++#define	pslld_r2r(regs, regd)	mmx_r2r(pslld, regs, regd)
++#define	psllq_i2r(imm, reg)	mmx_i2r(psllq, imm, reg)
++#define	psllq_m2r(var, reg)	mmx_m2r(psllq, var, reg)
++#define	psllq_r2r(regs, regd)	mmx_r2r(psllq, regs, regd)
++#define	psllw_i2r(imm, reg)	mmx_i2r(psllw, imm, reg)
++#define	psllw_m2r(var, reg)	mmx_m2r(psllw, var, reg)
++#define	psllw_r2r(regs, regd)	mmx_r2r(psllw, regs, regd)
++
++#define	psrad_i2r(imm, reg)	mmx_i2r(psrad, imm, reg)
++#define	psrad_m2r(var, reg)	mmx_m2r(psrad, var, reg)
++#define	psrad_r2r(regs, regd)	mmx_r2r(psrad, regs, regd)
++#define	psraw_i2r(imm, reg)	mmx_i2r(psraw, imm, reg)
++#define	psraw_m2r(var, reg)	mmx_m2r(psraw, var, reg)
++#define	psraw_r2r(regs, regd)	mmx_r2r(psraw, regs, regd)
++
++#define	psrld_i2r(imm, reg)	mmx_i2r(psrld, imm, reg)
++#define	psrld_m2r(var, reg)	mmx_m2r(psrld, var, reg)
++#define	psrld_r2r(regs, regd)	mmx_r2r(psrld, regs, regd)
++#define	psrlq_i2r(imm, reg)	mmx_i2r(psrlq, imm, reg)
++#define	psrlq_m2r(var, reg)	mmx_m2r(psrlq, var, reg)
++#define	psrlq_r2r(regs, regd)	mmx_r2r(psrlq, regs, regd)
++#define	psrlw_i2r(imm, reg)	mmx_i2r(psrlw, imm, reg)
++#define	psrlw_m2r(var, reg)	mmx_m2r(psrlw, var, reg)
++#define	psrlw_r2r(regs, regd)	mmx_r2r(psrlw, regs, regd)
++
++#define	psubb_m2r(var, reg)	mmx_m2r(psubb, var, reg)
++#define	psubb_r2r(regs, regd)	mmx_r2r(psubb, regs, regd)
++#define	psubd_m2r(var, reg)	mmx_m2r(psubd, var, reg)
++#define	psubd_r2r(regs, regd)	mmx_r2r(psubd, regs, regd)
++#define	psubw_m2r(var, reg)	mmx_m2r(psubw, var, reg)
++#define	psubw_r2r(regs, regd)	mmx_r2r(psubw, regs, regd)
++
++#define	psubsb_m2r(var, reg)	mmx_m2r(psubsb, var, reg)
++#define	psubsb_r2r(regs, regd)	mmx_r2r(psubsb, regs, regd)
++#define	psubsw_m2r(var, reg)	mmx_m2r(psubsw, var, reg)
++#define	psubsw_r2r(regs, regd)	mmx_r2r(psubsw, regs, regd)
++
++#define	psubusb_m2r(var, reg)	mmx_m2r(psubusb, var, reg)
++#define	psubusb_r2r(regs, regd)	mmx_r2r(psubusb, regs, regd)
++#define	psubusw_m2r(var, reg)	mmx_m2r(psubusw, var, reg)
++#define	psubusw_r2r(regs, regd)	mmx_r2r(psubusw, regs, regd)
++
++#define	punpckhbw_m2r(var, reg)		mmx_m2r(punpckhbw, var, reg)
++#define	punpckhbw_r2r(regs, regd)	mmx_r2r(punpckhbw, regs, regd)
++#define	punpckhdq_m2r(var, reg)		mmx_m2r(punpckhdq, var, reg)
++#define	punpckhdq_r2r(regs, regd)	mmx_r2r(punpckhdq, regs, regd)
++#define	punpckhwd_m2r(var, reg)		mmx_m2r(punpckhwd, var, reg)
++#define	punpckhwd_r2r(regs, regd)	mmx_r2r(punpckhwd, regs, regd)
++
++#define	punpcklbw_m2r(var, reg)		mmx_m2r(punpcklbw, var, reg)
++#define	punpcklbw_r2r(regs, regd)	mmx_r2r(punpcklbw, regs, regd)
++#define	punpckldq_m2r(var, reg)		mmx_m2r(punpckldq, var, reg)
++#define	punpckldq_r2r(regs, regd)	mmx_r2r(punpckldq, regs, regd)
++#define	punpcklwd_m2r(var, reg)		mmx_m2r(punpcklwd, var, reg)
++#define	punpcklwd_r2r(regs, regd)	mmx_r2r(punpcklwd, regs, regd)
++
++#define	pxor_m2r(var, reg)	mmx_m2r(pxor, var, reg)
++#define	pxor_r2r(regs, regd)	mmx_r2r(pxor, regs, regd)
+ 
+ /* 3DNOW extensions */
+ 
+-#define         pavgusb_m2r(var,reg)        mmx_m2r (pavgusb, var, reg)
+-#define         pavgusb_r2r(regs,regd)      mmx_r2r (pavgusb, regs, regd)
++#define	pavgusb_m2r(var, reg)	mmx_m2r(pavgusb, var, reg)
++#define	pavgusb_r2r(regs, regd)	mmx_r2r(pavgusb, regs, regd)
+ 
+ /* AMD MMX extensions - also available in intel SSE */
+ 
+-#define         mmx_m2ri(op,mem,reg,imm) \
+-        __asm__ __volatile__ (#op " %1, %0, %%" #reg \
+-                              : /* nothing */ \
+-                              : "m" (mem), "i" (imm))
+-#define         mmx_r2ri(op,regs,regd,imm) \
+-        __asm__ __volatile__ (#op " %0, %%" #regs ", %%" #regd \
+-                              : /* nothing */ \
+-                              : "i" (imm) )
++#define	mmx_m2ri(op, mem, reg, imm) \
++	__asm__ __volatile__ (#op " %1, %0, %%" #reg \
++				: /* nothing */ \
++				: "m" (mem), "i" (imm))
++#define	mmx_r2ri(op, regs, regd, imm) \
++	__asm__ __volatile__ (#op " %0, %%" #regs ", %%" #regd \
++				: /* nothing */ \
++				: "i" (imm))
+ 
+-#define         mmx_fetch(mem,hint) \
+-        __asm__ __volatile__ ("prefetch" #hint " %0" \
+-                              : /* nothing */ \
+-                              : "m" (mem))
++#define	mmx_fetch(mem, hint) \
++	__asm__ __volatile__ ("prefetch" #hint " %0" \
++				: /* nothing */ \
++				: "m" (mem))
+ 
+-#define         maskmovq(regs,maskreg)      mmx_r2ri (maskmovq, regs, maskreg)
++#define	maskmovq(regs, maskreg)	mmx_r2ri(maskmovq, regs, maskreg)
+ 
+-#define         movntq_r2m(mmreg,var)       mmx_r2m (movntq, mmreg, var)
++#define	movntq_r2m(mmreg, var)	mmx_r2m(movntq, mmreg, var)
+ 
+-#define         pavgb_m2r(var,reg)          mmx_m2r (pavgb, var, reg)
+-#define         pavgb_r2r(regs,regd)        mmx_r2r (pavgb, regs, regd)
+-#define         pavgw_m2r(var,reg)          mmx_m2r (pavgw, var, reg)
+-#define         pavgw_r2r(regs,regd)        mmx_r2r (pavgw, regs, regd)
++#define	pavgb_m2r(var, reg)	mmx_m2r(pavgb, var, reg)
++#define	pavgb_r2r(regs, regd)	mmx_r2r(pavgb, regs, regd)
++#define	pavgw_m2r(var, reg)	mmx_m2r(pavgw, var, reg)
++#define	pavgw_r2r(regs, regd)	mmx_r2r(pavgw, regs, regd)
+ 
+-#define         pextrw_r2r(mmreg,reg,imm)   mmx_r2ri (pextrw, mmreg, reg, imm)
++#define	pextrw_r2r(mmreg, reg, imm)	mmx_r2ri(pextrw, mmreg, reg, imm)
+ 
+-#define         pinsrw_r2r(reg,mmreg,imm)   mmx_r2ri (pinsrw, reg, mmreg, imm)
++#define	pinsrw_r2r(reg, mmreg, imm)	mmx_r2ri(pinsrw, reg, mmreg, imm)
+ 
+-#define         pmaxsw_m2r(var,reg)         mmx_m2r (pmaxsw, var, reg)
+-#define         pmaxsw_r2r(regs,regd)       mmx_r2r (pmaxsw, regs, regd)
++#define	pmaxsw_m2r(var, reg)	mmx_m2r(pmaxsw, var, reg)
++#define	pmaxsw_r2r(regs, regd)	mmx_r2r(pmaxsw, regs, regd)
+ 
+-#define         pmaxub_m2r(var,reg)         mmx_m2r (pmaxub, var, reg)
+-#define         pmaxub_r2r(regs,regd)       mmx_r2r (pmaxub, regs, regd)
++#define	pmaxub_m2r(var, reg)	mmx_m2r(pmaxub, var, reg)
++#define	pmaxub_r2r(regs, regd)	mmx_r2r(pmaxub, regs, regd)
+ 
+-#define         pminsw_m2r(var,reg)         mmx_m2r (pminsw, var, reg)
+-#define         pminsw_r2r(regs,regd)       mmx_r2r (pminsw, regs, regd)
++#define	pminsw_m2r(var, reg)	mmx_m2r(pminsw, var, reg)
++#define	pminsw_r2r(regs, regd)	mmx_r2r(pminsw, regs, regd)
+ 
+-#define         pminub_m2r(var,reg)         mmx_m2r (pminub, var, reg)
+-#define         pminub_r2r(regs,regd)       mmx_r2r (pminub, regs, regd)
++#define	pminub_m2r(var, reg)	mmx_m2r(pminub, var, reg)
++#define	pminub_r2r(regs, regd)	mmx_r2r(pminub, regs, regd)
+ 
+-#define         pmovmskb(mmreg,reg) \
+-        __asm__ __volatile__ ("movmskps %" #mmreg ", %" #reg)
++#define	pmovmskb(mmreg, reg) \
++	__asm__ __volatile__ ("movmskps %" #mmreg ", %" #reg)
+ 
+-#define         pmulhuw_m2r(var,reg)        mmx_m2r (pmulhuw, var, reg)
+-#define         pmulhuw_r2r(regs,regd)      mmx_r2r (pmulhuw, regs, regd)
++#define	pmulhuw_m2r(var, reg)	mmx_m2r(pmulhuw, var, reg)
++#define	pmulhuw_r2r(regs, regd)	mmx_r2r(pmulhuw, regs, regd)
+ 
+-#define         prefetcht0(mem)             mmx_fetch (mem, t0)
+-#define         prefetcht1(mem)             mmx_fetch (mem, t1)
+-#define         prefetcht2(mem)             mmx_fetch (mem, t2)
+-#define         prefetchnta(mem)            mmx_fetch (mem, nta)
++#define	prefetcht0(mem)		mmx_fetch(mem, t0)
++#define	prefetcht1(mem)		mmx_fetch(mem, t1)
++#define	prefetcht2(mem)		mmx_fetch(mem, t2)
++#define	prefetchnta(mem)	mmx_fetch(mem, nta)
+ 
+-#define         psadbw_m2r(var,reg)         mmx_m2r (psadbw, var, reg)
+-#define         psadbw_r2r(regs,regd)       mmx_r2r (psadbw, regs, regd)
++#define	psadbw_m2r(var, reg)	mmx_m2r(psadbw, var, reg)
++#define	psadbw_r2r(regs, regd)	mmx_r2r(psadbw, regs, regd)
+ 
+-#define         pshufw_m2r(var,reg,imm)     mmx_m2ri(pshufw, var, reg, imm)
+-#define         pshufw_r2r(regs,regd,imm)   mmx_r2ri(pshufw, regs, regd, imm)
++#define	pshufw_m2r(var, reg, imm)	mmx_m2ri(pshufw, var, reg, imm)
++#define	pshufw_r2r(regs, regd, imm)	mmx_r2ri(pshufw, regs, regd, imm)
+ 
+-#define         sfence() __asm__ __volatile__ ("sfence\n\t")
++#define	sfence() __asm__ __volatile__ ("sfence\n\t")
+ 
+ /* SSE2 */
+-#define         pshufhw_m2r(var,reg,imm)    mmx_m2ri(pshufhw, var, reg, imm)
+-#define         pshufhw_r2r(regs,regd,imm)  mmx_r2ri(pshufhw, regs, regd, imm)
+-#define         pshuflw_m2r(var,reg,imm)    mmx_m2ri(pshuflw, var, reg, imm)
+-#define         pshuflw_r2r(regs,regd,imm)  mmx_r2ri(pshuflw, regs, regd, imm)
++#define	pshufhw_m2r(var, reg, imm)	mmx_m2ri(pshufhw, var, reg, imm)
++#define	pshufhw_r2r(regs, regd, imm)	mmx_r2ri(pshufhw, regs, regd, imm)
++#define	pshuflw_m2r(var, reg, imm)	mmx_m2ri(pshuflw, var, reg, imm)
++#define	pshuflw_r2r(regs, regd, imm)	mmx_r2ri(pshuflw, regs, regd, imm)
+ 
+-#define         pshufd_r2r(regs,regd,imm)   mmx_r2ri(pshufd, regs, regd, imm)
++#define	pshufd_r2r(regs, regd, imm)	mmx_r2ri(pshufd, regs, regd, imm)
+ 
+-#define         movdqa_m2r(var,reg)         mmx_m2r (movdqa, var, reg)
+-#define         movdqa_r2m(reg,var)         mmx_r2m (movdqa, reg, var)
+-#define         movdqa_r2r(regs,regd)       mmx_r2r (movdqa, regs, regd)
+-#define         movdqu_m2r(var,reg)         mmx_m2r (movdqu, var, reg)
+-#define         movdqu_r2m(reg,var)         mmx_r2m (movdqu, reg, var)
+-#define         movdqu_r2r(regs,regd)       mmx_r2r (movdqu, regs, regd)
++#define	movdqa_m2r(var, reg)	mmx_m2r(movdqa, var, reg)
++#define	movdqa_r2m(reg, var)	mmx_r2m(movdqa, reg, var)
++#define	movdqa_r2r(regs, regd)	mmx_r2r(movdqa, regs, regd)
++#define	movdqu_m2r(var, reg)	mmx_m2r(movdqu, var, reg)
++#define	movdqu_r2m(reg, var)	mmx_r2m(movdqu, reg, var)
++#define	movdqu_r2r(regs, regd)	mmx_r2r(movdqu, regs, regd)
+ 
+-#define         pmullw_r2m(reg,var)         mmx_r2m (pmullw, reg, var)
++#define	pmullw_r2m(reg, var)	mmx_r2m(pmullw, reg, var)
+ 
+-#define         pslldq_i2r(imm,reg)         mmx_i2r (pslldq, imm, reg)
+-#define         psrldq_i2r(imm,reg)         mmx_i2r (psrldq, imm, reg)
++#define	pslldq_i2r(imm, reg)	mmx_i2r(pslldq, imm, reg)
++#define	psrldq_i2r(imm, reg)	mmx_i2r(psrldq, imm, reg)
+ 
+-#define         punpcklqdq_r2r(regs,regd)   mmx_r2r (punpcklqdq, regs, regd)
+-#define         punpckhqdq_r2r(regs,regd)   mmx_r2r (punpckhqdq, regs, regd)
++#define	punpcklqdq_r2r(regs, regd)	mmx_r2r(punpcklqdq, regs, regd)
++#define	punpckhqdq_r2r(regs, regd)	mmx_r2r(punpckhqdq, regs, regd)
+ 
+ #endif /* AVCODEC_I386MMX_H */
