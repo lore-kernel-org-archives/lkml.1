@@ -1,108 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbZCLEoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755051AbZCLErk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755570AbZCLEoV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 00:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbZCLEoM
+	id S1755051AbZCLErk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 00:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbZCLErb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 00:44:12 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:57831 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753573AbZCLEoL (ORCPT
+	Thu, 12 Mar 2009 00:47:31 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:42378 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbZCLEra (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 00:44:11 -0400
-Date: Thu, 12 Mar 2009 10:14:39 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC PATCH] cpuacct: per-cgroup utime/stime statistics - v1
-Message-ID: <20090312044439.GB3344@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090310124208.GC3902@in.ibm.com> <20090311151657.GA16769@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090311151657.GA16769@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 12 Mar 2009 00:47:30 -0400
+Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
+From: john stultz <johnstul@us.ibm.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1236818044.7680.153.camel@localhost.localdomain>
+References: <200903080230.10099.elendil@planet.nl>
+	 <1236733226.6080.28.camel@localhost> <200903111703.41663.elendil@planet.nl>
+	 <200903112005.38181.elendil@planet.nl>
+	 <1236818044.7680.153.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 11 Mar 2009 21:47:25 -0700
+Message-Id: <1236833245.7680.266.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 08:46:57PM +0530, Balbir Singh wrote:
-> * Bharata B Rao <bharata@linux.vnet.ibm.com> [2009-03-10 18:12:08]:
-> 
-> Hi, Bharata,
-> 
-> I did a quick run of the patch on my machine. The patch applied and
-> compile cleanly, here are a few comments?
-> 
-> 1. We could consider enhancing the patch to account for irq, softirq,
-> etc time like cpustat does. Not right away, but iteratively
+On Wed, 2009-03-11 at 17:34 -0700, john stultz wrote:
+> I'm still a little baffled, but I figure I can try to reproduce this
+> myself. So I'm working setting up hercules environment here to see if I
+> can't trigger it. Any help with config or links to your environment
+> would be great.
 
-Yes that should not be a problem. We can add those easily if needed.
+Ok. I've got this up and reproduced with the hercules emulator. 
 
-> 2. The accounting is converted to milliseconds, I would much rather
-> export it in cputime to be consistent with other cpu accounting.
-> I remember we used to return nanosecond accurate accounting and then
-> moved to cputime based accounting for cpuacct.
+A couple of interesting  hints:
+*  The issue seems to go away if we disable NO_HZ/dynticks in
+the .config
 
-Ok had thought about it but was hesitant to do because that makes
-percpu_counters to work directly on cputime_t type. But I guess that is fine.
+*  nohz=off does not affect the issue.
 
-> 3. How do we deal with CPU hotplug. Since we use a per-cpu counter,
-> any hotplug would mean that the data related to the offlined CPU is
-> lost. That is how the current CPU accounting system seems to work.
+*  The issue also seems to go away if HZ is anything except 250
 
-Not a problem as percpu_counter handles hotplug events as you noted
-in the other thread.
+*  Commenting out clocksource_adjust(), which does the clock steering,
+seems to avoid the issue.
 
-> > 
-> > @@ -9462,20 +9479,33 @@ static struct cgroup_subsys_state *cpuac
-> >  	struct cgroup_subsys *ss, struct cgroup *cgrp)
-> >  {
-> >  	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
-> > +	int i;
-> > 
-> >  	if (!ca)
-> > -		return ERR_PTR(-ENOMEM);
-> > +		goto out1;
-> > 
-> >  	ca->cpuusage = alloc_percpu(u64);
-> > -	if (!ca->cpuusage) {
-> > -		kfree(ca);
-> > -		return ERR_PTR(-ENOMEM);
-> > -	}
-> > +	if (!ca->cpuusage)
-> > +		goto out2;
-> > +
-> > +	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
-> > +		if (percpu_counter_init(&ca->cpustat[i], 0))
-> > +			goto out3;
-> > 
-> >  	if (cgrp->parent)
-> >  		ca->parent = cgroup_ca(cgrp->parent);
-> > 
-> >  	return &ca->css;
-> > +
-> > +out3:
-> > +	i--;
-> > +	while (i-- >= 0)
-> > +		percpu_counter_destroy(&ca->cpustat[i]);
-> > +	free_percpu(ca->cpuusage);
-> > +out2:
-> > +	kfree(ca);
-> > +out1:
-> > +	return ERR_PTR(-ENOMEM);
-> >  }
-> >
-> 
-> Don't like out* as labels, please let us have more meaningful labels.
+*  When the problem triggers we don't seem to transfer to the TOD clock,
+and the jiffies clocksource seems to be in use.
 
-Ok, I can change them if you don't like out* labels :)
+* The jiffies clocksource mult value seems to be ever increasing, again
+pointing to something wrong in the clock steering.
 
-Regards,
-Bharata.
+* Reverting both 6c9bacb41c10 and 5cd1c9c5cf30 against 2.6-git did not
+seem to help the issue, as originally reported. I also reverted
+49b5cf34727a as well just in case, and it didn't help either.
+
+
+That's about all I can get for today. I'm out of town until Monday, so
+I'll start digging back into it then.
+
+thanks
+-john
+
+
