@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbZCLOMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbZCLOPQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756817AbZCLOMx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 10:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbZCLOMn
+	id S1756051AbZCLOPQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 10:15:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbZCLOO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 10:12:43 -0400
-Received: from waste.org ([66.93.16.53]:37730 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754551AbZCLOMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 10:12:42 -0400
-Subject: Re: [PATCH] fix/improve generic page table walker
-From: Matt Mackall <mpm@selenic.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>, akpm@linux-foundation.org,
-       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20090312093335.6dd67251@skybase>
-References: <20090311144951.58c6ab60@skybase>
-	 <1236792263.3205.45.camel@calx>  <20090312093335.6dd67251@skybase>
-Content-Type: text/plain
-Date: Thu, 12 Mar 2009 09:10:14 -0500
-Message-Id: <1236867014.3213.16.camel@calx>
+	Thu, 12 Mar 2009 10:14:58 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49690 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755355AbZCLOO5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 10:14:57 -0400
+Date: Thu, 12 Mar 2009 15:34:27 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, herbert@gondor.apana.org.au,
+       jesse.brandeburg@intel.com, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to submit to upper layer
+Message-ID: <20090312143427.GJ11935@one.firstfloor.org>
+References: <1236761624.2567.442.camel@ymzhang> <877i2wfh1l.fsf@basil.nowhere.org> <1236845792.2567.484.camel@ymzhang>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236845792.2567.484.camel@ymzhang>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Nick and Hugh, maybe you can shed some light on this for me]
-
-On Thu, 2009-03-12 at 09:33 +0100, Martin Schwidefsky wrote:
-> On Wed, 11 Mar 2009 12:24:23 -0500
-> Matt Mackall <mpm@selenic.com> wrote:
+On Thu, Mar 12, 2009 at 04:16:32PM +0800, Zhang, Yanmin wrote:
 > 
-> > On Wed, 2009-03-11 at 14:49 +0100, Martin Schwidefsky wrote:
-> > > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > > 
-> > > On s390 the /proc/pid/pagemap interface is currently broken. This is
-> > > caused by the unconditional loop over all pgd/pud entries as specified
-> > > by the address range passed to walk_page_range. The tricky bit here
-> > > is that the pgd++ in the outer loop may only be done if the page table
-> > > really has 4 levels. For the pud++ in the second loop the page table needs
-> > > to have at least 3 levels. With the dynamic page tables on s390 we can have
-> > > page tables with 2, 3 or 4 levels. Which means that the pgd and/or the
-> > > pud pointer can get out-of-bounds causing all kinds of mayhem.
-> > 
-> > Not sure why this should be a problem without delving into the S390
-> > code. After all, x86 has 2, 3, or 4 levels as well (at compile time) in
-> > a way that's transparent to the walker.
+> > Seems very inconvenient to have to configure this by hand.
+> A little, but not too much, especially when we consider there is interrupt binding.
+
+Interrupt binding is something popular for benchmarks, but most users
+don't (and shouldn't need to) care. Having it work well out of the box
+without special configuration is very important.
+
 > 
-> Its hard to understand without looking at the s390 details. The main
-> difference between x86 and s390 in that respect is that on s390 the
-> number of page table levels is determined at runtime on a per process
-> basis. A compat process uses 2 levels, a 64 bit process starts with 3
-> levels and can "upgrade" to 4 levels if something gets mapped above
-> 4TB. Which means that a *pgd can point to a region-second (2**53 bytes),
-> a region-third (2**42 bytes) or a segment table (2**31 bytes), a *pud
-> can point to a region-third or a segment table. The page table
-> primitives know about this semantic, in particular pud_offset and
-> pmd_offset check the type of the page table pointed to by *pgd and *pud
-> and do nothing with the pointer if it is a lower level page table.
-> The only operation I can not "patch" is the pgd++/pud++ operation.
+> >  How about
+> > auto selecting one that shares the same LLC or somesuch?
+> There are 2 kinds of LLC sharing here.
+> 1) RX/TX share the LLC;
+> 2) All RX share the LLC of some cpus and TX share the LLC of other cpus.
+> 
+> Item 1) is important, but sometimes item 2) is also important when the sending speed is
+> very high and huge data is on flight which flushes cpu cache quickly.
+> It's hard to distinguish the 2 different scenarioes automatically.
 
-So in short, sometimes a pgd_t isn't really a pgd_t at all. It's another
-object with different semantics that generic code can trip over.
+Why is it hard if you know the CPUs?
 
-Can I get you to explain why this is necessary or even preferable to
-doing it the generic way where pgd_t has a fixed software meaning
-regardless of how many hardware levels are in play?
+> >  and just use the hash function on the
+> > NIC.
+> Sorry. I can't understand what the hash function of NIC is. Perhaps NIC hardware has something
+> like hash function to decide the RX queue number based on SRC/DST?
+
+There's a Microsoft spec for a standard hash function that does this
+on NICs and all the serious ones support it these days. The hash 
+is normally used to select a MSI-X target based on the input header.
+
+I think if that works your manual target shouldn't be necessary.
+
+> >  The trick here would
+> > be to try to avoid reordering inside streams as far as possible,
+> It's not to solve reorder issue. The start point is 10G NIC is very fast. We need some cpu
+
+Point was that any solution shouldn't add more reordering. But when a RSS
+hash is used there is no reordering on stream basis.
+
+-Andi 
 
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+ak@linux.intel.com -- Speaking for myself only.
