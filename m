@@ -1,97 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbZCLXCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbZCLXDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756633AbZCLXCr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 19:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbZCLXCg
+	id S1756026AbZCLXDT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 19:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbZCLXDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 19:02:36 -0400
-Received: from web4110.mail.ogk.yahoo.co.jp ([124.83.200.72]:20995 "HELO
-	web4110.mail.ogk.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754866AbZCLXCe (ORCPT
+	Thu, 12 Mar 2009 19:03:00 -0400
+Received: from n24.bullet.mail.mud.yahoo.com ([68.142.206.163]:48179 "HELO
+	n24.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753299AbZCLXC7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 19:02:34 -0400
+	Thu, 12 Mar 2009 19:02:59 -0400
+X-Yahoo-Newman-Id: 504305.50889.bm@omp423.mail.mud.yahoo.com
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=yj20050223; d=yahoo.co.jp;
-  h=Message-ID:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
-  b=qSFT82EURkWeBayMY91LqUDjdO1X9u0k0hJUy2MiK8eRb4OStyQHbdKwJIadtXh1FAOesotWCiLLWjn4IJwlegVHfrrrbY3dFlD5ywlhfUUECCsCQySzPXAQ8xBAoQaW  ;
-Message-ID: <20090312230230.95814.qmail@web4110.mail.ogk.yahoo.co.jp>
-Date: Fri, 13 Mar 2009 08:02:30 +0900 (JST)
-From: Norman Diamond <n0diamond@yahoo.co.jp>
-Reply-To: n0diamond@yahoo.co.jp
-Subject: Re: Off-by-one in both LIBATA and IDE drivers
-To: Mark Lord <liml@rtr.ca>
-Cc: Jim Paris <jim@jtan.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, n0diamond@yahoo.co.jp
-In-Reply-To: <49B91C98.4090309@rtr.ca>
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=4230wh2vDf7umkI+qG7z713JjlHO/qwnofO2cl4MX59dVXAiW9374Hbsr1kL3AaxWj5qaRJYsk4Th3oZQs/3qpjC2uNJrXDGTzoCSwRtcxOWrV2esSnx7v5Qx6wDllGZuqBbXFQrxO5Yta3Xx8uEciGhFNtqXAw398oTfZ0adhc=  ;
+X-YMail-OSG: OWpx3rsVM1loQAO1mQEU1QYX1iC8UludKoG5Skl6.eFMmLx5G7C0vr2OIT7OeRGjxTP2U8W0EjKiVbUhr1.n1jWCD2zoow6WCAxAD30cMKYeFNRySrRzPXt9vPUj6ZkAwsxQFv95IyQBznl.xJk6sRgc
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch 2.6.29-rc7 regulator-next] regulator: refcount fixes
+Date: Thu, 12 Mar 2009 15:02:55 -0800
+User-Agent: KMail/1.9.10
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+References: <200903111743.34708.david-b@pacbell.net> <200903121335.25368.david-b@pacbell.net> <20090312210545.GJ24376@sirena.org.uk>
+In-Reply-To: <20090312210545.GJ24376@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903121602.55570.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Norman Diamond wrote:
->> Jim Paris wrote:
->>> Norman Diamond wrote:
->>>>
->>>> It looks like both LIBATA and the old IDE drivers
->>>> have an off-by-one error in deciding whether to
->>>> use READ SECTOR(S) instead of READ SECTOR(S) EXT.
-
-I don't know for sure now but the old IDE drivers
-might be OK on this matter.  When hdparm got errors
-I thought they were the driver's fault, but now it's
-clear it was hdparm's fault.
-
-It still seems doubtful whether LIBATA is fully fixed.
-
->>> This was fixed here:
->>>
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=97b697a11b07e2ebfa69c488132596cc5eb24119
-
-(Though that patch doesn't mention two suspicious .c
-files that compare sector numbers to expressions
-1UL << 28 and 1 << 28.)
-
->> I'm still having trouble after applying the same
->> patch to 2.6.24.3 (applying it three times in order
->> to build Slax).
->> Does hdparm construct its own taskfiles for ATA and
->> SATA in order to produce an error trying to read
->> sector number 0x0fffffff even after I patched the
->> kernel?
+On Thursday 12 March 2009, Mark Brown wrote:
+> On Thu, Mar 12, 2009 at 12:35:24PM -0800, David Brownell wrote:
+> > On Thursday 12 March 2009, Mark Brown wrote:
 > 
-> What, *exactly*, do you mean there.
+> > > safely share a regulator without extra work since they have no way of
+> > > telling why a regulator is in the state that it's in without extra
+> > > stuff.
+> 
+> > Depends what you mean by "safely".  If they weren't buggy
+> > already, I don't see how they'd notice any difference.
+> > Having buggy consumers become non-buggy isn't exactly a
+> > job for the framework itself.
+> 
+> Previously the per-consumer reference count would've meant that they
+> couldn't interfere with other consumers - they could set their own
+> state but not reverse an enable something else had done.
 
-hdparm --read-sector 268435455 /dev/hda
-and
-hdparm --read-sector 268435455 /dev/sda
-still gave errors even after I patched LIBATA in
-kernel 2.6.24.3.  The exceptions are Western Digital
-drives that apparently accept LBA28 instructions on
-that sector number.
+They still can't ... *unless* they're already buggy.
 
-> Yes, hdparm constructs its own taskfiles for the
-> --read-sector subcommand.
 
-Thank you.  So I think my build of Slax now will work
-except for two obscure chipsets under LIBATA, and will
-work for every situation that I'm aware of under the
-old IDE drivers (though the old IDE drivers will run
-unbearably slowly in some cases).
+> Now there is 
+> only one reference count but there's no way for a consumer to exclude
+> other consumers and nothing which protects against breakage.
+> 
+> > > We should probably have something along the lines of a 
+> > > regulator_get_exclusive() for them.  Previously the consumer counting
+> > > would have stopped them interfering with enables done by other
+> > > consumers.
+> 
+> > I'd like to see get()/put() match the design pattern used
+> > elsewhere in the kernel:  those calls signify refcount
+> > operations.
+> 
+> Aquiring a reference is obviously what we want in the rather common case
+> where the supply is shared.  We could name an operation that enforces
+> non shared supplies something else but at the end of the day it's going
+> to be the same operation.  The major purpose of adding an explicit call
+> for this is to document the requirement the consumer has for direct
+> control of what it's doing.
 
-> Are you hitting these errors with the latest hdparm
-> (9.12)?
+Step back from the current interface for a moment though.
 
-Sorry, I just checked and it's hdparm 8.6.  Anyway
-it's a relief to see that I probably have a build
-working well enough for present needs, and I just have
-to use tools other than that build's version of hdparm
-to test it.
+There seem to be two things going on:
 
---------------------------------------
-Power up the Internet with Yahoo! Toolbar.
-http://pr.mail.yahoo.co.jp/toolbar/
+  * getting a handle on the regulator;
+
+  * adding consumer-specific constraints to it.
+
+Currently "handle" and "regulator" are two different objects;
+while "handle" and "consumer-specific constraints" are one.
+
+And, as a new thing not currently addressed well in code, you
+are talking about "non-shared" handles.
+
+One could as easily have "handle" and "regulator" be the
+same ... so the get/put idioms could work like they do
+elsewhere in the kernel.
+
+Doing that would imply making the "constraints" be separate
+(as they are for machine constraints) and possibly having the
+ability to control sharing (like IRQF_SHARED does).
+
+
+> > Agreed that the "consumer" access model probably needs a few
+> > interface updates.  I'm not sure what they would be though;
+> > one notion would be to focus on the constraints they apply
+> > (including "enabled") instead of what they do now.
+> 
+> I'm not at all sure what you mean by this - constraint narrowing by the
+> consumers is pretty much exactly the model the existing code has.  We
+> need to do things like re-add the voltage handling that was removed pre
+> merge but that's already the programming model we have.
+
+See above.  Currently constraints are hidden for "consumers",
+behind functional accessors like regulator_set_voltage().
+There are no explicit constraint objects, as there are for
+the machines.
+
+That's all I'm saying:  the approached you sketched isn't
+the only one, and may not be the best one.  If you want to
+change things, there may be better approaches.  Even ones
+that don't change the overall interface structure much.
+
+- Dave
+
+
