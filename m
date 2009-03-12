@@ -1,92 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbZCLOMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbZCLOMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756636AbZCLOMb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 10:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbZCLOMW
+	id S1756817AbZCLOMx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 10:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755452AbZCLOMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 10:12:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34424 "EHLO mx2.redhat.com"
+	Thu, 12 Mar 2009 10:12:43 -0400
+Received: from waste.org ([66.93.16.53]:37730 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753958AbZCLOMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 10:12:21 -0400
-Date: Thu, 12 Mar 2009 10:09:36 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       arozansk@redhat.com, jmoyer@redhat.com, oz-kernel@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, menage@google.com
-Subject: Re: [PATCH 01/10] Documentation
-Message-ID: <20090312140936.GF10919@redhat.com>
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <1236853490.5090.140.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1236853490.5090.140.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754551AbZCLOMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 10:12:42 -0400
+Subject: Re: [PATCH] fix/improve generic page table walker
+From: Matt Mackall <mpm@selenic.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>, akpm@linux-foundation.org,
+       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <20090312093335.6dd67251@skybase>
+References: <20090311144951.58c6ab60@skybase>
+	 <1236792263.3205.45.camel@calx>  <20090312093335.6dd67251@skybase>
+Content-Type: text/plain
+Date: Thu, 12 Mar 2009 09:10:14 -0500
+Message-Id: <1236867014.3213.16.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 11:24:50AM +0100, Peter Zijlstra wrote:
-> On Wed, 2009-03-11 at 21:56 -0400, Vivek Goyal wrote:
-> > +Going back to old behavior
-> > +==========================
-> > +In new scheme of things essentially we are creating hierarchical fair
-> > +queuing logic in elevator layer and changing IO schedulers to make use of
-> > +that logic so that end IO schedulers start supporting hierarchical scheduling.
-> > +
-> > +Elevator layer continues to support the old interfaces. So even if fair queuing
-> > +is enabled at elevator layer, one can have both new hierarchical scheduler as
-> > +well as old non-hierarchical scheduler operating.
-> > +
-> > +Also noop, deadline and AS have option of enabling hierarchical scheduling.
-> > +If it is selected, fair queuing is done in hierarchical manner. If hierarchical
-> > +scheduling is disabled, noop, deadline and AS should retain their existing
-> > +behavior.
-> > +
-> > +CFQ is the only exception where one can not disable fair queuing as it is
-> > +needed for providing fairness among various threads even in non-hierarchical
-> > +mode.
-> > +
-> > +Various user visible config options
-> > +===================================
-> > +CONFIG_IOSCHED_NOOP_HIER
-> > +       - Enables hierchical fair queuing in noop. Not selecting this option
-> > +         leads to old behavior of noop.
-> > +
-> > +CONFIG_IOSCHED_DEADLINE_HIER
-> > +       - Enables hierchical fair queuing in deadline. Not selecting this
-> > +         option leads to old behavior of deadline.
-> > +
-> > +CONFIG_IOSCHED_AS_HIER
-> > +       - Enables hierchical fair queuing in AS. Not selecting this option
-> > +         leads to old behavior of AS.
-> > +
-> > +CONFIG_IOSCHED_CFQ_HIER
-> > +       - Enables hierarchical fair queuing in CFQ. Not selecting this option
-> > +         still does fair queuing among various queus but it is flat and not
-> > +         hierarchical.
+[Nick and Hugh, maybe you can shed some light on this for me]
+
+On Thu, 2009-03-12 at 09:33 +0100, Martin Schwidefsky wrote:
+> On Wed, 11 Mar 2009 12:24:23 -0500
+> Matt Mackall <mpm@selenic.com> wrote:
 > 
-> One worry I have is that these are compile time switches. Is there any
-> way you can get the old AS/DEADLINE back when these are enabled but
-> you're not actively using cgroups?
+> > On Wed, 2009-03-11 at 14:49 +0100, Martin Schwidefsky wrote:
+> > > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > > 
+> > > On s390 the /proc/pid/pagemap interface is currently broken. This is
+> > > caused by the unconditional loop over all pgd/pud entries as specified
+> > > by the address range passed to walk_page_range. The tricky bit here
+> > > is that the pgd++ in the outer loop may only be done if the page table
+> > > really has 4 levels. For the pud++ in the second loop the page table needs
+> > > to have at least 3 levels. With the dynamic page tables on s390 we can have
+> > > page tables with 2, 3 or 4 levels. Which means that the pgd and/or the
+> > > pud pointer can get out-of-bounds causing all kinds of mayhem.
+> > 
+> > Not sure why this should be a problem without delving into the S390
+> > code. After all, x86 has 2, 3, or 4 levels as well (at compile time) in
+> > a way that's transparent to the walker.
+> 
+> Its hard to understand without looking at the s390 details. The main
+> difference between x86 and s390 in that respect is that on s390 the
+> number of page table levels is determined at runtime on a per process
+> basis. A compat process uses 2 levels, a 64 bit process starts with 3
+> levels and can "upgrade" to 4 levels if something gets mapped above
+> 4TB. Which means that a *pgd can point to a region-second (2**53 bytes),
+> a region-third (2**42 bytes) or a segment table (2**31 bytes), a *pud
+> can point to a region-third or a segment table. The page table
+> primitives know about this semantic, in particular pud_offset and
+> pmd_offset check the type of the page table pointed to by *pgd and *pud
+> and do nothing with the pointer if it is a lower level page table.
+> The only operation I can not "patch" is the pgd++/pud++ operation.
 
-Hi Peter,
+So in short, sometimes a pgd_t isn't really a pgd_t at all. It's another
+object with different semantics that generic code can trip over.
 
-In principle, if one is not using cgroups, there is only one io queue
-in the root group and most likely we should achieve the same behavior
-as old schedulers. Just that some extra code gets into execution at 
-runtime.
+Can I get you to explain why this is necessary or even preferable to
+doing it the generic way where pgd_t has a fixed software meaning
+regardless of how many hardware levels are in play?
 
-I have not got a chance yet to do some numbers but I think this path
-can be optimized enough that at run time effectively we don't see any 
-significant performance penalty and behavior of schedulers is almost
-same as old ones.
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-Thanks
-Vivek 
+
