@@ -1,158 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbZCLB6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZCLB7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329AbZCLB6B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 21:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbZCLB5v
+	id S1754501AbZCLB7P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 21:59:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZCLB66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 21:57:51 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:52287 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750807AbZCLB5u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 21:57:50 -0400
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
-From: john stultz <johnstul@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Frans Pop <elendil@planet.nl>, linux-s390@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0903120201040.29264@localhost.localdomain>
-References: <200903080230.10099.elendil@planet.nl>
-	 <200903091604.56455.elendil@planet.nl> <1236733226.6080.28.camel@localhost>
-	 <200903111703.41663.elendil@planet.nl>
-	 <1236817822.7680.148.camel@localhost.localdomain>
-	 <1236818863.7680.156.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0903120201040.29264@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 18:57:46 -0700
-Message-Id: <1236823066.7680.178.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Mar 2009 21:58:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49314 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754610AbZCLB65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 21:58:57 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       arozansk@redhat.com, jmoyer@redhat.com, oz-kernel@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Cc: vgoyal@redhat.com, akpm@linux-foundation.org, menage@google.com,
+       peterz@infradead.org
+Subject: [PATCH 09/10] deadline changes for hierarchical fair queuing
+Date: Wed, 11 Mar 2009 21:56:54 -0400
+Message-Id: <1236823015-4183-10-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-12 at 02:30 +0100, Thomas Gleixner wrote:
-> On Wed, 11 Mar 2009, john stultz wrote:
-> > For a cleaner version, could you try the following, against 2.6.29-git
-> > with no other modification?
-> 
-> cleaner ?
-> 
-> > xtime_nsec is expected at times to be negative. Instead of trying to
-> > handle all the shifting properly via casts, define it as a s64 instead
-> > of a u64.
-> > 
-> > NOT FOR INCLUSION
-> > Signed-off-by: John Stultz <johnstul@us.ibm.com>
-> > 
-> > diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-> > index f88d32f..e217000 100644
-> > --- a/include/linux/clocksource.h
-> > +++ b/include/linux/clocksource.h
-> > @@ -86,7 +86,7 @@ struct clocksource {
-> >  	 * more than one cache line.
-> >  	 */
-> >  	cycle_t cycle_last ____cacheline_aligned_in_smp;
-> > -	u64 xtime_nsec;
-> > +	s64 xtime_nsec;
-> >  	s64 error;
-> >  	struct timespec raw_time;
-> >  
-> > diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-> > index 900f1b6..387be3c 100644
-> > --- a/kernel/time/timekeeping.c
-> > +++ b/kernel/time/timekeeping.c
-> > @@ -546,7 +546,7 @@ void update_wall_time(void)
-> >  	/* store full nanoseconds into xtime after rounding it up and
-> >  	 * add the remainder to the error difference.
-> >  	 */
-> > -	xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
-> > +	xtime.tv_nsec = (clock->xtime_nsec >> clock->shift) + 1;
-> >  	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
-> >  	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
-> 
-> This code sequence does:
-> 
->    xtime.tv_nsec = (clock->xtime_nsec >> clock->shift) + 1;
->    clock->xtime_nsec -= xtime.tv_nsec << clock->shift;
-> 
-> Lets substitute a bit:
-> 
->    a = xtime.tv_nsec
->    b = clock->xtime_nsec
->    c = clock->shift
->    r = result (which ends up in b aka clock->xtime_nsec again for the next round)
-> 
-> => a = (b >> c) + 1
->    r = b - (a << c)
-> 
->    b >> c = b / 2^c
->    a << c = a * 2^c
-> 
-> => a = (b / 2^c) + 1
->    r = b - (a * 2^c)
-> 
-> => r = b - ((b / 2^c) + 1) * 2^c
->    r = b - ((2^c * b / 2^c) + 2^c)
->    r = b - (2^c * b / 2^c) - 2^c
->    r = b - b - 2^c
->    r = -2^c
->    
-> => r = -(1 << c)
-> 
-> So the whole business boils down to:
-> 
->    clock->xtime_nsec = -(1 << clock->shift);
+This patch changes deadline to use queue scheduling code from elevator layer.
+One can go back to old deadline by selecting CONFIG_IOSCHED_DEADLINE_HIER.
 
-Err, not quite. See, we truncate clock->xtime_nsec when we shift it down
-and store it into xtime.tv_nsec. Since we don't want to lose truncated
-remainder, we simply add one to xtime.tv_nsec, taking the ceiling in
-effect.
+Signed-off-by: Nauman Rafique <nauman@google.com>
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/Kconfig.iosched    |   11 +++++++++++
+ block/deadline-iosched.c |    3 +++
+ 2 files changed, 14 insertions(+), 0 deletions(-)
 
-However, we have to balance this out in order to not rush forward in
-time each tick. So we accumulate amount we ended up adding into the
-error.
-
-Lets walk through a simple example with actual values.
-b = 99
-c = 4
-
-=> a = (b >> c) + 1
-   r = b - (a << c)
-
-=> a = (99 >> 4) + 1
-   a = 6 + 1
-   a = 7
-
-   r = 99 - (7 << 4)
-   r = 99 - 112
-   r = -13
-
-(Your reduction would give -16, since it ignores that shift down
-truncates)
-
-In effect, adding 1 to xtime.tv_nsec, is the same as adding 13 to
-clock->xtime_nsec.
-
-
-Maybe a different way of expressing what we're calculating is the
-following:
-
-xtime.tv_nsec = (clock->xtime_nsec + (1<<clock->shift)) >> clock->shift
-clock->xtime_nsec = (1<<clock->shift) 
-			- (clock->xtime_nsec &((1<<clock->shift)-1)
-
-In other words: The rounded up portion - the masked remainder in
-xtime_nsec.
-
-Does that make sense?
-thanks
--john
-
-
-
-
-
+diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+index 9da6657..3a9e7d7 100644
+--- a/block/Kconfig.iosched
++++ b/block/Kconfig.iosched
+@@ -55,6 +55,17 @@ config IOSCHED_DEADLINE
+ 	  a disk at any one time, its behaviour is almost identical to the
+ 	  anticipatory I/O scheduler and so is a good choice.
+ 
++config IOSCHED_DEADLINE_HIER
++	bool "Deadline Hierarchical Scheduling support"
++	depends on IOSCHED_DEADLINE && CGROUPS
++	select ELV_FAIR_QUEUING
++	select GROUP_IOSCHED
++	default n
++	---help---
++	  Enable hierarhical scheduling in deadline. In this mode deadline keeps
++	  one IO queue per cgroup instead of a global queue. Elevator
++	  fair queuing logic ensures fairness among various queues.
++
+ config IOSCHED_CFQ
+ 	tristate "CFQ I/O scheduler"
+ 	select ELV_FAIR_QUEUING
+diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
+index 5e65041..27b77b9 100644
+--- a/block/deadline-iosched.c
++++ b/block/deadline-iosched.c
+@@ -477,6 +477,9 @@ static struct elevator_type iosched_deadline = {
+ 		.elevator_alloc_sched_queue_fn = deadline_alloc_deadline_queue,
+ 		.elevator_free_sched_queue_fn = deadline_free_deadline_queue,
+ 	},
++#ifdef CONFIG_IOSCHED_DEADLINE_HIER
++	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ,
++#endif
+ 	.elevator_attrs = deadline_attrs,
+ 	.elevator_name = "deadline",
+ 	.elevator_owner = THIS_MODULE,
+-- 
+1.6.0.1
 
