@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbZCLAGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbZCLALX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbZCLAGZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 20:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZCLAGQ
+	id S1753341AbZCLALX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 20:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZCLALJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 20:06:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35282 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752860AbZCLAGP (ORCPT
+	Wed, 11 Mar 2009 20:11:09 -0400
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:62910 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750952AbZCLALH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 20:06:15 -0400
-Date: Wed, 11 Mar 2009 17:02:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: dhowells@redhat.com, torvalds@linux-foundation.org, peterz@infradead.org,
-       Enrik.Berkhan@ge.com, uclinux-dev@uclinux.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hannes@cmpxchg.org
-Subject: Re: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may
- get wrongly discarded
-Message-Id: <20090311170207.1795cad9.akpm@linux-foundation.org>
-In-Reply-To: <20090311150302.0ae76cf1.akpm@linux-foundation.org>
-References: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk>
-	<20090311150302.0ae76cf1.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 11 Mar 2009 20:11:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=srD0fON3Pt7DVzNEB2sS4u9ocI8aQkka+8+sCLjp4xfCtvXzbzBYVh4elmgDbSNU31
+         eWSbhbjzQcYq3cn2lx2HZg7t92KylBAqQk2GMKnVgsL3iUhRSPZYOZ3px0z2FQ47wpSz
+         5W2xiOTJVsokHO5w7N2xsxU6/crABbsDv2CA0=
+Message-ID: <49B85312.5030905@gmail.com>
+Date: Wed, 11 Mar 2009 18:10:58 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+Newsgroups: gmane.linux.ide,gmane.linux.kernel
+To: n0diamond@yahoo.co.jp
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Off-by-one in both LIBATA and IDE drivers
+References: <20090311082725.37cb1883@lxorguk.ukuu.org.uk> <20090311083846.5137.qmail@web4112.mail.ogk.yahoo.co.jp>
+In-Reply-To: <20090311083846.5137.qmail@web4112.mail.ogk.yahoo.co.jp>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009 15:03:02 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> > The problem is that the pages are not marked dirty.  Anything that creates data
-> > in an MMU-based ramfs will cause the pages holding that data will cause the
-> > set_page_dirty() aop to be called.
-> > 
-> > For the NOMMU-based mmap, set_page_dirty() may be called by write(), but it
-> > won't be called by page-writing faults on writable mmaps, and it isn't called
-> > by ramfs_nommu_expand_for_mapping() when a file is being truncated from nothing
-> > to allocate a contiguous run.
-> > 
-> > The solution is to mark the pages dirty at the point of allocation by
-> > the truncation code.
+Norman Diamond wrote:
+> Alan Cox wrote:
+>> Norman Diamond <n0diamond@yahoo.co.jp> wrote:
+>>
+>>> It looks like both LIBATA and the old IDE drivers
+>>> have an off-by-one error in deciding whether to use
+>>> READ SECTOR(S) instead of READ SECTOR(S) EXT.
+>> This was fixed some time ago, you need a newer
+>> kernel.
 > 
-> Page reclaim shouldn't be even attempting to reclaim or write back
-> ramfs pagecache pages - reclaim can't possibly do anything with these
-> pages!
+> Well, either that or I need an older kernel.  It was also
+> fixed in 2.6.20, for which I think there was a ready-made
+> Slax distribution.
 > 
-> Arguably those pages shouldn't be on the LRU at all, but we haven't
-> done that yet.
+> On another topic, trying 2.6.20 in whatever Slax
+> distribution it was, an Intel ICH7M had DMA enabled on
+> both /dev/hda and /dev/hdc.  I understand that the change
+> which was made shortly after that is considered to be by
+> design not a bug.  In 2.6.20 I didn't even have to type a
+> "combined_mode" parameter, it just worked.  I understand
+> that the addition and subsequent deletion of the
+> "combined_mode" parameter are considered to be by design
+> not bugs.  But it is not at all pleasant that my /dev/hda
+> runs at 1.3 megabytes per second in 2.6.24.3 and later,
+> when it used to run at 45 megabytes per second in 2.6.20. 
+> Yeah I know libata is supposed to solve all this stuff. 
+> Removed some bugs and added others.
+
+You really shouldn't use the IDE drivers with SATA devices, if that's
+what you're talking about as far as the previous behavior. They were
+really never designed for it.
+
 > 
-> Now, my problem is that I can't 100% be sure that we _ever_ implemented
-> this properly.  I _think_ we did, in which case we later broke it.  If
-> we've always been (stupidly) trying to pageout these pages then OK, I
-> guess your patch is a suitable 2.6.29 stopgap.
+> I can't go newer than 2.6.24.3 until I find a version
+> where TASKFILEs start working again.  There might not be
+> one.  Yeah I know libata is supposed to solve all this
+> stuff.  I wonder how much time I'll need and how many
+> varieties of hardware I'll have to buy to see if it's
+> really fixed.
 
-OK, I can't find any code anywhere in which we excluded ramfs pages
-from consideration by page reclaim.  How dumb.
-
-So I guess that for now the proposed patch is suitable.  Longer-term we
-should bale early in shrink_page_list(), or not add these pages to the
-LRU at all.
+Realistically, although some people still work on it, testing coverage
+of the old IDE drivers is not that great these days, since most
+distributions no longer use it. The crusty, byzantine IDE code base
+doesn't exactly make it easy for the inexperienced to debug problems,
+either..
