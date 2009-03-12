@@ -1,51 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbZCLXjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbZCLXn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757203AbZCLXjr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 19:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbZCLXji
+	id S1756400AbZCLXn2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 19:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZCLXnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 19:39:38 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37977 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbZCLXjh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 19:39:37 -0400
-Message-ID: <49B99D0E.8060507@zytor.com>
-Date: Thu, 12 Mar 2009 16:38:54 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/setup] x86: use targets in the boot Makefile instead
- of CLEAN_FILES
-References: <tip-16a6791934a1077609482dd6c091aa8b4c39a834@git.kernel.org> <20090312210641.GC14205@uranus.ravnborg.org>
-In-Reply-To: <20090312210641.GC14205@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 12 Mar 2009 19:43:20 -0400
+Received: from mail1.radix.net ([207.192.128.31]:52651 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750946AbZCLXnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 19:43:19 -0400
+X-Greylist: delayed 1597 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 19:43:19 EDT
+Subject: Re: Fwd: [stable] [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885 
+ video_open
+From: Andy Walls <awalls@radix.net>
+To: Michael Krufky <mkrufky@linuxtv.org>
+Cc: stable@kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Jarod Wilson <jarod@wilsonet.com>, LMML <linux-media@vger.kernel.org>
+In-Reply-To: <37219a840903121324q7b08c8d1ma6d0d3ec4f5eb278@mail.gmail.com>
+References: <200902241700.56099.jarod@redhat.com>
+	 <37219a840903121324q7b08c8d1ma6d0d3ec4f5eb278@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 12 Mar 2009 19:03:53 -0400
+Message-Id: <1236899033.3261.7.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
+On Thu, 2009-03-12 at 16:24 -0400, Michael Krufky wrote:
+> Can we have this merged into -stable?  Jarod Wilson sent this last
+> month, but he left off the cc to stable@kernel.org
 > 
-> When you are cleaning up...
+> Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+
+Mike,
+
+A version of this is already in the v4l-dvb hg development repository:
+
+hg log -vp --limit 1 linux/drivers/media/video/cx23885/cx23885-417.c
+hg log -vp --limit 2 linux/drivers/media/video/cx23885/cx23885-video.c 
+
+I helped Mark work through the solution: I coded some of it, he coded
+some of it and he also tested it.
+
+Regards,
+Andy
+
+
 > 
-> archclean:
->         $(Q)rm -rf $(objtree)/arch/i386
->         $(Q)rm -rf $(objtree)/arch/x86_64
+> ---------- Forwarded message ----------
+> From: Jarod Wilson <jarod@redhat.com>
+> Date: Tue, Feb 24, 2009 at 6:00 PM
+> Subject: [stable] [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885 video_open
+> To: linux-kernel@vger.kernel.org
+> Cc: Mike Krufky <mkrufky@linuxtv.org>
 > 
-> Do we need this hack now?
-> I recall it was some backward soon-to-be-removed hack we made right after the x86 merge.
 > 
-
-Well, the hack hasn't been removed at least not in that particular 
-branch... we still create bzImage symlinks.
-
-It would be nice to fix that, I agree, and that would clean up the 
-Makefile further.
-
-	-hpa
-
+> From: Mark Jenks
+> https://www.redhat.com/mailman/private/video4linux-list/2009-January/msg00041.html
+> 
+> The Hauppauge WinTV HVR-1800 tv tuner card has both digital and analog
+> abilities, both of which are supported by v4l/dvb under 2.6.27.y. The analog
+> side also features a hardware mpeg2 encoder. The HVR-1250 tv tuner card
+> has both digital and analog abilities, but analog isn't currently supported
+> under any kernel. These cards both utilize the cx23885 driver, but with
+> slightly different usage. When the code paths for each card is executed,
+> they wind up poking a cx23885_devlist, which contains devices from both
+> of the cards, and access attempts are made to portions of 'struct
+> cx23885_dev' that aren't valid for that device. Simply add some extra
+> checks before trying to access these structs.
+> 
+> More gory details:
+>  http://article.gmane.org/gmane.linux.drivers.dvb/46630
+> 
+> This was triggering on my own system at home w/both cards in it, and
+> no longer happens with this patch included.
+> 
+> Signed-off-by: Jarod Wilson <jarod@redhat.com>
+> Reviewed-by: Michael Krufky <mkrufky@linuxtv.org>
+> 
+> ---
+> 
+>  drivers/media/video/cx23885/cx23885-417.c   |    2 +-
+>  drivers/media/video/cx23885/cx23885-video.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/media/video/cx23885/cx23885-417.c
+> b/drivers/media/video/cx23885/cx23885-417.c
+> index 7b0e8c0..19154b6 100644
+> --- a/drivers/media/video/cx23885/cx23885-417.c
+> +++ b/drivers/media/video/cx23885/cx23885-417.c
+> @@ -1585,7 +1585,7 @@ static int mpeg_open(struct inode *inode, struct
+> file *file)
+> 
+>        list_for_each(list, &cx23885_devlist) {
+>                h = list_entry(list, struct cx23885_dev, devlist);
+> -               if (h->v4l_device->minor == minor) {
+> +               if (h->v4l_device && h->v4l_device->minor == minor) {
+>                        dev = h;
+>                        break;
+>                }
+> diff --git a/drivers/media/video/cx23885/cx23885-video.c
+> b/drivers/media/video/cx23885/cx23885-video.c
+> index 6047c78..a2b5a0c 100644
+> --- a/drivers/media/video/cx23885/cx23885-video.c
+> +++ b/drivers/media/video/cx23885/cx23885-video.c
+> @@ -733,7 +733,7 @@ static int video_open(struct inode *inode, struct
+> file *file)
+> 
+>        list_for_each(list, &cx23885_devlist) {
+>                h = list_entry(list, struct cx23885_dev, devlist);
+> -               if (h->video_dev->minor == minor) {
+> +               if (h->video_dev && h->video_dev->minor == minor) {
+>                        dev  = h;
+>                        type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+>                }
+> 
+> 
+> --
+> Jarod Wilson
+> jarod@redhat.com
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
