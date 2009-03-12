@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbZCLVGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbZCLVVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757582AbZCLVGB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 17:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbZCLVFv
+	id S1756842AbZCLVVm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 17:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbZCLVVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 17:05:51 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4646 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbZCLVFu (ORCPT
+	Thu, 12 Mar 2009 17:21:32 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:51315 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbZCLVVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 17:05:50 -0400
-Date: Thu, 12 Mar 2009 21:05:46 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: dbrownell@users.sourceforge.net
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-Subject: Re: [patch 2.6.29-rc7 regulator-next] regulator: refcount fixes
-Message-ID: <20090312210545.GJ24376@sirena.org.uk>
-References: <200903111743.34708.david-b@pacbell.net> <20090312103744.GA24376@sirena.org.uk> <200903121335.25368.david-b@pacbell.net>
+	Thu, 12 Mar 2009 17:21:31 -0400
+Date: Thu, 12 Mar 2009 16:21:24 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Greg Kurz <gkurz@fr.ibm.com>
+Cc: Cedric Le Goater <legoater@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, mpm@selenic.com,
+       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-mm@kvack.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
+       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, xemul@openvz.org
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
+	do?
+Message-ID: <20090312212124.GA25019@us.ibm.com>
+References: <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226155755.GA1456@x200.localdomain> <20090310215305.GA2078@x200.localdomain> <49B775B4.1040800@free.fr> <20090312145311.GC12390@us.ibm.com> <1236891719.32630.14.camel@bahia>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200903121335.25368.david-b@pacbell.net>
-X-Cookie: War is an equal opportunity destroyer.
+In-Reply-To: <1236891719.32630.14.camel@bahia>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 12:35:24PM -0800, David Brownell wrote:
-> On Thursday 12 March 2009, Mark Brown wrote:
+Quoting Greg Kurz (gkurz@fr.ibm.com):
+> On Thu, 2009-03-12 at 09:53 -0500, Serge E. Hallyn wrote:
+> > Or are you suggesting that you'll do a dummy clone of (5594,2) so that
+> > the next clone(CLONE_NEWPID) will be expected to be (5594,3,1)?
+> > 
+> 
+> Of course not
 
-> > safely share a regulator without extra work since they have no way of
-> > telling why a regulator is in the state that it's in without extra
-> > stuff.
+Ok - someone *did* argue that at some point I think...
 
-> Depends what you mean by "safely".  If they weren't buggy
-> already, I don't see how they'd notice any difference.
-> Having buggy consumers become non-buggy isn't exactly a
-> job for the framework itself.
+> but one should be able to tell clone() to pick a specific
+> pid.
 
-Previously the per-consumer reference count would've meant that they
-couldn't interfere with other consumers - they could set their own
-state but not reverse an enable something else had done.  Now there is
-only one reference count but there's no way for a consumer to exclude
-other consumers and nothing which protects against breakage.
+Can you explain exactly how?  I must be missing something clever.
 
-> > We should probably have something along the lines of a 
-> > regulator_get_exclusive() for them.  Previously the consumer counting
-> > would have stopped them interfering with enables done by other
-> > consumers.
-
-> I'd like to see get()/put() match the design pattern used
-> elsewhere in the kernel:  those calls signify refcount
-> operations.
-
-Aquiring a reference is obviously what we want in the rather common case
-where the supply is shared.  We could name an operation that enforces
-non shared supplies something else but at the end of the day it's going
-to be the same operation.  The major purpose of adding an explicit call
-for this is to document the requirement the consumer has for direct
-control of what it's doing.
-
-> Agreed that the "consumer" access model probably needs a few
-> interface updates.  I'm not sure what they would be though;
-> one notion would be to focus on the constraints they apply
-> (including "enabled") instead of what they do now.
-
-I'm not at all sure what you mean by this - constraint narrowing by the
-consumers is pretty much exactly the model the existing code has.  We
-need to do things like re-add the voltage handling that was removed pre
-merge but that's already the programming model we have.
+-serge
