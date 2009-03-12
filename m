@@ -1,51 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbZCLR5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbZCLR6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756279AbZCLR5P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 13:57:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZCLR46
+	id S1756518AbZCLR6c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 13:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbZCLR6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 13:56:58 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:35858 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753999AbZCLR45 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 13:56:57 -0400
-Date: Thu, 12 Mar 2009 17:55:57 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: uClinux development list <uclinux-dev@uclinux.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Rik van Riel <riel@surriel.com>, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-Subject: Re: [uClinux-dev] Re: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may get wrongly discarded
-Message-ID: <20090312175557.GD14491@shareable.org>
-References: <20090311170207.1795cad9.akpm@linux-foundation.org> <28c262360903111735s2b0c43a3pd48fcf8d55416ae3@mail.gmail.com> <20090312100049.43A3.A69D9226@jp.fujitsu.com> <200903120819.08724.rgetz@blackfin.uclinux.org>
+	Thu, 12 Mar 2009 13:58:22 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:22279
+	"EHLO WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754074AbZCLR6W convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 13:58:22 -0400
+X-BigFish: VPS-24(za62sz1432R9370P98dR1805M936fKzz1202hzzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KGEN8O-02-6NJ-01
+Date: Thu, 12 Mar 2009 18:58:07 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: x86-microcode: get rid of set_cpus_allowed()
+Message-ID: <20090312175807.GJ20716@alberich.amd.com>
+References: <1236627539.5168.48.camel@earth> <200903111714.37444.rusty@rustcorp.com.au> <20090312174010.GI20716@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <200903120819.08724.rgetz@blackfin.uclinux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090312174010.GI20716@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 12 Mar 2009 17:58:08.0691 (UTC) FILETIME=[1A08A830:01C9A33C]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Getz wrote:
-> > Currently, CONFIG_UNEVICTABLE_LRU can't use on nommu machine
-> > because nobody of vmscan folk havbe nommu machine.
+On Thu, Mar 12, 2009 at 06:40:10PM +0100, Andreas Herrmann wrote:
+> On Wed, Mar 11, 2009 at 07:44:37AM +0100, Rusty Russell wrote:
+> > On Tuesday 10 March 2009 06:08:59 Dmitry Adamushko wrote:
+> > > 
+> > > Hi,
+> > > 
+> > > 
+> > > here is a possible candidate for Rusty's cpumask-refactored series.
+> > > Note the [*] remark below though.
 > > 
-> > Yes, it is very stupid reason. _very_ welcome to tester! :)
+> > Ah, OK, I'll drop my version then (below) in favor of this, and will
+> > push to Ingo with the others if he doesn't take it directly.
 > 
-> As always - if you (or any kernel developer) would like a noMMU machine to 
-> test on - please send me a private email.
+> Sorry guys -- for the late reply --
+> but I missed Dmitry's mail due to some silly mail filtering and had to
+> restore his mail ...
+> 
+> Now I've tested both patches and both seem to reliably prevent
+> microcode updates on CPU1 and CPU2 of an Phenom X3 after
+> suspend/resume. (Just CPU0 was updated.)
+> 
+> Then I've tested mainline kernel w/o your patches and I've observed
+> similar problems. I've seen that sometimes ucode of CPU0 was not
+> updated and sometimes CPU1 and CPU2 were not updated.
+> 
+> I'll look into this asap.
 
-Well, that explains why vmscan has historically performed a little
-dubiously on small nommu machines!
+Some further testing seem to indicate that suspend/resume does not
+work when I have done CPU hotplug before.
 
-By the way, this is just a random side thought... nommu kernels work
-just fine in emulators :-)
+During today's tests I did:
 
--- Jamie
+(1) set offline/online CPU 1 and 2
+(2) perform suspend/resume afterwards
+
+After that microcode update failed on some CPUs when performing
+suspend/resume. (When skipping step 1, microcode update during
+suspend/resume works.)
+
+Looks strange, but should be debuggable.
+
+
+Regards,
+
+Andreas
+
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
+
