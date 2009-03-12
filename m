@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZCLDrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbZCLDrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbZCLDrR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 23:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbZCLDrA
+	id S1755432AbZCLDrj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 23:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbZCLDr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 23:47:00 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:55890 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbZCLDrA (ORCPT
+	Wed, 11 Mar 2009 23:47:27 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:19040 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754300AbZCLDr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 23:47:00 -0400
-Date: Thu, 12 Mar 2009 09:16:47 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 0/5] memcg softlimit (Another one) v4
-Message-ID: <20090312034647.GA23583@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 11 Mar 2009 23:47:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=nlZ4/kvI0TbBviuYAESlgD71i2+SWTec4Udkv3KkhIvmweqCCgcy372mAx+xj9oj2T
+         o8CNy1rbXUwAWjxOehWigk6RQ7ar2LjbHggT5ER/yFF9fUrkELVToR9WojnJ2UJdrb5G
+         MjQi1GCLZ2EIcb4YlDvzaMKo7EHFGsFbjN+Fw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Wed, 11 Mar 2009 20:47:23 -0700
+Message-ID: <dd18b0c30903112047o3995e0as4a86025be7100f88@mail.gmail.com>
+Subject: suspend successful with radeon
+From: Justin Mattock <justinmattock@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 09:52:47]:
+I'm sending this to you to let
+you know that (uswsusp)
+s2ram works with radeon; kernel:
+2.6.29-rc7-00004-gc6504647.
 
-> Hi, this is a patch for implemnt softlimit to memcg.
-> 
-> I did some clean up and bug fixes. 
-> 
-> Anyway I have to look into details of "LRU scan algorithm" after this.
-> 
-> How this works:
-> 
->  (1) Set softlimit threshold to memcg.
->      #echo 400M > /cgroups/my_group/memory.softlimit_in_bytes.
-> 
->  (2) Define priority as victim.
->      #echo 3 > /cgroups/my_group/memory.softlimit_priority.
->      0 is the lowest, 8 is the highest.
->      If "8", softlimit feature ignore this group.
->      default value is "8".
-> 
->  (3) Add some memory pressure and make kswapd() work.
->      kswapd will reclaim memory from victims paying regard to priority.
-> 
-> Simple test on my 2cpu 86-64 box with 1.6Gbytes of memory (...vmware)
-> 
->   While a process malloc 800MB of memory and touch it and sleep in a group,
->   run kernel make -j 16 under a victim cgroup with softlimit=300M, priority=3.
-> 
->   Without softlimit => 400MB of malloc'ed memory are swapped out.
->   With softlimit    =>  80MB of malloc'ed memory are swapped out. 
-> 
-> I think 80MB of swap is from direct memory reclaim path. And this
-> seems not to be terrible result.
-> 
-> I'll do more test on other hosts. Any comments are welcome.
->
+to my surprise a minimal install as well
+libx86emu,libx86 only
+no directfb, splashy, etc..
 
-I've tested so far by
+was receiving a black screen a few weeks ago
+but either there was a commit that fixed this,
+or it was the permission on
+/dev/console that I had set wrong.
 
-Creating two cgroups and then 
+either way it works
+("thumbs up"), now to have acpid
+execute this when the lid is closed.
 
-a. Assigning limits of 1G and 2G and run memory allocation and touch
-test
-b. Same as (a) with 1G and 1G
-c. Same as (a) with 0 and 1G
-d. Same as (a) with 0 and 0
-
-More comments in induvidual patches.
-
+regards;
 -- 
-	Balbir
+Justin P. Mattock
