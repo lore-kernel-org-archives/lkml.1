@@ -1,57 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757041AbZCLVYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbZCLV3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757041AbZCLVYY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 17:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZCLVYQ
+	id S1756566AbZCLV3z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 17:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZCLV3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 17:24:16 -0400
-Received: from phunq.net ([64.81.85.152]:38528 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754038AbZCLVYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 17:24:16 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: tux3@tux3.org
-Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
-Date: Thu, 12 Mar 2009 14:24:08 -0700
-User-Agent: KMail/1.9.9
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <200903110925.37614.phillips@phunq.net> <20090311230713.d4710050.akpm@linux-foundation.org> <87zlfqeuwr.fsf@basil.nowhere.org>
-In-Reply-To: <87zlfqeuwr.fsf@basil.nowhere.org>
+	Thu, 12 Mar 2009 17:29:47 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:34880 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750809AbZCLV3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 17:29:46 -0400
+Message-ID: <49B97EC5.9050109@us.ibm.com>
+Date: Thu, 12 Mar 2009 14:29:41 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Arjan van de Ven <arjan@linux.intel.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, tglx@linutronix.de,
+       mingo@elte.hu, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/futexes] futex: use current->time_slack_ns for rt tasks
+ too
+References: <20090312075559.9856.28822.stgit@Aeon> <tip-16f4993f4e9860715918efd4eeac928f8de1218b@git.kernel.org> <49B913DC.6040807@linux.intel.com> <1236866529.22914.3694.camel@twins>
+In-Reply-To: <1236866529.22914.3694.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903121424.08961.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 March 2009, Andi Kleen wrote:
-> to be honest the estimate of adding btree directories in 3kLOC
-> of code seems very optimistic.
-
-Is that a bet?
-
-> >> This symbol is only supposed to be shared between separate compilation
-> >> units within fs/tux3, not be visible outside our module.  How do we do
-> >> that?
-> >
-> > You can't.  Bear in mind that we want the allyesconfig kernel to link
-> > and run, and that includes tux3.  So do it manually by prefixing
-> > everything with tux3_ or whatever.  (does it need the "3"?)
+Peter Zijlstra wrote:
+> On Thu, 2009-03-12 at 06:53 -0700, Arjan van de Ven wrote:
+>> Darren Hart wrote:
+>>> Commit-ID:  16f4993f4e9860715918efd4eeac928f8de1218b
+>>> Gitweb:     http://git.kernel.org/tip/16f4993f4e9860715918efd4eeac928f8de1218b
+>>> Author:     "Darren Hart" <dvhltc@us.ibm.com>
+>>> AuthorDate: Thu, 12 Mar 2009 00:55:59 -0700
+>>> Commit:     Ingo Molnar <mingo@elte.hu>
+>>> CommitDate: Thu, 12 Mar 2009 11:20:57 +0100
+>>>
+>>> futex: use current->time_slack_ns for rt tasks too
+>>>
+>>> RT tasks should set their timer slack to 0 on their own.  This
+>>> patch removes the 'if (rt_task()) slack = 0;' block in
+>>> futex_wait.
+>> Hi,
+>>
+>> can you explain the rationale for this reasoning?
 > 
-> AFAIK it could be done by using special linker scripts for the sublinks.
-> But I'm not sure it's worth it because that would require listing of the symbols
-> in some file. Would need some Makefile magic.
+> Yeah, I found it iffy as well, I think we want something like the below
+> instead though..
 > 
-> For modules I also had the "namespace" patches some time ago which implemented
-> simple namespace support. Should probably resurrect that.
+> ---
+> 
+> Subject: sched: adjust timer_slack_ns on scheduler policy change
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Thu Mar 12 15:01:02 CET 2009
+> 
+> Ensure RT tasks have 0 timer slack.
 
-Per-module name scope would be a nice creature comfort.  Well, for now
-the offending names will just get tux_ed.
+Fork takes care of this by setting the child's default_timer_slack_ns to 
+current->timer_slack_ns.  This change takes care of tasks that are 
+converted to rt by the user.
 
-Regards,
+What about tasks that are demoted from RT to SCHED_NORMAL?  I'm not sure 
+setting it to the default_timer_slack_ns is the right thing since that 
+could have been the timer_slack_ns of the rt process it forked from. 
+Perhaps heach scheduler class needs to have a default_timer_slack_ns set 
+in the class?
 
-Daniel
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  kernel/sched.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> Index: linux-2.6/kernel/sched.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched.c
+> +++ linux-2.6/kernel/sched.c
+> @@ -5511,10 +5511,12 @@ __setscheduler(struct rq *rq, struct tas
+>  	case SCHED_NORMAL:
+>  	case SCHED_BATCH:
+>  	case SCHED_IDLE:
+> +		p->timer_slack_ns = p->default_timer_slack_ns;
+>  		p->sched_class = &fair_sched_class;
+>  		break;
+>  	case SCHED_FIFO:
+>  	case SCHED_RR:
+> +		p->timer_slack_ns = 0;
+>  		p->sched_class = &rt_sched_class;
+>  		break;
+>  	}
+> 
+
+
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
