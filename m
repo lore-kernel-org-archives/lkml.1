@@ -1,68 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757029AbZCLQBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbZCLQDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757029AbZCLQBn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 12:01:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbZCLQBe
+	id S1756772AbZCLQDV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 12:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZCLQDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 12:01:34 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:41978 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752866AbZCLQBd convert rfc822-to-8bit (ORCPT
+	Thu, 12 Mar 2009 12:03:12 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:58493 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752866AbZCLQDL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 12:01:33 -0400
+	Thu, 12 Mar 2009 12:03:11 -0400
+Date: Thu, 12 Mar 2009 11:03:00 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Igor Zhbanov <izh1979@gmail.com>, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
+       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
+       Andrew Morgan <morgan@kernel.org>
+Subject: Re: VFS, NFS security bug? Should CAP_MKNOD and
+	CAP_LINUX_IMMUTABLE be added to CAP_FS_MASK?
+Message-ID: <20090312160300.GC13046@us.ibm.com>
+References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com> <20090311232356.GP13540@fieldses.org>
 MIME-Version: 1.0
-In-Reply-To: <ed82fe3e0903120854r2d8f23d8r249a8e510a2fbc4c@mail.gmail.com>
-References: <1236699004-1863-1-git-send-email-timur@freescale.com>
-	 <20090310153537.5fd5d84d@lxorguk.ukuu.org.uk>
-	 <1236729711.7086.28.camel@pasglop>
-	 <20090311003756.25ffa6f4@lxorguk.ukuu.org.uk>
-	 <ed82fe3e0903110948w542a864dj821106900755f14e@mail.gmail.com>
-	 <20090311165806.0b6838ab@lxorguk.ukuu.org.uk>
-	 <49B80081.5060703@freescale.com> <1236808722.7086.66.camel@pasglop>
-	 <fa686aa40903111945g53a0ba5au200fe9362e315175@mail.gmail.com>
-	 <ed82fe3e0903120854r2d8f23d8r249a8e510a2fbc4c@mail.gmail.com>
-Date: Thu, 12 Mar 2009 10:01:27 -0600
-Message-ID: <fa686aa40903120901me307a54y3511f4bafc6242e6@mail.gmail.com>
-Subject: Re: [PATCH v4] introduce macro spin_event_timeout()
-From: Grant Likely <grant.likely@secretlab.ca>
-To: Timur Tabi <timur@freescale.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       rdreier@cisco.com, jirislaby@gmail.com, peterz@infradead.org,
-       will.newton@gmail.com, hancockrwd@gmail.com, jeremy@goop.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090311232356.GP13540@fieldses.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 9:54 AM, Timur Tabi <timur@freescale.com> wrote:
-> On Wed, Mar 11, 2009 at 9:45 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
->
->>> The other big advantage of that approach is that drivers that aren't in
->>> an atomic section can use msleep() and allow the kernel to schedule on
->>> that processor.
->>
->> Ack!  I totally agree.
->
-> I'm glad everyone agrees.  I still don't know how to solve the
-> problem, though.  I came up with this:
->
-> #define spin_until_timeout(condition, timeout)          \
->       for (unsigned long __timeout = jiffies + (timeout);     \
->               (!(condition) && time_after(jiffies, __timeout)); )
->
-> Now how do I modify this so that the caller knows whether the loop
-> terminated because of a timeout or the condition became true?
+Quoting J. Bruce Fields (bfields@fieldses.org):
+> On Wed, Mar 11, 2009 at 03:53:34PM +0300, Igor Zhbanov wrote:
+> > Hello!
+> > 
+> > It seems that CAP_MKNOD and CAP_LINUX_IMMUTABLE were forgotten to be
 
-How about this:
+(Still looking into this, but meanwhile...)
 
-#define spin_until_timeout(condition, timeout, rc)          \
-      for (unsigned long __timeout = jiffies + (timeout);     \
-              (!(rc = (condition)) && time_after(jiffies, __timeout)); )
+> > added to CAP_FS_MASK_B0 in linux-2.6.x and to CAP_FS_MASK in
+> > linux-2.4.x. Both capabilities affects file system and can be
+> > considered file system capabilities.
+> 
+> Sounds right to me--I'd expect rootsquash to guarantee that new device
+> nodes can't be created from the network.  Cc'ing random people from the
+> git log for include/linux/capability.h in hopes they can help.
+> 
+> --b.
+> 
+> (Also: my copy of mknod(2) claims "Linux... does not have the CAP_MKNOD
+> capability".  I assume the manpage is out of date?)
 
-g.
+No, the whole paragraph is:
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+EPERM  mode  requested creation of something other than a regular file, FIFO
+(named pipe), or Unix domain socket, and the caller is not privileged
+(Linux: does not have the CAP_MKNOD capability);
+
+So it's saying that 'caller is not privileged', in linux, can be
+interpreted to mean 'the caller does not have CAP_MKNOD'.
+
+> 
+> > 
+> > Let's look at linux-2.6.x.
+> > 
+> > In include/linux/capability.h CAP_FS_SET is defined to contain
+> > following capabilities:
+> > CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_DAC_READ_SEARCH, CAP_FOWNER,
+> > CAP_FSETID and CAP_MAC_OVERRIDE.
+> > 
+> > And CAP_NFSD_SET is defined to be the same plus CAP_SYS_RESOURCE.
+> > 
+> > So, both CAP_FS_SET and CAP_NFSD_SET doesn't include CAP_MKNOD and
+> > CAP_LINUX_IMMUTABLE.
+> > 
+> > Also include/linux/capability.h there are cap_drop_fs_set(...),
+> > cap_raise_fs_set(...),
+> > cap_drop_nfsd_set(...) and cap_raise_nfsd_set(...) inline functions that return
+> > corresponding capabilities sets.
+> > 
+> > Let's look how these functions are used.
+> > 
+> > In file fs/nfsd/auth.c function nfsd_setuser(...) calls
+> > cap_raise_nfsd_set(...) and
+> > cap_drop_nfsd_set(...) to add/exclude corresponding capabilities to/from
+> > effective set of current nfsd process.
+> > 
+> > And in file security/commoncap.c function cap_task_post_setuid(...) calls
+> > cap_drop_fs_set(...) and cap_raise_fs_set(...) to change effective set
+> > of current task
+> > when (current->fsuid != old_ruid).
+> > 
+> > In linux-2.4.x the story is the same.
+> > 
+> > In file include/linux/capability.h CAP_FS_MASK is defined to contain
+> > CAP_CHOWN, CAP_DAC_OVERRIDE, CAP_DAC_READ_SEARCH, CAP_FOWNER, CAP_FSETID
+> > capabilities.
+> > 
+> > And in file fs/nfsd/auth.c CAP_NFSD_MASK is defined to be same as CAP_FS_MASK
+> > plus CAP_SYS_RESOURCE.
+> > 
+> > In file fs/nfsd/auth.c function nfsd_setuser(...) uses CAP_NFSD_MASK
+> > to add/exclude corresponding capabilities to/from effective set of current
+> > nfsd process.
+> > 
+> > And CAP_FS_MASK used in file kernel/sys.c in function sys_setfsuid(...)
+> > to add/exclude corresponding capabilities to/from effective set of current task.
+> > 
+> > This can be exploited (and I have succesfully tried it).
+> > 
+> > Suppose you have NFS-share exported even with root_squash option.
+> > If one client was compromised, local root can set CAP_MKNOD to some
+> > local user's process. Then that user can execute mknod to create a device
+> > that will be owned by that user, e.g. block device file for /dev/hda hard drive.
+> > 
+> > And he can create that device file on NFS-share (even exported with root_squash
+> > option). After that he can someway (ssh, cgi) execute code on another nfs client
+> > or the server to modify it's filesystem. It will be possible because
+> > he owns that
+> > device file on nfs share.
+> > 
+> > The problem is because CAP_MKNOD allows that user to successfully execute
+> > vfs_mknod(...) function on local host, and that function will call corresponding
+> > function in nfs module which sends request to NFS server. And nfsd will not
+> > drop CAP_MKNOD in nfsd_setuser(...) function when impersonating to that user.
+> > 
+> > Of course, NFS-shares can be mounted with nodev option, but they should be
+> > placed on separate partition on NFS-server, so even on server that partition
+> > is mounted with nodev option too.
+> > 
+> > So I suggest to add CAP_MKNOD and CAP_LINUX_IMMUTABLE to CAP_FS_MASK
+> > in linux-2.4.x and to CAP_FS_MASK_B0 in linux-2.6.x.
