@@ -1,164 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbZCLCMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZCLCOE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244AbZCLCMa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 22:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbZCLCMT
+	id S1755496AbZCLCOE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 22:14:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZCLCNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 22:12:19 -0400
-Received: from mail.windriver.com ([147.11.1.11]:48749 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753382AbZCLCMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 22:12:18 -0400
-Message-ID: <49B86C6E.2040300@windriver.com>
-Date: Thu, 12 Mar 2009 09:59:10 +0800
-From: Harry Ciao <qingtao.cao@windriver.com>
-Reply-To: qingtao.cao@windriver.com
-Organization: Wind River, CDC
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 11 Mar 2009 22:13:53 -0400
+Received: from mail-gx0-f167.google.com ([209.85.217.167]:45694 "EHLO
+	mail-gx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750742AbZCLCNw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 22:13:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=S3UnPtLXcLBV4N0kuNn6nwgC/+HpFH1/IQ6R6wY4zgoj9bAtBaxDVkVZ3KsP1pjn65
+         V/PFR2u8dg/weC4Wcgi0QsvhbraCHBseThg1Czu2aWUHp+M4HHb4qvjVoFMfaDYRQ5Pu
+         N49o5qv6oNbE2vmBBRoI6mH3xM6lSaZfhcdjw=
 MIME-Version: 1.0
-To: Doug Thompson <norsk5@yahoo.com>
-CC: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
-Subject: Re: [v2 PATCH 7/7] EDAC: AMD8131 driver Kconfig and Makefile - errors
-References: <264247.38837.qm@web50102.mail.re2.yahoo.com>
-In-Reply-To: <264247.38837.qm@web50102.mail.re2.yahoo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 12 Mar 2009 02:12:04.0619 (UTC) FILETIME=[F002A5B0:01C9A2B7]
+In-Reply-To: <49B7CD1B.2080704@mnementh.co.uk>
+References: <20090311125845.1563.31960.sendpatchset@rx1.opensource.se>
+	 <20090311125911.1563.27785.sendpatchset@rx1.opensource.se>
+	 <49B7CD1B.2080704@mnementh.co.uk>
+Date: Thu, 12 Mar 2009 11:13:49 +0900
+Message-ID: <aec7e5c30903111913y38041a68r4742779103c7df1b@mail.gmail.com>
+Subject: Re: [PATCH 03/05] tmio_mmc: Break out cnf area operations
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Ian Molton <ian@mnementh.co.uk>
+Cc: linux-kernel@vger.kernel.org, drzeus-wbsd@drzeus.cx,
+       akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Doug Thompson 写道:
-> --- On Tue, 3/10/09, Harry Ciao <qingtao.cao@windriver.com> wrote:
->
->   
->> From: Harry Ciao <qingtao.cao@windriver.com>
->> Subject: [v2 PATCH 7/7] EDAC: AMD8131 driver Kconfig and Makefile
->> To: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
->> Date: Tuesday, March 10, 2009, 9:25 PM
->> Introduce Kconfig and Makefile
->> options for AMD8131 EDAC driver.
+On Wed, Mar 11, 2009 at 11:39 PM, Ian Molton <ian@mnementh.co.uk> wrote:
+> Magnus Damm wrote:
 >>
->> Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
->> ---
->>  drivers/edac/Kconfig  |    7 +++++++
->>  drivers/edac/Makefile |    1 +
->>  2 files changed, 8 insertions(+), 0 deletions(-)
+>> From: �Magnus Damm <damm@opensource.se>
 >>
->> diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
->> index 46f8e77..13ccec6 100644
->> --- a/drivers/edac/Kconfig
->> +++ b/drivers/edac/Kconfig
->> @@ -181,4 +181,11 @@ config EDAC_AMD8111
->>        Support for error detection and
->> correction on the
->>        AMD8111 HyperTransport I/O Hub
->> chip.
->>  
->> +config EDAC_AMD8131
->> +    tristate "AMD8131 HyperTransport PCI-X
->> Tunnel"
->> +    depends on EDAC_MM_EDAC && PCI
->> +    help
->> +      Support for error detection and
->> correction on the
->> +      AMD8131 HyperTransport PCI-X
->> Tunnel chip.
->> +
->>  endif # EDAC
->> diff --git a/drivers/edac/Makefile b/drivers/edac/Makefile
->> index c324956..407601f 100644
->> --- a/drivers/edac/Makefile
->> +++ b/drivers/edac/Makefile
->> @@ -35,4 +35,5 @@
->> obj-$(CONFIG_EDAC_MPC85XX)   
->>     += mpc85xx_edac.o
->>  obj-$(CONFIG_EDAC_MV64X60)   
->>     += mv64x60_edac.o
->>  obj-$(CONFIG_EDAC_CELL)   
->>         += cell_edac.o
->>  obj-$(CONFIG_EDAC_AMD8111)   
->>     += amd8111_edac.o
->> +obj-$(CONFIG_EDAC_AMD8131)   
->>     += amd8131_edac.o
->>  
->> -- 
->> 1.5.6.2
->>     
+>> Break out tmio_mmc io operations for the cnf area.
+>> This moves similar register operations into one place.
 >
-> Andrew,
+> Not sure about this one yet. AFAICT this totally disables the HBA power
+> control.
+
+Hm, my plan was not to introduce any changes to the register accesses.
+With this patch code is only broken out, and the patch after this
+makes it possible to use this driver without the cnf block. For
+hardware with the cnf block included there should be no change. Unless
+I made some mistake that is. =)
+
+> I'm wondering if this is a common problem.
 >
-> I notice that the above is different from what is now in mmotm.
+> It seems to me �that its likely that clock and power control are often
+> external to the host controller chip. (not just on TMIO MMC).
+
+I agree. These patches show just that.
+
+> I think it'd be a good idea if we came up with an infrastructre that allowed
+> a set of clock / power control callbacks into the platform code.
 >
-> In the patches posted, amd8111 module IS and the amd8131 modules is NOT, configured in the Makefile to be compiled.
->
-> In the mmotm version NEITHER is configured to be compiled. When I do add them I get the following errors:
->
-> drivers/edac/amd8111_edac.c: In function ‘amd8111_lpc_bridge_init’:
-> drivers/edac/amd8111_edac.c:259: error: implicit declaration of function ‘__do_inb’
-> drivers/edac/amd8111_edac.c:273: error: implicit declaration of function ‘__do_outb’
-> drivers/edac/amd8111_edac.c: In function ‘amd8111_dev_probe’:
-> drivers/edac/amd8111_edac.c:383: warning: passing argument 2 of ‘edac_device_alloc_ctl_info’ discards qualifiers from pointer target type
->
->
-> and
->
-> drivers/edac/amd8111_edac.c: In function ‘amd8111_lpc_bridge_init’:
-> drivers/edac/amd8111_edac.c:259: error: implicit declaration of function ‘__do_inb’
-> drivers/edac/amd8111_edac.c:273: error: implicit declaration of function ‘__do_outb’
-> drivers/edac/amd8111_edac.c: In function ‘amd8111_dev_probe’:
-> drivers/edac/amd8111_edac.c:383: warning: passing argument 2 of ‘edac_device_alloc_ctl_info’ discards qualifiers from pointer target type
->
->
-> I assume that is why it is currently not enabled. I just didn't see it mentioned anywhere, but you are probably aware of it.
->
-> doug t
->
->   
-Doug,
+> Whats your use case for this? samee applies to the related cnf patch too.
 
-You're right!
+Please wait for platform data patches. They will be sent out late
+before -rc1 if we can agree on some way to make the cnf area optional.
+Without that (this patch and the next) we can't really use this driver
+so platform data patches are pointless. =)
 
-the __do_inb() and __do_outb() are defined in the io.h under 
-arch/powerpc/, rather than that under include/linux/:
-cao@cao-desktop:/work/community/linux-2.6/arch/powerpc$ grep do_inb * -r
-include/asm/io.h:#define __do_inb(port)        _rec_inb(port)
-include/asm/io.h:#define __do_inb(port)        
-readb((PCI_IO_ADDR)_IO_BASE + port);
+This is lucky guesswork. I just happened to figure out that I can use
+the tmio_mmc driver to drive the ctl block of this hardware. As for
+memory window setup, voltage control, and hotplug - I have no idea. No
+docs apart from the Toshiba docs that I can find online. But breaking
+out the power control and hotplug management sounds like a good plan.
 
-I stupidly changed the asm/io.h to linux/io.h when I saw following 
-warnings from checkpatch.pl:
-cao@cao-desktop:/work/community/linux-2.6$ scripts/checkpatch.pl 
-patches/0002-EDAC-AMD8111-driver-source-file.patch
-WARNING: Use #include <linux/io.h> instead of <asm/io.h>
-#48: FILE: drivers/edac/amd8111_edac.c:30:
-+#include <asm/io.h>
+As for clock control, maybe breaking out that as well is a good idea.
+At least part of it. The first thought that pops into my mind is to
+tie in the clock framework. So we can use clk_enable() and
+clk_disable() for run time power management and call clk_get_rate() to
+figure out the parent clock rate and use that to calculate the divider
+for CTL_SD_CARD_CLK_CTL. Not sure if the clock framework is supported
+on your target platforms though.
 
-total: 0 errors, 1 warnings, 595 lines checked
+Do you have any recommended hardware platform to test this driver?
+I'll try to find such hardware platform (or similar) so I have
+something to compare with. Unfortunately I don't have that much time
+to spend on this. But an hour here and there is probably fine.
 
-patches/0002-EDAC-AMD8111-driver-source-file.patch has style problems, 
-please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
+How would you like to proceed? I'd prefer to merge this first and
+break out after, but I'm not sure if that fits well with your plan.
 
-I guess by including <asm/io.h> back you won't see the error of implicit 
-declaration of __do_inb() any more.(On a side note, what should we do 
-with the checkpatch.pl to eliminate this false-positive warning?)
+Thanks for your help!
 
-The second warning about passing argument 2 for 
-edac_device_alloc_ctl_info discarding qualifiers is resulted from the 
-fact that now the 2nd parameter is of type of char *, whereas I am 
-passing a const char *, after I remove the "const" qualifier from 
-amd8111_dev_info.ctl_name, this warning can be eliminated.
+Cheers,
 
-I will send out new version patches for amd8111_edac.[ch], please help 
-verify them again on your side, thanks!!
-
-Best regards,
-
-Harry
-
-
-
-
-
+/ magnus
