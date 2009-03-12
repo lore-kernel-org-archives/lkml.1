@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbZCLUag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbZCLUhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752714AbZCLUag (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 16:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZCLUa1
+	id S1754187AbZCLUhS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 16:37:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZCLUhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 16:30:27 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:52177 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752086AbZCLUa0 (ORCPT
+	Thu, 12 Mar 2009 16:37:00 -0400
+Received: from n13a.bullet.mail.mud.yahoo.com ([68.142.207.51]:34929 "HELO
+	n13a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752206AbZCLUg7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 16:30:26 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] VM, x86, PAT: Change implementation of is_linear_pfn_mapping
-Date: Thu, 12 Mar 2009 21:30:21 +0100
-User-Agent: KMail/1.9.9
-Cc: "mingo@elte.hu" <mingo@elte.hu>,
-       "thellstrom@vmware.com" <thellstrom@vmware.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>
-References: <498B5ADE.3090602@vmware.com> <200903120645.44515.elendil@planet.nl> <20090312185918.GA22421@linux-os.sc.intel.com>
-In-Reply-To: <20090312185918.GA22421@linux-os.sc.intel.com>
+	Thu, 12 Mar 2009 16:36:59 -0400
+X-Yahoo-Newman-Id: 993454.74768.bm@omp407.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:Reply-To:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=gkbAVVJgYLrYfLNISM85GIZuWRQwCUVRaUiyAKdXBE7lkYkfWDFZZ9o/Ddq1mplRvIUQyJzWkU1/x9slm5d/SPP3lVL6CIwzPe0f4itk/RL8OLJq5tUD80PqPj/ccS885Op/miyrznEWohjmuglorcfj1fzMstVM5eC409NvQBU=  ;
+X-YMail-OSG: twx0JOAVM1ncMRV04jr9pMQiNoMkQgTQFixLxzfJ4uXjBGaNIoJMUfn1SLmm3H85NwMfvFyPaQXwOq2syopIilceR_1FuSAe6UC94rHbQf2H7TYU_nZiHysVZwR_5A1amT3u_1S41U__wti.YP83UGD32cIXS_NfYQi6HtiEi5C1_cnKA5ETbf5OtBeo5l3305kXFvsdTwk_ETGTEatVneUkrEnDmBl0ms0Zji8-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+Reply-To: dbrownell@users.sourceforge.net
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch 2.6.29-rc7 regulator-next] regulator: refcount fixes
+Date: Thu, 12 Mar 2009 12:35:24 -0800
+User-Agent: KMail/1.9.10
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+References: <200903111743.34708.david-b@pacbell.net> <20090312103744.GA24376@sirena.org.uk>
+In-Reply-To: <20090312103744.GA24376@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903122130.23860.elendil@planet.nl>
-X-OriginalArrivalTime: 12 Mar 2009 20:30:24.0553 (UTC) FILETIME=[5F6E9190:01C9A351]
+Message-Id: <200903121335.25368.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 March 2009, Pallipadi, Venkatesh wrote:
-> OK, Looking more at the code, I now understand how the patch from
-> yday resulted in the oops you saw. Here goes my nth attempt at solving
-> this problem. Can you please test this patch.
+On Thursday 12 March 2009, Mark Brown wrote:
+> On Wed, Mar 11, 2009 at 04:43:34PM -0800, David Brownell wrote:
+> 
+> > Buggy consumers could notice different bug symptoms.  The main
+> > example would be refcounting bugs; also, any (out-of-tree) users
+> > of the experimental regulator_set_optimum_mode() stuff which
+> > don't call it when they're done using a regulator.
+> 
+> I'm OK with this from a code point of view so
+> 
+> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> 
+> However any consumers that take advantage of this won't be able to
+> safely share a regulator without extra work since they have no way of
+> telling why a regulator is in the state that it's in without extra
+> stuff.
 
-System has been running stable for almost an hour now with pat enabled, so 
-it looks like the problem is solved.
+Depends what you mean by "safely".  If they weren't buggy
+already, I don't see how they'd notice any difference.
+Having buggy consumers become non-buggy isn't exactly a
+job for the framework itself.
 
-FYI, with early .29 RCs I had the following when running VirtualBox:
-kernel: WARNING: at arch/x86/mm/pat.c:620 reserve_pfn_range+0x5b/0x26d()
 
-After be03d9e80220 (which probably fixed that) VirtualBox could no longer 
-be loaded at all with pat enabled, but with this patch added VirtualBox 
-runs perfectly again.
+> We should probably have something along the lines of a 
+> regulator_get_exclusive() for them.  Previously the consumer counting
+> would have stopped them interfering with enables done by other
+> consumers.
 
-Thanks Venki.
+I'd like to see get()/put() match the design pattern used
+elsewhere in the kernel:  those calls signify refcount
+operations.
 
-> Use of vma->vm_pgoff to identify the pfnmaps that are fully
-> mapped at mmap time is broken. vm_pgoff is set by generic mmap
-> code even for cases where drivers are setting up the mappings
-> at the fault time.
->
-> The problem was originally reported here.
-> http://marc.info/?l=linux-kernel&m=123383810628583&w=2
->
-> Change is_linear_pfn_mapping logic to overload VM_INSERTPAGE
-> flag along with VM_PFNMAP to mean full PFNMAP setup at mmap
-> time.
->
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> Signed-off-by: Suresh Siddha <suresh.b.siddha>@intel.com>
+Agreed that the "consumer" access model probably needs a few
+interface updates.  I'm not sure what they would be though;
+one notion would be to focus on the constraints they apply
+(including "enabled") instead of what they do now.
 
-Tested-by: Frans Pop <elendil@planet.nl>
+ 
+> There will be other consumers that can't safely share a regulator anyway
+> (eg, requiring additional code to notice and handle voltage changes) so
+> it'd be a good thing to have.
+
+
