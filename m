@@ -1,117 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbZCLGMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbZCLGYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753739AbZCLGMf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 02:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbZCLGMR
+	id S1754632AbZCLGYa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 02:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbZCLGYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 02:12:17 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:42285 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755247AbZCLGMQ convert rfc822-to-8bit (ORCPT
+	Thu, 12 Mar 2009 02:24:20 -0400
+Received: from mail-gx0-f167.google.com ([209.85.217.167]:62565 "EHLO
+	mail-gx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750949AbZCLGYT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 02:12:16 -0400
-Message-ID: <49B8A75E.6040409@cosmosbay.com>
-Date: Thu, 12 Mar 2009 07:10:38 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Thu, 12 Mar 2009 02:24:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WWBUi/bVvsjWhImOfXTFYxJl0Sc7Nb2xDGkdLadx3G330ts4VbrkJnfIRiD8WFk4Pt
+         6RvQ62hRpDleFLtVYblWYHoT497k8LGTSyZ3PcKfviOcROvDSn0L63f/gipPlPyWbCLp
+         l9J7tr4W/9B/+h8ihrNOnUSJ11KzATN6PhLYQ=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jeff Moyer <jmoyer@redhat.com>, Avi Kivity <avi@redhat.com>,
-       linux-aio <linux-aio@kvack.org>, zach.brown@oracle.com, bcrl@kvack.org,
-       linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH] fs: fput() can be called from interrupt context
-References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>	<49B54143.1010607@redhat.com>	<x49sklmd1fo.fsf@segfault.boston.devel.redhat.com>	<49B57CB0.5020300@cosmosbay.com>	<49B875F7.3030305@cosmosbay.com>	<49B87CFE.4000701@cosmosbay.com>	<49B89B22.7080303@cosmosbay.com> <20090311224712.fb8db075.akpm@linux-foundation.org>
-In-Reply-To: <20090311224712.fb8db075.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <7d86d44a0903112255m34392231ne0cd04196e33f1b2@mail.gmail.com>
+References: <1236756563-20633-1-git-send-email-graff.yang@gmail.com>
+	 <7d86d44a0903110256t11edeff5qfd21055ef047dc2a@mail.gmail.com>
+	 <8bd0f97a0903110343m1f2f01catbc6cd54ecce91db9@mail.gmail.com>
+	 <1236831455.21146.7.camel@dy>
+	 <8bd0f97a0903112123j60eab672m16177581c959453b@mail.gmail.com>
+	 <1236832241.21146.12.camel@dy>
+	 <8bd0f97a0903112134m52a8faddp69926cb1281f5ce5@mail.gmail.com>
+	 <1236833307.21146.25.camel@dy>
+	 <8bd0f97a0903112159g59c7d414of76e9e4090d8209@mail.gmail.com>
+	 <7d86d44a0903112255m34392231ne0cd04196e33f1b2@mail.gmail.com>
+Date: Thu, 12 Mar 2009 02:24:16 -0400
+Message-ID: <8bd0f97a0903112324p3ecae9f9i44f9338f90cac85@mail.gmail.com>
+Subject: Re: [PATCH] [net/irda]: new Blackfin on-chip SIR IrDA driver
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: graff yang <graff.yang@gmail.com>
+Cc: gyang <graf.yang@analog.com>, samuel@sortiz.org,
+       irda-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       cooloney@kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 12 Mar 2009 07:10:39 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton a �crit :
-> On Thu, 12 Mar 2009 06:18:26 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
-> 
->> Eric Dumazet wrote :
->>> Path could be :
+On Thu, Mar 12, 2009 at 01:55, graff yang wrote:
+> On Thu, Mar 12, 2009 at 12:59 PM, Mike Frysinger wrote:
+>> On Thu, Mar 12, 2009 at 00:48, gyang wrote:
+>>> On Thu, 2009-03-12 at 00:34 -0400, Mike Frysinger wrote:
+>>>> On Thu, Mar 12, 2009 at 00:30, gyang wrote:
+>>>> > On Thu, 2009-03-12 at 00:23 -0400, Mike Frysinger wrote:
+>>>> >> On Thu, Mar 12, 2009 at 00:17, gyang wrote:
+>>>> >> > On Wed, 2009-03-11 at 06:43 -0400, Mike Frysinger wrote:
+>>>> >> >> On Wed, Mar 11, 2009 at 05:56, graff yang wrote:
+>>>> >> >> > On Wed, Mar 11, 2009 at 3:57 PM, Mike Frysinger wrote:
+>>>> >> >> >> On Wed, Mar 11, 2009 at 03:29,  <graff.yang@gmail.com> wrote:
+>>>> >> >> >>> +static int __devinit bfin_sir_probe(struct platform_device *pdev)
+>>>> >> >> >>> +{
+>>>> >> >> >>> +       struct net_device *dev;
+>>>> >> >> >>> +       struct bfin_sir_self *self;
+>>>> >> >> >>> +       unsigned int baudrate_mask;
+>>>> >> >> >>> +       struct bfin_sir_port *sir_port;
+>>>> >> >> >>> +       int err;
+>>>> >> >> >>> +
+>>>> >> >> >>> +       err = peripheral_request_list(per[pdev->id], DRIVER_NAME);
+>>>> >> >> >>
+>>>> >> >> >> what if pdev->id is set to 12512 ?
+>>>> >> >> >
+>>>> >> >> > The pdev->id is defined in board files, for example, uart0 should be 0.
+>>>> >> >>
+>>>> >> >> so ?  what's to stop the user from setting it to 12415 ?  the driver
+>>>> >> >> must sanity check these things.  you can never assume platform dev
+>>>> >> >> resources always have valid pointers and valid values.
+>>>> >> >
+>>>> >> > How about to limit the pdev->id to be 0,1,2,3 ?
+>>>> >> > I can extend the per to be
+>>>> >> > static const unsigned short per[][4] = {
+>>>> >> >        {P_UART0_RX, P_UART0_TX, 0, 0},
+>>>> >> >        {P_UART1_RX, P_UART1_TX, 0, 1},
+>>>> >> >        {P_UART2_RX, P_UART2_TX, 0, 2},
+>>>> >> >        {P_UART3_RX, P_UART3_TX, 0, 3},
+>>>> >> > };
+>>>> >> >
+>>>> >> > then check (pdev->id >= 0 && pdev->id < ARRAY_SIZE(per) &&
+>>>> >> > per[pdev->id][3] == pdev->id)
+>>>> >>
+>>>> >> the last check is redundant.  the first two should be added.
+>>>> >
+>>>> > I'm afraid of some cases such as uart0 uses id 1, will cause driver not
+>>>> > work, and not any warning message.
+>>>>
+>>>> then the call to peripheral request would fail as expected
 >>>
->>> 1) fput() changes so that calling it from interrupt context is possible
->>>    (Using a working queue to make sure __fput() is called from process context)
->>>
->>> 2) Changes aio to use fput() as is (and zap its internal work_queue and aio_fput_routine() stuff)
->>>
->>> 3) Once atomic_long_dec_and_test(&filp->f_count) only performed in fput(),
->>>    SLAB_DESTROY_BY_RCU for "struct file" get back :)
->>>
->> Please find first patch against linux-2.6
+>>> For example, user want to enable irda on uart2 for bf548, he use id 0
+>>> for uart2. In these case, peripheral request may not fail, but driver
+>>> not work.
 >>
->> Next patch (2) can cleanup aio code, but it probably can wait linux-2.6.30
->>
->> Thank you
->>
->> [PATCH] fs: fput() can be called from interrupt context
->>
->> Current aio/eventfd code can call fput() from interrupt context, which is
->> not allowed.
-> 
-> The changelog forgot to tell us where this happens, and under what
-> circumstances.
-> 
-> See, there might be other ways of fixing the bug,
+>> the id is wrong then.  if they want uart2, then they should use id 2.
+>
+> Such wrong case may existed for common users, and should be
+> prohibited. Driver need make sanity check to prevent it.
 
-Sure
-
-> 
->> In order to fix the problem and prepare SLAB_DESTROY_BY_RCU use for "struct file"
->> allocation/freeing in 2.6.30, we might extend existing workqueue infrastructure and
->> allow fput() to be called from interrupt context.
->>
->> This unfortunalty adds a pointer to 'struct file'.
->>
->> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
->> ---
->>  fs/file.c               |   55 ++++++++++++++++++++++++++------------
->>  fs/file_table.c         |   10 +++++-
->>  include/linux/fdtable.h |    1
->>  include/linux/fs.h      |    1
->>  4 files changed, 49 insertions(+), 18 deletions(-)
-> 
-> which might not have some or all of the above problems.
-> 
-> 
-> I assume you're referring to really_put_req(), and commit
-> 9c3060bedd84144653a2ad7bea32389f65598d40.
-> 
->>From the above email straggle I extract "If user program closes
-> eventfd, then inflight AIO requests can trigger a bug" and I don't
-> immediately see anything in there which would prevent this.
-> 
-> Did you reproduce the bug, and confirm that the patch fixes it?
-
-take Davide program : http://www.xmailserver.org/eventfd-aio-test.c
-
-and add at line 318 :
-close(afd);
-
-It should produce the kernel bug...
-> 
-> Are there simpler ways of fixing it?  Maybe sneak a call to
-> wait_for_all_aios() into the right place?  I doubt if it's performance
-> critical, as nobody seems to have ever hit the bug.
-
-Take the time to check how fs/aio.c handle the fput(req->ki_filp) case
-(or read my 2nd patch, it should spot the thing)
-
-If you want to add another kludge to properly fput(req->ki_eventfd),
-be my guest :-(
-
-> 
-> Bear in mind that if the bug _is_ real then it's now out there, and
-> we would like a fix which is usable by 2.6.<two-years-worth>.
-> 
-> etcetera..
-
-
-
-
+i dont know what you're talking about.  if the platform resource uses
+id of 2, then they want uart2 which means irda2.  the sanity check is
+already in place because the peripheral_request() will fail when it
+attempts to claim the pins of uart2 but the uart driver has already
+been enabled for it.
+-mike
