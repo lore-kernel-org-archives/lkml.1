@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZCLNL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756406AbZCLNNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbZCLNL0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 09:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZCLNLM
+	id S1756406AbZCLNNZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 09:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbZCLNNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 09:11:12 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:38959 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752918AbZCLNLL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 09:11:11 -0400
-Message-Id: <49B91826.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Thu, 12 Mar 2009 13:11:50 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: create a non-zero sized bm_pte only when needed
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 12 Mar 2009 09:13:13 -0400
+Received: from phunq.net ([64.81.85.152]:60102 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752114AbZCLNNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 09:13:12 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
+Date: Thu, 12 Mar 2009 06:12:58 -0700
+User-Agent: KMail/1.9.9
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-fsdevel@vger.kernel.org,
+       tux3@tux3.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <200903110925.37614.phillips@phunq.net> <20090312123230.GA14425@parisc-linux.org> <200903122345.13787.nickpiggin@yahoo.com.au>
+In-Reply-To: <200903122345.13787.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200903120612.58643.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: kernel image size reduction
+On Thursday 12 March 2009, Nick Piggin wrote:
+> On Thursday 12 March 2009 23:32:30 Matthew Wilcox wrote:
+> > On Thu, Mar 12, 2009 at 05:24:33AM -0700, Daniel Phillips wrote:
+> > > On Thursday 12 March 2009, Nick Piggin wrote:
+> > > > That's interesting. Do you handle 1K block sizes with 64K page size? :)
+> > >
+> > > Not in its current incarnation.  That would require 32 bytes worth of
+> > > state while the current code just has a 4 byte map (4 bits X 8 blocks).
+> > > I suppose a reasonable way to extend it would be 4 x 8 byte maps.  Has
+> > > somebody spotted a 64K page?
+> >
+> > I believe SGI ship their ia64 kernels configured this way.  Certainly
+> > 16k ia64 kernels are common, which would (if I understand your scheme
+> > correctly) be 8 bytes worth of state in your scheme.
+> 
+> I think some distros will (or do) ship configs with 64K page size for
+> ia64 and powerpc too. I think I have heard of people using 64K pages
+> with ARM. There was some (public) talk of x86-64 getting a 16K or 64K
+> page size too (and even if not HW, some people want to be able to go
+> bigger SW pagecache size).
+> 
+> I wouldn't expect 64K page and 1K block to be worth optimising for
+> (although 64K page systems could easily use older or shared 4K block
+> filesystems). But just keep in mind that a good solution should not
+> rely on PAGE_CACHE_SIZE for correctness.
 
-Since in most configurations the pmd page needed maps the same range of
-virtual addresses which is also mapped by the earlier inserted one for
-covering FIX_DBGP_BASE, that page (and its insertion in the page
-tables) can be avoided altogether by detecting the condition at compile
-time.
+Not worth optimizing for, but it better work.  Which the current nasty
+circular buffer list will, and I better keep that in mind for the next
+round of effort on block handles.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+On the other hand, 4K blocks on 64K pages better work really well or
+those 64K systems will be turkeys.
 
----
- arch/x86/mm/ioremap.c |   19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
+Regards,
 
---- linux-2.6.29-rc7/arch/x86/mm/ioremap.c	2009-03-04 09:10:19.000000000 +0100
-+++ 2.6.29-rc7-x86-avoid-bm_pte/arch/x86/mm/ioremap.c	2009-02-18 15:34:02.000000000 +0100
-@@ -490,7 +490,12 @@ static int __init early_ioremap_debug_se
- early_param("early_ioremap_debug", early_ioremap_debug_setup);
- 
- static __initdata int after_paging_init;
--static pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)] __page_aligned_bss;
-+#define __FIXADDR_TOP (-PAGE_SIZE)
-+static pte_t bm_pte[(__fix_to_virt(FIX_DBGP_BASE)
-+		     ^ __fix_to_virt(FIX_BTMAP_BEGIN)) >> PMD_SHIFT
-+		    ? PAGE_SIZE / sizeof(pte_t) : 0] __page_aligned_bss;
-+#undef __FIXADDR_TOP
-+static __initdata pte_t *bm_ptep;
- 
- static inline pmd_t * __init early_ioremap_pmd(unsigned long addr)
- {
-@@ -505,6 +510,8 @@ static inline pmd_t * __init early_iorem
- 
- static inline pte_t * __init early_ioremap_pte(unsigned long addr)
- {
-+	if (!sizeof(bm_pte))
-+		return &bm_ptep[pte_index(addr)];
- 	return &bm_pte[pte_index(addr)];
- }
- 
-@@ -516,8 +523,14 @@ void __init early_ioremap_init(void)
- 		printk(KERN_INFO "early_ioremap_init()\n");
- 
- 	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
--	memset(bm_pte, 0, sizeof(bm_pte));
--	pmd_populate_kernel(&init_mm, pmd, bm_pte);
-+	if (sizeof(bm_pte)) {
-+		memset(bm_pte, 0, sizeof(bm_pte));
-+		pmd_populate_kernel(&init_mm, pmd, bm_pte);
-+	} else {
-+		bm_ptep = pte_offset_kernel(pmd, 0);
-+		if (early_ioremap_debug)
-+			printk(KERN_INFO "bm_ptep=%p\n", bm_ptep);
-+	}
- 
- 	/*
- 	 * The boot-ioremap range spans multiple pmds, for which
-
-
-
+Daniel
