@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbZCLE3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZCLEai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbZCLE3k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 00:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbZCLE3b
+	id S1753872AbZCLEai (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 00:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZCLEa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 00:29:31 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:60296 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750777AbZCLE3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 00:29:30 -0400
-Date: Thu, 12 Mar 2009 09:59:51 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH] cpuacct: per-cgroup utime/stime statistics - v1
-Message-ID: <20090312042951.GA3344@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090310124208.GC3902@in.ibm.com> <20090311093812.298a0b21.kamezawa.hiroyu@jp.fujitsu.com> <20090311153434.GB16769@balbir.in.ibm.com>
+	Thu, 12 Mar 2009 00:30:28 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37243 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbZCLEa2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 00:30:28 -0400
+Message-ID: <49B88F80.3080203@zytor.com>
+Date: Wed, 11 Mar 2009 21:28:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090311153434.GB16769@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: relocs is only used with 32bit
+References: <49B80F7B.2020007@kernel.org>
+In-Reply-To: <49B80F7B.2020007@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 09:04:34PM +0530, Balbir Singh wrote:
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-11 09:38:12]:
-> 
-> > BTW, I'm not sure but don't we need special handling if
-> > CONFIG_VIRT_CPU_ACCOUNTING=y ?
-> 
-> Good point. Bharata, with CONFIG_VIRT_CPU_ACCOUNTING, utime and stime
-> is accounted for within the architecture.
+Hi Yinghai,
 
-True, but as I replied to Kamezawa in the other thread, these
-architectures are still dependent on generic implementations of
-account_{system,user}_time() which feed to per-process and system-wide
-accounting. And this is where we have hooks for per-cgroup accounting.
-So I don't see why we need to handle these archs specially. Do I miss
-something ?
+In general I prefer minimizing the conditional sections rather than
+maximizing them.  If nothing else, it catches errors earlier that way,
+and makes it easier to eventually eliminate them entirely.
 
-Regards,
-Bharata.
+	-hpa
+
+Yinghai Lu wrote:
+> Impact: cleanup
+> 
+> those lines is not needed for 64bit
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  arch/x86/boot/compressed/Makefile |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/boot/compressed/Makefile
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/boot/compressed/Makefile
+> +++ linux-2.6/arch/x86/boot/compressed/Makefile
+> @@ -26,6 +26,7 @@ OBJCOPYFLAGS_vmlinux.bin :=  -R .comment
+>  $(obj)/vmlinux.bin: vmlinux FORCE
+>  	$(call if_changed,objcopy)
+>  
+> +ifeq ($(CONFIG_X86_32),y)
+>  
+>  targets += vmlinux.bin.all vmlinux.relocs relocs
+>  hostprogs-$(CONFIG_X86_32) += relocs
+> @@ -42,8 +43,6 @@ quiet_cmd_relocbin = BUILD   $@
+>  $(obj)/vmlinux.bin.all: $(vmlinux.bin.all-y) FORCE
+>  	$(call if_changed,relocbin)
+>  
+> -ifeq ($(CONFIG_X86_32),y)
+> -
+>  ifdef CONFIG_RELOCATABLE
+>  $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin.all FORCE
+>  	$(call if_changed,gzip)
+
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
