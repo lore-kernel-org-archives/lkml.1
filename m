@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbZCLMIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbZCLMIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755296AbZCLMIA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 08:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZCLMHu
+	id S1755940AbZCLMIY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 08:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbZCLMHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 08:07:50 -0400
-Received: from mx3.schottelius.org ([77.109.138.221]:45481 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752383AbZCLMHt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 08:07:49 -0400
-Date: Thu, 12 Mar 2009 13:07:46 +0100
-From: Nico Schottelius <nico-linux-configs@schottelius.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Linux Next Mailing List <linux-next@vger.kernel.org>
-Cc: announce@l.schottelius.org
-Subject: Collection of working and tested kernel configurations
-Message-ID: <20090312120745.GA30728@denkbrett.schottelius.org>
-Mail-Followup-To: Nico Schottelius <nico-linux-configs@schottelius.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Linux Next Mailing List <linux-next@vger.kernel.org>,
-	announce@l.schottelius.org
+	Thu, 12 Mar 2009 08:07:53 -0400
+Received: from mga14.intel.com ([143.182.124.37]:46308 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754694AbZCLMHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 08:07:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,350,1233561600"; 
+   d="scan'208";a="119519741"
+Date: Thu, 12 Mar 2009 20:06:49 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: jack marrow <jackmarrow2@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: Memory usage per memory zone
+Message-ID: <20090312120649.GA20854@localhost>
+References: <e2dc2c680903110516v2c66d4a4h6a422cffceb12e2@mail.gmail.com> <20090311122611.GA8804@localhost> <e2dc2c680903120053w37968c1cy556812cef63f0896@mail.gmail.com> <20090312075952.GA19331@localhost> <e2dc2c680903120104h4d19a3f6j57ad045bc06f9a90@mail.gmail.com> <20090312081113.GA19506@localhost> <e2dc2c680903120117j7be962b2xd63f3296f8f65a46@mail.gmail.com> <20090312103847.GA20210@localhost> <e2dc2c680903120438i27e209c2h28c61704299b8b4f@mail.gmail.com> <e2dc2c680903120448q386f84a4t5667e22751002ae9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.29-rc7-next-20090306-ikn x86_64)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e2dc2c680903120448q386f84a4t5667e22751002ae9@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 12, 2009 at 01:48:50PM +0200, jack marrow wrote:
+> >> Sure, but something is unreclaimable... Maybe some process is taking a
+> >> lot of shared memory(shm)? What's the output of `lsof`?
+> >
+> > I can't paste that, but I expect oracle is using it.
+> 
+> Maybe this is helpful:
+> 
+> #  ipcs |grep oracle
+> 0x00000000 2293770    oracle    640        4194304    22
+> 0x00000000 2326539    oracle    640        536870912  22
+> 0x880f3334 2359308    oracle    640        266338304  22
+> 0x0f9b5efc 1933312    oracle    640        44
 
---yrj/dFKFPuw6o+aM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Up to 800M shm...
 
-Hello!
+http://lwn.net/Articles/286485/
+http://feedblog.org/2009/01/25/splitlru-patch-in-kernel-2628-must-have-for-mysql-and-innodb/
 
-As I'm testing many different kernel versions in the last time,
-I collected all the configurations, so somebody else with an X200
-or T60 can just grab a working configuration.
+which reads: 
 
-If you also have a long list of working configurations or want to
-share your config, just update against the following git repo:
+        If you’re running MySQL with InnoDB and an in-memory buffer pool, and
+        having paging issues, you probably should upgrade to 2.6.28 ASAP.
 
-  http://git.schottelius.org/configs/linux/
-  git://git.schottelius.org/configs/linux/
-  http://git.schottelius.org/?p=3Dconfigs/linux;a=3Dsummary
 
-Sincerly,
-
-Nico
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---yrj/dFKFPuw6o+aM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkm4+xEACgkQuL75KpiFGIxHBQCfVyPYlZfxJf0j9VyN8SepAi/t
-amEAn0vHtH/NfmhyCUtezQ9ektE0/oxQ
-=0F4R
------END PGP SIGNATURE-----
-
---yrj/dFKFPuw6o+aM--
+Thanks,
+Fengguang
