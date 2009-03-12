@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbZCLWpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbZCLWtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948AbZCLWpI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 18:45:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZCLWo5
+	id S1756402AbZCLWtX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 18:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZCLWtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 18:44:57 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53095 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752146AbZCLWo4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 18:44:56 -0400
-Date: Thu, 12 Mar 2009 18:44:52 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Jason Baron <jbaron@redhat.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, acme@ghostprotocols.net, fche@redhat.com,
-       peterz@infradead.org, compudj@krystal.dyndns.org
-Subject: Re: [Patch 1/2] tracepoints for softirq entry/exit - add softirq-to-name
- array
-In-Reply-To: <20090312184533.GB11045@nowhere>
-Message-ID: <alpine.DEB.2.00.0903121843550.3062@gandalf.stny.rr.com>
-References: <20090312183336.GB3352@redhat.com> <20090312184533.GB11045@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 12 Mar 2009 18:49:14 -0400
+Received: from mga01.intel.com ([192.55.52.88]:29697 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753140AbZCLWtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 18:49:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,353,1233561600"; 
+   d="scan'208";a="672532735"
+Subject: Re: [PATCH] VM, x86, PAT: Change implementation of
+ is_linear_pfn_mapping
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: "mingo@elte.hu" <mingo@elte.hu>,
+       "thellstrom@vmware.com" <thellstrom@vmware.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Nick Piggin <npiggin@suse.de>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>
+In-Reply-To: <200903122130.23860.elendil@planet.nl>
+References: <498B5ADE.3090602@vmware.com>
+	 <200903120645.44515.elendil@planet.nl>
+	 <20090312185918.GA22421@linux-os.sc.intel.com>
+	 <200903122130.23860.elendil@planet.nl>
+Content-Type: text/plain
+Date: Thu, 12 Mar 2009 15:48:10 -0700
+Message-Id: <1236898090.4529.80.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-03-12 at 13:30 -0700, Frans Pop wrote:
+> On Thursday 12 March 2009, Pallipadi, Venkatesh wrote:
+> > OK, Looking more at the code, I now understand how the patch from
+> > yday resulted in the oops you saw. Here goes my nth attempt at solving
+> > this problem. Can you please test this patch.
+> 
+> System has been running stable for almost an hour now with pat enabled, so 
+> it looks like the problem is solved.
+> 
+> FYI, with early .29 RCs I had the following when running VirtualBox:
+> kernel: WARNING: at arch/x86/mm/pat.c:620 reserve_pfn_range+0x5b/0x26d()
+> 
+> After be03d9e80220 (which probably fixed that) VirtualBox could no longer 
+> be loaded at all with pat enabled, but with this patch added VirtualBox 
+> runs perfectly again.
 
-On Thu, 12 Mar 2009, Frederic Weisbecker wrote:
-> > @@ -53,6 +53,12 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
-> >  
-> >  static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
-> >  
-> > +char *softirq_to_name[NR_SOFTIRQS] = {
-> > +	"HI_SOFTIRQ", "TIMER_SOFTIRQ", "NET_TX_SOFTIRQ", "NET_RX_SOFTIRQ",
-> > +	"BLOCK_SOFTIRQ", "TASKLET_SOFTIRQ", "SCHED_SOFTIRQ", "HRTIMER_SOFTIRQ",
-> > +	"RCU_SOFTIRQ"
-> > +};
-> 
-> 
-> Hi,
-> 
-> May be you could abuse open_softirq() to append dynamically these entries:
-> 
-> char *softirq_to_name[NR_SOFTIRQS];
-> 
-> #define open_softirq(nr, func)	\
-> 	softirq_to_name[nr] = __stringify(nr); \
-> 	__open_softirq(nr, func);
-> 
-> So that it's a bit more scalable.
-> 
+That's great news :-).
 
-Softirqs are pretty much set. If anything, they may even disappear (if the 
-threaded interrupts take off). So hardcoding it should not be an issue.
+Ingo: considering the history of this patch, can you let this cook in
+your tree for a week or so and then push towards upstream-git (and .29
+stable if .29 is out by then).
 
--- Steve
+Thanks,
+Venki
 
