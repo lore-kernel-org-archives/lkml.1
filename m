@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZCLLva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbZCLLvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbZCLLva (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 07:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbZCLLvT
+	id S1752877AbZCLLvo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 07:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbZCLLvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 07:51:19 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49641 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752184AbZCLLvT (ORCPT
+	Thu, 12 Mar 2009 07:51:24 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:35469 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756159AbZCLLvX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 07:51:19 -0400
-Subject: Re: [uClinux-dev] RE: [PATCH] NOMMU: Pages allocated to a ramfs
- inode's pagecache may get wrongly discarded
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: uClinux development list <uclinux-dev@uclinux.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090312112953.GD6995@shareable.org>
-References: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk>
-	 <20090311170840.2f136849.akpm@linux-foundation.org>
-	 <5DC5324CE00E4D4494EE5F031E354E9501CE9C0F@BUDMLVEM03.e2k.ad.ge.com>
-	 <20090312112953.GD6995@shareable.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 12 Mar 2009 12:50:08 +0100
-Message-Id: <1236858608.22914.3689.camel@twins>
+	Thu, 12 Mar 2009 07:51:23 -0400
+Message-Id: <49B9056F.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Thu, 12 Mar 2009 11:51:59 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <jeremy.fitzhardinge@citrix.com>, <tglx@linutronix.de>,
+       <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86-64: fix HYPERVISOR_update_descriptor()
+References: <49B8F3D4.76E4.0078.0@novell.com>
+ <20090312105426.GC30204@elte.hu> <49B8FF3E.76E4.0078.0@novell.com>
+ <20090312113520.GA8353@elte.hu>
+In-Reply-To: <20090312113520.GA8353@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-12 at 11:29 +0000, Jamie Lokier wrote:
-> Berkhan, Enrik (GE Infra, Oil & Gas) wrote:
-> > Andrew Morton wrote:
-> > > On Wed, 11 Mar 2009 15:30:35 +0000
-> > > David Howells <dhowells@redhat.com> wrote:
-> > >> From: Enrik Berkhan <Enrik.Berkhan@ge.com>
-> > >> 
-> > >> The solution is to mark the pages dirty at the point of allocation by
-> > >> the truncation code.
-> > > 
-> > > Was there a specific reason for using the low-level SetPageDirty()?
-> > 
-> > No, no specific reason. It was just my first try of a fix after spotting 
-> > the problem. After a short discussion with David, we decided to wait for 
-> > others' comments on using the low-/high-level approach.
-> 
-> Tangentially related...
-> 
-> Does the vm pageout logic include or skip these "dirty" pages looking
-> for candidates to flush to storage?  What about with MMU?
+>>> Ingo Molnar <mingo@elte.hu> 12.03.09 12:35 >>>
+>* Jan Beulich <jbeulich@novell.com> wrote:
+>> I'm confused: What point is there to add a textual description 
+>> that matches the subject? [...]
+>
+>For example, under what circumstances did you trigger the bug, 
+>how widely does it affect people, how did you test it. You are 
+>sending patches very close to the 2.6.29 release, and your 
+>commit log is non-existent.
+>
+>Yes, i can figure out what the patch does, but that is not the 
+>point.
+>
+>The point is for you to be forthcoming with such information and 
+>trying to be helpful to the maintenance process, by properly 
+>describing changes, by describing how you found the bug, how you 
+>tested the fix, how significant you find the fix, etc.
+>
+>I.e. try to emit the information you have about this _already_, 
+>and generously so, instead of hiding it and forcing others to 
+>recover it.
 
-Includes them, regular pageout will try to do the writeout to clean them
-and then discard them. 
+Hmm, I'm really just following what I see from many others. And I have
+to admit that there are [tiny] patches that really don't need much
+explanation (and I often find quite the inverse - huge patches that have
+[almost] no description).
 
-The ramfs stuff is rather icky in that it adds the pages to the aging
-list, marks them dirty, but does not provide a writeout method. 
+>>It might be a small work for me to recover it and 
+>>put it into the changelog, but many of your past patches showed 
+>>such a pattern and such overhead mounts up quickly.
 
-This will make the paging code scan over them (continuously) trying to
-clean them, failing that (lack of writeout method) and putting them back
-on the list.
+I'm sorry for that - I simply wasn't aware I'm causing you to do extra
+work. I usually try to be as verbose with patches as seems necessary
+to me - after all I have no other way to judge ho much is too little or
+too much.
+
+>> [...] And where is the need for an impact line documented 
+>> (clearly neither SubmitChecklist no SubmittingPatches have any 
+>> occurrence of the word impact), i.e. what are the valid values 
+>> to chose from?
+>
+>See:
+>
+>  http://lkml.org/lkml/2008/10/28/67 
+
+Thanks. Would certainly be helpful to put into Documentation/ if this is
+meant to be more than just a personal requirement of yours.
+
+Jan
+
