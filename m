@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbZCLH5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbZCLH46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755589AbZCLH5Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 03:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbZCLH4M
+	id S1755599AbZCLH46 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 03:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbZCLH4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 03:56:12 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:49003 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755025AbZCLH4L (ORCPT
+	Thu, 12 Mar 2009 03:56:05 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:52105 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754024AbZCLH4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 03:56:11 -0400
+	Thu, 12 Mar 2009 03:56:04 -0400
 From: Darren Hart <dvhltc@us.ibm.com>
-Subject: [PATCH 5/6] futex: unlock before returning -EFAULT
+Subject: [PATCH 4/6] futex: Use current->time_slack_ns for rt tasks too
 To: linux-kernel@vger.kernel.org
 Cc: Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
@@ -19,8 +19,8 @@ Cc: Thomas Gleixner <tglx@linutronix.de>,
        Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        Rusty Russell <rusty@rustcorp.com.au>
-Date: Thu, 12 Mar 2009 00:56:06 -0700
-Message-ID: <20090312075606.9856.88729.stgit@Aeon>
+Date: Thu, 12 Mar 2009 00:55:59 -0700
+Message-ID: <20090312075559.9856.28822.stgit@Aeon>
 In-Reply-To: <20090312075349.9856.83687.stgit@Aeon>
 References: <20090312075349.9856.83687.stgit@Aeon>
 User-Agent: StGIT/0.14.2
@@ -31,11 +31,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-futex_lock_pi can potentially return -EFAULT with the rt_mutex held.  This
-seems like the wrong thing to do as userspace should assume -EFAULT means the
-lock was not taken.  Even if it could figure this out, we'd be leaving the
-pi_state->owner in an inconsistent state.  This patch unlocks the rt_mutex
-prior to returning -EFAULT to userspace.
+RT tasks should set their timer slack to 0 on their own.  This patch removes
+the 'if (rt_task()) slack = 0;' block in futex_wait.
 
 Build and boot tested on a 4 way Intel x86_64 workstation.  Passes basic
 pthread_mutex and PI tests out of ltp/testcases/realtime.
@@ -47,25 +44,30 @@ Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Rusty Russell <rusty@rustcorp.com.au>
 ---
 
- kernel/futex.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ kernel/futex.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
 diff --git a/kernel/futex.c b/kernel/futex.c
-index 6579912..c980a55 100644
+index e149545..6579912 100644
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -1567,6 +1567,13 @@ retry_locked:
- 		}
- 	}
+@@ -1253,16 +1253,13 @@ retry:
+ 		if (!abs_time)
+ 			schedule();
+ 		else {
+-			unsigned long slack;
+-			slack = current->timer_slack_ns;
+-			if (rt_task(current))
+-				slack = 0;
+ 			hrtimer_init_on_stack(&t.timer,
+ 					      clockrt ? CLOCK_REALTIME :
+ 					      CLOCK_MONOTONIC,
+ 					      HRTIMER_MODE_ABS);
+ 			hrtimer_init_sleeper(&t, current);
+-			hrtimer_set_expires_range_ns(&t.timer, *abs_time, slack);
++			hrtimer_set_expires_range_ns(&t.timer, *abs_time,
++						     current->timer_slack_ns);
  
-+	/*
-+	 * If fixup_pi_state_owner() faulted and was unable to handle the
-+	 * fault, unlock it and return the fault to userspace.
-+	 */
-+	if (ret && (rt_mutex_owner(&q.pi_state->pi_mutex) == current))
-+		rt_mutex_unlock(&q.pi_state->pi_mutex);
-+
- 	/* Unqueue and drop the lock */
- 	unqueue_me_pi(&q);
- 
+ 			hrtimer_start_expires(&t.timer, HRTIMER_MODE_ABS);
+ 			if (!hrtimer_active(&t.timer))
 
