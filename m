@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZCLRVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZCLRZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbZCLRVo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 13:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZCLRVe
+	id S1755423AbZCLRZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 13:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbZCLRZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 13:21:34 -0400
-Received: from mail-in-10.arcor-online.net ([151.189.21.50]:48681 "EHLO
-	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753575AbZCLRVd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 13:21:33 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-12.arcor-online.net 0A4DA1B3B8D
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] PCI fixes for 2.6.29
-Date: Thu, 12 Mar 2009 18:23:57 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7; KDE/4.2.1; x86_64; ; )
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20090311043659.GC25995@parisc-linux.org> <alpine.LFD.2.00.0903111220200.32478@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903111220200.32478@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200903121823.57701.prakash@punnoor.de>
+	Thu, 12 Mar 2009 13:25:22 -0400
+Received: from waste.org ([66.93.16.53]:36568 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754827AbZCLRZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 13:25:21 -0400
+Subject: Re: [patch -mm] cpusets: add memory_slab_hardwall flag
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Menage <menage@google.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.10.0903121206250.5493@qirst.com>
+References: <20090309123011.A228.A69D9226@jp.fujitsu.com>
+	 <alpine.DEB.2.00.0903090206010.24605@chino.kir.corp.google.com>
+	 <20090309181756.CF66.A69D9226@jp.fujitsu.com>
+	 <alpine.DEB.2.00.0903091313090.27253@chino.kir.corp.google.com>
+	 <alpine.DEB.1.10.0903091706540.1861@qirst.com>
+	 <alpine.DEB.2.00.0903091422510.5410@chino.kir.corp.google.com>
+	 <alpine.DEB.1.10.0903101649330.20363@qirst.com>
+	 <1236719283.3205.24.camel@calx>
+	 <alpine.DEB.1.10.0903121206250.5493@qirst.com>
+Content-Type: text/plain
+Date: Thu, 12 Mar 2009 12:23:24 -0500
+Message-Id: <1236878604.3213.57.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mittwoch 11 März 2009 20:22:56 Linus Torvalds wrote:
-> On Tue, 10 Mar 2009, Matthew Wilcox wrote:
-> > These are the PCI fixes that have been piling up for the last week while
-> > Jesse's been on vacation.  I don't think there's anything questionable
-> > here.  All the patches have been posted to linux-pci.
->
-> Grrr. It doesn't even compile cleanly:
->
-> drivers/pci/quirks.c: In function ‘ht_check_msi_mapping’:
-> drivers/pci/quirks.c:2142: warning: ‘return’ with no value, in function
-> returning non-void
->
-> and yes, it's a real bug.
->
-> I'm not happy.
->
-> I assume the proper fix is this trivial one-liner, but people should
-> double-check.
->
-> Not pulled.
+On Thu, 2009-03-12 at 12:08 -0400, Christoph Lameter wrote:
+> On Tue, 10 Mar 2009, Matt Mackall wrote:
+> 
+> > > > Yes, and that's why we require the cpuset hardwall on a configurable
+> > > > per-cpuset basis.  If a cpuset has set this option for its workload, then
+> > > > it is demanding object allocations from local memory.  Other cpusets that
+> > > > do not have memory_slab_hardwall set can still allocate from any cpu slab
+> > > > or partial slab, including those allocated for the hardwall cpuset.
+> > >
+> > > You cannot hardwall something that is used in a shared way by processes in
+> > > multiple cpusets.
+> >
+> > He can enforce that every allocation made when a given task is current
+> > conforms. His patch demonstrates that.
+> 
+> Of course. But that may just be a subset of the data used by a task. If an
+> inode, dentry and so on was already allocated in the context of another
+> process then the locality of that allocation will not be changed. The
+> hardwall will have no effect.
 
-As I explained to Matthew Wilcox my small patch was incorrectly applied. It 
-originally was in
+It will if he's also using a namespace. This is part of a larger puzzle.
 
-static void __devinit __nv_msi_ht_cap_quirk(struct pci_dev *dev, int all)
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-I don't know who or how it moved into
-
-static int __devinit ht_check_msi_mapping(struct pci_dev *dev)
-
-where it breaks for obvious reasons.
-
-
->
-> 		Linus
->
-> ---
->  drivers/pci/quirks.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> index a13f3d7..4ba55d0 100644
-> --- a/drivers/pci/quirks.c
-> +++ b/drivers/pci/quirks.c
-> @@ -2139,7 +2139,7 @@ static int __devinit ht_check_msi_mapping(struct
-> pci_dev *dev)
->
->  	/* Enabling HT MSI mapping on this device breaks MCP51 */
->  	if (dev->device == 0x270)
-> -		return;
-> +		return 0;
->
->  	/* check if there is HT MSI cap or enabled on this device */
->  	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
