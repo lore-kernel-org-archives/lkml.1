@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZCLOfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbZCLOek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbZCLOfT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 10:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756317AbZCLOdy
+	id S1756888AbZCLOek (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 10:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbZCLOdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 10:33:54 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:40019 "EHLO kernel.dk"
+	Thu, 12 Mar 2009 10:33:53 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:40014 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755572AbZCLOdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755543AbZCLOdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Mar 2009 10:33:51 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, david@fromorbit.com, npiggin@suse.de,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 5/7] writeback: move the default backing_dev_info out of readahead
-Date: Thu, 12 Mar 2009 15:33:46 +0100
-Message-Id: <1236868428-20408-6-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 4/7] writeback: get rid of task/current_is_pdflush()
+Date: Thu, 12 Mar 2009 15:33:45 +0100
+Message-Id: <1236868428-20408-5-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <1236868428-20408-1-git-send-email-jens.axboe@oracle.com>
 References: <1236868428-20408-1-git-send-email-jens.axboe@oracle.com>
@@ -23,108 +23,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It belongs in mm/backing-dev.c
+There's just a single user in the kernel and Chris says it's safe to kill.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- mm/backing-dev.c |   27 ++++++++++++++++++++++++++-
- mm/readahead.c   |   25 -------------------------
- 2 files changed, 26 insertions(+), 26 deletions(-)
+ fs/btrfs/disk-io.c        |    2 +-
+ include/linux/writeback.h |   11 -----------
+ 2 files changed, 1 insertions(+), 12 deletions(-)
 
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index bf9c0e0..0096b96 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -5,10 +5,24 @@
- #include <linux/fs.h>
- #include <linux/sched.h>
- #include <linux/mm.h>
-+#include <linux/pagemap.h>
- #include <linux/module.h>
- #include <linux/writeback.h>
- #include <linux/device.h>
+diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
+index 3e18175..6ec80c0 100644
+--- a/fs/btrfs/disk-io.c
++++ b/fs/btrfs/disk-io.c
+@@ -2385,7 +2385,7 @@ void btrfs_btree_balance_dirty(struct btrfs_root *root, unsigned long nr)
+ 	unsigned long thresh = 32 * 1024 * 1024;
+ 	tree = &BTRFS_I(root->fs_info->btree_inode)->io_tree;
  
-+void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
-+{
-+}
-+EXPORT_SYMBOL(default_unplug_io_fn);
-+
-+struct backing_dev_info default_backing_dev_info = {
-+	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
-+	.state		= 0,
-+	.capabilities	= BDI_CAP_MAP_COPY,
-+	.unplug_io_fn	= default_unplug_io_fn,
-+};
-+EXPORT_SYMBOL_GPL(default_backing_dev_info);
-+
- static struct class *bdi_class;
- DEFINE_SPINLOCK(bdi_lock);
- LIST_HEAD(bdi_list);
-@@ -169,9 +183,20 @@ static __init int bdi_class_init(void)
- 	bdi_debug_init();
- 	return 0;
- }
--
- postcore_initcall(bdi_class_init);
+-	if (current_is_pdflush() || current->flags & PF_MEMALLOC)
++	if (current->flags & PF_MEMALLOC)
+ 		return;
  
-+static int __init default_bdi_init(void)
-+{
-+	int err;
-+
-+	err = bdi_init(&default_backing_dev_info);
-+	if (!err)
-+		bdi_register(&default_backing_dev_info, NULL, "default");
-+
-+	return err;
-+}
-+subsys_initcall(default_bdi_init);
-+
- int bdi_register(struct backing_dev_info *bdi, struct device *parent,
- 		const char *fmt, ...)
- {
-diff --git a/mm/readahead.c b/mm/readahead.c
-index bec83c1..9ce303d 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -17,19 +17,6 @@
- #include <linux/pagevec.h>
- #include <linux/pagemap.h>
+ 	num_dirty = count_range_bits(tree, &start, (u64)-1,
+diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+index 724327b..f96fea3 100644
+--- a/include/linux/writeback.h
++++ b/include/linux/writeback.h
+@@ -14,17 +14,6 @@ extern struct list_head inode_in_use;
+ extern struct list_head inode_unused;
  
--void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
--{
--}
--EXPORT_SYMBOL(default_unplug_io_fn);
--
--struct backing_dev_info default_backing_dev_info = {
--	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
--	.state		= 0,
--	.capabilities	= BDI_CAP_MAP_COPY,
--	.unplug_io_fn	= default_unplug_io_fn,
--};
--EXPORT_SYMBOL_GPL(default_backing_dev_info);
--
  /*
-  * Initialise a struct file's readahead state.  Assumes that the caller has
-  * memset *ra to zero.
-@@ -233,18 +220,6 @@ unsigned long max_sane_readahead(unsigned long nr)
- 		+ node_page_state(numa_node_id(), NR_FREE_PAGES)) / 2);
- }
- 
--static int __init readahead_init(void)
+- * Yes, writeback.h requires sched.h
+- * No, sched.h is not included from here.
+- */
+-static inline int task_is_pdflush(struct task_struct *task)
 -{
--	int err;
--
--	err = bdi_init(&default_backing_dev_info);
--	if (!err)
--		bdi_register(&default_backing_dev_info, NULL, "default");
--
--	return err;
+-	return task->flags & PF_FLUSHER;
 -}
--subsys_initcall(readahead_init);
 -
- /*
-  * Submit IO for the read-ahead request in file_ra_state.
+-#define current_is_pdflush()	task_is_pdflush(current)
+-
+-/*
+  * fs/fs-writeback.c
   */
+ enum writeback_sync_modes {
 -- 
 1.6.2
 
