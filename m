@@ -1,167 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbZCLAai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbZCLAdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754477AbZCLAai (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 20:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbZCLAa2
+	id S1754065AbZCLAdI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 20:33:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZCLAcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 20:30:28 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:57083 "EHLO e3.ny.us.ibm.com"
+	Wed, 11 Mar 2009 20:32:54 -0400
+Received: from mga11.intel.com ([192.55.52.93]:52475 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753288AbZCLAa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 20:30:27 -0400
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
-From: john stultz <johnstul@us.ibm.com>
+	id S1750752AbZCLAcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 20:32:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,346,1233561600"; 
+   d="scan'208";a="672250743"
+Subject: Re: [PATCH] VM, x86, PAT: Change implementation of
+ is_linear_pfn_mapping
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
 To: Frans Pop <elendil@planet.nl>
-Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200903111703.41663.elendil@planet.nl>
-References: <200903080230.10099.elendil@planet.nl>
-	 <200903091604.56455.elendil@planet.nl> <1236733226.6080.28.camel@localhost>
-	 <200903111703.41663.elendil@planet.nl>
+Cc: "mingo@elte.hu" <mingo@elte.hu>,
+       "thellstrom@vmware.com" <thellstrom@vmware.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Nick Piggin <npiggin@suse.de>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>
+In-Reply-To: <200903112309.40145.elendil@planet.nl>
+References: <498B5ADE.3090602@vmware.com> <m1tz78pdwy.fsf@fess.ebiederm.org>
+	 <498C062C.201@vmware.com> <20090304060857.GA18318@linux-os.sc.intel.com>
+	 <130CA3A191875048A0624FB523A55EC7075DA7CA@PA-EXMBX51.vmware.com>
+	 <20090310013953.GA11312@linux-os.sc.intel.com>
+	 <49B6232B.4050503@vmware.com>
+	 <1236706959.4529.56.camel@localhost.localdomain>
+	 <49B781B6.3060704@vmware.com> <20090311093338.GC12814@elte.hu>
+	 <20090311093338.GC12814@elte.hu>
+	 <20090311175452.GA1702@linux-os.sc.intel.com>
+	 <200903112309.40145.elendil@planet.nl>
 Content-Type: text/plain
-Date: Wed, 11 Mar 2009 17:30:22 -0700
-Message-Id: <1236817822.7680.148.camel@localhost.localdomain>
+Date: Wed, 11 Mar 2009 17:31:52 -0700
+Message-Id: <1236817912.4529.76.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-11 at 17:03 +0100, Frans Pop wrote:
-> OK, I think I've gotten a lot further now.
+On Wed, 2009-03-11 at 15:09 -0700, Frans Pop wrote:
+> Pallipadi, Venkatesh wrote:
+> > Use of vma->vm_pgoff to identify the pfnmaps that are fully
+> > mapped at mmap time is broke. vm_pgoff is set by generic mmap
+> > code even for cases where drivers are setting up the mappings
+> > at the fault time.
+> > 
+> > The problem was originally reported here.
+> > http://marc.info/?l=linux-kernel&m=123383810628583&w=2
+> > 
+> > Change is_linear_pfn_mapping logic to overload VM_NONLINEAR
+> > flag along with VM_PFNMAP to mean full PFNMAP setup at mmap
+> > time.
+> > 
+> > Acked-by: Thomas Hellstrom <thellstrom@vmware.com>
+> > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> > Signed-off-by: Suresh Siddha <suresh.b.siddha>@intel.com>
 > 
-> On Wednesday 11 March 2009, john stultz wrote:
-> > Also the negative conditional you add doesn't really make sense either,
-> > as we expect the xtime.tv_nsec << clock->shift to be larger then
-> > clock->xtime_nsec, as we've rounded it up by one. We then accumulate
-> > the negative difference between them into clock->error.
+> I've applied this patch on top of v2.6.29-rc7-143-g99adcd9 [1] and since 
+> then I've had my system, or rather X/KDE, hang several times. The last 
+> time the problem seems to have been KDE's kicker. I was running a kernel 
+> compile in a konsole window and that just continued and finished, but the 
+> keyboard was completely dead.
+> I could still ssh in from another box. 'ps' would show the top processes, 
+> but hang as well at some point (in the middle of listing KDE processes.
 > 
-> I'm not at all fluent in casts, bit shifting and stuff, so it took a
-> while for the quarter to drop. But AFAICT what you're saying here is
-> exactly the problem.
+> The hang was with pat enabled. I've now booted with nopat.
+
+Frans,
+
+Thanks for testing this. I don't seem to reproduce this on any of my
+test systems with this patch on either tip or latest git. Do you see the
+hang on every boot or once in a while? Are things stable with nopat?
+
+> The log shows (full log attached):
+> kernel: BUG: unable to handle kernel NULL pointer dereference at
+> 0000000000000008
+> kernel: IP: [<ffffffff80322504>] prio_tree_remove+0x9c/0xcc
+> kernel: PGD 7cab1067 PUD 7d644067 PMD 0
+> kernel: Oops: 0000 [#1] SMP
+> kernel: last sysfs file: /sys/class/power_supply/C23D/charge_full
+> kernel: CPU 1
+> kernel: Pid: 5415, comm: kicker Not tainted 2.6.29-rc7 #4 HP Comp
+> aq 2510p Notebook PC
+> kernel: RIP: 0010:[<ffffffff80322504>]  [<ffffffff80322504>] prio
+> _tree_remove+0x9c/0xcc
+> [...]
+> kernel: Call Trace:
+> kernel:  [<ffffffff803225df>] prio_tree_insert+0xab/0x22a
+> kernel:  [<ffffffff8027e90d>] vma_prio_tree_insert+0x23/0xc2
+> kernel:  [<ffffffff802864af>] __vma_link_file+0x70/0x72
+> kernel:  [<ffffffff80286c15>] vma_link+0x7d/0xab
+> kernel:  [<ffffffff802881ea>] mmap_region+0x313/0x479
+> kernel:  [<ffffffff80288646>] do_mmap_pgoff+0x2f6/0x35c
+> kernel:  [<ffffffff802ea99a>] do_shmat+0x28a/0x36c
+> kernel:  [<ffffffff802eaa8d>] sys_shmat+0x11/0x1c
+> kernel:  [<ffffffff8020c25b>] system_call_fastpath+0x16/0x1b
 > 
-> Indeed you do round xtime.tv_nsec up, so when you do
->    clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
-> or
->    clock->xtime_nsec = clock->xtime_nsec - ((s64)xtime.tv_nsec << clock->shift);
-> the second argument is always going to be bigger than the first, so you
-> always end up with a negative value.
+> From the symptoms I strongly suspect this patch to be the culprit.
 > 
-> > Hmm.. Does the following explicit casting help?
+> [1] Together with some other patches (mainly Rafael's latest patchset 
+> for "Rework disabling of interrupts during suspend-resume"), but I doubt 
+> any of those are related to this issue.
 > 
-> Even with the cast you're just papering over the issue that we're moving a
-> negative value into a field that is defined as unsigned:
-> include/linux/clocksource.h:    u64 xtime_nsec;
 
-Probably agreed here, xtime_nsec probably should be converted to a s64
-as negative values are possible.
+Nothing obvious strikes me with this patch and above OOPs. Can you
+please try this patch alone on latest git and check whether you still
+see the failures?
 
-
-However, Its unclear to me if my patch worked or not? 
-Did you try it alone?
-
-
-
-> Why does clock->xtime_nsec get set to the _difference_ (-=) at all? It
-> almost seems to me as if that field is getting abused as a temporary
-> variable. We're also not doing as the comment says:
->         /* store full nanoseconds into xtime after rounding it up and
->          * add the remainder to the error difference.
-> What we are actually doing is storing the _remainder_ in xtime.
-
-
-Yes, after Romans patch we do basically store the remainder in
-xtime_nsec, however we then use that to add to error and xtime_nsec
-isn't used until it is cleared the next time we hit update_wall_clock.
-
-So yea, xtime_nsec scope is now basically a local variable right now,
-but there is code in subfunctions that use it so we didn't change it
-totally. I agree there is some cleanup needed here.
-
-> The patch included below gives me saner values, but still leaves a
-> problem with the calculation of clock->error. Here are the first
-> wall_update calls after a reboot. This is with the patch and some
-> debugging code, but *without* actually changing clock->error.
-> 
-> With that the system boots correctly!
-
-By this you probably disabled the clock steering. Still not sure how it
-affected the issue.
-
-
-> 0: scale/shift: 32/8, xtime_ns old: 155790080000, new: 155790080256
->     tv_ns: 608555001, rem: -256, old_err: 0, error: -4294867296
-> 1: scale/shift: 32/8, xtime_ns old: 155790080256, new: 155790080512
->     tv_ns: 608555002, rem: -256, old_err: 0, error: -4294867296
-> 2: scale/shift: 32/8, xtime_ns old: 155790080512, new: 155790080768
->     tv_ns: 608555003, rem: -256, old_err: 0, error: -4294867296
-> 3: scale/shift: 32/8, xtime_ns old: 155790080768, new: 155790081024
->     tv_ns: 608555004, rem: -256, old_err: 0, error: -4294867296
-> 4: scale/shift: 32/8, xtime_ns old: 155790081024, new: 155790081280
->     tv_ns: 608555005, rem: -256, old_err: 0, error: -4294867296
-> 5: scale/shift: 32/8, xtime_ns old: 155790081280, new: 155790081536
->     tv_ns: 608555006, rem: -256, old_err: 0, error: -4294867296
-> 
-> First observation is that clock->shift is not 12, but 8! This explains
-> the "strange" values we got for xtime.tv_nsec. But I agree with you that
-> from the code in arch/s390/time.c it looks like the value should be 12
-> for the tod clocksource. No idea what mangles it. It also means that
-> clock->error gets shifted by 24 (!) as NTP_SCALE_SHIFT is 32.
-
-So if the shift value is 8, that likely means the jiffies clock is still
-in use here and we haven't switched to the TOD clocksource.
-
-
-> Second observation is that clock->error (old_err) remains at 0. So
-> apparently it's not getting set anywhere else if we don't set it here
-> first. The calculated new error is correct given the shift.
-> 
-> So, lets look next what happens if I allow clock->error to be changed
-> here. This makes the boot fail and I believe that this is the critical
-> change in 5cd1c9c5cf30.
-> 
-> 0: scale/shift: 32/8, xtime_ns old: 496319488000, new: 496319488256
->     tv_ns: 1938748001, rem: -256, old_err: 0, error: -4294867296
-> 1: scale/shift: 32/8, xtime_ns old: 496315293952, new: 496315294208
->     tv_ns: 1938731618, rem: -256, old_err: -4292487689804800, error: -4292501984672096
-> 2: scale/shift: 32/8, xtime_ns old: 496302611296, new: 496302611552
->     tv_ns: 1938682467, rem: -256, old_err: -12807120030269440, error: -12807124325236736
-> 3: scale/shift: 32/8, xtime_ns old: 496298417248, new: 496298417504
->     tv_ns: 1938666084, rem: -256, old_err: -14918186650466656, error: -14918180945433952
-> 4: scale/shift: 32/8, xtime_ns old: 496295896064, new: 496295896320
->     tv_ns: 1938655845, rem: -256, old_err: -15964926015076704, error: -15964920310044000
-> 5: scale/shift: 32/8, xtime_ns old: 496294223456, new: 496294223712
->     tv_ns: 1938649702, rem: -256, old_err: -16483889798454272, error: -16483904093421568
-> 
-> Note that clock->xtime_nsec is now running backwards and the crazy values
-> for clock->error.
-
-That could be acceptable. clocksource_adjust() can do some negative
-steering and still have correct output.
-
-
-> From this I conclude that clock->error is getting buggered somewhere
-> else: we get a completely different value back from what is calculated
-> here. The calculation here is still correct:
-> $ echo $(( -4292487689804800 + (-256 << 24) ))
-> -4292491984772096
-> 
-> I suspect that clock->error running back is what causes my hang.
-> 
-> I hope that I'm at least somewhat on the right track here?
-> I keep wondering why I'm the only one seeing problems...
-
-Me too. Its a little hard to unpack everything you've gone through here,
-as some of your assumptions aren't quite right. Its understandable as
-this code is fairly dense, and has evolved over the last couple of years
-to handle a number of corner cases found. 
-
-But its likely some cleanup here is in order to shake out these signed
-shift issues that were not part of the original design.
-
-thanks
--john
-
+Thanks,
+Venki
 
