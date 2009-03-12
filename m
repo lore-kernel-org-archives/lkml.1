@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZCLJYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbZCLJ05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbZCLJYx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 05:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZCLJYn
+	id S1754422AbZCLJ05 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 05:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZCLJ0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 05:24:43 -0400
-Received: from n23a.bullet.mail.mud.yahoo.com ([68.142.207.189]:35979 "HELO
-	n23a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751730AbZCLJYm (ORCPT
+	Thu, 12 Mar 2009 05:26:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47894 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752271AbZCLJ0r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 05:24:42 -0400
-X-Yahoo-Newman-Id: 106362.25496.bm@omp416.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=OrffFt80J4GCoHipJi8dgl7/MWGJRPSmBt2xybrFqMzEeIxZrjBbHUtYheQyL4C4vAs3fCOD+jYgbB2XOJPB+Wbovq/73b2Zrzs3BbR65kE/7JMV9sxqsJWP73811T2+/1y6QHRJb9qa9PySz90QYK/fD55WK1ZGXSB7kGzoZMg=  ;
-X-YMail-OSG: j8R7ZoQVM1mUBwztbdjC_vbgDzr4iwcA95.plpsfV6us5fMpDxtrT_VO5TQQLCEVEkzJeh1lw5_Qcau3r8ConKQNmE6.L.ZBbXErlve5BpFaT3rnF9mD6HKYz30uTo2a2BQT.3VJyIulL76lqOIMXimMAoBJv7gieyn5xU2FtkeCLc9ZaJWuRkZivmy0
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Subject: Re: [PATCH 3/7] mmc_spi: adjust for delayed data token response
-Date: Thu, 12 Mar 2009 01:24:37 -0800
-User-Agent: KMail/1.9.10
-Cc: "Pierre Ossman" <drzeus@drzeus.cx>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-References: <200903111345.33154.david-b@pacbell.net> <200903120920.06935.wolfgang.mues@auerswald.de>
-In-Reply-To: <200903120920.06935.wolfgang.mues@auerswald.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200903120224.38260.david-b@pacbell.net>
+	Thu, 12 Mar 2009 05:26:47 -0400
+Date: Thu, 12 Mar 2009 02:24:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PULL] Wrapper macros for struct task_struct and struct
+ mm_struct cpumask transition
+Message-Id: <20090312022445.354af358.akpm@linux-foundation.org>
+In-Reply-To: <200903121943.02799.rusty@rustcorp.com.au>
+References: <200903121436.53055.rusty@rustcorp.com.au>
+	<200903121745.23448.rusty@rustcorp.com.au>
+	<20090312003709.1196ce15.akpm@linux-foundation.org>
+	<200903121943.02799.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 March 2009, Wolfgang Mües wrote:
-> David,
-> Am Mittwoch, 11. März 2009 schrieb David Brownell:
-> > All hardware needs some bits to send binary data!!
-> >
-> > Do you mean "which don't send byte-aligned responses,
-> > contrary to MMC/SD/SDIO specifications"?
+On Thu, 12 Mar 2009 19:43:02 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+> On Thursday 12 March 2009 18:07:09 Andrew Morton wrote:
+> > On Thu, 12 Mar 2009 17:45:22 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> ...
+> > Please prefer to put the patches in the email if practical?  More
+> > eyeballs and all that.
 > 
-> No. The specification states that the response from the card after a whole 
-> data block is received is IMMEDIATELY, with 0 bits delay. Not every card is 
-> able to do this all the time.
+> Hmm, yes.  Is there a preferred way of doing that with git request-pull?
+> Or just append the diff?
+
+You're asking me about git?
+
+> > : +/* Future-safe accessor for struct mm_struct's cpu_vm_mask. */
+> > : +#define mm_cpumask(mm) (&(mm)->cpu_vm_mask)
+> > : +
+> ...
+> > It would be pretty perverse to run tsk_cpumask() against a `struct
+> > cpuset*', but your proposed implementation would merrily permit that
+> > mistake.
+> > 
+> > Can we write the kernel in C please??
 > 
-> My comment is a little bit missleading, yes.
+> You mean use an inline?  No, it's a bad idea for two reasons.  The minor
+> reason is that this macro is a temporary so it makes more sense to fix the
+> final version.
+> 
+> But the major one is const correctness.  Macros give a const value for
+> const input.
 
-Well, aligned to zero bytes is the same as "immediately".  ;)
+hm.  Sounds weaselly.
 
-And that description matches up with your other patch.  But
-either way, the comment was confusing.
+>  We can enhance the macro to check, but that's even uglier:
+> 
+>   static inline int check_is_task_struct(const struct task_struct *t) { }
+>   #define tsk_cpumask(t) (sizeof(check_is_task_struct(t)), &(t)->cpu_vm_mask)
 
-- Dave
+include/linux/typecheck.h has help?
 
+> > yup, the patches are quite safe and mergeable.  And if they'd been in the
+> > email body, Linus might have seen that and pulled them ;)
+> 
+> Probably not, as that's not what he complained about last time.
+
+Linus?  Complain?
+
+>  He might have
+> been enlightened by the commit messages tho.
 
