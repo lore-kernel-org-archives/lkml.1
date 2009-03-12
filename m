@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757849AbZCLQZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbZCLQYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757849AbZCLQZl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 12:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757518AbZCLQXt
+	id S1757574AbZCLQYU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 12:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757459AbZCLQXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 12:23:49 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:17361 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757527AbZCLQXs (ORCPT
+	Thu, 12 Mar 2009 12:23:16 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:25185 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757444AbZCLQXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 12:23:48 -0400
+	Thu, 12 Mar 2009 12:23:12 -0400
 From: Adrian Hunter <adrian.hunter@nokia.com>
 To: Pierre Ossman <drzeus-mmc@drzeus.cx>
 Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
@@ -18,263 +18,320 @@ Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
        David Brownell <david-b@pacbell.net>,
        linux-omap Mailing List <linux-omap@vger.kernel.org>,
        Tony Lindgren <tony@atomide.com>, lkml <linux-kernel@vger.kernel.org>
-Date: Thu, 12 Mar 2009 18:23:46 +0200
-Message-Id: <20090312162346.19421.90213.sendpatchset@ahunter-laptop>
+Date: Thu, 12 Mar 2009 18:23:13 +0200
+Message-Id: <20090312162313.19421.10545.sendpatchset@ahunter-laptop>
 In-Reply-To: <20090312162252.19421.34019.sendpatchset@ahunter-laptop>
 References: <20090312162252.19421.34019.sendpatchset@ahunter-laptop>
-Subject: [PATCH 8/10] OMAP: HSMMC: Make driver support dynamic idle
-X-OriginalArrivalTime: 12 Mar 2009 16:23:21.0895 (UTC) FILETIME=[DC707370:01C9A32E]
+Subject: [PATCH 3/10] OMAP: HSMMC: Implement scatter-gather emulation
+X-OriginalArrivalTime: 12 Mar 2009 16:22:48.0451 (UTC) FILETIME=[C8814D30:01C9A32E]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 47b6de0fcfeb5948199dbed941847580bedc5315 Mon Sep 17 00:00:00 2001
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-Date: Thu, 12 Mar 2009 15:47:39 +0200
-Subject: [PATCH] OMAP: HSMMC: Make driver support dynamic idle
+>From b123bde5b97520691535bec1cbe95f4f9160386e Mon Sep 17 00:00:00 2001
+From: Juha Yrjola <juha.yrjola@solidboot.com>
+Date: Fri, 14 Nov 2008 15:22:00 +0200
+Subject: [PATCH] OMAP: HSMMC: Implement scatter-gather emulation
 
-Add a timer that is kept active by MMC requests. FCLK is disabled on
-timeout.
+Instead of using the bounce buffer, using scatter-gather emulation
+(as in the OMAP1/2 MMC driver) removes the need of one extra memory
+copy and improves performance.
 
-Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+Signed-off-by: Juha Yrjola <juha.yrjola@solidboot.com>
 ---
- drivers/mmc/host/omap_hsmmc.c |   81 ++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 72 insertions(+), 9 deletions(-)
+ drivers/mmc/host/omap_hsmmc.c |  172 ++++++++++++++++++++++------------------
+ 1 files changed, 95 insertions(+), 77 deletions(-)
 
 diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index 2832651..0e47073 100644
+index 1f84bd4..483e591 100644
 --- a/drivers/mmc/host/omap_hsmmc.c
 +++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -121,6 +121,9 @@
- #define OMAP_HSMMC_WRITE(base, reg, val) \
- 	__raw_writel((val), (base) + OMAP_HSMMC_##reg)
+@@ -100,9 +100,6 @@
+ #define OMAP_MMC1_DEVID		0
+ #define OMAP_MMC2_DEVID		1
  
-+enum {OFF = 0, ON};
-+#define IDLE_TIMEOUT (jiffies_to_msecs(10))
-+
- struct mmc_omap_host {
- 	struct	device		*dev;
- 	struct	mmc_host	*mmc;
-@@ -147,9 +150,52 @@ struct mmc_omap_host {
+-#define OMAP_MMC_DATADIR_NONE	0
+-#define OMAP_MMC_DATADIR_READ	1
+-#define OMAP_MMC_DATADIR_WRITE	2
+ #define MMC_TIMEOUT_MS		20
+ #define OMAP_MMC_MASTER_CLOCK	96000000
+ #define DRIVER_NAME		"mmci-omap-hs"
+@@ -138,16 +135,14 @@ struct mmc_omap_host {
+ 	resource_size_t		mapbase;
+ 	unsigned int		id;
+ 	unsigned int		dma_len;
+-	unsigned int		dma_dir;
++	unsigned int		dma_sg_idx;
+ 	unsigned char		bus_mode;
+-	unsigned char		datadir;
+ 	u32			*buffer;
+ 	u32			bytesleft;
+ 	int			suspended;
+ 	int			irq;
+ 	int			carddetect;
+ 	int			use_dma, dma_ch;
+-	int			initstr;
  	int			slot_id;
  	int			dbclk_enabled;
  	int			response_busy;
-+
-+	struct timer_list       idle_timer;
-+	spinlock_t		clk_lock;     /* for changing enabled state */
-+	unsigned int		fclk_enabled:1;
-+
- 	struct	omap_mmc_platform_data	*pdata;
- };
+@@ -281,6 +276,15 @@ mmc_omap_start_command(struct mmc_omap_host *host, struct mmc_command *cmd,
+ 	OMAP_HSMMC_WRITE(host->base, CMD, cmdreg);
+ }
  
-+static int mmc_omap_fclk_state(struct mmc_omap_host *host, unsigned int state)
++static int
++mmc_omap_get_dma_dir(struct mmc_omap_host *host, struct mmc_data *data)
 +{
-+	unsigned long flags;
-+	int ret = 0;
++	if (data->flags & MMC_DATA_WRITE)
++		return DMA_TO_DEVICE;
++	else
++		return DMA_FROM_DEVICE;
++}
 +
-+	spin_lock_irqsave(&host->clk_lock, flags);
-+	del_timer(&host->idle_timer);
-+	if (host->fclk_enabled != state) {
-+		if (state == ON) {
-+			ret = clk_enable(host->fclk);
-+			if (ret != 0)
-+				goto err_out;
+ /*
+  * Notify the transfer complete to MMC core
+  */
+@@ -300,9 +304,7 @@ mmc_omap_xfer_done(struct mmc_omap_host *host, struct mmc_data *data)
+ 
+ 	if (host->use_dma && host->dma_ch != -1)
+ 		dma_unmap_sg(mmc_dev(host->mmc), data->sg, host->dma_len,
+-			host->dma_dir);
+-
+-	host->datadir = OMAP_MMC_DATADIR_NONE;
++			mmc_omap_get_dma_dir(host, data));
+ 
+ 	if (!data->error)
+ 		data->bytes_xfered += data->blocks * (data->blksz);
+@@ -352,13 +354,12 @@ static void mmc_dma_cleanup(struct mmc_omap_host *host, int errno)
+ 
+ 	if (host->use_dma && host->dma_ch != -1) {
+ 		dma_unmap_sg(mmc_dev(host->mmc), host->data->sg, host->dma_len,
+-			host->dma_dir);
++			mmc_omap_get_dma_dir(host, host->data));
+ 		omap_free_dma(host->dma_ch);
+ 		host->dma_ch = -1;
+ 		up(&host->sem);
+ 	}
+ 	host->data = NULL;
+-	host->datadir = OMAP_MMC_DATADIR_NONE;
+ }
+ 
+ /*
+@@ -592,6 +593,55 @@ static irqreturn_t omap_mmc_cd_handler(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
++static int mmc_omap_get_dma_sync_dev(struct mmc_omap_host *host,
++				     struct mmc_data *data)
++{
++	int sync_dev;
 +
-+			dev_dbg(mmc_dev(host->mmc), "mmc_fclk: enabled\n");
-+		} else {
-+			clk_disable(host->fclk);
-+			dev_dbg(mmc_dev(host->mmc), "mmc_fclk: disabled\n");
-+		}
-+		host->fclk_enabled = state;
++	if (data->flags & MMC_DATA_WRITE) {
++		if (host->id == OMAP_MMC1_DEVID)
++			sync_dev = OMAP24XX_DMA_MMC1_TX;
++		else
++			sync_dev = OMAP24XX_DMA_MMC2_TX;
++	} else {
++		if (host->id == OMAP_MMC1_DEVID)
++			sync_dev = OMAP24XX_DMA_MMC1_RX;
++		else
++			sync_dev = OMAP24XX_DMA_MMC2_RX;
++	}
++	return sync_dev;
++}
++
++static void mmc_omap_config_dma_params(struct mmc_omap_host *host,
++				       struct mmc_data *data,
++				       struct scatterlist *sgl)
++{
++	int blksz, nblk, dma_ch;
++
++	dma_ch = host->dma_ch;
++	if (data->flags & MMC_DATA_WRITE) {
++		omap_set_dma_dest_params(dma_ch, 0, OMAP_DMA_AMODE_CONSTANT,
++			(host->mapbase + OMAP_HSMMC_DATA), 0, 0);
++		omap_set_dma_src_params(dma_ch, 0, OMAP_DMA_AMODE_POST_INC,
++			sg_dma_address(sgl), 0, 0);
++	} else {
++		omap_set_dma_src_params(dma_ch, 0, OMAP_DMA_AMODE_CONSTANT,
++					(host->mapbase + OMAP_HSMMC_DATA), 0, 0);
++		omap_set_dma_dest_params(dma_ch, 0, OMAP_DMA_AMODE_POST_INC,
++			sg_dma_address(sgl), 0, 0);
 +	}
 +
-+err_out:
-+	spin_unlock_irqrestore(&host->clk_lock, flags);
-+	return ret;
-+}
++	blksz = host->data->blksz;
++	nblk = sg_dma_len(sgl) / blksz;
 +
-+static void mmc_omap_idle_timer(unsigned long data)
-+{
-+	struct mmc_omap_host *host = (struct mmc_omap_host *) data;
++	omap_set_dma_transfer_params(dma_ch, OMAP_DMA_DATA_TYPE_S32,
++			blksz / 4, nblk, OMAP_DMA_SYNC_FRAME,
++			mmc_omap_get_dma_sync_dev(host, data),
++			!(data->flags & MMC_DATA_WRITE));
 +
-+	mmc_omap_fclk_state(host, OFF);
-+}
-+
-+static void mmc_omap_fclk_lazy_disable(struct mmc_omap_host *host)
-+{
-+	mod_timer(&host->idle_timer, jiffies + IDLE_TIMEOUT);
++	omap_start_dma(dma_ch);
 +}
 +
  /*
-  * Stop clock to the card
+  * DMA call back function
   */
-@@ -314,6 +360,7 @@ mmc_omap_xfer_done(struct mmc_omap_host *host, struct mmc_data *data)
- 
- 	if (!data->stop) {
- 		host->mrq = NULL;
-+		mmc_omap_fclk_lazy_disable(host);
- 		mmc_request_done(host->mmc, data->mrq);
+@@ -605,6 +655,14 @@ static void mmc_omap_dma_cb(int lch, u16 ch_status, void *data)
+ 	if (host->dma_ch < 0)
  		return;
- 	}
-@@ -342,6 +389,7 @@ mmc_omap_cmd_done(struct mmc_omap_host *host, struct mmc_command *cmd)
- 	}
- 	if ((host->data == NULL && !host->response_busy) || cmd->error) {
- 		host->mrq = NULL;
-+		mmc_omap_fclk_lazy_disable(host);
- 		mmc_request_done(host->mmc, cmd->mrq);
- 	}
- }
-@@ -509,7 +557,7 @@ static int omap_mmc_switch_opcond(struct mmc_omap_host *host, int vdd)
- 	int ret;
  
- 	/* Disable the clocks */
--	clk_disable(host->fclk);
-+	mmc_omap_fclk_state(host, OFF);
- 	clk_disable(host->iclk);
- 	clk_disable(host->dbclk);
- 
-@@ -523,7 +571,7 @@ static int omap_mmc_switch_opcond(struct mmc_omap_host *host, int vdd)
- 	if (ret != 0)
- 		goto err;
- 
--	clk_enable(host->fclk);
-+	mmc_omap_fclk_state(host, ON);
- 	clk_enable(host->iclk);
- 	clk_enable(host->dbclk);
- 
-@@ -577,12 +625,14 @@ static void mmc_omap_detect(struct work_struct *work)
- 		host->carddetect = -ENOSYS;
- 
- 	sysfs_notify(&host->mmc->class_dev.kobj, NULL, "cover_switch");
-+	mmc_omap_fclk_state(host, ON);
- 	if (host->carddetect) {
- 		mmc_detect_change(host->mmc, (HZ * 200) / 1000);
- 	} else {
- 		mmc_omap_reset_controller_fsm(host, SRD);
- 		mmc_detect_change(host->mmc, (HZ * 50) / 1000);
- 	}
-+	mmc_omap_fclk_lazy_disable(host);
++	host->dma_sg_idx++;
++	if (host->dma_sg_idx < host->dma_len) {
++		/* Fire up the next transfer. */
++		mmc_omap_config_dma_params(host, host->data,
++					   host->data->sg + host->dma_sg_idx);
++		return;
++	}
++
+ 	omap_free_dma(host->dma_ch);
+ 	host->dma_ch = -1;
+ 	/*
+@@ -615,38 +673,28 @@ static void mmc_omap_dma_cb(int lch, u16 ch_status, void *data)
  }
  
  /*
-@@ -809,6 +859,7 @@ static void omap_mmc_request(struct mmc_host *mmc, struct mmc_request *req)
+- * Configure dma src and destination parameters
+- */
+-static int mmc_omap_config_dma_param(int sync_dir, struct mmc_omap_host *host,
+-				struct mmc_data *data)
+-{
+-	if (sync_dir == 0) {
+-		omap_set_dma_dest_params(host->dma_ch, 0,
+-			OMAP_DMA_AMODE_CONSTANT,
+-			(host->mapbase + OMAP_HSMMC_DATA), 0, 0);
+-		omap_set_dma_src_params(host->dma_ch, 0,
+-			OMAP_DMA_AMODE_POST_INC,
+-			sg_dma_address(&data->sg[0]), 0, 0);
+-	} else {
+-		omap_set_dma_src_params(host->dma_ch, 0,
+-			OMAP_DMA_AMODE_CONSTANT,
+-			(host->mapbase + OMAP_HSMMC_DATA), 0, 0);
+-		omap_set_dma_dest_params(host->dma_ch, 0,
+-			OMAP_DMA_AMODE_POST_INC,
+-			sg_dma_address(&data->sg[0]), 0, 0);
+-	}
+-	return 0;
+-}
+-/*
+  * Routine to configure and start DMA for the MMC card
+  */
+ static int
+ mmc_omap_start_dma_transfer(struct mmc_omap_host *host, struct mmc_request *req)
+ {
+-	int sync_dev, sync_dir = 0;
+-	int dma_ch = 0, ret = 0, err = 1;
++	int dma_ch = 0, ret = 0, err = 1, i;
+ 	struct mmc_data *data = req->data;
  
- 	WARN_ON(host->mrq != NULL);
- 	host->mrq = req;
-+	mmc_omap_fclk_state(host, ON);
- 	mmc_omap_prepare_data(host, req);
- 	mmc_omap_start_command(host, req->cmd, req->data);
- }
-@@ -823,6 +874,8 @@ static void omap_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 	unsigned long timeout;
- 	u32 con;
- 
-+	mmc_omap_fclk_state(host, ON);
++	/* Sanity check: all the SG entries must be aligned by block size. */
++	for (i = 0; i < host->dma_len; i++) {
++		struct scatterlist *sgl;
 +
- 	switch (ios->power_mode) {
- 	case MMC_POWER_OFF:
- 		mmc_slot(host).set_power(host->dev, host->slot_id, 0, 0);
-@@ -901,6 +954,8 @@ static void omap_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 	if (ios->bus_mode == MMC_BUSMODE_OPENDRAIN)
- 		OMAP_HSMMC_WRITE(host->base, CON,
- 				OMAP_HSMMC_READ(host->base, CON) | OD);
++		sgl = data->sg + i;
++		if (sgl->length % data->blksz)
++			return -EINVAL;
++	}
++	if ((data->blksz % 4) != 0)
++		/* REVISIT: The MMC buffer increments only when MSB is written.
++		 * Return error for blksz which is non multiple of four.
++		 */
++		return -EINVAL;
 +
-+	mmc_omap_fclk_lazy_disable(host);
- }
- 
- static int omap_hsmmc_get_cd(struct mmc_host *mmc)
-@@ -1029,14 +1084,18 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
- 		goto err1;
+ 	/*
+ 	 * If for some reason the DMA transfer is still active,
+ 	 * we wait for timeout period and free the dma
+@@ -665,49 +713,22 @@ mmc_omap_start_dma_transfer(struct mmc_omap_host *host, struct mmc_request *req)
+ 			return err;
  	}
  
--	if (clk_enable(host->fclk) != 0) {
-+	spin_lock_init(&host->clk_lock);
-+	setup_timer(&host->idle_timer, mmc_omap_idle_timer,
-+		    (unsigned long) host);
-+
-+	if (mmc_omap_fclk_state(host, ON) != 0) {
- 		clk_put(host->iclk);
- 		clk_put(host->fclk);
- 		goto err1;
+-	if (!(data->flags & MMC_DATA_WRITE)) {
+-		host->dma_dir = DMA_FROM_DEVICE;
+-		if (host->id == OMAP_MMC1_DEVID)
+-			sync_dev = OMAP24XX_DMA_MMC1_RX;
+-		else
+-			sync_dev = OMAP24XX_DMA_MMC2_RX;
+-	} else {
+-		host->dma_dir = DMA_TO_DEVICE;
+-		if (host->id == OMAP_MMC1_DEVID)
+-			sync_dev = OMAP24XX_DMA_MMC1_TX;
+-		else
+-			sync_dev = OMAP24XX_DMA_MMC2_TX;
+-	}
+-
+-	ret = omap_request_dma(sync_dev, "MMC/SD", mmc_omap_dma_cb,
+-			host, &dma_ch);
++	ret = omap_request_dma(mmc_omap_get_dma_sync_dev(host, data), "MMC/SD",
++			       mmc_omap_dma_cb,host, &dma_ch);
+ 	if (ret != 0) {
+-		dev_dbg(mmc_dev(host->mmc),
++		dev_err(mmc_dev(host->mmc),
+ 			"%s: omap_request_dma() failed with %d\n",
+ 			mmc_hostname(host->mmc), ret);
+ 		return ret;
  	}
  
- 	if (clk_enable(host->iclk) != 0) {
--		clk_disable(host->fclk);
-+		mmc_omap_fclk_state(host, OFF);
- 		clk_put(host->iclk);
- 		clk_put(host->fclk);
- 		goto err1;
-@@ -1122,6 +1181,7 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
- 		if (ret < 0)
- 			goto err_cover_switch;
- 	}
-+	mmc_omap_fclk_lazy_disable(host);
+ 	host->dma_len = dma_map_sg(mmc_dev(host->mmc), data->sg,
+-			data->sg_len, host->dma_dir);
++			data->sg_len, mmc_omap_get_dma_dir(host, data));
+ 	host->dma_ch = dma_ch;
++	host->dma_sg_idx = 0;
  
+-	if (!(data->flags & MMC_DATA_WRITE))
+-		mmc_omap_config_dma_param(1, host, data);
+-	else
+-		mmc_omap_config_dma_param(0, host, data);
+-
+-	if ((data->blksz % 4) == 0)
+-		omap_set_dma_transfer_params(dma_ch, OMAP_DMA_DATA_TYPE_S32,
+-			(data->blksz / 4), data->blocks, OMAP_DMA_SYNC_FRAME,
+-			sync_dev, sync_dir);
+-	else
+-		/* REVISIT: The MMC buffer increments only when MSB is written.
+-		 * Return error for blksz which is non multiple of four.
+-		 */
+-		return -EINVAL;
++	mmc_omap_config_dma_params(host, data, data->sg);
+ 
+-	omap_start_dma(dma_ch);
  	return 0;
+ }
  
-@@ -1134,7 +1194,7 @@ err_irq_cd:
- err_irq_cd_init:
- 	free_irq(host->irq, host);
- err_irq:
--	clk_disable(host->fclk);
-+	mmc_omap_fclk_state(host, OFF);
- 	clk_disable(host->iclk);
- 	clk_put(host->fclk);
- 	clk_put(host->iclk);
-@@ -1167,7 +1227,7 @@ static int omap_mmc_remove(struct platform_device *pdev)
- 			free_irq(mmc_slot(host).card_detect_irq, host);
- 		flush_scheduled_work();
+@@ -757,7 +778,6 @@ mmc_omap_prepare_data(struct mmc_omap_host *host, struct mmc_request *req)
+ 	host->data = req->data;
  
--		clk_disable(host->fclk);
-+		mmc_omap_fclk_state(host, OFF);
- 		clk_disable(host->iclk);
- 		clk_put(host->fclk);
- 		clk_put(host->iclk);
-@@ -1202,6 +1262,7 @@ static int omap_mmc_suspend(struct platform_device *pdev, pm_message_t state)
- 		if (ret == 0) {
- 			host->suspended = 1;
- 
-+			mmc_omap_fclk_state(host, ON);
- 			OMAP_HSMMC_WRITE(host->base, ISE, 0);
- 			OMAP_HSMMC_WRITE(host->base, IE, 0);
- 
-@@ -1216,7 +1277,7 @@ static int omap_mmc_suspend(struct platform_device *pdev, pm_message_t state)
- 
- 			OMAP_HSMMC_WRITE(host->base, HCTL,
- 					 OMAP_HSMMC_READ(host->base, HCTL) & ~SDBP);
--			clk_disable(host->fclk);
-+			mmc_omap_fclk_state(host, OFF);
- 			clk_disable(host->iclk);
- 			clk_disable(host->dbclk);
- 		}
-@@ -1236,13 +1297,13 @@ static int omap_mmc_resume(struct platform_device *pdev)
- 
- 	if (host) {
- 
--		ret = clk_enable(host->fclk);
-+		ret = mmc_omap_fclk_state(host, ON);
- 		if (ret)
- 			goto clk_en_err;
- 
- 		ret = clk_enable(host->iclk);
- 		if (ret) {
--			clk_disable(host->fclk);
-+			mmc_omap_fclk_state(host, OFF);
- 			clk_put(host->fclk);
- 			goto clk_en_err;
- 		}
-@@ -1264,6 +1325,8 @@ static int omap_mmc_resume(struct platform_device *pdev)
- 		ret = mmc_resume_host(host->mmc);
- 		if (ret == 0)
- 			host->suspended = 0;
-+
-+		mmc_omap_fclk_lazy_disable(host);
+ 	if (req->data == NULL) {
+-		host->datadir = OMAP_MMC_DATADIR_NONE;
+ 		OMAP_HSMMC_WRITE(host->base, BLK, 0);
+ 		return 0;
  	}
+@@ -766,9 +786,6 @@ mmc_omap_prepare_data(struct mmc_omap_host *host, struct mmc_request *req)
+ 					| (req->data->blocks << 16));
+ 	set_data_timeout(host, req);
  
- 	return ret;
+-	host->datadir = (req->data->flags & MMC_DATA_WRITE) ?
+-			OMAP_MMC_DATADIR_WRITE : OMAP_MMC_DATADIR_READ;
+-
+ 	if (host->use_dma) {
+ 		ret = mmc_omap_start_dma_transfer(host, req);
+ 		if (ret != 0) {
+@@ -1027,10 +1044,11 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
+ 		else
+ 			host->dbclk_enabled = 1;
+ 
+-#ifdef CONFIG_MMC_BLOCK_BOUNCE
+-	mmc->max_phys_segs = 1;
+-	mmc->max_hw_segs = 1;
+-#endif
++	/* Since we do only SG emulation, we can have as many segs
++	 * as we want. */
++	mmc->max_phys_segs = 1024;
++	mmc->max_hw_segs = 1024;
++
+ 	mmc->max_blk_size = 512;       /* Block Length at max can be 1024 */
+ 	mmc->max_blk_count = 0xFFFF;    /* No. of Blocks is 16 bits */
+ 	mmc->max_req_size = mmc->max_blk_size * mmc->max_blk_count;
 -- 
 1.5.6.3
 
