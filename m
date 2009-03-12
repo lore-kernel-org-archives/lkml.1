@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757382AbZCLPWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbZCLP0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757382AbZCLPWT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 11:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756353AbZCLPV7
+	id S1756880AbZCLP0G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 11:26:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZCLPZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 11:21:59 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:51302 "EHLO e2.ny.us.ibm.com"
+	Thu, 12 Mar 2009 11:25:54 -0400
+Received: from waste.org ([66.93.16.53]:44037 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755624AbZCLPV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 11:21:58 -0400
-Message-ID: <49B9287A.1080506@us.ibm.com>
-Date: Thu, 12 Mar 2009 08:21:30 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 0/6] Futex fixes and cleanups
-References: <20090312075349.9856.83687.stgit@Aeon> <20090312122233.GA24185@elte.hu>
-In-Reply-To: <20090312122233.GA24185@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753293AbZCLPZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 11:25:53 -0400
+Subject: Re: [PATCH] acquire mmap semaphore in pagemap_read.
+From: Matt Mackall <mpm@selenic.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+       akpm@linux-foundation.org
+In-Reply-To: <20090312125410.25400d18@skybase>
+References: <20090312113308.6fe18a93@skybase>
+	 <20090312114533.GA2407@x200.localdomain>  <20090312125410.25400d18@skybase>
+Content-Type: text/plain
+Date: Thu, 12 Mar 2009 10:23:34 -0500
+Message-Id: <1236871414.3213.50.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Darren Hart <dvhltc@us.ibm.com> wrote:
+On Thu, 2009-03-12 at 12:54 +0100, Martin Schwidefsky wrote:
+> On Thu, 12 Mar 2009 14:45:33 +0300
+> Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
->> Hi Ingo,
->>
->> Here are some assorted futex fixes that I was hoping to get 
->> upstream in preparation for my requeue_pi patchset in the near 
->> future.  They can found at the following git repository:
+> > On Thu, Mar 12, 2009 at 11:33:08AM +0100, Martin Schwidefsky wrote:
+> > > --- linux-2.6/fs/proc/task_mmu.c
+> > > +++ linux-2.6-patched/fs/proc/task_mmu.c
+> > > @@ -716,7 +716,9 @@ static ssize_t pagemap_read(struct file 
+> > >  	 * user buffer is tracked in "pm", and the walk
+> > >  	 * will stop when we hit the end of the buffer.
+> > >  	 */
+> > > +	down_read(&mm->mmap_sem);
+> > >  	ret = walk_page_range(start_vaddr, end_vaddr, &pagemap_walk);
+> > > +	up_read(&mm->mmap_sem);
+> > 
+> > This will introduce "put_user under mmap_sem" which is deadlockable.
 > 
-> applied, thanks Darren!
-> 
-> I'm wondering, which ones are 2.6.29 must-have's?
-> 
-> 	Ingo
+> Hmm, interesting. In this case the pagemap interface is fundamentally broken.
 
-
-Hi Ingo,
-
-I'd think only 2 and maybe 5 should be considered for 2.6.29.  Tglx 
-mentioned 2, and I'd be fine with 5 waiting until 2.6.30 I think.  The 
-rest are cleanups.
+Well it means we may have to reintroduce the very annoying double
+buffering from various earlier implementations. But let's leave this
+discussion until after we've figured out what to do about the walker
+code.
 
 -- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+http://selenic.com : development and support for Mercurial and Linux
+
+
