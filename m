@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbZCLNiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZCLNje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbZCLNiy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 09:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbZCLNin
+	id S1756914AbZCLNje (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 09:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756769AbZCLNjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 09:38:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:60678 "EHLO
+	Thu, 12 Mar 2009 09:39:24 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43414 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756491AbZCLNim (ORCPT
+	with ESMTP id S1754994AbZCLNjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 09:38:42 -0400
-Date: Thu, 12 Mar 2009 09:38:39 -0400 (EDT)
+	Thu, 12 Mar 2009 09:39:23 -0400
+Date: Thu, 12 Mar 2009 09:39:20 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+To: Pierre Ossman <drzeus@drzeus.cx>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Wu Fengguang <fengguang.wu@intel.com>, Pierre Ossman <drzeus@drzeus.cx>,
-       Pekka Paalanen <pq@iki.fi>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 4/4] ring-buffer: only allocate buffers for online cpus
-In-Reply-To: <20090312162722.43B1.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0903120933400.3062@gandalf.stny.rr.com>
-References: <20090312023720.144716747@goodmis.org> <20090312023936.696105567@goodmis.org> <20090312162722.43B1.A69D9226@jp.fujitsu.com>
+       Wu Fengguang <fengguang.wu@intel.com>, Pekka Paalanen <pq@iki.fi>,
+       Neil Horman <nhorman@redhat.com>
+Subject: Re: [PATCH 0/4] [GIT PULL] memory saving ring buffer for
+ tip/tracing/ftrace
+In-Reply-To: <20090312102014.7271f54e@mjolnir.ossman.eu>
+Message-ID: <alpine.DEB.2.00.0903120939000.3062@gandalf.stny.rr.com>
+References: <20090312023720.144716747@goodmis.org> <20090312080758.4a14d5b4@mjolnir.ossman.eu> <20090312163414.43B4.A69D9226@jp.fujitsu.com> <20090312102014.7271f54e@mjolnir.ossman.eu>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -32,48 +34,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 12 Mar 2009, KOSAKI Motohiro wrote:
+On Thu, 12 Mar 2009, Pierre Ossman wrote:
 
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > Impact: save on memory
-> > 
-> > Currently, a ring buffer was allocated for each "possible_cpus". On
-> > some systems, this is the same as NR_CPUS. Thus, if a system defined
-> > NR_CPUS = 64 but it only had 1 CPU, we could have possibly 63 useless
-> > ring buffers taking up space. With a default buffer of 3 megs, this
-> > could be quite drastic.
-> > 
-> > This patch changes the ring buffer code to only allocate ring buffers
-> > for online CPUs.  If a CPU goes off line, we do not free the buffer.
-> > This is because the user may still have trace data in that buffer
-> > that they would like to look at.
-> > 
-> > Perhaps in the future we could add code to delete a ring buffer if
-> > the CPU is offline and the ring buffer becomes empty.
+> On Thu, 12 Mar 2009 16:34:55 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 > 
-> I don't like this patch.
-> your [1/4] and [2/4] already solve Pierre's problem.
+> > > How difficult is it to apply this to 2.6.27? Fedora is still on that
+> > > kernel and it would be nice if I could get my memory back on a
+> > > distribution kernel. :)
+> > 
+> > Difficult.
+> > but you can use "trace_entries=1" kernel boot parameter :)
+> > 
 > 
-> using online cpu (not possible cpu) increase performance overhead 
-> and messiness.
-> but nobody get benefit ;)
+> Ah. I got a tip for trace_buf_size=1, but that didn't work. Your
+> version was much better. :)
 
-Well, the fact that you can have 15 buffers for non existent CPUs is a big 
-benefit. And the overhead was only on the read side, not the write, and 
-very limited in overhead for that matter.
-
-But, looking at this, I realized I can get rid of all the 
-"get_online_cpus". I originally had the CPU_DOWN_PREPARE remove the 
-buffer. But I found it highly annoying during tests, that I lose my data 
-when I brought down a CPU. Thus, I removed the code to free the buffer and 
-replaced it with the comment explaining this.
-
-The get_online_cpus is to prevent the race where we might remove a buffer. 
-But since we do not do that anymore, those get_online_cpus are pretty 
-useless.
-
-I'll update the code in a bit.
+Yeah, the name changed within the versions.
 
 -- Steve
 
