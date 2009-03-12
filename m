@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZCLB7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbZCLB7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbZCLB7P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 21:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZCLB66
+	id S1755551AbZCLB7f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 21:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZCLB66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 11 Mar 2009 21:58:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49314 "EHLO mx2.redhat.com"
+Received: from mx2.redhat.com ([66.187.237.31]:49315 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754610AbZCLB65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754536AbZCLB65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 11 Mar 2009 21:58:57 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
@@ -19,61 +19,55 @@ To: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
        linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
 Cc: vgoyal@redhat.com, akpm@linux-foundation.org, menage@google.com,
        peterz@infradead.org
-Subject: [PATCH 09/10] deadline changes for hierarchical fair queuing
-Date: Wed, 11 Mar 2009 21:56:54 -0400
-Message-Id: <1236823015-4183-10-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
+Subject: [RFC] IO Controller
+Date: Wed, 11 Mar 2009 21:56:45 -0400
+Message-Id: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes deadline to use queue scheduling code from elevator layer.
-One can go back to old deadline by selecting CONFIG_IOSCHED_DEADLINE_HIER.
 
-Signed-off-by: Nauman Rafique <nauman@google.com>
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
----
- block/Kconfig.iosched    |   11 +++++++++++
- block/deadline-iosched.c |    3 +++
- 2 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index 9da6657..3a9e7d7 100644
---- a/block/Kconfig.iosched
-+++ b/block/Kconfig.iosched
-@@ -55,6 +55,17 @@ config IOSCHED_DEADLINE
- 	  a disk at any one time, its behaviour is almost identical to the
- 	  anticipatory I/O scheduler and so is a good choice.
- 
-+config IOSCHED_DEADLINE_HIER
-+	bool "Deadline Hierarchical Scheduling support"
-+	depends on IOSCHED_DEADLINE && CGROUPS
-+	select ELV_FAIR_QUEUING
-+	select GROUP_IOSCHED
-+	default n
-+	---help---
-+	  Enable hierarhical scheduling in deadline. In this mode deadline keeps
-+	  one IO queue per cgroup instead of a global queue. Elevator
-+	  fair queuing logic ensures fairness among various queues.
-+
- config IOSCHED_CFQ
- 	tristate "CFQ I/O scheduler"
- 	select ELV_FAIR_QUEUING
-diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
-index 5e65041..27b77b9 100644
---- a/block/deadline-iosched.c
-+++ b/block/deadline-iosched.c
-@@ -477,6 +477,9 @@ static struct elevator_type iosched_deadline = {
- 		.elevator_alloc_sched_queue_fn = deadline_alloc_deadline_queue,
- 		.elevator_free_sched_queue_fn = deadline_free_deadline_queue,
- 	},
-+#ifdef CONFIG_IOSCHED_DEADLINE_HIER
-+	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ,
-+#endif
- 	.elevator_attrs = deadline_attrs,
- 	.elevator_name = "deadline",
- 	.elevator_owner = THIS_MODULE,
--- 
-1.6.0.1
+Hi All,
 
+Here is another posting for IO controller patches. Last time I had posted
+RFC patches for an IO controller which did bio control per cgroup.
+
+http://lkml.org/lkml/2008/11/6/227
+
+One of the takeaway from the discussion in this thread was that let us
+implement a common layer which contains the proportional weight scheduling
+code which can be shared by all the IO schedulers.
+
+Implementing IO controller will not cover the devices which don't use
+IO schedulers but it should cover the common case.
+
+There were more discussions regarding 2 level vs 1 level IO control at
+following link.
+
+https://lists.linux-foundation.org/pipermail/containers/2009-January/015402.html
+
+So in the mean time we took the discussion off the list and spent time on
+making the 1 level control apporoach work where majority of the proportional
+weight control is shared by the four schedulers instead of each one having
+to replicate the code. We make use of BFQ code for fair queuing as posted
+by Paolo and Fabio here.
+
+http://lkml.org/lkml/2008/11/11/148
+
+Details about design and howto have been put in documentation patch.
+
+I have done very basic testing of running 2 or 3 "dd" threads in different
+cgroups. Wanted to get the patchset out for feedback/review before we dive
+into more bug fixing, benchmarking, optimizations etc.
+
+Your feedback/comments are welcome.
+
+Patch series contains 10 patches. It should be compilable and bootable after
+every patch. Intial 2 patches implement flat fair queuing (no cgroup
+support) and make cfq to use that. Later patches introduce hierarchical
+fair queuing support in elevator layer and modify other IO schdulers to use
+that.
+
+Thanks
+Vivek
