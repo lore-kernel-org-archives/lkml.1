@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbZCLMkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbZCLMop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbZCLMkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 08:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbZCLMkq
+	id S1755948AbZCLMop (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 08:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbZCLMog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 08:40:46 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:37548 "EHLO
+	Thu, 12 Mar 2009 08:44:36 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:37702 "EHLO
 	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751867AbZCLMkp convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752114AbZCLMof convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 08:40:45 -0400
-Message-Id: <49B91103.76E4.0078.0@novell.com>
+	Thu, 12 Mar 2009 08:44:35 -0400
+Message-Id: <49B911EB.76E4.0078.0@novell.com>
 X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Thu, 12 Mar 2009 12:41:23 +0000
+Date: Thu, 12 Mar 2009 12:45:15 +0000
 From: "Jan Beulich" <jbeulich@novell.com>
 To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
 Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: properly __init-annotate recent early_printk
-	 additions
+Subject: [PATCH] x86: smarten /proc/interrupts output
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -26,91 +25,123 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+Impact: readability of kernel provided statistics data
 
-Don't keep code resident that's only needed during startup.
+With the number of interrupts on large systems growing, assumptions on
+the width an interrupt number requires when converted to a decimal
+string turn invalid. Therefore, calculate the maximum number of digits
+dynamically.
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
 ---
- arch/x86/kernel/early_printk.c |   20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ arch/x86/kernel/irq.c |   33 ++++++++++++++++++---------------
+ 1 file changed, 18 insertions(+), 15 deletions(-)
 
---- linux-2.6.29-rc7/arch/x86/kernel/early_printk.c	2009-03-04 09:10:19.000000000 +0100
-+++ 2.6.29-rc7-x86-earlyprintk-init/arch/x86/kernel/early_printk.c	2009-03-06 10:24:22.000000000 +0100
-@@ -250,7 +250,7 @@ static int dbgp_wait_until_complete(void
- 	return (ctrl & DBGP_ERROR) ? -DBGP_ERRCODE(ctrl) : DBGP_LEN(ctrl);
- }
- 
--static void dbgp_mdelay(int ms)
-+static void __init dbgp_mdelay(int ms)
+--- linux-2.6.29-rc7/arch/x86/kernel/irq.c	2009-03-04 09:10:19.000000000 +0100
++++ 2.6.29-rc7-x86-show-interrupts/arch/x86/kernel/irq.c	2009-03-05 15:30:06.000000000 +0100
+@@ -44,55 +44,55 @@ void ack_bad_irq(unsigned int irq)
+ /*
+  * /proc/interrupts printing:
+  */
+-static int show_other_interrupts(struct seq_file *p)
++static int show_other_interrupts(struct seq_file *p, int prec)
  {
- 	int i;
+ 	int j;
  
-@@ -311,7 +311,7 @@ static void dbgp_set_data(const void *bu
- 	writel(hi, &ehci_debug->data47);
- }
- 
--static void dbgp_get_data(void *buf, int size)
-+static void __init dbgp_get_data(void *buf, int size)
- {
- 	unsigned char *bytes = buf;
- 	u32 lo, hi;
-@@ -355,7 +355,7 @@ static int dbgp_bulk_write(unsigned devn
- 	return ret;
- }
- 
--static int dbgp_bulk_read(unsigned devnum, unsigned endpoint, void *data,
-+static int __init dbgp_bulk_read(unsigned devnum, unsigned endpoint, void *data,
- 				 int size)
- {
- 	u32 pids, addr, ctrl;
-@@ -386,8 +386,8 @@ static int dbgp_bulk_read(unsigned devnu
- 	return ret;
- }
- 
--static int dbgp_control_msg(unsigned devnum, int requesttype, int request,
--	int value, int index, void *data, int size)
-+static int __init dbgp_control_msg(unsigned devnum, int requesttype,
-+	int request, int value, int index, void *data, int size)
- {
- 	u32 pids, addr, ctrl;
- 	struct usb_ctrlrequest req;
-@@ -489,7 +489,7 @@ static u32 __init find_dbgp(int ehci_num
+-	seq_printf(p, "NMI: ");
++	seq_printf(p, "%*s: ", prec, "NMI");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->__nmi_count);
+ 	seq_printf(p, "  Non-maskable interrupts\n");
+ #ifdef CONFIG_X86_LOCAL_APIC
+-	seq_printf(p, "LOC: ");
++	seq_printf(p, "%*s: ", prec, "LOC");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->apic_timer_irqs);
+ 	seq_printf(p, "  Local timer interrupts\n");
+ #endif
+ #ifdef CONFIG_SMP
+-	seq_printf(p, "RES: ");
++	seq_printf(p, "%*s: ", prec, "RES");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->irq_resched_count);
+ 	seq_printf(p, "  Rescheduling interrupts\n");
+-	seq_printf(p, "CAL: ");
++	seq_printf(p, "%*s: ", prec, "CAL");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->irq_call_count);
+ 	seq_printf(p, "  Function call interrupts\n");
+-	seq_printf(p, "TLB: ");
++	seq_printf(p, "%*s: ", prec, "TLB");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->irq_tlb_count);
+ 	seq_printf(p, "  TLB shootdowns\n");
+ #endif
+ #ifdef CONFIG_X86_MCE
+-	seq_printf(p, "TRM: ");
++	seq_printf(p, "%*s: ", prec, "TRM");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->irq_thermal_count);
+ 	seq_printf(p, "  Thermal event interrupts\n");
+ # ifdef CONFIG_X86_64
+-	seq_printf(p, "THR: ");
++	seq_printf(p, "%*s: ", prec, "THR");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->irq_threshold_count);
+ 	seq_printf(p, "  Threshold APIC interrupts\n");
+ # endif
+ #endif
+ #ifdef CONFIG_X86_LOCAL_APIC
+-	seq_printf(p, "SPU: ");
++	seq_printf(p, "%*s: ", prec, "SPU");
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->irq_spurious_count);
+ 	seq_printf(p, "  Spurious interrupts\n");
+ #endif
+-	seq_printf(p, "ERR: %10u\n", atomic_read(&irq_err_count));
++	seq_printf(p, "%*s: %10u\n", prec, "ERR", atomic_read(&irq_err_count));
+ #if defined(CONFIG_X86_IO_APIC)
+-	seq_printf(p, "MIS: %10u\n", atomic_read(&irq_mis_count));
++	seq_printf(p, "%*s: %10u\n", prec, "MIS", atomic_read(&irq_mis_count));
+ #endif
  	return 0;
  }
- 
--static int ehci_reset_port(int port)
-+static int __init ehci_reset_port(int port)
+@@ -100,19 +100,22 @@ static int show_other_interrupts(struct 
+ int show_interrupts(struct seq_file *p, void *v)
  {
- 	u32 portsc;
- 	u32 delay_time, delay;
-@@ -532,7 +532,7 @@ static int ehci_reset_port(int port)
- 	return -EBUSY;
- }
+ 	unsigned long flags, any_count = 0;
+-	int i = *(loff_t *) v, j;
++	int i = *(loff_t *) v, j, prec;
+ 	struct irqaction *action;
+ 	struct irq_desc *desc;
  
--static int ehci_wait_for_port(int port)
-+static int __init ehci_wait_for_port(int port)
- {
- 	u32 status;
- 	int ret, reps;
-@@ -557,13 +557,13 @@ static inline void dbgp_printk(const cha
+ 	if (i > nr_irqs)
+ 		return 0;
  
- typedef void (*set_debug_port_t)(int port);
++	for (prec = 3, j = 1000; prec < 10 && j <= nr_irqs; ++prec)
++		j *= 10;
++
+ 	if (i == nr_irqs)
+-		return show_other_interrupts(p);
++		return show_other_interrupts(p, prec);
  
--static void default_set_debug_port(int port)
-+static void __init default_set_debug_port(int port)
- {
- }
+ 	/* print header */
+ 	if (i == 0) {
+-		seq_printf(p, "           ");
++		seq_printf(p, "%*s", prec + 8, "");
+ 		for_each_online_cpu(j)
+ 			seq_printf(p, "CPU%-8d", j);
+ 		seq_putc(p, '\n');
+@@ -133,7 +136,7 @@ int show_interrupts(struct seq_file *p, 
+ 	if (!action && !any_count)
+ 		goto out;
  
--static set_debug_port_t set_debug_port = default_set_debug_port;
-+static set_debug_port_t __initdata set_debug_port = default_set_debug_port;
- 
--static void nvidia_set_debug_port(int port)
-+static void __init nvidia_set_debug_port(int port)
- {
- 	u32 dword;
- 	dword = read_pci_config(ehci_dev.bus, ehci_dev.slot, ehci_dev.func,
+-	seq_printf(p, "%3d: ", i);
++	seq_printf(p, "%*d: ", prec, i);
+ #ifndef CONFIG_SMP
+ 	seq_printf(p, "%10u ", kstat_irqs(i));
+ #else
 
 
 
