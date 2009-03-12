@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZCLH40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZCLH4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbZCLH40 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 03:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768AbZCLHzv
+	id S1755414AbZCLH4m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 03:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbZCLHz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 03:55:51 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:32924 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754322AbZCLHzu (ORCPT
+	Thu, 12 Mar 2009 03:55:58 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:48992 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754541AbZCLHz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 03:55:50 -0400
+	Thu, 12 Mar 2009 03:55:57 -0400
 From: Darren Hart <dvhltc@us.ibm.com>
-Subject: [PATCH 2/6] Additional (get|put)_futex_key() fixes
+Subject: [PATCH 3/6] futex: add double_unlock_hb()
 To: linux-kernel@vger.kernel.org
 Cc: Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
@@ -19,8 +19,8 @@ Cc: Thomas Gleixner <tglx@linutronix.de>,
        Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
        Rusty Russell <rusty@rustcorp.com.au>
-Date: Thu, 12 Mar 2009 00:55:46 -0700
-Message-ID: <20090312075545.9856.75152.stgit@Aeon>
+Date: Thu, 12 Mar 2009 00:55:52 -0700
+Message-ID: <20090312075552.9856.48021.stgit@Aeon>
 In-Reply-To: <20090312075349.9856.83687.stgit@Aeon>
 References: <20090312075349.9856.83687.stgit@Aeon>
 User-Agent: StGIT/0.14.2
@@ -31,9 +31,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-futex_requeue and futex_lock_pi still had some bad (get|put)_futex_key() usage.
-This patch adds the missing put_futex_keys() and corrects a goto in
-futex_lock_pi() to avoid a double get.
+The futex code uses double_lock_hb() which locks the hb->lock's in pointer
+value order.  There is no parallel unlock routine, and the code unlocks them
+in name order, ignoring pointer value.  This opens up a window for an ABBA
+deadlock.  This patch adds double_unlock_hb() to remove the window as well
+as refactor the duplicated code segments.
 
 Build and boot tested on a 4 way Intel x86_64 workstation.  Passes basic
 pthread_mutex and PI tests out of ltp/testcases/realtime.
@@ -45,66 +47,75 @@ Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Rusty Russell <rusty@rustcorp.com.au>
 ---
 
- kernel/futex.c |   16 +++++++++++-----
- 1 files changed, 11 insertions(+), 5 deletions(-)
+ kernel/futex.c |   29 +++++++++++++++++------------
+ 1 files changed, 17 insertions(+), 12 deletions(-)
 
 diff --git a/kernel/futex.c b/kernel/futex.c
-index e6a4d72..4000454 100644
+index 4000454..e149545 100644
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -802,8 +802,10 @@ retry:
- 
- 		ret = get_user(dummy, uaddr2);
- 		if (ret)
--			return ret;
-+			goto out_put_keys;
- 
-+		put_futex_key(fshared, &key2);
-+		put_futex_key(fshared, &key1);
- 		goto retryfull;
+@@ -690,6 +690,19 @@ double_lock_hb(struct futex_hash_bucket *hb1, struct futex_hash_bucket *hb2)
  	}
- 
-@@ -878,6 +880,9 @@ retry:
- 			if (hb1 != hb2)
- 				spin_unlock(&hb2->lock);
- 
-+			put_futex_key(fshared, &key2);
-+			put_futex_key(fshared, &key1);
-+
- 			ret = get_user(curval, uaddr1);
- 
- 			if (!ret)
-@@ -1453,6 +1458,7 @@ retry_locked:
- 			 * exit to complete.
- 			 */
- 			queue_unlock(&q, hb);
-+			put_futex_key(fshared, &q.key);
- 			cond_resched();
- 			goto retry;
- 
-@@ -1595,13 +1601,12 @@ uaddr_faulted:
- 
- 	ret = get_user(uval, uaddr);
- 	if (!ret)
--		goto retry;
-+		goto retry_unlocked;
- 
--	if (to)
--		destroy_hrtimer_on_stack(&to->timer);
--	return ret;
-+	goto out_put_key;
  }
  
++static inline void
++double_unlock_hb(struct futex_hash_bucket *hb1, struct futex_hash_bucket *hb2)
++{
++	if (hb1 <= hb2) {
++		spin_unlock(&hb2->lock);
++		if (hb1 < hb2)
++			spin_unlock(&hb1->lock);
++	} else { /* hb1 > hb2 */
++		spin_unlock(&hb1->lock);
++		spin_unlock(&hb2->lock);
++	}
++}
 +
  /*
-  * Userspace attempted a TID -> 0 atomic transition, and failed.
-  * This is the in-kernel slowpath: we look up the PI state (if any),
-@@ -1705,6 +1710,7 @@ pi_faulted:
+  * Wake up waiters matching bitset queued on this futex (uaddr).
+  */
+@@ -767,9 +780,7 @@ retry:
+ 	if (unlikely(op_ret < 0)) {
+ 		u32 dummy;
+ 
+-		spin_unlock(&hb1->lock);
+-		if (hb1 != hb2)
+-			spin_unlock(&hb2->lock);
++		double_unlock_hb(hb1, hb2);
+ 
+ #ifndef CONFIG_MMU
+ 		/*
+@@ -833,9 +844,7 @@ retry:
+ 		ret += op_ret;
  	}
  
- 	ret = get_user(uval, uaddr);
-+	put_futex_key(fshared, &key);
- 	if (!ret)
- 		goto retry;
+-	spin_unlock(&hb1->lock);
+-	if (hb1 != hb2)
+-		spin_unlock(&hb2->lock);
++	double_unlock_hb(hb1, hb2);
+ out_put_keys:
+ 	put_futex_key(fshared, &key2);
+ out_put_key1:
+@@ -876,9 +885,7 @@ retry:
+ 		ret = get_futex_value_locked(&curval, uaddr1);
  
+ 		if (unlikely(ret)) {
+-			spin_unlock(&hb1->lock);
+-			if (hb1 != hb2)
+-				spin_unlock(&hb2->lock);
++			double_unlock_hb(hb1, hb2);
+ 
+ 			put_futex_key(fshared, &key2);
+ 			put_futex_key(fshared, &key1);
+@@ -925,9 +932,7 @@ retry:
+ 	}
+ 
+ out_unlock:
+-	spin_unlock(&hb1->lock);
+-	if (hb1 != hb2)
+-		spin_unlock(&hb2->lock);
++	double_unlock_hb(hb1, hb2);
+ 
+ 	/* drop_futex_key_refs() must be called outside the spinlocks. */
+ 	while (--drop_count >= 0)
 
