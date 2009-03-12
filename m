@@ -1,95 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZCLAeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbZCLAfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754773AbZCLAeW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 20:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZCLAeK
+	id S1753973AbZCLAfZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 20:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbZCLAfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 20:34:10 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:48860 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753829AbZCLAeJ (ORCPT
+	Wed, 11 Mar 2009 20:35:09 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:18935 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753170AbZCLAfH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 20:34:09 -0400
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
-From: john stultz <johnstul@us.ibm.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200903112005.38181.elendil@planet.nl>
-References: <200903080230.10099.elendil@planet.nl>
-	 <1236733226.6080.28.camel@localhost> <200903111703.41663.elendil@planet.nl>
-	 <200903112005.38181.elendil@planet.nl>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 17:34:04 -0700
-Message-Id: <1236818044.7680.153.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Mar 2009 20:35:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=EDvRsqVpUEerhPcLWMHa/KAeEjNxgMrm/l+RM952+ZUlyWJzTAPeCmUim5l1mg0n38
+         vHXH+8bB4yjJswxgefUko81MhAUabqzgMEMl69qQb7TIGZdRkSLsSjUT3P8p5AmGUBzm
+         OjR3ikMKyHeUHmGLYdKiS49+XPPkoVyBQA+dM=
+MIME-Version: 1.0
+In-Reply-To: <20090311170207.1795cad9.akpm@linux-foundation.org>
+References: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk>
+	 <20090311150302.0ae76cf1.akpm@linux-foundation.org>
+	 <20090311170207.1795cad9.akpm@linux-foundation.org>
+Date: Thu, 12 Mar 2009 09:35:05 +0900
+Message-ID: <28c262360903111735s2b0c43a3pd48fcf8d55416ae3@mail.gmail.com>
+Subject: Re: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may 
+	get wrongly discarded
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org, peterz@infradead.org,
+       Enrik.Berkhan@ge.com, uclinux-dev@uclinux.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Rik van Riel <riel@surriel.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-11 at 20:05 +0100, Frans Pop wrote:
-> Sorry for the mail flood. This is the last one and then I'm going to wait for some reactions.
-> 
-> On Wednesday 11 March 2009, Frans Pop wrote:
-> > So, lets look next what happens if I allow clock->error to be changed
-> > here. This makes the boot fail and I believe that this is the critical
-> > change in 5cd1c9c5cf30.
-> [...]
-> > Note that clock->xtime_nsec is now running backwards and the crazy
-> > values for clock->error.
-> >
-> > From this I conclude that clock->error is getting buggered somewhere
-> > else: we get a completely different value back from what is calculated
-> > here. The calculation here is still correct:
-> > $ echo $(( -4292487689804800 + (-256 << 24) ))
-> > -4292491984772096
-> >
-> > I suspect that clock->error running back is what causes my hang.
-> 
-> s/clock->error/clock->xtime_nsec/ of course.
-> 
-> Looking a bit closer at what Roman's patch 5cd1c9c5cf30 does, I see this:
-> 
-> -       clock->xtime_nsec += (s64)xtime.tv_nsec << clock->shift;
-> +       clock->xtime_nsec = (s64)xtime.tv_nsec << clock->shift;
-> [...]
->         clocksource_adjust(offset);
-> -       xtime.tv_nsec = (s64)clock->xtime_nsec >> clock->shift;
-> +       xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
->         clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
-> +       clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
-> 
-> So, in the old situation the code first added xtime.tv_nsec to
-> clock->xtime_nsec and later subtracted it again, so there's symmetry.
-> 
-> In the new code we no longer do the first, but still do the second. That
-> seems strange and probably upsets assumptions in the code in between, which
-> includes the call to clocksource_adjust(). AFAICT this is the root cause of
-> the overflow visible in my earliest traces.
-> I've done some tries to correct that, but did not find anything that really
-> worked.
+On Thu, Mar 12, 2009 at 9:02 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Wed, 11 Mar 2009 15:03:02 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+>> > The problem is that the pages are not marked dirty.  Anything that creates data
+>> > in an MMU-based ramfs will cause the pages holding that data will cause the
+>> > set_page_dirty() aop to be called.
+>> >
+>> > For the NOMMU-based mmap, set_page_dirty() may be called by write(), but it
+>> > won't be called by page-writing faults on writable mmaps, and it isn't called
+>> > by ramfs_nommu_expand_for_mapping() when a file is being truncated from nothing
+>> > to allocate a contiguous run.
+>> >
+>> > The solution is to mark the pages dirty at the point of allocation by
+>> > the truncation code.
+>>
+>> Page reclaim shouldn't be even attempting to reclaim or write back
+>> ramfs pagecache pages - reclaim can't possibly do anything with these
+>> pages!
+>>
+>> Arguably those pages shouldn't be on the LRU at all, but we haven't
+>> done that yet.
+>>
+>> Now, my problem is that I can't 100% be sure that we _ever_ implemented
+>> this properly.  I _think_ we did, in which case we later broke it.  If
+>> we've always been (stupidly) trying to pageout these pages then OK, I
+>> guess your patch is a suitable 2.6.29 stopgap.
+>
+> OK, I can't find any code anywhere in which we excluded ramfs pages
+> from consideration by page reclaim.  How dumb.
 
-No not quite. We use clock->xtime_nsec to store the high precision
-xtime.tv_nsec. Its use is as follows:
 
-1) We initialize it to xtime.tv_nsec << clock->shift
-2) We accumulate into it
-3) We tweak it as needed from clocksource_adjust()
-4) We then store its value shifted back down and rounded up into
-xtiem.tv_nsec.
-5) We calculate the the difference between the rounded up value and
-xtime_nsec, and add it to the error.
+The ramfs  considers it in just CONFIG_UNEVICTABLE_LRU case
+It that case, ramfs_get_inode calls mapping_set_unevictable.
+So,  page reclaim can exclude ramfs pages by page_evictable.
+It's problem .
 
-I'm still a little baffled, but I figure I can try to reproduce this
-myself. So I'm working setting up hercules environment here to see if I
-can't trigger it. Any help with config or links to your environment
-would be great.
 
-thanks
--john
+> So I guess that for now the proposed patch is suitable.  Longer-term we
+> should bale early in shrink_page_list(), or not add these pages to the
+> LRU at all.
+
+In future, we have to improve this.
+
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
 
 
 
+-- 
+Kinds regards,
+Minchan Kim
