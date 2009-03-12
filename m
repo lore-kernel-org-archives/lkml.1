@@ -1,89 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZCLHIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbZCLHLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755414AbZCLHIU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 03:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZCLHIK
+	id S1755531AbZCLHLV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 03:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZCLHLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 03:08:10 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:44722 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751539AbZCLHIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 03:08:09 -0400
-Date: Thu, 12 Mar 2009 08:07:58 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Wu Fengguang <fengguang.wu@intel.com>, Pekka Paalanen <pq@iki.fi>,
-       Neil Horman <nhorman@redhat.com>
-Subject: Re: [PATCH 0/4] [GIT PULL] memory saving ring buffer for
- tip/tracing/ftrace
-Message-ID: <20090312080758.4a14d5b4@mjolnir.ossman.eu>
-In-Reply-To: <20090312023720.144716747@goodmis.org>
-References: <20090312023720.144716747@goodmis.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.drzeus.cx-6291-1236841684-0001-2"
+	Thu, 12 Mar 2009 03:11:10 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:49439 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751565AbZCLHLK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 03:11:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=wQeZmIdqJDikMw63nZe9dmJDGLCEQ5gND1YYabsfBQosZpvM+KMNQNGK5NHJmw7yVU
+         T3lOKrWrCQbghWL0ioOjekHGSvAyfSjHdBFCnqIYR7Lpdmo5EvXut9dqbinLyaiCYmKE
+         8iNSTn3IVVsyumXeOEzRwWgZITP1YtB5iB4M0=
+MIME-Version: 1.0
+In-Reply-To: <49B8B1FB.1040506@cn.fujitsu.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
+	 <49B8810B.7030603@oss.ntt.co.jp>
+	 <d95d44a20903112340s3c77807dt465e68901747ad89@mail.gmail.com>
+	 <49B8B1FB.1040506@cn.fujitsu.com>
+Date: Thu, 12 Mar 2009 15:11:07 +0800
+Message-ID: <d95d44a20903120011m4a7281enf17b31b9aaf7c937@mail.gmail.com>
+Subject: Re: [RFC] IO Controller
+From: anqin <anqin.qin@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>,
+       Vivek Goyal <vgoyal@redhat.com>, oz-kernel@redhat.com,
+       paolo.valente@unimore.it, linux-kernel@vger.kernel.org,
+       dhaval@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       menage@google.com, jmoyer@redhat.com, fchecconi@gmail.com,
+       arozansk@redhat.com, jens.axboe@oracle.com, akpm@linux-foundation.org,
+       fernando@intellilink.co.jp, balbir@linux.vnet.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+> Why? When this is ready to be merged, then it should be based on Jens' block-tree,
+> or akpm's mm tree. And this version currently is based on 2.6.29-rc4, so if you
+> want to try it out, just prepare a 2.6.29-rc4 kernel tree.
+>
 
---=_freyr.drzeus.cx-6291-1236841684-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+I have checked the LKML and see these patches (on web pages) are based on
+2.6.27. It seemed too old.
 
-On Wed, 11 Mar 2009 22:37:20 -0400
-Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> Ingo,
->=20
-> This patch series implements a better memory management by the
-> ring buffer. It only allocates the buffers for the online CPUS, as well
-> as keeps the buffers to a minimum size until they are used.
->=20
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
->=20
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.g=
-it
-> tip/tracing/ftrace
->=20
->=20
-> Steven Rostedt (4):
->       tracing: keep ring buffer to minimum size till used
->       tracing: expand the ring buffers when an event is activated
->       tracing: fix trace_wait to know to wait on all cpus or just one
->       ring-buffer: only allocate buffers for online cpus
->=20
-
-How difficult is it to apply this to 2.6.27? Fedora is still on that
-kernel and it would be nice if I could get my memory back on a
-distribution kernel. :)
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-6291-1236841684-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkm4tNAACgkQ7b8eESbyJLg+ZwCdGxWc4ZlzC+B3UkVgbbp6qKD9
-B/MAoPW0n2+odTLWPriyaRE/P6/Gi8Z0
-=hbr4
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-6291-1236841684-0001-2--
+You mean that the codes have new patch files in 2.6.29-rc4?
