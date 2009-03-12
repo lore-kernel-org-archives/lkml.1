@@ -1,124 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbZCLXDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbZCLXHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756026AbZCLXDT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 19:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbZCLXDA
+	id S1756887AbZCLXHY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 19:07:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbZCLXHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 19:03:00 -0400
-Received: from n24.bullet.mail.mud.yahoo.com ([68.142.206.163]:48179 "HELO
-	n24.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753299AbZCLXC7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 19:02:59 -0400
-X-Yahoo-Newman-Id: 504305.50889.bm@omp423.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4230wh2vDf7umkI+qG7z713JjlHO/qwnofO2cl4MX59dVXAiW9374Hbsr1kL3AaxWj5qaRJYsk4Th3oZQs/3qpjC2uNJrXDGTzoCSwRtcxOWrV2esSnx7v5Qx6wDllGZuqBbXFQrxO5Yta3Xx8uEciGhFNtqXAw398oTfZ0adhc=  ;
-X-YMail-OSG: OWpx3rsVM1loQAO1mQEU1QYX1iC8UludKoG5Skl6.eFMmLx5G7C0vr2OIT7OeRGjxTP2U8W0EjKiVbUhr1.n1jWCD2zoow6WCAxAD30cMKYeFNRySrRzPXt9vPUj6ZkAwsxQFv95IyQBznl.xJk6sRgc
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch 2.6.29-rc7 regulator-next] regulator: refcount fixes
-Date: Thu, 12 Mar 2009 15:02:55 -0800
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-References: <200903111743.34708.david-b@pacbell.net> <200903121335.25368.david-b@pacbell.net> <20090312210545.GJ24376@sirena.org.uk>
-In-Reply-To: <20090312210545.GJ24376@sirena.org.uk>
+	Thu, 12 Mar 2009 19:07:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49491 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752348AbZCLXHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 19:07:07 -0400
+Date: Thu, 12 Mar 2009 23:06:25 GMT
+From: Magnus Damm <damm@igel.co.jp>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       damm@igel.co.jp, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       damm@igel.co.jp, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090312120542.2926.56609.sendpatchset@rx1.opensource.se>
+References: <20090312120542.2926.56609.sendpatchset@rx1.opensource.se>
+Subject: [tip:irq/genirq] irq: add remove_irq() for freeing of setup_irq() irqs
+Message-ID: <tip-f21cfb258df6dd3ea0b3e56d75c7e994edb81b35@git.kernel.org>
+Git-Commit-ID: f21cfb258df6dd3ea0b3e56d75c7e994edb81b35
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200903121602.55570.david-b@pacbell.net>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 12 Mar 2009 23:06:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 March 2009, Mark Brown wrote:
-> On Thu, Mar 12, 2009 at 12:35:24PM -0800, David Brownell wrote:
-> > On Thursday 12 March 2009, Mark Brown wrote:
-> 
-> > > safely share a regulator without extra work since they have no way of
-> > > telling why a regulator is in the state that it's in without extra
-> > > stuff.
-> 
-> > Depends what you mean by "safely".  If they weren't buggy
-> > already, I don't see how they'd notice any difference.
-> > Having buggy consumers become non-buggy isn't exactly a
-> > job for the framework itself.
-> 
-> Previously the per-consumer reference count would've meant that they
-> couldn't interfere with other consumers - they could set their own
-> state but not reverse an enable something else had done.
+Commit-ID:  f21cfb258df6dd3ea0b3e56d75c7e994edb81b35
+Gitweb:     http://git.kernel.org/tip/f21cfb258df6dd3ea0b3e56d75c7e994edb81b35
+Author:     Magnus Damm <damm@igel.co.jp>
+AuthorDate: Thu, 12 Mar 2009 21:05:42 +0900
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 12 Mar 2009 13:16:32 +0100
 
-They still can't ... *unless* they're already buggy.
+irq: add remove_irq() for freeing of setup_irq() irqs
 
+Impact: add new API
 
-> Now there is 
-> only one reference count but there's no way for a consumer to exclude
-> other consumers and nothing which protects against breakage.
-> 
-> > > We should probably have something along the lines of a 
-> > > regulator_get_exclusive() for them.  Previously the consumer counting
-> > > would have stopped them interfering with enables done by other
-> > > consumers.
-> 
-> > I'd like to see get()/put() match the design pattern used
-> > elsewhere in the kernel:  those calls signify refcount
-> > operations.
-> 
-> Aquiring a reference is obviously what we want in the rather common case
-> where the supply is shared.  We could name an operation that enforces
-> non shared supplies something else but at the end of the day it's going
-> to be the same operation.  The major purpose of adding an explicit call
-> for this is to document the requirement the consumer has for direct
-> control of what it's doing.
+This patch adds a remove_irq() function for releasing
+interrupts requested with setup_irq().
 
-Step back from the current interface for a moment though.
+Without this patch we have no way of releasing such
+interrupts since free_irq() today tries to kfree()
+the irqaction passed with setup_irq().
 
-There seem to be two things going on:
-
-  * getting a handle on the regulator;
-
-  * adding consumer-specific constraints to it.
-
-Currently "handle" and "regulator" are two different objects;
-while "handle" and "consumer-specific constraints" are one.
-
-And, as a new thing not currently addressed well in code, you
-are talking about "non-shared" handles.
-
-One could as easily have "handle" and "regulator" be the
-same ... so the get/put idioms could work like they do
-elsewhere in the kernel.
-
-Doing that would imply making the "constraints" be separate
-(as they are for machine constraints) and possibly having the
-ability to control sharing (like IRQF_SHARED does).
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+LKML-Reference: <20090312120542.2926.56609.sendpatchset@rx1.opensource.se>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-> > Agreed that the "consumer" access model probably needs a few
-> > interface updates.  I'm not sure what they would be though;
-> > one notion would be to focus on the constraints they apply
-> > (including "enabled") instead of what they do now.
-> 
-> I'm not at all sure what you mean by this - constraint narrowing by the
-> consumers is pretty much exactly the model the existing code has.  We
-> need to do things like re-add the voltage handling that was removed pre
-> merge but that's already the programming model we have.
+---
+ include/linux/irq.h |    1 +
+ kernel/irq/manage.c |   39 ++++++++++++++++++++++++++-------------
+ 2 files changed, 27 insertions(+), 13 deletions(-)
 
-See above.  Currently constraints are hidden for "consumers",
-behind functional accessors like regulator_set_voltage().
-There are no explicit constraint objects, as there are for
-the machines.
-
-That's all I'm saying:  the approached you sketched isn't
-the only one, and may not be the best one.  If you want to
-change things, there may be better approaches.  Even ones
-that don't change the overall interface structure much.
-
-- Dave
-
-
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index f899b50..56f9988 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -236,6 +236,7 @@ typedef struct irq_desc		irq_desc_t;
+ #include <asm/hw_irq.h>
+ 
+ extern int setup_irq(unsigned int irq, struct irqaction *new);
++extern struct irqaction *remove_irq(unsigned int irq, void *dev_id);
+ 
+ #ifdef CONFIG_GENERIC_HARDIRQS
+ 
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 52ee171..8b069a7 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -551,20 +551,14 @@ int setup_irq(unsigned int irq, struct irqaction *act)
+ }
+ 
+ /**
+- *	free_irq - free an interrupt
++ *	remove_irq - free an interrupt
+  *	@irq: Interrupt line to free
+  *	@dev_id: Device identity to free
+  *
+- *	Remove an interrupt handler. The handler is removed and if the
+- *	interrupt line is no longer in use by any driver it is disabled.
+- *	On a shared IRQ the caller must ensure the interrupt is disabled
+- *	on the card it drives before calling this function. The function
+- *	does not return until any executing interrupts for this IRQ
+- *	have completed.
+- *
+- *	This function must not be called from interrupt context.
++ * Used to remove interrupts statically setup by the early boot process.
+  */
+-void free_irq(unsigned int irq, void *dev_id)
++
++struct irqaction *remove_irq(unsigned int irq, void *dev_id)
+ {
+ 	struct irq_desc *desc = irq_to_desc(irq);
+ 	struct irqaction *action, **action_ptr;
+@@ -573,7 +567,7 @@ void free_irq(unsigned int irq, void *dev_id)
+ 	WARN(in_interrupt(), "Trying to free IRQ %d from IRQ context!\n", irq);
+ 
+ 	if (!desc)
+-		return;
++		return NULL;
+ 
+ 	spin_lock_irqsave(&desc->lock, flags);
+ 
+@@ -589,7 +583,7 @@ void free_irq(unsigned int irq, void *dev_id)
+ 			WARN(1, "Trying to free already-free IRQ %d\n", irq);
+ 			spin_unlock_irqrestore(&desc->lock, flags);
+ 
+-			return;
++			return NULL;
+ 		}
+ 
+ 		if (action->dev_id == dev_id)
+@@ -636,7 +630,26 @@ void free_irq(unsigned int irq, void *dev_id)
+ 		local_irq_restore(flags);
+ 	}
+ #endif
+-	kfree(action);
++	return action;
++}
++
++/**
++ *	free_irq - free an interrupt allocated with request_irq
++ *	@irq: Interrupt line to free
++ *	@dev_id: Device identity to free
++ *
++ *	Remove an interrupt handler. The handler is removed and if the
++ *	interrupt line is no longer in use by any driver it is disabled.
++ *	On a shared IRQ the caller must ensure the interrupt is disabled
++ *	on the card it drives before calling this function. The function
++ *	does not return until any executing interrupts for this IRQ
++ *	have completed.
++ *
++ *	This function must not be called from interrupt context.
++ */
++void free_irq(unsigned int irq, void *dev_id)
++{
++	kfree(remove_irq(irq, dev_id));
+ }
+ EXPORT_SYMBOL(free_irq);
+ 
