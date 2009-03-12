@@ -1,89 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbZCLR6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbZCLR6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756518AbZCLR6c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 13:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbZCLR6W
+	id S1756695AbZCLR6w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 13:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbZCLR6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 13:58:22 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:22279
-	"EHLO WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754074AbZCLR6W convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 13:58:22 -0400
-X-BigFish: VPS-24(za62sz1432R9370P98dR1805M936fKzz1202hzzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KGEN8O-02-6NJ-01
-Date: Thu, 12 Mar 2009 18:58:07 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: x86-microcode: get rid of set_cpus_allowed()
-Message-ID: <20090312175807.GJ20716@alberich.amd.com>
-References: <1236627539.5168.48.camel@earth> <200903111714.37444.rusty@rustcorp.com.au> <20090312174010.GI20716@alberich.amd.com>
+	Thu, 12 Mar 2009 13:58:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57149 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754126AbZCLR6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 13:58:39 -0400
+To: linux-kernel@vger.kernel.org
+Cc: linux-serial@vger.kernel.org,
+       "xen-devel\@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       Ian Jackson <Ian.Jackson@eu.citrix.com>,
+       Anders Kaseorg <andersk@MIT.EDU>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] IRQ handling race and spurious IIR read in serial/8250.c
+From: Markus Armbruster <armbru@redhat.com>
+Date: Thu, 12 Mar 2009 18:57:27 +0100
+Message-ID: <874oxyei9k.fsf@pike.pond.sub.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090312174010.GI20716@alberich.amd.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 12 Mar 2009 17:58:08.0691 (UTC) FILETIME=[1A08A830:01C9A33C]
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 06:40:10PM +0100, Andreas Herrmann wrote:
-> On Wed, Mar 11, 2009 at 07:44:37AM +0100, Rusty Russell wrote:
-> > On Tuesday 10 March 2009 06:08:59 Dmitry Adamushko wrote:
-> > > 
-> > > Hi,
-> > > 
-> > > 
-> > > here is a possible candidate for Rusty's cpumask-refactored series.
-> > > Note the [*] remark below though.
-> > 
-> > Ah, OK, I'll drop my version then (below) in favor of this, and will
-> > push to Ingo with the others if he doesn't take it directly.
-> 
-> Sorry guys -- for the late reply --
-> but I missed Dmitry's mail due to some silly mail filtering and had to
-> restore his mail ...
-> 
-> Now I've tested both patches and both seem to reliably prevent
-> microcode updates on CPU1 and CPU2 of an Phenom X3 after
-> suspend/resume. (Just CPU0 was updated.)
-> 
-> Then I've tested mainline kernel w/o your patches and I've observed
-> similar problems. I've seen that sometimes ucode of CPU0 was not
-> updated and sometimes CPU1 and CPU2 were not updated.
-> 
-> I'll look into this asap.
+From: Ian Jackson <ian.jackson@eu.citrix.com>
 
-Some further testing seem to indicate that suspend/resume does not
-work when I have done CPU hotplug before.
+Do not read IIR in serial8250_start_tx when UART_BUG_TXEN
 
-During today's tests I did:
+Reading the IIR clears some oustanding interrupts so it is not safe.
+Instead, simply transmit immediately if the buffer is empty without
+regard to IIR.
 
-(1) set offline/online CPU 1 and 2
-(2) perform suspend/resume afterwards
+Signed-off-by: Ian Jackson <ian.jackson@eu.citrix.com>
+Reviewed-by: Markus Armbruster <armbru@redhat.com>
 
-After that microcode update failed on some CPUs when performing
-suspend/resume. (When skipping step 1, microcode update during
-suspend/resume works.)
+---
+Ian Jackson recently debugged a problem reported by Anders Kaseorg, and
+posted a fix (see http://lkml.org/lkml/2009/2/11/240).  As far as I can
+see, the patch has been dropped on the floor.
 
-Looks strange, but should be debuggable.
+I also experienced the problem, and Ian's patch fixes it for me.
 
+The bug bites Xen HVM guests.  Output to the serial console stalls until
+some input happens.  As Ian's analysis quoted below shows, it is a race
+condition that could theoretically bite elsewhere as well.
 
-Regards,
+Ian Jackson explained:
+> The bugs in detail (this discussion applies to 2.6.20 and also to
+> 2.6.28.4):
+>
+>  1. The hunk of serial8250_startup I quote below attempts to discover
+>     whether writing the IER re-asserts the THRI (transmit ready)
+>     interrupt.  However the spinlock that it has taken out,
+>     port->lock, is not the one that the IRQ service routine takes
+>     before reading the IIR (i->lock).  As a result, on an SMP system
+>     the generated interrupt races with the straight-line code in
+>     serial8250_startup.
+>
+>     If serial8250_startup loses the race (perhaps because the system
+>     is a VM and its VCPU got preempted), UART_BUG_TXEN is spuriously
+>     added to bugs.  This is quite unlikely in a normal system but in
+>     certain Xen configurations, particularly ones where there is CPU
+>     pressure, we may lose the race every time.
+>
+>     It is not exactly clear to me how this ought to be resolved.  One
+>     possibility is that the UART_BUG_TXEN problem might be worked
+>     around perfectly well by the new and very similar workaround
+>     UART_BUG_THRE[1] in 2.6.21ish in which case it could just be
+>     removed.
+>      2. UART_BUG_TXEN's workaround appears to be intended to be
+> harmless.
+>     However what it actually does is to read the IIR, thus clearing
+>     any actual interrupt (including incidentally non-THRI), and then
+>     only perform the intended servicing if the interrupt was _not_
+>     asserted.  That is, it breaks on any serial port with the bug.
+>
+>     As far as I can see there is not much use in UART_BUG_TXEN reading
+>     IIR at all, so a suitable change if we want to keep UART_BUG_TXEN
+>     might be the first patch I enclose below (again, not compiled
+>     or tested).
+>
+>     If UART_BUG_TXEN is retained something along these lines should be
+>     done at the very least.
+>
+> Ian.
+>
+> [1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=40b36daad0ac704e6d5c1b75789f371ef5b053c1
+>     in which case UART
 
-Andreas
-
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+--- ../linux-2.6.28.4/drivers/serial/8250.c~	2009-02-06 21:47:45.000000000 +0000
++++ ../linux-2.6.28.4/drivers/serial/8250.c	2009-02-11 15:55:24.000000000 +0000
+@@ -1257,14 +1257,12 @@
+ 		serial_out(up, UART_IER, up->ier);
+ 
+ 		if (up->bugs & UART_BUG_TXEN) {
+-			unsigned char lsr, iir;
++			unsigned char lsr;
+ 			lsr = serial_in(up, UART_LSR);
+ 			up->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
+-			iir = serial_in(up, UART_IIR) & 0x0f;
+ 			if ((up->port.type == PORT_RM9000) ?
+-				(lsr & UART_LSR_THRE &&
+-				(iir == UART_IIR_NO_INT || iir == UART_IIR_THRI)) :
+-				(lsr & UART_LSR_TEMT && iir & UART_IIR_NO_INT))
++				(lsr & UART_LSR_THRE) :
++				(lsr & UART_LSR_TEMT))
+ 				transmit_chars(up);
+ 		}
+ 	}
 
 
