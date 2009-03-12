@@ -1,180 +1,316 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbZCLPUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbZCLPVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754571AbZCLPUX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 11:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbZCLPUG
+	id S1757343AbZCLPVU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 11:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756335AbZCLPVC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 11:20:06 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:46790 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756377AbZCLPUE (ORCPT
+	Thu, 12 Mar 2009 11:21:02 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:39785 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755224AbZCLPU7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 11:20:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=SqXwTZ3AVw7OnHFa9AfRgI7F4Au5RpVoBRaysiDUe4pUv8K0ttvYP0TM7Cji86RDj6
-         qA5CPwkQlXC2dPF4umHA87AlgAtZ6X6rLb+QKl7iUvNi9miesz+l1e8GvgL5pQAu/fkw
-         dRfEqR0okqXcTpkPONpJdEnVdG4MbdEo0stsI=
-Date: Fri, 13 Mar 2009 00:19:33 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 2/2] use debug_kmap_atomic
-Message-ID: <20090312151932.GB3904@localhost.localdomain>
-References: <20090312151617.GA3904@localhost.localdomain>
+	Thu, 12 Mar 2009 11:20:59 -0400
+From: "Jan-Bernd Themann" <ossthema@de.ibm.com>
+Organization: IBM
+To: David Miller <davem@davemloft.net>
+Subject: [PATCH net-next-2.6] ehea: fix circular locking problem
+Date: Thu, 12 Mar 2009 16:20:18 +0100
+User-Agent: KMail/1.9.9
+Cc: " linux-kernel" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       raisch@de.ibm.com, tklein@de.ibm.com, themann@de.ibm.com,
+       Hannes Hering <hering2@de.ibm.com>, linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
 Content-Disposition: inline
-In-Reply-To: <20090312151617.GA3904@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200903121620.19075.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use debug_kmap_atomic in kmap_atomic, kmap_atomic_pfn,
-and iomap_atomic_prot_pfn.
+This patch fixes the circular locking problem by changing the locking strategy
+concerning the logging of firmware handles.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: <x86@kernel.org>
-Cc: <linux-arch@vger.kernel.org>
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+
+
+
 ---
- arch/mips/mm/highmem.c             |    2 ++
- arch/powerpc/include/asm/highmem.h |    2 ++
- arch/sparc/mm/highmem.c            |    1 +
- arch/x86/mm/highmem_32.c           |    1 +
- arch/x86/mm/iomap_32.c             |    2 ++
- include/asm-frv/highmem.h          |    2 ++
- include/asm-mn10300/highmem.h      |    2 ++
- 7 files changed, 12 insertions(+)
 
-Index: 2.6-mmotm/arch/x86/mm/highmem_32.c
-===================================================================
---- 2.6-mmotm.orig/arch/x86/mm/highmem_32.c
-+++ 2.6-mmotm/arch/x86/mm/highmem_32.c
-@@ -88,6 +88,7 @@ void *kmap_atomic_pfn(unsigned long pfn,
+ drivers/net/ehea/ehea.h      |    2 +-
+ drivers/net/ehea/ehea_main.c |   56 ++++++++++++++++++++++-------------------
+ 2 files changed, 31 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index 029631c..6e317ca 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
  
- 	pagefault_disable();
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0099"
++#define DRV_VERSION	"EHEA_0100"
  
-+	debug_kmap_atomic(type);
- 	idx = type + KM_TYPE_NR*smp_processor_id();
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
- 	set_pte(kmap_pte-idx, pfn_pte(pfn, kmap_prot));
-Index: 2.6-mmotm/arch/x86/mm/iomap_32.c
-===================================================================
---- 2.6-mmotm.orig/arch/x86/mm/iomap_32.c
-+++ 2.6-mmotm/arch/x86/mm/iomap_32.c
-@@ -19,6 +19,7 @@
- #include <asm/iomap.h>
- #include <asm/pat.h>
- #include <linux/module.h>
-+#include <linux/highmem.h>
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index 40c34bf..ac0c5b4 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -155,6 +155,8 @@ static void ehea_update_firmware_handles(void)
+ 	int num_fw_handles, k, l;
  
- int is_io_mapping_possible(resource_size_t base, unsigned long size)
+ 	/* Determine number of handles */
++	mutex_lock(&ehea_fw_handles.lock);
++
+ 	list_for_each_entry(adapter, &adapter_list, list) {
+ 		num_adapters++;
+ 
+@@ -176,15 +178,19 @@ static void ehea_update_firmware_handles(void)
+ 	if (num_fw_handles) {
+ 		arr = kzalloc(num_fw_handles * sizeof(*arr), GFP_KERNEL);
+ 		if (!arr)
+-			return;  /* Keep the existing array */
++			goto out;  /* Keep the existing array */
+ 	} else
+ 		goto out_update;
+ 
+ 	list_for_each_entry(adapter, &adapter_list, list) {
++		if (num_adapters == 0)
++			break;
++
+ 		for (k = 0; k < EHEA_MAX_PORTS; k++) {
+ 			struct ehea_port *port = adapter->port[k];
+ 
+-			if (!port || (port->state != EHEA_PORT_UP))
++			if (!port || (port->state != EHEA_PORT_UP)
++				|| (num_ports == 0))
+ 				continue;
+ 
+ 			for (l = 0;
+@@ -207,6 +213,7 @@ static void ehea_update_firmware_handles(void)
+ 			}
+ 			arr[i].adh = adapter->handle;
+ 			arr[i++].fwh = port->qp_eq->fw_handle;
++			num_ports--;
+ 		}
+ 
+ 		arr[i].adh = adapter->handle;
+@@ -216,16 +223,20 @@ static void ehea_update_firmware_handles(void)
+ 			arr[i].adh = adapter->handle;
+ 			arr[i++].fwh = adapter->mr.handle;
+ 		}
++		num_adapters--;
+ 	}
+ 
+ out_update:
+ 	kfree(ehea_fw_handles.arr);
+ 	ehea_fw_handles.arr = arr;
+ 	ehea_fw_handles.num_entries = i;
++out:
++	mutex_unlock(&ehea_fw_handles.lock);
+ }
+ 
+ static void ehea_update_bcmc_registrations(void)
  {
-@@ -41,6 +42,7 @@ iomap_atomic_prot_pfn(unsigned long pfn,
++	unsigned long flags;
+ 	struct ehea_bcmc_reg_entry *arr = NULL;
+ 	struct ehea_adapter *adapter;
+ 	struct ehea_mc_list *mc_entry;
+@@ -233,6 +244,8 @@ static void ehea_update_bcmc_registrations(void)
+ 	int i = 0;
+ 	int k;
  
- 	pagefault_disable();
++	spin_lock_irqsave(&ehea_bcmc_regs.lock, flags);
++
+ 	/* Determine number of registrations */
+ 	list_for_each_entry(adapter, &adapter_list, list)
+ 		for (k = 0; k < EHEA_MAX_PORTS; k++) {
+@@ -250,7 +263,7 @@ static void ehea_update_bcmc_registrations(void)
+ 	if (num_registrations) {
+ 		arr = kzalloc(num_registrations * sizeof(*arr), GFP_ATOMIC);
+ 		if (!arr)
+-			return;  /* Keep the existing array */
++			goto out;  /* Keep the existing array */
+ 	} else
+ 		goto out_update;
  
-+	debug_kmap_atomic(type);
- 	/*
- 	 * For non-PAT systems, promote PAGE_KERNEL_WC to PAGE_KERNEL_UC_MINUS.
- 	 * PAGE_KERNEL_WC maps to PWT, which translates to uncached if the
-Index: 2.6-mmotm/arch/mips/mm/highmem.c
-===================================================================
---- 2.6-mmotm.orig/arch/mips/mm/highmem.c
-+++ 2.6-mmotm/arch/mips/mm/highmem.c
-@@ -43,6 +43,7 @@ void *__kmap_atomic(struct page *page, e
- 	if (!PageHighMem(page))
- 		return page_address(page);
+@@ -261,6 +274,9 @@ static void ehea_update_bcmc_registrations(void)
+ 			if (!port || (port->state != EHEA_PORT_UP))
+ 				continue;
  
-+	debug_kmap_atomic(type);
- 	idx = type + KM_TYPE_NR*smp_processor_id();
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
- #ifdef CONFIG_DEBUG_HIGHMEM
-@@ -91,6 +92,7 @@ void *kmap_atomic_pfn(unsigned long pfn,
++			if (num_registrations == 0)
++				goto out_update;
++
+ 			arr[i].adh = adapter->handle;
+ 			arr[i].port_id = port->logical_port_id;
+ 			arr[i].reg_type = EHEA_BCMC_BROADCAST |
+@@ -272,9 +288,13 @@ static void ehea_update_bcmc_registrations(void)
+ 			arr[i].reg_type = EHEA_BCMC_BROADCAST |
+ 					  EHEA_BCMC_VLANID_ALL;
+ 			arr[i++].macaddr = port->mac_addr;
++			num_registrations -= 2;
  
- 	pagefault_disable();
+ 			list_for_each_entry(mc_entry,
+ 					    &port->mc_list->list, list) {
++				if (num_registrations == 0)
++					goto out_update;
++
+ 				arr[i].adh = adapter->handle;
+ 				arr[i].port_id = port->logical_port_id;
+ 				arr[i].reg_type = EHEA_BCMC_SCOPE_ALL |
+@@ -288,6 +308,7 @@ static void ehea_update_bcmc_registrations(void)
+ 						  EHEA_BCMC_MULTICAST |
+ 						  EHEA_BCMC_VLANID_ALL;
+ 				arr[i++].macaddr = mc_entry->macaddr;
++				num_registrations -= 2;
+ 			}
+ 		}
+ 	}
+@@ -296,6 +317,8 @@ out_update:
+ 	kfree(ehea_bcmc_regs.arr);
+ 	ehea_bcmc_regs.arr = arr;
+ 	ehea_bcmc_regs.num_entries = i;
++out:
++	spin_unlock_irqrestore(&ehea_bcmc_regs.lock, flags);
+ }
  
-+	debug_kmap_atomic(type);
- 	idx = type + KM_TYPE_NR*smp_processor_id();
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
- 	set_pte(kmap_pte-idx, pfn_pte(pfn, kmap_prot));
-Index: 2.6-mmotm/arch/powerpc/include/asm/highmem.h
-===================================================================
---- 2.6-mmotm.orig/arch/powerpc/include/asm/highmem.h
-+++ 2.6-mmotm/arch/powerpc/include/asm/highmem.h
-@@ -24,6 +24,7 @@
+ static struct net_device_stats *ehea_get_stats(struct net_device *dev)
+@@ -1762,8 +1785,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
  
- #include <linux/init.h>
- #include <linux/interrupt.h>
-+#include <linux/highmem.h>
- #include <asm/kmap_types.h>
- #include <asm/tlbflush.h>
- #include <asm/page.h>
-@@ -94,6 +95,7 @@ static inline void *kmap_atomic_prot(str
- 	if (!PageHighMem(page))
- 		return page_address(page);
+ 	memcpy(dev->dev_addr, mac_addr->sa_data, dev->addr_len);
  
-+	debug_kmap_atomic(type);
- 	idx = type + KM_TYPE_NR*smp_processor_id();
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
- #ifdef CONFIG_DEBUG_HIGHMEM
-Index: 2.6-mmotm/arch/sparc/mm/highmem.c
-===================================================================
---- 2.6-mmotm.orig/arch/sparc/mm/highmem.c
-+++ 2.6-mmotm/arch/sparc/mm/highmem.c
-@@ -39,6 +39,7 @@ void *kmap_atomic(struct page *page, enu
- 	if (!PageHighMem(page))
- 		return page_address(page);
+-	spin_lock(&ehea_bcmc_regs.lock);
+-
+ 	/* Deregister old MAC in pHYP */
+ 	if (port->state == EHEA_PORT_UP) {
+ 		ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+@@ -1784,7 +1805,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
  
-+	debug_kmap_atomic(type);
- 	idx = type + KM_TYPE_NR*smp_processor_id();
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+ out_upregs:
+ 	ehea_update_bcmc_registrations();
+-	spin_unlock(&ehea_bcmc_regs.lock);
+ out_free:
+ 	free_page((unsigned long)cb0);
+ out:
+@@ -1946,8 +1966,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
+ 	}
+ 	ehea_promiscuous(dev, 0);
  
-Index: 2.6-mmotm/include/asm-frv/highmem.h
-===================================================================
---- 2.6-mmotm.orig/include/asm-frv/highmem.h
-+++ 2.6-mmotm/include/asm-frv/highmem.h
-@@ -18,6 +18,7 @@
- #ifdef __KERNEL__
+-	spin_lock(&ehea_bcmc_regs.lock);
+-
+ 	if (dev->flags & IFF_ALLMULTI) {
+ 		ehea_allmulti(dev, 1);
+ 		goto out;
+@@ -1977,7 +1995,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
+ 	}
+ out:
+ 	ehea_update_bcmc_registrations();
+-	spin_unlock(&ehea_bcmc_regs.lock);
+ 	return;
+ }
  
- #include <linux/init.h>
-+#include <linux/highmem.h>
- #include <asm/mem-layout.h>
- #include <asm/spr-regs.h>
- #include <asm/mb-regs.h>
-@@ -116,6 +117,7 @@ static inline void *kmap_atomic(struct p
- 	unsigned long paddr;
+@@ -2458,8 +2475,6 @@ static int ehea_up(struct net_device *dev)
+ 	if (port->state == EHEA_PORT_UP)
+ 		return 0;
  
- 	pagefault_disable();
-+	debug_kmap_atomic(type);
- 	paddr = page_to_phys(page);
+-	mutex_lock(&ehea_fw_handles.lock);
+-
+ 	ret = ehea_port_res_setup(port, port->num_def_qps,
+ 				  port->num_add_tx_qps);
+ 	if (ret) {
+@@ -2496,8 +2511,6 @@ static int ehea_up(struct net_device *dev)
+ 		}
+ 	}
  
- 	switch (type) {
-Index: 2.6-mmotm/include/asm-mn10300/highmem.h
-===================================================================
---- 2.6-mmotm.orig/include/asm-mn10300/highmem.h
-+++ 2.6-mmotm/include/asm-mn10300/highmem.h
-@@ -16,6 +16,7 @@
+-	spin_lock(&ehea_bcmc_regs.lock);
+-
+ 	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
+ 	if (ret) {
+ 		ret = -EIO;
+@@ -2519,10 +2532,7 @@ out:
+ 		ehea_info("Failed starting %s. ret=%i", dev->name, ret);
  
- #include <linux/init.h>
- #include <linux/interrupt.h>
-+#include <linux/highmem.h>
- #include <asm/kmap_types.h>
- #include <asm/pgtable.h>
+ 	ehea_update_bcmc_registrations();
+-	spin_unlock(&ehea_bcmc_regs.lock);
+-
+ 	ehea_update_firmware_handles();
+-	mutex_unlock(&ehea_fw_handles.lock);
  
-@@ -77,6 +78,7 @@ static inline unsigned long kmap_atomic(
- 	if (page < highmem_start_page)
- 		return page_address(page);
+ 	return ret;
+ }
+@@ -2572,9 +2582,6 @@ static int ehea_down(struct net_device *dev)
+ 	if (port->state == EHEA_PORT_DOWN)
+ 		return 0;
  
-+	debug_kmap_atomic(type);
- 	idx = type + KM_TYPE_NR * smp_processor_id();
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
- #if HIGHMEM_DEBUG
+-	mutex_lock(&ehea_fw_handles.lock);
+-
+-	spin_lock(&ehea_bcmc_regs.lock);
+ 	ehea_drop_multicast_list(dev);
+ 	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+ 
+@@ -2583,7 +2590,6 @@ static int ehea_down(struct net_device *dev)
+ 	port->state = EHEA_PORT_DOWN;
+ 
+ 	ehea_update_bcmc_registrations();
+-	spin_unlock(&ehea_bcmc_regs.lock);
+ 
+ 	ret = ehea_clean_all_portres(port);
+ 	if (ret)
+@@ -2591,7 +2597,6 @@ static int ehea_down(struct net_device *dev)
+ 			  dev->name, ret);
+ 
+ 	ehea_update_firmware_handles();
+-	mutex_unlock(&ehea_fw_handles.lock);
+ 
+ 	return ret;
+ }
+@@ -3368,7 +3373,6 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
+ 		ehea_error("Invalid ibmebus device probed");
+ 		return -EINVAL;
+ 	}
+-	mutex_lock(&ehea_fw_handles.lock);
+ 
+ 	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
+ 	if (!adapter) {
+@@ -3453,7 +3457,7 @@ out_free_ad:
+ 
+ out:
+ 	ehea_update_firmware_handles();
+-	mutex_unlock(&ehea_fw_handles.lock);
++
+ 	return ret;
+ }
+ 
+@@ -3472,8 +3476,6 @@ static int __devexit ehea_remove(struct of_device *dev)
+ 
+ 	flush_scheduled_work();
+ 
+-	mutex_lock(&ehea_fw_handles.lock);
+-
+ 	ibmebus_free_irq(adapter->neq->attr.ist1, adapter);
+ 	tasklet_kill(&adapter->neq_tasklet);
+ 
+@@ -3483,7 +3485,6 @@ static int __devexit ehea_remove(struct of_device *dev)
+ 	kfree(adapter);
+ 
+ 	ehea_update_firmware_handles();
+-	mutex_unlock(&ehea_fw_handles.lock);
+ 
+ 	return 0;
+ }
+@@ -3532,6 +3533,9 @@ static int ehea_mem_notifier(struct notifier_block *nb,
+ 	default:
+ 		break;
+ 	}
++
++	ehea_update_firmware_handles();
++
+ 	return NOTIFY_OK;
+ }
+ 
+-- 
+1.5.5
+
