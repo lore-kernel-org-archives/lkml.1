@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752942AbZCLI1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbZCLIdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752942AbZCLI1M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 04:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbZCLI04
+	id S1754184AbZCLIdJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 04:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZCLIcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 04:26:56 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:59694 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752007AbZCLI0z (ORCPT
+	Thu, 12 Mar 2009 04:32:55 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33251 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbZCLIcy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 04:26:55 -0400
-Date: Thu, 12 Mar 2009 13:56:46 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 0/5] memcg softlimit (Another one) v4
-Message-ID: <20090312082646.GA5828@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com> <20090312034647.GA23583@balbir.in.ibm.com> <20090312133949.130b20ed.kamezawa.hiroyu@jp.fujitsu.com> <20090312050423.GI23583@balbir.in.ibm.com> <20090312143212.50818cd5.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 12 Mar 2009 04:32:54 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 1/2] mm: use list.h for vma list
+Cc: kosaki.motohiro@jp.fujitsu.com, Daniel Lowengrub <lowdanie@gmail.com>,
+       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200903112254.56764.nickpiggin@yahoo.com.au>
+References: <8c5a844a0903110255q45b7cdf4u1453ce40d495ee2c@mail.gmail.com> <200903112254.56764.nickpiggin@yahoo.com.au>
+Message-Id: <20090312172619.43BA.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090312143212.50818cd5.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Thu, 12 Mar 2009 17:32:49 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 14:32:12]:
-
-> On Thu, 12 Mar 2009 10:34:23 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> On Wednesday 11 March 2009 20:55:48 Daniel Lowengrub wrote:
+> > Use the linked list defined list.h for the list of vmas that's stored
+> > in the mm_struct structure.  Wrapper functions "vma_next" and
+> > "vma_prev" are also implemented.  Functions that operate on more than
+> > one vma are now given a list of vmas as input.
 > 
-> > Not yet.. you just posted it. I am testing my v5, which I'll post
-> > soon. I am seeing very good results with v5. I'll test yours later
-> > today.
-> > 
-> 
-> If "hooks" to usual path doesn't exist and there are no global locks,
-> I don't have much concern with your version.
+> I'd love to be able to justify having a doubly linked list for vmas...
+> It's easier than managing singly linked lists by hand :) So if you have
+> such a good increase with lookups, it might be a good idea. I wouldn't
+> like to see vm_area_struct go above 192 bytes on any config if possible
+> though.
 
-Good to know. I think it is always good to have competing patches and
-then collaborating and getting the best in.
+Currently, sizeof(struct vm_area_struct) on x86_64 is 176.
+if we assume 32byte cache-line, 176byte is 6 cache-line.
+then, making coubly linked list don't cause d-cache pollution. 
 
-> But 'sorting' seems to be overkill to me.
-> 
+Therefore, We can merge this patch after some cleanups.
+(of cource, your opining cleanups is obiously necessary...)
 
-Sorting is very useful, specially if you have many cgroups. Without
-sorting, how do we select what group to select first.
 
-> I'm sorry if my responce to your patch is delayed. I may not be in office.
->
 
-No problem 
-
--- 
-	Balbir
