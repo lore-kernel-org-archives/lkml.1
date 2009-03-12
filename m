@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbZCLMyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbZCLM4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755452AbZCLMyS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 08:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZCLMyG
+	id S1755747AbZCLM4m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 08:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbZCLM4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 08:54:06 -0400
-Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:17520
-	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752114AbZCLMyF convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 08:54:05 -0400
-X-BigFish: VPS-33(z6cekz1432R98dR936eQ1805M936fKzz1202hzzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KGE95Q-01-5V4-01
-Date: Thu, 12 Mar 2009 13:53:52 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, trenn@suse.de
-Subject: Re: [PATCH] x86: mtrr: don't modify RdDram/WrDram bits of fixed
-	MTRRs
-Message-ID: <20090312125352.GG20716@alberich.amd.com>
-References: <20090311150027.GK10490@alberich.amd.com> <86802c440903120101o2a0c1ad0iec395c45f782078a@mail.gmail.com> <20090312114121.GF20716@alberich.amd.com> <1236860942.12514.1.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1236860942.12514.1.camel@localhost>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 12 Mar 2009 12:53:53.0413 (UTC) FILETIME=[990A4B50:01C9A311]
+	Thu, 12 Mar 2009 08:56:34 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:38276 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752292AbZCLM4d convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 08:56:33 -0400
+Message-Id: <49B914B6.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Thu, 12 Mar 2009 12:57:10 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: clean up output resulting from update_mptable
+	 option
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 02:29:02PM +0200, Maxim Levitsky wrote:
-> On Thu, 2009-03-12 at 12:41 +0100, Andreas Herrmann wrote:
-> >  (Causing Suspend/resume problem:)
-> > - Acer Ferrari 1000
-> > - Acer Ferrari 5000
+Impact: cleanup
 
-> What problem?
-> Hang second resume???
+Without apic=verbose, using the update_mptable option would result in
+garbled and confusing output due to the inconsistent use of printk() vs
+apic_printk().
 
-See
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-  http://lkml.org/lkml/2007/4/3/110
+---
+ arch/x86/kernel/mpparse.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-I don't have access to such a machine. Thus I don't know
-what the exact problem was.
+--- linux-2.6.29-rc7/arch/x86/kernel/mpparse.c	2009-03-04 09:10:19.000000000 +0100
++++ 2.6.29-rc7-x86-update-mptable/arch/x86/kernel/mpparse.c	2009-03-06 11:07:34.000000000 +0100
+@@ -876,12 +876,12 @@ static int  __init replace_intsrc_all(st
+ #ifdef CONFIG_X86_IO_APIC
+ 				struct mpc_intsrc *m = (struct mpc_intsrc *)mpt;
+ 
+-				printk(KERN_INFO "OLD ");
++				apic_printk(APIC_VERBOSE, "OLD ");
+ 				print_MP_intsrc_info(m);
+ 				i = get_MP_intsrc_index(m);
+ 				if (i > 0) {
+ 					assign_to_mpc_intsrc(&mp_irqs[i], m);
+-					printk(KERN_INFO "NEW ");
++					apic_printk(APIC_VERBOSE, "NEW ");
+ 					print_mp_irq_info(&mp_irqs[i]);
+ 				} else if (!i) {
+ 					/* legacy, do nothing */
+@@ -929,7 +929,7 @@ static int  __init replace_intsrc_all(st
+ 			continue;
+ 
+ 		if (nr_m_spare > 0) {
+-			printk(KERN_INFO "*NEW* found ");
++			apic_printk(APIC_VERBOSE, "*NEW* found\n");
+ 			nr_m_spare--;
+ 			assign_to_mpc_intsrc(&mp_irqs[i], m_spare[nr_m_spare]);
+ 			m_spare[nr_m_spare] = NULL;
 
-But it was the reason that the code to sync RdMem/WrMem bits of
-fixed-MTRRs on AMD-CPUs was added. And now this caused new problems on
-systems with other buggy BIOSes.
-
-
-Regards,
-
-Andreas
-
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
 
 
