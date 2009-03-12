@@ -1,51 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZCLJlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753662AbZCLJpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961AbZCLJlr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 05:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZCLJlj
+	id S1753662AbZCLJpr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 05:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZCLJpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 05:41:39 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59206 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752594AbZCLJli convert rfc822-to-8bit (ORCPT
+	Thu, 12 Mar 2009 05:45:38 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:35183 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751867AbZCLJph (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 05:41:38 -0400
-From: Jean Delvare <jdelvare@suse.de>
-Organization: SuSE Linux
-To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take 3)
-Date: Thu, 12 Mar 2009 10:41:34 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-References: <20080724143151.GA32422@lenovo> <4889D767 <4889ED91.7050800@fujitsu-siemens.com>
-In-Reply-To: <4889ED91.7050800@fujitsu-siemens.com>
+	Thu, 12 Mar 2009 05:45:37 -0400
+Date: Thu, 12 Mar 2009 15:15:29 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [BUGFIX][PATCH 1/5] memcg use correct scan number at reclaim
+Message-ID: <20090312094529.GA4335@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090312041414.GG23583@balbir.in.ibm.com> <20090312131739.296785da.kamezawa.hiroyu@jp.fujitsu.com> <20090312164204.43B7.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200903121041.34746.jdelvare@suse.de>
+In-Reply-To: <20090312164204.43B7.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-03-12 16:45:59]:
 
-Le vendredi 25 juillet 2008, Martin Wilck a écrit :
-> Cyrill Gorcunov wrote:
-> > Martin, it seems you forgot to attach the patch :) 
+> > On Thu, 12 Mar 2009 09:44:14 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 13:05:56]:
+> > > 
+> > > > On Thu, 12 Mar 2009 09:30:54 +0530
+> > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > 
+> > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 12:51:24]:
+> > > > > 
+> > > > > > On Thu, 12 Mar 2009 09:19:18 +0530
+> > > > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > > > 
+> > > > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 09:55:16]:
+> > > > > > > 
+> > > > > > > > Andrew, this [1/5] is a bug fix, others are not.
+> > > > > > > > 
+> > > > > > > > ==
+> > > > > > > > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > > > > > > 
+> > > > > > > > Even when page reclaim is under mem_cgroup, # of scan page is determined by
+> > > > > > > > status of global LRU. Fix that.
+> > > > > > > > 
+> > > > > > > > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > > > > > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > > > > > > ---
+> > > > > > > >  mm/vmscan.c |    2 +-
+> > > > > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > > > > > > 
+> > > > > > > > Index: mmotm-2.6.29-Mar10/mm/vmscan.c
+> > > > > > > > ===================================================================
+> > > > > > > > --- mmotm-2.6.29-Mar10.orig/mm/vmscan.c
+> > > > > > > > +++ mmotm-2.6.29-Mar10/mm/vmscan.c
+> > > > > > > > @@ -1470,7 +1470,7 @@ static void shrink_zone(int priority, st
+> > > > > > > >  		int file = is_file_lru(l);
+> > > > > > > >  		int scan;
+> > > > > > > > 
+> > > > > > > > -		scan = zone_page_state(zone, NR_LRU_BASE + l);
+> > > > > > > > +		scan = zone_nr_pages(zone, sc, l);
+> > > > > > > 
+> > > > > > > I have the exact same patch in my patch queue. BTW, mem_cgroup_zone_nr_pages is
+> > > > > > > buggy. We don't hold any sort of lock while extracting
+> > > > > > > MEM_CGROUP_ZSTAT (ideally we need zone->lru_lock). Without that how do
+> > > > > > > we guarantee that MEM_CGRUP_ZSTAT is not changing at the same time as
+> > > > > > > we are reading it?
+> > > > > > > 
+> > > > > > Is it big problem ? We don't need very precise value and ZSTAT just have
+> > > > > > increment/decrement. So, I tend to ignore this small race.
+> > > > > > (and it's unsigned long, not long long.)
+> > > > > >
+> > > > > 
+> > > > > The assumption is that unsigned long read is atomic even on 32 bit
+> > > > > systems? What if we get pre-empted in the middle of reading the data
+> > > > > and don't return back for long? The data can be highly in-accurate.
+> > > > > No? 
+> > > > > 
+> > > > Hmm,  preempt_disable() is appropriate ?
+> > > > 
+> > > > But shrink_zone() itself works on the value which is read at this time and
+> > > > dont' take care of changes in situation by preeemption...so it's not problem
+> > > > of memcg.
+> > > >
+> > > 
+> > > You'll end up reclaiming based on old stale data. shrink_zone itself
+> > > maintains atomic data for zones.
+> > > 
+> > IIUC, # of pages to be scanned is just determined once, here.
 > 
-> I am sorry, here it is. Thanks :)
+> In this case, lockless is right behavior.
+> lockless is valuable than precise ZSTAT. end user can't observe this race.
+>
 
-Sorry for replying to such an old thread, but did this patch go
-anywhere? I can't seem to find it in git. Was it somehow obsoleted
-by a different fix for the same issue (SMI flood during APIC
-calibration)? Or is the upstream kernel still affected?
+Lockless works fine provided the data is correctly aligned. I need to
+check this out more thoroghly.
 
-Thanks,
 -- 
-Jean Delvare
-Suse L3
+	Balbir
