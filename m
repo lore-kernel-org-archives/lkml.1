@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757161AbZCLPOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbZCLPPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757161AbZCLPOp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 11:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbZCLPOh
+	id S1756960AbZCLPPw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 11:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbZCLPPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 11:14:37 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:64023 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754571AbZCLPOg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 11:14:36 -0400
-Date: Thu, 12 Mar 2009 11:14:32 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, Pierre Ossman <drzeus@drzeus.cx>,
-       Pekka Paalanen <pq@iki.fi>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/4] tracing: keep ring buffer to minimum size till
- used
-In-Reply-To: <20090312150100.GB5270@nowhere>
-Message-ID: <alpine.DEB.2.00.0903121111170.3062@gandalf.stny.rr.com>
-References: <20090312023720.144716747@goodmis.org> <20090312023936.000182747@goodmis.org> <20090312150100.GB5270@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 12 Mar 2009 11:15:43 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40052 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755624AbZCLPPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 11:15:43 -0400
+Message-ID: <49B9271A.8040502@us.ibm.com>
+Date: Thu, 12 Mar 2009 08:15:38 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 5/6] futex: unlock before returning -EFAULT
+References: <20090312075349.9856.83687.stgit@Aeon> <20090312075606.9856.88729.stgit@Aeon> <1236852816.5090.117.camel@laptop> <alpine.LFD.2.00.0903121142200.29264@localhost.localdomain> <1236856017.5090.235.camel@laptop>
+In-Reply-To: <1236856017.5090.235.camel@laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 12 Mar 2009, Frederic Weisbecker wrote:
-> >  
-> > +static int tracing_resize_ring_buffer(unsigned long size)
-> > +{
-> > +	int ret;
-> > +
-> > +	/*
-> > +	 * If kernel or user changes the size of the ring buffer
-> > +	 * it get completed.
-> > +	 */
+Peter Zijlstra wrote:
+> On Thu, 2009-03-12 at 11:47 +0100, Thomas Gleixner wrote:
+>> On Thu, 12 Mar 2009, Peter Zijlstra wrote:
+>>
+>>> On Thu, 2009-03-12 at 00:56 -0700, Darren Hart wrote:
+>>>> futex_lock_pi can potentially return -EFAULT with the rt_mutex held.  This
+>>>> seems like the wrong thing to do as userspace should assume -EFAULT means the
+>>>> lock was not taken.  Even if it could figure this out, we'd be leaving the
+>>>> pi_state->owner in an inconsistent state.  This patch unlocks the rt_mutex
+>>>> prior to returning -EFAULT to userspace.
+>>> lockdep would complain, one is not to leave the kernel with locks held.
+>> That would break pi futexes in bits and pieces.
+>>
+>>      T1 takes F1
+>>      T2 blocks on F1
+>>      	-> T2 sets up rt_mutex and locks it for T1
+>> 	   T2 blocks on rt_mutex and boosts T1
+>>
+>>      T1 calls a non futex syscall
+>>      T1 returns from syscall with the rt_mutex still locked
+>>
+>> Thanks,
 > 
-> Indeed :-)
-
-That's my imitation of Shakespeare ;-)
-
+> Oh right, raw rt_mutex stuff isn't lockdep annotated, and you use the
+> robust futex infrastructure to ensure stuff gets unlocked when holder
+> dies. That should work out.
 > 
-> I just wonder about one thing.
-> Sometimes I use trace_printk to trace some events that come on bootup.
-> The only solution I see that could avoid me this minimum size would be
-> to use ftrace=nop that I sometimes use to avoid ftrace selftests.
 
-"Give that man a cigar!" Yep, you hit the jackpot!  I was anticipating
-this question and you even gave the same answer I would. That is to
-use "ftrace=nop" on the command line ;-)
+OK, are there any other concerns with this patch?
 
-> 
-> I guess that few developers will be aware of this trick so may be
-> it could be worth it to explain it on the ftrace documentation and
-> on kernel.h (though a simple ftrace_printk as a parameter would be
-> more obvious, or ftrace=printk).
-
-Any ftrace=foobar would work. Even if foobar was not a tracer. So using 
-ftrace=foobar literally, would work.
-
-> 
-> Anyway this patch is a very good thing, especially on embeeded systems.
-
-Thanks,
-
--- Steve
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
