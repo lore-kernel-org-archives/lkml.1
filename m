@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZCLSfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbZCLSgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbZCLSfr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 14:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZCLSfh
+	id S1757249AbZCLSgD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 14:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbZCLSfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 14:35:37 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:50261 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753644AbZCLSfg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 14:35:36 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [BUG,2.6.29-rc7,s390] System goes into endless loop during boot or logon
-Date: Thu, 12 Mar 2009 19:35:30 +0100
-User-Agent: KMail/1.9.9
-Cc: Jan Glauber <jang@linux.vnet.ibm.com>, linux-s390@vger.kernel.org,
-       Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200903080835.14032.elendil@planet.nl> <1236871686.19544.3.camel@localhost.localdomain> <200903121546.06687.elendil@planet.nl>
-In-Reply-To: <200903121546.06687.elendil@planet.nl>
+	Thu, 12 Mar 2009 14:35:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39182 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756825AbZCLSfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 14:35:38 -0400
+Date: Thu, 12 Mar 2009 14:33:36 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: mingo@elte.hu, rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org, acme@ghostprotocols.net, fweisbec@gmail.com,
+       fche@redhat.com, peterz@infradead.org, compudj@krystal.dyndns.org
+Subject: [Patch 1/2] tracepoints for softirq entry/exit - add
+	softirq-to-name array
+Message-ID: <20090312183336.GB3352@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903121935.32774.elendil@planet.nl>
-X-OriginalArrivalTime: 12 Mar 2009 18:35:33.0272 (UTC) FILETIME=[53E88980:01C9A341]
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 March 2009, Frans Pop wrote:
-> On Thursday 12 March 2009, Jan Glauber wrote:
-> > > AFAICT s390 does not have an NMI watchdog. And I have no idea how I
-> > > could trigger a sysrq given that I can't login and only have a dumb
-> > > console or SSH session to work with anyway.
-> >
-> > You can try to trigger sysrq by ^-, so to get the task view type:
-> > .^-t
->
-> Thanks a lot Jan! On a running system that works, so now the only
-> question is if it also works when the system is looping. Will try
-> later.
 
-Unfortunately it does not work when the system is hung, not even if I try 
-it as a "priority" command.
+create a 'softirq_to_name' array, which is indexed by softirq #, so
+that we can easily convert between the softirq index # and its name, in
+order to get more meaningful output messages.
 
-We're still working on my other 2.6.28 regression. I guess the smart thing 
-to do is wait and see what comes out of that first, so let's put this one 
-on hold for now.
+Signed-off-by: Jason Baron <jbaron@redhat.com>
 
-Cheers,
-FJP
+---
+
+ include/linux/interrupt.h |    5 +++++
+ kernel/softirq.c          |    9 ++++++++-
+ 2 files changed, 13 insertions(+), 1 deletions(-)
+
+
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index e7bcfd7..da82ee4 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -258,6 +258,11 @@ enum
+ 	NR_SOFTIRQS
+ };
+ 
++/* map softirq index to softirq name. update 'softirq_to_name' in
++ * kernel/softirq.c when adding a new softirq.
++ */
++extern char *softirq_to_name[NR_SOFTIRQS];
++
+ /* softirq mask and active fields moved to irq_cpustat_t in
+  * asm/hardirq.h to get better cache usage.  KAO
+  */
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 40ff3cf..ba1511f 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -53,6 +53,12 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
+ 
+ static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
+ 
++char *softirq_to_name[NR_SOFTIRQS] = {
++	"HI_SOFTIRQ", "TIMER_SOFTIRQ", "NET_TX_SOFTIRQ", "NET_RX_SOFTIRQ",
++	"BLOCK_SOFTIRQ", "TASKLET_SOFTIRQ", "SCHED_SOFTIRQ", "HRTIMER_SOFTIRQ",
++	"RCU_SOFTIRQ"
++};
++
+ /*
+  * we cannot loop indefinitely here to avoid userspace starvation,
+  * but we also don't want to introduce a worst case 1/HZ latency
+@@ -209,9 +215,10 @@ restart:
+ 			h->action(h);
+ 
+ 			if (unlikely(prev_count != preempt_count())) {
+-				printk(KERN_ERR "huh, entered softirq %td %p"
++				printk(KERN_ERR "huh, entered softirq %td %s %p"
+ 				       "with preempt_count %08x,"
+ 				       " exited with %08x?\n", h - softirq_vec,
++				       softirq_to_name[h - softirq_vec],
+ 				       h->action, prev_count, preempt_count());
+ 				preempt_count() = prev_count;
+ 			}
