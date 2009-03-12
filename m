@@ -1,148 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbZCLDbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbZCLDep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755549AbZCLDbW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 23:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbZCLDbN
+	id S1755743AbZCLDep (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 23:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbZCLDeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 23:31:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54473 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751714AbZCLDbM (ORCPT
+	Wed, 11 Mar 2009 23:34:36 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:42187 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001AbZCLDef convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 23:31:12 -0400
-Date: Wed, 11 Mar 2009 20:26:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Wu Fengguang <fengguang.wu@intel.com>, Pierre Ossman <drzeus@drzeus.cx>,
-       Pekka Paalanen <pq@iki.fi>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/4] tracing: keep ring buffer to minimum size till used
-Message-Id: <20090311202637.d8c2343b.akpm@linux-foundation.org>
-In-Reply-To: <20090312023936.000182747@goodmis.org>
-References: <20090312023720.144716747@goodmis.org>
-	<20090312023936.000182747@goodmis.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Mar 2009 23:34:35 -0400
+Message-ID: <49B88280.8060603@cosmosbay.com>
+Date: Thu, 12 Mar 2009 04:33:20 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Benjamin LaHaise <bcrl@kvack.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Jeff Moyer <jmoyer@redhat.com>,
+       Avi Kivity <avi@redhat.com>, linux-aio <linux-aio@kvack.org>,
+       zach.brown@oracle.com, linux-kernel@vger.kernel.org,
+       Davide Libenzi <davidel@xmailserver.org>
+Subject: Re: [patch] aio: remove aio-max-nr and instead use the memlock rlimit
+ to limit the number of pages pinned for the aio completion ring
+References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com> <49B54143.1010607@redhat.com> <x49sklmd1fo.fsf@segfault.boston.devel.redhat.com> <49B57CB0.5020300@cosmosbay.com> <49B875F7.3030305@cosmosbay.com> <20090312024419.GG18665@kvack.org> <49B8807A.5080302@cosmosbay.com> <20090312032928.GH18665@kvack.org>
+In-Reply-To: <20090312032928.GH18665@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 12 Mar 2009 04:33:21 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009 22:37:21 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> From: Steven Rostedt <srostedt@redhat.com>
+Benjamin LaHaise a écrit :
+> On Thu, Mar 12, 2009 at 04:24:42AM +0100, Eric Dumazet wrote:
+>>         if (!IS_ERR(req->ki_eventfd))
+>>                 fput(req->ki_eventfd);   /* BANG : can be called from interrupt context */
+> ...
+>> Thank you
 > 
-> Impact: less memory impact on systems not using tracer
+> That's a bug in the eventfd code, not aio.  Davide: please fix.
 > 
-> When the kernel boots up that has tracing configured, it allocates
-> the default size of the ring buffer. This currently happens to be
-> 1.4Megs per possible CPU. This is quite a bit of wasted memory if
-> the system is never using the tracer.
-> 
-> The current solution is to keep the ring buffers to a minimum size
-> until the user uses them. Once a tracer is piped into the current_tracer
-> the ring buffer will be expanded to the default size. If the user
-> changes the size of the ring buffer, it will take the size given
-> by the user immediately.
-> 
-> If the user adds a "ftrace=" to the kernel command line, then the ring
-> buffers will be set to the default size on initialization.
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/trace/trace.c |   79 +++++++++++++++++++++++++++++++++++++------------
->  1 files changed, 59 insertions(+), 20 deletions(-)
-> 
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 4c97947..0c1dc18 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -45,6 +45,12 @@ unsigned long __read_mostly	tracing_max_latency;
->  unsigned long __read_mostly	tracing_thresh;
->  
->  /*
-> + * On boot up, the ring buffer is set to the minimum size, so that
-> + * we do not waste memory on systems that are not using tracing.
-> + */
-> +static int ring_buffer_expanded;
-> +
-> +/*
->   * We need to change this state when a selftest is running.
->   * A selftest will lurk into the ring-buffer to count the
->   * entries inserted during the selftest although some concurrent
-> @@ -128,6 +134,8 @@ static int __init set_ftrace(char *str)
->  {
->  	strncpy(bootup_tracer_buf, str, BOOTUP_TRACER_SIZE);
->  	default_bootup_tracer = bootup_tracer_buf;
-> +	/* We are using ftrace early, expand it */
-> +	ring_buffer_expanded = 1;
->  	return 1;
->  }
->  __setup("ftrace=", set_ftrace);
-> @@ -2315,6 +2323,40 @@ int tracer_init(struct tracer *t, struct trace_array *tr)
->  	return t->init(tr);
->  }
->  
-> +static int tracing_resize_ring_buffer(unsigned long size)
-> +{
-> +	int ret;
-> +
-> +	/*
-> +	 * If kernel or user changes the size of the ring buffer
-> +	 * it get completed.
-> +	 */
 
-That comment needs help.
+Hmm... what about fget_light() ... is it Davide fault too ?
 
-> +	ring_buffer_expanded = 1;
-> +
-> +	ret = ring_buffer_resize(global_trace.buffer, size);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = ring_buffer_resize(max_tr.buffer, size);
-> +	if (ret < 0) {
-> +		int r;
-> +
-> +		r = ring_buffer_resize(global_trace.buffer,
-> +				       global_trace.entries);
-> +		if (r < 0) {
-> +			/* AARGH! We are left with different
-> +			 * size max buffer!!!! */
+aio breaks the fget_light() concept too, if process is mono threaded.
 
-So does that one, but at least it's understandable ;)
+/*
+ * Lightweight file lookup - no refcnt increment if fd table isn't shared.
+ * You can use this only if it is guranteed that the current task already
+ * holds a refcnt to that file. That check has to be done at fget() only
+ * and a flag is returned to be passed to the corresponding fput_light().
+ * There must not be a cloning between an fget_light/fput_light pair.
+ */
+struct file *fget_light(unsigned int fd, int *fput_needed)
+{
+        struct file *file;
+        struct files_struct *files = current->files;
 
-> +			WARN_ON(1);
-> +			tracing_disabled = 1;
-> +		}
-> +		return ret;
-> +	}
-> +
-> +	global_trace.entries = size;
-> +
-> +	return ret;
-> +}
-> +
->  struct trace_option_dentry;
->  
->  static struct trace_option_dentry *
-> @@ -2330,6 +2372,13 @@ static int tracing_set_tracer(const char *buf)
->  	struct tracer *t;
->  	int ret = 0;
->  
-> +	if (!ring_buffer_expanded) {
-> +		ret = tracing_resize_ring_buffer(trace_buf_size);
-> +		if (ret < 0)
-> +			return ret;
-> +		ret = 0;
-> +	}
+        *fput_needed = 0;
+        if (likely((atomic_read(&files->count) == 1))) {
+                file = fcheck_files(files, fd);
+        } else {
+                rcu_read_lock();
+                file = fcheck_files(files, fd);
+                if (file) {
+                        if (atomic_long_inc_not_zero(&file->f_count))
+                                *fput_needed = 1;
+                        else
+                                /* Didn't get the reference, someone's freed */
+                                file = NULL;
+                }
+                rcu_read_unlock();
+        }
 
-This would look a bit less racy were it to happen inside the lock.
+        return file;
+}
 
->  	mutex_lock(&trace_types_lock);
->  	for (t = trace_types; t; t = t->next) {
->  		if (strcmp(t->name, buf) == 0)
+
 
