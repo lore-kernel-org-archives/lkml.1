@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbZCLKvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZCLKvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbZCLKvd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 06:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbZCLKvW
+	id S1756049AbZCLKvr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 06:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbZCLKv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 06:51:22 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:32869 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752637AbZCLKvV convert rfc822-to-8bit (ORCPT
+	Thu, 12 Mar 2009 06:51:27 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1271 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755743AbZCLKv0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 06:51:21 -0400
-Message-Id: <49B8F761.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Thu, 12 Mar 2009 10:52:01 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i386: also limit NODES_HIGH_SHIFT here
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 12 Mar 2009 06:51:26 -0400
+Date: Thu, 12 Mar 2009 10:37:48 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+Subject: Re: [patch 2.6.29-rc7 regulator-next] regulator: refcount fixes
+Message-ID: <20090312103744.GA24376@sirena.org.uk>
+References: <200903111743.34708.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200903111743.34708.david-b@pacbell.net>
+X-Cookie: War is an equal opportunity destroyer.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+On Wed, Mar 11, 2009 at 04:43:34PM -0800, David Brownell wrote:
 
----
- arch/x86/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> Buggy consumers could notice different bug symptoms.  The main
+> example would be refcounting bugs; also, any (out-of-tree) users
+> of the experimental regulator_set_optimum_mode() stuff which
+> don't call it when they're done using a regulator.
 
---- linux-2.6.29-rc7/arch/x86/Kconfig	2009-03-04 09:10:19.000000000 +0100
-+++ 2.6.29-rc7-i386-nodes-shift-limit/arch/x86/Kconfig	2009-03-06 10:24:22.000000000 +0100
-@@ -1087,7 +1087,7 @@ config NUMA_EMU
- 
- config NODES_SHIFT
- 	int "Maximum NUMA Nodes (as a power of 2)" if !MAXSMP
--	range 1 9   if X86_64
-+	range 1 9
- 	default "9" if MAXSMP
- 	default "6" if X86_64
- 	default "4" if X86_NUMAQ
+I'm OK with this from a code point of view so
 
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
+However any consumers that take advantage of this won't be able to
+safely share a regulator without extra work since they have no way of
+telling why a regulator is in the state that it's in without extra
+stuff.  We should probably have something along the lines of a
+regulator_get_exclusive() for them.  Previously the consumer counting
+would have stopped them interfering with enables done by other
+consumers.
 
+There will be other consumers that can't safely share a regulator anyway
+(eg, requiring additional code to notice and handle voltage changes) so
+it'd be a good thing to have.
