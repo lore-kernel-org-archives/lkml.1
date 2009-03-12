@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbZCLS13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbZCLScX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754696AbZCLS13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 14:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbZCLS1U
+	id S1756770AbZCLScX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 14:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbZCLScE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 14:27:20 -0400
-Received: from mga09.intel.com ([134.134.136.24]:8351 "EHLO mga09.intel.com"
+	Thu, 12 Mar 2009 14:32:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49173 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752467AbZCLS1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 14:27:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,351,1233561600"; 
-   d="scan'208";a="394001644"
-Subject: Re: [ipw3945-devel] X200 suspend status on -wl and -next
-From: reinette chatre <reinette.chatre@intel.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Nico -telmich- Schottelius 
-	<nico-linux-ipw3945-devel@schottelius.org>,
-       Nico Schottelius <nico-linux-20090311@schottelius.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       Linux Next Mailing List <linux-next@vger.kernel.org>
-In-Reply-To: <20090312173042.GD3410@tuxdriver.com>
-References: <20090311073030.GA5284@denkbrett.schottelius.org>
-	 <200903110946.23280.rjw@sisk.pl>
-	 <20090311085229.GB4495@denkbrett.schottelius.org>
-	 <20090311184407.GG8761@tuxdriver.com>
-	 <20090312142003.GF30728@denkbrett.schottelius.org>
-	 <20090312173042.GD3410@tuxdriver.com>
-Content-Type: text/plain
-Date: Thu, 12 Mar 2009 11:32:22 -0700
-Message-Id: <1236882742.13699.28.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1753497AbZCLScB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 14:32:01 -0400
+Date: Thu, 12 Mar 2009 14:29:50 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: mingo@elte.hu, rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org, acme@ghostprotocols.net, fweisbec@gmail.com,
+       fche@redhat.com, peterz@infradead.org, compudj@krystal.dyndns.org
+Subject: [Patch 0/2] tracepoints for softirq entry/exit
+Message-ID: <20090312182950.GA3352@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-12 at 10:30 -0700, John W. Linville wrote:
-> On Thu, Mar 12, 2009 at 03:20:03PM +0100, Nico -telmich- Schottelius wrote:
-> > John W. Linville [Wed, Mar 11, 2009 at 02:44:07PM -0400]:
-> > > Any chance you'd like to try wireless-testing to help to isolate
-> > > possible sources of this problem?
-> > > 
-> > > 	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing.git
-> > 
-> > v2.6.29-rc7-17155-g2f7ab92 looks good (as in: wlan works after several
-> > suspends and resumes). But it seems you do not add the full kernel version:
-> > 
-> > sgnx20002:/home/nico/wireless-testing# git describe
-> > v2.6.29-rc7-17155-g2f7ab92
-> > sgnx20002:/home/nico/wireless-testing# uname -r
-> > 2.6.29-rc7-wl-ikn
-> > 
-> > Which is the kernel built some seconds before.
-> 
-> I don't know where you get the -ikn bits from, presumably from the
-> iwlwifi project.  Given what you said above, it would seem you are
-> getting your suspend/resume problems from them as well... :-(
+hi,
 
-In our repo we do not add anything to the value of localversion. We also
-track wireless-testing _very_ closely so the differences are at most a
-handful of patches. Could you please send me commit id of iwlwifi-2.6
-repo that fails as well as the commit id of wireless-testing repo that
-succeeds?
+Somewhat analogous to the hard irq entry/exit tracepoints. This patch
+series introduces tracepoints for softirq entry/exit points.
 
-Thanks
+These tracepoints are useful for augmenting the various tracers (sample
+output below), and for understanding frequencies and timings for
+softirqs. Very similar tracepoints are also in Mathieu's lttng tree.
 
-Reinette
+thanks,
+
+-Jason
+
+
+ 0)               |                                  /* irq_softirq_entry: softirq=1 action=TIMER_SOFTIRQ */
+ 0)               |                                  run_timer_softirq() {
+ 0)   1.032 us    |                                    hrtimer_run_pending();
+ 0)   0.796 us    |                                    _spin_lock_irq();
+ 0)   4.593 us    |                                  }
+ 0)               |                                  /* irq_softirq_exit: softirq=1 action=TIMER_SOFTIRQ */
+ 0)               |                                  /* irq_softirq_entry: softirq=6 action=SCHED_SOFTIRQ */
+ 0)               |                                  run_rebalance_domains() {
+ 0)               |                                    rebalance_domains() {
+ 0)   0.868 us    |                                      msecs_to_jiffies();
+ 0)   1.014 us    |                                      msecs_to_jiffies();
+ 0)   5.947 us    |                                    }
+ 0)   7.779 us    |                                  }
+ 0)               |                                  /* irq_softirq_exit: softirq=6 action=SCHED_SOFTIRQ */
+ 0)               |                                  /* irq_softirq_entry: softirq=8 action=RCU_SOFTIRQ */
+ 0)               |                                  rcu_process_callbacks() {
+ 0)               |                                    __rcu_process_callbacks() {
+ 0)   0.882 us    |                                      force_quiescent_state();
+ 0)   0.995 us    |                                      rcu_process_gp_end();
+ 0)   0.740 us    |                                      check_for_new_grace_period();
+ 0)               |                                      cpu_quiet() {
+ 0)   0.815 us    |                                        _spin_lock_irqsave();
+ 0)   0.939 us    |                                        _spin_unlock_irqrestore();
+ 0)   4.208 us    |                                      }
+ 0) + 12.257 us   |                                    }
+ 0)               |                                    __rcu_process_callbacks() {
+ 0)   0.547 us    |                                      force_quiescent_state();
+ 0)   0.917 us    |                                      rcu_process_gp_end();
+ 0)   0.744 us    |                                      check_for_new_grace_period();
+ 0)   5.879 us    |                                    }
+ 0) + 20.994 us   |                                  }
+ 0)               |                                  /* irq_softirq_exit: softirq=8 action=RCU_SOFTIRQ */
 
