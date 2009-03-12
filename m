@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbZCLHSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbZCLHT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753145AbZCLHSx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 03:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZCLHSo
+	id S1753764AbZCLHT5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 03:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZCLHTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 03:18:44 -0400
-Received: from exprod5og113.obsmtp.com ([64.18.0.26]:44391 "EHLO
-	exprod5og113.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750835AbZCLHSo convert rfc822-to-8bit (ORCPT
+	Thu, 12 Mar 2009 03:19:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38816 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750835AbZCLHTr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 03:18:44 -0400
-X-Greylist: delayed 304 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 03:18:40 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
+	Thu, 12 Mar 2009 03:19:47 -0400
+Date: Thu, 12 Mar 2009 00:11:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       arozansk@redhat.com, jmoyer@redhat.com, oz-kernel@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       menage@google.com, peterz@infradead.org
+Subject: Re: [PATCH 01/10] Documentation
+Message-Id: <20090312001146.74591b9d.akpm@linux-foundation.org>
+In-Reply-To: <1236823015-4183-2-git-send-email-vgoyal@redhat.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
+	<1236823015-4183-2-git-send-email-vgoyal@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may get wrongly discarded
-Date: Thu, 12 Mar 2009 08:12:44 +0100
-Message-ID: <5DC5324CE00E4D4494EE5F031E354E9501CE9C0F@BUDMLVEM03.e2k.ad.ge.com>
-In-Reply-To: <20090311170840.2f136849.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may get wrongly discarded
-thread-index: AcmipwUs1nDNQyMFSdOfnFQyuCrzDwAOl1sg
-References: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk> <20090311170840.2f136849.akpm@linux-foundation.org>
-From: "Berkhan, Enrik (GE Infra, Oil & Gas)" <enrik.berkhan@ge.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Howells" <dhowells@redhat.com>
-Cc: <torvalds@linux-foundation.org>, <peterz@infradead.org>,
-       <dhowells@redhat.com>, <uclinux-dev@uclinux.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 12 Mar 2009 07:12:56.0861 (UTC) FILETIME=[F7FC2CD0:01C9A2E1]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 11 Mar 2009 15:30:35 +0000
-> David Howells <dhowells@redhat.com> wrote:
->> From: Enrik Berkhan <Enrik.Berkhan@ge.com>
->> 
->> The solution is to mark the pages dirty at the point of allocation by
->> the truncation code.
-> 
-> Was there a specific reason for using the low-level SetPageDirty()?
+On Wed, 11 Mar 2009 21:56:46 -0400 Vivek Goyal <vgoyal@redhat.com> wrote:
 
-No, no specific reason. It was just my first try of a fix after spotting 
-the problem. After a short discussion with David, we decided to wait for 
-others' comments on using the low-/high-level approach.
+> +Currently "current" task
+> +is used to determine the cgroup (hence io group) of the request. Down the
+> +line we need to make use of bio-cgroup patches to map delayed writes to
+> +right group.
 
-Enrik
+You handled this problem pretty neatly!
+
+It's always been a BIG problem for all the io-controlling schemes, and
+most of them seem to have "handled" it in the above way :(
+
+But for many workloads, writeback is the majority of the IO and it has
+always been the form of IO which has caused us the worst contention and
+latency problems.  So I don't think that we can proceed with _anything_
+until we at least have a convincing plan here.
+
+
+
+
+Also..  there are so many IO controller implementations that I've lost
+track of who is doing what.  I do have one private report here that
+Andreas's controller "is incredibly productive for us and has allowed
+us to put twice as many users per server with faster times for all
+users".  Which is pretty stunning, although it should be viewed as a
+condemnation of the current code, I'm afraid.
+
+So my question is: what is the definitive list of
+proposed-io-controller-implementations and how do I cunningly get all
+you guys to check each others homework? :)
