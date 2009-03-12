@@ -1,95 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284AbZCLXV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbZCLXWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756284AbZCLXV2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 19:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbZCLXVT
+	id S1755807AbZCLXWU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 19:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755858AbZCLXWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 19:21:19 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:60148 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754037AbZCLXVS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 19:21:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=na5bzZOnppqIKDJG/hy+Cz1fvgX3gs7FuCNXQIO+W3QoYxw7RlREx3TkkPHXK8q/5w
-         uhBXM+FygvK1Nuqz/Di2QY1be57f7/n5xL93aoUXGkzwepROmQWzpKaPB3jKFpJ0976C
-         1SfmB0/L+Z7dMTj0HvcVFprmA/wX81VhIXSDM=
-Date: Fri, 13 Mar 2009 08:20:51 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jamie Lokier <jamie@shareable.org>,
-       uClinux development list <uclinux-dev@uclinux.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [uClinux-dev] RE: [PATCH] NOMMU: Pages allocated to a ramfs
- inode's pagecache may get wrongly discarded
-Message-Id: <20090313082051.5eaa11a3.minchan.kim@barrios-desktop>
-In-Reply-To: <1236858608.22914.3689.camel@twins>
-References: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk>
-	<20090311170840.2f136849.akpm@linux-foundation.org>
-	<5DC5324CE00E4D4494EE5F031E354E9501CE9C0F@BUDMLVEM03.e2k.ad.ge.com>
-	<20090312112953.GD6995@shareable.org>
-	<1236858608.22914.3689.camel@twins>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Mar 2009 19:22:10 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:47902 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754832AbZCLXWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 19:22:08 -0400
+Message-ID: <49B99918.5010806@us.ibm.com>
+Date: Thu, 12 Mar 2009 16:22:00 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 2/6] Additional (get|put)_futex_key() fixes
+References: <20090312075349.9856.83687.stgit@Aeon> <20090312075545.9856.75152.stgit@Aeon> <20090312101636.GB7157@elte.hu> <alpine.LFD.2.00.0903121207520.29264@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903121207520.29264@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Peter.
-
-On Thu, 12 Mar 2009 12:50:08 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Thu, 2009-03-12 at 11:29 +0000, Jamie Lokier wrote:
-> > Berkhan, Enrik (GE Infra, Oil & Gas) wrote:
-> > > Andrew Morton wrote:
-> > > > On Wed, 11 Mar 2009 15:30:35 +0000
-> > > > David Howells <dhowells@redhat.com> wrote:
-> > > >> From: Enrik Berkhan <Enrik.Berkhan@ge.com>
-> > > >> 
-> > > >> The solution is to mark the pages dirty at the point of allocation by
-> > > >> the truncation code.
-> > > > 
-> > > > Was there a specific reason for using the low-level SetPageDirty()?
-> > > 
-> > > No, no specific reason. It was just my first try of a fix after spotting 
-> > > the problem. After a short discussion with David, we decided to wait for 
-> > > others' comments on using the low-/high-level approach.
-> > 
-> > Tangentially related...
-> > 
-> > Does the vm pageout logic include or skip these "dirty" pages looking
-> > for candidates to flush to storage?  What about with MMU?
+Thomas Gleixner wrote:
+> On Thu, 12 Mar 2009, Ingo Molnar wrote:
+>> * Darren Hart <dvhltc@us.ibm.com> wrote:
+>>
+>>> futex_requeue and futex_lock_pi still had some bad 
+>>> (get|put)_futex_key() usage. This patch adds the missing 
+>>> put_futex_keys() and corrects a goto in futex_lock_pi() to 
+>>> avoid a double get.
+>>>
+>>> Build and boot tested on a 4 way Intel x86_64 workstation.  
+>>> Passes basic pthread_mutex and PI tests out of 
+>>> ltp/testcases/realtime.
+>> hm, how bad is the impact - do we need this in v2.6.29?
 > 
-> Includes them, regular pageout will try to do the writeout to clean them
-> and then discard them. 
+> I think so. We leak key references in some of the error/retry code
+> pathes.  Darrens patch does not apply to mainline. Backport below.
 > 
-> The ramfs stuff is rather icky in that it adds the pages to the aging
-> list, marks them dirty, but does not provide a writeout method. 
+
+I think you may have made a mistake in the application of the patch.  I 
+did a "git cherry-pick" of this patch onto linux-2.6.tip master and it 
+didn't complain, the patch itself was only different by a couple of line 
+numbers.  Trying to apply this patch manually resulted in:
+
+$ patch -p1 < fixes.diff
+patching file kernel/futex.c
+Hunk #1 succeeded at 805 (offset 3 lines).
+Hunk #2 succeeded at 883 (offset 3 lines).
+Hunk #3 succeeded at 1468 (offset 10 lines).
+Hunk #4 succeeded at 1611 (offset 10 lines).
+Hunk #5 succeeded at 1720 (offset 10 lines).
+
+So I think this patch should be fine.  Before I wrote the patch I 
+checked to make sure that my branch had merged tip/master which had the 
+most recent futex patches from mainline.
+
+Thanks,
+
+Darren
+
+> Thanks,
 > 
-> This will make the paging code scan over them (continuously) trying to
-> clean them, failing that (lack of writeout method) and putting them back
-> on the list.
-
-It ins't true any more. 
-UNEVICTABLE_LRU will move ramfs's page from LRU to unevictable list.
-Couldn't we solve this problem if NOMMU can support CONFIG_UNEVICTABLE_LRU ?
-
-
+> 	tglx
+> ---
+> Subject: futex: fix key reference leaks
+> From: Darren Hart <dvhltc@us.ibm.com>
+> Date: Thu, 12 Mar 2009 12:10:01 +0100
+> 
+> Impact: bugfix
+> 
+> futex_wake_op, futex_requeue, futex_lock_pi and futex_unlock_pi still
+> had some bad (get|put)_futex_key() usage. This patch adds the missing
+> put_futex_keys() and corrects a goto in futex_lock_pi() to avoid a
+> double get.
+> 
+> [ tglx: backport to mainline ]
+> 
+> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> ---
+> 
+>  kernel/futex.c |   13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/kernel/futex.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/futex.c
+> +++ linux-2.6/kernel/futex.c
+> @@ -803,6 +803,9 @@ retry:
+>  			goto retry;
+>  		}
+> 
+> +		put_futex_key(fshared, &key2);
+> +		put_futex_key(fshared, &key1);
+> +
+>  		ret = get_user(dummy, uaddr2);
+>  		if (ret)
+>  			return ret;
+> @@ -881,12 +884,15 @@ retry:
+>  			if (hb1 != hb2)
+>  				spin_unlock(&hb2->lock);
+> 
+> +			put_futex_key(fshared, &key2);
+> +			put_futex_key(fshared, &key1);
+> +
+>  			ret = get_user(curval, uaddr1);
+> 
+>  			if (!ret)
+>  				goto retry;
+> 
+> -			goto out_put_keys;
+> +			return ret;
+>  		}
+>  		if (curval != *cmpval) {
+>  			ret = -EAGAIN;
+> @@ -1459,7 +1465,7 @@ retry_locked:
+>  			 */
+>  			queue_unlock(&q, hb);
+>  			cond_resched();
+> -			goto retry;
+> +			goto retry_unlocked;
+> 
+>  		case -ESRCH:
+>  			/*
+> @@ -1598,6 +1604,7 @@ uaddr_faulted:
+>  		goto retry_unlocked;
+>  	}
+> 
+> +	put_futex_key(fshared, &q.key);
+>  	ret = get_user(uval, uaddr);
+>  	if (!ret)
+>  		goto retry;
+> @@ -1709,6 +1716,8 @@ pi_faulted:
+>  		goto retry_unlocked;
+>  	}
+> 
+> +	put_futex_key(fshared, &key);
+> +
+>  	ret = get_user(uval, uaddr);
+>  	if (!ret)
+>  		goto retry;
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
 
 -- 
-Kinds Regards
-Minchan Kim
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
