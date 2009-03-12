@@ -1,62 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbZCLPPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbZCLPQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756960AbZCLPPw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 11:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbZCLPPn
+	id S1756943AbZCLPQj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 11:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbZCLPQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 11:15:43 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40052 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755624AbZCLPPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 11:15:43 -0400
-Message-ID: <49B9271A.8040502@us.ibm.com>
-Date: Thu, 12 Mar 2009 08:15:38 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 12 Mar 2009 11:16:25 -0400
+Received: from mail.netone.net.tr ([193.192.98.182]:31355 "EHLO
+	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755539AbZCLPQY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 11:16:24 -0400
+Message-ID: <49B92744.5040106@turknet.net.tr>
+Date: Thu, 12 Mar 2009 17:16:20 +0200
+From: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 5/6] futex: unlock before returning -EFAULT
-References: <20090312075349.9856.83687.stgit@Aeon> <20090312075606.9856.88729.stgit@Aeon> <1236852816.5090.117.camel@laptop> <alpine.LFD.2.00.0903121142200.29264@localhost.localdomain> <1236856017.5090.235.camel@laptop>
-In-Reply-To: <1236856017.5090.235.camel@laptop>
+To: Theodore Tso <tytso@mit.edu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: ext4 problem on Linux-2.6.29-rc7-git4
+References: <49B7D979.7010406@turknet.net.tr> <20090312150235.GD11748@mit.edu>
+In-Reply-To: <20090312150235.GD11748@mit.edu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Mar 2009 15:16:21.0506 (UTC) FILETIME=[8019C620:01C9A325]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2009-03-12 at 11:47 +0100, Thomas Gleixner wrote:
->> On Thu, 12 Mar 2009, Peter Zijlstra wrote:
->>
->>> On Thu, 2009-03-12 at 00:56 -0700, Darren Hart wrote:
->>>> futex_lock_pi can potentially return -EFAULT with the rt_mutex held.  This
->>>> seems like the wrong thing to do as userspace should assume -EFAULT means the
->>>> lock was not taken.  Even if it could figure this out, we'd be leaving the
->>>> pi_state->owner in an inconsistent state.  This patch unlocks the rt_mutex
->>>> prior to returning -EFAULT to userspace.
->>> lockdep would complain, one is not to leave the kernel with locks held.
->> That would break pi futexes in bits and pieces.
->>
->>      T1 takes F1
->>      T2 blocks on F1
->>      	-> T2 sets up rt_mutex and locks it for T1
->> 	   T2 blocks on rt_mutex and boosts T1
->>
->>      T1 calls a non futex syscall
->>      T1 returns from syscall with the rt_mutex still locked
->>
->> Thanks,
-> 
-> Oh right, raw rt_mutex stuff isn't lockdep annotated, and you use the
-> robust futex infrastructure to ensure stuff gets unlocked when holder
-> dies. That should work out.
-> 
-
-OK, are there any other concerns with this patch?
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+Theodore Tso wrote:
+> It's a warning, not an error; but I didn't expect it to be quite so
+> voluminous in terms of log messages.  We have a proper fix for it
+> queued up for 2.6.30, but it was considered too invasive.  So the fix
+> was to print a warning which we ratelimited, but it looks like it's
+> even with the printk_ratelimit the warnings are too annoying to let
+> live.  I'll probably fix it to only printk the message once.
+>
+>        	    	     	       	    	       - Ted
+>   
+Good to hear that it was just a warning and not a bug/problem ;-)
+I think, I can live with these warnings in my dmesg till 2.6.30! :-P
