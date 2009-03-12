@@ -1,27 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZCLAMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZCLAPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754741AbZCLAMJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 20:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbZCLALy
+	id S1754825AbZCLAPp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 20:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbZCLAPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 20:11:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34065 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753895AbZCLALx (ORCPT
+	Wed, 11 Mar 2009 20:15:35 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34994 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754019AbZCLAPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 20:11:53 -0400
-Date: Wed, 11 Mar 2009 17:08:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@linux-foundation.org, peterz@infradead.org, Enrik.Berkhan@ge.com,
-       dhowells@redhat.com, uclinux-dev@uclinux.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may
- get wrongly discarded
-Message-Id: <20090311170840.2f136849.akpm@linux-foundation.org>
-In-Reply-To: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk>
-References: <20090311153034.9389.19938.stgit@warthog.procyon.org.uk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 11 Mar 2009 20:15:33 -0400
+Date: Thu, 12 Mar 2009 09:14:08 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC PATCH] cpuacct: per-cgroup utime/stime statistics - v1
+Message-Id: <20090312091408.90e602ce.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090311153434.GB16769@balbir.in.ibm.com>
+References: <20090310124208.GC3902@in.ibm.com>
+	<20090311093812.298a0b21.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090311153434.GB16769@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,58 +34,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009 15:30:35 +0000
-David Howells <dhowells@redhat.com> wrote:
-
-> From: Enrik Berkhan <Enrik.Berkhan@ge.com>
+On Wed, 11 Mar 2009 21:04:34 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > This patch adds a new file cpuacct.stat which displays two stats:
+> > > utime and stime. I wasn't too sure about the usefulness of providing
+> > > per-cgroup guest and steal times and hence not including them here.
+> > > 
+> > > Note that I am using percpu_counter for collecting these two stats.
+> > > Since percpu_counter subsystem doesn't protect the readside, readers could
+> > > theoritically obtain incorrect values for these stats on 32bit systems.
+> > 
+> > Using percpu_counter_read() means that .. but is it okay to ignore "batch"
+> > number ? (see FBC_BATCH)
+> >
 > 
-> The pages attached to a ramfs inode's pagecache by truncation from nothing - as
-> done by SYSV SHM for example - may get discarded under memory pressure.
-> 
-> The problem is that the pages are not marked dirty.  Anything that creates data
-> in an MMU-based ramfs will cause the pages holding that data will cause the
-> set_page_dirty() aop to be called.
-> 
-> For the NOMMU-based mmap, set_page_dirty() may be called by write(), but it
-> won't be called by page-writing faults on writable mmaps, and it isn't called
-> by ramfs_nommu_expand_for_mapping() when a file is being truncated from nothing
-> to allocate a contiguous run.
-> 
-> The solution is to mark the pages dirty at the point of allocation by
-> the truncation code.
-> 
-> Signed-off-by: Enrik Berkhan <Enrik.Berkhan@ge.com>
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
-> 
->  fs/ramfs/file-nommu.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/fs/ramfs/file-nommu.c b/fs/ramfs/file-nommu.c
-> index b9b567a..90d72be 100644
-> --- a/fs/ramfs/file-nommu.c
-> +++ b/fs/ramfs/file-nommu.c
-> @@ -114,6 +114,9 @@ int ramfs_nommu_expand_for_mapping(struct inode *inode, size_t newsize)
->  		if (!pagevec_add(&lru_pvec, page))
->  			__pagevec_lru_add_file(&lru_pvec);
+> FBC_BATCH? Thats gone..no? We have dynamic batches now, IIRC. Could
+> you please elaborate on your comment?
 >  
-> +		/* prevent the page from being discarded on memory pressure */
-> +		SetPageDirty(page);
-> +
->  		unlock_page(page);
->  	}
+Ah, ok. it's now extern int percpu_counter_batch.
 
-Was there a specific reason for using the low-level SetPageDirty()?
+-Kame
 
-On the write() path, ramfs pages will be dirtied by
-simple_commit_write()'s set_page_dirty(), which calls
-__set_page_dirty_no_writeback().
-
-It just so happens that __set_page_dirty_no_writeback() is equivalent
-to a simple SetPageDirty() - it bypasses all the extra things which we
-do for normal permanent-storage-backed pages.
-
-But I'd have thought that it would be cleaner and more maintainable (albeit
-a bit slower) to go through the a_ops?
+> > 
+> > > I hope occasional wrong values is not too much of a concern for
+> > > statistics like this. If it is a problem, we have to either fix
+> > > percpu_counter or do it all by ourselves as Kamezawa attempted
+> > > for cpuacct.usage (http://lkml.org/lkml/2009/3/4/14)
+> > > 
+> > Hmm, percpu_counter_sum() is bad ?
+> > 
+> 
+> Yes, but we need to sum somewhere..  user space summing will not be
+> atomic, we'll get several snapshots of per CPU data and summing it
+> might not yield the correct answers.
+> 
+> > BTW, I'm not sure but don't we need special handling if
+> > CONFIG_VIRT_CPU_ACCOUNTING=y ?
+> 
+> Good point. Bharata, with CONFIG_VIRT_CPU_ACCOUNTING, utime and stime
+> is accounted for within the architecture.
+> 
+> -- 
+> 	Balbir
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
