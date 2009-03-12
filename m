@@ -1,75 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbZCLOPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756774AbZCLORN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbZCLOPQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 10:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbZCLOO6
+	id S1756774AbZCLORN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 10:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbZCLOQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 10:14:58 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49690 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755355AbZCLOO5 (ORCPT
+	Thu, 12 Mar 2009 10:16:57 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:39130 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754040AbZCLOQ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 10:14:57 -0400
-Date: Thu, 12 Mar 2009 15:34:27 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, herbert@gondor.apana.org.au,
-       jesse.brandeburg@intel.com, shemminger@vyatta.com,
-       David Miller <davem@davemloft.net>
-Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to submit to upper layer
-Message-ID: <20090312143427.GJ11935@one.firstfloor.org>
-References: <1236761624.2567.442.camel@ymzhang> <877i2wfh1l.fsf@basil.nowhere.org> <1236845792.2567.484.camel@ymzhang>
-Mime-Version: 1.0
+	Thu, 12 Mar 2009 10:16:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mime-version
+         :content-type:content-disposition:user-agent;
+        b=g6QRGizF4eqD2gWDMKGP2sID84E/k/PQ89brtVvoKa62TNEHuMB+gDinEqa+6i40Ta
+         u+kz+dNmcOEM2ugAxpnmuPH2yMsQXhV4oluZoW1gMMYMLkhuuSJTHcY+3KmjUOMe9r9y
+         tY1CSX02GAJPuMfPPL4gXWIrD+4LeVqYgPFuQ=
+Date: Thu, 12 Mar 2009 22:16:12 +0800
+From: Zhenwen Xu <helight.xu@gmail.com>
+To: viro@zeniv.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-audit@redhat.com
+Subject: [PATCH]make the e->rule.xxx shorter in kernel auditfilter.c
+Message-ID: <20090312141612.GB3859@helight>
+Reply-To: Zhenwen Xu <helight.xu@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1236845792.2567.484.camel@ymzhang>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 04:16:32PM +0800, Zhang, Yanmin wrote:
-> 
-> > Seems very inconvenient to have to configure this by hand.
-> A little, but not too much, especially when we consider there is interrupt binding.
 
-Interrupt binding is something popular for benchmarks, but most users
-don't (and shouldn't need to) care. Having it work well out of the box
-without special configuration is very important.
-
-> 
-> >  How about
-> > auto selecting one that shares the same LLC or somesuch?
-> There are 2 kinds of LLC sharing here.
-> 1) RX/TX share the LLC;
-> 2) All RX share the LLC of some cpus and TX share the LLC of other cpus.
-> 
-> Item 1) is important, but sometimes item 2) is also important when the sending speed is
-> very high and huge data is on flight which flushes cpu cache quickly.
-> It's hard to distinguish the 2 different scenarioes automatically.
-
-Why is it hard if you know the CPUs?
-
-> >  and just use the hash function on the
-> > NIC.
-> Sorry. I can't understand what the hash function of NIC is. Perhaps NIC hardware has something
-> like hash function to decide the RX queue number based on SRC/DST?
-
-There's a Microsoft spec for a standard hash function that does this
-on NICs and all the serious ones support it these days. The hash 
-is normally used to select a MSI-X target based on the input header.
-
-I think if that works your manual target shouldn't be necessary.
-
-> >  The trick here would
-> > be to try to avoid reordering inside streams as far as possible,
-> It's not to solve reorder issue. The start point is 10G NIC is very fast. We need some cpu
-
-Point was that any solution shouldn't add more reordering. But when a RSS
-hash is used there is no reordering on stream basis.
-
--Andi 
-
+make the e->rule.xxx shorter in kernel/auditfilter.c
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+---------------------------------
+Zhenwen Xu - Open and Free
+Home Page:	http://zhwen.org
+My Studio:	http://dim4.cn
+
+>From 99692dc640b278f1cb1a15646ce42f22e89c0f77 Mon Sep 17 00:00:00 2001
+From: Zhenwen Xu <Helight.Xu@gmail.com>
+Date: Thu, 12 Mar 2009 22:04:59 +0800
+Subject: [PATCH] make the e->rule.xxx shorter in kernel/auditfilter.c
+
+
+Signed-off-by: Zhenwen Xu <Helight.Xu@gmail.com>
+---
+ kernel/auditfilter.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
+index fbf24d1..a6fe71f 100644
+--- a/kernel/auditfilter.c
++++ b/kernel/auditfilter.c
+@@ -135,18 +135,18 @@ static void audit_remove_watch(struct audit_watch *watch)
+ static inline void audit_free_rule(struct audit_entry *e)
+ {
+ 	int i;
+-
++	struct audit_krule *erule = &e->rule;
+ 	/* some rules don't have associated watches */
+-	if (e->rule.watch)
+-		audit_put_watch(e->rule.watch);
+-	if (e->rule.fields)
+-		for (i = 0; i < e->rule.field_count; i++) {
+-			struct audit_field *f = &e->rule.fields[i];
++	if (erule->watch)
++		audit_put_watch(erule->watch);
++	if (erule->fields)
++		for (i = 0; i < erule->field_count; i++) {
++			struct audit_field *f = &erule->fields[i];
+ 			kfree(f->lsm_str);
+ 			security_audit_rule_free(f->lsm_rule);
+ 		}
+-	kfree(e->rule.fields);
+-	kfree(e->rule.filterkey);
++	kfree(erule->fields);
++	kfree(erule->filterkey);
+ 	kfree(e);
+ }
+ 
+-- 
+1.5.6.5
+
