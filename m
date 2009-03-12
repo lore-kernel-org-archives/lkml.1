@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZCLMM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbZCLMQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755381AbZCLMM2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 08:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZCLMMS
+	id S1754337AbZCLMQH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 08:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZCLMPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 08:12:18 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:58173 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751597AbZCLMMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 08:12:17 -0400
-Date: Thu, 12 Mar 2009 13:12:07 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Neil Horman <nhorman@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Wu Fengguang <fengguang.wu@intel.com>, Pekka Paalanen <pq@iki.fi>
-Subject: Re: [PATCH 0/4] [GIT PULL] memory saving ring buffer for
- tip/tracing/ftrace
-Message-ID: <20090312131207.1c7fa213@mjolnir.ossman.eu>
-In-Reply-To: <20090312104721.GA6005@shamino.rdu.redhat.com>
-References: <20090312023720.144716747@goodmis.org>
-	<20090312080758.4a14d5b4@mjolnir.ossman.eu>
-	<20090312104721.GA6005@shamino.rdu.redhat.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
+	Thu, 12 Mar 2009 08:15:55 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:36650 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752383AbZCLMPy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 08:15:54 -0400
+Message-Id: <49B90B31.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Thu, 12 Mar 2009 12:16:33 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: "Andi Kleen" <andi@firstfloor.org>
+Subject: [PATCH] eliminate spurious pointless WARN_ON()s
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.drzeus.cx-8585-1236859932-0001-2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Namely during early boot, the panic() or BUG() paths may end up in
+smp_call_function_*() with just a single online CPU. In that situation
+the warnings generated are not only meaningless, but also result in
+relevant output being cluttered.
 
---=_freyr.drzeus.cx-8585-1236859932-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Therefore, defer the WARN_ON() checks until after the (unaffected from
+the problem that is being attempted to be detected here) cases have
+been handled.
 
-On Thu, 12 Mar 2009 06:47:21 -0400
-Neil Horman <nhorman@redhat.com> wrote:
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: Andi Kleen <andi@firstfloor.org>
 
-> On Thu, Mar 12, 2009 at 08:07:58AM +0100, Pierre Ossman wrote:
-> >=20
-> > How difficult is it to apply this to 2.6.27? Fedora is still on that
-> > kernel and it would be nice if I could get my memory back on a
-> > distribution kernel. :)
->=20
-> I'm looking into it currently.  I'll post a test kernel when I have somet=
-hing
-> for you.
+---
+ kernel/smp.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-F9 kernel if possible, as that's what the test machine is running.
+--- linux-2.6.29-rc7/kernel/smp.c	2009-03-04 09:11:00.000000000 +0100
++++ 2.6.29-rc7-smp-call-defer-warn/kernel/smp.c	2009-02-13 12:17:02.000000000 +0100
+@@ -222,9 +222,6 @@ int smp_call_function_single(int cpu, vo
+ 	int me = get_cpu();
+ 	int err = 0;
+ 
+-	/* Can deadlock when called with interrupts disabled */
+-	WARN_ON(irqs_disabled());
+-
+ 	if (cpu == me) {
+ 		local_irq_save(flags);
+ 		func(info);
+@@ -232,6 +229,9 @@ int smp_call_function_single(int cpu, vo
+ 	} else if ((unsigned)cpu < nr_cpu_ids && cpu_online(cpu)) {
+ 		struct call_single_data *data;
+ 
++		/* Can deadlock when called with interrupts disabled */
++		WARN_ON(irqs_disabled());
++
+ 		if (!wait) {
+ 			/*
+ 			 * We are calling a function on a single CPU
+@@ -325,9 +325,6 @@ void smp_call_function_many(const struct
+ 	unsigned long flags;
+ 	int cpu, next_cpu;
+ 
+-	/* Can deadlock when called with interrupts disabled */
+-	WARN_ON(irqs_disabled());
+-
+ 	/* So, what's a CPU they want?  Ignoring this one. */
+ 	cpu = cpumask_first_and(mask, cpu_online_mask);
+ 	if (cpu == smp_processor_id())
+@@ -347,6 +344,9 @@ void smp_call_function_many(const struct
+ 		return;
+ 	}
+ 
++	/* Can deadlock when called with interrupts disabled */
++	WARN_ON(irqs_disabled());
++
+ 	data = kmalloc(sizeof(*data) + cpumask_size(), GFP_ATOMIC);
+ 	if (unlikely(!data)) {
+ 		/* Slow path. */
 
-Rgds
---=20
-     -- Pierre Ossman
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
 
---=_freyr.drzeus.cx-8585-1236859932-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkm4/BkACgkQ7b8eESbyJLiDGACgt3LabKrdrGIjKFMPsQGHoMAH
-e6QAn2WzFy3iZBS4wDa9+fLys6+ZZOEq
-=Nfgr
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-8585-1236859932-0001-2--
