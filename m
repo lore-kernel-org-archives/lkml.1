@@ -1,67 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZCLKZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbZCLK0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755666AbZCLKZq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 06:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbZCLKZQ
+	id S1755150AbZCLK0A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 06:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbZCLKZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 06:25:16 -0400
-Received: from phunq.net ([64.81.85.152]:44336 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754641AbZCLKZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 06:25:15 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
-Date: Thu, 12 Mar 2009 03:25:09 -0700
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, tux3@tux3.org,
-       linux-kernel@vger.kernel.org
-References: <200903110925.37614.phillips@phunq.net> <200903120133.02645.phillips@phunq.net> <20090312094747.GA9309@uranus.ravnborg.org>
-In-Reply-To: <20090312094747.GA9309@uranus.ravnborg.org>
+	Thu, 12 Mar 2009 06:25:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44956 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755410AbZCLKZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 06:25:27 -0400
+Date: Thu, 12 Mar 2009 10:24:36 GMT
+From: Darren Hart <dvhltc@us.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, rusty@rustcorp.com.au, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090312075545.9856.75152.stgit@Aeon>
+References: <20090312075545.9856.75152.stgit@Aeon>
+Subject: [tip:core/futexes] futex: additional (get|put)_futex_key() fixes
+Message-ID: <tip-de87fcc124a5d4a171aa32707b3265608ebda6e7@git.kernel.org>
+Git-Commit-ID: de87fcc124a5d4a171aa32707b3265608ebda6e7
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200903120325.09809.phillips@phunq.net>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 12 Mar 2009 10:24:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 March 2009, Sam Ravnborg wrote:
-> > 
-> > > > > - What's "L"?
-> > > > > 
-> > > > > 		printf("%Lx-", (L)begin);
-> > > > 
-> > > > A very handy way of working around 32/64 bit format string issues.  We
-> > > > just cast all the messy cases to (long long), aka (L).  All other
-> > > > solutions to this messy problem are worse in my opinion, but whatever
-> > > > the ruling is, is what we will do.  This is used heavily in tracing and
-> > > > dumping code, which can all be turned off with ifdefs, so it doesn't
-> > > > affect production kernel text.
-> > > 
-> > > What format string issues are we talking about here?
-> > > 
-> > > See, a number of them will be fixed real soon now (geologically
-> > > speaking) when various 64-bit architectures switch their s64/u64
-> > > implementation from `long' to `long long'.
-> > 
-> > Ah, that would be helpful.  But not done yet?  How long until it
-> > happens, and does it make sense to wait, so we can reduce the number
-> > of problems cases?  And... will it be all 64 bit arches or just some?
-> > Because this issue isn't solved if it isn't fixed for all arches.
-> 
-> Most if not all will hit mainline during coming merge window.
-> When an arch changes u64 becomes unsigned long long.
-> 
-> It is considered a 'must have' for 64 bit archs these days so
-> do not workaround it.
+Commit-ID:  de87fcc124a5d4a171aa32707b3265608ebda6e7
+Gitweb:     http://git.kernel.org/tip/de87fcc124a5d4a171aa32707b3265608ebda6e7
+Author:     "Darren Hart" <dvhltc@us.ibm.com>
+AuthorDate: Thu, 12 Mar 2009 00:55:46 -0700
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 12 Mar 2009 11:20:56 +0100
 
-OK, well a mindless edit of (L) to (long long) isn't a workaround, just
-a reshuffle.  Then maybe when the 64 bit changes land in a month or two
-we can lose most or all of those ugly things.
+futex: additional (get|put)_futex_key() fixes
 
-Regards,
+Impact: fix races
 
-Daniel
+futex_requeue and futex_lock_pi still had some bad
+(get|put)_futex_key() usage. This patch adds the missing
+put_futex_keys() and corrects a goto in futex_lock_pi() to avoid
+a double get.
+
+Build and boot tested on a 4 way Intel x86_64 workstation.
+Passes basic pthread_mutex and PI tests out of
+ltp/testcases/realtime.
+
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+LKML-Reference: <20090312075545.9856.75152.stgit@Aeon>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/futex.c |   16 +++++++++++-----
+ 1 files changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/futex.c b/kernel/futex.c
+index e6a4d72..4000454 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -802,8 +802,10 @@ retry:
+ 
+ 		ret = get_user(dummy, uaddr2);
+ 		if (ret)
+-			return ret;
++			goto out_put_keys;
+ 
++		put_futex_key(fshared, &key2);
++		put_futex_key(fshared, &key1);
+ 		goto retryfull;
+ 	}
+ 
+@@ -878,6 +880,9 @@ retry:
+ 			if (hb1 != hb2)
+ 				spin_unlock(&hb2->lock);
+ 
++			put_futex_key(fshared, &key2);
++			put_futex_key(fshared, &key1);
++
+ 			ret = get_user(curval, uaddr1);
+ 
+ 			if (!ret)
+@@ -1453,6 +1458,7 @@ retry_locked:
+ 			 * exit to complete.
+ 			 */
+ 			queue_unlock(&q, hb);
++			put_futex_key(fshared, &q.key);
+ 			cond_resched();
+ 			goto retry;
+ 
+@@ -1595,13 +1601,12 @@ uaddr_faulted:
+ 
+ 	ret = get_user(uval, uaddr);
+ 	if (!ret)
+-		goto retry;
++		goto retry_unlocked;
+ 
+-	if (to)
+-		destroy_hrtimer_on_stack(&to->timer);
+-	return ret;
++	goto out_put_key;
+ }
+ 
++
+ /*
+  * Userspace attempted a TID -> 0 atomic transition, and failed.
+  * This is the in-kernel slowpath: we look up the PI state (if any),
+@@ -1705,6 +1710,7 @@ pi_faulted:
+ 	}
+ 
+ 	ret = get_user(uval, uaddr);
++	put_futex_key(fshared, &key);
+ 	if (!ret)
+ 		goto retry;
+ 
