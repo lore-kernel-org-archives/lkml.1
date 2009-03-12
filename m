@@ -1,81 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbZCLJyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbZCLJzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635AbZCLJyV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 05:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZCLJyJ
+	id S1754953AbZCLJzr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 05:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbZCLJzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 05:54:09 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:54241 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752378AbZCLJyI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 05:54:08 -0400
-Date: Thu, 12 Mar 2009 15:23:59 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 0/5] memcg softlimit (Another one) v4
-Message-ID: <20090312095359.GB4335@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com> <20090312034647.GA23583@balbir.in.ibm.com> <20090312133949.130b20ed.kamezawa.hiroyu@jp.fujitsu.com> <20090312050423.GI23583@balbir.in.ibm.com> <20090312143212.50818cd5.kamezawa.hiroyu@jp.fujitsu.com> <20090312082646.GA5828@balbir.in.ibm.com> <20090312174544.536d562c.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 12 Mar 2009 05:55:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49211 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752007AbZCLJzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 05:55:38 -0400
+Date: Thu, 12 Mar 2009 10:55:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Newall <davidn@davidnewall.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] (latest tip) make dequeue_task less confusing
+Message-ID: <20090312095518.GB16721@elte.hu>
+References: <49B8CE2B.8070402@davidnewall.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090312174544.536d562c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <49B8CE2B.8070402@davidnewall.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 17:45:44]:
 
-> On Thu, 12 Mar 2009 13:56:46 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+* David Newall <davidn@davidnewall.com> wrote:
+
+> The dequeue_patch function in kernel/sched.c is complicated by 
+> including a sleep parameter.  This parameter is always zero 
+> except in one instance.  This patch clarifies the task of 
+> dequeue_patch by removing the sleep parameter and moving the 
+> code that handles non-zero sleep to that one place where it is 
+> needed.
 > 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 14:32:12]:
-> > 
-> > > On Thu, 12 Mar 2009 10:34:23 +0530
-> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > Not yet.. you just posted it. I am testing my v5, which I'll post
-> > > > soon. I am seeing very good results with v5. I'll test yours later
-> > > > today.
-> > > > 
-> > > 
-> > > If "hooks" to usual path doesn't exist and there are no global locks,
-> > > I don't have much concern with your version.
-> > 
-> > Good to know. I think it is always good to have competing patches and
-> > then collaborating and getting the best in.
-> > 
-> > > But 'sorting' seems to be overkill to me.
-> > > 
-> > 
-> > Sorting is very useful, specially if you have many cgroups. Without
-> > sorting, how do we select what group to select first.
-> > 
-> As I explained, if round-robin works well, ordering has no meaning.
-> That's just a difference of what is the fairness.
-> 
->   1. In your method, recalaim at first from the user which exceeds the most
->      is fair.
->   2. In my method, reclaim from each cgroup in round robin is fair.
-> 
-> No big issue to users if the kernel policy is fixed.
-> Why I take "2" is that the usage of memcg doesn't mean the usage in the zone,
-> so, there are no big difference between 1 and 2 on NUMA.
->
 
-Round robin can be bad for soft limits. If an application started up
-way ahead of others, but had a small soft limit, we would like
-resources to be properly allocated when the second application comes
-up. As the number of cgroups increase, selecting the correct cgroup to
-reclaim from is going to be a challenge without sorting.
+> --- kernel/sched.c	2009-03-12 18:41:41.000000000 +1030
+> +++ kernel/sched.c.dn	2009-03-12 18:45:18.000000000 +1030
+> @@ -1791,21 +1791,10 @@
+>  	p->se.on_rq = 1;
+>  }
+>  
+> -static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
+> +static void dequeue_task(struct rq *rq, struct task_struct *p)
+>  {
+> -	if (sleep) {
+> -		if (p->se.last_wakeup) {
+> -			update_avg(&p->se.avg_overlap,
+> -				p->se.sum_exec_runtime - p->se.last_wakeup);
+> -			p->se.last_wakeup = 0;
+> -		} else {
+> -			update_avg(&p->se.avg_wakeup,
+> -				sysctl_sched_wakeup_granularity);
+> -		}
+> -	}
+> -
+>  	sched_info_dequeued(p);
+> -	p->sched_class->dequeue_task(rq, p, sleep);
+> +	p->sched_class->dequeue_task(rq, p, 0);
+>  	p->se.on_rq = 0;
+>  }
+>  
+> @@ -1875,7 +1864,22 @@
+>  	if (task_contributes_to_load(p))
+>  		rq->nr_uninterruptible++;
+>  
+> -	dequeue_task(rq, p, sleep);
+> +	if (sleep) {
+> +		if (p->se.last_wakeup) {
+> +			update_avg(&p->se.avg_overlap,
+> +				p->se.sum_exec_runtime - p->se.last_wakeup);
+> +			p->se.last_wakeup = 0;
+> +		} else {
+> +			update_avg(&p->se.avg_wakeup,
+> +				sysctl_sched_wakeup_granularity);
+> +		}
+> +	}
+> +
+> +	/*dequeue_task(rq, p, sleep);*/
+> +	sched_info_dequeued(p);
+> +	p->sched_class->dequeue_task(rq, p, sleep);
+> +	p->se.on_rq = 0;
+> +
+>  	dec_nr_running(rq);
+>  }
+>  
+> @@ -5323,7 +5327,7 @@
+>  	on_rq = p->se.on_rq;
+>  	running = task_current(rq, p);
+>  	if (on_rq)
+> -		dequeue_task(rq, p, 0);
+> +		dequeue_task(rq, p);
+>  	if (running)
+>  		p->sched_class->put_prev_task(rq, p);
+>  
+> @@ -5372,7 +5376,7 @@
+>  	}
+>  	on_rq = p->se.on_rq;
+>  	if (on_rq)
+> -		dequeue_task(rq, p, 0);
+> +		dequeue_task(rq, p);
+>  
+>  	p->static_prio = NICE_TO_PRIO(nice);
+>  	set_load_weight(p);
+> @@ -9189,7 +9193,7 @@
+>  	on_rq = tsk->se.on_rq;
+>  
+>  	if (on_rq)
+> -		dequeue_task(rq, tsk, 0);
+> +		dequeue_task(rq, tsk);
+>  	if (unlikely(running))
+>  		tsk->sched_class->put_prev_task(rq, tsk);
 
-Having said that, I need to do more testing with your patches. 
+It would be cleaner to achieve this by introducing a 
+__dequeue_task() inline function that does not have the sleep 
+parameter and is a thin wrapper over 
+p->sched_class->dequeue_task, and keep dequeue_task() with the 
+sleep parameter - but update it to use __dequeue_task() and mark 
+it an inline function.
 
--- 
-	Balbir
+[ Btw., could you please submit future patches in the regular
+  -p1 format? See Documentation/SubmittingPatches. And please
+  Cc: me to future scheduler patches. Thanks! ]
+
+	Ingo
