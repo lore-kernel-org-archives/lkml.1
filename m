@@ -1,117 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZCLGkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbZCLGmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755445AbZCLGkf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 02:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbZCLGk0
+	id S1755580AbZCLGmR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 02:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZCLGmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 02:40:26 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:21239 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751204AbZCLGkZ (ORCPT
+	Thu, 12 Mar 2009 02:42:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47714 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751204AbZCLGmE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 02:40:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=T08TJVDBVNeZ1zb6Pv6/C8l7JWUGqaxxpVmk3JTYUZWoJ+s5MC6etG2dffPccyQ5n9
-         Qi0yJui0z+GJm+2vCP2XbXKs6pE5UDTt2iTeM+oY5Dnr9b+2V/cAba/v54Um+APkEuyv
-         8/NwTJaWDfnhOmyjdktrzGXrgzyQ0NBVhU570=
-MIME-Version: 1.0
-In-Reply-To: <49B8810B.7030603@oss.ntt.co.jp>
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
-	 <49B8810B.7030603@oss.ntt.co.jp>
-Date: Thu, 12 Mar 2009 14:40:23 +0800
-Message-ID: <d95d44a20903112340s3c77807dt465e68901747ad89@mail.gmail.com>
-Subject: Re: [RFC] IO Controller
-From: anqin <anqin.qin@gmail.com>
-To: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>,
-       Vivek Goyal <vgoyal@redhat.com>
-Cc: oz-kernel@redhat.com, paolo.valente@unimore.it,
-       linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
-       containers@lists.linux-foundation.org, menage@google.com,
-       jmoyer@redhat.com, fchecconi@gmail.com, arozansk@redhat.com,
-       jens.axboe@oracle.com, akpm@linux-foundation.org,
-       fernando@intellilink.co.jp, balbir@linux.vnet.ibm.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 12 Mar 2009 02:42:04 -0400
+Date: Wed, 11 Mar 2009 23:39:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Jeff Moyer <jmoyer@redhat.com>, Avi Kivity <avi@redhat.com>,
+       linux-aio <linux-aio@kvack.org>, zach.brown@oracle.com, bcrl@kvack.org,
+       linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] fs: fput() can be called from interrupt context
+Message-Id: <20090311233903.f036027a.akpm@linux-foundation.org>
+In-Reply-To: <49B8A75E.6040409@cosmosbay.com>
+References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>
+	<49B54143.1010607@redhat.com>
+	<x49sklmd1fo.fsf@segfault.boston.devel.redhat.com>
+	<49B57CB0.5020300@cosmosbay.com>
+	<49B875F7.3030305@cosmosbay.com>
+	<49B87CFE.4000701@cosmosbay.com>
+	<49B89B22.7080303@cosmosbay.com>
+	<20090311224712.fb8db075.akpm@linux-foundation.org>
+	<49B8A75E.6040409@cosmosbay.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+On Thu, 12 Mar 2009 07:10:38 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-It would be very appreciated if the patches can be based on 2.6.28.
+> > 
+> > Did you reproduce the bug, and confirm that the patch fixes it?
+> 
+> take Davide program : http://www.xmailserver.org/eventfd-aio-test.c
+> 
+> and add at line 318 :
+> close(afd);
+> 
+> It should produce the kernel bug...
 
-Thanks a lot.
+"should"?
 
-Anqin
+> > 
+> > Are there simpler ways of fixing it?  Maybe sneak a call to
+> > wait_for_all_aios() into the right place?  I doubt if it's performance
+> > critical, as nobody seems to have ever hit the bug.
+> 
+> Take the time to check how fs/aio.c handle the fput(req->ki_filp) case
+> (or read my 2nd patch, it should spot the thing)
 
-On Thu, Mar 12, 2009 at 11:27 AM, Takuya Yoshikawa
-<yoshikawa.takuya@oss.ntt.co.jp> wrote:
-> Hi Vivek,
->
-> Could you tell me to which kernel I can apply your patches?
->   # latest mm?
-> I would like to test your controller.
->
-> Thank you,
->   Takuya Yoshikawa
->
->
-> Vivek Goyal wrote:
->>
->> Hi All,
->>
->> Here is another posting for IO controller patches. Last time I had posted
->> RFC patches for an IO controller which did bio control per cgroup.
->>
->> http://lkml.org/lkml/2008/11/6/227
->>
->> One of the takeaway from the discussion in this thread was that let us
->> implement a common layer which contains the proportional weight scheduling
->> code which can be shared by all the IO schedulers.
->>
->> Implementing IO controller will not cover the devices which don't use
->> IO schedulers but it should cover the common case.
->>
->> There were more discussions regarding 2 level vs 1 level IO control at
->> following link.
->>
->> https://lists.linux-foundation.org/pipermail/containers/2009-January/015402.html
->>
->> So in the mean time we took the discussion off the list and spent time on
->> making the 1 level control apporoach work where majority of the proportional
->> weight control is shared by the four schedulers instead of each one having
->> to replicate the code. We make use of BFQ code for fair queuing as posted
->> by Paolo and Fabio here.
->>
->> http://lkml.org/lkml/2008/11/11/148
->>
->> Details about design and howto have been put in documentation patch.
->>
->> I have done very basic testing of running 2 or 3 "dd" threads in different
->> cgroups. Wanted to get the patchset out for feedback/review before we dive
->> into more bug fixing, benchmarking, optimizations etc.
->>
->> Your feedback/comments are welcome.
->>
->> Patch series contains 10 patches. It should be compilable and bootable after
->> every patch. Intial 2 patches implement flat fair queuing (no cgroup
->> support) and make cfq to use that. Later patches introduce hierarchical
->> fair queuing support in elevator layer and modify other IO schdulers to use
->> that.
->>
->> Thanks
->> Vivek
->> _______________________________________________
->> Containers mailing list
->> Containers@lists.linux-foundation.org
->> https://lists.linux-foundation.org/mailman/listinfo/containers
->>
->
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
->
+Well yes, a kludge like that seems a bit safer.
+
+It's somewhat encouraging that we're apparently already doing fput()
+from within keventd (although how frequently?).  There might be
+problems with file locking, security code, etc from doing fput() from
+an unexpected thread.  And then there are all the usual weird problem
+with using the keventd queues which take a long time to get discovered.
+
+
+> If you want to add another kludge to properly fput(req->ki_eventfd),
+> be my guest :-(
+> 
+> > 
+> > Bear in mind that if the bug _is_ real then it's now out there, and
+> > we would like a fix which is usable by 2.6.<two-years-worth>.
+
+The patches are large and scary and it would be a real problem to merge
+them into 2.6.29 at this stage, let alone 2.6.25, etc.
+
+Especially as the code which you sent out appears to be untested:
+
+>  void fput(struct file *file)
+>  {
+> -	if (atomic_long_dec_and_test(&file->f_count))
+> -		__fput(file);
+> +	if (atomic_long_dec_and_test(&file->f_count)) {
+> +		if (unlikely(!in_interrupt()))
+
+                             ^
+
+> +			fd_defer_queue(NULL, file);
+> +		else
+> +			__fput(file);
+> +	}
+>  }
+
+
