@@ -1,78 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbZCLQum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbZCLQwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488AbZCLQum (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 12:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbZCLQud
+	id S1756558AbZCLQwx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 12:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbZCLQwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 12:50:33 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54219 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753999AbZCLQuc (ORCPT
+	Thu, 12 Mar 2009 12:52:44 -0400
+Received: from slb-smtpout-01.boeing.com ([130.76.64.48]:58399 "EHLO
+	slb-smtpout-01.boeing.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754171AbZCLQwn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 12:50:32 -0400
-Subject: Re: [PATCH v4] introduce macro spin_event_timeout()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Timur Tabi <timur@freescale.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       rdreier@cisco.com, jirislaby@gmail.com, will.newton@gmail.com,
-       hancockrwd@gmail.com, jeremy@goop.org
-In-Reply-To: <49B9362D.3090805@freescale.com>
-References: <1236699004-1863-1-git-send-email-timur@freescale.com>
-	 <20090310153537.5fd5d84d@lxorguk.ukuu.org.uk>
-	 <1236729711.7086.28.camel@pasglop>
-	 <20090311003756.25ffa6f4@lxorguk.ukuu.org.uk>
-	 <ed82fe3e0903110948w542a864dj821106900755f14e@mail.gmail.com>
-	 <20090311165806.0b6838ab@lxorguk.ukuu.org.uk>
-	 <49B80081.5060703@freescale.com> <1236808722.7086.66.camel@pasglop>
-	 <fa686aa40903111945g53a0ba5au200fe9362e315175@mail.gmail.com>
-	 <ed82fe3e0903120854r2d8f23d8r249a8e510a2fbc4c@mail.gmail.com>
-	 <fa686aa40903120901me307a54y3511f4bafc6242e6@mail.gmail.com>
-	 <49B9362D.3090805@freescale.com>
-Content-Type: text/plain
-Date: Thu, 12 Mar 2009 17:50:09 +0100
-Message-Id: <1236876609.5090.934.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Mar 2009 12:52:43 -0400
+X-Greylist: delayed 2098 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 12:52:43 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Build error with realtime patch on ppc platform
+Date: Thu, 12 Mar 2009 09:16:17 -0700
+Message-ID: <1A35CC2FF2016840923376BD5C2B3DAC0B6791EF@XCH-NW-6V1.nw.nos.boeing.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Build error with realtime patch on ppc platform
+Thread-Index: AcmjLd92PeMsZPjbTq2EQvfp+8LEBw==
+From: "Tate, Patrick O" <patrick.o.tate2@pss.boeing.com>
+To: <mingo@elte.hu>
+Cc: <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>,
+       "Lykken, Allan D" <allan.d.lykken@boeing.com>
+X-OriginalArrivalTime: 12 Mar 2009 16:17:16.0954 (UTC) FILETIME=[02EADFA0:01C9A32E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-12 at 11:19 -0500, Timur Tabi wrote:
-> Grant Likely wrote:
-> 
-> > #define spin_until_timeout(condition, timeout, rc)          \
-> >       for (unsigned long __timeout = jiffies + (timeout);     \
-> >               (!(rc = (condition)) && time_after(jiffies, __timeout)); )
-> 
-> Ooo, that's good.
-> 
-> I'm still not crazy about using jiffies, since it doesn't get
-> incremented when interrupts are disabled, and I'd like this function to
-> work in those cases.  How about get_cycles()?  I know it's not supported
-> on all platforms, but I'm willing to live with that.
-> 
-> The other problem with get_cycles() is that there doesn't appear to be a
-> num_cycles_per_usec() function, so there's no way for me to scale the
-> count to a fixed time period.
+Hi Ingo
 
-sched_clock() does that, but:
-  - it falls back to jiffies on poor platforms
-  - it requires to be called with IRQs disabled
-  - it can basically jump any random way on funky hardware
+My name is Pat Tate and I was trying to build a kernel with the realtime
+patch on a powerpc. We are using the YDL 4.1 distribution.
+I pulled down the linux 2.6.29-rc6 with the realtime
+patch-2.6.29-rc6-rt3.
 
-then there is cpu_clock(int cpu):
-  - still falls back to jiffies on poor platforms
-  - is monotonic when used on the same cpu
-  - can drift up to a few jiffies when used between cpus
+But after applying the patch and executing the make I get the following
+error in the spinlock_types.h
 
-But something that seems to always work, is simply count loops and rely
-on whatever delay is in the specified loop.
+************************************************************************
+***************************
+> make
+scripts/kconfig/conf -s arch/powerpc/Kconfig
+  CHK     include/linux/version.h
+  UPD     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  UPD     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-powerpc
+  CC      kernel/bounds.s
+  GEN     include/linux/bounds.h
+  CC      arch/powerpc/kernel/asm-offsets.s
+In file included from include/linux/spinlock.h:102,
+                 from include/linux/seqlock.h:34,
+                 from include/linux/time.h:8,
+                 from include/linux/timex.h:56,
+                 from include/linux/sched.h:54,
+                 from arch/powerpc/kernel/asm-offsets.c:17:
+include/linux/spinlock_types.h:38: error: syntax error before
+"__raw_spinlock_t"
+include/linux/spinlock_types.h:38: warning: no semicolon at end of
+struct or uni
+on
+include/linux/spinlock_types.h:49: error: syntax error before '}' token
+include/linux/spinlock_types.h:49: warning: useless keyword or type name
+in empt
+y declaration
+include/linux/spinlock_types.h:49: warning: empty declaration
+include/linux/spinlock_types.h:54: error: syntax error before
+"__raw_rwlock_t"
+include/linux/spinlock_types.h:54: warning: no semicolon at end of
+struct or uni
+on
+include/linux/spinlock_types.h:65: error: syntax error before '}' token
+include/linux/spinlock_types.h:65: warning: useless keyword or type name
+in empt
+y declaration
+include/linux/spinlock_types.h:65: warning: empty declaration
+************************************************************************
+***************************
 
-#define spin_until_timeout(condition, timeout, rc) \
-	for (unsigned long __timeout = 0; \
-	     !(rc = (condition)) && __timeout < (timeout); \
-	     __timeout++)
+I was told by Eduard Munteanu that you are the contact in the patch file
+so I thought I'd pass it by you and
+See if you have an answer or some ideas.
+
+If not would you know who might be a good contact to maybe work thru
+this error.
+
+Thanks for any help 
+
+Pat
 
