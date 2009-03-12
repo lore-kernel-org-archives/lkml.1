@@ -1,127 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbZCLBE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZCLBGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbZCLBE4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 21:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbZCLBEr
+	id S1755625AbZCLBGU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 21:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZCLBGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 21:04:47 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41165 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753565AbZCLBEq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 21:04:46 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may  get wrongly discarded
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       dhowells@redhat.com, torvalds@linux-foundation.org,
-       peterz@infradead.org, Enrik.Berkhan@ge.com, uclinux-dev@uclinux.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@surriel.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-In-Reply-To: <28c262360903111735s2b0c43a3pd48fcf8d55416ae3@mail.gmail.com>
-References: <20090311170207.1795cad9.akpm@linux-foundation.org> <28c262360903111735s2b0c43a3pd48fcf8d55416ae3@mail.gmail.com>
-Message-Id: <20090312100049.43A3.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 11 Mar 2009 21:06:07 -0400
+Received: from mga02.intel.com ([134.134.136.20]:56436 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753574AbZCLBGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 21:06:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,346,1233561600"; 
+   d="scan'208";a="393743499"
+Subject: Re: [PATCH] acpi: Populate DIDL before registering ACPI video
+	device on Intel
+From: yakui_zhao <yakui.zhao@intel.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>, lenb@kernel.org
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       intel-gfx@lists.freedesktop.org
+In-Reply-To: <20090311215517.GA32400@srcf.ucam.org>
+References: <20090311215517.GA32400@srcf.ucam.org>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Thu, 12 Mar 2009 09:06:59 +0800
+Message-Id: <1236820019.3640.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Thu, 12 Mar 2009 10:04:41 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Thu, 2009-03-12 at 05:55 +0800, Matthew Garrett wrote:
+cc: intel-gfx@lists.freedesktop.org
 
-> >> Page reclaim shouldn't be even attempting to reclaim or write back
-> >> ramfs pagecache pages - reclaim can't possibly do anything with these
-> >> pages!
-> >>
-> >> Arguably those pages shouldn't be on the LRU at all, but we haven't
-> >> done that yet.
-> >>
-> >> Now, my problem is that I can't 100% be sure that we _ever_ implemented
-> >> this properly. ?I _think_ we did, in which case we later broke it. ?If
-> >> we've always been (stupidly) trying to pageout these pages then OK, I
-> >> guess your patch is a suitable 2.6.29 stopgap.
-> >
-> > OK, I can't find any code anywhere in which we excluded ramfs pages
-> > from consideration by page reclaim. ?How dumb.
+     On some HP boxes the acpi video driver depends on the ACPI IGD
+Opregion. If the ACPI IGD opregion is not initialized, the _DOD object
+will return the incorrect supported devices. In such case when LID is
+closed, the SMI will be called and crash will happen. (The DIDL field of
+ACPI IGD opregion is filled with the supported devices, which is
+enumerated by graphics driver).
+If the ACPI IGD opregion is initialized correctly, the ACPI video driver
+can be loaded correctly and there is no crash.
+
+IMO the idea in this patch is very reasonable. 
+
+The ACPI video driver will be deferred if the ACPI IGD opregion is
+detected. Only when ACPI IGD opregion is initialized, the acpi video
+driver will be bound with the ACPI video device. 
+    The supported device list is enumerated by graphics driver, which
+depends on the KMS.
+
+Hi, Len/Jesse
+    Any comments about this patch?
+   
+     
+> Intel graphics hardware that implements the ACPI IGD OpRegion spec 
+> requires that the list of display devices be populated before any ACPI 
+> video methods are called. Detect when this is the case and defer 
+> registration until the opregion code calls it. Fixes crashes on HP 
+> laptops as seen in kernel bugzilla #11259.
+>     
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
 > 
-> The ramfs  considers it in just CONFIG_UNEVICTABLE_LRU case
-> It that case, ramfs_get_inode calls mapping_set_unevictable.
-> So,  page reclaim can exclude ramfs pages by page_evictable.
-> It's problem .
-
-Currently, CONFIG_UNEVICTABLE_LRU can't use on nommu machine
-because nobody of vmscan folk havbe nommu machine.
-
-Yes, it is very stupid reason. _very_ welcome to tester! :)
-
-
-
-David, Could you please try following patch if you have NOMMU machine?
-it is straightforward porting to nommu.
-
-
-==
-Subject: [PATCH] remove to depend on MMU from CONFIG_UNEVICTABLE_LRU
-
-logically, CONFIG_UNEVICTABLE_LRU doesn't depend on MMU.
-but current code does by mistake. fix it.
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/Kconfig |    1 -
- mm/nommu.c |   24 ++++++++++++++++++++++++
- 2 files changed, 24 insertions(+), 1 deletion(-)
-
-Index: b/mm/Kconfig
-===================================================================
---- a/mm/Kconfig	2008-12-28 20:55:23.000000000 +0900
-+++ b/mm/Kconfig	2008-12-28 21:24:08.000000000 +0900
-@@ -212,7 +212,6 @@ config VIRT_TO_BUS
- config UNEVICTABLE_LRU
- 	bool "Add LRU list to track non-evictable pages"
- 	default y
--	depends on MMU
- 	help
- 	  Keeps unevictable pages off of the active and inactive pageout
- 	  lists, so kswapd will not waste CPU time or have its balancing
-Index: b/mm/nommu.c
-===================================================================
---- a/mm/nommu.c	2008-12-25 08:26:37.000000000 +0900
-+++ b/mm/nommu.c	2008-12-28 21:29:36.000000000 +0900
-@@ -1521,3 +1521,27 @@ int access_process_vm(struct task_struct
- 	mmput(mm);
- 	return len;
- }
-+
-+/*
-+ *  LRU accounting for clear_page_mlock()
-+ */
-+void __clear_page_mlock(struct page *page)
-+{
-+	VM_BUG_ON(!PageLocked(page));
-+
-+	if (!page->mapping) {	/* truncated ? */
-+		return;
-+	}
-+
-+	dec_zone_page_state(page, NR_MLOCK);
-+	count_vm_event(UNEVICTABLE_PGCLEARED);
-+	if (!isolate_lru_page(page)) {
-+		putback_lru_page(page);
-+	} else {
-+		/*
-+		 * We lost the race. the page already moved to evictable list.
-+		 */
-+		if (PageUnevictable(page))
-+			count_vm_event(UNEVICTABLE_PGSTRANDED);
-+	}
-+}
-
-
-
+> diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+> index bb5ed05..64e987c 100644
+> --- a/drivers/acpi/video.c
+> +++ b/drivers/acpi/video.c
+> @@ -37,6 +37,8 @@
+>  #include <linux/thermal.h>
+>  #include <linux/video_output.h>
+>  #include <linux/sort.h>
+> +#include <linux/pci.h>
+> +#include <linux/pci_ids.h>
+>  #include <asm/uaccess.h>
+>  
+>  #include <acpi/acpi_bus.h>
+> @@ -2124,7 +2126,27 @@ static int acpi_video_bus_remove(struct acpi_device *device, int type)
+>  	return 0;
+>  }
+>  
+> -static int __init acpi_video_init(void)
+> +static int __init intel_opregion_present(void)
+> +{
+> +#if defined(CONFIG_DRM_I915) || defined(CONFIG_DRM_I915_MODULE)
+> +	struct pci_dev *dev = NULL;
+> +	u32 address;
+> +
+> +	for_each_pci_dev(dev) {
+> +		if ((dev->class >> 8) != PCI_CLASS_DISPLAY_VGA)
+> +			continue;
+> +		if (dev->vendor != PCI_VENDOR_ID_INTEL)
+> +			continue;
+> +		pci_read_config_dword(dev, 0xfc, &address);
+> +		if (!address)
+> +			continue;
+> +		return 1;
+> +	}
+> +#endif
+> +	return 0;
+> +}
+> +
+> +int acpi_video_register(void)
+>  {
+>  	int result = 0;
+>  
+> @@ -2141,6 +2163,22 @@ static int __init acpi_video_init(void)
+>  
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL(acpi_video_register);
+> +
+> +/*
+> + * This is kind of nasty. Hardware using Intel chipsets may require
+> + * the video opregion code to be run first in order to initialise
+> + * state before any ACPI video calls are made. To handle this we defer
+> + * registration of the video class until the opregion code has run.
+> + */
+> +
+> +static int __init acpi_video_init(void)
+> +{
+> +	if (intel_opregion_present())
+> +		return 0;
+> +
+> +	return acpi_video_register();
+> +}
+>  
+>  static void __exit acpi_video_exit(void)
+>  {
+> diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
+> index 6dab63b..70a9904 100644
+> --- a/drivers/gpu/drm/i915/i915_dma.c
+> +++ b/drivers/gpu/drm/i915/i915_dma.c
+> @@ -1144,8 +1144,6 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
+>  	if (!IS_I945G(dev) && !IS_I945GM(dev))
+>  		pci_enable_msi(dev->pdev);
+>  
+> -	intel_opregion_init(dev);
+> -
+>  	spin_lock_init(&dev_priv->user_irq_lock);
+>  	dev_priv->user_irq_refcount = 0;
+>  
+> @@ -1164,6 +1162,9 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
+>  		}
+>  	}
+>  
+> +	/* Must be done after probing outputs */
+> +	intel_opregion_init(dev);
+> +
+>  	return 0;
+>  
+>  out_iomapfree:
+> diff --git a/drivers/gpu/drm/i915/i915_opregion.c b/drivers/gpu/drm/i915/i915_opregion.c
+> index ff01283..60b746f 100644
+> --- a/drivers/gpu/drm/i915/i915_opregion.c
+> +++ b/drivers/gpu/drm/i915/i915_opregion.c
+> @@ -26,6 +26,7 @@
+>   */
+>  
+>  #include <linux/acpi.h>
+> +#include <acpi/video.h>
+>  
+>  #include "drmP.h"
+>  #include "i915_drm.h"
+> @@ -136,6 +137,12 @@ struct opregion_asle {
+>  
+>  #define ASLE_CBLV_VALID         (1<<31)
+>  
+> +#define ACPI_OTHER_OUTPUT (0<<8)
+> +#define ACPI_VGA_OUTPUT (1<<8)
+> +#define ACPI_TV_OUTPUT (2<<8)
+> +#define ACPI_DIGITAL_OUTPUT (3<<8)
+> +#define ACPI_LVDS_OUTPUT (4<<8)
+> +
+>  static u32 asle_set_backlight(struct drm_device *dev, u32 bclp)
+>  {
+>  	struct drm_i915_private *dev_priv = dev->dev_private;
+> @@ -282,6 +289,57 @@ static struct notifier_block intel_opregion_notifier = {
+>  	.notifier_call = intel_opregion_video_event,
+>  };
+>  
+> +/*
+> + * Initialise the DIDL field in opregion. This passes a list of devices to
+> + * the firmware. Values are defined by section B.4.2 of the ACPI specification
+> + * (version 3)
+> + */
+> +
+> +static void intel_didl_outputs(struct drm_device *dev)
+> +{
+> +	struct drm_i915_private *dev_priv = dev->dev_private;
+> +	struct intel_opregion *opregion = &dev_priv->opregion;
+> +	struct drm_connector *connector;
+> +	int i = 0;
+> +
+> +	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+> +		int output_type = ACPI_OTHER_OUTPUT;
+> +		if (i >= 8) {
+> +			dev_printk (KERN_ERR, &dev->pdev->dev,
+> +				    "More than 8 outputs detected\n");
+> +			return;
+> +		}
+> +		switch (connector->connector_type) {
+> +		case DRM_MODE_CONNECTOR_VGA:
+> +		case DRM_MODE_CONNECTOR_DVIA:
+> +			output_type = ACPI_VGA_OUTPUT;
+> +			break;
+> +		case DRM_MODE_CONNECTOR_Composite:
+> +		case DRM_MODE_CONNECTOR_SVIDEO:
+> +		case DRM_MODE_CONNECTOR_Component:
+> +		case DRM_MODE_CONNECTOR_9PinDIN:
+> +			output_type = ACPI_TV_OUTPUT;
+> +			break;
+> +		case DRM_MODE_CONNECTOR_DVII:
+> +		case DRM_MODE_CONNECTOR_DVID:
+> +		case DRM_MODE_CONNECTOR_DisplayPort:
+> +		case DRM_MODE_CONNECTOR_HDMIA:
+> +		case DRM_MODE_CONNECTOR_HDMIB:
+> +			output_type = ACPI_DIGITAL_OUTPUT;
+> +			break;
+> +		case DRM_MODE_CONNECTOR_LVDS:
+> +			output_type = ACPI_LVDS_OUTPUT;
+> +			break;
+> +		}
+> +		opregion->acpi->didl[i] |= (1<<31) | output_type | i;
+> +		i++;
+> +	}
+> +
+> +	/* If fewer than 8 outputs, the list must be null terminated */
+> +	if (i < 8)
+> +		opregion->acpi->didl[i] = 0;
+> +}
+> +
+>  int intel_opregion_init(struct drm_device *dev)
+>  {
+>  	struct drm_i915_private *dev_priv = dev->dev_private;
+> @@ -312,6 +370,10 @@ int intel_opregion_init(struct drm_device *dev)
+>  	if (mboxes & MBOX_ACPI) {
+>  		DRM_DEBUG("Public ACPI methods supported\n");
+>  		opregion->acpi = base + OPREGION_ACPI_OFFSET;
+> +		if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+> +			intel_didl_outputs(dev);
+> +			acpi_video_register();
+> +		}
+>  	} else {
+>  		DRM_DEBUG("Public ACPI methods not supported\n");
+>  		err = -ENOTSUPP;
+> diff --git a/include/acpi/video.h b/include/acpi/video.h
+> new file mode 100644
+> index 0000000..f0275bb
+> --- /dev/null
+> +++ b/include/acpi/video.h
+> @@ -0,0 +1,11 @@
+> +#ifndef __ACPI_VIDEO_H
+> +#define __ACPI_VIDEO_H
+> +
+> +#if (defined CONFIG_ACPI_VIDEO || defined CONFIG_ACPI_VIDEO_MODULE)
+> +extern int acpi_video_register(void);
+> +#else
+> +static inline int acpi_video_register(void) { return 0; }
+> +#endif
+> +
+> +#endif
+> +
+> 
+> 
 
