@@ -1,53 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbZCLFw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbZCLF4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbZCLFw7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 01:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZCLFwv
+	id S1754698AbZCLF4M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 01:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbZCLFz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 01:52:51 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:11674 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751204AbZCLFwu (ORCPT
+	Thu, 12 Mar 2009 01:55:57 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:60793 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750941AbZCLFz4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 01:52:50 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=xhDVZCXd86LvMpagF/Pv6BIm7tRW9p7MiSIfv7Mii9Ae9bUXiu/RrSQ+g3VAk7Gj+
-	rHWNv5pvSOXlFvbuejzew==
-Date: Wed, 11 Mar 2009 22:51:12 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm] cpusets: add memory_slab_hardwall flag
-In-Reply-To: <20090312010330.GK7086@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.00.0903112248360.26210@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903080917460.25207@chino.kir.corp.google.com> <alpine.DEB.1.10.0903091448110.20314@qirst.com> <20090312010330.GK7086@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 12 Mar 2009 01:55:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=u8/uKhox3lBUYJFMicB89NbAdJzzO33h8kyfujluxrUQ6jLZZWLcYZF+EahO4MbSEc
+         cgHHKr1pBP1Buh+n92xa90A6WbNEgMPsK6jWdXe+Z4rCF1ADxrOeghMFQwbjiGN+4I/9
+         an5/zoZ56W+ozZoMOtOCgefkEPr5/+NCz/QrM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <8bd0f97a0903112159g59c7d414of76e9e4090d8209@mail.gmail.com>
+References: <1236756563-20633-1-git-send-email-graff.yang@gmail.com>
+	 <8bd0f97a0903110057x46cb2aa9p43dd8e12a28be67a@mail.gmail.com>
+	 <7d86d44a0903110256t11edeff5qfd21055ef047dc2a@mail.gmail.com>
+	 <8bd0f97a0903110343m1f2f01catbc6cd54ecce91db9@mail.gmail.com>
+	 <1236831455.21146.7.camel@dy>
+	 <8bd0f97a0903112123j60eab672m16177581c959453b@mail.gmail.com>
+	 <1236832241.21146.12.camel@dy>
+	 <8bd0f97a0903112134m52a8faddp69926cb1281f5ce5@mail.gmail.com>
+	 <1236833307.21146.25.camel@dy>
+	 <8bd0f97a0903112159g59c7d414of76e9e4090d8209@mail.gmail.com>
+Date: Thu, 12 Mar 2009 13:55:53 +0800
+Message-ID: <7d86d44a0903112255m34392231ne0cd04196e33f1b2@mail.gmail.com>
+Subject: Re: [PATCH] [net/irda]: new Blackfin on-chip SIR IrDA driver
+From: graff yang <graff.yang@gmail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: gyang <graf.yang@analog.com>, samuel@sortiz.org,
+       irda-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       cooloney@kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009, Paul E. McKenney wrote:
+On Thu, Mar 12, 2009 at 12:59 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> On Thu, Mar 12, 2009 at 00:48, gyang wrote:
+>> On Thu, 2009-03-12 at 00:34 -0400, Mike Frysinger wrote:
+>>> On Thu, Mar 12, 2009 at 00:30, gyang wrote:
+>>> > On Thu, 2009-03-12 at 00:23 -0400, Mike Frysinger wrote:
+>>> >> On Thu, Mar 12, 2009 at 00:17, gyang wrote:
+>>> >> > On Wed, 2009-03-11 at 06:43 -0400, Mike Frysinger wrote:
+>>> >> >> On Wed, Mar 11, 2009 at 05:56, graff yang wrote:
+>>> >> >> > On Wed, Mar 11, 2009 at 3:57 PM, Mike Frysinger wrote:
+>>> >> >> >> On Wed, Mar 11, 2009 at 03:29,  <graff.yang@gmail.com> wrote:
+>>> >> >> >>> +static int __devinit bfin_sir_probe(struct platform_device *pdev)
+>>> >> >> >>> +{
+>>> >> >> >>> +       struct net_device *dev;
+>>> >> >> >>> +       struct bfin_sir_self *self;
+>>> >> >> >>> +       unsigned int baudrate_mask;
+>>> >> >> >>> +       struct bfin_sir_port *sir_port;
+>>> >> >> >>> +       int err;
+>>> >> >> >>> +
+>>> >> >> >>> +       err = peripheral_request_list(per[pdev->id], DRIVER_NAME);
+>>> >> >> >>
+>>> >> >> >> what if pdev->id is set to 12512 ?
+>>> >> >> >
+>>> >> >> > The pdev->id is defined in board files, for example, uart0 should be 0.
+>>> >> >>
+>>> >> >> so ?  what's to stop the user from setting it to 12415 ?  the driver
+>>> >> >> must sanity check these things.  you can never assume platform dev
+>>> >> >> resources always have valid pointers and valid values.
+>>> >> >
+>>> >> > How about to limit the pdev->id to be 0,1,2,3 ?
+>>> >> > I can extend the per to be
+>>> >> > static const unsigned short per[][4] = {
+>>> >> >        {P_UART0_RX, P_UART0_TX, 0, 0},
+>>> >> >        {P_UART1_RX, P_UART1_TX, 0, 1},
+>>> >> >        {P_UART2_RX, P_UART2_TX, 0, 2},
+>>> >> >        {P_UART3_RX, P_UART3_TX, 0, 3},
+>>> >> > };
+>>> >> >
+>>> >> > then check (pdev->id >= 0 && pdev->id < ARRAY_SIZE(per) &&
+>>> >> > per[pdev->id][3] == pdev->id)
+>>> >>
+>>> >> the last check is redundant.  the first two should be added.
+>>> >
+>>> > I'm afraid of some cases such as uart0 uses id 1, will cause driver not
+>>> > work, and not any warning message.
+>>>
+>>> then the call to peripheral request would fail as expected
+>>
+>> For example, user want to enable irda on uart2 for bf548, he use id 0
+>> for uart2. In these case, peripheral request may not fail, but driver
+>> not work.
+>
+> the id is wrong then.  if they want uart2, then they should use id 2.
+> -mike
+>
 
-> Adding synchronize_rcu() into a fast path would certainly be a problem,
-> but call_rcu() should be OK.  If the data structure is updated often
-> (old elements removed and new elements added), then the cache misses
-> from elements that were removed, went cache-cold, and then were added
-> again could potentially cause trouble, but read-mostly data structures
-> should be OK.
-> 
-> Or were you worried about some other aspect of RCU overhead?
-> 
+Such wrong case may existed for common users, and should be
+prohibited. Driver need make sanity check to prevent it.
 
-Thanks for looking at this, Paul.  My latest proposal actually replaces 
-the need for the rcu with a per-task flag called PF_SLAB_HARDWALL (see 
-http://marc.info/?l=linux-kernel&m=123665181400366).
+-- 
+-Graff
