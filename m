@@ -1,130 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbZCLTDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbZCLTFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756830AbZCLTDI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 15:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZCLTC4
+	id S1757068AbZCLTFY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 15:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbZCLTFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 15:02:56 -0400
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:35420 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbZCLTCz (ORCPT
+	Thu, 12 Mar 2009 15:05:09 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:33208 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753790AbZCLTFG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 15:02:55 -0400
+	Thu, 12 Mar 2009 15:05:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=bzjmF1JLCiDj+RI9tdYWfk8osKWaaHYeHNyHUtdvpjFo1P2rke8vnAg8k/5+xFaZ1Y
-         QlCw+Q/bbe+5YaHM7thY8+C7X9X9HeHIr8R9rNfM57W6IPxTfOiev6upCF64npo96gz9
-         aWAxqU5xziaH408zB/MZOpsLLCtH+e+bpTw48=
-Date: Thu, 12 Mar 2009 20:02:50 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       acme@ghostprotocols.net, fche@redhat.com, peterz@infradead.org,
-       compudj@krystal.dyndns.org
-Subject: Re: [Patch 2/2] tracepoints for softirq entry/exit - tracepoints
-Message-ID: <20090312190243.GC11045@nowhere>
-References: <20090312183603.GC3352@redhat.com>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=CLgcZ6UpfN44bQhxYw7tDInYawIPS4eF+ar/tR1Vla1Gpo5CmFWSQGxz0fi/8a773A
+         +wzygRABDOd+F9i00JPRTHODN3d155aQhxGSley2Ft5AM+qxFA6dT0XtXTOrku/m7Ij2
+         pJ90m/SHN4j7nztT7h+HdG0/0vHWP+HRq1jKU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090312183603.GC3352@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1236876609.5090.934.camel@laptop>
+References: <1236699004-1863-1-git-send-email-timur@freescale.com>
+	 <ed82fe3e0903110948w542a864dj821106900755f14e@mail.gmail.com>
+	 <20090311165806.0b6838ab@lxorguk.ukuu.org.uk>
+	 <49B80081.5060703@freescale.com> <1236808722.7086.66.camel@pasglop>
+	 <fa686aa40903111945g53a0ba5au200fe9362e315175@mail.gmail.com>
+	 <ed82fe3e0903120854r2d8f23d8r249a8e510a2fbc4c@mail.gmail.com>
+	 <fa686aa40903120901me307a54y3511f4bafc6242e6@mail.gmail.com>
+	 <49B9362D.3090805@freescale.com> <1236876609.5090.934.camel@laptop>
+Date: Thu, 12 Mar 2009 14:05:05 -0500
+X-Google-Sender-Auth: a2619e9e05d953db
+Message-ID: <ed82fe3e0903121205k552a83bft9ac3b63c64a293c8@mail.gmail.com>
+Subject: Re: [PATCH v4] introduce macro spin_event_timeout()
+From: Timur Tabi <timur@freescale.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       rdreier@cisco.com, jirislaby@gmail.com, will.newton@gmail.com,
+       hancockrwd@gmail.com, jeremy@goop.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 02:36:03PM -0400, Jason Baron wrote:
-> 
-> introduce softirq entry/exit tracepoints. These are useful for
-> augmenting existing tracers, and to figure out softirq frequencies and
-> timings.
-> 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> 
-> ---
-> 
->  include/trace/irq_event_types.h |   12 ++++++++++++
->  kernel/softirq.c                |    7 ++++++-
->  2 files changed, 18 insertions(+), 1 deletions(-)
-> 
-> 
-> diff --git a/include/trace/irq_event_types.h b/include/trace/irq_event_types.h
-> index 214bb92..38b4bdd 100644
-> --- a/include/trace/irq_event_types.h
-> +++ b/include/trace/irq_event_types.h
-> @@ -40,4 +40,16 @@ TRACE_EVENT(irq_handler_exit,
->  		  __entry->irq, __entry->ret ? "handled" : "unhandled")
->  );
->  
-> +TRACE_FORMAT(irq_softirq_entry,
-> +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-> +	TP_ARGS(h, vec),
-> +	TP_FMT("softirq=%d action=%s", h - vec, softirq_to_name[h-vec])
-> +	);
-> +
-> +TRACE_FORMAT(irq_softirq_exit,
-> +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-> +	TP_ARGS(h, vec),
-> +	TP_FMT("softirq=%d action=%s", h - vec, softirq_to_name[h-vec])
-> +	);
-> +
->  #undef TRACE_SYSTEM
-> diff --git a/kernel/softirq.c b/kernel/softirq.c
-> index ba1511f..c378d53 100644
-> --- a/kernel/softirq.c
-> +++ b/kernel/softirq.c
-> @@ -24,6 +24,7 @@
->  #include <linux/ftrace.h>
->  #include <linux/smp.h>
->  #include <linux/tick.h>
-> +#include <trace/irq.h>
->  
->  #include <asm/irq.h>
->  /*
-> @@ -186,6 +187,9 @@ EXPORT_SYMBOL(local_bh_enable_ip);
->   */
->  #define MAX_SOFTIRQ_RESTART 10
->  
-> +DEFINE_TRACE(irq_softirq_entry);
-> +DEFINE_TRACE(irq_softirq_exit);
+On Thu, Mar 12, 2009 at 11:50 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> sched_clock() does that, but:
+>  - it falls back to jiffies on poor platforms
 
+I think it's ok to fall back to jiffies where necessary, but these two
+functions are too heavy-weight for my tastes.
 
-Just one nit here. The "irq_" prefix seems to me too much.
-On the trace we have:
+> But something that seems to always work, is simply count loops and rely
+> on whatever delay is in the specified loop.
+>
+> #define spin_until_timeout(condition, timeout, rc) \
+>        for (unsigned long __timeout = 0; \
+>             !(rc = (condition)) && __timeout < (timeout); \
+>             __timeout++)
 
-/* irq_softirq_entry: softirq=nb action=nb_to_logical_name */
+But that's the thing - I don't want a required delay inside the loop.
 
-It's even too much words that says the same things.
-Moreover, we have the logical name, the number seems not very useful
-because we have its logical translation just after.
+I guess I'm going to have to think about this for a while.  I'd like
+to see something like cycles_per_usec() as a companion function to
+get_cycles().
 
-I would suggest to have just:
-
-/* softirq_entry: nb_to_logical_name */
-
-ie:
-
-/* softirq_entry: SCHED_SOFTIRQ */
-
-Don't you think it's more clear and obvious?
-
-Other than that, I think these tracepoints are a good idea.
-
-
->  asmlinkage void __do_softirq(void)
->  {
->  	struct softirq_action *h;
-> @@ -212,8 +216,9 @@ restart:
->  		if (pending & 1) {
->  			int prev_count = preempt_count();
->  
-> +			trace_irq_softirq_entry(h, softirq_vec);
->  			h->action(h);
-> -
-> +			trace_irq_softirq_exit(h, softirq_vec);
->  			if (unlikely(prev_count != preempt_count())) {
->  				printk(KERN_ERR "huh, entered softirq %td %s %p"
->  				       "with preempt_count %08x,"
-
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
