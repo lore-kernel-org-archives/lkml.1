@@ -1,41 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZCLOqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbZCLOq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbZCLOqD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 10:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbZCLOpv
+	id S1757083AbZCLOq0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 10:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756800AbZCLOqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 10:45:51 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:42148 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751624AbZCLOpt (ORCPT
+	Thu, 12 Mar 2009 10:46:04 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:60870 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756585AbZCLOqD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 10:45:49 -0400
-Date: Thu, 12 Mar 2009 15:45:46 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: System tick rate
-In-Reply-To: <20090312072110.0a325543@infradead.org>
-Message-ID: <alpine.LSU.2.00.0903121541410.8068@fbirervta.pbzchgretzou.qr>
-References: <alpine.LSU.2.00.0903121435190.3835@fbirervta.pbzchgretzou.qr> <20090312072110.0a325543@infradead.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 12 Mar 2009 10:46:03 -0400
+Date: Thu, 12 Mar 2009 15:42:29 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>, akpm@linux-foundation.org,
+       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] fix/improve generic page table walker
+Message-ID: <20090312154229.3ee463eb@skybase>
+In-Reply-To: <1236867014.3213.16.camel@calx>
+References: <20090311144951.58c6ab60@skybase>
+	<1236792263.3205.45.camel@calx>
+	<20090312093335.6dd67251@skybase>
+	<1236867014.3213.16.camel@calx>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 12 Mar 2009 09:10:14 -0500
+Matt Mackall <mpm@selenic.com> wrote:
 
-On Thursday 2009-03-12 15:21, Arjan van de Ven wrote:
->On Thu, 12 Mar 2009 14:38:19 +0100 (CET) Jan Engelhardt wrote:
->> 
->> is there an "official" way of obtaining the current tick rate when 
->> CONFIG_NO_HZ? 
->
->what does "current tick rate" mean for you in a no-hz situation ?
->is it the HZ value (which is supposed to be invisible from userspace,
->so good luck) or the wakeup count ?
+> [Nick and Hugh, maybe you can shed some light on this for me]
+> 
+> On Thu, 2009-03-12 at 09:33 +0100, Martin Schwidefsky wrote:
+> > On Wed, 11 Mar 2009 12:24:23 -0500
+> > Matt Mackall <mpm@selenic.com> wrote:
+> > 
+> > > On Wed, 2009-03-11 at 14:49 +0100, Martin Schwidefsky wrote:
+> > > > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > > > 
+> > > > On s390 the /proc/pid/pagemap interface is currently broken. This is
+> > > > caused by the unconditional loop over all pgd/pud entries as specified
+> > > > by the address range passed to walk_page_range. The tricky bit here
+> > > > is that the pgd++ in the outer loop may only be done if the page table
+> > > > really has 4 levels. For the pud++ in the second loop the page table needs
+> > > > to have at least 3 levels. With the dynamic page tables on s390 we can have
+> > > > page tables with 2, 3 or 4 levels. Which means that the pgd and/or the
+> > > > pud pointer can get out-of-bounds causing all kinds of mayhem.
+> > > 
+> > > Not sure why this should be a problem without delving into the S390
+> > > code. After all, x86 has 2, 3, or 4 levels as well (at compile time) in
+> > > a way that's transparent to the walker.
+> > 
+> > Its hard to understand without looking at the s390 details. The main
+> > difference between x86 and s390 in that respect is that on s390 the
+> > number of page table levels is determined at runtime on a per process
+> > basis. A compat process uses 2 levels, a 64 bit process starts with 3
+> > levels and can "upgrade" to 4 levels if something gets mapped above
+> > 4TB. Which means that a *pgd can point to a region-second (2**53 bytes),
+> > a region-third (2**42 bytes) or a segment table (2**31 bytes), a *pud
+> > can point to a region-third or a segment table. The page table
+> > primitives know about this semantic, in particular pud_offset and
+> > pmd_offset check the type of the page table pointed to by *pgd and *pud
+> > and do nothing with the pointer if it is a lower level page table.
+> > The only operation I can not "patch" is the pgd++/pud++ operation.
+> 
+> So in short, sometimes a pgd_t isn't really a pgd_t at all. It's another
+> object with different semantics that generic code can trip over.
 
-Hm, I guess what I want is the number of timer interrupts which
-occurred within the observation period that called the scheduler
-code. (So that excludes RTC on usual x86en.)
+Then what exactly is a pgd_t? For me it is the top level page table
+which can have very different meaning for the various architectures.
+
+> Can I get you to explain why this is necessary or even preferable to
+> doing it the generic way where pgd_t has a fixed software meaning
+> regardless of how many hardware levels are in play?
+
+Well, the hardware can do up to 5 levels of page tables for the full
+64 bit address space. With the introduction of pud's we wanted to
+extend our address space from 3 levels / 42 bits to 4 levels / 53 bits.
+But this comes at a cost: additional page table levels cost memory and
+performance. In particular for the compat processes which can only
+address a maximum of 2 GB it is a waste to allocate 4 levels. With the
+dynamic page tables we allocate as much as required by each process.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
