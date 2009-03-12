@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZCLLZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbZCLL2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbZCLLZL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 07:25:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbZCLLY6
+	id S1755652AbZCLL2R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 07:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbZCLL2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 07:24:58 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:34430 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753063AbZCLLY5 convert rfc822-to-8bit (ORCPT
+	Thu, 12 Mar 2009 07:28:01 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:43258 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753372AbZCLL2A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 07:24:57 -0400
-Message-Id: <49B8FF3E.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Thu, 12 Mar 2009 11:25:34 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <jeremy.fitzhardinge@citrix.com>, <tglx@linutronix.de>,
-       <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
-Subject: Re: [PATCH] x86-64: fix HYPERVISOR_update_descriptor()
-References: <49B8F3D4.76E4.0078.0@novell.com>
- <20090312105426.GC30204@elte.hu>
-In-Reply-To: <20090312105426.GC30204@elte.hu>
+	Thu, 12 Mar 2009 07:28:00 -0400
+Date: Thu, 12 Mar 2009 12:24:41 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] fix/improve generic page table walker
+Message-ID: <20090312122441.46782f9b@skybase>
+In-Reply-To: <20090312111916.5dbdb1e5@skybase>
+References: <20090311144951.58c6ab60@skybase>
+	<1236792263.3205.45.camel@calx>
+	<20090312093335.6dd67251@skybase>
+	<20090312111916.5dbdb1e5@skybase>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Ingo Molnar <mingo@elte.hu> 12.03.09 11:54 >>>
->* Jan Beulich <jbeulich@novell.com> wrote:
->> Signed-off-by: Jan Beulich <jbeulich@novell.com>
->> Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->> 
->> ---
->>  arch/x86/include/asm/xen/hypercall.h |    2 ++
->>  1 file changed, 2 insertions(+)
->> 
->> --- linux-2.6.29-rc7/arch/x86/include/asm/xen/hypercall.h	2009-03-11 17:52:10.000000000 +0100
->> +++ 2.6.29-rc7-x86_64-xen-update-descr/arch/x86/include/asm/xen/hypercall.h	2009-02-13 11:41:39.000000000 +0100
->> @@ -296,6 +296,8 @@ HYPERVISOR_get_debugreg(int reg)
->>  static inline int
->>  HYPERVISOR_update_descriptor(u64 ma, u64 desc)
->>  {
->> +	if (sizeof(u64) == sizeof(long))
->> +		return _hypercall2(int, update_descriptor, ma, desc);
->>  	return _hypercall4(int, update_descriptor, ma, ma>>32, desc, desc>>32);
->
->missing changelog and Impact line.
+On Thu, 12 Mar 2009 11:19:16 +0100
+Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
 
-I'm confused: What point is there to add a textual description that matches
-the subject? And where is the need for an impact line documented (clearly
-neither SubmitChecklist no SubmittingPatches have any occurrence of the
-word impact), i.e. what are the valid values to chose from?
+> On Thu, 12 Mar 2009 09:33:35 +0100
+> Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+> 
+> > > I've gone to lengths to keep VMAs out of the equation, so I can't say
+> > > I'm excited about this solution.  
+> > 
+> > The minimum fix is to add the mmap_sem. If a vma is unmapped while you
+> > walk the page tables, they can get freed. You do have a dependency on
+> > the vma list. All the other page table walkers in mm/ start with the
+> > vma, then do the four loops. It would be consistent if the generic page
+> > table walker would do the same.
+> > 
+> > Having thought about the problem again, I think I found a way how to
+> > deal with the problem in the s390 page table primitives. The fix is not
+> > exactly nice but it will work. With it s390 will be able to walk
+> > addresses outside of the vma address range.
+> 
+> Ok, the patch below fixes the problem without vma operations in the
+> generic page table walker. We still need the mmap_sem part though.
 
-Jan
+Hmm, thinko on my part. If would need the address of the pgd entry to do
+what I'm trying to achieve but I only have the pgd entry itself. Back
+to the vma operation in walk_page_range I'm afraid.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
