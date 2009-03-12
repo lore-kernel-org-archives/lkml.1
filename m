@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZCLCle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZCLClu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756043AbZCLCle (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 22:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755930AbZCLClO
+	id S1756167AbZCLClu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 22:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966AbZCLClS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 22:41:14 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:50155 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755960AbZCLClM (ORCPT
+	Wed, 11 Mar 2009 22:41:18 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:41516 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755988AbZCLClQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 22:41:12 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=EUmRJaE8SU/X2xlXhn8m9YjFPZ9sg2JoMqeUR/7uWlu1JSZe9XmzzzyZb2WH/CdlB
-	Sr+LfHZo2noQe8T95hchQ==
+	Wed, 11 Mar 2009 22:41:16 -0400
+Message-ID: <49B875F7.3030305@cosmosbay.com>
+Date: Thu, 12 Mar 2009 03:39:51 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-In-Reply-To: <49B869B2.1020303@cn.fujitsu.com>
-References: <49B869B2.1020303@cn.fujitsu.com>
-Date: Wed, 11 Mar 2009 19:41:06 -0700
-Message-ID: <6599ad830903111941n5f244bb1n6d4df9268fe18fcb@mail.gmail.com>
-Subject: Re: [PATCH] cls_cgroup: remove unneeded cgroup_lock
-From: Paul Menage <menage@google.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: David Miller <davem@davemloft.net>, Thomas Graf <tgraf@suug.ch>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jeff Moyer <jmoyer@redhat.com>, Avi Kivity <avi@redhat.com>,
+       linux-aio <linux-aio@kvack.org>, zach.brown@oracle.com, bcrl@kvack.org,
+       linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>
+Subject: Re: [patch] aio: remove aio-max-nr and instead use the memlock rlimit
+ to limit the number of pages pinned for the aio completion ring
+References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>	<49B54143.1010607@redhat.com> <x49sklmd1fo.fsf@segfault.boston.devel.redhat.com> <49B57CB0.5020300@cosmosbay.com>
+In-Reply-To: <49B57CB0.5020300@cosmosbay.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 12 Mar 2009 03:39:52 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 6:47 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> We can remove this lock here, since we are in cgroup write handler
-> and thus the cgrp is guaranteed to be valid, and no lock is needed
-> when writing a u32 variable.
+Eric Dumazet a écrit :
+> Jeff Moyer a écrit :
+>> Avi Kivity <avi@redhat.com> writes:
+>>
+>>> Jeff Moyer wrote:
+>>>> Hi,
+>>>>
+>>>> Believe it or not, I get numerous questions from customers about the
+>>>> suggested tuning value of aio-max-nr.  aio-max-nr limits the total
+>>>> number of io events that can be reserved, system wide, for aio
+>>>> completions.  Each time io_setup is called, a ring buffer is allocated
+>>>> that can hold nr_events I/O completions.  That ring buffer is then
+>>>> mapped into the process' address space, and the pages are pinned in
+>>>> memory.  So, the reason for this upper limit (I believe) is to keep a
+>>>> malicious user from pinning all of kernel memory.  Now, this sounds like
+>>>> a much better job for the memlock rlimit to me, hence the following
+>>>> patch.
+>>>>   
+>>> Is it not possible to get rid of the pinning entirely?  Pinning
+>>> interferes with page migration which is important for NUMA, among
+>>> other issues.
+>> aio_complete is called from interrupt handlers, so can't block faulting
+>> in a page.  Zach mentions there is a possibility of handing completions
+>> off to a kernel thread, with all of the performance worries and extra
+>> bookkeeping that go along with such a scheme (to help frame my concerns,
+>> I often get lambasted over .5% performance regressions).
+> 
+> This aio_completion from interrupt handlers keep us from using SLAB_DESTROY_BY_RCU
+> instead of call_rcu() for "struct file" freeing.
+> 
+> http://lkml.org/lkml/2008/12/17/364
+> 
+> I would love if we could get rid of this mess...
 
-There's no guarantee that the group isn't dead, so we could be writing
-into a value that's never going to be used again, but I guess that's
-not really a big deal.
+Speaking of that, I tried to take a look at this aio stuff and have one question.
 
-Acked-by: Paul Menage <menage@google.com>
+Assuming that __fput() cannot be called from interrupt context.
+-> fput() should not be called from interrupt context as well.
 
->
-> Signed-off-by: Li Zefan <lizf@cn.fujitsuc.com>
-> ---
->  net/sched/cls_cgroup.c |    6 ------
->  1 files changed, 0 insertions(+), 6 deletions(-)
->
-> diff --git a/net/sched/cls_cgroup.c b/net/sched/cls_cgroup.c
-> index 91a3db4..1ab4542 100644
-> --- a/net/sched/cls_cgroup.c
-> +++ b/net/sched/cls_cgroup.c
-> @@ -62,13 +62,7 @@ static u64 read_classid(struct cgroup *cgrp, struct cftype *cft)
->
->  static int write_classid(struct cgroup *cgrp, struct cftype *cft, u64 value)
->  {
-> -       if (!cgroup_lock_live_group(cgrp))
-> -               return -ENODEV;
-> -
->        cgrp_cls_state(cgrp)->classid = (u32) value;
-> -
-> -       cgroup_unlock();
-> -
->        return 0;
->  }
->
-> --
-> 1.5.4.rc3
->
->
+How comes we call fput(req->ki_eventfd) from really_put_req()
+from interrupt context ?
+
+If user program closes eventfd, then inflight AIO requests can trigger
+a bug.
+
+
