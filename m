@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbZCLTUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbZCLTYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754972AbZCLTUT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 15:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZCLTUB
+	id S1756926AbZCLTYd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 15:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbZCLTYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 15:20:01 -0400
-Received: from www.tglx.de ([62.245.132.106]:35055 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751079AbZCLTUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 15:20:00 -0400
-Date: Thu, 12 Mar 2009 20:17:50 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>
-Subject: [Announce] 2.6.29-rc7-rt1
-In-Reply-To: <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
- <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 12 Mar 2009 15:24:25 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:49150 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754410AbZCLTYY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 15:24:24 -0400
+Date: Thu, 12 Mar 2009 15:12:14 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: David Rientjes <rientjes@google.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm v2] cpusets: add memory_slab_hardwall flag
+In-Reply-To: <alpine.DEB.2.00.0903121137320.1514@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.10.0903121510380.21607@qirst.com>
+References: <alpine.DEB.2.00.0903091920100.7539@chino.kir.corp.google.com> <alpine.DEB.1.10.0903101651480.20363@qirst.com> <alpine.DEB.2.00.0903101416160.4495@chino.kir.corp.google.com> <alpine.DEB.1.10.0903121145510.27660@qirst.com>
+ <alpine.DEB.2.00.0903121137320.1514@chino.kir.corp.google.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series. It contains only one new patch:
-   
-   - port forward to 2.6.29-rc7
-   - disable CONFIG_MAXCPUS for now (undebugged runtime bug)
-   - fix CONFIG_HIGHMEM problems
-   - fix netfilter problems
-   - make debugobjects -rt safe
-   - various build fixes
+On Thu, 12 Mar 2009, David Rientjes wrote:
 
-Download locations:
- 
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
-  
-Information on the RT patch can be found at:
+> Yes, jobs are running in the leaf with my above example.  And it's quite
+> possible that the higher level has segmented the machine for NUMA locality
+> and then further divided that memory for individual jobs.  When a job
+> completes or is killed, the slab cache that it has allocated can be freed
+> in its entirety with no partial slab fragmentation (i.e. there are no
+> objects allocated from its slabs for disjoint, still running jobs).  That
+> cpuset may then serve another job.
 
-    http://rt.wiki.kernel.org/index.php/Main_Page
+Looks like we are talking about a differing project here. Partial slabs
+are shared between all processors with SLUB. Slab shares the partial slabs
+for the processors on the same node.
 
-to build the 2.6.29-rc7-rt1 tree, the following patches should be
-applied:
-
-  http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc7.tar.bz2
-  http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc7-rt1.bz2
-  
-The broken out patches are also available at the same download
-locations.
-
-Enjoy !
-
-      tglx
 
