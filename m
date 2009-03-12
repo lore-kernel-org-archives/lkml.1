@@ -1,71 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbZCLL7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZCLMBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756589AbZCLL7d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 07:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbZCLL6o
+	id S1755915AbZCLMBh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 08:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbZCLMB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 07:58:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59749 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756425AbZCLL6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 07:58:42 -0400
-Date: Thu, 12 Mar 2009 11:58:01 GMT
-From: Jan Beulich <jbeulich@novell.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jbeulich@novell.com, tglx@linutronix.de, mingo@elte.hu,
-       jeremy.fitzhardinge@citrix.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com, tglx@linutronix.de, jeremy.fitzhardinge@citrix.com,
-       mingo@elte.hu
-In-Reply-To: <49B9061E.76E4.0078.0@novell.com>
-References: <49B9061E.76E4.0078.0@novell.com>
-Subject: [tip:x86/urgent] x86: fix HYPERVISOR_update_descriptor()
-Message-ID: <tip-6a5c05f002c3e4f24887a5fe8e7df757d339d368@git.kernel.org>
-Git-Commit-ID: 6a5c05f002c3e4f24887a5fe8e7df757d339d368
-X-Mailer: tip-git-log-daemon
+	Thu, 12 Mar 2009 08:01:26 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:2213 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbZCLMBZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 08:01:25 -0400
+Date: Thu, 12 Mar 2009 12:01:21 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+Subject: Re: [patch 2.6.29-rc7 regulator-next] regulator: init fixes
+Message-ID: <20090312120119.GB24376@sirena.org.uk>
+References: <200903111743.34708.david-b@pacbell.net> <200903111932.16317.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 12 Mar 2009 11:58:02 +0000 (UTC)
+In-Reply-To: <200903111932.16317.david-b@pacbell.net>
+X-Cookie: War is an equal opportunity destroyer.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6a5c05f002c3e4f24887a5fe8e7df757d339d368
-Gitweb:     http://git.kernel.org/tip/6a5c05f002c3e4f24887a5fe8e7df757d339d368
-Author:     "Jan Beulich" <jbeulich@novell.com>
-AuthorDate: Thu, 12 Mar 2009 11:54:54 +0000
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 12 Mar 2009 12:56:21 +0100
+On Wed, Mar 11, 2009 at 06:32:15PM -0800, David Brownell wrote:
 
-x86: fix HYPERVISOR_update_descriptor()
+> Make the regulator setup code cope more consistently with
+> regulators undesirably left enabled by the bootloader.
 
-Impact: fix potential oops during app-initiated LDT manipulation
+First up I'd just like to make it absolutely clear that I agree that
+this is a feature we should have - it's obviously useful.
 
-The underlying hypercall has differing argument requirements on 32-
-and 64-bit.
+>  * Unless the "boot_on" or "always_on" machine constraints
+>    were set, disable() the regulator.  This gives drivers
+>    a clean start state:  enable state matches usecount,
+>    regardless of boot_on/always_on flag state.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-LKML-Reference: <49B9061E.76E4.0078.0@novell.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+At the minute the regulator constraints have the property that if you
+pass a zero-initialised set of constraints the regulator API will not do
+anything other than allow you to read the state of the regulator - any
+action taken by the regulator API must be explicitly permitted by code.
+This change will mean that users will have to explicitly mark any
+regulators that are needed as enabled or we'll do unfortunate things.  
 
+It is a particular problem for multi-function devices like pcf50633
+which not only register all their regulators by default but also embed
+constraints within the general pcf50633 platform data.  If the user
+simply turns on the regulator driver in their config they'll get this
+behavior if they don't edit the code.  Even with regulator code I'd not
+be surprised if people were bitten by this for things like the memory or
+a CPU core without regulator based DVFS.
 
----
- arch/x86/include/asm/xen/hypercall.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+You've addressed some of the use cases for this by providing devmode but
+it's still a big incompatible change, especially at this point in the
+development cycle where we've got at most a couple of weeks to the merge
+window.  We could do this without introducing the incompatibility by
+adding a new flag (eg, boot_off) which machine constraints need to
+explicitly set to enforce this behaviour or by having something machine
+drivers can call to say "now power off any regulators that look idle".
 
-diff --git a/arch/x86/include/asm/xen/hypercall.h b/arch/x86/include/asm/xen/hypercall.h
-index 5e79ca6..9c371e4 100644
---- a/arch/x86/include/asm/xen/hypercall.h
-+++ b/arch/x86/include/asm/xen/hypercall.h
-@@ -296,6 +296,8 @@ HYPERVISOR_get_debugreg(int reg)
- static inline int
- HYPERVISOR_update_descriptor(u64 ma, u64 desc)
- {
-+	if (sizeof(u64) == sizeof(long))
-+		return _hypercall2(int, update_descriptor, ma, desc);
- 	return _hypercall4(int, update_descriptor, ma, ma>>32, desc, desc>>32);
- }
- 
+I'm not 100% agaist doing things the way you suggest since there is 
+appeal in having boot_on be more of a boolean but I do feel that if
+we're going to go this way we should do it more gently.  For example, we
+could merge a patch now which warns loudly that this will happen and
+then after the 2.6.30 merge window actually implement it.  This would
+reduce merge issues for machine support coming in via other trees; we're
+rather late in the development cycle to be putting this in right now.
+Not everyone will read a warning but there is some chance they might and
+there's also a chance they'll test in -next.  We should also provide a
+temporary Kconfig which actually enables the behaviour if people request
+it.
+
+>  * To help make some integration stages easier, add a new
+>    "devmode" machine constraint where state the bootloader
+>    left isn't touched, but enable state and usecount may
+>    not match.  (System boots but some drivers act odd ...
+>    debuggable.  System dies part way through booting ...
+>    often painful.)
+
+This also addresses things like the reverse engineering use case where
+people genuinely don't know what's going on and want to use the API to
+inspect the state of the regulators.
+
+I do wonder if we can't come up with a different way of expressing
+devmode - a different name like dont_disable that more directly
+expresses what the constraint does might be more obvious.  Something
+that can enable this globally may also be convenient.
+
+The code itself is OK.
