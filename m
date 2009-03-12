@@ -1,81 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZCLJRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbZCLJSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbZCLJRN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 05:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbZCLJQ5
+	id S1755026AbZCLJSt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 05:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZCLJSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 05:16:57 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35642 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752004AbZCLJQ4 (ORCPT
+	Thu, 12 Mar 2009 05:18:40 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58003 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446AbZCLJSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 05:16:56 -0400
-Message-ID: <49B8D2F4.1030206@jp.fujitsu.com>
-Date: Thu, 12 Mar 2009 18:16:36 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Thu, 12 Mar 2009 05:18:38 -0400
+Date: Thu, 12 Mar 2009 10:21:14 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       mtk.manpages@gmail.com, tytso@mit.edu, rdunlap@xenotime.net,
+       linux-doc@vger.kernel.org
+Cc: linux-ext4@vger.kernel.org
+Subject: ext2/3: document conditions when reliable operation is possible
+Message-ID: <20090312092114.GC6949@elf.ucw.cz>
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 05/11] PCI: beef up pci_do_scan_bus()
-References: <20090309052933.3918.86601.stgit@bob.kio> <20090309054900.3918.4473.stgit@bob.kio>
-In-Reply-To: <20090309054900.3918.4473.stgit@bob.kio>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> We have a nice interface for re-scanning a PCI bus which will
-> discover newly added devices, add them to the device tree, and
-> enable them properly.
-> 
-> Ensure that the bridge resources are properly sized and assigned
-> during the rescan.
-> 
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
-> 
->  drivers/pci/hotplug-pci.c |   16 ++++++++++++----
->  1 files changed, 12 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/pci/hotplug-pci.c b/drivers/pci/hotplug-pci.c
-> index 4d4a644..33ab2d2 100644
-> --- a/drivers/pci/hotplug-pci.c
-> +++ b/drivers/pci/hotplug-pci.c
-> @@ -6,13 +6,21 @@
->  
->  unsigned int __devinit pci_do_scan_bus(struct pci_bus *bus)
->  {
-> -	unsigned int max;
-> +	unsigned int max, pass;
-> +	struct pci_dev *dev;
->  
->  	max = pci_scan_child_bus(bus);
->  
-> -	/*
-> -	 * Make the discovered devices available.
-> -	 */
-> +	for (pass=0; pass < 2; pass++)
-> +		list_for_each_entry(dev, &bus->devices, bus_list) {
-> +			if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
-> +			    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
-> +				if (pass && dev->subordinate)
-> +					pci_bus_size_bridges(dev->subordinate);
-> +		}
-> +
-> +	pci_bus_assign_resources(bus);
-> +	pci_enable_bridges(bus);
->  	pci_bus_add_devices(bus);
 
-The "for (pass=0; pass <2; pass++)" loop doesn't look necessary.
+Not all block devices are suitable for all filesystems. In fact, some
+block devices are so broken that reliable operation is pretty much
+impossible. Document stuff ext2/ext3 needs for reliable operation.
 
-And I'm worrying that your change have some bad effect to the
-existing user of pci_do_scan_bus(). Did you confirm that?
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-Thanks,
-Kenji Kaneshige
+diff --git a/Documentation/filesystems/expectations.txt b/Documentation/filesystems/expectations.txt
+new file mode 100644
+index 0000000..9c3d729
+--- /dev/null
++++ b/Documentation/filesystems/expectations.txt
+@@ -0,0 +1,47 @@
++Linux block-backed filesystems can only work correctly when several
++conditions are met in the block layer and below (disks, flash
++cards). Some of them are obvious ("data on media should not change
++randomly"), some are less so.
++
++Write errors not allowed (NO-WRITE-ERRORS)
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++
++Writes to media never fail. Even if disk returns error condition
++during write, filesystems can't handle that correctly, because success
++on fsync was already returned when data hit the journal.
++
++	Fortunately writes failing are very uncommon on traditional 
++	spinning disks, as they have spare sectors they use when write
++	fails.
++
++Sector writes are atomic (ATOMIC-SECTORS)
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++
++Either whole sector is correctly written or nothing is written during
++powerfail.
++
++	Unfortuantely, none of the cheap USB/SD flash cards I seen do 
++	behave like this, and are unsuitable for all linux filesystems 
++	I know. 
++
++		An inherent problem with using flash as a normal block
++		device is that the flash erase size is bigger than
++		most filesystem sector sizes.  So when you request a
++		write, it may erase and rewrite the next 64k, 128k, or
++		even a couple megabytes on the really _big_ ones.
++
++		If you lose power in the middle of that, filesystem
++		won't notice that data in the "sectors" _around_ the
++		one your were trying to write to got trashed.
++
++	Because RAM tends to fail faster than rest of system during 
++	powerfail, special hw killing DMA transfers may be neccessary;
++	otherwise, disks may write garbage during powerfail.
++	Not sure how common that problem is on generic PC machines.
++
++	Note that atomic write is very hard to guarantee for RAID-4/5/6,
++	because it needs to write both changed data, and parity, to 
++	different disks.
++
++
++
+diff --git a/Documentation/filesystems/ext2.txt b/Documentation/filesystems/ext2.txt
+index 4333e83..b09aa4c 100644
+--- a/Documentation/filesystems/ext2.txt
++++ b/Documentation/filesystems/ext2.txt
+@@ -338,27 +339,25 @@ enough 4-character names to make up unique directory entries, so they
+ have to be 8 character filenames, even then we are fairly close to
+ running out of unique filenames.
+ 
++Requirements
++============
++
++Ext3 expects disk/storage subsystem to behave sanely. On sanely
++behaving disk subsystem, data that have been successfully synced will
++stay on the disk. Sane means:
++
++* write errors not allowed
++
++* sector writes are atomic
++
++(see expectations.txt; note that most/all linux block-based
++filesystems have similar expectations)
++
++* write caching is disabled. ext2 does not know how to issue barriers
++  as of 2.6.28. hdparm -W0 disables it on SATA disks.
++
+ Journaling
+-----------
+-
+-A journaling extension to the ext2 code has been developed by Stephen
+-Tweedie.  It avoids the risks of metadata corruption and the need to
+-wait for e2fsck to complete after a crash, without requiring a change
+-to the on-disk ext2 layout.  In a nutshell, the journal is a regular
+-file which stores whole metadata (and optionally data) blocks that have
+-been modified, prior to writing them into the filesystem.  This means
+-it is possible to add a journal to an existing ext2 filesystem without
+-the need for data conversion.
+-
+-When changes to the filesystem (e.g. a file is renamed) they are stored in
+-a transaction in the journal and can either be complete or incomplete at
+-the time of a crash.  If a transaction is complete at the time of a crash
+-(or in the normal case where the system does not crash), then any blocks
+-in that transaction are guaranteed to represent a valid filesystem state,
+-and are copied into the filesystem.  If a transaction is incomplete at
+-the time of the crash, then there is no guarantee of consistency for
+-the blocks in that transaction so they are discarded (which means any
+-filesystem changes they represent are also lost).
++==========
+ Check Documentation/filesystems/ext3.txt if you want to read more about
+ ext3 and journaling.
+ 
+diff --git a/Documentation/filesystems/ext3.txt b/Documentation/filesystems/ext3.txt
+index 9dd2a3b..02a9bd5 100644
+--- a/Documentation/filesystems/ext3.txt
++++ b/Documentation/filesystems/ext3.txt
+@@ -188,6 +200,27 @@ mke2fs: 	create a ext3 partition with the -j flag.
+ debugfs: 	ext2 and ext3 file system debugger.
+ ext2online:	online (mounted) ext2 and ext3 filesystem resizer
+ 
++Requirements
++============
++
++Ext3 expects disk/storage subsystem to behave sanely. On sanely
++behaving disk subsystem, data that have been successfully synced will
++stay on the disk. Sane means:
++
++* write errors not allowed
++
++* sector writes are atomic
++
++(see expectations.txt; note that most/all linux block-based
++filesystems have similar expectations)
++
++* either write caching is disabled, or hw can do barriers and they are enabled.
++
++	   (Note that barriers are disabled by default, use "barrier=1"
++	   mount option after making sure hw can support them). 
++
++	   hdparm -I reports disk features. If you have "Native
++	   Command Queueing" is the feature you are looking for.
+ 
+ References
+ ==========
 
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
