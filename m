@@ -1,168 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbZCLC1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755610AbZCLC22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754456AbZCLC1s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 22:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZCLC12
+	id S1755610AbZCLC22 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 22:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbZCLC1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 22:27:28 -0400
-Received: from mail.windriver.com ([147.11.1.11]:50825 "EHLO mail.wrs.com"
+	Wed, 11 Mar 2009 22:27:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41693 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754297AbZCLC10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 22:27:26 -0400
-From: Harry Ciao <qingtao.cao@windriver.com>
-To: linux-kernel@vger.kernel.org, bluesmoke-devel@lists.sourceforge.net
-Cc: akpm@linux-foundation.org, norsk5@yahoo.com
-Subject: [v3 PATCH 1/7] EDAC: AMD8111 driver header file
-Date: Thu, 12 Mar 2009 10:14:03 +0800
-Message-Id: <1236824044-20579-2-git-send-email-qingtao.cao@windriver.com>
-X-Mailer: git-send-email 1.5.6.2
-In-Reply-To: <1236824044-20579-1-git-send-email-qingtao.cao@windriver.com>
-References: <1236824044-20579-1-git-send-email-qingtao.cao@windriver.com>
-X-OriginalArrivalTime: 12 Mar 2009 02:26:50.0355 (UTC) FILETIME=[FFF33C30:01C9A2B9]
+	id S1754501AbZCLC1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 22:27:33 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: prasad@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch 04/11] Introduce virtual debug register in
+	thread_struct and wrapper-routines around process related functions
+In-Reply-To: Ingo Molnar's message of  Tuesday, 10 March 2009 15:35:43 +0100 <20090310143543.GE3850@elte.hu>
+References: <20090305043440.189041194@linux.vnet.ibm.com>
+	<20090305043830.GE17747@in.ibm.com>
+	<20090310143543.GE3850@elte.hu>
+X-Zippy-Says: Hey!!  Let's watch the' ELEVATOR go UP and DOWN at th' HILTON HOTEL!!
+Message-Id: <20090312022650.C00DDFC3B6@magilla.sf.frob.com>
+Date: Wed, 11 Mar 2009 19:26:50 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce AMD8111 EDAC driver header file, which adds register and bits
-definitions for the LPC Bridge Controller and PCI Bridge Controller on
-the AMD8111 HyperTransport I/O Hub.
+> detached from thread_struct? There's a lot of complications 
+> (alloc/free, locking, etc.) from this for no good reason - the 
+> hardware-breakpoints info structure is alway per thread and is 
+> quite small, so there's no reason not to embedd it directly 
+> inside thread_struct.
 
-Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
----
- drivers/edac/amd8111_edac.h |  130 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 130 insertions(+)
- create mode 100644 drivers/edac/amd8111_edac.h
+I do certainly think it's worthwhile to use a coherent struct type here
+rather than many fields in thread_struct, independent of the allocation for
+it being direct or indirect (not that you objected to that).  That makes
+the code read cleaner, and should make it a minor change to most of the
+code later if the allocation plan changes.
 
---- /dev/null
-+++ b/drivers/edac/amd8111_edac.h
-@@ -0,0 +1,130 @@
-+/*
-+ * amd8111_edac.h, EDAC defs for AMD8111 hypertransport chip
-+ *
-+ * Copyright (c) 2008 Wind River Systems, Inc.
-+ *
-+ * Authors:	Cao Qingtao <qingtao.cao@windriver.com>
-+ * 		Benjamin Walsh <benjamin.walsh@windriver.com>
-+ * 		Hu Yongqi <yongqi.hu@windriver.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+ * See the GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ */
-+
-+#ifndef _AMD8111_EDAC_H_
-+#define _AMD8111_EDAC_H_
-+
-+/************************************************************
-+ *	PCI Bridge Status and Command Register, DevA:0x04
-+ ************************************************************/
-+#define REG_PCI_STSCMD	0x04
-+enum pci_stscmd_bits {
-+	PCI_STSCMD_SSE		= BIT(30),
-+	PCI_STSCMD_RMA		= BIT(29),
-+	PCI_STSCMD_RTA		= BIT(28),
-+	PCI_STSCMD_SERREN	= BIT(8),
-+	PCI_STSCMD_CLEAR_MASK	= (PCI_STSCMD_SSE |
-+				   PCI_STSCMD_RMA |
-+				   PCI_STSCMD_RTA)
-+};
-+
-+/************************************************************
-+ *	PCI Bridge Memory Base-Limit Register, DevA:0x1c
-+ ************************************************************/
-+#define REG_MEM_LIM     0x1c
-+enum mem_limit_bits {
-+	MEM_LIMIT_DPE   = BIT(31),
-+	MEM_LIMIT_RSE   = BIT(30),
-+	MEM_LIMIT_RMA   = BIT(29),
-+	MEM_LIMIT_RTA   = BIT(28),
-+	MEM_LIMIT_STA   = BIT(27),
-+	MEM_LIMIT_MDPE  = BIT(24),
-+	MEM_LIMIT_CLEAR_MASK  = (MEM_LIMIT_DPE |
-+				 MEM_LIMIT_RSE |
-+				 MEM_LIMIT_RMA |
-+				 MEM_LIMIT_RTA |
-+				 MEM_LIMIT_STA |
-+				 MEM_LIMIT_MDPE)
-+};
-+
-+/************************************************************
-+ *	HyperTransport Link Control Register, DevA:0xc4
-+ ************************************************************/
-+#define REG_HT_LINK	0xc4
-+enum ht_link_bits {
-+	HT_LINK_LKFAIL	= BIT(4),
-+	HT_LINK_CRCFEN	= BIT(1),
-+	HT_LINK_CLEAR_MASK = (HT_LINK_LKFAIL)
-+};
-+
-+/************************************************************
-+ *	PCI Bridge Interrupt and Bridge Control, DevA:0x3c
-+ ************************************************************/
-+#define REG_PCI_INTBRG_CTRL	0x3c
-+enum pci_intbrg_ctrl_bits {
-+	PCI_INTBRG_CTRL_DTSERREN	= BIT(27),
-+	PCI_INTBRG_CTRL_DTSTAT		= BIT(26),
-+	PCI_INTBRG_CTRL_MARSP		= BIT(21),
-+	PCI_INTBRG_CTRL_SERREN		= BIT(17),
-+	PCI_INTBRG_CTRL_PEREN		= BIT(16),
-+	PCI_INTBRG_CTRL_CLEAR_MASK	= (PCI_INTBRG_CTRL_DTSTAT),
-+	PCI_INTBRG_CTRL_POLL_MASK	= (PCI_INTBRG_CTRL_DTSERREN |
-+					   PCI_INTBRG_CTRL_MARSP |
-+					   PCI_INTBRG_CTRL_SERREN)
-+};
-+
-+/************************************************************
-+ *		I/O Control 1 Register, DevB:0x40
-+ ************************************************************/
-+#define REG_IO_CTRL_1 0x40
-+enum io_ctrl_1_bits {
-+	IO_CTRL_1_NMIONERR	= BIT(7),
-+	IO_CTRL_1_LPC_ERR	= BIT(6),
-+	IO_CTRL_1_PW2LPC	= BIT(1),
-+	IO_CTRL_1_CLEAR_MASK	= (IO_CTRL_1_LPC_ERR | IO_CTRL_1_PW2LPC)
-+};
-+
-+/************************************************************
-+ *		Legacy I/O Space Registers
-+ ************************************************************/
-+#define REG_AT_COMPAT 0x61
-+enum at_compat_bits {
-+	AT_COMPAT_SERR		= BIT(7),
-+	AT_COMPAT_IOCHK		= BIT(6),
-+	AT_COMPAT_CLRIOCHK	= BIT(3),
-+	AT_COMPAT_CLRSERR	= BIT(2),
-+};
-+
-+struct amd8111_dev_info {
-+	u16 err_dev;	/* PCI Device ID */
-+	struct pci_dev *dev;
-+	int edac_idx;	/* device index */
-+	char *ctl_name;
-+	struct edac_device_ctl_info *edac_dev;
-+	void (*init)(struct amd8111_dev_info *dev_info);
-+	void (*exit)(struct amd8111_dev_info *dev_info);
-+	void (*check)(struct edac_device_ctl_info *edac_dev);
-+};
-+
-+struct amd8111_pci_info {
-+	u16 err_dev;	/* PCI Device ID */
-+	struct pci_dev *dev;
-+	int edac_idx;	/* pci index */
-+	const char *ctl_name;
-+	struct edac_pci_ctl_info *edac_dev;
-+	void (*init)(struct amd8111_pci_info *dev_info);
-+	void (*exit)(struct amd8111_pci_info *dev_info);
-+	void (*check)(struct edac_pci_ctl_info *edac_dev);
-+};
-+
-+#endif /* _AMD8111_EDAC_H_ */
+I think in the original effort another motivating factor was concern about
+bloating the size of thread_struct.  The struct thread_hw_breakpoint is at
+least a few times the size of the set old fields it replaces.  We were
+concerned that inflating every task's thread_struct for the benefit of
+these rarely-used fancy new features might meet resistance from arch
+maintainers like you.  If that issue doesn't hold you back from taking the
+new code, then I think we are more than happy to start with thread_struct
+directly containing a struct thread_hw_breakpoint member.
+
+I do think we'll want to make it a pointer with later incremental changes.
+(But those may not need to come very soon.)  Firstly, the size reduction to
+task_struct is fairly compelling since it's for the vast majority of tasks
+which never need to allocate it.  The hair potential is really not very
+much at least to begin with, if you just make it allocate on first setup
+and never free (no locking et al, just if (thread->hwbkpt) ...).  Second,
+eventually we'd like to have the possibility of sharing the struct among
+threads.  This will come later on when we have higher-level things that
+would like to set common watchpoints on a whole group of threads (what
+debuggers usually really do).  Such APIs are far improved and optimized by
+updating many threads together, and when a big app has thousands of threads
+to which all the same watchpoints apply, sharing at low level makes many of
+those intraprocess context switches quicker.  As I said, all in the future.
+But it's far from being entirely baseless to think a pointer makes good sense.
+
+
+Thanks,
+Roland
