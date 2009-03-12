@@ -1,115 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZCLUYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbZCLUZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbZCLUYx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 16:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZCLUYn
+	id S1753755AbZCLUZO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 16:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZCLUY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 16:24:43 -0400
-Received: from mail-bw0-f178.google.com ([209.85.218.178]:55512 "EHLO
-	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751395AbZCLUYm convert rfc822-to-8bit (ORCPT
+	Thu, 12 Mar 2009 16:24:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36605 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752206AbZCLUY5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 16:24:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Y+ekJ+mP7v2MjMYt2bU9i+FwWJpkKKVC/WYyloPvlNbAtrJMNUJhXgdIhBeX2aTzAt
-         NUPh3NpdhBmAxYhCGTy1oc3I2fcb+cySERhOKu39gnID62JQPxuZWLh5M37+LY8u5i6m
-         wow7SaHd3MlgCWaul+r9pONi9Az9ob6pbzLGI=
-MIME-Version: 1.0
-In-Reply-To: <200902241700.56099.jarod@redhat.com>
-References: <200902241700.56099.jarod@redhat.com>
-Date: Thu, 12 Mar 2009 16:24:38 -0400
-X-Google-Sender-Auth: 4d0f1c18a46f6e79
-Message-ID: <37219a840903121324q7b08c8d1ma6d0d3ec4f5eb278@mail.gmail.com>
-Subject: Fwd: [stable] [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885 
-	video_open
-From: Michael Krufky <mkrufky@linuxtv.org>
-To: stable@kernel.org, LKML <linux-kernel@vger.kernel.org>
-Cc: Jarod Wilson <jarod@wilsonet.com>, LMML <linux-media@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 12 Mar 2009 16:24:57 -0400
+Date: Thu, 12 Mar 2009 13:21:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: jmoyer@redhat.com, avi@redhat.com, linux-aio@kvack.org,
+       zach.brown@oracle.com, bcrl@kvack.org, linux-kernel@vger.kernel.org,
+       davidel@xmailserver.org, cl@linux-foundation.org
+Subject: Re: [PATCH] fs: fput() can be called from interrupt context
+Message-Id: <20090312132115.21b478cd.akpm@linux-foundation.org>
+In-Reply-To: <49B960DE.6000406@cosmosbay.com>
+References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>
+	<49B54143.1010607@redhat.com>
+	<x49sklmd1fo.fsf@segfault.boston.devel.redhat.com>
+	<49B57CB0.5020300@cosmosbay.com>
+	<49B875F7.3030305@cosmosbay.com>
+	<49B87CFE.4000701@cosmosbay.com>
+	<49B89B22.7080303@cosmosbay.com>
+	<20090311224712.fb8db075.akpm@linux-foundation.org>
+	<49B8A75E.6040409@cosmosbay.com>
+	<20090311233903.f036027a.akpm@linux-foundation.org>
+	<49B960DE.6000406@cosmosbay.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can we have this merged into -stable?  Jarod Wilson sent this last
-month, but he left off the cc to stable@kernel.org
+On Thu, 12 Mar 2009 20:22:06 +0100
+Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+> > It's somewhat encouraging that we're apparently already doing fput()
+> > from within keventd (although how frequently?).  There might be
+> > problems with file locking, security code, etc from doing fput() from
+> > an unexpected thread.  And then there are all the usual weird problem
+> > with using the keventd queues which take a long time to get discovered.
+> > 
+> 
+> Hum... Do you mean "if (in_interrupt())" is not the right test to
+> perform ? 
 
+No, in_interrupt() seems appropriate.
 
----------- Forwarded message ----------
-From: Jarod Wilson <jarod@redhat.com>
-Date: Tue, Feb 24, 2009 at 6:00 PM
-Subject: [stable] [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885 video_open
-To: linux-kernel@vger.kernel.org
-Cc: Mike Krufky <mkrufky@linuxtv.org>
-
-
-From: Mark Jenks
-https://www.redhat.com/mailman/private/video4linux-list/2009-January/msg00041.html
-
-The Hauppauge WinTV HVR-1800 tv tuner card has both digital and analog
-abilities, both of which are supported by v4l/dvb under 2.6.27.y. The analog
-side also features a hardware mpeg2 encoder. The HVR-1250 tv tuner card
-has both digital and analog abilities, but analog isn't currently supported
-under any kernel. These cards both utilize the cx23885 driver, but with
-slightly different usage. When the code paths for each card is executed,
-they wind up poking a cx23885_devlist, which contains devices from both
-of the cards, and access attempts are made to portions of 'struct
-cx23885_dev' that aren't valid for that device. Simply add some extra
-checks before trying to access these structs.
-
-More gory details:
- http://article.gmane.org/gmane.linux.drivers.dvb/46630
-
-This was triggering on my own system at home w/both cards in it, and
-no longer happens with this patch included.
-
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-Reviewed-by: Michael Krufky <mkrufky@linuxtv.org>
-
----
-
- drivers/media/video/cx23885/cx23885-417.c   |    2 +-
- drivers/media/video/cx23885/cx23885-video.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/media/video/cx23885/cx23885-417.c
-b/drivers/media/video/cx23885/cx23885-417.c
-index 7b0e8c0..19154b6 100644
---- a/drivers/media/video/cx23885/cx23885-417.c
-+++ b/drivers/media/video/cx23885/cx23885-417.c
-@@ -1585,7 +1585,7 @@ static int mpeg_open(struct inode *inode, struct
-file *file)
-
-       list_for_each(list, &cx23885_devlist) {
-               h = list_entry(list, struct cx23885_dev, devlist);
--               if (h->v4l_device->minor == minor) {
-+               if (h->v4l_device && h->v4l_device->minor == minor) {
-                       dev = h;
-                       break;
-               }
-diff --git a/drivers/media/video/cx23885/cx23885-video.c
-b/drivers/media/video/cx23885/cx23885-video.c
-index 6047c78..a2b5a0c 100644
---- a/drivers/media/video/cx23885/cx23885-video.c
-+++ b/drivers/media/video/cx23885/cx23885-video.c
-@@ -733,7 +733,7 @@ static int video_open(struct inode *inode, struct
-file *file)
-
-       list_for_each(list, &cx23885_devlist) {
-               h = list_entry(list, struct cx23885_dev, devlist);
--               if (h->video_dev->minor == minor) {
-+               if (h->video_dev && h->video_dev->minor == minor) {
-                       dev  = h;
-                       type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-               }
+It's a bit weak, because it means that the proposed code can't be used
+for calling fput() inside spinlock.  A better interface would be to
+add a new fput_atomic() and let the caller decide which functions
+should be called, depending upon what context the caller is running in.
 
 
---
-Jarod Wilson
-jarod@redhat.com
+
