@@ -1,68 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZCLQJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbZCLQQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756352AbZCLQJI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 12:09:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbZCLQIz
+	id S1756908AbZCLQQB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 12:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbZCLQPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 12:08:55 -0400
-Received: from iona.labri.fr ([147.210.8.143]:56891 "EHLO iona.labri.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755110AbZCLQIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 12:08:54 -0400
-X-Greylist: delayed 1637 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 12:08:54 EDT
-Message-ID: <49B92D2B.2090100@ens-lyon.org>
-Date: Thu, 12 Mar 2009 16:41:31 +0100
-From: Brice Goglin <Brice.Goglin@ens-lyon.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Thu, 12 Mar 2009 12:15:51 -0400
+Received: from rcsinet13.oracle.com ([148.87.113.125]:57137 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753629AbZCLQPu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 12:15:50 -0400
+Message-ID: <49B93584.3020302@oracle.com>
+Date: Thu, 12 Mar 2009 09:17:08 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: Matt Mackall <mpm@selenic.com>, Alexey Dobriyan <adobriyan@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>, akpm@linux-foundation.org
-Subject: Re: [PATCH] acquire mmap semaphore in pagemap_read.
-References: <20090312113308.6fe18a93@skybase>	<20090312114533.GA2407@x200.localdomain>	<20090312125410.25400d18@skybase>	<1236871414.3213.50.camel@calx> <20090312162733.4e8fd197@skybase>
-In-Reply-To: <20090312162733.4e8fd197@skybase>
-X-Enigmail-Version: 0.95.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: linux-next: Tree for March 11 (tracing)
+References: <20090311225913.51589223.sfr@canb.auug.org.au> <49B7F691.5000305@oracle.com>
+In-Reply-To: <49B7F691.5000305@oracle.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.49B93512.003A:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Schwidefsky wrote:
-> On Thu, 12 Mar 2009 10:23:34 -0500
-> Matt Mackall <mpm@selenic.com> wrote:
-> 
->> On Thu, 2009-03-12 at 12:54 +0100, Martin Schwidefsky wrote:
->>> On Thu, 12 Mar 2009 14:45:33 +0300
->>> Alexey Dobriyan <adobriyan@gmail.com> wrote:
->>>
->>>> On Thu, Mar 12, 2009 at 11:33:08AM +0100, Martin Schwidefsky wrote:
->>>>> --- linux-2.6/fs/proc/task_mmu.c
->>>>> +++ linux-2.6-patched/fs/proc/task_mmu.c
->>>>> @@ -716,7 +716,9 @@ static ssize_t pagemap_read(struct file 
->>>>>  	 * user buffer is tracked in "pm", and the walk
->>>>>  	 * will stop when we hit the end of the buffer.
->>>>>  	 */
->>>>> +	down_read(&mm->mmap_sem);
->>>>>  	ret = walk_page_range(start_vaddr, end_vaddr, &pagemap_walk);
->>>>> +	up_read(&mm->mmap_sem);
->>>> This will introduce "put_user under mmap_sem" which is deadlockable.
->>> Hmm, interesting. In this case the pagemap interface is fundamentally broken.
->> Well it means we may have to reintroduce the very annoying double
->> buffering from various earlier implementations. But let's leave this
->> discussion until after we've figured out what to do about the walker
->> code.
-> 
-> Which would be really ugly. I still have not grasped why this will
-> introduce a deadlock though. The worst the put_user can do is to cause
-> a page fault, no? I do not see where the fault handler acquires the
-> mmap_sem as writer. It takes the mmap_sem as reader and two readers
-> should be fine.
+[adding cc:s]
 
-Somebody else can acquire for write in the meantime, for instance
-another thread doing mprotect. This writer is blocked by the first
-reader, and the second reader is blocked by the writer. So both
-tasks are blocked.
+[same report for March 12]
 
-Brice
+Randy Dunlap wrote:
+> Stephen Rothwell wrote:
+>> Hi all,
+>>
+>> Changes since 20090310:
+> 
+> 
+> Building on i386 generates a ton of printk format warnings:
+> 
+> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'unsigned int'
+> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 6 has type 'unsigned int'
+> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 9 has type 'unsigned int'
+> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 10 has type 'unsigned int'
+> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 13 has type 'unsigned int'
+> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 14 has type 'unsigned int'
+> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 17 has type 'unsigned int'
+> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 18 has type 'unsigned int'
+> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 21 has type 'unsigned int'
+> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 22 has type 'unsigned int'
+> 
+> include/trace/sched_event_types.h:11: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:11: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/sched_event_types.h:21: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:21: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/sched_event_types.h:31: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:31: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/sched_event_types.h:41: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:41: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/sched_event_types.h:53: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:53: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/sched_event_types.h:65: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:65: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/sched_event_types.h:85: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:85: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/sched_event_types.h:98: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:98: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/sched_event_types.h:108: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:108: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/sched_event_types.h:118: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:118: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/sched_event_types.h:128: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:128: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/sched_event_types.h:140: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/sched_event_types.h:140: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> 
+> include/trace/irq_event_types.h:11: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/irq_event_types.h:11: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> include/trace/irq_event_types.h:21: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> include/trace/irq_event_types.h:21: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> 
+> kernel/trace/trace_event_types.h:8: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:8: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:16: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:16: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:25: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:25: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:34: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:34: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:47: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:47: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:60: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:60: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:75: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:75: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:90: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:90: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:105: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:105: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:114: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:114: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:124: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:124: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:132: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:132: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:142: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:142: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:156: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'unsigned int'
+> kernel/trace/trace_event_types.h:156: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'unsigned int'
+
+
+-- 
+~Randy
