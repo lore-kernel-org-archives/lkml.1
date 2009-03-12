@@ -1,102 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbZCLLP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbZCLLUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754698AbZCLLP4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 07:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZCLLPq
+	id S1755010AbZCLLUr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 07:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZCLLUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 07:15:46 -0400
-Received: from mga03.intel.com ([143.182.124.21]:17651 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752169AbZCLLPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 07:15:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,350,1233561600"; 
-   d="scan'208";a="119506927"
-Date: Thu, 12 Mar 2009 19:14:43 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: jack marrow <jackmarrow2@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: Memory usage per memory zone
-Message-ID: <20090312111443.GA20569@localhost>
-References: <20090311114353.GA759@localhost> <e2dc2c680903110451m3cfa35d9s7a9fd942bcee39eb@mail.gmail.com> <20090311121123.GA7656@localhost> <e2dc2c680903110516v2c66d4a4h6a422cffceb12e2@mail.gmail.com> <20090311122611.GA8804@localhost> <e2dc2c680903120053w37968c1cy556812cef63f0896@mail.gmail.com> <20090312075952.GA19331@localhost> <e2dc2c680903120104h4d19a3f6j57ad045bc06f9a90@mail.gmail.com> <20090312081113.GA19506@localhost> <e2dc2c680903120148j1aee0759td49055be059e33ae@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 12 Mar 2009 07:20:39 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:34213 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752965AbZCLLUi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 07:20:38 -0400
+Message-Id: <49B8FE3C.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Thu, 12 Mar 2009 11:21:16 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Alexander van Heukelum" <heukelum@fastmail.fm>,
+       "Cyrill Gorcunov" <gorcunov@gmail.com>, <tglx@linutronix.de>,
+       <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86-64: fix unwind annotations in entry_64.S
+References: <49B8F2DF.76E4.0078.0@novell.com>
+ <20090312104834.GA30204@elte.hu>
+In-Reply-To: <20090312104834.GA30204@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e2dc2c680903120148j1aee0759td49055be059e33ae@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 10:48:42AM +0200, jack marrow wrote:
-> (Didn't reply all:)
+>>> Ingo Molnar <mingo@elte.hu> 12.03.09 11:48 >>>
+>* Jan Beulich <jbeulich@novell.com> wrote:
+>>  	.macro XCPT_FRAME start=1 offset=0
+>> -	INTR_FRAME \start, RIP+\offset-ORIG_RAX
+>> -	/*CFI_REL_OFFSET orig_rax, ORIG_RAX-ORIG_RAX*/
+>> +	INTR_FRAME \start, __stringify(RIP+\offset-ORIG_RAX)
+>>  	.endm
+>>  
+>>  /*
+>>   * frame that enables calling into C.
+>>   */
+>>  	.macro PARTIAL_FRAME start=1 offset=0
+>> -	XCPT_FRAME \start, ORIG_RAX+\offset-ARGOFFSET
+>> +	.if \start >= 0
+>> +	XCPT_FRAME \start, __stringify(ORIG_RAX+\offset-ARGOFFSET)
+>> +	.endif
 >
-> 2009/3/12 Wu Fengguang <fengguang.wu@intel.com>:
-> > On Thu, Mar 12, 2009 at 10:04:17AM +0200, jack marrow wrote:
-> >> 2009/3/12 Wu Fengguang <fengguang.wu@intel.com>:
-> >> > On Thu, Mar 12, 2009 at 09:53:27AM +0200, jack marrow wrote:
-> >> >> > Can you paste /proc/vmstat, /proc/meminfo, /proc/zoneinfo and
-> >> >> > /proc/slabinfo? Thank you.
-> >> >>
-> >> >> Sure, but I don't know if it will help.
-> >> >>
-> >> >> The oom info was from in the night, the rest is from now. I have no zoneinfo.
-> >> >>
-> >> >> http://pastebin.com/m67409bc0
-> >> >
-> >> > Thank you! So you are running a pretty old kernel?
-> >> >
-> >>
-> >> Yes. Kernel.2.6.9-78.
-> >>
-> >> Added more output from the other oom kills here:
-> >>  http://pastebin.com/m76fc473d
-> >>
-> >> If I could just find a way to find out what is using up all the memory
-> >> in a zone I could go away happy :)
-> >
-> > But the highmem zone wont help you much, since you have a large 900M
-> > normal zone and a tiny 100M highmem zone ;)
+>So we pass in a stringified parameter from PARTIAL_FRAME to 
+>XCPT_FRAME and then we stringify it again?
 
-btw, how much physical memory do you have?
-It's weird that meminfo says 1G but Mem-Info says 4G...
+Yes and no. You have to realize that __stringify() is a C preprocessor
+operation, while the rest is assembler macro expansion (which strips the
+quotes again, as they're just used to identify how much of the argument
+string applies to the respective macro parameter. I've seen rather ugly
+and difficult to diagnose problems with the assembler without doing this
+(in the code before this patch they happened to work out of pure luck,
+and dependent on undocumented gas internals).
 
-> MemTotal:      1034496 kB
-> MemFree:         95600 kB
-> Buffers:         49916 kB
-> Cached:         761544 kB
-> SwapCached:          0 kB
-> Active:          80484 kB
-> Inactive:       749960 kB
-> HighTotal:      131008 kB
-> HighFree:        68480 kB
-> LowTotal:       903488 kB
-> LowFree:         27120 kB
-> SwapTotal:     2040212 kB
-> SwapFree:      2039780 kB
+>> -	movq_cfi rdi, RDI+16-ARGOFFSET
+>> -	movq_cfi rsi, RSI+16-ARGOFFSET
+>> -	movq_cfi rdx, RDX+16-ARGOFFSET
+>> -	movq_cfi rcx, RCX+16-ARGOFFSET
+>> -	movq_cfi rax, RAX+16-ARGOFFSET
+>> -	movq_cfi  r8,  R8+16-ARGOFFSET
+>> -	movq_cfi  r9,  R9+16-ARGOFFSET
+>> -	movq_cfi r10, R10+16-ARGOFFSET
+>> -	movq_cfi r11, R11+16-ARGOFFSET
+>> +	movq %rdi, RDI+16-ARGOFFSET(%rsp)
+>> +	movq %rsi, RSI+16-ARGOFFSET(%rsp)
+>> +	movq %rdx, RDX+16-ARGOFFSET(%rsp)
+>> +	movq %rcx, RCX+16-ARGOFFSET(%rsp)
+>> +	movq_cfi rax, __stringify(RAX+16-ARGOFFSET)
+>> +	movq  %r8,  R8+16-ARGOFFSET(%rsp)
+>> +	movq  %r9,  R9+16-ARGOFFSET(%rsp)
+>> +	movq %r10, R10+16-ARGOFFSET(%rsp)
+>> +	movq_cfi r11, __stringify(R11+16-ARGOFFSET)
+>
+>Hm, we used to have annotations for those arguments too, now 
+>they are gone.
 
-Free pages:       16808kB (1664kB HighMem)
-Active:457312 inactive:273805 dirty:0 writeback:0 unstable:0 free:4202 slab:5897 mapped:390707 pagetables:5068
-DMA free:12408kB min:64kB low:128kB high:192kB active:0kB inactive:0kB present:16384kB pages_scanned:0 all_unreclaimable? yes
-protections[]: 0 0 0
-Normal free:2736kB min:3728kB low:7456kB high:11184kB active:256kB inactive:16kB present:901120kB pages_scanned:2782 all_unre
-claimable? yes
-protections[]: 0 0 0
-HighMem free:1664kB min:512kB low:1024kB high:1536kB active:1828992kB inactive:1095204kB present:3014656kB pages_scanned:0 al
-l_unreclaimable? no
-protections[]: 0 0 0
-DMA: 4*4kB 5*8kB 2*16kB 1*32kB 4*64kB 2*128kB 2*256kB 0*512kB 1*1024kB 1*2048kB 2*4096kB = 12408kB
-Normal: 0*4kB 0*8kB 1*16kB 1*32kB 0*64kB 1*128kB 0*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB = 2736kB
-HighMem: 320*4kB 0*8kB 0*16kB 0*32kB 0*64kB 1*128kB 1*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 1664kB
-448110 pagecache pages
-Swap cache: add 787243, delete 731019, find 235217/281007, race 0+3
-0 bounce buffer pages
-Free swap:       1558736kB
-983040 pages of RAM
-753648 pages of HIGHMEM
-9253 reserved pages
-253474 pages shared
-56224 pages swap cached
-Out of Memory: Killed process 28258 (oracle).
+It is pointless to annotate those, as the function doesn't modify them.
+
+>>  	leaq 8(%rsp), %rbp		/* mov %rsp, %ebp */
+>> +	CFI_DEF_CFA_REGISTER rbp
+>> +	CFI_ADJUST_CFA_OFFSET -8
+>
+>This open-codes CFI annotations again - please introduce a 
+>helper instead.
+
+That seems pretty pointless, as what is being done here is very unlikely to
+be done anywhere else again.
+
+>> -	popq_cfi %rax			/* move return address... */
+>> +	popq %rax			/* move return address... */
+>
+>No annotation needed?
+
+No. The annotation was actually wrong (because rsp is no longer the frame
+pointer here). This is one of the aspects of unwind annotations which make
+me think that trying to abstract out too much is actually hurting.
+
+>>  	mov %gs:pda_irqstackptr,%rsp
+>> -	EMPTY_FRAME 0
+>> -	pushq_cfi %rbp			/* backlink for unwinder */
+>> -	pushq_cfi %rax			/* ... to the new stack */
+>> +	pushq %rbp			/* backlink for unwinder */
+>> +	pushq %rax			/* ... to the new stack */
+>
+>Ditto?
+
+Exactly.
+
+>>  ENTRY(save_rest)
+>> -	PARTIAL_FRAME 1 REST_SKIP+8
+>> +	CFI_STARTPROC
+>>  	movq 5*8+16(%rsp), %r11	/* save return address */
+>> -	movq_cfi rbx, RBX+16
+>> -	movq_cfi rbp, RBP+16
+>> -	movq_cfi r12, R12+16
+>> -	movq_cfi r13, R13+16
+>> -	movq_cfi r14, R14+16
+>> -	movq_cfi r15, R15+16
+>> +	movq %rbx, RBX+16(%rsp)
+>> +	movq %rbp, RBP+16(%rsp)
+>> +	movq %r12, R12+16(%rsp)
+>> +	movq %r13, R13+16(%rsp)
+>> +	movq %r14, R14+16(%rsp)
+>> +	movq %r15, R15+16(%rsp)
+>
+>Same here?
+
+No. Here it is again that the function doesn't modify these registers, and
+hence there's no reason to annotate the spills.
+
+>>  	CFI_ADJUST_CFA_OFFSET REST_SKIP
+>>  	call save_rest
+>> -	DEFAULT_FRAME 0 8		/* offset 8: return address */
+>> +	DEFAULT_FRAME -2 8		/* offset 8: return address */
+>>  	leaq 8(%rsp), \arg	/* pt_regs pointer */
+>
+>Open-coded CFI annotation again.
+
+Where is there anything open-coded here. It just changes the first macro
+argument.
+
+>I havent checked the rest of the patch but it shows similar 
+>patters.
+>
+>The thing is, this patch is completely unacceptable - it just 
+>reintroduces the same ugly crufty CFI code we used to have 
+>there.
+
+Hiding things behind macros where it makes sense is fine, but there are
+limits to this imo. Not the least because this macro-ization prevents actual
+consolidation (in many places, rather than annotating individual instructions,
+the annotations as written out to the object file could actually be
+compacted by placing the annotations after e.g. a group of registers had
+been spilled - reducing size and parsing overhead from whoever reads the
+.eh_frame section).
+
+>The current annotations might be completely broken but at least 
+>they _look_ structured and attempt to bring some order into the 
+>CFI annotations chaos.
+
+There was no chaos. Everything was working fine (and was understandable
+to someone familiar with CFI annotations). The chaos got introduced with
+the improperly annotated code. To me (and to our kernel, which makes
+actual use of the annotations) this is a clear regression that shouldn't even
+haven been allowed in. I'm just trying to pick up the pieces others put on
+the ground.
+
+>There's really just two options here:
+>
+>- You either submit clean, gradual patches that fix the problems 
+>  and explain what is done and why, and documents the annotation
+>  rules and makes CFI annotations maintainable,
+
+I think the patch is as clean as it can be. It's debatable whether splitting
+it up would be possible - perhaps very few hunks could be broken out
+and submitted individually, but the bulk of it has to stay together as it's
+dependent stuff.
+
+>- Or we'll remove all CFI annotations from all x86 assembly
+>  files and wait for future, clean patches.
+
+Oh yes, thanks for offering this as an option. Wasn't it you who always
+wanted reliable stack traces? This would get us even further away from
+that goal. Besides being forced to maintain the unwinder out-of-tree,
+we'd then also need to maintain the annotations in this manner. This very
+much reminds me of Linus' attitude of considering Open Source more
+open to some people than to others.
+
+Jan
