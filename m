@@ -1,106 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbZCLHqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbZCLHq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754966AbZCLHqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 03:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbZCLHqJ
+	id S1754434AbZCLHq6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 03:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZCLHqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 03:46:09 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53686 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753001AbZCLHqH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 03:46:07 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [BUGFIX][PATCH 1/5] memcg use correct scan number at reclaim
-Cc: kosaki.motohiro@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-In-Reply-To: <20090312131739.296785da.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090312041414.GG23583@balbir.in.ibm.com> <20090312131739.296785da.kamezawa.hiroyu@jp.fujitsu.com>
-Message-Id: <20090312164204.43B7.A69D9226@jp.fujitsu.com>
+	Thu, 12 Mar 2009 03:46:49 -0400
+Received: from mga03.intel.com ([143.182.124.21]:62413 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751497AbZCLHqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 03:46:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,349,1233561600"; 
+   d="scan'208";a="119452242"
+Date: Thu, 12 Mar 2009 15:45:24 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Len Brown <len.brown@intel.com>, Zhao Yakui <yakui.zhao@intel.com>
+Subject: [PATCH] ACPI: pass correct parameter to
+	acpi_processor_ffh_cstate_probe_cpu()
+Message-ID: <20090312074524.GA15992@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Thu, 12 Mar 2009 16:45:59 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 12 Mar 2009 09:44:14 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 13:05:56]:
-> > 
-> > > On Thu, 12 Mar 2009 09:30:54 +0530
-> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 12:51:24]:
-> > > > 
-> > > > > On Thu, 12 Mar 2009 09:19:18 +0530
-> > > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > > > 
-> > > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 09:55:16]:
-> > > > > > 
-> > > > > > > Andrew, this [1/5] is a bug fix, others are not.
-> > > > > > > 
-> > > > > > > ==
-> > > > > > > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > > > > > 
-> > > > > > > Even when page reclaim is under mem_cgroup, # of scan page is determined by
-> > > > > > > status of global LRU. Fix that.
-> > > > > > > 
-> > > > > > > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > > > > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > > > > > ---
-> > > > > > >  mm/vmscan.c |    2 +-
-> > > > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > > > > 
-> > > > > > > Index: mmotm-2.6.29-Mar10/mm/vmscan.c
-> > > > > > > ===================================================================
-> > > > > > > --- mmotm-2.6.29-Mar10.orig/mm/vmscan.c
-> > > > > > > +++ mmotm-2.6.29-Mar10/mm/vmscan.c
-> > > > > > > @@ -1470,7 +1470,7 @@ static void shrink_zone(int priority, st
-> > > > > > >  		int file = is_file_lru(l);
-> > > > > > >  		int scan;
-> > > > > > > 
-> > > > > > > -		scan = zone_page_state(zone, NR_LRU_BASE + l);
-> > > > > > > +		scan = zone_nr_pages(zone, sc, l);
-> > > > > > 
-> > > > > > I have the exact same patch in my patch queue. BTW, mem_cgroup_zone_nr_pages is
-> > > > > > buggy. We don't hold any sort of lock while extracting
-> > > > > > MEM_CGROUP_ZSTAT (ideally we need zone->lru_lock). Without that how do
-> > > > > > we guarantee that MEM_CGRUP_ZSTAT is not changing at the same time as
-> > > > > > we are reading it?
-> > > > > > 
-> > > > > Is it big problem ? We don't need very precise value and ZSTAT just have
-> > > > > increment/decrement. So, I tend to ignore this small race.
-> > > > > (and it's unsigned long, not long long.)
-> > > > >
-> > > > 
-> > > > The assumption is that unsigned long read is atomic even on 32 bit
-> > > > systems? What if we get pre-empted in the middle of reading the data
-> > > > and don't return back for long? The data can be highly in-accurate.
-> > > > No? 
-> > > > 
-> > > Hmm,  preempt_disable() is appropriate ?
-> > > 
-> > > But shrink_zone() itself works on the value which is read at this time and
-> > > dont' take care of changes in situation by preeemption...so it's not problem
-> > > of memcg.
-> > >
-> > 
-> > You'll end up reclaiming based on old stale data. shrink_zone itself
-> > maintains atomic data for zones.
-> > 
-> IIUC, # of pages to be scanned is just determined once, here.
+This fixes a NULL pointer dereference bug introduced by 6e911954cac.
 
-In this case, lockless is right behavior.
-lockless is valuable than precise ZSTAT. end user can't observe this race.
-
-
-
-
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+index 6626e8c..b866b87 100644
+--- a/arch/x86/kernel/acpi/cstate.c
++++ b/arch/x86/kernel/acpi/cstate.c
+@@ -137,7 +137,7 @@ int acpi_processor_ffh_cstate_probe(unsigned int cpu,
+ 	/* Run acpi_processor_ffh_cstate_probe_cpu() on the target CPU */
+ 
+ 	retval = smp_call_function_single(cpu,
+-				acpi_processor_ffh_cstate_probe_cpu, cx, 1);
++				acpi_processor_ffh_cstate_probe_cpu, &cxcc, 1);
+ 	if (retval == 0) {
+ 		retval = cxcc.retval;
+ 		if (retval == 0) {
