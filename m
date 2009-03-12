@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbZCLUrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757000AbZCLUsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756628AbZCLUrk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 16:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZCLUrb
+	id S1757000AbZCLUsW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 16:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbZCLUsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 16:47:31 -0400
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:47053
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753343AbZCLUrb convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 16:47:31 -0400
-X-Greylist: delayed 904 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 16:47:31 EDT
-X-BigFish: VPS3(zz4015Mzz1202hzzz2dh6bh95p61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,8,
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: FW: level interrupt handling in the Kernel
-Date: Thu, 12 Mar 2009 14:32:09 -0600
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: level interrupt handling in the Kernel
-Thread-Index: AcmjRKcB+XeldVHNTWyUVcTB6CLahgADJg/w
-From: Julie Zhu <julie.zhu@xilinx.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 12 Mar 2009 20:32:04.0802 (UTC) FILETIME=[9B2F5A20:01C9A351]
-Message-ID: <20090312203206.0113C1A3009D@mail92-va3.bigfish.com>
+	Thu, 12 Mar 2009 16:48:12 -0400
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:60954 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753532AbZCLUsL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 16:48:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=bepH8z++gdn5VH4nRpTGwUbj+LjMOO/lUaWUhDe03B1Z8kl1acuoTD6qlJNHcN19dD
+         t3kuKHzqV3yadrGJDYJvszr+bsfGaw+x27LsN7qKREv9GNbbLeF0DbtDBvdes452HK/2
+         2UCMunk6lj/xpatrIzO3QC2NYHmTsbgidoSqY=
+From: Yegor Yefremov <yegorslists@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Yegor Yefremov <yegorslists@googlemail.com>
+Subject: [PATCH] Add support for the SST 39VF3201 flash chip.
+Date: Thu, 12 Mar 2009 21:48:01 +0100
+Message-Id: <49b97507.190c660a.7b95.ffffccb8@mx.google.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Yegor Yefremov <yegorslists@googlemail.com>
 
-We found that level interrupts are handled in the following way in the
-Linux
-kernel:
-1. mask irq, disable it
-2. ack irq, clear it in interrupt controller.
-3. move irq, handle it in handler for the source.
-4. unmask irq, reenable it.
+---
+ drivers/mtd/chips/jedec_probe.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-This sequnce results in bogus interrupts in the system. The reason is
-that, after step 2 but before step 3, interrupt controller sees that the
-interrupt source is high, and will re-assert the interrupt after step 4.
-This will be a bogus interrupt, because the interrupt handler for the
-source has cleared the interrupt.
-
-We solve this issue by changing the interrupt controller to do nothing
-in step 2, ack irq, if it is a level interrupt. In step 4, unmask irq,
-we ack the interrupt controller, and then re-enable the interrupt. Since
-interrupt
-is level, and source interrupt handler only clears interrupts once in
-the
-handler, nothing will be missed.
-
-I am not sure whether we are doing the right thing, and why the Linux
-kernel
-chooses to handle level interrupt in that sequence.
-
-Thanks,
-Julie.
-
-Thanks,
+diff --git a/drivers/mtd/chips/jedec_probe.c b/drivers/mtd/chips/jedec_probe.c
+index 2f3f2f7..e824b9b 100644
+--- a/drivers/mtd/chips/jedec_probe.c
++++ b/drivers/mtd/chips/jedec_probe.c
+@@ -159,6 +159,7 @@
+ #define SST39LF800	0x2781
+ #define SST39LF160	0x2782
+ #define SST39VF1601	0x234b
++#define SST39VF3201	0x235b
+ #define SST39LF512	0x00D4
+ #define SST39LF010	0x00D5
+ #define SST39LF020	0x00D6
+@@ -1490,6 +1491,21 @@ static const struct amd_flash_info jedec_table[] = {
+ 			ERASEINFO(0x1000,256)
+ 		}
+ 	}, {
++		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
++		.dev_id		= SST39VF3201,
++		.name		= "SST 39VF3201",
++		.devtypes	= CFI_DEVICETYPE_X16,
++		.uaddr		= MTD_UADDR_0xAAAA_0x5555,
++		.dev_size	= SIZE_4MiB,
++		.cmd_set	= P_ID_AMD_STD,
++		.nr_regions	= 4,
++		.regions	= {
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256)
++		}
++	}, {
+ 		.mfr_id		= MANUFACTURER_SST,
+ 		.dev_id		= SST36VF3203,
+ 		.name		= "SST 36VF3203",
 -- 
-View this message in context:
-http://www.nabble.com/level-interrupt-handling-in-the-Kernel-tp22481320p
-22481320.html
-Sent from the linux-newbie mailing list archive at Nabble.com.
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-newbie"
-in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at http://www.linux-learn.org/faqs
-
-
-This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
-
+1.5.2.4
 
