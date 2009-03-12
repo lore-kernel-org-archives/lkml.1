@@ -1,56 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbZCLTBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbZCLTDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755198AbZCLTBE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 15:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZCLTAs
+	id S1756830AbZCLTDI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 15:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZCLTC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 15:00:48 -0400
-Received: from mail.fieldses.org ([141.211.133.115]:38497 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbZCLTAr (ORCPT
+	Thu, 12 Mar 2009 15:02:56 -0400
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:35420 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZCLTCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 15:00:47 -0400
-Date: Thu, 12 Mar 2009 15:00:39 -0400
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Igor Zhbanov <izh1979@gmail.com>, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
-       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>
-Subject: Re: VFS, NFS security bug? Should CAP_MKNOD and
-	CAP_LINUX_IMMUTABLE be added to CAP_FS_MASK?
-Message-ID: <20090312190039.GA6901@fieldses.org>
-References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com> <20090311232356.GP13540@fieldses.org> <20090312161047.GA15209@us.ibm.com>
+	Thu, 12 Mar 2009 15:02:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=bzjmF1JLCiDj+RI9tdYWfk8osKWaaHYeHNyHUtdvpjFo1P2rke8vnAg8k/5+xFaZ1Y
+         QlCw+Q/bbe+5YaHM7thY8+C7X9X9HeHIr8R9rNfM57W6IPxTfOiev6upCF64npo96gz9
+         aWAxqU5xziaH408zB/MZOpsLLCtH+e+bpTw48=
+Date: Thu, 12 Mar 2009 20:02:50 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       acme@ghostprotocols.net, fche@redhat.com, peterz@infradead.org,
+       compudj@krystal.dyndns.org
+Subject: Re: [Patch 2/2] tracepoints for softirq entry/exit - tracepoints
+Message-ID: <20090312190243.GC11045@nowhere>
+References: <20090312183603.GC3352@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090312161047.GA15209@us.ibm.com>
+In-Reply-To: <20090312183603.GC3352@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 11:10:47AM -0500, Serge E. Hallyn wrote:
-> Quoting J. Bruce Fields (bfields@fieldses.org):
-> > On Wed, Mar 11, 2009 at 03:53:34PM +0300, Igor Zhbanov wrote:
-> > > Hello!
-> > > 
-> > > It seems that CAP_MKNOD and CAP_LINUX_IMMUTABLE were forgotten to be
-> > > added to CAP_FS_MASK_B0 in linux-2.6.x and to CAP_FS_MASK in
-> > > linux-2.4.x. Both capabilities affects file system and can be
-> > > considered file system capabilities.
-> > 
-> > Sounds right to me--I'd expect rootsquash to guarantee that new device
-> > nodes can't be created from the network.  Cc'ing random people from the
-> > git log for include/linux/capability.h in hopes they can help.
+On Thu, Mar 12, 2009 at 02:36:03PM -0400, Jason Baron wrote:
 > 
-> Yeah it seems reasonable.  If it is, then does that mean that we
-> also need CAP_SYS_ADMIN (to write selinux labels) and CAP_SETFCAP
-> (to set file capabilities) as well?
+> introduce softirq entry/exit tracepoints. These are useful for
+> augmenting existing tracers, and to figure out softirq frequencies and
+> timings.
+> 
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> 
+> ---
+> 
+>  include/trace/irq_event_types.h |   12 ++++++++++++
+>  kernel/softirq.c                |    7 ++++++-
+>  2 files changed, 18 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/include/trace/irq_event_types.h b/include/trace/irq_event_types.h
+> index 214bb92..38b4bdd 100644
+> --- a/include/trace/irq_event_types.h
+> +++ b/include/trace/irq_event_types.h
+> @@ -40,4 +40,16 @@ TRACE_EVENT(irq_handler_exit,
+>  		  __entry->irq, __entry->ret ? "handled" : "unhandled")
+>  );
+>  
+> +TRACE_FORMAT(irq_softirq_entry,
+> +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
+> +	TP_ARGS(h, vec),
+> +	TP_FMT("softirq=%d action=%s", h - vec, softirq_to_name[h-vec])
+> +	);
+> +
+> +TRACE_FORMAT(irq_softirq_exit,
+> +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
+> +	TP_ARGS(h, vec),
+> +	TP_FMT("softirq=%d action=%s", h - vec, softirq_to_name[h-vec])
+> +	);
+> +
+>  #undef TRACE_SYSTEM
+> diff --git a/kernel/softirq.c b/kernel/softirq.c
+> index ba1511f..c378d53 100644
+> --- a/kernel/softirq.c
+> +++ b/kernel/softirq.c
+> @@ -24,6 +24,7 @@
+>  #include <linux/ftrace.h>
+>  #include <linux/smp.h>
+>  #include <linux/tick.h>
+> +#include <trace/irq.h>
+>  
+>  #include <asm/irq.h>
+>  /*
+> @@ -186,6 +187,9 @@ EXPORT_SYMBOL(local_bh_enable_ip);
+>   */
+>  #define MAX_SOFTIRQ_RESTART 10
+>  
+> +DEFINE_TRACE(irq_softirq_entry);
+> +DEFINE_TRACE(irq_softirq_exit);
 
-For nfsd at least we should be droppping anything that concerns the
-filesystem and would normally require root privileges.
 
-We need to trace up through the users of CAP_FS_SET and figure out what
-other users need.
+Just one nit here. The "irq_" prefix seems to me too much.
+On the trace we have:
 
---b.
+/* irq_softirq_entry: softirq=nb action=nb_to_logical_name */
+
+It's even too much words that says the same things.
+Moreover, we have the logical name, the number seems not very useful
+because we have its logical translation just after.
+
+I would suggest to have just:
+
+/* softirq_entry: nb_to_logical_name */
+
+ie:
+
+/* softirq_entry: SCHED_SOFTIRQ */
+
+Don't you think it's more clear and obvious?
+
+Other than that, I think these tracepoints are a good idea.
+
+
+>  asmlinkage void __do_softirq(void)
+>  {
+>  	struct softirq_action *h;
+> @@ -212,8 +216,9 @@ restart:
+>  		if (pending & 1) {
+>  			int prev_count = preempt_count();
+>  
+> +			trace_irq_softirq_entry(h, softirq_vec);
+>  			h->action(h);
+> -
+> +			trace_irq_softirq_exit(h, softirq_vec);
+>  			if (unlikely(prev_count != preempt_count())) {
+>  				printk(KERN_ERR "huh, entered softirq %td %s %p"
+>  				       "with preempt_count %08x,"
+
