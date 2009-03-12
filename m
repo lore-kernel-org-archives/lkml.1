@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757224AbZCLQbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbZCLQbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757224AbZCLQbY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 12:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbZCLQbO
+	id S1757550AbZCLQbj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 12:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbZCLQbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 12:31:14 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:23089 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754712AbZCLQbN (ORCPT
+	Thu, 12 Mar 2009 12:31:15 -0400
+Received: from mail.fieldses.org ([141.211.133.115]:55328 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755922AbZCLQbP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 12:31:13 -0400
-Message-ID: <49B9391C.8020101@oracle.com>
-Date: Thu, 12 Mar 2009 09:32:28 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 12 Mar 2009 12:31:15 -0400
+Date: Thu, 12 Mar 2009 12:31:10 -0400
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Igor Zhbanov <izh1979@gmail.com>, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
+       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
+       Andrew Morgan <morgan@kernel.org>
+Subject: Re: VFS, NFS security bug? Should CAP_MKNOD and
+	CAP_LINUX_IMMUTABLE be added to CAP_FS_MASK?
+Message-ID: <20090312163110.GE2081@fieldses.org>
+References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com> <20090311232356.GP13540@fieldses.org> <20090312160300.GC13046@us.ibm.com>
 MIME-Version: 1.0
-To: Steven Rostedt <srostedt@redhat.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-next: Tree for March 11 (tracing)
-References: <20090311225913.51589223.sfr@canb.auug.org.au>	 <49B7F691.5000305@oracle.com>  <49B93584.3020302@oracle.com> <1236875181.11290.1.camel@localhost.localdomain>
-In-Reply-To: <1236875181.11290.1.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt700.oracle.com [141.146.40.70]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.49B938A8.0082:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090312160300.GC13046@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Thu, 2009-03-12 at 09:17 -0700, Randy Dunlap wrote:
->> [adding cc:s]
->>
->> [same report for March 12]
->>
->> Randy Dunlap wrote:
->>> Stephen Rothwell wrote:
->>>> Hi all,
->>>>
->>>> Changes since 20090310:
->>>
->>> Building on i386 generates a ton of printk format warnings:
->>>
->>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'unsigned int'
->>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 6 has type 'unsigned int'
->>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 9 has type 'unsigned int'
->>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 10 has type 'unsigned int'
->>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 13 has type 'unsigned int'
->>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 14 has type 'unsigned int'
->>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 17 has type 'unsigned int'
->>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 18 has type 'unsigned int'
->>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 21 has type 'unsigned int'
->>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 22 has type 'unsigned int'
->>>
+On Thu, Mar 12, 2009 at 11:03:00AM -0500, Serge E. Hallyn wrote:
+> Quoting J. Bruce Fields (bfields@fieldses.org):
+> > On Wed, Mar 11, 2009 at 03:53:34PM +0300, Igor Zhbanov wrote:
+> > > Hello!
+> > > 
+> > > It seems that CAP_MKNOD and CAP_LINUX_IMMUTABLE were forgotten to be
 > 
-> I believe this is corrected in Ingo's tip tree. I changed %lu to %zu to
-> handle the "sizeof()" case. The fix was suggested by Andrew Morton.
+> (Still looking into this, but meanwhile...)
+> 
+> > > added to CAP_FS_MASK_B0 in linux-2.6.x and to CAP_FS_MASK in
+> > > linux-2.4.x. Both capabilities affects file system and can be
+> > > considered file system capabilities.
+> > 
+> > Sounds right to me--I'd expect rootsquash to guarantee that new device
+> > nodes can't be created from the network.  Cc'ing random people from the
+> > git log for include/linux/capability.h in hopes they can help.
+> > 
+> > --b.
+> > 
+> > (Also: my copy of mknod(2) claims "Linux... does not have the CAP_MKNOD
+> > capability".  I assume the manpage is out of date?)
+> 
+> No, the whole paragraph is:
+> 
+> EPERM  mode  requested creation of something other than a regular file, FIFO
+> (named pipe), or Unix domain socket, and the caller is not privileged
+> (Linux: does not have the CAP_MKNOD capability);
+> 
+> So it's saying that 'caller is not privileged', in linux, can be
+> interpreted to mean 'the caller does not have CAP_MKNOD'.
 
-OK, thanks for the info.
-
--- 
-~Randy
+Ah!  Foiled by punctuation.  Apologies!--b.
