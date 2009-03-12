@@ -1,87 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbZCLIGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbZCLIOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754327AbZCLIGB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 04:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbZCLIFo
+	id S1754143AbZCLIOF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 04:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZCLINs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 04:05:44 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:30612 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750922AbZCLIFn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 04:05:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=d93Xx2MCKHXpVY5+83eiaAWoxg0L9ucQ3CC0Rkv6Ug9tcBSNU5PSFfJNeafEppuG9r
-         hj26vTWh+GoDZHenWSiL3O51Ff5Y2By9lo0S5bDaIIE1S7qk+oR6L9CdPGQq+CET1cgx
-         HlJunLUtbaCE1+/KHjohKJdfJuz7+oQ2xH2TA=
+	Thu, 12 Mar 2009 04:13:48 -0400
+Received: from cantor.suse.de ([195.135.220.2]:55796 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752029AbZCLINr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 04:13:47 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+Subject: [PATCH] Fix Bug 10504 - losetup possible circular locking
+Date: Thu, 12 Mar 2009 13:41:12 +0530
+User-Agent: KMail/1.10.3 (Linux/2.6.27.19-3.2-default; KDE/4.1.3; x86_64; ; )
 MIME-Version: 1.0
-In-Reply-To: <200903031452.43086.nickpiggin@yahoo.com.au>
-References: <m2hc2yulrw.fsf@gmail.com>
-	 <200903021811.43653.nickpiggin@yahoo.com.au>
-	 <38b2ab8a0903020530j18921202r32f73382ff5f0aa@mail.gmail.com>
-	 <200903031452.43086.nickpiggin@yahoo.com.au>
-Date: Thu, 12 Mar 2009 09:05:39 +0100
-Message-ID: <38b2ab8a0903120105s59f21e0dv1dd67df41dcb2f9d@mail.gmail.com>
-Subject: Re: Question regarding concurrent accesses through block device and 
-	fs
-From: Francis Moreau <francis.moro@gmail.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+To: jens.axboe@oracle.com
+Cc: zdenek.kabelac@gmail.com, bunk@kernel.org, jirislaby@gmail.com,
+       hidave.darkstar@gmail.com, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, nikanth@gmail.com
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200903121341.13173.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Nick,
+With CONFIG_PROVE_LOCKING enabled
 
-Sorry for the long delay before my answer, but I don't have enough
-time to dig the kernel source.
+$ losetup /dev/loop0 file
+$ losetup -o 32256 /dev/loop1 /dev/loop0 
 
-On Tue, Mar 3, 2009 at 4:52 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> On Tuesday 03 March 2009 00:30:18 Francis Moreau wrote:
->> Nick Piggin <nickpiggin@yahoo.com.au> writes:
->> > On Monday 02 March 2009 08:07:30 Francis Moreau wrote:
->> >> This is the case where I can't find when the metadata are actually
->> >> written back to the disk by the flushers. I looked at
->> >> writback_inodes() but I fail to find this out.
->> >>
->> >> Could you point out the place in the code where this happen ?
->> >
->> > I guess it picks them up via their block device inodes.
->>
->> Probably but I don't find the actual place.
->
-> It was an educated guess ;) I'm quite sure it does.
->
+$ losetup -d /dev/loop1
+$ losetup -d /dev/loop0
 
-Ok I think I got the idea now. I though block device main purpose was
-to handle block nodes such as /dev/sdx but it isn't.
+triggers a [ INFO: possible circular locking dependency detected ]
 
->
->> I looked at the place where page are normally written back to disk (ie
->> in background_writeout()) but I can see only the writeback of data, not
->> metadata...
->
-> What are you expecting writeback of metadata to look like? To the
-> core kernel it looks the same as writeback of data.
->
+I think this warning is a false positive. 
 
-I don't know. I was just thinking that since metadata are special since they
-handle critical file system information, the kernel did treat them specially.
+Open/close on a loop device acquires bd_mutex of the device before
+acquiring lo_ctl_mutex of the same device. For ioctl(LOOP_CLR_FD) after
+acquiring lo_ctl_mutex, fput on the backing_file might acquire the bd_mutex of
+a device, if backing file is a device and this is the last reference to the
+file being dropped . But it is guaranteed that it is impossible to have a
+circular list of backing devices.(say loop2->loop1->loop0->loop2 is not
+possible), which guarantees that this can never deadlock.
 
-> But the cache layer on top of that ensures it *appears* not to be mixed
-> up. A problem arises when the system crashes in the middle of this, and
-> we lose that information and see a mixed up filesystem. Hence journalling
-> filesystems.
+So this warning should be suppressed. It is very difficult to annotate lockdep
+not to warn here in the correct way. A simple way to silence lockdep could be
+to mark the lo_ctl_mutex in ioctl to be a sub class, but this might mask some
+other real bugs.
 
-Ok I guess I win a new tour in the kernel code ;) to understand how the cache
-layer do that.
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -1164,7 +1164,7 @@ static int lo_ioctl(struct block_device *bdev, fmode_t mode,
+ 	struct loop_device *lo = bdev->bd_disk->private_data;
+ 	int err;
+ 
+-	mutex_lock(&lo->lo_ctl_mutex);
++	mutex_lock_nested(&lo->lo_ctl_mutex, 1);
+ 	switch (cmd) {
+ 	case LOOP_SET_FD:
+ 		err = loop_set_fd(lo, mode, bdev, arg);
 
-thanks a lot.
--- 
-Francis
+Or actually marking the bd_mutex after lo_ctl_mutex as a sub class could be 
+a better solution.
+
+Luckily it is easy to avoid calling fput on backing file with lo_ctl_mutex
+held, so no lockdep annotation is required. 
+
+If you do not like the special handling of the lo_ctl_mutex just for the
+LOOP_CLR_FD ioctl in lo_ioctl(), the mutex handling could be moved inside
+each of the individual ioctl handlers and I could send you another patch.
+
+Thanks
+Nikanth Karthikesan
+
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+
+---
+
+Fix Bug 10504 - losetup possible circular locking
+
+Avoid triggering a circular dependency warning by calling fput on the backing 
+file with lo_ctl_mutex held. If the backing file is a device, fput might try 
+to acquire bd_mutex of a that device which triggers a circular dependency 
+warning.
+
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index edbaac6..5588f67 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -942,11 +942,18 @@ static int loop_clr_fd(struct loop_device *lo, struct block_device *bdev)
+ 		bd_set_size(bdev, 0);
+ 	mapping_set_gfp_mask(filp->f_mapping, gfp);
+ 	lo->lo_state = Lo_unbound;
+-	fput(filp);
+ 	/* This is safe: open() is still holding a reference. */
+ 	module_put(THIS_MODULE);
+ 	if (max_part > 0)
+ 		ioctl_by_bdev(bdev, BLKRRPART, 0);
++	mutex_unlock(&lo->lo_ctl_mutex);
++	/*
++	 * Need not hold lo_ctl_mutex to fput backing file.
++	 * Calling fput holding lo_ctl_mutex triggers a circular
++	 * lock dependency possibility warning as fput can take
++	 * bd_mutex which is usually taken before lo_ctl_mutex.
++	 */
++	fput(filp);
+ 	return 0;
+ }
+ 
+@@ -1173,7 +1180,10 @@ static int lo_ioctl(struct block_device *bdev, fmode_t mode,
+ 		err = loop_change_fd(lo, bdev, arg);
+ 		break;
+ 	case LOOP_CLR_FD:
++		/* loop_clr_fd would have unlocked lo_ctl_mutex on success */
+ 		err = loop_clr_fd(lo, bdev);
++		if (!err)
++			goto out_unlocked;
+ 		break;
+ 	case LOOP_SET_STATUS:
+ 		err = loop_set_status_old(lo, (struct loop_info __user *) arg);
+@@ -1191,6 +1201,8 @@ static int lo_ioctl(struct block_device *bdev, fmode_t mode,
+ 		err = lo->ioctl ? lo->ioctl(lo, cmd, arg) : -EINVAL;
+ 	}
+ 	mutex_unlock(&lo->lo_ctl_mutex);
++
++out_unlocked:
+ 	return err;
+ }
+ 
+
+
