@@ -1,102 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756069AbZCLWP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbZCLWR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756069AbZCLWP7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 18:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbZCLWPv
+	id S1756385AbZCLWR6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 18:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZCLWRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 18:15:51 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:40380 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751599AbZCLWPu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 18:15:50 -0400
-Date: Thu, 12 Mar 2009 23:17:47 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] initconst adjustments
-Message-ID: <20090312221747.GA14921@uranus.ravnborg.org>
-References: <49B8F8E9.76E4.0078.0@novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B8F8E9.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 12 Mar 2009 18:17:49 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:41187 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751599AbZCLWRs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 18:17:48 -0400
+Message-ID: <49B98A07.2000004@us.ibm.com>
+Date: Thu, 12 Mar 2009 15:17:43 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 5/6] futex: unlock before returning -EFAULT
+References: <20090312075349.9856.83687.stgit@Aeon> <20090312075606.9856.88729.stgit@Aeon> <1236852816.5090.117.camel@laptop>
+In-Reply-To: <1236852816.5090.117.camel@laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 10:58:33AM +0000, Jan Beulich wrote:
-> - add .init.rodata to INIT_DATA, and group all initconst flavors
->   together
-> - move strings generated from __setup_param() into .init.rodata
-> - add .*init.rodata to modpost's sets of init sections
-> - make modpost warn about references between meminit and cpuinit
->   as well as memexit and cpuexit sections (as CPU and memory
->   hotplug are independently selectable features)
+Peter Zijlstra wrote:
+> On Thu, 2009-03-12 at 00:56 -0700, Darren Hart wrote:
+>> futex_lock_pi can potentially return -EFAULT with the rt_mutex held.  This
+>> seems like the wrong thing to do as userspace should assume -EFAULT means the
+>> lock was not taken.  Even if it could figure this out, we'd be leaving the
+>> pi_state->owner in an inconsistent state.  This patch unlocks the rt_mutex
+>> prior to returning -EFAULT to userspace.
 > 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> lockdep would complain, one is not to leave the kernel with locks held.
 > 
-> ---
->  include/asm-generic/vmlinux.lds.h |    5 ++-
->  include/linux/init.h              |    3 +-
->  scripts/mod/modpost.c             |   50 +++++++++++++++++++++++++++++---------
->  3 files changed, 44 insertions(+), 14 deletions(-)
+>> Build and boot tested on a 4 way Intel x86_64 workstation.  Passes basic
+>> pthread_mutex and PI tests out of ltp/testcases/realtime.
 > 
-> +++ 2.6.29-rc7-initconst/scripts/mod/modpost.c	2009-02-13 12:17:25.000000000 +0100
-> @@ -753,6 +753,8 @@ static int check_section(const char *mod
->  
->  
->  #define ALL_INIT_DATA_SECTIONS \
-> +	".init.setup$", ".init.rodata$", \
-> +	".devinit.rodata$", ".cpuinit.rodata$", ".meminit.rodata$" \
->  	".init.data$", ".devinit.data$", ".cpuinit.data$", ".meminit.data$"
->  #define ALL_EXIT_DATA_SECTIONS \
->  	".exit.data$", ".devexit.data$", ".cpuexit.data$", ".memexit.data$"
-> @@ -762,21 +764,23 @@ static int check_section(const char *mod
->  #define ALL_EXIT_TEXT_SECTIONS \
->  	".exit.text$", ".devexit.text$", ".cpuexit.text$", ".memexit.text$"
->  
-> -#define ALL_INIT_SECTIONS ALL_INIT_DATA_SECTIONS, ALL_INIT_TEXT_SECTIONS
-> -#define ALL_EXIT_SECTIONS ALL_EXIT_DATA_SECTIONS, ALL_EXIT_TEXT_SECTIONS
-> +#define ALL_INIT_SECTIONS INIT_SECTIONS, DEV_INIT_SECTIONS, \
-> +	CPU_INIT_SECTIONS, MEM_INIT_SECTIONS
-> +#define ALL_EXIT_SECTIONS EXIT_SECTIONS, DEV_EXIT_SECTIONS, \
-> +	CPU_EXIT_SECTIONS, MEM_EXIT_SECTIONS
->  
->  #define DATA_SECTIONS ".data$", ".data.rel$"
->  #define TEXT_SECTIONS ".text$"
->  
-> -#define INIT_SECTIONS      ".init.data$", ".init.text$"
-> -#define DEV_INIT_SECTIONS  ".devinit.data$", ".devinit.text$"
-> -#define CPU_INIT_SECTIONS  ".cpuinit.data$", ".cpuinit.text$"
-> -#define MEM_INIT_SECTIONS  ".meminit.data$", ".meminit.text$"
-> -
-> -#define EXIT_SECTIONS      ".exit.data$", ".exit.text$"
-> -#define DEV_EXIT_SECTIONS  ".devexit.data$", ".devexit.text$"
-> -#define CPU_EXIT_SECTIONS  ".cpuexit.data$", ".cpuexit.text$"
-> -#define MEM_EXIT_SECTIONS  ".memexit.data$", ".memexit.text$"
-> +#define INIT_SECTIONS      ".init.*"
-> +#define DEV_INIT_SECTIONS  ".devinit.*"
-> +#define CPU_INIT_SECTIONS  ".cpuinit.*"
-> +#define MEM_INIT_SECTIONS  ".meminit.*"
-> +
-> +#define EXIT_SECTIONS      ".exit.*"
-> +#define DEV_EXIT_SECTIONS  ".devexit.*"
-> +#define CPU_EXIT_SECTIONS  ".cpuexit.*"
-> +#define MEM_EXIT_SECTIONS  ".memexit.*"
+> You keep mentioning these tests.. makes me wonder how much of the futex
+> code paths they actually test. Got any coverage info on them?
 
-The abvoe simplification now makes us math all sections that starts with
-for example .init. - and we have seen sections named .init.1 for example.
-So I'm afraid that we will simply match too many sections here on the various
-architectures.
+Right now these are tests I know the most about and I know they 
+excercise the futex_wait, futex_wake, futex_(un)lock_pi, and 
+futex_requeue paths via the pthread_mutex* and pthread_cond* APIs.  I 
+doubt they test the fault logic very well, and I know they don't test 
+shared futexes.
 
-A quick grep showed for example:
-arch/blackfin/kernel/vmlinux.lds.S:     .init.setup :
-arch/blackfin/kernel/vmlinux.lds.S:             *(.init.setup)
-arch/blackfin/kernel/vmlinux.lds.S:     .init.ramfs :
-arch/blackfin/kernel/vmlinux.lds.S:             *(.init.ramfs)
+I'd really like to ramp up my efforts on the raw sys_futex tests I've 
+been working on, but just haven't had the cycles.  I suspect they will 
+become necessary for requeue_pi however.  I also think we should look at 
+some kind of futex-debug.c infrastructure that also adds some 
+fault-injection to test the various error paths.
 
-We should be on the safe side and avoid this optimization.
+--
+Darren
 
-	Sam
+> 
+>> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>> Cc: Peter Zijlstra <peterz@infradead.org>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>> Cc: Rusty Russell <rusty@rustcorp.com.au>
+>> ---
+>>
+>>  kernel/futex.c |    7 +++++++
+>>  1 files changed, 7 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/kernel/futex.c b/kernel/futex.c
+>> index 6579912..c980a55 100644
+>> --- a/kernel/futex.c
+>> +++ b/kernel/futex.c
+>> @@ -1567,6 +1567,13 @@ retry_locked:
+>>  		}
+>>  	}
+>>  
+>> +	/*
+>> +	 * If fixup_pi_state_owner() faulted and was unable to handle the
+>> +	 * fault, unlock it and return the fault to userspace.
+>> +	 */
+>> +	if (ret && (rt_mutex_owner(&q.pi_state->pi_mutex) == current))
+>> +		rt_mutex_unlock(&q.pi_state->pi_mutex);
+>> +
+>>  	/* Unqueue and drop the lock */
+>>  	unqueue_me_pi(&q);
+>>  
+>>
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
