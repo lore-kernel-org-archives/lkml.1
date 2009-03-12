@@ -1,44 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbZCLDlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZCLDrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755369AbZCLDlt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 23:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbZCLDlk
+	id S1755242AbZCLDrR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 23:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbZCLDrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 23:41:40 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:56915 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbZCLDlj convert rfc822-to-8bit (ORCPT
+	Wed, 11 Mar 2009 23:47:00 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:55890 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbZCLDrA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 23:41:39 -0400
-Message-ID: <49B8841C.20701@cosmosbay.com>
-Date: Thu, 12 Mar 2009 04:40:12 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 11 Mar 2009 23:47:00 -0400
+Date: Thu, 12 Mar 2009 09:16:47 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 0/5] memcg softlimit (Another one) v4
+Message-ID: <20090312034647.GA23583@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Benjamin LaHaise <bcrl@kvack.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Jeff Moyer <jmoyer@redhat.com>,
-       Avi Kivity <avi@redhat.com>, linux-aio <linux-aio@kvack.org>,
-       zach.brown@oracle.com, linux-kernel@vger.kernel.org,
-       Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: [patch] aio: remove aio-max-nr and instead use the memlock rlimit
- to limit the number of pages pinned for the aio completion ring
-References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com> <49B54143.1010607@redhat.com> <x49sklmd1fo.fsf@segfault.boston.devel.redhat.com> <49B57CB0.5020300@cosmosbay.com> <49B875F7.3030305@cosmosbay.com> <20090312024419.GG18665@kvack.org> <49B8807A.5080302@cosmosbay.com> <20090312032928.GH18665@kvack.org> <49B88280.8060603@cosmosbay.com> <20090312033613.GJ18665@kvack.org>
-In-Reply-To: <20090312033613.GJ18665@kvack.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 12 Mar 2009 04:40:13 +0100 (CET)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin LaHaise a écrit :
-> On Thu, Mar 12, 2009 at 04:33:20AM +0100, Eric Dumazet wrote:
->> aio breaks the fget_light() concept too, if process is mono threaded.
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 09:52:47]:
+
+> Hi, this is a patch for implemnt softlimit to memcg.
 > 
-> AIO requests cannot use fget_light().  The user space program could very 
-> well use the close() syscall to destroy the file descriptor while an io 
-> request is in flight, so you cannot avoid the reference counting overhead.
+> I did some clean up and bug fixes. 
+> 
+> Anyway I have to look into details of "LRU scan algorithm" after this.
+> 
+> How this works:
+> 
+>  (1) Set softlimit threshold to memcg.
+>      #echo 400M > /cgroups/my_group/memory.softlimit_in_bytes.
+> 
+>  (2) Define priority as victim.
+>      #echo 3 > /cgroups/my_group/memory.softlimit_priority.
+>      0 is the lowest, 8 is the highest.
+>      If "8", softlimit feature ignore this group.
+>      default value is "8".
+> 
+>  (3) Add some memory pressure and make kswapd() work.
+>      kswapd will reclaim memory from victims paying regard to priority.
+> 
+> Simple test on my 2cpu 86-64 box with 1.6Gbytes of memory (...vmware)
+> 
+>   While a process malloc 800MB of memory and touch it and sleep in a group,
+>   run kernel make -j 16 under a victim cgroup with softlimit=300M, priority=3.
+> 
+>   Without softlimit => 400MB of malloc'ed memory are swapped out.
+>   With softlimit    =>  80MB of malloc'ed memory are swapped out. 
+> 
+> I think 80MB of swap is from direct memory reclaim path. And this
+> seems not to be terrible result.
+> 
+> I'll do more test on other hosts. Any comments are welcome.
+>
 
-Yes, you are right, AIO doesnt break fget_light()
+I've tested so far by
 
+Creating two cgroups and then 
 
+a. Assigning limits of 1G and 2G and run memory allocation and touch
+test
+b. Same as (a) with 1G and 1G
+c. Same as (a) with 0 and 1G
+d. Same as (a) with 0 and 0
+
+More comments in induvidual patches.
+
+-- 
+	Balbir
