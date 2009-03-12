@@ -1,65 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbZCLDQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbZCLDRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754550AbZCLDQR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 23:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZCLDQC
+	id S1755307AbZCLDRS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 23:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZCLDRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 23:16:02 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56010 "EHLO mx1.redhat.com"
+	Wed, 11 Mar 2009 23:17:06 -0400
+Received: from kanga.kvack.org ([205.233.56.17]:56194 "EHLO kanga.kvack.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbZCLDQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 23:16:00 -0400
-MIME-Version: 1.0
+	id S1750742AbZCLDRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 23:17:05 -0400
+X-Greylist: delayed 1962 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Mar 2009 23:17:05 EDT
+Date: Wed, 11 Mar 2009 22:44:19 -0400
+From: Benjamin LaHaise <bcrl@kvack.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Moyer <jmoyer@redhat.com>,
+       Avi Kivity <avi@redhat.com>, linux-aio <linux-aio@kvack.org>,
+       zach.brown@oracle.com, linux-kernel@vger.kernel.org,
+       Davide Libenzi <davidel@xmailserver.org>
+Subject: Re: [patch] aio: remove aio-max-nr and instead use the memlock rlimit to limit the number of pages pinned for the aio completion ring
+Message-ID: <20090312024419.GG18665@kvack.org>
+References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com> <49B54143.1010607@redhat.com> <x49sklmd1fo.fsf@segfault.boston.devel.redhat.com> <49B57CB0.5020300@cosmosbay.com> <49B875F7.3030305@cosmosbay.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-X-Fcc: ~/Mail/linus
-Cc: prasad@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch 08/11] Modify Ptrace routines to access breakpoint
-	registers
-In-Reply-To: Ingo Molnar's message of  Tuesday, 10 March 2009 15:40:02 +0100 <20090310144002.GF3850@elte.hu>
-References: <20090305043440.189041194@linux.vnet.ibm.com>
-	<20090305044051.GI17747@in.ibm.com>
-	<20090310144002.GF3850@elte.hu>
-X-Shopping-List: (1) Classical gloves
-   (2) Burrowing piston sugar
-   (3) Surfing soft-serve fads
-   (4) Mighty liquid-center tampon nutrition
-   (5) Magnificent retention commanders
-Message-Id: <20090312031449.83F34FC3B6@magilla.sf.frob.com>
-Date: Wed, 11 Mar 2009 20:14:49 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <49B875F7.3030305@cosmosbay.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I dont see where this security check has been carried over into 
-> the generic code. The new code has:
-> 
->  +int arch_check_va_in_userspace(unsigned long va, struct task_struct *tsk)
->  +{
->  +       return (va < TASK_SIZE);
->  +}
-> 
-> but i think that misses the detail that it's not just the start 
-> address of an x86 breakpoint that has to be considered, but also 
-> the end addess of it.
+On Thu, Mar 12, 2009 at 03:39:51AM +0100, Eric Dumazet wrote:
+> Assuming that __fput() cannot be called from interrupt context.
+> -> fput() should not be called from interrupt context as well.
 
-It also needs to be TASK_SIZE_OF(tsk), which is shorthand for the same
-logic already in the 64-bit debugreg_addr_limit().  
+It doesn't get called in irq context.  The atomic dec is done in irq 
+context, and if that is the last user of the file descriptor, it's 
+placed on a work queue and then released in process context.
 
-For the end-of-range issue, it perhaps ought to check size-1 instead of
-wordsize-1, i.e. through the end of the actual breakpoint range, not of the
-word containing it.  What debugreg_addr_limit() does is the historical
-ptrace check on x86, but I don't see a reason to disallow a 1-byte
-watchpoint on the last addressable user-space byte if the hardware will
-support it.
-
-So either the arch check should take a size parameter, or the
-arch-independent code can just call it with address+size-1.
-
-
-Thanks,
-Roland
+		-ben
