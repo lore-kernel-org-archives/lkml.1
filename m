@@ -1,52 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbZCLCDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbZCLCBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756255AbZCLCDW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 22:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbZCLCCe
+	id S1754209AbZCLCBk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 22:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbZCLB7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 22:02:34 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39974 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756184AbZCLCCd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 22:02:33 -0400
-Date: Thu, 12 Mar 2009 11:01:07 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH 6/5] softlimit document
-Message-Id: <20090312110107.c4749a8d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <49B86B3A.2050506@cn.fujitsu.com>
-References: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090312100112.6f010cae.kamezawa.hiroyu@jp.fujitsu.com>
-	<49B86B3A.2050506@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 11 Mar 2009 21:59:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49336 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755442AbZCLB7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 21:59:09 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       arozansk@redhat.com, jmoyer@redhat.com, oz-kernel@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Cc: vgoyal@redhat.com, akpm@linux-foundation.org, menage@google.com,
+       peterz@infradead.org
+Subject: [PATCH 05/10] cfq changes to use hierarchical fair queuing code in elevaotor layer
+Date: Wed, 11 Mar 2009 21:56:50 -0400
+Message-Id: <1236823015-4183-6-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Mar 2009 09:54:02 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+Make cfq hierarhical.
 
-> > +    - memory.softlimit_priority.
-> > +	- priority of this cgroup at softlimit reclaim.
-> > +	  Allowed priority level is 3-0 and 3 is the lowest.
-> > +	  If 0, this cgroup will not be target of softlimit.
-> > +
-> 
-> Seems this document is the older one...
-> 
-Ouch..my merge miss...please ignore this 6/5.
+Signed-off-by: Nauman Rafique <nauman@google.com>
+Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
+Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
+Signed-off-by: Aristeu Rozanski <aris@redhat.com>
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+---
+ block/Kconfig.iosched |    8 ++++++++
+ block/cfq-iosched.c   |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
+ init/Kconfig          |    2 +-
+ 3 files changed, 57 insertions(+), 1 deletions(-)
 
-Thanks,
--Kame
-
+diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+index dd5224d..a91a807 100644
+--- a/block/Kconfig.iosched
++++ b/block/Kconfig.iosched
+@@ -54,6 +54,14 @@ config IOSCHED_CFQ
+ 	  working environment, suitable for desktop systems.
+ 	  This is the default I/O scheduler.
+ 
++config IOSCHED_CFQ_HIER
++	bool "CFQ Hierarchical Scheduling support"
++	depends on IOSCHED_CFQ && CGROUPS
++	select GROUP_IOSCHED
++	default n
++	---help---
++	  Enable hierarhical scheduling in cfq.
++
+ choice
+ 	prompt "Default I/O scheduler"
+ 	default DEFAULT_CFQ
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 5b41b54..0ecf7c7 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1069,6 +1069,50 @@ static void cfq_ioc_set_ioprio(struct io_context *ioc)
+ 	ioc->ioprio_changed = 0;
+ }
+ 
++#ifdef CONFIG_IOSCHED_CFQ_HIER
++static void changed_cgroup(struct io_context *ioc, struct cfq_io_context *cic)
++{
++	struct cfq_queue *async_cfqq = cic_to_cfqq(cic, 0);
++	struct cfq_queue *sync_cfqq = cic_to_cfqq(cic, 1);
++	struct cfq_data *cfqd = cic->key;
++	struct io_group *iog, *__iog;
++	unsigned long flags;
++	struct request_queue *q;
++
++	if (unlikely(!cfqd))
++		return;
++
++	q = cfqd->q;
++
++	spin_lock_irqsave(q->queue_lock, flags);
++
++	iog = io_lookup_io_group_current(q);
++
++	if (async_cfqq != NULL) {
++		__iog = cfqq_to_io_group(async_cfqq);
++
++		if (iog != __iog) {
++			cic_set_cfqq(cic, NULL, 0);
++			cfq_put_queue(async_cfqq);
++		}
++	}
++
++	if (sync_cfqq != NULL) {
++		__iog = cfqq_to_io_group(sync_cfqq);
++		if (iog != __iog)
++			io_ioq_move(q->elevator, sync_cfqq->ioq, iog);
++	}
++
++	spin_unlock_irqrestore(q->queue_lock, flags);
++}
++
++static void cfq_ioc_set_cgroup(struct io_context *ioc)
++{
++	call_for_each_cic(ioc, changed_cgroup);
++	ioc->cgroup_changed = 0;
++}
++#endif  /* CONFIG_IOSCHED_CFQ_HIER */
++
+ static struct cfq_queue *
+ cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
+ 				struct io_context *ioc, gfp_t gfp_mask)
+@@ -1335,6 +1379,10 @@ out:
+ 	smp_read_barrier_depends();
+ 	if (unlikely(ioc->ioprio_changed))
+ 		cfq_ioc_set_ioprio(ioc);
++#ifdef CONFIG_IOSCHED_CFQ_HIER
++	if (unlikely(ioc->cgroup_changed))
++		cfq_ioc_set_cgroup(ioc);
++#endif
+ 	return cic;
+ err_free:
+ 	cfq_cic_free(cic);
+diff --git a/init/Kconfig b/init/Kconfig
+index 66c2310..d7bc054 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -539,7 +539,7 @@ config CGROUP_MEM_RES_CTLR_SWAP
+ 	  if boot option "noswapaccount" is set, swap will not be accounted.
+ 
+ config GROUP_IOSCHED
+-	bool "Group IO Scheduler"
++	bool
+ 	depends on CGROUPS && ELV_FAIR_QUEUING
+ 	default n
+ 	---help---
+-- 
+1.6.0.1
 
