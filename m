@@ -1,231 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbZCLHPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbZCLHPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755465AbZCLHPb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 03:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZCLHPV
+	id S1755898AbZCLHPq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 03:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768AbZCLHPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 03:15:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37761 "EHLO hera.kernel.org"
+	Thu, 12 Mar 2009 03:15:30 -0400
+Received: from ozlabs.org ([203.10.76.45]:59725 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751785AbZCLHPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 03:15:20 -0400
-Subject: Re: [git-pull -tip] x86: cpu_debug support read-write opertaions
- for PMC
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1236807253.15646.11.camel@ht.satnam>
-References: <1236807253.15646.11.camel@ht.satnam>
-Content-Type: text/plain
-Date: Thu, 12 Mar 2009 12:44:36 +0530
-Message-Id: <1236842076.12116.7.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	id S1755414AbZCLHP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 03:15:29 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PULL] Wrapper macros for struct task_struct and struct mm_struct cpumask transition
+Date: Thu, 12 Mar 2009 17:45:22 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+References: <200903121436.53055.rusty@rustcorp.com.au> <200903121520.12245.nickpiggin@yahoo.com.au>
+In-Reply-To: <200903121520.12245.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903121745.23448.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-12 at 03:04 +0530, Jaswinder Singh Rajput wrote:
-> Currently I added read-write operations for PMC MSRs for cpu_debug:
+On Thursday 12 March 2009 14:50:11 Nick Piggin wrote:
+> On Thursday 12 March 2009 15:06:52 Rusty Russell wrote:
+> > Rusty Russell (2):
+> >       cpumask: tsk_cpumask for accessing the struct task_struct's cpus_allowed.
+> >       cpumask: mm_cpumask for accessing the struct mm_struct's cpu_vm_mask.
+> >
+> >  include/linux/mm_types.h |    3 +++
+> >  include/linux/sched.h    |    3 +++
+> 
+> What's the transition?
 
-Now I made generic write support by adding write flag for registers.
-currently write is enabled only for PMC MSR but we can also support
-another MSRs just changing the write flag.
+Generally, cpumask_t to cpumask_var_t, ie. a struct cpumask [1] normally,
+or a struct cpumask * for CONFIG_CPUMASK_OFFSTACK=y (currently x86 only).
 
-So here is new pull request:
+In these cases though, we're allocating them anyway so it makes more sense to
+do a dangling bitmap at the end of the struct (and only allocate nr_cpu_ids
+bits when CONFIG_CPUMASK_OFFSTACK=y).
 
-The following changes since commit 8851485ba842e892adfa343463ce6b74550bb8b1:
-  Ingo Molnar (1):
-        Merge branch 'x86/urgent'
+I had a patch which used a const struct cpumask * for task_struct: we only
+ever replace the whole thing, so we can often use the standard cpu_mask_all
+or cpumask_of() and only allocate when it's set to something else.  But
+the code was pretty ugly.
 
-are available in the git repository at:
+Anyway, it's a trivial to change if people use the wrappers.  And if the
+wrappers are in Linus' tree, it's easy to get the conversions into linux-next.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-cpu.git master
-
-Jaswinder Singh Rajput (1):
-      x86: cpu_debug add write support for MSRs
-
- arch/x86/include/asm/cpu_debug.h |   12 ++--
- arch/x86/kernel/cpu/cpu_debug.c  |  117 +++++++++++++++++++++++++++----------
- 2 files changed, 92 insertions(+), 37 deletions(-)
-Complete diff:
-diff --git a/arch/x86/include/asm/cpu_debug.h b/arch/x86/include/asm/cpu_debug.h
-index d24d64f..146d9e0 100755
---- a/arch/x86/include/asm/cpu_debug.h
-+++ b/arch/x86/include/asm/cpu_debug.h
-@@ -171,16 +171,18 @@ struct cpu_private {
- struct cpu_debug_base {
- 	char			*name;		/* Register name	*/
- 	unsigned		flag;		/* Register flag	*/
--};
--
--struct cpu_cpuX_base {
--	struct dentry		*dentry;	/* Register dentry	*/
--	int			init;		/* Register index file	*/
-+	unsigned		write;		/* Register write flag	*/
- };
- 
- struct cpu_file_base {
- 	char			*name;		/* Register file name	*/
- 	unsigned		flag;		/* Register file flag	*/
-+	unsigned		write;		/* Register write flag	*/
-+};
-+
-+struct cpu_cpuX_base {
-+	struct dentry		*dentry;	/* Register dentry	*/
-+	int			init;		/* Register index file	*/
- };
- 
- struct cpu_debug_range {
-diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
-index 9abbcbd..bb6e5b7 100755
---- a/arch/x86/kernel/cpu/cpu_debug.c
-+++ b/arch/x86/kernel/cpu/cpu_debug.c
-@@ -11,6 +11,7 @@
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
- #include <linux/kprobes.h>
-+#include <linux/uaccess.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/percpu.h>
-@@ -40,41 +41,41 @@ static DEFINE_MUTEX(cpu_debug_lock);
- static struct dentry *cpu_debugfs_dir;
- 
- static struct cpu_debug_base cpu_base[] = {
--	{ "mc",		CPU_MC		},	/* Machine Check	*/
--	{ "monitor",	CPU_MONITOR	},	/* Monitor		*/
--	{ "time",	CPU_TIME	},	/* Time			*/
--	{ "pmc",	CPU_PMC		},	/* Performance Monitor	*/
--	{ "platform",	CPU_PLATFORM	},	/* Platform		*/
--	{ "apic",	CPU_APIC	},	/* APIC			*/
--	{ "poweron",	CPU_POWERON	},	/* Power-on		*/
--	{ "control",	CPU_CONTROL	},	/* Control		*/
--	{ "features",	CPU_FEATURES	},	/* Features control	*/
--	{ "lastbranch",	CPU_LBRANCH	},	/* Last Branch		*/
--	{ "bios",	CPU_BIOS	},	/* BIOS			*/
--	{ "freq",	CPU_FREQ	},	/* Frequency		*/
--	{ "mtrr",	CPU_MTRR	},	/* MTRR			*/
--	{ "perf",	CPU_PERF	},	/* Performance		*/
--	{ "cache",	CPU_CACHE	},	/* Cache		*/
--	{ "sysenter",	CPU_SYSENTER	},	/* Sysenter		*/
--	{ "therm",	CPU_THERM	},	/* Thermal		*/
--	{ "misc",	CPU_MISC	},	/* Miscellaneous	*/
--	{ "debug",	CPU_DEBUG	},	/* Debug		*/
--	{ "pat",	CPU_PAT		},	/* PAT			*/
--	{ "vmx",	CPU_VMX		},	/* VMX			*/
--	{ "call",	CPU_CALL	},	/* System Call		*/
--	{ "base",	CPU_BASE	},	/* BASE Address		*/
--	{ "smm",	CPU_SMM		},	/* System mgmt mode	*/
--	{ "svm",	CPU_SVM		},	/*Secure Virtial Machine*/
--	{ "osvm",	CPU_OSVM	},	/* OS-Visible Workaround*/
--	{ "tss",	CPU_TSS		},	/* Task Stack Segment	*/
--	{ "cr",		CPU_CR		},	/* Control Registers	*/
--	{ "dt",		CPU_DT		},	/* Descriptor Table	*/
--	{ "registers",	CPU_REG_ALL	},	/* Select all Registers	*/
-+	{ "mc",		CPU_MC,		0	},
-+	{ "monitor",	CPU_MONITOR,	0	},
-+	{ "time",	CPU_TIME,	0	},
-+	{ "pmc",	CPU_PMC,	1	},
-+	{ "platform",	CPU_PLATFORM,	0	},
-+	{ "apic",	CPU_APIC,	0	},
-+	{ "poweron",	CPU_POWERON,	0	},
-+	{ "control",	CPU_CONTROL,	0	},
-+	{ "features",	CPU_FEATURES,	0	},
-+	{ "lastbranch",	CPU_LBRANCH,	0	},
-+	{ "bios",	CPU_BIOS,	0	},
-+	{ "freq",	CPU_FREQ,	0	},
-+	{ "mtrr",	CPU_MTRR,	0	},
-+	{ "perf",	CPU_PERF,	0	},
-+	{ "cache",	CPU_CACHE,	0	},
-+	{ "sysenter",	CPU_SYSENTER,	0	},
-+	{ "therm",	CPU_THERM,	0	},
-+	{ "misc",	CPU_MISC,	0	},
-+	{ "debug",	CPU_DEBUG,	0	},
-+	{ "pat",	CPU_PAT,	0	},
-+	{ "vmx",	CPU_VMX,	0	},
-+	{ "call",	CPU_CALL,	0	},
-+	{ "base",	CPU_BASE,	0	},
-+	{ "smm",	CPU_SMM,	0	},
-+	{ "svm",	CPU_SVM,	0	},
-+	{ "osvm",	CPU_OSVM,	0	},
-+	{ "tss",	CPU_TSS,	0	},
-+	{ "cr",		CPU_CR,		0	},
-+	{ "dt",		CPU_DT,		0	},
-+	{ "registers",	CPU_REG_ALL,	0	},
- };
- 
- static struct cpu_file_base cpu_file[] = {
--	{ "index",	CPU_REG_ALL	},	/* index		*/
--	{ "value",	CPU_REG_ALL	},	/* value		*/
-+	{ "index",	CPU_REG_ALL,	0	},
-+	{ "value",	CPU_REG_ALL,	1	},
- };
- 
- /* Intel Registers Range */
-@@ -608,9 +609,61 @@ static int cpu_seq_open(struct inode *inode, struct file *file)
- 	return err;
- }
- 
-+static int write_msr(struct cpu_private *priv, const char *buf)
-+{
-+	u32 low, high;
-+	int ret;
-+	u64 val;
-+
-+	ret = strict_strtoull(buf, 0, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	high = (val >> 32) & 0xffffffff;
-+	low = val & 0xffffffff;
-+
-+	if (!wrmsr_safe_on_cpu(priv->cpu, priv->reg, low, high))
-+		return 0;
-+
-+	return -EPERM;
-+}
-+
-+static int write_cpu_register(struct cpu_private *priv, const char *buf)
-+{
-+	/* Supporting only MSRs */
-+	if (priv->type < CPU_TSS_BIT)
-+		return write_msr(priv, buf);
-+
-+	return -EPERM;
-+}
-+
-+static ssize_t cpu_write(struct file *file, const char __user *ubuf,
-+			     size_t count, loff_t *off)
-+{
-+	struct seq_file *seq = file->private_data;
-+	struct cpu_private *priv = seq->private;
-+	char buf[19];
-+
-+	if ((priv == NULL) || (count >= sizeof(buf)))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&buf, ubuf, count))
-+		return -EFAULT;
-+
-+	buf[count] = 0;
-+
-+	if ((cpu_base[priv->type].write) && (cpu_file[priv->file].write))
-+		if (!write_cpu_register(priv, buf))
-+			return count;
-+
-+	return -EACCES;
-+}
-+
- static const struct file_operations cpu_fops = {
-+	.owner		= THIS_MODULE,
- 	.open		= cpu_seq_open,
- 	.read		= seq_read,
-+	.write		= cpu_write,
- 	.llseek		= seq_lseek,
- 	.release	= seq_release,
- };
-
-
+Cheers,
+Rusty.
