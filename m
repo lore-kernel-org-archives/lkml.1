@@ -1,109 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbZCLLmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbZCLLtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbZCLLmr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 07:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZCLLmi
+	id S1755387AbZCLLtG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 07:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbZCLLsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 07:42:38 -0400
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:34535 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753196AbZCLLmg convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 07:42:36 -0400
-X-BigFish: VPS-32(z6cekz1432R98dR1805M936fK9371Pzz1202hzzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KGE5SW-01-3L0-01
-Date: Thu, 12 Mar 2009 12:41:21 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       trenn@suse.de
-Subject: Re: [PATCH] x86: mtrr: don't modify RdDram/WrDram bits of fixed
-	MTRRs
-Message-ID: <20090312114121.GF20716@alberich.amd.com>
-References: <20090311150027.GK10490@alberich.amd.com> <86802c440903120101o2a0c1ad0iec395c45f782078a@mail.gmail.com>
+	Thu, 12 Mar 2009 07:48:54 -0400
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:37211 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754316AbZCLLsx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 07:48:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nz4n4jJpUKxyiU0yHeCFvbjYSJCuwXQX+l0Ws9UPjqJqtPtxVjutIlICuMFAFdMW5M
+         79MomjAHr4OkQaUu1pDsL00tZ5UEI/Ew5+nD2K0WrksinCZB5W1iXi64fr03CohUiGJx
+         N5/Tf/52z1UXiq+hY6LEpAtNn0sDb558hjPHU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <86802c440903120101o2a0c1ad0iec395c45f782078a@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 12 Mar 2009 11:41:22.0366 (UTC) FILETIME=[779D35E0:01C9A307]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <e2dc2c680903120438i27e209c2h28c61704299b8b4f@mail.gmail.com>
+References: <20090311114353.GA759@localhost>
+	 <e2dc2c680903110516v2c66d4a4h6a422cffceb12e2@mail.gmail.com>
+	 <20090311122611.GA8804@localhost>
+	 <e2dc2c680903120053w37968c1cy556812cef63f0896@mail.gmail.com>
+	 <20090312075952.GA19331@localhost>
+	 <e2dc2c680903120104h4d19a3f6j57ad045bc06f9a90@mail.gmail.com>
+	 <20090312081113.GA19506@localhost>
+	 <e2dc2c680903120117j7be962b2xd63f3296f8f65a46@mail.gmail.com>
+	 <20090312103847.GA20210@localhost>
+	 <e2dc2c680903120438i27e209c2h28c61704299b8b4f@mail.gmail.com>
+Date: Thu, 12 Mar 2009 12:48:50 +0100
+Message-ID: <e2dc2c680903120448q386f84a4t5667e22751002ae9@mail.gmail.com>
+Subject: Re: Memory usage per memory zone
+From: jack marrow <jackmarrow2@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 01:01:26AM -0700, Yinghai Lu wrote:
-> On Wed, Mar 11, 2009 at 8:00 AM, Andreas Herrmann
-> <andreas.herrmann3@amd.com> wrote:
-> > BIOS is expected to clear the SYSCFG[MtrrFixDramModEn] on AMD CPUs after
-> > fixed MTRRs are configured.
-> >
-> > Some BIOSes do not clear SYSCFG[MtrrFixDramModEn] on BP (and on APs).
-> >
-> > This can lead to obfuscation in Linux when this bit is not cleared on
-> > BP but cleared on APs. A consequence of this is that the saved
-> > fixed-MTRR state (from BP) differs from the fixed-MTRRs of APs --
-> > because RdDram/WrDram bits are read as zero when
-> > SYSCFG[MtrrFixDramModEn] is cleared -- and Linux tries to sync
-> > fixed-MTRR state from BP to AP. This implies that Linux sets
-> > SYSCFG[MtrrFixDramEn] and activates those bits.
-> >
-> > More important is that (some) systems change these bits in SMM when
-> > ACPI is enabled. Hence it is racy if Linux modifies RdMem/WrMem bits,
-> > too.
-> >
-> > I suggest not to touch RdDram/WrDram bits of fixed-MTRRs and
-> > SYSCFG[MtrrFixDramEn] and to clear SYSCFG[MtrrFixDramModEn] as
-> > suggested by AMD K8, and AMD family 10h/11h BKDGs.
-> > BIOS is expected to do this anyway. This should avoid that
-> > Linux and SMM tread on each other's toes ...
-> >
-> 
-> wonder if you could add one dmi check to tell the user that bios is
-> buggy, ask vendor fixed BIOS
-> and skip fixed mtrr sync.
+>> Sure, but something is unreclaimable... Maybe some process is taking a
+>> lot of shared memory(shm)? What's the output of `lsof`?
+>
+> I can't paste that, but I expect oracle is using it.
 
-There seem to be several systems affected that do not hide
-RdMem/WrMem bits from OS. 
+Maybe this is helpful:
 
- (Causing Suspend/resume problem:)
-- Acer Ferrari 1000
-- Acer Ferrari 5000
- (Causing kernel freeze:)
-- Asus M51TR-AP003C notebook
-- Asus M51Ta notebook
-- Asus M3A-H/HDMI mobo
-
-- maybe some more systems
-
-That is why I prefer to have a general solution for this.
-(Which is to hide those bits whenever Linux reads or modifies
-fixed-MTRR state.)
-
-> instead of covering bios problem quietly.
-
-It's not quietly, an error message will be printed.
-
-Thomas R. suggested to use "KERN_ERR FW_BUG" but I'd prefer to add a
-FW_WARN which should be used "for not that clear (e.g. could the
-kernel messed up things already?) and medium priority BIOS bugs."
-
-Note that if Linux does not try to sync fixed-MTRRs the affected
-systems do not panic. But as a fact Linux is syncing (and needs to)
-MTRR values across CPUs due to other buggy BIOSes ...
-
-
-Regards,
-Andreas
-
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
-
+#  ipcs |grep oracle
+0x00000000 2293770    oracle    640        4194304    22
+0x00000000 2326539    oracle    640        536870912  22
+0x880f3334 2359308    oracle    640        266338304  22
+0x0f9b5efc 1933312    oracle    640        44
