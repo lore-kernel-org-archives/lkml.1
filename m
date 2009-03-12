@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757674AbZCLQYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757737AbZCLQZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757674AbZCLQYg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 12:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757468AbZCLQXU
+	id S1757737AbZCLQZQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 12:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757317AbZCLQXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 12:23:20 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:25191 "EHLO
+	Thu, 12 Mar 2009 12:23:36 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:25233 "EHLO
 	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757436AbZCLQXO (ORCPT
+	with ESMTP id S1757492AbZCLQX2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 12:23:14 -0400
+	Thu, 12 Mar 2009 12:23:28 -0400
 From: Adrian Hunter <adrian.hunter@nokia.com>
 To: Pierre Ossman <drzeus-mmc@drzeus.cx>
 Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
@@ -18,66 +18,77 @@ Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
        David Brownell <david-b@pacbell.net>,
        linux-omap Mailing List <linux-omap@vger.kernel.org>,
        Tony Lindgren <tony@atomide.com>, lkml <linux-kernel@vger.kernel.org>
-Date: Thu, 12 Mar 2009 18:23:26 +0200
-Message-Id: <20090312162326.19421.20582.sendpatchset@ahunter-laptop>
+Date: Thu, 12 Mar 2009 18:23:19 +0200
+Message-Id: <20090312162319.19421.94489.sendpatchset@ahunter-laptop>
 In-Reply-To: <20090312162252.19421.34019.sendpatchset@ahunter-laptop>
 References: <20090312162252.19421.34019.sendpatchset@ahunter-laptop>
-Subject: [PATCH 5/10] OMAP: HSMMC: Allow cover switch to cause rescan
-X-OriginalArrivalTime: 12 Mar 2009 16:23:01.0873 (UTC) FILETIME=[D0815610:01C9A32E]
+Subject: [PATCH 4/10] OMAP: HSMMC: Add 8-bit bus width mode support
+X-OriginalArrivalTime: 12 Mar 2009 16:22:55.0176 (UTC) FILETIME=[CC837480:01C9A32E]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 702faf54a21016777bfedf94ea709b2f05b5aee2 Mon Sep 17 00:00:00 2001
-From: Adrian Hunter <adrian.hunter@nokia.com>
-Date: Mon, 26 Jan 2009 13:17:25 +0200
-Subject: [PATCH] OMAP: HSMMC: Allow cover switch to cause rescan
+>From 7961505a57b8a9dff7b6fc8bbee654165a1b05b2 Mon Sep 17 00:00:00 2001
+From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+Date: Fri, 21 Nov 2008 16:49:54 +0200
+Subject: [PATCH] OMAP: HSMMC: Add 8-bit bus width mode support
 
-Allow a cover switch to be used to cause a rescan of the
-MMC slot.
-
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
 ---
- drivers/mmc/host/omap_hsmmc.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+ drivers/mmc/host/omap_hsmmc.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index fd1657a..f3e4e0f 100644
+index 483e591..fd1657a 100644
 --- a/drivers/mmc/host/omap_hsmmc.c
 +++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -571,7 +571,10 @@ static void mmc_omap_detect(struct work_struct *work)
- 						mmc_carddetect_work);
- 	struct omap_mmc_slot_data *slot = &mmc_slot(host);
+@@ -77,6 +77,7 @@
+ #define MSBS			(1 << 5)
+ #define BCE			(1 << 1)
+ #define FOUR_BIT		(1 << 1)
++#define DW8			(1 << 5)
+ #define CC			0x1
+ #define TC			0x02
+ #define OD			0x1
+@@ -817,6 +818,7 @@ static void omap_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ 	u16 dsor = 0;
+ 	unsigned long regval;
+ 	unsigned long timeout;
++	u32 con;
  
--	host->carddetect = slot->card_detect(slot->card_detect_irq);
-+	if (mmc_slot(host).card_detect)
-+		host->carddetect = slot->card_detect(slot->card_detect_irq);
-+	else
-+		host->carddetect = -ENOSYS;
- 
- 	sysfs_notify(&host->mmc->class_dev.kobj, NULL, "cover_switch");
- 	if (host->carddetect) {
-@@ -1089,7 +1092,7 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
+ 	switch (ios->power_mode) {
+ 	case MMC_POWER_OFF:
+@@ -827,12 +829,18 @@ static void omap_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ 		break;
  	}
  
- 	/* Request IRQ for card detect */
--	if ((mmc_slot(host).card_detect_irq) && (mmc_slot(host).card_detect)) {
-+	if ((mmc_slot(host).card_detect_irq)) {
- 		ret = request_irq(mmc_slot(host).card_detect_irq,
- 				  omap_mmc_cd_handler,
- 				  IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING
-@@ -1112,8 +1115,8 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
- 		if (ret < 0)
- 			goto err_slot_name;
- 	}
--	if (mmc_slot(host).card_detect_irq && mmc_slot(host).card_detect &&
--			host->pdata->slots[host->slot_id].get_cover_state) {
-+	if (mmc_slot(host).card_detect_irq &&
-+	    host->pdata->slots[host->slot_id].get_cover_state) {
- 		ret = device_create_file(&mmc->class_dev,
- 					&dev_attr_cover_switch);
- 		if (ret < 0)
++	con = OMAP_HSMMC_READ(host->base, CON);
+ 	switch (mmc->ios.bus_width) {
++	case MMC_BUS_WIDTH_8:
++		OMAP_HSMMC_WRITE(host->base, CON, con | DW8);
++		break;
+ 	case MMC_BUS_WIDTH_4:
++		OMAP_HSMMC_WRITE(host->base, CON, con & ~DW8);
+ 		OMAP_HSMMC_WRITE(host->base, HCTL,
+ 			OMAP_HSMMC_READ(host->base, HCTL) | FOUR_BIT);
+ 		break;
+ 	case MMC_BUS_WIDTH_1:
++		OMAP_HSMMC_WRITE(host->base, CON, con & ~DW8);
+ 		OMAP_HSMMC_WRITE(host->base, HCTL,
+ 			OMAP_HSMMC_READ(host->base, HCTL) & ~FOUR_BIT);
+ 		break;
+@@ -1057,7 +1065,9 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
+ 	mmc->ocr_avail = mmc_slot(host).ocr_mask;
+ 	mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
+ 
+-	if (pdata->slots[host->slot_id].wires >= 4)
++	if (pdata->slots[host->slot_id].wires >= 8)
++		mmc->caps |= MMC_CAP_8_BIT_DATA;
++	else if (pdata->slots[host->slot_id].wires >= 4)
+ 		mmc->caps |= MMC_CAP_4_BIT_DATA;
+ 
+ 	omap_hsmmc_init(host);
 -- 
 1.5.6.3
 
