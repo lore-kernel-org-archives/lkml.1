@@ -1,965 +1,1302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbZCLGpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbZCLGvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754079AbZCLGpS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 02:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbZCLGpD
+	id S1755634AbZCLGvo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 02:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZCLGve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 02:45:03 -0400
-Received: from mail.renesas.com ([202.234.163.13]:53493 "EHLO
-	mail05.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752521AbZCLGo7 (ORCPT
+	Thu, 12 Mar 2009 02:51:34 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:52007 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751922AbZCLGvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 02:44:59 -0400
-X-AuditID: ac140388-0000000600006b18-3d-49b8af6506bb
-Date: Thu, 12 Mar 2009 15:44:55 +0900
-From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Subject: [PATCH] dmaengine: sh: Add support DMA-Engine driver for DMA of SuperH
-To: Linux-sh <linux-sh@vger.kernel.org>
-Cc: linux-kernel@vger.kernel.org, maciej.sosnowski@intel.com,
-       dan.j.williams@intel.com, Paul Mundt <lethal@linux-sh.org>
-Message-id: <49B8AF67.8080309@renesas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-2022-JP
-Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-X-Brightmail-Tracker: AAAAAA==
+	Thu, 12 Mar 2009 02:51:31 -0400
+From: Frans Pop <elendil@planet.nl>
+To: john stultz <johnstul@us.ibm.com>
+Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
+Date: Thu, 12 Mar 2009 07:51:26 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200903080230.10099.elendil@planet.nl> <1236818044.7680.153.camel@localhost.localdomain> <1236833245.7680.266.camel@localhost.localdomain>
+In-Reply-To: <1236833245.7680.266.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_vDLuJXbMqAKGkTX"
+Message-Id: <200903120751.27821.elendil@planet.nl>
+X-OriginalArrivalTime: 12 Mar 2009 06:51:28.0574 (UTC) FILETIME=[F81B2DE0:01C9A2DE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This supports DMA-Engine driver for DMA of SuperH.
-This supported all DMA channels, and it was tested in SH7722/SH7780.
-This can not use with SH DMA API and can control this in Kconfig.
+--Boundary-00=_vDLuJXbMqAKGkTX
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>
-Cc: Dan Williams <dan.j.williams@intel.com>
----
- arch/sh/drivers/dma/Kconfig  |   12 +-
- arch/sh/drivers/dma/Makefile |    3 +-
- arch/sh/include/asm/dma-sh.h |   11 +
- drivers/dma/Kconfig          |    9 +
- drivers/dma/Makefile         |    2 +
- drivers/dma/shdma.c          |  743 ++++++++++++++++++++++++++++++++++++++++++
- drivers/dma/shdma.h          |   65 ++++
- 7 files changed, 840 insertions(+), 5 deletions(-)
- create mode 100644 drivers/dma/shdma.c
- create mode 100644 drivers/dma/shdma.h
+On Thursday 12 March 2009, John Stultz wrote:
+> * Reverting both 6c9bacb41c10 and 5cd1c9c5cf30 against 2.6-git did not
+> seem to help the issue, as originally reported. I also reverted
+> 49b5cf34727a as well just in case, and it didn't help either.
 
-diff --git a/arch/sh/drivers/dma/Kconfig b/arch/sh/drivers/dma/Kconfig
-index 57d95fc..f556629 100644
---- a/arch/sh/drivers/dma/Kconfig
-+++ b/arch/sh/drivers/dma/Kconfig
-@@ -1,14 +1,20 @@
- menu "DMA support"
+Hmm, interesting. I think you may have reproduced a similar failure case,=20
+but not exactly the same as mine. I wonder if what you have reproduced is=20
+the same as Debian bug report http://bugs.debian.org/511334. That is with=20
+2.6.26 which would match the fact that the reverts that work reliably for=20
+me did not work for you. I've never had any problems with Debian's 2.6.26=20
+in my configuration.
 
--config SH_DMA_API
--	bool
+=46or me 2.6.28.7 is rock solid with the two reverts. I've attached my=20
+kernel config and my Hercules config. I think the critical thing in my=20
+config may be the "TIMERINT 500" setting for Hercules, which is somewhat=20
+similar to your "goes away if HZ is anything except 250" observation.
 
- config SH_DMA
- 	bool "SuperH on-chip DMA controller (DMAC) support"
- 	depends on CPU_SH3 || CPU_SH4
--	select SH_DMA_API
- 	default n
+> That's about all I can get for today. I'm out of town until Monday, so
+> I'll start digging back into it then.
 
-+config SH_DMA_API
-+	depends on SH_DMA
-+	bool "SuperH DMA API support"
-+	default n
-+	help
-+	  SH_DMA_API always enabled DMA API of used SuperH.
-+	  If you want to use DMA ENGINE, you must not enable this.
-+	  Please enable DMA_ENGINE and SH_DMAE.
-+
- config NR_ONCHIP_DMA_CHANNELS
- 	int
- 	depends on SH_DMA
-diff --git a/arch/sh/drivers/dma/Makefile b/arch/sh/drivers/dma/Makefile
-index ab956ad..c78ddd3 100644
---- a/arch/sh/drivers/dma/Makefile
-+++ b/arch/sh/drivers/dma/Makefile
-@@ -2,7 +2,6 @@
- # Makefile for the SuperH DMA specific kernel interface routines under Linux.
- #
+=46rom your other replies I've seen that I have been way off track at some=
+=20
+points. It looks as if I have been looking at events too early in the=20
+boot and been confused by the use of clock->xtime_nsec. My apologies for=20
+any confusion caused by that.
 
--obj-$(CONFIG_SH_DMA_API)	+= dma-api.o dma-sysfs.o
--obj-$(CONFIG_SH_DMA)		+= dma-sh.o
-+obj-$(CONFIG_SH_DMA_API)	+= dma-sh.o dma-api.o dma-sysfs.o
- obj-$(CONFIG_SH_DREAMCAST)	+= dma-pvr2.o dma-g2.o
- obj-$(CONFIG_SH_DMABRG)		+= dmabrg.o
-diff --git a/arch/sh/include/asm/dma-sh.h b/arch/sh/include/asm/dma-sh.h
-index 0c8f8e1..c356df4 100644
---- a/arch/sh/include/asm/dma-sh.h
-+++ b/arch/sh/include/asm/dma-sh.h
-@@ -115,4 +115,15 @@ static u32 dma_base_addr[] __maybe_unused = {
- #define CHCR    0x0C
- #define DMAOR	0x40
+I have a few more tests I think I can usefully do, but will try harder not=
+=20
+to confuse the issue with my inexpert ramblings anymore :-P
+My main problem in trying to nail this down has been that any printks that=
+=20
+are added tend to flood the system to such an extend that you cannot=20
+actually observe anything.
 
-+/* for dma engine */
-+/* mode */
-+#define SHDMA_MIX_IRQ	(1 << 1)
-+#define SHDMA_DMAOR1	(1 << 2)
-+#define SHDMA_DMAE1		(1 << 3)
-+
-+struct sh_dmae_pdata {
-+	unsigned long int2b3;
-+	unsigned int mode;
-+};
-+
- #endif /* __DMA_SH_H */
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 7f9e1ec..af74ff3 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -81,6 +81,15 @@ config MX3_IPU_IRQS
- 	  To avoid bloating the irq_desc[] array we allocate a sufficient
- 	  number of IRQ slots and map them dynamically to specific sources.
-
-+config SH_DMAE
-+	tristate "Renesas SuperH DMAC support"
-+	depends on SUPERH && SH_DMA
-+	depends on !SH_DMA_API
-+	select DMA_ENGINE
-+	help
-+	  There is SH_DMA_API which is another DMA implementation in SuperH.
-+	  When you want to use this, please enable SH_DMA_API.
-+
- config DMA_ENGINE
- 	bool
-
-diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-index 2e5dc96..0d2f3e9 100644
---- a/drivers/dma/Makefile
-+++ b/drivers/dma/Makefile
-@@ -8,3 +8,5 @@ obj-$(CONFIG_FSL_DMA) += fsldma.o
- obj-$(CONFIG_MV_XOR) += mv_xor.o
- obj-$(CONFIG_DW_DMAC) += dw_dmac.o
- obj-$(CONFIG_MX3_IPU) += ipu/
-+obj-$(CONFIG_SH_DMAE) += shdma.o
-+
-diff --git a/drivers/dma/shdma.c b/drivers/dma/shdma.c
-new file mode 100644
-index 0000000..7f1ef7b
---- /dev/null
-+++ b/drivers/dma/shdma.c
-@@ -0,0 +1,743 @@
-+/*
-+ * Renesas SuperH DMA Engine support
-+ *
-+ * base is drivers/dma/flsdma.c
-+ *
-+ * Copyright (C) 2009 Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-+ * Copyright (C) 2009 Renesas Solutions, Inc. All rights reserved.
-+ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
-+ *
-+ * This is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * - DMA of SuperH does not have Hardware DMA chain mode.
-+ * - MAX DMA size is 16MB.
-+ *
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/dmaengine.h>
-+#include <linux/delay.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/dmapool.h>
-+#include <linux/platform_device.h>
-+#include <cpu/dma.h>
-+#include <asm/dma-sh.h>
-+#include "shdma.h"
-+
-+/* DMA descriptor control */
-+#define DESC_LAST	(-1)
-+#define DESC_COMP	(1)
-+#define DESC_NCOMP	(0)
-+
-+/*
-+ * Define the default configuration for dual address memory-memory transfer.
-+ * The 0x400 value represents auto-request, external->external.
-+ */
-+#define RS_DEFAULT RS_DUAL
-+
-+#define SH_DMAC_CHAN_BASE(id) (dma_base_addr[id])
-+static void sh_dmae_writel(struct sh_dmae_chan *sh_dc, u32 data, u32 reg)
-+{
-+	ctrl_outl(data, (SH_DMAC_CHAN_BASE(sh_dc->id) + reg));
-+}
-+
-+static u32 sh_dmae_readl(struct sh_dmae_chan *sh_dc, u32 reg)
-+{
-+	return ctrl_inl((SH_DMAC_CHAN_BASE(sh_dc->id) + reg));
-+}
-+
-+static void sh_dmae_writew(struct sh_dmae_chan *sh_dc, u16 data, u32 reg)
-+{
-+	ctrl_outw(data, (SH_DMAC_CHAN_BASE(sh_dc->id) + reg));
-+}
-+
-+static u16 sh_dmae_readw(struct sh_dmae_chan *sh_dc, u32 reg)
-+{
-+	return ctrl_inw((SH_DMAC_CHAN_BASE(sh_dc->id) + reg));
-+}
-+
-+static void dmae_init(struct sh_dmae_chan *sh_chan)
-+{
-+	u32 chcr = RS_DEFAULT; /* default is DUAL mode */
-+	sh_dmae_writel(sh_chan, chcr, CHCR);
-+}
-+
-+/*
-+ * Reset DMA controler
-+ *
-+ * SH7780 has two DMAOR register
-+ */
-+static void sh_dmae_ctl_stop(int id)
-+{
-+	unsigned short dmaor = dmaor_read_reg(id);
-+
-+	dmaor &= ~(DMAOR_NMIF | DMAOR_AE);
-+	dmaor_write_reg(id, dmaor);
-+}
-+
-+static int sh_dmae_rst(int id)
-+{
-+	unsigned short dmaor;
-+
-+	sh_dmae_ctl_stop(id);
-+	dmaor = (dmaor_read_reg(id)|DMAOR_INIT);
-+
-+	dmaor_write_reg(id, dmaor);
-+	if ((dmaor_read_reg(id) & (DMAOR_AE | DMAOR_NMIF))) {
-+		pr_warning(KERN_ERR "dma-sh: Can't initialize DMAOR.\n");
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static int dmae_is_idle(struct sh_dmae_chan *sh_chan)
-+{
-+	u32 chcr = sh_dmae_readl(sh_chan, CHCR);
-+	if (chcr & CHCR_DE) {
-+		if (!(chcr & CHCR_TE))
-+			return -EBUSY; /* working */
-+	}
-+	return 0; /* waiting */
-+}
-+
-+static inline unsigned int calc_xmit_shift(struct sh_dmae_chan *sh_chan)
-+{
-+	u32 chcr = sh_dmae_readl(sh_chan, CHCR);
-+	return ts_shift[(chcr & CHCR_TS_MASK) >> CHCR_TS_SHIFT];
-+}
-+
-+static void dmae_set_reg(struct sh_dmae_chan *sh_chan, struct sh_dmae_regs hw)
-+{
-+	sh_dmae_writel(sh_chan, hw.sar, SAR);
-+	sh_dmae_writel(sh_chan, hw.dar, DAR);
-+	sh_dmae_writel(sh_chan, hw.tcr, TCR);
-+}
-+
-+static void dmae_start(struct sh_dmae_chan *sh_chan)
-+{
-+    u32 chcr = sh_dmae_readl(sh_chan, CHCR);
-+
-+    chcr |= (CHCR_DE|CHCR_IE);
-+	sh_dmae_writel(sh_chan, chcr, CHCR);
-+}
-+
-+static void dmae_halt(struct sh_dmae_chan *sh_chan)
-+{
-+    u32 chcr = sh_dmae_readl(sh_chan, CHCR);
-+    chcr &= ~(CHCR_DE | CHCR_TE | CHCR_IE);
-+	sh_dmae_writel(sh_chan, chcr, CHCR);
-+}
-+
-+static int dmae_set_chcr(struct sh_dmae_chan *sh_chan, u32 val)
-+{
-+	int ret = dmae_is_idle(sh_chan);
-+	/* When DMA was working, can not set data to CHCR */
-+	if (ret)
-+		return ret;
-+	sh_dmae_writel(sh_chan, val, CHCR);
-+	return 0;
-+}
-+
-+#define DMARS1_ADDR	0x04
-+#define DMARS2_ADDR	0x08
-+#define DMARS_SHIFT 8
-+#define DMARS_CHAN_MSK 0x01
-+static int dmae_set_dmars(struct sh_dmae_chan *sh_chan, u16 val)
-+{
-+	u32 addr;
-+	u16 dmars;
-+	int shift = 0;
-+	int ret = dmae_is_idle(sh_chan);
-+	if (ret)
-+		return ret;
-+
-+	if (sh_chan->id & DMARS_CHAN_MSK)
-+		shift = DMARS_SHIFT;
-+
-+	switch (sh_chan->id) {
-+	/* DMARS0 */
-+	case 0:
-+	case 1:
-+		addr = SH_DMARS_BASE;
-+		break;
-+	/* DMARS1 */
-+	case 2:
-+	case 3:
-+		addr = (SH_DMARS_BASE + DMARS1_ADDR);
-+		break;
-+	/* DMARS2 */
-+	case 4:
-+	case 5:
-+		addr = (SH_DMARS_BASE + DMARS2_ADDR);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	dmars = sh_dmae_readw(sh_chan, addr);
-+	sh_dmae_writew(sh_chan,
-+		(val << shift) | (dmars & (shift ? 0xFF00 : 0x00FF)),
-+		addr);
-+	return 0;
-+}
-+
-+static dma_cookie_t sh_dmae_tx_submit(struct dma_async_tx_descriptor *tx)
-+{
-+	struct sh_desc *desc = tx_to_sh_desc(tx);
-+	struct sh_dmae_chan *sh_chan = to_sh_chan(tx->chan);
-+	unsigned long flags;
-+	dma_cookie_t cookie;
-+
-+	spin_lock_irqsave(&sh_chan->desc_lock, flags);
-+
-+	cookie = sh_chan->common.cookie;
-+	cookie++;
-+	if (cookie < 0)
-+		cookie = 1;
-+
-+	/* If desc only in the case of 1 */
-+	if (desc->async_tx.cookie != -EBUSY)
-+		desc->async_tx.cookie = cookie;
-+	sh_chan->common.cookie = desc->async_tx.cookie;
-+
-+	list_splice_init(&desc->async_tx.tx_list, sh_chan->ld_queue.prev);
-+
-+	spin_unlock_irqrestore(&sh_chan->desc_lock, flags);
-+
-+	return cookie;
-+}
-+
-+static struct sh_desc *sh_dmae_alloc_descriptor(struct sh_dmae_chan *sh_chan)
-+{
-+	struct sh_desc *desc_sw;
-+	desc_sw = kzalloc(sizeof(struct sh_desc), GFP_KERNEL);
-+	if (desc_sw) {
-+		dma_async_tx_descriptor_init(&desc_sw->async_tx,
-+						&sh_chan->common);
-+		desc_sw->async_tx.tx_submit = sh_dmae_tx_submit;
-+		INIT_LIST_HEAD(&desc_sw->async_tx.tx_list);
-+	}
-+
-+	return desc_sw;
-+}
-+
-+static int sh_dmae_alloc_chan_resources(struct dma_chan *chan)
-+{
-+	return 1;
-+}
-+
-+/*
-+ * sh_dma_free_chan_resources - Free all resources of the channel.
-+ */
-+static void sh_dmae_free_chan_resources(struct dma_chan *chan)
-+{
-+	struct sh_dmae_chan *sh_chan = to_sh_chan(chan);
-+	struct sh_desc *desc, *_desc;
-+	unsigned long flags;
-+
-+	dev_dbg(sh_chan->dev, "Free all channel resources.\n");
-+	spin_lock_irqsave(&sh_chan->desc_lock, flags);
-+	list_for_each_entry_safe(desc, _desc, &sh_chan->ld_queue, node) {
-+		list_del(&desc->node);
-+		/* free link descriptor */
-+		kfree(desc);
-+	}
-+	spin_unlock_irqrestore(&sh_chan->desc_lock, flags);
-+}
-+
-+static struct dma_async_tx_descriptor *sh_dmae_prep_memcpy(
-+	struct dma_chan *chan, dma_addr_t dma_dest, dma_addr_t dma_src,
-+	size_t len, unsigned long flags)
-+{
-+	struct sh_dmae_chan *sh_chan;
-+	struct sh_desc *first = NULL, *prev = NULL, *new;
-+	size_t copy_size;
-+	int cnt = 0;
-+	LIST_HEAD(link_chain);
-+
-+	if (!chan)
-+		return NULL;
-+
-+	if (!len)
-+		return NULL;
-+
-+	sh_chan = to_sh_chan(chan);
-+
-+	do {
-+		/* Allocate the link descriptor from DMA pool */
-+		new = sh_dmae_alloc_descriptor(sh_chan);
-+		if (!new) {
-+			dev_err(sh_chan->dev,
-+					"No free memory for link descriptor\n");
-+			return NULL;
-+		}
-+
-+		copy_size = min(len, (size_t)SH_DMA_TCR_MAX);
-+
-+		new->hw.sar = dma_src;
-+		new->hw.dar = dma_dest;
-+		new->hw.tcr = (copy_size >> calc_xmit_shift(sh_chan));
-+		if (!first)
-+			first = new;
-+
-+		new->mark = DESC_NCOMP;
-+		async_tx_ack(&new->async_tx);
-+
-+		prev = new;
-+		len -= copy_size;
-+		dma_src += copy_size;
-+		dma_dest += copy_size;
-+		cnt++;
-+		/* Insert the link descriptor to the LD ring */
-+		list_add_tail(&new->node, &first->async_tx.tx_list);
-+	} while (len);
-+
-+	new->async_tx.flags = flags; /* client is in control of this ack */
-+	new->async_tx.cookie = -EBUSY;
-+
-+	sh_chan->set_chcr = dmae_set_chcr;
-+	sh_chan->set_dmars = dmae_set_dmars;
-+
-+	return first ? &first->async_tx : NULL;
-+}
-+
-+/*
-+ * sh_chan_ld_cleanup - Clean up link descriptors
-+ *
-+ * This function clean up the ld_queue of DMA channel.
-+ */
-+static void sh_dmae_chan_ld_cleanup(struct sh_dmae_chan *sh_chan)
-+{
-+	struct sh_desc *desc, *_desc;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&sh_chan->desc_lock, flags);
-+	list_for_each_entry_safe(desc, _desc, &sh_chan->ld_queue, node) {
-+		dma_async_tx_callback callback;
-+		void *callback_param;
-+
-+		/* non send data */
-+		if (desc->mark == DESC_NCOMP)
-+			break;
-+
-+		/* send data sesc */
-+		callback = desc->async_tx.callback;
-+		callback_param = desc->async_tx.callback_param;
-+
-+		/* Remove from ld_queue list */
-+		list_del(&desc->node);
-+
-+		dev_dbg(sh_chan->dev, "link descriptor %p will be recycle.\n",
-+				desc);
-+		kfree(desc);
-+		/* Run the link descriptor callback function */
-+		if (callback) {
-+			spin_unlock_irqrestore(&sh_chan->desc_lock, flags);
-+			dev_dbg(sh_chan->dev, "link descriptor %p callback\n",
-+					desc);
-+			callback(callback_param);
-+			spin_lock_irqsave(&sh_chan->desc_lock, flags);
-+		}
-+	}
-+	spin_unlock_irqrestore(&sh_chan->desc_lock, flags);
-+}
-+
-+static void sh_chan_xfer_ld_queue(struct sh_dmae_chan *sh_chan)
-+{
-+	struct list_head *ld_node;
-+	unsigned long flags;
-+	struct sh_dmae_regs hw;
-+
-+	if (dmae_is_idle(sh_chan))
-+		return;
-+
-+	dmae_halt(sh_chan);
-+	spin_lock_irqsave(&sh_chan->desc_lock, flags);
-+
-+	/* Find the first un-transfer desciptor */
-+	for (ld_node = sh_chan->ld_queue.next;
-+		(ld_node != &sh_chan->ld_queue)
-+			&& (to_sh_desc(ld_node)->mark == DESC_COMP);
-+		ld_node = ld_node->next)
-+		cpu_relax();
-+
-+	spin_unlock_irqrestore(&sh_chan->desc_lock, flags);
-+
-+	if (ld_node != &sh_chan->ld_queue) {
-+		/* Get the ld start address from ld_queue */
-+		hw = to_sh_desc(ld_node)->hw;
-+		dmae_set_reg(sh_chan, hw);
-+		dmae_start(sh_chan);
-+	}
-+}
-+
-+static void sh_dmae_memcpy_issue_pending(struct dma_chan *chan)
-+{
-+	struct sh_dmae_chan *sh_chan = to_sh_chan(chan);
-+
-+	sh_chan_xfer_ld_queue(sh_chan);
-+}
-+
-+static enum dma_status sh_dmae_is_complete(struct dma_chan *chan,
-+					dma_cookie_t cookie,
-+					dma_cookie_t *done,
-+					dma_cookie_t *used)
-+{
-+	struct sh_dmae_chan *sh_chan = to_sh_chan(chan);
-+	dma_cookie_t last_used;
-+	dma_cookie_t last_complete;
-+
-+	sh_dmae_chan_ld_cleanup(sh_chan);
-+
-+	last_used = chan->cookie;
-+	last_complete = sh_chan->completed_cookie;
-+	if (last_complete == -EBUSY)
-+		last_complete = last_used;
-+
-+	if (done)
-+		*done = last_complete;
-+
-+	if (used)
-+		*used = last_used;
-+
-+	return dma_async_is_complete(cookie, last_complete, last_used);
-+}
-+
-+static irqreturn_t sh_dmae_interrupt(int irq, void *data)
-+{
-+	irqreturn_t ret = IRQ_NONE;
-+	struct sh_dmae_chan *sh_chan = (struct sh_dmae_chan *)data;
-+	u32 chcr = sh_dmae_readl(sh_chan, CHCR);
-+
-+	if (chcr & CHCR_TE) {
-+		struct sh_desc *desc, *cur_desc = NULL;
-+		u32 sar_buf = sh_dmae_readl(sh_chan, SAR);
-+
-+		list_for_each_entry(desc, &sh_chan->ld_queue, node) {
-+			if ((desc->hw.sar + desc->hw.tcr) == sar_buf) {
-+				cur_desc = desc;
-+				break;
-+			}
-+		}
-+		if (cur_desc) {
-+			switch (cur_desc->async_tx.cookie) {
-+			case 0: /* other desc data */
-+				break;
-+			case -EBUSY: /* last desc */
-+				sh_chan->completed_cookie =
-+					cur_desc->async_tx.cookie;
-+				break;
-+			default: /* first desc ( 0 < )*/
-+				sh_chan->completed_cookie =
-+					cur_desc->async_tx.cookie - 1;
-+				break;
-+			}
-+			cur_desc->mark = DESC_COMP;
-+		}
-+		/* Next desc */
-+		sh_chan_xfer_ld_queue(sh_chan);
-+		ret = IRQ_HANDLED;
-+	}
-+	tasklet_schedule(&sh_chan->tasklet);
-+	return ret;
-+}
-+
-+#if defined(CONFIG_CPU_SH4)
-+static irqreturn_t sh_dmae_err(int irq, void *data)
-+{
-+	int err = 0;
-+	struct sh_dmae_device *shdev = (struct sh_dmae_device *)data;
-+
-+	/* IRQ Multi */
-+	if (shdev->pdata.mode & SHDMA_MIX_IRQ) {
-+		int cnt = 0;
-+		switch (irq) {
-+#if defined(DMTE6_IRQ) && defined(DMAE1_IRQ)
-+		case DMTE6_IRQ:
-+			cnt++;
-+#endif
-+		case DMTE0_IRQ:
-+			if (dmaor_read_reg(cnt) & (DMAOR_NMIF | DMAOR_AE)) {
-+				disable_irq(irq);
-+				return IRQ_HANDLED;
-+			}
-+		default:
-+			return IRQ_NONE;
-+		}
-+	} else {
-+		/* reset dma controler */
-+		err = sh_dmae_rst(0);
-+		if (err)
-+			return err;
-+		if (shdev->pdata.mode & SHDMA_DMAOR1) {
-+			err = sh_dmae_rst(1);
-+			if (err)
-+				return err;
-+		}
-+		disable_irq(irq);
-+		return IRQ_HANDLED;
-+	}
-+}
-+#endif
-+
-+static void dmae_do_tasklet(unsigned long data)
-+{
-+	struct sh_dmae_chan *sh_chan = (struct sh_dmae_chan *)data;
-+	sh_dmae_chan_ld_cleanup(sh_chan);
-+}
-+
-+static unsigned int get_dmae_irq(unsigned int id)
-+{
-+	unsigned int irq = 0;
-+	if (id < ARRAY_SIZE(dmte_irq_map))
-+		irq = dmte_irq_map[id];
-+	return irq;
-+}
-+
-+static int __devinit sh_dmae_chan_probe(struct sh_dmae_device *shdev, int id)
-+{
-+	int err;
-+	unsigned int irq = get_dmae_irq(id);
-+	unsigned long irqflags = IRQF_DISABLED;
-+	struct sh_dmae_chan *new_sh_chan;
-+
-+	/* alloc channel */
-+	new_sh_chan = kzalloc(sizeof(struct sh_dmae_chan), GFP_KERNEL);
-+	if (!new_sh_chan) {
-+		dev_err(shdev->dev, "No free memory for allocating "
-+				"dma channels!\n");
-+		return -ENOMEM;
-+	}
-+
-+	new_sh_chan->dev = shdev->dev;
-+	shdev->chan[id] = new_sh_chan;
-+	new_sh_chan->id = id;
-+
-+	/* Init DMA tasklet */
-+	tasklet_init(&new_sh_chan->tasklet, dmae_do_tasklet,
-+			(unsigned long)new_sh_chan);
-+
-+	/* Init the channel */
-+	dmae_init(new_sh_chan);
-+
-+	spin_lock_init(&new_sh_chan->desc_lock);
-+
-+	/* Init descripter manage list */
-+	INIT_LIST_HEAD(&new_sh_chan->ld_queue);
-+
-+	/* copy struct dma_device */
-+	new_sh_chan->common.device = &shdev->common;
-+
-+	/* Add the channel to DMA device channel list */
-+	list_add_tail(&new_sh_chan->common.device_node,
-+			&shdev->common.channels);
-+	shdev->common.chancnt++;
-+
-+	if (shdev->pdata.mode & SHDMA_MIX_IRQ) {
-+		irqflags = IRQF_SHARED;
-+#if defined(DMTE6_IRQ)
-+		if (irq >= DMTE6_IRQ)
-+			irq = DMTE6_IRQ;
-+		else
-+#endif
-+			irq = DMTE0_IRQ;
-+	}
-+
-+	snprintf(new_sh_chan->dev_id, sizeof(new_sh_chan->dev_id),
-+			"sh-dmae%d", new_sh_chan->id);
-+
-+	/* set up channel irq */
-+	err = request_irq(irq, &sh_dmae_interrupt,
-+		irqflags, new_sh_chan->dev_id, new_sh_chan);
-+	if (err) {
-+		dev_err(shdev->dev, "DMA channel %d request_irq error "
-+			"with return %d\n", id, err);
-+		goto err_no_irq;
-+	}
-+
-+	return 0;
-+
-+err_no_irq:
-+	/* remove from dmaengine device node */
-+	list_del(&new_sh_chan->common.device_node);
-+	kfree(new_sh_chan);
-+	return err;
-+}
-+
-+static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
-+{
-+	int i;
-+
-+	for (i = shdev->common.chancnt - 1 ; i >= 0 ; i--) {
-+		if (shdev->chan[i]) {
-+			struct sh_dmae_chan *shchan = shdev->chan[i];
-+			if (!(shdev->pdata.mode & SHDMA_MIX_IRQ))
-+				free_irq(dmte_irq_map[i], shchan);
-+
-+			list_del(&shchan->common.device_node);
-+			kfree(shchan);
-+			shdev->chan[i] = NULL;
-+		}
-+	}
-+	shdev->common.chancnt = 0;
-+}
-+
-+static int __init sh_dmae_probe(struct platform_device *pdev)
-+{
-+	int err = 0, cnt, ecnt;
-+	unsigned long irqflags = IRQF_DISABLED;
-+	int eirq[] = { DMAE0_IRQ,
-+#if defined(DMAE1_IRQ)
-+			DMAE1_IRQ
-+#endif
-+		};
-+	struct sh_dmae_device *shdev;
-+
-+	shdev = kzalloc(sizeof(struct sh_dmae_device), GFP_KERNEL);
-+	if (!shdev) {
-+		dev_err(&pdev->dev, "No enough memory\n");
-+		err = -ENOMEM;
-+		goto shdev_err;
-+	}
-+
-+	/* get platform data */
-+	if (!pdev->dev.platform_data)
-+		goto shdev_err;
-+
-+	/* platform data */
-+	memcpy(&shdev->pdata, pdev->dev.platform_data,
-+			sizeof(struct sh_dmae_pdata));
-+
-+	/* reset dma controler */
-+	err = sh_dmae_rst(0);
-+	if (err)
-+		goto rst_err;
-+
-+	/* SH7780/85/23 has DMAOR1 */
-+	if (shdev->pdata.mode & SHDMA_DMAOR1) {
-+		err = sh_dmae_rst(1);
-+		if (err)
-+			goto rst_err;
-+	}
-+
-+	shdev->dev = &pdev->dev;
-+	INIT_LIST_HEAD(&shdev->common.channels);
-+
-+	dma_cap_set(DMA_MEMCPY, shdev->common.cap_mask);
-+	shdev->common.device_alloc_chan_resources
-+		= sh_dmae_alloc_chan_resources;
-+	shdev->common.device_free_chan_resources = sh_dmae_free_chan_resources;
-+	shdev->common.device_prep_dma_memcpy = sh_dmae_prep_memcpy;
-+	shdev->common.device_is_tx_complete = sh_dmae_is_complete;
-+	shdev->common.device_issue_pending = sh_dmae_memcpy_issue_pending;
-+	shdev->common.dev = &pdev->dev;
-+
-+	/* Non Mix IRQ mode SH7722/SH7730 etc... */
-+	if (shdev->pdata.mode & SHDMA_MIX_IRQ) {
-+		irqflags = IRQF_SHARED;
-+		eirq[0] = DMTE0_IRQ;
-+#if defined(DMTE6_IRQ) && defined(DMAE1_IRQ)
-+		eirq[1] = DMTE6_IRQ;
-+#endif
-+	}
-+
-+	for (ecnt = 0 ; ecnt < ARRAY_SIZE(eirq); ecnt++) {
-+		err = request_irq(eirq[ecnt], sh_dmae_err,
-+			irqflags, "DMAC Address Error", shdev);
-+		if (err) {
-+			dev_err(&pdev->dev, "DMA device request_irq"
-+				"erro (irq %d) with return %d\n",
-+				eirq[ecnt], err);
-+			goto eirq_err;
-+		}
-+	}
-+
-+	/* Create DMA Channel */
-+	for (cnt = 0 ; cnt < MAX_DMA_CHANNELS ; cnt++) {
-+		err = sh_dmae_chan_probe(shdev, cnt);
-+		if (err)
-+			goto chan_probe_err;
-+	}
-+
-+	platform_set_drvdata(pdev, shdev);
-+	dma_async_device_register(&shdev->common);
-+
-+	return err;
-+
-+chan_probe_err:
-+	sh_dmae_chan_remove(shdev);
-+
-+eirq_err:
-+	for (ecnt-- ; ecnt >= 0; ecnt--)
-+		free_irq(eirq[ecnt], shdev);
-+
-+rst_err:
-+	kfree(shdev);
-+
-+shdev_err:
-+	return err;
-+}
-+
-+static int __exit sh_dmae_remove(struct platform_device *pdev)
-+{
-+	struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
-+
-+	dma_async_device_unregister(&shdev->common);
-+
-+	if (shdev->pdata.mode & SHDMA_MIX_IRQ) {
-+		free_irq(DMTE0_IRQ, shdev);
-+#if defined(DMTE6_IRQ)
-+		free_irq(DMTE6_IRQ, shdev);
-+#endif
-+	}
-+
-+	/* channel data remove */
-+	sh_dmae_chan_remove(shdev);
-+
-+	if (!(shdev->pdata.mode & SHDMA_MIX_IRQ)) {
-+		free_irq(DMAE0_IRQ, shdev);
-+#if defined(DMAE1_IRQ)
-+		free_irq(DMAE1_IRQ, shdev);
-+#endif
-+	}
-+	kfree(shdev);
-+
-+	return 0;
-+}
-+
-+static void sh_dmae_shutdown(struct platform_device *pdev)
-+{
-+	struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
-+	sh_dmae_ctl_stop(0);
-+	if (shdev->pdata.mode & SHDMA_DMAOR1)
-+		sh_dmae_ctl_stop(1);
-+}
-+
-+static struct platform_driver sh_dmae_driver = {
-+	.remove		= __exit_p(sh_dmae_remove),
-+	.shutdown	= sh_dmae_shutdown,
-+	.driver = {
-+		.name	= "sh-dma-engine",
-+	},
-+};
-+
-+static int __init sh_dmae_init(void)
-+{
-+	return platform_driver_probe(&sh_dmae_driver, sh_dmae_probe);
-+}
-+module_init(sh_dmae_init);
-+
-+static void __exit sh_dmae_exit(void)
-+{
-+	platform_driver_unregister(&sh_dmae_driver);
-+}
-+module_exit(sh_dmae_exit);
-+
-+MODULE_AUTHOR("Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>");
-+MODULE_DESCRIPTION("Renesas SH DMA Engine driver");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/dma/shdma.h b/drivers/dma/shdma.h
-new file mode 100644
-index 0000000..5f2d9b6
---- /dev/null
-+++ b/drivers/dma/shdma.h
-@@ -0,0 +1,65 @@
-+/*
-+ * Renesas SuperH DMA Engine support
-+ *
-+ * Copyright (C) 2009 Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-+ * Copyright (C) 2009 Renesas Solutions, Inc. All rights reserved.
-+ *
-+ * This is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
-+#ifndef __DMA_SHDMA_H
-+#define __DMA_SHDMA_H
-+
-+#include <linux/device.h>
-+#include <linux/dmapool.h>
-+#include <linux/dmaengine.h>
-+
-+#define SH_DMA_TCR_MAX 0x00FFFFFF	/* 16MB */
-+
-+struct sh_dmae_regs {
-+	u32 sar; /* SAR / source address */
-+	u32 dar; /* DAR / destination address */
-+	u32 tcr; /* TCR / transfer count */
-+};
-+
-+struct sh_desc {
-+	struct sh_dmae_regs hw;
-+	struct list_head node;
-+	struct dma_async_tx_descriptor async_tx;
-+	struct list_head *ld;
-+	int mark;
-+};
-+
-+struct sh_dmae_chan {
-+	dma_cookie_t completed_cookie;	/* The maximum cookie completed */
-+	spinlock_t desc_lock;			/* Descriptor operation lock */
-+	struct list_head ld_queue;		/* Link descriptors queue */
-+	struct dma_chan common;			/* DMA common channel */
-+	struct device *dev;				/* Channel device */
-+	struct resource reg;			/* Resource for register */
-+	struct tasklet_struct tasklet;
-+	int id;	/* Raw id of this channel */
-+	char dev_id[16];	/* unique name per DMAC of channel */
-+
-+	/* Set chcr */
-+	int (*set_chcr)(struct sh_dmae_chan *sh_chan, u32 regs);
-+	/* Set DMA resource */
-+	int (*set_dmars)(struct sh_dmae_chan *sh_chan, u16 res);
-+};
-+
-+struct sh_dmae_device {
-+	struct resource reg;	/* Resource for register */
-+	struct device *dev;
-+	struct dma_device common;
-+	struct sh_dmae_chan *chan[CONFIG_NR_ONCHIP_DMA_CHANNELS];
-+	struct sh_dmae_pdata pdata;
-+};
-+
-+#define to_sh_chan(chan) container_of(chan, struct sh_dmae_chan, common)
-+#define to_sh_desc(lh) container_of(lh, struct sh_desc, node)
-+#define tx_to_sh_desc(tx) container_of(tx, struct sh_desc, async_tx)
-+
-+#endif	/* __DMA_SHDMA_H */
--- 
-1.6.2
+Thanks a lot for your replies and work on this.
 
 
+--Boundary-00=_vDLuJXbMqAKGkTX
+Content-Type: text/plain;
+  charset="iso 8859-15";
+  name="hercules.cnf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="hercules.cnf"
+
+#ARCHMODE	ESA/390
+ARCHMODE	z/Arch
+OSTAILOR	LINUX
+LOADPARM	0120....
+
+CPUMODEL	3090
+CPUSERIAL	002623
+NUMCPU		2
+MAINSIZE	256
+CODEPAGE	default
+XPNDSIZE	0
+#CNSLPORT	3270
+#HTTPPORT	8081 fjp Quincunx
+#HTTPROOT	/usr/local/share/hercules/
+
+#HERCPRIO	-1
+#CPUPRIO	-1
+#DEVPRIO	-1
+PANRATE		SLOW
+TIMERINT	500
+
+0009	1052
+000C	3505	gen/kernel.debian parmfile.debian gen/initrd.debian autopad eof
+000D	3505	gen.daily/kernel.debian parmfile.debian gen.daily/initrd.debian autopad eof
+001F	3270
+0120	3390	/srv/emulators/dasd0
+0121	3390	/srv/emulators/dasd1
+0122	3390	/srv/emulators/dasd2
+0123	3390	/srv/emulators/dasd3
+0581	3480	debian.tdf
+0A00	3088	CTCI /dev/net/tun 1500 10.19.92.1 10.19.92.2 255.255.255.0
+0A01	3088	CTCI /dev/net/tun 1500 10.19.92.1 10.19.92.2 255.255.255.0
+
+--Boundary-00=_vDLuJXbMqAKGkTX
+Content-Type: text/plain;
+  charset="utf-8";
+  name="config"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="config"
+
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.28.7
+# Sat Mar  7 20:32:18 2009
+#
+CONFIG_SCHED_MC=y
+CONFIG_MMU=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_BUG=y
+CONFIG_NO_IOMEM=y
+CONFIG_NO_DMA=y
+CONFIG_S390=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+
+#
+# General setup
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+# CONFIG_LOCALVERSION_AUTO is not set
+CONFIG_SWAP=y
+CONFIG_SYSVIPC=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_BSD_PROCESS_ACCT=y
+CONFIG_BSD_PROCESS_ACCT_V3=y
+CONFIG_TASKSTATS=y
+CONFIG_TASK_DELAY_ACCT=y
+CONFIG_TASK_XACCT=y
+CONFIG_TASK_IO_ACCOUNTING=y
+CONFIG_AUDIT=y
+CONFIG_AUDITSYSCALL=y
+CONFIG_AUDIT_TREE=y
+# CONFIG_IKCONFIG is not set
+CONFIG_LOG_BUF_SHIFT=17
+CONFIG_CGROUPS=y
+# CONFIG_CGROUP_DEBUG is not set
+CONFIG_CGROUP_NS=y
+# CONFIG_CGROUP_FREEZER is not set
+CONFIG_CGROUP_DEVICE=y
+CONFIG_CPUSETS=y
+CONFIG_GROUP_SCHED=y
+CONFIG_FAIR_GROUP_SCHED=y
+# CONFIG_RT_GROUP_SCHED is not set
+# CONFIG_USER_SCHED is not set
+CONFIG_CGROUP_SCHED=y
+CONFIG_CGROUP_CPUACCT=y
+# CONFIG_RESOURCE_COUNTERS is not set
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_SYSFS_DEPRECATED_V2=y
+CONFIG_PROC_PID_CPUSET=y
+CONFIG_RELAY=y
+CONFIG_NAMESPACES=y
+CONFIG_UTS_NS=y
+CONFIG_IPC_NS=y
+CONFIG_USER_NS=y
+CONFIG_PID_NS=y
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+# CONFIG_EMBEDDED is not set
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+# CONFIG_KALLSYMS_ALL is not set
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+# CONFIG_COMPAT_BRK is not set
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_TIMERFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_AIO=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_SLAB=y
+# CONFIG_SLUB is not set
+# CONFIG_SLOB is not set
+CONFIG_PROFILING=y
+# CONFIG_MARKERS is not set
+# CONFIG_OPROFILE is not set
+CONFIG_HAVE_OPROFILE=y
+# CONFIG_KPROBES is not set
+CONFIG_HAVE_SYSCALL_WRAPPERS=y
+CONFIG_HAVE_KPROBES=y
+CONFIG_HAVE_KRETPROBES=y
+CONFIG_HAVE_ARCH_TRACEHOOK=y
+# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+# CONFIG_TINY_SHMEM is not set
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+CONFIG_MODULE_FORCE_LOAD=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODULE_FORCE_UNLOAD=y
+CONFIG_MODVERSIONS=y
+# CONFIG_MODULE_SRCVERSION_ALL is not set
+CONFIG_KMOD=y
+CONFIG_STOP_MACHINE=y
+CONFIG_BLOCK=y
+CONFIG_LBD=y
+CONFIG_BLK_DEV_IO_TRACE=y
+# CONFIG_LSF is not set
+CONFIG_BLK_DEV_BSG=y
+# CONFIG_BLK_DEV_INTEGRITY is not set
+
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+CONFIG_DEFAULT_CFQ=y
+# CONFIG_DEFAULT_NOOP is not set
+CONFIG_DEFAULT_IOSCHED="cfq"
+CONFIG_CLASSIC_RCU=y
+# CONFIG_FREEZER is not set
+
+#
+# Base setup
+#
+
+#
+# Processor type and features
+#
+CONFIG_TICK_ONESHOT=y
+CONFIG_NO_HZ=y
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+# CONFIG_64BIT is not set
+CONFIG_32BIT=y
+CONFIG_SMP=y
+CONFIG_NR_CPUS=32
+CONFIG_HOTPLUG_CPU=y
+CONFIG_MATHEMU=y
+CONFIG_AUDIT_ARCH=y
+CONFIG_S390_SWITCH_AMODE=y
+CONFIG_S390_EXEC_PROTECT=y
+
+#
+# Code generation options
+#
+CONFIG_MARCH_G5=y
+# CONFIG_MARCH_Z900 is not set
+# CONFIG_MARCH_Z990 is not set
+# CONFIG_MARCH_Z9_109 is not set
+CONFIG_PACK_STACK=y
+# CONFIG_CHECK_STACK is not set
+# CONFIG_WARN_STACK is not set
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+
+#
+# Kernel preemption
+#
+CONFIG_PREEMPT_NONE=y
+# CONFIG_PREEMPT_VOLUNTARY is not set
+# CONFIG_PREEMPT is not set
+CONFIG_ARCH_SPARSEMEM_ENABLE=y
+CONFIG_ARCH_SPARSEMEM_DEFAULT=y
+CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTREMOVE=y
+CONFIG_SELECT_MEMORY_MODEL=y
+# CONFIG_FLATMEM_MANUAL is not set
+# CONFIG_DISCONTIGMEM_MANUAL is not set
+CONFIG_SPARSEMEM_MANUAL=y
+CONFIG_SPARSEMEM=y
+CONFIG_HAVE_MEMORY_PRESENT=y
+CONFIG_SPARSEMEM_STATIC=y
+CONFIG_SPARSEMEM_VMEMMAP_ENABLE=y
+CONFIG_SPARSEMEM_VMEMMAP=y
+# CONFIG_MEMORY_HOTPLUG is not set
+CONFIG_PAGEFLAGS_EXTENDED=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_MIGRATION=y
+# CONFIG_RESOURCES_64BIT is not set
+# CONFIG_PHYS_ADDR_T_64BIT is not set
+CONFIG_ZONE_DMA_FLAG=0
+CONFIG_VIRT_TO_BUS=y
+CONFIG_UNEVICTABLE_LRU=y
+
+#
+# I/O subsystem configuration
+#
+CONFIG_MACHCHK_WARNING=y
+CONFIG_QDIO=y
+# CONFIG_QDIO_DEBUG is not set
+CONFIG_CHSC_SCH=m
+
+#
+# Misc
+#
+CONFIG_IPL=y
+# CONFIG_IPL_TAPE is not set
+CONFIG_IPL_VM=y
+CONFIG_BINFMT_ELF=y
+# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+# CONFIG_HAVE_AOUT is not set
+CONFIG_BINFMT_MISC=m
+CONFIG_FORCE_MAX_ZONEORDER=9
+# CONFIG_PROCESS_DEBUG is not set
+CONFIG_PFAULT=y
+# CONFIG_SHARED_KERNEL is not set
+CONFIG_CMM=y
+CONFIG_CMM_PROC=y
+# CONFIG_PAGE_STATES is not set
+# CONFIG_VIRT_TIMER is not set
+# CONFIG_HZ_100 is not set
+CONFIG_HZ_250=y
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=250
+# CONFIG_SCHED_HRTICK is not set
+CONFIG_S390_HYPFS_FS=y
+CONFIG_KEXEC=y
+# CONFIG_ZFCPDUMP is not set
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+CONFIG_PACKET_MMAP=y
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+CONFIG_XFRM_USER=m
+# CONFIG_XFRM_SUB_POLICY is not set
+# CONFIG_XFRM_MIGRATE is not set
+# CONFIG_XFRM_STATISTICS is not set
+CONFIG_XFRM_IPCOMP=m
+CONFIG_NET_KEY=m
+# CONFIG_NET_KEY_MIGRATE is not set
+CONFIG_IUCV=y
+CONFIG_AFIUCV=m
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_IP_ADVANCED_ROUTER=y
+CONFIG_ASK_IP_FIB_HASH=y
+# CONFIG_IP_FIB_TRIE is not set
+CONFIG_IP_FIB_HASH=y
+CONFIG_IP_MULTIPLE_TABLES=y
+CONFIG_IP_ROUTE_MULTIPATH=y
+CONFIG_IP_ROUTE_VERBOSE=y
+# CONFIG_IP_PNP is not set
+CONFIG_NET_IPIP=m
+CONFIG_NET_IPGRE=m
+CONFIG_NET_IPGRE_BROADCAST=y
+CONFIG_IP_MROUTE=y
+CONFIG_IP_PIMSM_V1=y
+CONFIG_IP_PIMSM_V2=y
+# CONFIG_ARPD is not set
+CONFIG_SYN_COOKIES=y
+CONFIG_INET_AH=m
+CONFIG_INET_ESP=m
+CONFIG_INET_IPCOMP=m
+CONFIG_INET_XFRM_TUNNEL=m
+CONFIG_INET_TUNNEL=m
+CONFIG_INET_XFRM_MODE_TRANSPORT=m
+CONFIG_INET_XFRM_MODE_TUNNEL=m
+CONFIG_INET_XFRM_MODE_BEET=m
+CONFIG_INET_LRO=m
+CONFIG_INET_DIAG=m
+CONFIG_INET_TCP_DIAG=m
+CONFIG_TCP_CONG_ADVANCED=y
+CONFIG_TCP_CONG_BIC=m
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_TCP_CONG_WESTWOOD=m
+CONFIG_TCP_CONG_HTCP=m
+CONFIG_TCP_CONG_HSTCP=m
+CONFIG_TCP_CONG_HYBLA=m
+CONFIG_TCP_CONG_VEGAS=m
+CONFIG_TCP_CONG_SCALABLE=m
+CONFIG_TCP_CONG_LP=m
+CONFIG_TCP_CONG_VENO=m
+CONFIG_TCP_CONG_YEAH=m
+CONFIG_TCP_CONG_ILLINOIS=m
+# CONFIG_DEFAULT_BIC is not set
+CONFIG_DEFAULT_CUBIC=y
+# CONFIG_DEFAULT_HTCP is not set
+# CONFIG_DEFAULT_VEGAS is not set
+# CONFIG_DEFAULT_WESTWOOD is not set
+# CONFIG_DEFAULT_RENO is not set
+CONFIG_DEFAULT_TCP_CONG="cubic"
+CONFIG_TCP_MD5SIG=y
+# CONFIG_IPV6 is not set
+# CONFIG_NETLABEL is not set
+CONFIG_NETWORK_SECMARK=y
+CONFIG_NETFILTER=y
+# CONFIG_NETFILTER_DEBUG is not set
+CONFIG_NETFILTER_ADVANCED=y
+CONFIG_BRIDGE_NETFILTER=y
+
+#
+# Core Netfilter Configuration
+#
+CONFIG_NETFILTER_NETLINK=m
+CONFIG_NETFILTER_NETLINK_QUEUE=m
+CONFIG_NETFILTER_NETLINK_LOG=m
+CONFIG_NF_CONNTRACK=m
+CONFIG_NF_CT_ACCT=y
+CONFIG_NF_CONNTRACK_MARK=y
+CONFIG_NF_CONNTRACK_SECMARK=y
+CONFIG_NF_CONNTRACK_EVENTS=y
+CONFIG_NF_CT_PROTO_DCCP=m
+CONFIG_NF_CT_PROTO_GRE=m
+CONFIG_NF_CT_PROTO_SCTP=m
+CONFIG_NF_CT_PROTO_UDPLITE=m
+CONFIG_NF_CONNTRACK_AMANDA=m
+CONFIG_NF_CONNTRACK_FTP=m
+CONFIG_NF_CONNTRACK_H323=m
+CONFIG_NF_CONNTRACK_IRC=m
+CONFIG_NF_CONNTRACK_NETBIOS_NS=m
+CONFIG_NF_CONNTRACK_PPTP=m
+CONFIG_NF_CONNTRACK_SANE=m
+CONFIG_NF_CONNTRACK_SIP=m
+CONFIG_NF_CONNTRACK_TFTP=m
+CONFIG_NF_CT_NETLINK=m
+# CONFIG_NETFILTER_TPROXY is not set
+CONFIG_NETFILTER_XTABLES=m
+CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
+CONFIG_NETFILTER_XT_TARGET_CONNMARK=m
+CONFIG_NETFILTER_XT_TARGET_CONNSECMARK=m
+CONFIG_NETFILTER_XT_TARGET_DSCP=m
+CONFIG_NETFILTER_XT_TARGET_MARK=m
+CONFIG_NETFILTER_XT_TARGET_NFLOG=m
+CONFIG_NETFILTER_XT_TARGET_NFQUEUE=m
+CONFIG_NETFILTER_XT_TARGET_NOTRACK=m
+CONFIG_NETFILTER_XT_TARGET_RATEEST=m
+CONFIG_NETFILTER_XT_TARGET_TRACE=m
+CONFIG_NETFILTER_XT_TARGET_SECMARK=m
+CONFIG_NETFILTER_XT_TARGET_TCPMSS=m
+CONFIG_NETFILTER_XT_TARGET_TCPOPTSTRIP=m
+CONFIG_NETFILTER_XT_MATCH_COMMENT=m
+CONFIG_NETFILTER_XT_MATCH_CONNBYTES=m
+CONFIG_NETFILTER_XT_MATCH_CONNLIMIT=m
+CONFIG_NETFILTER_XT_MATCH_CONNMARK=m
+CONFIG_NETFILTER_XT_MATCH_CONNTRACK=m
+CONFIG_NETFILTER_XT_MATCH_DCCP=m
+CONFIG_NETFILTER_XT_MATCH_DSCP=m
+CONFIG_NETFILTER_XT_MATCH_ESP=m
+CONFIG_NETFILTER_XT_MATCH_HASHLIMIT=m
+CONFIG_NETFILTER_XT_MATCH_HELPER=m
+CONFIG_NETFILTER_XT_MATCH_IPRANGE=m
+CONFIG_NETFILTER_XT_MATCH_LENGTH=m
+CONFIG_NETFILTER_XT_MATCH_LIMIT=m
+CONFIG_NETFILTER_XT_MATCH_MAC=m
+CONFIG_NETFILTER_XT_MATCH_MARK=m
+CONFIG_NETFILTER_XT_MATCH_MULTIPORT=m
+CONFIG_NETFILTER_XT_MATCH_OWNER=m
+CONFIG_NETFILTER_XT_MATCH_POLICY=m
+CONFIG_NETFILTER_XT_MATCH_PHYSDEV=m
+CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
+CONFIG_NETFILTER_XT_MATCH_QUOTA=m
+CONFIG_NETFILTER_XT_MATCH_RATEEST=m
+CONFIG_NETFILTER_XT_MATCH_REALM=m
+# CONFIG_NETFILTER_XT_MATCH_RECENT is not set
+CONFIG_NETFILTER_XT_MATCH_SCTP=m
+CONFIG_NETFILTER_XT_MATCH_STATE=m
+CONFIG_NETFILTER_XT_MATCH_STATISTIC=m
+CONFIG_NETFILTER_XT_MATCH_STRING=m
+CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
+CONFIG_NETFILTER_XT_MATCH_TIME=m
+CONFIG_NETFILTER_XT_MATCH_U32=m
+CONFIG_IP_VS=m
+# CONFIG_IP_VS_DEBUG is not set
+CONFIG_IP_VS_TAB_BITS=12
+
+#
+# IPVS transport protocol load balancing support
+#
+CONFIG_IP_VS_PROTO_TCP=y
+CONFIG_IP_VS_PROTO_UDP=y
+CONFIG_IP_VS_PROTO_AH_ESP=y
+CONFIG_IP_VS_PROTO_ESP=y
+CONFIG_IP_VS_PROTO_AH=y
+
+#
+# IPVS scheduler
+#
+CONFIG_IP_VS_RR=m
+CONFIG_IP_VS_WRR=m
+CONFIG_IP_VS_LC=m
+CONFIG_IP_VS_WLC=m
+CONFIG_IP_VS_LBLC=m
+CONFIG_IP_VS_LBLCR=m
+CONFIG_IP_VS_DH=m
+CONFIG_IP_VS_SH=m
+CONFIG_IP_VS_SED=m
+CONFIG_IP_VS_NQ=m
+
+#
+# IPVS application helper
+#
+CONFIG_IP_VS_FTP=m
+
+#
+# IP: Netfilter Configuration
+#
+CONFIG_NF_DEFRAG_IPV4=m
+CONFIG_NF_CONNTRACK_IPV4=m
+CONFIG_NF_CONNTRACK_PROC_COMPAT=y
+CONFIG_IP_NF_QUEUE=m
+CONFIG_IP_NF_IPTABLES=m
+CONFIG_IP_NF_MATCH_ADDRTYPE=m
+CONFIG_IP_NF_MATCH_AH=m
+CONFIG_IP_NF_MATCH_ECN=m
+CONFIG_IP_NF_MATCH_TTL=m
+CONFIG_IP_NF_FILTER=m
+CONFIG_IP_NF_TARGET_REJECT=m
+CONFIG_IP_NF_TARGET_LOG=m
+CONFIG_IP_NF_TARGET_ULOG=m
+CONFIG_NF_NAT=m
+CONFIG_NF_NAT_NEEDED=y
+CONFIG_IP_NF_TARGET_MASQUERADE=m
+CONFIG_IP_NF_TARGET_NETMAP=m
+CONFIG_IP_NF_TARGET_REDIRECT=m
+CONFIG_NF_NAT_SNMP_BASIC=m
+CONFIG_NF_NAT_PROTO_DCCP=m
+CONFIG_NF_NAT_PROTO_GRE=m
+CONFIG_NF_NAT_PROTO_UDPLITE=m
+CONFIG_NF_NAT_PROTO_SCTP=m
+CONFIG_NF_NAT_FTP=m
+CONFIG_NF_NAT_IRC=m
+CONFIG_NF_NAT_TFTP=m
+CONFIG_NF_NAT_AMANDA=m
+CONFIG_NF_NAT_PPTP=m
+CONFIG_NF_NAT_H323=m
+CONFIG_NF_NAT_SIP=m
+CONFIG_IP_NF_MANGLE=m
+CONFIG_IP_NF_TARGET_CLUSTERIP=m
+CONFIG_IP_NF_TARGET_ECN=m
+CONFIG_IP_NF_TARGET_TTL=m
+CONFIG_IP_NF_RAW=m
+# CONFIG_IP_NF_SECURITY is not set
+CONFIG_IP_NF_ARPTABLES=m
+CONFIG_IP_NF_ARPFILTER=m
+CONFIG_IP_NF_ARP_MANGLE=m
+CONFIG_BRIDGE_NF_EBTABLES=m
+CONFIG_BRIDGE_EBT_BROUTE=m
+CONFIG_BRIDGE_EBT_T_FILTER=m
+CONFIG_BRIDGE_EBT_T_NAT=m
+CONFIG_BRIDGE_EBT_802_3=m
+CONFIG_BRIDGE_EBT_AMONG=m
+CONFIG_BRIDGE_EBT_ARP=m
+CONFIG_BRIDGE_EBT_IP=m
+CONFIG_BRIDGE_EBT_LIMIT=m
+CONFIG_BRIDGE_EBT_MARK=m
+CONFIG_BRIDGE_EBT_PKTTYPE=m
+CONFIG_BRIDGE_EBT_STP=m
+CONFIG_BRIDGE_EBT_VLAN=m
+CONFIG_BRIDGE_EBT_ARPREPLY=m
+CONFIG_BRIDGE_EBT_DNAT=m
+CONFIG_BRIDGE_EBT_MARK_T=m
+CONFIG_BRIDGE_EBT_REDIRECT=m
+CONFIG_BRIDGE_EBT_SNAT=m
+CONFIG_BRIDGE_EBT_LOG=m
+CONFIG_BRIDGE_EBT_ULOG=m
+CONFIG_BRIDGE_EBT_NFLOG=m
+CONFIG_IP_DCCP=m
+CONFIG_INET_DCCP_DIAG=m
+CONFIG_IP_DCCP_ACKVEC=y
+
+#
+# DCCP CCIDs Configuration (EXPERIMENTAL)
+#
+CONFIG_IP_DCCP_CCID2=m
+# CONFIG_IP_DCCP_CCID2_DEBUG is not set
+# CONFIG_IP_DCCP_CCID3 is not set
+# CONFIG_IP_DCCP_TFRC_LIB is not set
+
+#
+# DCCP Kernel Hacking
+#
+# CONFIG_IP_DCCP_DEBUG is not set
+CONFIG_IP_SCTP=m
+# CONFIG_SCTP_DBG_MSG is not set
+# CONFIG_SCTP_DBG_OBJCNT is not set
+# CONFIG_SCTP_HMAC_NONE is not set
+# CONFIG_SCTP_HMAC_SHA1 is not set
+CONFIG_SCTP_HMAC_MD5=y
+CONFIG_TIPC=m
+CONFIG_TIPC_ADVANCED=y
+CONFIG_TIPC_ZONES=3
+CONFIG_TIPC_CLUSTERS=1
+CONFIG_TIPC_NODES=255
+CONFIG_TIPC_SLAVE_NODES=0
+CONFIG_TIPC_PORTS=8191
+CONFIG_TIPC_LOG=0
+# CONFIG_TIPC_DEBUG is not set
+# CONFIG_ATM is not set
+CONFIG_STP=m
+CONFIG_BRIDGE=m
+CONFIG_VLAN_8021Q=m
+# CONFIG_VLAN_8021Q_GVRP is not set
+# CONFIG_DECNET is not set
+CONFIG_LLC=m
+# CONFIG_LLC2 is not set
+# CONFIG_IPX is not set
+# CONFIG_ATALK is not set
+# CONFIG_X25 is not set
+# CONFIG_LAPB is not set
+# CONFIG_ECONET is not set
+# CONFIG_WAN_ROUTER is not set
+CONFIG_NET_SCHED=y
+
+#
+# Queueing/Scheduling
+#
+CONFIG_NET_SCH_CBQ=m
+CONFIG_NET_SCH_HTB=m
+CONFIG_NET_SCH_HFSC=m
+CONFIG_NET_SCH_PRIO=m
+# CONFIG_NET_SCH_MULTIQ is not set
+CONFIG_NET_SCH_RED=m
+CONFIG_NET_SCH_SFQ=m
+CONFIG_NET_SCH_TEQL=m
+CONFIG_NET_SCH_TBF=m
+CONFIG_NET_SCH_GRED=m
+CONFIG_NET_SCH_DSMARK=m
+CONFIG_NET_SCH_NETEM=m
+CONFIG_NET_SCH_INGRESS=m
+
+#
+# Classification
+#
+CONFIG_NET_CLS=y
+CONFIG_NET_CLS_BASIC=m
+CONFIG_NET_CLS_TCINDEX=m
+CONFIG_NET_CLS_ROUTE4=m
+CONFIG_NET_CLS_ROUTE=y
+CONFIG_NET_CLS_FW=m
+CONFIG_NET_CLS_U32=m
+CONFIG_CLS_U32_PERF=y
+CONFIG_CLS_U32_MARK=y
+CONFIG_NET_CLS_RSVP=m
+CONFIG_NET_CLS_RSVP6=m
+CONFIG_NET_CLS_FLOW=m
+CONFIG_NET_EMATCH=y
+CONFIG_NET_EMATCH_STACK=32
+CONFIG_NET_EMATCH_CMP=m
+CONFIG_NET_EMATCH_NBYTE=m
+CONFIG_NET_EMATCH_U32=m
+CONFIG_NET_EMATCH_META=m
+CONFIG_NET_EMATCH_TEXT=m
+CONFIG_NET_CLS_ACT=y
+CONFIG_NET_ACT_POLICE=m
+CONFIG_NET_ACT_GACT=m
+CONFIG_GACT_PROB=y
+CONFIG_NET_ACT_MIRRED=m
+CONFIG_NET_ACT_IPT=m
+CONFIG_NET_ACT_NAT=m
+CONFIG_NET_ACT_PEDIT=m
+CONFIG_NET_ACT_SIMP=m
+# CONFIG_NET_ACT_SKBEDIT is not set
+CONFIG_NET_CLS_IND=y
+CONFIG_NET_SCH_FIFO=y
+
+#
+# Network testing
+#
+CONFIG_NET_PKTGEN=m
+# CONFIG_CAN is not set
+CONFIG_AF_RXRPC=m
+# CONFIG_AF_RXRPC_DEBUG is not set
+CONFIG_RXKAD=m
+# CONFIG_PHONET is not set
+CONFIG_FIB_RULES=y
+# CONFIG_RFKILL is not set
+# CONFIG_NET_9P is not set
+# CONFIG_PCMCIA is not set
+CONFIG_CCW=y
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+CONFIG_FIRMWARE_IN_KERNEL=y
+CONFIG_EXTRA_FIRMWARE=""
+# CONFIG_DEBUG_DRIVER is not set
+# CONFIG_DEBUG_DEVRES is not set
+CONFIG_SYS_HYPERVISOR=y
+CONFIG_CONNECTOR=m
+CONFIG_BLK_DEV=y
+# CONFIG_BLK_DEV_COW_COMMON is not set
+CONFIG_BLK_DEV_LOOP=m
+CONFIG_BLK_DEV_CRYPTOLOOP=m
+CONFIG_BLK_DEV_NBD=m
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=24576
+# CONFIG_BLK_DEV_XIP is not set
+# CONFIG_CDROM_PKTCDVD is not set
+CONFIG_ATA_OVER_ETH=m
+
+#
+# S/390 block device drivers
+#
+CONFIG_BLK_DEV_XPRAM=m
+CONFIG_DCSSBLK=m
+CONFIG_DASD=m
+# CONFIG_DASD_PROFILE is not set
+CONFIG_DASD_ECKD=m
+CONFIG_DASD_FBA=m
+CONFIG_DASD_DIAG=m
+# CONFIG_DASD_EER is not set
+CONFIG_MISC_DEVICES=y
+CONFIG_EEPROM_93CX6=m
+CONFIG_ENCLOSURE_SERVICES=m
+# CONFIG_C2PORT is not set
+
+#
+# SCSI device support
+#
+CONFIG_RAID_ATTRS=m
+CONFIG_SCSI=m
+# CONFIG_SCSI_DMA is not set
+CONFIG_SCSI_TGT=m
+CONFIG_SCSI_NETLINK=y
+CONFIG_SCSI_PROC_FS=y
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=m
+CONFIG_CHR_DEV_ST=m
+CONFIG_CHR_DEV_OSST=m
+CONFIG_BLK_DEV_SR=m
+CONFIG_BLK_DEV_SR_VENDOR=y
+CONFIG_CHR_DEV_SG=m
+CONFIG_CHR_DEV_SCH=m
+CONFIG_SCSI_ENCLOSURE=m
+
+#
+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+#
+CONFIG_SCSI_MULTI_LUN=y
+CONFIG_SCSI_CONSTANTS=y
+CONFIG_SCSI_LOGGING=y
+CONFIG_SCSI_SCAN_ASYNC=y
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+CONFIG_SCSI_SPI_ATTRS=m
+CONFIG_SCSI_FC_ATTRS=m
+CONFIG_SCSI_FC_TGT_ATTRS=y
+CONFIG_SCSI_ISCSI_ATTRS=m
+CONFIG_SCSI_SAS_ATTRS=m
+CONFIG_SCSI_SAS_LIBSAS=m
+CONFIG_SCSI_SAS_HOST_SMP=y
+# CONFIG_SCSI_SAS_LIBSAS_DEBUG is not set
+# CONFIG_SCSI_SRP_ATTRS is not set
+CONFIG_SCSI_LOWLEVEL=y
+CONFIG_ISCSI_TCP=m
+# CONFIG_SCSI_DEBUG is not set
+CONFIG_ZFCP=m
+# CONFIG_SCSI_DH is not set
+CONFIG_MD=y
+# CONFIG_BLK_DEV_MD is not set
+CONFIG_BLK_DEV_DM=m
+# CONFIG_DM_DEBUG is not set
+CONFIG_DM_CRYPT=m
+CONFIG_DM_SNAPSHOT=m
+CONFIG_DM_MIRROR=m
+CONFIG_DM_ZERO=m
+CONFIG_DM_MULTIPATH=m
+CONFIG_DM_DELAY=m
+CONFIG_DM_UEVENT=y
+CONFIG_NETDEVICES=y
+CONFIG_IFB=m
+# CONFIG_DUMMY is not set
+CONFIG_BONDING=m
+# CONFIG_MACVLAN is not set
+CONFIG_EQUALIZER=m
+CONFIG_TUN=m
+CONFIG_VETH=m
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=m
+# CONFIG_IBM_NEW_EMAC_ZMII is not set
+# CONFIG_IBM_NEW_EMAC_RGMII is not set
+# CONFIG_IBM_NEW_EMAC_TAH is not set
+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+# CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL is not set
+# CONFIG_IBM_NEW_EMAC_MAL_CLR_ICINTSTAT is not set
+# CONFIG_IBM_NEW_EMAC_MAL_COMMON_ERR is not set
+# CONFIG_NETDEV_1000 is not set
+# CONFIG_NETDEV_10000 is not set
+# CONFIG_TR is not set
+# CONFIG_WAN is not set
+
+#
+# S/390 network device drivers
+#
+CONFIG_LCS=m
+CONFIG_CTCM=m
+CONFIG_NETIUCV=m
+CONFIG_SMSGIUCV=m
+CONFIG_CLAW=m
+CONFIG_QETH=m
+CONFIG_QETH_L2=m
+CONFIG_QETH_L3=m
+CONFIG_CCWGROUP=m
+# CONFIG_PPP is not set
+# CONFIG_SLIP is not set
+# CONFIG_NETCONSOLE is not set
+# CONFIG_NETPOLL is not set
+# CONFIG_NET_POLL_CONTROLLER is not set
+
+#
+# Character devices
+#
+CONFIG_DEVKMEM=y
+CONFIG_UNIX98_PTYS=y
+# CONFIG_LEGACY_PTYS is not set
+CONFIG_HW_RANDOM=m
+# CONFIG_R3964 is not set
+# CONFIG_RAW_DRIVER is not set
+CONFIG_HANGCHECK_TIMER=m
+
+#
+# S/390 character device drivers
+#
+CONFIG_TN3270=y
+CONFIG_TN3270_TTY=y
+CONFIG_TN3270_FS=m
+CONFIG_TN3270_CONSOLE=y
+CONFIG_TN3215=y
+CONFIG_TN3215_CONSOLE=y
+CONFIG_CCW_CONSOLE=y
+CONFIG_SCLP_TTY=y
+CONFIG_SCLP_CONSOLE=y
+CONFIG_SCLP_VT220_TTY=y
+CONFIG_SCLP_VT220_CONSOLE=y
+CONFIG_SCLP_CPI=m
+CONFIG_S390_TAPE=m
+
+#
+# S/390 tape interface support
+#
+CONFIG_S390_TAPE_BLOCK=y
+
+#
+# S/390 tape hardware support
+#
+CONFIG_S390_TAPE_34XX=m
+CONFIG_S390_TAPE_3590=m
+CONFIG_VMLOGRDR=m
+CONFIG_VMCP=m
+CONFIG_MONREADER=m
+CONFIG_MONWRITER=m
+CONFIG_S390_VMUR=m
+# CONFIG_POWER_SUPPLY is not set
+# CONFIG_THERMAL is not set
+# CONFIG_THERMAL_HWMON is not set
+# CONFIG_WATCHDOG is not set
+# CONFIG_REGULATOR is not set
+# CONFIG_MEMSTICK is not set
+# CONFIG_NEW_LEDS is not set
+# CONFIG_ACCESSIBILITY is not set
+# CONFIG_STAGING is not set
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=m
+CONFIG_EXT2_FS_XATTR=y
+CONFIG_EXT2_FS_POSIX_ACL=y
+CONFIG_EXT2_FS_SECURITY=y
+# CONFIG_EXT2_FS_XIP is not set
+CONFIG_EXT3_FS=m
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+CONFIG_EXT3_FS_SECURITY=y
+# CONFIG_EXT4_FS is not set
+CONFIG_JBD=m
+# CONFIG_JBD_DEBUG is not set
+CONFIG_FS_MBCACHE=m
+# CONFIG_REISERFS_FS is not set
+# CONFIG_JFS_FS is not set
+CONFIG_FS_POSIX_ACL=y
+CONFIG_FILE_LOCKING=y
+# CONFIG_XFS_FS is not set
+# CONFIG_OCFS2_FS is not set
+CONFIG_DNOTIFY=y
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+CONFIG_QUOTA=y
+CONFIG_QUOTA_NETLINK_INTERFACE=y
+CONFIG_PRINT_QUOTA_WARNING=y
+CONFIG_QFMT_V1=m
+CONFIG_QFMT_V2=m
+CONFIG_QUOTACTL=y
+CONFIG_AUTOFS_FS=m
+CONFIG_AUTOFS4_FS=m
+CONFIG_FUSE_FS=m
+CONFIG_GENERIC_ACL=y
+
+#
+# CD-ROM/DVD Filesystems
+#
+CONFIG_ISO9660_FS=m
+CONFIG_JOLIET=y
+CONFIG_ZISOFS=y
+CONFIG_UDF_FS=m
+CONFIG_UDF_NLS=y
+
+#
+# DOS/FAT/NT Filesystems
+#
+CONFIG_FAT_FS=m
+CONFIG_MSDOS_FS=m
+CONFIG_VFAT_FS=m
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="utf8"
+CONFIG_NTFS_FS=m
+# CONFIG_NTFS_DEBUG is not set
+CONFIG_NTFS_RW=y
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_PROC_PAGE_MONITOR=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_TMPFS_POSIX_ACL=y
+# CONFIG_HUGETLB_PAGE is not set
+CONFIG_CONFIGFS_FS=m
+
+#
+# Miscellaneous filesystems
+#
+# CONFIG_ADFS_FS is not set
+# CONFIG_AFFS_FS is not set
+# CONFIG_ECRYPT_FS is not set
+# CONFIG_HFS_FS is not set
+# CONFIG_HFSPLUS_FS is not set
+# CONFIG_BEFS_FS is not set
+# CONFIG_BFS_FS is not set
+# CONFIG_EFS_FS is not set
+# CONFIG_CRAMFS is not set
+# CONFIG_VXFS_FS is not set
+# CONFIG_MINIX_FS is not set
+# CONFIG_OMFS_FS is not set
+# CONFIG_HPFS_FS is not set
+# CONFIG_QNX4FS_FS is not set
+CONFIG_ROMFS_FS=m
+# CONFIG_SYSV_FS is not set
+CONFIG_UFS_FS=m
+# CONFIG_UFS_FS_WRITE is not set
+# CONFIG_UFS_DEBUG is not set
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_NFS_FS=m
+CONFIG_NFS_V3=y
+CONFIG_NFS_V3_ACL=y
+CONFIG_NFS_V4=y
+# CONFIG_NFSD is not set
+CONFIG_LOCKD=m
+CONFIG_LOCKD_V4=y
+CONFIG_NFS_ACL_SUPPORT=m
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=m
+CONFIG_SUNRPC_GSS=m
+# CONFIG_SUNRPC_REGISTER_V4 is not set
+CONFIG_RPCSEC_GSS_KRB5=m
+CONFIG_RPCSEC_GSS_SPKM3=m
+# CONFIG_SMB_FS is not set
+CONFIG_CIFS=m
+# CONFIG_CIFS_STATS is not set
+CONFIG_CIFS_WEAK_PW_HASH=y
+CONFIG_CIFS_UPCALL=y
+CONFIG_CIFS_XATTR=y
+CONFIG_CIFS_POSIX=y
+# CONFIG_CIFS_DEBUG2 is not set
+CONFIG_CIFS_EXPERIMENTAL=y
+CONFIG_CIFS_DFS_UPCALL=y
+# CONFIG_NCP_FS is not set
+# CONFIG_CODA_FS is not set
+# CONFIG_AFS_FS is not set
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+# CONFIG_ACORN_PARTITION is not set
+# CONFIG_OSF_PARTITION is not set
+# CONFIG_AMIGA_PARTITION is not set
+# CONFIG_ATARI_PARTITION is not set
+CONFIG_IBM_PARTITION=y
+# CONFIG_MAC_PARTITION is not set
+CONFIG_MSDOS_PARTITION=y
+CONFIG_BSD_DISKLABEL=y
+# CONFIG_MINIX_SUBPARTITION is not set
+# CONFIG_SOLARIS_X86_PARTITION is not set
+# CONFIG_UNIXWARE_DISKLABEL is not set
+# CONFIG_LDM_PARTITION is not set
+# CONFIG_SGI_PARTITION is not set
+# CONFIG_ULTRIX_PARTITION is not set
+# CONFIG_SUN_PARTITION is not set
+CONFIG_KARMA_PARTITION=y
+# CONFIG_EFI_PARTITION is not set
+# CONFIG_SYSV68_PARTITION is not set
+CONFIG_NLS=m
+CONFIG_NLS_DEFAULT="utf8"
+CONFIG_NLS_CODEPAGE_437=m
+# CONFIG_NLS_CODEPAGE_737 is not set
+# CONFIG_NLS_CODEPAGE_775 is not set
+CONFIG_NLS_CODEPAGE_850=m
+# CONFIG_NLS_CODEPAGE_852 is not set
+# CONFIG_NLS_CODEPAGE_855 is not set
+# CONFIG_NLS_CODEPAGE_857 is not set
+# CONFIG_NLS_CODEPAGE_860 is not set
+# CONFIG_NLS_CODEPAGE_861 is not set
+# CONFIG_NLS_CODEPAGE_862 is not set
+# CONFIG_NLS_CODEPAGE_863 is not set
+# CONFIG_NLS_CODEPAGE_864 is not set
+# CONFIG_NLS_CODEPAGE_865 is not set
+# CONFIG_NLS_CODEPAGE_866 is not set
+# CONFIG_NLS_CODEPAGE_869 is not set
+# CONFIG_NLS_CODEPAGE_936 is not set
+# CONFIG_NLS_CODEPAGE_950 is not set
+# CONFIG_NLS_CODEPAGE_932 is not set
+# CONFIG_NLS_CODEPAGE_949 is not set
+# CONFIG_NLS_CODEPAGE_874 is not set
+# CONFIG_NLS_ISO8859_8 is not set
+# CONFIG_NLS_CODEPAGE_1250 is not set
+# CONFIG_NLS_CODEPAGE_1251 is not set
+CONFIG_NLS_ASCII=m
+CONFIG_NLS_ISO8859_1=m
+# CONFIG_NLS_ISO8859_2 is not set
+# CONFIG_NLS_ISO8859_3 is not set
+# CONFIG_NLS_ISO8859_4 is not set
+# CONFIG_NLS_ISO8859_5 is not set
+# CONFIG_NLS_ISO8859_6 is not set
+# CONFIG_NLS_ISO8859_7 is not set
+# CONFIG_NLS_ISO8859_9 is not set
+# CONFIG_NLS_ISO8859_13 is not set
+# CONFIG_NLS_ISO8859_14 is not set
+CONFIG_NLS_ISO8859_15=m
+# CONFIG_NLS_KOI8_R is not set
+# CONFIG_NLS_KOI8_U is not set
+CONFIG_NLS_UTF8=m
+CONFIG_DLM=m
+CONFIG_DLM_DEBUG=y
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+CONFIG_PRINTK_TIME=y
+CONFIG_ENABLE_WARN_DEPRECATED=y
+CONFIG_ENABLE_MUST_CHECK=y
+CONFIG_FRAME_WARN=1024
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_UNUSED_SYMBOLS=y
+CONFIG_DEBUG_FS=y
+# CONFIG_HEADERS_CHECK is not set
+CONFIG_DEBUG_KERNEL=y
+CONFIG_SCHED_DEBUG=y
+# CONFIG_SCHEDSTATS is not set
+CONFIG_TIMER_STATS=y
+# CONFIG_DEBUG_OBJECTS is not set
+# CONFIG_DEBUG_SLAB is not set
+# CONFIG_DEBUG_RT_MUTEXES is not set
+# CONFIG_RT_MUTEX_TESTER is not set
+# CONFIG_DEBUG_SPINLOCK is not set
+# CONFIG_DEBUG_MUTEXES is not set
+# CONFIG_DEBUG_LOCK_ALLOC is not set
+# CONFIG_PROVE_LOCKING is not set
+# CONFIG_LOCK_STAT is not set
+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+# CONFIG_DEBUG_KOBJECT is not set
+CONFIG_DEBUG_BUGVERBOSE=y
+# CONFIG_DEBUG_INFO is not set
+# CONFIG_DEBUG_VM is not set
+# CONFIG_DEBUG_WRITECOUNT is not set
+CONFIG_DEBUG_MEMORY_INIT=y
+# CONFIG_DEBUG_LIST is not set
+# CONFIG_DEBUG_SG is not set
+# CONFIG_FRAME_POINTER is not set
+# CONFIG_RCU_TORTURE_TEST is not set
+# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+# CONFIG_BACKTRACE_SELF_TEST is not set
+# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
+# CONFIG_FAULT_INJECTION is not set
+# CONFIG_LATENCYTOP is not set
+CONFIG_SYSCTL_SYSCALL_CHECK=y
+
+#
+# Tracers
+#
+# CONFIG_IRQSOFF_TRACER is not set
+# CONFIG_SCHED_TRACER is not set
+# CONFIG_CONTEXT_SWITCH_TRACER is not set
+# CONFIG_BOOT_TRACER is not set
+# CONFIG_DYNAMIC_PRINTK_DEBUG is not set
+# CONFIG_SAMPLES is not set
+# CONFIG_DEBUG_PAGEALLOC is not set
+
+#
+# Security options
+#
+CONFIG_KEYS=y
+# CONFIG_KEYS_DEBUG_PROC_KEYS is not set
+CONFIG_SECURITY=y
+# CONFIG_SECURITYFS is not set
+CONFIG_SECURITY_NETWORK=y
+CONFIG_SECURITY_NETWORK_XFRM=y
+CONFIG_SECURITY_FILE_CAPABILITIES=y
+CONFIG_SECURITY_DEFAULT_MMAP_MIN_ADDR=0
+CONFIG_SECURITY_SELINUX=y
+CONFIG_SECURITY_SELINUX_BOOTPARAM=y
+CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=0
+CONFIG_SECURITY_SELINUX_DISABLE=y
+CONFIG_SECURITY_SELINUX_DEVELOP=y
+CONFIG_SECURITY_SELINUX_AVC_STATS=y
+CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=1
+# CONFIG_SECURITY_SELINUX_ENABLE_SECMARK_DEFAULT is not set
+# CONFIG_SECURITY_SELINUX_POLICYDB_VERSION_MAX is not set
+CONFIG_CRYPTO=y
+
+#
+# Crypto core or helper
+#
+# CONFIG_CRYPTO_FIPS is not set
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_ALGAPI2=y
+CONFIG_CRYPTO_AEAD=m
+CONFIG_CRYPTO_AEAD2=y
+CONFIG_CRYPTO_BLKCIPHER=m
+CONFIG_CRYPTO_BLKCIPHER2=y
+CONFIG_CRYPTO_HASH=y
+CONFIG_CRYPTO_HASH2=y
+CONFIG_CRYPTO_RNG=m
+CONFIG_CRYPTO_RNG2=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_MANAGER2=y
+CONFIG_CRYPTO_GF128MUL=m
+CONFIG_CRYPTO_NULL=m
+# CONFIG_CRYPTO_CRYPTD is not set
+CONFIG_CRYPTO_AUTHENC=m
+CONFIG_CRYPTO_TEST=m
+
+#
+# Authenticated Encryption with Associated Data
+#
+CONFIG_CRYPTO_CCM=m
+CONFIG_CRYPTO_GCM=m
+CONFIG_CRYPTO_SEQIV=m
+
+#
+# Block modes
+#
+CONFIG_CRYPTO_CBC=m
+CONFIG_CRYPTO_CTR=m
+CONFIG_CRYPTO_CTS=m
+CONFIG_CRYPTO_ECB=m
+CONFIG_CRYPTO_LRW=m
+CONFIG_CRYPTO_PCBC=m
+CONFIG_CRYPTO_XTS=m
+
+#
+# Hash modes
+#
+CONFIG_CRYPTO_HMAC=y
+CONFIG_CRYPTO_XCBC=m
+
+#
+# Digest
+#
+CONFIG_CRYPTO_CRC32C=m
+CONFIG_CRYPTO_MD4=m
+CONFIG_CRYPTO_MD5=y
+CONFIG_CRYPTO_MICHAEL_MIC=m
+# CONFIG_CRYPTO_RMD128 is not set
+# CONFIG_CRYPTO_RMD160 is not set
+# CONFIG_CRYPTO_RMD256 is not set
+# CONFIG_CRYPTO_RMD320 is not set
+CONFIG_CRYPTO_SHA1=m
+CONFIG_CRYPTO_SHA256=m
+CONFIG_CRYPTO_SHA512=m
+CONFIG_CRYPTO_TGR192=m
+CONFIG_CRYPTO_WP512=m
+
+#
+# Ciphers
+#
+CONFIG_CRYPTO_AES=m
+CONFIG_CRYPTO_ANUBIS=m
+CONFIG_CRYPTO_ARC4=m
+CONFIG_CRYPTO_BLOWFISH=m
+CONFIG_CRYPTO_CAMELLIA=m
+CONFIG_CRYPTO_CAST5=m
+CONFIG_CRYPTO_CAST6=m
+CONFIG_CRYPTO_DES=m
+CONFIG_CRYPTO_FCRYPT=m
+CONFIG_CRYPTO_KHAZAD=m
+CONFIG_CRYPTO_SALSA20=m
+CONFIG_CRYPTO_SEED=m
+CONFIG_CRYPTO_SERPENT=m
+CONFIG_CRYPTO_TEA=m
+CONFIG_CRYPTO_TWOFISH=m
+CONFIG_CRYPTO_TWOFISH_COMMON=m
+
+#
+# Compression
+#
+CONFIG_CRYPTO_DEFLATE=m
+CONFIG_CRYPTO_LZO=m
+
+#
+# Random Number Generation
+#
+# CONFIG_CRYPTO_ANSI_CPRNG is not set
+CONFIG_CRYPTO_HW=y
+CONFIG_ZCRYPT=m
+# CONFIG_ZCRYPT_MONOLITHIC is not set
+CONFIG_CRYPTO_SHA1_S390=m
+CONFIG_CRYPTO_SHA256_S390=m
+CONFIG_CRYPTO_SHA512_S390=m
+CONFIG_CRYPTO_DES_S390=m
+CONFIG_CRYPTO_AES_S390=m
+CONFIG_S390_PRNG=m
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+CONFIG_CRC_CCITT=m
+CONFIG_CRC16=m
+# CONFIG_CRC_T10DIF is not set
+CONFIG_CRC_ITU_T=m
+CONFIG_CRC32=y
+CONFIG_CRC7=m
+CONFIG_LIBCRC32C=m
+CONFIG_ZLIB_INFLATE=m
+CONFIG_ZLIB_DEFLATE=m
+CONFIG_LZO_COMPRESS=m
+CONFIG_LZO_DECOMPRESS=m
+CONFIG_TEXTSEARCH=y
+CONFIG_TEXTSEARCH_KMP=m
+CONFIG_TEXTSEARCH_BM=m
+CONFIG_TEXTSEARCH_FSM=m
+CONFIG_PLIST=y
+# CONFIG_VIRTUALIZATION is not set
+
+--Boundary-00=_vDLuJXbMqAKGkTX--
