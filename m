@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZCLRZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbZCLR3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbZCLRZb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 13:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbZCLRZW
+	id S1755652AbZCLR3T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 13:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbZCLR3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 13:25:22 -0400
-Received: from waste.org ([66.93.16.53]:36568 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754827AbZCLRZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 13:25:21 -0400
-Subject: Re: [patch -mm] cpusets: add memory_slab_hardwall flag
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Paul Menage <menage@google.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.10.0903121206250.5493@qirst.com>
-References: <20090309123011.A228.A69D9226@jp.fujitsu.com>
-	 <alpine.DEB.2.00.0903090206010.24605@chino.kir.corp.google.com>
-	 <20090309181756.CF66.A69D9226@jp.fujitsu.com>
-	 <alpine.DEB.2.00.0903091313090.27253@chino.kir.corp.google.com>
-	 <alpine.DEB.1.10.0903091706540.1861@qirst.com>
-	 <alpine.DEB.2.00.0903091422510.5410@chino.kir.corp.google.com>
-	 <alpine.DEB.1.10.0903101649330.20363@qirst.com>
-	 <1236719283.3205.24.camel@calx>
-	 <alpine.DEB.1.10.0903121206250.5493@qirst.com>
-Content-Type: text/plain
-Date: Thu, 12 Mar 2009 12:23:24 -0500
-Message-Id: <1236878604.3213.57.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Mar 2009 13:29:10 -0400
+Received: from vms173009pub.verizon.net ([206.46.173.9]:61789 "EHLO
+	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753241AbZCLR3J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 13:29:09 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Organization: Organization? very little
+To: David Newall <davidn@davidnewall.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: I just got got another Oops
+Date: Thu, 12 Mar 2009 13:28:51 -0400
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7; KDE/4.2.0; i686; ; )
+References: <200903120133.11583.gene.heskett@gmail.com>
+ <49B8C98D.3020309@davidnewall.com>
+In-reply-to: <49B8C98D.3020309@davidnewall.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+Message-id: <200903121328.51881.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-12 at 12:08 -0400, Christoph Lameter wrote:
-> On Tue, 10 Mar 2009, Matt Mackall wrote:
-> 
-> > > > Yes, and that's why we require the cpuset hardwall on a configurable
-> > > > per-cpuset basis.  If a cpuset has set this option for its workload, then
-> > > > it is demanding object allocations from local memory.  Other cpusets that
-> > > > do not have memory_slab_hardwall set can still allocate from any cpu slab
-> > > > or partial slab, including those allocated for the hardwall cpuset.
-> > >
-> > > You cannot hardwall something that is used in a shared way by processes in
-> > > multiple cpusets.
-> >
-> > He can enforce that every allocation made when a given task is current
-> > conforms. His patch demonstrates that.
-> 
-> Of course. But that may just be a subset of the data used by a task. If an
-> inode, dentry and so on was already allocated in the context of another
-> process then the locality of that allocation will not be changed. The
-> hardwall will have no effect.
+On Thursday 12 March 2009, David Newall wrote:
+>Gene Heskett wrote:
+>> Mar 12 01:15:01 coyote xinetd[2583]: START: amanda pid=8970
+>> from=::ffff:192.168.71.3 Mar 12 01:16:21 coyote kernel: [10353.910914]
+>> BUG: unable to handle kernel NULL pointer dereference at 00000006 Mar 12
+>> 01:16:21 coyote kernel: [10353.910921] IP: [<c046520b>]
+>> get_page_from_freelist+0x24b/0x4c0 Mar 12 01:16:21 coyote kernel:
+>> [10353.910929] *pdpt = 0000000000b38001 *pde = 0000000000000000 Mar 12
+>> 01:16:21 coyote kernel: [10353.910934] Oops: 0000 [#1] PREEMPT SMP
+>
+>I think there must be a zone at 0x0.  Try adding
+>
+>		if (!zone) goto try_next_zone;
+>
+>
+>in mm/page_alloc.c, (near line 1469), before
+>
+>		if (NUMA_BUILD && zlc_active &&
 
-It will if he's also using a namespace. This is part of a larger puzzle.
+This line is at #1417 in my mm/page_alloc.c, (in 2.6.29-rc7) but I have added 
+it, and a rebuild is in progress.  I'll post again if I see it again.  The 
+machine is still up, and functioning apparently only semi-normally ATM.  I 
+don't know it its related, but setroubleshoot's daemon is also exiting 
+frequently.  And can't be restarted with the 'service' utility.  Off to reboot 
+next.
+
+Thanks David.
 
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+You're dead, Jim.
+		-- McCoy, "Amok Time", stardate 3372.7
 
