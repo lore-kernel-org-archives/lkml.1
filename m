@@ -1,104 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbZCLQBG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757029AbZCLQBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756874AbZCLQBG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 12:01:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbZCLQAy
+	id S1757029AbZCLQBn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 12:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbZCLQBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 12:00:54 -0400
-Received: from waste.org ([66.93.16.53]:54360 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752866AbZCLQAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 12:00:53 -0400
-Subject: Re: [PATCH] fix/improve generic page table walker
-From: Matt Mackall <mpm@selenic.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>, akpm@linux-foundation.org,
-       Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20090312154229.3ee463eb@skybase>
-References: <20090311144951.58c6ab60@skybase>
-	 <1236792263.3205.45.camel@calx> <20090312093335.6dd67251@skybase>
-	 <1236867014.3213.16.camel@calx>  <20090312154229.3ee463eb@skybase>
-Content-Type: text/plain
-Date: Thu, 12 Mar 2009 10:58:14 -0500
-Message-Id: <1236873494.3213.55.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Mar 2009 12:01:34 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:41978 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752866AbZCLQBd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 12:01:33 -0400
+MIME-Version: 1.0
+In-Reply-To: <ed82fe3e0903120854r2d8f23d8r249a8e510a2fbc4c@mail.gmail.com>
+References: <1236699004-1863-1-git-send-email-timur@freescale.com>
+	 <20090310153537.5fd5d84d@lxorguk.ukuu.org.uk>
+	 <1236729711.7086.28.camel@pasglop>
+	 <20090311003756.25ffa6f4@lxorguk.ukuu.org.uk>
+	 <ed82fe3e0903110948w542a864dj821106900755f14e@mail.gmail.com>
+	 <20090311165806.0b6838ab@lxorguk.ukuu.org.uk>
+	 <49B80081.5060703@freescale.com> <1236808722.7086.66.camel@pasglop>
+	 <fa686aa40903111945g53a0ba5au200fe9362e315175@mail.gmail.com>
+	 <ed82fe3e0903120854r2d8f23d8r249a8e510a2fbc4c@mail.gmail.com>
+Date: Thu, 12 Mar 2009 10:01:27 -0600
+Message-ID: <fa686aa40903120901me307a54y3511f4bafc6242e6@mail.gmail.com>
+Subject: Re: [PATCH v4] introduce macro spin_event_timeout()
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Timur Tabi <timur@freescale.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       rdreier@cisco.com, jirislaby@gmail.com, peterz@infradead.org,
+       will.newton@gmail.com, hancockrwd@gmail.com, jeremy@goop.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-12 at 15:42 +0100, Martin Schwidefsky wrote:
-> On Thu, 12 Mar 2009 09:10:14 -0500
-> Matt Mackall <mpm@selenic.com> wrote:
-> 
-> > [Nick and Hugh, maybe you can shed some light on this for me]
-> > 
-> > On Thu, 2009-03-12 at 09:33 +0100, Martin Schwidefsky wrote:
-> > > On Wed, 11 Mar 2009 12:24:23 -0500
-> > > Matt Mackall <mpm@selenic.com> wrote:
-> > > 
-> > > > On Wed, 2009-03-11 at 14:49 +0100, Martin Schwidefsky wrote:
-> > > > > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > > > > 
-> > > > > On s390 the /proc/pid/pagemap interface is currently broken. This is
-> > > > > caused by the unconditional loop over all pgd/pud entries as specified
-> > > > > by the address range passed to walk_page_range. The tricky bit here
-> > > > > is that the pgd++ in the outer loop may only be done if the page table
-> > > > > really has 4 levels. For the pud++ in the second loop the page table needs
-> > > > > to have at least 3 levels. With the dynamic page tables on s390 we can have
-> > > > > page tables with 2, 3 or 4 levels. Which means that the pgd and/or the
-> > > > > pud pointer can get out-of-bounds causing all kinds of mayhem.
-> > > > 
-> > > > Not sure why this should be a problem without delving into the S390
-> > > > code. After all, x86 has 2, 3, or 4 levels as well (at compile time) in
-> > > > a way that's transparent to the walker.
-> > > 
-> > > Its hard to understand without looking at the s390 details. The main
-> > > difference between x86 and s390 in that respect is that on s390 the
-> > > number of page table levels is determined at runtime on a per process
-> > > basis. A compat process uses 2 levels, a 64 bit process starts with 3
-> > > levels and can "upgrade" to 4 levels if something gets mapped above
-> > > 4TB. Which means that a *pgd can point to a region-second (2**53 bytes),
-> > > a region-third (2**42 bytes) or a segment table (2**31 bytes), a *pud
-> > > can point to a region-third or a segment table. The page table
-> > > primitives know about this semantic, in particular pud_offset and
-> > > pmd_offset check the type of the page table pointed to by *pgd and *pud
-> > > and do nothing with the pointer if it is a lower level page table.
-> > > The only operation I can not "patch" is the pgd++/pud++ operation.
-> > 
-> > So in short, sometimes a pgd_t isn't really a pgd_t at all. It's another
-> > object with different semantics that generic code can trip over.
-> 
-> Then what exactly is a pgd_t? For me it is the top level page table
-> which can have very different meaning for the various architectures.
+On Thu, Mar 12, 2009 at 9:54 AM, Timur Tabi <timur@freescale.com> wrote:
+> On Wed, Mar 11, 2009 at 9:45 PM, Grant Likely <grant.likely@secretlab.ca> wrote:
+>
+>>> The other big advantage of that approach is that drivers that aren't in
+>>> an atomic section can use msleep() and allow the kernel to schedule on
+>>> that processor.
+>>
+>> Ack!  I totally agree.
+>
+> I'm glad everyone agrees.  I still don't know how to solve the
+> problem, though.  I came up with this:
+>
+> #define spin_until_timeout(condition, timeout)          \
+>       for (unsigned long __timeout = jiffies + (timeout);     \
+>               (!(condition) && time_after(jiffies, __timeout)); )
+>
+> Now how do I modify this so that the caller knows whether the loop
+> terminated because of a timeout or the condition became true?
 
-The important thing is that it's always 3 levels removed from the
-bottom, whether or not those 3 levels actually have hardware
-manifestations. From your description, it sounds like that's not how
-things work in S390 land.
+How about this:
 
-> > Can I get you to explain why this is necessary or even preferable to
-> > doing it the generic way where pgd_t has a fixed software meaning
-> > regardless of how many hardware levels are in play?
-> 
-> Well, the hardware can do up to 5 levels of page tables for the full
-> 64 bit address space. With the introduction of pud's we wanted to
-> extend our address space from 3 levels / 42 bits to 4 levels / 53 bits.
-> But this comes at a cost: additional page table levels cost memory and
-> performance. In particular for the compat processes which can only
-> address a maximum of 2 GB it is a waste to allocate 4 levels. With the
-> dynamic page tables we allocate as much as required by each process.
+#define spin_until_timeout(condition, timeout, rc)          \
+      for (unsigned long __timeout = jiffies + (timeout);     \
+              (!(rc = (condition)) && time_after(jiffies, __timeout)); )
 
-X86 uses 1-entry tables at higher levels to maintain consistency with
-fairly minimal overhead. In some of the sillier addressing modes, we may
-even use a 4-entry table in some places. I think table size is fixed at
-compile time, but I don't think that's essential. Very little code in
-the x86 architecture has any notion of how many hardware levels actually
-exist.
+g.
 
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
