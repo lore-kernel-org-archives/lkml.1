@@ -1,74 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbZCLA5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZCLA5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870AbZCLA5K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 20:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZCLA4u
+	id S1754811AbZCLA5u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 20:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbZCLA5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 20:56:50 -0400
-Received: from mga09.intel.com ([134.134.136.24]:29501 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754043AbZCLA4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 20:56:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,346,1233561600"; 
-   d="scan'208";a="497088952"
-From: "Luo, Ximin" <ximin.luo@intel.com>
-To: Nico Schottelius <nico-linux-ipw3945-devel@schottelius.org>
-CC: "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "Zhu, Yi" <yi.zhu@intel.com>
-Date: Thu, 12 Mar 2009 08:56:10 +0800
-Subject: RE: [ipw3945-devel] iwlagn: Cannot allocate memory on
-	2.6.29-rc4-ikn-00001-gd5b5623
-Thread-Topic: [ipw3945-devel] iwlagn: Cannot allocate memory on
-	2.6.29-rc4-ikn-00001-gd5b5623
-Thread-Index: AcmiODAsWxDaopfrTqyI7hEOhfHkywAcoUrA
-Message-ID: <AFAB8585072C7E48BC5C6F9C87F9B7970733E7C4@pdsmsx502.ccr.corp.intel.com>
-References: <20090309142407.GB18058@denkbrett.schottelius.org>
- <AFAB8585072C7E48BC5C6F9C87F9B797072E3362@pdsmsx502.ccr.corp.intel.com>
- <20090311105722.GB5471@denkbrett.schottelius.org>
-In-Reply-To: <20090311105722.GB5471@denkbrett.schottelius.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="gb2312"
-MIME-Version: 1.0
+	Wed, 11 Mar 2009 20:57:40 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42043 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753772AbZCLA5j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 20:57:39 -0400
+Date: Thu, 12 Mar 2009 09:56:12 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: [RFC][PATCH 2/5] add softlimit to res_counter
+Message-Id: <20090312095612.4a7758e1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2C0vUqu019633
 
-Hello Nico,
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Thank you very much. :)
-Could you please provide more details as comments of that bug, such as OS, uCode and kernel version? If you can easy reproduce it, please tell us the detailed steps to reproduce it? 
-It will help our developer to tracking it. Thanks in advance.
+Adds an interface for defining sotlimit per memcg. (no handler in this patch.)
+softlimit paramater itself is added to res_counter and 
+ res_counter_set_softlimit() and
+ res_counter_check_under_softlimit() is provided as an interface.
 
-Best Regards,
-Ximin
 
------Original Message-----
-From: Nico Schottelius [mailto:nico-linux-ipw3945-devel@schottelius.org] 
-Sent: 2009Äê3ÔÂ11ÈÕ 18:57
-To: Luo, Ximin
-Cc: ipw3945-devel@lists.sourceforge.net; LKML; Chatre, Reinette; Zhu, Yi
-Subject: Re: [ipw3945-devel] iwlagn: Cannot allocate memory on 2.6.29-rc4-ikn-00001-gd5b5623
+Changelog v2->v3:
+ - softlimit is moved to res_counter
+Changelog v1->v2:
+ - For refactoring, divided a patch into 2 part and this patch just
+   involves memory.softlimit interface.
+ - Removed governor-detect routine, it was buggy in design.
 
-Luo, Ximin [Tue, Mar 10, 2009 at 09:05:02AM +0800]:
-> Hello Nico,
-> 
-> This issue is caused by memory allocation failure when allocating rx memory in isr. (From Yi's point) If you are interested in tracking it, please report a bug at http://www.intellinuxwireless.org/bugzilla/ for further tracking.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ include/linux/res_counter.h |    9 +++++++++
+ kernel/res_counter.c        |   29 +++++++++++++++++++++++++++++
+ mm/memcontrol.c             |   12 ++++++++++++
+ 3 files changed, 50 insertions(+)
 
-http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1933
+Index: mmotm-2.6.29-Mar10/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.29-Mar10.orig/mm/memcontrol.c
++++ mmotm-2.6.29-Mar10/mm/memcontrol.c
+@@ -2002,6 +2002,12 @@ static int mem_cgroup_write(struct cgrou
+ 		else
+ 			ret = mem_cgroup_resize_memsw_limit(memcg, val);
+ 		break;
++	case RES_SOFTLIMIT:
++		ret = res_counter_memparse_write_strategy(buffer, &val);
++		if (ret)
++			break;
++		ret = res_counter_set_softlimit(&memcg->res, val);
++		break;
+ 	default:
+ 		ret = -EINVAL; /* should be BUG() ? */
+ 		break;
+@@ -2251,6 +2257,12 @@ static struct cftype mem_cgroup_files[] 
+ 		.read_u64 = mem_cgroup_read,
+ 	},
+ 	{
++		.name = "softlimit_in_bytes",
++		.private = MEMFILE_PRIVATE(_MEM, RES_SOFTLIMIT),
++		.write_string = mem_cgroup_write,
++		.read_u64 = mem_cgroup_read,
++	},
++	{
+ 		.name = "failcnt",
+ 		.private = MEMFILE_PRIVATE(_MEM, RES_FAILCNT),
+ 		.trigger = mem_cgroup_reset,
+Index: mmotm-2.6.29-Mar10/include/linux/res_counter.h
+===================================================================
+--- mmotm-2.6.29-Mar10.orig/include/linux/res_counter.h
++++ mmotm-2.6.29-Mar10/include/linux/res_counter.h
+@@ -39,6 +39,10 @@ struct res_counter {
+ 	 */
+ 	unsigned long long failcnt;
+ 	/*
++	 * the softlimit.
++	 */
++	unsigned long long softlimit;
++	/*
+ 	 * the lock to protect all of the above.
+ 	 * the routines below consider this to be IRQ-safe
+ 	 */
+@@ -85,6 +89,7 @@ enum {
+ 	RES_MAX_USAGE,
+ 	RES_LIMIT,
+ 	RES_FAILCNT,
++	RES_SOFTLIMIT,
+ };
+ 
+ /*
+@@ -178,4 +183,8 @@ static inline int res_counter_set_limit(
+ 	return ret;
+ }
+ 
++/* res_counter's softlimit check can handles hierarchy in proper way */
++int res_counter_set_softlimit(struct res_counter *cnt, unsigned long long val);
++bool res_counter_check_under_softlimit(struct res_counter *cnt);
++
+ #endif
+Index: mmotm-2.6.29-Mar10/kernel/res_counter.c
+===================================================================
+--- mmotm-2.6.29-Mar10.orig/kernel/res_counter.c
++++ mmotm-2.6.29-Mar10/kernel/res_counter.c
+@@ -20,6 +20,7 @@ void res_counter_init(struct res_counter
+ 	spin_lock_init(&counter->lock);
+ 	counter->limit = (unsigned long long)LLONG_MAX;
+ 	counter->parent = parent;
++	counter->softlimit = (unsigned long long)LLONG_MAX;
+ }
+ 
+ int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
+@@ -88,6 +89,32 @@ void res_counter_uncharge(struct res_cou
+ 	local_irq_restore(flags);
+ }
+ 
++int res_counter_set_softlimit(struct res_counter *cnt, unsigned long long val)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	cnt->softlimit = val;
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return 0;
++}
++
++bool res_counter_check_under_softlimit(struct res_counter *cnt)
++{
++	struct res_counter *c;
++	unsigned long flags;
++	bool ret = true;
++
++	local_irq_save(flags);
++	for (c = cnt; ret && c != NULL; c = c->parent) {
++		spin_lock(&c->lock);
++		if (c->softlimit < c->usage)
++			ret = false;
++		spin_unlock(&c->lock);
++	}
++	local_irq_restore(flags);
++	return ret;
++}
+ 
+ static inline unsigned long long *
+ res_counter_member(struct res_counter *counter, int member)
+@@ -101,6 +128,8 @@ res_counter_member(struct res_counter *c
+ 		return &counter->limit;
+ 	case RES_FAILCNT:
+ 		return &counter->failcnt;
++	case RES_SOFTLIMIT:
++		return &counter->softlimit;
+ 	};
+ 
+ 	BUG();
 
--- 
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
