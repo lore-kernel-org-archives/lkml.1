@@ -1,130 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbZCLXn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZCLXsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756400AbZCLXn2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 19:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZCLXnU
+	id S1757020AbZCLXsF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 19:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZCLXry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 19:43:20 -0400
-Received: from mail1.radix.net ([207.192.128.31]:52651 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750946AbZCLXnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 19:43:19 -0400
-X-Greylist: delayed 1597 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 19:43:19 EDT
-Subject: Re: Fwd: [stable] [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885 
- video_open
-From: Andy Walls <awalls@radix.net>
-To: Michael Krufky <mkrufky@linuxtv.org>
-Cc: stable@kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Jarod Wilson <jarod@wilsonet.com>, LMML <linux-media@vger.kernel.org>
-In-Reply-To: <37219a840903121324q7b08c8d1ma6d0d3ec4f5eb278@mail.gmail.com>
-References: <200902241700.56099.jarod@redhat.com>
-	 <37219a840903121324q7b08c8d1ma6d0d3ec4f5eb278@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 12 Mar 2009 19:03:53 -0400
-Message-Id: <1236899033.3261.7.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+	Thu, 12 Mar 2009 19:47:54 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48680 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752354AbZCLXrx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 19:47:53 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 4/4] ring-buffer: only allocate buffers for online cpus
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Wu Fengguang <fengguang.wu@intel.com>, Pierre Ossman <drzeus@drzeus.cx>,
+       Pekka Paalanen <pq@iki.fi>, Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <alpine.DEB.2.00.0903120933400.3062@gandalf.stny.rr.com>
+References: <20090312162722.43B1.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0903120933400.3062@gandalf.stny.rr.com>
+Message-Id: <20090313083919.43CB.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Fri, 13 Mar 2009 08:47:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-12 at 16:24 -0400, Michael Krufky wrote:
-> Can we have this merged into -stable?  Jarod Wilson sent this last
-> month, but he left off the cc to stable@kernel.org
+> > I don't like this patch.
+> > your [1/4] and [2/4] already solve Pierre's problem.
+> > 
+> > using online cpu (not possible cpu) increase performance overhead 
+> > and messiness.
+> > but nobody get benefit ;)
 > 
-> Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+> Well, the fact that you can have 15 buffers for non existent CPUs is a big 
+> benefit. And the overhead was only on the read side, not the write, and 
+> very limited in overhead for that matter.
+> 
+> But, looking at this, I realized I can get rid of all the 
+> "get_online_cpus". I originally had the CPU_DOWN_PREPARE remove the 
+> buffer. But I found it highly annoying during tests, that I lose my data 
+> when I brought down a CPU. Thus, I removed the code to free the buffer and 
+> replaced it with the comment explaining this.
+> 
+> The get_online_cpus is to prevent the race where we might remove a buffer. 
+> But since we do not do that anymore, those get_online_cpus are pretty 
+> useless.
+> 
+> I'll update the code in a bit.
 
-Mike,
+Great!
 
-A version of this is already in the v4l-dvb hg development repository:
+from mission critical area view, CPU down event is very important.
+I don't hope to lost trace data of downed cpu.
+and no get_online_cpus() don't cause annoy overhead.
 
-hg log -vp --limit 1 linux/drivers/media/video/cx23885/cx23885-417.c
-hg log -vp --limit 2 linux/drivers/media/video/cx23885/cx23885-video.c 
+I love to see your next patch :)
 
-I helped Mark work through the solution: I coded some of it, he coded
-some of it and he also tested it.
-
-Regards,
-Andy
-
-
-> 
-> ---------- Forwarded message ----------
-> From: Jarod Wilson <jarod@redhat.com>
-> Date: Tue, Feb 24, 2009 at 6:00 PM
-> Subject: [stable] [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885 video_open
-> To: linux-kernel@vger.kernel.org
-> Cc: Mike Krufky <mkrufky@linuxtv.org>
-> 
-> 
-> From: Mark Jenks
-> https://www.redhat.com/mailman/private/video4linux-list/2009-January/msg00041.html
-> 
-> The Hauppauge WinTV HVR-1800 tv tuner card has both digital and analog
-> abilities, both of which are supported by v4l/dvb under 2.6.27.y. The analog
-> side also features a hardware mpeg2 encoder. The HVR-1250 tv tuner card
-> has both digital and analog abilities, but analog isn't currently supported
-> under any kernel. These cards both utilize the cx23885 driver, but with
-> slightly different usage. When the code paths for each card is executed,
-> they wind up poking a cx23885_devlist, which contains devices from both
-> of the cards, and access attempts are made to portions of 'struct
-> cx23885_dev' that aren't valid for that device. Simply add some extra
-> checks before trying to access these structs.
-> 
-> More gory details:
->  http://article.gmane.org/gmane.linux.drivers.dvb/46630
-> 
-> This was triggering on my own system at home w/both cards in it, and
-> no longer happens with this patch included.
-> 
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> Reviewed-by: Michael Krufky <mkrufky@linuxtv.org>
-> 
-> ---
-> 
->  drivers/media/video/cx23885/cx23885-417.c   |    2 +-
->  drivers/media/video/cx23885/cx23885-video.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/media/video/cx23885/cx23885-417.c
-> b/drivers/media/video/cx23885/cx23885-417.c
-> index 7b0e8c0..19154b6 100644
-> --- a/drivers/media/video/cx23885/cx23885-417.c
-> +++ b/drivers/media/video/cx23885/cx23885-417.c
-> @@ -1585,7 +1585,7 @@ static int mpeg_open(struct inode *inode, struct
-> file *file)
-> 
->        list_for_each(list, &cx23885_devlist) {
->                h = list_entry(list, struct cx23885_dev, devlist);
-> -               if (h->v4l_device->minor == minor) {
-> +               if (h->v4l_device && h->v4l_device->minor == minor) {
->                        dev = h;
->                        break;
->                }
-> diff --git a/drivers/media/video/cx23885/cx23885-video.c
-> b/drivers/media/video/cx23885/cx23885-video.c
-> index 6047c78..a2b5a0c 100644
-> --- a/drivers/media/video/cx23885/cx23885-video.c
-> +++ b/drivers/media/video/cx23885/cx23885-video.c
-> @@ -733,7 +733,7 @@ static int video_open(struct inode *inode, struct
-> file *file)
-> 
->        list_for_each(list, &cx23885_devlist) {
->                h = list_entry(list, struct cx23885_dev, devlist);
-> -               if (h->video_dev->minor == minor) {
-> +               if (h->video_dev && h->video_dev->minor == minor) {
->                        dev  = h;
->                        type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
->                }
-> 
-> 
-> --
-> Jarod Wilson
-> jarod@redhat.com
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-media" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
 
