@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbZCLJNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbZCLJNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbZCLJNB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 05:13:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZCLJMu
+	id S1754901AbZCLJNZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 05:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbZCLJNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 05:12:50 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:48121 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751659AbZCLJMu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 05:12:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ocnF1+8njtadaReQTYfmnEMI4M1WW9xm/j5d1THVKEhvhzkhWUIVHnILmn7UGqg6oX0liDxX04zaW6x7Q8hLFTLdaUuQ/BLTDfkRZoenOyz/mojpG5cBgO/rrB1gSshR1FdtGNFi2J10QS4vWYbdsfUUWHiNUVMZQZe6UfWKeV4=  ;
-X-YMail-OSG: jcm57NQVM1nBr1P8ch8QdXLYAe6APRomnNR6vrAUUcYw7CG2DsONrUfLLMj9y1Ld.qN9w4zBB189YsTdf4t9G7HKXIsb1fdv0s3YCZ3LN2jg8Cmb5_.Jor6vrNZdjbVmLYrsmerzUWacVhwkvNsXt6ZXA4zoqi0EXvOM8aihArvFhdwGgNo04VKhl5iZszWOSvT0P2aPUOKoqjl_GfJOChBMeX0aCP55QYI-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Francis Moreau <francis.moro@gmail.com>
-Subject: Re: Question regarding concurrent accesses through block device and fs
-Date: Thu, 12 Mar 2009 20:12:45 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <m2hc2yulrw.fsf@gmail.com> <200903121922.53529.nickpiggin@yahoo.com.au> <38b2ab8a0903120200h2f586c41s58d6a1520cba5ea8@mail.gmail.com>
-In-Reply-To: <38b2ab8a0903120200h2f586c41s58d6a1520cba5ea8@mail.gmail.com>
+	Thu, 12 Mar 2009 05:13:11 -0400
+Received: from ozlabs.org ([203.10.76.45]:47567 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754623AbZCLJNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 05:13:10 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PULL] Wrapper macros for struct task_struct and struct mm_struct cpumask transition
+Date: Thu, 12 Mar 2009 19:43:02 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+References: <200903121436.53055.rusty@rustcorp.com.au> <200903121745.23448.rusty@rustcorp.com.au> <20090312003709.1196ce15.akpm@linux-foundation.org>
+In-Reply-To: <20090312003709.1196ce15.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903122012.45607.nickpiggin@yahoo.com.au>
+Message-Id: <200903121943.02799.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 March 2009 20:00:38 Francis Moreau wrote:
-> On Thu, Mar 12, 2009 at 9:22 AM, Nick Piggin <nickpiggin@yahoo.com.au> 
-wrote:
-> > Ignore details like crashes, direct IO and coherency between data
-> > mappings and buffercache where things get a bit hairy, and it's just a
-> > writeback cache. The last thing you write to some location will be what
-> > you get back if you read from that location -- regardless of whether it
-> > is dirty or clean or not present when you ask for it (and has to be read
-> > from disk).
->
-> Well yes but I was wondering in the special where the kernel crash or
-> the power supply is down how the kernel is minimizing the risk of file
-> system inconsistency. Hence my questions about metadata handling.
+On Thursday 12 March 2009 18:07:09 Andrew Morton wrote:
+> On Thu, 12 Mar 2009 17:45:22 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
+...
+> Please prefer to put the patches in the email if practical?  More
+> eyeballs and all that.
 
-Well, journalling filesystems, other filesystems can do synchronous
-metadata updates (write through) which can help too. There is really
-nothing that the generic pagecache/buffercache code does to try to
-handle this because it is far to filesystem specific.
+Hmm, yes.  Is there a preferred way of doing that with git request-pull?
+Or just append the diff?
 
+> : +/* Future-safe accessor for struct mm_struct's cpu_vm_mask. */
+> : +#define mm_cpumask(mm) (&(mm)->cpu_vm_mask)
+> : +
+...
+> It would be pretty perverse to run tsk_cpumask() against a `struct
+> cpuset*', but your proposed implementation would merrily permit that
+> mistake.
+> 
+> Can we write the kernel in C please??
+
+You mean use an inline?  No, it's a bad idea for two reasons.  The minor
+reason is that this macro is a temporary so it makes more sense to fix the
+final version.
+
+But the major one is const correctness.  Macros give a const value for
+const input.  We can enhance the macro to check, but that's even uglier:
+
+  static inline int check_is_task_struct(const struct task_struct *t) { }
+  #define tsk_cpumask(t) (sizeof(check_is_task_struct(t)), &(t)->cpu_vm_mask)
+
+> yup, the patches are quite safe and mergeable.  And if they'd been in the
+> email body, Linus might have seen that and pulled them ;)
+
+Probably not, as that's not what he complained about last time.  He might have
+been enlightened by the commit messages tho.
+
+Cheers,
+Rusty.
