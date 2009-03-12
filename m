@@ -1,147 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbZCLMop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbZCLMpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948AbZCLMop (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 08:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbZCLMog
+	id S1756698AbZCLMpd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 08:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbZCLMpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 08:44:36 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:37702 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752114AbZCLMof convert rfc822-to-8bit (ORCPT
+	Thu, 12 Mar 2009 08:45:19 -0400
+Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:23037 "HELO
+	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754947AbZCLMpS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 08:44:35 -0400
-Message-Id: <49B911EB.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Thu, 12 Mar 2009 12:45:15 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: smarten /proc/interrupts output
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Thu, 12 Mar 2009 08:45:18 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=SNcLnReBsk/V9m6OtaAUV9ebsRUfsSUyJraD3NlJp1aROqcp+4CRpIkUkpdy3OU2hgHAJVJ7/vMkzhq71gl1esNHit+87+EhZwlqlZxb3Gf9OpqCnwPxRcdxB/JLn9mcVSnnZVLBTQa0u9A4hCnWNuYTVxQZDxgkii7bPtnUixg=  ;
+X-YMail-OSG: upYS2wgVM1lbZ_.zeeQWvRCkVeplqxWki1_y4MCU5jTf5vS5bGywSUi4Jk5VgHAZybFeb40kJsuAw7Xxk1NjqE_82Qr6IQrEXGUa.Ak6CFmvsboUVaJ9Sj8E2a5uYmzVgEHXCZsPfd.02hi99zLA9D05fXhPO1VwZ3As0qBaRlYvTD2n8LXDPAaqYZ_wTA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
+Date: Thu, 12 Mar 2009 23:45:13 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Daniel Phillips <phillips@phunq.net>, linux-fsdevel@vger.kernel.org,
+       tux3@tux3.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <200903110925.37614.phillips@phunq.net> <200903120524.34150.phillips@phunq.net> <20090312123230.GA14425@parisc-linux.org>
+In-Reply-To: <20090312123230.GA14425@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200903122345.13787.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: readability of kernel provided statistics data
+On Thursday 12 March 2009 23:32:30 Matthew Wilcox wrote:
+> On Thu, Mar 12, 2009 at 05:24:33AM -0700, Daniel Phillips wrote:
+> > On Thursday 12 March 2009, Nick Piggin wrote:
+> > > That's interesting. Do you handle 1K block sizes with 64K page size? :)
+> >
+> > Not in its current incarnation.  That would require 32 bytes worth of
+> > state while the current code just has a 4 byte map (4 bits X 8 blocks).
+> > I suppose a reasonable way to extend it would be 4 x 8 byte maps.  Has
+> > somebody spotted a 64K page?
+>
+> I believe SGI ship their ia64 kernels configured this way.  Certainly
+> 16k ia64 kernels are common, which would (if I understand your scheme
+> correctly) be 8 bytes worth of state in your scheme.
 
-With the number of interrupts on large systems growing, assumptions on
-the width an interrupt number requires when converted to a decimal
-string turn invalid. Therefore, calculate the maximum number of digits
-dynamically.
+I think some distros will (or do) ship configs with 64K page size for
+ia64 and powerpc too. I think I have heard of people using 64K pages
+with ARM. There was some (public) talk of x86-64 getting a 16K or 64K
+page size too (and even if not HW, some people want to be able to go
+bigger SW pagecache size).
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-
----
- arch/x86/kernel/irq.c |   33 ++++++++++++++++++---------------
- 1 file changed, 18 insertions(+), 15 deletions(-)
-
---- linux-2.6.29-rc7/arch/x86/kernel/irq.c	2009-03-04 09:10:19.000000000 +0100
-+++ 2.6.29-rc7-x86-show-interrupts/arch/x86/kernel/irq.c	2009-03-05 15:30:06.000000000 +0100
-@@ -44,55 +44,55 @@ void ack_bad_irq(unsigned int irq)
- /*
-  * /proc/interrupts printing:
-  */
--static int show_other_interrupts(struct seq_file *p)
-+static int show_other_interrupts(struct seq_file *p, int prec)
- {
- 	int j;
- 
--	seq_printf(p, "NMI: ");
-+	seq_printf(p, "%*s: ", prec, "NMI");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->__nmi_count);
- 	seq_printf(p, "  Non-maskable interrupts\n");
- #ifdef CONFIG_X86_LOCAL_APIC
--	seq_printf(p, "LOC: ");
-+	seq_printf(p, "%*s: ", prec, "LOC");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->apic_timer_irqs);
- 	seq_printf(p, "  Local timer interrupts\n");
- #endif
- #ifdef CONFIG_SMP
--	seq_printf(p, "RES: ");
-+	seq_printf(p, "%*s: ", prec, "RES");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->irq_resched_count);
- 	seq_printf(p, "  Rescheduling interrupts\n");
--	seq_printf(p, "CAL: ");
-+	seq_printf(p, "%*s: ", prec, "CAL");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->irq_call_count);
- 	seq_printf(p, "  Function call interrupts\n");
--	seq_printf(p, "TLB: ");
-+	seq_printf(p, "%*s: ", prec, "TLB");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->irq_tlb_count);
- 	seq_printf(p, "  TLB shootdowns\n");
- #endif
- #ifdef CONFIG_X86_MCE
--	seq_printf(p, "TRM: ");
-+	seq_printf(p, "%*s: ", prec, "TRM");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->irq_thermal_count);
- 	seq_printf(p, "  Thermal event interrupts\n");
- # ifdef CONFIG_X86_64
--	seq_printf(p, "THR: ");
-+	seq_printf(p, "%*s: ", prec, "THR");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->irq_threshold_count);
- 	seq_printf(p, "  Threshold APIC interrupts\n");
- # endif
- #endif
- #ifdef CONFIG_X86_LOCAL_APIC
--	seq_printf(p, "SPU: ");
-+	seq_printf(p, "%*s: ", prec, "SPU");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->irq_spurious_count);
- 	seq_printf(p, "  Spurious interrupts\n");
- #endif
--	seq_printf(p, "ERR: %10u\n", atomic_read(&irq_err_count));
-+	seq_printf(p, "%*s: %10u\n", prec, "ERR", atomic_read(&irq_err_count));
- #if defined(CONFIG_X86_IO_APIC)
--	seq_printf(p, "MIS: %10u\n", atomic_read(&irq_mis_count));
-+	seq_printf(p, "%*s: %10u\n", prec, "MIS", atomic_read(&irq_mis_count));
- #endif
- 	return 0;
- }
-@@ -100,19 +100,22 @@ static int show_other_interrupts(struct 
- int show_interrupts(struct seq_file *p, void *v)
- {
- 	unsigned long flags, any_count = 0;
--	int i = *(loff_t *) v, j;
-+	int i = *(loff_t *) v, j, prec;
- 	struct irqaction *action;
- 	struct irq_desc *desc;
- 
- 	if (i > nr_irqs)
- 		return 0;
- 
-+	for (prec = 3, j = 1000; prec < 10 && j <= nr_irqs; ++prec)
-+		j *= 10;
-+
- 	if (i == nr_irqs)
--		return show_other_interrupts(p);
-+		return show_other_interrupts(p, prec);
- 
- 	/* print header */
- 	if (i == 0) {
--		seq_printf(p, "           ");
-+		seq_printf(p, "%*s", prec + 8, "");
- 		for_each_online_cpu(j)
- 			seq_printf(p, "CPU%-8d", j);
- 		seq_putc(p, '\n');
-@@ -133,7 +136,7 @@ int show_interrupts(struct seq_file *p, 
- 	if (!action && !any_count)
- 		goto out;
- 
--	seq_printf(p, "%3d: ", i);
-+	seq_printf(p, "%*d: ", prec, i);
- #ifndef CONFIG_SMP
- 	seq_printf(p, "%10u ", kstat_irqs(i));
- #else
-
-
+I wouldn't expect 64K page and 1K block to be worth optimising for
+(although 64K page systems could easily use older or shared 4K block
+filesystems). But just keep in mind that a good solution should not
+rely on PAGE_CACHE_SIZE for correctness.
 
