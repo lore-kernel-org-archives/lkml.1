@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353AbZCLVdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756092AbZCLViW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757353AbZCLVdr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 17:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbZCLVdf
+	id S1756092AbZCLViW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 17:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZCLViN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 17:33:35 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46935 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755212AbZCLVde (ORCPT
+	Thu, 12 Mar 2009 17:38:13 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:45553 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751999AbZCLViM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 17:33:34 -0400
-Message-ID: <49B97FA8.1060504@us.ibm.com>
-Date: Thu, 12 Mar 2009 14:33:28 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/futexes] futex: use current->time_slack_ns for rt tasks
- too
-References: <20090312075559.9856.28822.stgit@Aeon>	 <tip-16f4993f4e9860715918efd4eeac928f8de1218b@git.kernel.org>	 <49B913DC.6040807@linux.intel.com> <1236866529.22914.3694.camel@twins>	 <alpine.LFD.2.00.0903121524370.29264@localhost.localdomain> <1236869314.22914.3697.camel@twins> <49B923C4.20901@linux.intel.com>
-In-Reply-To: <49B923C4.20901@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Mar 2009 17:38:12 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; charset=us-ascii
+Date: Thu, 12 Mar 2009 17:39:23 -0400
+From: Jody McIntyre <scjody@sun.com>
+Subject: [PATCH] trivial: fix bad links in the ext2 and ext3 documentation
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Message-id: <20090312213922.GK8732@clouds>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Peter Zijlstra wrote:
->>>> ---
->>>>
->>>> Subject: sched: adjust timer_slack_ns on scheduler policy change
->>>> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
->>>> Date: Thu Mar 12 15:01:02 CET 2009
->>>>
->>>> Ensure RT tasks have 0 timer slack.
->>>>
->>>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->>>> ---
->>>>  kernel/sched.c |    2 ++
->>>>  1 file changed, 2 insertions(+)
->>>>
->>>> Index: linux-2.6/kernel/sched.c
->>>> ===================================================================
->>>> --- linux-2.6.orig/kernel/sched.c
->>>> +++ linux-2.6/kernel/sched.c
->>>> @@ -5511,10 +5511,12 @@ __setscheduler(struct rq *rq, struct tas
->>>>      case SCHED_NORMAL:
->>>>      case SCHED_BATCH:
->>>>      case SCHED_IDLE:
->>>> +        p->timer_slack_ns = p->default_timer_slack_ns;
->>>>          p->sched_class = &fair_sched_class;
->>>>          break;
->>>>      case SCHED_FIFO:
->>>>      case SCHED_RR:
->>>> +        p->timer_slack_ns = 0;
->>>>          p->sched_class = &rt_sched_class;
->>>>          break;
->>>>      }
->>>>
->>
->> Looking at the default_timer_slack_ns stuff, do we want something like
->> the below?
-> 
-> the original idea was that you had a default slack that you got from 
-> exec time,
-> and then something you could just tweak around yourself independently....
-> 
-> this would throw that out of the window.
+Trivial patch to fix bad links in the ext2 and ext3 documentation.
 
-It seems to me that changing your scheduling class from userspace would 
-be reasonable justification to change the timer slack to a default value 
-for that class.  Thoughts?
+Signed-off-by: Jody McIntyre <scjody@sun.com>
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+Index: linux-2.6/Documentation/filesystems/ext2.txt
+===================================================================
+--- linux-2.6.orig/Documentation/filesystems/ext2.txt
++++ linux-2.6/Documentation/filesystems/ext2.txt
+@@ -373,10 +373,10 @@ Filesystem Resizing	http://ext2resize.so
+ Compression (*)		http://e2compr.sourceforge.net/
+ 
+ Implementations for:
+-Windows 95/98/NT/2000	http://uranus.it.swin.edu.au/~jn/linux/Explore2fs.htm
+-Windows 95 (*)		http://www.yipton.demon.co.uk/content.html#FSDEXT2
++Windows 95/98/NT/2000	http://www.chrysocome.net/explore2fs
++Windows 95 (*)		http://www.yipton.net/content.html#FSDEXT2
+ DOS client (*)		ftp://metalab.unc.edu/pub/Linux/system/filesystems/ext2/
+-OS/2			http://perso.wanadoo.fr/matthieu.willm/ext2-os2/
+-RISC OS client		ftp://ftp.barnet.ac.uk/pub/acorn/armlinux/iscafs/
++OS/2 (*)		ftp://metalab.unc.edu/pub/Linux/system/filesystems/ext2/
++RISC OS client		http://www.esw-heim.tu-clausthal.de/~marco/smorbrod/IscaFS/
+ 
+-(*) no longer actively developed/supported (as of Apr 2001)
++(*) no longer actively developed/supported (as of Mar 2009)
+Index: linux-2.6/Documentation/filesystems/ext3.txt
+===================================================================
+--- linux-2.6.orig/Documentation/filesystems/ext3.txt
++++ linux-2.6/Documentation/filesystems/ext3.txt
+@@ -198,5 +198,5 @@ kernel source:	<file:fs/ext3/>
+ programs: 	http://e2fsprogs.sourceforge.net/
+ 		http://ext2resize.sourceforge.net
+ 
+-useful links:	http://www-106.ibm.com/developerworks/linux/library/l-fs7/
+-		http://www-106.ibm.com/developerworks/linux/library/l-fs8/
++useful links:	http://www.ibm.com/developerworks/library/l-fs7.html
++		http://www.ibm.com/developerworks/library/l-fs8.html
