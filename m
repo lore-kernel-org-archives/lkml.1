@@ -1,84 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZCLA7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZCLBAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbZCLA7X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 20:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbZCLA7F
+	id S1755414AbZCLBAN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 21:00:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbZCLA75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 20:59:05 -0400
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:43772 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754391AbZCLA7D (ORCPT
+	Wed, 11 Mar 2009 20:59:57 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42155 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752804AbZCLA74 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 20:59:03 -0400
-Message-ID: <49B85E55.6060804@lougher.demon.co.uk>
-Date: Thu, 12 Mar 2009 00:59:01 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: akpm@linux-foundation.org, Geert.Uytterhoeven@sonycom.com,
-       linux-kernel@vger.kernel.org, s.L-H@gmx.de
-Subject: Re: [GIT-PULL] More Squashfs fixes for 2.6.29?
-References: <E1LhU3m-0001f1-Cw@dylan.lougher.demon.co.uk> <alpine.LFD.2.00.0903111237410.32478@localhost.localdomain> <49B85335.2010504@lougher.demon.co.uk> <alpine.LFD.2.00.0903111715340.32478@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903111715340.32478@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 11 Mar 2009 20:59:56 -0400
+Date: Thu, 12 Mar 2009 09:58:31 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: [RFC][PATCH 4/5] memcg softlimit_priority
+Message-Id: <20090312095831.e88b4556.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Thu, 12 Mar 2009, Phillip Lougher wrote:
->> But I optimised the inner loop out because of the following logic:
->>
->> zlib_inflate always tries to make as much progress as possible
-> 
-> Is this strictly true? Your own bug report seems to say that it isn't.
-> 
-> Hmm. [ Goes back and looks. ] The zlib source code is a total piece of 
-> mess, but it does seem like it only does "goto inf_leave" when it needs 
-> more data (unless you ask for the "stop at block boundary", of course). Or 
-> in the Z_STREAM_END case, or errors. 
-> 
-> But your bug report sounds very much like you got all the data already 
-> (nothing available for output any more), but then didn't do the last CHECK 
-> stage (== no output, but the input contains the 32-bit adler checksum and 
-> the CHECK command). That would explain exactly the case of "a few extra 
-> bytes at the input, despite not having any output left".
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Yes, this is exactly what's happening.  Sorry if the bug report didn't
-make it clear.
+An iterface to set/read softlimit priority of cgroup.
 
-> 
-> And if you don't do the CHECK stage, then you're missing a large part of 
-> the corruption checking that zlib does.
-> 
-> So you should never exit based on whether you still need output. So that
-> 
-> 	if (msblk->stream.avail_out == 0) {
-> 		..
-> 		else if (msblk->stream.avail_in > 0
-> 			BUG
-> 
-> really looks _wrong_. It's not a buggy situation at all to have no output 
-> left to process, but still input in the input buffers. It may well just 
-> mean that you ended up having the CHECK part of the zlib buffer in a new 
-> input buffer.
+Changelog: v2->v3
+ - removed complicated handling of hierarchy.
+   i.e. Changes in priority doesn't affect children.
 
-Yes the check is pretty bogus.  I'm about to send an improved patch
-that gets rid of this check (just relying on zlib to error if we've
-got no more output buffers, and it wants to output).
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/memcontrol.c |   31 +++++++++++++++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)
 
-I'll also put some more info into the commit indicating the problem
-it's fixing.
-
-Thanks
-
-Phillip
-
-> 
-> 		Linus
-> 
-
+Index: mmotm-2.6.29-Mar10/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.29-Mar10.orig/mm/memcontrol.c
++++ mmotm-2.6.29-Mar10/mm/memcontrol.c
+@@ -217,6 +217,8 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
+ #define MEMFILE_TYPE(val)	(((val) >> 16) & 0xffff)
+ #define MEMFILE_ATTR(val)	((val) & 0xffff)
+ 
++#define MEM_SOFTLIMIT_PRIO     (0x10)
++
+ static void mem_cgroup_get(struct mem_cgroup *mem);
+ static void mem_cgroup_put(struct mem_cgroup *mem);
+ static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
+@@ -2187,7 +2189,14 @@ static u64 mem_cgroup_read(struct cgroup
+ 	name = MEMFILE_ATTR(cft->private);
+ 	switch (type) {
+ 	case _MEM:
+-		val = res_counter_read_u64(&mem->res, name);
++		switch (name) {
++		case MEM_SOFTLIMIT_PRIO:
++			val = mem->softlimit_priority;
++			break;
++		default:
++			val = res_counter_read_u64(&mem->res, name);
++			break;
++		}
+ 		break;
+ 	case _MEMSWAP:
+ 		if (do_swap_account)
+@@ -2290,6 +2299,18 @@ static int mem_cgroup_reset(struct cgrou
+ 	return 0;
+ }
+ 
++static int mem_cgroup_write_softlimit_priority(struct cgroup *cgrp,
++					struct cftype *cft,
++					u64 val)
++{
++	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
++	int priority = (int)val;
++
++	if ((priority < 0) || (priority > SOFTLIMIT_MAXPRI))
++		return -EINVAL;
++	memcg_softlimit_requeue(memcg, priority);
++	return 0;
++}
+ 
+ /* For read statistics */
+ enum {
+@@ -2485,6 +2506,12 @@ static struct cftype mem_cgroup_files[] 
+ 		.read_u64 = mem_cgroup_read,
+ 	},
+ 	{
++		.name = "softlimit_priority",
++		.private = MEMFILE_PRIVATE(_MEM, MEM_SOFTLIMIT_PRIO),
++		.write_u64 = mem_cgroup_write_softlimit_priority,
++		.read_u64 = mem_cgroup_read,
++	},
++	{
+ 		.name = "failcnt",
+ 		.private = MEMFILE_PRIVATE(_MEM, RES_FAILCNT),
+ 		.trigger = mem_cgroup_reset,
+@@ -2711,8 +2738,8 @@ mem_cgroup_create(struct cgroup_subsys *
+ 		res_counter_init(&mem->res, NULL);
+ 		res_counter_init(&mem->memsw, NULL);
+ 	}
+-	mem->last_scanned_child = 0;
+ 	mem->softlimit_priority = SOFTLIMIT_MAXPRI;
++	mem->last_scanned_child = 0;
+ 	mutex_init(&mem->softlimit_mutex);
+ 	spin_lock_init(&mem->reclaim_param_lock);
+ 
 
