@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbZCLRp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbZCLRqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755522AbZCLRp7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 13:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbZCLRpj
+	id S1756684AbZCLRqW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 13:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756455AbZCLRps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 13:45:39 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:57109 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756190AbZCLRpi (ORCPT
+	Thu, 12 Mar 2009 13:45:48 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:38827 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756331AbZCLRpr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 13:45:38 -0400
-Date: Thu, 12 Mar 2009 13:30:43 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Nico -telmich- Schottelius 
-	<nico-linux-ipw3945-devel@schottelius.org>,
-       Nico Schottelius <nico-linux-20090311@schottelius.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       ipw3945-devel@lists.sourceforge.net,
-       Linux Next Mailing List <linux-next@vger.kernel.org>
-Subject: Re: [ipw3945-devel] X200 suspend status on -wl and -next
-Message-ID: <20090312173042.GD3410@tuxdriver.com>
-References: <20090311073030.GA5284@denkbrett.schottelius.org> <200903110946.23280.rjw@sisk.pl> <20090311085229.GB4495@denkbrett.schottelius.org> <20090311184407.GG8761@tuxdriver.com> <20090312142003.GF30728@denkbrett.schottelius.org>
+	Thu, 12 Mar 2009 13:45:47 -0400
+Date: Thu, 12 Mar 2009 23:15:01 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, menage@google.com
+Cc: Balbir Singh <balbir@in.ibm.com>
+Subject: cpuset: Check if the cpus allowed is a subset of the cpuset's cpus
+	for PF_THREAD_BOUND threads
+Message-ID: <20090312174501.GA7821@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090312142003.GF30728@denkbrett.schottelius.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 03:20:03PM +0100, Nico -telmich- Schottelius wrote:
-> John W. Linville [Wed, Mar 11, 2009 at 02:44:07PM -0400]:
-> > Any chance you'd like to try wireless-testing to help to isolate
-> > possible sources of this problem?
-> > 
-> > 	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing.git
-> 
-> v2.6.29-rc7-17155-g2f7ab92 looks good (as in: wlan works after several
-> suspends and resumes). But it seems you do not add the full kernel version:
-> 
-> sgnx20002:/home/nico/wireless-testing# git describe
-> v2.6.29-rc7-17155-g2f7ab92
-> sgnx20002:/home/nico/wireless-testing# uname -r
-> 2.6.29-rc7-wl-ikn
-> 
-> Which is the kernel built some seconds before.
 
-I don't know where you get the -ikn bits from, presumably from the
-iwlwifi project.  Given what you said above, it would seem you are
-getting your suspend/resume problems from them as well... :-(
+When a kernel thread which has been bound to a CPU is moved to
+a cpuset which is a superset of the CPU it is bound to, the
+movement fails.
 
-John
+[root@llm11 cgroups]# mkdir a
+[root@llm11 cgroups]# echo 3 > a/cpuset.cpus
+[root@llm11 cgroups]# echo 0 > a/cpuset.mems
+[root@llm11 cgroups]# echo 12 > a/tasks
+[root@llm11 cgroups]# echo 12 > tasks
+-bash: echo: write error: Invalid argument
+[root@llm11 cgroups]# cat cpuset.cpus
+0-7
+[root@llm11 cgroups]#
+
+(pid 12 is the migration thread bound to CPU 3)
+
+Change the check to see if the cpus allowed is a subset of the
+cpus allowed for that cpuset.
+
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+---
+ kernel/cpuset.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1362,7 +1362,7 @@ static int cpuset_can_attach(struct cgro
+ 
+ 	if (tsk->flags & PF_THREAD_BOUND) {
+ 		mutex_lock(&callback_mutex);
+-		if (!cpumask_equal(&tsk->cpus_allowed, cs->cpus_allowed))
++		if (!cpumask_subset(&tsk->cpus_allowed, cs->cpus_allowed))
+ 			ret = -EINVAL;
+ 		mutex_unlock(&callback_mutex);
+ 	}
 -- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+regards,
+Dhaval
