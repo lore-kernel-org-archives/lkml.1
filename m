@@ -1,88 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbZCLNsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbZCLNtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756032AbZCLNsu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 09:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbZCLNsl
+	id S1756114AbZCLNtU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 09:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbZCLNtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 09:48:41 -0400
-Received: from dgate20.fujitsu-siemens.com ([80.70.172.51]:24902 "EHLO
-	dgate20.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754626AbZCLNsl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 09:48:41 -0400
-X-Greylist: delayed 591 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 09:48:40 EDT
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
-  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
-   Received:Received:Message-ID:Date:From:Organization:
-   User-Agent:MIME-Version:To:CC:Subject:References:
-   In-Reply-To:X-Enigmail-Version:Content-Type:
-   Content-Transfer-Encoding;
-  b=rbuhbqZ5kRQld3SIeZJmRqHeBZebKXVIXAX2iZgAjo9uB7TpEYOgx0h7
-   1bpnfTBfKCw6npUwJuT7+6cOlUvoiN0IjMauN8bwHw49Tbrq/+7vUfxTQ
-   GPhIEVX4Skgo5LG;
-X-SBRSScore: None
-X-IronPort-AV: E=Sophos;i="4.38,350,1233529200"; 
-   d="scan'208";a="56138593"
-X-IronPort-AV: E=Sophos;i="4.38,350,1233529200"; 
-   d="scan'208";a="45083375"
-Message-ID: <49B91066.3010000@fujitsu-siemens.com>
-Date: Thu, 12 Mar 2009 14:38:46 +0100
-From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Organization: Fujitsu Siemens Computers
-User-Agent: Thunderbird 2.0.0.15pre (X11/20080508)
+	Thu, 12 Mar 2009 09:49:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58345 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754688AbZCLNtC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 09:49:02 -0400
+Date: Thu, 12 Mar 2009 09:46:46 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: anqin <anqin.qin@gmail.com>
+Cc: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>, oz-kernel@redhat.com,
+       paolo.valente@unimore.it, linux-kernel@vger.kernel.org,
+       dhaval@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       menage@google.com, jmoyer@redhat.com, fchecconi@gmail.com,
+       arozansk@redhat.com, jens.axboe@oracle.com, akpm@linux-foundation.org,
+       fernando@intellilink.co.jp, balbir@linux.vnet.ibm.com
+Subject: Re: [RFC] IO Controller
+Message-ID: <20090312134646.GC10919@redhat.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <49B8810B.7030603@oss.ntt.co.jp> <d95d44a20903112340s3c77807dt465e68901747ad89@mail.gmail.com>
 MIME-Version: 1.0
-To: Jean Delvare <jdelvare@suse.de>
-CC: Cyrill Gorcunov <gorcunov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Wichert, Gerhard" <Gerhard.Wichert@fujitsu-siemens.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH] x86 (64): make calibrate_APIC_clock() SMI-safe (take
- 3)
-References: <20080724143151.GA32422@lenovo> <4889D767 <4889ED91.7050800@fujitsu-siemens.com> <200903121041.34746.jdelvare@suse.de>
-In-Reply-To: <200903121041.34746.jdelvare@suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d95d44a20903112340s3c77807dt465e68901747ad89@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+On Thu, Mar 12, 2009 at 02:40:23PM +0800, anqin wrote:
+> Hi Vivek,
+> 
+> It would be very appreciated if the patches can be based on 2.6.28.
+> 
 
-same answer as on Bugzilla...
+Hi Anquin,
 
-> Sorry for replying to such an old thread, but did this patch go
-> anywhere? I can't seem to find it in git. Was it somehow obsoleted
-> by a different fix for the same issue (SMI flood during APIC
-> calibration)? Or is the upstream kernel still affected?
+I think most of the people want to test new patches on latest kernels
+so I will keep it that way. You can backport it to previous kernels if
+you really need to. For me it will become very difficult to maintain
+two versions. 
 
-We were asked for a solution for all affected architectures (in 
-particular, also i386) which was more than we were able to do
-at the time, given that the pressure had been reduced by finding a BIOS 
-fix for the particular situation on system in question.
+Is there any reason why you can't move to latest kernels?  
 
-The APIC clock calibration code on i386 is more complex than x86_64, we 
-saw no way to provide a high-quality, regression-safe, tested patch for 
-that to upstream with a reasonable amount of effort.
+Thanks
+Vivek
 
-That aside, I still think the x86_64 patch is fine and won't cause 
-regressions. It just doesn't help on 32bit systems.
-
-Martin
-
--- 
-Martin Wilck
-PRIMERGY System Software Engineer
-FSC IP ESP DEV 6
-
-Fujitsu Siemens Computers GmbH
-Heinz-Nixdorf-Ring 1
-33106 Paderborn
-Germany
-
-Tel:			++49 5251 525 2796
-Fax:			++49 5251 525 2820
-Email:			mailto:martin.wilck@fujitsu-siemens.com
-Internet:		http://www.fujitsu-siemens.com
-Company Details:	http://www.fujitsu-siemens.com/imprint.html
+> Thanks a lot.
+> 
+> Anqin
+> 
+> On Thu, Mar 12, 2009 at 11:27 AM, Takuya Yoshikawa
+> <yoshikawa.takuya@oss.ntt.co.jp> wrote:
+> > Hi Vivek,
+> >
+> > Could you tell me to which kernel I can apply your patches?
+> >   # latest mm?
+> > I would like to test your controller.
+> >
+> > Thank you,
+> >   Takuya Yoshikawa
+> >
+> >
+> > Vivek Goyal wrote:
+> >>
+> >> Hi All,
+> >>
+> >> Here is another posting for IO controller patches. Last time I had posted
+> >> RFC patches for an IO controller which did bio control per cgroup.
+> >>
+> >> http://lkml.org/lkml/2008/11/6/227
+> >>
+> >> One of the takeaway from the discussion in this thread was that let us
+> >> implement a common layer which contains the proportional weight scheduling
+> >> code which can be shared by all the IO schedulers.
+> >>
+> >> Implementing IO controller will not cover the devices which don't use
+> >> IO schedulers but it should cover the common case.
+> >>
+> >> There were more discussions regarding 2 level vs 1 level IO control at
+> >> following link.
+> >>
+> >> https://lists.linux-foundation.org/pipermail/containers/2009-January/015402.html
+> >>
+> >> So in the mean time we took the discussion off the list and spent time on
+> >> making the 1 level control apporoach work where majority of the proportional
+> >> weight control is shared by the four schedulers instead of each one having
+> >> to replicate the code. We make use of BFQ code for fair queuing as posted
+> >> by Paolo and Fabio here.
+> >>
+> >> http://lkml.org/lkml/2008/11/11/148
+> >>
+> >> Details about design and howto have been put in documentation patch.
+> >>
+> >> I have done very basic testing of running 2 or 3 "dd" threads in different
+> >> cgroups. Wanted to get the patchset out for feedback/review before we dive
+> >> into more bug fixing, benchmarking, optimizations etc.
+> >>
+> >> Your feedback/comments are welcome.
+> >>
+> >> Patch series contains 10 patches. It should be compilable and bootable after
+> >> every patch. Intial 2 patches implement flat fair queuing (no cgroup
+> >> support) and make cfq to use that. Later patches introduce hierarchical
+> >> fair queuing support in elevator layer and modify other IO schdulers to use
+> >> that.
+> >>
+> >> Thanks
+> >> Vivek
+> >> _______________________________________________
+> >> Containers mailing list
+> >> Containers@lists.linux-foundation.org
+> >> https://lists.linux-foundation.org/mailman/listinfo/containers
+> >>
+> >
+> > _______________________________________________
+> > Containers mailing list
+> > Containers@lists.linux-foundation.org
+> > https://lists.linux-foundation.org/mailman/listinfo/containers
+> >
