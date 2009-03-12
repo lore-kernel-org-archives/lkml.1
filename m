@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbZCLODY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbZCLOG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756787AbZCLODY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 10:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbZCLODM
+	id S1756160AbZCLOG0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 10:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbZCLOGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 10:03:12 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53613 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754692AbZCLODK (ORCPT
+	Thu, 12 Mar 2009 10:06:17 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:16240 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753293AbZCLOGQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 10:03:10 -0400
-Subject: Re: [tip:core/futexes] futex: use current->time_slack_ns for rt
- tasks too
-From: Peter Zijlstra <peterz@infradead.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, tglx@linutronix.de,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-In-Reply-To: <49B913DC.6040807@linux.intel.com>
-References: <20090312075559.9856.28822.stgit@Aeon>
-	 <tip-16f4993f4e9860715918efd4eeac928f8de1218b@git.kernel.org>
-	 <49B913DC.6040807@linux.intel.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 12 Mar 2009 15:02:09 +0100
-Message-Id: <1236866529.22914.3694.camel@twins>
+	Thu, 12 Mar 2009 10:06:16 -0400
+Date: Thu, 12 Mar 2009 15:06:03 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: feature-removal-schedule.txt for some I2C functions
+Message-ID: <20090312150603.1aecdba9@hyperion.delvare>
+In-Reply-To: <20090312102617.3235a35b@pedra.chehab.org>
+References: <20090312102617.3235a35b@pedra.chehab.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-12 at 06:53 -0700, Arjan van de Ven wrote:
-> Darren Hart wrote:
-> > Commit-ID:  16f4993f4e9860715918efd4eeac928f8de1218b
-> > Gitweb:     http://git.kernel.org/tip/16f4993f4e9860715918efd4eeac928f8de1218b
-> > Author:     "Darren Hart" <dvhltc@us.ibm.com>
-> > AuthorDate: Thu, 12 Mar 2009 00:55:59 -0700
-> > Commit:     Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Thu, 12 Mar 2009 11:20:57 +0100
-> > 
-> > futex: use current->time_slack_ns for rt tasks too
-> > 
-> > RT tasks should set their timer slack to 0 on their own.  This
-> > patch removes the 'if (rt_task()) slack = 0;' block in
-> > futex_wait.
+Hi Mauro,
+
+On Thu, 12 Mar 2009 10:26:17 -0300, Mauro Carvalho Chehab wrote:
+> Hi Jean,
 > 
-> Hi,
+> On your entry at Documentation/feature-removal-schedule.txt:
 > 
-> can you explain the rationale for this reasoning?
+> What:   i2c_attach_client(), i2c_detach_client(), i2c_driver->detach_client()
+> When:   2.6.29 (ideally) or 2.6.30 (more likely)
+> Why:    Deprecated by the new (standard) device driver binding model. Use
+>         i2c_driver->probe() and ->remove() instead.
+> Who:    Jean Delvare <khali@linux-fr.org>
+> 
+> You forgot to add a check entry, like:
+> Check: i2c_attach_client i2c_detach_client i2c_driver->detach_client
+> 
+> The check entry is used by checkpatch.pl to warn about the usage of a legacy function.
+> 
+> Please fix it, since me and others rely on this tool to discover about the
+> usage of legacy functions.
 
-Yeah, I found it iffy as well, I think we want something like the below
-instead though..
+Thanks for the tip, I didn't know about this. Is there some
+documentation about the Check: entry format? If checkpatch.pl simply
+matches the strings then i2c_driver->detach_client is never going to
+match, so there's no point in adding it.
 
----
-
-Subject: sched: adjust timer_slack_ns on scheduler policy change
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Thu Mar 12 15:01:02 CET 2009
-
-Ensure RT tasks have 0 timer slack.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/sched.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -5511,10 +5511,12 @@ __setscheduler(struct rq *rq, struct tas
- 	case SCHED_NORMAL:
- 	case SCHED_BATCH:
- 	case SCHED_IDLE:
-+		p->timer_slack_ns = p->default_timer_slack_ns;
- 		p->sched_class = &fair_sched_class;
- 		break;
- 	case SCHED_FIFO:
- 	case SCHED_RR:
-+		p->timer_slack_ns = 0;
- 		p->sched_class = &rt_sched_class;
- 		break;
- 	}
-
+-- 
+Jean Delvare
