@@ -1,56 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZCLHAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZCLHIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbZCLHAT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 03:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZCLHAF
+	id S1755414AbZCLHIU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 03:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZCLHIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 03:00:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42908 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750949AbZCLHAD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 03:00:03 -0400
-Date: Wed, 11 Mar 2009 23:56:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kyle McMartin <kyle@infradead.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-       jakub@redhat.com, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] scripts/unifdef.c: rename getline symbol to something
- else
-Message-Id: <20090311235651.3c3fba2a.akpm@linux-foundation.org>
-In-Reply-To: <20090311185942.GA11433@bombadil.infradead.org>
-References: <20090311161733.GE5448@bombadil.infradead.org>
-	<20090311183735.GA2832@uranus.ravnborg.org>
-	<20090311185942.GA11433@bombadil.infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 12 Mar 2009 03:08:10 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:44722 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751539AbZCLHIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 03:08:09 -0400
+Date: Thu, 12 Mar 2009 08:07:58 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Wu Fengguang <fengguang.wu@intel.com>, Pekka Paalanen <pq@iki.fi>,
+       Neil Horman <nhorman@redhat.com>
+Subject: Re: [PATCH 0/4] [GIT PULL] memory saving ring buffer for
+ tip/tracing/ftrace
+Message-ID: <20090312080758.4a14d5b4@mjolnir.ossman.eu>
+In-Reply-To: <20090312023720.144716747@goodmis.org>
+References: <20090312023720.144716747@goodmis.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.drzeus.cx-6291-1236841684-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 11 Mar 2009 14:59:42 -0400 Kyle McMartin <kyle@infradead.org> wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> On Wed, Mar 11, 2009 at 07:37:35PM +0100, Sam Ravnborg wrote:
-> > > Rawhide builds are currently failing to build unifdef.c, as the next
-> > > version of glibc changes the default _POSIX_C_SOURCE level, which
-> > > exposes getline() from <stdio.h>
-> > > 
-> > > scripts/unifdef.c:209: error: conflicting types for 'getline'
-> > > /usr/include/stdio.h:653: note: previous declaration of 'getline' was
-> > > here
-> > > make[2]: *** [scripts/unifdef] Error 1
-> > > make[1]: *** [__headers] Error 2
-> > > make: *** [vmlinux] Error 2
-> > > 
-> > > Rename the symbol in unifdef.c to parseline to avoid this conflicting
-> > > declaration.
-> > 
-> > I have a similar patch queued in kbuild-fixes.git.
-> > 
-> 
-> Great, thanks. Is this going to go into the next -rc?
-> 
+--=_freyr.drzeus.cx-6291-1236841684-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-I was going to put it into 2.6.29 but Sam stole it :)
+On Wed, 11 Mar 2009 22:37:20 -0400
+Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> Ingo,
+>=20
+> This patch series implements a better memory management by the
+> ring buffer. It only allocates the buffers for the online CPUS, as well
+> as keeps the buffers to a minimum size until they are used.
+>=20
+> Please pull the latest tip/tracing/ftrace tree, which can be found at:
+>=20
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.g=
+it
+> tip/tracing/ftrace
+>=20
+>=20
+> Steven Rostedt (4):
+>       tracing: keep ring buffer to minimum size till used
+>       tracing: expand the ring buffers when an event is activated
+>       tracing: fix trace_wait to know to wait on all cpus or just one
+>       ring-buffer: only allocate buffers for online cpus
+>=20
+
+How difficult is it to apply this to 2.6.27? Fedora is still on that
+kernel and it would be nice if I could get my memory back on a
+distribution kernel. :)
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-6291-1236841684-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkm4tNAACgkQ7b8eESbyJLg+ZwCdGxWc4ZlzC+B3UkVgbbp6qKD9
+B/MAoPW0n2+odTLWPriyaRE/P6/Gi8Z0
+=hbr4
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-6291-1236841684-0001-2--
