@@ -1,116 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZCLSpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZCLStZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757472AbZCLSpw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 14:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756469AbZCLSpn
+	id S1756244AbZCLStZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 14:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbZCLStQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 14:45:43 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:58741 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754934AbZCLSpm (ORCPT
+	Thu, 12 Mar 2009 14:49:16 -0400
+Received: from vms173011pub.verizon.net ([206.46.173.11]:49745 "EHLO
+	vms173011pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751635AbZCLStQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 14:45:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=L9//tpxi+gNiTANcbhHZaf8nOoY3MTe/y2R0k3lkfiJgJLlCrEuHq1BMm6ZIb6rIrf
-         iBysNv4tVj/UNZTobNcU7SMKPAHf1KQrbpZeqfSjHcnZjjcuvZ9K6OSHDu2hUVyDFMZk
-         ClBUnFaCGJr72C+k2FNvjvkbZ8xcAjnjXqKAI=
-Date: Thu, 12 Mar 2009 19:45:37 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       acme@ghostprotocols.net, fche@redhat.com, peterz@infradead.org,
-       compudj@krystal.dyndns.org
-Subject: Re: [Patch 1/2] tracepoints for softirq entry/exit - add
-	softirq-to-name array
-Message-ID: <20090312184533.GB11045@nowhere>
-References: <20090312183336.GB3352@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090312183336.GB3352@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 12 Mar 2009 14:49:16 -0400
+X-Greylist: delayed 3621 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 14:49:15 EDT
+From: Gene Heskett <gene.heskett@gmail.com>
+Organization: Organization? very little
+To: David Newall <davidn@davidnewall.com>
+Subject: Re: I just got got another Oops
+Date: Thu, 12 Mar 2009 13:48:43 -0400
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7; KDE/4.2.0; i686; ; )
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200903120133.11583.gene.heskett@gmail.com>
+ <49B8C98D.3020309@davidnewall.com>
+In-reply-to: <49B8C98D.3020309@davidnewall.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+Message-id: <200903121348.43477.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 02:33:36PM -0400, Jason Baron wrote:
-> 
-> create a 'softirq_to_name' array, which is indexed by softirq #, so
-> that we can easily convert between the softirq index # and its name, in
-> order to get more meaningful output messages.
-> 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> 
-> ---
-> 
->  include/linux/interrupt.h |    5 +++++
->  kernel/softirq.c          |    9 ++++++++-
->  2 files changed, 13 insertions(+), 1 deletions(-)
-> 
-> 
-> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-> index e7bcfd7..da82ee4 100644
-> --- a/include/linux/interrupt.h
-> +++ b/include/linux/interrupt.h
-> @@ -258,6 +258,11 @@ enum
->  	NR_SOFTIRQS
->  };
->  
-> +/* map softirq index to softirq name. update 'softirq_to_name' in
-> + * kernel/softirq.c when adding a new softirq.
-> + */
-> +extern char *softirq_to_name[NR_SOFTIRQS];
-> +
->  /* softirq mask and active fields moved to irq_cpustat_t in
->   * asm/hardirq.h to get better cache usage.  KAO
->   */
-> diff --git a/kernel/softirq.c b/kernel/softirq.c
-> index 40ff3cf..ba1511f 100644
-> --- a/kernel/softirq.c
-> +++ b/kernel/softirq.c
-> @@ -53,6 +53,12 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
->  
->  static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
->  
-> +char *softirq_to_name[NR_SOFTIRQS] = {
-> +	"HI_SOFTIRQ", "TIMER_SOFTIRQ", "NET_TX_SOFTIRQ", "NET_RX_SOFTIRQ",
-> +	"BLOCK_SOFTIRQ", "TASKLET_SOFTIRQ", "SCHED_SOFTIRQ", "HRTIMER_SOFTIRQ",
-> +	"RCU_SOFTIRQ"
-> +};
+On Thursday 12 March 2009, David Newall wrote:
+>Gene Heskett wrote:
+>> Mar 12 01:15:01 coyote xinetd[2583]: START: amanda pid=8970
+>> from=::ffff:192.168.71.3 Mar 12 01:16:21 coyote kernel: [10353.910914]
+>> BUG: unable to handle kernel NULL pointer dereference at 00000006 Mar 12
+>> 01:16:21 coyote kernel: [10353.910921] IP: [<c046520b>]
+>> get_page_from_freelist+0x24b/0x4c0 Mar 12 01:16:21 coyote kernel:
+>> [10353.910929] *pdpt = 0000000000b38001 *pde = 0000000000000000 Mar 12
+>> 01:16:21 coyote kernel: [10353.910934] Oops: 0000 [#1] PREEMPT SMP
+>
+>I think there must be a zone at 0x0.  Try adding
+>
+>		if (!zone) goto try_next_zone;
+>
+>
+>in mm/page_alloc.c, (near line 1469), before
+>
+>		if (NUMA_BUILD && zlc_active &&
 
+Rebooted to the above now, still scratching head though.  Specifically, 
+setroubleshoot will not return anything but a null for any 'service' command.  
+In fact, none of the selinux stuff is running ANAICT.  Did we break other 
+stuff?
 
-Hi,
+Thanks David.
 
-May be you could abuse open_softirq() to append dynamically these entries:
-
-char *softirq_to_name[NR_SOFTIRQS];
-
-#define open_softirq(nr, func)	\
-	softirq_to_name[nr] = __stringify(nr); \
-	__open_softirq(nr, func);
-
-So that it's a bit more scalable.
-
-Frederic.
-
-
-> +
->  /*
->   * we cannot loop indefinitely here to avoid userspace starvation,
->   * but we also don't want to introduce a worst case 1/HZ latency
-> @@ -209,9 +215,10 @@ restart:
->  			h->action(h);
->  
->  			if (unlikely(prev_count != preempt_count())) {
-> -				printk(KERN_ERR "huh, entered softirq %td %p"
-> +				printk(KERN_ERR "huh, entered softirq %td %s %p"
->  				       "with preempt_count %08x,"
->  				       " exited with %08x?\n", h - softirq_vec,
-> +				       softirq_to_name[h - softirq_vec],
->  				       h->action, prev_count, preempt_count());
->  				preempt_count() = prev_count;
->  			}
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+I think that I shall never see
+A billboard lovely as a tree.
+Indeed, unless the billboards fall
+I'll never see a tree at all.
+		-- Ogden Nash
 
