@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZCLNje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbZCLNj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756914AbZCLNje (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 09:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756769AbZCLNjY
+	id S1757037AbZCLNj5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 09:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756494AbZCLNjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 09:39:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43414 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754994AbZCLNjX (ORCPT
+	Thu, 12 Mar 2009 09:39:47 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:47613 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755922AbZCLNjq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 09:39:23 -0400
-Date: Thu, 12 Mar 2009 09:39:20 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Pierre Ossman <drzeus@drzeus.cx>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Wu Fengguang <fengguang.wu@intel.com>, Pekka Paalanen <pq@iki.fi>,
-       Neil Horman <nhorman@redhat.com>
-Subject: Re: [PATCH 0/4] [GIT PULL] memory saving ring buffer for
- tip/tracing/ftrace
-In-Reply-To: <20090312102014.7271f54e@mjolnir.ossman.eu>
-Message-ID: <alpine.DEB.2.00.0903120939000.3062@gandalf.stny.rr.com>
-References: <20090312023720.144716747@goodmis.org> <20090312080758.4a14d5b4@mjolnir.ossman.eu> <20090312163414.43B4.A69D9226@jp.fujitsu.com> <20090312102014.7271f54e@mjolnir.ossman.eu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 12 Mar 2009 09:39:46 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 12 Mar 2009 06:39:16 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Eric Dumazet <dada1@cosmosbay.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Avi Kivity <avi@redhat.com>, linux-aio <linux-aio@kvack.org>,
+       zach.brown@oracle.com, Benjamin LaHaise <bcrl@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] fs: fput() can be called from interrupt context
+In-Reply-To: <20090311233903.f036027a.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0903120625340.6040@makko.or.mcafeemobile.com>
+References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com> <49B54143.1010607@redhat.com> <x49sklmd1fo.fsf@segfault.boston.devel.redhat.com> <49B57CB0.5020300@cosmosbay.com> <49B875F7.3030305@cosmosbay.com> <49B87CFE.4000701@cosmosbay.com>
+ <49B89B22.7080303@cosmosbay.com> <20090311224712.fb8db075.akpm@linux-foundation.org> <49B8A75E.6040409@cosmosbay.com> <20090311233903.f036027a.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 11 Mar 2009, Andrew Morton wrote:
 
-On Thu, 12 Mar 2009, Pierre Ossman wrote:
-
-> On Thu, 12 Mar 2009 16:34:55 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > Take the time to check how fs/aio.c handle the fput(req->ki_filp) case
+> > (or read my 2nd patch, it should spot the thing)
 > 
-> > > How difficult is it to apply this to 2.6.27? Fedora is still on that
-> > > kernel and it would be nice if I could get my memory back on a
-> > > distribution kernel. :)
-> > 
-> > Difficult.
-> > but you can use "trace_entries=1" kernel boot parameter :)
-> > 
+> Well yes, a kludge like that seems a bit safer.
 > 
-> Ah. I got a tip for trace_buf_size=1, but that didn't work. Your
-> version was much better. :)
+> It's somewhat encouraging that we're apparently already doing fput()
+> from within keventd (although how frequently?).  There might be
+> problems with file locking, security code, etc from doing fput() from
+> an unexpected thread.  And then there are all the usual weird problem
+> with using the keventd queues which take a long time to get discovered.
 
-Yeah, the name changed within the versions.
+Would it be a huge problem, performance-wise, to stop making ->f_count 
+tricks in __aio_put_req, and always offload to fput_work the task of 
+releasing the requests?
+If that's a huge problem, IMO the lower impact fix would be to use 
+aio_fput_routine to loop into a second list, releasing the eventual 
+eventfd file*. There's no need, IMO, to turn the whole fput() into 
+IRQ-callable just for this case, when we can contain it into the 
+particular KAIO+eventfd usage.
 
--- Steve
+
+- Davide
+
 
