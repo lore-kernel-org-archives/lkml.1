@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZCLXie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757203AbZCLXjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756971AbZCLXie (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 19:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbZCLXi0
+	id S1757203AbZCLXjr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 19:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbZCLXji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 19:38:26 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57780 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbZCLXi0 (ORCPT
+	Thu, 12 Mar 2009 19:39:38 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37977 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbZCLXjh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 19:38:26 -0400
-Date: Fri, 13 Mar 2009 00:38:22 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: tux3@tux3.org, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
-Message-ID: <20090312233822.GK11935@one.firstfloor.org>
-References: <200903110925.37614.phillips@phunq.net> <20090311230713.d4710050.akpm@linux-foundation.org> <87zlfqeuwr.fsf@basil.nowhere.org> <200903121424.08961.phillips@phunq.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903121424.08961.phillips@phunq.net>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 12 Mar 2009 19:39:37 -0400
+Message-ID: <49B99D0E.8060507@zytor.com>
+Date: Thu, 12 Mar 2009 16:38:54 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/setup] x86: use targets in the boot Makefile instead
+ of CLEAN_FILES
+References: <tip-16a6791934a1077609482dd6c091aa8b4c39a834@git.kernel.org> <20090312210641.GC14205@uranus.ravnborg.org>
+In-Reply-To: <20090312210641.GC14205@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 02:24:08PM -0700, Daniel Phillips wrote:
-> On Thursday 12 March 2009, Andi Kleen wrote:
-> > to be honest the estimate of adding btree directories in 3kLOC
-> > of code seems very optimistic.
+Sam Ravnborg wrote:
 > 
-> Is that a bet?
+> When you are cleaning up...
+> 
+> archclean:
+>         $(Q)rm -rf $(objtree)/arch/i386
+>         $(Q)rm -rf $(objtree)/arch/x86_64
+> 
+> Do we need this hack now?
+> I recall it was some backward soon-to-be-removed hack we made right after the x86 merge.
+> 
 
-No, just a general comment comparing with other read/write btree
-implementations.
+Well, the hack hasn't been removed at least not in that particular 
+branch... we still create bzImage symlinks.
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+It would be nice to fix that, I agree, and that would clean up the 
+Makefile further.
+
+	-hpa
+
+
