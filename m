@@ -1,141 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbZCLAns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbZCLAr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbZCLAns (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 20:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZCLAni
+	id S1754398AbZCLAr5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 20:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbZCLArs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 20:43:38 -0400
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:33903 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752497AbZCLAnh (ORCPT
+	Wed, 11 Mar 2009 20:47:48 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:43403 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753195AbZCLArr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 20:43:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fpFX3uS/ONFR3oVdYgPaw5x91fMYAtdbqeuR9tonPZNq8OJ4vlprhPWptbKUVgDnlTpRXiIh/751lDVHNCOU3NDcU3a0ukSunKae8nMuE6efpv1w9ZGiNsWxjuYEOq22kSXdwVFjJ5pJTHRTUqXczCm3r1C9cdkm/Xy5gTAP2r4=  ;
-X-YMail-OSG: tocdeEIVM1lNLM0x2DWzMDmh39FkxKoIWiVG4n6U97Icys3b1CiYCcaNIWJ0JdwIYNrwyipJCsHtbXqEUt.m.O54h3nU74IsjO_kQ5Fofc_D.G4cUbYjeVDieZ6YgDoxe0WOSPTarw3w18p1FSVbO6x2nExW0xE2Bm1la0wpHHWKk4fa2FalZA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Liam Girdwood <lrg@slimlogic.co.uk>, Mark Brown <broonie@sirena.org.uk>
-Subject: [patch 2.6.29-rc7 regulator-next] regulator: refcount fixes
-Date: Wed, 11 Mar 2009 16:43:34 -0800
-User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>, OMAP <linux-omap@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 11 Mar 2009 20:47:47 -0400
+Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
+From: john stultz <johnstul@us.ibm.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1236817822.7680.148.camel@localhost.localdomain>
+References: <200903080230.10099.elendil@planet.nl>
+	 <200903091604.56455.elendil@planet.nl> <1236733226.6080.28.camel@localhost>
+	 <200903111703.41663.elendil@planet.nl>
+	 <1236817822.7680.148.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 11 Mar 2009 17:47:43 -0700
+Message-Id: <1236818863.7680.156.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903111743.34708.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+On Wed, 2009-03-11 at 17:30 -0700, john stultz wrote:
+> On Wed, 2009-03-11 at 17:03 +0100, Frans Pop wrote:
+> > OK, I think I've gotten a lot further now.
+> > 
+> > On Wednesday 11 March 2009, john stultz wrote:
+> > > Also the negative conditional you add doesn't really make sense either,
+> > > as we expect the xtime.tv_nsec << clock->shift to be larger then
+> > > clock->xtime_nsec, as we've rounded it up by one. We then accumulate
+> > > the negative difference between them into clock->error.
+> > 
+> > I'm not at all fluent in casts, bit shifting and stuff, so it took a
+> > while for the quarter to drop. But AFAICT what you're saying here is
+> > exactly the problem.
+> > 
+> > Indeed you do round xtime.tv_nsec up, so when you do
+> >    clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+> > or
+> >    clock->xtime_nsec = clock->xtime_nsec - ((s64)xtime.tv_nsec << clock->shift);
+> > the second argument is always going to be bigger than the first, so you
+> > always end up with a negative value.
+> > 
+> > > Hmm.. Does the following explicit casting help?
+> > 
+> > Even with the cast you're just papering over the issue that we're moving a
+> > negative value into a field that is defined as unsigned:
+> > include/linux/clocksource.h:    u64 xtime_nsec;
+> 
+> Probably agreed here, xtime_nsec probably should be converted to a s64
+> as negative values are possible.
+> 
+> 
+> However, Its unclear to me if my patch worked or not? 
+> Did you try it alone?
 
-Fix some refcounting issues in the regulator framework, supporting
-regulator_disable() for regulators that were enabled at boot time
-via machine constraints:
+For a cleaner version, could you try the following, against 2.6.29-git
+with no other modification?
 
- - Update those regulators' usecounts after enabling, so they
-   can cleanly be disabled at that level.
+thanks
+-john
 
- - Remove the problematic per-consumer usecount, so there's
-   only one level of enable/disable.
 
-Buggy consumers could notice different bug symptoms.  The main
-example would be refcounting bugs; also, any (out-of-tree) users
-of the experimental regulator_set_optimum_mode() stuff which
-don't call it when they're done using a regulator.
 
-This is a net minor codeshrink.
+xtime_nsec is expected at times to be negative. Instead of trying to
+handle all the shifting properly via casts, define it as a s64 instead
+of a u64.
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
-Against the regulator-next tree; mainline has similar issues.
+NOT FOR INCLUSION
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
- drivers/regulator/core.c |   30 ++++++++----------------------
- 1 file changed, 8 insertions(+), 22 deletions(-)
-
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -52,7 +52,6 @@ struct regulator {
- 	int uA_load;
- 	int min_uV;
- 	int max_uV;
--	int enabled; /* count of client enables */
- 	char *supply_name;
- 	struct device_attribute dev_attr;
- 	struct regulator_dev *rdev;
-@@ -811,6 +810,7 @@ static int set_machine_constraints(struc
- 			rdev->constraints = NULL;
- 			goto out;
- 		}
-+		rdev->use_count = 1;
- 	}
+diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+index f88d32f..e217000 100644
+--- a/include/linux/clocksource.h
++++ b/include/linux/clocksource.h
+@@ -86,7 +86,7 @@ struct clocksource {
+ 	 * more than one cache line.
+ 	 */
+ 	cycle_t cycle_last ____cacheline_aligned_in_smp;
+-	u64 xtime_nsec;
++	s64 xtime_nsec;
+ 	s64 error;
+ 	struct timespec raw_time;
  
- 	print_constraints(rdev);
-@@ -1066,10 +1066,6 @@ void regulator_put(struct regulator *reg
- 	mutex_lock(&regulator_list_mutex);
- 	rdev = regulator->rdev;
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 900f1b6..387be3c 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -546,7 +546,7 @@ void update_wall_time(void)
+ 	/* store full nanoseconds into xtime after rounding it up and
+ 	 * add the remainder to the error difference.
+ 	 */
+-	xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
++	xtime.tv_nsec = (clock->xtime_nsec >> clock->shift) + 1;
+ 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
+ 	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
  
--	if (WARN(regulator->enabled, "Releasing supply %s while enabled\n",
--			       regulator->supply_name))
--		_regulator_disable(rdev);
--
- 	/* remove any sysfs entries */
- 	if (regulator->dev) {
- 		sysfs_remove_link(&rdev->dev.kobj, regulator->supply_name);
-@@ -1144,12 +1140,7 @@ int regulator_enable(struct regulator *r
- 	int ret = 0;
- 
- 	mutex_lock(&rdev->mutex);
--	if (regulator->enabled == 0)
--		ret = _regulator_enable(rdev);
--	else if (regulator->enabled < 0)
--		ret = -EIO;
--	if (ret == 0)
--		regulator->enabled++;
-+	ret = _regulator_enable(rdev);
- 	mutex_unlock(&rdev->mutex);
- 	return ret;
- }
-@@ -1160,6 +1151,11 @@ static int _regulator_disable(struct reg
- {
- 	int ret = 0;
- 
-+	if (WARN(rdev->use_count <= 0,
-+			"unbalanced disables for %s\n",
-+			rdev->desc->name))
-+		return -EIO;
-+
- 	/* are we the last user and permitted to disable ? */
- 	if (rdev->use_count == 1 && !rdev->constraints->always_on) {
- 
-@@ -1208,16 +1204,7 @@ int regulator_disable(struct regulator *
- 	int ret = 0;
- 
- 	mutex_lock(&rdev->mutex);
--	if (regulator->enabled == 1) {
--		ret = _regulator_disable(rdev);
--		if (ret == 0)
--			regulator->uA_load = 0;
--	} else if (WARN(regulator->enabled <= 0,
--			"unbalanced disables for supply %s\n",
--			regulator->supply_name))
--		ret = -EIO;
--	if (ret == 0)
--		regulator->enabled--;
-+	ret = _regulator_disable(rdev);
- 	mutex_unlock(&rdev->mutex);
- 	return ret;
- }
-@@ -1264,7 +1251,6 @@ int regulator_force_disable(struct regul
- 	int ret;
- 
- 	mutex_lock(&regulator->rdev->mutex);
--	regulator->enabled = 0;
- 	regulator->uA_load = 0;
- 	ret = _regulator_force_disable(regulator->rdev);
- 	mutex_unlock(&regulator->rdev->mutex);
+
+
