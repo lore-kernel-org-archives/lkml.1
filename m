@@ -1,110 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbZCLAr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbZCLAuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754398AbZCLAr5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 20:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbZCLArs
+	id S1755025AbZCLAuU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 20:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbZCLAuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 20:47:48 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:43403 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753195AbZCLArr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 20:47:47 -0400
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator
-From: john stultz <johnstul@us.ibm.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1236817822.7680.148.camel@localhost.localdomain>
-References: <200903080230.10099.elendil@planet.nl>
-	 <200903091604.56455.elendil@planet.nl> <1236733226.6080.28.camel@localhost>
-	 <200903111703.41663.elendil@planet.nl>
-	 <1236817822.7680.148.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 11 Mar 2009 17:47:43 -0700
-Message-Id: <1236818863.7680.156.camel@localhost.localdomain>
+	Wed, 11 Mar 2009 20:50:06 -0400
+Received: from main.gmane.org ([80.91.229.2]:32782 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754037AbZCLAuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 20:50:05 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Piet Delaney <pdelaney@tensilica.com>
+Subject: Re: [patch 0/8] xtensa: s6000 & s6105
+Date: Wed, 11 Mar 2009 17:44:45 -0700
+Message-ID: <49B85AFD.1050200@tensilica.com>
+References: <E1Lh1cN-0005rH-9t@cmpxchg.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: Johannes Weiner <jw@emlix.com>, Cord Seele <cs@emlix.com>,
+       Oskar Schirmer <os@emlix.com>, Daniel Gloeckner <dg@emlix.com>,
+       Piet Delaney <piet@tensilica.com>, Marc Gauthier <marc@tensilica.com>,
+       Maxim Grigoriev <maxim@tensilica.com>,
+       Dan Nicolaescu <dann@tensilica.com>, Chris Zankel <chris@zankel.net>,
+       Bill Huffman <huffman@tensilica.com>, Ross Morley <ross@tensilica.com>
+X-Gmane-NNTP-Posting-Host: hq2.tensilica.com
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+In-Reply-To: <E1Lh1cN-0005rH-9t@cmpxchg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-11 at 17:30 -0700, john stultz wrote:
-> On Wed, 2009-03-11 at 17:03 +0100, Frans Pop wrote:
-> > OK, I think I've gotten a lot further now.
-> > 
-> > On Wednesday 11 March 2009, john stultz wrote:
-> > > Also the negative conditional you add doesn't really make sense either,
-> > > as we expect the xtime.tv_nsec << clock->shift to be larger then
-> > > clock->xtime_nsec, as we've rounded it up by one. We then accumulate
-> > > the negative difference between them into clock->error.
-> > 
-> > I'm not at all fluent in casts, bit shifting and stuff, so it took a
-> > while for the quarter to drop. But AFAICT what you're saying here is
-> > exactly the problem.
-> > 
-> > Indeed you do round xtime.tv_nsec up, so when you do
-> >    clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
-> > or
-> >    clock->xtime_nsec = clock->xtime_nsec - ((s64)xtime.tv_nsec << clock->shift);
-> > the second argument is always going to be bigger than the first, so you
-> > always end up with a negative value.
-> > 
-> > > Hmm.. Does the following explicit casting help?
-> > 
-> > Even with the cast you're just papering over the issue that we're moving a
-> > negative value into a field that is defined as unsigned:
-> > include/linux/clocksource.h:    u64 xtime_nsec;
+Johannes Weiner wrote:
+> Hi,
 > 
-> Probably agreed here, xtime_nsec probably should be converted to a s64
-> as negative values are possible.
+> here is the core series of our s6000 port.
 > 
+> First comes the nommu patch.  Right now we use CONFIG_MMU for
+> everything that separates the S6000 from existing ports, memorywise.
+> This is a lot easier and can still be broken up by newer ports when
+> they have requirements with finer granularity.  Furthermore, we have
+> only this one nommu box here, so we couldn't test an MMU architecture
+> and therefor not say for sure we didn't break anything ;)
+
+Perhaps you have a pointer to a git repository with your changes
+that I can clone from.
+
+I can make sure the LX60 and LX200 didn't break. We have a
+number of bug fixes and new support for SMP and a new MMU
+that we expect to ready for prime time soon. I'd prefer to
+use git to test your changes and doing the merge.
+
+How about I add accounts for you, Oskar, and Daniel and
+we use the repo(s) as a staging site to test each other's changes
+before passing them upstream to Christian and Linus.
+
+It you don't have an external Git repository you could just
+ftp a copy and we can add it easily.
+
+-piet
+
+
 > 
-> However, Its unclear to me if my patch worked or not? 
-> Did you try it alone?
-
-For a cleaner version, could you try the following, against 2.6.29-git
-with no other modification?
-
-thanks
--john
-
-
-
-xtime_nsec is expected at times to be negative. Instead of trying to
-handle all the shifting properly via casts, define it as a s64 instead
-of a u64.
-
-NOT FOR INCLUSION
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index f88d32f..e217000 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -86,7 +86,7 @@ struct clocksource {
- 	 * more than one cache line.
- 	 */
- 	cycle_t cycle_last ____cacheline_aligned_in_smp;
--	u64 xtime_nsec;
-+	s64 xtime_nsec;
- 	s64 error;
- 	struct timespec raw_time;
- 
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 900f1b6..387be3c 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -546,7 +546,7 @@ void update_wall_time(void)
- 	/* store full nanoseconds into xtime after rounding it up and
- 	 * add the remainder to the error difference.
- 	 */
--	xtime.tv_nsec = ((s64)clock->xtime_nsec >> clock->shift) + 1;
-+	xtime.tv_nsec = (clock->xtime_nsec >> clock->shift) + 1;
- 	clock->xtime_nsec -= (s64)xtime.tv_nsec << clock->shift;
- 	clock->error += clock->xtime_nsec << (NTP_SCALE_SHIFT - clock->shift);
- 
-
+> Then comes the core variant stuff.  We are the first variant that
+> needs to ship code files, so there is a prereq patch that allows that.
+> 
+> The inclusion of the GPIO driver is a bit arbitrary.  It was the only
+> one left after stripping out all real peripheral support because we
+> initially used GPIO in platform_setup().  I send it now to have an
+> example on variant-specific code and conceptual improvements can then
+> be excercised on it.
+> 
+> The platform patch is fairly trivial.  One more requirement is that
+> our platform can define the kernel text offset.  We can not use a
+> fixed virtual address (nommu, remember? ;)) but have to provide a
+> physical one that is within bounds of our actual RAM.
+> 
+> The diffstat looks a bit overwhelming, but note that most of it is the
+> defconfig, the tensilica core definitions and address definitions
+> where the core has registers mapped.
+> 
+>         Hannes
+> 
+>  arch/xtensa/Kconfig                                |   15 +
+>  arch/xtensa/Makefile                               |    5 +
+>  arch/xtensa/configs/s6105_defconfig                |  530 ++++++++++++++++++++
+>  arch/xtensa/include/asm/cacheflush.h               |   10 +-
+>  arch/xtensa/include/asm/dma.h                      |    3 +-
+>  arch/xtensa/include/asm/gpio.h                     |   56 ++
+>  arch/xtensa/include/asm/io.h                       |    9 +-
+>  arch/xtensa/include/asm/irq.h                      |    7 +
+>  arch/xtensa/include/asm/mmu.h                      |    5 +
+>  arch/xtensa/include/asm/mmu_context.h              |    5 +
+>  arch/xtensa/include/asm/nommu.h                    |    3 +
+>  arch/xtensa/include/asm/nommu_context.h            |   25 +
+>  arch/xtensa/include/asm/page.h                     |    9 +-
+>  arch/xtensa/include/asm/pgtable.h                  |   13 +-
+>  arch/xtensa/include/asm/processor.h                |    6 +
+>  arch/xtensa/kernel/entry.S                         |    3 +-
+>  arch/xtensa/kernel/head.S                          |    3 +-
+>  arch/xtensa/kernel/irq.c                           |   14 +
+>  arch/xtensa/kernel/setup.c                         |    7 +
+>  arch/xtensa/kernel/traps.c                         |    2 +
+>  arch/xtensa/kernel/vectors.S                       |    4 +
+>  arch/xtensa/kernel/vmlinux.lds.S                   |    3 +
+>  arch/xtensa/mm/Makefile                            |    3 +-
+>  arch/xtensa/mm/init.c                              |   62 +---
+>  arch/xtensa/mm/misc.S                              |    2 +
+>  arch/xtensa/mm/mmu.c                               |   70 +++
+>  arch/xtensa/platforms/s6105/Makefile               |    3 +
+>  arch/xtensa/platforms/s6105/device.c               |   67 +++
+>  .../xtensa/platforms/s6105/include/platform/gpio.h |   27 +
+>  .../platforms/s6105/include/platform/hardware.h    |   11 +
+>  .../platforms/s6105/include/platform/serial.h      |    8 +
+>  arch/xtensa/platforms/s6105/setup.c                |   61 +++
+>  arch/xtensa/variants/dc232b/Makefile               |    1 +
+>  arch/xtensa/variants/fsf/Makefile                  |    1 +
+>  arch/xtensa/variants/s6000/Makefile                |    3 +
+>  arch/xtensa/variants/s6000/gpio.c                  |   71 +++
+>  arch/xtensa/variants/s6000/include/variant/core.h  |  431 ++++++++++++++++
+>  .../variants/s6000/include/variant/hardware.h      |  259 ++++++++++
+>  arch/xtensa/variants/s6000/include/variant/irq.h   |    9 +
+>  .../variants/s6000/include/variant/tie-asm.h       |  304 +++++++++++
+>  arch/xtensa/variants/s6000/include/variant/tie.h   |  191 +++++++
+>  arch/xtensa/variants/s6000/irq.c                   |   74 +++
+>  42 files changed, 2320 insertions(+), 75 deletions(-)
+> 
 
