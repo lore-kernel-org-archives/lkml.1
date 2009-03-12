@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbZCLMUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbZCLMXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755019AbZCLMUa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 08:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbZCLMUS
+	id S1756156AbZCLMXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 08:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZCLMXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 08:20:18 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:56184 "EHLO smtp2.it.da.ut.ee"
+	Thu, 12 Mar 2009 08:23:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45081 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751838AbZCLMUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 08:20:16 -0400
-Date: Thu, 12 Mar 2009 14:20:12 +0200 (EET)
-From: Meelis Roos <mroos@linux.ee>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: ttyS* names missing in /proc/interrupts?
-Message-ID: <Pine.SOC.4.64.0903121418240.11504@math.ut.ee>
+	id S1751838AbZCLMXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 08:23:03 -0400
+Date: Thu, 12 Mar 2009 13:22:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 0/6] Futex fixes and cleanups
+Message-ID: <20090312122233.GA24185@elte.hu>
+References: <20090312075349.9856.83687.stgit@Aeon>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090312075349.9856.83687.stgit@Aeon>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just noticed in 2.6.29-rc7+git: lines corresponding to 8250 ttyS* 
-serial ports have no device name in /proc interrupts:
 
-           CPU0
-  0:         35    XT-PIC-XT        timer
-  1:        338    XT-PIC-XT        i8042
-  2:          0    XT-PIC-XT        cascade
-  3:          3    XT-PIC-XT
-  4:          3    XT-PIC-XT
-  6:          5    XT-PIC-XT        floppy
-  7:          1    XT-PIC-XT        parport0
-  8:          2    XT-PIC-XT        rtc0
-  9:         41    XT-PIC-XT        acpi, qla2xxx, tr1
- 10:          1    XT-PIC-XT        Intel 82801BA-ICH2
- 11:     160060    XT-PIC-XT        uhci_hcd:usb1, uhci_hcd:usb2, lpfc, tr0, eth0, mga@pci:0000:02:00.0
- 12:        141    XT-PIC-XT        i8042
- 14:      88730    XT-PIC-XT        ata_piix
- 15:    1190012    XT-PIC-XT        ata_piix
-NMI:          0   Non-maskable interrupts
-LOC:    1028718   Local timer interrupts
-TRM:          0   Thermal event interrupts
-SPU:          0   Spurious interrupts
-ERR:          0
+* Darren Hart <dvhltc@us.ibm.com> wrote:
 
-$ dmesg | grep tty
-console [tty0] enabled
-serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-00:08: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-00:09: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+> Hi Ingo,
+> 
+> Here are some assorted futex fixes that I was hoping to get 
+> upstream in preparation for my requeue_pi patchset in the near 
+> future.  They can found at the following git repository:
 
-And similarly on another machine.
+applied, thanks Darren!
 
--- 
-Meelis Roos (mroos@linux.ee)
+I'm wondering, which ones are 2.6.29 must-have's?
+
+	Ingo
