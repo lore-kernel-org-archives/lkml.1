@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbZCLN0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbZCLN1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbZCLN0z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 09:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZCLN0q
+	id S1756188AbZCLN1R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 09:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbZCLN0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 09:26:46 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51072 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbZCLN0p (ORCPT
+	Thu, 12 Mar 2009 09:26:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33631 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755810AbZCLN0u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 09:26:45 -0400
-Date: Thu, 12 Mar 2009 10:26:17 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: feature-removal-schedule.txt for some I2C functions
-Message-ID: <20090312102617.3235a35b@pedra.chehab.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 12 Mar 2009 09:26:50 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Daniel Phillips <phillips@phunq.net>, tux3@tux3.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Tux3 report: Tux3 Git tree available
+From: Andi Kleen <andi@firstfloor.org>
+References: <200903110925.37614.phillips@phunq.net>
+	<20090311114211.89eed5b8.akpm@linux-foundation.org>
+	<200903112238.55864.phillips@phunq.net>
+	<20090311230713.d4710050.akpm@linux-foundation.org>
+Date: Thu, 12 Mar 2009 14:24:20 +0100
+In-Reply-To: <20090311230713.d4710050.akpm@linux-foundation.org> (Andrew Morton's message of "Wed, 11 Mar 2009 23:07:13 -0700")
+Message-ID: <87zlfqeuwr.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-On your entry at Documentation/feature-removal-schedule.txt:
+As a general comment I'm not sure it really makes all that sense to
+integrate anywhere without recovery functionality because noone can
+really use in that state. I think it would be better to concentrate
+reviewing/testing efforts on other submitted file systems that
+actually work and are used today (like ceph or nilfs2)
 
-What:   i2c_attach_client(), i2c_detach_client(), i2c_driver->detach_client()
-When:   2.6.29 (ideally) or 2.6.30 (more likely)
-Why:    Deprecated by the new (standard) device driver binding model. Use
-        i2c_driver->probe() and ->remove() instead.
-Who:    Jean Delvare <khali@linux-fr.org>
+Also to be honest the estimate of adding btree directories in 3kLOC
+of code seems very optimistic.
 
-You forgot to add a check entry, like:
-Check: i2c_attach_client i2c_detach_client i2c_driver->detach_client
+>
+>> > - count_range() is an unsuitable identifier for a kernel-wide symbol.
+>> >   Please review all global symbols in the fs, ensure that they are
+>> >   prefixed with "tux3_".  Or make them static, of course.
+>> 
+>> This symbol is only supposed to be shared between separate compilation
+>> units within fs/tux3, not be visible outside our module.  How do we do
+>> that?
+>
+> You can't.  Bear in mind that we want the allyesconfig kernel to link
+> and run, and that includes tux3.  So do it manually by prefixing
+> everything with tux3_ or whatever.  (does it need the "3"?)
 
-The check entry is used by checkpatch.pl to warn about the usage of a legacy function.
+AFAIK it could be done by using special linker scripts for the sublinks.
+But I'm not sure it's worth it because that would require listing of the symbols
+in some file. Would need some Makefile magic.
 
-Please fix it, since me and others rely on this tool to discover about the
-usage of legacy functions.
+For modules I also had the "namespace" patches some time ago which implemented
+simple namespace support. Should probably resurrect that.
 
-Cheers,
-Mauro
+> I'm not sure why, really - I have vague memories of Linus having an
+> episode...  It seems an OK construct if used tastefully.  Although it
+> does make it easy to hide nasty surprises.
+
+The original reason was gcc 2.95, but that got dropped.
+
+Then I loved to use c99 mixed code/declarations (imho putting the declaration
+near the code improves readability), but someone pointed
+out that having them makes it harder to catch patch mistakes when
+patch puts a hunk in the wrong place.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
