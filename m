@@ -1,64 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbZCLQbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbZCLQiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757550AbZCLQbj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 12:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbZCLQbP
+	id S1757570AbZCLQiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 12:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZCLQiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 12:31:15 -0400
-Received: from mail.fieldses.org ([141.211.133.115]:55328 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755922AbZCLQbP (ORCPT
+	Thu, 12 Mar 2009 12:38:07 -0400
+Received: from [220.248.27.114] ([220.248.27.114]:34510 "EHLO
+	arinc.soulinfo.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754074AbZCLQiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 12:31:15 -0400
-Date: Thu, 12 Mar 2009 12:31:10 -0400
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Igor Zhbanov <izh1979@gmail.com>, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
-       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
-       Andrew Morgan <morgan@kernel.org>
-Subject: Re: VFS, NFS security bug? Should CAP_MKNOD and
-	CAP_LINUX_IMMUTABLE be added to CAP_FS_MASK?
-Message-ID: <20090312163110.GE2081@fieldses.org>
-References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com> <20090311232356.GP13540@fieldses.org> <20090312160300.GC13046@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090312160300.GC13046@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Thu, 12 Mar 2009 12:38:06 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 12:38:05 EDT
+X-Antivirus-MYDOMAIN-Mail-From: hugang@soulinfo.com via arinc
+X-Antivirus-MYDOMAIN: 2.02st (Clear:RC:0(221.216.85.36):SA:0(-2.5/5.0):. Processed in 0.175266 secs Process 18614)
+Comment: DomainKeys? See http://antispam.yahoo.com/domainkeys
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=default; d=soulinfo.com;
+  b=oRtMF0Ts5jwVXeoqmd7ULRgPjz9iiSo21SA6NTCyvMTZVFM90kIdkHE1+4UDazWVKfAXBv7meQo4q4y0/yBAtxmcMuZhbiGGHsXxupRc9fv+J7rmeCnmxleyYFf0q2i0  ;
+Date: Fri, 13 Mar 2009 00:31:19 +0800
+From: Hu Gang <hugang@soulinfo.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [patch]correct the pci window in iop80331.
+Message-ID: <20090313003119.15faf644@hugang-macbook>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+Importance: high
+X-Priority: 1 (Highest)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2CGcLqu028432
 
-On Thu, Mar 12, 2009 at 11:03:00AM -0500, Serge E. Hallyn wrote:
-> Quoting J. Bruce Fields (bfields@fieldses.org):
-> > On Wed, Mar 11, 2009 at 03:53:34PM +0300, Igor Zhbanov wrote:
-> > > Hello!
-> > > 
-> > > It seems that CAP_MKNOD and CAP_LINUX_IMMUTABLE were forgotten to be
-> 
-> (Still looking into this, but meanwhile...)
-> 
-> > > added to CAP_FS_MASK_B0 in linux-2.6.x and to CAP_FS_MASK in
-> > > linux-2.4.x. Both capabilities affects file system and can be
-> > > considered file system capabilities.
-> > 
-> > Sounds right to me--I'd expect rootsquash to guarantee that new device
-> > nodes can't be created from the network.  Cc'ing random people from the
-> > git log for include/linux/capability.h in hopes they can help.
-> > 
-> > --b.
-> > 
-> > (Also: my copy of mknod(2) claims "Linux... does not have the CAP_MKNOD
-> > capability".  I assume the manpage is out of date?)
-> 
-> No, the whole paragraph is:
-> 
-> EPERM  mode  requested creation of something other than a regular file, FIFO
-> (named pipe), or Unix domain socket, and the caller is not privileged
-> (Linux: does not have the CAP_MKNOD capability);
-> 
-> So it's saying that 'caller is not privileged', in linux, can be
-> interpreted to mean 'the caller does not have CAP_MKNOD'.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Ah!  Foiled by punctuation.  Apologies!--b.
+- -----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Hi Dan Williams:
+
+I found the IOP80331 pci outband windows it not correct, the outboand 
+window size is 128Mbyte, split with two 64MByte window, the first outband
+translate address is 0x80000000, so the second translate address must 
+0x84000000, but in linux kernel it is 0x88000000.
+
+I try to enable the direct windows outband window in iop80331 but not 
+work, can you give me some point.
+
+thanks.
+
+- - ------------ patch for fix pci outband window -----------------------
+- - --- a/arch/arm/mach-iop3xx/iop331-pci.c
++++ b/arch/arm/mach-iop3xx/iop331-pci.c
+@@ -283,7 +283,7 @@ void __init iop3xx_atu_setup(void)
+        *IOP331_OUMWTVR0 = 0;
+
+        /* Outbound window 1 */
+- - -       *IOP331_OMWTVR1 = IOP331_PCI_LOWER_MEM_PA + IOP3XX_PCI_MEM_WINDOW_SIZE;
++       *IOP331_OMWTVR1 = IOP331_PCI_LOWER_MEM_PA + IOP3XX_PCI_MEM_WINDOW_SIZE/2;
+        *IOP331_OUMWTVR1 = 0;
+
+        /* BAR 3 ( Disabled ) */
+
+
+- - -- 
+steve
+- - ----------------------------------------------------------------- 
+phone  :    010-68920288-818
+fax    :    010-68920289
+mobile :    13910034252
+e-mail :    steve.hu@soulinfo.com
+web    :    http://www.soul.com.cn/
+- - -----------------------------------------------------------------
+- -----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkm5DOYACgkQlNo3R5/SzI0nagCfU7imFR6snaCMeACKRNWdA74I
+6EUAoItAAksVqyAtuwIq6ynOKsCmSlOg
+=LHwl
+- -----END PGP SIGNATURE-----
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkm5ONcACgkQlNo3R5/SzI0e6QCglfs3ADpdizWF+PqewSAziP3E
+1UIAoMMjWzSJ3vE7sg2goLcds37Xd8sE
+=LxXn
+-----END PGP SIGNATURE-----
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
