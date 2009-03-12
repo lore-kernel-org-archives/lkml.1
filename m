@@ -1,110 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbZCLETX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbZCLEUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755821AbZCLETX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 00:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbZCLETI
+	id S1755928AbZCLEUm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 00:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbZCLEUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 00:19:08 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50035 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750939AbZCLETG (ORCPT
+	Thu, 12 Mar 2009 00:20:33 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:35520 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751472AbZCLEUc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 00:19:06 -0400
-Date: Thu, 12 Mar 2009 13:17:39 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [BUGFIX][PATCH 1/5] memcg use correct scan number at reclaim
-Message-Id: <20090312131739.296785da.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090312041414.GG23583@balbir.in.ibm.com>
-References: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090312095516.53a2d029.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090312034918.GB23583@balbir.in.ibm.com>
-	<20090312125124.06af6ad9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090312040054.GE23583@balbir.in.ibm.com>
-	<20090312130556.68d03711.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090312041414.GG23583@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 12 Mar 2009 00:20:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=JbVlRPqzsy6B0Mi1DW1Mv+wTnOR7QV2fTNcJh2fEDn99zPUoTAQt9geBgWRXX0nh1Psu1hxEzHFGzbvRgVoFXLzjOeW97+L2zH/+KDDRfZJvZsoPbs74To8aY5H9ZfwAwdtaCkm+nw/nEiP1z+B++i2WWgpdVicJdCdBCOdqr1o=  ;
+X-YMail-OSG: IFXaF5kVM1khPjdJM7sxp9IyFFVWLRKg3BBEqxbFFq.PFrVQ8e14L6Gh2TMc26bVnmTSg_7ZjG9VCgZbC4kGGhEIGPoxtLlZ2oSZKuhn7lZIKb2nvj2gtTw3gjO09yCxSmpV05rfTtf447P16YcCRDzNddhiY40seyufr54av0lwdfTpytA57MBwhTkNtrUL5HCenbwDuabfAZl73rdd_1Gyw9UGHWys
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PULL] Wrapper macros for struct task_struct and struct mm_struct cpumask transition
+Date: Thu, 12 Mar 2009 15:20:11 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+References: <200903121436.53055.rusty@rustcorp.com.au>
+In-Reply-To: <200903121436.53055.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903121520.12245.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Mar 2009 09:44:14 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Thursday 12 March 2009 15:06:52 Rusty Russell wrote:
+> The following changes since commit
+> 99adcd9d67aaf04e28f5ae96df280f236bde4b66: Linus Torvalds (1):
+>         Merge branch 'fixes' of git://git.kernel.org/.../davej/cpufreq
+>
+> are available in the git repository at:
+>
+>  
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.
+>git master
+>
+> Rusty Russell (2):
+>       cpumask: tsk_cpumask for accessing the struct task_struct's
+> cpus_allowed. cpumask: mm_cpumask for accessing the struct mm_struct's
+> cpu_vm_mask.
+>
+>  include/linux/mm_types.h |    3 +++
+>  include/linux/sched.h    |    3 +++
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 13:05:56]:
-> 
-> > On Thu, 12 Mar 2009 09:30:54 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 12:51:24]:
-> > > 
-> > > > On Thu, 12 Mar 2009 09:19:18 +0530
-> > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 09:55:16]:
-> > > > > 
-> > > > > > Andrew, this [1/5] is a bug fix, others are not.
-> > > > > > 
-> > > > > > ==
-> > > > > > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > > > > 
-> > > > > > Even when page reclaim is under mem_cgroup, # of scan page is determined by
-> > > > > > status of global LRU. Fix that.
-> > > > > > 
-> > > > > > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > > > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > > > > ---
-> > > > > >  mm/vmscan.c |    2 +-
-> > > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > > > 
-> > > > > > Index: mmotm-2.6.29-Mar10/mm/vmscan.c
-> > > > > > ===================================================================
-> > > > > > --- mmotm-2.6.29-Mar10.orig/mm/vmscan.c
-> > > > > > +++ mmotm-2.6.29-Mar10/mm/vmscan.c
-> > > > > > @@ -1470,7 +1470,7 @@ static void shrink_zone(int priority, st
-> > > > > >  		int file = is_file_lru(l);
-> > > > > >  		int scan;
-> > > > > > 
-> > > > > > -		scan = zone_page_state(zone, NR_LRU_BASE + l);
-> > > > > > +		scan = zone_nr_pages(zone, sc, l);
-> > > > > 
-> > > > > I have the exact same patch in my patch queue. BTW, mem_cgroup_zone_nr_pages is
-> > > > > buggy. We don't hold any sort of lock while extracting
-> > > > > MEM_CGROUP_ZSTAT (ideally we need zone->lru_lock). Without that how do
-> > > > > we guarantee that MEM_CGRUP_ZSTAT is not changing at the same time as
-> > > > > we are reading it?
-> > > > > 
-> > > > Is it big problem ? We don't need very precise value and ZSTAT just have
-> > > > increment/decrement. So, I tend to ignore this small race.
-> > > > (and it's unsigned long, not long long.)
-> > > >
-> > > 
-> > > The assumption is that unsigned long read is atomic even on 32 bit
-> > > systems? What if we get pre-empted in the middle of reading the data
-> > > and don't return back for long? The data can be highly in-accurate.
-> > > No? 
-> > > 
-> > Hmm,  preempt_disable() is appropriate ?
-> > 
-> > But shrink_zone() itself works on the value which is read at this time and
-> > dont' take care of changes in situation by preeemption...so it's not problem
-> > of memcg.
-> >
-> 
-> You'll end up reclaiming based on old stale data. shrink_zone itself
-> maintains atomic data for zones.
-> 
-IIUC, # of pages to be scanned is just determined once, here.
-
-Thanks,
--Kame
+What's the transition?
 
