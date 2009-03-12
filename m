@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbZCLWtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbZCLWzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756402AbZCLWtX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 18:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZCLWtO
+	id S1755948AbZCLWzF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 18:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbZCLWyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 18:49:14 -0400
-Received: from mga01.intel.com ([192.55.52.88]:29697 "EHLO mga01.intel.com"
+	Thu, 12 Mar 2009 18:54:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:53449 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753140AbZCLWtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 18:49:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,353,1233561600"; 
-   d="scan'208";a="672532735"
-Subject: Re: [PATCH] VM, x86, PAT: Change implementation of
- is_linear_pfn_mapping
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: "mingo@elte.hu" <mingo@elte.hu>,
-       "thellstrom@vmware.com" <thellstrom@vmware.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>
-In-Reply-To: <200903122130.23860.elendil@planet.nl>
-References: <498B5ADE.3090602@vmware.com>
-	 <200903120645.44515.elendil@planet.nl>
-	 <20090312185918.GA22421@linux-os.sc.intel.com>
-	 <200903122130.23860.elendil@planet.nl>
-Content-Type: text/plain
-Date: Thu, 12 Mar 2009 15:48:10 -0700
-Message-Id: <1236898090.4529.80.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	id S1754040AbZCLWyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 18:54:54 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PULL] x86 cpumask work
+Date: Fri, 13 Mar 2009 09:24:48 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mike Travis <travis@sgi.com>
+References: <200903121453.45163.rusty@rustcorp.com.au> <20090312102645.GA25792@elte.hu> <20090312103733.GA29585@elte.hu>
+In-Reply-To: <20090312103733.GA29585@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903130924.48885.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-12 at 13:30 -0700, Frans Pop wrote:
-> On Thursday 12 March 2009, Pallipadi, Venkatesh wrote:
-> > OK, Looking more at the code, I now understand how the patch from
-> > yday resulted in the oops you saw. Here goes my nth attempt at solving
-> > this problem. Can you please test this patch.
+On Thursday 12 March 2009 21:07:33 Ingo Molnar wrote:
 > 
-> System has been running stable for almost an hour now with pat enabled, so 
-> it looks like the problem is solved.
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> FYI, with early .29 RCs I had the following when running VirtualBox:
-> kernel: WARNING: at arch/x86/mm/pat.c:620 reserve_pfn_range+0x5b/0x26d()
+> > * Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > 
+> > > Phew.  One core patch (the first one), the rest x86-specific.
 > 
-> After be03d9e80220 (which probably fixed that) VirtualBox could no longer 
-> be loaded at all with pat enabled, but with this patch added VirtualBox 
-> runs perfectly again.
+> hm, how much testing did this tree get? It crashes fast and hard 
+> in -tip testing:
 
-That's great news :-).
+Missing a core patch (it even got a compile warning with that config).
 
-Ingo: considering the history of this patch, can you let this cook in
-your tree for a week or so and then push towards upstream-git (and .29
-stable if .29 is out by then).
+But there's something else wrong.  Firing up my 64-bit test box now.
 
-Thanks,
-Venki
-
+Sorry,
+Rusty.
