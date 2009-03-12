@@ -1,247 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZCLLJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698AbZCLLP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbZCLLJZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 07:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZCLLJP
+	id S1754698AbZCLLP4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 07:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZCLLPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 07:09:15 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:54220 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbZCLLJO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 07:09:14 -0400
-Date: Thu, 12 Mar 2009 16:39:24 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-arch@vger.kernel.org
-Subject: [RFC PATCH -tip] cpuacct: per-cgroup utime/stime statistics - v2
-Message-ID: <20090312110924.GC3344@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
+	Thu, 12 Mar 2009 07:15:46 -0400
+Received: from mga03.intel.com ([143.182.124.21]:17651 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752169AbZCLLPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 07:15:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,350,1233561600"; 
+   d="scan'208";a="119506927"
+Date: Thu, 12 Mar 2009 19:14:43 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: jack marrow <jackmarrow2@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: Memory usage per memory zone
+Message-ID: <20090312111443.GA20569@localhost>
+References: <20090311114353.GA759@localhost> <e2dc2c680903110451m3cfa35d9s7a9fd942bcee39eb@mail.gmail.com> <20090311121123.GA7656@localhost> <e2dc2c680903110516v2c66d4a4h6a422cffceb12e2@mail.gmail.com> <20090311122611.GA8804@localhost> <e2dc2c680903120053w37968c1cy556812cef63f0896@mail.gmail.com> <20090312075952.GA19331@localhost> <e2dc2c680903120104h4d19a3f6j57ad045bc06f9a90@mail.gmail.com> <20090312081113.GA19506@localhost> <e2dc2c680903120148j1aee0759td49055be059e33ae@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e2dc2c680903120148j1aee0759td49055be059e33ae@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is the 2nd version of the cpuacct statistics patch. Copying
-linux-arch list also this time to check if archs which define
-CONFIG_VIRT_CPU_ACCOUNTING are ok with this change.
+On Thu, Mar 12, 2009 at 10:48:42AM +0200, jack marrow wrote:
+> (Didn't reply all:)
+>
+> 2009/3/12 Wu Fengguang <fengguang.wu@intel.com>:
+> > On Thu, Mar 12, 2009 at 10:04:17AM +0200, jack marrow wrote:
+> >> 2009/3/12 Wu Fengguang <fengguang.wu@intel.com>:
+> >> > On Thu, Mar 12, 2009 at 09:53:27AM +0200, jack marrow wrote:
+> >> >> > Can you paste /proc/vmstat, /proc/meminfo, /proc/zoneinfo and
+> >> >> > /proc/slabinfo? Thank you.
+> >> >>
+> >> >> Sure, but I don't know if it will help.
+> >> >>
+> >> >> The oom info was from in the night, the rest is from now. I have no zoneinfo.
+> >> >>
+> >> >> http://pastebin.com/m67409bc0
+> >> >
+> >> > Thank you! So you are running a pretty old kernel?
+> >> >
+> >>
+> >> Yes. Kernel.2.6.9-78.
+> >>
+> >> Added more output from the other oom kills here:
+> >>  http://pastebin.com/m76fc473d
+> >>
+> >> If I could just find a way to find out what is using up all the memory
+> >> in a zone I could go away happy :)
+> >
+> > But the highmem zone wont help you much, since you have a large 900M
+> > normal zone and a tiny 100M highmem zone ;)
 
-Changes for v2:
-- stime and utime now exported in clock_t units instead of msecs.
-- Addressed the code review comments from Balbir and Li Zefan.
-- Moved to -tip tree.
+btw, how much physical memory do you have?
+It's weird that meminfo says 1G but Mem-Info says 4G...
 
-v1:
-- http://lkml.org/lkml/2009/3/10/150
+> MemTotal:      1034496 kB
+> MemFree:         95600 kB
+> Buffers:         49916 kB
+> Cached:         761544 kB
+> SwapCached:          0 kB
+> Active:          80484 kB
+> Inactive:       749960 kB
+> HighTotal:      131008 kB
+> HighFree:        68480 kB
+> LowTotal:       903488 kB
+> LowFree:         27120 kB
+> SwapTotal:     2040212 kB
+> SwapFree:      2039780 kB
 
-
-cpuacct: Add stime and utime statistics
-
-Add per-cgroup cpuacct controller statistics like the system and user
-time consumed by the group of tasks.
-
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Signed-off-by: Balaji Rao <balajirrao@gmail.com>
----
- Documentation/cgroups/cpuacct.txt |   17 +++++++
- kernel/sched.c                    |   86 +++++++++++++++++++++++++++++++++++---
- 2 files changed, 97 insertions(+), 6 deletions(-)
-
---- a/Documentation/cgroups/cpuacct.txt
-+++ b/Documentation/cgroups/cpuacct.txt
-@@ -30,3 +30,20 @@ The above steps create a new group g1 an
- process (bash) into it. CPU time consumed by this bash and its children
- can be obtained from g1/cpuacct.usage and the same is accumulated in
- /cgroups/cpuacct.usage also.
-+
-+cpuacct.stat file lists a few statistics which further divide the
-+CPU time obtained by the cgroup into user and system times. Currently
-+the following statistics are supported:
-+
-+utime: Time spent by tasks of the cgroup in user mode.
-+stime: Time spent by tasks of the cgroup in kernel mode.
-+
-+utime and stime are in USER_HZ unit.
-+
-+cpuacct controller uses percpu_counter interface to collect utime and
-+stime. This causes two side effects:
-+
-+- It is theoritically possible to see wrong values for stime and utime.
-+  This is because percpu_counter_read() on 32bit systems is broken.
-+- It is possible to see slightly outdated values for stime and utime
-+  due to the batch processing nature of percpu_counter.
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1434,10 +1434,22 @@ iter_move_one_task(struct rq *this_rq, i
- 		   struct rq_iterator *iterator);
- #endif
- 
-+/* Time spent by the tasks of the cpu accounting group executing in ... */
-+enum cpuacct_stat_index {
-+	CPUACCT_STAT_UTIME,	/* ... user mode */
-+	CPUACCT_STAT_STIME,	/* ... kernel mode */
-+
-+	CPUACCT_STAT_NSTATS,
-+};
-+
- #ifdef CONFIG_CGROUP_CPUACCT
- static void cpuacct_charge(struct task_struct *tsk, u64 cputime);
-+static void cpuacct_update_stats(struct task_struct *tsk,
-+		enum cpuacct_stat_index idx, cputime_t val);
- #else
- static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
-+static void cpuacct_update_stats(struct task_struct *tsk,
-+		enum cpuacct_stat_index idx, cputime_t val) {}
- #endif
- 
- static inline void inc_cpu_load(struct rq *rq, unsigned long load)
-@@ -4379,6 +4391,8 @@ void account_user_time(struct task_struc
- 		cpustat->nice = cputime64_add(cpustat->nice, tmp);
- 	else
- 		cpustat->user = cputime64_add(cpustat->user, tmp);
-+
-+	cpuacct_update_stats(p, CPUACCT_STAT_UTIME, cputime);
- 	/* Account for user time used */
- 	acct_update_integrals(p);
- }
-@@ -4440,6 +4454,8 @@ void account_system_time(struct task_str
- 	else
- 		cpustat->system = cputime64_add(cpustat->system, tmp);
- 
-+	cpuacct_update_stats(p, CPUACCT_STAT_STIME, cputime);
-+
- 	/* Account for system time used */
- 	acct_update_integrals(p);
- }
-@@ -9723,6 +9739,7 @@ struct cpuacct {
- 	struct cgroup_subsys_state css;
- 	/* cpuusage holds pointer to a u64-type object on every cpu */
- 	u64 *cpuusage;
-+	struct percpu_counter cpustat[CPUACCT_STAT_NSTATS];
- 	struct cpuacct *parent;
- };
- 
-@@ -9747,20 +9764,33 @@ static struct cgroup_subsys_state *cpuac
- 	struct cgroup_subsys *ss, struct cgroup *cgrp)
- {
- 	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
-+	int i;
- 
- 	if (!ca)
--		return ERR_PTR(-ENOMEM);
-+		goto out;
- 
- 	ca->cpuusage = alloc_percpu(u64);
--	if (!ca->cpuusage) {
--		kfree(ca);
--		return ERR_PTR(-ENOMEM);
--	}
-+	if (!ca->cpuusage)
-+		goto out_free_ca;
-+
-+	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
-+		if (percpu_counter_init(&ca->cpustat[i], 0))
-+			goto out_free_counters;
- 
- 	if (cgrp->parent)
- 		ca->parent = cgroup_ca(cgrp->parent);
- 
- 	return &ca->css;
-+
-+out_free_counters:
-+	i--;
-+	while (i-- >= 0)
-+		percpu_counter_destroy(&ca->cpustat[i]);
-+	free_percpu(ca->cpuusage);
-+out_free_ca:
-+	kfree(ca);
-+out:
-+	return ERR_PTR(-ENOMEM);
- }
- 
- /* destroy an existing cpu accounting group */
-@@ -9768,7 +9798,10 @@ static void
- cpuacct_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
- {
- 	struct cpuacct *ca = cgroup_ca(cgrp);
-+	int i;
- 
-+	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
-+		percpu_counter_destroy(&ca->cpustat[i]);
- 	free_percpu(ca->cpuusage);
- 	kfree(ca);
- }
-@@ -9855,6 +9888,25 @@ static int cpuacct_percpu_seq_read(struc
- 	return 0;
- }
- 
-+static const char *cpuacct_stat_desc[] = {
-+	[CPUACCT_STAT_UTIME] = "utime",
-+	[CPUACCT_STAT_STIME] = "stime",
-+};
-+
-+static int cpuacct_stats_show(struct cgroup *cgrp, struct cftype *cft,
-+		struct cgroup_map_cb *cb)
-+{
-+	struct cpuacct *ca = cgroup_ca(cgrp);
-+	int i;
-+
-+	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
-+		s64 val = percpu_counter_read(&ca->cpustat[i]);
-+		val = cputime_to_clock_t(val);
-+		cb->fill(cb, cpuacct_stat_desc[i], val);
-+	}
-+	return 0;
-+}
-+
- static struct cftype files[] = {
- 	{
- 		.name = "usage",
-@@ -9865,7 +9917,10 @@ static struct cftype files[] = {
- 		.name = "usage_percpu",
- 		.read_seq_string = cpuacct_percpu_seq_read,
- 	},
--
-+	{
-+		.name = "stat",
-+		.read_map = cpuacct_stats_show,
-+	},
- };
- 
- static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
-@@ -9895,6 +9950,25 @@ static void cpuacct_charge(struct task_s
- 	}
- }
- 
-+/*
-+ * Account the system/user time to the task's accounting group.
-+ */
-+static void cpuacct_update_stats(struct task_struct *tsk,
-+		enum cpuacct_stat_index idx, cputime_t val)
-+{
-+	struct cpuacct *ca;
-+
-+	if (unlikely(!cpuacct_subsys.active))
-+		return;
-+
-+	ca = task_ca(tsk);
-+
-+	do {
-+		percpu_counter_add(&ca->cpustat[idx], val);
-+		ca = ca->parent;
-+	} while (ca);
-+}
-+
- struct cgroup_subsys cpuacct_subsys = {
- 	.name = "cpuacct",
- 	.create = cpuacct_create,
+Free pages:       16808kB (1664kB HighMem)
+Active:457312 inactive:273805 dirty:0 writeback:0 unstable:0 free:4202 slab:5897 mapped:390707 pagetables:5068
+DMA free:12408kB min:64kB low:128kB high:192kB active:0kB inactive:0kB present:16384kB pages_scanned:0 all_unreclaimable? yes
+protections[]: 0 0 0
+Normal free:2736kB min:3728kB low:7456kB high:11184kB active:256kB inactive:16kB present:901120kB pages_scanned:2782 all_unre
+claimable? yes
+protections[]: 0 0 0
+HighMem free:1664kB min:512kB low:1024kB high:1536kB active:1828992kB inactive:1095204kB present:3014656kB pages_scanned:0 al
+l_unreclaimable? no
+protections[]: 0 0 0
+DMA: 4*4kB 5*8kB 2*16kB 1*32kB 4*64kB 2*128kB 2*256kB 0*512kB 1*1024kB 1*2048kB 2*4096kB = 12408kB
+Normal: 0*4kB 0*8kB 1*16kB 1*32kB 0*64kB 1*128kB 0*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB = 2736kB
+HighMem: 320*4kB 0*8kB 0*16kB 0*32kB 0*64kB 1*128kB 1*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 1664kB
+448110 pagecache pages
+Swap cache: add 787243, delete 731019, find 235217/281007, race 0+3
+0 bounce buffer pages
+Free swap:       1558736kB
+983040 pages of RAM
+753648 pages of HIGHMEM
+9253 reserved pages
+253474 pages shared
+56224 pages swap cached
+Out of Memory: Killed process 28258 (oracle).
