@@ -1,144 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbZCLCBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbZCLCGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbZCLCBk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 11 Mar 2009 22:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbZCLB7Q
+	id S1755387AbZCLCGv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 11 Mar 2009 22:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZCLCGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 21:59:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49336 "EHLO mx2.redhat.com"
+	Wed, 11 Mar 2009 22:06:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33734 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755442AbZCLB7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 21:59:09 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       arozansk@redhat.com, jmoyer@redhat.com, oz-kernel@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Cc: vgoyal@redhat.com, akpm@linux-foundation.org, menage@google.com,
-       peterz@infradead.org
-Subject: [PATCH 05/10] cfq changes to use hierarchical fair queuing code in elevaotor layer
-Date: Wed, 11 Mar 2009 21:56:50 -0400
-Message-Id: <1236823015-4183-6-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com>
+	id S1750742AbZCLCGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 11 Mar 2009 22:06:41 -0400
+Message-ID: <49B86E29.6050108@kernel.org>
+Date: Thu, 12 Mar 2009 11:06:33 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Tony Luck <tony.luck@gmail.com>
+CC: rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, jeremy@goop.org,
+       cpw@sgi.com, mingo@elte.hu
+Subject: Re: [PATCH 06/10] percpu: kill percpu_alloc() and friends
+References: <1234958676-27618-1-git-send-email-tj@kernel.org>	 <1234958676-27618-7-git-send-email-tj@kernel.org> <12c511ca0903111136h3805a106i484a32fd2972c568@mail.gmail.com>
+In-Reply-To: <12c511ca0903111136h3805a106i484a32fd2972c568@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 12 Mar 2009 02:06:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make cfq hierarhical.
+Tony Luck wrote:
+> On Wed, Feb 18, 2009 at 5:04 AM, Tejun Heo <tj@kernel.org> wrote:
+>> +static inline void *__alloc_percpu(size_t size, size_t align)
+>>  {
+>> +       /*
+>> +        * Can't easily make larger alignment work with kmalloc.  WARN
+>> +        * on it.  Larger alignment should only be used for module
+>> +        * percpu sections on SMP for which this path isn't used.
+>> +        */
+>> +       WARN_ON_ONCE(align > __alignof__(unsigned long long));
+>>        return kzalloc(size, gfp);
+>>  }
+> 
+> This WARN_ON just pinged for me when I built & ran linux-next tag next-20090311
+> 
+> Stack trace from the WARN_ON pointed to __create_workqueue_key() which
+> does:
+> 
+>          wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
+> 
+> and the cpu_workqueue_struct is defined as ____cacheline_aligned
+> 
+> I hit this on ia64, but all this code looks generic.
 
-Signed-off-by: Nauman Rafique <nauman@google.com>
-Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
-Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
-Signed-off-by: Aristeu Rozanski <aris@redhat.com>
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
----
- block/Kconfig.iosched |    8 ++++++++
- block/cfq-iosched.c   |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
- init/Kconfig          |    2 +-
- 3 files changed, 57 insertions(+), 1 deletions(-)
+Yeap, it's fixed now, but as Rusty pointed out, once move to dynamic
+percpu allocator is complete, we wouldn't need cacheline alignment for
+percpu data structures.  It will only hurt performance by wasting
+cachelines.
 
-diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index dd5224d..a91a807 100644
---- a/block/Kconfig.iosched
-+++ b/block/Kconfig.iosched
-@@ -54,6 +54,14 @@ config IOSCHED_CFQ
- 	  working environment, suitable for desktop systems.
- 	  This is the default I/O scheduler.
- 
-+config IOSCHED_CFQ_HIER
-+	bool "CFQ Hierarchical Scheduling support"
-+	depends on IOSCHED_CFQ && CGROUPS
-+	select GROUP_IOSCHED
-+	default n
-+	---help---
-+	  Enable hierarhical scheduling in cfq.
-+
- choice
- 	prompt "Default I/O scheduler"
- 	default DEFAULT_CFQ
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 5b41b54..0ecf7c7 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1069,6 +1069,50 @@ static void cfq_ioc_set_ioprio(struct io_context *ioc)
- 	ioc->ioprio_changed = 0;
- }
- 
-+#ifdef CONFIG_IOSCHED_CFQ_HIER
-+static void changed_cgroup(struct io_context *ioc, struct cfq_io_context *cic)
-+{
-+	struct cfq_queue *async_cfqq = cic_to_cfqq(cic, 0);
-+	struct cfq_queue *sync_cfqq = cic_to_cfqq(cic, 1);
-+	struct cfq_data *cfqd = cic->key;
-+	struct io_group *iog, *__iog;
-+	unsigned long flags;
-+	struct request_queue *q;
-+
-+	if (unlikely(!cfqd))
-+		return;
-+
-+	q = cfqd->q;
-+
-+	spin_lock_irqsave(q->queue_lock, flags);
-+
-+	iog = io_lookup_io_group_current(q);
-+
-+	if (async_cfqq != NULL) {
-+		__iog = cfqq_to_io_group(async_cfqq);
-+
-+		if (iog != __iog) {
-+			cic_set_cfqq(cic, NULL, 0);
-+			cfq_put_queue(async_cfqq);
-+		}
-+	}
-+
-+	if (sync_cfqq != NULL) {
-+		__iog = cfqq_to_io_group(sync_cfqq);
-+		if (iog != __iog)
-+			io_ioq_move(q->elevator, sync_cfqq->ioq, iog);
-+	}
-+
-+	spin_unlock_irqrestore(q->queue_lock, flags);
-+}
-+
-+static void cfq_ioc_set_cgroup(struct io_context *ioc)
-+{
-+	call_for_each_cic(ioc, changed_cgroup);
-+	ioc->cgroup_changed = 0;
-+}
-+#endif  /* CONFIG_IOSCHED_CFQ_HIER */
-+
- static struct cfq_queue *
- cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
- 				struct io_context *ioc, gfp_t gfp_mask)
-@@ -1335,6 +1379,10 @@ out:
- 	smp_read_barrier_depends();
- 	if (unlikely(ioc->ioprio_changed))
- 		cfq_ioc_set_ioprio(ioc);
-+#ifdef CONFIG_IOSCHED_CFQ_HIER
-+	if (unlikely(ioc->cgroup_changed))
-+		cfq_ioc_set_cgroup(ioc);
-+#endif
- 	return cic;
- err_free:
- 	cfq_cic_free(cic);
-diff --git a/init/Kconfig b/init/Kconfig
-index 66c2310..d7bc054 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -539,7 +539,7 @@ config CGROUP_MEM_RES_CTLR_SWAP
- 	  if boot option "noswapaccount" is set, swap will not be accounted.
- 
- config GROUP_IOSCHED
--	bool "Group IO Scheduler"
-+	bool
- 	depends on CGROUPS && ELV_FAIR_QUEUING
- 	default n
- 	---help---
+Thanks.
+
 -- 
-1.6.0.1
-
+tejun
