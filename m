@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZCLXsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZCLXto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757020AbZCLXsF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 19:48:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZCLXry
+	id S1757275AbZCLXto (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 19:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZCLXtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 19:47:54 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48680 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752354AbZCLXrx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 19:47:53 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 4/4] ring-buffer: only allocate buffers for online cpus
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Wu Fengguang <fengguang.wu@intel.com>, Pierre Ossman <drzeus@drzeus.cx>,
-       Pekka Paalanen <pq@iki.fi>, Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <alpine.DEB.2.00.0903120933400.3062@gandalf.stny.rr.com>
-References: <20090312162722.43B1.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0903120933400.3062@gandalf.stny.rr.com>
-Message-Id: <20090313083919.43CB.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 12 Mar 2009 19:49:33 -0400
+Received: from mail1.radix.net ([207.192.128.31]:53030 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752670AbZCLXtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 19:49:33 -0400
+Subject: Re: Fwd: [stable] [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885
+ video_open
+From: Andy Walls <awalls@radix.net>
+To: Michael Krufky <mkrufky@linuxtv.org>
+Cc: stable@kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Jarod Wilson <jarod@wilsonet.com>, LMML <linux-media@vger.kernel.org>
+In-Reply-To: <49B99828.3090002@linuxtv.org>
+References: <200902241700.56099.jarod@redhat.com>
+	 <37219a840903121324q7b08c8d1ma6d0d3ec4f5eb278@mail.gmail.com>
+	 <1236899033.3261.7.camel@palomino.walls.org> <49B99828.3090002@linuxtv.org>
+Content-Type: text/plain
+Date: Thu, 12 Mar 2009 19:49:47 -0400
+Message-Id: <1236901787.3715.23.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Fri, 13 Mar 2009 08:47:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I don't like this patch.
-> > your [1/4] and [2/4] already solve Pierre's problem.
-> > 
-> > using online cpu (not possible cpu) increase performance overhead 
-> > and messiness.
-> > but nobody get benefit ;)
+On Thu, 2009-03-12 at 19:18 -0400, Michael Krufky wrote:
+> Andy Walls wrote:
+> > On Thu, 2009-03-12 at 16:24 -0400, Michael Krufky wrote:
+> >   
+> >> Can we have this merged into -stable?  Jarod Wilson sent this last
+> >> month, but he left off the cc to stable@kernel.org
+> >>
+> >> Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+> >>     
+> >
+> > Mike,
+> >
+> > A version of this is already in the v4l-dvb hg development repository:
+> >
+> > hg log -vp --limit 1 linux/drivers/media/video/cx23885/cx23885-417.c
+> > hg log -vp --limit 2 linux/drivers/media/video/cx23885/cx23885-video.c 
+> >
+> > I helped Mark work through the solution: I coded some of it, he coded
+> > some of it and he also tested it.
+> >
+> > Regards,
+> > Andy
 > 
-> Well, the fact that you can have 15 buffers for non existent CPUs is a big 
-> benefit. And the overhead was only on the read side, not the write, and 
-> very limited in overhead for that matter.
+> I'm aware of that, Andy -- That's why I am sending this off to the 
+> -stable team for 2.6.27.y
+
+Ooops. Sorry for my cluelessness. :)
+
+Regards,
+Andy
+
+
+> Thanks & regards,
 > 
-> But, looking at this, I realized I can get rid of all the 
-> "get_online_cpus". I originally had the CPU_DOWN_PREPARE remove the 
-> buffer. But I found it highly annoying during tests, that I lose my data 
-> when I brought down a CPU. Thus, I removed the code to free the buffer and 
-> replaced it with the comment explaining this.
+> Mike
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
-> The get_online_cpus is to prevent the race where we might remove a buffer. 
-> But since we do not do that anymore, those get_online_cpus are pretty 
-> useless.
-> 
-> I'll update the code in a bit.
-
-Great!
-
-from mission critical area view, CPU down event is very important.
-I don't hope to lost trace data of downed cpu.
-and no get_online_cpus() don't cause annoy overhead.
-
-I love to see your next patch :)
-
 
