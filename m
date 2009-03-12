@@ -1,73 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZCLUVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZCLUYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346AbZCLUVe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 16:21:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZCLUV0
+	id S1754176AbZCLUYx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 16:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZCLUYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 16:21:26 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:34760 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbZCLUVZ convert rfc822-to-8bit (ORCPT
+	Thu, 12 Mar 2009 16:24:43 -0400
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:55512 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751395AbZCLUYm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 16:21:25 -0400
+	Thu, 12 Mar 2009 16:24:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:sender:in-reply-to:references:date
          :x-google-sender-auth:message-id:subject:from:to:cc:content-type
          :content-transfer-encoding;
-        b=q80saEbBuOs82RMUHv72+aKR4MbPMtp3+my7D145ImgMbEt2V3L2LG4ZmWGnEmJv8P
-         +XbmlDaI9O8sxs91Pb/84SzUHuHRANXvEo4VOZDjMLvsslIQoU2ny4Yu4wZ+6jMrZcuw
-         AGxgcv1ZwOp3mNPGzAh6BxWNv+3xTYUPP8jeY=
+        b=Y+ekJ+mP7v2MjMYt2bU9i+FwWJpkKKVC/WYyloPvlNbAtrJMNUJhXgdIhBeX2aTzAt
+         NUPh3NpdhBmAxYhCGTy1oc3I2fcb+cySERhOKu39gnID62JQPxuZWLh5M37+LY8u5i6m
+         wow7SaHd3MlgCWaul+r9pONi9Az9ob6pbzLGI=
 MIME-Version: 1.0
-In-Reply-To: <20090312161047.GA15209@us.ibm.com>
-References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com>
-	 <20090311232356.GP13540@fieldses.org>
-	 <20090312161047.GA15209@us.ibm.com>
-Date: Fri, 13 Mar 2009 09:21:23 +1300
-X-Google-Sender-Auth: e2050b26c3016e9a
-Message-ID: <517f3f820903121321sf6d2014q8165b925d5d44db7@mail.gmail.com>
-Subject: Re: VFS, NFS security bug? Should CAP_MKNOD and CAP_LINUX_IMMUTABLE 
-	be added to CAP_FS_MASK?
-From: Michael Kerrisk <mtk.manpages@gmail.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, Igor Zhbanov <izh1979@gmail.com>,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, neilb@suse.de,
-       Trond.Myklebust@netapp.com, David Howells <dhowells@redhat.com>,
-       James Morris <jmorris@namei.org>,
-       Michael Kerrisk <mtk.manpages@gmail.com>
+In-Reply-To: <200902241700.56099.jarod@redhat.com>
+References: <200902241700.56099.jarod@redhat.com>
+Date: Thu, 12 Mar 2009 16:24:38 -0400
+X-Google-Sender-Auth: 4d0f1c18a46f6e79
+Message-ID: <37219a840903121324q7b08c8d1ma6d0d3ec4f5eb278@mail.gmail.com>
+Subject: Fwd: [stable] [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885 
+	video_open
+From: Michael Krufky <mkrufky@linuxtv.org>
+To: stable@kernel.org, LKML <linux-kernel@vger.kernel.org>
+Cc: Jarod Wilson <jarod@wilsonet.com>, LMML <linux-media@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 13, 2009 at 5:10 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
-> Quoting J. Bruce Fields (bfields@fieldses.org):
->> On Wed, Mar 11, 2009 at 03:53:34PM +0300, Igor Zhbanov wrote:
->> > Hello!
->> >
->> > It seems that CAP_MKNOD and CAP_LINUX_IMMUTABLE were forgotten to be
->> > added to CAP_FS_MASK_B0 in linux-2.6.x and to CAP_FS_MASK in
->> > linux-2.4.x. Both capabilities affects file system and can be
->> > considered file system capabilities.
->>
->> Sounds right to me--I'd expect rootsquash to guarantee that new device
->> nodes can't be created from the network.  Cc'ing random people from the
->> git log for include/linux/capability.h in hopes they can help.
->
-> Yeah it seems reasonable.  If it is, then does that mean that we
-> also need CAP_SYS_ADMIN (to write selinux labels) and CAP_SETFCAP
-> (to set file capabilities) as well?
+Can we have this merged into -stable?  Jarod Wilson sent this last
+month, but he left off the cc to stable@kernel.org
 
-If a change is made to CAP_FS_MASK, please do remember to CC
-mtk.manpages@gmail.com, and linux-api@.
-
-Cheers,
-
-Michael
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 
 
--- 
-Michael Kerrisk Linux man-pages maintainer;
-http://www.kernel.org/doc/man-pages/ Found a documentation bug?
-http://www.kernel.org/doc/man-pages/reporting_bugs.html
+---------- Forwarded message ----------
+From: Jarod Wilson <jarod@redhat.com>
+Date: Tue, Feb 24, 2009 at 6:00 PM
+Subject: [stable] [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885 video_open
+To: linux-kernel@vger.kernel.org
+Cc: Mike Krufky <mkrufky@linuxtv.org>
+
+
+From: Mark Jenks
+https://www.redhat.com/mailman/private/video4linux-list/2009-January/msg00041.html
+
+The Hauppauge WinTV HVR-1800 tv tuner card has both digital and analog
+abilities, both of which are supported by v4l/dvb under 2.6.27.y. The analog
+side also features a hardware mpeg2 encoder. The HVR-1250 tv tuner card
+has both digital and analog abilities, but analog isn't currently supported
+under any kernel. These cards both utilize the cx23885 driver, but with
+slightly different usage. When the code paths for each card is executed,
+they wind up poking a cx23885_devlist, which contains devices from both
+of the cards, and access attempts are made to portions of 'struct
+cx23885_dev' that aren't valid for that device. Simply add some extra
+checks before trying to access these structs.
+
+More gory details:
+ http://article.gmane.org/gmane.linux.drivers.dvb/46630
+
+This was triggering on my own system at home w/both cards in it, and
+no longer happens with this patch included.
+
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+Reviewed-by: Michael Krufky <mkrufky@linuxtv.org>
+
+---
+
+ drivers/media/video/cx23885/cx23885-417.c   |    2 +-
+ drivers/media/video/cx23885/cx23885-video.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/media/video/cx23885/cx23885-417.c
+b/drivers/media/video/cx23885/cx23885-417.c
+index 7b0e8c0..19154b6 100644
+--- a/drivers/media/video/cx23885/cx23885-417.c
++++ b/drivers/media/video/cx23885/cx23885-417.c
+@@ -1585,7 +1585,7 @@ static int mpeg_open(struct inode *inode, struct
+file *file)
+
+       list_for_each(list, &cx23885_devlist) {
+               h = list_entry(list, struct cx23885_dev, devlist);
+-               if (h->v4l_device->minor == minor) {
++               if (h->v4l_device && h->v4l_device->minor == minor) {
+                       dev = h;
+                       break;
+               }
+diff --git a/drivers/media/video/cx23885/cx23885-video.c
+b/drivers/media/video/cx23885/cx23885-video.c
+index 6047c78..a2b5a0c 100644
+--- a/drivers/media/video/cx23885/cx23885-video.c
++++ b/drivers/media/video/cx23885/cx23885-video.c
+@@ -733,7 +733,7 @@ static int video_open(struct inode *inode, struct
+file *file)
+
+       list_for_each(list, &cx23885_devlist) {
+               h = list_entry(list, struct cx23885_dev, devlist);
+-               if (h->video_dev->minor == minor) {
++               if (h->video_dev && h->video_dev->minor == minor) {
+                       dev  = h;
+                       type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+               }
+
+
+--
+Jarod Wilson
+jarod@redhat.com
