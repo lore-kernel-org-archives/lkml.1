@@ -1,118 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZCLKWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZCLKZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbZCLKWk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 06:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbZCLKWc
+	id S1755416AbZCLKZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 06:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZCLKZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 06:22:32 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:46573 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbZCLKWb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 06:22:31 -0400
-Date: Thu, 12 Mar 2009 11:19:16 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>, akpm@linux-foundation.org
-Subject: Re: [PATCH] fix/improve generic page table walker
-Message-ID: <20090312111916.5dbdb1e5@skybase>
-In-Reply-To: <20090312093335.6dd67251@skybase>
-References: <20090311144951.58c6ab60@skybase>
-	<1236792263.3205.45.camel@calx>
-	<20090312093335.6dd67251@skybase>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Mar 2009 06:25:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44939 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752713AbZCLKZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 06:25:10 -0400
+Date: Thu, 12 Mar 2009 10:24:29 GMT
+From: Darren Hart <dvhltc@us.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dvhltc@us.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, rusty@rustcorp.com.au, peterz@infradead.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, dvhltc@us.ibm.com,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090312075537.9856.29954.stgit@Aeon>
+References: <20090312075537.9856.29954.stgit@Aeon>
+Subject: [tip:core/futexes] futex: update futex commentary
+Message-ID: <tip-b2d0994b1301fc3a6a89e1889578dac9227840e3@git.kernel.org>
+Git-Commit-ID: b2d0994b1301fc3a6a89e1889578dac9227840e3
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 12 Mar 2009 10:24:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 12 Mar 2009 09:33:35 +0100
-Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+Commit-ID:  b2d0994b1301fc3a6a89e1889578dac9227840e3
+Gitweb:     http://git.kernel.org/tip/b2d0994b1301fc3a6a89e1889578dac9227840e3
+Author:     "Darren Hart" <dvhltc@us.ibm.com>
+AuthorDate: Thu, 12 Mar 2009 00:55:37 -0700
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 12 Mar 2009 11:20:55 +0100
 
-> > I've gone to lengths to keep VMAs out of the equation, so I can't say
-> > I'm excited about this solution.  
-> 
-> The minimum fix is to add the mmap_sem. If a vma is unmapped while you
-> walk the page tables, they can get freed. You do have a dependency on
-> the vma list. All the other page table walkers in mm/ start with the
-> vma, then do the four loops. It would be consistent if the generic page
-> table walker would do the same.
-> 
-> Having thought about the problem again, I think I found a way how to
-> deal with the problem in the s390 page table primitives. The fix is not
-> exactly nice but it will work. With it s390 will be able to walk
-> addresses outside of the vma address range.
+futex: update futex commentary
 
-Ok, the patch below fixes the problem without vma operations in the
-generic page table walker. We still need the mmap_sem part though.
+Impact: cleanup
 
--- 
-blue skies,
-   Martin.
+The futex_hash_bucket can be a bit confusing when first looking
+at the code as it is a shared queue (and futex_q isn't a queue
+at all, but rather an element on the queue).
 
-"Reality continues to ruin my life." - Calvin.
+The mmap_sem is no longer held outside of the
+futex_handle_fault() routine, yet numerous comments refer to it.
+The fshared argument is no an integer.  I left some of these
+comments along as they are simply removed in future patches.
+
+Some of the commentary refering to futexes by virtual page
+mappings was not very clear, and completely accurate (as for
+shared futexes both the page and the offset are used to
+determine the key).  For the purposes of the function
+description, just referring to "the futex" seems sufficient.
+
+With hashed futexes we now access the page after the hash-bucket
+is locked, and not only after it is enqueued.
+
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+LKML-Reference: <20090312075537.9856.29954.stgit@Aeon>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
 
 ---
-Subject: [PATCH] s390: make page table walking more robust
+ kernel/futex.c |   33 ++++++++++++++-------------------
+ 1 files changed, 14 insertions(+), 19 deletions(-)
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-
-Make page table walking on s390 more robust. Currently the four loops
-over the pgd/pud/pmd/pte tables may only be done if the address range
-of the walk is below the end address of the last vma of the address
-space. The reason is the dynamic page table code on s390. A *pgd can
-point to a region-second, a region-third or a segment table and a *pud
-can point to a region-third or a segment table. The page table primitives
-can determine the level of a pgd/pud table by looking at two bits in
-any of the entries of the table. The pgd_present primitive always returns
-1 if the *pgd does not point to a region-second table, pud_present always
-returs 1 if the *pud does not point to a region-third table. pud_offset
-and pmd_offset check the type of the table pointed to by *pgd and *pud
-and either just cast the pointer to the type of the next lower level
-table, or if the level of the table is correct they read the entry from
-the table. This all only works if the address bits for the potentially
-missing higher page tables are zero. As long as the address of the walk
-stays smaller than the end address of the last vma this works.
-
-The generic page table walker ignores the list of vmas and can be used to
-walk page table ranges behind the end address of the last vma. If the
-process is using a reduced page table nasty things happen.
-
-In case of a reduced page table pgd_present and/or pud_present should
-return true only of the address bits in the pgd/pud pointer of the missing
-page table is zero. The effect of this changes is that the loop over the
-pgd/pud table is done on the lower level. For each of the entries but
-the first pgd_present returns false and the outer loops just continue.
-
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- arch/s390/include/asm/pgtable.h |    4 ++--
- fs/proc/task_mmu.c              |    2 ++
- 2 files changed, 4 insertions(+), 2 deletions(-)
-
-diff -urpN linux-2.6/arch/s390/include/asm/pgtable.h linux-2.6-patched/arch/s390/include/asm/pgtable.h
---- linux-2.6/arch/s390/include/asm/pgtable.h	2009-03-12 10:34:01.000000000 +0100
-+++ linux-2.6-patched/arch/s390/include/asm/pgtable.h	2009-03-12 10:34:43.000000000 +0100
-@@ -451,7 +451,7 @@ static inline int pud_bad(pud_t pud)	 { 
- static inline int pgd_present(pgd_t pgd)
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 438701a..e6a4d72 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -114,7 +114,9 @@ struct futex_q {
+ };
+ 
+ /*
+- * Split the global futex_lock into every hash list lock.
++ * Hash buckets are shared by all the futex_keys that hash to the same
++ * location.  Each key may have multiple futex_q structures, one for each task
++ * waiting on a futex.
+  */
+ struct futex_hash_bucket {
+ 	spinlock_t lock;
+@@ -189,8 +191,7 @@ static void drop_futex_key_refs(union futex_key *key)
+ /**
+  * get_futex_key - Get parameters which are the keys for a futex.
+  * @uaddr: virtual address of the futex
+- * @shared: NULL for a PROCESS_PRIVATE futex,
+- *	&current->mm->mmap_sem for a PROCESS_SHARED futex
++ * @fshared: 0 for a PROCESS_PRIVATE futex, 1 for PROCESS_SHARED
+  * @key: address where result is stored.
+  *
+  * Returns a negative error code or 0
+@@ -200,9 +201,7 @@ static void drop_futex_key_refs(union futex_key *key)
+  * offset_within_page).  For private mappings, it's (uaddr, current->mm).
+  * We can usually work out the index without swapping in the page.
+  *
+- * fshared is NULL for PROCESS_PRIVATE futexes
+- * For other futexes, it points to &current->mm->mmap_sem and
+- * caller must have taken the reader lock. but NOT any spinlocks.
++ * lock_page() might sleep, the caller should not hold a spinlock.
+  */
+ static int get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key)
  {
- 	if ((pgd_val(pgd) & _REGION_ENTRY_TYPE_MASK) < _REGION_ENTRY_TYPE_R2)
--		return 1;
-+		return (pgd_val(pgd) & PGDIR_MASK) == 0;
- 	return (pgd_val(pgd) & _REGION_ENTRY_ORIGIN) != 0UL;
+@@ -589,10 +588,9 @@ static void wake_futex(struct futex_q *q)
+ 	 * The waiting task can free the futex_q as soon as this is written,
+ 	 * without taking any locks.  This must come last.
+ 	 *
+-	 * A memory barrier is required here to prevent the following store
+-	 * to lock_ptr from getting ahead of the wakeup. Clearing the lock
+-	 * at the end of wake_up_all() does not prevent this store from
+-	 * moving.
++	 * A memory barrier is required here to prevent the following store to
++	 * lock_ptr from getting ahead of the wakeup. Clearing the lock at the
++	 * end of wake_up() does not prevent this store from moving.
+ 	 */
+ 	smp_wmb();
+ 	q->lock_ptr = NULL;
+@@ -693,8 +691,7 @@ double_lock_hb(struct futex_hash_bucket *hb1, struct futex_hash_bucket *hb2)
  }
  
-@@ -478,7 +478,7 @@ static inline int pgd_bad(pgd_t pgd)
- static inline int pud_present(pud_t pud)
+ /*
+- * Wake up all waiters hashed on the physical page that is mapped
+- * to this virtual address:
++ * Wake up waiters matching bitset queued on this futex (uaddr).
+  */
+ static int futex_wake(u32 __user *uaddr, int fshared, int nr_wake, u32 bitset)
  {
- 	if ((pud_val(pud) & _REGION_ENTRY_TYPE_MASK) < _REGION_ENTRY_TYPE_R3)
--		return 1;
-+		return (pud_val(pud) & PUD_MASK) == 0;
- 	return (pud_val(pud) & _REGION_ENTRY_ORIGIN) != 0UL;
- }
+@@ -1076,11 +1073,9 @@ static int fixup_pi_state_owner(u32 __user *uaddr, struct futex_q *q,
+ 	 * in the user space variable. This must be atomic as we have
+ 	 * to preserve the owner died bit here.
+ 	 *
+-	 * Note: We write the user space value _before_ changing the
+-	 * pi_state because we can fault here. Imagine swapped out
+-	 * pages or a fork, which was running right before we acquired
+-	 * mmap_sem, that marked all the anonymous memory readonly for
+-	 * cow.
++	 * Note: We write the user space value _before_ changing the pi_state
++	 * because we can fault here. Imagine swapped out pages or a fork
++	 * that marked all the anonymous memory readonly for cow.
+ 	 *
+ 	 * Modifying pi_state _before_ the user space value would
+ 	 * leave the pi_state in an inconsistent state when we fault
+@@ -1188,7 +1183,7 @@ retry:
+ 	hb = queue_lock(&q);
  
+ 	/*
+-	 * Access the page AFTER the futex is queued.
++	 * Access the page AFTER the hash-bucket is locked.
+ 	 * Order is important:
+ 	 *
+ 	 *   Userspace waiter: val = var; if (cond(val)) futex_wait(&var, val);
+@@ -1204,7 +1199,7 @@ retry:
+ 	 * a wakeup when *uaddr != val on entry to the syscall.  This is
+ 	 * rare, but normal.
+ 	 *
+-	 * for shared futexes, we hold the mmap semaphore, so the mapping
++	 * For shared futexes, we hold the mmap semaphore, so the mapping
+ 	 * cannot have changed since we looked it up in get_futex_key.
+ 	 */
+ 	ret = get_futex_value_locked(&uval, uaddr);
