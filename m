@@ -1,53 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbZCLM2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbZCLM3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756657AbZCLM2o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 08:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbZCLM2e
+	id S1756712AbZCLM3V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 08:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbZCLM3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 08:28:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57845 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754747AbZCLM2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 08:28:33 -0400
-Date: Thu, 12 Mar 2009 13:27:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org
-Subject: Re: [PATCH 1/2] x86: unify kmap_atomic_pfn() and
-	iomap_atomic_prot_pfn()
-Message-ID: <20090312122727.GA24856@elte.hu>
-References: <20090311143317.GA22244@localhost.localdomain> <alpine.LFD.2.00.0903111606350.29264@localhost.localdomain> <961aa3350903110825y1af77709q49d6328703081afb@mail.gmail.com> <20090311165252.GB30777@elte.hu> <961aa3350903111728m6203106tf74a767f1a82e663@mail.gmail.com> <20090312122427.GA24295@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090312122427.GA24295@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 12 Mar 2009 08:29:10 -0400
+Received: from mail-bw0-f178.google.com ([209.85.218.178]:53212 "EHLO
+	mail-bw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755242AbZCLM3I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 08:29:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Q5jCOVH1rmiLXUCUSylJxsssc6W0/xbpQJaGIBR1hihMb/cx61X6X6TvLrW599MNSD
+         FzpW4P6yVv8Gu+kaRYqec7fPQCmk9y6wtnYOBKMSV0mgOiauJ2j4V/dz3JJRu1kydQ3R
+         ld6HKxBiTzPa1PoP1Gsja/DKdjV58mTvhWWmU=
+Subject: Re: [PATCH] x86: mtrr: don't modify RdDram/WrDram bits of fixed
+ MTRRs
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, trenn@suse.de
+In-Reply-To: <20090312114121.GF20716@alberich.amd.com>
+References: <20090311150027.GK10490@alberich.amd.com>
+	 <86802c440903120101o2a0c1ad0iec395c45f782078a@mail.gmail.com>
+	 <20090312114121.GF20716@alberich.amd.com>
+Content-Type: text/plain
+Date: Thu, 12 Mar 2009 14:29:02 +0200
+Message-Id: <1236860942.12514.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > It actually didn't compile with CONFIG_HIGHMEM=n as Thomas 
-> > pointed out.
+On Thu, 2009-03-12 at 12:41 +0100, Andreas Herrmann wrote:
+> On Thu, Mar 12, 2009 at 01:01:26AM -0700, Yinghai Lu wrote:
+> > On Wed, Mar 11, 2009 at 8:00 AM, Andreas Herrmann
+> > <andreas.herrmann3@amd.com> wrote:
+> > > BIOS is expected to clear the SYSCFG[MtrrFixDramModEn] on AMD CPUs after
+> > > fixed MTRRs are configured.
+> > >
+> > > Some BIOSes do not clear SYSCFG[MtrrFixDramModEn] on BP (and on APs).
+> > >
+> > > This can lead to obfuscation in Linux when this bit is not cleared on
+> > > BP but cleared on APs. A consequence of this is that the saved
+> > > fixed-MTRR state (from BP) differs from the fixed-MTRRs of APs --
+> > > because RdDram/WrDram bits are read as zero when
+> > > SYSCFG[MtrrFixDramModEn] is cleared -- and Linux tries to sync
+> > > fixed-MTRR state from BP to AP. This implies that Linux sets
+> > > SYSCFG[MtrrFixDramEn] and activates those bits.
+> > >
+> > > More important is that (some) systems change these bits in SMM when
+> > > ACPI is enabled. Hence it is racy if Linux modifies RdMem/WrMem bits,
+> > > too.
+> > >
+> > > I suggest not to touch RdDram/WrDram bits of fixed-MTRRs and
+> > > SYSCFG[MtrrFixDramEn] and to clear SYSCFG[MtrrFixDramModEn] as
+> > > suggested by AMD K8, and AMD family 10h/11h BKDGs.
+> > > BIOS is expected to do this anyway. This should avoid that
+> > > Linux and SMM tread on each other's toes ...
+> > >
 > > 
-> > arch/x86/mm/iomap_32.c:49: undefined reference to 
-> > `kmap_atomic_prot_pfn'
+> > wonder if you could add one dmi check to tell the user that bios is
+> > buggy, ask vendor fixed BIOS
+> > and skip fixed mtrr sync.
 > 
-> hm, i didnt see any build failures myself. Could you please 
-> send the .config that triggers it?
+> There seem to be several systems affected that do not hide
+> RdMem/WrMem bits from OS. 
+> 
+>  (Causing Suspend/resume problem:)
+> - Acer Ferrari 1000
+> - Acer Ferrari 5000
 
-got it now. Somehow randconfig does not find that combo.
 
-	Ingo
+What problem?
+Hang second resume???
+
+I have an acer 5720G that hangs on second resume - bios doesn't pass
+control to linux at all. First resume works fine.
+
+
+Best regards,
+	Maxim Levitsky
+
+
+
