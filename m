@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbZCLKR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbZCLKRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755076AbZCLKR3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 06:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZCLKRU
+	id S1755958AbZCLKRn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 06:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZCLKRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 12 Mar 2009 06:17:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52025 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751867AbZCLKRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:47083 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751749AbZCLKRT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 12 Mar 2009 06:17:19 -0400
-Date: Thu, 12 Mar 2009 11:16:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2/6] Additional (get|put)_futex_key() fixes
-Message-ID: <20090312101636.GB7157@elte.hu>
-References: <20090312075349.9856.83687.stgit@Aeon> <20090312075545.9856.75152.stgit@Aeon>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090312075545.9856.75152.stgit@Aeon>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] mfd: Mark WM8350 mask revision as readable to match silicon
+Date: Thu, 12 Mar 2009 10:17:16 +0000
+Message-Id: <1236853036-4438-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+No impact unless someone has written additional kernel code.
 
-* Darren Hart <dvhltc@us.ibm.com> wrote:
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/mfd/wm8350-regmap.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> futex_requeue and futex_lock_pi still had some bad 
-> (get|put)_futex_key() usage. This patch adds the missing 
-> put_futex_keys() and corrects a goto in futex_lock_pi() to 
-> avoid a double get.
-> 
-> Build and boot tested on a 4 way Intel x86_64 workstation.  
-> Passes basic pthread_mutex and PI tests out of 
-> ltp/testcases/realtime.
+diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
+index 9a4cc95..97d6aad 100644
+--- a/drivers/mfd/wm8350-regmap.c
++++ b/drivers/mfd/wm8350-regmap.c
+@@ -3186,7 +3186,7 @@ const struct wm8350_reg_access wm8350_reg_io_map[] = {
+ 	/*  read    write volatile */
+ 	{ 0xFFFF, 0xFFFF, 0xFFFF }, /* R0   - Reset/ID */
+ 	{ 0x7CFF, 0x0C00, 0x7FFF }, /* R1   - ID */
+-	{ 0x0000, 0x0000, 0x0000 }, /* R2 */
++	{ 0x007F, 0x0000, 0x0000 }, /* R2   - ROM Mask ID */
+ 	{ 0xBE3B, 0xBE3B, 0x8000 }, /* R3   - System Control 1 */
+ 	{ 0xFEF7, 0xFEF7, 0xF800 }, /* R4   - System Control 2 */
+ 	{ 0x80FF, 0x80FF, 0x8000 }, /* R5   - System Hibernate */
+-- 
+1.6.2
 
-hm, how bad is the impact - do we need this in v2.6.29?
-
-	Ingo
