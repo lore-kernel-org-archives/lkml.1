@@ -1,125 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbZCLHoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbZCLHqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754677AbZCLHoK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 03:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZCLHn4
+	id S1754966AbZCLHqT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 03:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbZCLHqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 03:43:56 -0400
-Received: from mail-gx0-f167.google.com ([209.85.217.167]:36912 "EHLO
-	mail-gx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751539AbZCLHnz convert rfc822-to-8bit (ORCPT
+	Thu, 12 Mar 2009 03:46:09 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53686 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753001AbZCLHqH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 03:43:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=tRZYVR4Bu1K8NZuO3qro9Fv0ouCsCTH13R0gRVRA3F2gixsNqk0f+xFCnR5ZEvAiTS
-         ZnATbGu5W/vTuddOZSgCFZA5wb9MBeWJbTHdtlgaz+SJxev66wObmXAFu9hrUC3r6IKK
-         20B/H7gVFE5FOXYPdvXLhxox5YHZZGk4iJPIE=
+	Thu, 12 Mar 2009 03:46:07 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [BUGFIX][PATCH 1/5] memcg use correct scan number at reclaim
+Cc: kosaki.motohiro@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+In-Reply-To: <20090312131739.296785da.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090312041414.GG23583@balbir.in.ibm.com> <20090312131739.296785da.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20090312164204.43B7.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <8bd0f97a0903112324p3ecae9f9i44f9338f90cac85@mail.gmail.com>
-References: <1236756563-20633-1-git-send-email-graff.yang@gmail.com>
-	 <8bd0f97a0903110343m1f2f01catbc6cd54ecce91db9@mail.gmail.com>
-	 <1236831455.21146.7.camel@dy>
-	 <8bd0f97a0903112123j60eab672m16177581c959453b@mail.gmail.com>
-	 <1236832241.21146.12.camel@dy>
-	 <8bd0f97a0903112134m52a8faddp69926cb1281f5ce5@mail.gmail.com>
-	 <1236833307.21146.25.camel@dy>
-	 <8bd0f97a0903112159g59c7d414of76e9e4090d8209@mail.gmail.com>
-	 <7d86d44a0903112255m34392231ne0cd04196e33f1b2@mail.gmail.com>
-	 <8bd0f97a0903112324p3ecae9f9i44f9338f90cac85@mail.gmail.com>
-Date: Thu, 12 Mar 2009 15:43:53 +0800
-Message-ID: <7d86d44a0903120043q6dd1345byd998942be62a6191@mail.gmail.com>
-Subject: Re: [PATCH] [net/irda]: new Blackfin on-chip SIR IrDA driver
-From: graff yang <graff.yang@gmail.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: gyang <graf.yang@analog.com>, samuel@sortiz.org,
-       irda-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       cooloney@kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Thu, 12 Mar 2009 16:45:59 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 2:24 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Thu, Mar 12, 2009 at 01:55, graff yang wrote:
->> On Thu, Mar 12, 2009 at 12:59 PM, Mike Frysinger wrote:
->>> On Thu, Mar 12, 2009 at 00:48, gyang wrote:
->>>> On Thu, 2009-03-12 at 00:34 -0400, Mike Frysinger wrote:
->>>>> On Thu, Mar 12, 2009 at 00:30, gyang wrote:
->>>>> > On Thu, 2009-03-12 at 00:23 -0400, Mike Frysinger wrote:
->>>>> >> On Thu, Mar 12, 2009 at 00:17, gyang wrote:
->>>>> >> > On Wed, 2009-03-11 at 06:43 -0400, Mike Frysinger wrote:
->>>>> >> >> On Wed, Mar 11, 2009 at 05:56, graff yang wrote:
->>>>> >> >> > On Wed, Mar 11, 2009 at 3:57 PM, Mike Frysinger wrote:
->>>>> >> >> >> On Wed, Mar 11, 2009 at 03:29,  <graff.yang@gmail.com> wrote:
->>>>> >> >> >>> +static int __devinit bfin_sir_probe(struct platform_device *pdev)
->>>>> >> >> >>> +{
->>>>> >> >> >>> +       struct net_device *dev;
->>>>> >> >> >>> +       struct bfin_sir_self *self;
->>>>> >> >> >>> +       unsigned int baudrate_mask;
->>>>> >> >> >>> +       struct bfin_sir_port *sir_port;
->>>>> >> >> >>> +       int err;
->>>>> >> >> >>> +
->>>>> >> >> >>> +       err = peripheral_request_list(per[pdev->id], DRIVER_NAME);
->>>>> >> >> >>
->>>>> >> >> >> what if pdev->id is set to 12512 ?
->>>>> >> >> >
->>>>> >> >> > The pdev->id is defined in board files, for example, uart0 should be 0.
->>>>> >> >>
->>>>> >> >> so ?  what's to stop the user from setting it to 12415 ?  the driver
->>>>> >> >> must sanity check these things.  you can never assume platform dev
->>>>> >> >> resources always have valid pointers and valid values.
->>>>> >> >
->>>>> >> > How about to limit the pdev->id to be 0,1,2,3 ?
->>>>> >> > I can extend the per to be
->>>>> >> > static const unsigned short per[][4] = {
->>>>> >> >        {P_UART0_RX, P_UART0_TX, 0, 0},
->>>>> >> >        {P_UART1_RX, P_UART1_TX, 0, 1},
->>>>> >> >        {P_UART2_RX, P_UART2_TX, 0, 2},
->>>>> >> >        {P_UART3_RX, P_UART3_TX, 0, 3},
->>>>> >> > };
->>>>> >> >
->>>>> >> > then check (pdev->id >= 0 && pdev->id < ARRAY_SIZE(per) &&
->>>>> >> > per[pdev->id][3] == pdev->id)
->>>>> >>
->>>>> >> the last check is redundant.  the first two should be added.
->>>>> >
->>>>> > I'm afraid of some cases such as uart0 uses id 1, will cause driver not
->>>>> > work, and not any warning message.
->>>>>
->>>>> then the call to peripheral request would fail as expected
->>>>
->>>> For example, user want to enable irda on uart2 for bf548, he use id 0
->>>> for uart2. In these case, peripheral request may not fail, but driver
->>>> not work.
->>>
->>> the id is wrong then.  if they want uart2, then they should use id 2.
->>
->> Such wrong case may existed for common users, and should be
->> prohibited. Driver need make sanity check to prevent it.
->
-> i dont know what you're talking about.  if the platform resource uses
-> id of 2, then they want uart2 which means irda2.
+> On Thu, 12 Mar 2009 09:44:14 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 13:05:56]:
+> > 
+> > > On Thu, 12 Mar 2009 09:30:54 +0530
+> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 12:51:24]:
+> > > > 
+> > > > > On Thu, 12 Mar 2009 09:19:18 +0530
+> > > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > > > 
+> > > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 09:55:16]:
+> > > > > > 
+> > > > > > > Andrew, this [1/5] is a bug fix, others are not.
+> > > > > > > 
+> > > > > > > ==
+> > > > > > > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > > > > > 
+> > > > > > > Even when page reclaim is under mem_cgroup, # of scan page is determined by
+> > > > > > > status of global LRU. Fix that.
+> > > > > > > 
+> > > > > > > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > > > > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > > > > > ---
+> > > > > > >  mm/vmscan.c |    2 +-
+> > > > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > > > > > 
+> > > > > > > Index: mmotm-2.6.29-Mar10/mm/vmscan.c
+> > > > > > > ===================================================================
+> > > > > > > --- mmotm-2.6.29-Mar10.orig/mm/vmscan.c
+> > > > > > > +++ mmotm-2.6.29-Mar10/mm/vmscan.c
+> > > > > > > @@ -1470,7 +1470,7 @@ static void shrink_zone(int priority, st
+> > > > > > >  		int file = is_file_lru(l);
+> > > > > > >  		int scan;
+> > > > > > > 
+> > > > > > > -		scan = zone_page_state(zone, NR_LRU_BASE + l);
+> > > > > > > +		scan = zone_nr_pages(zone, sc, l);
+> > > > > > 
+> > > > > > I have the exact same patch in my patch queue. BTW, mem_cgroup_zone_nr_pages is
+> > > > > > buggy. We don't hold any sort of lock while extracting
+> > > > > > MEM_CGROUP_ZSTAT (ideally we need zone->lru_lock). Without that how do
+> > > > > > we guarantee that MEM_CGRUP_ZSTAT is not changing at the same time as
+> > > > > > we are reading it?
+> > > > > > 
+> > > > > Is it big problem ? We don't need very precise value and ZSTAT just have
+> > > > > increment/decrement. So, I tend to ignore this small race.
+> > > > > (and it's unsigned long, not long long.)
+> > > > >
+> > > > 
+> > > > The assumption is that unsigned long read is atomic even on 32 bit
+> > > > systems? What if we get pre-empted in the middle of reading the data
+> > > > and don't return back for long? The data can be highly in-accurate.
+> > > > No? 
+> > > > 
+> > > Hmm,  preempt_disable() is appropriate ?
+> > > 
+> > > But shrink_zone() itself works on the value which is read at this time and
+> > > dont' take care of changes in situation by preeemption...so it's not problem
+> > > of memcg.
+> > >
+> > 
+> > You'll end up reclaiming based on old stale data. shrink_zone itself
+> > maintains atomic data for zones.
+> > 
+> IIUC, # of pages to be scanned is just determined once, here.
 
-The X of irdaX is determined by the order of calling register_netdev().
-It will be irda0 for the first registered irda device, in spite of the pdev->id.
-
-Because you argued that user can use any id for pdev->id, I think I not only
-need limit them to be 0~3, but also need keep them in right order, or else,
-driver may be fail.
-It is easy for driver to check that, and safe for users.
-
-> the sanity check is
-> already in place because the peripheral_request() will fail when it
-> attempts to claim the pins of uart2 but the uart driver has already
-> been enabled for it.
-> -mike
->
+In this case, lockless is right behavior.
+lockless is valuable than precise ZSTAT. end user can't observe this race.
 
 
 
--- 
--Graff
+
