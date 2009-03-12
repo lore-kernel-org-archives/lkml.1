@@ -1,102 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbZCLEOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487AbZCLEP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755312AbZCLEOg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 00:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbZCLEO1
+	id S1754487AbZCLEP5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 00:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbZCLEPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 00:14:27 -0400
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:34824 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750965AbZCLEO0 (ORCPT
+	Thu, 12 Mar 2009 00:15:49 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49841 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbZCLEPs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 00:14:26 -0400
-Date: Thu, 12 Mar 2009 09:44:14 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 12 Mar 2009 00:15:48 -0400
+Date: Thu, 12 Mar 2009 13:14:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
 Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [BUGFIX][PATCH 1/5] memcg use correct scan number at reclaim
-Message-ID: <20090312041414.GG23583@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com> <20090312095516.53a2d029.kamezawa.hiroyu@jp.fujitsu.com> <20090312034918.GB23583@balbir.in.ibm.com> <20090312125124.06af6ad9.kamezawa.hiroyu@jp.fujitsu.com> <20090312040054.GE23583@balbir.in.ibm.com> <20090312130556.68d03711.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090312130556.68d03711.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 2/5] add softlimit to res_counter
+Message-Id: <20090312131419.5250cdaf.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090312041038.GF23583@balbir.in.ibm.com>
+References: <20090312095247.bf338fe8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090312095612.4a7758e1.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090312035444.GC23583@balbir.in.ibm.com>
+	<20090312125839.3b01e20c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090312041038.GF23583@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 13:05:56]:
+On Thu, 12 Mar 2009 09:40:38 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> On Thu, 12 Mar 2009 09:30:54 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> Correct me if I am wrong, but this boils down to checking if the top
+> root is above it's soft limit? 
+
+  Level_1    soft limit=400M
+    Level_2  soft limit=200M
+      Level_3  no soft limit
+      Level_3  softlimit=100M
+    Level_2  soft limit=200M
+    Level_2  soft limit=200M
+
+When checking Level3, we need to check Level_2 and Level_1.
+
+
+> Instead of checking all the way up in
+> the hierarchy, can't we do a conditional check for
 > 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 12:51:24]:
-> > 
-> > > On Thu, 12 Mar 2009 09:19:18 +0530
-> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-12 09:55:16]:
-> > > > 
-> > > > > Andrew, this [1/5] is a bug fix, others are not.
-> > > > > 
-> > > > > ==
-> > > > > From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > > > 
-> > > > > Even when page reclaim is under mem_cgroup, # of scan page is determined by
-> > > > > status of global LRU. Fix that.
-> > > > > 
-> > > > > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > > > ---
-> > > > >  mm/vmscan.c |    2 +-
-> > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > > 
-> > > > > Index: mmotm-2.6.29-Mar10/mm/vmscan.c
-> > > > > ===================================================================
-> > > > > --- mmotm-2.6.29-Mar10.orig/mm/vmscan.c
-> > > > > +++ mmotm-2.6.29-Mar10/mm/vmscan.c
-> > > > > @@ -1470,7 +1470,7 @@ static void shrink_zone(int priority, st
-> > > > >  		int file = is_file_lru(l);
-> > > > >  		int scan;
-> > > > > 
-> > > > > -		scan = zone_page_state(zone, NR_LRU_BASE + l);
-> > > > > +		scan = zone_nr_pages(zone, sc, l);
-> > > > 
-> > > > I have the exact same patch in my patch queue. BTW, mem_cgroup_zone_nr_pages is
-> > > > buggy. We don't hold any sort of lock while extracting
-> > > > MEM_CGROUP_ZSTAT (ideally we need zone->lru_lock). Without that how do
-> > > > we guarantee that MEM_CGRUP_ZSTAT is not changing at the same time as
-> > > > we are reading it?
-> > > > 
-> > > Is it big problem ? We don't need very precise value and ZSTAT just have
-> > > increment/decrement. So, I tend to ignore this small race.
-> > > (and it's unsigned long, not long long.)
-> > >
-> > 
-> > The assumption is that unsigned long read is atomic even on 32 bit
-> > systems? What if we get pre-empted in the middle of reading the data
-> > and don't return back for long? The data can be highly in-accurate.
-> > No? 
-> > 
-> Hmm,  preempt_disable() is appropriate ?
+>         c->parent == NULL && (c->softlimit < c->usage)
 > 
-> But shrink_zone() itself works on the value which is read at this time and
-> dont' take care of changes in situation by preeemption...so it's not problem
-> of memcg.
->
+> BTW, I would prefer to split the word softlimit to soft_limit, it is
+> more readable that way.
+> 
+Ok, it will give me tons of HUNK but will do ;)
 
-You'll end up reclaiming based on old stale data. shrink_zone itself
-maintains atomic data for zones.
+Thanks,
+-Kame
 
-I think the assumption that unsigned long read is atomic seems quite
-reasonable, but I want to validate this across architectures. Anyone
-know the correct answer? 
-
--- 
-	Balbir
