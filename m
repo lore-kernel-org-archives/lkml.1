@@ -1,120 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758494AbZCMKlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbZCMKp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758494AbZCMKlj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 06:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZCMKl3
+	id S1758424AbZCMKp5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 06:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbZCMKps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 06:41:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39734 "EHLO hera.kernel.org"
+	Fri, 13 Mar 2009 06:45:48 -0400
+Received: from cmpxchg.org ([85.214.51.133]:44069 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751939AbZCMKl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 06:41:28 -0400
-Date: Fri, 13 Mar 2009 10:39:36 GMT
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       srostedt@redhat.com, tglx@linutronix.de, laijs@cn.fujitsu.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       srostedt@redhat.com, tglx@linutronix.de, laijs@cn.fujitsu.com,
-       mingo@elte.hu
-In-Reply-To: <49BA2C9F.8020009@cn.fujitsu.com>
-References: <49BA2C9F.8020009@cn.fujitsu.com>
-Subject: [tip:tracing/ftrace] ftrace: remove struct list_head from struct dyn_ftrace
-Message-ID: <tip-e94142a67f8bad494c593f0a07c9fc2fbec98c0e@git.kernel.org>
-Git-Commit-ID: e94142a67f8bad494c593f0a07c9fc2fbec98c0e
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	id S1754162AbZCMKpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 06:45:47 -0400
+Date: Fri, 13 Mar 2009 11:44:42 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
+       Enrik.Berkhan@ge.com, uclinux-dev@uclinux.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may get wrongly discarded
+Message-ID: <20090313104442.GB2119@cmpxchg.org>
+References: <20090313105618.43DF.A69D9226@jp.fujitsu.com> <1236931036.5188.80.camel@laptop> <20090313170058.6840.A69D9226@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 10:39:46 +0000 (UTC)
+In-Reply-To: <20090313170058.6840.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e94142a67f8bad494c593f0a07c9fc2fbec98c0e
-Gitweb:     http://git.kernel.org/tip/e94142a67f8bad494c593f0a07c9fc2fbec98c0e
-Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Fri, 13 Mar 2009 17:51:27 +0800
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 11:36:20 +0100
+On Fri, Mar 13, 2009 at 05:15:44PM +0900, KOSAKI Motohiro wrote:
+> > > > > 	The ramfs stuff is rather icky in that it adds the pages to the aging
+> > > > > 	list, marks them dirty, but does not provide a writeout method. 
+> > > > > 
+> > > > > 	This will make the paging code scan over them (continuously) trying to
+> > > > > 	clean them, failing that (lack of writeout method) and putting them back
+> > > > > 	on the list.
+> > > > > 
+> > > > > Not requiring the pages to be added to the LRU would be a really good idea.
+> > > > > They are not discardable, be it in MMU or NOMMU mode, except when the inode
+> > > > > itself is discarded.
+> > > > 
+> > > > Yep, these pages shouldn't be on the LRU at all.  I guess that will
+> > > > require some tweaks to core filemap.c code.
+> > > 
+> > > IMHO, UNEVICTABLE_LRU already does lru isolation.
+> > > only rest prblem is, getting rid of "depends on MMU" line in mm/Kconfig.
+> > > 
+> > > Am I missing anything?
+> > 
+> > Yes, the need to take something off that shouldn't be there to begin
+> > with.
+> 
+> In past unevictable lru discussion, we discuss the same thing.
+> at that time, we found two reason of unevictable lru is better than 
+> completely taking off.
+> 
+> (1) page migration code depend on the page stay on lru.
+> (2) "taking off at reclaim time" can avoid adding lock to fastpath.
+>     anyway, complely removing from lru need something lock.
+>     we disliked it at that time.
 
-ftrace: remove struct list_head from struct dyn_ftrace
+Agreed with (1).  NOMMU can't support migration, though.  But keeping
+them off the LRU on NOMMU needs adjustment of the page cache
+read/write code in mm/filemap.c.
 
-Impact: save memory
+I'm not quite sure I understand (2).  But never adding these pages on
+the LRU means we never have to remove them anywhere, no?
 
-The struct dyn_ftrace table is very large, this patch will save
-about 50%.
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <srostedt@redhat.com>
-LKML-Reference: <49BA2C9F.8020009@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/ftrace.h |    1 -
- kernel/trace/ftrace.c  |   14 ++++++++------
- 2 files changed, 8 insertions(+), 7 deletions(-)
-
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index c146c10..9d598bb 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -145,7 +145,6 @@ enum {
- };
- 
- struct dyn_ftrace {
--	struct list_head	list;
- 	unsigned long		ip; /* address of mcount call-site */
- 	unsigned long		flags;
- 	struct dyn_arch_ftrace	arch;
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index bf78a4c..90d5729 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -272,7 +272,7 @@ enum {
- 
- static int ftrace_filtered;
- 
--static LIST_HEAD(ftrace_new_addrs);
-+static struct dyn_ftrace *ftrace_new_addrs;
- 
- static DEFINE_MUTEX(ftrace_regex_lock);
- 
-@@ -409,8 +409,8 @@ ftrace_record_ip(unsigned long ip)
- 		return NULL;
- 
- 	rec->ip = ip;
--
--	list_add(&rec->list, &ftrace_new_addrs);
-+	rec->flags = (unsigned long)ftrace_new_addrs;
-+	ftrace_new_addrs = rec;
- 
- 	return rec;
- }
-@@ -716,19 +716,21 @@ unsigned long		ftrace_update_tot_cnt;
- 
- static int ftrace_update_code(struct module *mod)
- {
--	struct dyn_ftrace *p, *t;
-+	struct dyn_ftrace *p;
- 	cycle_t start, stop;
- 
- 	start = ftrace_now(raw_smp_processor_id());
- 	ftrace_update_cnt = 0;
- 
--	list_for_each_entry_safe(p, t, &ftrace_new_addrs, list) {
-+	while (ftrace_new_addrs) {
- 
- 		/* If something went wrong, bail without enabling anything */
- 		if (unlikely(ftrace_disabled))
- 			return -1;
- 
--		list_del_init(&p->list);
-+		p = ftrace_new_addrs;
-+		ftrace_new_addrs = (struct dyn_ftrace *)p->flags;
-+		p->flags = 0L;
- 
- 		/* convert record (i.e, patch mcount-call with NOP) */
- 		if (ftrace_code_disable(mod, p)) {
+	Hannes
