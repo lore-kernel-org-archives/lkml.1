@@ -1,33 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbZCMD3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbZCMDa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754225AbZCMD3d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 23:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757988AbZCMD3S
+	id S1758072AbZCMDa7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 23:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZCMDau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 23:29:18 -0400
-Received: from hrndva-commlb.mail.rr.com ([71.74.57.8]:52769 "EHLO
-	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757504AbZCMD3S (ORCPT
+	Thu, 12 Mar 2009 23:30:50 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:57573 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585AbZCMDas (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 23:29:18 -0400
-Message-Id: <7h9gbp$cedubp@rrcs-agw-01b.hrndva.rr.com>
-X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
-From: Mrs Sarah Wood <laquinta@yuma.twcbc.com>
-Reply-To: jerry.smith00@btinternet.com
-Organization: info@winner.org
-To: <info@lotto.org>
-Subject: Claims Of =?iso-8859-1?B?ozk1MCwwMDAsMDA=?= Pounds
-Date: Thu, 12 Mar 2009 22:29:15 -0500
+	Thu, 12 Mar 2009 23:30:48 -0400
+X-Greylist: delayed 2500 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 23:30:48 EDT
+Message-ID: <49B9C8E0.5080500@cs.columbia.edu>
+Date: Thu, 12 Mar 2009 22:45:52 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>, mingo@elte.hu,
+       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, hpa@zytor.com,
+       tglx@linutronix.de
+Subject: Re: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>	<1234285547.30155.6.camel@nimitz>	<20090211141434.dfa1d079.akpm@linux-foundation.org>	<1234462282.30155.171.camel@nimitz> <20090213152836.0fbbfa7d.akpm@linux-foundation.org>
+In-Reply-To: <20090213152836.0fbbfa7d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Your email ID has been awarded £950.000.00 pounds in Compaq Promo,Reply us with your info(jerry.smith88@btinternet.com)
+Hi,
 
-Name:.....
-Country:..
-Sex:......
-Addres:...
+Just got back from 3 weeks with practically no internet, and I see
+that I missed a big party !
+
+Trying to catch up with what's been said so far --
+
+"An app really has to know whether it can reliably checkpoint+restart."
+
+It was suggested (Dave) to either have an "uncheckpointable" flag at containter,
+or process, or resource level. Another suggestion (Serge, Alexey) was to let
+the app try to checkpoint and return an error.
+
+For what it's worth, I vote for the latter. Have the checkpoint code always
+return an error if the checkpoint cannot be taken. If checkpoint succeeds
+then the app/user is guaranteed that restart will succeed (if it is given
+the right starting conditions, e.g. correct file system view).
+
+To figure out what/when went wrong, the c/r code can indicate the _reason_
+to the failure (e.g. output to the console, or other means) so that the
+frustrated user/developer/app can report it. I also think it's cleaner as
+it keep c/r consideration within the c/r subsystem and not scattered around
+different locations in the kernel.
+
+
+Andrew Morton wrote:
+> On Thu, 12 Feb 2009 10:11:22 -0800
+> Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+> 
+>> ...
+>>
+>>> - In bullet-point form, what features are missing, and should be added?
+>>  * support for more architectures than i386
+>>  * file descriptors:
+>>   * sockets (network, AF_UNIX, etc...)
+>>   * devices files
+>>   * shmfs, hugetlbfs
+>>   * epoll
+>>   * unlinked files
+>>  * Filesystem state
+>>   * contents of files
+>>   * mount tree for individual processes
+>>  * flock
+>>  * threads and sessions
+>>  * CPU and NUMA affinity
+>>  * sys_remap_file_pages()
+>>
+>> This is a very minimal list that is surely incomplete and sure to grow.
+> 
+> That's a worry.
+> 
+>>> For extra marks:
+>>>
+>>> - Will any of this involve non-trivial serialisation of kernel
+>>>   objects?  If so, that's getting into the
+>>>   unacceptably-expensive-to-maintain space, I suspect.
+>> We have some structures that are certainly tied to the kernel-internal
+>> ones.  However, we are certainly *not* simply writing kernel structures
+>> to userspace.  We could do that with /dev/mem.  We are carefully pulling
+>> out the minimal bits of information from the kernel structures that we
+>> *need* to recreate the function of the structure at restart.  There is a
+>> maintenance burden here but, so far, that burden is almost entirely in
+>> checkpoint/*.c.  We intend to test this functionality thoroughly to
+>> ensure that we don't regress once we have integrated it.
+> 
+> I guess my question can be approximately simplified to: "will it end up
+> looking like openvz"?  (I don't believe that we know of any other way
+> of implementing this?)
+> 
+> Because if it does then that's a concern, because my assessment when I
+> looked at that code (a number of years ago) was that having code of
+> that nature in mainline would be pretty costly to us, and rather
+> unwelcome.
+
+I originally implemented c/r for linux as as kernel module, without
+requiring any changes from the kernel. (Doing the namespaces as a kernel
+module was much harder). For more details, see:
+	https://www.ncl.cs.columbia.edu/research/migrate
+
+The current set of patches is the beginning of a re-implementation
+based on that work and other lessons learned, as well as feedback and
+collaboration with other players.
+
+I am confident that the the vast majority of the code will end up as a
+separate "subsystem", and that relatively few changes will be required
+from the existing kernel.
+
+> The broadest form of the question is "will we end up regretting having
+> done this".
+
+I bet that once this works for a critical mass of apps/users - we will
+never regret having done this. (We may regret - and fix - having done
+specific part this way or another).
+
+> 
+> If we can arrange for the implementation to sit quietly over in a
+> corner with a team of people maintaining it and not screwing up other
+> people's work then I guess we'd be OK - if it breaks then the breakage
+> is localised.
+
+In my experience, there is very little code of the c/r that affects
+other parts of the kernel, it's mostly isolated. So I believe this
+will be the case.
+
+> 
+> And it's not just a matter of "does the diffstat only affect a single
+> subdirectory".  We also should watch out for the imposition of new
+> rules which kernel code must follow.  "you can't do that, because we
+> can't serialise it", or something.
+> 
+> Similar to the way in which perfectly correct and normal kernel
+> sometimes has to be changed because it unexpectedly upsets the -rt
+> patch.
+> 
+> Do you expect that any restrictions of this type will be imposed?
+> 
+
+That an excellent point. Again, judging from past experience -
+it is possible (but not always pretty) to implement c/r as a kernel
+module, without requiring _any_ kernel changes. I can't think of
+any such restrictions, but we'll certainly have to keep our eyes
+open.
+
+Oren
+
