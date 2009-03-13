@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbZCMHlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbZCMHoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433AbZCMHlt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 03:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbZCMHlY
+	id S1756363AbZCMHoi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 03:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZCMHo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 03:41:24 -0400
-Received: from web4108.mail.ogk.yahoo.co.jp ([124.83.200.70]:23375 "HELO
-	web4108.mail.ogk.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751019AbZCMHlX (ORCPT
+	Fri, 13 Mar 2009 03:44:27 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40182 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751260AbZCMHo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 03:41:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=yj20050223; d=yahoo.co.jp;
-  h=Message-ID:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
-  b=icsB2d4BPJW4N5sT/LrwU9RyM6H9QhaJqgn2LHJsUyrHbX4T9y2o1vjYCrbTc8LYhHtqn3OYCh2NFnjCqWfmx7HaifGZn6nBM04pgvMuDIinp2qFpHvZBmTLMJeJ2c0c  ;
-Message-ID: <20090313074120.48682.qmail@web4108.mail.ogk.yahoo.co.jp>
-Date: Fri, 13 Mar 2009 16:41:19 +0900 (JST)
-From: Norman Diamond <n0diamond@yahoo.co.jp>
-Reply-To: n0diamond@yahoo.co.jp
-Subject: Re: Off-by-one in both LIBATA and IDE drivers
-To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Cc: Jim Paris <jim@jtan.com>, Robert Hancock <hancockrwd@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Mark Lord <liml@rtr.ca>,
-       n0diamond@yahoo.co.jp
-In-Reply-To: <20090312230230.95814.qmail@web4110.mail.ogk.yahoo.co.jp>
+	Fri, 13 Mar 2009 03:44:27 -0400
+X-Sasl-enc: wOqZYzs6ri59yaxesRENgrUhu19T+p3j71EFRt3+LKiF 1236930264
+Message-ID: <49BA0EDA.4080606@ladisch.de>
+Date: Fri, 13 Mar 2009 08:44:26 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
+To: "Christian P. Schmidt" <schmidt@digadd.de>
+CC: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: Re: [alsa-devel] How can PCI resource allocation fail?
+References: <49B9959F.1080705@digadd.de>
+In-Reply-To: <49B9959F.1080705@digadd.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LIBATA with the patch to ata.h now handles all sectors on
-hard drives that it recognizes.
+Christian P. Schmidt wrote:
+> I'm toying with the alsa-driver for the Creative Labs X-Fi. I'm working
+> on the PCI Express version of this card,
 
-An example of a hard drive that it recognizes is one that
-is attached to an Intel ICH7M chipset when hda=noprobe
-hdc=noprobe have been specified in the boot command.
+... which isn't supported ...
 
-An example of a hard drive that it doesn't recognize is
-one that is attached to an Intel PIIX4 chipset when
-hda=noprobe hdc=noprobe have been specified in the boot
-command.
+> [46833.487588] cannot allocate the port
+> [46833.487594] CA0106: probe of 0000:04:00.0 failed with error -16
+> ...
+> 	Region 0: Memory at f9ffc000 (32-bit, non-prefetchable) [size=16K]
 
-In either case, the boot parameters persuade the old IDE
-drivers not to grab the controllers.
+... because this I/O range is memory-mapped; the driver knows only about
+models with regular I/O ports.  (This has nothing to do with the PCI-E
+bridge; the X-Fi chip itself is a different model.)
 
-With ICH7M, LIBATA takes over and runs both the hard drive
-and DVD at full speed.
 
-With PIIX4, LIBATA initializes.  End of story.  Slax can't
-find its own CD.  If I only use hda=noprobe then the old
-IDE controller assigns hdc to the CD and Slax finds it,
-but the hard drive is still undetected.  Behaviour is the
-same under VMware as in a genuine old PC.
-
-LIBATA's PIIX drivers are built in along with everything
-else.  They just seem not to get executed.
-
-What am I missing?
-
---------------------------------------
-Power up the Internet with Yahoo! Toolbar.
-http://pr.mail.yahoo.co.jp/toolbar/
+Best regards,
+Clemens
