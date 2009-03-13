@@ -1,97 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757617AbZCMV5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbZCMWAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757617AbZCMV5U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 17:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZCMV5J
+	id S1759333AbZCMWAV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 18:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbZCMWAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 17:57:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38531 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753817AbZCMV5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 17:57:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [update, rev. 6] Re: [PATCH 1/10] PM: Rework handling of interrupts during suspend-resume (rev. 5)
-Date: Fri, 13 Mar 2009 22:56:50 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-References: <200902221837.49396.rjw@sisk.pl> <200903122243.27452.rjw@sisk.pl> <alpine.LFD.2.00.0903132052240.29264@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903132052240.29264@localhost.localdomain>
+	Fri, 13 Mar 2009 18:00:01 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:46574 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755634AbZCMWAA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 18:00:00 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=GC1VJTk/Dvn48j0+7JrjHy5Bc+4mOjx7Chq2pvgHGLmUM2FW0lRvryLJv+Uc5Yof0
+	VrY+YEakloQNhNgp/iAUA==
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <20090313.140217.143696945.davem@davemloft.net>
+References: <65634d660903131006n44f068dw18b2fe9dce25399e@mail.gmail.com>
+	 <20090313.115137.254924980.davem@davemloft.net>
+	 <65634d660903131358h765bef64y6a0f1b0db7400f6f@mail.gmail.com>
+	 <20090313.140217.143696945.davem@davemloft.net>
+Date: Fri, 13 Mar 2009 14:59:55 -0700
+Message-ID: <65634d660903131459m645eb468y3ad850a1fd56d447@mail.gmail.com>
+Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to submit 
+	to upper layer
+From: Tom Herbert <therbert@google.com>
+To: David Miller <davem@davemloft.net>
+Cc: yanmin_zhang@linux.intel.com, bhutchings@solarflare.com,
+       andi@firstfloor.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
+       jesse.brandeburg@intel.com, shemminger@vyatta.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903132256.51522.rjw@sisk.pl>
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 March 2009, Thomas Gleixner wrote:
-> On Thu, 12 Mar 2009, Rafael J. Wysocki wrote:
-> > +/**
-> > + * suspend_device_irqs - disable all currently enabled interrupt lines
-> > + *
-> > + * During system-wide suspend or hibernation device interrupts need to be
-> > + * disabled at the chip level and this function is provided for this purpose.
-> > + * It disables all interrupt lines that are enabled at the moment and sets the
-> > + * IRQ_SUSPENDED flag for them.
-> > + */
-> > +void suspend_device_irqs(void)
-> > +{
-> > +	struct irq_desc *desc;
-> > +	int irq;
-> > +
-> > +	for_each_irq_desc(irq, desc) {
-> > +		unsigned long flags;
-> > +
-> > +		spin_lock_irqsave(&desc->lock, flags);
-> > +		__disable_irq(desc, irq, true);
-> > +		spin_unlock_irqrestore(&desc->lock, flags);
-> 
-> Can we move the locking into __disable_irq ?
+>
+> If the hash is good is will distribute the load properly.
+>
+> If the NIC is sophisticated enough (Sun's Neptune chipset is)
+> you can even group interrupt distribution by traffic type
+> and even bind specific ports to interrupt groups.
+>
+> I really detest all of these software hacks that add overhead
+> to solve problems the hardware can solve for us.
+>
 
-Well, yes, but (see below)
-
-> > +	}
-> > +
-> > +	for_each_irq_desc(irq, desc)
-> > +		if (desc->status & IRQ_SUSPENDED)
-> > +			synchronize_irq(irq);
-> > +}
-> > +EXPORT_SYMBOL_GPL(suspend_device_irqs);
-> > +
-> > +/**
-> > + * resume_device_irqs - enable interrupt lines disabled by suspend_device_irqs()
-> > + *
-> > + * Enable all interrupt lines previously disabled by suspend_device_irqs() that
-> > + * have the IRQ_SUSPENDED flag set.
-> > + */
-> > +void resume_device_irqs(void)
-> > +{
-> > +	struct irq_desc *desc;
-> > +	int irq;
-> > +
-> > +	for_each_irq_desc(irq, desc) {
-> > +		unsigned long flags;
-> > +
-> > +		if (!(desc->status & IRQ_SUSPENDED))
-> > +			continue;
-> > +
-> > +		spin_lock_irqsave(&desc->lock, flags);
-> > +		__enable_irq(desc, irq, true);
-> > +		spin_unlock_irqrestore(&desc->lock, flags);
-> 
-> Ditto
-
-No, because of __setup_irq().
-
-Thanks,
-Rafael
+I appreciate this philosophy, but unfortunately I don't have the
+luxury of working with a NIC that solves these problems.  The reality
+may be that we're trying to squeeze performance out of crappy hardware
+to scale on multi-core.  Left alone we couldn't get the stack to
+scale, but with these "destable hacks" we've gotten 3X or so
+improvement in packets per second across both our dumb 1G and 10G
+NICs.  These gains have translated into tangible application
+performance gains, so we'll probably continue to have interest in this
+area of development at least for the foreseeable future.
