@@ -1,110 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbZCMTDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759248AbZCMTLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759916AbZCMTDY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 15:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbZCMTDN
+	id S1759248AbZCMTLK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 15:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZCMTKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 15:03:13 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:49716 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbZCMTDL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 15:03:11 -0400
-Date: Fri, 13 Mar 2009 14:02:53 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Ying Han <yinghan@google.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mingo@elte.hu,
-       mpm@selenic.com, Andrew Morton <akpm@linux-foundation.org>,
-       xemul@openvz.org, tglx@linutronix.de,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
-	do?
-Message-ID: <20090313190253.GA16683@us.ibm.com>
-References: <1234479845.30155.220.camel@nimitz> <20090226155755.GA1456@x200.localdomain> <20090310215305.GA2078@x200.localdomain> <49B775B4.1040800@free.fr> <20090312145311.GC12390@us.ibm.com> <1236891719.32630.14.camel@bahia> <20090312212124.GA25019@us.ibm.com> <604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com> <20090313053458.GA28833@us.ibm.com> <alpine.LFD.2.00.0903131018390.3940@localhost.localdomain>
+	Fri, 13 Mar 2009 15:10:51 -0400
+Received: from z2.cat.iki.fi ([212.16.98.133]:45754 "EHLO z2.cat.iki.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751892AbZCMTKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 15:10:50 -0400
+Date: Fri, 13 Mar 2009 21:10:45 +0200
+From: Matti Aarnio <matti.aarnio@zmailer.org>
+To: David Miller <davem@davemloft.net>
+Cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org, ben@simtec.co.uk
+Subject: Re: [PATCH] drivers/net/ax88796.c: take IRQ flags from
+	platform_device
+Message-ID: <20090313191045.GN28512@mea-ext.zmailer.org>
+References: <1236955851-14763-1-git-send-email-daniel@caiaq.de> <20090313.115342.89774843.davem@davemloft.net> <20090313.120214.115613120.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903131018390.3940@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090313.120214.115613120.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Linus Torvalds (torvalds@linux-foundation.org):
+On Fri, Mar 13, 2009 at 12:02:14PM -0700, David Miller wrote:
 > 
+> Can someone forward my reply to daniel@caiaq.de?  His site
+> doesn't accept emails from me because I lack reverse DNS.
 > 
-> On Thu, 12 Mar 2009, Sukadev Bhattiprolu wrote:
-> 
-> > Ying Han [yinghan@google.com] wrote:
-> > | Hi Serge:
-> > | I made a patch based on Oren's tree recently which implement a new
-> > | syscall clone_with_pid. I tested with checkpoint/restart process tree
-> > | and it works as expected.
-> > 
-> > Yes, I think we had a version of clone() with pid a while ago.
-> 
-> Are people _at_all_ thinking about security?
-> 
-> Obviously not.
-> 
-> There's no way we can do anything like this. Sure, it's trivial to do 
-> inside the kernel. But it also sounds like a _wonderful_ attack vector 
-> against badly written user-land software that sends signals and has small 
-> races.
+> Also let him know that he should get that resolved if he
+> wants to submit any other networking patches :-)
 
-If we're worried about that, one way we could address it is to tag a
-pid_ns with the userid of whoever created it, and enforce that you
-can only specify a pid in a pid_ns which you own.
+Done that, Dave.
 
-What openvz does is have sys_restart create the whole process tree,
-including custom pids (only in the new private namespaces), from inside
-the kernel.  That has the same effect of only allowing specification of
-pids in your own private pid namespaces.
+You could use your privileges as VGER's user to send email
+from there...
 
-> Quite frankly, from having followed the discussion(s) over the last few 
-> weeks about checkpoint/restart in various forms, my reaction to just about 
-> _all_ of this is that people pushing this are pretty damn borderline. 
-> 
-> I think you guys are working on all the wrong problems. 
-> 
-> Let's face it, we're not going to _ever_ checkpoint any kind of general 
-> case process. Just TCP makes that fundamentally impossible in the general 
-> case, and there are lots and lots of other cases too (just something as 
-> totally _trivial_ as all the files in the filesystem that don't get rolled 
-> back).
-
-I'm pretty sure that each of Openvz, Metacluster, and Zap are able to
-checkpoint, restart, and migrate tasks which are actively using TCP.
-Of course doing rollback of one endpoint of an ongoing communication
-would be silly, but migration is possible.
-
-> So unless people start realizing that
->  (a) processes that want to be checkpointed had better be ready and aware 
->      of it, and help out
->  (b) there's no way in hell that we're going to add these kinds of 
->      interfaces that have dubious upsides (just teach the damn program 
->      you're checkpointing that pids will change, and admit to everybody 
->      that people who want to be checkpointed need to do work) and are 
->      potential security holes.
->  (c) if you are going to play any deeper games, you need to have 
->      privileges. IOW, "clone_with_pid()" is ok for _root_, but not for 
->      some random user. And you'd better keep that in mind EVERY SINGLE 
->      STEP OF THE WAY.
-
-Yes, that is why we're keeping from requiring privilege so far - to make
-sure that at each step we have to consider security requirements.
-
-> I'm really fed up with these discussions. I have seen almost _zero_ 
-> critical thinking at all. Probably because anybody who is in the least 
-> doubtful about it simply has tuned out the discussion. So here's my input: 
-> start small, start over, and start thinking about other issues than just 
-> checkpointing.
-
-The first set of patches from Oren is intended to do just that.  It
-certainly did not have any sort of clone_with_pid() equivalent.
-
--serge
+ /Matti
