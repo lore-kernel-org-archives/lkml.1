@@ -1,514 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbZCME3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbZCMEe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935AbZCME3z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 00:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbZCME3m
+	id S1757549AbZCMEe2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 00:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbZCMEeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 00:29:42 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:43461 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750963AbZCME3k convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 00:29:40 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=Mr9vm3JWStXftnPp4eRL1lEF47mFPKPSjLuMeYU7Lr0be8fkqai3gou6ZltiNUdTs
-	lyWy+BROyOLQtyTIddc+Q==
+	Fri, 13 Mar 2009 00:34:20 -0400
+Received: from ozlabs.org ([203.10.76.45]:36618 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750832AbZCMEeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 00:34:19 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PULL] x86 cpumask work
+Date: Fri, 13 Mar 2009 15:04:08 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mike Travis <travis@sgi.com>
+References: <200903121453.45163.rusty@rustcorp.com.au> <200903131316.26455.rusty@rustcorp.com.au> <20090313032015.GD18760@elte.hu>
+In-Reply-To: <20090313032015.GD18760@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20090312212124.GA25019@us.ibm.com>
-References: <1234467035.3243.538.camel@calx>
-	 <1234475483.30155.194.camel@nimitz>
-	 <20090212141014.2cd3d54d.akpm@linux-foundation.org>
-	 <1234479845.30155.220.camel@nimitz>
-	 <20090226155755.GA1456@x200.localdomain>
-	 <20090310215305.GA2078@x200.localdomain> <49B775B4.1040800@free.fr>
-	 <20090312145311.GC12390@us.ibm.com> <1236891719.32630.14.camel@bahia>
-	 <20090312212124.GA25019@us.ibm.com>
-Date: Thu, 12 Mar 2009 21:29:32 -0700
-Message-ID: <604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ do?
-From: Ying Han <yinghan@google.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Greg Kurz <gkurz@fr.ibm.com>, Cedric Le Goater <legoater@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, mpm@selenic.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
-       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, xemul@openvz.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903131504.09388.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Serge:
-I made a patch based on Oren's tree recently which implement a new
-syscall clone_with_pid. I tested with checkpoint/restart process tree
-and it works as expected.
-This patch has some hack in it which i made a copy of libc's clone and
-made modifications of passing one more argument(pid number). I will
-try to clean up the code and do more testing.
+On Friday 13 March 2009 13:50:15 Ingo Molnar wrote:
+> 
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
+> 
+> > On Friday 13 March 2009 11:27:43 Ingo Molnar wrote:
+> > > 
+> > > * Rusty Russell <rusty@rustcorp.com.au> wrote: 
+> > > > Missing a core patch (it even got a compile warning with that 
+> > > > config).
+> > > So it's manual work and sometimes i notice them amongst a 
+> > > boatload of other warnings, sometimes i dont.
+> > 
+> > Me too :( I thought you were starting a de-warning tree?  I'd 
+> > be happy to send you patches (particularly, exporting 
+> > deprecated symbols should not give a warning!).
+> 
+> Yeah - i have a de-warning tree, but it's not yet fully up and 
+> running for -tip qa automation.
+> 
+> > > > But there's something else wrong.  Firing up my 64-bit 
+> > > > test box now.
+> > > 
+> > > Great - so you can reproduce. Thanks,
+> > 
+> > Yep, and I'm running some stress tests as well now.
+> > 
+> > Perhaps throw away that tree, and I'll feed you a new one (the 
+> > core patch needs to go at the front), but I can work either 
+> > way.
+> 
+> Ok, i dropped it back to d95c357.
+> 
+> Suggestion for future workflow: we wouldnt have these somewhat 
+> stressful (and stressful to you mostly!), large hickups and 
+> history-less trees if you sent stuff more gradually and not so 
+> close to the merge window. You exposed some of your changes to 
+> linux-next but that's not nearly enough testing in practice for 
+> x86-affecting patches.
 
-New syscall clone_with_pid
-Implement a new syscall which clone a thread with a preselected pid number.
+Yes, I wanted to complete the patchset to make sure I wasn't going to hit
+some subtle problem.
 
-clone_with_pid(child_func, child_stack + CHILD_STACK - 16,
-			CLONE_WITH_PID|SIGCHLD, pid, NULL);
+OK, please check the first patch (it's a new addition, I *think* using
+the topology_* macros is right here), and the other change is:
 
-Signed-off-by: Ying Han <yinghan@google.com>
+Here's the other change: it's a little ugly (AFAICT boot_cpu_data isn't
+even *used* on 64 bit, so a cleanup may be in order):
 
-diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
-index 87803da..b5a1b03 100644
---- a/arch/x86/include/asm/syscalls.h
-+++ b/arch/x86/include/asm/syscalls.h
-@@ -26,6 +26,7 @@ asmlinkage int sys_fork(struct pt_regs);
- asmlinkage int sys_clone(struct pt_regs);
- asmlinkage int sys_vfork(struct pt_regs);
- asmlinkage int sys_execve(struct pt_regs);
-+asmlinkage int sys_clone_with_pid(struct pt_regs);
-
- /* kernel/signal_32.c */
- asmlinkage int sys_sigsuspend(int, int, old_sigset_t);
-diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32
-index a5f9e09..f10ca0e 100644
---- a/arch/x86/include/asm/unistd_32.h
-+++ b/arch/x86/include/asm/unistd_32.h
-@@ -340,6 +340,7 @@
- #define __NR_inotify_init1	332
- #define __NR_checkpoint		333
- #define __NR_restart		334
-+#define __NR_clone_with_pid	335
-
- #ifdef __KERNEL__
-
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 0a1302f..88ae634 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -8,7 +8,6 @@
- /*
-  * This file handles the architecture-dependent parts of process handling..
-  */
--
- #include <stdarg.h>
-
- #include <linux/cpu.h>
-@@ -652,6 +651,28 @@ asmlinkage int sys_clone(struct pt_regs regs)
- 	return do_fork(clone_flags, newsp, &regs, 0, parent_tidptr, child_tidptr);
++++ b/arch/x86/kernel/smpboot.c
+@@ -329,6 +329,23 @@ notrace static void __cpuinit start_seco
+ 	cpu_idle();
  }
-
-+/**
-+ * sys_clone_with_pid - clone a thread with pre-select pid number.
-+ */
-+asmlinkage int sys_clone_with_pid(struct pt_regs regs)
+ 
++#ifdef CONFIG_CPUMASK_OFFSTACK
++/* In this case, llc_shared_map is a pointer to a cpumask. */
++static inline void copy_cpuinfo_x86(struct cpuinfo_x86 *dst,
++				    const struct cpuinfo_x86 *src)
 +{
-+	unsigned long clone_flags;
-+	unsigned long newsp;
-+	int __user *parent_tidptr, *child_tidptr;
-+	pid_t pid_nr;
-+
-+	clone_flags = regs.bx;
-+	newsp = regs.cx;
-+	parent_tidptr = (int __user *)regs.dx;
-+	child_tidptr = (int __user *)regs.di;
-+	pid_nr = regs.bp;
-+
-+	if (!newsp)
-+		newsp = regs.sp;
-+	return do_fork(clone_flags, newsp, &regs, pid_nr, parent_tidptr,
-+			child_tidptr);
++	struct cpumask *llc = dst->llc_shared_map;
++	*dst = *src;
++	dst->llc_shared_map = llc;
 +}
++#else
++static inline void copy_cpuinfo_x86(struct cpuinfo_x86 *dst,
++				    const struct cpuinfo_x86 *src)
++{
++	*dst = *src;
++}
++#endif /* CONFIG_CPUMASK_OFFSTACK */
 +
  /*
-  * This is trivial, and on the face of it looks like it
-  * could equally well be done in user mode.
-diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_tabl
-index 5543136..5191117 100644
---- a/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -334,3 +334,4 @@ ENTRY(sys_call_table)
- 	.long sys_inotify_init1
- 	.long sys_checkpoint
- 	.long sys_restart
-+	.long sys_clone_with_pid
-diff --git a/arch/x86/mm/checkpoint.c b/arch/x86/mm/checkpoint.c
-index 50bde9a..a4aee65 100644
---- a/arch/x86/mm/checkpoint.c
-+++ b/arch/x86/mm/checkpoint.c
-@@ -7,7 +7,6 @@
-  *  License.  See the file COPYING in the main directory of the Linux
-  *  distribution for more details.
-  */
--
- #include <asm/desc.h>
- #include <asm/i387.h>
-
-diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index 64155de..b7de611 100644
---- a/checkpoint/checkpoint.c
-+++ b/checkpoint/checkpoint.c
-@@ -8,6 +8,7 @@
-  *  distribution for more details.
-  */
-
-+#define DEBUG
- #include <linux/version.h>
- #include <linux/sched.h>
- #include <linux/ptrace.h>
-@@ -564,3 +565,4 @@ int do_checkpoint(struct cr_ctx *ctx, pid_t pid)
-  out:
- 	return ret;
- }
-+
-diff --git a/checkpoint/ckpt_file.c b/checkpoint/ckpt_file.c
-index e3097ac..a8c5ad5 100644
---- a/checkpoint/ckpt_file.c
-+++ b/checkpoint/ckpt_file.c
-@@ -7,7 +7,7 @@
-  *  License.  See the file COPYING in the main directory of the Linux
-  *  distribution for more details.
-  */
--
-+#define DEBUG
- #include <linux/kernel.h>
- #include <linux/sched.h>
- #include <linux/file.h>
-diff --git a/checkpoint/ckpt_mem.c b/checkpoint/ckpt_mem.c
-index 4925ff2..ca5840b 100644
---- a/checkpoint/ckpt_mem.c
-+++ b/checkpoint/ckpt_mem.c
-@@ -7,7 +7,7 @@
-  *  License.  See the file COPYING in the main directory of the Linux
-  *  distribution for more details.
-  */
--
-+#define DEBUG
- #include <linux/kernel.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
-diff --git a/checkpoint/restart.c b/checkpoint/restart.c
-index 7ec4de4..30e43c2 100644
---- a/checkpoint/restart.c
-+++ b/checkpoint/restart.c
-@@ -8,6 +8,7 @@
-  *  distribution for more details.
-  */
-
-+#define DEBUG
- #include <linux/version.h>
- #include <linux/sched.h>
- #include <linux/wait.h>
-@@ -242,7 +243,7 @@ static int cr_read_task_struct(struct cr_ctx *ctx)
- 		memcpy(t->comm, buf, min(hh->task_comm_len, TASK_COMM_LEN));
- 	}
- 	kfree(buf);
--
-+	pr_debug("read task %s\n", t->comm);
- 	/* FIXME: restore remaining relevant task_struct fields */
-  out:
- 	cr_hbuf_put(ctx, sizeof(*hh));
-diff --git a/checkpoint/rstr_file.c b/checkpoint/rstr_file.c
-index f44b081..755e40e 100644
---- a/checkpoint/rstr_file.c
-+++ b/checkpoint/rstr_file.c
-@@ -7,7 +7,7 @@
-  *  License.  See the file COPYING in the main directory of the Linux
-  *  distribution for more details.
-  */
--
-+#define DEBUG
- #include <linux/kernel.h>
- #include <linux/sched.h>
- #include <linux/fs.h>
-diff --git a/checkpoint/rstr_mem.c b/checkpoint/rstr_mem.c
-index 4d5ce1a..8330468 100644
---- a/checkpoint/rstr_mem.c
-+++ b/checkpoint/rstr_mem.c
-@@ -7,7 +7,7 @@
-  *  License.  See the file COPYING in the main directory of the Linux
-  *  distribution for more details.
-  */
--
-+#define DEBUG
- #include <linux/kernel.h>
- #include <linux/sched.h>
- #include <linux/fcntl.h>
-diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-index f26b0c6..d1a5394 100644
---- a/checkpoint/sys.c
-+++ b/checkpoint/sys.c
-@@ -7,7 +7,7 @@
-  *  License.  See the file COPYING in the main directory of the Linux
-  *  distribution for more details.
-  */
--
-+#define DEBUG
- #include <linux/sched.h>
- #include <linux/nsproxy.h>
- #include <linux/kernel.h>
-@@ -263,7 +263,6 @@ asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned
- 		return PTR_ERR(ctx);
-
- 	ret = do_checkpoint(ctx, pid);
--
- 	if (!ret)
- 		ret = ctx->crid;
-
-@@ -304,3 +303,4 @@ asmlinkage long sys_restart(int crid, int fd, unsigned lon
- 	cr_ctx_put(ctx);
- 	return ret;
- }
-+
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 217cf6e..bc2c202 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -114,7 +114,6 @@ extern int cr_write_files(struct cr_ctx *ctx, struct task_
- extern int do_restart(struct cr_ctx *ctx, pid_t pid);
- extern int cr_read_mm(struct cr_ctx *ctx);
- extern int cr_read_files(struct cr_ctx *ctx);
--
- #ifdef pr_fmt
- #undef pr_fmt
- #endif
-diff --git a/include/linux/pid.h b/include/linux/pid.h
-index d7e98ff..86e2f61 100644
---- a/include/linux/pid.h
-+++ b/include/linux/pid.h
-@@ -119,7 +119,7 @@ extern struct pid *find_get_pid(int nr);
- extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
- int next_pidmap(struct pid_namespace *pid_ns, int last);
-
--extern struct pid *alloc_pid(struct pid_namespace *ns);
-+extern struct pid *alloc_pid(struct pid_namespace *ns, pid_t pid_nr);
- extern void free_pid(struct pid *pid);
-
- /*
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 0150e90..7fb4e28 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -28,6 +28,7 @@
- #define CLONE_NEWPID		0x20000000	/* New pid namespace */
- #define CLONE_NEWNET		0x40000000	/* New network namespace */
- #define CLONE_IO		0x80000000	/* Clone io context */
-+#define CLONE_WITH_PID		0x00001000	/* Clone with pre-select PID */
-
- /*
-  * Scheduling policies
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 2d8be7e..4baf651 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -3,7 +3,7 @@
-  *
-  *  Copyright (C) 1991, 1992  Linus Torvalds
-  */
--
-+#define DEBUG
- #include <linux/mm.h>
- #include <linux/slab.h>
- #include <linux/interrupt.h>
-@@ -1676,6 +1676,7 @@ static long do_wait(enum pid_type type, struct pid *pid,
- 	DECLARE_WAITQUEUE(wait, current);
- 	struct task_struct *tsk;
- 	int retval;
-+	int level;
-
- 	trace_sched_process_wait(pid);
-
-@@ -1708,7 +1709,6 @@ repeat:
- 			retval = tsk_result;
- 			goto end;
- 		}
--
- 		if (options & __WNOTHREAD)
- 			break;
- 		tsk = next_thread(tsk);
-@@ -1817,7 +1817,6 @@ asmlinkage long sys_wait4(pid_t upid, int __user *stat_a
- 		type = PIDTYPE_PID;
- 		pid = find_get_pid(upid);
- 	}
--
- 	ret = do_wait(type, pid, options | WEXITED, NULL, stat_addr, ru);
- 	put_pid(pid);
-
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 085ce56..262ae1e 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -10,7 +10,7 @@
-  * Fork is rather simple, once you get the hang of it, but the memory
-  * management can be a bitch. See 'mm/memory.c': 'copy_page_range()'
-  */
--
-+#define DEBUG
- #include <linux/slab.h>
- #include <linux/init.h>
- #include <linux/unistd.h>
-@@ -959,10 +959,19 @@ static struct task_struct *copy_process(unsigned long cl
- 	int retval;
- 	struct task_struct *p;
- 	int cgroup_callbacks_done = 0;
-+	pid_t clone_pid = stack_size;
-
- 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
- 		return ERR_PTR(-EINVAL);
-
-+	/* We only allow the clone_with_pid when a new pid namespace is
-+	 * created. FIXME: how to restrict it.
-+	 */
-+	if ((clone_flags & CLONE_NEWPID) && (clone_flags & CLONE_WITH_PID))
-+		return ERR_PTR(-EINVAL);
-+	if ((clone_flags & CLONE_WITH_PID) && (clone_pid <= 1))
-+		return ERR_PTR(-EINVAL);
-+
- 	/*
- 	 * Thread groups must share signals as well, and detached threads
- 	 * can only be started up within the thread group.
-@@ -1135,7 +1144,10 @@ static struct task_struct *copy_process(unsigned long c
-
- 	if (pid != &init_struct_pid) {
- 		retval = -ENOMEM;
--		pid = alloc_pid(task_active_pid_ns(p));
-+		if (clone_flags & CLONE_WITH_PID)
-+			pid = alloc_pid(task_active_pid_ns(p), clone_pid);
-+		else
-+			pid = alloc_pid(task_active_pid_ns(p), 0);
- 		if (!pid)
- 			goto bad_fork_cleanup_io;
-
-@@ -1162,6 +1174,8 @@ static struct task_struct *copy_process(unsigned long cl
- 	 * Clear TID on mm_release()?
- 	 */
- 	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? child_tidptr: NU
-+
-+
- #ifdef CONFIG_FUTEX
- 	p->robust_list = NULL;
- #ifdef CONFIG_COMPAT
-diff --git a/kernel/pid.c b/kernel/pid.c
-index 064e76a..0facf05 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -25,7 +25,7 @@
-  *     Many thanks to Oleg Nesterov for comments and help
-  *
-  */
--
-+#define DEBUG
- #include <linux/mm.h>
- #include <linux/module.h>
- #include <linux/slab.h>
-@@ -122,12 +122,15 @@ static void free_pidmap(struct upid *upid)
- 	atomic_inc(&map->nr_free);
- }
-
--static int alloc_pidmap(struct pid_namespace *pid_ns)
-+static int alloc_pidmap(struct pid_namespace *pid_ns, pid_t pid_nr)
+  * The bootstrap kernel entry code has set these up. Save them for
+  * a given CPU
+@@ -338,7 +355,7 @@ void __cpuinit smp_store_cpu_info(int id
  {
- 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
- 	struct pidmap *map;
+ 	struct cpuinfo_x86 *c = &cpu_data(id);
+ 
+-	*c = boot_cpu_data;
++	copy_cpuinfo_x86(c, &boot_cpu_data);
+ 	c->cpu_index = id;
+ 	if (id != 0)
+ 		identify_secondary_cpu(c);
 
--	pid = last + 1;
-+	if (pid_nr)
-+		pid = pid_nr;
-+	else
-+		pid = last + 1;
- 	if (pid >= pid_max)
- 		pid = RESERVED_PIDS;
- 	offset = pid & BITS_PER_PAGE_MASK;
-@@ -153,9 +156,12 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
- 			do {
- 				if (!test_and_set_bit(offset, map->page)) {
- 					atomic_dec(&map->nr_free);
--					pid_ns->last_pid = pid;
-+					if (!pid_nr)
-+						pid_ns->last_pid = pid;
- 					return pid;
- 				}
-+				if (pid_nr)
-+					return -1;
- 				offset = find_next_offset(map, offset);
- 				pid = mk_pid(pid_ns, map, offset);
- 			/*
-@@ -239,21 +245,25 @@ void free_pid(struct pid *pid)
- 	call_rcu(&pid->rcu, delayed_put_pid);
- }
+BTW, these didn't go thru linux-next: your testing is better and your
+tree is too different or me to ask Stephen to merge.
 
--struct pid *alloc_pid(struct pid_namespace *ns)
-+struct pid *alloc_pid(struct pid_namespace *ns, pid_t pid_nr)
- {
- 	struct pid *pid;
- 	enum pid_type type;
- 	int i, nr;
- 	struct pid_namespace *tmp;
- 	struct upid *upid;
-+	int level = ns->level;
-+
-+	if (pid_nr >= pid_max)
-+		return NULL;
+Thanks!
+Rusty.
 
- 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
- 	if (!pid)
- 		goto out;
+The following changes since commit d95c3578120e5bc4784069439f00ccb1b5f87717:
+  Ingo Molnar (1):
+        Merge branch 'x86/core' into cpus4096
 
--	tmp = ns;
--	for (i = ns->level; i >= 0; i--) {
--		nr = alloc_pidmap(tmp);
-+	tmp = ns->parent;
-+	for (i = level-1; i >= 0; i--) {
-+		nr = alloc_pidmap(tmp, 0);
- 		if (nr < 0)
- 			goto out_free;
+are available in the git repository at:
 
-@@ -262,6 +272,14 @@ struct pid *alloc_pid(struct pid_namespace *ns)
- 		tmp = tmp->parent;
- 	}
+  git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-x86.git cpus4096
 
-+	nr = alloc_pidmap(ns, pid_nr);
-+	if (nr < 0)
-+		goto out_free;
-+	pid->numbers[level].nr = nr;
-+	pid->numbers[level].ns = ns;
-+	if (nr == pid_nr)
-+		pr_debug("nr == pid_nr == %d\n", nr);
-+
- 	get_pid_ns(ns);
- 	pid->level = ns->level;
- 	atomic_set(&pid->count, 1);
+Rusty Russell (22):
+      cpumask: use topology_core_cpumask/topology_thread_cpumask instead of cpu_core_map/cpu_sibling_map
+      cpumask: replace node_to_cpumask with cpumask_of_node.
+      cpumask: remove dangerous CPU_MASK_ALL_PTR, &CPU_MASK_ALL.: x86
+      cpumask: remove the now-obsoleted pcibus_to_cpumask(): x86
+      cpumask: remove cpu_coregroup_map: x86
+      cpumask: remove obsolete topology_core_siblings and topology_thread_siblings: x86
+      cpumask: convert c1e_mask in arch/x86/kernel/process.c to cpumask_var_t.
+      cpumask: convert arch/x86/kernel/nmi.c's backtrace_mask to a cpumask_var_t
+      cpumask: x86: convert cpu_sibling_map/cpu_core_map to cpumask_var_t
+      cpumask: convert arch/x86/kernel/cpu/mcheck/mce_64.c
+      x86: arch_send_call_function_ipi_mask
+      cpumask: remove x86's node_to_cpumask now everyone uses cpumask_of_node
+      x86: unify 32 and 64-bit node_to_cpumask_map
+      cpumask: convert node_to_cpumask_map[] to cpumask_var_t
+      cpumask: convert struct cpuinfo_x86's llc_shared_map to cpumask_var_t
+      x86: unify cpu_callin_mask/cpu_callout_mask/cpu_initialized_mask/cpu_sibling_setup_mask
+      cpumask: use new cpumask functions throughout x86
+      cpumask: clean up summit's send_IPI functions
+      cpumask: make Xen use the new operators.
+      cpumask: remove cpumask_t assignment from vector_allocation_domain()
+      cpumask: use cpumask_var_t in uv_flush_tlb_others.
+      cpumask: remove x86 cpumask_t uses.
 
-
-
-
-
-
-
-
-On Thu, Mar 12, 2009 at 2:21 PM, Serge E. Hallyn <serue@us.ibm.com> wrote:
->
-> Quoting Greg Kurz (gkurz@fr.ibm.com):
-> > On Thu, 2009-03-12 at 09:53 -0500, Serge E. Hallyn wrote:
-> > > Or are you suggesting that you'll do a dummy clone of (5594,2) so that
-> > > the next clone(CLONE_NEWPID) will be expected to be (5594,3,1)?
-> > >
-> >
-> > Of course not
->
-> Ok - someone *did* argue that at some point I think...
->
-> > but one should be able to tell clone() to pick a specific
-> > pid.
->
-> Can you explain exactly how?  I must be missing something clever.
->
-> -serge
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+ arch/x86/include/asm/cpumask.h              |   18 -----
+ arch/x86/include/asm/pci.h                  |    5 -
+ arch/x86/include/asm/processor.h            |    2 +-
+ arch/x86/include/asm/smp.h                  |   13 ++--
+ arch/x86/include/asm/topology.h             |   89 +++++-----------------
+ arch/x86/kernel/apic/bigsmp_32.c            |   16 ++--
+ arch/x86/kernel/apic/es7000_32.c            |   17 ++--
+ arch/x86/kernel/apic/nmi.c                  |   11 ++-
+ arch/x86/kernel/apic/numaq_32.c             |   11 ++-
+ arch/x86/kernel/apic/probe_32.c             |    3 +-
+ arch/x86/kernel/apic/summit_32.c            |   21 ++---
+ arch/x86/kernel/cpu/common.c                |   12 ---
+ arch/x86/kernel/cpu/cpufreq/p4-clockmod.c   |    2 +-
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c   |   13 ++-
+ arch/x86/kernel/cpu/cpufreq/speedstep-ich.c |    2 +-
+ arch/x86/kernel/cpu/mcheck/mce_64.c         |   10 ++-
+ arch/x86/kernel/cpu/mcheck/mce_amd_64.c     |    6 +-
+ arch/x86/kernel/cpu/mcheck/mce_intel_64.c   |    2 +-
+ arch/x86/kernel/cpu/proc.c                  |    6 +-
+ arch/x86/kernel/process.c                   |   12 ++-
+ arch/x86/kernel/smpboot.c                   |   70 ++++++++++-------
+ arch/x86/kernel/tlb_uv.c                    |    9 ++-
+ arch/x86/mm/Makefile                        |    2 +-
+ arch/x86/mm/numa.c                          |   67 ++++++++++++++++
+ arch/x86/mm/numa_64.c                       |  111 ++-------------------------
+ arch/x86/oprofile/op_model_p4.c             |    2 +-
+ arch/x86/xen/smp.c                          |    6 +-
+ block/blk.h                                 |    2 +-
+ drivers/base/node.c                         |    2 +-
+ drivers/pci/pci-driver.c                    |    3 +-
+ drivers/xen/cpu_hotplug.c                   |    4 +-
+ include/linux/topology.h                    |    6 +-
+ kernel/sched.c                              |    8 +-
+ mm/page_alloc.c                             |    6 +-
+ mm/quicklist.c                              |    2 +-
+ mm/slab.c                                   |    2 +-
+ mm/vmscan.c                                 |    6 +-
+ net/sunrpc/svc.c                            |    3 +-
+ 38 files changed, 246 insertions(+), 336 deletions(-)
+ create mode 100644 arch/x86/mm/numa.c
