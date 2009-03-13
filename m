@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759983AbZCMQoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760019AbZCMQos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759983AbZCMQoP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759344AbZCMQnI
+	id S1760019AbZCMQos (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759265AbZCMQnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:43:08 -0400
-Received: from gw.goop.org ([64.81.55.164]:57269 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 12:43:13 -0400
+Received: from gw.goop.org ([64.81.55.164]:57276 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759314AbZCMQnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 12:43:07 -0400
+	id S1759386AbZCMQnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 12:43:11 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@f9-builder (none)>,
+       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 05/17] x86/io_apic: add get_nr_irqs_gsi()
-Date: Fri, 13 Mar 2009 09:42:26 -0700
-Message-Id: <1236962558-13748-6-git-send-email-jeremy@goop.org>
+Subject: [PATCH 09/17] xen: pre-initialize legacy irqs early
+Date: Fri, 13 Mar 2009 09:42:30 -0700
+Message-Id: <1236962558-13748-10-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1236962558-13748-1-git-send-email-jeremy@goop.org>
 References: <1236962558-13748-1-git-send-email-jeremy@goop.org>
@@ -26,45 +26,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy@f9-builder.(none)>
+From: Ian Campbell <ian.campbell@citrix.com>
 
-Add get_nr_irqs_gsi() to return nr_irqs_gsi.  Xen will use this to
-determine how many irqs it needs to reserve for hardware irqs.
+Various legacy devices, such as IDE, assume their legacy interrupts are
+already initialized and are immediately usable.  Pre-initialize all the
+legacy interrupts.
 
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/io_apic.h |    1 +
- arch/x86/kernel/apic/io_apic.c |    5 +++++
- 2 files changed, 6 insertions(+), 0 deletions(-)
+ arch/x86/xen/pci.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 20b543a..10a7a43 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -168,6 +168,7 @@ extern void reinit_intr_remapped_IO_APIC(int);
- #endif
+diff --git a/arch/x86/xen/pci.c b/arch/x86/xen/pci.c
+index 61f070c..d661c74 100644
+--- a/arch/x86/xen/pci.c
++++ b/arch/x86/xen/pci.c
+@@ -60,9 +60,9 @@ int xen_register_gsi(u32 gsi, int triggering, int polarity)
  
- extern void probe_nr_irqs_gsi(void);
-+extern int get_nr_irqs_gsi(void);
- 
- extern int setup_ioapic_entry(int apic, int irq,
- 			      struct IO_APIC_route_entry *entry,
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 6d14ff9..6da6f3c 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3851,6 +3851,11 @@ void __init probe_nr_irqs_gsi(void)
- 	printk(KERN_DEBUG "nr_irqs_gsi: %d\n", nr_irqs_gsi);
- }
- 
-+int get_nr_irqs_gsi(void)
-+{
-+	return nr_irqs_gsi;
-+}
-+
- #ifdef CONFIG_SPARSE_IRQ
- int __init arch_probe_nr_irqs(void)
+ void __init xen_setup_pirqs(void)
  {
+-#ifdef CONFIG_ACPI
+ 	int irq;
+ 
++#ifdef CONFIG_ACPI
+ 	/*
+ 	 * Set up acpi interrupt in acpi_gbl_FADT.sci_interrupt.
+ 	 */
+@@ -74,4 +74,8 @@ void __init xen_setup_pirqs(void)
+ 	/* Blerk. */
+ 	acpi_gbl_FADT.sci_interrupt = irq;
+ #endif
++
++	/* Pre-allocate legacy irqs */
++	for (irq=0; irq < NR_IRQS_LEGACY; irq++)
++		xen_allocate_pirq(irq);
+ }
 -- 
 1.6.0.6
 
