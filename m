@@ -1,35 +1,31 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753829AbZCLDAw (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Wed, 11 Mar 2009 23:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZCLDAl
+	id S1756293AbZCMCTS (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 12 Mar 2009 22:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZCMCTC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 11 Mar 2009 23:00:41 -0400
-Received: from 91-208-21-130.bestadmarketing.com ([91.208.21.130]:59274 "EHLO
-	smtp130.news4view.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbZCLDAk (ORCPT
+	Thu, 12 Mar 2009 22:19:02 -0400
+Received: from hrndva-commlb.mail.rr.com ([71.74.57.9]:39021 "EHLO
+	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751655AbZCMCTB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 11 Mar 2009 23:00:40 -0400
-X-Greylist: delayed 1285 seconds by postgrey-1.27 at vger.kernel.org; Wed, 11 Mar 2009 23:00:40 EDT
+	Thu, 12 Mar 2009 22:19:01 -0400
+Message-Id: <7h9gbp$ced5ut@rrcs-agw-01b.hrndva.rr.com>
+X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
+From: COMPAQ Winners Alert <laquinta@yuma.twcbc.com>
+Reply-To: edward.brown50@btinternet.com
+Organization: COMPAQ Winners Alert
+To: <info@lotto.org>
+Subject: claims of =?iso-8859-1?B?ozk1MCwwMDAsMDA=?=
+Date: Thu, 12 Mar 2009 21:18:53 -0500
 MIME-Version: 1.0
-From: "Viola" <Viola@Schikk-sal.com>
-User-Agent: Microsoft-Entourage/10.1.4.6749438.0
-X-BounceID: a133f366d2c64c079e3ed971a4621401
-Subject: Du stirbst sehr bald.
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
-Message-ID: <kgdgpd.1nsgik@localhost>
-To: linux-kernel@vger.kernel.org
-Date: Thu, 12 Mar 2009 03:39:13 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Du stirbst bald. Oder kannst Du das Schicksal noch stoppen?
-
-http://Schikk-sal.com/
-
-
-
-
-
+£950,000,00 GBP   has been won by you in our Compaq Promo .get back to this office with your details  
+Names
+Address 
+Contry
 
