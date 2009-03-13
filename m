@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760911AbZCMRGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761034AbZCMRGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760911AbZCMRGU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 13:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759875AbZCMRB0
+	id S1761034AbZCMRGx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 13:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759913AbZCMRB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 13:01:26 -0400
-Received: from gw.goop.org ([64.81.55.164]:57422 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 13:01:28 -0400
+Received: from gw.goop.org ([64.81.55.164]:57425 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759782AbZCMRBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 13:01:23 -0400
+	id S1759814AbZCMRB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 13:01:26 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       David Airlie <airlied@linux.ie>, Ian Campbell <ian.campbell@citrix.com>,
+       David Airlie <airlied@linux.ie>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 13/27] xen/swiotlb: add hook for swiotlb_arch_range_needs_mapping
-Date: Fri, 13 Mar 2009 09:59:58 -0700
-Message-Id: <1236963612-14287-14-git-send-email-jeremy@goop.org>
+Subject: [PATCH 25/27] x86: define arch_vm_get_page_prot to set _PAGE_IOMAP on VM_IO vmas
+Date: Fri, 13 Mar 2009 10:00:10 -0700
+Message-Id: <1236963612-14287-26-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1236963612-14287-1-git-send-email-jeremy@goop.org>
 References: <1236963612-14287-1-git-send-email-jeremy@goop.org>
@@ -26,61 +26,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <ian.campbell@citrix.com>
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Add hook so that Xen can determine whether a particular address range needs
-pfn<->mfn mapping.
+Set _PAGE_IOMAP in ptes mapping a VM_IO vma.  This says that the mapping
+is of a real piece of physical hardware, and not just system memory.
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Xen, in particular, uses to this to inhibit the normal pfn->mfn conversion
+that would normally happen - in other words, treat the address directly
+as a machine physical address without converting it from pseudo-physical.
+
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: David Airlie <airlied@linux.ie>
 ---
- arch/x86/kernel/pci-swiotlb.c |    4 ++++
- drivers/pci/xen-iommu.c       |    5 +++++
- include/xen/swiotlb.h         |    2 ++
- 3 files changed, 11 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/pgtable.h |    3 +++
+ arch/x86/mm/pgtable.c          |   10 ++++++++++
+ 2 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index 0943813..5826be8 100644
---- a/arch/x86/kernel/pci-swiotlb.c
-+++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -51,6 +51,10 @@ phys_addr_t swiotlb_bus_to_phys(dma_addr_t baddr)
+diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+index d37e55e..d7cbfaa 100644
+--- a/arch/x86/include/asm/pgtable.h
++++ b/arch/x86/include/asm/pgtable.h
+@@ -391,6 +391,9 @@ static inline unsigned long pages_to_mb(unsigned long npg)
+ #define io_remap_pfn_range(vma, vaddr, pfn, size, prot)	\
+ 	remap_pfn_range(vma, vaddr, pfn, size, prot)
  
- int __weak swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
++#define arch_vm_get_page_prot arch_vm_get_page_prot
++extern pgprot_t arch_vm_get_page_prot(unsigned vm_flags);
++
+ #if PAGETABLE_LEVELS > 2
+ static inline int pud_none(pud_t pud)
  {
-+#ifdef CONFIG_PCI_XEN
-+	if (xen_pv_domain())
-+		return xen_range_needs_mapping(paddr, size);
-+#endif
- 	return 0;
- }
+diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
+index 7a4d6ee..d9da313 100644
+--- a/arch/x86/mm/pgtable.c
++++ b/arch/x86/mm/pgtable.c
+@@ -6,6 +6,16 @@
  
-diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-index e7ba06b..0995ddf 100644
---- a/drivers/pci/xen-iommu.c
-+++ b/drivers/pci/xen-iommu.c
-@@ -126,6 +126,11 @@ static int range_straddles_page_boundary(phys_addr_t p, size_t size)
- 	return 1;
- }
+ #define PGALLOC_GFP GFP_KERNEL | __GFP_NOTRACK | __GFP_REPEAT | __GFP_ZERO
  
-+int xen_range_needs_mapping(phys_addr_t paddr, size_t size)
++pgprot_t arch_vm_get_page_prot(unsigned vm_flags)
 +{
-+	return range_straddles_page_boundary(paddr, size);
++	pgprot_t ret = __pgprot(0);
++
++	if (vm_flags & VM_IO)
++		ret = __pgprot(_PAGE_IOMAP);
++
++	return ret;
 +}
 +
- static inline void xen_dma_unmap_page(struct page *page)
+ pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
  {
- 	/* Xen TODO: 2.6.18 xen calls __gnttab_dma_unmap_page here
-diff --git a/include/xen/swiotlb.h b/include/xen/swiotlb.h
-index 9ecaff1..e15caa8 100644
---- a/include/xen/swiotlb.h
-+++ b/include/xen/swiotlb.h
-@@ -12,4 +12,6 @@ static inline void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslab
- extern phys_addr_t xen_bus_to_phys(dma_addr_t daddr);
- extern dma_addr_t xen_phys_to_bus(phys_addr_t paddr);
- 
-+extern int xen_range_needs_mapping(phys_addr_t phys, size_t size);
-+
- #endif /* _XEN_SWIOTLB_H */
+ 	return (pte_t *)__get_free_page(PGALLOC_GFP);
 -- 
 1.6.0.6
 
