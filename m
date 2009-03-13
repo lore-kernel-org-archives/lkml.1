@@ -1,103 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbZCMBkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbZCMBlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757486AbZCMBkw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 21:40:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZCMBkn
+	id S1757594AbZCMBlT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 21:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbZCMBlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 21:40:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46611 "EHLO hera.kernel.org"
+	Thu, 12 Mar 2009 21:41:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46636 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750852AbZCMBkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 21:40:42 -0400
-Date: Fri, 13 Mar 2009 01:39:23 GMT
-From: Jan Beulich <jbeulich@novell.com>
+	id S1751172AbZCMBlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 21:41:00 -0400
+Date: Fri, 13 Mar 2009 01:39:31 GMT
+From: Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jbeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
+       akinobu.mita@gmail.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49B91A7E.76E4.0078.0@novell.com>
-References: <49B91A7E.76E4.0078.0@novell.com>
-Subject: [tip:core/ipi] generic-ipi: eliminate spurious pointless WARN_ON()s
-Message-ID: <tip-6a09dfa870ba0ed21b1124539968a36b42660661@git.kernel.org>
-Git-Commit-ID: 6a09dfa870ba0ed21b1124539968a36b42660661
+       tglx@linutronix.de, akinobu.mita@gmail.com, mingo@elte.hu
+In-Reply-To: <20090311143317.GA22244@localhost.localdomain>
+References: <20090311143317.GA22244@localhost.localdomain>
+Subject: [tip:x86/mm] x86: unify kmap_atomic_pfn() and iomap_atomic_prot_pfn(), fix
+Message-ID: <tip-dd63fdcc63f0f853b116b52e56200a0e0227cf5f@git.kernel.org>
+Git-Commit-ID: dd63fdcc63f0f853b116b52e56200a0e0227cf5f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 01:39:25 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 01:39:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6a09dfa870ba0ed21b1124539968a36b42660661
-Gitweb:     http://git.kernel.org/tip/6a09dfa870ba0ed21b1124539968a36b42660661
-Author:     Jan Beulich <jbeulich@novell.com>
-AuthorDate: Thu, 12 Mar 2009 13:21:50 +0000
+Commit-ID:  dd63fdcc63f0f853b116b52e56200a0e0227cf5f
+Gitweb:     http://git.kernel.org/tip/dd63fdcc63f0f853b116b52e56200a0e0227cf5f
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Fri, 13 Mar 2009 03:20:49 +0100
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 02:14:41 +0100
+CommitDate: Fri, 13 Mar 2009 03:24:53 +0100
 
-generic-ipi: eliminate spurious pointless WARN_ON()s
+x86: unify kmap_atomic_pfn() and iomap_atomic_prot_pfn(), fix
 
-Namely during early boot, the panic() or BUG() paths may end up in
-smp_call_function_*() with just a single online CPU. In that situation
-the warnings generated are not only meaningless, but also result in
-relevant output being cluttered.
+Impact: build fix
 
-Therefore, defer the WARN_ON() checks until after the (unaffected from
-the problem that is being attempted to be detected here) cases have
-been handled.
+Move kmap_atomic_prot_pfn() to iomap_32.c. It is used on all 32-bit
+kernels, while highmem_32.c is only built on highmem kernels.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-LKML-Reference: <49B91A7E.76E4.0078.0@novell.com>
+( Note: the debug_kmap_atomic_prot() check is removed for now, that
+  problem is handled via another patch. )
+
+Reported-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Akinobu Mita <akinobu.mita@gmail.com>
+LKML-Reference: <20090311143317.GA22244@localhost.localdomain>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/smp.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/mm/highmem_32.c |   20 ++------------------
+ arch/x86/mm/iomap_32.c   |   18 +++++++++++++++++-
+ 2 files changed, 19 insertions(+), 19 deletions(-)
 
-diff --git a/kernel/smp.c b/kernel/smp.c
-index 7ad2262..37b90a9 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -284,9 +284,6 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
- 	 */
- 	this_cpu = get_cpu();
+diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+index f256e73..522db5e 100644
+--- a/arch/x86/mm/highmem_32.c
++++ b/arch/x86/mm/highmem_32.c
+@@ -121,24 +121,8 @@ void kunmap_atomic(void *kvaddr, enum km_type type)
+ 	pagefault_enable();
+ }
  
--	/* Can deadlock when called with interrupts disabled */
--	WARN_ON(irqs_disabled());
+-void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
+-{
+-	enum fixed_addresses idx;
+-	unsigned long vaddr;
 -
- 	if (cpu == this_cpu) {
- 		local_irq_save(flags);
- 		func(info);
-@@ -295,6 +292,9 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
- 		if ((unsigned)cpu < nr_cpu_ids && cpu_online(cpu)) {
- 			struct call_single_data *data = &d;
- 
-+			/* Can deadlock when called with interrupts disabled */
-+			WARN_ON(irqs_disabled());
-+
- 			if (!wait)
- 				data = &__get_cpu_var(csd_data);
- 
-@@ -364,9 +364,6 @@ void smp_call_function_many(const struct cpumask *mask,
- 	unsigned long flags;
- 	int cpu, next_cpu, this_cpu = smp_processor_id();
- 
--	/* Can deadlock when called with interrupts disabled */
--	WARN_ON(irqs_disabled());
+-	pagefault_disable();
 -
- 	/* So, what's a CPU they want? Ignoring this one. */
- 	cpu = cpumask_first_and(mask, cpu_online_mask);
- 	if (cpu == this_cpu)
-@@ -387,6 +384,9 @@ void smp_call_function_many(const struct cpumask *mask,
- 		return;
- 	}
+-	debug_kmap_atomic_prot(type);
+-
+-	idx = type + KM_TYPE_NR * smp_processor_id();
+-	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+-	set_pte(kmap_pte - idx, pfn_pte(pfn, prot));
+-	arch_flush_lazy_mmu_mode();
+-
+-	return (void*) vaddr;
+-}
+-
+-/* This is the same as kmap_atomic() but can map memory that doesn't
++/*
++ * This is the same as kmap_atomic() but can map memory that doesn't
+  * have a struct page associated with it.
+  */
+ void *kmap_atomic_pfn(unsigned long pfn, enum km_type type)
+diff --git a/arch/x86/mm/iomap_32.c b/arch/x86/mm/iomap_32.c
+index 592984e..6e60ba6 100644
+--- a/arch/x86/mm/iomap_32.c
++++ b/arch/x86/mm/iomap_32.c
+@@ -32,7 +32,23 @@ int is_io_mapping_possible(resource_size_t base, unsigned long size)
+ }
+ EXPORT_SYMBOL_GPL(is_io_mapping_possible);
  
-+	/* Can deadlock when called with interrupts disabled */
-+	WARN_ON(irqs_disabled());
+-/* Map 'pfn' using fixed map 'type' and protections 'prot'
++void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
++{
++	enum fixed_addresses idx;
++	unsigned long vaddr;
 +
- 	data = &__get_cpu_var(cfd_data);
- 	csd_lock(&data->csd);
- 
++	pagefault_disable();
++
++	idx = type + KM_TYPE_NR * smp_processor_id();
++	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
++	set_pte(kmap_pte - idx, pfn_pte(pfn, prot));
++	arch_flush_lazy_mmu_mode();
++
++	return (void *)vaddr;
++}
++
++/*
++ * Map 'pfn' using fixed map 'type' and protections 'prot'
+  */
+ void *
+ iomap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
