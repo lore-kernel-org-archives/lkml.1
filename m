@@ -1,249 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbZCMO6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758696AbZCMPA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757931AbZCMO6m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 10:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbZCMO6b
+	id S1758696AbZCMPA0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 11:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbZCMPAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 10:58:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50486 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753118AbZCMO6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 10:58:30 -0400
-Date: Fri, 13 Mar 2009 14:57:28 GMT
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090313112301.096138802@chello.nl>
-References: <20090313112301.096138802@chello.nl>
-Subject: [tip:core/locking] hrtimer: fix rq->lock inversion (again)
-Message-ID: <tip-84648567ee357abd8879257018f38f8b6b35334d@git.kernel.org>
-Git-Commit-ID: 84648567ee357abd8879257018f38f8b6b35334d
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 14:57:43 +0000 (UTC)
+	Fri, 13 Mar 2009 11:00:13 -0400
+Received: from gmp-eb-inf-1.sun.com ([192.18.6.21]:60496 "EHLO
+	gmp-eb-inf-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752840AbZCMPAL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 11:00:11 -0400
+MIME-version: 1.0
+Date: Fri, 13 Mar 2009 16:00:00 +0100
+From: Frank Mehnert <Frank.Mehnert@Sun.COM>
+Subject: Re: remap_pfn_range() not suitable for physical RAM?
+In-reply-to: <7E82351C108FA840AB1866AC776AEC464FD82A88@orsmsx505.amr.corp.intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Message-id: <200903131600.00463.frank.mehnert@sun.com>
+Organization: Sun Microsystems
+Content-type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary=nextPart2221120.EYVyRzaiG7
+Content-transfer-encoding: 7BIT
+References: <200903042025.46861.frank.mehnert@sun.com>
+ <200903100904.22753.frank.mehnert@sun.com>
+ <7E82351C108FA840AB1866AC776AEC464FD82A88@orsmsx505.amr.corp.intel.com>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  84648567ee357abd8879257018f38f8b6b35334d
-Gitweb:     http://git.kernel.org/tip/84648567ee357abd8879257018f38f8b6b35334d
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 13 Mar 2009 12:21:27 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 15:31:28 +0100
 
-hrtimer: fix rq->lock inversion (again)
+--nextPart2221120.EYVyRzaiG7
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-It appears I inadvertly introduced rq->lock recursion to the
-hrtimer_start() path when I delegated running already expired
-timers to softirq context.
+Venki,
 
-This patch fixes it by introducing a __hrtimer_start_range_ns()
-method that will not use raise_softirq_irqoff() but
-__raise_softirq_irqoff() which avoids the wakeup.
+thanks for your reply. May I ask anyway why this check is done in=20
+remap_pfn_range() and vm_insert_pfn() but not in vm_insert_page()?
 
-It then also changes schedule() to check for pending softirqs and
-do the wakeup then, I'm not quite sure I like this last bit, nor
-am I convinced its really needed.
+Kind regards,
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: paulus@samba.org
-LKML-Reference: <20090313112301.096138802@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+=46rank
+
+On Tuesday 10 March 2009, Pallipadi, Venkatesh wrote:
+> Frank,
+>
+> Patch here should eliminate the restriction.
+> http://marc.info/?l=3Dlinux-kernel&m=3D123664923030126&w=3D1
+>
+> Thanks,
+> Venki
+>
+> >-----Original Message-----
+> >From: linux-kernel-owner@vger.kernel.org
+> >[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Frank Mehnert
+> >Sent: Tuesday, March 10, 2009 1:04 AM
+> >To: linux-kernel@vger.kernel.org
+> >Cc: peterz@infradead.org; Siddha, Suresh B
+> >Subject: Re: remap_pfn_range() not suitable for physical RAM?
+> >
+> >Hi,
+> >
+> >sorry for re-posting this message and sorry for addressing you
+> >directly.
+> >Perhaps you can help me again or can you give me a pointer for a proper
+> >documentation of the various *remap* and *vm_insert* functions:
+> >
+> >On Wednesday 04 March 2009, Frank Mehnert wrote:
+> >> since 2.6.29-rcX it seems to be not allowed anymore to use
+> >> remap_pfn_range() to remap physical RAM to userland. This restriction
+> >> applies only if CONFIG_X86_PAT is enabled. It seems that
+> >
+> >vm_insert_page()
+> >
+> >> does not have this restriction. Am I correct? And what is the reason
+> >> for this restriction?
+> >
+> >Kind regards,
+> >
+> >Frank
+> >--
+> >Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
+> >--
+>
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 
----
- include/linux/hrtimer.h   |    5 ++++
- include/linux/interrupt.h |    1 +
- kernel/hrtimer.c          |   55 +++++++++++++++++++++++++++-----------------
- kernel/sched.c            |   14 +++++++++--
- kernel/softirq.c          |    2 +-
- 5 files changed, 52 insertions(+), 25 deletions(-)
 
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index bd37078..0d2f7c8 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -336,6 +336,11 @@ extern int hrtimer_start(struct hrtimer *timer, ktime_t tim,
- 			 const enum hrtimer_mode mode);
- extern int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
- 			unsigned long range_ns, const enum hrtimer_mode mode);
-+extern int
-+__hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-+			 unsigned long delta_ns,
-+			 const enum hrtimer_mode mode, int wakeup);
-+
- extern int hrtimer_cancel(struct hrtimer *timer);
- extern int hrtimer_try_to_cancel(struct hrtimer *timer);
- 
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 169db98..663b8bc 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -274,6 +274,7 @@ extern void softirq_init(void);
- #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
- extern void raise_softirq_irqoff(unsigned int nr);
- extern void raise_softirq(unsigned int nr);
-+extern void wakeup_softirqd(void);
- 
- /* This is the worklist that queues up per-cpu softirq work.
-  *
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index f394d2a..cb8a15c 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -651,14 +651,20 @@ static inline void hrtimer_init_timer_hres(struct hrtimer *timer)
-  * and expiry check is done in the hrtimer_interrupt or in the softirq.
-  */
- static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
--					    struct hrtimer_clock_base *base)
-+					    struct hrtimer_clock_base *base,
-+					    int wakeup)
- {
- 	if (base->cpu_base->hres_active && hrtimer_reprogram(timer, base)) {
--		spin_unlock(&base->cpu_base->lock);
--		raise_softirq_irqoff(HRTIMER_SOFTIRQ);
--		spin_lock(&base->cpu_base->lock);
-+		if (wakeup) {
-+			spin_unlock(&base->cpu_base->lock);
-+			raise_softirq_irqoff(HRTIMER_SOFTIRQ);
-+			spin_lock(&base->cpu_base->lock);
-+		} else
-+			__raise_softirq_irqoff(HRTIMER_SOFTIRQ);
-+
- 		return 1;
- 	}
-+
- 	return 0;
- }
- 
-@@ -703,7 +709,8 @@ static inline int hrtimer_is_hres_enabled(void) { return 0; }
- static inline int hrtimer_switch_to_hres(void) { return 0; }
- static inline void hrtimer_force_reprogram(struct hrtimer_cpu_base *base) { }
- static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
--					    struct hrtimer_clock_base *base)
-+					    struct hrtimer_clock_base *base,
-+					    int wakeup)
- {
- 	return 0;
- }
-@@ -886,20 +893,9 @@ remove_hrtimer(struct hrtimer *timer, struct hrtimer_clock_base *base)
- 	return 0;
- }
- 
--/**
-- * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
-- * @timer:	the timer to be added
-- * @tim:	expiry time
-- * @delta_ns:	"slack" range for the timer
-- * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
-- *
-- * Returns:
-- *  0 on success
-- *  1 when the timer was active
-- */
--int
--hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_ns,
--			const enum hrtimer_mode mode)
-+int __hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-+		unsigned long delta_ns, const enum hrtimer_mode mode,
-+		int wakeup)
- {
- 	struct hrtimer_clock_base *base, *new_base;
- 	unsigned long flags;
-@@ -940,12 +936,29 @@ hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_n
- 	 * XXX send_remote_softirq() ?
- 	 */
- 	if (leftmost && new_base->cpu_base == &__get_cpu_var(hrtimer_bases))
--		hrtimer_enqueue_reprogram(timer, new_base);
-+		hrtimer_enqueue_reprogram(timer, new_base, wakeup);
- 
- 	unlock_hrtimer_base(timer, &flags);
- 
- 	return ret;
- }
-+
-+/**
-+ * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
-+ * @timer:	the timer to be added
-+ * @tim:	expiry time
-+ * @delta_ns:	"slack" range for the timer
-+ * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
-+ *
-+ * Returns:
-+ *  0 on success
-+ *  1 when the timer was active
-+ */
-+int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-+		unsigned long delta_ns, const enum hrtimer_mode mode)
-+{
-+	return __hrtimer_start_range_ns(timer, tim, delta_ns, mode, 1);
-+}
- EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
- 
- /**
-@@ -961,7 +974,7 @@ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
- int
- hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
- {
--	return hrtimer_start_range_ns(timer, tim, 0, mode);
-+	return __hrtimer_start_range_ns(timer, tim, 0, mode, 1);
- }
- EXPORT_SYMBOL_GPL(hrtimer_start);
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 01275cb..1f43d81 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -231,13 +231,20 @@ static void start_rt_bandwidth(struct rt_bandwidth *rt_b)
- 
- 	spin_lock(&rt_b->rt_runtime_lock);
- 	for (;;) {
-+		unsigned long delta;
-+		ktime_t soft, hard;
-+
- 		if (hrtimer_active(&rt_b->rt_period_timer))
- 			break;
- 
- 		now = hrtimer_cb_get_time(&rt_b->rt_period_timer);
- 		hrtimer_forward(&rt_b->rt_period_timer, now, rt_b->rt_period);
--		hrtimer_start_expires(&rt_b->rt_period_timer,
--				HRTIMER_MODE_ABS);
-+
-+		soft = hrtimer_get_softexpires(&rt_b->rt_period_timer);
-+		hard = hrtimer_get_expires(&rt_b->rt_period_timer);
-+		delta = ktime_to_ns(ktime_sub(hard, soft));
-+		__hrtimer_start_range_ns(&rt_b->rt_period_timer, soft, delta,
-+				HRTIMER_MODE_ABS, 0);
- 	}
- 	spin_unlock(&rt_b->rt_runtime_lock);
- }
-@@ -1129,7 +1136,8 @@ static __init void init_hrtick(void)
-  */
- static void hrtick_start(struct rq *rq, u64 delay)
- {
--	hrtimer_start(&rq->hrtick_timer, ns_to_ktime(delay), HRTIMER_MODE_REL);
-+	__hrtimer_start_range_ns(&rq->hrtick_timer, ns_to_ktime(delay), 0,
-+			HRTIMER_MODE_REL, 0);
- }
- 
- static inline void init_hrtick(void)
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index f813122..34c309d 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -58,7 +58,7 @@ static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
-  * to the pending events, so lets the scheduler to balance
-  * the softirq load for us.
-  */
--static inline void wakeup_softirqd(void)
-+void wakeup_softirqd(void)
- {
- 	/* Interrupts are disabled: no need to stop preemption */
- 	struct task_struct *tsk = __get_cpu_var(ksoftirqd);
+=2D-=20
+Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
+
+--nextPart2221120.EYVyRzaiG7
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkm6dPAACgkQ6z8pigLf3Ec1UQCdHNoEgj9xO0HTwKiFScrpaZ6m
+4RUAnRSV7U8up5UVFm0dOwa4tfTLHW60
+=o85d
+-----END PGP SIGNATURE-----
+
+--nextPart2221120.EYVyRzaiG7--
