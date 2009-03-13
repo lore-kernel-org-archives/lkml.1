@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZCMJtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbZCMJu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758626AbZCMJtb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 05:49:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757101AbZCMJtD
+	id S1758674AbZCMJu6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 05:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbZCMJut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 05:49:03 -0400
-Received: from mga09.intel.com ([134.134.136.24]:31406 "EHLO mga09.intel.com"
+	Fri, 13 Mar 2009 05:50:49 -0400
+Received: from mga14.intel.com ([143.182.124.37]:57848 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752055AbZCMJtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 05:49:00 -0400
+	id S1750901AbZCMJus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 05:50:48 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,356,1233561600"; 
-   d="scan'208";a="394218134"
-Date: Fri, 13 Mar 2009 10:48:52 +0100
+   d="scan'208";a="119905376"
+Date: Fri, 13 Mar 2009 10:50:27 +0100
 From: Markus Metzger <markus.t.metzger@intel.com>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
        hpa@zytor.com
 Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
        eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
        ak@linux.jf.intel.com
-Subject: [patch 4/5] x86, hw-branch-tracer: keep resources on stop
-Message-ID: <20090313104852.A30168@sedona.ch.intel.com>
+Subject: [patch 5/5] x86, hw-branch-tracer: add selftest
+Message-ID: <20090313105027.A30183@sedona.ch.intel.com>
 Mime-Version: 1.0
 Content-Disposition: inline
 User-Agent: Mutt/1.2.5i
@@ -30,228 +30,109 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Distinguish init/reset and start/stop:
-init/reset will allocate and release bts tracing resources
-stop/start will suspend and resume bts tracing
-
-Return an error on init() if no cpu can be traced.
+Add a selftest for the hw-branch-tracer.
 
 
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
 
-Index: gits/kernel/trace/trace_hw_branches.c
+Index: git-new/kernel/trace/trace_hw_branches.c
 ===================================================================
---- gits.orig/kernel/trace/trace_hw_branches.c	2009-03-09 10:53:20.000000000 +0100
-+++ gits/kernel/trace/trace_hw_branches.c	2009-03-09 10:58:41.000000000 +0100
-@@ -19,7 +19,7 @@
- #include "trace_output.h"
- 
- 
--#define SIZEOF_BTS (1 << 13)
-+#define BTS_BUFFER_SIZE (1 << 13)
- 
- /*
-  * The tracer lock protects the below per-cpu tracer array.
-@@ -33,53 +33,68 @@
-  */
- static DEFINE_SPINLOCK(bts_tracer_lock);
- static DEFINE_PER_CPU(struct bts_tracer *, tracer);
--static DEFINE_PER_CPU(unsigned char[SIZEOF_BTS], buffer);
-+static DEFINE_PER_CPU(unsigned char[BTS_BUFFER_SIZE], buffer);
- 
- #define this_tracer per_cpu(tracer, smp_processor_id())
- #define this_buffer per_cpu(buffer, smp_processor_id())
- 
--static int __read_mostly trace_hw_branches_enabled;
-+static int trace_hw_branches_enabled __read_mostly;
-+static int trace_hw_branches_suspended __read_mostly;
- static struct trace_array *hw_branch_trace __read_mostly;
- 
- 
- /*
-- * Start tracing on the current cpu.
-+ * Initialize the tracer for the current cpu.
-  * The argument is ignored.
-  *
-  * pre: bts_tracer_lock must be locked.
-  */
--static void bts_trace_start_cpu(void *arg)
-+static void bts_trace_init_cpu(void *arg)
- {
- 	if (this_tracer)
- 		ds_release_bts(this_tracer);
- 
--	this_tracer =
--		ds_request_bts(/* task = */ NULL, this_buffer, SIZEOF_BTS,
--			       /* ovfl = */ NULL, /* th = */ (size_t)-1,
--			       BTS_KERNEL);
-+	this_tracer = ds_request_bts(NULL, this_buffer, BTS_BUFFER_SIZE,
-+				     NULL, (size_t)-1, BTS_KERNEL);
- 	if (IS_ERR(this_tracer)) {
- 		this_tracer = NULL;
- 		return;
- 	}
- }
- 
--static void bts_trace_start(struct trace_array *tr)
-+static int bts_trace_init(struct trace_array *tr)
- {
-+	int cpu, avail;
-+
- 	spin_lock(&bts_tracer_lock);
- 
--	on_each_cpu(bts_trace_start_cpu, NULL, 1);
--	trace_hw_branches_enabled = 1;
-+	hw_branch_trace = tr;
-+
-+	on_each_cpu(bts_trace_init_cpu, NULL, 1);
-+
-+	/* Check on how many cpus we could enable tracing */
-+	avail = 0;
-+	for_each_online_cpu(cpu)
-+		if (per_cpu(tracer, cpu))
-+			avail++;
-+
-+	trace_hw_branches_enabled = (avail ? 1 : 0);
-+	trace_hw_branches_suspended = 0;
- 
- 	spin_unlock(&bts_tracer_lock);
-+
-+
-+	/* If we could not enable tracing on a single cpu, we fail. */
-+	return avail ? 0 : -EOPNOTSUPP;
- }
- 
- /*
-- * Stop tracing on the current cpu.
-+ * Release the tracer for the current cpu.
-  * The argument is ignored.
-  *
-  * pre: bts_tracer_lock must be locked.
-  */
--static void bts_trace_stop_cpu(void *arg)
-+static void bts_trace_release_cpu(void *arg)
- {
- 	if (this_tracer) {
- 		ds_release_bts(this_tracer);
-@@ -87,12 +102,57 @@ static void bts_trace_stop_cpu(void *arg
- 	}
- }
- 
--static void bts_trace_stop(struct trace_array *tr)
-+static void bts_trace_reset(struct trace_array *tr)
- {
- 	spin_lock(&bts_tracer_lock);
- 
-+	on_each_cpu(bts_trace_release_cpu, NULL, 1);
- 	trace_hw_branches_enabled = 0;
--	on_each_cpu(bts_trace_stop_cpu, NULL, 1);
-+	trace_hw_branches_suspended = 0;
-+
-+	spin_unlock(&bts_tracer_lock);
-+}
-+
-+/*
-+ * Resume tracing on the current cpu.
-+ * The argument is ignored.
-+ *
-+ * pre: bts_tracer_lock must be locked.
-+ */
-+static void bts_trace_resume_cpu(void *arg)
-+{
-+	if (this_tracer)
-+		ds_resume_bts(this_tracer);
-+}
-+
-+static void bts_trace_start(struct trace_array *tr)
-+{
-+	spin_lock(&bts_tracer_lock);
-+
-+	on_each_cpu(bts_trace_resume_cpu, NULL, 1);
-+	trace_hw_branches_suspended = 0;
-+
-+	spin_unlock(&bts_tracer_lock);
-+}
-+
-+/*
-+ * Suspend tracing on the current cpu.
-+ * The argument is ignored.
-+ *
-+ * pre: bts_tracer_lock must be locked.
-+ */
-+static void bts_trace_suspend_cpu(void *arg)
-+{
-+	if (this_tracer)
-+		ds_suspend_bts(this_tracer);
-+}
-+
-+static void bts_trace_stop(struct trace_array *tr)
-+{
-+	spin_lock(&bts_tracer_lock);
-+
-+	on_each_cpu(bts_trace_suspend_cpu, NULL, 1);
-+	trace_hw_branches_suspended = 1;
- 
- 	spin_unlock(&bts_tracer_lock);
- }
-@@ -110,10 +170,14 @@ static int __cpuinit bts_hotcpu_handler(
- 	switch (action) {
- 	case CPU_ONLINE:
- 	case CPU_DOWN_FAILED:
--		smp_call_function_single(cpu, bts_trace_start_cpu, NULL, 1);
-+		smp_call_function_single(cpu, bts_trace_init_cpu, NULL, 1);
-+
-+		if (trace_hw_branches_suspended)
-+			smp_call_function_single(cpu, bts_trace_suspend_cpu,
-+						 NULL, 1);
- 		break;
- 	case CPU_DOWN_PREPARE:
--		smp_call_function_single(cpu, bts_trace_stop_cpu, NULL, 1);
-+		smp_call_function_single(cpu, bts_trace_release_cpu, NULL, 1);
- 		break;
- 	}
- 
-@@ -126,20 +190,6 @@ static struct notifier_block bts_hotcpu_
- 	.notifier_call = bts_hotcpu_handler
+--- git-new.orig/kernel/trace/trace_hw_branches.c	2009-03-12 14:13:14.000000000 +0100
++++ git-new/kernel/trace/trace_hw_branches.c	2009-03-12 14:13:16.000000000 +0100
+@@ -342,7 +342,10 @@ struct tracer bts_tracer __read_mostly =
+ 	.start		= bts_trace_start,
+ 	.stop		= bts_trace_stop,
+ 	.open		= trace_bts_prepare,
+-	.close		= trace_bts_close
++	.close		= trace_bts_close,
++#ifdef CONFIG_FTRACE_SELFTEST
++	.selftest	= trace_selftest_startup_hw_branches,
++#endif /* CONFIG_FTRACE_SELFTEST */
  };
  
--static int bts_trace_init(struct trace_array *tr)
--{
--	hw_branch_trace = tr;
--
--	bts_trace_start(tr);
--
--	return 0;
--}
--
--static void bts_trace_reset(struct trace_array *tr)
--{
--	bts_trace_stop(tr);
--}
--
- static void bts_trace_print_header(struct seq_file *m)
- {
- 	seq_puts(m, "# CPU#        TO  <-  FROM\n");
-@@ -228,7 +278,7 @@ static void trace_bts_at(const struct bt
-  */
- static void trace_bts_cpu(void *arg)
- {
--	struct trace_array *tr = (struct trace_array *) arg;
-+	struct trace_array *tr = (struct trace_array *)arg;
- 	const struct bts_trace *trace;
- 	unsigned char *at;
- 
-@@ -276,7 +326,8 @@ void trace_hw_branch_oops(void)
- {
- 	spin_lock(&bts_tracer_lock);
- 
--	trace_bts_cpu(hw_branch_trace);
-+	if (trace_hw_branches_enabled)
-+		trace_bts_cpu(hw_branch_trace);
- 
- 	spin_unlock(&bts_tracer_lock);
+ __init static int init_bts_trace(void)
+Index: git-new/kernel/trace/trace_selftest.c
+===================================================================
+--- git-new.orig/kernel/trace/trace_selftest.c	2009-03-12 11:28:42.000000000 +0100
++++ git-new/kernel/trace/trace_selftest.c	2009-03-12 14:13:16.000000000 +0100
+@@ -16,6 +16,7 @@ static inline int trace_valid_entry(stru
+ 	case TRACE_BRANCH:
+ 	case TRACE_GRAPH_ENT:
+ 	case TRACE_GRAPH_RET:
++	case TRACE_HW_BRANCHES:
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -691,3 +692,55 @@ trace_selftest_startup_branch(struct tra
+ 	return ret;
  }
+ #endif /* CONFIG_BRANCH_TRACER */
++
++#ifdef CONFIG_HW_BRANCH_TRACER
++int
++trace_selftest_startup_hw_branches(struct tracer *trace,
++				   struct trace_array *tr)
++{
++	unsigned long count;
++	int ret;
++	struct trace_iterator iter;
++	struct tracer tracer;
++
++	if (!trace->open) {
++		printk(KERN_CONT "missing open function...");
++		return -1;
++	}
++
++	ret = tracer_init(trace, tr);
++	if (ret) {
++		warn_failed_init_tracer(trace, ret);
++		return ret;
++	}
++
++	/*
++	 * The hw-branch tracer needs to collect the trace from the various
++	 * cpu trace buffers - before tracing is stopped.
++	 */
++	memset(&iter, 0, sizeof(iter));
++	memcpy(&tracer, trace, sizeof(tracer));
++
++	iter.trace = &tracer;
++	iter.tr = tr;
++	iter.pos = -1;
++	mutex_init(&iter.mutex);
++
++	trace->open(&iter);
++
++	mutex_destroy(&iter.mutex);
++
++	tracing_stop();
++
++	ret = trace_test_buffer(tr, &count);
++	trace->reset(tr);
++	tracing_start();
++
++	if (!ret && !count) {
++		printk(KERN_CONT "no entries found..");
++		ret = -1;
++	}
++
++	return ret;
++}
++#endif /* CONFIG_HW_BRANCH_TRACER */
+Index: git-new/kernel/trace/trace.h
+===================================================================
+--- git-new.orig/kernel/trace/trace.h	2009-03-12 11:28:42.000000000 +0100
++++ git-new/kernel/trace/trace.h	2009-03-12 14:13:16.000000000 +0100
+@@ -565,6 +565,8 @@ extern int trace_selftest_startup_syspro
+ 					       struct trace_array *tr);
+ extern int trace_selftest_startup_branch(struct tracer *trace,
+ 					 struct trace_array *tr);
++extern int trace_selftest_startup_hw_branches(struct tracer *trace,
++					      struct trace_array *tr);
+ #endif /* CONFIG_FTRACE_STARTUP_TEST */
+ 
+ extern void *head_page(struct trace_array_cpu *data);
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
