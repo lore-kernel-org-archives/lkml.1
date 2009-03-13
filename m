@@ -1,258 +1,353 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbZCMFFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbZCMFGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758077AbZCMFFi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 01:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346AbZCMFDl
+	id S1757927AbZCMFGY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 01:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757110AbZCMFDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 01:03:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59748 "EHLO hera.kernel.org"
+	Fri, 13 Mar 2009 01:03:43 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59752 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757269AbZCMFDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 01:03:39 -0400
+	id S1757341AbZCMFDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 01:03:40 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 06/14] block: reorder request completion functions
-Date: Fri, 13 Mar 2009 14:02:50 +0900
-Message-Id: <1236920578-2179-7-git-send-email-tj@kernel.org>
+Subject: [PATCH 07/14] block: reorganize request fetching functions
+Date: Fri, 13 Mar 2009 14:02:51 +0900
+Message-Id: <1236920578-2179-8-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1236920578-2179-1-git-send-email-tj@kernel.org>
 References: <1236920578-2179-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 05:03:30 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 05:03:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup, code reorganization
+Impact: code reorganization
 
-Reorder request completion functions such that
+elv_next_request() and elv_dequeue_request() are public block layer
+interface than actual elevator implementation.  They mostly deal with
+how requests interact with block layer and low level drivers at the
+beginning of rqeuest processing whereas __elv_next_request() is the
+actual eleveator request fetching interface.
 
-* All request completion functions are located together.
-
-* Functions which are used by only one caller is put right above the
-  caller.
-
-* end_request() is put after other completion functions but before
-  blk_update_request().
-
-This change is for completion function cleanup which will follow.
+Move the two functions to blk-core.c.  This prepares for further
+interface cleanup.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- block/blk-core.c       |  144 ++++++++++++++++++++++++------------------------
- include/linux/blkdev.h |   16 +++---
- 2 files changed, 80 insertions(+), 80 deletions(-)
+ block/blk-core.c |   95 ++++++++++++++++++++++++++++++++++++++++
+ block/blk.h      |   37 ++++++++++++++++
+ block/elevator.c |  128 ------------------------------------------------------
+ 3 files changed, 132 insertions(+), 128 deletions(-)
 
 diff --git a/block/blk-core.c b/block/blk-core.c
-index 9e5f154..fd9dec3 100644
+index fd9dec3..0d97fbe 100644
 --- a/block/blk-core.c
 +++ b/block/blk-core.c
-@@ -1674,6 +1674,35 @@ static void blk_account_io_done(struct request *req)
+@@ -1702,6 +1702,101 @@ unsigned int blk_rq_cur_bytes(struct request *rq)
  }
+ EXPORT_SYMBOL_GPL(blk_rq_cur_bytes);
  
- /**
-+ * blk_rq_bytes - Returns bytes left to complete in the entire request
-+ * @rq: the request being processed
-+ **/
-+unsigned int blk_rq_bytes(struct request *rq)
++struct request *elv_next_request(struct request_queue *q)
 +{
-+	if (blk_fs_request(rq))
-+		return rq->hard_nr_sectors << 9;
++	struct request *rq;
++	int ret;
 +
-+	return rq->data_len;
-+}
-+EXPORT_SYMBOL_GPL(blk_rq_bytes);
++	while ((rq = __elv_next_request(q)) != NULL) {
++		if (!(rq->cmd_flags & REQ_STARTED)) {
++			/*
++			 * This is the first time the device driver
++			 * sees this request (possibly after
++			 * requeueing).  Notify IO scheduler.
++			 */
++			if (blk_sorted_rq(rq))
++				elv_activate_rq(q, rq);
 +
-+/**
-+ * blk_rq_cur_bytes - Returns bytes left to complete in the current segment
-+ * @rq: the request being processed
-+ **/
-+unsigned int blk_rq_cur_bytes(struct request *rq)
-+{
-+	if (blk_fs_request(rq))
-+		return rq->current_nr_sectors << 9;
++			/*
++			 * just mark as started even if we don't start
++			 * it, a request that has been delayed should
++			 * not be passed by new incoming requests
++			 */
++			rq->cmd_flags |= REQ_STARTED;
++			trace_block_rq_issue(q, rq);
++		}
 +
-+	if (rq->bio)
-+		return rq->bio->bi_size;
++		if (!q->boundary_rq || q->boundary_rq == rq) {
++			q->end_sector = rq_end_sector(rq);
++			q->boundary_rq = NULL;
++		}
 +
-+	return rq->data_len;
-+}
-+EXPORT_SYMBOL_GPL(blk_rq_cur_bytes);
++		if (rq->cmd_flags & REQ_DONTPREP)
++			break;
 +
-+/**
-  * __end_that_request_first - end I/O on a request
-  * @req:      the request being processed
-  * @error:    %0 for success, < %0 for error
-@@ -1783,6 +1812,22 @@ static int __end_that_request_first(struct request *req, int error,
- 	return 1;
- }
- 
-+static int end_that_request_data(struct request *rq, int error,
-+				 unsigned int nr_bytes, unsigned int bidi_bytes)
-+{
-+	if (rq->bio) {
-+		if (__end_that_request_first(rq, error, nr_bytes))
-+			return 1;
++		if (q->dma_drain_size && rq->data_len) {
++			/*
++			 * make sure space for the drain appears we
++			 * know we can do this because max_hw_segments
++			 * has been adjusted to be one fewer than the
++			 * device can handle
++			 */
++			rq->nr_phys_segments++;
++		}
 +
-+		/* Bidi request must be completed as a whole */
-+		if (blk_bidi_rq(rq) &&
-+		    __end_that_request_first(rq->next_rq, error, bidi_bytes))
-+			return 1;
++		if (!q->prep_rq_fn)
++			break;
++
++		ret = q->prep_rq_fn(q, rq);
++		if (ret == BLKPREP_OK) {
++			break;
++		} else if (ret == BLKPREP_DEFER) {
++			/*
++			 * the request may have been (partially) prepped.
++			 * we need to keep this request in the front to
++			 * avoid resource deadlock.  REQ_STARTED will
++			 * prevent other fs requests from passing this one.
++			 */
++			if (q->dma_drain_size && rq->data_len &&
++			    !(rq->cmd_flags & REQ_DONTPREP)) {
++				/*
++				 * remove the space for the drain we added
++				 * so that we don't add it again
++				 */
++				--rq->nr_phys_segments;
++			}
++
++			rq = NULL;
++			break;
++		} else if (ret == BLKPREP_KILL) {
++			rq->cmd_flags |= REQ_QUIET;
++			__blk_end_request(rq, -EIO, blk_rq_bytes(rq));
++		} else {
++			printk(KERN_ERR "%s: bad return=%d\n", __func__, ret);
++			break;
++		}
 +	}
 +
-+	return 0;
++	return rq;
++}
++EXPORT_SYMBOL(elv_next_request);
++
++void elv_dequeue_request(struct request_queue *q, struct request *rq)
++{
++	BUG_ON(list_empty(&rq->queuelist));
++	BUG_ON(ELV_ON_HASH(rq));
++
++	list_del_init(&rq->queuelist);
++
++	/*
++	 * the time frame between a request being removed from the lists
++	 * and to it is freed is accounted as io that is in progress at
++	 * the driver side.
++	 */
++	if (blk_account_rq(rq))
++		q->in_flight++;
 +}
 +
- /*
-  * queue lock must be held
-  */
-@@ -1812,78 +1857,6 @@ static void end_that_request_last(struct request *req, int error)
+ /**
+  * __end_that_request_first - end I/O on a request
+  * @req:      the request being processed
+diff --git a/block/blk.h b/block/blk.h
+index 0dce92c..3979fd1 100644
+--- a/block/blk.h
++++ b/block/blk.h
+@@ -43,6 +43,43 @@ static inline void blk_clear_rq_complete(struct request *rq)
+ 	clear_bit(REQ_ATOM_COMPLETE, &rq->atomic_flags);
  }
  
- /**
-- * blk_rq_bytes - Returns bytes left to complete in the entire request
-- * @rq: the request being processed
-- **/
--unsigned int blk_rq_bytes(struct request *rq)
++/*
++ * Internal elevator interface
++ */
++#define ELV_ON_HASH(rq)		(!hlist_unhashed(&(rq)->hash))
++
++static inline struct request *__elv_next_request(struct request_queue *q)
++{
++	struct request *rq;
++
++	while (1) {
++		while (!list_empty(&q->queue_head)) {
++			rq = list_entry_rq(q->queue_head.next);
++			if (blk_do_ordered(q, &rq))
++				return rq;
++		}
++
++		if (!q->elevator->ops->elevator_dispatch_fn(q, 0))
++			return NULL;
++	}
++}
++
++static inline void elv_activate_rq(struct request_queue *q, struct request *rq)
++{
++	struct elevator_queue *e = q->elevator;
++
++	if (e->ops->elevator_activate_req_fn)
++		e->ops->elevator_activate_req_fn(q, rq);
++}
++
++static inline void elv_deactivate_rq(struct request_queue *q, struct request *rq)
++{
++	struct elevator_queue *e = q->elevator;
++
++	if (e->ops->elevator_deactivate_req_fn)
++		e->ops->elevator_deactivate_req_fn(q, rq);
++}
++
+ #ifdef CONFIG_FAIL_IO_TIMEOUT
+ int blk_should_fake_timeout(struct request_queue *);
+ ssize_t part_timeout_show(struct device *, struct device_attribute *, char *);
+diff --git a/block/elevator.c b/block/elevator.c
+index fca4436..fd17605 100644
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -53,7 +53,6 @@ static const int elv_hash_shift = 6;
+ 		(hash_long(ELV_HASH_BLOCK((sec)), elv_hash_shift))
+ #define ELV_HASH_ENTRIES	(1 << elv_hash_shift)
+ #define rq_hash_key(rq)		((rq)->sector + (rq)->nr_sectors)
+-#define ELV_ON_HASH(rq)		(!hlist_unhashed(&(rq)->hash))
+ 
+ DEFINE_TRACE(block_rq_insert);
+ DEFINE_TRACE(block_rq_issue);
+@@ -310,22 +309,6 @@ void elevator_exit(struct elevator_queue *e)
+ }
+ EXPORT_SYMBOL(elevator_exit);
+ 
+-static void elv_activate_rq(struct request_queue *q, struct request *rq)
 -{
--	if (blk_fs_request(rq))
--		return rq->hard_nr_sectors << 9;
+-	struct elevator_queue *e = q->elevator;
 -
--	return rq->data_len;
+-	if (e->ops->elevator_activate_req_fn)
+-		e->ops->elevator_activate_req_fn(q, rq);
 -}
--EXPORT_SYMBOL_GPL(blk_rq_bytes);
 -
--/**
-- * blk_rq_cur_bytes - Returns bytes left to complete in the current segment
-- * @rq: the request being processed
-- **/
--unsigned int blk_rq_cur_bytes(struct request *rq)
+-static void elv_deactivate_rq(struct request_queue *q, struct request *rq)
 -{
--	if (blk_fs_request(rq))
--		return rq->current_nr_sectors << 9;
+-	struct elevator_queue *e = q->elevator;
 -
--	if (rq->bio)
--		return rq->bio->bi_size;
--
--	return rq->data_len;
+-	if (e->ops->elevator_deactivate_req_fn)
+-		e->ops->elevator_deactivate_req_fn(q, rq);
 -}
--EXPORT_SYMBOL_GPL(blk_rq_cur_bytes);
 -
--/**
-- * end_request - end I/O on the current segment of the request
-- * @req:	the request being processed
-- * @uptodate:	error value or %0/%1 uptodate flag
-- *
-- * Description:
-- *     Ends I/O on the current segment of a request. If that is the only
-- *     remaining segment, the request is also completed and freed.
-- *
-- *     This is a remnant of how older block drivers handled I/O completions.
-- *     Modern drivers typically end I/O on the full request in one go, unless
-- *     they have a residual value to account for. For that case this function
-- *     isn't really useful, unless the residual just happens to be the
-- *     full current segment. In other words, don't use this function in new
-- *     code. Use blk_end_request() or __blk_end_request() to end a request.
-- **/
--void end_request(struct request *req, int uptodate)
+ static inline void __elv_rqhash_del(struct request *rq)
+ {
+ 	hlist_del_init(&rq->hash);
+@@ -733,117 +716,6 @@ void elv_add_request(struct request_queue *q, struct request *rq, int where,
+ }
+ EXPORT_SYMBOL(elv_add_request);
+ 
+-static inline struct request *__elv_next_request(struct request_queue *q)
 -{
--	int error = 0;
+-	struct request *rq;
 -
--	if (uptodate <= 0)
--		error = uptodate ? uptodate : -EIO;
+-	while (1) {
+-		while (!list_empty(&q->queue_head)) {
+-			rq = list_entry_rq(q->queue_head.next);
+-			if (blk_do_ordered(q, &rq))
+-				return rq;
+-		}
 -
--	__blk_end_request(req, error, req->hard_cur_sectors << 9);
+-		if (!q->elevator->ops->elevator_dispatch_fn(q, 0))
+-			return NULL;
+-	}
 -}
--EXPORT_SYMBOL(end_request);
 -
--static int end_that_request_data(struct request *rq, int error,
--				 unsigned int nr_bytes, unsigned int bidi_bytes)
+-struct request *elv_next_request(struct request_queue *q)
 -{
--	if (rq->bio) {
--		if (__end_that_request_first(rq, error, nr_bytes))
--			return 1;
+-	struct request *rq;
+-	int ret;
 -
--		/* Bidi request must be completed as a whole */
--		if (blk_bidi_rq(rq) &&
--		    __end_that_request_first(rq->next_rq, error, bidi_bytes))
--			return 1;
+-	while ((rq = __elv_next_request(q)) != NULL) {
+-		if (!(rq->cmd_flags & REQ_STARTED)) {
+-			/*
+-			 * This is the first time the device driver
+-			 * sees this request (possibly after
+-			 * requeueing).  Notify IO scheduler.
+-			 */
+-			if (blk_sorted_rq(rq))
+-				elv_activate_rq(q, rq);
+-
+-			/*
+-			 * just mark as started even if we don't start
+-			 * it, a request that has been delayed should
+-			 * not be passed by new incoming requests
+-			 */
+-			rq->cmd_flags |= REQ_STARTED;
+-			trace_block_rq_issue(q, rq);
+-		}
+-
+-		if (!q->boundary_rq || q->boundary_rq == rq) {
+-			q->end_sector = rq_end_sector(rq);
+-			q->boundary_rq = NULL;
+-		}
+-
+-		if (rq->cmd_flags & REQ_DONTPREP)
+-			break;
+-
+-		if (q->dma_drain_size && rq->data_len) {
+-			/*
+-			 * make sure space for the drain appears we
+-			 * know we can do this because max_hw_segments
+-			 * has been adjusted to be one fewer than the
+-			 * device can handle
+-			 */
+-			rq->nr_phys_segments++;
+-		}
+-
+-		if (!q->prep_rq_fn)
+-			break;
+-
+-		ret = q->prep_rq_fn(q, rq);
+-		if (ret == BLKPREP_OK) {
+-			break;
+-		} else if (ret == BLKPREP_DEFER) {
+-			/*
+-			 * the request may have been (partially) prepped.
+-			 * we need to keep this request in the front to
+-			 * avoid resource deadlock.  REQ_STARTED will
+-			 * prevent other fs requests from passing this one.
+-			 */
+-			if (q->dma_drain_size && rq->data_len &&
+-			    !(rq->cmd_flags & REQ_DONTPREP)) {
+-				/*
+-				 * remove the space for the drain we added
+-				 * so that we don't add it again
+-				 */
+-				--rq->nr_phys_segments;
+-			}
+-
+-			rq = NULL;
+-			break;
+-		} else if (ret == BLKPREP_KILL) {
+-			rq->cmd_flags |= REQ_QUIET;
+-			__blk_end_request(rq, -EIO, blk_rq_bytes(rq));
+-		} else {
+-			printk(KERN_ERR "%s: bad return=%d\n", __func__, ret);
+-			break;
+-		}
 -	}
 -
--	return 0;
+-	return rq;
+-}
+-EXPORT_SYMBOL(elv_next_request);
+-
+-void elv_dequeue_request(struct request_queue *q, struct request *rq)
+-{
+-	BUG_ON(list_empty(&rq->queuelist));
+-	BUG_ON(ELV_ON_HASH(rq));
+-
+-	list_del_init(&rq->queuelist);
+-
+-	/*
+-	 * the time frame between a request being removed from the lists
+-	 * and to it is freed is accounted as io that is in progress at
+-	 * the driver side.
+-	 */
+-	if (blk_account_rq(rq))
+-		q->in_flight++;
 -}
 -
--/**
-  * blk_end_io - Generic end_io function to complete a request.
-  * @rq:           the request being processed
-  * @error:        %0 for success, < %0 for error
-@@ -1993,6 +1966,33 @@ int blk_end_bidi_request(struct request *rq, int error, unsigned int nr_bytes,
- EXPORT_SYMBOL_GPL(blk_end_bidi_request);
- 
- /**
-+ * end_request - end I/O on the current segment of the request
-+ * @req:	the request being processed
-+ * @uptodate:	error value or %0/%1 uptodate flag
-+ *
-+ * Description:
-+ *     Ends I/O on the current segment of a request. If that is the only
-+ *     remaining segment, the request is also completed and freed.
-+ *
-+ *     This is a remnant of how older block drivers handled I/O completions.
-+ *     Modern drivers typically end I/O on the full request in one go, unless
-+ *     they have a residual value to account for. For that case this function
-+ *     isn't really useful, unless the residual just happens to be the
-+ *     full current segment. In other words, don't use this function in new
-+ *     code. Use blk_end_request() or __blk_end_request() to end a request.
-+ **/
-+void end_request(struct request *req, int uptodate)
-+{
-+	int error = 0;
-+
-+	if (uptodate <= 0)
-+		error = uptodate ? uptodate : -EIO;
-+
-+	__blk_end_request(req, error, req->hard_cur_sectors << 9);
-+}
-+EXPORT_SYMBOL(end_request);
-+
-+/**
-  * blk_update_request - Special helper function for request stacking drivers
-  * @rq:           the request being processed
-  * @error:        %0 for success, < %0 for error
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 4c05bb9..cdfac4f 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -810,6 +810,14 @@ static inline void blk_run_address_space(struct address_space *mapping)
- extern void blkdev_dequeue_request(struct request *req);
- 
- /*
-+ * blk_end_request() takes bytes instead of sectors as a complete size.
-+ * blk_rq_bytes() returns bytes left to complete in the entire request.
-+ * blk_rq_cur_bytes() returns bytes left to complete in the current segment.
-+ */
-+extern unsigned int blk_rq_bytes(struct request *rq);
-+extern unsigned int blk_rq_cur_bytes(struct request *rq);
-+
-+/*
-  * blk_end_request() and friends.
-  * __blk_end_request() and end_request() must be called with
-  * the request queue spinlock acquired.
-@@ -836,14 +844,6 @@ extern void blk_update_request(struct request *rq, int error,
- 			       unsigned int nr_bytes);
- 
- /*
-- * blk_end_request() takes bytes instead of sectors as a complete size.
-- * blk_rq_bytes() returns bytes left to complete in the entire request.
-- * blk_rq_cur_bytes() returns bytes left to complete in the current segment.
-- */
--extern unsigned int blk_rq_bytes(struct request *rq);
--extern unsigned int blk_rq_cur_bytes(struct request *rq);
--
--/*
-  * Access functions for manipulating queue properties
-  */
- extern struct request_queue *blk_init_queue_node(request_fn_proc *rfn,
+ int elv_queue_empty(struct request_queue *q)
+ {
+ 	struct elevator_queue *e = q->elevator;
 -- 
 1.6.0.2
 
