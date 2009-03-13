@@ -1,108 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761463AbZCMRLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761489AbZCMRLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761463AbZCMRLV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 13:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760660AbZCMRGQ
+	id S1761489AbZCMRLi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 13:11:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761052AbZCMRHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 13:06:16 -0400
-Received: from alcalazamora.dti2.net ([81.24.162.8]:3680 "EHLO
-	alcalazamora.dti2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759554AbZCMRGO (ORCPT
+	Fri, 13 Mar 2009 13:07:11 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:32299 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761047AbZCMRHI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 13:06:14 -0400
-X-Spam-Processed: alcalazamora.dti2.net, Fri, 13 Mar 2009 18:06:11 +0100
-	(not processed: message from valid local sender)
-X-MDOP-RefID: str=0001.0A0B0206.49BA9280.0287,ss=1,fgs=0 (_st=1 _vt=0 _iwf=0)
-X-Authenticated-Sender: jorge@dti2.net
-X-MDRemoteIP: 81.24.161.20
-X-Return-Path: jorge@dti2.net
-X-Envelope-From: jorge@dti2.net
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Message-ID: <49BA927F.8020701@dti2.net>
-Date: Fri, 13 Mar 2009 18:06:07 +0100
-From: "Jorge Boncompte [DTI2]" <jorge@dti2.net>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Fri, 13 Mar 2009 13:07:08 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=dnRis22Zivw2bLSVEXosa4Z8t1KtbMbvo8GZa/npWlVAZHZiZ7E+46dreMnfIeQBZ
+	RbFeBLHXdQmi9rZkrvZHg==
 MIME-Version: 1.0
-To: npiggin@suse.de
-CC: ext-adrian.hunter@nokia.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Error testing ext3 on brd ramdisk
-References: <20090228055809.GC28496@wotan.suse.de> <49AC1A7A.1070108@dti2.net> <20090305065529.GB11916@wotan.suse.de> <49AF9932.2040301@dti2.net> <20090305094623.GA17815@wotan.suse.de> <49AFAFD9.9050805@dti2.net> <49AFC1A9.90501@dti2.net> <20090310161247.GA19352@wotan.suse.de> <20090310163002.GC19352@wotan.suse.de> <49B69A09.3080408@dti2.net> <20090311021920.GA16561@wotan.suse.de>
-In-Reply-To: <20090311021920.GA16561@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-Reply-To: jorge@dti2.net
-X-MDAV-Processed: alcalazamora.dti2.net, Fri, 13 Mar 2009 18:06:11 +0100
+In-Reply-To: <1236926602.2567.528.camel@ymzhang>
+References: <1236761624.2567.442.camel@ymzhang>
+	 <877i2wfh1l.fsf@basil.nowhere.org> <1236845792.2567.484.camel@ymzhang>
+	 <1236866906.3221.11.camel@achroite>
+	 <1236926602.2567.528.camel@ymzhang>
+Date: Fri, 13 Mar 2009 10:06:56 -0700
+Message-ID: <65634d660903131006n44f068dw18b2fe9dce25399e@mail.gmail.com>
+Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to submit 
+	to upper layer
+From: Tom Herbert <therbert@google.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Ben Hutchings <bhutchings@solarflare.com>,
+       Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, herbert@gondor.apana.org.au,
+       jesse.brandeburg@intel.com, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin escribió:
-> On Tue, Mar 10, 2009 at 05:49:13PM +0100, Jorge Boncompte [DTI2] wrote:
->> Nick Piggin escribió:
->>> Ah, of course, it would be due to directory-in-pagecache. You need
->>> the following patch if you expect this to work.
->>>
->>> And that confirms the ext3 problem is a different one because it
->>> doesn't use directory in pagecache I think. Well, I'll look at
->>> that one tomorrow.
->>>
->>> Thanks,
->>> Nick
->>>
->>> ---
->>> fs/super.c |    2 ++
->>> 1 file changed, 2 insertions(+)
->>>
->>> Index: linux-2.6/fs/super.c
->>> ===================================================================
->>> --- linux-2.6.orig/fs/super.c
->>> +++ linux-2.6/fs/super.c
->>> @@ -644,6 +644,8 @@ int do_remount_sb(struct super_block *sb
->>> 		acct_auto_close(sb);
->>> 	shrink_dcache_sb(sb);
->>> 	fsync_super(sb);
->>> +	if (flags & MS_RDONLY)
->>> +		invalidate_bdev(sb->s_bdev);
->>>
->>> 	/* If we are remounting RDONLY and current sb is read/write,
->>> 	   make sure there are no rw files opened */
->>>
->>>
->>>
->>>
->> 	With this applied it seems I cannot reproduce the corruption, I have 
-> 
-> Ah, that sounds promising.
-> 
->> 	to do more tests, but the box oopses on reboot after doing "umount -na -r".
-> 
-> Oh, silly me, s_bdev will be NULL for non block device based filesystems.
-> If you check for s_bdev != NULL there too, it should work.
+On Thu, Mar 12, 2009 at 11:43 PM, Zhang, Yanmin
+<yanmin_zhang@linux.intel.com> wrote:
+>
+> On Thu, 2009-03-12 at 14:08 +0000, Ben Hutchings wrote:
+> > On Thu, 2009-03-12 at 16:16 +0800, Zhang, Yanmin wrote:
+> > > On Wed, 2009-03-11 at 12:13 +0100, Andi Kleen wrote:
+> > [...]
+> > > >  and just use the hash function on the
+> > > > NIC.
+> > > Sorry. I can't understand what the hash function of NIC is. Perhaps NIC hardware has something
+> > > like hash function to decide the RX queue number based on SRC/DST?
+> >
+> > Yes, that's exactly what they do.  This feature is sometimes called
+> > Receive-Side Scaling (RSS) which is Microsoft's name for it.  Microsoft
+> > requires Windows drivers performing RSS to provide the hash value to the
+> > networking stack, so Linux drivers for the same hardware should be able
+> > to do so too.
+> Oh, I didn't know the background. I need study more about network.
+> Thanks for explain it.
+>
 
-	Hi Nick, no problems noticed in the last days running with the below 
-patch...
+You'll definitely want to look at the hardware provided hash.  We've
+been using a 10G NIC which provides a Toeplitz hash (the one defined
+by Microsoft) and a software RSS-like capability to move packets from
+an interrupting CPU to another for processing.  The hash could be used
+to index to a set of CPUs, but we also use the hash as a connection
+identifier to key into a lookup table to steer packets to the CPU
+where the application is running based on the running CPU of the last
+recvmsg.  Using the device provided hash in this manner is a HUGE win,
+as opposed to taking cache misses to get 4-tuple from packet itself to
+compute a hash.  I posted some patches a while back on our work if
+you're interested.
 
---- linux-2.6.29-rc8/fs/super.c       2009-03-13 13:46:19 +0100
-+++ kernel/fs/super.c       2009-03-13 13:47:50 +0100
-@@ -647,6 +647,8 @@ int do_remount_sb(struct super_block *sb
-                 acct_auto_close(sb);
-         shrink_dcache_sb(sb);
-         fsync_super(sb);
-+       if (sb->s_bdev && (flags & MS_RDONLY))
-+               invalidate_bdev(sb->s_bdev);
+We also using multiple RX queues of the 10G device in concert with
+pretty good results.  We have noticed that the interrupt overheads
+substantially mitigate the benefits.  In fact, I would say the
+software packet steering has provided the greater benefit (and it's
+very useful on our many 1G NICS that don't have multiq!).
 
-         /* If we are remounting RDONLY and current sb is read/write,
-            make sure there are no rw files opened */
-
--- 
-==============================================================
-Jorge Boncompte - Ingenieria y Gestion de RED
-DTI2 - Desarrollo de la Tecnologia de las Comunicaciones
---------------------------------------------------------------
-C/ Abogado Enriquez Barrios, 5   14004 CORDOBA (SPAIN)
-Tlf: +34 957 761395 / FAX: +34 957 450380
-==============================================================
-- Sin pistachos no hay Rock & Roll...
-- Without wicker a basket cannot be made.
-==============================================================
-
+Tom
