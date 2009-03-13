@@ -1,110 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbZCMFA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756296AbZCMFDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbZCMFA7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 01:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZCMFAt
+	id S1756296AbZCMFDd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 01:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZCMFDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 01:00:49 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56779 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750884AbZCMFAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 01:00:48 -0400
-Date: Fri, 13 Mar 2009 14:00:40 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: clemens@ladisch.de
-Subject: [Patch] Fix the possibility of insane return value of hpet_calibrate() against SMI.
-Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>, robert.picco@hp.com,
-       venkatesh.pallipadi@intel.com, vojtech@suse.cz, mingo@redhat.com
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20090313134846.24B6.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.01 [ja]
+	Fri, 13 Mar 2009 01:03:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59722 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751267AbZCMFDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 01:03:22 -0400
+From: Tejun Heo <tj@kernel.org>
+To: axboe@kernel.dk, linux-kernel@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 01/14] block: merge blk_invoke_request_fn() into __blk_run_queue()
+Date: Fri, 13 Mar 2009 14:02:45 +0900
+Message-Id: <1236920578-2179-2-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1236920578-2179-1-git-send-email-tj@kernel.org>
+References: <1236920578-2179-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 05:03:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Impact: merge two subtly different internal functions
 
-I think there is a possibility that HPET driver will return
-insane value due to a SMI interruption (or switching guests by hypervisor).
-I found it by reviewing, and I would like to fix it.
+__blk_run_queue wraps blk_invoke_request_fn() such that it
+additionally removes plug and bails out early if the queue is empty.
+Both extra operations have their own pending mechanisms and don't
+cause any harm correctness-wise when they are done superflously.
 
-Current HPET driver calibrates the adjustment value
-by calculation the elapse time in CPU busy loop. 
-However this way is too dangerous against SMI interruption.
+The only user of blk_invoke_request_fn() being blk_start_queue(),
+there isn't much reason to keep both functions around.  Merge
+blk_invoke_request_fn() into __blk_run_queue() and make
+blk_start_queue() use __blk_run_queue() instead.
 
-Here is the calibration code in hpet_calibrate()
-
- 701 static unsigned long hpet_calibrate(struct hpets *hpetp)
-             :
-             :
- 728         do {
- 729                 m = read_counter(&hpet->hpet_mc);
- 730                 write_counter(t + m + hpetp->hp_delta, &timer->hpet_compare);
- 731         } while (i++, (m - start) < count);
- 732 
- 733         local_irq_restore(flags);
- 734 
- 735         return (m - start) / i;
-
-If SMI interruption occurs between 728 to 731, then return value will be
-bigger value than correct one. (SMI is not able to be controlled by OS.)
-
-
-This patch is a simple solution to fix it.
-hpet_calibrate() is called 5 times, and one of them is expected as
-correct value.
-
-Thanks.
-
-
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
+ block/blk-core.c |   35 ++++++++++++++---------------------
+ 1 files changed, 14 insertions(+), 21 deletions(-)
 
-hpet_calibrate() has a possibility of miss-calibration due to SMI.
-If SMI interrupts in the while loop of calibration, then return value
-will be big. This changes it tries 5 times and get minimum value as
-correct value.
-
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-
----
-
-Index: hpet_test/drivers/char/hpet.c
-===================================================================
---- hpet_test.orig/drivers/char/hpet.c	2008-12-04 16:24:02.000000000 +0900
-+++ hpet_test/drivers/char/hpet.c	2008-12-04 16:34:59.000000000 +0900
-@@ -713,7 +713,7 @@
-  */
- #define	TICK_CALIBRATE	(1000UL)
- 
--static unsigned long hpet_calibrate(struct hpets *hpetp)
-+static unsigned long __hpet_calibrate(struct hpets *hpetp)
- {
- 	struct hpet_timer __iomem *timer = NULL;
- 	unsigned long t, m, count, i, flags, start;
-@@ -750,6 +750,17 @@
- 	return (m - start) / i;
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 7b63c9b..95dc76f 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -333,24 +333,6 @@ void blk_unplug(struct request_queue *q)
  }
+ EXPORT_SYMBOL(blk_unplug);
  
-+static unsigned long hpet_calibrate(struct hpets *hpetp)
-+{
-+	unsigned long ret = ~0UL, i;
-+
-+	/* Try 5 times to remove impact of SMI.*/
-+	for (i = 0; i < 5; i++)
-+		ret = min(ret, __hpet_calibrate(hpetp));
-+
-+	return ret;
-+}
-+
- int hpet_alloc(struct hpet_data *hdp)
+-static void blk_invoke_request_fn(struct request_queue *q)
+-{
+-	if (unlikely(blk_queue_stopped(q)))
+-		return;
+-
+-	/*
+-	 * one level of recursion is ok and is much faster than kicking
+-	 * the unplug handling
+-	 */
+-	if (!queue_flag_test_and_set(QUEUE_FLAG_REENTER, q)) {
+-		q->request_fn(q);
+-		queue_flag_clear(QUEUE_FLAG_REENTER, q);
+-	} else {
+-		queue_flag_set(QUEUE_FLAG_PLUGGED, q);
+-		kblockd_schedule_work(q, &q->unplug_work);
+-	}
+-}
+-
+ /**
+  * blk_start_queue - restart a previously stopped queue
+  * @q:    The &struct request_queue in question
+@@ -365,7 +347,7 @@ void blk_start_queue(struct request_queue *q)
+ 	WARN_ON(!irqs_disabled());
+ 
+ 	queue_flag_clear(QUEUE_FLAG_STOPPED, q);
+-	blk_invoke_request_fn(q);
++	__blk_run_queue(q);
+ }
+ EXPORT_SYMBOL(blk_start_queue);
+ 
+@@ -425,12 +407,23 @@ void __blk_run_queue(struct request_queue *q)
  {
- 	u64 cap, mcfg;
-
+ 	blk_remove_plug(q);
+ 
++	if (unlikely(blk_queue_stopped(q)))
++		return;
++
++	if (elv_queue_empty(q))
++		return;
++
+ 	/*
+ 	 * Only recurse once to avoid overrunning the stack, let the unplug
+ 	 * handling reinvoke the handler shortly if we already got there.
+ 	 */
+-	if (!elv_queue_empty(q))
+-		blk_invoke_request_fn(q);
++	if (!queue_flag_test_and_set(QUEUE_FLAG_REENTER, q)) {
++		q->request_fn(q);
++		queue_flag_clear(QUEUE_FLAG_REENTER, q);
++	} else {
++		queue_flag_set(QUEUE_FLAG_PLUGGED, q);
++		kblockd_schedule_work(q, &q->unplug_work);
++	}
+ }
+ EXPORT_SYMBOL(__blk_run_queue);
+ 
 -- 
-Yasunori Goto 
-
+1.6.0.2
 
