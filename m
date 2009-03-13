@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbZCMQbD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759352AbZCMQbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758902AbZCMQbD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:31:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbZCMQaQ
+	id S1759352AbZCMQbm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759015AbZCMQai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:30:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:56734 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 12:30:38 -0400
+Received: from gw.goop.org ([64.81.55.164]:56782 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753923AbZCMQaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 12:30:14 -0400
+	id S1759009AbZCMQah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 12:30:37 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Juan Quintela <quintela@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 03/15] xen dom0: Set up basic IO permissions for dom0.
-Date: Fri, 13 Mar 2009 09:29:44 -0700
-Message-Id: <1236961796-13407-4-git-send-email-jeremy@goop.org>
+Subject: [PATCH 12/15] xen/dom0: add XEN_DOM0 config option
+Date: Fri, 13 Mar 2009 09:29:53 -0700
+Message-Id: <1236961796-13407-13-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1236961796-13407-1-git-send-email-jeremy@goop.org>
 References: <1236961796-13407-1-git-send-email-jeremy@goop.org>
@@ -26,124 +26,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Juan Quintela <quintela@redhat.com>
-
-Add the direct mapping area for ISA bus access, and enable IO space
-access for the guest when running as dom0.
+Allow dom0 to be configured.  Requires more patches to do something useful.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Signed-off-by: Juan Quintela <quintela@redhat.com>
 ---
- arch/x86/xen/enlighten.c |    8 ++++++++
- arch/x86/xen/mmu.c       |   24 ++++++++++++++++++++++++
- arch/x86/xen/setup.c     |    6 +++++-
- arch/x86/xen/xen-ops.h   |    1 +
- 4 files changed, 38 insertions(+), 1 deletions(-)
+ arch/x86/xen/Kconfig     |   26 ++++++++++++++++++++++++++
+ arch/x86/xen/enlighten.c |    5 +++--
+ 2 files changed, 29 insertions(+), 2 deletions(-)
 
+diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
+index b83e119..fe69286 100644
+--- a/arch/x86/xen/Kconfig
++++ b/arch/x86/xen/Kconfig
+@@ -36,3 +36,29 @@ config XEN_DEBUG_FS
+ 	help
+ 	  Enable statistics output and various tuning options in debugfs.
+ 	  Enabling this option may incur a significant performance overhead.
++
++config XEN_DOM0
++	bool "Enable Xen privileged domain support"
++	depends on XEN && X86_IO_APIC && ACPI
++	help
++	  The Xen hypervisor requires a privileged domain ("dom0") to
++	  actually manage the machine, provide devices drivers, etc.
++	  This option enables dom0 support.  A dom0 kernel can also
++	  run as an unprivileged domU kernel, or a kernel running
++	  native on bare hardware.
++
++# Dummy symbol since people have come to rely on the PRIVILEGED_GUEST
++# name in tools.
++config XEN_PRIVILEGED_GUEST
++	def_bool XEN_DOM0
++
++config XEN_PCI_PASSTHROUGH
++       bool #"Enable support for Xen PCI passthrough devices"
++       depends on XEN && PCI
++       help
++         Enable support for passing PCI devices through to
++	 unprivileged domains. (COMPLETELY UNTESTED)
++
++config XEN_DOM0_PCI
++       def_bool y
++       depends on XEN_DOM0 && PCI
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index da33e0c..19af31b 100644
+index 40a930b..213e1ba 100644
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -989,6 +989,7 @@ asmlinkage void __init xen_start_kernel(void)
+@@ -169,9 +169,10 @@ static void __init xen_banner(void)
  
- 	xen_raw_console_write("mapping kernel into physical memory\n");
- 	pgd = xen_setup_kernel_pagetable(pgd, xen_start_info->nr_pages);
-+	xen_ident_map_ISA();
- 
- 	init_mm.pgd = pgd;
- 
-@@ -998,6 +999,13 @@ asmlinkage void __init xen_start_kernel(void)
- 	if (xen_feature(XENFEAT_supervisor_mode_kernel))
- 		pv_info.kernel_rpl = 0;
- 
-+	if (xen_initial_domain()) {
-+		struct physdev_set_iopl set_iopl;
-+		set_iopl.iopl = 1;
-+		if (HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl) == -1)
-+			BUG();
-+	}
-+
- 	/* set the limit of our address space */
- 	xen_reserve_top();
- 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 8969353..0232018 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1619,6 +1619,7 @@ static void *m2v(phys_addr_t maddr)
- 	return __ka(m2p(maddr));
+ 	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
+ 	       pv_info.name);
+-	printk(KERN_INFO "Xen version: %d.%d%s%s\n",
++	printk(KERN_INFO "Xen version: %d.%d%s%s%s\n",
+ 	       version >> 16, version & 0xffff, extra.extraversion,
+-	       xen_feature(XENFEAT_mmu_pt_update_preserve_ad) ? " (preserve-AD)" : "");
++	       xen_feature(XENFEAT_mmu_pt_update_preserve_ad) ? " (preserve-AD)" : "",
++	       xen_initial_domain() ? " (dom0)" : "");
  }
  
-+/* Set the page permissions on an identity-mapped pages */
- static void set_page_prot(void *addr, pgprot_t prot)
- {
- 	unsigned long pfn = __pa(addr) >> PAGE_SHIFT;
-@@ -1844,6 +1845,29 @@ static void xen_set_fixmap(unsigned idx, unsigned long phys, pgprot_t prot)
- #endif
- }
- 
-+__init void xen_ident_map_ISA(void)
-+{
-+	unsigned long pa;
-+
-+	/*
-+	 * If we're dom0, then linear map the ISA machine addresses into
-+	 * the kernel's address space.
-+	 */
-+	if (!xen_initial_domain())
-+		return;
-+
-+	xen_raw_printk("Xen: setup ISA identity maps\n");
-+
-+	for (pa = ISA_START_ADDRESS; pa < ISA_END_ADDRESS; pa += PAGE_SIZE) {
-+		pte_t pte = mfn_pte(PFN_DOWN(pa), PAGE_KERNEL_IO);
-+
-+		if (HYPERVISOR_update_va_mapping(PAGE_OFFSET + pa, pte, 0))
-+			BUG();
-+	}
-+
-+	xen_flush_tlb();
-+}
-+
- __init void xen_post_allocator_init(void)
- {
- 	pv_mmu_ops.set_pte = xen_set_pte;
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index 15c6c68..3e4cf46 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -51,6 +51,9 @@ char * __init xen_memory_setup(void)
- 	 * Even though this is normal, usable memory under Xen, reserve
- 	 * ISA memory anyway because too many things think they can poke
- 	 * about in there.
-+	 *
-+	 * In a dom0 kernel, this region is identity mapped with the
-+	 * hardware ISA area, so it really is out of bounds.
- 	 */
- 	e820_add_region(ISA_START_ADDRESS, ISA_END_ADDRESS - ISA_START_ADDRESS,
- 			E820_RESERVED);
-@@ -188,7 +191,8 @@ void __init xen_arch_setup(void)
- 
- 	pm_idle = xen_idle;
- 
--	paravirt_disable_iospace();
-+	if (!xen_initial_domain())
-+		paravirt_disable_iospace();
- 
- 	fiddle_vdso();
- }
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index f897cdf..8098ed1 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -29,6 +29,7 @@ void xen_setup_machphys_mapping(void);
- pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd, unsigned long max_pfn);
- void xen_ident_map_ISA(void);
- void xen_reserve_top(void);
-+void xen_ident_map_ISA(void);
- 
- void xen_post_allocator_init(void);
- 
+ static __read_mostly unsigned int cpuid_leaf1_edx_mask = ~0;
 -- 
 1.6.0.6
 
