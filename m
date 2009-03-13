@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbZCMQeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbZCMQdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759626AbZCMQeR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758934AbZCMQax
+	id S1758380AbZCMQdf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759204AbZCMQat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:30:53 -0400
-Received: from gw.goop.org ([64.81.55.164]:56732 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 12:30:49 -0400
+Received: from gw.goop.org ([64.81.55.164]:56779 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753755AbZCMQav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 12:30:51 -0400
+	id S1758098AbZCMQar (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 12:30:47 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Stephen Tweedie <sct@redhat.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 04/15] xen dom0: Add support for the platform_ops hypercall
-Date: Fri, 13 Mar 2009 09:29:45 -0700
-Message-Id: <1236961796-13407-5-git-send-email-jeremy@goop.org>
+Subject: [PATCH 09/15] xen: implement XENMEM_machphys_mapping
+Date: Fri, 13 Mar 2009 09:29:50 -0700
+Message-Id: <1236961796-13407-10-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1236961796-13407-1-git-send-email-jeremy@goop.org>
 References: <1236961796-13407-1-git-send-email-jeremy@goop.org>
@@ -26,297 +26,205 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Tweedie <sct@redhat.com>
+From: Ian Campbell <ian.campbell@citrix.com>
 
-Minimal changes to get platform ops (renamed dom0_ops on pv_ops) working
-on pv_ops builds.  Pulls in upstream linux-2.6.18-xen.hg's platform.h
+This hypercall allows Xen to specify a non-default location for the
+machine to physical mapping. This capability is used when running a 32
+bit domain 0 on a 64 bit hypervisor to shrink the hypervisor hole to
+exactly the size required.
 
-Signed-off-by: Stephen Tweedie <sct@redhat.com>
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/xen/hypercall.h |    8 ++
- include/xen/interface/platform.h     |  232 ++++++++++++++++++++++++++++++++++
- include/xen/interface/xen.h          |    2 +
- 3 files changed, 242 insertions(+), 0 deletions(-)
- create mode 100644 include/xen/interface/platform.h
+ arch/x86/include/asm/xen/interface.h    |    6 +++---
+ arch/x86/include/asm/xen/interface_32.h |    5 +++++
+ arch/x86/include/asm/xen/interface_64.h |   13 +------------
+ arch/x86/include/asm/xen/page.h         |    7 ++++---
+ arch/x86/xen/enlighten.c                |    8 +++++++-
+ arch/x86/xen/mmu.c                      |   15 +++++++++++++++
+ include/xen/interface/memory.h          |   13 +++++++++++++
+ 7 files changed, 48 insertions(+), 19 deletions(-)
 
-diff --git a/arch/x86/include/asm/xen/hypercall.h b/arch/x86/include/asm/xen/hypercall.h
-index 5e79ca6..2200a72 100644
---- a/arch/x86/include/asm/xen/hypercall.h
-+++ b/arch/x86/include/asm/xen/hypercall.h
-@@ -45,6 +45,7 @@
- #include <xen/interface/xen.h>
- #include <xen/interface/sched.h>
- #include <xen/interface/physdev.h>
-+#include <xen/interface/platform.h>
+diff --git a/arch/x86/include/asm/xen/interface.h b/arch/x86/include/asm/xen/interface.h
+index e8506c1..1c10c88 100644
+--- a/arch/x86/include/asm/xen/interface.h
++++ b/arch/x86/include/asm/xen/interface.h
+@@ -61,9 +61,9 @@ DEFINE_GUEST_HANDLE(void);
+ #define HYPERVISOR_VIRT_START mk_unsigned_long(__HYPERVISOR_VIRT_START)
+ #endif
+ 
+-#ifndef machine_to_phys_mapping
+-#define machine_to_phys_mapping ((unsigned long *)HYPERVISOR_VIRT_START)
+-#endif
++#define MACH2PHYS_VIRT_START  mk_unsigned_long(__MACH2PHYS_VIRT_START)
++#define MACH2PHYS_VIRT_END    mk_unsigned_long(__MACH2PHYS_VIRT_END)
++#define MACH2PHYS_NR_ENTRIES  ((MACH2PHYS_VIRT_END-MACH2PHYS_VIRT_START)>>__MACH2PHYS_SHIFT)
+ 
+ /* Maximum number of virtual CPUs in multi-processor guests. */
+ #define MAX_VIRT_CPUS 32
+diff --git a/arch/x86/include/asm/xen/interface_32.h b/arch/x86/include/asm/xen/interface_32.h
+index 42a7e00..8413688 100644
+--- a/arch/x86/include/asm/xen/interface_32.h
++++ b/arch/x86/include/asm/xen/interface_32.h
+@@ -32,6 +32,11 @@
+ /* And the trap vector is... */
+ #define TRAP_INSTR "int $0x82"
+ 
++#define __MACH2PHYS_VIRT_START 0xF5800000
++#define __MACH2PHYS_VIRT_END   0xF6800000
++
++#define __MACH2PHYS_SHIFT      2
++
+ /*
+  * Virtual addresses beyond this are not modifiable by guest OSes. The
+  * machine->physical mapping table starts at this address, read-only.
+diff --git a/arch/x86/include/asm/xen/interface_64.h b/arch/x86/include/asm/xen/interface_64.h
+index 100d266..839a481 100644
+--- a/arch/x86/include/asm/xen/interface_64.h
++++ b/arch/x86/include/asm/xen/interface_64.h
+@@ -39,18 +39,7 @@
+ #define __HYPERVISOR_VIRT_END   0xFFFF880000000000
+ #define __MACH2PHYS_VIRT_START  0xFFFF800000000000
+ #define __MACH2PHYS_VIRT_END    0xFFFF804000000000
+-
+-#ifndef HYPERVISOR_VIRT_START
+-#define HYPERVISOR_VIRT_START mk_unsigned_long(__HYPERVISOR_VIRT_START)
+-#define HYPERVISOR_VIRT_END   mk_unsigned_long(__HYPERVISOR_VIRT_END)
+-#endif
+-
+-#define MACH2PHYS_VIRT_START  mk_unsigned_long(__MACH2PHYS_VIRT_START)
+-#define MACH2PHYS_VIRT_END    mk_unsigned_long(__MACH2PHYS_VIRT_END)
+-#define MACH2PHYS_NR_ENTRIES  ((MACH2PHYS_VIRT_END-MACH2PHYS_VIRT_START)>>3)
+-#ifndef machine_to_phys_mapping
+-#define machine_to_phys_mapping ((unsigned long *)HYPERVISOR_VIRT_START)
+-#endif
++#define __MACH2PHYS_SHIFT       3
  
  /*
-  * The hypercall asms have to meet several constraints:
-@@ -282,6 +283,13 @@ HYPERVISOR_set_timer_op(u64 timeout)
+  * int HYPERVISOR_set_segment_base(unsigned int which, unsigned long base)
+diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
+index bf5f7d3..d5fb2e8 100644
+--- a/arch/x86/include/asm/xen/page.h
++++ b/arch/x86/include/asm/xen/page.h
+@@ -5,6 +5,7 @@
+ #include <linux/types.h>
+ #include <linux/spinlock.h>
+ #include <linux/pfn.h>
++#include <linux/mm.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/page.h>
+@@ -35,6 +36,8 @@ typedef struct xpaddr {
+ #define MAX_DOMAIN_PAGES						\
+     ((unsigned long)((u64)CONFIG_XEN_MAX_DOMAIN_MEMORY * 1024 * 1024 * 1024 / PAGE_SIZE))
+ 
++extern unsigned long *machine_to_phys_mapping;
++extern unsigned int   machine_to_phys_order;
+ 
+ extern unsigned long get_phys_to_machine(unsigned long pfn);
+ extern void set_phys_to_machine(unsigned long pfn, unsigned long mfn);
+@@ -62,10 +65,8 @@ static inline unsigned long mfn_to_pfn(unsigned long mfn)
+ 	if (xen_feature(XENFEAT_auto_translated_physmap))
+ 		return mfn;
+ 
+-#if 0
+ 	if (unlikely((mfn >> machine_to_phys_order) != 0))
+-		return max_mapnr;
+-#endif
++		return ~0;
+ 
+ 	pfn = 0;
+ 	/*
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index 35deb3e..f7c8afb 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -62,6 +62,11 @@ DEFINE_PER_CPU(struct vcpu_info, xen_vcpu_info);
+ enum xen_domain_type xen_domain_type = XEN_NATIVE;
+ EXPORT_SYMBOL_GPL(xen_domain_type);
+ 
++unsigned long *machine_to_phys_mapping = (void *)MACH2PHYS_VIRT_START;
++EXPORT_SYMBOL(machine_to_phys_mapping);
++unsigned int   machine_to_phys_order;
++EXPORT_SYMBOL(machine_to_phys_order);
++
+ struct start_info *xen_start_info;
+ EXPORT_SYMBOL_GPL(xen_start_info);
+ 
+@@ -913,7 +918,6 @@ static const struct machine_ops __initdata xen_machine_ops = {
+ 	.emergency_restart = xen_emergency_restart,
+ };
+ 
+-
+ /* First C function to be called on Xen boot */
+ asmlinkage void __init xen_start_kernel(void)
+ {
+@@ -928,6 +932,8 @@ asmlinkage void __init xen_start_kernel(void)
+ 
+ 	xen_setup_features();
+ 
++	xen_setup_machphys_mapping();
++
+ 	/* Install Xen paravirt ops */
+ 	pv_info = xen_info;
+ 	pv_init_ops = xen_init_ops;
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 15120ab..ad1b824 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -57,6 +57,7 @@
+ #include <xen/page.h>
+ #include <xen/interface/xen.h>
+ #include <xen/interface/version.h>
++#include <xen/interface/memory.h>
+ #include <xen/hvc-console.h>
+ 
+ #include "multicalls.h"
+@@ -1733,6 +1734,20 @@ static __init void xen_map_identity_early(pmd_t *pmd, unsigned long max_pfn)
+ 	set_page_prot(pmd, PAGE_KERNEL_RO);
  }
  
- static inline int
-+HYPERVISOR_dom0_op(struct xen_platform_op *platform_op)
++void __init xen_setup_machphys_mapping(void)
 +{
-+	platform_op->interface_version = XENPF_INTERFACE_VERSION;
-+	return _hypercall1(int, dom0_op, platform_op);
++	struct xen_machphys_mapping mapping;
++	unsigned long machine_to_phys_nr_ents;
++
++	if (HYPERVISOR_memory_op(XENMEM_machphys_mapping, &mapping) == 0) {
++		machine_to_phys_mapping = (unsigned long *)mapping.v_start;
++		machine_to_phys_nr_ents = mapping.max_mfn + 1;
++	} else {
++		machine_to_phys_nr_ents = MACH2PHYS_NR_ENTRIES;
++	}
++	machine_to_phys_order = fls(machine_to_phys_nr_ents - 1);
 +}
 +
-+static inline int
- HYPERVISOR_set_debugreg(int reg, unsigned long value)
+ #ifdef CONFIG_X86_64
+ static void convert_pfn_mfn(void *v)
  {
- 	return _hypercall2(int, set_debugreg, reg, value);
-diff --git a/include/xen/interface/platform.h b/include/xen/interface/platform.h
-new file mode 100644
-index 0000000..da548f3
---- /dev/null
-+++ b/include/xen/interface/platform.h
-@@ -0,0 +1,232 @@
-+/******************************************************************************
-+ * platform.h
-+ *
-+ * Hardware platform operations. Intended for use by domain-0 kernel.
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this software and associated documentation files (the "Software"), to
-+ * deal in the Software without restriction, including without limitation the
-+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-+ * sell copies of the Software, and to permit persons to whom the Software is
-+ * furnished to do so, subject to the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-+ * DEALINGS IN THE SOFTWARE.
-+ *
-+ * Copyright (c) 2002-2006, K Fraser
-+ */
-+
-+#ifndef __XEN_PUBLIC_PLATFORM_H__
-+#define __XEN_PUBLIC_PLATFORM_H__
-+
-+#include "xen.h"
-+
-+#define XENPF_INTERFACE_VERSION 0x03000001
-+
-+/*
-+ * Set clock such that it would read <secs,nsecs> after 00:00:00 UTC,
-+ * 1 January, 1970 if the current system time was <system_time>.
-+ */
-+#define XENPF_settime             17
-+struct xenpf_settime {
-+    /* IN variables. */
-+    uint32_t secs;
-+    uint32_t nsecs;
-+    uint64_t system_time;
-+};
-+typedef struct xenpf_settime xenpf_settime_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_settime_t);
-+
-+/*
-+ * Request memory range (@mfn, @mfn+@nr_mfns-1) to have type @type.
-+ * On x86, @type is an architecture-defined MTRR memory type.
-+ * On success, returns the MTRR that was used (@reg) and a handle that can
-+ * be passed to XENPF_DEL_MEMTYPE to accurately tear down the new setting.
-+ * (x86-specific).
-+ */
-+#define XENPF_add_memtype         31
-+struct xenpf_add_memtype {
-+    /* IN variables. */
-+    unsigned long mfn;
-+    uint64_t nr_mfns;
-+    uint32_t type;
-+    /* OUT variables. */
-+    uint32_t handle;
-+    uint32_t reg;
-+};
-+typedef struct xenpf_add_memtype xenpf_add_memtype_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_add_memtype_t);
-+
-+/*
-+ * Tear down an existing memory-range type. If @handle is remembered then it
-+ * should be passed in to accurately tear down the correct setting (in case
-+ * of overlapping memory regions with differing types). If it is not known
-+ * then @handle should be set to zero. In all cases @reg must be set.
-+ * (x86-specific).
-+ */
-+#define XENPF_del_memtype         32
-+struct xenpf_del_memtype {
-+    /* IN variables. */
-+    uint32_t handle;
-+    uint32_t reg;
-+};
-+typedef struct xenpf_del_memtype xenpf_del_memtype_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_del_memtype_t);
-+
-+/* Read current type of an MTRR (x86-specific). */
-+#define XENPF_read_memtype        33
-+struct xenpf_read_memtype {
-+    /* IN variables. */
-+    uint32_t reg;
-+    /* OUT variables. */
-+    unsigned long mfn;
-+    uint64_t nr_mfns;
-+    uint32_t type;
-+};
-+typedef struct xenpf_read_memtype xenpf_read_memtype_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_read_memtype_t);
-+
-+#define XENPF_microcode_update    35
-+struct xenpf_microcode_update {
-+    /* IN variables. */
-+    GUEST_HANDLE(void) data;          /* Pointer to microcode data */
-+    uint32_t length;                  /* Length of microcode data. */
-+};
-+typedef struct xenpf_microcode_update xenpf_microcode_update_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_microcode_update_t);
-+
-+#define XENPF_platform_quirk      39
-+#define QUIRK_NOIRQBALANCING      1 /* Do not restrict IO-APIC RTE targets */
-+#define QUIRK_IOAPIC_BAD_REGSEL   2 /* IO-APIC REGSEL forgets its value    */
-+#define QUIRK_IOAPIC_GOOD_REGSEL  3 /* IO-APIC REGSEL behaves properly     */
-+struct xenpf_platform_quirk {
-+    /* IN variables. */
-+    uint32_t quirk_id;
-+};
-+typedef struct xenpf_platform_quirk xenpf_platform_quirk_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_platform_quirk_t);
-+
-+#define XENPF_firmware_info       50
-+#define XEN_FW_DISK_INFO          1 /* from int 13 AH=08/41/48 */
-+#define XEN_FW_DISK_MBR_SIGNATURE 2 /* from MBR offset 0x1b8 */
-+#define XEN_FW_VBEDDC_INFO        3 /* from int 10 AX=4f15 */
-+struct xenpf_firmware_info {
-+    /* IN variables. */
-+    uint32_t type;
-+    uint32_t index;
-+    /* OUT variables. */
-+    union {
-+        struct {
-+            /* Int13, Fn48: Check Extensions Present. */
-+            uint8_t device;                   /* %dl: bios device number */
-+            uint8_t version;                  /* %ah: major version      */
-+            uint16_t interface_support;       /* %cx: support bitmap     */
-+            /* Int13, Fn08: Legacy Get Device Parameters. */
-+            uint16_t legacy_max_cylinder;     /* %cl[7:6]:%ch: max cyl # */
-+            uint8_t legacy_max_head;          /* %dh: max head #         */
-+            uint8_t legacy_sectors_per_track; /* %cl[5:0]: max sector #  */
-+            /* Int13, Fn41: Get Device Parameters (as filled into %ds:%esi). */
-+            /* NB. First uint16_t of buffer must be set to buffer size.      */
-+            GUEST_HANDLE(void) edd_params;
-+        } disk_info; /* XEN_FW_DISK_INFO */
-+        struct {
-+            uint8_t device;                   /* bios device number  */
-+            uint32_t mbr_signature;           /* offset 0x1b8 in mbr */
-+        } disk_mbr_signature; /* XEN_FW_DISK_MBR_SIGNATURE */
-+        struct {
-+            /* Int10, AX=4F15: Get EDID info. */
-+            uint8_t capabilities;
-+            uint8_t edid_transfer_time;
-+            /* must refer to 128-byte buffer */
-+            GUEST_HANDLE(uchar) edid;
-+        } vbeddc_info; /* XEN_FW_VBEDDC_INFO */
-+    } u;
-+};
-+typedef struct xenpf_firmware_info xenpf_firmware_info_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_firmware_info_t);
-+
-+#define XENPF_enter_acpi_sleep    51
-+struct xenpf_enter_acpi_sleep {
-+    /* IN variables */
-+    uint16_t pm1a_cnt_val;      /* PM1a control value. */
-+    uint16_t pm1b_cnt_val;      /* PM1b control value. */
-+    uint32_t sleep_state;       /* Which state to enter (Sn). */
-+    uint32_t flags;             /* Must be zero. */
-+};
-+typedef struct xenpf_enter_acpi_sleep xenpf_enter_acpi_sleep_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_enter_acpi_sleep_t);
-+
-+#define XENPF_change_freq         52
-+struct xenpf_change_freq {
-+    /* IN variables */
-+    uint32_t flags; /* Must be zero. */
-+    uint32_t cpu;   /* Physical cpu. */
-+    uint64_t freq;  /* New frequency (Hz). */
-+};
-+typedef struct xenpf_change_freq xenpf_change_freq_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_change_freq_t);
-+
-+/*
-+ * Get idle times (nanoseconds since boot) for physical CPUs specified in the
-+ * @cpumap_bitmap with range [0..@cpumap_nr_cpus-1]. The @idletime array is
-+ * indexed by CPU number; only entries with the corresponding @cpumap_bitmap
-+ * bit set are written to. On return, @cpumap_bitmap is modified so that any
-+ * non-existent CPUs are cleared. Such CPUs have their @idletime array entry
-+ * cleared.
-+ */
-+#define XENPF_getidletime         53
-+struct xenpf_getidletime {
-+    /* IN/OUT variables */
-+    /* IN: CPUs to interrogate; OUT: subset of IN which are present */
-+    GUEST_HANDLE(uchar) cpumap_bitmap;
-+    /* IN variables */
-+    /* Size of cpumap bitmap. */
-+    uint32_t cpumap_nr_cpus;
-+    /* Must be indexable for every cpu in cpumap_bitmap. */
-+    GUEST_HANDLE(uint64_t) idletime;
-+    /* OUT variables */
-+    /* System time when the idletime snapshots were taken. */
-+    uint64_t now;
-+};
-+typedef struct xenpf_getidletime xenpf_getidletime_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_getidletime_t);
-+
-+struct xen_platform_op {
-+    uint32_t cmd;
-+    uint32_t interface_version; /* XENPF_INTERFACE_VERSION */
-+    union {
-+        struct xenpf_settime           settime;
-+        struct xenpf_add_memtype       add_memtype;
-+        struct xenpf_del_memtype       del_memtype;
-+        struct xenpf_read_memtype      read_memtype;
-+        struct xenpf_microcode_update  microcode;
-+        struct xenpf_platform_quirk    platform_quirk;
-+        struct xenpf_firmware_info     firmware_info;
-+        struct xenpf_enter_acpi_sleep  enter_acpi_sleep;
-+        struct xenpf_change_freq       change_freq;
-+        struct xenpf_getidletime       getidletime;
-+        uint8_t                        pad[128];
-+    } u;
-+};
-+typedef struct xen_platform_op xen_platform_op_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xen_platform_op_t);
-+
-+#endif /* __XEN_PUBLIC_PLATFORM_H__ */
-+
-+/*
-+ * Local variables:
-+ * mode: C
-+ * c-set-style: "BSD"
-+ * c-basic-offset: 4
-+ * tab-width: 4
-+ * indent-tabs-mode: nil
-+ * End:
-+ */
-diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
-index 2befa3e..18b5599 100644
---- a/include/xen/interface/xen.h
-+++ b/include/xen/interface/xen.h
-@@ -461,6 +461,8 @@ typedef uint8_t xen_domain_handle_t[16];
- #define __mk_unsigned_long(x) x ## UL
- #define mk_unsigned_long(x) __mk_unsigned_long(x)
+diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
+index e6c6bcb..f548f7c 100644
+--- a/include/xen/interface/memory.h
++++ b/include/xen/interface/memory.h
+@@ -97,6 +97,19 @@ struct xen_machphys_mfn_list {
+ DEFINE_GUEST_HANDLE_STRUCT(xen_machphys_mfn_list);
  
-+DEFINE_GUEST_HANDLE(uint64_t);
+ /*
++ * Returns the location in virtual address space of the machine_to_phys
++ * mapping table. Architectures which do not have a m2p table, or which do not
++ * map it by default into guest address space, do not implement this command.
++ * arg == addr of xen_machphys_mapping_t.
++ */
++#define XENMEM_machphys_mapping     12
++struct xen_machphys_mapping {
++    unsigned long v_start, v_end; /* Start and end virtual addresses.   */
++    unsigned long max_mfn;        /* Maximum MFN that can be looked up. */
++};
++DEFINE_GUEST_HANDLE_STRUCT(xen_machphys_mapping_t);
 +
- #else /* __ASSEMBLY__ */
- 
- /* In assembly code we cannot use C numeric constant suffixes. */
++/*
+  * Sets the GPFN at which a particular page appears in the specified guest's
+  * pseudophysical address space.
+  * arg == addr of xen_add_to_physmap_t.
 -- 
 1.6.0.6
 
