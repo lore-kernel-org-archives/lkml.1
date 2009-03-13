@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZCMKka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758494AbZCMKlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbZCMKka (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 06:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZCMKkR
+	id S1758494AbZCMKlj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 06:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZCMKl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 06:40:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39681 "EHLO hera.kernel.org"
+	Fri, 13 Mar 2009 06:41:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39734 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752353AbZCMKkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 06:40:16 -0400
-Date: Fri, 13 Mar 2009 10:39:28 GMT
+	id S1751939AbZCMKl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 06:41:28 -0400
+Date: Fri, 13 Mar 2009 10:39:36 GMT
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,105 +18,103 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        srostedt@redhat.com, tglx@linutronix.de, laijs@cn.fujitsu.com,
        mingo@elte.hu
-In-Reply-To: <49BA2BAB.6010608@cn.fujitsu.com>
-References: <49BA2BAB.6010608@cn.fujitsu.com>
-Subject: [tip:tracing/ftrace] ftrace: use seq_read
-Message-ID: <tip-850a80cfaa5aec3e626eb3736eff890a80e4fa77@git.kernel.org>
-Git-Commit-ID: 850a80cfaa5aec3e626eb3736eff890a80e4fa77
+In-Reply-To: <49BA2C9F.8020009@cn.fujitsu.com>
+References: <49BA2C9F.8020009@cn.fujitsu.com>
+Subject: [tip:tracing/ftrace] ftrace: remove struct list_head from struct dyn_ftrace
+Message-ID: <tip-e94142a67f8bad494c593f0a07c9fc2fbec98c0e@git.kernel.org>
+Git-Commit-ID: e94142a67f8bad494c593f0a07c9fc2fbec98c0e
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 10:39:37 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 10:39:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  850a80cfaa5aec3e626eb3736eff890a80e4fa77
-Gitweb:     http://git.kernel.org/tip/850a80cfaa5aec3e626eb3736eff890a80e4fa77
+Commit-ID:  e94142a67f8bad494c593f0a07c9fc2fbec98c0e
+Gitweb:     http://git.kernel.org/tip/e94142a67f8bad494c593f0a07c9fc2fbec98c0e
 Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Fri, 13 Mar 2009 17:47:23 +0800
+AuthorDate: Fri, 13 Mar 2009 17:51:27 +0800
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 11:35:31 +0100
+CommitDate: Fri, 13 Mar 2009 11:36:20 +0100
 
-ftrace: use seq_read
+ftrace: remove struct list_head from struct dyn_ftrace
 
-Impact: cleanup
+Impact: save memory
 
-VFS layer has tested the file mode, we do not need test it.
+The struct dyn_ftrace table is very large, this patch will save
+about 50%.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Steven Rostedt <srostedt@redhat.com>
-LKML-Reference: <49BA2BAB.6010608@cn.fujitsu.com>
+LKML-Reference: <49BA2C9F.8020009@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/ftrace.c |   26 +++-----------------------
- 1 files changed, 3 insertions(+), 23 deletions(-)
+ include/linux/ftrace.h |    1 -
+ kernel/trace/ftrace.c  |   14 ++++++++------
+ 2 files changed, 8 insertions(+), 7 deletions(-)
 
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index c146c10..9d598bb 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -145,7 +145,6 @@ enum {
+ };
+ 
+ struct dyn_ftrace {
+-	struct list_head	list;
+ 	unsigned long		ip; /* address of mcount call-site */
+ 	unsigned long		flags;
+ 	struct dyn_arch_ftrace	arch;
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 08f4a62..bf78a4c 100644
+index bf78a4c..90d5729 100644
 --- a/kernel/trace/ftrace.c
 +++ b/kernel/trace/ftrace.c
-@@ -1120,16 +1120,6 @@ ftrace_notrace_open(struct inode *inode, struct file *file)
- 	return ftrace_regex_open(inode, file, 0);
- }
+@@ -272,7 +272,7 @@ enum {
  
--static ssize_t
--ftrace_regex_read(struct file *file, char __user *ubuf,
--		       size_t cnt, loff_t *ppos)
--{
--	if (file->f_mode & FMODE_READ)
--		return seq_read(file, ubuf, cnt, ppos);
--	else
--		return -EPERM;
--}
+ static int ftrace_filtered;
+ 
+-static LIST_HEAD(ftrace_new_addrs);
++static struct dyn_ftrace *ftrace_new_addrs;
+ 
+ static DEFINE_MUTEX(ftrace_regex_lock);
+ 
+@@ -409,8 +409,8 @@ ftrace_record_ip(unsigned long ip)
+ 		return NULL;
+ 
+ 	rec->ip = ip;
 -
- static loff_t
- ftrace_regex_lseek(struct file *file, loff_t offset, int origin)
- {
-@@ -1882,7 +1872,7 @@ static const struct file_operations ftrace_failures_fops = {
+-	list_add(&rec->list, &ftrace_new_addrs);
++	rec->flags = (unsigned long)ftrace_new_addrs;
++	ftrace_new_addrs = rec;
  
- static const struct file_operations ftrace_filter_fops = {
- 	.open = ftrace_filter_open,
--	.read = ftrace_regex_read,
-+	.read = seq_read,
- 	.write = ftrace_filter_write,
- 	.llseek = ftrace_regex_lseek,
- 	.release = ftrace_filter_release,
-@@ -1890,7 +1880,7 @@ static const struct file_operations ftrace_filter_fops = {
- 
- static const struct file_operations ftrace_notrace_fops = {
- 	.open = ftrace_notrace_open,
--	.read = ftrace_regex_read,
-+	.read = seq_read,
- 	.write = ftrace_notrace_write,
- 	.llseek = ftrace_regex_lseek,
- 	.release = ftrace_notrace_release,
-@@ -1992,16 +1982,6 @@ ftrace_graph_open(struct inode *inode, struct file *file)
- 	return ret;
+ 	return rec;
  }
+@@ -716,19 +716,21 @@ unsigned long		ftrace_update_tot_cnt;
  
--static ssize_t
--ftrace_graph_read(struct file *file, char __user *ubuf,
--		       size_t cnt, loff_t *ppos)
--{
--	if (file->f_mode & FMODE_READ)
--		return seq_read(file, ubuf, cnt, ppos);
--	else
--		return -EPERM;
--}
--
- static int
- ftrace_set_func(unsigned long *array, int *idx, char *buffer)
+ static int ftrace_update_code(struct module *mod)
  {
-@@ -2132,7 +2112,7 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
+-	struct dyn_ftrace *p, *t;
++	struct dyn_ftrace *p;
+ 	cycle_t start, stop;
  
- static const struct file_operations ftrace_graph_fops = {
- 	.open = ftrace_graph_open,
--	.read = ftrace_graph_read,
-+	.read = seq_read,
- 	.write = ftrace_graph_write,
- };
- #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+ 	start = ftrace_now(raw_smp_processor_id());
+ 	ftrace_update_cnt = 0;
+ 
+-	list_for_each_entry_safe(p, t, &ftrace_new_addrs, list) {
++	while (ftrace_new_addrs) {
+ 
+ 		/* If something went wrong, bail without enabling anything */
+ 		if (unlikely(ftrace_disabled))
+ 			return -1;
+ 
+-		list_del_init(&p->list);
++		p = ftrace_new_addrs;
++		ftrace_new_addrs = (struct dyn_ftrace *)p->flags;
++		p->flags = 0L;
+ 
+ 		/* convert record (i.e, patch mcount-call with NOP) */
+ 		if (ftrace_code_disable(mod, p)) {
