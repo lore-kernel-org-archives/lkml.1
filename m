@@ -1,140 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbZCMEzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbZCMFA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757554AbZCMEzq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 00:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZCMEzf
+	id S1755484AbZCMFA7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 01:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZCMFAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 00:55:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43090 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752624AbZCMEze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 00:55:34 -0400
-Date: Fri, 13 Mar 2009 05:55:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mike Travis <travis@sgi.com>
-Subject: Re: [PULL] x86 cpumask work
-Message-ID: <20090313045516.GA27326@elte.hu>
-References: <200903121453.45163.rusty@rustcorp.com.au> <200903131316.26455.rusty@rustcorp.com.au> <20090313032015.GD18760@elte.hu> <200903131504.09388.rusty@rustcorp.com.au>
+	Fri, 13 Mar 2009 01:00:49 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56779 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbZCMFAs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 01:00:48 -0400
+Date: Fri, 13 Mar 2009 14:00:40 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: clemens@ladisch.de
+Subject: [Patch] Fix the possibility of insane return value of hpet_calibrate() against SMI.
+Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>, robert.picco@hp.com,
+       venkatesh.pallipadi@intel.com, vojtech@suse.cz, mingo@redhat.com
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20090313134846.24B6.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903131504.09388.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.01 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+I think there is a possibility that HPET driver will return
+insane value due to a SMI interruption (or switching guests by hypervisor).
+I found it by reviewing, and I would like to fix it.
 
-> On Friday 13 March 2009 13:50:15 Ingo Molnar wrote:
-> > 
-> > * Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > 
-> > > On Friday 13 March 2009 11:27:43 Ingo Molnar wrote:
-> > > > 
-> > > > * Rusty Russell <rusty@rustcorp.com.au> wrote: 
-> > > > > Missing a core patch (it even got a compile warning with that 
-> > > > > config).
-> > > > So it's manual work and sometimes i notice them amongst a 
-> > > > boatload of other warnings, sometimes i dont.
-> > > 
-> > > Me too :( I thought you were starting a de-warning tree?  I'd 
-> > > be happy to send you patches (particularly, exporting 
-> > > deprecated symbols should not give a warning!).
-> > 
-> > Yeah - i have a de-warning tree, but it's not yet fully up and 
-> > running for -tip qa automation.
-> > 
-> > > > > But there's something else wrong.  Firing up my 64-bit 
-> > > > > test box now.
-> > > > 
-> > > > Great - so you can reproduce. Thanks,
-> > > 
-> > > Yep, and I'm running some stress tests as well now.
-> > > 
-> > > Perhaps throw away that tree, and I'll feed you a new one (the 
-> > > core patch needs to go at the front), but I can work either 
-> > > way.
-> > 
-> > Ok, i dropped it back to d95c357.
-> > 
-> > Suggestion for future workflow: we wouldnt have these somewhat 
-> > stressful (and stressful to you mostly!), large hickups and 
-> > history-less trees if you sent stuff more gradually and not so 
-> > close to the merge window. You exposed some of your changes to 
-> > linux-next but that's not nearly enough testing in practice for 
-> > x86-affecting patches.
-> 
-> Yes, I wanted to complete the patchset to make sure I wasn't going to hit
-> some subtle problem.
-> 
-> OK, please check the first patch (it's a new addition, I *think* using
-> the topology_* macros is right here), and the other change is:
-> 
-> Here's the other change: it's a little ugly (AFAICT boot_cpu_data isn't
-> even *used* on 64 bit, so a cleanup may be in order):
-> 
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -329,6 +329,23 @@ notrace static void __cpuinit start_seco
->  	cpu_idle();
->  }
->  
-> +#ifdef CONFIG_CPUMASK_OFFSTACK
-> +/* In this case, llc_shared_map is a pointer to a cpumask. */
-> +static inline void copy_cpuinfo_x86(struct cpuinfo_x86 *dst,
-> +				    const struct cpuinfo_x86 *src)
-> +{
-> +	struct cpumask *llc = dst->llc_shared_map;
-> +	*dst = *src;
-> +	dst->llc_shared_map = llc;
-> +}
-> +#else
-> +static inline void copy_cpuinfo_x86(struct cpuinfo_x86 *dst,
-> +				    const struct cpuinfo_x86 *src)
-> +{
-> +	*dst = *src;
-> +}
-> +#endif /* CONFIG_CPUMASK_OFFSTACK */
-> +
->  /*
->   * The bootstrap kernel entry code has set these up. Save them for
->   * a given CPU
-> @@ -338,7 +355,7 @@ void __cpuinit smp_store_cpu_info(int id
->  {
->  	struct cpuinfo_x86 *c = &cpu_data(id);
->  
-> -	*c = boot_cpu_data;
-> +	copy_cpuinfo_x86(c, &boot_cpu_data);
->  	c->cpu_index = id;
->  	if (id != 0)
->  		identify_secondary_cpu(c);
-> 
-> BTW, these didn't go thru linux-next: your testing is better and your
-> tree is too different or me to ask Stephen to merge.
-> 
-> Thanks!
-> Rusty.
-> 
-> The following changes since commit d95c3578120e5bc4784069439f00ccb1b5f87717:
->   Ingo Molnar (1):
->         Merge branch 'x86/core' into cpus4096
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-x86.git cpus4096
+Current HPET driver calibrates the adjustment value
+by calculation the elapse time in CPU busy loop. 
+However this way is too dangerous against SMI interruption.
 
-Pulled, thanks Rusty!
+Here is the calibration code in hpet_calibrate()
 
-Will let you know if something breaks.
+ 701 static unsigned long hpet_calibrate(struct hpets *hpetp)
+             :
+             :
+ 728         do {
+ 729                 m = read_counter(&hpet->hpet_mc);
+ 730                 write_counter(t + m + hpetp->hp_delta, &timer->hpet_compare);
+ 731         } while (i++, (m - start) < count);
+ 732 
+ 733         local_irq_restore(flags);
+ 734 
+ 735         return (m - start) / i;
 
-	Ingo
+If SMI interruption occurs between 728 to 731, then return value will be
+bigger value than correct one. (SMI is not able to be controlled by OS.)
+
+
+This patch is a simple solution to fix it.
+hpet_calibrate() is called 5 times, and one of them is expected as
+correct value.
+
+Thanks.
+
+
+---
+
+hpet_calibrate() has a possibility of miss-calibration due to SMI.
+If SMI interrupts in the while loop of calibration, then return value
+will be big. This changes it tries 5 times and get minimum value as
+correct value.
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+---
+
+Index: hpet_test/drivers/char/hpet.c
+===================================================================
+--- hpet_test.orig/drivers/char/hpet.c	2008-12-04 16:24:02.000000000 +0900
++++ hpet_test/drivers/char/hpet.c	2008-12-04 16:34:59.000000000 +0900
+@@ -713,7 +713,7 @@
+  */
+ #define	TICK_CALIBRATE	(1000UL)
+ 
+-static unsigned long hpet_calibrate(struct hpets *hpetp)
++static unsigned long __hpet_calibrate(struct hpets *hpetp)
+ {
+ 	struct hpet_timer __iomem *timer = NULL;
+ 	unsigned long t, m, count, i, flags, start;
+@@ -750,6 +750,17 @@
+ 	return (m - start) / i;
+ }
+ 
++static unsigned long hpet_calibrate(struct hpets *hpetp)
++{
++	unsigned long ret = ~0UL, i;
++
++	/* Try 5 times to remove impact of SMI.*/
++	for (i = 0; i < 5; i++)
++		ret = min(ret, __hpet_calibrate(hpetp));
++
++	return ret;
++}
++
+ int hpet_alloc(struct hpet_data *hdp)
+ {
+ 	u64 cap, mcfg;
+
+-- 
+Yasunori Goto 
+
+
