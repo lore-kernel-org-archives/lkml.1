@@ -1,66 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbZCMT50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbZCMT63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758819AbZCMT50 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 15:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZCMT5Q
+	id S1757728AbZCMT63 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 15:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbZCMT6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 15:57:16 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:51412 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbZCMT5Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 15:57:16 -0400
-Date: Fri, 13 Mar 2009 14:57:13 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Linux Containers <containers@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] devcgroup: avoid using cgroup_lock
-Message-ID: <20090313195712.GA18439@us.ibm.com>
-References: <49B869BB.7030907@cn.fujitsu.com> <20090312181912.GA20144@us.ibm.com> <49B9BCC7.7090908@cn.fujitsu.com> <20090313134139.GB32304@us.ibm.com>
+	Fri, 13 Mar 2009 15:58:21 -0400
+Received: from www.tglx.de ([62.245.132.106]:49041 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751549AbZCMT6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 15:58:20 -0400
+Date: Fri, 13 Mar 2009 20:55:13 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Ingo Molnar <mingo@elte.hu>, pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>,
+       =?ISO-8859-15?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [update, rev. 6] Re: [PATCH 1/10] PM: Rework handling of interrupts
+ during suspend-resume (rev. 5)
+In-Reply-To: <200903122243.27452.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0903132052240.29264@localhost.localdomain>
+References: <200902221837.49396.rjw@sisk.pl> <alpine.LFD.2.00.0903112342440.29264@localhost.localdomain> <200903121436.21504.rjw@sisk.pl> <200903122243.27452.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090313134139.GB32304@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Serge E. Hallyn (serue@us.ibm.com):
-> Quoting Li Zefan (lizf@cn.fujitsu.com):
-> > >> @@ -426,11 +431,11 @@ static int devcgroup_access_write(struct cgroup *cgrp, struct cftype *cft,
-> > >>  				  const char *buffer)
-> > >>  {
-> > >>  	int retval;
-> > >> -	if (!cgroup_lock_live_group(cgrp))
-> > > 
-> > > Does it matter that we no longer check for cgroup_is_removed()?
-> > > 
-> > 
-> > No, this means in a rare case that the write handler is called when the cgroup
-> > is dead, we still do the update work instead of returning ENODEV.
-> > 
-> > This is ok, since at that time, accessing cgroup and devcgroup is still valid,
-> > but will have no effect since there is no task in this cgroup and the cgroup
-> > will be destroyed soon.
-> 
-> Ok, just wanted to make sure the devcgroup couldn't be partially torn
-> down and risking NULL or freed-memory derefs...
+On Thu, 12 Mar 2009, Rafael J. Wysocki wrote:
+> +/**
+> + * suspend_device_irqs - disable all currently enabled interrupt lines
+> + *
+> + * During system-wide suspend or hibernation device interrupts need to be
+> + * disabled at the chip level and this function is provided for this purpose.
+> + * It disables all interrupt lines that are enabled at the moment and sets the
+> + * IRQ_SUSPENDED flag for them.
+> + */
+> +void suspend_device_irqs(void)
+> +{
+> +	struct irq_desc *desc;
+> +	int irq;
+> +
+> +	for_each_irq_desc(irq, desc) {
+> +		unsigned long flags;
+> +
+> +		spin_lock_irqsave(&desc->lock, flags);
+> +		__disable_irq(desc, irq, true);
+> +		spin_unlock_irqrestore(&desc->lock, flags);
 
-Ok, so the cgroup's files will be deleted first, then on the directory
-removal the cgroup's data (each whitelist entry) is deleted.  So we can
-let that ordering (by cgroup_clear_directory) ensure that nothing inside
-a file write can happen while the destroy handler is called, right?
+Can we move the locking into __disable_irq ?
 
-(That's why I was worried about not using the cgroup_lock: we need some
-way of synchronizing those.  But I guess we're fine)
+> +	}
+> +
+> +	for_each_irq_desc(irq, desc)
+> +		if (desc->status & IRQ_SUSPENDED)
+> +			synchronize_irq(irq);
+> +}
+> +EXPORT_SYMBOL_GPL(suspend_device_irqs);
+> +
+> +/**
+> + * resume_device_irqs - enable interrupt lines disabled by suspend_device_irqs()
+> + *
+> + * Enable all interrupt lines previously disabled by suspend_device_irqs() that
+> + * have the IRQ_SUSPENDED flag set.
+> + */
+> +void resume_device_irqs(void)
+> +{
+> +	struct irq_desc *desc;
+> +	int irq;
+> +
+> +	for_each_irq_desc(irq, desc) {
+> +		unsigned long flags;
+> +
+> +		if (!(desc->status & IRQ_SUSPENDED))
+> +			continue;
+> +
+> +		spin_lock_irqsave(&desc->lock, flags);
+> +		__enable_irq(desc, irq, true);
+> +		spin_unlock_irqrestore(&desc->lock, flags);
 
-> BTW is that against linux-next?  (didn't seem to apply cleanly against
-> my 2.6.29-rc9)  I guess I'd like to do a little test before acking,
-> though it looks ok based on your answer.
+Ditto
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Thanks,
 
--serge
+	tglx
