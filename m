@@ -1,103 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZCMIM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbZCMINU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbZCMIM0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 04:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZCMIMJ
+	id S1758092AbZCMINU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 04:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbZCMIMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 04:12:09 -0400
-Received: from gw.goop.org ([64.81.55.164]:34776 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 04:12:12 -0400
+Received: from gw.goop.org ([64.81.55.164]:34777 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750897AbZCMIMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 04:12:06 -0400
+	id S1751933AbZCMIMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 04:12:09 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: [GIT PULL] 2.6.30 Xen core updates
-Date: Fri, 13 Mar 2009 01:11:36 -0700
-Message-Id: <1236931920-6861-1-git-send-email-jeremy@goop.org>
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 02/24] xen: separate p2m allocation from setting
+Date: Fri, 13 Mar 2009 01:11:38 -0700
+Message-Id: <1236931920-6861-3-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1236931920-6861-1-git-send-email-jeremy@goop.org>
+References: <1236931920-6861-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-This series updates the kernel's baseline domU Xen functionality.
-It's mostly bugfixes, but there are a couple of new Xen-specific drivers.
+When doing very early p2m setting, we need to separate setting
+from allocation, so split things up accordingly.
 
-The series depends on the earlier x86/brk and x86/paravirt patches I
-posted a couple of days ago.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/xen/mmu.c |   61 +++++++++++++++++++++++++++++++++++++--------------
+ arch/x86/xen/mmu.h |    3 ++
+ 2 files changed, 47 insertions(+), 17 deletions(-)
 
-Thanks,
-	J
-
-The following changes since commit 6b3933081104945c557d8fe678301cc1bdefdcc8:
-  Jeremy Fitzhardinge (1):
-        Merge branch 'push/x86/brk' into HEAD
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push/xen/master
-
-Alex Nixon (1):
-      Xen: Add virt_to_pfn helper function
-
-Hannes Eder (1):
-      NULL noise: arch/x86/xen/smp.c
-
-Ian Campbell (6):
-      xen: add irq_from_evtchn
-      xen: add /dev/xen/evtchn driver
-      xen: export ioctl headers to userspace
-      xen: drop kexec bits from /sys/hypervisor since kexec isn't implemented yet
-      xen: remove suspend_cancel hook
-      xen: use device model for suspending xenbus devices
-
-Jeremy Fitzhardinge (18):
-      xen: disable preempt for leave_lazy_mmu
-      xen: separate p2m allocation from setting
-      xen: dynamically allocate p2m tables
-      xen: split construction of p2m mfn tables from registration
-      xen: clean up xen_load_gdt
-      xen: make xen_load_gdt simpler
-      xen: remove xen_load_gdt debug
-      xen: reserve i386 Xen pagetables
-      xen: mask XSAVE from cpuid
-      xen: add FIX_TEXT_POKE to fixmap
-      x86-64: remove PGE from must-have feature list
-      xen/dev-evtchn: clean up locking in evtchn
-      xen: add "capabilities" file
-      xen: add /sys/hypervisor support
-      xen/sys/hypervisor: change writable_pt to features
-      xen/xenbus: export xenbus_dev_changed
-      Merge branches 'push/xen/dev-evtchn', 'push/xen/xenfs' and 'push/xen/sys-hypervisor' into push/xen/control
-      Merge branches 'push/xen/control' and 'push/xen/xenbus' into push/xen/master
-
- arch/x86/include/asm/required-features.h |    2 +-
- arch/x86/include/asm/xen/page.h          |    3 +-
- arch/x86/xen/enlighten.c                 |   76 ++++-
- arch/x86/xen/mmu.c                       |  116 ++++++--
- arch/x86/xen/mmu.h                       |    3 +
- arch/x86/xen/smp.c                       |    4 +-
- drivers/xen/Kconfig                      |   20 ++
- drivers/xen/Makefile                     |    4 +-
- drivers/xen/events.c                     |    6 +
- drivers/xen/evtchn.c                     |  507 ++++++++++++++++++++++++++++++
- drivers/xen/manage.c                     |    9 +-
- drivers/xen/sys-hypervisor.c             |  445 ++++++++++++++++++++++++++
- drivers/xen/xenbus/xenbus_probe.c        |   61 +---
- drivers/xen/xenbus/xenbus_xs.c           |    2 +
- drivers/xen/xenfs/super.c                |   19 +-
- include/Kbuild                           |    1 +
- include/xen/Kbuild                       |    1 +
- include/xen/events.h                     |    3 +
- include/xen/evtchn.h                     |   88 +++++
- include/xen/interface/version.h          |    3 +
- include/xen/xenbus.h                     |    3 +-
- 21 files changed, 1269 insertions(+), 107 deletions(-)
- create mode 100644 drivers/xen/evtchn.c
- create mode 100644 drivers/xen/sys-hypervisor.c
- create mode 100644 include/xen/Kbuild
- create mode 100644 include/xen/evtchn.h
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index eceff87..d534986 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -233,47 +233,74 @@ unsigned long get_phys_to_machine(unsigned long pfn)
+ }
+ EXPORT_SYMBOL_GPL(get_phys_to_machine);
+ 
+-static void alloc_p2m(unsigned long **pp, unsigned long *mfnp)
++/* install a  new p2m_top page */
++bool install_p2mtop_page(unsigned long pfn, unsigned long *p)
+ {
+-	unsigned long *p;
++	unsigned topidx = p2m_top_index(pfn);
++	unsigned long **pfnp, *mfnp;
+ 	unsigned i;
+ 
+-	p = (void *)__get_free_page(GFP_KERNEL | __GFP_NOFAIL);
+-	BUG_ON(p == NULL);
++	pfnp = &p2m_top[topidx];
++	mfnp = &p2m_top_mfn[topidx];
+ 
+ 	for (i = 0; i < P2M_ENTRIES_PER_PAGE; i++)
+ 		p[i] = INVALID_P2M_ENTRY;
+ 
+-	if (cmpxchg(pp, p2m_missing, p) != p2m_missing)
+-		free_page((unsigned long)p);
+-	else
++	if (cmpxchg(pfnp, p2m_missing, p) == p2m_missing) {
+ 		*mfnp = virt_to_mfn(p);
++		return true;
++	}
++
++	return false;
+ }
+ 
+-void set_phys_to_machine(unsigned long pfn, unsigned long mfn)
++static void alloc_p2m(unsigned long pfn)
+ {
+-	unsigned topidx, idx;
++	unsigned long *p;
+ 
+-	if (unlikely(xen_feature(XENFEAT_auto_translated_physmap))) {
+-		BUG_ON(pfn != mfn && mfn != INVALID_P2M_ENTRY);
+-		return;
+-	}
++	p = (void *)__get_free_page(GFP_KERNEL | __GFP_NOFAIL);
++	BUG_ON(p == NULL);
++
++	if (!install_p2mtop_page(pfn, p))
++		free_page((unsigned long)p);
++}
++
++/* Try to install p2m mapping; fail if intermediate bits missing */
++bool __set_phys_to_machine(unsigned long pfn, unsigned long mfn)
++{
++	unsigned topidx, idx;
+ 
+ 	if (unlikely(pfn >= MAX_DOMAIN_PAGES)) {
+ 		BUG_ON(mfn != INVALID_P2M_ENTRY);
+-		return;
++		return true;
+ 	}
+ 
+ 	topidx = p2m_top_index(pfn);
+ 	if (p2m_top[topidx] == p2m_missing) {
+-		/* no need to allocate a page to store an invalid entry */
+ 		if (mfn == INVALID_P2M_ENTRY)
+-			return;
+-		alloc_p2m(&p2m_top[topidx], &p2m_top_mfn[topidx]);
++			return true;
++		return false;
+ 	}
+ 
+ 	idx = p2m_index(pfn);
+ 	p2m_top[topidx][idx] = mfn;
++
++	return true;
++}
++
++void set_phys_to_machine(unsigned long pfn, unsigned long mfn)
++{
++	if (unlikely(xen_feature(XENFEAT_auto_translated_physmap))) {
++		BUG_ON(pfn != mfn && mfn != INVALID_P2M_ENTRY);
++		return;
++	}
++
++	if (unlikely(!__set_phys_to_machine(pfn, mfn)))  {
++		alloc_p2m(pfn);
++
++		if (!__set_phys_to_machine(pfn, mfn))
++			BUG();
++	}
+ }
+ 
+ unsigned long arbitrary_virt_to_mfn(void *vaddr)
+diff --git a/arch/x86/xen/mmu.h b/arch/x86/xen/mmu.h
+index 24d1b44..da73026 100644
+--- a/arch/x86/xen/mmu.h
++++ b/arch/x86/xen/mmu.h
+@@ -11,6 +11,9 @@ enum pt_level {
+ };
+ 
+ 
++bool __set_phys_to_machine(unsigned long pfn, unsigned long mfn);
++bool install_p2mtop_page(unsigned long pfn, unsigned long *p);
++
+ void set_pte_mfn(unsigned long vaddr, unsigned long pfn, pgprot_t flags);
+ 
+ 
+-- 
+1.6.0.6
 
