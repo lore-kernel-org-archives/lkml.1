@@ -1,173 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757226AbZCMGgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbZCMGoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757226AbZCMGgZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 02:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZCMGgQ
+	id S1755007AbZCMGoN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 02:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbZCMGny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 02:36:16 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:57588 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbZCMGgP (ORCPT
+	Fri, 13 Mar 2009 02:43:54 -0400
+Received: from mga10.intel.com ([192.55.52.92]:64507 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750780AbZCMGnx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 02:36:15 -0400
-Date: Thu, 12 Mar 2009 23:36:11 -0700
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Serge Hallyn <serue@linux.vnet.ibm.com>
-Cc: Containers <containers@lists.osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Ensuring c/r maintainability (WAS Re: [RFC][PATCH 00/11] track
-	files for checkpointability)
-Message-ID: <20090313063611.GH7561@us.ibm.com>
-References: <1236280567.22399.99.camel@nimitz> <20090305210840.GA2499@x200.localdomain> <1236288427.22399.122.camel@nimitz> <20090305220044.GA2819@x200.localdomain> <1236352121.5732.80.camel@bahia> <20090306153549.GA898@us.ibm.com> <49B15F35.2010909@free.fr> <20090306183055.GA6729@us.ibm.com> <49B76D91.1020807@free.fr> <20090312153048.GA11147@hallyn.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090312153048.GA11147@hallyn.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 13 Mar 2009 02:43:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,355,1233561600"; 
+   d="scan'208";a="438594979"
+Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to
+	submit to upper layer
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, herbert@gondor.apana.org.au,
+       jesse.brandeburg@intel.com, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <1236866906.3221.11.camel@achroite>
+References: <1236761624.2567.442.camel@ymzhang>
+	 <877i2wfh1l.fsf@basil.nowhere.org>  <1236845792.2567.484.camel@ymzhang>
+	 <1236866906.3221.11.camel@achroite>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 13 Mar 2009 14:43:22 +0800
+Message-Id: <1236926602.2567.528.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 10:30:48AM -0500, Serge E. Hallyn wrote:
-> Quoting Cedric Le Goater (legoater@free.fr):
-> > >> And if Ingo's requirement is fulfilled, would any C/R patchset be acceptable ?
-> > > 
-> > > Yup, no matter how hideous  :)  Ok not really.
-> > > 
-> > > But the point was that it wasn't Dave not understanding Alexey's
-> > > suggestion, but Greg not understanding Ingo's.  If you think Ingo's
-> > > goal isn't worthwhile or achievable, then argue that (as I am), don't
-> > > keep elaborating on something we all agree will be needed (Alexey's
-> > > suggestion or some other way of doing a true may-be-checkpointed test).
+On Thu, 2009-03-12 at 14:08 +0000, Ben Hutchings wrote:
+> On Thu, 2009-03-12 at 16:16 +0800, Zhang, Yanmin wrote:
+> > On Wed, 2009-03-11 at 12:13 +0100, Andi Kleen wrote:
+> [...]
+> > >  and just use the hash function on the
+> > > NIC.
+> > Sorry. I can't understand what the hash function of NIC is. Perhaps NIC hardware has something
+> > like hash function to decide the RX queue number based on SRC/DST?
+> 
+> Yes, that's exactly what they do.  This feature is sometimes called
+> Receive-Side Scaling (RSS) which is Microsoft's name for it.  Microsoft
+> requires Windows drivers performing RSS to provide the hash value to the
+> networking stack, so Linux drivers for the same hardware should be able
+> to do so too.
+Oh, I didn't know the background. I need study more about network.
+Thanks for explain it.
+
+> 
+> > >  Have you considered this for forwarding too?
+> > Yes. originally, I plan to add a tx_num under the same sysfs directory, so admin could
+> > define that all packets received from a RX queue should be sent out from a specific TX queue.
+> 
+> The choice of TX queue can be based on the RX hash so that configuration
+> is usually unnecessary.
+I agree. I double checked the latest codes of tree ﻿net-next-2.6 and function skb_tx_hash
+is enough. 
+
+> 
+> > So struct sk_buff->queue_mapping would be a union of 2 sub-members, rx_num and tx_num. But
+> > ﻿sk_buff->queue_mapping is just a u16 which is a small type. We might use the most-significant
+> > bit of ﻿sk_buff->queue_mapping as a flag as rx_num and tx_num wouldn't exist at the
+> > same time.
 > > 
-> > I rather spend my time on enabling things rather than forbid them. 
+> > >  The trick here would
+> > > be to try to avoid reordering inside streams as far as possible,
+> > It's not to solve reorder issue. The start point is 10G NIC is very fast. We need some cpu
+> > work on packet receiving dedicately. If they work on other things, NIC might drop packets
+> > quickly.
 > 
-> That sure sounds productive.  How could I argue with that.
+
+> Aggressive power-saving causes far greater latency than context-
+> switching under Linux.
+Yes when NIC is free mostly. When NIC is busy, it wouldn't enter power-saving mode.
+Performance testing is used to turn off all power-saving modes. :)
+
+>   I believe most 10G NICs have large RX FIFOs to
+> mitigate against this.  Ethernet flow control also helps to prevent
+> packet loss.
+I guess NIC might allocate resources evenly for all queues, at least by default. If considering
+packet sending burst with the same SRC/DST, a specific queue might be full quickly. I
+instrumented driver and kernel to print out packet receiving and forwarding. As The latest IXGBE
+driver gets a packet and forwards it immediately, I think most packets are dropped by hardware
+because cpu doesn't collects packets quickly when the specific receiving queue is full. By
+comparing the sending speed and forwarding speed, we could get the dropping rate easily.
+
+My experiment shows receving cpu idle is more than 50% and cpu does often collect all packets
+till the specific queue is empty. I think that's because pktgen switches to a new SRC/DST to
+produce another burst to fill other queues quickly.
+
+It's hard to say cpu is slower than NIC because they work on different parts of the full
+receiving/processing procedures. But we need cpu collect packets ASAP.
+
+
+> > The sysfs interface is just to facilitate NIC drivers. If there is no the sysfs interface,
+> > driver developers need implement it with parameters which are painful.
+> [...]
 > 
-> But wait, haven't several teams been doing that for years?  So why is
-> c/r not in the upstream kernel?  Could it be that ignoring the
-> upstream maintainers' concerns about (a) treating the feature as a
-> toy, (b) long-term maintainability, and (c) c/r becoming an impediment
-> to future features, and instead hacking away at our toy feature, is
-> *not* always the best course?
+> Or through the ethtool API, which already has some multiqueue control
+> operations.
+That's an alternative approach to configure it. If checking the sample patch on driver,
+we can find the change is very small.
 
-I've been thinking about how we could make checkpoint/restart (c/r) more
-maintainable in the long-term. I've only come up with two ideas:
+Thanks for your kind comments.
 
-I. Implement sparse-like __cr struct annotations for some compile-time checking.
+Yanmin
 
-First we annotate structures which c/r needs to save. For example we might have:
 
-	struct mm_struct {
-		__cr struct vm_area_struct * mmap;
-		struct rb_root mm_rb;
-		struct vm_area_struct *mmap_cache;
-		...
-		__cr unsigned long mmap_base;
-		__cr unsigned long task_size;
-		..
-	};
-
-The __cr annotations indicate fields of the mm_struct which must be
-saved during checkpoint restart. In fact, for non-pointer fields these
-annotations would be sufficient to generate c/r code.
-
-Next we would need a __cr_root annotation. These mark structures which
-the c/r code visits that determine the scope of c/r. If there is no path from a
-__cr annotation to a __cr_root annotation then we would conclude that c/r of
-this struct is broken. These path constraint checks could be done at compile
-time.
-
-Since the example so far lacks a __cr_root we would know that there's a bug
-since no __cr_root struct is reachable from an mm_struct. We'd fix that with:
-
-	struct task_struct __cr_root {
-		__cr volatile long state;
-		..
-		__cr struct mm_struct *mm;
-		struct *active_mm;
-		...
-	};
-
-Of course there are problems with this specific annotation scheme. It doesn't
-follow casts -- e.g. list heads, rb_nodes, and anything that uses the important
-container_of() idiom would be problematic if the containers themselves are not
-uniform. What I've proposed so far doesn't check the functions that walk these
-data structures during c/r to make sure each saved instance has a matching
-restore (seems like this could be addressed though). I'm no sparse expert so I
-don't know that sparse can check these kinds of struct constraints,
-however I'm pretty sure that if sparse can't do it then we can do it
-with the dwarf-2 debugging information available.
-
-We could also save __cr-annotated struct definitions across one or more commits
-and compare them to determine how structures with __cr annotations change. We
-could use dwarf-2 information to detect certain types of changes which can then
-be flagged for further review, emit warnings or even  errors. I think once c/r
-was in mainline this would ideally be run against automated compile tests of
-linux-next and the output sent to c/r maintainers/lists. This output would also
-highlight changes relevant to userspace checkpoint-image converters that enable
-things like kernel upgrades by doing checkpoint, kexec, and restart.
-
-The idea of generating straight-line struct assignment code from these
-annotations crossed my mind but I'm pretty sure that would be less 
-maintainable.
-
-II. JIT-instrumentation
-
-WARNING: This idea is much more vaporous than the previous idea.
-
-Confirm that, from the perspective of executing userspace code, a restarted
-container does exactly the same thing as the original, checkpointed container.
-Use valgrind's JIT instrumentation framework to do instruction by instruction
-step-and-compare cycles between corresponding tasks in each container:
-
-	1. Compare instruction pointer (IP)
-	2. Compare the instruction (redundant if we check text mappings)
-	3. Compare all register and memory operand contents
-
-Each comparison must match exactly otherwise we "abort" the two containers.
-
-Normally this would break even if c/r is correctly implemented. The idea is we
-insert "mirroring" code into parts of the kernel to ensure that the timing and
-contents of inputs external to the userspace portion of these containers match:
-	1. Network
-		i. Need to "mirror" packets to both containers
-		ii. Need to merge packets from both containers
-	2. Time
-		Each corresponding call to functions like gettimeofday()
-		would need to return the same struct timeval.
-	
-		Each timeout result from calls like ppoll() would need
-		to be the same.
-	3. Locking "order" would need to be "mirrored". This is probably
-		the hardest to implement. Task A and A' (original and
-		duplicate respectively) could try to acquire the same
-		lock or semaphore in the kernel. The results of a system call
-		could vary depending on whether trying to acquire this
-		lock succeeds. Suddenly the task behavior would diverge
-		even though c/r is correct. I haven't figured out how to
-		address this problem but perhaps others can make
-		suggestions.
-	4. Scheduling
-		Need to schedule tasks within a container in the same order.
-		This is probably strongly tied to both timing and locking --
-		perhaps so much so that taking care of those will take care
-		of scheduling??
-
-This should catch any points where the restarted application differs
-from the original. I'm hoping it would catch most of the problems that
-struct annotation would miss and make maintenance of c/r much less
-problematic. One weakness of this method as I've described it so far is there's
-no mechanism for relating the divergence of the two tasks to a spot in the c/r
-code. Again, I haven't thought of a way to do that and perhaps others
-can help take the idea farther.
-
-A weakened version of this check might use the same kernel changes but only
-compare system calls.
-
-Cheers,
-	-Matt Helsley
