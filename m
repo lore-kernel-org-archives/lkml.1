@@ -1,187 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759157AbZCMSez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759589AbZCMSib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759157AbZCMSez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 14:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbZCMSeo
+	id S1759589AbZCMSib (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 14:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759558AbZCMSiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 14:34:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57348 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751449AbZCMSen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 14:34:43 -0400
-Date: Fri, 13 Mar 2009 19:33:04 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
-       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
-       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net
-Subject: [PATCH] bonding: allow bond in mode balance-alb to work properly
-	in bridge
-Message-ID: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
+	Fri, 13 Mar 2009 14:38:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:20855 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758859AbZCMSiQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 14:38:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=iZ47OjhlzzwtaS0hSwe+VglREW1MbSds6nOdOmfZk0mPM+Dig5szS3qCEXK2xM8FqN
+         SRr6YmVT5yT38aPZffJgjnf2wcVeMNOu+r4PtMKb1tcvhnny7/92egMoKl289hXonKUX
+         8MYwnwjztyoprR2/hNe7L0msHn01LWpjHp6wk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090313.100802.67201749.davem@davemloft.net>
+References: <59f1f0cb0903130025k31cc2c9fud865dd776534c2bd@mail.gmail.com>
+	 <20090313.100802.67201749.davem@davemloft.net>
+Date: Fri, 13 Mar 2009 11:38:14 -0700
+Message-ID: <59f1f0cb0903131138s1012ef9q94a67d212e905296@mail.gmail.com>
+Subject: Re: Network throughput (localhost)
+From: Aki Niimura <akineko@gmail.com>
+To: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all.
+Hello David,
 
-This is only a draft of patch to consult. I'm aware that it should be divided
-into multiple patches. I want to know opinion from you folks.
+Thank you for your prompt response to my posting.
+I have changed my program temporarily to use AF_UNIX and tested the performance.
+I got approx 20% throughput improvement in all testing conditions.
+Thank you!
 
-The problem is described in following bugzilla:
-https://bugzilla.redhat.com/show_bug.cgi?id=487763
+However, even with the use of AF_UNIX, the localhost throughput of
+Solaris/x86 is still around 30% faster than Linux's AF_UNIX throughput
+(using the same h/w).
+I like the way Solaris did because I don't need to change my program
+as my program may need to send packets to another machine rather than
+another CPU next to.
+Hope Linux will incorporate such scheme in the future.
 
-Basically here's what's going on. In every mode, bonding interface uses the same
-mac address for all enslaved devices. Except for mode balance-alb. When you put
-this kind of bond device into a bridge it will only add one of mac adresses into
-a hash list of mac addresses, say X. This mac address is marked as local. But
-this bonding interface also has mac address Y. Now then packet arrives with
-destination address Y, this address is not marked as local and the packed looks
-like it needs to be forwarded. This packet is then lost which is wrong.
+Best regards,
+Aki Niimura
 
-Notice that interfaces can be added and removed from bond while it is in bridge.
-Therefore I introduce another function pointer in struct net_device_ops -
-ndo_check_mac_address. This function when it's implemented should check passed
-mac address against the one set in device. I'm using this in bonding driver when
-the bond is in mode balance-alb to walk thru all slaves and checking if any of
-them equals passed address.
-
-Then in bridge function br_handle_frame_finish() I'm using ndo_check_mac_address
-to recognize the destination mac address as local.
-
-Please look at this and tell me what you think about it.
-
-Thanks
-
-Jirka
-
-
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-
- drivers/net/bonding/bond_alb.c  |   17 +++++++++++++++++
- drivers/net/bonding/bond_alb.h  |    1 +
- drivers/net/bonding/bond_main.c |   11 +++++++++++
- include/linux/netdevice.h       |    7 +++++++
- net/bridge/br_input.c           |    5 ++++-
- 5 files changed, 40 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
-index 27fb7f5..b7bcee0 100644
---- a/drivers/net/bonding/bond_alb.c
-+++ b/drivers/net/bonding/bond_alb.c
-@@ -1762,6 +1762,23 @@ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr)
- 	return 0;
- }
- 
-+int bond_alb_check_mac_address(struct net_device *bond_dev, void *addr)
-+{
-+	struct bonding *bond = netdev_priv(bond_dev);
-+	struct slave *slave = NULL;
-+	int ret = !0;
-+	int i;
-+
-+	read_lock(&bond->lock);
-+	bond_for_each_slave(bond, slave, i) {
-+		ret = compare_ether_addr(slave->perm_hwaddr, addr);
-+		if (!ret)
-+			break;
-+	}
-+	read_unlock(&bond->lock);
-+	return ret;
-+}
-+
- void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id)
- {
- 	if (bond->alb_info.current_alb_vlan &&
-diff --git a/drivers/net/bonding/bond_alb.h b/drivers/net/bonding/bond_alb.h
-index 50968f8..5e39bda 100644
---- a/drivers/net/bonding/bond_alb.h
-+++ b/drivers/net/bonding/bond_alb.h
-@@ -127,6 +127,7 @@ void bond_alb_handle_active_change(struct bonding *bond, struct slave *new_slave
- int bond_alb_xmit(struct sk_buff *skb, struct net_device *bond_dev);
- void bond_alb_monitor(struct work_struct *);
- int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr);
-+int bond_alb_check_mac_address(struct net_device *bond_dev, void *addr);
- void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id);
- #endif /* __BOND_ALB_H__ */
- 
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-index e0578fe..fbff338 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -4279,6 +4279,16 @@ unwind:
- 	return res;
- }
- 
-+static int bond_check_mac_address(struct net_device *bond_dev, void *addr)
-+{
-+	struct bonding *bond = netdev_priv(bond_dev);
-+
-+	if (bond->params.mode == BOND_MODE_ALB)
-+		return bond_alb_check_mac_address(bond_dev, addr);
-+
-+	return compare_ether_addr(bond_dev->dev_addr, addr);
-+}
-+
- static int bond_xmit_roundrobin(struct sk_buff *skb, struct net_device *bond_dev)
- {
- 	struct bonding *bond = netdev_priv(bond_dev);
-@@ -4576,6 +4586,7 @@ static const struct net_device_ops bond_netdev_ops = {
- 	.ndo_set_multicast_list	= bond_set_multicast_list,
- 	.ndo_change_mtu		= bond_change_mtu,
- 	.ndo_set_mac_address 	= bond_set_mac_address,
-+	.ndo_check_mac_address 	= bond_check_mac_address,
- 	.ndo_neigh_setup	= bond_neigh_setup,
- 	.ndo_vlan_rx_register	= bond_vlan_rx_register,
- 	.ndo_vlan_rx_add_vid 	= bond_vlan_rx_add_vid,
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 6593667..e75f691 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -491,6 +491,10 @@ struct netdev_queue {
-  *	needs to be changed. If not this interface is not defined, the
-  *	mac address can not be changed.
-  *
-+ * int (*ndo_check_mac_address)(struct net_device *dev, void *addr);
-+ *	This function is called when the given Media Access Control address
-+ *	needs to compared to the one set to the device.
-+ *
-  * int (*ndo_validate_addr)(struct net_device *dev);
-  *	Test if Media Access Control address is valid for the device.
-  *
-@@ -554,6 +558,9 @@ struct net_device_ops {
- #define HAVE_SET_MAC_ADDR
- 	int			(*ndo_set_mac_address)(struct net_device *dev,
- 						       void *addr);
-+#define HAVE_CHECK_MAC_ADDR
-+	int			(*ndo_check_mac_address)(struct net_device *dev,
-+						       void *addr);
- #define HAVE_VALIDATE_ADDR
- 	int			(*ndo_validate_addr)(struct net_device *dev);
- #define HAVE_PRIVATE_IOCTL
-diff --git a/net/bridge/br_input.c b/net/bridge/br_input.c
-index 30b8877..b071169 100644
---- a/net/bridge/br_input.c
-+++ b/net/bridge/br_input.c
-@@ -39,6 +39,7 @@ int br_handle_frame_finish(struct sk_buff *skb)
- {
- 	const unsigned char *dest = eth_hdr(skb)->h_dest;
- 	struct net_bridge_port *p = rcu_dereference(skb->dev->br_port);
-+	struct net_device *dev = p->dev;
- 	struct net_bridge *br;
- 	struct net_bridge_fdb_entry *dst;
- 	struct sk_buff *skb2;
-@@ -64,7 +65,9 @@ int br_handle_frame_finish(struct sk_buff *skb)
- 	if (is_multicast_ether_addr(dest)) {
- 		br->dev->stats.multicast++;
- 		skb2 = skb;
--	} else if ((dst = __br_fdb_get(br, dest)) && dst->is_local) {
-+	} else if (((dst = __br_fdb_get(br, dest)) && dst->is_local) ||
-+		   (dev->netdev_ops->ndo_check_mac_address &&
-+		    !dev->netdev_ops->ndo_check_mac_address(dev, (unsigned char *) dest))) {
- 		skb2 = skb;
- 		/* Do not forward the packet since it's local. */
- 		skb = NULL;
+On Fri, Mar 13, 2009 at 10:08 AM, David Miller <davem@davemloft.net> wrote:
+> From: Aki Niimura <akineko@gmail.com>
+> Date: Fri, 13 Mar 2009 00:25:48 -0700
+>
+>> Any suggestions will be greatly appreciated.
+>
+> Use AF_UNIX sockets if you want optimal performance.
+>
+> Solaris treats TCP connections over localhost specially,
+> and we have no plans to add that optimization any time
+> soon.
+>
