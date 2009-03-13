@@ -1,468 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbZCMP1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758465AbZCMP2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756273AbZCMP1u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 11:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbZCMP1k
+	id S1758465AbZCMP2f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 11:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbZCMP2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 11:27:40 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:48672 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753966AbZCMP1i (ORCPT
+	Fri, 13 Mar 2009 11:28:24 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:37491 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755617AbZCMP2Y convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 11:27:38 -0400
-Message-ID: <49BA7B60.60607@free.fr>
-Date: Fri, 13 Mar 2009 16:27:28 +0100
-From: Cedric Le Goater <legoater@free.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Ying Han <yinghan@google.com>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>, Greg Kurz <gkurz@fr.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, mpm@selenic.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
-       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
- do?
-References: <1234467035.3243.538.camel@calx>	 <1234475483.30155.194.camel@nimitz>	 <20090212141014.2cd3d54d.akpm@linux-foundation.org>	 <1234479845.30155.220.camel@nimitz>	 <20090226155755.GA1456@x200.localdomain>	 <20090310215305.GA2078@x200.localdomain> <49B775B4.1040800@free.fr>	 <20090312145311.GC12390@us.ibm.com> <1236891719.32630.14.camel@bahia>	 <20090312212124.GA25019@us.ibm.com> <604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>
-In-Reply-To: <604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------000706030707010408000403"
+	Fri, 13 Mar 2009 11:28:24 -0400
+Message-Id: <49BA815E.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Fri, 13 Mar 2009 14:53:02 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <hannes@cmpxchg.org>, "Ingo Molnar" <mingo@elte.hu>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: alloc_bootmem_low() mis-uses
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000706030707010408000403
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+As you are being listed as the authors of mm/bootmem.c, I'd like to raise
+the following issues in the hope that you can shed some additional light on
+the original intentions of that code.
 
-Ying Han wrote:
-> Hi Serge:
-> I made a patch based on Oren's tree recently which implement a new
-> syscall clone_with_pid. I tested with checkpoint/restart process tree
-> and it works as expected.
-> This patch has some hack in it which i made a copy of libc's clone and
-> made modifications of passing one more argument(pid number). I will
-> try to clean up the code and do more testing.
+>From looking at all the callers of this and similar functions I'm getting the
+impression that the majority of them are actually mis-uses: These functions
+should really only be used when there is a need for getting an address
+below ARCH_LOW_ADDRESS_LIMIT, but they should in particular not be
+used just because the caller wants to make sure he doesn't get any
+highmem range back (which is because highmem never enters the bootmem
+allocator in the first place). Or am I missing something here?
 
-ok. 2 patches would also be interesting. one for the syscall and one
-for the kernel support (which might be acceptable)
+A second aspect is that there is no attempt to preserve memory below
+ARCH_LOW_ADDRESS_LIMIT for those few callers that really need to
+get such memory (swiotlb, ACPI sleep) - 'normal' bootmem allocations
+honor MAX_DMA_ADDRESS, but not ARCH_LOW_ADDRESS_LIMIT. This
+apparently can, on systems with very much memory, lead to earlier
+huge allocations (e.g. alloc_large_system_hash() and
+alloc_node_mem_map()) exhausting almost all of the memory below that
+boundary. Not avoiding that area may also result in unnecessary
+pressure on later GFP_DMA32 allocations.
 
-> New syscall clone_with_pid
-> Implement a new syscall which clone a thread with a preselected pid number.
+Wouldn't it therefore be reasonable to
+- eliminate all the bogus callers of alloc_bootmem_low() & Co,
+- change ___alloc_bootmem_nopanic() to use a three (or even multi) stage
+  search, based on the fact that the goal argument isn't something that
+  must be strictly adhered to anyway, and
+- change alloc_bootmem_core() to start allocating from the top rather
+  than the bottom?
 
-yes this definitely needed to restart a task/thread. we maintain an ugly 
-hack which stores a pid in the current task that will be used by the next 
-clone() call. 
+Thanks, Jan
 
-> clone_with_pid(child_func, child_stack + CHILD_STACK - 16,
-> 			CLONE_WITH_PID|SIGCHLD, pid, NULL);
-
-since you're introducing a new syscall, I don't see why you need a 
-CLONE_WITH_PID flag ?
-
-(FYI, attached is my old attempt of clone_with_pid but that's too old)
-
-[ ... ]
-
-> +#define DEBUG
->  #include <linux/slab.h>
->  #include <linux/init.h>
->  #include <linux/unistd.h>
-> @@ -959,10 +959,19 @@ static struct task_struct *copy_process(unsigned long cl
->  	int retval;
->  	struct task_struct *p;
->  	int cgroup_callbacks_done = 0;
-> +	pid_t clone_pid = stack_size;
-> 
->  	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
->  		return ERR_PTR(-EINVAL);
-> 
-> +	/* We only allow the clone_with_pid when a new pid namespace is
-> +	 * created. FIXME: how to restrict it.
-> +	 */
-> +	if ((clone_flags & CLONE_NEWPID) && (clone_flags & CLONE_WITH_PID))
-> +		return ERR_PTR(-EINVAL);
-> +	if ((clone_flags & CLONE_WITH_PID) && (clone_pid <= 1))
-> +		return ERR_PTR(-EINVAL);
-
-I would let alloc_pid() handle the error.
-
->  	/*
->  	 * Thread groups must share signals as well, and detached threads
->  	 * can only be started up within the thread group.
-> @@ -1135,7 +1144,10 @@ static struct task_struct *copy_process(unsigned long c
-> 
->  	if (pid != &init_struct_pid) {
->  		retval = -ENOMEM;
-> -		pid = alloc_pid(task_active_pid_ns(p));
-> +		if (clone_flags & CLONE_WITH_PID)
-> +			pid = alloc_pid(task_active_pid_ns(p), clone_pid);
-> +		else
-> +			pid = alloc_pid(task_active_pid_ns(p), 0);
-
-this is overkill IMO.
-
-[ ... ]
-
-> -static int alloc_pidmap(struct pid_namespace *pid_ns)
-> +static int alloc_pidmap(struct pid_namespace *pid_ns, pid_t pid_nr)
->  {
->  	int i, offset, max_scan, pid, last = pid_ns->last_pid;
->  	struct pidmap *map;
-> 
-> -	pid = last + 1;
-> +	if (pid_nr)
-> +		pid = pid_nr;
-> +	else
-> +		pid = last + 1;
->
->  	if (pid >= pid_max)
->  		pid = RESERVED_PIDS;
->  	offset = pid & BITS_PER_PAGE_MASK;
-> @@ -153,9 +156,12 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
->  			do {
->  				if (!test_and_set_bit(offset, map->page)) {
->  					atomic_dec(&map->nr_free);
-> -					pid_ns->last_pid = pid;
-> +					if (!pid_nr)
-> +						pid_ns->last_pid = pid;
->  					return pid;
->  				}
-> +				if (pid_nr)
-> +					return -1;
->  				offset = find_next_offset(map, offset);
->  				pid = mk_pid(pid_ns, map, offset);
->  			/*
-> @@ -239,21 +245,25 @@ void free_pid(struct pid *pid)
->  	call_rcu(&pid->rcu, delayed_put_pid);
->  }
-> 
-> -struct pid *alloc_pid(struct pid_namespace *ns)
-> +struct pid *alloc_pid(struct pid_namespace *ns, pid_t pid_nr)
->  {
->  	struct pid *pid;
->  	enum pid_type type;
->  	int i, nr;
->  	struct pid_namespace *tmp;
->  	struct upid *upid;
-> +	int level = ns->level;
-> +
-> +	if (pid_nr >= pid_max)
-> +		return NULL;
-
-let alloc_pidmap() handle it ? 
-
-> 
->  	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
->  	if (!pid)
->  		goto out;
-> 
-> -	tmp = ns;
-> -	for (i = ns->level; i >= 0; i--) {
-> -		nr = alloc_pidmap(tmp);
-> +	tmp = ns->parent;
-> +	for (i = level-1; i >= 0; i--) {
-> +		nr = alloc_pidmap(tmp, 0);
->  		if (nr < 0)
->  			goto out_free;
-> 
-> @@ -262,6 +272,14 @@ struct pid *alloc_pid(struct pid_namespace *ns)
->  		tmp = tmp->parent;
->  	}
-> 
-> +	nr = alloc_pidmap(ns, pid_nr);
-> +	if (nr < 0)
-> +		goto out_free;
-> +	pid->numbers[level].nr = nr;
-> +	pid->numbers[level].ns = ns;
-> +	if (nr == pid_nr)
-> +		pr_debug("nr == pid_nr == %d\n", nr);
-> +
->  	get_pid_ns(ns);
->  	pid->level = ns->level;
->  	atomic_set(&pid->count, 1);
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> On Thu, Mar 12, 2009 at 2:21 PM, Serge E. Hallyn <serue@us.ibm.com> wrote:
->> Quoting Greg Kurz (gkurz@fr.ibm.com):
->>> On Thu, 2009-03-12 at 09:53 -0500, Serge E. Hallyn wrote:
->>>> Or are you suggesting that you'll do a dummy clone of (5594,2) so that
->>>> the next clone(CLONE_NEWPID) will be expected to be (5594,3,1)?
->>>>
->>> Of course not
->> Ok - someone *did* argue that at some point I think...
->>
->>> but one should be able to tell clone() to pick a specific
->>> pid.
->> Can you explain exactly how?  I must be missing something clever.
->>
->> -serge
->>
->> --
->> To unsubscribe, send a message with 'unsubscribe linux-mm' in
->> the body to majordomo@kvack.org.  For more info on Linux MM,
->> see: http://www.linux-mm.org/ .
->> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-
-
---------------000706030707010408000403
-Content-Type: text/plain;
- name="clone_with_pid.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="clone_with_pid.patch"
-
-Subject: [RFC] forkpid() syscall
-
-From: Cedric Le Goater <clg@fr.ibm.com>
-
-let's the user specify a pid to fork and return EBUSY if the pid is
-not available.
-
-this patch includes a alloc_pid*() cleanup on the way errors are 
-returned that could be pushed to mainline independently.
-
-usage :
-
-    #include <sys/syscall.h>
-
-    #define __NR_forkpid 	324
-
-    static inline int forkpid(int pid)
-    {
-	  return syscall(__NR_forkpid, pid);
-    }
-    
-caveats : 
-	fork oriented, should also cover clone
-	i386 only
-	does not cover 64 bits clone flags
-
-
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
----
- arch/i386/kernel/process.c       |   15 +++++++++++----
- arch/i386/kernel/syscall_table.S |    1 +
- include/asm-i386/unistd.h        |    3 ++-
- include/linux/pid.h              |    2 +-
- include/linux/sched.h            |    2 +-
- kernel/fork.c                    |    9 +++++----
- kernel/pid.c                     |   28 +++++++++++++++-------------
- 7 files changed, 36 insertions(+), 24 deletions(-)
-
-Index: 2.6.22/kernel/pid.c
-===================================================================
---- 2.6.22.orig/kernel/pid.c
-+++ 2.6.22/kernel/pid.c
-@@ -96,12 +96,12 @@ static fastcall void free_pidmap(struct 
- 	atomic_inc(&map->nr_free);
- }
- 
--static int alloc_pidmap(struct pid_namespace *pid_ns)
-+static int alloc_pidmap(struct pid_namespace *pid_ns, pid_t upid)
- {
- 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
- 	struct pidmap *map;
- 
--	pid = last + 1;
-+	pid = upid ? upid : last + 1;
- 	if (pid >= pid_max)
- 		pid = RESERVED_PIDS;
- 	offset = pid & BITS_PER_PAGE_MASK;
-@@ -130,6 +130,8 @@ static int alloc_pidmap(struct pid_names
- 					pid_ns->last_pid = pid;
- 					return pid;
- 				}
-+				if (upid)
-+					return -EBUSY;
- 				offset = find_next_offset(map, offset);
- 				pid = mk_pid(pid_ns, map, offset);
- 			/*
-@@ -153,7 +155,7 @@ static int alloc_pidmap(struct pid_names
- 		}
- 		pid = mk_pid(pid_ns, map, offset);
- 	}
--	return -1;
-+	return -EAGAIN;
- }
- 
- static int next_pidmap(struct pid_namespace *pid_ns, int last)
-@@ -203,19 +205,24 @@ fastcall void free_pid(struct pid *pid)
- 	call_rcu(&pid->rcu, delayed_put_pid);
- }
- 
--struct pid *alloc_pid(void)
-+struct pid *alloc_pid(pid_t upid)
- {
- 	struct pid *pid;
- 	enum pid_type type;
- 	int nr = -1;
- 
- 	pid = kmem_cache_alloc(pid_cachep, GFP_KERNEL);
--	if (!pid)
-+	if (!pid) {
-+		pid = ERR_PTR(-ENOMEM);
- 		goto out;
-+	}
- 
--	nr = alloc_pidmap(current->nsproxy->pid_ns);
--	if (nr < 0)
--		goto out_free;
-+	nr = alloc_pidmap(current->nsproxy->pid_ns, upid);
-+	if (nr < 0) {
-+		kmem_cache_free(pid_cachep, pid);
-+		pid = ERR_PTR(nr);
-+		goto out;
-+	}
- 
- 	atomic_set(&pid->count, 1);
- 	pid->nr = nr;
-@@ -228,11 +235,6 @@ struct pid *alloc_pid(void)
- 
- out:
- 	return pid;
--
--out_free:
--	kmem_cache_free(pid_cachep, pid);
--	pid = NULL;
--	goto out;
- }
- 
- struct pid * fastcall find_pid(int nr)
-Index: 2.6.22/arch/i386/kernel/process.c
-===================================================================
---- 2.6.22.orig/arch/i386/kernel/process.c
-+++ 2.6.22/arch/i386/kernel/process.c
-@@ -355,7 +355,7 @@ int kernel_thread(int (*fn)(void *), voi
- 	regs.eflags = X86_EFLAGS_IF | X86_EFLAGS_SF | X86_EFLAGS_PF | 0x2;
- 
- 	/* Ok, create the new process.. */
--	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0, NULL, NULL);
-+	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0, NULL, NULL, 0);
- }
- EXPORT_SYMBOL(kernel_thread);
- 
-@@ -722,9 +722,16 @@ struct task_struct fastcall * __switch_t
- 	return prev_p;
- }
- 
-+asmlinkage int sys_forkpid(struct pt_regs regs)
-+{
-+	pid_t pid = regs.ebx;
-+
-+	return do_fork(SIGCHLD, regs.esp, &regs, 0, NULL, NULL, pid);
-+}
-+
- asmlinkage int sys_fork(struct pt_regs regs)
- {
--	return do_fork(SIGCHLD, regs.esp, &regs, 0, NULL, NULL);
-+	return do_fork(SIGCHLD, regs.esp, &regs, 0, NULL, NULL, 0);
- }
- 
- asmlinkage int sys_clone(struct pt_regs regs)
-@@ -739,7 +746,7 @@ asmlinkage int sys_clone(struct pt_regs 
- 	child_tidptr = (int __user *)regs.edi;
- 	if (!newsp)
- 		newsp = regs.esp;
--	return do_fork(clone_flags, newsp, &regs, 0, parent_tidptr, child_tidptr);
-+	return do_fork(clone_flags, newsp, &regs, 0, parent_tidptr, child_tidptr, 0);
- }
- 
- /*
-@@ -754,7 +761,7 @@ asmlinkage int sys_clone(struct pt_regs 
-  */
- asmlinkage int sys_vfork(struct pt_regs regs)
- {
--	return do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD, regs.esp, &regs, 0, NULL, NULL);
-+	return do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD, regs.esp, &regs, 0, NULL, NULL, 0);
- }
- 
- /*
-Index: 2.6.22/arch/i386/kernel/syscall_table.S
-===================================================================
---- 2.6.22.orig/arch/i386/kernel/syscall_table.S
-+++ 2.6.22/arch/i386/kernel/syscall_table.S
-@@ -323,3 +323,4 @@ ENTRY(sys_call_table)
- 	.long sys_signalfd
- 	.long sys_timerfd
- 	.long sys_eventfd
-+	.long sys_forkpid
-Index: 2.6.22/include/asm-i386/unistd.h
-===================================================================
---- 2.6.22.orig/include/asm-i386/unistd.h
-+++ 2.6.22/include/asm-i386/unistd.h
-@@ -329,10 +329,11 @@
- #define __NR_signalfd		321
- #define __NR_timerfd		322
- #define __NR_eventfd		323
-+#define __NR_forkpid		324
- 
- #ifdef __KERNEL__
- 
--#define NR_syscalls 324
-+#define NR_syscalls 325
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
-Index: 2.6.22/kernel/fork.c
-===================================================================
---- 2.6.22.orig/kernel/fork.c
-+++ 2.6.22/kernel/fork.c
-@@ -1358,15 +1358,16 @@ long do_fork(unsigned long clone_flags,
- 	      struct pt_regs *regs,
- 	      unsigned long stack_size,
- 	      int __user *parent_tidptr,
--	      int __user *child_tidptr)
-+	      int __user *child_tidptr,
-+	      pid_t upid)
- {
- 	struct task_struct *p;
- 	int trace = 0;
--	struct pid *pid = alloc_pid();
-+	struct pid *pid = alloc_pid(upid);
- 	long nr;
- 
--	if (!pid)
--		return -EAGAIN;
-+	if (IS_ERR(pid))
-+		return PTR_ERR(pid);
- 	nr = pid->nr;
- 	if (unlikely(current->ptrace)) {
- 		trace = fork_traceflag (clone_flags);
-Index: 2.6.22/include/linux/sched.h
-===================================================================
---- 2.6.22.orig/include/linux/sched.h
-+++ 2.6.22/include/linux/sched.h
-@@ -1433,7 +1433,7 @@ extern int allow_signal(int);
- extern int disallow_signal(int);
- 
- extern int do_execve(char *, char __user * __user *, char __user * __user *, struct pt_regs *);
--extern long do_fork(unsigned long, unsigned long, struct pt_regs *, unsigned long, int __user *, int __user *);
-+extern long do_fork(unsigned long, unsigned long, struct pt_regs *, unsigned long, int __user *, int __user *, pid_t);
- struct task_struct *fork_idle(int);
- 
- extern void set_task_comm(struct task_struct *tsk, char *from);
-Index: 2.6.22/include/linux/pid.h
-===================================================================
---- 2.6.22.orig/include/linux/pid.h
-+++ 2.6.22/include/linux/pid.h
-@@ -95,7 +95,7 @@ extern struct pid *FASTCALL(find_pid(int
- extern struct pid *find_get_pid(int nr);
- extern struct pid *find_ge_pid(int nr);
- 
--extern struct pid *alloc_pid(void);
-+extern struct pid *alloc_pid(pid_t upid);
- extern void FASTCALL(free_pid(struct pid *pid));
- 
- static inline pid_t pid_nr(struct pid *pid)
-
---------------000706030707010408000403--
