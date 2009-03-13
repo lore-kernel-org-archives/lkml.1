@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759389AbZCMWL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbZCMWM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759389AbZCMWL2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 18:11:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbZCMWLQ
+	id S1759679AbZCMWM2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 18:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755613AbZCMWMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 18:11:16 -0400
-Received: from smarthost03.mail.zen.net.uk ([212.23.3.142]:45329 "EHLO
-	smarthost03.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755184AbZCMWLP (ORCPT
+	Fri, 13 Mar 2009 18:12:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44336 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757972AbZCMWMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 18:11:15 -0400
-Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to
-	submit  to upper layer
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Tom Herbert <therbert@google.com>
-Cc: David Miller <davem@davemloft.net>, yanmin_zhang@linux.intel.com,
-       andi@firstfloor.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
-       jesse.brandeburg@intel.com, shemminger@vyatta.com
-In-Reply-To: <65634d660903131401v24d0b5aarec36ad95220ba201@mail.gmail.com>
-References: <1236866906.3221.11.camel@achroite>
-	 <1236926602.2567.528.camel@ymzhang>
-	 <65634d660903131006n44f068dw18b2fe9dce25399e@mail.gmail.com>
-	 <20090313.115137.254924980.davem@davemloft.net>
-	 <65634d660903131401v24d0b5aarec36ad95220ba201@mail.gmail.com>
-Content-Type: text/plain
-Organization: Solarflare Communications
-Date: Fri, 13 Mar 2009 22:10:59 +0000
-Message-Id: <1236982259.3300.13.camel@achroite>
+	Fri, 13 Mar 2009 18:12:14 -0400
+Date: Fri, 13 Mar 2009 15:12:00 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: scott@canonical.com, linux-kernel@vger.kernel.org,
+       bridge@lists.linux-foundation.org
+Subject: Re: [PATCH 01/31] bridge: Auto-load bridge module when socket
+ opened.
+Message-ID: <20090313151200.1cc16255@nehalam>
+In-Reply-To: <20090313.142718.21189207.davem@davemloft.net>
+References: <cover.1236702228.git.scott@canonical.com>
+	<74b87ec3359e6e65d59cd6fb62a83fb469e6c8ae.1236702228.git.scott@canonical.com>
+	<20090313.142718.21189207.davem@davemloft.net>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.15.5; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Originating-Smarthost03-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-13 at 14:01 -0700, Tom Herbert wrote:
-> On Fri, Mar 13, 2009 at 11:51 AM, David Miller <davem@davemloft.net> wrote:
-> >
-> > From: Tom Herbert <therbert@google.com>
-> > Date: Fri, 13 Mar 2009 10:06:56 -0700
-> >
-> > > You'll definitely want to look at the hardware provided hash.  We've
-> > > been using a 10G NIC which provides a Toeplitz hash (the one defined
-> > > by Microsoft) and a software RSS-like capability to move packets from
-> > > an interrupting CPU to another for processing.  The hash could be used
-> > > to index to a set of CPUs, but we also use the hash as a connection
-> > > identifier to key into a lookup table to steer packets to the CPU
-> > > where the application is running based on the running CPU of the last
-> > > recvmsg.  Using the device provided hash in this manner is a HUGE win,
-> > > as opposed to taking cache misses to get 4-tuple from packet itself to
-> > > compute a hash.  I posted some patches a while back on our work if
-> > > you're interested.
-> >
-> > I never understood this.
-> >
-> > If you don't let the APIC move the interrupt around, the individual
-> > MSI-X interrupts will steer packets to individual specific CPUS and as
-> > a result the scheduler will migrate tasks over to those cpus since the
-> > wakeup events keep occuring there.
+On Fri, 13 Mar 2009 14:27:18 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
+
+> From: Scott James Remnant <scott@canonical.com>
+> Date: Mon, 2 Mar 2009 16:40:10 +0000
 > 
-> We are trying to follow the decisions scheduler as opposed to leading
-> it.  This works on very loaded systems, with applications binding to
-> cpusets, with threads that are receiving on multiple sockets.  I
-> suppose it might be compelling if a NIC could steer packets per flow,
-> instead of by a hash...
+> > The bridge module is missing the net-pf-7 alias that would cause it to
+> > be auto-loaded when a socket of that type is opened.  This patch adds
+> > the alias.
+> > 
+> > Signed-off-by: Scott James Remnant <scott@canonical.com>
+> > Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+> 
+> Bridging has no sockets, so this patch won't do anything.
+> 
+> Did you verify that these changes actually do something?
+> Or did you blindly run around peppering source files with
+> these annotations?
 
-Depending on the NIC, RX queue selection may be done using a large
-number of bits of the hash value and an indirection table or by matching
-against specific values in the headers.  The SFC4000 supports both of
-these, though limited to TCP/IPv4 and UDP/IPv4.  I think Neptune may be
-more flexible.  Of course, both indirection table entries and filter
-table entries will be limited resources in any NIC, so allocating these
-wholly automatically is an interesting challenge.
+I think this all started when I was debugging a problem where LLC
+was not getting autoloaded properly. It turned out that distro's
+like Debian (and therefore Ubuntu) had incorrect modprobe.d/alias file
+entries. I raised the bug that, "hey you have wrong data and you
+really don't need these alias entries at all anymore". There was some
+comparison of what was being shipped versus what was in the kernel
+and the Debian/Ubuntu guys stepped in to try and unify this.
 
-Ben.
-
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
-
+Let's be supportive of Ubuntu maintainers actually working on upstream
+resolution for a change. The normal distro maintainer is "patch and ignore".
+In this case, many of these are correct, but several of them are cases
+where there is no point in having a module alias because there is no
+functiona user visible API. You can try and open a PF_BRIDGE socket, there just
+is no point.
