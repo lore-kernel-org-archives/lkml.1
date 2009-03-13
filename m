@@ -1,107 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbZCMNB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbZCMNBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675AbZCMNB1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 09:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbZCMNBQ
+	id S1754069AbZCMNBn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 09:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbZCMNBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 09:01:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53952 "EHLO hera.kernel.org"
+	Fri, 13 Mar 2009 09:01:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53963 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750910AbZCMNBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 09:01:15 -0400
-Date: Fri, 13 Mar 2009 13:00:29 GMT
+	id S1754813AbZCMNBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 09:01:23 -0400
+Date: Fri, 13 Mar 2009 13:00:38 GMT
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090313112300.927414207@chello.nl>
-References: <20090313112300.927414207@chello.nl>
-Subject: [tip:core/locking] sched: remove extra call overhead for schedule()
-Message-ID: <tip-e690e5337d953a0936a9735424a454ec21bae0a5@git.kernel.org>
-Git-Commit-ID: e690e5337d953a0936a9735424a454ec21bae0a5
+In-Reply-To: <20090313112301.096138802@chello.nl>
+References: <20090313112301.096138802@chello.nl>
+Subject: [tip:core/locking] hrtimer: fix rq->lock inversion (again)
+Message-ID: <tip-75f9078edfebb697647ba00c1bb3df533fb8b713@git.kernel.org>
+Git-Commit-ID: 75f9078edfebb697647ba00c1bb3df533fb8b713
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 13:00:32 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 13:00:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e690e5337d953a0936a9735424a454ec21bae0a5
-Gitweb:     http://git.kernel.org/tip/e690e5337d953a0936a9735424a454ec21bae0a5
+Commit-ID:  75f9078edfebb697647ba00c1bb3df533fb8b713
+Gitweb:     http://git.kernel.org/tip/75f9078edfebb697647ba00c1bb3df533fb8b713
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 13 Mar 2009 12:21:26 +0100
+AuthorDate: Fri, 13 Mar 2009 12:21:27 +0100
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 13:55:17 +0100
+CommitDate: Fri, 13 Mar 2009 13:55:18 +0100
 
-sched: remove extra call overhead for schedule()
+hrtimer: fix rq->lock inversion (again)
 
-Lai Jiangshan's patch reminded me that I promised Nick to remove
-that extra call overhead in schedule().
+It appears I inadvertly introduced rq->lock recursion to the
+hrtimer_start() path when I delegated running already expired
+timers to softirq context.
+
+This patch fixes it by introducing a __hrtimer_start_range_ns()
+method that will not use raise_softirq_irqoff() but
+__raise_softirq_irqoff() which avoids the wakeup.
+
+It then also changes schedule() to check for pending softirqs and
+do the wakeup then, I'm not quite sure I like this last bit, nor
+am I convinced its really needed.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090313112300.927414207@chello.nl>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: paulus@samba.org
+LKML-Reference: <20090313112301.096138802@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/mutex.c |    4 +++-
- kernel/sched.c |   12 ++++--------
- 2 files changed, 7 insertions(+), 9 deletions(-)
+ include/linux/interrupt.h |    1 +
+ kernel/hrtimer.c          |   55 +++++++++++++++++++++++++++-----------------
+ kernel/sched.c            |   17 +++++++++++--
+ kernel/softirq.c          |    2 +-
+ 4 files changed, 50 insertions(+), 25 deletions(-)
 
-diff --git a/kernel/mutex.c b/kernel/mutex.c
-index 5d79781..e1fb735 100644
---- a/kernel/mutex.c
-+++ b/kernel/mutex.c
-@@ -248,7 +248,9 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 169db98..663b8bc 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -274,6 +274,7 @@ extern void softirq_init(void);
+ #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
+ extern void raise_softirq_irqoff(unsigned int nr);
+ extern void raise_softirq(unsigned int nr);
++extern void wakeup_softirqd(void);
  
- 		/* didnt get the lock, go to sleep: */
- 		spin_unlock_mutex(&lock->wait_lock, flags);
--		__schedule();
-+		preempt_enable_no_resched();
-+		schedule();
-+		preempt_disable();
- 		spin_lock_mutex(&lock->wait_lock, flags);
+ /* This is the worklist that queues up per-cpu softirq work.
+  *
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index f394d2a..cb8a15c 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -651,14 +651,20 @@ static inline void hrtimer_init_timer_hres(struct hrtimer *timer)
+  * and expiry check is done in the hrtimer_interrupt or in the softirq.
+  */
+ static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
+-					    struct hrtimer_clock_base *base)
++					    struct hrtimer_clock_base *base,
++					    int wakeup)
+ {
+ 	if (base->cpu_base->hres_active && hrtimer_reprogram(timer, base)) {
+-		spin_unlock(&base->cpu_base->lock);
+-		raise_softirq_irqoff(HRTIMER_SOFTIRQ);
+-		spin_lock(&base->cpu_base->lock);
++		if (wakeup) {
++			spin_unlock(&base->cpu_base->lock);
++			raise_softirq_irqoff(HRTIMER_SOFTIRQ);
++			spin_lock(&base->cpu_base->lock);
++		} else
++			__raise_softirq_irqoff(HRTIMER_SOFTIRQ);
++
+ 		return 1;
  	}
++
+ 	return 0;
+ }
+ 
+@@ -703,7 +709,8 @@ static inline int hrtimer_is_hres_enabled(void) { return 0; }
+ static inline int hrtimer_switch_to_hres(void) { return 0; }
+ static inline void hrtimer_force_reprogram(struct hrtimer_cpu_base *base) { }
+ static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
+-					    struct hrtimer_clock_base *base)
++					    struct hrtimer_clock_base *base,
++					    int wakeup)
+ {
+ 	return 0;
+ }
+@@ -886,20 +893,9 @@ remove_hrtimer(struct hrtimer *timer, struct hrtimer_clock_base *base)
+ 	return 0;
+ }
+ 
+-/**
+- * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
+- * @timer:	the timer to be added
+- * @tim:	expiry time
+- * @delta_ns:	"slack" range for the timer
+- * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
+- *
+- * Returns:
+- *  0 on success
+- *  1 when the timer was active
+- */
+-int
+-hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_ns,
+-			const enum hrtimer_mode mode)
++int __hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
++		unsigned long delta_ns, const enum hrtimer_mode mode,
++		int wakeup)
+ {
+ 	struct hrtimer_clock_base *base, *new_base;
+ 	unsigned long flags;
+@@ -940,12 +936,29 @@ hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_n
+ 	 * XXX send_remote_softirq() ?
+ 	 */
+ 	if (leftmost && new_base->cpu_base == &__get_cpu_var(hrtimer_bases))
+-		hrtimer_enqueue_reprogram(timer, new_base);
++		hrtimer_enqueue_reprogram(timer, new_base, wakeup);
+ 
+ 	unlock_hrtimer_base(timer, &flags);
+ 
+ 	return ret;
+ }
++
++/**
++ * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
++ * @timer:	the timer to be added
++ * @tim:	expiry time
++ * @delta_ns:	"slack" range for the timer
++ * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
++ *
++ * Returns:
++ *  0 on success
++ *  1 when the timer was active
++ */
++int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
++		unsigned long delta_ns, const enum hrtimer_mode mode)
++{
++	return __hrtimer_start_range_ns(timer, tim, delta_ns, mode, 1);
++}
+ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
+ 
+ /**
+@@ -961,7 +974,7 @@ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
+ int
+ hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
+ {
+-	return hrtimer_start_range_ns(timer, tim, 0, mode);
++	return __hrtimer_start_range_ns(timer, tim, 0, mode, 1);
+ }
+ EXPORT_SYMBOL_GPL(hrtimer_start);
  
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 8549d48..01275cb 100644
+index 01275cb..5e05d31 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -4543,13 +4543,15 @@ pick_next_task(struct rq *rq, struct task_struct *prev)
- /*
-  * schedule() is the main scheduler function.
+@@ -231,13 +231,20 @@ static void start_rt_bandwidth(struct rt_bandwidth *rt_b)
+ 
+ 	spin_lock(&rt_b->rt_runtime_lock);
+ 	for (;;) {
++		unsigned long delta;
++		ktime_t soft, hard;
++
+ 		if (hrtimer_active(&rt_b->rt_period_timer))
+ 			break;
+ 
+ 		now = hrtimer_cb_get_time(&rt_b->rt_period_timer);
+ 		hrtimer_forward(&rt_b->rt_period_timer, now, rt_b->rt_period);
+-		hrtimer_start_expires(&rt_b->rt_period_timer,
+-				HRTIMER_MODE_ABS);
++
++		soft = hrtimer_get_softexpires(&rt_b->rt_period_timer);
++		hard = hrtimer_get_expires(&rt_b->rt_period_timer);
++		delta = ktime_to_ns(ktime_sub(hard, soft));
++		__hrtimer_start_range_ns(&rt_b->rt_period_timer, soft, delta,
++				HRTIMER_MODE_ABS, 0);
+ 	}
+ 	spin_unlock(&rt_b->rt_runtime_lock);
+ }
+@@ -1129,7 +1136,8 @@ static __init void init_hrtick(void)
   */
--asmlinkage void __sched __schedule(void)
-+asmlinkage void __sched schedule(void)
+ static void hrtick_start(struct rq *rq, u64 delay)
  {
- 	struct task_struct *prev, *next;
- 	unsigned long *switch_count;
- 	struct rq *rq;
- 	int cpu;
+-	hrtimer_start(&rq->hrtick_timer, ns_to_ktime(delay), HRTIMER_MODE_REL);
++	__hrtimer_start_range_ns(&rq->hrtick_timer, ns_to_ktime(delay), 0,
++			HRTIMER_MODE_REL, 0);
+ }
  
-+need_resched:
-+	preempt_disable();
- 	cpu = smp_processor_id();
- 	rq = cpu_rq(cpu);
- 	rcu_qsctr_inc(cpu);
-@@ -4606,15 +4608,9 @@ need_resched_nonpreemptible:
- 
+ static inline void init_hrtick(void)
+@@ -4609,6 +4617,9 @@ need_resched_nonpreemptible:
  	if (unlikely(reacquire_kernel_lock(current) < 0))
  		goto need_resched_nonpreemptible;
--}
  
--asmlinkage void __sched schedule(void)
--{
--need_resched:
--	preempt_disable();
--	__schedule();
++	if (unlikely(local_softirq_pending()))
++		wakeup_softirqd();
++
  	preempt_enable_no_resched();
--	if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
-+	if (need_resched())
+ 	if (need_resched())
  		goto need_resched;
- }
- EXPORT_SYMBOL(schedule);
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index f813122..34c309d 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -58,7 +58,7 @@ static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
+  * to the pending events, so lets the scheduler to balance
+  * the softirq load for us.
+  */
+-static inline void wakeup_softirqd(void)
++void wakeup_softirqd(void)
+ {
+ 	/* Interrupts are disabled: no need to stop preemption */
+ 	struct task_struct *tsk = __get_cpu_var(ksoftirqd);
