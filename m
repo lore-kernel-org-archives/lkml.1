@@ -1,174 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbZCMCi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbZCMCiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758538AbZCMCi3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 22:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757830AbZCMCgS
+	id S1758574AbZCMCiu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 22:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758146AbZCMCgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 22:36:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52545 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757772AbZCMCgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 22:36:13 -0400
-Date: Fri, 13 Mar 2009 02:35:07 GMT
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, andreas.herrmann3@amd.com, stable@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, andreas.herrmann3@amd.com, stable@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090312163937.GH20716@alberich.amd.com>
-References: <20090312163937.GH20716@alberich.amd.com>
-Subject: [tip:x86/mtrr] x86: mtrr: don't modify RdDram/WrDram bits of fixed MTRRs
-Message-ID: <tip-850055f2e850ef3c1d133e024bc98fa97ff30c48@git.kernel.org>
-Git-Commit-ID: 850055f2e850ef3c1d133e024bc98fa97ff30c48
-X-Mailer: tip-git-log-daemon
+	Thu, 12 Mar 2009 22:36:40 -0400
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:43490 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757655AbZCMCgi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 22:36:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=rUZQYDG4F8lH2Zb/CXSxkKpinwJ3BNZQdqJth+hTZxYt1m/AHPUgkXIoKj2L1vVsdK
+         yGLQrosdJkmlefdn0brzd1FINFgGUEG3bi7E8TJb6j3cC5F6NnwneZpGSNkRK09UvYBY
+         9G3jrlMUfIMmILyVBTBKd3iqISIL3EERgfBV0=
+Message-ID: <49B9C6AE.5050308@gmail.com>
+Date: Thu, 12 Mar 2009 20:36:30 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 02:35:09 +0000 (UTC)
+Newsgroups: gmane.linux.alsa.devel,gmane.linux.kernel
+To: "Christian P. Schmidt" <schmidt@digadd.de>
+CC: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: Re: How can PCI resource allocation fail?
+References: <49B9959F.1080705@digadd.de>
+In-Reply-To: <49B9959F.1080705@digadd.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  850055f2e850ef3c1d133e024bc98fa97ff30c48
-Gitweb:     http://git.kernel.org/tip/850055f2e850ef3c1d133e024bc98fa97ff30c48
-Author:     Andreas Herrmann <andreas.herrmann3@amd.com>
-AuthorDate: Thu, 12 Mar 2009 17:39:37 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 02:55:27 +0100
+Christian P. Schmidt wrote:
+> Hi all,
+> 
+> I'm toying with the alsa-driver for the Creative Labs X-Fi. I'm working on the PCI Express version of this card, though, which is
+> the same as the PCI version plus a PCIe to PCI bridge but has a different ID:
+> 
+>           +-1c.2-[0000:03-04]----00.0-[0000:04]----00.0  1102:0009
+> 
+> 03:00.0 PCI bridge: Creative Labs Device 7006
+> 04:00.0 Audio device: Creative Labs [SB X-Fi Xtreme Audio] CA0110-IBG
+> 
+> Now, after adding the ID, the driver fails:
+> 
+> [46833.487579] CA0106 0000:04:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+> [46833.487586] CA0106 0000:04:00.0: PCI INT A disabled
+> [46833.487588] cannot allocate the port
+> [46833.487594] CA0106: probe of 0000:04:00.0 failed with error -16
+> 
+> The actual error is occurring in
+> 
+> 	chip->port = pci_resource_start(pci, 0);
+> 	chip->res_port = request_region(chip->port, pci_resource_len(pci,0), "snd_ca0106");
+> 	if (!chip->res_port) {
+> 		snd_ca0106_free(chip);
+> 		printk(KERN_ERR "cannot allocate the port\n");
+> 		return -EBUSY;
+> 	}
+> 
+> This from /proc/iomem:
+> 
+> f9f00000-f9ffffff : PCI Bus 0000:03
+>   f9f00000-f9ffffff : PCI Bus 0000:04
+>     f9ffc000-f9ffffff : 0000:04:00.0
+> 
+> Some additional debug output tells me that the code is actually trying to allocate 16k starting from f9ffc000. What could be
+> potential reasons for the failure? Do I have to do something with the bridge before I can try to request the region?
 
-x86: mtrr: don't modify RdDram/WrDram bits of fixed MTRRs
-
-Impact: bug fix + BIOS workaround
-
-BIOS is expected to clear the SYSCFG[MtrrFixDramModEn] on AMD CPUs
-after fixed MTRRs are configured.
-
-Some BIOSes do not clear SYSCFG[MtrrFixDramModEn] on BP (and on APs).
-
-This can lead to obfuscation in Linux when this bit is not cleared on
-BP but cleared on APs. A consequence of this is that the saved
-fixed-MTRR state (from BP) differs from the fixed-MTRRs of APs --
-because RdDram/WrDram bits are read as zero when
-SYSCFG[MtrrFixDramModEn] is cleared -- and Linux tries to sync
-fixed-MTRR state from BP to AP. This implies that Linux sets
-SYSCFG[MtrrFixDramEn] and activates those bits.
-
-More important is that (some) systems change these bits in SMM when
-ACPI is enabled. Hence it is racy if Linux modifies RdMem/WrMem bits,
-too.
-
-I suggest not to touch RdDram/WrDram bits of fixed-MTRRs and
-SYSCFG[MtrrFixDramEn] and to clear SYSCFG[MtrrFixDramModEn] as
-suggested by AMD K8, and AMD family 10h/11h BKDGs.
-BIOS is expected to do this anyway. This should avoid that
-Linux and SMM tread on each other's toes ...
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: trenn@suse.de
-Cc: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <20090312163937.GH20716@alberich.amd.com>
-Cc: <stable@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/cpu/mtrr/generic.c |   51 +++++++++++++++++++++---------------
- 1 files changed, 30 insertions(+), 21 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
-index 9644035..950c434 100644
---- a/arch/x86/kernel/cpu/mtrr/generic.c
-+++ b/arch/x86/kernel/cpu/mtrr/generic.c
-@@ -33,6 +33,32 @@ u64 mtrr_tom2;
- struct mtrr_state_type mtrr_state = {};
- EXPORT_SYMBOL_GPL(mtrr_state);
- 
-+/**
-+ * BIOS is expected to clear MtrrFixDramModEn bit, see for example
-+ * "BIOS and Kernel Developer's Guide for the AMD Athlon 64 and AMD
-+ * Opteron Processors" (26094 Rev. 3.30 February 2006), section
-+ * "13.2.1.2 SYSCFG Register": "The MtrrFixDramModEn bit should be set
-+ * to 1 during BIOS initalization of the fixed MTRRs, then cleared to
-+ * 0 for operation."
-+ */
-+static inline void k8_check_syscfg_dram_mod_en(void)
-+{
-+	u32 lo, hi;
-+
-+	if (!((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) &&
-+	      (boot_cpu_data.x86 >= 0x0f)))
-+		return;
-+
-+	rdmsr(MSR_K8_SYSCFG, lo, hi);
-+	if (lo & K8_MTRRFIXRANGE_DRAM_MODIFY) {
-+		printk(KERN_ERR FW_WARN "MTRR: CPU %u: SYSCFG[MtrrFixDramModEn]"
-+		       " not cleared by BIOS, clearing this bit\n",
-+		       smp_processor_id());
-+		lo &= ~K8_MTRRFIXRANGE_DRAM_MODIFY;
-+		mtrr_wrmsr(MSR_K8_SYSCFG, lo, hi);
-+	}
-+}
-+
- /*
-  * Returns the effective MTRR type for the region
-  * Error returns:
-@@ -166,6 +192,8 @@ get_fixed_ranges(mtrr_type * frs)
- 	unsigned int *p = (unsigned int *) frs;
- 	int i;
- 
-+	k8_check_syscfg_dram_mod_en();
-+
- 	rdmsr(MTRRfix64K_00000_MSR, p[0], p[1]);
- 
- 	for (i = 0; i < 2; i++)
-@@ -306,27 +334,10 @@ void mtrr_wrmsr(unsigned msr, unsigned a, unsigned b)
- }
- 
- /**
-- * Enable and allow read/write of extended fixed-range MTRR bits on K8 CPUs
-- * see AMD publication no. 24593, chapter 3.2.1 for more information
-- */
--static inline void k8_enable_fixed_iorrs(void)
--{
--	unsigned lo, hi;
--
--	rdmsr(MSR_K8_SYSCFG, lo, hi);
--	mtrr_wrmsr(MSR_K8_SYSCFG, lo
--				| K8_MTRRFIXRANGE_DRAM_ENABLE
--				| K8_MTRRFIXRANGE_DRAM_MODIFY, hi);
--}
--
--/**
-  * set_fixed_range - checks & updates a fixed-range MTRR if it differs from the value it should have
-  * @msr: MSR address of the MTTR which should be checked and updated
-  * @changed: pointer which indicates whether the MTRR needed to be changed
-  * @msrwords: pointer to the MSR values which the MSR should have
-- *
-- * If K8 extentions are wanted, update the K8 SYSCFG MSR also.
-- * See AMD publication no. 24593, chapter 7.8.1, page 233 for more information.
-  */
- static void set_fixed_range(int msr, bool *changed, unsigned int *msrwords)
- {
-@@ -335,10 +346,6 @@ static void set_fixed_range(int msr, bool *changed, unsigned int *msrwords)
- 	rdmsr(msr, lo, hi);
- 
- 	if (lo != msrwords[0] || hi != msrwords[1]) {
--		if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
--		    (boot_cpu_data.x86 >= 0x0f && boot_cpu_data.x86 <= 0x11) &&
--		    ((msrwords[0] | msrwords[1]) & K8_MTRR_RDMEM_WRMEM_MASK))
--			k8_enable_fixed_iorrs();
- 		mtrr_wrmsr(msr, msrwords[0], msrwords[1]);
- 		*changed = true;
- 	}
-@@ -426,6 +433,8 @@ static int set_fixed_ranges(mtrr_type * frs)
- 	bool changed = false;
- 	int block=-1, range;
- 
-+	k8_check_syscfg_dram_mod_en();
-+
- 	while (fixed_range_blocks[++block].ranges)
- 	    for (range=0; range < fixed_range_blocks[block].ranges; range++)
- 		set_fixed_range(fixed_range_blocks[block].base_msr + range,
+request_region is requesting IO ports. The PCI BAR on the card is MMIO 
+memory, not IO ports, so request_mem_region has to be used. It's 
+possible that this driver isn't set up to handle MMIO space.
