@@ -1,96 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbZCMJxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbZCMKF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758217AbZCMJxK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 05:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZCMJwz
+	id S1757243AbZCMKF3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 06:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZCMKFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 05:52:55 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53393 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753163AbZCMJwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 05:52:54 -0400
-Message-ID: <49BA2C9F.8020009@cn.fujitsu.com>
-Date: Fri, 13 Mar 2009 17:51:27 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ftace: remove struct list_head in struct dyn_ftrace
-Content-Type: text/plain; charset=UTF-8
+	Fri, 13 Mar 2009 06:05:14 -0400
+Received: from sh.osrg.net ([192.16.179.4]:50852 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750935AbZCMKFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 06:05:13 -0400
+Date: Fri, 13 Mar 2009 19:04:18 +0900 (JST)
+Message-Id: <20090313.190418.110778375.ryusuke@osrg.net>
+To: raa.lkml@gmail.com
+Cc: konishi.ryusuke@lab.ntt.co.jp, akpm@linux-foundation.org, hch@lst.de,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Asking for inclusion of nilfs2 in the mainline kernel
+From: Ryusuke Konishi <ryusuke@osrg.net>
+In-Reply-To: <81b0412b0903130105y2f9c2430iabaab26d6a8e8188@mail.gmail.com>
+References: <20090311.015542.118514963.ryusuke@osrg.net>
+	<81b0412b0903130105y2f9c2430iabaab26d6a8e8188@mail.gmail.com>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 13 Mar 2009 19:04:23 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
+On Fri, 13 Mar 2009 09:05:53 +0100, Alex Riesen wrote:
+> 2009/3/10 Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>:
+> >
+> > # mount -t nilfs2 -r -o cp=33339 /dev/sdb1 /snap
+> > (mount the snapshot, then it will become accessible on the mount=
+ point)
+>
+> Is it possible to mount a snapshot rw to make it a branch?
 
-Impact: save memory
+No, the writable snapshot is not supported.
+( So, a readonly option appears in the example. )
 
-The struct dyn_ftrace table is very large, this patch will save about
-50%
+Maybe the current design is unfit for efficient branching because
+nilfs identifies checkpoints with linear numbers and manages lifetime
+of each on-disk block with a range of the numbers.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index e1583f2..4dc32c8 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -145,7 +145,6 @@ enum {
- };
- 
- struct dyn_ftrace {
--	struct list_head	list;
- 	unsigned long		ip; /* address of mcount call-site */
- 	unsigned long		flags;
- 	struct dyn_arch_ftrace	arch;
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index d33d306..40eaaae 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -272,7 +272,7 @@ enum {
- 
- static int ftrace_filtered;
- 
--static LIST_HEAD(ftrace_new_addrs);
-+static struct dyn_ftrace *ftrace_new_addrs;
- 
- static DEFINE_MUTEX(ftrace_regex_lock);
- 
-@@ -408,8 +408,8 @@ ftrace_record_ip(unsigned long ip)
- 		return NULL;
- 
- 	rec->ip = ip;
--
--	list_add(&rec->list, &ftrace_new_addrs);
-+	rec->flags = (unsigned long)ftrace_new_addrs;
-+	ftrace_new_addrs = rec;
- 
- 	return rec;
- }
-@@ -714,19 +714,21 @@ unsigned long		ftrace_update_tot_cnt;
- 
- static int ftrace_update_code(struct module *mod)
- {
--	struct dyn_ftrace *p, *t;
-+	struct dyn_ftrace *p;
- 	cycle_t start, stop;
- 
- 	start = ftrace_now(raw_smp_processor_id());
- 	ftrace_update_cnt = 0;
- 
--	list_for_each_entry_safe(p, t, &ftrace_new_addrs, list) {
-+	while (ftrace_new_addrs) {
- 
- 		/* If something went wrong, bail without enabling anything */
- 		if (unlikely(ftrace_disabled))
- 			return -1;
- 
--		list_del_init(&p->list);
-+		p = ftrace_new_addrs;
-+		ftrace_new_addrs = (struct dyn_ftrace *)p->flags;
-+		p->flags = 0L;
- 
- 		/* convert record (i.e, patch mcount-call with NOP) */
- 		if (ftrace_code_disable(mod, p)) {
+We might be able to add a feature like replacing the latest filesystem
+state with a past snapshot, but it's not yet determined.
 
-
+Cheers,
+Ryusuke
