@@ -1,88 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbZCMMpD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbZCMMsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754240AbZCMMpD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 08:45:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbZCMMox
+	id S1755954AbZCMMsA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 08:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbZCMMrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 08:44:53 -0400
-Received: from viefep13-int.chello.at ([62.179.121.33]:31478 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753123AbZCMMow (ORCPT
+	Fri, 13 Mar 2009 08:47:52 -0400
+Received: from billgribble.com ([65.99.215.30]:49618 "EHLO
+	mail.billgribble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751624AbZCMMrv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 08:44:52 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH] perfcounters: Make s/w counters in a group only count
- when group is on
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <18874.20538.785519.824803@cargo.ozlabs.ibm.com>
-References: <18873.48668.562126.113618@cargo.ozlabs.ibm.com>
-	 <1236939816.22914.3714.camel@twins>
-	 <18874.20538.785519.824803@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Fri, 13 Mar 2009 13:44:43 +0100
-Message-Id: <1236948283.22447.36.camel@twins>
+	Fri, 13 Mar 2009 08:47:51 -0400
+X-Greylist: delayed 481 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Mar 2009 08:47:51 EDT
+Subject: usbhid:  Changes since 2.6.28 in quirk handling?
+From: Bill Gribble <grib@billgribble.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary="=-H+qoA7dSWjOrnlmntHV6"
+Date: Fri, 13 Mar 2009 08:39:02 -0400
+Message-Id: <1236947942.9606.26.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.5 
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Fri Mar 13 07:40:38 2009
+X-DSPAM-Confidence: 1.0000
+X-DSPAM-Probability: 0.0023
+X-DSPAM-Signature: 49ba544613713852521447
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-13 at 23:23 +1100, Paul Mackerras wrote:
-> Peter Zijlstra writes:
-> 
-> > The former case however, you seem to say we should keep software
-> > counters active even though their associated task is scheduled out? That
-> > doesn't appear to make sense to me.
-> > 
-> > Why would you want to do that?
-> 
-> Because the things that they are based on can get incremented when the
-> task is scheduled out.  This is most noticeable in the case of the
-> context switch counter and also happens with the task migrations
-> counter.  These *always* get incremented when the task is scheduled
-> out from the perf_counter subsystem's point of view, i.e. after
-> perf_counter_task_sched_out is called for the task and before the next
-> perf_counter_task_sched_in call.
 
-Ah, I would rather special case these two counters than do what you did.
+--=-H+qoA7dSWjOrnlmntHV6
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-The issue I have with your approach is two-fold:
- - it breaks the symmetry between software and hardware counters by
-   treating them differently.
- - it doesn't make much conceptual sense to me
+Hi, I have been maintaining a patch for a quirky USB device built-in to
+a UMPC, the Raon Digital Everun.  Without the patch, the builtin
+keyboard, mouse, and touchscreen are useless.  I have never submitted it
+for inclusion in the kernel because there are less than 5 people who
+have ever even attempted to install Linux on this device, and it's
+discontinued.  However, *I* use the thing daily, and its wifi device
+(libertas) has continued to get better support in the recent kernels so
+I port the patch forward. 
 
-For the context switch counter, we could count the event right before we
-schedule out, which would make it behave like expected.
+Anyway the patch adds a quirk handler that does a mandatory
+initialization step to turn the USB device on at powerup or resume.  In
+recent kernels (I moved from 2.6.28, which was reliable, at 2.6.29-rc5,
+I believe) this has become unreliable; about half the time the device is
+not enabled at boot, and about 1 time in 10 it is disabled when resuming
+from suspend-to-RAM. 
 
-The same for task migration, most migrations happen when they are in
-fact running, so there too we can account the migration either before we
-rip it off the src cpu, or after we place it on the dst cpu.
+I noticed that the structure of the quirk handling code has changed
+somewhat; I left my patch using the "old" way of adding an entry to
+hid_blacklist in hid-quirks.c.  Is there a document or email trail that
+describes the new way of structuring this quirk code?  Any pitfalls to
+look out for? 
 
-There are a few places where this isn't quite so, like affine wakeups,
-but there we can account after the placement.
+Thanks,
+Bill Gribble
 
->   I believe page faults can also
-> happen while the task is scheduled out, via access_process_vm.
 
-Very rare, and once could conceivably argue that the fault would then
-belong to the task doing access_process_vm().
+--=-H+qoA7dSWjOrnlmntHV6
+Content-Disposition: attachment; filename="everun.patch"
+Content-Type: text/x-patch; name="everun.patch"; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 
-> I also originally thought that software counters should only count
-> while their task is scheduled in, which is why I introduced the bug
-> that I fixed in c07c99b67233ccaad38a961c17405dc1e1542aa4.  That commit
-> however left us with software counters that counted even when their
-> group wasn't on; hence the current patch.
+diff -u -r linux-2.6-stock/drivers/hid/usbhid/hid-core.c linux-2.6/drivers/hid/usbhid/hid-core.c
+--- linux-2.6-stock/drivers/hid/usbhid/hid-core.c	2009-03-13 08:28:42.000000000 -0400
++++ linux-2.6/drivers/hid/usbhid/hid-core.c	2009-03-13 08:05:48.000000000 -0400
+@@ -697,6 +697,35 @@
+ 	usb_buffer_free(dev, usbhid->bufsize, usbhid->ctrlbuf, usbhid->ctrlbuf_dma);
+ }
+ 
++/*
++ * Sending HID_REQ_SET_REPORT changes the operation mode of the
++ * Microchip controller in the Raon Everun to "operational".  Without
++ * this, the keyboard/mouse/touchpad will not send any events
++ */
++static void hid_fixup_microchip_exphid(struct usb_device *dev, int ifnum)
++{
++       int result;
++       char *buf = kmalloc(1, GFP_KERNEL);
++
++       if (!buf)
++               return;
++
++       buf[0] = 0;
++       dbg_hid("exphid quirk, iface=%d", ifnum);
++       /* only do this for interface 0, the keyboard */
++       if (ifnum == 0) {
++               result = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
++                                        HID_REQ_SET_REPORT,
++                                        USB_TYPE_CLASS | USB_RECIP_INTERFACE,
++                                        0x0200, 0x00, buf, 1, USB_CTRL_GET_TIMEOUT);
++
++               if (result < 0)
++                       err_hid("%s failed: %d\n", __func__, result);
++       }
++
++       kfree(buf);
++}
++
+ static int usbhid_parse(struct hid_device *hid)
+ {
+ 	struct usb_interface *intf = to_usb_interface(hid->dev.parent);
+@@ -772,6 +801,7 @@
+ 	return ret;
+ }
+ 
++
+ static int usbhid_start(struct hid_device *hid)
+ {
+ 	struct usb_interface *intf = to_usb_interface(hid->dev.parent);
+@@ -801,6 +831,10 @@
+ 		goto fail;
+ 	}
+ 
++        if (hid->quirks & HID_QUIRK_MICROCHIP_EXPHID)
++                hid_fixup_microchip_exphid(interface_to_usbdev(intf),
++                        intf->cur_altsetting->desc.bInterfaceNumber);
++
+ 	for (n = 0; n < interface->desc.bNumEndpoints; n++) {
+ 		struct usb_endpoint_descriptor *endpoint;
+ 		int pipe;
+@@ -1075,10 +1109,16 @@
+ 	if (!test_bit(HID_STARTED, &usbhid->iofl))
+ 		return 0;
+ 
++        if (hid->quirks & HID_QUIRK_MICROCHIP_EXPHID)
++                hid_fixup_microchip_exphid(interface_to_usbdev(intf),
++                        intf->cur_altsetting->desc.bInterfaceNumber);
++
+ 	clear_bit(HID_SUSPENDED, &usbhid->iofl);
+ 	usbhid->retry_delay = 0;
+ 	status = hid_start_in(hid);
+ 	dev_dbg(&intf->dev, "resume status %d\n", status);
++
++
+ 	return status;
+ }
+ 
+diff -u -r linux-2.6-stock/drivers/hid/usbhid/hid-quirks.c linux-2.6/drivers/hid/usbhid/hid-quirks.c
+--- linux-2.6-stock/drivers/hid/usbhid/hid-quirks.c	2009-03-13 08:28:42.000000000 -0400
++++ linux-2.6/drivers/hid/usbhid/hid-quirks.c	2009-03-13 08:05:48.000000000 -0400
+@@ -61,6 +61,8 @@
+ 	{ USB_VENDOR_ID_WISEGROUP_LTD, USB_DEVICE_ID_SMARTJOY_DUAL_PLUS, HID_QUIRK_NOGET | HID_QUIRK_MULTI_INPUT },
+ 	{ USB_VENDOR_ID_WISEGROUP_LTD2, USB_DEVICE_ID_SMARTJOY_DUAL_PLUS, HID_QUIRK_NOGET | HID_QUIRK_MULTI_INPUT },
+ 
++        { USB_VENDOR_ID_MICROCHIP, USB_DEVICE_ID_MICROCHIP_EXPHID, HID_QUIRK_MICROCHIP_EXPHID },
++
+ 	{ 0, 0 }
+ };
+ 
 
-Right.
+--=-H+qoA7dSWjOrnlmntHV6--
 
-Anyway, I would like to keep the behaviour that software and hardware
-counters are symmetric, that means disable them when their associated
-task goes.
-
-Like stated above, we can fix these special cases by accounting in
-different places.
 
