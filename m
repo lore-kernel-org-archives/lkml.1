@@ -1,82 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757525AbZCMKTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbZCMKXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757525AbZCMKTe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 06:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbZCMKTZ
+	id S1756290AbZCMKXT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 06:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbZCMKXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 06:19:25 -0400
-Received: from ns.firmix.at ([62.141.48.66]:2947 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751515AbZCMKTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 06:19:24 -0400
-Subject: Re: Network throughput (localhost)
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Aki Niimura <akineko@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <59f1f0cb0903130025k31cc2c9fud865dd776534c2bd@mail.gmail.com>
-References: <59f1f0cb0903130025k31cc2c9fud865dd776534c2bd@mail.gmail.com>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Fri, 13 Mar 2009 11:18:55 +0100
-Message-Id: <1236939535.25161.17.camel@spike.firmix.at>
+	Fri, 13 Mar 2009 06:23:08 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:24513 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbZCMKXH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 06:23:07 -0400
+Message-Id: <49BA3A84.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Fri, 13 Mar 2009 09:50:44 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Jeremy Fitzhardinge" <jeremy.fitzhardinge@citrix.com>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       "Xen-devel" <xen-devel@lists.xensource.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [PATCH 10/24] xen: mask XSAVE from cpuid
+References: <1236931920-6861-1-git-send-email-jeremy@goop.org>
+ <1236931920-6861-11-git-send-email-jeremy@goop.org>
+In-Reply-To: <1236931920-6861-11-git-send-email-jeremy@goop.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -1.054 () AWL,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-1.054 required=5
-X-Spam-Score: -1.054 () AWL,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-13 at 00:25 -0700, Aki Niimura wrote:
-[...]
-> I developed a Python program, which tries to take advantage of
-> available Multi CPU resources.
-> Two programs (Server and Client) are running in separate processes
-> communicating each other using Socket IPC.
-> The performance I'm getting is somewhat in line with my expectation
-> under Solaris/x86 but significantly slower
-> under Linux (CentOS 5) even both use the identical hardware.
-> 
-> My investigation revealed that the performance is bottlenecked by the
-> communication (Socket to localhost).
-> 
-> So, I wrote much simpler program (socket server and socket client) to
-> measure the network throughput.
-> What I found was that the network throughput on both platforms
-> (Solaris/x86 and CentOS Linux) are almost
-> identical if packets are going out but the network throughput of
-> Solaris/x86 is almost twice (up to three times)
-> the throughput Linux can deliver if the packets are destined to localhost.
-> 
-> I know that Solaris treats packets destined to localhost differently.
-> 
-> Because of this, my program is slower (than one process) under Linux
-> (and is practically useless).
-> (I see meaningful performance gain under Solaris/x86, though)
-> I haven't tried any other Linux distributions.
-> Is there any Linux distribution known for better localhost network throughput?
-> Is there any way to improve the localhost throughput under Linux (CentOS)?
-> 
-> Of course, some people would point out that other types of IPC (such
-> as shared memory) are better choices
-> for the communication between closely coupled multi-processing
-> program. Unfortunately, there are
-> reasons that my program needs to use Socket.
-> 
-> Any suggestions will be greatly appreciated.
+>>> Jeremy Fitzhardinge <jeremy@goop.org> 13.03.09 09:11 >>>
+>From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>
+>Xen leaves XSAVE set in cpuid, but doesn't allow cr4.OSXSAVE
+>to be set.  This confuses the kernel and it ends up crashing on
+>an xsetbv instruction.
+>
+>At boot time, try to set cr4.OSXSAVE, and mask XSAVE out of
+>cpuid it we can't.  This will produce a spurious error from Xen,
+>but allows us to support XSAVE if/when Xen does.
 
-Have you tried AF_UNIX sockets?
+As pointed out on an earlier thread, it seems inappropriate to do probing
+like this when there is a cpuid feature flag (osxsave) that can be used to
+determine whether XSAVE can be used. And even without that flag,
+simply reading CR4 and checking whether osxsave is set there would
+suffice. This is under the assumption that Xen's to-be-done implementation
+of XSAVE support would match that of FXSAVE (Xen turns its support on
+unconditionally and for all [pv] guests).
 
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
+Jan
 
