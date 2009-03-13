@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbZCMFU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbZCMFV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757102AbZCMFU5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 01:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZCMFUs
+	id S1757302AbZCMFV2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 01:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbZCMFVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 01:20:48 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37543 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751383AbZCMFUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 01:20:47 -0400
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 13 Mar 2009 16:19:25 +1100
-Message-Id: <1236921565.25062.42.camel@pasglop>
+	Fri, 13 Mar 2009 01:21:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43641 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751517AbZCMFVR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 01:21:17 -0400
+Date: Thu, 12 Mar 2009 22:16:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 3/4] tracing: move binary buffers into per cpu directory
+Message-Id: <20090312221634.407c82ad.akpm@linux-foundation.org>
+In-Reply-To: <20090313050521.535041167@goodmis.org>
+References: <20090313050446.277065036@goodmis.org>
+	<20090313050521.535041167@goodmis.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus !
+On Fri, 13 Mar 2009 01:04:49 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
 
-So here's the new ps3 nvram driver for 2.6.29 that we discussed earlier
+>  	if (!entry)
+>  		pr_warning("Could not create debugfs 'trace' entry\n");
+> +
+> +	entry = debugfs_create_file("trace_pipe_raw", 0444, d_cpu,
+> +				    (void *) cpu, &tracing_buffers_fops);
+> +	if (!entry)
+> +		pr_warning("Could not create debugfs 'trace_pipe_raw' entry\n");
 
-Cheers,
-Ben.
+Maybe we should just do the warning in debugfs_create_file().  It's hard to
+think of a scenario where we wouldn't want this failure to be reported.
 
-The following changes since commit 9ead64974b05501bbac0d63a47c99fa786d064ba:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../sam/kbuild-fixes
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-Geert Uytterhoeven (1):
-      ps3/block: Replace mtd/ps3vram by block/ps3vram
-
- arch/powerpc/platforms/ps3/Kconfig |    7 +
- drivers/block/Makefile             |    1 +
- drivers/block/ps3vram.c            |  865 ++++++++++++++++++++++++++++++++++++
- drivers/mtd/devices/Kconfig        |    7 -
- drivers/mtd/devices/Makefile       |    1 -
- drivers/mtd/devices/ps3vram.c      |  768 --------------------------------
- 6 files changed, 873 insertions(+), 776 deletions(-)
- create mode 100644 drivers/block/ps3vram.c
- delete mode 100644 drivers/mtd/devices/ps3vram.c
-
-
+If there is such a scenario then debugfs_create_file_nowarn() beckons.
