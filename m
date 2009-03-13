@@ -1,75 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbZCMKjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZCMKka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbZCMKjJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 06:39:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZCMKix
+	id S1756758AbZCMKka (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 06:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZCMKkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 06:38:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53215 "EHLO mx2.mail.elte.hu"
+	Fri, 13 Mar 2009 06:40:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39681 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752670AbZCMKiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 06:38:52 -0400
-Date: Fri, 13 Mar 2009 11:38:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Jan Beulich <jbeulich@novell.com>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [tip:core/ipi] generic-ipi: eliminate spurious
-	pointlessWARN_ON()s
-Message-ID: <20090313103828.GB31094@elte.hu>
-References: <49B91A7E.76E4.0078.0@novell.com> <tip-6a09dfa870ba0ed21b1124539968a36b42660661@git.kernel.org> <1236934491.5188.209.camel@laptop> <49BA33BE.76E4.0078.0@novell.com> <1236937423.22914.3698.camel@twins>
+	id S1752353AbZCMKkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 06:40:16 -0400
+Date: Fri, 13 Mar 2009 10:39:28 GMT
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       srostedt@redhat.com, tglx@linutronix.de, laijs@cn.fujitsu.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       srostedt@redhat.com, tglx@linutronix.de, laijs@cn.fujitsu.com,
+       mingo@elte.hu
+In-Reply-To: <49BA2BAB.6010608@cn.fujitsu.com>
+References: <49BA2BAB.6010608@cn.fujitsu.com>
+Subject: [tip:tracing/ftrace] ftrace: use seq_read
+Message-ID: <tip-850a80cfaa5aec3e626eb3736eff890a80e4fa77@git.kernel.org>
+Git-Commit-ID: 850a80cfaa5aec3e626eb3736eff890a80e4fa77
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1236937423.22914.3698.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 10:39:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  850a80cfaa5aec3e626eb3736eff890a80e4fa77
+Gitweb:     http://git.kernel.org/tip/850a80cfaa5aec3e626eb3736eff890a80e4fa77
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Fri, 13 Mar 2009 17:47:23 +0800
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 13 Mar 2009 11:35:31 +0100
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+ftrace: use seq_read
 
-> On Fri, 2009-03-13 at 09:21 +0000, Jan Beulich wrote:
-> > >>> Peter Zijlstra <peterz@infradead.org> 13.03.09 09:54 >>>
-> > >Wouldn't leaving them in place but changing them to:
-> > >
-> > >WARN_ON(irqs_disabled() && system_state == SYSTEM_RUNNING);
-> > >
-> > >be clearer?
-> > 
-> > I don't think that would be precise: system_state gets set to
-> > SYSTEM_RUNNING much later than APs get brought up (i.e. there are
-> > cases where the WARN_ON()s could validly trigger with SYSTEM_BOOTING),
-> > and also doesn't cover states > SYSTEM_RUNNING (where, again, after
-> > perhaps having brought down all APs the warnings could become pointless,
-> > but the warnings could be meaningful as long as there are still some APs
-> > online).
-> > 
-> > While from an abstract code reading perspective your suggestion might
-> > seem reasonable, the changed placement really reflects what the warning
-> > is trying to warn about - a potential deadlock which cannot occur under
-> > the conditions filtered out by conditionals the warnings were moved
-> > beyond.
-> 
-> How about?
-> 
-> WARN_ON_ONCE(irqs_disabled() && !oops_in_progress)
+Impact: cleanup
 
-ok, that's indeed better - i've done that - see the upcoming 
-commit messages in this thread.
+VFS layer has tested the file mode, we do not need test it.
 
-I also changed all of panic() to be covered by oops_in_progress 
-- see the other commit. Eric: that should make kexec [a tiny 
-bit] more robust too, agreed?
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <srostedt@redhat.com>
+LKML-Reference: <49BA2BAB.6010608@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-	Ingo
+
+---
+ kernel/trace/ftrace.c |   26 +++-----------------------
+ 1 files changed, 3 insertions(+), 23 deletions(-)
+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 08f4a62..bf78a4c 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -1120,16 +1120,6 @@ ftrace_notrace_open(struct inode *inode, struct file *file)
+ 	return ftrace_regex_open(inode, file, 0);
+ }
+ 
+-static ssize_t
+-ftrace_regex_read(struct file *file, char __user *ubuf,
+-		       size_t cnt, loff_t *ppos)
+-{
+-	if (file->f_mode & FMODE_READ)
+-		return seq_read(file, ubuf, cnt, ppos);
+-	else
+-		return -EPERM;
+-}
+-
+ static loff_t
+ ftrace_regex_lseek(struct file *file, loff_t offset, int origin)
+ {
+@@ -1882,7 +1872,7 @@ static const struct file_operations ftrace_failures_fops = {
+ 
+ static const struct file_operations ftrace_filter_fops = {
+ 	.open = ftrace_filter_open,
+-	.read = ftrace_regex_read,
++	.read = seq_read,
+ 	.write = ftrace_filter_write,
+ 	.llseek = ftrace_regex_lseek,
+ 	.release = ftrace_filter_release,
+@@ -1890,7 +1880,7 @@ static const struct file_operations ftrace_filter_fops = {
+ 
+ static const struct file_operations ftrace_notrace_fops = {
+ 	.open = ftrace_notrace_open,
+-	.read = ftrace_regex_read,
++	.read = seq_read,
+ 	.write = ftrace_notrace_write,
+ 	.llseek = ftrace_regex_lseek,
+ 	.release = ftrace_notrace_release,
+@@ -1992,16 +1982,6 @@ ftrace_graph_open(struct inode *inode, struct file *file)
+ 	return ret;
+ }
+ 
+-static ssize_t
+-ftrace_graph_read(struct file *file, char __user *ubuf,
+-		       size_t cnt, loff_t *ppos)
+-{
+-	if (file->f_mode & FMODE_READ)
+-		return seq_read(file, ubuf, cnt, ppos);
+-	else
+-		return -EPERM;
+-}
+-
+ static int
+ ftrace_set_func(unsigned long *array, int *idx, char *buffer)
+ {
+@@ -2132,7 +2112,7 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
+ 
+ static const struct file_operations ftrace_graph_fops = {
+ 	.open = ftrace_graph_open,
+-	.read = ftrace_graph_read,
++	.read = seq_read,
+ 	.write = ftrace_graph_write,
+ };
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
