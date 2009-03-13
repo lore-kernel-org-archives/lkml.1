@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbZCMClz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758542AbZCMCmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758595AbZCMClz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 22:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758555AbZCMCif
+	id S1758542AbZCMCmx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 22:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbZCMCii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 22:38:35 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47341 "EHLO
+	Thu, 12 Mar 2009 22:38:38 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43749 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758534AbZCMCi2 (ORCPT
+	with ESMTP id S1758541AbZCMCi3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 22:38:28 -0400
-Message-Id: <20090313023825.869949732@goodmis.org>
+	Thu, 12 Mar 2009 22:38:29 -0400
+Message-Id: <20090313023826.906365262@goodmis.org>
 References: <20090313023704.971438367@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 12 Mar 2009 22:37:09 -0400
+Date: Thu, 12 Mar 2009 22:37:14 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -22,67 +22,54 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Lai Jiangshan <laijs@cn.fujitsu.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 05/16] tracing: show that buffer size is not expanded
-Content-Disposition: inline; filename=0005-tracing-show-that-buffer-size-is-not-expanded.patch
+Subject: [PATCH 10/16] tracing: fix stack tracer header
+Content-Disposition: inline; filename=0010-tracing-fix-stack-tracer-header.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: do not confuse user on small trace buffer sizes
+The stack tracer use to look like this:
 
-When the system boots up, the trace buffer is small to conserve memory.
-It is only two pages per online CPU. When the tracer is used, it expands
-to the default value.
+ # cat /debug/tracing/stack_trace
+         Depth  Size      Location    (57 entries)
+         -----  ----      --------
+  0)     5088      16   mempool_alloc_slab+0x16/0x18
+  1)     5072     144   mempool_alloc+0x4d/0xfe
+  2)     4928      16   scsi_sg_alloc+0x48/0x4a [scsi_mod]
 
-This can confuse the user if they look at the buffer size and see only
-7, but then later they see 1408.
+Now it looks like this:
 
- # cat /debug/tracing/buffer_size_kb
-7
+ # cat /debug/tracing/stack_trace
 
- # echo sched_switch > /debug/tracing/current_tracer
-
- # cat /debug/tracing/buffer_size_kb
-1408
-
-This patch tries to help remove this confustion by showing that the
-buffer has not been expanded.
-
- # cat /debug/tracing/buffer_size_kb
-7 (expanded: 1408)
+        Depth    Size      Location    (57 entries)
+        -----    ----      --------
+  0)     5088      16   mempool_alloc_slab+0x16/0x18
+  1)     5072     144   mempool_alloc+0x4d/0xfe
+  2)     4928      16   scsi_sg_alloc+0x48/0x4a [scsi_mod]
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+ kernel/trace/trace_stack.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 04ab824..62a63b2 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2948,10 +2948,18 @@ tracing_entries_read(struct file *filp, char __user *ubuf,
- 		     size_t cnt, loff_t *ppos)
- {
- 	struct trace_array *tr = filp->private_data;
--	char buf[64];
-+	char buf[96];
- 	int r;
+diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+index d0871bc..4564fd9 100644
+--- a/kernel/trace/trace_stack.c
++++ b/kernel/trace/trace_stack.c
+@@ -251,9 +251,9 @@ static int t_show(struct seq_file *m, void *v)
+ 	int size;
  
--	r = sprintf(buf, "%lu\n", tr->entries >> 10);
-+	mutex_lock(&trace_types_lock);
-+	if (!ring_buffer_expanded)
-+		r = sprintf(buf, "%lu (expanded: %lu)\n",
-+			    tr->entries >> 10,
-+			    trace_buf_size >> 10);
-+	else
-+		r = sprintf(buf, "%lu\n", tr->entries >> 10);
-+	mutex_unlock(&trace_types_lock);
-+
- 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
- }
- 
+ 	if (v == SEQ_START_TOKEN) {
+-		seq_printf(m, "        Depth   Size      Location"
++		seq_printf(m, "        Depth    Size      Location"
+ 			   "    (%d entries)\n"
+-			   "        -----   ----      --------\n",
++			   "        -----    ----      --------\n",
+ 			   max_stack_trace.nr_entries);
+ 		return 0;
+ 	}
 -- 
 1.6.1.3
 
