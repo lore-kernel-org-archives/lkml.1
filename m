@@ -1,170 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbZCMRij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759817AbZCMRjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758830AbZCMRij (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 13:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbZCMRiH
+	id S1759817AbZCMRjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 13:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759290AbZCMRiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 13:38:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36585 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757942AbZCMRiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 13:38:04 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/2] NOMMU: There is no mlock() for NOMMU,
-	so don't provide the bits
-To: kosaki.motohiro@jp.fujitsu.com, minchan.kim@gmail.com
-Cc: dhowells@redhat.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, peterz@infradead.org,
-       nrik.Berkhan@ge.com, uclinux-dev@uclinux.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hannes@cmpxchg.org,
-       riel@surriel.com, lee.schermerhorn@hp.com
-Date: Fri, 13 Mar 2009 17:33:48 +0000
-Message-ID: <20090313173348.10169.31420.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090313173343.10169.58053.stgit@warthog.procyon.org.uk>
-References: <20090313173343.10169.58053.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Fri, 13 Mar 2009 13:38:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45865 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759148AbZCMRiJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 13:38:09 -0400
+Date: Fri, 13 Mar 2009 10:27:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+cc: Ying Han <yinghan@google.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
+       hpa@zytor.com, linux-kernel@vger.kernel.org,
+       Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
+       viro@zeniv.linux.org.uk, mingo@elte.hu, mpm@selenic.com,
+       Andrew Morton <akpm@linux-foundation.org>, xemul@openvz.org,
+       tglx@linutronix.de, Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
+ do?
+In-Reply-To: <20090313053458.GA28833@us.ibm.com>
+Message-ID: <alpine.LFD.2.00.0903131018390.3940@localhost.localdomain>
+References: <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226155755.GA1456@x200.localdomain> <20090310215305.GA2078@x200.localdomain> <49B775B4.1040800@free.fr>
+ <20090312145311.GC12390@us.ibm.com> <1236891719.32630.14.camel@bahia> <20090312212124.GA25019@us.ibm.com> <604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com> <20090313053458.GA28833@us.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mlock() facility does not exist for NOMMU since all mappings are
-effectively locked anyway, so we don't make the bits available when they're
-not useful.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- include/linux/page-flags.h |   20 +++++++++++++-------
- mm/Kconfig                 |    8 ++++++++
- mm/internal.h              |    8 +++++---
- 3 files changed, 26 insertions(+), 10 deletions(-)
 
 
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index 219a523..61df177 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -96,6 +96,8 @@ enum pageflags {
- 	PG_swapbacked,		/* Page is backed by RAM/swap */
- #ifdef CONFIG_UNEVICTABLE_LRU
- 	PG_unevictable,		/* Page is "unevictable"  */
-+#endif
-+#ifdef CONFIG_HAVE_MLOCKED_PAGE_BIT
- 	PG_mlocked,		/* Page is vma mlocked */
- #endif
- #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
-@@ -234,20 +236,20 @@ PAGEFLAG_FALSE(SwapCache)
- #ifdef CONFIG_UNEVICTABLE_LRU
- PAGEFLAG(Unevictable, unevictable) __CLEARPAGEFLAG(Unevictable, unevictable)
- 	TESTCLEARFLAG(Unevictable, unevictable)
-+#else
-+PAGEFLAG_FALSE(Unevictable) TESTCLEARFLAG_FALSE(Unevictable)
-+	SETPAGEFLAG_NOOP(Unevictable) CLEARPAGEFLAG_NOOP(Unevictable)
-+	__CLEARPAGEFLAG_NOOP(Unevictable)
-+#endif
- 
-+#ifdef CONFIG_HAVE_MLOCKED_PAGE_BIT
- #define MLOCK_PAGES 1
- PAGEFLAG(Mlocked, mlocked) __CLEARPAGEFLAG(Mlocked, mlocked)
- 	TESTSCFLAG(Mlocked, mlocked)
--
- #else
--
- #define MLOCK_PAGES 0
- PAGEFLAG_FALSE(Mlocked)
- 	SETPAGEFLAG_NOOP(Mlocked) TESTCLEARFLAG_FALSE(Mlocked)
--
--PAGEFLAG_FALSE(Unevictable) TESTCLEARFLAG_FALSE(Unevictable)
--	SETPAGEFLAG_NOOP(Unevictable) CLEARPAGEFLAG_NOOP(Unevictable)
--	__CLEARPAGEFLAG_NOOP(Unevictable)
- #endif
- 
- #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
-@@ -367,9 +369,13 @@ static inline void __ClearPageTail(struct page *page)
- 
- #ifdef CONFIG_UNEVICTABLE_LRU
- #define __PG_UNEVICTABLE	(1 << PG_unevictable)
--#define __PG_MLOCKED		(1 << PG_mlocked)
- #else
- #define __PG_UNEVICTABLE	0
-+#endif
-+
-+#ifdef CONFIG_HAVE_MLOCKED_PAGE_BIT
-+#define __PG_MLOCKED		(1 << PG_mlocked)
-+#else
- #define __PG_MLOCKED		0
- #endif
- 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index a5b7781..8c89597 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -214,5 +214,13 @@ config UNEVICTABLE_LRU
- 	  will use one page flag and increase the code size a little,
- 	  say Y unless you know what you are doing.
- 
-+config HAVE_MLOCK
-+	bool
-+	default y if MMU=y
-+
-+config HAVE_MLOCKED_PAGE_BIT
-+	bool
-+	default y if HAVE_MLOCK=y && UNEVICTABLE_LRU=y
-+
- config MMU_NOTIFIER
- 	bool
-diff --git a/mm/internal.h b/mm/internal.h
-index 478223b..987bb03 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -63,6 +63,7 @@ static inline unsigned long page_order(struct page *page)
- 	return page_private(page);
- }
- 
-+#ifdef CONFIG_HAVE_MLOCK
- extern long mlock_vma_pages_range(struct vm_area_struct *vma,
- 			unsigned long start, unsigned long end);
- extern void munlock_vma_pages_range(struct vm_area_struct *vma,
-@@ -71,6 +72,7 @@ static inline void munlock_vma_pages_all(struct vm_area_struct *vma)
- {
- 	munlock_vma_pages_range(vma, vma->vm_start, vma->vm_end);
- }
-+#endif
- 
- #ifdef CONFIG_UNEVICTABLE_LRU
- /*
-@@ -90,7 +92,7 @@ static inline void unevictable_migrate_page(struct page *new, struct page *old)
- }
- #endif
- 
--#ifdef CONFIG_UNEVICTABLE_LRU
-+#ifdef CONFIG_HAVE_MLOCKED_PAGE_BIT
- /*
-  * Called only in fault path via page_evictable() for a new page
-  * to determine if it's being mapped into a LOCKED vma.
-@@ -165,7 +167,7 @@ static inline void free_page_mlock(struct page *page)
- 	}
- }
- 
--#else /* CONFIG_UNEVICTABLE_LRU */
-+#else /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
- static inline int is_mlocked_vma(struct vm_area_struct *v, struct page *p)
- {
- 	return 0;
-@@ -175,7 +177,7 @@ static inline void mlock_vma_page(struct page *page) { }
- static inline void mlock_migrate_page(struct page *new, struct page *old) { }
- static inline void free_page_mlock(struct page *page) { }
- 
--#endif /* CONFIG_UNEVICTABLE_LRU */
-+#endif /* CONFIG_HAVE_MLOCKED_PAGE_BIT */
- 
- /*
-  * Return the mem_map entry representing the 'offset' subpage within
+On Thu, 12 Mar 2009, Sukadev Bhattiprolu wrote:
+
+> Ying Han [yinghan@google.com] wrote:
+> | Hi Serge:
+> | I made a patch based on Oren's tree recently which implement a new
+> | syscall clone_with_pid. I tested with checkpoint/restart process tree
+> | and it works as expected.
+> 
+> Yes, I think we had a version of clone() with pid a while ago.
+
+Are people _at_all_ thinking about security?
+
+Obviously not.
+
+There's no way we can do anything like this. Sure, it's trivial to do 
+inside the kernel. But it also sounds like a _wonderful_ attack vector 
+against badly written user-land software that sends signals and has small 
+races.
+
+Quite frankly, from having followed the discussion(s) over the last few 
+weeks about checkpoint/restart in various forms, my reaction to just about 
+_all_ of this is that people pushing this are pretty damn borderline. 
+
+I think you guys are working on all the wrong problems. 
+
+Let's face it, we're not going to _ever_ checkpoint any kind of general 
+case process. Just TCP makes that fundamentally impossible in the general 
+case, and there are lots and lots of other cases too (just something as 
+totally _trivial_ as all the files in the filesystem that don't get rolled 
+back).
+
+So unless people start realizing that
+ (a) processes that want to be checkpointed had better be ready and aware 
+     of it, and help out
+ (b) there's no way in hell that we're going to add these kinds of 
+     interfaces that have dubious upsides (just teach the damn program 
+     you're checkpointing that pids will change, and admit to everybody 
+     that people who want to be checkpointed need to do work) and are 
+     potential security holes.
+ (c) if you are going to play any deeper games, you need to have 
+     privileges. IOW, "clone_with_pid()" is ok for _root_, but not for 
+     some random user. And you'd better keep that in mind EVERY SINGLE 
+     STEP OF THE WAY.
+
+I'm really fed up with these discussions. I have seen almost _zero_ 
+critical thinking at all. Probably because anybody who is in the least 
+doubtful about it simply has tuned out the discussion. So here's my input: 
+start small, start over, and start thinking about other issues than just 
+checkpointing.
+
+		Linus
 
