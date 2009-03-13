@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbZCMBle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZCMBny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757686AbZCMBle (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 21:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757558AbZCMBlN
+	id S1754689AbZCMBny (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 21:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbZCMBnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 21:41:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52137 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757550AbZCMBlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 21:41:11 -0400
-Date: Fri, 13 Mar 2009 02:40:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: more debug print out with mtrr
-Message-ID: <20090313014052.GB6178@elte.hu>
-References: <49B87BE7.3040809@kernel.org>
+	Thu, 12 Mar 2009 21:43:45 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:59317 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750732AbZCMBnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 21:43:45 -0400
+Message-ID: <49B9BA51.70105@cn.fujitsu.com>
+Date: Fri, 13 Mar 2009 09:43:45 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B87BE7.3040809@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: mingo@redhat.com, hpa@zytor.com, vatsa@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, dhaval@linux.vnet.ibm.com,
+       balbir@in.ibm.com, akpm@linux-foundation.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:sched/urgent] cpuset: Check if the cpus allowed is a	subset
+ of the cpuset's cpus for PF_THREAD_BOUND threads
+References: <20090312174501.GA7821@linux.vnet.ibm.com> <tip-5a98d36112f4301f068b638d6e0db2357f7deb75@git.kernel.org> <20090313013241.GA6107@elte.hu>
+In-Reply-To: <20090313013241.GA6107@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+CC: David Rientjes <rientjes@google.com>
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
-
-> Impact: more print out
+Ingo Molnar wrote:
+> * Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 > 
-> remove unneeded mtrr_show
+>> Commit-ID:  5a98d36112f4301f068b638d6e0db2357f7deb75
+>> Gitweb:     http://git.kernel.org/tip/5a98d36112f4301f068b638d6e0db2357f7deb75
+>> Author:     Dhaval Giani <dhaval@linux.vnet.ibm.com>
+>> AuthorDate: Thu, 12 Mar 2009 23:15:01 +0530
+>> Commit:     Ingo Molnar <mingo@elte.hu>
+>> CommitDate: Fri, 13 Mar 2009 00:21:25 +0100
+>>
+>> cpuset: Check if the cpus allowed is a subset of the cpuset's 
+>> cpus for PF_THREAD_BOUND threads
 > 
-> it will only printout one time by first cpu, so it is not big deal.
+> Dropped this patch for now - Andrew says it got NAK-ed and he's 
+> handling it with other fixes.
 > 
-> also print out directly from get_mtrr, because it doesn't update mtrr_state.
 
-FYI, this patch is whitespace and line-wrap corrupted, please 
-resend.
+It's not a bug, it's David Rientjes that introduced this behavior:
+	9985b0bab332289f14837eff3c6e0bcc658b58f7
 
-	Ingo
+And here was the discussion:
+	http://lkml.org/lkml/2008/6/5/310
