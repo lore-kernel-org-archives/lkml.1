@@ -1,381 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760434AbZCMQsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760551AbZCMQsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760434AbZCMQsS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759986AbZCMQnr
+	id S1760551AbZCMQsx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760029AbZCMQoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:43:47 -0400
-Received: from gw.goop.org ([64.81.55.164]:57242 "EHLO abulafia.goop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758174AbZCMQnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 12:43:46 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 04/17] xen: implement pirq type event channels
-Date: Fri, 13 Mar 2009 09:42:25 -0700
-Message-Id: <1236962558-13748-5-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1236962558-13748-1-git-send-email-jeremy@goop.org>
-References: <1236962558-13748-1-git-send-email-jeremy@goop.org>
+	Fri, 13 Mar 2009 12:44:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47686 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760100AbZCMQox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 12:44:53 -0400
+Date: Fri, 13 Mar 2009 13:43:33 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, LMML <linux-media@vger.kernel.org>
+Subject: [GIT PATCHES for 2.6.29-rc8] V4L/DVB fixes
+Message-ID: <20090313134333.563c0565@pedra.chehab.org>
+Organization: Red Hat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A privileged PV Xen domain can get direct access to hardware.  In
-order for this to be useful, it must be able to get hardware
-interrupts.
+Linus,
 
-Being a PV Xen domain, all interrupts are delivered as event channels.
-PIRQ event channels are bound to a pirq number and an interrupt
-vector.  When a IO APIC raises a hardware interrupt on that vector, it
-is delivered as an event channel, which we can deliver to the
-appropriate device driver(s).
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
 
-This patch simply implements the infrastructure for dealing with pirq
-event channels.
+With the following fixes for 2.6.29-rc8:
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+   - dst: Report tuning algorithm correctly.
+   - m5602-s5k4aa: Split up the initial sensor probe in chunks to avoid breakage;
+   - stb0899: fix a bug on stb0899_send_diseqc_burst by using Diseqc 3/3 mode to send data;
+   - stb0899: Bug: by using signed types, Offsets and range can be negative;
+   - stb0899: Bug: For legacy applications, stv0899 performs search only first time after insmod;
+   - stb6100: init fix, the call to stb6100_set_bandwidth needs an argument;
+   - tvaudio: Avoid breakage with tda9874a, due to the access of a shadow register
+	      that would otherwise be out of range;
+   - zl10353: i2c_gate_ctrl bug fix;
+   - zoran Kconfig: auto-select bt866 needed for AverMedia 6 Eyes;
+
+Cheers,
+Mauro.
+
 ---
- drivers/xen/events.c |  245 +++++++++++++++++++++++++++++++++++++++++++++++++-
- include/xen/events.h |   14 +++
- 2 files changed, 256 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index f46e880..81726e8 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -16,7 +16,7 @@
-  *    (typically dom0).
-  * 2. VIRQs, typically used for timers.  These are per-cpu events.
-  * 3. IPIs.
-- * 4. Hardware interrupts. Not supported at present.
-+ * 4. PIRQs - Hardware interrupts.
-  *
-  * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
-  */
-@@ -40,6 +40,9 @@
- #include <xen/interface/xen.h>
- #include <xen/interface/event_channel.h>
- 
-+/* Leave low irqs free for identity mapping */
-+#define LEGACY_IRQS	16
-+
- /*
-  * This lock protects updates to the following mapping and reference-count
-  * arrays. The lock does not need to be acquired to read the mapping tables.
-@@ -83,10 +86,12 @@ struct irq_info
- 		enum ipi_vector ipi;
- 		struct {
- 			unsigned short gsi;
--			unsigned short vector;
-+			unsigned char vector;
-+			unsigned char flags;
- 		} pirq;
- 	} u;
- };
-+#define PIRQ_NEEDS_EOI	(1 << 0)
- 
- static struct irq_info irq_info[NR_IRQS];
- 
-@@ -106,6 +111,7 @@ static inline unsigned long *cpu_evtchn_mask(int cpu)
- #define VALID_EVTCHN(chn)	((chn) != 0)
- 
- static struct irq_chip xen_dynamic_chip;
-+static struct irq_chip xen_pirq_chip;
- 
- /* Constructor for packed IRQ information. */
- static struct irq_info mk_unbound_info(void)
-@@ -212,6 +218,15 @@ static unsigned int cpu_from_evtchn(unsigned int evtchn)
- 	return ret;
- }
- 
-+static bool pirq_needs_eoi(unsigned irq)
-+{
-+	struct irq_info *info = info_for_irq(irq);
-+
-+	BUG_ON(info->type != IRQT_PIRQ);
-+
-+	return info->u.pirq.flags & PIRQ_NEEDS_EOI;
-+}
-+
- static inline unsigned long active_evtchns(unsigned int cpu,
- 					   struct shared_info *sh,
- 					   unsigned int idx)
-@@ -328,7 +343,7 @@ static int find_unbound_irq(void)
- 	int irq;
- 	struct irq_desc *desc;
- 
--	for (irq = 0; irq < nr_irqs; irq++)
-+	for (irq = LEGACY_IRQS; irq < nr_irqs; irq++)
- 		if (irq_info[irq].type == IRQT_UNBOUND)
- 			break;
- 
-@@ -344,6 +359,210 @@ static int find_unbound_irq(void)
- 	return irq;
- }
- 
-+static bool identity_mapped_irq(unsigned irq)
-+{
-+	/* only identity map legacy irqs */
-+	return irq < LEGACY_IRQS;
-+}
-+
-+static void pirq_unmask_notify(int irq)
-+{
-+	struct physdev_eoi eoi = { .irq = irq };
-+
-+	if (unlikely(pirq_needs_eoi(irq))) {
-+		int rc = HYPERVISOR_physdev_op(PHYSDEVOP_eoi, &eoi);
-+		WARN_ON(rc);
-+	}
-+}
-+
-+static void pirq_query_unmask(int irq)
-+{
-+	struct physdev_irq_status_query irq_status;
-+	struct irq_info *info = info_for_irq(irq);
-+
-+	BUG_ON(info->type != IRQT_PIRQ);
-+
-+	irq_status.irq = irq;
-+	if (HYPERVISOR_physdev_op(PHYSDEVOP_irq_status_query, &irq_status))
-+		irq_status.flags = 0;
-+
-+	info->u.pirq.flags &= ~PIRQ_NEEDS_EOI;
-+	if (irq_status.flags & XENIRQSTAT_needs_eoi)
-+		info->u.pirq.flags |= PIRQ_NEEDS_EOI;
-+}
-+
-+static bool probing_irq(int irq)
-+{
-+	struct irq_desc *desc = irq_to_desc(irq);
-+
-+	return desc && desc->action == NULL;
-+}
-+
-+static unsigned int startup_pirq(unsigned int irq)
-+{
-+	struct evtchn_bind_pirq bind_pirq;
-+	struct irq_info *info = info_for_irq(irq);
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	BUG_ON(info->type != IRQT_PIRQ);
-+
-+	if (VALID_EVTCHN(evtchn))
-+		goto out;
-+
-+	bind_pirq.pirq = irq;
-+	/* NB. We are happy to share unless we are probing. */
-+	bind_pirq.flags = probing_irq(irq) ? 0 : BIND_PIRQ__WILL_SHARE;
-+	if (HYPERVISOR_event_channel_op(EVTCHNOP_bind_pirq, &bind_pirq) != 0) {
-+		if (!probing_irq(irq))
-+			printk(KERN_INFO "Failed to obtain physical IRQ %d\n",
-+			       irq);
-+		return 0;
-+	}
-+	evtchn = bind_pirq.port;
-+
-+	pirq_query_unmask(irq);
-+
-+	evtchn_to_irq[evtchn] = irq;
-+	bind_evtchn_to_cpu(evtchn, 0);
-+	info->evtchn = evtchn;
-+
-+ out:
-+	unmask_evtchn(evtchn);
-+	pirq_unmask_notify(irq);
-+
-+	return 0;
-+}
-+
-+static void shutdown_pirq(unsigned int irq)
-+{
-+	struct evtchn_close close;
-+	struct irq_info *info = info_for_irq(irq);
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	BUG_ON(info->type != IRQT_PIRQ);
-+
-+	if (!VALID_EVTCHN(evtchn))
-+		return;
-+
-+	mask_evtchn(evtchn);
-+
-+	close.port = evtchn;
-+	if (HYPERVISOR_event_channel_op(EVTCHNOP_close, &close) != 0)
-+		BUG();
-+
-+	bind_evtchn_to_cpu(evtchn, 0);
-+	evtchn_to_irq[evtchn] = -1;
-+	info->evtchn = 0;
-+}
-+
-+static void enable_pirq(unsigned int irq)
-+{
-+	startup_pirq(irq);
-+}
-+
-+static void disable_pirq(unsigned int irq)
-+{
-+}
-+
-+static void ack_pirq(unsigned int irq)
-+{
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	move_native_irq(irq);
-+
-+	if (VALID_EVTCHN(evtchn)) {
-+		mask_evtchn(evtchn);
-+		clear_evtchn(evtchn);
-+	}
-+}
-+
-+static void end_pirq(unsigned int irq)
-+{
-+	int evtchn = evtchn_from_irq(irq);
-+	struct irq_desc *desc = irq_to_desc(irq);
-+
-+	if (WARN_ON(!desc))
-+		return;
-+
-+	if ((desc->status & (IRQ_DISABLED|IRQ_PENDING)) ==
-+	    (IRQ_DISABLED|IRQ_PENDING)) {
-+		shutdown_pirq(irq);
-+	} else if (VALID_EVTCHN(evtchn)) {
-+		unmask_evtchn(evtchn);
-+		pirq_unmask_notify(irq);
-+	}
-+}
-+
-+static int find_irq_by_gsi(unsigned gsi)
-+{
-+	int irq;
-+
-+	for(irq = 0; irq < NR_IRQS; irq++) {
-+		struct irq_info *info = info_for_irq(irq);
-+
-+		if (info == NULL || info->type != IRQT_PIRQ)
-+			continue;
-+
-+		if (gsi_from_irq(irq) == gsi)
-+			return irq;
-+	}
-+
-+	return -1;
-+}
-+
-+/*
-+ * Allocate a physical irq, along with a vector.  We don't assign an
-+ * event channel until the irq actually started up.  Return an
-+ * existing irq if we've already got one for the gsi.
-+ */
-+int xen_allocate_pirq(unsigned gsi)
-+{
-+	int irq;
-+	struct physdev_irq irq_op;
-+
-+	spin_lock(&irq_mapping_update_lock);
-+
-+	irq = find_irq_by_gsi(gsi);
-+	if (irq != -1) {
-+		printk(KERN_INFO "xen_allocate_pirq: returning irq %d for gsi %u\n",
-+		       irq, gsi);
-+		goto out;	/* XXX need refcount? */
-+	}
-+
-+	if (identity_mapped_irq(gsi)) {
-+		irq = gsi;
-+		dynamic_irq_init(irq);
-+	} else
-+		irq = find_unbound_irq();
-+
-+	set_irq_chip_and_handler_name(irq, &xen_pirq_chip,
-+				      handle_level_irq, "pirq");
-+
-+	irq_op.irq = irq;
-+	if (HYPERVISOR_physdev_op(PHYSDEVOP_alloc_irq_vector, &irq_op)) {
-+		dynamic_irq_cleanup(irq);
-+		irq = -ENOSPC;
-+		goto out;
-+	}
-+
-+	irq_info[irq] = mk_pirq_info(0, gsi, irq_op.vector);
-+
-+out:
-+	spin_unlock(&irq_mapping_update_lock);
-+
-+	return irq;
-+}
-+
-+int xen_vector_from_irq(unsigned irq)
-+{
-+	return vector_from_irq(irq);
-+}
-+
-+int xen_gsi_from_irq(unsigned irq)
-+{
-+	return gsi_from_irq(irq);
-+}
-+
- int bind_evtchn_to_irq(unsigned int evtchn)
- {
- 	int irq;
-@@ -916,6 +1135,26 @@ static struct irq_chip xen_dynamic_chip __read_mostly = {
- 	.retrigger	= retrigger_dynirq,
- };
- 
-+static struct irq_chip xen_pirq_chip __read_mostly = {
-+	.name		= "xen-pirq",
-+
-+	.startup	= startup_pirq,
-+	.shutdown	= shutdown_pirq,
-+
-+	.enable		= enable_pirq,
-+	.unmask		= enable_pirq,
-+
-+	.disable	= disable_pirq,
-+	.mask		= disable_pirq,
-+
-+	.ack		= ack_pirq,
-+	.end		= end_pirq,
-+
-+	.set_affinity	= set_affinity_irq,
-+
-+	.retrigger	= retrigger_dynirq,
-+};
-+
- void __init xen_init_IRQ(void)
- {
- 	int i;
-diff --git a/include/xen/events.h b/include/xen/events.h
-index 0397ba1..e5b541d 100644
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -55,4 +55,18 @@ bool xen_test_irq_pending(int irq);
-    irq will be disabled so it won't deliver an interrupt. */
- void xen_poll_irq(int irq);
- 
-+/* Determine the IRQ which is bound to an event channel */
-+unsigned irq_from_evtchn(unsigned int evtchn);
-+
-+/* Allocate an irq for a physical interrupt, given a gsi.  "Legacy"
-+   GSIs are identity mapped; others are dynamically allocated as
-+   usual. */
-+int xen_allocate_pirq(unsigned gsi);
-+
-+/* Return vector allocated to pirq */
-+int xen_vector_from_irq(unsigned pirq);
-+
-+/* Return gsi allocated to pirq */
-+int xen_gsi_from_irq(unsigned pirq);
-+
- #endif	/* _XEN_EVENTS_H */
--- 
-1.6.0.6
+ drivers/media/dvb/bt8xx/dst.c                  |    2 +-
+ drivers/media/dvb/dvb-core/dvb_frontend.c      |    7 ++++---
+ drivers/media/dvb/frontends/stb0899_algo.c     |   14 +++++++-------
+ drivers/media/dvb/frontends/stb0899_drv.c      |    2 +-
+ drivers/media/dvb/frontends/stb0899_priv.h     |   12 ++++--------
+ drivers/media/dvb/frontends/stb6100.c          |    4 ++--
+ drivers/media/dvb/frontends/zl10353.c          |    2 +-
+ drivers/media/dvb/frontends/zl10353.h          |    3 +++
+ drivers/media/video/gspca/m5602/m5602_s5k4aa.c |    6 +++++-
+ drivers/media/video/saa7134/saa7134-dvb.c      |    1 +
+ drivers/media/video/tvaudio.c                  |    2 +-
+ drivers/media/video/zoran/Kconfig              |    1 +
+ 12 files changed, 31 insertions(+), 25 deletions(-)
 
+Antti Palosaari (1):
+      V4L/DVB (10972): zl10353: i2c_gate_ctrl bug fix
+
+Gregory Lardiere (1):
+      V4L/DVB (10789): m5602-s5k4aa: Split up the initial sensor probe in chunks.
+
+Hans Werner (1):
+      V4L/DVB (10977): STB6100 init fix, the call to stb6100_set_bandwidth needs an argument
+
+Igor M. Liplianin (1):
+      V4L/DVB (10976): Bug fix: For legacy applications stv0899 performs search only first time after insmod.
+
+Manu Abraham (1):
+      V4L/DVB (10975): Bug: Use signed types, Offsets and range can be negative
+
+Matthias Schwarzzot (1):
+      V4L/DVB (10978): Report tuning algorith correctly
+
+Mauro Carvalho Chehab (1):
+      V4L/DVB (10834): zoran: auto-select bt866 for AverMedia 6 Eyes
+
+Sigmund Augdal (1):
+      V4L/DVB (10974): Use Diseqc 3/3 mode to send data
+
+Vitaly Wool (1):
+      V4L/DVB (10832): tvaudio: Avoid breakage with tda9874a
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
