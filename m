@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZCMDIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753614AbZCMDIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbZCMDIX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 23:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZCMDIN
+	id S1753614AbZCMDIi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 23:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755677AbZCMDIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 23:08:13 -0400
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:59293
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752544AbZCMDIM (ORCPT
+	Thu, 12 Mar 2009 23:08:23 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64257 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755680AbZCMDIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 23:08:12 -0400
-X-Greylist: delayed 467 seconds by postgrey-1.27 at vger.kernel.org; Thu, 12 Mar 2009 23:08:11 EDT
-Message-ID: <49B9CC3B.4060300@wilsonet.com>
-Date: Thu, 12 Mar 2009 23:00:11 -0400
-From: Jarod Wilson <jarod@wilsonet.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 12 Mar 2009 23:08:22 -0400
+Date: Thu, 12 Mar 2009 23:08:19 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 08/16] tracing: have event_trace_printk use static
+ tracer
+In-Reply-To: <20090312194942.8348613c.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.2.00.0903122301130.18396@gandalf.stny.rr.com>
+References: <20090313023704.971438367@goodmis.org> <20090313023826.503765882@goodmis.org> <20090312194942.8348613c.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Michael Krufky <mkrufky@linuxtv.org>, stable@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, LMML <linux-media@vger.kernel.org>
-Subject: Re: [stable] Fwd: [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885
- video_open
-References: <200902241700.56099.jarod@redhat.com> <37219a840903121324q7b08c8d1ma6d0d3ec4f5eb278@mail.gmail.com> <20090313025051.GA5385@kroah.com>
-In-Reply-To: <20090313025051.GA5385@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Mar 12, 2009 at 04:24:38PM -0400, Michael Krufky wrote:
->> Can we have this merged into -stable?  Jarod Wilson sent this last
->> month, but he left off the cc to stable@kernel.org
+
+On Thu, 12 Mar 2009, Andrew Morton wrote:
+
+> On Thu, 12 Mar 2009 22:37:12 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> What is the git commit id of the patch in Linus's tree that matches up
-> with this?
+> > +		static const char *trace_printk_fmt			\
+> > +		  __attribute__((section("__trace_printk_fmt"))) =	\
+> > +			__builtin_constant_p(fmt) ? fmt : NULL;		\
 > 
-> thanks,
-> 
-> greg k-h
+> hm.  Does this put trace_printk_fmt into the __trace_printk_fmt
+> section, or does it put *trace_printk_fmt in there?
+
+We save the pointer into that section:
+
+ 0xc0432100:   "my format is to print this number %d\n"
+
+  [...]
+
+section <__trace_printk_fmt>:
+  [...]
+ 0xc0483210:   0xc0432100  (trace_printk_fmt)
 
 
-Now that I look closer, seems there's an even more complete patch 
-already in linus' tree, commit id:
+It would be difficult to make the string be located in the section when 
+the caller simply does:
 
-cd8f894eacf13996d920fdd2aef1afc55156b191
+   trace_printk("my format is to print this number %d\n", mynum);
 
-Shoulda just forwarded that along, but I was under the impression that 
-area of code had changed significantly in 2.6.28 and the patch was no 
-longer applicable. Maybe that was the v4l/dvb hg tree though... So I'd 
-just grab that, and add:
+Although I guess we could try by using [] = fmt, but the pointer just 
+seemed easier.
 
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
+Note, for modules, we have a hash of all strings/pointers. When a module 
+is loaded, we copy the strings into the hash (if it is not already there) 
+and keep it loaded, even if the module is removed. This is because the 
+pointer to this string would still be around inside the trace buffer.
 
+-- Steve
 
---jarod
