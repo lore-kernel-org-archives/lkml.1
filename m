@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbZCMWM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbZCMWPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759679AbZCMWM2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 18:12:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755613AbZCMWMQ
+	id S1758797AbZCMWPW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 18:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbZCMWPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 18:12:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44336 "EHLO
+	Fri, 13 Mar 2009 18:15:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57608 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757972AbZCMWMO (ORCPT
+	by vger.kernel.org with ESMTP id S1755184AbZCMWPF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 18:12:14 -0400
-Date: Fri, 13 Mar 2009 15:12:00 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-Cc: scott@canonical.com, linux-kernel@vger.kernel.org,
-       bridge@lists.linux-foundation.org
-Subject: Re: [PATCH 01/31] bridge: Auto-load bridge module when socket
- opened.
-Message-ID: <20090313151200.1cc16255@nehalam>
-In-Reply-To: <20090313.142718.21189207.davem@davemloft.net>
-References: <cover.1236702228.git.scott@canonical.com>
-	<74b87ec3359e6e65d59cd6fb62a83fb469e6c8ae.1236702228.git.scott@canonical.com>
-	<20090313.142718.21189207.davem@davemloft.net>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.15.5; x86_64-pc-linux-gnu)
+	Fri, 13 Mar 2009 18:15:05 -0400
+Date: Fri, 13 Mar 2009 15:10:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       e1000-devel@lists.sourceforge.net
+Subject: Re: [stable] Li-nux 2.6.27.19  2.6.28.7
+Message-Id: <20090313151051.a9198384.akpm@linux-foundation.org>
+In-Reply-To: <20090220225448.GA14122@kroah.com>
+References: <20090220225448.GA14122@kroah.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,36 +27,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Mar 2009 14:27:18 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
 
-> From: Scott James Remnant <scott@canonical.com>
-> Date: Mon, 2 Mar 2009 16:40:10 +0000
-> 
-> > The bridge module is missing the net-pf-7 alias that would cause it to
-> > be auto-loaded when a socket of that type is opened.  This patch adds
-> > the alias.
-> > 
-> > Signed-off-by: Scott James Remnant <scott@canonical.com>
-> > Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-> 
-> Bridging has no sockets, so this patch won't do anything.
-> 
-> Did you verify that these changes actually do something?
-> Or did you blindly run around peppering source files with
-> these annotations?
+I fired up this kernel up on my FC8 laptop and I see
+http://userweb.kernel.org/~akpm/p3130212.jpg
 
-I think this all started when I was debugging a problem where LLC
-was not getting autoloaded properly. It turned out that distro's
-like Debian (and therefore Ubuntu) had incorrect modprobe.d/alias file
-entries. I raised the bug that, "hey you have wrong data and you
-really don't need these alias entries at all anymore". There was some
-comparison of what was being shipped versus what was in the kernel
-and the Debian/Ubuntu guys stepped in to try and unify this.
+On the next two boot attempts, the kernel came up OK.
 
-Let's be supportive of Ubuntu maintainers actually working on upstream
-resolution for a change. The normal distro maintainer is "patch and ignore".
-In this case, many of these are correct, but several of them are cases
-where there is no point in having a module alias because there is no
-functiona user visible API. You can try and open a PF_BRIDGE socket, there just
-is no point.
+
+
+Also, during boot the e1000e driver has conniptions:
+
+------------[ cut here ]------------
+WARNING: at drivers/net/e1000e/ich8lan.c:408 e1000_acquire_swflag_ich8lan+0x51/0xf2()
+e1000e mutex contention. Owned by pid 10
+Modules linked in:
+Pid: 9, comm: events/0 Not tainted 2.6.28.7 #1
+Call Trace:
+ [<ffffffff8103a810>] warn_slowpath+0xae/0xcd
+ [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
+ [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
+ [<ffffffff8105d63f>] ? __lock_acquire+0x702/0x760
+ [<ffffffff8105bfc6>] ? mark_held_locks+0x50/0x6d
+ [<ffffffff812dd950>] ? mutex_trylock+0x104/0x118
+ [<ffffffff8105c170>] ? trace_hardirqs_on_caller+0xf8/0x123
+ [<ffffffff8105c1a8>] ? trace_hardirqs_on+0xd/0xf
+ [<ffffffff811ed838>] e1000_acquire_swflag_ich8lan+0x51/0xf2
+ [<ffffffff811f2fe9>] e1000e_read_kmrn_reg+0x1b/0x69
+ [<ffffffff811f63c5>] ? e1000e_downshift_workaround+0x0/0x12
+ [<ffffffff811ed1e9>] e1000e_gig_downshift_workaround_ich8lan+0x2c/0x71
+ [<ffffffff811f63d5>] e1000e_downshift_workaround+0x10/0x12
+ [<ffffffff8104a6ed>] run_workqueue+0xf5/0x1fd
+ [<ffffffff8104a697>] ? run_workqueue+0x9f/0x1fd
+ [<ffffffff8104a8f6>] ? worker_thread+0x0/0xe8
+ [<ffffffff8104a9d1>] worker_thread+0xdb/0xe8
+ [<ffffffff8104de14>] ? autoremove_wake_function+0x0/0x36
+ [<ffffffff8104a8f6>] ? worker_thread+0x0/0xe8
+ [<ffffffff8104db1a>] kthread+0x44/0x6b
+ [<ffffffff8100cf59>] child_rip+0xa/0x11
+ [<ffffffff8100c474>] ? restore_args+0x0/0x30
+ [<ffffffff8104dad6>] ? kthread+0x0/0x6b
+ [<ffffffff8100cf4f>] ? child_rip+0x0/0x11
+---[ end trace 09c88554f9900e8b ]---
+
+Config: http://userweb.kernel.org/~akpm/config-t61p.txt
+dmesg: http://userweb.kernel.org/~akpm/dmesg-t61p.txt
