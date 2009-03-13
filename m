@@ -1,101 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173AbZCMXmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbZCMXoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754173AbZCMXmm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 19:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZCMXmc
+	id S1758798AbZCMXoT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 19:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbZCMXoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 19:42:32 -0400
-Received: from mga11.intel.com ([192.55.52.93]:60700 "EHLO mga11.intel.com"
+	Fri, 13 Mar 2009 19:44:03 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:50033 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751982AbZCMXmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 19:42:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,360,1233561600"; 
-   d="scan'208";a="438815108"
-Subject: Re: [ipw3945-devel] X200 suspend status on -wl and -next
-From: reinette chatre <reinette.chatre@intel.com>
-To: Nico -telmich- Schottelius 
-	<nico-linux-ipw3945-devel@schottelius.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Nico Schottelius <nico-linux-20090311@schottelius.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Next Mailing List <linux-next@vger.kernel.org>
-In-Reply-To: <1236967266.31798.14.camel@rc-desk>
-References: <20090311073030.GA5284@denkbrett.schottelius.org>
-	 <200903110946.23280.rjw@sisk.pl>
-	 <20090311085229.GB4495@denkbrett.schottelius.org>
-	 <20090311184407.GG8761@tuxdriver.com>
-	 <20090312142003.GF30728@denkbrett.schottelius.org>
-	 <20090312173042.GD3410@tuxdriver.com>	<1236882742.13699.28.camel@rc-desk>
-	 <20090313080030.GB3246@denkbrett.schottelius.org>
-	 <1236967266.31798.14.camel@rc-desk>
-Content-Type: text/plain
-Date: Fri, 13 Mar 2009 16:47:37 -0700
-Message-Id: <1236988057.31798.174.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	id S1753742AbZCMXoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 19:44:00 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18874.61369.966599.636154@cargo.ozlabs.ibm.com>
+Date: Sat, 14 Mar 2009 10:43:53 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] perfcounters: Make s/w counters in a group only count
+	when group is on
+In-Reply-To: <20090313131309.GB10117@elte.hu>
+References: <18873.48668.562126.113618@cargo.ozlabs.ibm.com>
+	<1236939816.22914.3714.camel@twins>
+	<18874.20538.785519.824803@cargo.ozlabs.ibm.com>
+	<1236948283.22447.36.camel@twins>
+	<1236949440.5188.709.camel@laptop>
+	<20090313131309.GB10117@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-13 at 11:01 -0700, Chatre, Reinette wrote:
-> On Fri, 2009-03-13 at 01:00 -0700, Nico -telmich- Schottelius wrote:
-> > reinette chatre [Thu, Mar 12, 2009 at 11:32:22AM -0700]:
-> > > On Thu, 2009-03-12 at 10:30 -0700, John W. Linville wrote:
-> > > > On Thu, Mar 12, 2009 at 03:20:03PM +0100, Nico -telmich- Schottelius wrote:
-> > > > > John W. Linville [Wed, Mar 11, 2009 at 02:44:07PM -0400]:
-> > > > > > Any chance you'd like to try wireless-testing to help to isolate
-> > > > > > possible sources of this problem?
-> > > > > > 
-> > > > > > 	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing.git
-> > > > > 
-> > > > > v2.6.29-rc7-17155-g2f7ab92 looks good (as in: wlan works after several
-> > > > > suspends and resumes). But it seems you do not add the full kernel version:
-> > > > > 
-> > > > > sgnx20002:/home/nico/wireless-testing# git describe
-> > > > > v2.6.29-rc7-17155-g2f7ab92
-> > > > > sgnx20002:/home/nico/wireless-testing# uname -r
-> > > > > 2.6.29-rc7-wl-ikn
-> > > > > 
-> > > > > Which is the kernel built some seconds before.
-> > > > 
-> > > > I don't know where you get the -ikn bits from, presumably from the
-> > > > iwlwifi project.  Given what you said above, it would seem you are
-> > > > getting your suspend/resume problems from them as well... :-(
-> > > 
-> > > In our repo we do not add anything to the value of localversion. We also
-> > > track wireless-testing _very_ closely so the differences are at most a
-> > > handful of patches. Could you please send me commit id of iwlwifi-2.6
-> > > repo that fails as well as the commit id of wireless-testing repo that
-> > > succeeds?
-> > 
-> > As I did before in this thread:
-> > 
-> >   vmlinuz-2.6.29-rc7-wl-ikn-32831-g98c5597 from iwlwifi-2.6: fails
-> >   2.6.29-rc7-wl-ikn or v2.6.29-rc7-17155-g2f7ab92 from wireless-testing: works
+Ingo Molnar writes:
+
+> Agreed. There should really be no difference between software 
+> and hardware counters as far as the generic perfcounters code 
+> goes. It's a magic "metric" that gets read out somehow, and 
+> which generates events somehow.
+
+And my patch didn't create any new difference in the core between
+software and hardware counters.  It just gave the low-level code a way
+to distinguish between sched-out and disable events, and between
+sched-in and enable events - for any kind of counter.
+
+That is useful now for making software counters behave correctly, and
+will IMO be useful in future for doing lazy PMU switching.
+
+> We can have various grades of hardware versus software counters: 
 > 
-> I am sorry that I missed this information in the thread.
+> - 'pure hardware counters' where both the count and events come 
+>   from some hw register
 > 
-> > 
-> > Btw, I'm running 2.6.29-rc7-next-20090306-ikn currently, which also looks good.
+> - 'pure software counters' where both the count and events are 
+>   generated by software
 > 
-> Your wireless-testing repository tested is much newer than the
-> iwlwifi-2.6 one ... new patches for our driver is in your
-> wireless-testing repo but not in iwlwifi-2.6. So, in your testing
-> wireless-testing contains more up to date iwlwifi code than the
-> iwlwifi-2.6 repo.
+> - 'hybride counters' where for example the count might be from a 
+>   hardware register, but the event is generated by a hrtimer 
+>   (because the hardware is not capable of generating events).
 > 
-> Could you please test with today's versions of the two repos? There is a
-> one small patch difference.
+> the is_software_counter() assymetry broke this generally relaxed 
+> model of counters.
 
-The difference is not just one patch anymore ... could you please run
-your test with yesterday's version of the two repositories?
+There are currently two asymmetries that I can see in the core
+relating to software vs. hardware groups:
 
-Thank you very much
+- we don't bother checking with the CPU-specific low-level code
+  whether a group with only software counters can go on; we assume it
+  always can.
 
-Reinette
+- the exclusive group mechanism only applies to hardware counters,
+  since it is there to let the user do funky things with the PMU.
 
+Do you see any other asymmetry?  Note that the patch under discussion
+did *not* introduce any additional asymmetry (despite its possibly
+ill-chosen title :-).
 
+Paul.
