@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758520AbZCMFI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbZCMFIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758520AbZCMFI3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 01:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554AbZCMFFZ
+	id S1758215AbZCMFIr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 01:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757894AbZCMFF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 01:05:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41498 "EHLO
+	Fri, 13 Mar 2009 01:05:26 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34731 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758037AbZCMFFX (ORCPT
+	with ESMTP id S1758038AbZCMFFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Mar 2009 01:05:23 -0400
-Message-Id: <20090313050446.277065036@goodmis.org>
+Message-Id: <20090313050521.050453564@goodmis.org>
+References: <20090313050446.277065036@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 13 Mar 2009 01:04:46 -0400
+Date: Fri, 13 Mar 2009 01:04:47 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [PATCH 0/4] [GIT PULL] updates for tip/tracing/ftrace
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 1/4] tracing: left align location header in stack_trace
+Content-Disposition: inline; filename=0001-tracing-left-align-location-header-in-stack_trace.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Steven Rostedt <srostedt@redhat.com>
 
-Ingo,
+Ingo Molnar suggested, instead of:
 
-Please pull the latest tip/tracing/ftrace tree, which can be found at:
+        Depth    Size      Location    (27 entries)
+        -----    ----      --------
+  0)     2880      48   lock_timer_base+0x2b/0x4f
+  1)     2832      80   __mod_timer+0x33/0xe0
+  2)     2752      16   __ide_set_handler+0x63/0x65
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/ftrace
+To have it be:
 
+        Depth    Size   Location    (27 entries)
+        -----    ----   --------
+  0)     2880      48   lock_timer_base+0x2b/0x4f
+  1)     2832      80   __mod_timer+0x33/0xe0
+  2)     2752      16   __ide_set_handler+0x63/0x65
 
-Steven Rostedt (4):
-      tracing: left align location header in stack_trace
-      tracing: add comment for use of double __builtin_consant_p
-      tracing: move binary buffers into per cpu directory
-      softirq: no need to have SOFTIRQ in softirq name
-
-----
- kernel/softirq.c           |    5 ++---
- kernel/trace/trace.c       |   26 +++++---------------------
- kernel/trace/trace.h       |    5 +++++
+Requested-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
  kernel/trace/trace_stack.c |    4 ++--
- 4 files changed, 14 insertions(+), 26 deletions(-)
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+index 91ccbf3..c750f65 100644
+--- a/kernel/trace/trace_stack.c
++++ b/kernel/trace/trace_stack.c
+@@ -262,9 +262,9 @@ static int t_show(struct seq_file *m, void *v)
+ 	int size;
+ 
+ 	if (v == SEQ_START_TOKEN) {
+-		seq_printf(m, "        Depth    Size      Location"
++		seq_printf(m, "        Depth    Size   Location"
+ 			   "    (%d entries)\n"
+-			   "        -----    ----      --------\n",
++			   "        -----    ----   --------\n",
+ 			   max_stack_trace.nr_entries);
+ 
+ 		if (!stack_tracer_enabled && !max_stack_size)
+-- 
+1.6.1.3
+
 -- 
