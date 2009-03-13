@@ -1,46 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZCMHOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZCMHOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbZCMHOH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 03:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbZCMHNp
+	id S1755506AbZCMHOl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 03:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbZCMHNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 03:13:45 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:27577 "EHLO
+	Fri, 13 Mar 2009 03:13:50 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:27583 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750975AbZCMHNo (ORCPT
+	with ESMTP id S1752270AbZCMHNr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 03:13:44 -0400
-Message-ID: <49BA07B4.30706@chelsio.com>
-Date: Fri, 13 Mar 2009 00:13:56 -0700
+	Fri, 13 Mar 2009 03:13:47 -0400
 From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+Subject: [PATCH net-next 1/10] cxgb3: ring rx door bell less frequently
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Fri, 13 Mar 2009 00:13:43 -0700
+Message-ID: <20090313071343.21994.85719.stgit@speedy5>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>,
-       Linux Network Development list <netdev@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Steve Wise <swise@opengridcomputing.com>
-Subject: [PATCH net-next 0/10] cxgb3: driver updates
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 13 Mar 2009 07:14:30.0015 (UTC) FILETIME=[59EC18F0:01C9A3AB]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+From: Divy Le Ray <divy@chelsio.com>
 
-I’m submitting 10 patches targeted for net-next-2.6.
+Ring free lists door bell less frequently,
+specifically every quarter of the active FL
+size.
 
-Here is a brief description of the patch series:
-- ring receive rings door bells less aggressively
-- drop page reference when dma mapping fails
-- fix skb truesize when coalescing fragments of a jumbo frame
-- eliminate a cache miss in the GRO section of the driver
-- segregate Rx and Tx credit reclaim timers
-- poll for HW alert status when intrs would happen too frequently
-- update the xgmac hang workaround for the chip's rev 3
-- detect mac link faults
-- update the FW rev to 7.1
-- update the driver rev to 1.1.2
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
 
-Cheers,
-Divy
+ drivers/net/cxgb3/adapter.h |    1 +
+ drivers/net/cxgb3/sge.c     |   32 ++++++++++++++++++++++++--------
+ 2 files changed, 25 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
+index fbe1569..95dce48 100644
+--- a/drivers/net/cxgb3/adapter.h
++++ b/drivers/net/cxgb3/adapter.h
+@@ -91,6 +91,7 @@ struct rx_sw_desc;
+ struct sge_fl {                     /* SGE per free-buffer list state */
+ 	unsigned int buf_size;      /* size of each Rx buffer */
+ 	unsigned int credits;       /* # of available Rx buffers */
++	unsigned int pend_cred;     /* new buffers since last FL DB ring */
+ 	unsigned int size;          /* capacity of free list */
+ 	unsigned int cidx;          /* consumer index */
+ 	unsigned int pidx;          /* producer index */
+diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+index 8205aa4..882beaf 100644
+--- a/drivers/net/cxgb3/sge.c
++++ b/drivers/net/cxgb3/sge.c
+@@ -63,6 +63,10 @@
+ #define SGE_RX_DROP_THRES 16
+ 
+ /*
++ * Max number of Rx buffers we replenish at a time.
++ */
++#define MAX_RX_REFILL 16U
++/*
+  * Period of the Tx buffer reclaim timer.  This timer does not need to run
+  * frequently as Tx buffers are usually reclaimed by new Tx packets.
+  */
+@@ -423,6 +427,14 @@ static int alloc_pg_chunk(struct sge_fl *q, struct rx_sw_desc *sd, gfp_t gfp,
+ 	return 0;
+ }
+ 
++static inline void ring_fl_db(struct adapter *adap, struct sge_fl *q)
++{
++	if (q->pend_cred >= q->credits / 4) {
++		q->pend_cred = 0;
++		t3_write_reg(adap, A_SG_KDOORBELL, V_EGRCNTX(q->cntxt_id));
++	}
++}
++
+ /**
+  *	refill_fl - refill an SGE free-buffer list
+  *	@adapter: the adapter
+@@ -478,19 +490,19 @@ nomem:				q->alloc_failed++;
+ 			sd = q->sdesc;
+ 			d = q->desc;
+ 		}
+-		q->credits++;
+ 		count++;
+ 	}
+-	wmb();
+-	if (likely(count))
+-		t3_write_reg(adap, A_SG_KDOORBELL, V_EGRCNTX(q->cntxt_id));
++
++	q->credits += count;
++	q->pend_cred += count;
++	ring_fl_db(adap, q);
+ 
+ 	return count;
+ }
+ 
+ static inline void __refill_fl(struct adapter *adap, struct sge_fl *fl)
+ {
+-	refill_fl(adap, fl, min(16U, fl->size - fl->credits),
++	refill_fl(adap, fl, min(MAX_RX_REFILL, fl->size - fl->credits),
+ 		  GFP_ATOMIC | __GFP_COMP);
+ }
+ 
+@@ -515,13 +527,15 @@ static void recycle_rx_buf(struct adapter *adap, struct sge_fl *q,
+ 	wmb();
+ 	to->len_gen = cpu_to_be32(V_FLD_GEN1(q->gen));
+ 	to->gen2 = cpu_to_be32(V_FLD_GEN2(q->gen));
+-	q->credits++;
+ 
+ 	if (++q->pidx == q->size) {
+ 		q->pidx = 0;
+ 		q->gen ^= 1;
+ 	}
+-	t3_write_reg(adap, A_SG_KDOORBELL, V_EGRCNTX(q->cntxt_id));
++
++	q->credits++;
++	q->pend_cred++;
++	ring_fl_db(adap, q);
+ }
+ 
+ /**
+@@ -732,7 +746,9 @@ recycle:
+ 		return skb;
+ 	}
+ 
+-	if (unlikely(fl->credits < drop_thres))
++	if (unlikely(fl->credits < drop_thres) &&
++	    refill_fl(adap, fl, min(MAX_RX_REFILL, fl->size - fl->credits - 1),
++		      GFP_ATOMIC | __GFP_COMP) == 0)
+ 		goto recycle;
+ 
+ use_orig_buf:
+
