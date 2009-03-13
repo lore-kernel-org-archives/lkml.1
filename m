@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758188AbZCMHSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757713AbZCMHUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758188AbZCMHSa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 03:18:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756801AbZCMHP2
+	id S1757713AbZCMHUJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 03:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZCMHTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 03:15:28 -0400
-Received: from mail-gx0-f167.google.com ([209.85.217.167]:43911 "EHLO
-	mail-gx0-f167.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756759AbZCMHP0 convert rfc822-to-8bit (ORCPT
+	Fri, 13 Mar 2009 03:19:55 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:27074 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780AbZCMHTy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 03:15:26 -0400
+	Fri, 13 Mar 2009 03:19:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=wjueAtRdo6KfzlOv2qGCnorNptb/YhkoUFTwFAqKfwD7i6g6h77EhSMhBsa2NqCdN8
+         zLJkbhL/Uj6mV7tRCZUeX8ANdFqcPd3ga4btzDC/nAAmdDRMkCiCfZDsgQY+Ox78LlZ5
+         Iowm/u3ejxRxHkr8ck5uge3YUeoks2CvF2QvE=
 MIME-Version: 1.0
-In-Reply-To: <200903122243.27452.rjw@sisk.pl>
-References: <200902221837.49396.rjw@sisk.pl>
-	 <alpine.LFD.2.00.0903112342440.29264@localhost.localdomain>
-	 <200903121436.21504.rjw@sisk.pl> <200903122243.27452.rjw@sisk.pl>
-Date: Thu, 12 Mar 2009 23:15:22 -0800
-Message-ID: <d6200be20903130015w4a25806bmbf9d4dda12e6825c@mail.gmail.com>
-Subject: Re: [update, rev. 6] Re: [PATCH 1/10] PM: Rework handling of 
-	interrupts during suspend-resume (rev. 5)
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>
+Date: Fri, 13 Mar 2009 00:19:52 -0700
+Message-ID: <59f1f0cb0903130019n5403ef8ct268ab187caf142a1@mail.gmail.com>
+Subject: Path mapping wrapper application?
+From: Aki Niimura <akineko@gmail.com>
+To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 1:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> +void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
-> +{
-> +       if (suspend) {
-> +               if (desc->action && (desc->action->flags & IRQF_TIMER))
-> +                       return;
+Hello Linux experts,
 
-Don't you want "(!desc->action || ..." here to avoid enabling unused
-interrupts on resume?
+I have one application that requires glibc 2.1.3.
+I would like to use it with other Linux applications that use more
+recent glibc version (such as glibc 2.3.2).
+I originally thought I could workaround this problem by installing
+glibc 2.1.3 library files in another directory and set LD_LIBRARY_PATH
+locally.
 
--- 
-Arve Hjønnevåg
+Unfortunately it didn't work.
+The trace I got using strace showed that the application didn't use
+LD_LIBRARY_PATH environment variable to load the following key files.
+/lib/libc.so.6
+/lib/ld-linux.so.2
+
+The paths for these libraries seems embedded in the application binary.
+
+Now, I thought I could work around the problem if I write a simple
+wrapper program to map directories.
+ex.
+$ wrapper_app  old_app
+
+old_app -> /lib/libc.so.6  --> /usr/local/old_lib/libc.so.6
+
+Before writing such application by myself, I'm wondering if there is
+such linux program already available.
+Also, maybe there is another way to deal with this kind of problem in Linux.
+Some OS provides a way to dynamically map directories.
+
+BTW, I'm very new to Linux but why the same libc.so.6 name is being
+used for apparently not compatible libraries?
+
+If the file name is different, for example libc.so.6.2.1, I wouldn't
+have this problem.
+Maybe, there is a historical reason behind this. But this glibc
+version issue has caused several problems around me already.
+
+Any suggestions will be greatly appreciated.
+
+Best regards,
+Aki Niimura
