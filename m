@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbZCMUeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbZCMUge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797AbZCMUeY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 16:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZCMUeP
+	id S1758890AbZCMUge (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 16:36:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZCMUgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 16:34:15 -0400
-Received: from 195-23-16-24.net.novis.pt ([195.23.16.24]:39940 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751865AbZCMUeO (ORCPT
+	Fri, 13 Mar 2009 16:36:25 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:54336 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751865AbZCMUgZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 16:34:14 -0400
-Message-ID: <49BAC340.5030100@grupopie.com>
-Date: Fri, 13 Mar 2009 20:34:08 +0000
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 13 Mar 2009 16:36:25 -0400
+Date: Fri, 13 Mar 2009 16:34:41 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: David Rientjes <rientjes@google.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm v2] cpusets: add memory_slab_hardwall flag
+In-Reply-To: <alpine.DEB.2.00.0903121224430.5306@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.10.0903131630530.1741@qirst.com>
+References: <alpine.DEB.2.00.0903091920100.7539@chino.kir.corp.google.com> <alpine.DEB.1.10.0903101651480.20363@qirst.com> <alpine.DEB.2.00.0903101416160.4495@chino.kir.corp.google.com> <alpine.DEB.1.10.0903121145510.27660@qirst.com>
+ <alpine.DEB.2.00.0903121137320.1514@chino.kir.corp.google.com> <alpine.DEB.1.10.0903121510380.21607@qirst.com> <alpine.DEB.2.00.0903121224430.5306@chino.kir.corp.google.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Sam Ravnborg <sam@ravnborg.org>, laijs@cn.fujitsu.com, mingo@elte.hu,
-       srostedt@redhat.com, fweisbec@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V3] kallsyms, tracing: output more proper symbol name
-References: <49B7863F.6020804@cn.fujitsu.com>	<20090311094621.GA13543@elte.hu>	<49B7B70F.5010908@grupopie.com>	<49B876BB.50007@cn.fujitsu.com>	<49B92B25.6020805@grupopie.com>	<49BA06E2.7080807@cn.fujitsu.com>	<49BA2704.9040404@cn.fujitsu.com>	<20090313194013.GA23304@uranus.ravnborg.org> <20090313130722.1d92ad80.akpm@linux-foundation.org>
-In-Reply-To: <20090313130722.1d92ad80.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 13 Mar 2009 20:40:13 +0100
-> Sam Ravnborg <sam@ravnborg.org> wrote:
-> 
->>> This patch puts symbols like "__irqentry_text_start" to the second
->>> aliased symbols. And a more proper symbol name becomes the first.
->>>
->>> Aliased symbols mostly come from linker script. The solution is
->>> guessing "is this symbol defined in linker script", the symbols
->>> defined in linker script will not become the first aliased symbol.
->>>
->>> And if symbols are found to be equal in this "linker script provided"
->>> criteria, symbols are sorted by the number of prefix underscores.
->>>
->>> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> Looks good to me.
->>
->> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> 
-> So... do we need this in 2.6.29?
+On Thu, 12 Mar 2009, David Rientjes wrote:
 
-IMHO, no. I think the way the kernel handles aliased symbols hasn't
-changed in a very long time so one more release shouldn't make a big
-difference.
+> If `memory_slab_hardwall' is set for a cpuset, its tasks will only pull a
+> slab off the partial list that was allocated on an allowed node.  So in my
+> earlier example which segments the machine via cpusets for NUMA locality
+> and then divides those cpusets further for exclusive memory to provide to
+> individual jobs, slab allocations will be constrained within the cpuset of
+> the task that allocated them.  When a job dies, all slab allocations are
+> freed so that no objects remain on the memory allowed to that job and,
+> thus, no partial slabs remain (i.e. there were no object allocations on
+> the job's slabs from disjoint cpusets because of the exclusivity).
 
-Even if the risk of the patch breaking something is small, taking that
-chance for such a small gain this late in the 2.6.29 cycle is just not
-worth it.
+In order to do that you would need to duplicate the partial lists for
+each job and then guarantee that only the job uses objects from these
+partial pages.
 
--- 
-Paulo Marques - www.grupopie.com
+Usually some partial allocated pages are kept around and are
+indiscriminately used by various system components by the OS due to other
+processing. Creating partial slabs cannot be avoided like that.
 
-"You're just jealous because the voices only talk to me."
+
+
+
+
