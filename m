@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbZCMQyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbZCMQzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758974AbZCMQyE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZCMQxw
+	id S1759463AbZCMQzV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZCMQzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:53:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37689 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754180AbZCMQxv convert rfc822-to-8bit (ORCPT
+	Fri, 13 Mar 2009 12:55:00 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:53983 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752447AbZCMQy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 12:53:51 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: [update, rev. 6] Re: [PATCH 1/10] PM: Rework handling of interrupts during suspend-resume (rev. 5)
-Date: Fri, 13 Mar 2009 17:53:37 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>
-References: <200902221837.49396.rjw@sisk.pl> <200903122243.27452.rjw@sisk.pl> <d6200be20903130015w4a25806bmbf9d4dda12e6825c@mail.gmail.com>
-In-Reply-To: <d6200be20903130015w4a25806bmbf9d4dda12e6825c@mail.gmail.com>
+	Fri, 13 Mar 2009 12:54:59 -0400
+Message-ID: <49BA8FA5.5030003@free.fr>
+Date: Fri, 13 Mar 2009 17:53:57 +0100
+From: Cedric Le Goater <legoater@free.fr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200903131753.39076.rjw@sisk.pl>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Alexey Dobriyan <adobriyan@gmail.com>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mingo@elte.hu,
+       mpm@selenic.com, tglx@linutronix.de, torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>, xemul@openvz.org
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
+ do?
+References: <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226155755.GA1456@x200.localdomain> <20090310215305.GA2078@x200.localdomain> <49B775B4.1040800@free.fr> <20090312145311.GC12390@us.ibm.com> <49BA8013.3030103@free.fr> <20090313163531.GA10685@us.ibm.com>
+In-Reply-To: <20090313163531.GA10685@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 13 March 2009, Arve Hjønnevåg wrote:
-> On Thu, Mar 12, 2009 at 1:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >
-> > +void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
-> > +{
-> > +       if (suspend) {
-> > +               if (desc->action && (desc->action->flags & IRQF_TIMER))
-> > +                       return;
+Serge E. Hallyn wrote:
+> Quoting Cedric Le Goater (legoater@free.fr):
+>>> No, what you're suggesting does not suffice.
+>> probably. I'm still trying to understand what you mean below :)
+>>
+>> Man, I hate these hierarchicals pid_ns. one level would have been enough, 
+>> just one vpid attribute in 'struct pid*'
 > 
-> Don't you want "(!desc->action || ..." here to avoid enabling unused
-> interrupts on resume?
+> Well I don't mind - temporarily - saying that nested pid namespaces
+> are not checkpointable.  It's just that if we're going to need a new
+> syscall anyway, then why not go ahead and address the whole problem?
+> It's not hugely more complicated, and seems worth it.
 
-Hmm, good idea, thanks.
+yes. agree. there's a thread going on that topic. i'm following it.
 
-Best,
-Rafael
+[ ... ] 
+
+>> anyway, I think that some CLONE_NEW* should be forbidden. Daniel should
+>> send soon a little patch for the ns_cgroup restricting the clone flags
+>> being used in a container.
+> 
+> Uh, that feels a bit over the top.  We want to make this
+> uncheckpointable (if it remains so), not prevent the whole action.
+> After all I may be running a container which I don't plan on ever
+> checkpointing, and inside that container running a job which i do
+> want to migrate.
+
+ok. i've been scanning the emails a bit fast. that would be fine 
+and useful.
+
+> So depending on if we're doing the Dave or the rest-of-the-world
+> way :), we either clear_bit(pidns->may_checkpoint) on the parent
+> pid_ns when a child is created, or we walk every task being
+> checkpointed and make sure they each are in the same pid_ns.  
+> Doesn't that suffice?
+
+yes. this 'may_checkpoint' is a container level info so I wonder 
+where you store it. in a cgroup_checkpoint ? sorry for jumping in 
+and may be restarting some old topics of discussion.
+
+C.
