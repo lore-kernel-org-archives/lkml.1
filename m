@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbZCMH0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZCMHeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757302AbZCMH0A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 03:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZCMHZv
+	id S1755506AbZCMHeu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 03:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZCMHel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 03:25:51 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:26309 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbZCMHZu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 03:25:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=eD2WceiwBlo22samHbJ5ua1P4lJDdZ/qwBQDLd/rkSL1POSujjyrVSuHBXgjolzDNT
-         Vw9noDyydWLN1iqeTrgBUf0EjI5dBeEZ24+8KffKZXuoYKdqP+D6ScLjtTWMkS/zbg6M
-         en32RZSZ5GnLbMKXUu62YIpDVmnLeORqgU/w8=
+	Fri, 13 Mar 2009 03:34:41 -0400
+Received: from gw.goop.org ([64.81.55.164]:55953 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751267AbZCMHek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 03:34:40 -0400
+Message-ID: <49BA0C8C.4050302@goop.org>
+Date: Fri, 13 Mar 2009 00:34:36 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Date: Fri, 13 Mar 2009 00:25:48 -0700
-Message-ID: <59f1f0cb0903130025k31cc2c9fud865dd776534c2bd@mail.gmail.com>
-Subject: Network throughput (localhost)
-From: Aki Niimura <akineko@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip V2] x86: cpu architecture debug code
+References: <1236684201.3301.11.camel@localhost.localdomain>	 <20090310122806.GE5794@elte.hu>	 <1236697752.3387.2.camel@localhost.localdomain>	 <20090310152029.GN3850@elte.hu>	 <1236701373.3387.4.camel@localhost.localdomain>	 <20090310174535.GA2963@elte.hu>	 <1236729310.7004.2.camel@localhost.localdomain>	 <20090311105333.GC2282@elte.hu> <1236770749.2836.10.camel@ht.satnam>
+In-Reply-To: <1236770749.2836.10.camel@ht.satnam>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Linux experts,
+Jaswinder Singh Rajput wrote:
+>>> Complete diff:
+>>> diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
+>>> index 0bdf4da..08c365a 100755
+>>> --- a/arch/x86/kernel/cpu/cpu_debug.c
+>>> +++ b/arch/x86/kernel/cpu/cpu_debug.c
+>>> @@ -464,19 +464,19 @@ static void print_dt(void *seq)
+>>>  	unsigned long ldt;
+>>>  
+>>>  	/* IDT */
+>>> -	store_idt((struct desc_ptr *)&dt);
+>>> +	native_store_idt((struct desc_ptr *)&dt);
+>>>       
+>> hm, this wont work on Xen then.
+>>
+>>     
+>
+> Strange it should work for Xen, Are you getting any error.
+>
+> Xen also uses native_store_idt:
+> arch/x86/xen/enlighten.c:	.store_idt = native_store_idt,
+>   
 
-I developed a Python program, which tries to take advantage of
-available Multi CPU resources.
-Two programs (Server and Client) are running in separate processes
-communicating each other using Socket IPC.
-The performance I'm getting is somewhat in line with my expectation
-under Solaris/x86 but significantly slower
-under Linux (CentOS 5) even both use the identical hardware.
+store_idt (and the others) are not used very much, and never in any code 
+path under Xen.  They're not really meaningful in Xen, and this code 
+will probably oops if you ran it.
 
-My investigation revealed that the performance is bottlenecked by the
-communication (Socket to localhost).
+I guess we could do more meaningful implementations of these ops for 
+Xen, now that there's a user.
 
-So, I wrote much simpler program (socket server and socket client) to
-measure the network throughput.
-What I found was that the network throughput on both platforms
-(Solaris/x86 and CentOS Linux) are almost
-identical if packets are going out but the network throughput of
-Solaris/x86 is almost twice (up to three times)
-the throughput Linux can deliver if the packets are destined to localhost.
+>>>  	print_desc_ptr("IDT", seq, dt);
+>>>  
+>>>  	/* GDT */
+>>> -	store_gdt((struct desc_ptr *)&dt);
+>>> +	native_store_gdt((struct desc_ptr *)&dt);
+>>>  	print_desc_ptr("GDT", seq, dt);
+>>>  
+>>>  	/* LDT */
+>>> -	store_ldt(ldt);
+>>> +	asm volatile("sldt %0" : "=m" (ldt));
+>>>  	seq_printf(seq, " LDT\t: %016lx\n", ldt);
+>>>  
+>>>  	/* TR */
+>>> -	store_tr(ldt);
+>>> +	asm volatile("str %0" : "=r" (ldt));
+>>>  	seq_printf(seq, " TR\t: %016lx\n", ldt);
+>>>       
+>> we do have a store_tr() primitive - why open code the assembly?
+>>
+>>     
+>
+> It is a single line code to avoid further conflicts, so i moved it here.
+>   
 
-I know that Solaris treats packets destined to localhost differently.
+Definitely a bad idea.
 
-Because of this, my program is slower (than one process) under Linux
-(and is practically useless).
-(I see meaningful performance gain under Solaris/x86, though)
-I haven't tried any other Linux distributions.
-Is there any Linux distribution known for better localhost network throughput?
-Is there any way to improve the localhost throughput under Linux (CentOS)?
-
-Of course, some people would point out that other types of IPC (such
-as shared memory) are better choices
-for the communication between closely coupled multi-processing
-program. Unfortunately, there are
-reasons that my program needs to use Socket.
-
-Any suggestions will be greatly appreciated.
-
-Best regards,
-Aki Niimura
+    J
