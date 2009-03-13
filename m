@@ -1,108 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbZCMQb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbZCMQbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759330AbZCMQb1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757916AbZCMQaR
+	id S1758902AbZCMQbD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:31:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbZCMQaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:30:17 -0400
-Received: from gw.goop.org ([64.81.55.164]:56733 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 12:30:16 -0400
+Received: from gw.goop.org ([64.81.55.164]:56734 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750742AbZCMQaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753923AbZCMQaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Mar 2009 12:30:14 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: [GIT PULL] Xen dom0 core changes
-Date: Fri, 13 Mar 2009 09:29:41 -0700
-Message-Id: <1236961796-13407-1-git-send-email-jeremy@goop.org>
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Juan Quintela <quintela@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 03/15] xen dom0: Set up basic IO permissions for dom0.
+Date: Fri, 13 Mar 2009 09:29:44 -0700
+Message-Id: <1236961796-13407-4-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1236961796-13407-1-git-send-email-jeremy@goop.org>
+References: <1236961796-13407-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Juan Quintela <quintela@redhat.com>
 
-This is the set of core changes for Xen dom0 support.  It does not by
-itself implement everything needed for dom0 support, but it lays the
-groundwork.
+Add the direct mapping area for ISA bus access, and enable IO space
+access for the guest when running as dom0.
 
-This is more or less a repost of the patches posted a few weeks ago,
-but rebased to last night's push/xen/master patch posting, and with a
-few bugfixes folded into it.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Juan Quintela <quintela@redhat.com>
+---
+ arch/x86/xen/enlighten.c |    8 ++++++++
+ arch/x86/xen/mmu.c       |   24 ++++++++++++++++++++++++
+ arch/x86/xen/setup.c     |    6 +++++-
+ arch/x86/xen/xen-ops.h   |    1 +
+ 4 files changed, 38 insertions(+), 1 deletions(-)
 
-Thanks,
-	J
-
-The following changes since commit f33700f25a49f98835158d7f3d086dbf727f08db:
-  Alex Nixon (1):
-        Xen: Add virt_to_pfn helper function
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push/xen/dom0/core
-
-Christophe Saout (1):
-      Preliminary work on paravirtualizing set_io_bitmap.
-
-Ian Campbell (4):
-      xen: disable PAT
-      xen/dom0: Use host E820 map
-      xen: implement XENMEM_machphys_mapping
-      xen: clear reserved bits in l3 entries given in the initial pagetables
-
-Jeremy Fitzhardinge (6):
-      xen dom0: Make hvc_xen console work for dom0.
-      xen/dom0: use _PAGE_IOMAP in ioremap to do machine mappings
-      xen: allow enable use of VGA console on dom0
-      xen/dom0: add XEN_DOM0 config option
-      x86: make /dev/mem mappings _PAGE_IOMAP
-      x86: don't need "changed" parameter for set_io_bitmap()
-
-Juan Quintela (2):
-      xen dom0: Initialize xenbus for dom0.
-      xen dom0: Set up basic IO permissions for dom0.
-
-Stephen Tweedie (2):
-      xen dom0: Add support for the platform_ops hypercall
-      xen mtrr: Add mtrr_ops support for Xen mtrr
-
- arch/x86/include/asm/paravirt.h         |    7 +
- arch/x86/include/asm/pat.h              |    5 +
- arch/x86/include/asm/processor.h        |    4 +
- arch/x86/include/asm/xen/hypercall.h    |    8 +
- arch/x86/include/asm/xen/interface.h    |    6 +-
- arch/x86/include/asm/xen/interface_32.h |    5 +
- arch/x86/include/asm/xen/interface_64.h |   13 +--
- arch/x86/include/asm/xen/page.h         |   15 +--
- arch/x86/kernel/cpu/mtrr/Makefile       |    1 +
- arch/x86/kernel/cpu/mtrr/amd.c          |    1 +
- arch/x86/kernel/cpu/mtrr/centaur.c      |    1 +
- arch/x86/kernel/cpu/mtrr/cyrix.c        |    1 +
- arch/x86/kernel/cpu/mtrr/generic.c      |    1 +
- arch/x86/kernel/cpu/mtrr/main.c         |   11 +-
- arch/x86/kernel/cpu/mtrr/mtrr.h         |    5 +
- arch/x86/kernel/cpu/mtrr/xen.c          |   59 ++++++++
- arch/x86/kernel/ioport.c                |   30 +++-
- arch/x86/kernel/paravirt.c              |    1 +
- arch/x86/kernel/process.c               |   27 +---
- arch/x86/mm/pat.c                       |    7 +-
- arch/x86/xen/Kconfig                    |   26 ++++
- arch/x86/xen/Makefile                   |    3 +-
- arch/x86/xen/enlighten.c                |   51 ++++++-
- arch/x86/xen/mmu.c                      |  123 ++++++++++++++++-
- arch/x86/xen/setup.c                    |   51 ++++++-
- arch/x86/xen/vga.c                      |   67 +++++++++
- arch/x86/xen/xen-ops.h                  |   12 ++
- drivers/char/hvc_xen.c                  |  101 +++++++++-----
- drivers/xen/events.c                    |    2 +-
- drivers/xen/xenbus/xenbus_probe.c       |   30 ++++-
- include/xen/events.h                    |    2 +
- include/xen/interface/memory.h          |   42 ++++++
- include/xen/interface/platform.h        |  232 +++++++++++++++++++++++++++++++
- include/xen/interface/xen.h             |   41 ++++++
- 34 files changed, 883 insertions(+), 108 deletions(-)
- create mode 100644 arch/x86/kernel/cpu/mtrr/xen.c
- create mode 100644 arch/x86/xen/vga.c
- create mode 100644 include/xen/interface/platform.h
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index da33e0c..19af31b 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -989,6 +989,7 @@ asmlinkage void __init xen_start_kernel(void)
+ 
+ 	xen_raw_console_write("mapping kernel into physical memory\n");
+ 	pgd = xen_setup_kernel_pagetable(pgd, xen_start_info->nr_pages);
++	xen_ident_map_ISA();
+ 
+ 	init_mm.pgd = pgd;
+ 
+@@ -998,6 +999,13 @@ asmlinkage void __init xen_start_kernel(void)
+ 	if (xen_feature(XENFEAT_supervisor_mode_kernel))
+ 		pv_info.kernel_rpl = 0;
+ 
++	if (xen_initial_domain()) {
++		struct physdev_set_iopl set_iopl;
++		set_iopl.iopl = 1;
++		if (HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl) == -1)
++			BUG();
++	}
++
+ 	/* set the limit of our address space */
+ 	xen_reserve_top();
+ 
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 8969353..0232018 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -1619,6 +1619,7 @@ static void *m2v(phys_addr_t maddr)
+ 	return __ka(m2p(maddr));
+ }
+ 
++/* Set the page permissions on an identity-mapped pages */
+ static void set_page_prot(void *addr, pgprot_t prot)
+ {
+ 	unsigned long pfn = __pa(addr) >> PAGE_SHIFT;
+@@ -1844,6 +1845,29 @@ static void xen_set_fixmap(unsigned idx, unsigned long phys, pgprot_t prot)
+ #endif
+ }
+ 
++__init void xen_ident_map_ISA(void)
++{
++	unsigned long pa;
++
++	/*
++	 * If we're dom0, then linear map the ISA machine addresses into
++	 * the kernel's address space.
++	 */
++	if (!xen_initial_domain())
++		return;
++
++	xen_raw_printk("Xen: setup ISA identity maps\n");
++
++	for (pa = ISA_START_ADDRESS; pa < ISA_END_ADDRESS; pa += PAGE_SIZE) {
++		pte_t pte = mfn_pte(PFN_DOWN(pa), PAGE_KERNEL_IO);
++
++		if (HYPERVISOR_update_va_mapping(PAGE_OFFSET + pa, pte, 0))
++			BUG();
++	}
++
++	xen_flush_tlb();
++}
++
+ __init void xen_post_allocator_init(void)
+ {
+ 	pv_mmu_ops.set_pte = xen_set_pte;
+diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+index 15c6c68..3e4cf46 100644
+--- a/arch/x86/xen/setup.c
++++ b/arch/x86/xen/setup.c
+@@ -51,6 +51,9 @@ char * __init xen_memory_setup(void)
+ 	 * Even though this is normal, usable memory under Xen, reserve
+ 	 * ISA memory anyway because too many things think they can poke
+ 	 * about in there.
++	 *
++	 * In a dom0 kernel, this region is identity mapped with the
++	 * hardware ISA area, so it really is out of bounds.
+ 	 */
+ 	e820_add_region(ISA_START_ADDRESS, ISA_END_ADDRESS - ISA_START_ADDRESS,
+ 			E820_RESERVED);
+@@ -188,7 +191,8 @@ void __init xen_arch_setup(void)
+ 
+ 	pm_idle = xen_idle;
+ 
+-	paravirt_disable_iospace();
++	if (!xen_initial_domain())
++		paravirt_disable_iospace();
+ 
+ 	fiddle_vdso();
+ }
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index f897cdf..8098ed1 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -29,6 +29,7 @@ void xen_setup_machphys_mapping(void);
+ pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd, unsigned long max_pfn);
+ void xen_ident_map_ISA(void);
+ void xen_reserve_top(void);
++void xen_ident_map_ISA(void);
+ 
+ void xen_post_allocator_init(void);
+ 
+-- 
+1.6.0.6
 
