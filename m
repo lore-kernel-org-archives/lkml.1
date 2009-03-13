@@ -1,96 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbZCMEz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbZCMEzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753035AbZCMEz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 00:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZCMEzO
+	id S1757554AbZCMEzq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 00:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZCMEzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 00:55:14 -0400
-Received: from hawking.rebel.net.au ([203.20.69.83]:43080 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751031AbZCMEzN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 00:55:13 -0400
-Message-ID: <49B9E725.3060103@davidnewall.com>
-Date: Fri, 13 Mar 2009 15:25:01 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=_hawking.rebel.net.au-21059-1236920109-0001-2"
-To: Gene Heskett <gene.heskett@gmail.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: I just got got another Oops
-References: <200903120133.11583.gene.heskett@gmail.com> <200903121348.43477.gene.heskett@gmail.com> <49B96471.8070602@davidnewall.com> <200903121928.00746.gene.heskett@gmail.com>
-In-Reply-To: <200903121928.00746.gene.heskett@gmail.com>
+	Fri, 13 Mar 2009 00:55:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43090 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752624AbZCMEze (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 00:55:34 -0400
+Date: Fri, 13 Mar 2009 05:55:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mike Travis <travis@sgi.com>
+Subject: Re: [PULL] x86 cpumask work
+Message-ID: <20090313045516.GA27326@elte.hu>
+References: <200903121453.45163.rusty@rustcorp.com.au> <200903131316.26455.rusty@rustcorp.com.au> <20090313032015.GD18760@elte.hu> <200903131504.09388.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903131504.09388.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_hawking.rebel.net.au-21059-1236920109-0001-2
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-Gene,
+> On Friday 13 March 2009 13:50:15 Ingo Molnar wrote:
+> > 
+> > * Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > 
+> > > On Friday 13 March 2009 11:27:43 Ingo Molnar wrote:
+> > > > 
+> > > > * Rusty Russell <rusty@rustcorp.com.au> wrote: 
+> > > > > Missing a core patch (it even got a compile warning with that 
+> > > > > config).
+> > > > So it's manual work and sometimes i notice them amongst a 
+> > > > boatload of other warnings, sometimes i dont.
+> > > 
+> > > Me too :( I thought you were starting a de-warning tree?  I'd 
+> > > be happy to send you patches (particularly, exporting 
+> > > deprecated symbols should not give a warning!).
+> > 
+> > Yeah - i have a de-warning tree, but it's not yet fully up and 
+> > running for -tip qa automation.
+> > 
+> > > > > But there's something else wrong.  Firing up my 64-bit 
+> > > > > test box now.
+> > > > 
+> > > > Great - so you can reproduce. Thanks,
+> > > 
+> > > Yep, and I'm running some stress tests as well now.
+> > > 
+> > > Perhaps throw away that tree, and I'll feed you a new one (the 
+> > > core patch needs to go at the front), but I can work either 
+> > > way.
+> > 
+> > Ok, i dropped it back to d95c357.
+> > 
+> > Suggestion for future workflow: we wouldnt have these somewhat 
+> > stressful (and stressful to you mostly!), large hickups and 
+> > history-less trees if you sent stuff more gradually and not so 
+> > close to the merge window. You exposed some of your changes to 
+> > linux-next but that's not nearly enough testing in practice for 
+> > x86-affecting patches.
+> 
+> Yes, I wanted to complete the patchset to make sure I wasn't going to hit
+> some subtle problem.
+> 
+> OK, please check the first patch (it's a new addition, I *think* using
+> the topology_* macros is right here), and the other change is:
+> 
+> Here's the other change: it's a little ugly (AFAICT boot_cpu_data isn't
+> even *used* on 64 bit, so a cleanup may be in order):
+> 
+> +++ b/arch/x86/kernel/smpboot.c
+> @@ -329,6 +329,23 @@ notrace static void __cpuinit start_seco
+>  	cpu_idle();
+>  }
+>  
+> +#ifdef CONFIG_CPUMASK_OFFSTACK
+> +/* In this case, llc_shared_map is a pointer to a cpumask. */
+> +static inline void copy_cpuinfo_x86(struct cpuinfo_x86 *dst,
+> +				    const struct cpuinfo_x86 *src)
+> +{
+> +	struct cpumask *llc = dst->llc_shared_map;
+> +	*dst = *src;
+> +	dst->llc_shared_map = llc;
+> +}
+> +#else
+> +static inline void copy_cpuinfo_x86(struct cpuinfo_x86 *dst,
+> +				    const struct cpuinfo_x86 *src)
+> +{
+> +	*dst = *src;
+> +}
+> +#endif /* CONFIG_CPUMASK_OFFSTACK */
+> +
+>  /*
+>   * The bootstrap kernel entry code has set these up. Save them for
+>   * a given CPU
+> @@ -338,7 +355,7 @@ void __cpuinit smp_store_cpu_info(int id
+>  {
+>  	struct cpuinfo_x86 *c = &cpu_data(id);
+>  
+> -	*c = boot_cpu_data;
+> +	copy_cpuinfo_x86(c, &boot_cpu_data);
+>  	c->cpu_index = id;
+>  	if (id != 0)
+>  		identify_secondary_cpu(c);
+> 
+> BTW, these didn't go thru linux-next: your testing is better and your
+> tree is too different or me to ask Stephen to merge.
+> 
+> Thanks!
+> Rusty.
+> 
+> The following changes since commit d95c3578120e5bc4784069439f00ccb1b5f87717:
+>   Ingo Molnar (1):
+>         Merge branch 'x86/core' into cpus4096
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-x86.git cpus4096
 
-I think it's a null page pointer passed to prep_new_page.  It's
-difficult to be certain, because it's compiled with -O2, but that's what
-it looks like.
+Pulled, thanks Rusty!
 
-Let's test that hypothesis.  Let's also compile page_alloc.c with
-debugging.  Do that by executing the commands in the attached file, and
-then doing a make install (or whatever you do.)
+Will let you know if something breaks.
 
-But first, let's also sidestep the optimiser by making prep_new_page
-public. Do that by changing:
-
-   static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)**
-
-
-in mm/page_alloc.c, near line 637, to:
-
-   int my_prep_new_page(struct page *page, int order, gfp_t gfp_flags)**
-
-and by changing:
-
-	if (prep_new_page(page, order, gfp_flags))
-
-
-near line 1137, to:
-
-	if (my_prep_new_page(page, order, gfp_flags))
-
-
-This will prevent the optimiser from inlining that function, and we
-would expect to see the error change from
-"get_page_from_freelist+0x24b/0x4c0" to "my_prep_new_page+0x0yy/0x0zz".
-
-David
-
---=_hawking.rebel.net.au-21059-1236920109-0001-2
-Content-Type: text/plain; name="compile_page_alloc"; charset=iso-8859-1
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="compile_page_alloc"
-
-Z2NjIC1nIC1XcCwtTUQsbW0vLnBhZ2VfYWxsb2Muby5kICAtbm9zdGRpbmMgLWlzeXN0ZW0g
-L3Vzci9saWIvZ2NjL2k0ODYtbGludXgtZ251LzQuMS4zL2luY2x1ZGUgLUlpbmNsdWRlICAt
-SS9ob21lL2Rhdmlkbi9OQVMvbGludXgudHJlZXMuZ2l0L2FyY2gveDg2L2luY2x1ZGUgLWlu
-Y2x1ZGUgaW5jbHVkZS9saW51eC9hdXRvY29uZi5oIC1EX19LRVJORUxfXyAtV2FsbCAtV3Vu
-ZGVmIC1Xc3RyaWN0LXByb3RvdHlwZXMgLVduby10cmlncmFwaHMgLWZuby1zdHJpY3QtYWxp
-YXNpbmcgLWZuby1jb21tb24gLVdlcnJvci1pbXBsaWNpdC1mdW5jdGlvbi1kZWNsYXJhdGlv
-biAtbTMyIC1tc29mdC1mbG9hdCAtbXJlZ3Bhcm09MyAtZnJlZy1zdHJ1Y3QtcmV0dXJuIC1t
-cHJlZmVycmVkLXN0YWNrLWJvdW5kYXJ5PTIgLW1hcmNoPWs4IC1tdHVuZT1nZW5lcmljIC1X
-YSwtbXR1bmU9Z2VuZXJpYzMyIC1mZnJlZXN0YW5kaW5nIC1waXBlIC1Xbm8tc2lnbi1jb21w
-YXJlIC1mbm8tYXN5bmNocm9ub3VzLXVud2luZC10YWJsZXMgLW1uby1zc2UgLW1uby1tbXgg
-LW1uby1zc2UyIC1tbm8tM2Rub3cgLWZuby1zdGFjay1wcm90ZWN0b3IgLWZuby1vbWl0LWZy
-YW1lLXBvaW50ZXIgLWZuby1vcHRpbWl6ZS1zaWJsaW5nLWNhbGxzIC1XZGVjbGFyYXRpb24t
-YWZ0ZXItc3RhdGVtZW50IC1Xbm8tcG9pbnRlci1zaWduICAgLUQiS0JVSUxEX1NUUihzKT0j
-cyIgLUQiS0JVSUxEX0JBU0VOQU1FPUtCVUlMRF9TVFIocGFnZV9hbGxvYykiICAtRCJLQlVJ
-TERfTU9ETkFNRT1LQlVJTERfU1RSKHBhZ2VfYWxsb2MpIiAgLWMgLW8gbW0vcGFnZV9hbGxv
-Yy5vIG1tL3BhZ2VfYWxsb2MuYwoKc2NyaXB0cy9iYXNpYy9maXhkZXAgbW0vLnBhZ2VfYWxs
-b2Muby5kIG1tL3BhZ2VfYWxsb2MubyAnZ2NjIGV0YycgPiBtbS8ucGFnZV9hbGxvYy5vLnRt
-cApybSAtZiBtbS8ucGFnZV9hbGxvYy5vLmQKbXYgLWYgbW0vLnBhZ2VfYWxsb2Muby50bXAg
-bW0vLnBhZ2VfYWxsb2Muby5jbWQK
---=_hawking.rebel.net.au-21059-1236920109-0001-2--
+	Ingo
