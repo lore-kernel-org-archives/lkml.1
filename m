@@ -1,104 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbZCMMDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757787AbZCMMDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755278AbZCMMDS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 08:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZCMMDB
+	id S1757787AbZCMMDe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 08:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbZCMMDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 08:03:01 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:49916 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752254AbZCMMDA (ORCPT
+	Fri, 13 Mar 2009 08:03:20 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:58022 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755925AbZCMMDS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 08:03:00 -0400
-Date: Fri, 13 Mar 2009 08:02:56 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       zhaolei@cn.fujitsu.com, tglx@linutronix.de, mingo@elte.hu
-cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/ftrace] ftrace: don't try to __ftrace_replace_code
- on !FTRACE_FL_CONVERTED rec
-In-Reply-To: <tip-fa9d13cf135efbd454453a53b6299976bea245a9@git.kernel.org>
-Message-ID: <alpine.DEB.2.00.0903130757450.18396@gandalf.stny.rr.com>
-References: <49BA2472.4060206@cn.fujitsu.com> <tip-fa9d13cf135efbd454453a53b6299976bea245a9@git.kernel.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 13 Mar 2009 08:03:18 -0400
+Date: Fri, 13 Mar 2009 13:03:14 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: Greg KH <gregkh@suse.de>, Tejun Heo <tj@kernel.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] sysfs: only allow one scheduled removal callback
+ per kobj
+Message-ID: <20090313130314.77dc18ed@gondolin>
+In-Reply-To: <20090312220231.GC31042@ldl.fc.hp.com>
+References: <20090310232027.GC25665@ldl.fc.hp.com>
+	<20090311044151.GB25840@suse.de>
+	<20090311070359.GF25665@ldl.fc.hp.com>
+	<49B76640.6010109@kernel.org>
+	<20090312002737.GB17345@ldl.fc.hp.com>
+	<20090312032228.GA25419@suse.de>
+	<20090312220231.GC31042@ldl.fc.hp.com>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 12 Mar 2009 16:02:31 -0600,
+Alex Chiang <achiang@hp.com> wrote:
 
-
-On Fri, 13 Mar 2009, Zhaolei wrote:
-
-> Commit-ID:  fa9d13cf135efbd454453a53b6299976bea245a9
-> Gitweb:     http://git.kernel.org/tip/fa9d13cf135efbd454453a53b6299976bea245a9
-> Author:     Zhaolei <zhaolei@cn.fujitsu.com>
-> AuthorDate: Fri, 13 Mar 2009 17:16:34 +0800
-> Commit:     Ingo Molnar <mingo@elte.hu>
-> CommitDate: Fri, 13 Mar 2009 10:25:06 +0100
+> From: Alex Chiang <achiang@hp.com>
 > 
-> ftrace: don't try to __ftrace_replace_code on !FTRACE_FL_CONVERTED rec
+> sysfs: only allow one scheduled removal callback per kobj
 > 
-> Do __ftrace_replace_code for !FTRACE_FL_CONVERTED rec will always
-> fail, we should ignore this rec.
-
-Is this also by code review or did you actually hit it?
-
-This code is very sensitive, and changing must be done extremely 
-carefully.
-
+> The only way for a sysfs attribute to remove itself (without
+> deadlock) is to use the sysfs_schedule_callback() interface.
 > 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> Cc: "Steven Rostedt ;" <rostedt@goodmis.org>
-> LKML-Reference: <49BA2472.4060206@cn.fujitsu.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Vegard Nossum discovered that a poorly written sysfs ->store
+> callback can repeatedly schedule remove callbacks on the same
+> device over and over, e.g.
 > 
+> 	$ while true ; do echo 1 > /sys/devices/.../remove ; done
 > 
+> If the 'remove' attribute uses the sysfs_schedule_callback API
+> and also does not protect itself from concurrent accesses, its
+> callback handler will be called multiple times, and will
+> eventually attempt to perform operations on a freed kobject,
+> leading to many problems.
+> 
+> Instead of requiring all callers of sysfs_schedule_callback to
+> implement their own synchronization, provide the protection in
+> the infrastructure.
+> 
+> Now, sysfs_schedule_callback will only allow one scheduled
+> callback per kobject. On subsequent calls with the same kobject,
+> return -EAGAIN.
+> 
+> This is a short term fix. The long term fix is to allow sysfs
+> attributes to remove themselves directly, without any of this
+> callback hokey pokey.
+> 
+> Cc: cornelia.huck@de.ibm.com
+> Reported-by: vegard.nossum@gmail.com
+> Signed-off-by: Alex Chiang <achiang@hp.com>
 > ---
->  kernel/trace/ftrace.c |    9 +++++----
->  1 files changed, 5 insertions(+), 4 deletions(-)
+> Greg, I think this is .30 material; we're late in the -rc cycle
+> now and we're changing the semantics of an API.
 > 
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index 26c45aa..08f4a62 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -532,11 +532,12 @@ static void ftrace_replace_code(int enable)
->  
->  	do_for_each_ftrace_rec(pg, rec) {
->  		/*
-> -		 * Skip over free records and records that have
-> -		 * failed.
-> +		 * Skip over free records, records that have
-> +		 * failed and not converted.
->  		 */
->  		if (rec->flags & FTRACE_FL_FREE ||
-> -		    rec->flags & FTRACE_FL_FAILED)
-> +		    rec->flags & FTRACE_FL_FAILED ||
-> +		    rec->flags & FTRACE_FL_CONVERTED)
->  			continue;
->  
->  		/* ignore updates to this record's mcount site */
-> @@ -548,7 +549,7 @@ static void ftrace_replace_code(int enable)
->  		}
->  
->  		failed = __ftrace_replace_code(rec, enable);
-> -		if (failed && (rec->flags & FTRACE_FL_CONVERTED)) {
-> +		if (failed) {
+> Cornelia, I understand your earlier point about a smaller patch
+> in the caller, but I think pushing the code down into the
+> infrastructure is the right thing to do. 
 
-Note, if we get here when a record does not have FL_CONVERTED set, then
-something already went wrong and tracing should have been disabled.
-The check here was simply to prevent mulitple errors from being printed 
-out.
+OK, I don't have further objections.
 
-I'm just getting ready to travel, but maybe I'll look into this code a bit
-more, and see what reasons we can get here without that CONVERTED flag
-being set. Perhaps the best thing to do is exit the loop?
+> Also, I wasn't brave
+> enough to patch your ccwgroup_ungroup_store(), but I think you
+> won't need the gdev->onoff stuff anymore in that code path.
 
--- Steve
+We still need it to prevent online/offline vs. ungroup races.
 
->  			rec->flags |= FTRACE_FL_FAILED;
->  			if ((system_state == SYSTEM_BOOTING) ||
->  			    !core_kernel_text(rec->ip)) {
-> 
+While device_schedule_callback() should not be able to return -EAGAIN
+on us, I'll sleep better if you could add the following snippet to your
+patch:
+
+---
+ drivers/s390/cio/ccwgroup.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+--- linux-2.6.orig/drivers/s390/cio/ccwgroup.c
++++ linux-2.6/drivers/s390/cio/ccwgroup.c
+@@ -104,8 +104,9 @@ ccwgroup_ungroup_store(struct device *de
+ 	rc = device_schedule_callback(dev, ccwgroup_ungroup_callback);
+ out:
+ 	if (rc) {
+-		/* Release onoff "lock" when ungrouping failed. */
+-		atomic_set(&gdev->onoff, 0);
++		if (rc != -EAGAIN)
++			/* Release onoff "lock" when ungrouping failed. */
++			atomic_set(&gdev->onoff, 0);
+ 		return rc;
+ 	}
+ 	return count;
