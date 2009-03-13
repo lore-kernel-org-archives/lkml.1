@@ -1,194 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbZCMXWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760100AbZCMX1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759955AbZCMXWE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 19:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbZCMXVy
+	id S1760100AbZCMX1Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 19:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZCMX1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 19:21:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43563 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752251AbZCMXVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 19:21:53 -0400
-Message-ID: <49BAEA3B.8030808@kernel.org>
-Date: Fri, 13 Mar 2009 16:20:27 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] x86: add brk allocator for very early allocations
-References: <49B7EDF4.7060904@goop.org> <49B800B8.2040009@kernel.org> <49B9A1CD.5040704@goop.org> <49B9AC7F.9030302@kernel.org> <49BAC1B0.6050107@goop.org> <49BAE210.7090300@zytor.com> <49BAE55F.40406@goop.org>
-In-Reply-To: <49BAE55F.40406@goop.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Mar 2009 19:27:13 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:56976 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751223AbZCMX1M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 19:27:12 -0400
+From: Jay Vosburgh <fubar@us.ibm.com>
+To: David Miller <davem@davemloft.net>
+cc: jesper@krogh.cc, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jgarzik@redhat.com, aowi@novozymes.com
+Subject: Re: Regression in bonding between 2.6.26.8 and 2.6.27.6 - bisected - twice
+In-reply-to: <20090313.161217.52045656.davem@davemloft.net>
+References: <49AA8B4F.8090405@krogh.cc> <9712.1236279072@death.nxdomain.ibm.com> <49B581D3.6060807@krogh.cc> <20090313.161217.52045656.davem@davemloft.net>
+Comments: In-reply-to David Miller <davem@davemloft.net>
+   message dated "Fri, 13 Mar 2009 16:12:17 -0700."
+X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
+Date: Fri, 13 Mar 2009 16:27:16 -0700
+Message-ID: <8799.1236986836@death.nxdomain.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
->> Those references are just the actual reservation of memory.  If all
->> the users of that memory are converted to either brk or bss,
->> INIT_MAP_BEYOND_END should be removed.  If all the users of that
->> memory aren't converted to brk to bss, we should do so.
-> 
-> I just added an adapted Yinghai's patch and added it to push/x86/brk.
-> 
->    J
-> 
-> 
-> The following changes since commit
-> 8131667360004a0b74e4dcadfee8a18d4e2b074f:
->  Jeremy Fitzhardinge (1):
->        x86: allow extend_brk users to reserve brk space
-> 
-> are available in the git repository at:
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push/x86/brk
-> 
-> Yinghai Lu (1):
->      x86: put initial_pg_tables into .bss -v4
-> 
-> arch/x86/kernel/head_32.S        |   47
-> ++++++++++++++-----------------------
-> arch/x86/kernel/vmlinux_32.lds.S |    6 +++++
-> 2 files changed, 24 insertions(+), 29 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-> index 80dc05e..ad7dbbb 100644
-> --- a/arch/x86/kernel/head_32.S
-> +++ b/arch/x86/kernel/head_32.S
-> @@ -38,42 +38,30 @@
-> #define X86_VENDOR_ID    new_cpu_data+CPUINFO_x86_vendor_id
-> 
-> /*
-> - * This is how much memory *in addition to the memory covered up to
-> - * and including _end* we need mapped initially.
-> - * We need:
-> - *  - one bit for each possible page, but only in low memory, which means
-> - *     2^32/4096/8 = 128K worst case (4G/4G split.)
-> + * This is how much memory for page table to and including _end
-> + * we need mapped initially.
->  *  - enough space to map all low memory, which means
-> - *     (2^32/4096) / 1024 pages (worst case, non PAE)
-> - *     (2^32/4096) / 512 + 4 pages (worst case for PAE)
-> - *  - a few pages for allocator use before the kernel pagetable has
-> - *     been set up
-> + *     (KERNEL_IMAGE_SIZE/4096) / 1024 pages (worst case, non PAE)
-> + *     (KERNEL_IMAGE_SIZE/4096) / 512 + 4 pages (worst case for PAE)
->  *
->  * Modulo rounding, each megabyte assigned here requires a kilobyte of
->  * memory, which is currently unreclaimed.
->  *
->  * This should be a multiple of a page.
-> + *
-> + * KERNEL_IMAGE_SIZE should be greater than pa(_end)
-> + * and small than max_low_pfn, otherwise will waste some page table
-> entries
->  */
-> LOW_PAGES = (KERNEL_IMAGE_SIZE + PAGE_SIZE_asm - 1)>>PAGE_SHIFT
-> 
-> -/*
-> - * To preserve the DMA pool in PAGEALLOC kernels, we'll allocate
-> - * pagetables from above the 16MB DMA limit, so we'll have to set
-> - * up pagetables 16MB more (worst-case):
-> - */
-> -#if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KMEMCHECK)
-> -LOW_PAGES = LOW_PAGES + 0x1000000
-> -#endif
-> -
-> #if PTRS_PER_PMD > 1
-> PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PMD) + PTRS_PER_PGD
-> #else
-> PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PGD)
-> #endif
-> -BOOTBITMAP_SIZE = LOW_PAGES / 8
-> ALLOCATOR_SLOP = 4
-> 
-> -INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE +
-> ALLOCATOR_SLOP)*PAGE_SIZE_asm
-> +INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
-> 
-> RESERVE_BRK(pagetables, PAGE_TABLE_SIZE * PAGE_SIZE)
+David Miller <davem@davemloft.net> wrote:
 
-use INIT_MAP_SIZE in RESERVE_BRK directly?
+>From: Jesper Krogh <jesper@krogh.cc>
+>Date: Mon, 09 Mar 2009 21:53:39 +0100
+>
+>> Jay Vosburgh wrote:
+>> > 	However, I did find another bug I introduced during the "mii
+>> > refactor" patch that you mentioned as being the original source of the
+>> > problem.  That bug will cause 802.3ad to not notice speed changes.
+>> > 	Could you test the patch below on your 2.6.68.7 and/or 2.6.27.19
+>> > and see if it resolves your problem (without the forcedeth patch)?
+>> 
+>> There was something missing from the header to make it compile.. I found that in a later version. Patch below fixed the problem (without the forcedeth patch).
+>
+>Jay please resend this with proper signoffs etc. if you want
+>me to apply it.
 
-> 
-> @@ -168,10 +156,10 @@ num_subarch_entries = (. - subarch_entries) / 4
-> 
-> /*
->  * Initialize page tables.  This creates a PDE and a set of page
-> - * tables, which are located immediately beyond _end.  The variable
-> + * tables, which are located immediately beyond __brk_base.  The variable
->  * _brk_end is set up to point to the first "safe" location.
->  * Mappings are created both at virtual address 0 (identity mapping)
-> - * and PAGE_OFFSET for up to _end+sizeof(page tables)+INIT_MAP_BEYOND_END.
-> + * and PAGE_OFFSET for up to _end.
->  *
->  * Note that the stack is not yet set up!
->  */
-> @@ -210,10 +198,9 @@ default_entry:
->     loop 11b
-> 
->     /*
-> -     * End condition: we must map up to and including INIT_MAP_BEYOND_END
-> -     * bytes beyond the end of our own page tables.
-> +     * End condition: we must map up to the end.
->      */
-> -    leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
-> +    movl $pa(_end) + PTE_IDENT_ATTR, %ebp
->     cmpl %ebp,%eax
->     jb 10b
-> 1:
-> @@ -243,11 +230,9 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
->     addl $0x1000,%eax
->     loop 11b
->     /*
-> -     * End condition: we must map up to and including INIT_MAP_BEYOND_END
-> -     * bytes beyond the end of our own page tables; the +0x007 is
-> -     * the attribute bits
-> +     * End condition: we must map up to end
->      */
-> -    leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
-> +    movl $pa(_end) + PTE_IDENT_ATTR, %ebp
->     cmpl %ebp,%eax
->     jb 10b
->     addl $__PAGE_OFFSET, %edi
-> @@ -638,6 +623,10 @@ swapper_pg_fixmap:
->     .fill 1024,4,0
-> ENTRY(empty_zero_page)
->     .fill 4096,1,0
-> +
-> +.section ".bss.extra_page_aligned","wa"
-> +    .align PAGE_SIZE_asm
-> +    .fill INIT_MAP_SIZE,1,0
+	I posted it again with the usual stuff a day or two after I
+posted the test patch; I'll append it to the end of this email.  Note
+that the below patch has a minor cosmetic change from the test patch.
 
-this 4 lines are not needed. you already had RESERVE_BRK for it.
+	I believe this fix should go to -stable for 2.6.26 and 2.6.27,
+but it'll need the change Jesper added to pick up a macro that was added
+to mainline:
 
-YH
+diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
+index fb730ec..b1315e4 100644
+--- a/drivers/net/bonding/bonding.h
++++ b/drivers/net/bonding/bonding.h
+@@ -248,6 +248,14 @@ static inline struct bonding
+*bond_get_bond_by_slave(struct slave *slave)
+        return (struct bonding *)slave->dev->master->priv;
+ }
 
-> /*
->  * This starts the data section.
->  */
-> diff --git a/arch/x86/kernel/vmlinux_32.lds.S
-> b/arch/x86/kernel/vmlinux_32.lds.S
-> index 4005279..c318dee 100644
-> --- a/arch/x86/kernel/vmlinux_32.lds.S
-> +++ b/arch/x86/kernel/vmlinux_32.lds.S
-> @@ -210,6 +210,12 @@ SECTIONS
->   DWARF_DEBUG
-> }
-> 
-> +/*
-> + * Build-time check on the image size:
-> + */
-> +ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
-> +    "kernel image bigger than KERNEL_IMAGE_SIZE")
-> +
-> #ifdef CONFIG_KEXEC
-> /* Link time checks */
-> #include <asm/kexec.h>
++static inline bool bond_is_lb(const struct bonding *bond)
++{
++        return bond->params.mode == BOND_MODE_TLB
++                || bond->params.mode == BOND_MODE_ALB;
++}
++
++
++
+ #define BOND_FOM_NONE                  0
+ #define BOND_FOM_ACTIVE                        1
+ #define BOND_FOM_FOLLOW                        2
 
+	The above fragment isn't needed for mainline, only for -stable.
+
+	-J
+
+From: Jay Vosburgh <fubar@us.ibm.com>
+To: netdev@vger.kernel.org
+Cc: "David S. Miller" <davem@davemloft.net>, stable@kernel.org
+Subject: [PATCH net-next-2.6] bonding: Fix updating of speed/duplex changes
+Date: 	Fri, 06 Mar 2009 15:27:33 -0800
+
+
+	This patch corrects an omission from the following commit:
+
+commit f0c76d61779b153dbfb955db3f144c62d02173c2
+Author: Jay Vosburgh <fubar@us.ibm.com>
+Date:   Wed Jul 2 18:21:58 2008 -0700
+
+    bonding: refactor mii monitor
+
+	The un-refactored code checked the link speed and duplex of
+every slave on every pass; the refactored code did not do so.
+
+	The 802.3ad and balance-alb/tlb modes utilize the speed and
+duplex information, and require it to be kept up to date.  This patch
+adds a notifier check to perform the appropriate updating when the slave
+device speed changes.
+
+Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+---
+ drivers/net/bonding/bond_main.c |   25 ++++++++++++++++++++-----
+ 1 files changed, 20 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index bfe1ed8..dce3cf9 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -3545,11 +3545,26 @@ static int bond_slave_netdev_event(unsigned long event, struct net_device *slave
+ 		}
+ 		break;
+ 	case NETDEV_CHANGE:
+-		/*
+-		 * TODO: is this what we get if somebody
+-		 * sets up a hierarchical bond, then rmmod's
+-		 * one of the slave bonding devices?
+-		 */
++		if (bond->params.mode == BOND_MODE_8023AD || bond_is_lb(bond)) {
++			struct slave *slave;
++
++			slave = bond_get_slave_by_dev(bond, slave_dev);
++			if (slave) {
++				u16 old_speed = slave->speed;
++				u16 old_duplex = slave->duplex;
++
++				bond_update_speed_duplex(slave);
++
++				if (bond_is_lb(bond))
++					break;
++
++				if (old_speed != slave->speed)
++					bond_3ad_adapter_speed_changed(slave);
++				if (old_duplex != slave->duplex)
++					bond_3ad_adapter_duplex_changed(slave);
++			}
++		}
++
+ 		break;
+ 	case NETDEV_DOWN:
+ 		/*
+-- 
+1.6.0.2
+
+--
+To unsubscribe from this list: send the line "unsubscribe netdev" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
