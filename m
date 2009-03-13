@@ -1,149 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbZCMApk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbZCMApz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756817AbZCMApk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 20:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbZCMApb
+	id S1757477AbZCMApz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 20:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757307AbZCMApm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 20:45:31 -0400
-Received: from mga01.intel.com ([192.55.52.88]:28762 "EHLO mga01.intel.com"
+	Thu, 12 Mar 2009 20:45:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55261 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753729AbZCMApa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 20:45:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,354,1233561600"; 
-   d="scan'208";a="672557614"
-Date: Thu, 12 Mar 2009 17:45:27 -0700
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Frans Pop <elendil@planet.nl>,
-       "thellstrom@vmware.com" <thellstrom@vmware.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>
-Subject: [PATCH] VM, x86, PAT: Change is_linear_pfn_mapping to not use vm_pgoff
-Message-ID: <20090313004527.GA7176@linux-os.sc.intel.com>
-References: <498B5ADE.3090602@vmware.com> <200903120645.44515.elendil@planet.nl> <20090312185918.GA22421@linux-os.sc.intel.com> <200903122130.23860.elendil@planet.nl> <1236898090.4529.80.camel@localhost.localdomain> <20090313003654.GA19544@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090313003654.GA19544@elte.hu>
-User-Agent: Mutt/1.4.1i
+	id S1756665AbZCMApl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 20:45:41 -0400
+Message-ID: <49B9AC7F.9030302@kernel.org>
+Date: Thu, 12 Mar 2009 17:44:47 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] x86: add brk allocator for very early allocations
+References: <49B7EDF4.7060904@goop.org> <49B800B8.2040009@kernel.org> <49B9A1CD.5040704@goop.org>
+In-Reply-To: <49B9A1CD.5040704@goop.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> Yinghai Lu wrote:
+>> could have more explanation about the 1M size.
+>> because initial_pg_tables will sit in it. please consider to add
+>> something like
+>>
+>> in head_32.S
+>>
+>>  LOW_PAGES = (KERNEL_IMAGE_SIZE + PAGE_SIZE_asm - 1)>>PAGE_SHIFT
+>>  
+>>  #if PTRS_PER_PMD > 1
+>>  PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PMD) + PTRS_PER_PGD
+>>  #else
+>>  PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PGD)
+>>  #endif
+>>  ALLOCATOR_SLOP = 4
+>>   
+> 
+> OK, how does this look:
+> 
+> The following changes since commit
+> 21e8ba72daf5d7f0af33968f873499c85f96ccef:
+>  Jeremy Fitzhardinge (1):
+>        x86: use brk allocation for DMI
+> 
+> are available in the git repository at:
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push/x86/brk
+> 
+> Jeremy Fitzhardinge (1):
+>      x86: allow extend_brk users to reserve brk space
+> 
+> Yinghai Lu (1):
+>      x86-32: compute initial mapping size more accurately
+> 
+> arch/x86/include/asm/page_32_types.h |    5 +++++
+> arch/x86/include/asm/setup.h         |   30 ++++++++++++++++++++++++++++++
+> arch/x86/kernel/head_32.S            |    4 +++-
+> arch/x86/kernel/setup.c              |    2 ++
+> arch/x86/kernel/vmlinux_32.lds.S     |    4 +++-
+> arch/x86/kernel/vmlinux_64.lds.S     |    4 +++-
+> 6 files changed, 46 insertions(+), 3 deletions(-)
+> 
+> git diff 21e8ba72daf5d7f0af33968f873499c85f96ccef..push/x86/brk
+> diff --git a/arch/x86/include/asm/page_32_types.h
+> b/arch/x86/include/asm/page_32_types.h
+> index f1e4a79..0f915ae 100644
+> --- a/arch/x86/include/asm/page_32_types.h
+> +++ b/arch/x86/include/asm/page_32_types.h
+> @@ -39,6 +39,11 @@
+> #define __VIRTUAL_MASK_SHIFT    32
+> #endif    /* CONFIG_X86_PAE */
+> 
+> +/*
+> + * Kernel image size is limited to 512 MB (see in
+> arch/x86/kernel/head_32.S)
+> + */
+> +#define KERNEL_IMAGE_SIZE    (512 * 1024 * 1024)
+> +
+> #ifndef __ASSEMBLY__
+> 
+> /*
+> diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
+> index 366d366..61b126b 100644
+> --- a/arch/x86/include/asm/setup.h
+> +++ b/arch/x86/include/asm/setup.h
+> @@ -104,6 +104,29 @@ extern struct boot_params boot_params;
+> extern unsigned long _brk_end;
+> void *extend_brk(size_t size, size_t align);
+> 
+> +/*
+> + * Reserve space in the brk section.  The name must be unique within
+> + * the file, and somewhat descriptive.  The size is in bytes.  Must be
+> + * used at file scope.
+> + *
+> + * (This uses a temp function to wrap the asm so we can pass it the
+> + * size parameter; otherwise we wouldn't be able to.  We can't use a
+> + * "section" attribute on a normal variable because it always ends up
+> + * being @progbits, which ends up allocating space in the vmlinux
+> + * executable.)
+> + */
+> +#define RESERVE_BRK(name,sz)                        \
+> +    static void __section(.discard) __used            \
+> +    __brk_reservation_fn_##name##__(void) {                \
+> +        asm volatile (                        \
+> +            ".pushsection .brk_reservation,\"aw\",@nobits;" \
+> +            "__brk_reservation_" #name "__:"        \
+> +            " 1:.skip %c0;"                    \
+> +            " .size __brk_reservation_" #name "__, . - 1b;"    \
+> +            " .popsection"                    \
+> +            : : "i" (sz));                    \
+> +    }
+> +
+> #ifdef __i386__
+> 
+> void __init i386_start_kernel(void);
+> @@ -115,6 +138,13 @@ void __init x86_64_start_reservations(char
+> *real_mode_data);
+> 
+> #endif /* __i386__ */
+> #endif /* _SETUP */
+> +#else
+> +#define RESERVE_BRK(name,sz)                \
+> +    .pushsection .brk_reservation,"aw",@nobits;    \
+> +__brk_reservation_##name##__:                \
+> +1:    .skip sz;                    \
+> +    .size __brk_reservation_##name##__,.-1b;    \
+> +    .popsection
+> #endif /* __ASSEMBLY__ */
+> #endif  /*  __KERNEL__  */
+> 
+> diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+> index d243437..80dc05e 100644
+> --- a/arch/x86/kernel/head_32.S
+> +++ b/arch/x86/kernel/head_32.S
+> @@ -54,7 +54,7 @@
+>  *
+>  * This should be a multiple of a page.
+>  */
+> -LOW_PAGES = 1<<(32-PAGE_SHIFT_asm)
+> +LOW_PAGES = (KERNEL_IMAGE_SIZE + PAGE_SIZE_asm - 1)>>PAGE_SHIFT
+> 
+> /*
+>  * To preserve the DMA pool in PAGEALLOC kernels, we'll allocate
+> @@ -75,6 +75,8 @@ ALLOCATOR_SLOP = 4
+> 
+> INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE +
+> ALLOCATOR_SLOP)*PAGE_SIZE_asm
 
-Use of vma->vm_pgoff to identify the pfnmaps that are fully
-mapped at mmap time is broke. vm_pgoff is set by generic mmap
-code even for cases where drivers are setting up the mappings
-at the fault time.
+no user for INIT_MAP_BEYOND_END any more.
 
-The problem was originally reported here.
-http://marc.info/?l=linux-kernel&m=123383810628583&w=2
+> 
+> +RESERVE_BRK(pagetables, PAGE_TABLE_SIZE * PAGE_SIZE)
+> +
+> /*
+>  * 32-bit kernel entrypoint; only used by the boot CPU.  On entry,
+>  * %esi points to the real-mode code as a 32-bit pointer.
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index b344908..d633958 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -112,6 +112,8 @@
+> #define ARCH_SETUP
+> #endif
+> 
+> +RESERVE_BRK(dmi_alloc, 65536);
+> +
+> unsigned int boot_cpu_id __read_mostly;
+> 
+> static __initdata unsigned long _brk_start = (unsigned long)__brk_base;
+> diff --git a/arch/x86/kernel/vmlinux_32.lds.S
+> b/arch/x86/kernel/vmlinux_32.lds.S
+> index 1063fbe..4005279 100644
+> --- a/arch/x86/kernel/vmlinux_32.lds.S
+> +++ b/arch/x86/kernel/vmlinux_32.lds.S
+> @@ -192,7 +192,8 @@ SECTIONS
+> 
+>     . = ALIGN(PAGE_SIZE);
+>     __brk_base = . ;
+> -    . += 1024 * 1024 ;
+> +     . += 64 * 1024 ;    /* 64k slop space */
+> +    *(.brk_reservation)    /* areas brk users have reserved */
+>     __brk_limit = . ;
+> 
+>       _end = . ;
+> @@ -201,6 +202,7 @@ SECTIONS
+>   /* Sections to be discarded */
+>   /DISCARD/ : {
+>     *(.exitcall.exit)
+> +    *(.discard)
+>     }
+> 
+>   STABS_DEBUG
 
-Change is_linear_pfn_mapping logic to overload VM_INSERTPAGE
-flag along with VM_PFNMAP to mean full PFNMAP setup at mmap
-time.
+could add 
+/*
+ * Build-time check on the image size:
+ */
+ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
+        "kernel image bigger than KERNEL_IMAGE_SIZE")
 
-Problem also tracked at
-http://bugzilla.kernel.org/show_bug.cgi?id=12800
 
-Reported-by: Thomas Hellstrom <thellstrom@vmware.com>
-Tested-by: Frans Pop <elendil@planet.nl>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha>@intel.com>
+for 32bit
 
----
- arch/x86/mm/pat.c  |    5 +++--
- include/linux/mm.h |   15 +++++++++++++--
- mm/memory.c        |    6 ++++--
- 3 files changed, 20 insertions(+), 6 deletions(-)
+YH
 
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index e0ab173..21bc1f7 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -641,10 +641,11 @@ static int reserve_pfn_range(u64 paddr, unsigned long size, pgprot_t *vma_prot,
- 	is_ram = pat_pagerange_is_ram(paddr, paddr + size);
- 
- 	/*
--	 * reserve_pfn_range() doesn't support RAM pages.
-+	 * reserve_pfn_range() doesn't support RAM pages. Maintain the current
-+	 * behavior with RAM pages by returning success.
- 	 */
- 	if (is_ram != 0)
--		return -EINVAL;
-+		return 0;
- 
- 	ret = reserve_memtype(paddr, paddr + size, want_flags, &flags);
- 	if (ret)
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 065cdf8..3daa05f 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -98,7 +98,7 @@ extern unsigned int kobjsize(const void *objp);
- #define VM_HUGETLB	0x00400000	/* Huge TLB Page VM */
- #define VM_NONLINEAR	0x00800000	/* Is non-linear (remap_file_pages) */
- #define VM_MAPPED_COPY	0x01000000	/* T if mapped copy of data (nommu mmap) */
--#define VM_INSERTPAGE	0x02000000	/* The vma has had "vm_insert_page()" done on it */
-+#define VM_INSERTPAGE	0x02000000	/* The vma has had "vm_insert_page()" done on it. Refer note in VM_PFNMAP_AT_MMAP below */
- #define VM_ALWAYSDUMP	0x04000000	/* Always include in core dumps */
- 
- #define VM_CAN_NONLINEAR 0x08000000	/* Has ->fault & does nonlinear pages */
-@@ -127,6 +127,17 @@ extern unsigned int kobjsize(const void *objp);
- #define VM_SPECIAL (VM_IO | VM_DONTEXPAND | VM_RESERVED | VM_PFNMAP)
- 
- /*
-+ * pfnmap vmas that are fully mapped at mmap time (not mapped on fault).
-+ * Used by x86 PAT to identify such PFNMAP mappings and optimize their handling.
-+ * Note VM_INSERTPAGE flag is overloaded here. i.e,
-+ * VM_INSERTPAGE && !VM_PFNMAP implies
-+ *     The vma has had "vm_insert_page()" done on it
-+ * VM_INSERTPAGE && VM_PFNMAP implies
-+ *     The vma is PFNMAP with full mapping at mmap time
-+ */
-+#define VM_PFNMAP_AT_MMAP (VM_INSERTPAGE | VM_PFNMAP)
-+
-+/*
-  * mapping from the currently active vm_flags protection bits (the
-  * low four bits) to a page protection mask..
-  */
-@@ -145,7 +156,7 @@ extern pgprot_t protection_map[16];
-  */
- static inline int is_linear_pfn_mapping(struct vm_area_struct *vma)
- {
--	return ((vma->vm_flags & VM_PFNMAP) && vma->vm_pgoff);
-+	return ((vma->vm_flags & VM_PFNMAP_AT_MMAP) == VM_PFNMAP_AT_MMAP);
- }
- 
- static inline int is_pfn_mapping(struct vm_area_struct *vma)
-diff --git a/mm/memory.c b/mm/memory.c
-index baa999e..d7df5ba 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1665,9 +1665,10 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
- 	 * behaviour that some programs depend on. We mark the "original"
- 	 * un-COW'ed pages by matching them up with "vma->vm_pgoff".
- 	 */
--	if (addr == vma->vm_start && end == vma->vm_end)
-+	if (addr == vma->vm_start && end == vma->vm_end) {
- 		vma->vm_pgoff = pfn;
--	else if (is_cow_mapping(vma->vm_flags))
-+		vma->vm_flags |= VM_PFNMAP_AT_MMAP;
-+	} else if (is_cow_mapping(vma->vm_flags))
- 		return -EINVAL;
- 
- 	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP;
-@@ -1679,6 +1680,7 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
- 		 * needed from higher level routine calling unmap_vmas
- 		 */
- 		vma->vm_flags &= ~(VM_IO | VM_RESERVED | VM_PFNMAP);
-+		vma->vm_flags &= ~VM_PFNMAP_AT_MMAP;
- 		return -EINVAL;
- 	}
- 
--- 
-1.6.0.6
+> diff --git a/arch/x86/kernel/vmlinux_64.lds.S
+> b/arch/x86/kernel/vmlinux_64.lds.S
+> index b8b83e4..47deee3 100644
+> --- a/arch/x86/kernel/vmlinux_64.lds.S
+> +++ b/arch/x86/kernel/vmlinux_64.lds.S
+> @@ -250,7 +250,8 @@ SECTIONS
+> 
+>      . = ALIGN(PAGE_SIZE);
+>      __brk_base = . ;
+> -     . += 1024 * 1024 ;
+> +     . += 64 * 1024 ;    /* 64k slop space */
+> +    *(.brk_reservation)    /* areas brk users have reserved */
+>      __brk_limit = . ;
+>   }
+> 
+> @@ -260,6 +261,7 @@ SECTIONS
+>   /DISCARD/ : {
+>     *(.exitcall.exit)
+>     *(.eh_frame)
+> +    *(.discard)
+>     }
+> 
+>   STABS_DEBUG
+> 
 
