@@ -1,85 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbZCMKhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbZCMKiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758009AbZCMKhq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 06:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbZCMKhX
+	id S1758295AbZCMKiH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 06:38:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756981AbZCMKhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 06:37:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36940 "EHLO hera.kernel.org"
+	Fri, 13 Mar 2009 06:37:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36943 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753781AbZCMKhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 06:37:21 -0400
-Date: Fri, 13 Mar 2009 10:36:35 GMT
+	id S1755547AbZCMKhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 06:37:24 -0400
+Date: Fri, 13 Mar 2009 10:36:44 GMT
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jbeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
+       tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
+       tglx@linutronix.de, mingo@elte.hu
 In-Reply-To: <49B91A7E.76E4.0078.0@novell.com>
 References: <49B91A7E.76E4.0078.0@novell.com>
-Subject: [tip:core/ipi] panic: decrease oops_in_progress only after having done the panic
-Message-ID: <tip-ffd71da4e3f323b7673b061e6f7e0d0c12dc2b49@git.kernel.org>
-Git-Commit-ID: ffd71da4e3f323b7673b061e6f7e0d0c12dc2b49
+Subject: [tip:core/ipi] panic, smp: provide smp_send_stop() wrapper on UP too
+Message-ID: <tip-d1dedb52acd98bd5e13e1ff4c4d045d58bbd16fe@git.kernel.org>
+Git-Commit-ID: d1dedb52acd98bd5e13e1ff4c4d045d58bbd16fe
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 10:36:45 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 10:36:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ffd71da4e3f323b7673b061e6f7e0d0c12dc2b49
-Gitweb:     http://git.kernel.org/tip/ffd71da4e3f323b7673b061e6f7e0d0c12dc2b49
+Commit-ID:  d1dedb52acd98bd5e13e1ff4c4d045d58bbd16fe
+Gitweb:     http://git.kernel.org/tip/d1dedb52acd98bd5e13e1ff4c4d045d58bbd16fe
 Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Fri, 13 Mar 2009 10:54:24 +0100
+AuthorDate: Fri, 13 Mar 2009 11:14:06 +0100
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 11:06:47 +0100
+CommitDate: Fri, 13 Mar 2009 11:24:31 +0100
 
-panic: decrease oops_in_progress only after having done the panic
+panic, smp: provide smp_send_stop() wrapper on UP too
 
-Impact: eliminate secondary warnings during panic()
+Impact: cleanup, no code changed
 
-We can panic() in a number of difficult, atomic contexts, hence
-we use bust_spinlocks(1) in panic() to increase oops_in_progress,
-which prevents various debug checks we have in place.
+Remove an ugly #ifdef CONFIG_SMP from panic(), by providing
+an smp_send_stop() wrapper on UP too.
 
-But in practice this protection only covers the first few printk's
-done by panic() - it does not cover the later attempt to stop all
-other CPUs and kexec(). If a secondary warning triggers in one of
-those facilities that can make the panic message scroll off.
-
-So do bust_spinlocks(0) only much later in panic(). (which code
-is only reached if panic policy is relaxed that it can return
-after a warning message)
-
-Reported-by: Jan Beulich <jbeulich@novell.com>
 LKML-Reference: <49B91A7E.76E4.0078.0@novell.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/panic.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ include/linux/smp.h |    4 +++-
+ kernel/panic.c      |    2 --
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/include/linux/smp.h b/include/linux/smp.h
+index 2d3bcb6..a69db82 100644
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -38,7 +38,7 @@ int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
+ /*
+  * main cross-CPU interfaces, handles INIT, TLB flush, STOP, etc.
+  * (defined in asm header):
+- */ 
++ */
+ 
+ /*
+  * stops all CPUs but the current one:
+@@ -122,6 +122,8 @@ extern unsigned int setup_max_cpus;
+ 
+ #else /* !SMP */
+ 
++static inline void smp_send_stop(void) { }
++
+ /*
+  *	These macros fold the SMP functionality into a single CPU system
+  */
 diff --git a/kernel/panic.c b/kernel/panic.c
-index 32fe4ef..57fb005 100644
+index 57fb005..ca75e81 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -77,7 +77,6 @@ NORET_TYPE void panic(const char * fmt, ...)
- #ifdef CONFIG_DEBUG_BUGVERBOSE
- 	dump_stack();
- #endif
--	bust_spinlocks(0);
+@@ -85,14 +85,12 @@ NORET_TYPE void panic(const char * fmt, ...)
+ 	 */
+ 	crash_kexec(NULL);
  
+-#ifdef CONFIG_SMP
  	/*
- 	 * If we have crashed and we have a crash kernel loaded let it handle
-@@ -136,6 +135,7 @@ NORET_TYPE void panic(const char * fmt, ...)
- 		mdelay(1);
- 		i++;
- 	}
-+	bust_spinlocks(0);
- }
+ 	 * Note smp_send_stop is the usual smp shutdown function, which
+ 	 * unfortunately means it may not be hardened to work in a panic
+ 	 * situation.
+ 	 */
+ 	smp_send_stop();
+-#endif
  
- EXPORT_SYMBOL(panic);
+ 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+ 
