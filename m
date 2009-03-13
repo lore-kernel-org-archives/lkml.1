@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbZCMRDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759404AbZCMRDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759848AbZCMRDT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 13:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759623AbZCMRBE
+	id S1759404AbZCMRDf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 13:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759590AbZCMRBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 13:01:04 -0400
-Received: from gw.goop.org ([64.81.55.164]:57402 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 13:01:05 -0400
+Received: from gw.goop.org ([64.81.55.164]:57410 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759565AbZCMRBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 13:01:01 -0400
+	id S1757548AbZCMRBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 13:01:03 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       David Airlie <airlied@linux.ie>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Airlie <airlied@linux.ie>, Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 10/27] xen: make sure swiotlb allocation is physically contigious
-Date: Fri, 13 Mar 2009 09:59:55 -0700
-Message-Id: <1236963612-14287-11-git-send-email-jeremy@goop.org>
+Subject: [PATCH 12/27] xen: add hooks for mapping phys<->bus addresses in swiotlb
+Date: Fri, 13 Mar 2009 09:59:57 -0700
+Message-Id: <1236963612-14287-13-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1236963612-14287-1-git-send-email-jeremy@goop.org>
 References: <1236963612-14287-1-git-send-email-jeremy@goop.org>
@@ -26,105 +26,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When allocating the swiotlb buffer under Xen, make sure the memory is
-physically contiguous so that its really suitable for DMA.
+From: Ian Campbell <ian.campbell@citrix.com>
 
+Add hooks to allow Xen to do translation between pfn and mfns for the swiotlb
+layer, so that dma actually ends up going to the proper machine pages.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/kernel/pci-swiotlb.c |   17 +++++++++++++++--
- drivers/pci/xen-iommu.c       |   16 ++++++++++++++++
- include/xen/swiotlb.h         |   12 ++++++++++++
- 3 files changed, 43 insertions(+), 2 deletions(-)
- create mode 100644 include/xen/swiotlb.h
+ arch/x86/kernel/pci-swiotlb.c |    8 ++++++++
+ drivers/pci/xen-iommu.c       |   10 ++++++++++
+ include/xen/swiotlb.h         |    3 +++
+ 3 files changed, 21 insertions(+), 0 deletions(-)
 
 diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index 34f12e9..a7b9410 100644
+index 298f01d..0943813 100644
 --- a/arch/x86/kernel/pci-swiotlb.c
 +++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -11,16 +11,29 @@
- #include <asm/swiotlb.h>
- #include <asm/dma.h>
- 
-+#include <xen/swiotlb.h>
-+#include <asm/xen/hypervisor.h>
-+
- int swiotlb __read_mostly;
- 
- void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
- {
--	return alloc_bootmem_low_pages(size);
-+	void *ret = alloc_bootmem_low_pages(size);
-+
-+	if (ret && xen_pv_domain())
-+		xen_swiotlb_fixup(ret, size, nslabs);
-+
-+	return ret;
- }
- 
- void *swiotlb_alloc(unsigned order, unsigned long nslabs)
- {
--	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
-+	void *ret = (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
-+
-+	if (ret && xen_pv_domain())
-+		xen_swiotlb_fixup(ret, 1u << order, nslabs);
-+
-+	return ret;
- }
+@@ -33,11 +33,19 @@ void *swiotlb_alloc(unsigned order, unsigned long nslabs)
  
  dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
+ {
++#ifdef CONFIG_PCI_XEN
++	if (xen_pv_domain())
++		return xen_phys_to_bus(paddr);
++#endif
+ 	return paddr;
+ }
+ 
+ phys_addr_t swiotlb_bus_to_phys(dma_addr_t baddr)
+ {
++#ifdef CONFIG_PCI_XEN
++	if (xen_pv_domain())
++		return xen_bus_to_phys(baddr);
++#endif
+ 	return baddr;
+ }
+ 
 diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-index 5b701e8..dc0da76 100644
+index d546698..e7ba06b 100644
 --- a/drivers/pci/xen-iommu.c
 +++ b/drivers/pci/xen-iommu.c
-@@ -12,6 +12,7 @@
- #include <xen/grant_table.h>
- #include <xen/page.h>
- #include <xen/xen-ops.h>
-+#include <xen/swiotlb.h>
+@@ -67,6 +67,16 @@ void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
+ 	}
+ }
  
- #include <asm/iommu.h>
- #include <asm/swiotlb.h>
-@@ -42,6 +43,21 @@ struct dma_coherent_mem {
- 	unsigned long	*bitmap;
- };
- 
-+void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
++dma_addr_t xen_phys_to_bus(phys_addr_t paddr)
 +{
-+	unsigned order = get_order(size);
++	return phys_to_machine(XPADDR(paddr)).maddr;
++}
 +
-+	printk(KERN_DEBUG "xen_swiotlb_fixup: buf=%p size=%zu order=%u\n",
-+		buf, size, order);
-+
-+	if (WARN_ON(size != (PAGE_SIZE << order)))
-+		return;
-+
-+	if (xen_create_contiguous_region((unsigned long)buf,
-+					 order, 0xffffffff))
-+		printk(KERN_ERR "xen_create_contiguous_region failed\n");
++phys_addr_t xen_bus_to_phys(dma_addr_t daddr)
++{
++	return machine_to_phys(XMADDR(daddr)).paddr;
 +}
 +
  static inline int address_needs_mapping(struct device *hwdev,
  						dma_addr_t addr)
  {
 diff --git a/include/xen/swiotlb.h b/include/xen/swiotlb.h
-new file mode 100644
-index 0000000..8d59439
---- /dev/null
+index 8d59439..9ecaff1 100644
+--- a/include/xen/swiotlb.h
 +++ b/include/xen/swiotlb.h
-@@ -0,0 +1,12 @@
-+#ifndef _XEN_SWIOTLB_H
-+#define _XEN_SWIOTLB_H
+@@ -9,4 +9,7 @@ static inline void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslab
+ }
+ #endif
+ 
++extern phys_addr_t xen_bus_to_phys(dma_addr_t daddr);
++extern dma_addr_t xen_phys_to_bus(phys_addr_t paddr);
 +
-+#ifdef CONFIG_PCI_XEN
-+extern void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs);
-+#else
-+static inline void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
-+{
-+}
-+#endif
-+
-+#endif /* _XEN_SWIOTLB_H */
+ #endif /* _XEN_SWIOTLB_H */
 -- 
 1.6.0.6
 
