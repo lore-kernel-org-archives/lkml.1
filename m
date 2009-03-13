@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758632AbZCMIRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758538AbZCMISm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758632AbZCMIRr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 04:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbZCMIM1
+	id S1758538AbZCMISm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 04:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757626AbZCMIMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 04:12:27 -0400
-Received: from gw.goop.org ([64.81.55.164]:34821 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 04:12:30 -0400
+Received: from gw.goop.org ([64.81.55.164]:34829 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755965AbZCMIMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 04:12:23 -0400
+	id S1756463AbZCMIMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 04:12:25 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 12/24] x86-64: remove PGE from must-have feature list
-Date: Fri, 13 Mar 2009 01:11:48 -0700
-Message-Id: <1236931920-6861-13-git-send-email-jeremy@goop.org>
+Subject: [PATCH 20/24] xen/sys/hypervisor: change writable_pt to features
+Date: Fri, 13 Mar 2009 01:11:56 -0700
+Message-Id: <1236931920-6861-21-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1236931920-6861-1-git-send-email-jeremy@goop.org>
 References: <1236931920-6861-1-git-send-email-jeremy@goop.org>
@@ -27,27 +27,82 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-PGE may not be available when running paravirtualized, so test the cpuid
-bit before using it.
+/sys/hypervisor/properties/writable_pt was misnamed.  Rename to features,
+expressed as a bit array in hex.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/required-features.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/xen/sys-hypervisor.c |   41 ++++++++++++++++++++++++++---------------
+ 1 files changed, 26 insertions(+), 15 deletions(-)
 
-diff --git a/arch/x86/include/asm/required-features.h b/arch/x86/include/asm/required-features.h
-index d5cd6c5..a4737dd 100644
---- a/arch/x86/include/asm/required-features.h
-+++ b/arch/x86/include/asm/required-features.h
-@@ -50,7 +50,7 @@
- #ifdef CONFIG_X86_64
- #define NEED_PSE	0
- #define NEED_MSR	(1<<(X86_FEATURE_MSR & 31))
--#define NEED_PGE	(1<<(X86_FEATURE_PGE & 31))
-+#define NEED_PGE	0
- #define NEED_FXSR	(1<<(X86_FEATURE_FXSR & 31))
- #define NEED_XMM	(1<<(X86_FEATURE_XMM & 31))
- #define NEED_XMM2	(1<<(X86_FEATURE_XMM2 & 31))
+diff --git a/drivers/xen/sys-hypervisor.c b/drivers/xen/sys-hypervisor.c
+index cb29d1c..1267d6f 100644
+--- a/drivers/xen/sys-hypervisor.c
++++ b/drivers/xen/sys-hypervisor.c
+@@ -293,37 +293,48 @@ static ssize_t pagesize_show(struct hyp_sysfs_attr *attr, char *buffer)
+ 
+ HYPERVISOR_ATTR_RO(pagesize);
+ 
+-/* eventually there will be several more features to export */
+ static ssize_t xen_feature_show(int index, char *buffer)
+ {
+-	int ret = -ENOMEM;
+-	struct xen_feature_info *info;
++	ssize_t ret;
++	struct xen_feature_info info;
+ 
+-	info = kmalloc(sizeof(struct xen_feature_info), GFP_KERNEL);
+-	if (info) {
+-		info->submap_idx = index;
+-		ret = HYPERVISOR_xen_version(XENVER_get_features, info);
+-		if (!ret)
+-			ret = sprintf(buffer, "%d\n", info->submap);
+-		kfree(info);
+-	}
++	info.submap_idx = index;
++	ret = HYPERVISOR_xen_version(XENVER_get_features, &info);
++	if (!ret)
++		ret = sprintf(buffer, "%08x", info.submap);
+ 
+ 	return ret;
+ }
+ 
+-static ssize_t writable_pt_show(struct hyp_sysfs_attr *attr, char *buffer)
++static ssize_t features_show(struct hyp_sysfs_attr *attr, char *buffer)
+ {
+-	return xen_feature_show(XENFEAT_writable_page_tables, buffer);
++	ssize_t len;
++	int i;
++
++	len = 0;
++	for (i = XENFEAT_NR_SUBMAPS-1; i >= 0; i--) {
++		int ret = xen_feature_show(i, buffer + len);
++		if (ret < 0) {
++			if (len == 0)
++				len = ret;
++			break;
++		}
++		len += ret;
++	}
++	if (len > 0)
++		buffer[len++] = '\n';
++
++	return len;
+ }
+ 
+-HYPERVISOR_ATTR_RO(writable_pt);
++HYPERVISOR_ATTR_RO(features);
+ 
+ static struct attribute *xen_properties_attrs[] = {
+ 	&capabilities_attr.attr,
+ 	&changeset_attr.attr,
+ 	&virtual_start_attr.attr,
+ 	&pagesize_attr.attr,
+-	&writable_pt_attr.attr,
++	&features_attr.attr,
+ 	NULL
+ };
+ 
 -- 
 1.6.0.6
 
