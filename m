@@ -1,135 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbZCMD0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757768AbZCMD2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757919AbZCMD0V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 23:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZCMD0L
+	id S1757768AbZCMD2r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 23:28:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZCMD2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 23:26:11 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:64664 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753018AbZCMD0K (ORCPT
+	Thu, 12 Mar 2009 23:28:38 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57733 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752122AbZCMD2h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 23:26:10 -0400
-Message-ID: <49B9C9EB.90408@cs.columbia.edu>
-Date: Thu, 12 Mar 2009 22:50:19 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 12 Mar 2009 23:28:37 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 05/16] tracing: show that buffer size is not expanded
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <alpine.DEB.2.00.0903122317280.18396@gandalf.stny.rr.com>
+References: <20090313114953.43E2.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0903122317280.18396@gandalf.stny.rr.com>
+Message-Id: <20090313122458.43EE.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       containers <containers@lists.linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [RFC][PATCH 05/11] add generic checkpoint f_op to ext fses
-References: <20090305163857.0C18F3FD@kernel> <20090305163904.D9CFC631@kernel>
-In-Reply-To: <20090305163904.D9CFC631@kernel>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Fri, 13 Mar 2009 12:28:31 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Note that as far as I understand, ext4 does _not_ support a "relink"
-operation. By "re-link" I mean an operation that re-links an (orphan)
-inode to a filename.  (By "orphan" I mean a file that was opened and
-unlinked, so it does not appear in any directory anymore).
-
-This feature is very useful to efficiently checkpoint unlinked files.
-
-Oren.
-
-
-Dave Hansen wrote:
-> This marks ext[234] as being checkpointable.  There will be many
-> more to do this to, but this is a start.
+> > >  # cat /debug/tracing/buffer_size_kb
+> > > 7 (expanded: 1408)
+> > 
+> > Hi,
+> > 
+> > I have one question.
+> > Why souldn't use following output?
+> > 
+> > sprintf(buf, "%lu\n", trace_buf_size >> 10);
+> > 
+> > 
+> > My point is:
+> >   - pure number output can hadle easily.
+> >   - nobody need to know internal memory saving logic.
 > 
-> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
-> ---
+> My answer to the second point is: "I do" ;-)
 > 
->  linux-2.6.git-dave/fs/ext2/dir.c  |    1 +
->  linux-2.6.git-dave/fs/ext2/file.c |    2 ++
->  linux-2.6.git-dave/fs/ext3/dir.c  |    1 +
->  linux-2.6.git-dave/fs/ext3/file.c |    1 +
->  linux-2.6.git-dave/fs/ext4/dir.c  |    1 +
->  linux-2.6.git-dave/fs/ext4/file.c |    1 +
->  6 files changed, 7 insertions(+)
-> 
-> diff -puN fs/ext2/dir.c~add-stupid-checkpoint-to-lots-of-fses-take0 fs/ext2/dir.c
-> --- linux-2.6.git/fs/ext2/dir.c~add-stupid-checkpoint-to-lots-of-fses-take0	2009-03-05 08:37:01.000000000 -0800
-> +++ linux-2.6.git-dave/fs/ext2/dir.c	2009-03-05 08:37:01.000000000 -0800
-> @@ -721,4 +721,5 @@ const struct file_operations ext2_dir_op
->  	.compat_ioctl	= ext2_compat_ioctl,
->  #endif
->  	.fsync		= ext2_sync_file,
-> +	.checkpoint	= generic_file_checkpoint,
->  };
-> diff -puN fs/ext2/file.c~add-stupid-checkpoint-to-lots-of-fses-take0 fs/ext2/file.c
-> --- linux-2.6.git/fs/ext2/file.c~add-stupid-checkpoint-to-lots-of-fses-take0	2009-03-05 08:37:01.000000000 -0800
-> +++ linux-2.6.git-dave/fs/ext2/file.c	2009-03-05 08:37:01.000000000 -0800
-> @@ -58,6 +58,7 @@ const struct file_operations ext2_file_o
->  	.fsync		= ext2_sync_file,
->  	.splice_read	= generic_file_splice_read,
->  	.splice_write	= generic_file_splice_write,
-> +	.checkpoint	= generic_file_checkpoint,
->  };
->  
->  #ifdef CONFIG_EXT2_FS_XIP
-> @@ -73,6 +74,7 @@ const struct file_operations ext2_xip_fi
->  	.open		= generic_file_open,
->  	.release	= ext2_release_file,
->  	.fsync		= ext2_sync_file,
-> +	.checkpoint	= generic_file_checkpoint,
->  };
->  #endif
->  
-> diff -puN fs/ext3/dir.c~add-stupid-checkpoint-to-lots-of-fses-take0 fs/ext3/dir.c
-> --- linux-2.6.git/fs/ext3/dir.c~add-stupid-checkpoint-to-lots-of-fses-take0	2009-03-05 08:37:01.000000000 -0800
-> +++ linux-2.6.git-dave/fs/ext3/dir.c	2009-03-05 08:37:01.000000000 -0800
-> @@ -48,6 +48,7 @@ const struct file_operations ext3_dir_op
->  #endif
->  	.fsync		= ext3_sync_file,	/* BKL held */
->  	.release	= ext3_release_dir,
-> +	.checkpoint	= generic_file_checkpoint,
->  };
->  
->  
-> diff -puN fs/ext3/file.c~add-stupid-checkpoint-to-lots-of-fses-take0 fs/ext3/file.c
-> --- linux-2.6.git/fs/ext3/file.c~add-stupid-checkpoint-to-lots-of-fses-take0	2009-03-05 08:37:01.000000000 -0800
-> +++ linux-2.6.git-dave/fs/ext3/file.c	2009-03-05 08:37:01.000000000 -0800
-> @@ -122,6 +122,7 @@ const struct file_operations ext3_file_o
->  	.fsync		= ext3_sync_file,
->  	.splice_read	= generic_file_splice_read,
->  	.splice_write	= generic_file_splice_write,
-> +	.checkpoint	= generic_file_checkpoint,
->  };
->  
->  const struct inode_operations ext3_file_inode_operations = {
-> diff -puN fs/ext4/dir.c~add-stupid-checkpoint-to-lots-of-fses-take0 fs/ext4/dir.c
-> --- linux-2.6.git/fs/ext4/dir.c~add-stupid-checkpoint-to-lots-of-fses-take0	2009-03-05 08:37:01.000000000 -0800
-> +++ linux-2.6.git-dave/fs/ext4/dir.c	2009-03-05 08:37:01.000000000 -0800
-> @@ -48,6 +48,7 @@ const struct file_operations ext4_dir_op
->  #endif
->  	.fsync		= ext4_sync_file,
->  	.release	= ext4_release_dir,
-> +	.checkpoint	= generic_file_checkpoint,
->  };
->  
->  
-> diff -puN fs/ext4/file.c~add-stupid-checkpoint-to-lots-of-fses-take0 fs/ext4/file.c
-> --- linux-2.6.git/fs/ext4/file.c~add-stupid-checkpoint-to-lots-of-fses-take0	2009-03-05 08:37:01.000000000 -0800
-> +++ linux-2.6.git-dave/fs/ext4/file.c	2009-03-05 08:37:01.000000000 -0800
-> @@ -156,6 +156,7 @@ const struct file_operations ext4_file_o
->  	.fsync		= ext4_sync_file,
->  	.splice_read	= generic_file_splice_read,
->  	.splice_write	= generic_file_splice_write,
-> +	.checkpoint	= generic_file_checkpoint,
->  };
->  
->  const struct inode_operations ext4_file_inode_operations = {
-> _
-> 
+> I like to know the real buffer size. That '7' comes from the ring buffer 
+> size directly. If something is going wrong, I do not want to hide the fact 
+> that the ring buffer size is not what I expect it to be. Lets say someone 
+> modifies the code, and we miss expanding the buffer. It will be very hard 
+> to debug why we are getting a small trace. But if we see that the buffer 
+> has not been expanded, we know exactly what is wrong.
+
+ok. understanding.
+please ignore my last mail.
+
+Thanks!
+
+
