@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbZCMCiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754606AbZCMCjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758574AbZCMCiu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 22:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758146AbZCMCgk
+	id S1754606AbZCMCjg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 22:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758258AbZCMCi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 22:36:40 -0400
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:43490 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757655AbZCMCgi (ORCPT
+	Thu, 12 Mar 2009 22:38:29 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:65292 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758527AbZCMCi2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 22:36:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=rUZQYDG4F8lH2Zb/CXSxkKpinwJ3BNZQdqJth+hTZxYt1m/AHPUgkXIoKj2L1vVsdK
-         yGLQrosdJkmlefdn0brzd1FINFgGUEG3bi7E8TJb6j3cC5F6NnwneZpGSNkRK09UvYBY
-         9G3jrlMUfIMmILyVBTBKd3iqISIL3EERgfBV0=
-Message-ID: <49B9C6AE.5050308@gmail.com>
-Date: Thu, 12 Mar 2009 20:36:30 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-Newsgroups: gmane.linux.alsa.devel,gmane.linux.kernel
-To: "Christian P. Schmidt" <schmidt@digadd.de>
-CC: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: Re: How can PCI resource allocation fail?
-References: <49B9959F.1080705@digadd.de>
-In-Reply-To: <49B9959F.1080705@digadd.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 12 Mar 2009 22:38:28 -0400
+Message-Id: <20090313023825.294064533@goodmis.org>
+References: <20090313023704.971438367@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 12 Mar 2009 22:37:06 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 02/16] tracing: protect ring_buffer_expanded with trace_types_lock
+Content-Disposition: inline; filename=0002-tracing-protect-ring_buffer_expanded-with-trace_typ.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian P. Schmidt wrote:
-> Hi all,
-> 
-> I'm toying with the alsa-driver for the Creative Labs X-Fi. I'm working on the PCI Express version of this card, though, which is
-> the same as the PCI version plus a PCIe to PCI bridge but has a different ID:
-> 
->           +-1c.2-[0000:03-04]----00.0-[0000:04]----00.0  1102:0009
-> 
-> 03:00.0 PCI bridge: Creative Labs Device 7006
-> 04:00.0 Audio device: Creative Labs [SB X-Fi Xtreme Audio] CA0110-IBG
-> 
-> Now, after adding the ID, the driver fails:
-> 
-> [46833.487579] CA0106 0000:04:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-> [46833.487586] CA0106 0000:04:00.0: PCI INT A disabled
-> [46833.487588] cannot allocate the port
-> [46833.487594] CA0106: probe of 0000:04:00.0 failed with error -16
-> 
-> The actual error is occurring in
-> 
-> 	chip->port = pci_resource_start(pci, 0);
-> 	chip->res_port = request_region(chip->port, pci_resource_len(pci,0), "snd_ca0106");
-> 	if (!chip->res_port) {
-> 		snd_ca0106_free(chip);
-> 		printk(KERN_ERR "cannot allocate the port\n");
-> 		return -EBUSY;
-> 	}
-> 
-> This from /proc/iomem:
-> 
-> f9f00000-f9ffffff : PCI Bus 0000:03
->   f9f00000-f9ffffff : PCI Bus 0000:04
->     f9ffc000-f9ffffff : 0000:04:00.0
-> 
-> Some additional debug output tells me that the code is actually trying to allocate 16k starting from f9ffc000. What could be
-> potential reasons for the failure? Do I have to do something with the bridge before I can try to request the region?
+From: Steven Rostedt <srostedt@redhat.com>
 
-request_region is requesting IO ports. The PCI BAR on the card is MMIO 
-memory, not IO ports, so request_mem_region has to be used. It's 
-possible that this driver isn't set up to handle MMIO space.
+Impact: prevent races with ring_buffer_expanded
+
+This patch places the expanding of the tracing buffer under the
+protection of the trace_types_lock mutex. It is highly unlikely
+that there would be any contention, but better safe than sorry.
+
+Reported-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/trace.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index c61ee85..04ab824 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2391,8 +2391,10 @@ int tracing_update_buffers(void)
+ {
+ 	int ret = 0;
+ 
++	mutex_lock(&trace_types_lock);
+ 	if (!ring_buffer_expanded)
+ 		ret = tracing_resize_ring_buffer(trace_buf_size);
++	mutex_unlock(&trace_types_lock);
+ 
+ 	return ret;
+ }
+@@ -2412,6 +2414,8 @@ static int tracing_set_tracer(const char *buf)
+ 	struct tracer *t;
+ 	int ret = 0;
+ 
++	mutex_lock(&trace_types_lock);
++
+ 	if (!ring_buffer_expanded) {
+ 		ret = tracing_resize_ring_buffer(trace_buf_size);
+ 		if (ret < 0)
+@@ -2419,7 +2423,6 @@ static int tracing_set_tracer(const char *buf)
+ 		ret = 0;
+ 	}
+ 
+-	mutex_lock(&trace_types_lock);
+ 	for (t = trace_types; t; t = t->next) {
+ 		if (strcmp(t->name, buf) == 0)
+ 			break;
+-- 
+1.6.1.3
+
+-- 
