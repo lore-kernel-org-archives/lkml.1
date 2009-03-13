@@ -1,131 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757742AbZCMCfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757882AbZCMCgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757742AbZCMCfu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 22:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZCMCeu
+	id S1757882AbZCMCgg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 22:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757758AbZCMCfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 22:34:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52467 "EHLO hera.kernel.org"
+	Thu, 12 Mar 2009 22:35:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52518 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757755AbZCMCes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 22:34:48 -0400
-Date: Fri, 13 Mar 2009 02:34:03 GMT
+	id S1757737AbZCMCfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 22:35:38 -0400
+Date: Fri, 13 Mar 2009 02:34:19 GMT
 From: Jan Beulich <jbeulich@novell.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        jbeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        jbeulich@novell.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49B91103.76E4.0078.0@novell.com>
-References: <49B91103.76E4.0078.0@novell.com>
-Subject: [tip:x86/mm] x86: properly __init-annotate recent early_printk additions
-Message-ID: <tip-9a50156a1c7bfa65315facaffdfbed6513fcfd3b@git.kernel.org>
-Git-Commit-ID: 9a50156a1c7bfa65315facaffdfbed6513fcfd3b
+In-Reply-To: <49B9171B.76E4.0078.0@novell.com>
+References: <49B9171B.76E4.0078.0@novell.com>
+Subject: [tip:x86/mm] x86: fix code paths used by update_mptable
+Message-ID: <tip-5c0e6f035df983210e4d22213aed624ced502d3d@git.kernel.org>
+Git-Commit-ID: 5c0e6f035df983210e4d22213aed624ced502d3d
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 02:34:05 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 02:34:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9a50156a1c7bfa65315facaffdfbed6513fcfd3b
-Gitweb:     http://git.kernel.org/tip/9a50156a1c7bfa65315facaffdfbed6513fcfd3b
+Commit-ID:  5c0e6f035df983210e4d22213aed624ced502d3d
+Gitweb:     http://git.kernel.org/tip/5c0e6f035df983210e4d22213aed624ced502d3d
 Author:     Jan Beulich <jbeulich@novell.com>
-AuthorDate: Thu, 12 Mar 2009 12:41:23 +0000
+AuthorDate: Thu, 12 Mar 2009 13:07:23 +0000
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 02:37:18 +0100
+CommitDate: Fri, 13 Mar 2009 02:37:19 +0100
 
-x86: properly __init-annotate recent early_printk additions
+x86: fix code paths used by update_mptable
 
-Impact: cleanup, save memory
+Impact: fix crashes under Xen due to unrobust e820 code
 
-Don't keep code resident that's only needed during startup.
+find_e820_area_size() must return a properly distinguishable and
+out-of-bounds value when it fails, and -1UL does not meet that
+criteria on i386/PAE. Additionally, callers of the function must
+check against that value.
+
+early_reserve_e820() should be prepared for the region found to be
+outside of the addressable range on 32-bits.
+
+e820_update_range_map() should not blindly update e820, but should do
+all it work on the map it got a pointer passed for (which in 50% of the
+cases is &e820_saved). It must also not call e820_add_region(), as that
+again acts on e820 unconditionally.
+
+The issues were found when trying to make this option work in our Xen
+kernel (i.e. where some of the silent assumptions made in the code
+would not hold).
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
-LKML-Reference: <49B91103.76E4.0078.0@novell.com>
+LKML-Reference: <49B9171B.76E4.0078.0@novell.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/early_printk.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+ arch/x86/kernel/check.c |    2 +-
+ arch/x86/kernel/e820.c  |   32 +++++++++++++++++++++++++-------
+ 2 files changed, 26 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/kernel/early_printk.c b/arch/x86/kernel/early_printk.c
-index 639ad98..335f049 100644
---- a/arch/x86/kernel/early_printk.c
-+++ b/arch/x86/kernel/early_printk.c
-@@ -250,7 +250,7 @@ static int dbgp_wait_until_complete(void)
- 	return (ctrl & DBGP_ERROR) ? -DBGP_ERRCODE(ctrl) : DBGP_LEN(ctrl);
+diff --git a/arch/x86/kernel/check.c b/arch/x86/kernel/check.c
+index 2ac0ab7..b617b11 100644
+--- a/arch/x86/kernel/check.c
++++ b/arch/x86/kernel/check.c
+@@ -83,7 +83,7 @@ void __init setup_bios_corruption_check(void)
+ 		u64 size;
+ 		addr = find_e820_area_size(addr, &size, PAGE_SIZE);
+ 
+-		if (addr == 0)
++		if (!(addr + 1))
+ 			break;
+ 
+ 		if ((addr + size) > corruption_check_size)
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 508bec1..3cf6681 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -421,7 +421,7 @@ static u64 __init e820_update_range_map(struct e820map *e820x, u64 start,
+ 					u64 size, unsigned old_type,
+ 					unsigned new_type)
+ {
+-	int i;
++	unsigned int i, x;
+ 	u64 real_updated_size = 0;
+ 
+ 	BUG_ON(old_type == new_type);
+@@ -429,7 +429,7 @@ static u64 __init e820_update_range_map(struct e820map *e820x, u64 start,
+ 	if (size > (ULLONG_MAX - start))
+ 		size = ULLONG_MAX - start;
+ 
+-	for (i = 0; i < e820.nr_map; i++) {
++	for (i = 0; i < e820x->nr_map; i++) {
+ 		struct e820entry *ei = &e820x->map[i];
+ 		u64 final_start, final_end;
+ 		if (ei->type != old_type)
+@@ -446,14 +446,23 @@ static u64 __init e820_update_range_map(struct e820map *e820x, u64 start,
+ 		final_end = min(start + size, ei->addr + ei->size);
+ 		if (final_start >= final_end)
+ 			continue;
+-		e820_add_region(final_start, final_end - final_start,
+-					 new_type);
++
++		x = e820x->nr_map;
++		if (x == ARRAY_SIZE(e820x->map)) {
++			printk(KERN_ERR "Too many memory map entries!\n");
++			break;
++		}
++		e820x->map[x].addr = final_start;
++		e820x->map[x].size = final_end - final_start;
++		e820x->map[x].type = new_type;
++		e820x->nr_map++;
++
+ 		real_updated_size += final_end - final_start;
+ 
+-		ei->size -= final_end - final_start;
+ 		if (ei->addr < final_start)
+ 			continue;
+ 		ei->addr = final_end;
++		ei->size -= final_end - final_start;
+ 	}
+ 	return real_updated_size;
+ }
+@@ -1020,8 +1029,8 @@ u64 __init find_e820_area_size(u64 start, u64 *sizep, u64 align)
+ 			continue;
+ 		return addr;
+ 	}
+-	return -1UL;
+ 
++	return -1ULL;
  }
  
--static void dbgp_mdelay(int ms)
-+static void __init dbgp_mdelay(int ms)
- {
- 	int i;
+ /*
+@@ -1034,13 +1043,22 @@ u64 __init early_reserve_e820(u64 startt, u64 sizet, u64 align)
+ 	u64 start;
  
-@@ -311,7 +311,7 @@ static void dbgp_set_data(const void *buf, int size)
- 	writel(hi, &ehci_debug->data47);
- }
+ 	start = startt;
+-	while (size < sizet)
++	while (size < sizet && (start + 1))
+ 		start = find_e820_area_size(start, &size, align);
  
--static void dbgp_get_data(void *buf, int size)
-+static void __init dbgp_get_data(void *buf, int size)
- {
- 	unsigned char *bytes = buf;
- 	u32 lo, hi;
-@@ -355,7 +355,7 @@ static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
- 	return ret;
- }
+ 	if (size < sizet)
+ 		return 0;
  
--static int dbgp_bulk_read(unsigned devnum, unsigned endpoint, void *data,
-+static int __init dbgp_bulk_read(unsigned devnum, unsigned endpoint, void *data,
- 				 int size)
- {
- 	u32 pids, addr, ctrl;
-@@ -386,8 +386,8 @@ static int dbgp_bulk_read(unsigned devnum, unsigned endpoint, void *data,
- 	return ret;
- }
- 
--static int dbgp_control_msg(unsigned devnum, int requesttype, int request,
--	int value, int index, void *data, int size)
-+static int __init dbgp_control_msg(unsigned devnum, int requesttype,
-+	int request, int value, int index, void *data, int size)
- {
- 	u32 pids, addr, ctrl;
- 	struct usb_ctrlrequest req;
-@@ -489,7 +489,7 @@ static u32 __init find_dbgp(int ehci_num, u32 *rbus, u32 *rslot, u32 *rfunc)
- 	return 0;
- }
- 
--static int ehci_reset_port(int port)
-+static int __init ehci_reset_port(int port)
- {
- 	u32 portsc;
- 	u32 delay_time, delay;
-@@ -532,7 +532,7 @@ static int ehci_reset_port(int port)
- 	return -EBUSY;
- }
- 
--static int ehci_wait_for_port(int port)
-+static int __init ehci_wait_for_port(int port)
- {
- 	u32 status;
- 	int ret, reps;
-@@ -557,13 +557,13 @@ static inline void dbgp_printk(const char *fmt, ...) { }
- 
- typedef void (*set_debug_port_t)(int port);
- 
--static void default_set_debug_port(int port)
-+static void __init default_set_debug_port(int port)
- {
- }
- 
--static set_debug_port_t set_debug_port = default_set_debug_port;
-+static set_debug_port_t __initdata set_debug_port = default_set_debug_port;
- 
--static void nvidia_set_debug_port(int port)
-+static void __init nvidia_set_debug_port(int port)
- {
- 	u32 dword;
- 	dword = read_pci_config(ehci_dev.bus, ehci_dev.slot, ehci_dev.func,
++#ifdef CONFIG_X86_32
++	if (start >= MAXMEM)
++		return 0;
++	if (start + size > MAXMEM)
++		size = MAXMEM - start;
++#endif
++
+ 	addr = round_down(start + size - sizet, align);
++	if (addr < start)
++		return 0;
+ 	e820_update_range(addr, sizet, E820_RAM, E820_RESERVED);
+ 	e820_update_range_saved(addr, sizet, E820_RAM, E820_RESERVED);
+ 	printk(KERN_INFO "update e820 for early_reserve_e820\n");
