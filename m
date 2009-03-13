@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759390AbZCMWWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759569AbZCMWXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759390AbZCMWWo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 18:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZCMWWg
+	id S1759569AbZCMWXY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 18:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbZCMWXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 18:22:36 -0400
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:58211 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753451AbZCMWWf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 18:22:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=AXVOVvJpakPh/y4QevwW9wq45Pfk4SfRPnN3GcZAQwFqYU3GP4WBxl68bYBjJ8OLLc
-         fZ2hFcR91gCSpTVxSGS6IMIhV75acEo+sAKGKz8Hlb7kyVcdbfDibT5JYLAzPjjf9sw5
-         8t3uKbMpTfHfYREvwee2/ysEmjxIFojaWIw24=
-Message-ID: <49BADCA8.9020008@gmail.com>
-Date: Fri, 13 Mar 2009 23:22:32 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
+	Fri, 13 Mar 2009 18:23:13 -0400
+Received: from kroah.org ([198.145.64.141]:51273 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752058AbZCMWXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 18:23:12 -0400
+Date: Fri, 13 Mar 2009 15:20:44 -0700
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       e1000-devel@lists.sourceforge.net
+Subject: Re: [stable] Li-nux 2.6.27.19  2.6.28.7
+Message-ID: <20090313222044.GA18010@kroah.com>
+References: <20090220225448.GA14122@kroah.com> <20090313151051.a9198384.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29-rc8
-References: <alpine.LFD.2.00.0903122102510.3940@localhost.localdomain> <49BAD165.5020503@goop.org>
-In-Reply-To: <49BAD165.5020503@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090313151051.a9198384.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13.3.2009 22:34, Jeremy Fitzhardinge wrote:
-> Linus Torvalds wrote:
->> Ingo Molnar (1):
->> x86: work around Fedora-11 x86-32 kernel failures on Intel Atom CPUs
->
-> I don't see a change titled this either in tip.git or linux-2.6.git. Did
-> it get lost?
+On Fri, Mar 13, 2009 at 03:10:51PM -0700, Andrew Morton wrote:
+> 
+> I fired up this kernel up on my FC8 laptop and I see
+> http://userweb.kernel.org/~akpm/p3130212.jpg
+> 
+> On the next two boot attempts, the kernel came up OK.
+> 
 
-Did you forget to rebase/merge? I have it as
-211b3d03c7400f48a781977a50104c9d12f4e229
-in linux-2.6.git.
+That's wierd, it can't find the root filesystem?
+
+What driver controls the disk for /dev/root?  It's not the USB
+controller, is it?  Is that normally sda?
+
+> Also, during boot the e1000e driver has conniptions:
+> 
+> ------------[ cut here ]------------
+> WARNING: at drivers/net/e1000e/ich8lan.c:408 e1000_acquire_swflag_ich8lan+0x51/0xf2()
+> e1000e mutex contention. Owned by pid 10
+> Modules linked in:
+> Pid: 9, comm: events/0 Not tainted 2.6.28.7 #1
+> Call Trace:
+>  [<ffffffff8103a810>] warn_slowpath+0xae/0xcd
+>  [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
+>  [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
+>  [<ffffffff8105d63f>] ? __lock_acquire+0x702/0x760
+>  [<ffffffff8105bfc6>] ? mark_held_locks+0x50/0x6d
+>  [<ffffffff812dd950>] ? mutex_trylock+0x104/0x118
+>  [<ffffffff8105c170>] ? trace_hardirqs_on_caller+0xf8/0x123
+>  [<ffffffff8105c1a8>] ? trace_hardirqs_on+0xd/0xf
+>  [<ffffffff811ed838>] e1000_acquire_swflag_ich8lan+0x51/0xf2
+>  [<ffffffff811f2fe9>] e1000e_read_kmrn_reg+0x1b/0x69
+>  [<ffffffff811f63c5>] ? e1000e_downshift_workaround+0x0/0x12
+>  [<ffffffff811ed1e9>] e1000e_gig_downshift_workaround_ich8lan+0x2c/0x71
+>  [<ffffffff811f63d5>] e1000e_downshift_workaround+0x10/0x12
+>  [<ffffffff8104a6ed>] run_workqueue+0xf5/0x1fd
+>  [<ffffffff8104a697>] ? run_workqueue+0x9f/0x1fd
+>  [<ffffffff8104a8f6>] ? worker_thread+0x0/0xe8
+>  [<ffffffff8104a9d1>] worker_thread+0xdb/0xe8
+>  [<ffffffff8104de14>] ? autoremove_wake_function+0x0/0x36
+>  [<ffffffff8104a8f6>] ? worker_thread+0x0/0xe8
+>  [<ffffffff8104db1a>] kthread+0x44/0x6b
+>  [<ffffffff8100cf59>] child_rip+0xa/0x11
+>  [<ffffffff8100c474>] ? restore_args+0x0/0x30
+>  [<ffffffff8104dad6>] ? kthread+0x0/0x6b
+>  [<ffffffff8100cf4f>] ? child_rip+0x0/0x11
+> ---[ end trace 09c88554f9900e8b ]---
+> 
+> Config: http://userweb.kernel.org/~akpm/config-t61p.txt
+> dmesg: http://userweb.kernel.org/~akpm/dmesg-t61p.txt
+
+Wierd, I don't know.
+
+thanks,
+
+greg k-h
