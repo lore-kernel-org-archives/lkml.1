@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbZCMOE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbZCMOJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbZCMOE5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 10:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZCMOEs
+	id S1755912AbZCMOJI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 10:09:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbZCMOIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 10:04:48 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56477 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751794AbZCMOEr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 10:04:47 -0400
-Date: Fri, 13 Mar 2009 10:04:44 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ingo Molnar <mingo@elte.hu>
-cc: Roland McGrath <roland@redhat.com>, <prasad@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 02/11] x86 architecture implementation of Hardware
- Breakpoint interfaces
-In-Reply-To: <20090313034301.GE11355@elte.hu>
-Message-ID: <Pine.LNX.4.44L0.0903130959400.2898-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 13 Mar 2009 10:08:55 -0400
+Received: from esentire.com ([64.7.150.32]:64138 "EHLO eSentire.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751852AbZCMOIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 10:08:54 -0400
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Mar 2009 10:08:54 EDT
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Transfer-Encoding: 7bit
+Message-Id: <30C3FDF7-8830-4220-A207-A7C8417427D8@esentire.com>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+To: linux-kernel@vger.kernel.org
+From: Andrew Malton <andrew.malton@esentire.com>
+Subject: mixed protection flags for mmap() ?
+Date: Fri, 13 Mar 2009 10:03:40 -0400
+X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Mar 2009, Ingo Molnar wrote:
+A) I have a driver whcih (vm)allocates some space and writes data  
+from its device there: user processes (readers) mmap the region read- 
+only and to get at the data more quickly than using read(). Writing  
+has priority but flags are placed to warn readers where writing is  
+going on.  Lke this (some details omitted):
 
-> The core issue being discussed is the debug register allocation 
-> and scheduling model though, and you have not directly commented 
-> on that.
-> 
-> My argument in a nutshell is that a bottom-up for user + 
-> top-down for kernel use static allocator with no dynamic 
-> scheduling will get us most of the benefits with a tenth of the 
-> complexity.
+	vma->vm_flags = VM_READ;
+	remap_vmalloc_range(vma,region,0)
 
-Take this even farther: We shouldn't restrict userspace to bottom-up
-register allocation.  With very little additional effort we can
-virtualize the debug registers; then userspace can allocate them in
-whatever order it wants and still end up using the physical registers
-in bottom-up order (or top-down, which is the order used by the current
-patches).
+B) For improving synchronization between the running parts of this I  
+want to add a control section, which the readers can write to in  
+order to communicate what they're doing to each other and to the  
+writer (which is the driver itself).   Abstractly it seems that this  
+control section should be "part of" being mmaped to the device... But  
+mmap() is dispatched to the driver with only one vma_area_struct, and  
+I need two because the flags are different (read, and read-write).   
+Logically, I want to split the vma then map the two sections  
+separately (checking that sizes match) and with different flags,  
+roughly like this :
 
-After all, there's nothing to prevent programs other than gdb from 
-using ptrace, and there's no guarantee that gdb will continue to 
-allocate registers in increasing order.
+	// map part1 of size size1 and part2 of size size2
+	split_vma(vma->vm_mm, vma, vma->vm_start + size1, 0);
 
-Alan Stern
+	vma->vm_flags = VM_READ|VM_WRITE;
+	remap_vmalloc_range(vma,part1,0)
 
+	vma->vm_next->vm_flags = VM_READ;
+	remap_vmalloc_range(vma->vm_next,part2,0)
+
+I can't do this because split_vma is not exported.
+
+1) If split_vma would work at this point, I'd consider a local patch  
+to export it.  But does this work? The relevant lock in the mm seems  
+to be held right through the mmap callback....  but I am probably  
+missing something.
+
+2) If it doesn't work, what is the right way to achieve (B)?
+
+A Malton
+eSentire, Inc.
