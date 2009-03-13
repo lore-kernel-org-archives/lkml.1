@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759446AbZCMQcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbZCMQcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759446AbZCMQcX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759087AbZCMQal
+	id S1759453AbZCMQcj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759088AbZCMQam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:30:41 -0400
-Received: from gw.goop.org ([64.81.55.164]:56775 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 12:30:42 -0400
+Received: from gw.goop.org ([64.81.55.164]:56778 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758821AbZCMQak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758905AbZCMQak (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Mar 2009 12:30:40 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Juan Quintela <quintela@redhat.com>
-Subject: [PATCH 01/15] xen dom0: Make hvc_xen console work for dom0.
-Date: Fri, 13 Mar 2009 09:29:42 -0700
-Message-Id: <1236961796-13407-2-git-send-email-jeremy@goop.org>
+       Ian Campbell <ian.campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 08/15] xen/dom0: Use host E820 map
+Date: Fri, 13 Mar 2009 09:29:49 -0700
+Message-Id: <1236961796-13407-9-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1236961796-13407-1-git-send-email-jeremy@goop.org>
 References: <1236961796-13407-1-git-send-email-jeremy@goop.org>
@@ -27,224 +26,130 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the console hypercalls for dom0 console.
+From: Ian Campbell <ian.campbell@citrix.com>
 
+Unlike the non-paravirt Xen port we do not have distinct psuedo-physical
+and I/O memory resource-spaces and therefore resources in the two
+can clash. Fix this by registering a memory map which matches the
+underlying I/O map. Currently this wastes the memory in the reserved
+regions. Eventually we should remap this memory to the end of the
+address space.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Signed-off-by: Juan Quintela <quintela@redhat.com>
 ---
- drivers/char/hvc_xen.c |  101 ++++++++++++++++++++++++++++++++----------------
- drivers/xen/events.c   |    2 +-
- include/xen/events.h   |    2 +
- 3 files changed, 70 insertions(+), 35 deletions(-)
+ arch/x86/xen/setup.c           |   45 +++++++++++++++++++++++++++++++++++++--
+ include/xen/interface/memory.h |   29 +++++++++++++++++++++++++
+ 2 files changed, 71 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/hvc_xen.c b/drivers/char/hvc_xen.c
-index eba999f..81d9186 100644
---- a/drivers/char/hvc_xen.c
-+++ b/drivers/char/hvc_xen.c
-@@ -55,7 +55,7 @@ static inline void notify_daemon(void)
- 	notify_remote_via_evtchn(xen_start_info->console.domU.evtchn);
- }
+diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+index 3e4cf46..175396c 100644
+--- a/arch/x86/xen/setup.c
++++ b/arch/x86/xen/setup.c
+@@ -19,6 +19,7 @@
  
--static int write_console(uint32_t vtermno, const char *data, int len)
-+static int domU_write_console(uint32_t vtermno, const char *data, int len)
+ #include <xen/page.h>
+ #include <xen/interface/callback.h>
++#include <xen/interface/memory.h>
+ #include <xen/interface/physdev.h>
+ #include <xen/features.h>
+ 
+@@ -36,16 +37,54 @@ extern void xen_syscall32_target(void);
+ /**
+  * machine_specific_memory_setup - Hook for machine specific memory setup.
+  **/
+-
+ char * __init xen_memory_setup(void)
  {
- 	struct xencons_interface *intf = xencons_interface();
- 	XENCONS_RING_IDX cons, prod;
-@@ -76,7 +76,7 @@ static int write_console(uint32_t vtermno, const char *data, int len)
- 	return sent;
- }
+ 	unsigned long max_pfn = xen_start_info->nr_pages;
++	unsigned long long mem_end;
++	int rc;
++	struct xen_memory_map memmap;
++	/*
++	 * This is rather large for a stack variable but this early in
++	 * the boot process we know we have plenty slack space.
++	 */
++	struct e820entry map[E820MAX];
++	int op = xen_initial_domain() ?
++		XENMEM_machine_memory_map :
++		XENMEM_memory_map;
++	int i;
  
--static int read_console(uint32_t vtermno, char *buf, int len)
-+static int domU_read_console(uint32_t vtermno, char *buf, int len)
- {
- 	struct xencons_interface *intf = xencons_interface();
- 	XENCONS_RING_IDX cons, prod;
-@@ -97,28 +97,63 @@ static int read_console(uint32_t vtermno, char *buf, int len)
- 	return recv;
- }
+ 	max_pfn = min(MAX_DOMAIN_PAGES, max_pfn);
++	mem_end = PFN_PHYS((u64)max_pfn);
++
++	memmap.nr_entries = E820MAX;
++	set_xen_guest_handle(memmap.buffer, map);
++
++	rc = HYPERVISOR_memory_op(op, &memmap);
++	if (rc == -ENOSYS) {
++		memmap.nr_entries = 1;
++		map[0].addr = 0ULL;
++		map[0].size = mem_end;
++		/* 8MB slack (to balance backend allocations). */
++		map[0].size += 8ULL << 20;
++		map[0].type = E820_RAM;
++		rc = 0;
++	}
++	BUG_ON(rc);
  
--static struct hv_ops hvc_ops = {
--	.get_chars = read_console,
--	.put_chars = write_console,
-+static struct hv_ops domU_hvc_ops = {
-+	.get_chars = domU_read_console,
-+	.put_chars = domU_write_console,
- 	.notifier_add = notifier_add_irq,
- 	.notifier_del = notifier_del_irq,
- 	.notifier_hangup = notifier_hangup_irq,
- };
- 
--static int __init xen_init(void)
-+static int dom0_read_console(uint32_t vtermno, char *buf, int len)
-+{
-+	return HYPERVISOR_console_io(CONSOLEIO_read, len, buf);
-+}
-+
-+/*
-+ * Either for a dom0 to write to the system console, or a domU with a
-+ * debug version of Xen
-+ */
-+static int dom0_write_console(uint32_t vtermno, const char *str, int len)
-+{
-+	int rc = HYPERVISOR_console_io(CONSOLEIO_write, len, (char *)str);
-+	if (rc < 0)
-+		return 0;
-+
-+	return len;
-+}
-+
-+static struct hv_ops dom0_hvc_ops = {
-+	.get_chars = dom0_read_console,
-+	.put_chars = dom0_write_console,
-+	.notifier_add = notifier_add_irq,
-+	.notifier_del = notifier_del_irq,
-+	.notifier_hangup = notifier_hangup_irq,
-+};
-+
-+static int __init xen_hvc_init(void)
- {
- 	struct hvc_struct *hp;
-+	struct hv_ops *ops;
- 
--	if (!xen_pv_domain() ||
--	    xen_initial_domain() ||
--	    !xen_start_info->console.domU.evtchn)
--		return -ENODEV;
-+	if (!xen_pv_domain())
-+ 		return -ENODEV;
-+
-+	if (xen_initial_domain()) {
-+		ops = &dom0_hvc_ops;
-+		xencons_irq = bind_virq_to_irq(VIRQ_CONSOLE, 0);
-+	} else {
-+		if (!xen_start_info->console.domU.evtchn)
-+			return -ENODEV;
-+
-+		ops = &domU_hvc_ops;
-+		xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
+ 	e820.nr_map = 0;
+-
+-	e820_add_region(0, PFN_PHYS((u64)max_pfn), E820_RAM);
++	for (i = 0; i < memmap.nr_entries; i++) {
++		unsigned long long end = map[i].addr + map[i].size;
++		if (map[i].type == E820_RAM) {
++			if (map[i].addr > mem_end)
++				continue;
++			if (end > mem_end) {
++				/* Truncate region to max_mem. */
++				map[i].size -= end - mem_end;
++			}
++		}
++		if (map[i].size > 0)
++			e820_add_region(map[i].addr, map[i].size, map[i].type);
 +	}
  
--	xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
- 	if (xencons_irq < 0)
- 		xencons_irq = 0; /* NO_IRQ */
+ 	/*
+ 	 * Even though this is normal, usable memory under Xen, reserve
+diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
+index af36ead..e6c6bcb 100644
+--- a/include/xen/interface/memory.h
++++ b/include/xen/interface/memory.h
+@@ -142,4 +142,33 @@ struct xen_translate_gpfn_list {
+ };
+ DEFINE_GUEST_HANDLE_STRUCT(xen_translate_gpfn_list);
  
--	hp = hvc_alloc(HVC_COOKIE, xencons_irq, &hvc_ops, 256);
-+	hp = hvc_alloc(HVC_COOKIE, xencons_irq, ops, 256);
- 	if (IS_ERR(hp))
- 		return PTR_ERR(hp);
- 
-@@ -135,7 +170,7 @@ void xen_console_resume(void)
- 		rebind_evtchn_irq(xen_start_info->console.domU.evtchn, xencons_irq);
- }
- 
--static void __exit xen_fini(void)
-+static void __exit xen_hvc_fini(void)
- {
- 	if (hvc)
- 		hvc_remove(hvc);
-@@ -143,29 +178,24 @@ static void __exit xen_fini(void)
- 
- static int xen_cons_init(void)
- {
-+	struct hv_ops *ops;
++/*
++ * Returns the pseudo-physical memory map as it was when the domain
++ * was started (specified by XENMEM_set_memory_map).
++ * arg == addr of struct xen_memory_map.
++ */
++#define XENMEM_memory_map           9
++struct xen_memory_map {
++    /*
++     * On call the number of entries which can be stored in buffer. On
++     * return the number of entries which have been stored in
++     * buffer.
++     */
++    unsigned int nr_entries;
 +
- 	if (!xen_pv_domain())
- 		return 0;
- 
--	hvc_instantiate(HVC_COOKIE, 0, &hvc_ops);
-+	ops = &domU_hvc_ops;
-+	if (xen_initial_domain())
-+		ops = &dom0_hvc_ops;
++    /*
++     * Entries in the buffer are in the same format as returned by the
++     * BIOS INT 0x15 EAX=0xE820 call.
++     */
++    GUEST_HANDLE(void) buffer;
++};
++DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
 +
-+	hvc_instantiate(HVC_COOKIE, 0, ops);
++/*
++ * Returns the real physical memory map. Passes the same structure as
++ * XENMEM_memory_map.
++ * arg == addr of struct xen_memory_map.
++ */
++#define XENMEM_machine_memory_map   10
 +
- 	return 0;
- }
- 
--module_init(xen_init);
--module_exit(xen_fini);
-+module_init(xen_hvc_init);
-+module_exit(xen_hvc_fini);
- console_initcall(xen_cons_init);
- 
--static void raw_console_write(const char *str, int len)
--{
--	while(len > 0) {
--		int rc = HYPERVISOR_console_io(CONSOLEIO_write, len, (char *)str);
--		if (rc <= 0)
--			break;
--
--		str += rc;
--		len -= rc;
--	}
--}
--
- #ifdef CONFIG_EARLY_PRINTK
- static void xenboot_write_console(struct console *console, const char *string,
- 				  unsigned len)
-@@ -173,19 +203,22 @@ static void xenboot_write_console(struct console *console, const char *string,
- 	unsigned int linelen, off = 0;
- 	const char *pos;
- 
--	raw_console_write(string, len);
-+	dom0_write_console(0, string, len);
-+
-+	if (xen_initial_domain())
-+		return;
- 
--	write_console(0, "(early) ", 8);
-+	domU_write_console(0, "(early) ", 8);
- 	while (off < len && NULL != (pos = strchr(string+off, '\n'))) {
- 		linelen = pos-string+off;
- 		if (off + linelen > len)
- 			break;
--		write_console(0, string+off, linelen);
--		write_console(0, "\r\n", 2);
-+		domU_write_console(0, string+off, linelen);
-+		domU_write_console(0, "\r\n", 2);
- 		off += linelen + 1;
- 	}
- 	if (off < len)
--		write_console(0, string+off, len-off);
-+		domU_write_console(0, string+off, len-off);
- }
- 
- struct console xenboot_console = {
-@@ -197,7 +230,7 @@ struct console xenboot_console = {
- 
- void xen_raw_console_write(const char *str)
- {
--	raw_console_write(str, strlen(str));
-+	dom0_write_console(0, str, strlen(str));
- }
- 
- void xen_raw_printk(const char *fmt, ...)
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 30963af..f46e880 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -404,7 +404,7 @@ static int bind_ipi_to_irq(unsigned int ipi, unsigned int cpu)
- }
- 
- 
--static int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
-+int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
- {
- 	struct evtchn_bind_virq bind_virq;
- 	int evtchn, irq;
-diff --git a/include/xen/events.h b/include/xen/events.h
-index 0d5f1ad..0397ba1 100644
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -12,6 +12,8 @@ int bind_evtchn_to_irqhandler(unsigned int evtchn,
- 			      irq_handler_t handler,
- 			      unsigned long irqflags, const char *devname,
- 			      void *dev_id);
-+int bind_virq_to_irq(unsigned int virq, unsigned int cpu);
-+
- int bind_virq_to_irqhandler(unsigned int virq, unsigned int cpu,
- 			    irq_handler_t handler,
- 			    unsigned long irqflags, const char *devname,
+ #endif /* __XEN_PUBLIC_MEMORY_H__ */
 -- 
 1.6.0.6
 
