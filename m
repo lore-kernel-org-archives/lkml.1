@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbZCMNkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbZCMNmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756657AbZCMNkD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 09:40:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751248AbZCMNjs
+	id S1757530AbZCMNmU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 09:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbZCMNmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 09:39:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53794 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752757AbZCMNjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 09:39:47 -0400
-Message-ID: <49BA621B.40303@redhat.com>
-Date: Fri, 13 Mar 2009 14:39:39 +0100
-From: Ivan Vecera <ivecera@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 13 Mar 2009 09:42:10 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:59335 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752679AbZCMNmJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 09:42:09 -0400
+Date: Fri, 13 Mar 2009 08:41:39 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH] devcgroup: avoid using cgroup_lock
+Message-ID: <20090313134139.GB32304@us.ibm.com>
+References: <49B869BB.7030907@cn.fujitsu.com> <20090312181912.GA20144@us.ibm.com> <49B9BCC7.7090908@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: Jiri Pirko <jpirko@redhat.com>, Michal Schmidt <mschmidt@redhat.com>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] 8139cp: allow to set mac address on running device
-References: <20090312162730.GA20153@psychotron.englab.brq.redhat.com> <20090312181121.79e297a2@brian.englab.brq.redhat.com> <20090312174641.GC20153@psychotron.englab.brq.redhat.com> <49BA20E1.70607@redhat.com> <20090313111633.GB3436@psychotron.englab.brq.redhat.com> <49BA5B98.90604@redhat.com> <49BA616B.5080902@pobox.com>
-In-Reply-To: <49BA616B.5080902@pobox.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49B9BCC7.7090908@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Ivan Vecera wrote:
->> Jiri Pirko wrote:
->>> Fri, Mar 13, 2009 at 10:01:21AM CET, ivecera@redhat.com wrote:
->>>> Jiri Pirko wrote:
->>>>> Thu, Mar 12, 2009 at 06:11:21PM CET, mschmidt@redhat.com wrote:
->>>>>> On Thu, 12 Mar 2009 17:27:31 +0100
->>>>>> Jiri Pirko <jpirko@redhat.com> wrote:
->>>>>>
->>>>>>> +	cpw32_f(MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr +
->>>>>>> 0)));
->>>>>>> +	cpw32_f(MAC0 + 4, le32_to_cpu (*(__le32 *) (dev->dev_addr +
->>>>>>> 4)));
->>>>>> You're writing to the card, so using *_to_cpu looks suspicious.
->>>>> Well, I'm using the same approach as it is already done in function
->>>>> cp_init_hw(). Quote:
->>>>>
->>>>>  /* Restore our idea of the MAC address. */
->>>>>  cpw32_f (MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr + 0)));
->>>>>  cpw32_f (MAC0 + 4, le32_to_cpu (*(__le32 *) (dev->dev_addr + 4)));
->>>>>
->>>> Yes, that's right but I would use more cleaner approach:
->>>> ===
->>>> u32 low, high;
->>>> low  = addr[0] | (addr[1] << 8) | (addr[2] << 16) | (addr[3] << 24);
->>>> high = addr[4] | (addr[5] << 8);
->>>> cpw32_f(MAC0 + 0, low);
->>>> cpw32_f(MAC0 + 4, high);
->>>> ===
->>> Well, I have no problem with this (in fact I like this more). I just wanted to
->>> stay consistent to existing code. Maybe it would be good to change this chunk
->>> of code in cp_init_hw() too, don't you think?
->> Yes, you're right.
+Quoting Li Zefan (lizf@cn.fujitsu.com):
+> >> @@ -426,11 +431,11 @@ static int devcgroup_access_write(struct cgroup *cgrp, struct cftype *cft,
+> >>  				  const char *buffer)
+> >>  {
+> >>  	int retval;
+> >> -	if (!cgroup_lock_live_group(cgrp))
+> > 
+> > Does it matter that we no longer check for cgroup_is_removed()?
+> > 
 > 
-> The existing code is correct, and works.  How about just leaving it alone?
-+1
+> No, this means in a rare case that the write handler is called when the cgroup
+> is dead, we still do the update work instead of returning ENODEV.
+> 
+> This is ok, since at that time, accessing cgroup and devcgroup is still valid,
+> but will have no effect since there is no task in this cgroup and the cgroup
+> will be destroyed soon.
 
-Ivan
-> 
-> You can grep around and see other drivers doing this when necessary, too.
-> 
-> 	Jeff
-> 
-> 
-> 
+Ok, just wanted to make sure the devcgroup couldn't be partially torn
+down and risking NULL or freed-memory derefs...
 
+BTW is that against linux-next?  (didn't seem to apply cleanly against
+my 2.6.29-rc9)  I guess I'd like to do a little test before acking,
+though it looks ok based on your answer.
+
+thanks,
+-serge
