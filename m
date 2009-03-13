@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbZCMKF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbZCMKIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757243AbZCMKF3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 06:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZCMKFO
+	id S1754444AbZCMKIX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 06:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbZCMKIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 06:05:14 -0400
-Received: from sh.osrg.net ([192.16.179.4]:50852 "EHLO sh.osrg.net"
+	Fri, 13 Mar 2009 06:08:13 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53322 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750935AbZCMKFN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 06:05:13 -0400
-Date: Fri, 13 Mar 2009 19:04:18 +0900 (JST)
-Message-Id: <20090313.190418.110778375.ryusuke@osrg.net>
-To: raa.lkml@gmail.com
-Cc: konishi.ryusuke@lab.ntt.co.jp, akpm@linux-foundation.org, hch@lst.de,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Asking for inclusion of nilfs2 in the mainline kernel
-From: Ryusuke Konishi <ryusuke@osrg.net>
-In-Reply-To: <81b0412b0903130105y2f9c2430iabaab26d6a8e8188@mail.gmail.com>
-References: <20090311.015542.118514963.ryusuke@osrg.net>
-	<81b0412b0903130105y2f9c2430iabaab26d6a8e8188@mail.gmail.com>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1751306AbZCMKIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 06:08:13 -0400
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Products GmbH
+To: Ingo Molnar <mingo@elte.hu>
+Subject: How to submit patches that should be considered for stable inclusion also [Was: Re: [PATCH v2] x86: mtrr: ...]
+Date: Fri, 13 Mar 2009 11:08:07 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27.15-SLE11_BRANCH_20090211224354_e2f9ae3b-default; KDE/4.1.3; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Greg Kroah-Hartman" <gregkh@novell.com>
+References: <20090311150027.GK10490@alberich.amd.com> <200903130942.38568.trenn@suse.de> <20090313091812.GB2571@elte.hu>
+In-Reply-To: <20090313091812.GB2571@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 13 Mar 2009 19:04:23 +0900 (JST)
+Content-Disposition: inline
+Message-Id: <200903131108.08619.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-On Fri, 13 Mar 2009 09:05:53 +0100, Alex Riesen wrote:
-> 2009/3/10 Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>:
-> >
-> > # mount -t nilfs2 -r -o cp=33339 /dev/sdb1 /snap
-> > (mount the snapshot, then it will become accessible on the mount=
- point)
->
-> Is it possible to mount a snapshot rw to make it a branch?
+On Friday 13 March 2009 10:18:12 Ingo Molnar wrote:
+> 
+> * Thomas Renninger <trenn@suse.de> wrote:
+> 
+> > What does -stable backport tag mean?
+> 
+> It means such lines added to commit logs:
+> 
+>     Cc: <stable@kernel.org>
+Thanks. That was the bit I liked to know.
+> 
+> Pointing out specific examples where the backport was realized 
+> when the fix was committed but the tag was not added or outright 
+> lost, and talking to those those maintainers might help. Often 
+> it's a matter of "Oh, cool, did not know that!" realization.
+Yep. Same for me.
+> 
+> Interestingly, the second-ever such tag i found in Git history 
+> was for a fix ... from you:
+I did this more intuitively.
+If this is how it should be done, this info should be spread
+to maintainers and repeated some times until really everybody
+is looking at it. This is not much work. The backporting itself
+might be, but this could be done by the author or distributions looking out 
+for that tag. At least much less important "easy" fixes shouldn't slip 
+through or take a long time until someone realizes that they are missing.
 
-No, the writable snapshot is not supported.
-( So, a readonly option appears in the example. )
+Thanks,
 
-Maybe the current design is unfit for efficient branching because
-nilfs identifies checkpoints with linear numbers and manages lifetime
-of each on-disk block with a range of the numbers.
-
-We might be able to add a feature like replacing the latest filesystem
-state with a past snapshot, but it's not yet determined.
-
-Cheers,
-Ryusuke
+     Thomas
