@@ -1,125 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758926AbZCMVGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbZCMVKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758926AbZCMVGx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 17:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbZCMVGn
+	id S1759264AbZCMVKA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 17:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbZCMVJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 17:06:43 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:37848 "EHLO isrv.corpit.ru"
+	Fri, 13 Mar 2009 17:09:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42257 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750777AbZCMVGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 17:06:42 -0400
-Message-ID: <49BACABE.7060003@msgid.tls.msk.ru>
-Date: Sat, 14 Mar 2009 00:06:06 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1750949AbZCMVJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 17:09:52 -0400
+Message-ID: <49BACB61.8000302@kernel.org>
+Date: Fri, 13 Mar 2009 14:08:49 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Linux-kernel <linux-kernel@vger.kernel.org>,
-       KVM list <kvm@vger.kernel.org>
-Subject: phenom, amd780g, tsc, hpet, kvm, kernel -- who's at fault?
-Content-Type: text/plain; charset=KOI8-R; format=flowed
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: print fixed mtrr out continuous part together
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today (Friday, the 13th) I had a very bad sequence of failures
-with our servers leading to data loss and almost the whole day
-of very hard work.  And now I'm *really* interested where the
-fault(s) is(are).
 
-What I have here is an AMD780G-based system (Asus M3A-H/HDMI
-motherboard, latest BIOS) with AND Phenom 9750 CPU and 8Gig of
-ECC memory.  The system is built for KVM (kernel virtual machine)
-work, and is running several guests, but I'm not sure anymore
-that KVM is related to the problem at hand.
+Impact: less lines print out
 
-The problem is that - it seems - timekeeping on this machine is
-quite unreliable.
+1. print continuous range with same type together
+2. change _INFO to _DEBUG
 
-It's Phenom, so TSC should be synced.  And it is being choosen
-at bootup as clocksource.  But regardless of current_clocksource
-(tsc), it constantly increases hpet min_delta_ns, like this:
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-Mar 13 19:58:02 gate kernel: CE: hpet increasing min_delta_ns to 15000 nsec
-Mar 13 19:59:16 gate kernel: CE: hpet increasing min_delta_ns to 22500 nsec
-Mar 13 19:59:16 gate kernel: CE: hpet increasing min_delta_ns to 33750 nsec
-Mar 13 19:59:16 gate kernel: CE: hpet increasing min_delta_ns to 50624 nsec
-Mar 13 20:47:02 gate kernel: CE: hpet increasing min_delta_ns to 75936 nsec
-Mar 13 20:48:17 gate kernel: CE: hpet increasing min_delta_ns to 113904 nsec
-Mar 13 21:02:23 gate kernel: CE: hpet increasing min_delta_ns to 170856 nsec
-Mar 13 21:05:27 gate kernel: CE: hpet increasing min_delta_ns to 256284 nsec
-Mar 13 21:07:28 gate kernel: Clocksource tsc unstable (delta = 751920452 ns)
-Mar 13 21:09:12 gate kernel: CE: hpet increasing min_delta_ns to 384426 nsec
+---
+ arch/x86/kernel/cpu/mtrr/generic.c |   58 ++++++++++++++++++++++++++++++-------
+ 1 file changed, 48 insertions(+), 10 deletions(-)
 
-and finally, it declares that TSC is unstable (pre-last line) and
-switches to the (unstable) HPET.
-
-HPET min_delta_ns will be increasing further and further, i've seen it
-increased to 576638 and more.
-
-And no doubt the system is unstable with KVM like crazy, especially under
-some, even light, load.
-
-Today I were copying some relatively large amount of data over network from
-another to this machine (to the host itself, not to any virtual guest), and
-had numerous guest and host stalls and lockups.  At times, host sops doing
-anything at all, all guests stalling too, load average jumps to 80 and more,
-and nothing happens.  I can do something over console still, like running
-top/strace, but nothing interesting shows.  I captured Sysrq+T of this situation
-here: http://www.corpit.ru/mjt/host-high-la -- everything I was able to find
-in kern.log.
-
-After some time, sometimes it's several seconds, sometimes it's up to 10
-minutes, the thing "unstucks" and continues working.  Today it happened after
-about 10 minutes.  But after it continued, 2 of the KVM guests were eating
-100% CPU and did not respond at all.  The Sysrq+T of this is available at
-http://www.corpit.ru/mjt/guest-stuck -- two KVM guests were not responsible.
-
-It's even more - the system started showing sporadic, random I/O errors
-unrelated to the disks - for example, one of software RAID5 arrays started
-behaving really oddly, so that finally, after a reboot, I had to re-create
-the array and some of the filesystems on it (which I never saw in last ~10
-years I'm using sofraid on linus, on many different systems and disks and
-with various failure cases).
-
-Now, I switched to acpi_pm clocksource.  And also tried to disable nested
-page tables with kvm (kvm_amd npt=0).  With that, everything is slow and
-sluggish, but I was finally able to copy that data without errors, while
-the guests were running.
-
-It were about to stuck as before, but I noticed it switched to hpet (see
-"tsc is unstable" above) and I forced it to use acpi_pm instead, and it
-survived.
-
-So, to the hell out of it all, and ignoring the magical Friday the 13th --
-who's fault it is?
-
-  o why it declares tsc is unstable while phenom supposed to keep it ok?
-  o why hpet is malfunctioning?
-  o why the system time on this machine is dog slow without special
-    adjtimex adjustments, while it worked before (circa 2.6.26) and
-    windows works ok here?
-
-For reference:
-
-  https://sourceforge.net/tracker/?func=detail&atid=893831&aid=2351676&group_id=180599
-   -- kvm bug on sourceforge, without any visible interest in even looking at it
-
-  http://www.google.com/search?q=CE%3A+hpet+increasing+min_delta_ns
-   -- numerous references to that "CE: hpet increasing min_delta_ns" on the 'net,
-   mostly for C2Ds, mentioning various lockup issues
-
-  http://marc.info/?t=123246270000002&r=1&w=2 --
-   "slow clock on AMD 740G chipset" -- it's about the clock issue, also without
-   any visible interest.
-
-What's the next thing to do here?  I for one don't want to see todays failures
-again, it was very, and I mean *very* difficult day to restore the functionality
-of this system that (and it isn't restored at full because of the slowness of
-its current state).
-
-Thanks!
-
-/tired mjt.
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/generic.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -208,13 +208,47 @@ void mtrr_save_fixed_ranges(void *info)
+ 		get_fixed_ranges(mtrr_state.fixed_ranges);
+ }
+ 
+-static void print_fixed(unsigned base, unsigned step, const mtrr_type*types)
++static unsigned __initdata last_fixed_start;
++static unsigned __initdata last_fixed_end;
++static mtrr_type __initdata last_fixed_type;
++
++static void __init print_fixed_last(void)
++{
++	if (!last_fixed_end)
++		return;
++
++	printk(KERN_DEBUG "  %05X-%05X %s\n", last_fixed_start,
++		last_fixed_end - 1, mtrr_attrib_to_str(last_fixed_type));
++
++	last_fixed_end = 0;
++}
++
++static void __init update_fixed_last(unsigned base, unsigned end,
++				       mtrr_type type)
++{
++	last_fixed_start = base;
++	last_fixed_end = end;
++	last_fixed_type = type;
++}
++
++static void __init print_fixed(unsigned base, unsigned step,
++			       const mtrr_type *types)
+ {
+ 	unsigned i;
+ 
+-	for (i = 0; i < 8; ++i, ++types, base += step)
+-		printk(KERN_INFO "  %05X-%05X %s\n",
+-			base, base + step - 1, mtrr_attrib_to_str(*types));
++	for (i = 0; i < 8; ++i, ++types, base += step) {
++		if (last_fixed_end == 0) {
++			update_fixed_last(base, base + step, *types);
++			continue;
++		}
++		if (last_fixed_end == base && last_fixed_type == *types) {
++			last_fixed_end = base + step;
++			continue;
++		}
++		/* new segments: gap or different type */
++		print_fixed_last();
++		update_fixed_last(base, base + step, *types);
++	}
+ }
+ 
+ static void prepare_set(void);
+@@ -225,22 +259,26 @@ static void __init print_mtrr_state(void
+ 	unsigned int i;
+ 	int high_width;
+ 
+-	printk(KERN_INFO "MTRR default type: %s\n", mtrr_attrib_to_str(mtrr_state.def_type));
++	printk(KERN_DEBUG "MTRR default type: %s\n",
++			 mtrr_attrib_to_str(mtrr_state.def_type));
+ 	if (mtrr_state.have_fixed) {
+-		printk(KERN_INFO "MTRR fixed ranges %sabled:\n",
++		printk(KERN_DEBUG "MTRR fixed ranges %sabled:\n",
+ 		       mtrr_state.enabled & 1 ? "en" : "dis");
+ 		print_fixed(0x00000, 0x10000, mtrr_state.fixed_ranges + 0);
+ 		for (i = 0; i < 2; ++i)
+ 			print_fixed(0x80000 + i * 0x20000, 0x04000, mtrr_state.fixed_ranges + (i + 1) * 8);
+ 		for (i = 0; i < 8; ++i)
+ 			print_fixed(0xC0000 + i * 0x08000, 0x01000, mtrr_state.fixed_ranges + (i + 3) * 8);
++
++		/* tail */
++		print_fixed_last();
+ 	}
+-	printk(KERN_INFO "MTRR variable ranges %sabled:\n",
++	printk(KERN_DEBUG "MTRR variable ranges %sabled:\n",
+ 	       mtrr_state.enabled & 2 ? "en" : "dis");
+ 	high_width = ((size_or_mask ? ffs(size_or_mask) - 1 : 32) - (32 - PAGE_SHIFT) + 3) / 4;
+ 	for (i = 0; i < num_var_ranges; ++i) {
+ 		if (mtrr_state.var_ranges[i].mask_lo & (1 << 11))
+-			printk(KERN_INFO "  %u base %0*X%05X000 mask %0*X%05X000 %s\n",
++			printk(KERN_DEBUG "  %u base %0*X%05X000 mask %0*X%05X000 %s\n",
+ 			       i,
+ 			       high_width,
+ 			       mtrr_state.var_ranges[i].base_hi,
+@@ -250,10 +288,10 @@ static void __init print_mtrr_state(void
+ 			       mtrr_state.var_ranges[i].mask_lo >> 12,
+ 			       mtrr_attrib_to_str(mtrr_state.var_ranges[i].base_lo & 0xff));
+ 		else
+-			printk(KERN_INFO "   %u disabled\n", i);
++			printk(KERN_DEBUG "  %u disabled\n", i);
+ 	}
+ 	if (mtrr_tom2) {
+-		printk(KERN_INFO "TOM2: %016llx aka %lldM\n",
++		printk(KERN_DEBUG "TOM2: %016llx aka %lldM\n",
+ 				  mtrr_tom2, mtrr_tom2>>20);
+ 	}
+ }
