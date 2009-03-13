@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZCME0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZCME2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbZCME0A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 00:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbZCMEZu
+	id S1756473AbZCME2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 00:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbZCME2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 00:25:50 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47238 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbZCMEZt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 00:25:49 -0400
-Date: Fri, 13 Mar 2009 00:25:43 -0400
-From: Kyle McMartin <kyle@infradead.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Kyle McMartin <kyle@infradead.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       Alessandro Zummo <alessandro.zummo@towertech.it>,
-       linux-m68k@vger.kernel.org, rtc-linux@googlegroups.com,
-       linux-parisc@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-       Paul Mundt <lethal@linux-sh.org>, Dann Frazier <dannf@dannf.org>
-Subject: Re: [PATCH 0/7] Generic RTC class driver
-Message-ID: <20090313042543.GA3907@bombadil.infradead.org>
-References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <alpine.LRH.2.00.0903111134270.1040@vixen.sonytel.be> <20090311154505.GB5448@bombadil.infradead.org> <alpine.LRH.2.00.0903111825040.1040@vixen.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0903111825040.1040@vixen.sonytel.be>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 13 Mar 2009 00:28:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40760 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750755AbZCME2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 00:28:04 -0400
+Subject: Re: [tip:x86/mtrr] x86: more MTRR debug printouts
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-8ad9790588ee2e69118b2b294ddab6f3f0379ad9@git.kernel.org>
+References: <49B9BA5A.40108@kernel.org>
+	 <tip-8ad9790588ee2e69118b2b294ddab6f3f0379ad9@git.kernel.org>
+Content-Type: text/plain
+Date: Fri, 13 Mar 2009 09:56:50 +0530
+Message-Id: <1236918410.2553.5.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 06:26:12PM +0100, Geert Uytterhoeven wrote:
-> 	Hi Kyle,
+On Fri, 2009-03-13 at 02:34 +0000, Yinghai Lu wrote:
+> Commit-ID:  8ad9790588ee2e69118b2b294ddab6f3f0379ad9
+> Gitweb:     http://git.kernel.org/tip/8ad9790588ee2e69118b2b294ddab6f3f0379ad9
+> Author:     Yinghai Lu <yinghai@kernel.org>
+> AuthorDate: Thu, 12 Mar 2009 18:43:54 -0700
+> Commit:     Ingo Molnar <mingo@elte.hu>
+> CommitDate: Fri, 13 Mar 2009 02:52:18 +0100
 > 
-> On Wed, 11 Mar 2009, Kyle McMartin wrote:
-> > On Wed, Mar 11, 2009 at 11:36:02AM +0100, Geert Uytterhoeven wrote:
-> > > Is it OK for you to take it through your PA-RISC tree?
-> > > If yes, I can resend the patch series with the collected acks.
-> > 
-> > That's fine with me, just hit me up with a git tree address and I'll
-> > suck it all into the rtc-parisc tree?
+> x86: more MTRR debug printouts
 > 
-> I put it up at:
+> Impact: improve MTRR debugging messages
 > 
-> master.kernel.org:/pub/scm/linux/kernel/git/geert/linux-rtc-generic.git
+> There's still inefficiencies suspected with the MTRR sanitizing
+> code, so make sure we get all the info we need from a dmesg.
 > 
-> The master branch should be a descendant of your rtc-parisc branch.
+> - Remove unneeded mtrr_show
 > 
-> Thanks!
->
+>  (It will only printout one time by first cpu, so it is no big deal.)
+> 
+> - Also print out directly from get_mtrr, because it doesn't update mtrr_state.
+> 
 
-Great, thanks Geert!
+Is there any worth moving these debug functions to
+arch/x86/kernel/cpu/cpu_debug.c
 
-I've pulled it and pushed it back out, I'll submit it when the merge
-window opens.
+By little bit changes you can desired results through:
+print_msr(NULL, cpu, CPU_MTRR);
 
-cheers, Kyle
+More cpu's flag available at:
+arch/x86/include/asm/cpu_debug.h
+
+by using cpu_debug you can read/write registers through kernel/user
+mode.
+
+Thanks,
+--
+JSR
+
