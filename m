@@ -1,143 +1,514 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbZCMEaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbZCME3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbZCMEaU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 00:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757169AbZCME3r
+	id S1756935AbZCME3z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 00:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbZCME3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 00:29:47 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54414 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756985AbZCME3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 00:29:45 -0400
-Date: Fri, 13 Mar 2009 04:27:45 GMT
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       laijs@cn.fujitsu.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       laijs@cn.fujitsu.com, mingo@elte.hu
-In-Reply-To: <1236401580-5758-3-git-send-email-fweisbec@gmail.com>
-References: <1236401580-5758-3-git-send-email-fweisbec@gmail.com>
-Subject: [tip:tracing/syscalls] tracing/x86: basic implementation of syscall tracing for x86
-Message-ID: <tip-1b3fa2ce64363c289b3b14723cca7290bf91cfce@git.kernel.org>
-Git-Commit-ID: 1b3fa2ce64363c289b3b14723cca7290bf91cfce
-X-Mailer: tip-git-log-daemon
+	Fri, 13 Mar 2009 00:29:42 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:43461 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750963AbZCME3k convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 00:29:40 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=Mr9vm3JWStXftnPp4eRL1lEF47mFPKPSjLuMeYU7Lr0be8fkqai3gou6ZltiNUdTs
+	lyWy+BROyOLQtyTIddc+Q==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 04:27:47 +0000 (UTC)
+In-Reply-To: <20090312212124.GA25019@us.ibm.com>
+References: <1234467035.3243.538.camel@calx>
+	 <1234475483.30155.194.camel@nimitz>
+	 <20090212141014.2cd3d54d.akpm@linux-foundation.org>
+	 <1234479845.30155.220.camel@nimitz>
+	 <20090226155755.GA1456@x200.localdomain>
+	 <20090310215305.GA2078@x200.localdomain> <49B775B4.1040800@free.fr>
+	 <20090312145311.GC12390@us.ibm.com> <1236891719.32630.14.camel@bahia>
+	 <20090312212124.GA25019@us.ibm.com>
+Date: Thu, 12 Mar 2009 21:29:32 -0700
+Message-ID: <604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ do?
+From: Ying Han <yinghan@google.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Greg Kurz <gkurz@fr.ibm.com>, Cedric Le Goater <legoater@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, mpm@selenic.com,
+       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-mm@kvack.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
+       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, xemul@openvz.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1b3fa2ce64363c289b3b14723cca7290bf91cfce
-Gitweb:     http://git.kernel.org/tip/1b3fa2ce64363c289b3b14723cca7290bf91cfce
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Sat, 7 Mar 2009 05:53:00 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 06:25:44 +0100
+Hi Serge:
+I made a patch based on Oren's tree recently which implement a new
+syscall clone_with_pid. I tested with checkpoint/restart process tree
+and it works as expected.
+This patch has some hack in it which i made a copy of libc's clone and
+made modifications of passing one more argument(pid number). I will
+try to clean up the code and do more testing.
 
-tracing/x86: basic implementation of syscall tracing for x86
+New syscall clone_with_pid
+Implement a new syscall which clone a thread with a preselected pid number.
 
-Provide the x86 trace callbacks to trace syscalls.
+clone_with_pid(child_func, child_stack + CHILD_STACK - 16,
+			CLONE_WITH_PID|SIGCHLD, pid, NULL);
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-LKML-Reference: <1236401580-5758-3-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Ying Han <yinghan@google.com>
 
+diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
+index 87803da..b5a1b03 100644
+--- a/arch/x86/include/asm/syscalls.h
++++ b/arch/x86/include/asm/syscalls.h
+@@ -26,6 +26,7 @@ asmlinkage int sys_fork(struct pt_regs);
+ asmlinkage int sys_clone(struct pt_regs);
+ asmlinkage int sys_vfork(struct pt_regs);
+ asmlinkage int sys_execve(struct pt_regs);
++asmlinkage int sys_clone_with_pid(struct pt_regs);
 
----
- arch/x86/Kconfig                   |    1 +
- arch/x86/include/asm/thread_info.h |    9 ++++++---
- arch/x86/kernel/ptrace.c           |    7 +++++++
- 3 files changed, 14 insertions(+), 3 deletions(-)
+ /* kernel/signal_32.c */
+ asmlinkage int sys_sigsuspend(int, int, old_sigset_t);
+diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32
+index a5f9e09..f10ca0e 100644
+--- a/arch/x86/include/asm/unistd_32.h
++++ b/arch/x86/include/asm/unistd_32.h
+@@ -340,6 +340,7 @@
+ #define __NR_inotify_init1	332
+ #define __NR_checkpoint		333
+ #define __NR_restart		334
++#define __NR_clone_with_pid	335
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index bdcee12..b0a638b 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -35,6 +35,7 @@ config X86
- 	select HAVE_FUNCTION_GRAPH_TRACER
- 	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
- 	select HAVE_FTRACE_NMI_ENTER if DYNAMIC_FTRACE
-+	select HAVE_FTRACE_SYSCALLS
- 	select HAVE_KVM
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_TRACEHOOK
-diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-index df9d5f7..8820a73 100644
---- a/arch/x86/include/asm/thread_info.h
-+++ b/arch/x86/include/asm/thread_info.h
-@@ -94,6 +94,7 @@ struct thread_info {
- #define TIF_FORCED_TF		24	/* true if TF in eflags artificially */
- #define TIF_DEBUGCTLMSR		25	/* uses thread_struct.debugctlmsr */
- #define TIF_DS_AREA_MSR		26      /* uses thread_struct.ds_area_msr */
-+#define TIF_SYSCALL_FTRACE	27	/* for ftrace syscall instrumentation */
- 
- #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
-@@ -115,15 +116,17 @@ struct thread_info {
- #define _TIF_FORCED_TF		(1 << TIF_FORCED_TF)
- #define _TIF_DEBUGCTLMSR	(1 << TIF_DEBUGCTLMSR)
- #define _TIF_DS_AREA_MSR	(1 << TIF_DS_AREA_MSR)
-+#define _TIF_SYSCALL_FTRACE	(1 << TIF_SYSCALL_FTRACE)
- 
- /* work to do in syscall_trace_enter() */
- #define _TIF_WORK_SYSCALL_ENTRY	\
--	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_EMU | \
-+	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_EMU | _TIF_SYSCALL_FTRACE |	\
- 	 _TIF_SYSCALL_AUDIT | _TIF_SECCOMP | _TIF_SINGLESTEP)
- 
- /* work to do in syscall_trace_leave() */
- #define _TIF_WORK_SYSCALL_EXIT	\
--	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | _TIF_SINGLESTEP)
-+	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | _TIF_SINGLESTEP |	\
-+	 _TIF_SYSCALL_FTRACE)
- 
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK							\
-@@ -132,7 +135,7 @@ struct thread_info {
- 	   _TIF_SINGLESTEP|_TIF_SECCOMP|_TIF_SYSCALL_EMU))
- 
- /* work to do on any return to user space */
--#define _TIF_ALLWORK_MASK (0x0000FFFF & ~_TIF_SECCOMP)
-+#define _TIF_ALLWORK_MASK ((0x0000FFFF & ~_TIF_SECCOMP) | _TIF_SYSCALL_FTRACE)
- 
- /* Only used for 64 bit */
- #define _TIF_DO_NOTIFY_MASK						\
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 3d9672e..99749d6 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -21,6 +21,7 @@
- #include <linux/audit.h>
- #include <linux/seccomp.h>
- #include <linux/signal.h>
-+#include <linux/ftrace.h>
- 
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
-@@ -1416,6 +1417,9 @@ asmregparm long syscall_trace_enter(struct pt_regs *regs)
- 	    tracehook_report_syscall_entry(regs))
- 		ret = -1L;
- 
-+	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
-+		ftrace_syscall_enter(regs);
+ #ifdef __KERNEL__
+
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 0a1302f..88ae634 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -8,7 +8,6 @@
+ /*
+  * This file handles the architecture-dependent parts of process handling..
+  */
+-
+ #include <stdarg.h>
+
+ #include <linux/cpu.h>
+@@ -652,6 +651,28 @@ asmlinkage int sys_clone(struct pt_regs regs)
+ 	return do_fork(clone_flags, newsp, &regs, 0, parent_tidptr, child_tidptr);
+ }
+
++/**
++ * sys_clone_with_pid - clone a thread with pre-select pid number.
++ */
++asmlinkage int sys_clone_with_pid(struct pt_regs regs)
++{
++	unsigned long clone_flags;
++	unsigned long newsp;
++	int __user *parent_tidptr, *child_tidptr;
++	pid_t pid_nr;
 +
- 	if (unlikely(current->audit_context)) {
- 		if (IS_IA32)
- 			audit_syscall_entry(AUDIT_ARCH_I386,
-@@ -1439,6 +1443,9 @@ asmregparm void syscall_trace_leave(struct pt_regs *regs)
- 	if (unlikely(current->audit_context))
- 		audit_syscall_exit(AUDITSC_RESULT(regs->ax), regs->ax);
- 
-+	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
-+		ftrace_syscall_exit(regs);
++	clone_flags = regs.bx;
++	newsp = regs.cx;
++	parent_tidptr = (int __user *)regs.dx;
++	child_tidptr = (int __user *)regs.di;
++	pid_nr = regs.bp;
 +
- 	if (test_thread_flag(TIF_SYSCALL_TRACE))
- 		tracehook_report_syscall_exit(regs, 0);
- 
++	if (!newsp)
++		newsp = regs.sp;
++	return do_fork(clone_flags, newsp, &regs, pid_nr, parent_tidptr,
++			child_tidptr);
++}
++
+ /*
+  * This is trivial, and on the face of it looks like it
+  * could equally well be done in user mode.
+diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_tabl
+index 5543136..5191117 100644
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -334,3 +334,4 @@ ENTRY(sys_call_table)
+ 	.long sys_inotify_init1
+ 	.long sys_checkpoint
+ 	.long sys_restart
++	.long sys_clone_with_pid
+diff --git a/arch/x86/mm/checkpoint.c b/arch/x86/mm/checkpoint.c
+index 50bde9a..a4aee65 100644
+--- a/arch/x86/mm/checkpoint.c
++++ b/arch/x86/mm/checkpoint.c
+@@ -7,7 +7,6 @@
+  *  License.  See the file COPYING in the main directory of the Linux
+  *  distribution for more details.
+  */
+-
+ #include <asm/desc.h>
+ #include <asm/i387.h>
+
+diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+index 64155de..b7de611 100644
+--- a/checkpoint/checkpoint.c
++++ b/checkpoint/checkpoint.c
+@@ -8,6 +8,7 @@
+  *  distribution for more details.
+  */
+
++#define DEBUG
+ #include <linux/version.h>
+ #include <linux/sched.h>
+ #include <linux/ptrace.h>
+@@ -564,3 +565,4 @@ int do_checkpoint(struct cr_ctx *ctx, pid_t pid)
+  out:
+ 	return ret;
+ }
++
+diff --git a/checkpoint/ckpt_file.c b/checkpoint/ckpt_file.c
+index e3097ac..a8c5ad5 100644
+--- a/checkpoint/ckpt_file.c
++++ b/checkpoint/ckpt_file.c
+@@ -7,7 +7,7 @@
+  *  License.  See the file COPYING in the main directory of the Linux
+  *  distribution for more details.
+  */
+-
++#define DEBUG
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <linux/file.h>
+diff --git a/checkpoint/ckpt_mem.c b/checkpoint/ckpt_mem.c
+index 4925ff2..ca5840b 100644
+--- a/checkpoint/ckpt_mem.c
++++ b/checkpoint/ckpt_mem.c
+@@ -7,7 +7,7 @@
+  *  License.  See the file COPYING in the main directory of the Linux
+  *  distribution for more details.
+  */
+-
++#define DEBUG
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+diff --git a/checkpoint/restart.c b/checkpoint/restart.c
+index 7ec4de4..30e43c2 100644
+--- a/checkpoint/restart.c
++++ b/checkpoint/restart.c
+@@ -8,6 +8,7 @@
+  *  distribution for more details.
+  */
+
++#define DEBUG
+ #include <linux/version.h>
+ #include <linux/sched.h>
+ #include <linux/wait.h>
+@@ -242,7 +243,7 @@ static int cr_read_task_struct(struct cr_ctx *ctx)
+ 		memcpy(t->comm, buf, min(hh->task_comm_len, TASK_COMM_LEN));
+ 	}
+ 	kfree(buf);
+-
++	pr_debug("read task %s\n", t->comm);
+ 	/* FIXME: restore remaining relevant task_struct fields */
+  out:
+ 	cr_hbuf_put(ctx, sizeof(*hh));
+diff --git a/checkpoint/rstr_file.c b/checkpoint/rstr_file.c
+index f44b081..755e40e 100644
+--- a/checkpoint/rstr_file.c
++++ b/checkpoint/rstr_file.c
+@@ -7,7 +7,7 @@
+  *  License.  See the file COPYING in the main directory of the Linux
+  *  distribution for more details.
+  */
+-
++#define DEBUG
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <linux/fs.h>
+diff --git a/checkpoint/rstr_mem.c b/checkpoint/rstr_mem.c
+index 4d5ce1a..8330468 100644
+--- a/checkpoint/rstr_mem.c
++++ b/checkpoint/rstr_mem.c
+@@ -7,7 +7,7 @@
+  *  License.  See the file COPYING in the main directory of the Linux
+  *  distribution for more details.
+  */
+-
++#define DEBUG
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <linux/fcntl.h>
+diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+index f26b0c6..d1a5394 100644
+--- a/checkpoint/sys.c
++++ b/checkpoint/sys.c
+@@ -7,7 +7,7 @@
+  *  License.  See the file COPYING in the main directory of the Linux
+  *  distribution for more details.
+  */
+-
++#define DEBUG
+ #include <linux/sched.h>
+ #include <linux/nsproxy.h>
+ #include <linux/kernel.h>
+@@ -263,7 +263,6 @@ asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned
+ 		return PTR_ERR(ctx);
+
+ 	ret = do_checkpoint(ctx, pid);
+-
+ 	if (!ret)
+ 		ret = ctx->crid;
+
+@@ -304,3 +303,4 @@ asmlinkage long sys_restart(int crid, int fd, unsigned lon
+ 	cr_ctx_put(ctx);
+ 	return ret;
+ }
++
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index 217cf6e..bc2c202 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -114,7 +114,6 @@ extern int cr_write_files(struct cr_ctx *ctx, struct task_
+ extern int do_restart(struct cr_ctx *ctx, pid_t pid);
+ extern int cr_read_mm(struct cr_ctx *ctx);
+ extern int cr_read_files(struct cr_ctx *ctx);
+-
+ #ifdef pr_fmt
+ #undef pr_fmt
+ #endif
+diff --git a/include/linux/pid.h b/include/linux/pid.h
+index d7e98ff..86e2f61 100644
+--- a/include/linux/pid.h
++++ b/include/linux/pid.h
+@@ -119,7 +119,7 @@ extern struct pid *find_get_pid(int nr);
+ extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
+ int next_pidmap(struct pid_namespace *pid_ns, int last);
+
+-extern struct pid *alloc_pid(struct pid_namespace *ns);
++extern struct pid *alloc_pid(struct pid_namespace *ns, pid_t pid_nr);
+ extern void free_pid(struct pid *pid);
+
+ /*
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 0150e90..7fb4e28 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -28,6 +28,7 @@
+ #define CLONE_NEWPID		0x20000000	/* New pid namespace */
+ #define CLONE_NEWNET		0x40000000	/* New network namespace */
+ #define CLONE_IO		0x80000000	/* Clone io context */
++#define CLONE_WITH_PID		0x00001000	/* Clone with pre-select PID */
+
+ /*
+  * Scheduling policies
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 2d8be7e..4baf651 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -3,7 +3,7 @@
+  *
+  *  Copyright (C) 1991, 1992  Linus Torvalds
+  */
+-
++#define DEBUG
+ #include <linux/mm.h>
+ #include <linux/slab.h>
+ #include <linux/interrupt.h>
+@@ -1676,6 +1676,7 @@ static long do_wait(enum pid_type type, struct pid *pid,
+ 	DECLARE_WAITQUEUE(wait, current);
+ 	struct task_struct *tsk;
+ 	int retval;
++	int level;
+
+ 	trace_sched_process_wait(pid);
+
+@@ -1708,7 +1709,6 @@ repeat:
+ 			retval = tsk_result;
+ 			goto end;
+ 		}
+-
+ 		if (options & __WNOTHREAD)
+ 			break;
+ 		tsk = next_thread(tsk);
+@@ -1817,7 +1817,6 @@ asmlinkage long sys_wait4(pid_t upid, int __user *stat_a
+ 		type = PIDTYPE_PID;
+ 		pid = find_get_pid(upid);
+ 	}
+-
+ 	ret = do_wait(type, pid, options | WEXITED, NULL, stat_addr, ru);
+ 	put_pid(pid);
+
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 085ce56..262ae1e 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -10,7 +10,7 @@
+  * Fork is rather simple, once you get the hang of it, but the memory
+  * management can be a bitch. See 'mm/memory.c': 'copy_page_range()'
+  */
+-
++#define DEBUG
+ #include <linux/slab.h>
+ #include <linux/init.h>
+ #include <linux/unistd.h>
+@@ -959,10 +959,19 @@ static struct task_struct *copy_process(unsigned long cl
+ 	int retval;
+ 	struct task_struct *p;
+ 	int cgroup_callbacks_done = 0;
++	pid_t clone_pid = stack_size;
+
+ 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
+ 		return ERR_PTR(-EINVAL);
+
++	/* We only allow the clone_with_pid when a new pid namespace is
++	 * created. FIXME: how to restrict it.
++	 */
++	if ((clone_flags & CLONE_NEWPID) && (clone_flags & CLONE_WITH_PID))
++		return ERR_PTR(-EINVAL);
++	if ((clone_flags & CLONE_WITH_PID) && (clone_pid <= 1))
++		return ERR_PTR(-EINVAL);
++
+ 	/*
+ 	 * Thread groups must share signals as well, and detached threads
+ 	 * can only be started up within the thread group.
+@@ -1135,7 +1144,10 @@ static struct task_struct *copy_process(unsigned long c
+
+ 	if (pid != &init_struct_pid) {
+ 		retval = -ENOMEM;
+-		pid = alloc_pid(task_active_pid_ns(p));
++		if (clone_flags & CLONE_WITH_PID)
++			pid = alloc_pid(task_active_pid_ns(p), clone_pid);
++		else
++			pid = alloc_pid(task_active_pid_ns(p), 0);
+ 		if (!pid)
+ 			goto bad_fork_cleanup_io;
+
+@@ -1162,6 +1174,8 @@ static struct task_struct *copy_process(unsigned long cl
+ 	 * Clear TID on mm_release()?
+ 	 */
+ 	p->clear_child_tid = (clone_flags & CLONE_CHILD_CLEARTID) ? child_tidptr: NU
++
++
+ #ifdef CONFIG_FUTEX
+ 	p->robust_list = NULL;
+ #ifdef CONFIG_COMPAT
+diff --git a/kernel/pid.c b/kernel/pid.c
+index 064e76a..0facf05 100644
+--- a/kernel/pid.c
++++ b/kernel/pid.c
+@@ -25,7 +25,7 @@
+  *     Many thanks to Oleg Nesterov for comments and help
+  *
+  */
+-
++#define DEBUG
+ #include <linux/mm.h>
+ #include <linux/module.h>
+ #include <linux/slab.h>
+@@ -122,12 +122,15 @@ static void free_pidmap(struct upid *upid)
+ 	atomic_inc(&map->nr_free);
+ }
+
+-static int alloc_pidmap(struct pid_namespace *pid_ns)
++static int alloc_pidmap(struct pid_namespace *pid_ns, pid_t pid_nr)
+ {
+ 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
+ 	struct pidmap *map;
+
+-	pid = last + 1;
++	if (pid_nr)
++		pid = pid_nr;
++	else
++		pid = last + 1;
+ 	if (pid >= pid_max)
+ 		pid = RESERVED_PIDS;
+ 	offset = pid & BITS_PER_PAGE_MASK;
+@@ -153,9 +156,12 @@ static int alloc_pidmap(struct pid_namespace *pid_ns)
+ 			do {
+ 				if (!test_and_set_bit(offset, map->page)) {
+ 					atomic_dec(&map->nr_free);
+-					pid_ns->last_pid = pid;
++					if (!pid_nr)
++						pid_ns->last_pid = pid;
+ 					return pid;
+ 				}
++				if (pid_nr)
++					return -1;
+ 				offset = find_next_offset(map, offset);
+ 				pid = mk_pid(pid_ns, map, offset);
+ 			/*
+@@ -239,21 +245,25 @@ void free_pid(struct pid *pid)
+ 	call_rcu(&pid->rcu, delayed_put_pid);
+ }
+
+-struct pid *alloc_pid(struct pid_namespace *ns)
++struct pid *alloc_pid(struct pid_namespace *ns, pid_t pid_nr)
+ {
+ 	struct pid *pid;
+ 	enum pid_type type;
+ 	int i, nr;
+ 	struct pid_namespace *tmp;
+ 	struct upid *upid;
++	int level = ns->level;
++
++	if (pid_nr >= pid_max)
++		return NULL;
+
+ 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
+ 	if (!pid)
+ 		goto out;
+
+-	tmp = ns;
+-	for (i = ns->level; i >= 0; i--) {
+-		nr = alloc_pidmap(tmp);
++	tmp = ns->parent;
++	for (i = level-1; i >= 0; i--) {
++		nr = alloc_pidmap(tmp, 0);
+ 		if (nr < 0)
+ 			goto out_free;
+
+@@ -262,6 +272,14 @@ struct pid *alloc_pid(struct pid_namespace *ns)
+ 		tmp = tmp->parent;
+ 	}
+
++	nr = alloc_pidmap(ns, pid_nr);
++	if (nr < 0)
++		goto out_free;
++	pid->numbers[level].nr = nr;
++	pid->numbers[level].ns = ns;
++	if (nr == pid_nr)
++		pr_debug("nr == pid_nr == %d\n", nr);
++
+ 	get_pid_ns(ns);
+ 	pid->level = ns->level;
+ 	atomic_set(&pid->count, 1);
+
+
+
+
+
+
+
+
+On Thu, Mar 12, 2009 at 2:21 PM, Serge E. Hallyn <serue@us.ibm.com> wrote:
+>
+> Quoting Greg Kurz (gkurz@fr.ibm.com):
+> > On Thu, 2009-03-12 at 09:53 -0500, Serge E. Hallyn wrote:
+> > > Or are you suggesting that you'll do a dummy clone of (5594,2) so that
+> > > the next clone(CLONE_NEWPID) will be expected to be (5594,3,1)?
+> > >
+> >
+> > Of course not
+>
+> Ok - someone *did* argue that at some point I think...
+>
+> > but one should be able to tell clone() to pick a specific
+> > pid.
+>
+> Can you explain exactly how?  I must be missing something clever.
+>
+> -serge
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
