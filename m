@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759968AbZCMQhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbZCMQmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759968AbZCMQhg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbZCMQhZ
+	id S1758668AbZCMQmx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbZCMQmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:37:25 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58481 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754980AbZCMQhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 12:37:24 -0400
-Date: Fri, 13 Mar 2009 17:37:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
-Subject: Re: [RFC][PATCH 2/2] tracing/x86: basic implementation of syscall
-	tracing for x86-64
-Message-ID: <20090313163702.GA9082@elte.hu>
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-3-git-send-email-fweisbec@gmail.com> <20090313163207.GA3354@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090313163207.GA3354@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 13 Mar 2009 12:42:43 -0400
+Received: from gw.goop.org ([64.81.55.164]:57236 "EHLO abulafia.goop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753212AbZCMQmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 12:42:43 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 01/17] xen/dom0: handle acpi lapic parsing in Xen dom0
+Date: Fri, 13 Mar 2009 09:42:22 -0700
+Message-Id: <1236962558-13748-2-git-send-email-jeremy@goop.org>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1236962558-13748-1-git-send-email-jeremy@goop.org>
+References: <1236962558-13748-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When running in Xen dom0, we still want to parse the ACPI tables to
+find out about local and IO apics, but we don't want to actually use
+the lapics.
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+Put a couple of tests for Xen to prevent lapics from being mapped or
+accessed.  This is very Xen-specific behaviour, so there didn't seem to
+be any point in adding more indirection.
 
-> * Frederic Weisbecker (fweisbec@gmail.com) wrote:
->
-> > Provide the ptrace hooks and arch specific syscall numbers 
-> > to ftrace arch indepedant syscall numbers. For now it only 
-> > supports 4 syscalls to provide an example.
-> > 
-> 
-> Hi Frederic,
-> 
-> I already have the equivalent TIF_KERNEL_TRACE flag in my 
-> LTTng tree added to every Linux architecture. You might want 
-> to re-use this work rather than re-doing this. I don't mind 
-> changing the flag name.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/kernel/acpi/boot.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-Yeah. Note that the TIF bits are just one part - there are other 
-bits needed for HAVE_FTRACE_SYSCALLS arch support.
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index a18eb7c..6a5af13 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -41,6 +41,8 @@
+ #include <asm/mpspec.h>
+ #include <asm/smp.h>
+ 
++#include <asm/xen/hypervisor.h>
++
+ static int __initdata acpi_force = 0;
+ u32 acpi_rsdt_forced;
+ #ifdef	CONFIG_ACPI
+@@ -218,6 +220,10 @@ static void __cpuinit acpi_register_lapic(int id, u8 enabled)
+ {
+ 	unsigned int ver = 0;
+ 
++	/* We don't want to register lapics when in Xen dom0 */
++	if (xen_initial_domain())
++		return;
++
+ 	if (!enabled) {
+ 		++disabled_cpus;
+ 		return;
+@@ -754,6 +760,10 @@ static int __init acpi_parse_fadt(struct acpi_table_header *table)
+ 
+ static void __init acpi_register_lapic_address(unsigned long address)
+ {
++	/* Xen dom0 doesn't have usable lapics */
++	if (xen_initial_domain())
++		return;
++
+ 	mp_lapic_addr = address;
+ 
+ 	set_fixmap_nocache(FIX_APIC_BASE, address);
+-- 
+1.6.0.6
 
-Also, i'd eventually expect the TIF bits to be converted to a 
-tracehook callback, not spread it to other architectures.
-
-	Ingo
