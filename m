@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758748AbZCMPET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbZCMPHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758748AbZCMPET (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 11:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756981AbZCMPEG
+	id S1758499AbZCMPHX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 11:07:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbZCMPHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 11:04:06 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:50279 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752314AbZCMPEE (ORCPT
+	Fri, 13 Mar 2009 11:07:08 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:32037 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbZCMPHH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 11:04:04 -0400
-Message-ID: <49BA75CF.3040501@us.ibm.com>
-Date: Fri, 13 Mar 2009 08:03:43 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-CC: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/futexes] futex: remove the pointer math from double_unlock_hb,
- fix
-References: <20090312221118.11146.68610.stgit@Aeon> <tip-88f502fedba82eff252b6420e8b8328e4ae25c67@git.kernel.org>
-In-Reply-To: <tip-88f502fedba82eff252b6420e8b8328e4ae25c67@git.kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Mar 2009 11:07:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=GeoSKNlfOJg+0dukc8tmN7yUvJDl6yEcCHTX51p9HFUT9N9NEGA90V/fgoypCWPYkR
+         gzR2SxeHaQ3qFVXY6taydnOFtMfCiTUpSlyATsyPIE/CvFRvDHvJXsKPUCQ96Eh7V80R
+         3snrjYS8ATTcPtyTR5fPW/ADne1ygU6Zr+8AA=
+From: tom.leiming@gmail.com
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, Ming Lei <tom.leiming@gmail.com>
+Subject: [PATCH] driver core: fix passing platform_data
+Date: Fri, 13 Mar 2009 23:06:59 +0800
+Message-Id: <1236956819-13412-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.6.0.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> Commit-ID:  88f502fedba82eff252b6420e8b8328e4ae25c67
-> Gitweb:     http://git.kernel.org/tip/88f502fedba82eff252b6420e8b8328e4ae25c67
-> Author:     Ingo Molnar <mingo@elte.hu>
-> AuthorDate: Fri, 13 Mar 2009 10:32:07 +0100
-> Commit:     Ingo Molnar <mingo@elte.hu>
-> CommitDate: Fri, 13 Mar 2009 10:32:07 +0100
-> 
-> futex: remove the pointer math from double_unlock_hb, fix
-> 
-> Impact: fix double unlock crash
-> 
-> Thomas Gleixner noticed that the simplified double_unlock_hb()
-> became ... too unsophisticated: in the hb1 == hb2 case it will
-> do a double unlock.
+From: Ming Lei <tom.leiming@gmail.com>
 
-Gah.  Thanks for catching it.
+We will remove platform_data field from struct device until
+all platform devices pass its specific data from platfom_device
+and all platform drivers use platform specific data passed by
+platform_device->platform_data. This kind of conversion will
+need a long time, for thousands of files is affected.
 
-> 
-> Reported-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Darren Hart <dvhltc@us.ibm.com>
-> LKML-Reference: <20090312221118.11146.68610.stgit@Aeon>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+To make the conversion easily, we allow platform specific data
+passed by struct device or struct platform_device and platform
+driver may use it from struct device or struct platform_device.
 
-Acked-by: Darren Hart <dvhltc@us.ibm.com>
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+---
+ drivers/base/platform.c |   15 ++++++++++++++-
+ 1 files changed, 14 insertions(+), 1 deletions(-)
 
-> 
-> 
-> ---
->  kernel/futex.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/futex.c b/kernel/futex.c
-> index 2331b73..6b50a02 100644
-> --- a/kernel/futex.c
-> +++ b/kernel/futex.c
-> @@ -659,7 +659,8 @@ static inline void
->  double_unlock_hb(struct futex_hash_bucket *hb1, struct futex_hash_bucket *hb2)
->  {
->  	spin_unlock(&hb1->lock);
-> -	spin_unlock(&hb2->lock);
-> +	if (hb1 != hb2)
-> +		spin_unlock(&hb2->lock);
->  }
-> 
->  /*
-
-
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index c5ac81d..d2198f6 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -247,7 +247,20 @@ int platform_device_add(struct platform_device *pdev)
+ 	else
+ 		dev_set_name(&pdev->dev, pdev->name);
+ 
+-	pdev->platform_data = pdev->dev.platform_data;
++	/* We will remove platform_data field from struct device
++	* if all platform devices pass its platform specific data
++	* from platform_device. The conversion is going to be a
++	* long time, so we allow the two cases coexist to make
++	* this kind of fix more easily*/
++	if (pdev->platform_data && pdev->dev.platform_data) {
++		printk(KERN_ERR
++			       "%s: use which platform_data?\n",
++			       dev_name(&pdev->dev));
++	} else if (pdev->platform_data) {
++		pdev->dev.platform_data = pdev->platform_data;
++	} else if (pdev->dev.platform_data) {
++		pdev->platform_data = pdev->dev.platform_data;
++	}
+ 
+ 	for (i = 0; i < pdev->num_resources; i++) {
+ 		struct resource *p, *r = &pdev->resource[i];
 -- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+1.6.0.GIT
+
