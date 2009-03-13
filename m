@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758548AbZCMIQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758632AbZCMIRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548AbZCMIQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 04:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbZCMIMZ
+	id S1758632AbZCMIRr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 04:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbZCMIM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 04:12:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:34806 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 04:12:27 -0400
+Received: from gw.goop.org ([64.81.55.164]:34821 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754356AbZCMIMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 04:12:22 -0400
+	id S1755965AbZCMIMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 04:12:23 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Hannes Eder <hannes@hanneseder.net>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 09/24] NULL noise: arch/x86/xen/smp.c
-Date: Fri, 13 Mar 2009 01:11:45 -0700
-Message-Id: <1236931920-6861-10-git-send-email-jeremy@goop.org>
+Subject: [PATCH 12/24] x86-64: remove PGE from must-have feature list
+Date: Fri, 13 Mar 2009 01:11:48 -0700
+Message-Id: <1236931920-6861-13-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1236931920-6861-1-git-send-email-jeremy@goop.org>
 References: <1236931920-6861-1-git-send-email-jeremy@goop.org>
@@ -26,40 +25,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hannes Eder <hannes@hanneseder.net>
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Fix this sparse warnings:
-  arch/x86/xen/smp.c:316:52: warning: Using plain integer as NULL pointer
-  arch/x86/xen/smp.c:421:60: warning: Using plain integer as NULL pointer
+PGE may not be available when running paravirtualized, so test the cpuid
+bit before using it.
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/smp.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/required-features.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
-index 8d47056..304d832 100644
---- a/arch/x86/xen/smp.c
-+++ b/arch/x86/xen/smp.c
-@@ -317,7 +317,7 @@ static int __cpuinit xen_cpu_up(unsigned int cpu)
- 	BUG_ON(rc);
- 
- 	while(per_cpu(cpu_state, cpu) != CPU_ONLINE) {
--		HYPERVISOR_sched_op(SCHEDOP_yield, 0);
-+		HYPERVISOR_sched_op(SCHEDOP_yield, NULL);
- 		barrier();
- 	}
- 
-@@ -422,7 +422,7 @@ static void xen_smp_send_call_function_ipi(const struct cpumask *mask)
- 	/* Make sure other vcpus get a chance to run if they need to. */
- 	for_each_cpu(cpu, mask) {
- 		if (xen_vcpu_stolen(cpu)) {
--			HYPERVISOR_sched_op(SCHEDOP_yield, 0);
-+			HYPERVISOR_sched_op(SCHEDOP_yield, NULL);
- 			break;
- 		}
- 	}
+diff --git a/arch/x86/include/asm/required-features.h b/arch/x86/include/asm/required-features.h
+index d5cd6c5..a4737dd 100644
+--- a/arch/x86/include/asm/required-features.h
++++ b/arch/x86/include/asm/required-features.h
+@@ -50,7 +50,7 @@
+ #ifdef CONFIG_X86_64
+ #define NEED_PSE	0
+ #define NEED_MSR	(1<<(X86_FEATURE_MSR & 31))
+-#define NEED_PGE	(1<<(X86_FEATURE_PGE & 31))
++#define NEED_PGE	0
+ #define NEED_FXSR	(1<<(X86_FEATURE_FXSR & 31))
+ #define NEED_XMM	(1<<(X86_FEATURE_XMM & 31))
+ #define NEED_XMM2	(1<<(X86_FEATURE_XMM2 & 31))
 -- 
 1.6.0.6
 
