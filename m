@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbZCMNr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbZCMOE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758902AbZCMNr3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 09:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZCMNrS
+	id S1756083AbZCMOE5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 10:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZCMOEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 09:47:18 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:47398 "EHLO pardus.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753859AbZCMNrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 09:47:17 -0400
-Message-ID: <49BA6364.6040407@pardus.org.tr>
-Date: Fri, 13 Mar 2009 15:45:08 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Fri, 13 Mar 2009 10:04:48 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:56477 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751794AbZCMOEr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 10:04:47 -0400
+Date: Fri, 13 Mar 2009 10:04:44 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Ingo Molnar <mingo@elte.hu>
+cc: Roland McGrath <roland@redhat.com>, <prasad@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 02/11] x86 architecture implementation of Hardware
+ Breakpoint interfaces
+In-Reply-To: <20090313034301.GE11355@elte.hu>
+Message-ID: <Pine.LNX.4.44L0.0903130959400.2898-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Capability to do correct frequency throttling and PM when the cpufreq
- drivers are compiled into kernel
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 13 Mar 2009, Ingo Molnar wrote:
 
-Is the mainline kernel fully capable of detecting the processor model/family for
-using the correct power management stuff when all the cpufreq, powernow*, acpi_processor,
-etc. are made into kernel instead of loadable modules?
+> The core issue being discussed is the debug register allocation 
+> and scheduling model though, and you have not directly commented 
+> on that.
+> 
+> My argument in a nutshell is that a bottom-up for user + 
+> top-down for kernel use static allocator with no dynamic 
+> scheduling will get us most of the benefits with a tenth of the 
+> complexity.
 
-Or more precisely, can we get totally rid of the userspace init scripts which probes, loads, tweaks power management modules by parsing some /proc files, when we make them in-kernel?
+Take this even farther: We shouldn't restrict userspace to bottom-up
+register allocation.  With very little additional effort we can
+virtualize the debug registers; then userspace can allocate them in
+whatever order it wants and still end up using the physical registers
+in bottom-up order (or top-down, which is the order used by the current
+patches).
 
-Thanks,
+After all, there's nothing to prevent programs other than gdb from 
+using ptrace, and there's no guarantee that gdb will continue to 
+allocate registers in increasing order.
 
--- 
+Alan Stern
 
-Ozan Çağlayan
-<ozan_at_pardus.org.tr>
