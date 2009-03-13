@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbZCMIWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759160AbZCMIXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759123AbZCMIWQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 04:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757906AbZCMIMm
+	id S1759160AbZCMIXG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 04:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757269AbZCMIMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 04:12:42 -0400
-Received: from gw.goop.org ([64.81.55.164]:34830 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 04:12:46 -0400
+Received: from gw.goop.org ([64.81.55.164]:34828 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757214AbZCMIMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 04:12:36 -0400
+	id S1756536AbZCMIMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 04:12:39 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       Ian Campbell <ian.campbell@citrix.com>
-Subject: [PATCH 21/24] xen: drop kexec bits from /sys/hypervisor since kexec isn't implemented yet
-Date: Fri, 13 Mar 2009 01:11:57 -0700
-Message-Id: <1236931920-6861-22-git-send-email-jeremy@goop.org>
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 19/24] xen: add /sys/hypervisor support
+Date: Fri, 13 Mar 2009 01:11:55 -0700
+Message-Id: <1236931920-6861-20-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1236931920-6861-1-git-send-email-jeremy@goop.org>
 References: <1236931920-6861-1-git-send-email-jeremy@goop.org>
@@ -26,93 +25,544 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <Ian.Campbell@citrix.com>
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-I needed this to compile since there is no kexec yet in pvops kernel
-  CC      drivers/xen/sys-hypervisor.o
-drivers/xen/sys-hypervisor.c: In function 'hyper_sysfs_init':
-drivers/xen/sys-hypervisor.c:405: error: 'vmcoreinfo_size_xen' undeclared (first use in this function)
-drivers/xen/sys-hypervisor.c:405: error: (Each undeclared identifier is reported only once
-drivers/xen/sys-hypervisor.c:405: error: for each function it appears in.)
-drivers/xen/sys-hypervisor.c:406: error: implicit declaration of function 'xen_sysfs_vmcoreinfo_init'
-drivers/xen/sys-hypervisor.c: In function 'hyper_sysfs_exit':
-drivers/xen/sys-hypervisor.c:433: error: 'vmcoreinfo_size_xen' undeclared (first use in this function)
-drivers/xen/sys-hypervisor.c:434: error: implicit declaration of function 'xen_sysfs_vmcoreinfo_destroy'
+Adds support for Xen info under /sys/hypervisor.  Taken from Novell 2.6.27
+backport tree.
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- drivers/xen/sys-hypervisor.c |   41 -----------------------------------------
- 1 files changed, 0 insertions(+), 41 deletions(-)
+ drivers/xen/Kconfig             |   10 +
+ drivers/xen/Makefile            |    3 +-
+ drivers/xen/sys-hypervisor.c    |  475 +++++++++++++++++++++++++++++++++++++++
+ include/xen/interface/version.h |    3 +
+ 4 files changed, 490 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/xen/sys-hypervisor.c
 
+diff --git a/drivers/xen/Kconfig b/drivers/xen/Kconfig
+index 526187c..88bca1c 100644
+--- a/drivers/xen/Kconfig
++++ b/drivers/xen/Kconfig
+@@ -41,3 +41,13 @@ config XEN_COMPAT_XENFS
+          a xen platform.
+          If in doubt, say yes.
+ 
++config XEN_SYS_HYPERVISOR
++       bool "Create xen entries under /sys/hypervisor"
++       depends on XEN && SYSFS
++       select SYS_HYPERVISOR
++       default y
++       help
++         Create entries under /sys/hypervisor describing the Xen
++	 hypervisor environment.  When running native or in another
++	 virtual environment, /sys/hypervisor will still be present,
++	 but will have no xen contents.
+\ No newline at end of file
+diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
+index ff8accc..f3603a3 100644
+--- a/drivers/xen/Makefile
++++ b/drivers/xen/Makefile
+@@ -4,4 +4,5 @@ obj-y	+= xenbus/
+ obj-$(CONFIG_HOTPLUG_CPU)	+= cpu_hotplug.o
+ obj-$(CONFIG_XEN_XENCOMM)	+= xencomm.o
+ obj-$(CONFIG_XEN_BALLOON)	+= balloon.o
+-obj-$(CONFIG_XENFS)		+= xenfs/
+\ No newline at end of file
++obj-$(CONFIG_XENFS)		+= xenfs/
++obj-$(CONFIG_XEN_SYS_HYPERVISOR)	+= sys-hypervisor.o
 diff --git a/drivers/xen/sys-hypervisor.c b/drivers/xen/sys-hypervisor.c
-index 1267d6f..88a60e0 100644
---- a/drivers/xen/sys-hypervisor.c
+new file mode 100644
+index 0000000..cb29d1c
+--- /dev/null
 +++ b/drivers/xen/sys-hypervisor.c
-@@ -353,32 +353,6 @@ static void xen_properties_destroy(void)
- 	sysfs_remove_group(hypervisor_kobj, &xen_properties_group);
- }
+@@ -0,0 +1,475 @@
++/*
++ *  copyright (c) 2006 IBM Corporation
++ *  Authored by: Mike D. Day <ncmike@us.ibm.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/kobject.h>
++
++#include <asm/xen/hypervisor.h>
++#include <asm/xen/hypercall.h>
++
++#include <xen/xenbus.h>
++#include <xen/interface/xen.h>
++#include <xen/interface/version.h>
++
++#define HYPERVISOR_ATTR_RO(_name) \
++static struct hyp_sysfs_attr  _name##_attr = __ATTR_RO(_name)
++
++#define HYPERVISOR_ATTR_RW(_name) \
++static struct hyp_sysfs_attr _name##_attr = \
++	__ATTR(_name, 0644, _name##_show, _name##_store)
++
++struct hyp_sysfs_attr {
++	struct attribute attr;
++	ssize_t (*show)(struct hyp_sysfs_attr *, char *);
++	ssize_t (*store)(struct hyp_sysfs_attr *, const char *, size_t);
++	void *hyp_attr_data;
++};
++
++static ssize_t type_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	return sprintf(buffer, "xen\n");
++}
++
++HYPERVISOR_ATTR_RO(type);
++
++static int __init xen_sysfs_type_init(void)
++{
++	return sysfs_create_file(hypervisor_kobj, &type_attr.attr);
++}
++
++static void xen_sysfs_type_destroy(void)
++{
++	sysfs_remove_file(hypervisor_kobj, &type_attr.attr);
++}
++
++/* xen version attributes */
++static ssize_t major_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	int version = HYPERVISOR_xen_version(XENVER_version, NULL);
++	if (version)
++		return sprintf(buffer, "%d\n", version >> 16);
++	return -ENODEV;
++}
++
++HYPERVISOR_ATTR_RO(major);
++
++static ssize_t minor_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	int version = HYPERVISOR_xen_version(XENVER_version, NULL);
++	if (version)
++		return sprintf(buffer, "%d\n", version & 0xff);
++	return -ENODEV;
++}
++
++HYPERVISOR_ATTR_RO(minor);
++
++static ssize_t extra_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	int ret = -ENOMEM;
++	char *extra;
++
++	extra = kmalloc(XEN_EXTRAVERSION_LEN, GFP_KERNEL);
++	if (extra) {
++		ret = HYPERVISOR_xen_version(XENVER_extraversion, extra);
++		if (!ret)
++			ret = sprintf(buffer, "%s\n", extra);
++		kfree(extra);
++	}
++
++	return ret;
++}
++
++HYPERVISOR_ATTR_RO(extra);
++
++static struct attribute *version_attrs[] = {
++	&major_attr.attr,
++	&minor_attr.attr,
++	&extra_attr.attr,
++	NULL
++};
++
++static struct attribute_group version_group = {
++	.name = "version",
++	.attrs = version_attrs,
++};
++
++static int __init xen_sysfs_version_init(void)
++{
++	return sysfs_create_group(hypervisor_kobj, &version_group);
++}
++
++static void xen_sysfs_version_destroy(void)
++{
++	sysfs_remove_group(hypervisor_kobj, &version_group);
++}
++
++/* UUID */
++
++static ssize_t uuid_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	char *vm, *val;
++	int ret;
++	extern int xenstored_ready;
++
++	if (!xenstored_ready)
++		return -EBUSY;
++
++	vm = xenbus_read(XBT_NIL, "vm", "", NULL);
++	if (IS_ERR(vm))
++		return PTR_ERR(vm);
++	val = xenbus_read(XBT_NIL, vm, "uuid", NULL);
++	kfree(vm);
++	if (IS_ERR(val))
++		return PTR_ERR(val);
++	ret = sprintf(buffer, "%s\n", val);
++	kfree(val);
++	return ret;
++}
++
++HYPERVISOR_ATTR_RO(uuid);
++
++static int __init xen_sysfs_uuid_init(void)
++{
++	return sysfs_create_file(hypervisor_kobj, &uuid_attr.attr);
++}
++
++static void xen_sysfs_uuid_destroy(void)
++{
++	sysfs_remove_file(hypervisor_kobj, &uuid_attr.attr);
++}
++
++/* xen compilation attributes */
++
++static ssize_t compiler_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	int ret = -ENOMEM;
++	struct xen_compile_info *info;
++
++	info = kmalloc(sizeof(struct xen_compile_info), GFP_KERNEL);
++	if (info) {
++		ret = HYPERVISOR_xen_version(XENVER_compile_info, info);
++		if (!ret)
++			ret = sprintf(buffer, "%s\n", info->compiler);
++		kfree(info);
++	}
++
++	return ret;
++}
++
++HYPERVISOR_ATTR_RO(compiler);
++
++static ssize_t compiled_by_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	int ret = -ENOMEM;
++	struct xen_compile_info *info;
++
++	info = kmalloc(sizeof(struct xen_compile_info), GFP_KERNEL);
++	if (info) {
++		ret = HYPERVISOR_xen_version(XENVER_compile_info, info);
++		if (!ret)
++			ret = sprintf(buffer, "%s\n", info->compile_by);
++		kfree(info);
++	}
++
++	return ret;
++}
++
++HYPERVISOR_ATTR_RO(compiled_by);
++
++static ssize_t compile_date_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	int ret = -ENOMEM;
++	struct xen_compile_info *info;
++
++	info = kmalloc(sizeof(struct xen_compile_info), GFP_KERNEL);
++	if (info) {
++		ret = HYPERVISOR_xen_version(XENVER_compile_info, info);
++		if (!ret)
++			ret = sprintf(buffer, "%s\n", info->compile_date);
++		kfree(info);
++	}
++
++	return ret;
++}
++
++HYPERVISOR_ATTR_RO(compile_date);
++
++static struct attribute *xen_compile_attrs[] = {
++	&compiler_attr.attr,
++	&compiled_by_attr.attr,
++	&compile_date_attr.attr,
++	NULL
++};
++
++static struct attribute_group xen_compilation_group = {
++	.name = "compilation",
++	.attrs = xen_compile_attrs,
++};
++
++int __init static xen_compilation_init(void)
++{
++	return sysfs_create_group(hypervisor_kobj, &xen_compilation_group);
++}
++
++static void xen_compilation_destroy(void)
++{
++	sysfs_remove_group(hypervisor_kobj, &xen_compilation_group);
++}
++
++/* xen properties info */
++
++static ssize_t capabilities_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	int ret = -ENOMEM;
++	char *caps;
++
++	caps = kmalloc(XEN_CAPABILITIES_INFO_LEN, GFP_KERNEL);
++	if (caps) {
++		ret = HYPERVISOR_xen_version(XENVER_capabilities, caps);
++		if (!ret)
++			ret = sprintf(buffer, "%s\n", caps);
++		kfree(caps);
++	}
++
++	return ret;
++}
++
++HYPERVISOR_ATTR_RO(capabilities);
++
++static ssize_t changeset_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	int ret = -ENOMEM;
++	char *cset;
++
++	cset = kmalloc(XEN_CHANGESET_INFO_LEN, GFP_KERNEL);
++	if (cset) {
++		ret = HYPERVISOR_xen_version(XENVER_changeset, cset);
++		if (!ret)
++			ret = sprintf(buffer, "%s\n", cset);
++		kfree(cset);
++	}
++
++	return ret;
++}
++
++HYPERVISOR_ATTR_RO(changeset);
++
++static ssize_t virtual_start_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	int ret = -ENOMEM;
++	struct xen_platform_parameters *parms;
++
++	parms = kmalloc(sizeof(struct xen_platform_parameters), GFP_KERNEL);
++	if (parms) {
++		ret = HYPERVISOR_xen_version(XENVER_platform_parameters,
++					     parms);
++		if (!ret)
++			ret = sprintf(buffer, "%lx\n", parms->virt_start);
++		kfree(parms);
++	}
++
++	return ret;
++}
++
++HYPERVISOR_ATTR_RO(virtual_start);
++
++static ssize_t pagesize_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	int ret;
++
++	ret = HYPERVISOR_xen_version(XENVER_pagesize, NULL);
++	if (ret > 0)
++		ret = sprintf(buffer, "%x\n", ret);
++
++	return ret;
++}
++
++HYPERVISOR_ATTR_RO(pagesize);
++
++/* eventually there will be several more features to export */
++static ssize_t xen_feature_show(int index, char *buffer)
++{
++	int ret = -ENOMEM;
++	struct xen_feature_info *info;
++
++	info = kmalloc(sizeof(struct xen_feature_info), GFP_KERNEL);
++	if (info) {
++		info->submap_idx = index;
++		ret = HYPERVISOR_xen_version(XENVER_get_features, info);
++		if (!ret)
++			ret = sprintf(buffer, "%d\n", info->submap);
++		kfree(info);
++	}
++
++	return ret;
++}
++
++static ssize_t writable_pt_show(struct hyp_sysfs_attr *attr, char *buffer)
++{
++	return xen_feature_show(XENFEAT_writable_page_tables, buffer);
++}
++
++HYPERVISOR_ATTR_RO(writable_pt);
++
++static struct attribute *xen_properties_attrs[] = {
++	&capabilities_attr.attr,
++	&changeset_attr.attr,
++	&virtual_start_attr.attr,
++	&pagesize_attr.attr,
++	&writable_pt_attr.attr,
++	NULL
++};
++
++static struct attribute_group xen_properties_group = {
++	.name = "properties",
++	.attrs = xen_properties_attrs,
++};
++
++static int __init xen_properties_init(void)
++{
++	return sysfs_create_group(hypervisor_kobj, &xen_properties_group);
++}
++
++static void xen_properties_destroy(void)
++{
++	sysfs_remove_group(hypervisor_kobj, &xen_properties_group);
++}
++
++#ifdef CONFIG_KEXEC
++
++extern size_t vmcoreinfo_size_xen;
++extern unsigned long paddr_vmcoreinfo_xen;
++
++static ssize_t vmcoreinfo_show(struct hyp_sysfs_attr *attr, char *page)
++{
++	return sprintf(page, "%lx %zx\n",
++		paddr_vmcoreinfo_xen, vmcoreinfo_size_xen);
++}
++
++HYPERVISOR_ATTR_RO(vmcoreinfo);
++
++static int __init xen_sysfs_vmcoreinfo_init(void)
++{
++	return sysfs_create_file(hypervisor_kobj,
++				 &vmcoreinfo_attr.attr);
++}
++
++static void xen_sysfs_vmcoreinfo_destroy(void)
++{
++	sysfs_remove_file(hypervisor_kobj, &vmcoreinfo_attr.attr);
++}
++
++#endif
++
++static int __init hyper_sysfs_init(void)
++{
++	int ret;
++
++	if (!xen_domain())
++		return -ENODEV;
++
++	ret = xen_sysfs_type_init();
++	if (ret)
++		goto out;
++	ret = xen_sysfs_version_init();
++	if (ret)
++		goto version_out;
++	ret = xen_compilation_init();
++	if (ret)
++		goto comp_out;
++	ret = xen_sysfs_uuid_init();
++	if (ret)
++		goto uuid_out;
++	ret = xen_properties_init();
++	if (ret)
++		goto prop_out;
++#ifdef CONFIG_KEXEC
++	if (vmcoreinfo_size_xen != 0) {
++		ret = xen_sysfs_vmcoreinfo_init();
++		if (ret)
++			goto vmcoreinfo_out;
++	}
++#endif
++
++	goto out;
++
++#ifdef CONFIG_KEXEC
++vmcoreinfo_out:
++#endif
++	xen_properties_destroy();
++prop_out:
++	xen_sysfs_uuid_destroy();
++uuid_out:
++	xen_compilation_destroy();
++comp_out:
++	xen_sysfs_version_destroy();
++version_out:
++	xen_sysfs_type_destroy();
++out:
++	return ret;
++}
++
++static void __exit hyper_sysfs_exit(void)
++{
++#ifdef CONFIG_KEXEC
++	if (vmcoreinfo_size_xen != 0)
++		xen_sysfs_vmcoreinfo_destroy();
++#endif
++	xen_properties_destroy();
++	xen_compilation_destroy();
++	xen_sysfs_uuid_destroy();
++	xen_sysfs_version_destroy();
++	xen_sysfs_type_destroy();
++
++}
++module_init(hyper_sysfs_init);
++module_exit(hyper_sysfs_exit);
++
++static ssize_t hyp_sysfs_show(struct kobject *kobj,
++			      struct attribute *attr,
++			      char *buffer)
++{
++	struct hyp_sysfs_attr *hyp_attr;
++	hyp_attr = container_of(attr, struct hyp_sysfs_attr, attr);
++	if (hyp_attr->show)
++		return hyp_attr->show(hyp_attr, buffer);
++	return 0;
++}
++
++static ssize_t hyp_sysfs_store(struct kobject *kobj,
++			       struct attribute *attr,
++			       const char *buffer,
++			       size_t len)
++{
++	struct hyp_sysfs_attr *hyp_attr;
++	hyp_attr = container_of(attr, struct hyp_sysfs_attr, attr);
++	if (hyp_attr->store)
++		return hyp_attr->store(hyp_attr, buffer, len);
++	return 0;
++}
++
++static struct sysfs_ops hyp_sysfs_ops = {
++	.show = hyp_sysfs_show,
++	.store = hyp_sysfs_store,
++};
++
++static struct kobj_type hyp_sysfs_kobj_type = {
++	.sysfs_ops = &hyp_sysfs_ops,
++};
++
++static int __init hypervisor_subsys_init(void)
++{
++	if (!xen_domain())
++		return -ENODEV;
++
++	hypervisor_kobj->ktype = &hyp_sysfs_kobj_type;
++	return 0;
++}
++device_initcall(hypervisor_subsys_init);
+diff --git a/include/xen/interface/version.h b/include/xen/interface/version.h
+index 453235e..e8b6519 100644
+--- a/include/xen/interface/version.h
++++ b/include/xen/interface/version.h
+@@ -57,4 +57,7 @@ struct xen_feature_info {
+ /* Declares the features reported by XENVER_get_features. */
+ #include "features.h"
  
--#ifdef CONFIG_KEXEC
--
--extern size_t vmcoreinfo_size_xen;
--extern unsigned long paddr_vmcoreinfo_xen;
--
--static ssize_t vmcoreinfo_show(struct hyp_sysfs_attr *attr, char *page)
--{
--	return sprintf(page, "%lx %zx\n",
--		paddr_vmcoreinfo_xen, vmcoreinfo_size_xen);
--}
--
--HYPERVISOR_ATTR_RO(vmcoreinfo);
--
--static int __init xen_sysfs_vmcoreinfo_init(void)
--{
--	return sysfs_create_file(hypervisor_kobj,
--				 &vmcoreinfo_attr.attr);
--}
--
--static void xen_sysfs_vmcoreinfo_destroy(void)
--{
--	sysfs_remove_file(hypervisor_kobj, &vmcoreinfo_attr.attr);
--}
--
--#endif
--
- static int __init hyper_sysfs_init(void)
- {
- 	int ret;
-@@ -401,20 +375,9 @@ static int __init hyper_sysfs_init(void)
- 	ret = xen_properties_init();
- 	if (ret)
- 		goto prop_out;
--#ifdef CONFIG_KEXEC
--	if (vmcoreinfo_size_xen != 0) {
--		ret = xen_sysfs_vmcoreinfo_init();
--		if (ret)
--			goto vmcoreinfo_out;
--	}
--#endif
- 
- 	goto out;
- 
--#ifdef CONFIG_KEXEC
--vmcoreinfo_out:
--#endif
--	xen_properties_destroy();
- prop_out:
- 	xen_sysfs_uuid_destroy();
- uuid_out:
-@@ -429,10 +392,6 @@ out:
- 
- static void __exit hyper_sysfs_exit(void)
- {
--#ifdef CONFIG_KEXEC
--	if (vmcoreinfo_size_xen != 0)
--		xen_sysfs_vmcoreinfo_destroy();
--#endif
- 	xen_properties_destroy();
- 	xen_compilation_destroy();
- 	xen_sysfs_uuid_destroy();
++/* arg == NULL; returns host memory page size. */
++#define XENVER_pagesize 7
++
+ #endif /* __XEN_PUBLIC_VERSION_H__ */
 -- 
 1.6.0.6
 
