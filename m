@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759720AbZCMWt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760153AbZCMWub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759720AbZCMWt6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 18:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758348AbZCMWtu
+	id S1760153AbZCMWub (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 18:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758348AbZCMWuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 18:49:50 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37981 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757899AbZCMWtu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 18:49:50 -0400
-Message-ID: <49BAE210.7090300@zytor.com>
-Date: Fri, 13 Mar 2009 15:45:36 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] x86: add brk allocator for very early allocations
-References: <49B7EDF4.7060904@goop.org> <49B800B8.2040009@kernel.org> <49B9A1CD.5040704@goop.org> <49B9AC7F.9030302@kernel.org> <49BAC1B0.6050107@goop.org>
-In-Reply-To: <49BAC1B0.6050107@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Mar 2009 18:50:17 -0400
+Received: from cmpxchg.org ([85.214.51.133]:52241 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754879AbZCMWuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 18:50:16 -0400
+Date: Fri, 13 Mar 2009 23:49:08 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: David Howells <dhowells@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, peterz@infradead.org,
+       Enrik.Berkhan@ge.com, uclinux-dev@uclinux.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Rik van Riel <riel@surriel.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: [PATCH] NOMMU: Pages allocated to a ramfs inode's pagecache may get wrongly discarded
+Message-ID: <20090313224908.GA2271@cmpxchg.org>
+References: <20090312100049.43A3.A69D9226@jp.fujitsu.com> <20090311170207.1795cad9.akpm@linux-foundation.org> <28c262360903111735s2b0c43a3pd48fcf8d55416ae3@mail.gmail.com> <27074.1236945182@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <27074.1236945182@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
->>>
->>> INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE +
->>> ALLOCATOR_SLOP)*PAGE_SIZE_asm
->>>     
->>
->> no user for INIT_MAP_BEYOND_END any more.
->>   
+On Fri, Mar 13, 2009 at 11:53:02AM +0000, David Howells wrote:
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 > 
-> There are several remaining references:
+> > David, Could you please try following patch if you have NOMMU machine?
+> > it is straightforward porting to nommu.
 > 
-> : abulafia:pts/0; grep INIT_MAP_BEYOND_END arch/x86/kernel/head_32.S 
-> INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE + 
-> ALLOCATOR_SLOP)*PAGE_SIZE_asm
-> * and PAGE_OFFSET for up to _end+sizeof(page tables)+INIT_MAP_BEYOND_END.
->      * End condition: we must map up to and including INIT_MAP_BEYOND_END
->     leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
->      * End condition: we must map up to and including INIT_MAP_BEYOND_END
->     leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
-> 
-> Are you saying they're redundant and should be removed?
-> 
+> Is this patch actually sufficient, though?  Surely it requires an alteration
+> to ramfs to mark the page as being unevictable?
 
-Those references are just the actual reservation of memory.  If all the 
-users of that memory are converted to either brk or bss, 
-INIT_MAP_BEYOND_END should be removed.  If all the users of that memory 
-aren't converted to brk to bss, we should do so.
+ramfs already marks the whole address space of each inode as
+unevictable, see ramfs_get_inode().
 
-	-hpa
+The reclaim code will regard this when the config option is enabled.
+
+	Hannes
