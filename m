@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbZCMFlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbZCMFqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758023AbZCMFlr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 01:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbZCMFlc
+	id S1757699AbZCMFqk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 01:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZCMFqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 01:41:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49548 "EHLO hera.kernel.org"
+	Fri, 13 Mar 2009 01:46:31 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:49447 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752831AbZCMFlb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 01:41:31 -0400
-Subject: Re: [PATCH 4/4] softirq: no need to have SOFTIRQ in softirq name
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <srostedt@redhat.com>
-In-Reply-To: <20090313050521.766183674@goodmis.org>
-References: <20090313050446.277065036@goodmis.org>
-	 <20090313050521.766183674@goodmis.org>
-Content-Type: text/plain
-Date: Fri, 13 Mar 2009 11:10:11 +0530
-Message-Id: <1236922811.2553.16.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	id S1750923AbZCMFqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 01:46:30 -0400
+Message-ID: <49B9F32E.9020003@us.ibm.com>
+Date: Thu, 12 Mar 2009 22:46:22 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/futexes] futex: additional (get|put)_futex_key() fixes
+References: <20090312075545.9856.75152.stgit@Aeon> <tip-de87fcc124a5d4a171aa32707b3265608ebda6e7@git.kernel.org> <20090313002000.GA11780@elte.hu>
+In-Reply-To: <20090313002000.GA11780@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-13 at 01:04 -0400, Steven Rostedt wrote:
-> plain text document attachment
-> (0004-softirq-no-need-to-have-SOFTIRQ-in-softirq-name.patch)
-> From: Steven Rostedt <srostedt@redhat.com>
+Ingo Molnar wrote:
+> * Darren Hart <dvhltc@us.ibm.com> wrote:
 > 
-> Impact: clean up
+>> @@ -1595,13 +1601,12 @@ uaddr_faulted:
+>>  
+>>  	ret = get_user(uval, uaddr);
+>>  	if (!ret)
+>> -		goto retry;
+>> +		goto retry_unlocked;
+>>  
+>> -	if (to)
+>> -		destroy_hrtimer_on_stack(&to->timer);
+>> -	return ret;
+>> +	goto out_put_key;
 > 
-> It is redundant to have 'SOFTIRQ' in the softirq names.
-> 
-> Reported-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/softirq.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/softirq.c b/kernel/softirq.c
-> index a5e8123..65ff3e3 100644
-> --- a/kernel/softirq.c
-> +++ b/kernel/softirq.c
-> @@ -55,9 +55,8 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
->  static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
->  
->  char *softirq_to_name[NR_SOFTIRQS] = {
-> -	"HI_SOFTIRQ", "TIMER_SOFTIRQ", "NET_TX_SOFTIRQ", "NET_RX_SOFTIRQ",
-> -	"BLOCK_SOFTIRQ", "TASKLET_SOFTIRQ", "SCHED_SOFTIRQ", "HRTIMER_SOFTIRQ",
-> -	"RCU_SOFTIRQ"
-> +	"HI", "TIMER", "NET_TX", "NET_RX", "BLOCK",
-> +	"TASKLET", "SCHED", "HRTIMER",	"RCU"
->  };
->  
+> hm, was that destroy_hrtimer_on_stack() removal intended? It's 
+> not directly commented on in the changelog.
 
-This will look more better:
+Yes, rather than duplicate the cleanup logic, I replaced it with the 
+"goto out_put_key;", which also drops the futex_key, which was missing 
+in the original exit path.
 
-+	"HI",		"TIMER",	"NET_TX",
-+	"NET_RX",	"BLOCK",	"TASKLET",
-+	"SCHED",	"HRTIMER",	"RCU"
+Thanks,
 
---
-JSR
-
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
