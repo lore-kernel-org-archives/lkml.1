@@ -1,130 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbZCMBFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbZCMBYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757484AbZCMBFT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 21:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZCMBFD
+	id S1757343AbZCMBYs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 21:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbZCMBYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 21:05:03 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:36220 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754139AbZCMBFB (ORCPT
+	Thu, 12 Mar 2009 21:24:38 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:32737 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750770AbZCMBYh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 21:05:01 -0400
-Date: Fri, 13 Mar 2009 02:04:58 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>
-Subject: some ARM fixes for 2.6.29-rc7-rt1
-Message-ID: <20090313010458.GB1192@pengutronix.de>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain> <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
+	Thu, 12 Mar 2009 21:24:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=qT2S6Mz2YoevTRj3/gpGzliGasVDx8QZGN4hSpa3mqCdeK24dbmMtUp2VbvNGPjBcd
+         6dgILI5PnVbitFGLhPLJVr0Z3iaCJ/Z0BKocr5z/gtf1C0auIPyXdy3KvOhHzQ4BzeEq
+         8Dvj1Uw2bhQ+xJxG5qXY+MMWN0ZxKfi90D/tQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+In-Reply-To: <f14c01620903121753j34de8bf0j28ba3339e560d5db@mail.gmail.com>
+References: <f14c01620903121753j34de8bf0j28ba3339e560d5db@mail.gmail.com>
+Date: Thu, 12 Mar 2009 18:24:34 -0700
+Message-ID: <f14c01620903121824tcf8b988rcb783dafee015c72@mail.gmail.com>
+Subject: Re: kernel lockup - copy_user_generic_string+45 -> oops?
+From: Kaleb Pederson <kaleb.pederson@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Here's another crash dump including the initial crash output which I
+forgot last time.  Both this and the prior call system_call_fastpath
+and are going through the vfs layer, but this second one doesn't go
+through copy_user_generic_string. I'm not familiar with any of the
+kernel source to know what that might imply :(.
 
-On Thu, Mar 12, 2009 at 08:17:50PM +0100, Thomas Gleixner wrote:
-> We are pleased to announce the next update to our new preempt-rt
-> series. It contains only one new patch:
->    
->    - port forward to 2.6.29-rc7
->    - disable CONFIG_MAXCPUS for now (undebugged runtime bug)
->    - fix CONFIG_HIGHMEM problems
->    - fix netfilter problems
->    - make debugobjects -rt safe
->    - various build fixes
-on top of 2.6.29-rc7-rc1 I did some ARM related fixes that you can find
-at
+Could this be related to a hardware problem (in this case related to
+the hard drive)?
 
-	git://git.pengutronix.de/git/ukl/linux-2.6.git v2.6.29-rc7-rt1-pu
+      KERNEL: /usr/src/linux/vmlinux
+    DUMPFILE: /root/vmcore2
+        CPUS: 4
+        DATE: Thu Mar 12 18:04:01 2009
+      UPTIME: 00:05:53
+LOAD AVERAGE: 1.15, 0.28, 0.09
+       TASKS: 207
+    NODENAME: kibab
+     RELEASE: 2.6.29-rc7
+     VERSION: #3 SMP Thu Mar 12 13:34:16 PDT 2009
+     MACHINE: x86_64  (2608 Mhz)
+      MEMORY: 4 GB
+       PANIC: ""
+         PID: 10935
+     COMMAND: "kdeinit4"
+        TASK: ffff880129533160  [THREAD_INFO: ffff88012bc26000]
+         CPU: 0
+       STATE: TASK_RUNNING (NMI)
 
-The top commit currently isn't pretty as it contains several independant
-fixes.  Some of them are netX specific so you probably don't need them,
-but they shouldn't hurt you either.
+crash> bt -a
+PID: 10935  TASK: ffff880129533160  CPU: 0   COMMAND: "kdeinit4"
+ #0 [ffffffff807e8cd0] machine_kexec at ffffffff8021ef5b
+ #1 [ffffffff807e8db0] crash_kexec at ffffffff8026326e
+ #2 [ffffffff807e8e80] oops_end at ffffffff80554115
+ #3 [ffffffff807e8eb0] die_nmi at ffffffff805542ba
+ #4 [ffffffff807e8ee0] nmi_watchdog_tick at ffffffff8055461a
+ #5 [ffffffff807e8f20] do_nmi at ffffffff80553bc7
+ #6 [ffffffff807e8f50] nmi at ffffffff8055398a
+    [exception RIP: task_rq_lock+89]
+    RIP: ffffffff8022e540  RSP: ffff88012bc27b18  RFLAGS: 00000046
+    RAX: ffff88012f8846c0  RBX: ffff88002803a700  RCX: 00000052513686ad
+    RDX: 0000000000000001  RSI: ffff88012bc27b58  RDI: ffff88002803a700
+    RBP: ffff88012bc27b38   R8: ffff88012bc27ba8   R9: ffff88012bc67ad8
+    R10: 0000000000000000  R11: 0000000000000000  R12: ffff88002803a700
+    R13: ffff88012bc27b58  R14: ffff880129570500  R15: 0000000000000001
+    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+--- <exception stack> ---
+ #7 [ffff88012bc27b18] task_rq_lock at ffffffff8022e540
+ #8 [ffff88012bc27b40] try_to_wake_up at ffffffff8023205f
+ #9 [ffff88012bc27b90] default_wake_function at ffffffff802321b1
+#10 [ffff88012bc27ba0] pollwake at ffffffff802b92f6
+#11 [ffff88012bc27bf0] __wake_up_common at ffffffff8022cf28
+#12 [ffff88012bc27c30] __wake_up_sync at ffffffff8022df86
+#13 [ffff88012bc27c60] sock_def_readable at ffffffff804d0f7c
+#14 [ffff88012bc27c80] unix_stream_sendmsg at ffffffff80539143
+#15 [ffff88012bc27d10] sock_aio_write at ffffffff804cc8c0
+#16 [ffff88012bc27de0] do_sync_write at ffffffff802ab077
+#17 [ffff88012bc27f10] vfs_write at ffffffff802ab81f
+#18 [ffff88012bc27f40] sys_write at ffffffff802abd8c
+#19 [ffff88012bc27f80] system_call_fastpath at ffffffff8020bf5b
+    RIP: 00007f1212cd9200  RSP: 00007fff1b4ff510  RFLAGS: 00010293
+    RAX: 0000000000000001  RBX: ffffffff8020bf5b  RCX: 000000000062cbe0
+    RDX: 0000000000000010  RSI: 00007fff1b4ff9e0  RDI: 0000000000000007
+    RBP: 000000000060b560   R8: 00007f1211649eb7   R9: 0000000000002ab7
+    R10: 00007f12134c67f0  R11: 0000000000000246  R12: 0000000000409c67
+    R13: 0000000000000007  R14: 000000000062d490  R15: 0000000000002b4f
+    ORIG_RAX: 0000000000000001  CS: 0033  SS: 002b
 
-I will update this branch as I continue working in a non-fast-forward
-manner.  I use TopGit to manage this branch, you might want to use it,
-too, if you intend to follow my work.
+PID: 0      TASK: ffff88012f26b410  CPU: 1   COMMAND: "swapper"
+ #0 [ffff88012f274e80] crash_nmi_callback at ffffffff8021b588
+ #1 [ffff88012f274e90] notifier_call_chain at ffffffff80555ac6
+ #2 [ffff88012f274ed0] __atomic_notifier_call_chain at ffffffff80555b05
+ #3 [ffff88012f274ee0] atomic_notifier_call_chain at ffffffff80555b16
+ #4 [ffff88012f274ef0] notify_die at ffffffff8024f776
+ #5 [ffff88012f274f20] do_nmi at ffffffff80553bb1
+ #6 [ffff88012f274f50] nmi at ffffffff8055398a
+    [exception RIP: default_idle+43]
+    RIP: ffffffff80211d9d  RSP: ffff88012f26ded8  RFLAGS: 00000246
+    RAX: ffff88012f26dfd8  RBX: ffffffff8076bbb8  RCX: 00000000c0010055
+    RDX: 0000000000000000  RSI: 0000000000000001  RDI: ffffffff806b4d90
+    RBP: ffff88012f26ded8   R8: 0000000000000000   R9: 0000000000000001
+    R10: 0000000000000000  R11: 0000000000000000  R12: 0000000000000000
+    R13: 0000000000000000  R14: 0000000000000000  R15: 0000000000000000
+    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+--- <exception stack> ---
+ #7 [ffff88012f26ded8] default_idle at ffffffff80211d9d
+ #8 [ffff88012f26dee0] c1e_idle at ffffffff80211fc5
+ #9 [ffff88012f26df10] cpu_idle at ffffffff8020aca0
 
-My status quo is:
+PID: 11086  TASK: ffff880129aa7550  CPU: 2   COMMAND: "kio_http"
+ #0 [ffff88012f2a9e80] crash_nmi_callback at ffffffff8021b588
+ #1 [ffff88012f2a9e90] notifier_call_chain at ffffffff80555ac6
+ #2 [ffff88012f2a9ed0] __atomic_notifier_call_chain at ffffffff80555b05
+ #3 [ffff88012f2a9ee0] atomic_notifier_call_chain at ffffffff80555b16
+ #4 [ffff88012f2a9ef0] notify_die at ffffffff8024f776
+ #5 [ffff88012f2a9f20] do_nmi at ffffffff80553bb1
+ #6 [ffff88012f2a9f50] nmi at ffffffff8055398a
+    RIP: 00007f1212a23128  RSP: 00007fff1b4fd070  RFLAGS: 00000207
+    RAX: 00007f12132e36c0  RBX: 000000000065ad98  RCX: 0000000000000013
+    RDX: 0000000000000001  RSI: 000000000065ef70  RDI: 000000000065ef70
+    RBP: 00007fff1b4fd07c   R8: 00007fff1b4fd07c   R9: 0000000000000004
+    R10: 0000000000000003  R11: 00007f120fbe5a70  R12: 0000000000665fb8
+    R13: 00007fff1b4fdfa0  R14: 00007f12132e36c0  R15: 0000000000000000
+    ORIG_RAX: ffffffffffffffff  CS: 0033  SS: 002b
+--- <exception stack> ---
 
-	Testing tracer sched_switch: PASSED
-	Testing tracer function: PASSED
-	Testing tracer irqsoff: .. no entries found ..FAILED!
-	Testing tracer preemptoff: .. no entries found ..FAILED!
-	Testing tracer preemptirqsoff: .. no entries found ..<4>------------[ cut here ]------------
-	WARNING: at /ptx/work/octopus/WORK_2_A/ukl/gsrc/linux-2.6/kernel/trace/trace.c:683 warn_slowpath+0x18/0xa0()
-	Modules linked in:
-	[<c0244d40>] (dump_stack+0x0/0x18) from [<c003787c>] (warn_slowpath+0x6c/0xa0)
-	[<c0037810>] (warn_slowpath+0x0/0xa0) from [<c00750d0>] (tracing_start+0x60/0xdc)
-	 r3:ffffffff r2:00000000
-	 r7:c074aaf0 r6:c0748a0c r5:60000013 r4:c074aac8
-	[<c0075070>] (tracing_start+0x0/0xdc) from [<c0076430>] (trace_selftest_startup_preemptirqsoff+0x1ac/0x1d8)
-	 r5:c1c1a000 r4:ffffffff
-	[<c0076284>] (trace_selftest_startup_preemptirqsoff+0x0/0x1d8) from [<c00760c4>] (register_tracer+0x118/0x240)
-	[<c0075fac>] (register_tracer+0x0/0x240) from [<c000ebbc>] (init_irqsoff_tracer+0x24/0x38)
-	 r7:c000eb98 r6:00000000 r5:c001c44c r4:c001c2b8
-	[<c000eb98>] (init_irqsoff_tracer+0x0/0x38) from [<c00232c4>] (__exception_text_end+0x5c/0x1a4)
-	[<c0023268>] (__exception_text_end+0x0/0x1a4) from [<c00085a4>] (kernel_init+0x90/0x1c0)
-	 r8:00000000 r7:00000000 r6:00000000 r5:c001c44c r4:c001c2b8
-	[<c0008514>] (kernel_init+0x0/0x1c0) from [<c003aebc>] (do_exit+0x0/0x798)
-	 r5:00000000 r4:00000000
-	---[ end trace da227214a82491b7 ]---
-	FAILED!
+PID: 0      TASK: ffff88012f2d5490  CPU: 3   COMMAND: "swapper"
+ #0 [ffff88012f2e0e80] crash_nmi_callback at ffffffff8021b588
+ #1 [ffff88012f2e0e90] notifier_call_chain at ffffffff80555ac6
+ #2 [ffff88012f2e0ed0] __atomic_notifier_call_chain at ffffffff80555b05
+ #3 [ffff88012f2e0ee0] atomic_notifier_call_chain at ffffffff80555b16
+ #4 [ffff88012f2e0ef0] notify_die at ffffffff8024f776
+ #5 [ffff88012f2e0f20] do_nmi at ffffffff80553bb1
+ #6 [ffff88012f2e0f50] nmi at ffffffff8055398a
+    [exception RIP: default_idle+43]
+    RIP: ffffffff80211d9d  RSP: ffff88012f2d7ed8  RFLAGS: 00000246
+    RAX: ffff88012f2d7fd8  RBX: ffffffff8076bbb8  RCX: 00000000c0010055
+    RDX: 0000000000000000  RSI: 0000000000000001  RDI: ffffffff806b4d90
+    RBP: ffff88012f2d7ed8   R8: 0000000000000000   R9: 0000000000000003
+    R10: 0000000000000008  R11: 0000000000000246  R12: 0000000000000000
+    R13: 0000000000000000  R14: 0000000000000000  R15: 0000000000000000
+    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+--- <exception stack> ---
+ #7 [ffff88012f2d7ed8] default_idle at ffffffff80211d9d
+ #8 [ffff88012f2d7ee0] c1e_idle at ffffffff80211fc5
+ #9 [ffff88012f2d7f10] cpu_idle at ffffffff8020aca0
 
-The warning is triggered here because tracing_start is called twice in
-trace_selftest_startup_preemptirqsoff's error path[1].
 
-I researched for some time now why the tracers doesn't pass the
-self-tests, but without success.  It's bed time and any hints are
-welcome.
+Thanks again for the help.
 
-Other than that my machine boots and reports from time to time
+--Kaleb
 
-	scheduling while atomic
-
-and
-
-	sleeping function called from invalid context at kernel/rtmutex.c:683
-
-Both errors probably happen because some spin_locks need to be converted
-to raw_spin_locks.  Will look later.
-
-I provide this uncooked state to prevent duplicate work, so please
-excuse the bad code and commit history.  If it upsets you, please send
-patches :-)
-
-Best regards
-Uwe
-
-[1] if trace_test_buffer sets count = 0 or returns != 0 in
-kernel/trace/trace_selftest.c:440, the code flow is:
-
-	tracing_start()
-	goto out;
-
-	...
-out:
-	trace->reset(tr);
-	tracing_start();
-
-I think the last tracing_start is wrong, but I didn't check deeply.
-
--- 
-Pengutronix e.K.                              | Uwe Kleine-K�nig            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+On Thu, Mar 12, 2009 at 5:53 PM, Kaleb Pederson
+<kaleb.pederson@gmail.com> wrote:
+> I'm experiencing random but frequent lockups on a newly built system.
+> I installed a crashkernel and was able to produce a crash dump which
+> follows:
+>
+> crash> bt -a
+> PID: 11672  TASK: ffff88012960d260  CPU: 0   COMMAND: "strings"
+>  #0 [ffffffff807e8cd0] machine_kexec at ffffffff8021ef5b
+>  #1 [ffffffff807e8db0] crash_kexec at ffffffff8026326e
+>  #2 [ffffffff807e8e80] oops_end at ffffffff80554115
+>  #3 [ffffffff807e8eb0] die_nmi at ffffffff805542ba
+>  #4 [ffffffff807e8ee0] nmi_watchdog_tick at ffffffff8055461a
+>  #5 [ffffffff807e8f20] do_nmi at ffffffff80553bc7
+>  #6 [ffffffff807e8f50] nmi at ffffffff8055398a
+>    [exception RIP: copy_user_generic_string+45]
+>    RIP: ffffffff803ca68d  RSP: ffff88012dcb5c60  RFLAGS: 00000246
+>    RAX: ffff880000000000  RBX: ffff88012dcb5d08  RCX: 00000000000000af
+>    RDX: 0000000000000000  RSI: ffff8801190d1a88  RDI: 00007f5e594f6a98
+>    RBP: ffff88012dcb5c98   R8: 0000000000010287   R9: ffffe20003d7adc0
+>    R10: 0000000000000002  R11: 0000000000000001  R12: 0000000000001000
+>    R13: 0000000000096000  R14: ffffe20003d7adb8  R15: 0000000000000000
+>    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+> --- <exception stack> ---
+>  #7 [ffff88012dcb5c60] copy_user_generic_string at ffffffff803ca68d
+>  #8 [ffff88012dcb5c60] file_read_actor at ffffffff802851f1
+>  #9 [ffff88012dcb5ca0] generic_file_aio_read at ffffffff80284ee5
+> #10 [ffff88012dcb5d70] xfs_read at ffffffff803926d4
+> #11 [ffff88012dcb5dd0] xfs_file_aio_read at ffffffff8038f11b
+> #12 [ffff88012dcb5de0] do_sync_read at ffffffff802ab19d
+> #13 [ffff88012dcb5f10] vfs_read at ffffffff802ab960
+> #14 [ffff88012dcb5f40] sys_read at ffffffff802abd1c
+> #15 [ffff88012dcb5f80] system_call_fastpath at ffffffff8020bf5b
+>    RIP: 00007f5e59647860  RSP: 00007fff61ffcd80  RFLAGS: 00010202
+>    RAX: 0000000000000000  RBX: ffffffff8020bf5b  RCX: 00007f5e596507da
+>    RDX: 0000000000359000  RSI: 00007f5e59233010  RDI: 000000000000000a
+>    RBP: 0000000000609200   R8: 00007f5e59fd46f0   R9: 00007f5e59233010
+>    R10: 0000000000200000  R11: 0000000000000246  R12: 00000000003599af
+>    R13: 00007f5e59233010  R14: 00000000003599af  R15: 0000000000000000
+>    ORIG_RAX: 0000000000000000  CS: 0033  SS: 002b
+>
+> PID: 0      TASK: ffff88012f26b410  CPU: 1   COMMAND: "swapper"
+>  #0 [ffff88012f274e80] crash_nmi_callback at ffffffff8021b588
+>  #1 [ffff88012f274e90] notifier_call_chain at ffffffff80555ac6
+>  #2 [ffff88012f274ed0] __atomic_notifier_call_chain at ffffffff80555b05
+>  #3 [ffff88012f274ee0] atomic_notifier_call_chain at ffffffff80555b16
+>  #4 [ffff88012f274ef0] notify_die at ffffffff8024f776
+>  #5 [ffff88012f274f20] do_nmi at ffffffff80553bb1
+>  #6 [ffff88012f274f50] nmi at ffffffff8055398a
+>    [exception RIP: default_idle+43]
+>    RIP: ffffffff80211d9d  RSP: ffff88012f26ded8  RFLAGS: 00000246
+>    RAX: ffff88012f26dfd8  RBX: ffffffff8076bbb8  RCX: 00000000c0010055
+>    RDX: 0000000000000000  RSI: 0000000000000001  RDI: ffffffff806b4d90
+>    RBP: ffff88012f26ded8   R8: 0000000000000000   R9: 0000000000000001
+>    R10: 0000000000000022  R11: 0000000000000246  R12: 0000000000000000
+>    R13: 0000000000000000  R14: 0000000000000000  R15: 0000000000000000
+>    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+> --- <exception stack> ---
+>  #7 [ffff88012f26ded8] default_idle at ffffffff80211d9d
+>  #8 [ffff88012f26dee0] c1e_idle at ffffffff80211fc5
+>  #9 [ffff88012f26df10] cpu_idle at ffffffff8020aca0
+>
+> PID: 0      TASK: ffff88012f2a1450  CPU: 2   COMMAND: "swapper"
+>  #0 [ffff88012f2a9e80] crash_nmi_callback at ffffffff8021b588
+>  #1 [ffff88012f2a9e90] notifier_call_chain at ffffffff80555ac6
+>  #2 [ffff88012f2a9ed0] __atomic_notifier_call_chain at ffffffff80555b05
+>  #3 [ffff88012f2a9ee0] atomic_notifier_call_chain at ffffffff80555b16
+>  #4 [ffff88012f2a9ef0] notify_die at ffffffff8024f776
+>  #5 [ffff88012f2a9f20] do_nmi at ffffffff80553bb1
+>  #6 [ffff88012f2a9f50] nmi at ffffffff8055398a
+>    [exception RIP: default_idle+43]
+>    RIP: ffffffff80211d9d  RSP: ffff88012f2a3ed8  RFLAGS: 00000246
+>    RAX: ffff88012f2a3fd8  RBX: ffffffff8076bbb8  RCX: 00000000c0010055
+>    RDX: 0000000000000000  RSI: 0000000000000001  RDI: ffffffff806b4d90
+>    RBP: ffff88012f2a3ed8   R8: 0000000000000000   R9: 0000000000000002
+>    R10: 0000000000000003  R11: 0000000000000001  R12: 0000000000000000
+>    R13: 0000000000000000  R14: 0000000000000000  R15: 0000000000000000
+>    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+> --- <exception stack> ---
+>  #7 [ffff88012f2a3ed8] default_idle at ffffffff80211d9d
+>  #8 [ffff88012f2a3ee0] c1e_idle at ffffffff80211fc5
+>  #9 [ffff88012f2a3f10] cpu_idle at ffffffff8020aca0
+>
+> PID: 0      TASK: ffff88012f2d5490  CPU: 3   COMMAND: "swapper"
+>  #0 [ffff88012f2e0e80] crash_nmi_callback at ffffffff8021b588
+>  #1 [ffff88012f2e0e90] notifier_call_chain at ffffffff80555ac6
+>  #2 [ffff88012f2e0ed0] __atomic_notifier_call_chain at ffffffff80555b05
+>  #3 [ffff88012f2e0ee0] atomic_notifier_call_chain at ffffffff80555b16
+>  #4 [ffff88012f2e0ef0] notify_die at ffffffff8024f776
+>  #5 [ffff88012f2e0f20] do_nmi at ffffffff80553bb1
+>  #6 [ffff88012f2e0f50] nmi at ffffffff8055398a
+>    [exception RIP: default_idle+43]
+>    RIP: ffffffff80211d9d  RSP: ffff88012f2d7ed8  RFLAGS: 00000246
+>    RAX: ffff88012f2d7fd8  RBX: ffffffff8076bbb8  RCX: 00000000c0010055
+>    RDX: 0000000000000000  RSI: 0000000000000001  RDI: ffffffff806b4d90
+>    RBP: ffff88012f2d7ed8   R8: 0000000000000000   R9: 0000000000000003
+>    R10: 0000000000000003  R11: 0000000000000001  R12: 0000000000000000
+>    R13: 0000000000000000  R14: 0000000000000000  R15: 0000000000000000
+>    ORIG_RAX: ffffffffffffffff  CS: 0010  SS: 0018
+> --- <exception stack> ---
+>  #7 [ffff88012f2d7ed8] default_idle at ffffffff80211d9d
+>  #8 [ffff88012f2d7ee0] c1e_idle at ffffffff80211fc5
+>  #9 [ffff88012f2d7f10] cpu_idle at ffffffff8020aca0
+>
+> I'm interested in helping arrive at a solution and any workarounds.
+> Please let me know if there's anything else useful that I can provide.
+>
+> Thanks.
+>
+> --Kaleb
+>
