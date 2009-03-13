@@ -1,89 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbZCMIJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZCMIM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756801AbZCMIJZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 04:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZCMIJL
+	id S1755506AbZCMIM0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 04:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZCMIMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 04:09:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43089 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751703AbZCMIJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 04:09:09 -0400
-Subject: Re: [git-pull -tip V2] x86: cpu architecture debug code
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <49BA0C8C.4050302@goop.org>
-References: <1236684201.3301.11.camel@localhost.localdomain>
-	 <20090310122806.GE5794@elte.hu>
-	 <1236697752.3387.2.camel@localhost.localdomain>
-	 <20090310152029.GN3850@elte.hu>
-	 <1236701373.3387.4.camel@localhost.localdomain>
-	 <20090310174535.GA2963@elte.hu>
-	 <1236729310.7004.2.camel@localhost.localdomain>
-	 <20090311105333.GC2282@elte.hu> <1236770749.2836.10.camel@ht.satnam>
-	 <49BA0C8C.4050302@goop.org>
-Content-Type: text/plain
-Date: Fri, 13 Mar 2009 13:37:48 +0530
-Message-Id: <1236931668.7865.4.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Mar 2009 04:12:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:34776 "EHLO abulafia.goop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750897AbZCMIMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 04:12:06 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: [GIT PULL] 2.6.30 Xen core updates
+Date: Fri, 13 Mar 2009 01:11:36 -0700
+Message-Id: <1236931920-6861-1-git-send-email-jeremy@goop.org>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-13 at 00:34 -0700, Jeremy Fitzhardinge wrote:
-> Jaswinder Singh Rajput wrote:
-> >>> Complete diff:
-> >>> diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
-> >>> index 0bdf4da..08c365a 100755
-> >>> --- a/arch/x86/kernel/cpu/cpu_debug.c
-> >>> +++ b/arch/x86/kernel/cpu/cpu_debug.c
-> >>> @@ -464,19 +464,19 @@ static void print_dt(void *seq)
-> >>>  	unsigned long ldt;
-> >>>  
-> >>>  	/* IDT */
-> >>> -	store_idt((struct desc_ptr *)&dt);
-> >>> +	native_store_idt((struct desc_ptr *)&dt);
-> >>>       
-> >> hm, this wont work on Xen then.
-> >>
-> >>     
-> >
-> > Strange it should work for Xen, Are you getting any error.
-> >
-> > Xen also uses native_store_idt:
-> > arch/x86/xen/enlighten.c:	.store_idt = native_store_idt,
-> >   
-> 
-> store_idt (and the others) are not used very much, and never in any code 
-> path under Xen.  They're not really meaningful in Xen, and this code 
-> will probably oops if you ran it.
-> 
-> I guess we could do more meaningful implementations of these ops for 
-> Xen, now that there's a user.
-> 
 
-cpu_debug is availabe in -tip.
+This series updates the kernel's baseline domU Xen functionality.
+It's mostly bugfixes, but there are a couple of new Xen-specific drivers.
 
-Can you test it:
+The series depends on the earlier x86/brk and x86/paravirt patches I
+posted a couple of days ago.
 
-[jaswinder@ht linux-2.6-tip]$ cat /sys/kernel/debug/x86/cpu/cpu*/dt/dt
- IDT	: 00000000c05617ff
- GDT	: 00000000c17040ff
- LDT	: 0000000000000000
- TR	: 0000000000000080
+Thanks,
+	J
 
- IDT	: 00000000c05617ff
- GDT	: 00000000c17140ff
- LDT	: 00000000fce90000
- TR	: 0000000000000080
+The following changes since commit 6b3933081104945c557d8fe678301cc1bdefdcc8:
+  Jeremy Fitzhardinge (1):
+        Merge branch 'push/x86/brk' into HEAD
 
-[jaswinder@ht linux-2.6-tip]$ 
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push/xen/master
 
---
-JSR
+Alex Nixon (1):
+      Xen: Add virt_to_pfn helper function
+
+Hannes Eder (1):
+      NULL noise: arch/x86/xen/smp.c
+
+Ian Campbell (6):
+      xen: add irq_from_evtchn
+      xen: add /dev/xen/evtchn driver
+      xen: export ioctl headers to userspace
+      xen: drop kexec bits from /sys/hypervisor since kexec isn't implemented yet
+      xen: remove suspend_cancel hook
+      xen: use device model for suspending xenbus devices
+
+Jeremy Fitzhardinge (18):
+      xen: disable preempt for leave_lazy_mmu
+      xen: separate p2m allocation from setting
+      xen: dynamically allocate p2m tables
+      xen: split construction of p2m mfn tables from registration
+      xen: clean up xen_load_gdt
+      xen: make xen_load_gdt simpler
+      xen: remove xen_load_gdt debug
+      xen: reserve i386 Xen pagetables
+      xen: mask XSAVE from cpuid
+      xen: add FIX_TEXT_POKE to fixmap
+      x86-64: remove PGE from must-have feature list
+      xen/dev-evtchn: clean up locking in evtchn
+      xen: add "capabilities" file
+      xen: add /sys/hypervisor support
+      xen/sys/hypervisor: change writable_pt to features
+      xen/xenbus: export xenbus_dev_changed
+      Merge branches 'push/xen/dev-evtchn', 'push/xen/xenfs' and 'push/xen/sys-hypervisor' into push/xen/control
+      Merge branches 'push/xen/control' and 'push/xen/xenbus' into push/xen/master
+
+ arch/x86/include/asm/required-features.h |    2 +-
+ arch/x86/include/asm/xen/page.h          |    3 +-
+ arch/x86/xen/enlighten.c                 |   76 ++++-
+ arch/x86/xen/mmu.c                       |  116 ++++++--
+ arch/x86/xen/mmu.h                       |    3 +
+ arch/x86/xen/smp.c                       |    4 +-
+ drivers/xen/Kconfig                      |   20 ++
+ drivers/xen/Makefile                     |    4 +-
+ drivers/xen/events.c                     |    6 +
+ drivers/xen/evtchn.c                     |  507 ++++++++++++++++++++++++++++++
+ drivers/xen/manage.c                     |    9 +-
+ drivers/xen/sys-hypervisor.c             |  445 ++++++++++++++++++++++++++
+ drivers/xen/xenbus/xenbus_probe.c        |   61 +---
+ drivers/xen/xenbus/xenbus_xs.c           |    2 +
+ drivers/xen/xenfs/super.c                |   19 +-
+ include/Kbuild                           |    1 +
+ include/xen/Kbuild                       |    1 +
+ include/xen/events.h                     |    3 +
+ include/xen/evtchn.h                     |   88 +++++
+ include/xen/interface/version.h          |    3 +
+ include/xen/xenbus.h                     |    3 +-
+ 21 files changed, 1269 insertions(+), 107 deletions(-)
+ create mode 100644 drivers/xen/evtchn.c
+ create mode 100644 drivers/xen/sys-hypervisor.c
+ create mode 100644 include/xen/Kbuild
+ create mode 100644 include/xen/evtchn.h
 
