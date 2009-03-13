@@ -1,141 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760177AbZCMRCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760588AbZCMRCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760177AbZCMRCU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 13:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759585AbZCMRAz
+	id S1760588AbZCMRCx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 13:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759674AbZCMRBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 13:00:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:57365 "EHLO abulafia.goop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753832AbZCMRAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 13:00:54 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       David Airlie <airlied@linux.ie>, Alex Nixon <alex.nixon@citrix.com>
-Subject: [PATCH 03/27] Xen: Rename the balloon lock
-Date: Fri, 13 Mar 2009 09:59:48 -0700
-Message-Id: <1236963612-14287-4-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1236963612-14287-1-git-send-email-jeremy@goop.org>
-References: <1236963612-14287-1-git-send-email-jeremy@goop.org>
+	Fri, 13 Mar 2009 13:01:01 -0400
+Received: from kotten8a.marieberg.ac ([213.238.238.22]:40058 "HELO
+	iluvatar.nyren.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759610AbZCMRBA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 13:01:00 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Mar 2009 13:00:59 EDT
+Date: Fri, 13 Mar 2009 17:54:09 +0100 (CET)
+From: Ralf Nyren <ralf@nyren.net>
+X-X-Sender: plumbum@fujje.iml.umu.se
+To: Rory Filer <rfiler@SierraWireless.com>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Kevin Lloyd <klloyd@SierraWireless.com>
+Subject: Re: your mail
+In-Reply-To: <8F90F944E50427428C60E12A34A309D21C401BA619@carmd-exchmb01.sierrawireless.local>
+Message-ID: <alpine.DEB.1.10.0903131751120.8432@fujje.iml.umu.se>
+References: <8F90F944E50427428C60E12A34A309D21C401BA619@carmd-exchmb01.sierrawireless.local>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Nixon <alex.nixon@citrix.com>
+Hi Rory,
 
-* xen_create_contiguous_region needs access to the balloon lock to
-  ensure memory doesn't change under its feet, so expose the balloon
-  lock
-* Change the name of the lock to xen_reservation_lock, to imply it's
-  now less-specific usage.
+Sounds great, send the driver and I'll give it a try at once. I'll report back
+to you with the results.
 
-Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
----
- arch/x86/xen/mmu.c             |    7 +++++++
- drivers/xen/balloon.c          |   15 ++++-----------
- include/xen/interface/memory.h |    8 ++++++++
- 3 files changed, 19 insertions(+), 11 deletions(-)
+Many thanks, Ralf
 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 58af0b0..c2aa44b 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -67,6 +67,13 @@
- 
- #define MMU_UPDATE_HISTO	30
- 
-+/*
-+ * Protects atomic reservation decrease/increase against concurrent increases.
-+ * Also protects non-atomic updates of current_pages and driver_pages, and
-+ * balloon lists.
-+ */
-+DEFINE_SPINLOCK(xen_reservation_lock);
-+
- #ifdef CONFIG_XEN_DEBUG_FS
- 
- static struct {
-diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
-index efa4b36..1e7984d 100644
---- a/drivers/xen/balloon.c
-+++ b/drivers/xen/balloon.c
-@@ -84,13 +84,6 @@ static struct sys_device balloon_sysdev;
- 
- static int register_balloon(struct sys_device *sysdev);
- 
--/*
-- * Protects atomic reservation decrease/increase against concurrent increases.
-- * Also protects non-atomic updates of current_pages and driver_pages, and
-- * balloon lists.
-- */
--static DEFINE_SPINLOCK(balloon_lock);
--
- static struct balloon_stats balloon_stats;
- 
- /* We increase/decrease in batches which fit in a page */
-@@ -209,7 +202,7 @@ static int increase_reservation(unsigned long nr_pages)
- 	if (nr_pages > ARRAY_SIZE(frame_list))
- 		nr_pages = ARRAY_SIZE(frame_list);
- 
--	spin_lock_irqsave(&balloon_lock, flags);
-+	spin_lock_irqsave(&xen_reservation_lock, flags);
- 
- 	page = balloon_first_page();
- 	for (i = 0; i < nr_pages; i++) {
-@@ -267,7 +260,7 @@ static int increase_reservation(unsigned long nr_pages)
- 	totalram_pages = balloon_stats.current_pages;
- 
-  out:
--	spin_unlock_irqrestore(&balloon_lock, flags);
-+	spin_unlock_irqrestore(&xen_reservation_lock, flags);
- 
- 	return 0;
- }
-@@ -312,7 +305,7 @@ static int decrease_reservation(unsigned long nr_pages)
- 	kmap_flush_unused();
- 	flush_tlb_all();
- 
--	spin_lock_irqsave(&balloon_lock, flags);
-+	spin_lock_irqsave(&xen_reservation_lock, flags);
- 
- 	/* No more mappings: invalidate P2M and add to balloon. */
- 	for (i = 0; i < nr_pages; i++) {
-@@ -329,7 +322,7 @@ static int decrease_reservation(unsigned long nr_pages)
- 	balloon_stats.current_pages -= nr_pages;
- 	totalram_pages = balloon_stats.current_pages;
- 
--	spin_unlock_irqrestore(&balloon_lock, flags);
-+	spin_unlock_irqrestore(&xen_reservation_lock, flags);
- 
- 	return need_sleep;
- }
-diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
-index f548f7c..9df4bd0 100644
---- a/include/xen/interface/memory.h
-+++ b/include/xen/interface/memory.h
-@@ -9,6 +9,8 @@
- #ifndef __XEN_PUBLIC_MEMORY_H__
- #define __XEN_PUBLIC_MEMORY_H__
- 
-+#include <linux/spinlock.h>
-+
- /*
-  * Increase or decrease the specified domain's memory reservation. Returns a
-  * -ve errcode on failure, or the # extents successfully allocated or freed.
-@@ -184,4 +186,10 @@ DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
-  */
- #define XENMEM_machine_memory_map   10
- 
-+/*
-+ * Prevent the balloon driver from changing the memory reservation during a driver
-+ * critical region.
-+ */
-+extern spinlock_t xen_reservation_lock;
-+
- #endif /* __XEN_PUBLIC_MEMORY_H__ */
--- 
-1.6.0.6
+On Fri, 13 Mar 2009, Rory Filer wrote:
 
+> Hi Ralf
+>
+>
+>
+> Kevin passed your email on to my attention and I think we can help you with this problem. We've been doing a lot of work on our drivers lately and I've got a freshly-ready version of sierra.c just for 2.6.28. We've done a lot of testing here and it seems pretty robust; perhaps you'd be willing to give it a try?
+>
+>
+>
+> Since I'm not sure about the etiquette for posting to this list, so I will attach the driver in a separate email to you.
+>
+>
+>
+> Regards
+>
+>
+>
+> Rory Filer
+>
+>
+>
+>
+>
+> -----Original Message-----
+>
+> From: Ralf Nyren [mailto:ralf@nyren.net]
+>
+> Sent: Friday, March 13, 2009 8:01 AM
+>
+> To: linux-kernel@vger.kernel.org
+>
+> Cc: Kevin Lloyd
+>
+> Subject: Sierra Wireless (MC8780) HSDPA speed issue
+>
+>
+>
+> Hi,
+>
+>
+>
+> I have a Sierra Wireless MC8780 UMTS card in a Fujitsu S6410 laptop running kernel 2.6.28.7. In kernel sierra driver v1.3.2.
+>
+>
+>
+> The card works but speed seems limited to approx 1.0 Mbit/s download using the linux driver.  Testing the card in Windows XP yields download speeds close to 5.0 Mbit/s.
+>
+>
+>
+> I recently updated the firmware of the card to support HSDPA/HSUPA. The update gave the desired result in Windows but not in Linux. The speed improved in Linux but didn't increase above 1 Mbit/s.
+>
+>
+>
+> Is there any known driver limitations or is this a configuration issue?
+>
+>
+>
+> Please let me know if you need any additional information.
+>
+>
+>
+> Best regards, Ralf
+>
+>
