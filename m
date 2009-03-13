@@ -1,57 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbZCMDeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbZCMDe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758013AbZCMDeI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 23:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZCMDdy
+	id S1755008AbZCMDe0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 23:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757910AbZCMDeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 23:33:54 -0400
-Received: from kroah.org ([198.145.64.141]:47421 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751394AbZCMDdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 23:33:53 -0400
-Date: Thu, 12 Mar 2009 20:05:10 -0700
-From: Greg KH <greg@kroah.com>
-To: Jarod Wilson <jarod@wilsonet.com>
-Cc: Michael Krufky <mkrufky@linuxtv.org>, stable@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, LMML <linux-media@vger.kernel.org>
-Subject: Re: [stable] Fwd: [PATCH] 2.6.27.y: fix NULL ptr deref in cx23885
-	video_open
-Message-ID: <20090313030510.GA5543@kroah.com>
-References: <200902241700.56099.jarod@redhat.com> <37219a840903121324q7b08c8d1ma6d0d3ec4f5eb278@mail.gmail.com> <20090313025051.GA5385@kroah.com> <49B9CC3B.4060300@wilsonet.com>
+	Thu, 12 Mar 2009 23:34:05 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58906 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757857AbZCMDeE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 23:34:04 -0400
+Date: Thu, 12 Mar 2009 23:34:01 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 08/16] tracing: have event_trace_printk use static
+ tracer
+In-Reply-To: <20090313122235.43EB.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0903122333110.18396@gandalf.stny.rr.com>
+References: <20090313120855.43E8.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0903122311160.18396@gandalf.stny.rr.com> <20090313122235.43EB.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49B9CC3B.4060300@wilsonet.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 11:00:11PM -0400, Jarod Wilson wrote:
-> Greg KH wrote:
->> On Thu, Mar 12, 2009 at 04:24:38PM -0400, Michael Krufky wrote:
->>> Can we have this merged into -stable?  Jarod Wilson sent this last
->>> month, but he left off the cc to stable@kernel.org
->> What is the git commit id of the patch in Linus's tree that matches up
->> with this?
->> thanks,
->> greg k-h
->
->
-> Now that I look closer, seems there's an even more complete patch already 
-> in linus' tree, commit id:
->
-> cd8f894eacf13996d920fdd2aef1afc55156b191
->
-> Shoulda just forwarded that along, but I was under the impression that area 
-> of code had changed significantly in 2.6.28 and the patch was no longer 
-> applicable. Maybe that was the v4l/dvb hg tree though... So I'd just grab 
-> that, and add:
->
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-Ok, will do that.
+On Fri, 13 Mar 2009, KOSAKI Motohiro wrote:
 
-thanks,
+> > > > +#define event_trace_printk(ip, fmt, args...)				\
+> > > > +do {									\
+> > > > +	__trace_printk_check_format(fmt, ##args);			\
+> > > > +	tracing_record_cmdline(current);				\
+> > > > +	if (__builtin_constant_p(fmt)) {				\
+> > > > +		static const char *trace_printk_fmt			\
+> > > > +		  __attribute__((section("__trace_printk_fmt"))) =	\
+> > > > +			__builtin_constant_p(fmt) ? fmt : NULL;		\
+> > > 
+> > > Why __builtin_constant_p(fmt) evaluate twice?
+> > 
+> > It's explained in another patch. But this was a real PITA. We first tried 
+> > this with just the "if (__builtin_return_p(fmt))" but the way gcc works, 
+> > it handles the global data assignments before optimizing out condition 
+> > logic. Thus we ended up getting errors about can not initialize static 
+> > variable with a non constant.
+> > 
+> > But the ? : operation of the assignment is optimized before the assignment
+> > is made. Thus, if fmt is not constant, then we avoid this warning. Then
+> > during the conditional optimization, gcc will remove that part of the code 
+> > altogether.
+> > 
+> > Thus the double __builtin_constant_p(fmt) is needed twice. Try taking out 
+> > one of them and see what happens with:
+> > 
+> > myfunc(const char *fmt) {
+> > 
+> >   event_trace_printk(fmt);
+> > 
+> > }
+> > 
+> > Of course the way this is made, we may not call it that way, but I wanted 
+> > to be safe.
+> 
+> Thanks for kindful explain.
+> So, I guess many developer feel it's strange. 
+> adding comment is better?
 
-greg k-h
+Yeah, I cut and pasted this out from the trace_printk in kernel.h where I 
+had the comment there. But I think you are right, I probably should copy 
+that comment here too.
+
+-- Steve
+
