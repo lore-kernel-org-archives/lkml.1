@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbZCMOJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbZCMONy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755912AbZCMOJI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 10:09:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbZCMOIz
+	id S1755675AbZCMONy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 10:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbZCMONp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 10:08:55 -0400
-Received: from esentire.com ([64.7.150.32]:64138 "EHLO eSentire.com"
+	Fri, 13 Mar 2009 10:13:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53692 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751852AbZCMOIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 10:08:54 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Mar 2009 10:08:54 EDT
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Transfer-Encoding: 7bit
-Message-Id: <30C3FDF7-8830-4220-A207-A7C8417427D8@esentire.com>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-To: linux-kernel@vger.kernel.org
-From: Andrew Malton <andrew.malton@esentire.com>
-Subject: mixed protection flags for mmap() ?
-Date: Fri, 13 Mar 2009 10:03:40 -0400
-X-Mailer: Apple Mail (2.753.1)
+	id S1751852AbZCMONo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 10:13:44 -0400
+Date: Fri, 13 Mar 2009 15:13:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Roland McGrath <roland@redhat.com>, prasad@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 02/11] x86 architecture implementation of Hardware
+	Breakpoint interfaces
+Message-ID: <20090313141304.GB12591@elte.hu>
+References: <20090313034301.GE11355@elte.hu> <Pine.LNX.4.44L0.0903130959400.2898-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0903130959400.2898-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A) I have a driver whcih (vm)allocates some space and writes data  
-from its device there: user processes (readers) mmap the region read- 
-only and to get at the data more quickly than using read(). Writing  
-has priority but flags are placed to warn readers where writing is  
-going on.  Lke this (some details omitted):
 
-	vma->vm_flags = VM_READ;
-	remap_vmalloc_range(vma,region,0)
+* Alan Stern <stern@rowland.harvard.edu> wrote:
 
-B) For improving synchronization between the running parts of this I  
-want to add a control section, which the readers can write to in  
-order to communicate what they're doing to each other and to the  
-writer (which is the driver itself).   Abstractly it seems that this  
-control section should be "part of" being mmaped to the device... But  
-mmap() is dispatched to the driver with only one vma_area_struct, and  
-I need two because the flags are different (read, and read-write).   
-Logically, I want to split the vma then map the two sections  
-separately (checking that sizes match) and with different flags,  
-roughly like this :
+> On Fri, 13 Mar 2009, Ingo Molnar wrote:
+> 
+> > The core issue being discussed is the debug register 
+> > allocation and scheduling model though, and you have not 
+> > directly commented on that.
+> > 
+> > My argument in a nutshell is that a bottom-up for user + 
+> > top-down for kernel use static allocator with no dynamic 
+> > scheduling will get us most of the benefits with a tenth of 
+> > the complexity.
+> 
+> Take this even farther: We shouldn't restrict userspace to 
+> bottom-up register allocation.  With very little additional 
+> effort we can virtualize the debug registers; then userspace 
+> can allocate them in whatever order it wants and still end up 
+> using the physical registers in bottom-up order (or top-down, 
+> which is the order used by the current patches).
+> 
+> After all, there's nothing to prevent programs other than gdb 
+> from using ptrace, and there's no guarantee that gdb will 
+> continue to allocate registers in increasing order.
 
-	// map part1 of size size1 and part2 of size size2
-	split_vma(vma->vm_mm, vma, vma->vm_start + size1, 0);
+If in ~10 years of its existence no such usage arose so i dont 
+think it will magically appear now.
 
-	vma->vm_flags = VM_READ|VM_WRITE;
-	remap_vmalloc_range(vma,part1,0)
+The thing is, kernel-side use of debug registers is a borderline 
+item whose impact we should minimalize as much as possible. 
+Linus in the past expressed that it is fine to not have _any_ 
+management of user versus kernel debug registers. So we want to 
+approach this from the minimalistic side. I offered such a very 
+minimal design that is trivial in terms of correctness and 
+impact.
 
-	vma->vm_next->vm_flags = VM_READ;
-	remap_vmalloc_range(vma->vm_next,part2,0)
+We can still get this simple allocation model into .30 if we 
+dont waste time arguing about unnecessarily. If someone runs 
+into limitations the model can be extended.
 
-I can't do this because split_vma is not exported.
-
-1) If split_vma would work at this point, I'd consider a local patch  
-to export it.  But does this work? The relevant lock in the mm seems  
-to be held right through the mmap callback....  but I am probably  
-missing something.
-
-2) If it doesn't work, what is the right way to achieve (B)?
-
-A Malton
-eSentire, Inc.
+	Ingo
