@@ -1,81 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbZCMDe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbZCMDf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbZCMDe0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 23:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757910AbZCMDeF
+	id S1757813AbZCMDf6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 23:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZCMDfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 23:34:05 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58906 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757857AbZCMDeE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 23:34:04 -0400
-Date: Thu, 12 Mar 2009 23:34:01 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Thu, 12 Mar 2009 23:35:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35358 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751643AbZCMDft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 23:35:49 -0400
+Date: Fri, 13 Mar 2009 04:35:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 08/16] tracing: have event_trace_printk use static
- tracer
-In-Reply-To: <20090313122235.43EB.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0903122333110.18396@gandalf.stny.rr.com>
-References: <20090313120855.43E8.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0903122311160.18396@gandalf.stny.rr.com> <20090313122235.43EB.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 00/16] [GIT PULL] updates for tip/tracing/ftrace
+Message-ID: <20090313033532.GC11355@elte.hu>
+References: <20090313023704.971438367@goodmis.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090313023704.971438367@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 13 Mar 2009, KOSAKI Motohiro wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> > > > +#define event_trace_printk(ip, fmt, args...)				\
-> > > > +do {									\
-> > > > +	__trace_printk_check_format(fmt, ##args);			\
-> > > > +	tracing_record_cmdline(current);				\
-> > > > +	if (__builtin_constant_p(fmt)) {				\
-> > > > +		static const char *trace_printk_fmt			\
-> > > > +		  __attribute__((section("__trace_printk_fmt"))) =	\
-> > > > +			__builtin_constant_p(fmt) ? fmt : NULL;		\
-> > > 
-> > > Why __builtin_constant_p(fmt) evaluate twice?
-> > 
-> > It's explained in another patch. But this was a real PITA. We first tried 
-> > this with just the "if (__builtin_return_p(fmt))" but the way gcc works, 
-> > it handles the global data assignments before optimizing out condition 
-> > logic. Thus we ended up getting errors about can not initialize static 
-> > variable with a non constant.
-> > 
-> > But the ? : operation of the assignment is optimized before the assignment
-> > is made. Thus, if fmt is not constant, then we avoid this warning. Then
-> > during the conditional optimization, gcc will remove that part of the code 
-> > altogether.
-> > 
-> > Thus the double __builtin_constant_p(fmt) is needed twice. Try taking out 
-> > one of them and see what happens with:
-> > 
-> > myfunc(const char *fmt) {
-> > 
-> >   event_trace_printk(fmt);
-> > 
-> > }
-> > 
-> > Of course the way this is made, we may not call it that way, but I wanted 
-> > to be safe.
+> Ingo,
 > 
-> Thanks for kindful explain.
-> So, I guess many developer feel it's strange. 
-> adding comment is better?
+> Please pull the latest tip/tracing/ftrace tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/ftrace
+> 
+> 
+> Frederic Weisbecker (1):
+>       tracing/core: bring back raw trace_printk for dynamic formats strings
+> 
+> Jason Baron (2):
+>       tracing: tracepoints for softirq entry/exit - add softirq-to-name array
+>       tracing: tracepoints for softirq entry/exit - tracepoints
+> 
+> KOSAKI Motohiro (1):
+>       tracing: Don't use tracing_record_cmdline() in workqueue tracer fix
+> 
+> Steven Rostedt (12):
+>       tracing: fix comments about trace buffer resizing
+>       tracing: protect ring_buffer_expanded with trace_types_lock
+>       ring-buffer: use CONFIG_HOTPLUG_CPU not CONFIG_HOTPLUG
+>       ring-buffer: remove unneeded get_online_cpus
+>       tracing: show that buffer size is not expanded
+>       tracing: make bprint event use the proper event id
+>       tracing: have event_trace_printk use static tracer
+>       tracing: export trace formats to user space
+>       tracing: fix stack tracer header
+>       tracing: explain why stack tracer is empty
+>       tracing: show event name in trace for TRACE_EVENT created events
+>       ring-buffer: document reader page design
+> 
+> ----
+>  include/linux/interrupt.h            |    5 +
+>  include/linux/kernel.h               |   40 ++++++---
+>  include/trace/irq_event_types.h      |   12 +++
+>  kernel/softirq.c                     |   16 +++-
+>  kernel/trace/ring_buffer.c           |  168 +++++++++++++++++----------------
+>  kernel/trace/trace.c                 |  121 ++++++++++++++++++++++--
+>  kernel/trace/trace.h                 |   30 ++++++-
+>  kernel/trace/trace_event_types.h     |   11 ++-
+>  kernel/trace/trace_events.c          |   10 --
+>  kernel/trace/trace_events_stage_2.h  |    2 +-
+>  kernel/trace/trace_functions_graph.c |    6 +-
+>  kernel/trace/trace_mmiotrace.c       |    7 +-
+>  kernel/trace/trace_output.c          |   57 ++++++++++-
+>  kernel/trace/trace_printk.c          |  150 ++++++++++++++++++++++++++++--
+>  kernel/trace/trace_stack.c           |   19 ++++-
+>  kernel/trace/trace_workqueue.c       |   20 +++-
+>  16 files changed, 523 insertions(+), 151 deletions(-)
 
-Yeah, I cut and pasted this out from the trace_printk in kernel.h where I 
-had the comment there. But I think you are right, I probably should copy 
-that comment here too.
+Pulled, thanks Steve!
 
--- Steve
-
+	Ingo
