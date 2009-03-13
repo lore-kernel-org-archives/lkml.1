@@ -1,349 +1,311 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759356AbZCMNJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759257AbZCMNIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759356AbZCMNJa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 09:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758471AbZCMNIS
+	id S1759257AbZCMNIr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 09:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756282AbZCMNIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 09:08:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36750 "EHLO hera.kernel.org"
+	Fri, 13 Mar 2009 09:08:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36745 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753647AbZCMNIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 09:08:15 -0400
-Date: Fri, 13 Mar 2009 13:07:01 GMT
+	id S1758579AbZCMNIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 09:08:12 -0400
+Date: Fri, 13 Mar 2009 13:07:28 GMT
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090313112301.569153875@chello.nl>
-References: <20090313112301.569153875@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: software counter event infrastructure
-Message-ID: <tip-b506f7a61f352b7a1f7b8354ecd35f2c1d526e95@git.kernel.org>
-Git-Commit-ID: b506f7a61f352b7a1f7b8354ecd35f2c1d526e95
+In-Reply-To: <20090313112301.862384083@chello.nl>
+References: <20090313112301.862384083@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: hrtimer based sampling for software time events
+Message-ID: <tip-4657834f0b97521139e88cf17befccbf416f500e@git.kernel.org>
+Git-Commit-ID: 4657834f0b97521139e88cf17befccbf416f500e
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 13:07:03 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 13:07:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b506f7a61f352b7a1f7b8354ecd35f2c1d526e95
-Gitweb:     http://git.kernel.org/tip/b506f7a61f352b7a1f7b8354ecd35f2c1d526e95
+Commit-ID:  4657834f0b97521139e88cf17befccbf416f500e
+Gitweb:     http://git.kernel.org/tip/4657834f0b97521139e88cf17befccbf416f500e
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 13 Mar 2009 12:21:32 +0100
+AuthorDate: Fri, 13 Mar 2009 12:21:35 +0100
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 14:02:44 +0100
+CommitDate: Fri, 13 Mar 2009 14:02:46 +0100
 
-perf_counter: software counter event infrastructure
+perf_counter: hrtimer based sampling for software time events
 
-Provide generic software counter infrastructure that supports
-software events.
+Use hrtimers to profile timer based sampling for the software time
+counters.
 
-This will be used to allow sample based profiling based on software
-events such as pagefaults. The current infrastructure can only
-provide a count of such events, no place information.
+This allows platforms without hardware counter support to still
+perform sample based profiling.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090313112301.569153875@chello.nl>
+LKML-Reference: <20090313112301.862384083@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/perf_counter.h |    8 ++-
- kernel/perf_counter.c        |  201 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 208 insertions(+), 1 deletions(-)
+ include/linux/perf_counter.h |   20 +++++--
+ kernel/perf_counter.c        |  123 +++++++++++++++++++++++++++++-------------
+ 2 files changed, 100 insertions(+), 43 deletions(-)
 
 diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index dde5645..3fefc3b 100644
+index 4b14a8e..dfb4c7c 100644
 --- a/include/linux/perf_counter.h
 +++ b/include/linux/perf_counter.h
-@@ -126,6 +126,7 @@ struct hw_perf_counter {
- 	unsigned long			counter_base;
- 	int				nmi;
- 	unsigned int			idx;
-+	atomic64_t			count; /* software */
+@@ -114,6 +114,7 @@ struct perf_counter_hw_event {
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+ #include <linux/spinlock.h>
++#include <linux/hrtimer.h>
+ #include <asm/atomic.h>
+ 
+ struct task_struct;
+@@ -123,12 +124,19 @@ struct task_struct;
+  */
+ struct hw_perf_counter {
+ #ifdef CONFIG_PERF_COUNTERS
+-	u64				config;
+-	unsigned long			config_base;
+-	unsigned long			counter_base;
+-	int				nmi;
+-	unsigned int			idx;
+-	atomic64_t			count; /* software */
++	union {
++		struct { /* hardware */
++			u64				config;
++			unsigned long			config_base;
++			unsigned long			counter_base;
++			int				nmi;
++			unsigned int			idx;
++		};
++		union { /* software */
++			atomic64_t			count;
++			struct hrtimer			hrtimer;
++		};
++	};
  	atomic64_t			prev_count;
  	u64				irq_period;
  	atomic64_t			period_left;
-@@ -283,6 +284,8 @@ static inline int is_software_counter(struct perf_counter *counter)
- 	return !counter->hw_event.raw && counter->hw_event.type < 0;
- }
- 
-+extern void perf_swcounter_event(enum hw_event_types, u64, int, struct pt_regs *);
-+
- #else
- static inline void
- perf_counter_task_sched_in(struct task_struct *task, int cpu)		{ }
-@@ -295,10 +298,13 @@ static inline void perf_counter_exit_task(struct task_struct *child)	{ }
- static inline void perf_counter_notify(struct pt_regs *regs)		{ }
- static inline void perf_counter_print_debug(void)			{ }
- static inline void perf_counter_unthrottle(void)			{ }
--static inline void hw_perf_restore(u64 ctrl)			{ }
-+static inline void hw_perf_restore(u64 ctrl)				{ }
- static inline u64 hw_perf_save_disable(void)		      { return 0; }
- static inline int perf_counter_task_disable(void)	{ return -EINVAL; }
- static inline int perf_counter_task_enable(void)	{ return -EINVAL; }
-+
-+static inline void perf_swcounter_event(enum hw_event_types event, u64 nr,
-+					int nmi, struct pt_regs *regs)	{ }
- #endif
- 
- #endif /* __KERNEL__ */
 diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 0fe22c9..eeb1b46 100644
+index 68950a3..f9330d5 100644
 --- a/kernel/perf_counter.c
 +++ b/kernel/perf_counter.c
-@@ -1328,6 +1328,185 @@ static const struct file_operations perf_fops = {
- 	.compat_ioctl		= perf_ioctl,
- };
+@@ -1395,7 +1395,7 @@ static void perf_swcounter_handle_group(struct perf_counter *sibling)
+ 	struct perf_counter *counter, *group_leader = sibling->group_leader;
  
-+/*
-+ * Generic software counter infrastructure
-+ */
-+
-+static void perf_swcounter_update(struct perf_counter *counter)
-+{
-+	struct hw_perf_counter *hwc = &counter->hw;
-+	u64 prev, now;
-+	s64 delta;
-+
-+again:
-+	prev = atomic64_read(&hwc->prev_count);
-+	now = atomic64_read(&hwc->count);
-+	if (atomic64_cmpxchg(&hwc->prev_count, prev, now) != prev)
-+		goto again;
-+
-+	delta = now - prev;
-+
-+	atomic64_add(delta, &counter->count);
-+	atomic64_sub(delta, &hwc->period_left);
-+}
-+
-+static void perf_swcounter_set_period(struct perf_counter *counter)
-+{
-+	struct hw_perf_counter *hwc = &counter->hw;
-+	s64 left = atomic64_read(&hwc->period_left);
-+	s64 period = hwc->irq_period;
-+
-+	if (unlikely(left <= -period)) {
-+		left = period;
-+		atomic64_set(&hwc->period_left, left);
-+	}
-+
-+	if (unlikely(left <= 0)) {
-+		left += period;
-+		atomic64_add(period, &hwc->period_left);
-+	}
-+
-+	atomic64_set(&hwc->prev_count, -left);
-+	atomic64_set(&hwc->count, -left);
-+}
-+
-+static void perf_swcounter_save_and_restart(struct perf_counter *counter)
-+{
-+	perf_swcounter_update(counter);
-+	perf_swcounter_set_period(counter);
-+}
-+
-+static void perf_swcounter_store_irq(struct perf_counter *counter, u64 data)
-+{
-+	struct perf_data *irqdata = counter->irqdata;
-+
-+	if (irqdata->len > PERF_DATA_BUFLEN - sizeof(u64)) {
-+		irqdata->overrun++;
-+	} else {
-+		u64 *p = (u64 *) &irqdata->data[irqdata->len];
-+
-+		*p = data;
-+		irqdata->len += sizeof(u64);
-+	}
-+}
-+
-+static void perf_swcounter_handle_group(struct perf_counter *sibling)
-+{
-+	struct perf_counter *counter, *group_leader = sibling->group_leader;
-+
-+	list_for_each_entry(counter, &group_leader->sibling_list, list_entry) {
-+		perf_swcounter_update(counter);
-+		perf_swcounter_store_irq(sibling, counter->hw_event.type);
-+		perf_swcounter_store_irq(sibling, atomic64_read(&counter->count));
-+	}
-+}
-+
-+static void perf_swcounter_interrupt(struct perf_counter *counter,
-+				     int nmi, struct pt_regs *regs)
-+{
-+	perf_swcounter_save_and_restart(counter);
-+
-+	switch (counter->hw_event.record_type) {
-+	case PERF_RECORD_SIMPLE:
-+		break;
-+
-+	case PERF_RECORD_IRQ:
-+		perf_swcounter_store_irq(counter, instruction_pointer(regs));
-+		break;
-+
-+	case PERF_RECORD_GROUP:
-+		perf_swcounter_handle_group(counter);
-+		break;
-+	}
-+
-+	if (nmi) {
-+		counter->wakeup_pending = 1;
-+		set_tsk_thread_flag(current, TIF_PERF_COUNTERS);
-+	} else
-+		wake_up(&counter->waitq);
-+}
-+
-+static int perf_swcounter_match(struct perf_counter *counter,
-+				enum hw_event_types event,
-+				struct pt_regs *regs)
-+{
-+	if (counter->state != PERF_COUNTER_STATE_ACTIVE)
-+		return 0;
-+
-+	if (counter->hw_event.raw)
-+		return 0;
-+
-+	if (counter->hw_event.type != event)
-+		return 0;
-+
-+	if (counter->hw_event.exclude_user && user_mode(regs))
-+		return 0;
-+
-+	if (counter->hw_event.exclude_kernel && !user_mode(regs))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static void perf_swcounter_ctx_event(struct perf_counter_context *ctx,
-+				     enum hw_event_types event, u64 nr,
-+				     int nmi, struct pt_regs *regs)
+ 	list_for_each_entry(counter, &group_leader->sibling_list, list_entry) {
+-		perf_swcounter_update(counter);
++		counter->hw_ops->read(counter);
+ 		perf_swcounter_store_irq(sibling, counter->hw_event.type);
+ 		perf_swcounter_store_irq(sibling, atomic64_read(&counter->count));
+ 	}
+@@ -1404,8 +1404,6 @@ static void perf_swcounter_handle_group(struct perf_counter *sibling)
+ static void perf_swcounter_interrupt(struct perf_counter *counter,
+ 				     int nmi, struct pt_regs *regs)
+ {
+-	perf_swcounter_save_and_restart(counter);
+-
+ 	switch (counter->hw_event.record_type) {
+ 	case PERF_RECORD_SIMPLE:
+ 		break;
+@@ -1426,6 +1424,38 @@ static void perf_swcounter_interrupt(struct perf_counter *counter,
+ 		wake_up(&counter->waitq);
+ }
+ 
++static enum hrtimer_restart perf_swcounter_hrtimer(struct hrtimer *hrtimer)
 +{
 +	struct perf_counter *counter;
-+	unsigned long flags;
-+	int neg;
++	struct pt_regs *regs;
 +
-+	if (list_empty(&ctx->counter_list))
-+		return;
++	counter	= container_of(hrtimer, struct perf_counter, hw.hrtimer);
++	counter->hw_ops->read(counter);
 +
-+	spin_lock_irqsave(&ctx->lock, flags);
-+
++	regs = get_irq_regs();
 +	/*
-+	 * XXX: make counter_list RCU safe
++	 * In case we exclude kernel IPs or are somehow not in interrupt
++	 * context, provide the next best thing, the user IP.
 +	 */
-+	list_for_each_entry(counter, &ctx->counter_list, list_entry) {
-+		if (perf_swcounter_match(counter, event, regs)) {
-+			neg = atomic64_add_negative(nr, &counter->hw.count);
-+			if (counter->hw.irq_period && !neg)
-+				perf_swcounter_interrupt(counter, nmi, regs);
-+		}
++	if ((counter->hw_event.exclude_kernel || !regs) &&
++			!counter->hw_event.exclude_user)
++		regs = task_pt_regs(current);
++
++	if (regs)
++		perf_swcounter_interrupt(counter, 0, regs);
++
++	hrtimer_forward_now(hrtimer, ns_to_ktime(counter->hw.irq_period));
++
++	return HRTIMER_RESTART;
++}
++
++static void perf_swcounter_overflow(struct perf_counter *counter,
++				    int nmi, struct pt_regs *regs)
++{
++	perf_swcounter_save_and_restart(counter);
++	perf_swcounter_interrupt(counter, nmi, regs);
++}
++
+ static int perf_swcounter_match(struct perf_counter *counter,
+ 				enum hw_event_types event,
+ 				struct pt_regs *regs)
+@@ -1448,13 +1478,20 @@ static int perf_swcounter_match(struct perf_counter *counter,
+ 	return 1;
+ }
+ 
++static void perf_swcounter_add(struct perf_counter *counter, u64 nr,
++			       int nmi, struct pt_regs *regs)
++{
++	int neg = atomic64_add_negative(nr, &counter->hw.count);
++	if (counter->hw.irq_period && !neg)
++		perf_swcounter_overflow(counter, nmi, regs);
++}
++
+ static void perf_swcounter_ctx_event(struct perf_counter_context *ctx,
+ 				     enum hw_event_types event, u64 nr,
+ 				     int nmi, struct pt_regs *regs)
+ {
+ 	struct perf_counter *counter;
+ 	unsigned long flags;
+-	int neg;
+ 
+ 	if (list_empty(&ctx->counter_list))
+ 		return;
+@@ -1465,11 +1502,8 @@ static void perf_swcounter_ctx_event(struct perf_counter_context *ctx,
+ 	 * XXX: make counter_list RCU safe
+ 	 */
+ 	list_for_each_entry(counter, &ctx->counter_list, list_entry) {
+-		if (perf_swcounter_match(counter, event, regs)) {
+-			neg = atomic64_add_negative(nr, &counter->hw.count);
+-			if (counter->hw.irq_period && !neg)
+-				perf_swcounter_interrupt(counter, nmi, regs);
+-		}
++		if (perf_swcounter_match(counter, event, regs))
++			perf_swcounter_add(counter, nr, nmi, regs);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&ctx->lock, flags);
+@@ -1513,14 +1547,6 @@ static const struct hw_perf_counter_ops perf_ops_generic = {
+  * Software counter: cpu wall time clock
+  */
+ 
+-static int cpu_clock_perf_counter_enable(struct perf_counter *counter)
+-{
+-	int cpu = raw_smp_processor_id();
+-
+-	atomic64_set(&counter->hw.prev_count, cpu_clock(cpu));
+-	return 0;
+-}
+-
+ static void cpu_clock_perf_counter_update(struct perf_counter *counter)
+ {
+ 	int cpu = raw_smp_processor_id();
+@@ -1533,8 +1559,26 @@ static void cpu_clock_perf_counter_update(struct perf_counter *counter)
+ 	atomic64_add(now - prev, &counter->count);
+ }
+ 
++static int cpu_clock_perf_counter_enable(struct perf_counter *counter)
++{
++	struct hw_perf_counter *hwc = &counter->hw;
++	int cpu = raw_smp_processor_id();
++
++	atomic64_set(&hwc->prev_count, cpu_clock(cpu));
++	if (hwc->irq_period) {
++		hrtimer_init(&hwc->hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++		hwc->hrtimer.function = perf_swcounter_hrtimer;
++		__hrtimer_start_range_ns(&hwc->hrtimer,
++				ns_to_ktime(hwc->irq_period), 0,
++				HRTIMER_MODE_REL, 0);
 +	}
 +
-+	spin_unlock_irqrestore(&ctx->lock, flags);
-+}
-+
-+void perf_swcounter_event(enum hw_event_types event, u64 nr,
-+			  int nmi, struct pt_regs *regs)
-+{
-+	struct perf_cpu_context *cpuctx = &get_cpu_var(perf_cpu_context);
-+
-+	perf_swcounter_ctx_event(&cpuctx->ctx, event, nr, nmi, regs);
-+	if (cpuctx->task_ctx)
-+		perf_swcounter_ctx_event(cpuctx->task_ctx, event, nr, nmi, regs);
-+
-+	put_cpu_var(perf_cpu_context);
-+}
-+
-+static void perf_swcounter_read(struct perf_counter *counter)
-+{
-+	perf_swcounter_update(counter);
-+}
-+
-+static int perf_swcounter_enable(struct perf_counter *counter)
-+{
-+	perf_swcounter_set_period(counter);
 +	return 0;
 +}
 +
-+static void perf_swcounter_disable(struct perf_counter *counter)
-+{
-+	perf_swcounter_update(counter);
-+}
-+
-+/*
-+ * Software counter: cpu wall time clock
-+ */
-+
- static int cpu_clock_perf_counter_enable(struct perf_counter *counter)
+ static void cpu_clock_perf_counter_disable(struct perf_counter *counter)
  {
- 	int cpu = raw_smp_processor_id();
-@@ -1365,6 +1544,10 @@ static const struct hw_perf_counter_ops perf_ops_cpu_clock = {
- };
- 
- /*
-+ * Software counter: task time clock
-+ */
-+
-+/*
-  * Called from within the scheduler:
-  */
- static u64 task_clock_perf_counter_val(struct perf_counter *counter, int update)
-@@ -1420,6 +1603,10 @@ static const struct hw_perf_counter_ops perf_ops_task_clock = {
- 	.read		= task_clock_perf_counter_read,
- };
- 
-+/*
-+ * Software counter: page faults
-+ */
-+
- #ifdef CONFIG_VM_EVENT_COUNTERS
- #define cpu_page_faults()	__get_cpu_var(vm_event_states).event[PGFAULT]
- #else
-@@ -1473,6 +1660,10 @@ static const struct hw_perf_counter_ops perf_ops_page_faults = {
- 	.read		= page_faults_perf_counter_read,
- };
- 
-+/*
-+ * Software counter: context switches
-+ */
-+
- static u64 get_context_switches(struct perf_counter *counter)
- {
- 	struct task_struct *curr = counter->ctx->task;
-@@ -1521,6 +1712,10 @@ static const struct hw_perf_counter_ops perf_ops_context_switches = {
- 	.read		= context_switches_perf_counter_read,
- };
- 
-+/*
-+ * Software counter: cpu migrations
-+ */
-+
- static inline u64 get_cpu_migrations(struct perf_counter *counter)
- {
- 	struct task_struct *curr = counter->ctx->task;
-@@ -1572,7 +1767,9 @@ static const struct hw_perf_counter_ops perf_ops_cpu_migrations = {
- static const struct hw_perf_counter_ops *
- sw_perf_counter_init(struct perf_counter *counter)
- {
-+	struct perf_counter_hw_event *hw_event = &counter->hw_event;
- 	const struct hw_perf_counter_ops *hw_ops = NULL;
-+	struct hw_perf_counter *hwc = &counter->hw;
- 
- 	/*
- 	 * Software counters (currently) can't in general distinguish
-@@ -1618,6 +1815,10 @@ sw_perf_counter_init(struct perf_counter *counter)
- 	default:
- 		break;
- 	}
-+
-+	if (hw_ops)
-+		hwc->irq_period = hw_event->irq_period;
-+
- 	return hw_ops;
++	hrtimer_cancel(&counter->hw.hrtimer);
+ 	cpu_clock_perf_counter_update(counter);
  }
  
+@@ -1580,27 +1624,33 @@ static void task_clock_perf_counter_update(struct perf_counter *counter, u64 now
+ 	atomic64_add(delta, &counter->count);
+ }
+ 
+-static void task_clock_perf_counter_read(struct perf_counter *counter)
+-{
+-	u64 now = task_clock_perf_counter_val(counter, 1);
+-
+-	task_clock_perf_counter_update(counter, now);
+-}
+-
+ static int task_clock_perf_counter_enable(struct perf_counter *counter)
+ {
+-	if (counter->prev_state <= PERF_COUNTER_STATE_OFF)
+-		atomic64_set(&counter->hw.prev_count,
+-			     task_clock_perf_counter_val(counter, 0));
++	struct hw_perf_counter *hwc = &counter->hw;
++
++	atomic64_set(&hwc->prev_count, task_clock_perf_counter_val(counter, 0));
++	if (hwc->irq_period) {
++		hrtimer_init(&hwc->hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++		hwc->hrtimer.function = perf_swcounter_hrtimer;
++		__hrtimer_start_range_ns(&hwc->hrtimer,
++				ns_to_ktime(hwc->irq_period), 0,
++				HRTIMER_MODE_REL, 0);
++	}
+ 
+ 	return 0;
+ }
+ 
+ static void task_clock_perf_counter_disable(struct perf_counter *counter)
+ {
+-	u64 now = task_clock_perf_counter_val(counter, 0);
++	hrtimer_cancel(&counter->hw.hrtimer);
++	task_clock_perf_counter_update(counter,
++			task_clock_perf_counter_val(counter, 0));
++}
+ 
+-	task_clock_perf_counter_update(counter, now);
++static void task_clock_perf_counter_read(struct perf_counter *counter)
++{
++	task_clock_perf_counter_update(counter,
++			task_clock_perf_counter_val(counter, 1));
+ }
+ 
+ static const struct hw_perf_counter_ops perf_ops_task_clock = {
+@@ -1729,16 +1779,12 @@ sw_perf_counter_init(struct perf_counter *counter)
+ 	 */
+ 	switch (counter->hw_event.type) {
+ 	case PERF_COUNT_CPU_CLOCK:
+-		if (!(counter->hw_event.exclude_user ||
+-		      counter->hw_event.exclude_kernel ||
+-		      counter->hw_event.exclude_hv))
+-			hw_ops = &perf_ops_cpu_clock;
++		hw_ops = &perf_ops_cpu_clock;
++
++		if (hw_event->irq_period && hw_event->irq_period < 10000)
++			hw_event->irq_period = 10000;
+ 		break;
+ 	case PERF_COUNT_TASK_CLOCK:
+-		if (counter->hw_event.exclude_user ||
+-		    counter->hw_event.exclude_kernel ||
+-		    counter->hw_event.exclude_hv)
+-			break;
+ 		/*
+ 		 * If the user instantiates this as a per-cpu counter,
+ 		 * use the cpu_clock counter instead.
+@@ -1747,6 +1793,9 @@ sw_perf_counter_init(struct perf_counter *counter)
+ 			hw_ops = &perf_ops_task_clock;
+ 		else
+ 			hw_ops = &perf_ops_cpu_clock;
++
++		if (hw_event->irq_period && hw_event->irq_period < 10000)
++			hw_event->irq_period = 10000;
+ 		break;
+ 	case PERF_COUNT_PAGE_FAULTS:
+ 	case PERF_COUNT_PAGE_FAULTS_MIN:
