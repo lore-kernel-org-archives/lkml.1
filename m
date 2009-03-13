@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbZCMJcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbZCMJdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758044AbZCMJcH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 05:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbZCMJbw
+	id S1757965AbZCMJdS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 05:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbZCMJc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 05:31:52 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58843 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751517AbZCMJbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 05:31:51 -0400
-Message-ID: <18199AAD941A4071B7FD8A0D6C67733A@zhaoleiwin>
-From: "Zhaolei" <zhaolei@cn.fujitsu.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: "Steven Rostedt ;" <rostedt@goodmis.org>, <linux-kernel@vger.kernel.org>
-References: <49BA23D9.1050900@cn.fujitsu.com> <20090313092558.GD2571@elte.hu>
-Subject: Re: [PATCH] ftrace: Avoid double-free of dyn_ftrace
-Date: Fri, 13 Mar 2009 17:30:40 +0800
+	Fri, 13 Mar 2009 05:32:59 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:21913 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751748AbZCMJc6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 05:32:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Zb3KFrjdPChU6SEIWhTYP7Woh40EsR6IIrARiHGDiPLEs/vvlofn1e8kE2P9jEjhe7EjTx9Kl4Ct5qlDi+QbO9rN1qWxpcNVi/sL7uOe6kD4kHWY2E1UugHonXKJ2uXEQA01JkpBN3IgMbHvVD8fiGWJ86EFTiC0g+aReBBMKjg=  ;
+X-YMail-OSG: R67Zl14VM1no.NNlnCPwOHO.dioE3e3t9u9DjCmTlITDlFGOBTaRQ5Nn6rTH5sgxZSIRtN_8OTUTHr1RU8cZdogmI54yfN7pnh5Onr5VCtLQ4yu.Vn8d2Tz7q6Och2PdFz9sDXPMAmMpVgjzPZZ6nMiMEP7CO1QVGnd8IPoI2WfcRDM0jIXOO60_.Gtmog--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
+Date: Fri, 13 Mar 2009 20:32:47 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Daniel Phillips <phillips@phunq.net>, linux-fsdevel@vger.kernel.org,
+       tux3@tux3.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <200903110925.37614.phillips@phunq.net> <200903122203.31502.nickpiggin@yahoo.com.au> <20090312170653.GC17104@mit.edu>
+In-Reply-To: <20090312170653.GC17104@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ISO-8859-1"
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903132032.48517.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2D9WMqu006570
 
-* From: "Ingo Molnar" <mingo@elte.hu>
-> 
-> * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
-> 
->> If dyn_ftrace is free before ftrace_release(), 
->> ftrace_release() will free it again and make 
->> ftrace_free_records wrong.
->> 
->> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
->> ---
->>  kernel/trace/ftrace.c |    3 ++-
->>  1 files changed, 2 insertions(+), 1 deletions(-)
->> 
->> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
->> index d33d306..26c45aa 100644
->> --- a/kernel/trace/ftrace.c
->> +++ b/kernel/trace/ftrace.c
->> @@ -356,7 +356,8 @@ void ftrace_release(void *start, unsigned long size)
->>  
->>  mutex_lock(&ftrace_lock);
->>  do_for_each_ftrace_rec(pg, rec) {
->> - if ((rec->ip >= s) && (rec->ip < e))
->> + if ((rec->ip >= s) && (rec->ip < e) &&
->> +     !(rec->flags & FTRACE_FL_FREE))
->>  ftrace_free_rec(rec);
-> 
-> Applied to tip:tracing/ftrace, thanks!
-> 
-> I'm wondering, did you trigger this in practice (if yes, how?), 
-> or have you found it via code review?
-Hello, Ingo
+On Friday 13 March 2009 04:06:53 Theodore Tso wrote:
+> On Thu, Mar 12, 2009 at 10:03:31PM +1100, Nick Piggin wrote:
+> > It is basically already proven. It is faster with ext2 and it works with
+> > XFS delalloc, unwritten etc blocks (mostly -- except where I wasn't
+> > really able to grok XFS enough to convert it). And works with minix
+> > with larger block size than page size (except some places where core
+> > pagecache code needs some hacking that I haven't got around to).
+> >
+> > Yes an ext3 conversion would probably reveal some tweaks or fixes to
+> > fsblock. I might try doing ext3 next. I suspect most of the problems
+> > would be fitting ext3 to much stricter checks and consistency required
+> > by fsblock, rather than adding ext3-required features to fsblock.
+> >
+> > ext3 will be a tough one to convert because it is complex, very stable,
+> > and widely used so there are lots of reasons not to make big changes to
+> > it.
+>
+> One possibility would be to do this with ext4 instead, since there are
+> fewer users, and it has more a "development" feel to it.  OTOH, there
 
-It is found via code review.
+Yes I think ext4 would be the best candidate for the next conversion.
 
-B.R.
-Zhaolei
-> 
-> Ingo
-> 
->ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+
+> are poeple (including myself) who are using ext4 in production
+> already, and I'd appreciate not having my source trees on my laptop
+> getting toasted.  :-)
+
+Definitely ;)
+
+
+> Is it going to be possible to make the fsblock conversion being
+> something which is handled via CONFIG_EXT4_FSBLOCK #ifdefs, or are the
+> changes too invasive to really allow that?  (Also note BTW that ocfs2
+> is also using jbd2, so we need to be careful we don't break ocfs2
+> while we're doing the fsblock conversion.)
+
+Hmm, it would be difficult. I think once I get a patch working, it
+wouldn't be too hard to maintain out of tree though (there tends to
+be just a smallish number of patterns used many times). I'd start
+by doing that, and see how it looks from there.
+
