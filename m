@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758371AbZCMOvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbZCMO4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758371AbZCMOvS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 10:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbZCMOvF
+	id S1758045AbZCMO4W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 10:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbZCMO4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 10:51:05 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:47894 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755129AbZCMOvE (ORCPT
+	Fri, 13 Mar 2009 10:56:12 -0400
+Received: from vms173017pub.verizon.net ([206.46.173.17]:60173 "EHLO
+	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753118AbZCMO4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 10:51:04 -0400
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-net@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Daniel Mack <daniel@caiaq.de>,
-       Ben Dooks <ben@simtec.co.uk>
-Subject: [PATCH] drivers/net/ax88796.c: take IRQ flags from platform_device
-Date: Fri, 13 Mar 2009 15:50:51 +0100
-Message-Id: <1236955851-14763-1-git-send-email-daniel@caiaq.de>
-X-Mailer: git-send-email 1.6.2
+	Fri, 13 Mar 2009 10:56:12 -0400
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
+Subject: Re: Linux* Processor Microcode Data File
+Date: Fri, 13 Mar 2009 10:55:44 -0400
+User-Agent: KMail/1.11.0 (Linux/2.6.28.7; KDE/4.2.0; i686; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <2d05c4580903090243k6cf73ee9ubb6c4fccf0f07a2f@mail.gmail.com>
+ <2d05c4580903130142o2e5ebbcfw1e35eb52ea48e4b1@mail.gmail.com>
+ <2d05c4580903130144t8e92950l7a6cb1078a8a577b@mail.gmail.com>
+In-reply-to: <2d05c4580903130144t8e92950l7a6cb1078a8a577b@mail.gmail.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+Message-id: <200903131055.44150.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support to the ax88796 ethernet driver to take IRQ flags
-given by the platform_device definition.
+On Friday 13 March 2009, Dragoslav Zaric wrote:
+>---------------------------------------------
+>I found this on web site http://kerneltrap.org
+>
+>Tigran Aivazian, author of the IA32 microcode driver and Microcode
+>Update Utility for Linux explained:
+>
+>"The answer to your question is that some Intel CPUs (just like any
+>other hardware or software) contain bugs
+>and, fortunately, their architecture is flexible enough to provide a
+>way to fix those bugs by means of loading the
+>microcode update on the fly, i.e. while the OS is running with no need
+>to reboot (in fact, rebooting or otherwise
+>resetting the CPU causes the update to be lost and requires to run the
+>update again)."
 
-The patch depends on the platform_get_irq_flags() function which I added
-in a patch posted here:
+And what runs this update?  I saw it apply once in the dmesg output, about 3 
+full powerdown reboots ago, never since, and the code is still there in 
+/lib/firmware
 
-	http://lkml.org/lkml/2009/3/13/267
+AMD quad core 9550 here, stepping 03.
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Ben Dooks <ben@simtec.co.uk>
----
- drivers/net/ax88796.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+Thanks.
+>---------------------------------------------
+>
+>So when you reboot system, you reset CPU to original state, and after
+>that you must apply microcode, and this
+>is what is actually doing right now, you put microcode in folder
+>/etc/firmware and after boot microcode is loaded.
+>
+>So I think for CPU hotplug it is also natural that microcode is loaded
+>after plugging, because you can not use
+>microcode from boot process. Maybe kernel should have database of
+>tested microcodes, so when you plug CPU
+>appropriate microcode is loaded.
 
-diff --git a/drivers/net/ax88796.c b/drivers/net/ax88796.c
-index a4eb6c4..728e17c 100644
---- a/drivers/net/ax88796.c
-+++ b/drivers/net/ax88796.c
-@@ -93,6 +93,7 @@ struct ax_device {
- 
- 	unsigned char		 running;
- 	unsigned char		 resume_open;
-+	unsigned int		 irqflags;
- 
- 	u32			 reg_offsets[0x20];
- };
-@@ -474,7 +475,8 @@ static int ax_open(struct net_device *dev)
- 
- 	dev_dbg(&ax->dev->dev, "%s: open\n", dev->name);
- 
--	ret = request_irq(dev->irq, ax_ei_interrupt, 0, dev->name, dev);
-+	ret = request_irq(dev->irq, ax_ei_interrupt, ax->irqflags,
-+			  dev->name, dev);
- 	if (ret)
- 		return ret;
- 
-@@ -856,6 +858,7 @@ static int ax_probe(struct platform_device *pdev)
- 		goto exit_mem;
- 	}
- 	dev->irq = ret;
-+	ax->irqflags = platform_get_irq_flags(pdev, 0);
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (res == NULL) {
+
 -- 
-1.6.2
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The only thing that experience teaches us is that experience teaches us 
+nothing.
+		-- Andre Maurois (Emile Herzog)
 
