@@ -1,25 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbZCMWPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759814AbZCMWPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797AbZCMWPW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 18:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbZCMWPI
+	id S1759814AbZCMWPm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 18:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759684AbZCMWP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 18:15:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57608 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755184AbZCMWPF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 18:15:05 -0400
-Date: Fri, 13 Mar 2009 15:10:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       e1000-devel@lists.sourceforge.net
-Subject: Re: [stable] Li-nux 2.6.27.19  2.6.28.7
-Message-Id: <20090313151051.a9198384.akpm@linux-foundation.org>
-In-Reply-To: <20090220225448.GA14122@kroah.com>
-References: <20090220225448.GA14122@kroah.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 13 Mar 2009 18:15:27 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:51699 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759629AbZCMWPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 18:15:25 -0400
+Date: Fri, 13 Mar 2009 15:15:16 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: Tom Herbert <therbert@google.com>, David Miller <davem@davemloft.net>,
+       yanmin_zhang@linux.intel.com, andi@firstfloor.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       herbert@gondor.apana.org.au, jesse.brandeburg@intel.com
+Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to
+ submit  to upper layer
+Message-ID: <20090313151516.42c9cc10@nehalam>
+In-Reply-To: <1236982259.3300.13.camel@achroite>
+References: <1236866906.3221.11.camel@achroite>
+	<1236926602.2567.528.camel@ymzhang>
+	<65634d660903131006n44f068dw18b2fe9dce25399e@mail.gmail.com>
+	<20090313.115137.254924980.davem@davemloft.net>
+	<65634d660903131401v24d0b5aarec36ad95220ba201@mail.gmail.com>
+	<1236982259.3300.13.camel@achroite>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.15.5; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,47 +35,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 13 Mar 2009 22:10:59 +0000
+Ben Hutchings <bhutchings@solarflare.com> wrote:
 
-I fired up this kernel up on my FC8 laptop and I see
-http://userweb.kernel.org/~akpm/p3130212.jpg
+> On Fri, 2009-03-13 at 14:01 -0700, Tom Herbert wrote:
+> > On Fri, Mar 13, 2009 at 11:51 AM, David Miller <davem@davemloft.net> wrote:
+> > >
+> > > From: Tom Herbert <therbert@google.com>
+> > > Date: Fri, 13 Mar 2009 10:06:56 -0700
+> > >
+> > > > You'll definitely want to look at the hardware provided hash.  We've
+> > > > been using a 10G NIC which provides a Toeplitz hash (the one defined
+> > > > by Microsoft) and a software RSS-like capability to move packets from
+> > > > an interrupting CPU to another for processing.  The hash could be used
+> > > > to index to a set of CPUs, but we also use the hash as a connection
+> > > > identifier to key into a lookup table to steer packets to the CPU
+> > > > where the application is running based on the running CPU of the last
+> > > > recvmsg.  Using the device provided hash in this manner is a HUGE win,
+> > > > as opposed to taking cache misses to get 4-tuple from packet itself to
+> > > > compute a hash.  I posted some patches a while back on our work if
+> > > > you're interested.
+> > >
+> > > I never understood this.
+> > >
+> > > If you don't let the APIC move the interrupt around, the individual
+> > > MSI-X interrupts will steer packets to individual specific CPUS and as
+> > > a result the scheduler will migrate tasks over to those cpus since the
+> > > wakeup events keep occuring there.
+> > 
+> > We are trying to follow the decisions scheduler as opposed to leading
+> > it.  This works on very loaded systems, with applications binding to
+> > cpusets, with threads that are receiving on multiple sockets.  I
+> > suppose it might be compelling if a NIC could steer packets per flow,
+> > instead of by a hash...
+> 
+> Depending on the NIC, RX queue selection may be done using a large
+> number of bits of the hash value and an indirection table or by matching
+> against specific values in the headers.  The SFC4000 supports both of
+> these, though limited to TCP/IPv4 and UDP/IPv4.  I think Neptune may be
+> more flexible.  Of course, both indirection table entries and filter
+> table entries will be limited resources in any NIC, so allocating these
+> wholly automatically is an interesting challenge.
+> 
+> Ben.
+> 
 
-On the next two boot attempts, the kernel came up OK.
-
-
-
-Also, during boot the e1000e driver has conniptions:
-
-------------[ cut here ]------------
-WARNING: at drivers/net/e1000e/ich8lan.c:408 e1000_acquire_swflag_ich8lan+0x51/0xf2()
-e1000e mutex contention. Owned by pid 10
-Modules linked in:
-Pid: 9, comm: events/0 Not tainted 2.6.28.7 #1
-Call Trace:
- [<ffffffff8103a810>] warn_slowpath+0xae/0xcd
- [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
- [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
- [<ffffffff8105d63f>] ? __lock_acquire+0x702/0x760
- [<ffffffff8105bfc6>] ? mark_held_locks+0x50/0x6d
- [<ffffffff812dd950>] ? mutex_trylock+0x104/0x118
- [<ffffffff8105c170>] ? trace_hardirqs_on_caller+0xf8/0x123
- [<ffffffff8105c1a8>] ? trace_hardirqs_on+0xd/0xf
- [<ffffffff811ed838>] e1000_acquire_swflag_ich8lan+0x51/0xf2
- [<ffffffff811f2fe9>] e1000e_read_kmrn_reg+0x1b/0x69
- [<ffffffff811f63c5>] ? e1000e_downshift_workaround+0x0/0x12
- [<ffffffff811ed1e9>] e1000e_gig_downshift_workaround_ich8lan+0x2c/0x71
- [<ffffffff811f63d5>] e1000e_downshift_workaround+0x10/0x12
- [<ffffffff8104a6ed>] run_workqueue+0xf5/0x1fd
- [<ffffffff8104a697>] ? run_workqueue+0x9f/0x1fd
- [<ffffffff8104a8f6>] ? worker_thread+0x0/0xe8
- [<ffffffff8104a9d1>] worker_thread+0xdb/0xe8
- [<ffffffff8104de14>] ? autoremove_wake_function+0x0/0x36
- [<ffffffff8104a8f6>] ? worker_thread+0x0/0xe8
- [<ffffffff8104db1a>] kthread+0x44/0x6b
- [<ffffffff8100cf59>] child_rip+0xa/0x11
- [<ffffffff8100c474>] ? restore_args+0x0/0x30
- [<ffffffff8104dad6>] ? kthread+0x0/0x6b
- [<ffffffff8100cf4f>] ? child_rip+0x0/0x11
----[ end trace 09c88554f9900e8b ]---
-
-Config: http://userweb.kernel.org/~akpm/config-t61p.txt
-dmesg: http://userweb.kernel.org/~akpm/dmesg-t61p.txt
+The problem is that without hardware support, handing off the packet
+may take more effort than processing it. Especially when cache line
+has to bounce to other CPU and trying to keep up with DoS attacks.
+It all depends how much processing is required, and the architecture
+of the system. The tradeoff would change over time based on processing
+speed and optimizing the receive/firewall code.
