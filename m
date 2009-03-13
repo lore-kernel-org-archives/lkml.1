@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbZCMFqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbZCMFu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757699AbZCMFqk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 01:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZCMFqb
+	id S1757653AbZCMFu2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 01:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656AbZCMFuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 01:46:31 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:49447 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750923AbZCMFqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 01:46:30 -0400
-Message-ID: <49B9F32E.9020003@us.ibm.com>
-Date: Thu, 12 Mar 2009 22:46:22 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/futexes] futex: additional (get|put)_futex_key() fixes
-References: <20090312075545.9856.75152.stgit@Aeon> <tip-de87fcc124a5d4a171aa32707b3265608ebda6e7@git.kernel.org> <20090313002000.GA11780@elte.hu>
-In-Reply-To: <20090313002000.GA11780@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Mar 2009 01:50:16 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:49456 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750923AbZCMFuP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 01:50:15 -0400
+Date: Fri, 13 Mar 2009 06:52:09 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kyle McMartin <kyle@infradead.org>, linux-kernel@vger.kernel.org,
+       jakub@redhat.com, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] scripts/unifdef.c: rename getline symbol to something else
+Message-ID: <20090313055209.GA18111@uranus.ravnborg.org>
+References: <20090311161733.GE5448@bombadil.infradead.org> <20090311183735.GA2832@uranus.ravnborg.org> <20090311185942.GA11433@bombadil.infradead.org> <20090311235651.3c3fba2a.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090311235651.3c3fba2a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Darren Hart <dvhltc@us.ibm.com> wrote:
+On Wed, Mar 11, 2009 at 11:56:51PM -0700, Andrew Morton wrote:
+> On Wed, 11 Mar 2009 14:59:42 -0400 Kyle McMartin <kyle@infradead.org> wrote:
 > 
->> @@ -1595,13 +1601,12 @@ uaddr_faulted:
->>  
->>  	ret = get_user(uval, uaddr);
->>  	if (!ret)
->> -		goto retry;
->> +		goto retry_unlocked;
->>  
->> -	if (to)
->> -		destroy_hrtimer_on_stack(&to->timer);
->> -	return ret;
->> +	goto out_put_key;
+> > On Wed, Mar 11, 2009 at 07:37:35PM +0100, Sam Ravnborg wrote:
+> > > > Rawhide builds are currently failing to build unifdef.c, as the next
+> > > > version of glibc changes the default _POSIX_C_SOURCE level, which
+> > > > exposes getline() from <stdio.h>
+> > > > 
+> > > > scripts/unifdef.c:209: error: conflicting types for 'getline'
+> > > > /usr/include/stdio.h:653: note: previous declaration of 'getline' was
+> > > > here
+> > > > make[2]: *** [scripts/unifdef] Error 1
+> > > > make[1]: *** [__headers] Error 2
+> > > > make: *** [vmlinux] Error 2
+> > > > 
+> > > > Rename the symbol in unifdef.c to parseline to avoid this conflicting
+> > > > declaration.
+> > > 
+> > > I have a similar patch queued in kbuild-fixes.git.
+> > > 
+> > 
+> > Great, thanks. Is this going to go into the next -rc?
+> > 
 > 
-> hm, was that destroy_hrtimer_on_stack() removal intended? It's 
-> not directly commented on in the changelog.
+> I was going to put it into 2.6.29 but Sam stole it :)
+Bad boy.
+The patch is included in -rc8 so everyone is happy again.
 
-Yes, rather than duplicate the cleanup logic, I replaced it with the 
-"goto out_put_key;", which also drops the futex_key, which was missing 
-in the original exit path.
-
-Thanks,
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+	Sam
