@@ -1,31 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757033AbZCMAh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757097AbZCMAmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757033AbZCMAh0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 20:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbZCMAhM
+	id S1757097AbZCMAmA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 20:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbZCMAlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 20:37:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47348 "EHLO mx2.mail.elte.hu"
+	Thu, 12 Mar 2009 20:41:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48898 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750752AbZCMAhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 20:37:10 -0400
-Date: Fri, 13 Mar 2009 01:36:54 +0100
+	id S1751262AbZCMAlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 12 Mar 2009 20:41:50 -0400
+Date: Fri, 13 Mar 2009 01:39:50 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Frans Pop <elendil@planet.nl>,
-       "thellstrom@vmware.com" <thellstrom@vmware.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Nick Piggin <npiggin@suse.de>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>
-Subject: Re: [PATCH] VM, x86, PAT: Change implementation of
-	is_linear_pfn_mapping
-Message-ID: <20090313003654.GA19544@elte.hu>
-References: <498B5ADE.3090602@vmware.com> <200903120645.44515.elendil@planet.nl> <20090312185918.GA22421@linux-os.sc.intel.com> <200903122130.23860.elendil@planet.nl> <1236898090.4529.80.camel@localhost.localdomain>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>,
+       Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
+Subject: Re: [update, rev. 6] Re: [PATCH 1/10] PM: Rework handling of
+	interrupts during suspend-resume (rev. 5)
+Message-ID: <20090313003950.GB19544@elte.hu>
+References: <200902221837.49396.rjw@sisk.pl> <alpine.LFD.2.00.0903112342440.29264@localhost.localdomain> <200903121436.21504.rjw@sisk.pl> <200903122243.27452.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1236898090.4529.80.camel@localhost.localdomain>
+In-Reply-To: <200903122243.27452.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,32 +43,50 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com> wrote:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> On Thu, 2009-03-12 at 13:30 -0700, Frans Pop wrote:
-> > On Thursday 12 March 2009, Pallipadi, Venkatesh wrote:
-> > > OK, Looking more at the code, I now understand how the patch from
-> > > yday resulted in the oops you saw. Here goes my nth attempt at solving
-> > > this problem. Can you please test this patch.
+> On Thursday 12 March 2009, Rafael J. Wysocki wrote:
+> > On Wednesday 11 March 2009, Thomas Gleixner wrote:
+> > > On Wed, 11 Mar 2009, Thomas Gleixner wrote:
+> > > > On Wed, 11 Mar 2009, Rafael J. Wysocki wrote:
+> > > > > On Wednesday 11 March 2009, Thomas Gleixner wrote:
+> > > > > > > +EXPORT_SYMBOL_GPL(suspend_device_irqs);
+> > > > > > 
+> > > > > >   I'm not too enthusiastic about this open coded implementation of
+> > > > > >   disable_irq() with slightly different semantics.
+> > > > > 
+> > > > > The difference in semantics is important IMO, otherwise I woulndn't have
+> > > > > done that.  In particular, IMO, the condition should be under the spinlock IMO
+> > > > > and I'd rather not synchronize all interrupts we don't really disable here.
+> > > > 
+> > > > I don't say that the difference is not relevant. But the code is
+> > > > almost the same and disable_irq() could have the sync_irq optimization
+> > > > as well.
+> > > 
+> > > Thought more about that. Avoiding the sync_irq() for irqs which have
+> > > no action associated is fine, but you need to catch the following case
+> > > as well:
+> > > 
+> > >    driver code calls disable_irq_nosyc() from the handler (which is
+> > >    still running)
+> > > 
+> > >    suspend code skips the sync due to depth > 0
+> > > 
+> > > The sync operation is not that expensive.
 > > 
-> > System has been running stable for almost an hour now with pat enabled, so 
-> > it looks like the problem is solved.
-> > 
-> > FYI, with early .29 RCs I had the following when running VirtualBox:
-> > kernel: WARNING: at arch/x86/mm/pat.c:620 reserve_pfn_range+0x5b/0x26d()
-> > 
-> > After be03d9e80220 (which probably fixed that) VirtualBox could no longer 
-> > be loaded at all with pat enabled, but with this patch added VirtualBox 
-> > runs perfectly again.
+> > OK, what about this (untested, irrelevant parts skipped)?
 > 
-> That's great news :-).
+> Well, I guess I need to assume that no reaction means it's fine. ;-)
 > 
-> Ingo: considering the history of this patch, can you let this 
-> cook in your tree for a week or so and then push towards 
-> upstream-git (and .29 stable if .29 is out by then).
+> Below is the complete patch.  Thomas, Ingo, please let me know 
+> it it is fine with you.
 
-Could you please update the commit log with the Reported-by and 
-Tested-by tags from Frans, and resend it anew into this thread 
-with a changed subject line?
+looks good - but you sure want to split it up some more, right?
+
+> 13 files changed, 195 insertions(+), 47 deletions(-)
+
+We want the non-intrusive 'add new APIs' bits [which give most 
+of the linecount] separated from the 'all hell breaks lose' 
+functional changes ;-) Makes it easier to revert, bisect, etc.
 
 	Ingo
