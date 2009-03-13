@@ -1,93 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761283AbZCMRKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761463AbZCMRLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761283AbZCMRKe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 13:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760448AbZCMRCs
+	id S1761463AbZCMRLV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 13:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760660AbZCMRGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 13:02:48 -0400
-Received: from gw.goop.org ([64.81.55.164]:57449 "EHLO abulafia.goop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759907AbZCMRCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 13:02:47 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       David Airlie <airlied@linux.ie>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 27/27] agp/intel: use dma_alloc_coherent for special cursor memory
-Date: Fri, 13 Mar 2009 10:00:12 -0700
-Message-Id: <1236963612-14287-28-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1236963612-14287-1-git-send-email-jeremy@goop.org>
-References: <1236963612-14287-1-git-send-email-jeremy@goop.org>
+	Fri, 13 Mar 2009 13:06:16 -0400
+Received: from alcalazamora.dti2.net ([81.24.162.8]:3680 "EHLO
+	alcalazamora.dti2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759554AbZCMRGO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 13:06:14 -0400
+X-Spam-Processed: alcalazamora.dti2.net, Fri, 13 Mar 2009 18:06:11 +0100
+	(not processed: message from valid local sender)
+X-MDOP-RefID: str=0001.0A0B0206.49BA9280.0287,ss=1,fgs=0 (_st=1 _vt=0 _iwf=0)
+X-Authenticated-Sender: jorge@dti2.net
+X-MDRemoteIP: 81.24.161.20
+X-Return-Path: jorge@dti2.net
+X-Envelope-From: jorge@dti2.net
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Message-ID: <49BA927F.8020701@dti2.net>
+Date: Fri, 13 Mar 2009 18:06:07 +0100
+From: "Jorge Boncompte [DTI2]" <jorge@dti2.net>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+MIME-Version: 1.0
+To: npiggin@suse.de
+CC: ext-adrian.hunter@nokia.com, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Error testing ext3 on brd ramdisk
+References: <20090228055809.GC28496@wotan.suse.de> <49AC1A7A.1070108@dti2.net> <20090305065529.GB11916@wotan.suse.de> <49AF9932.2040301@dti2.net> <20090305094623.GA17815@wotan.suse.de> <49AFAFD9.9050805@dti2.net> <49AFC1A9.90501@dti2.net> <20090310161247.GA19352@wotan.suse.de> <20090310163002.GC19352@wotan.suse.de> <49B69A09.3080408@dti2.net> <20090311021920.GA16561@wotan.suse.de>
+In-Reply-To: <20090311021920.GA16561@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+Reply-To: jorge@dti2.net
+X-MDAV-Processed: alcalazamora.dti2.net, Fri, 13 Mar 2009 18:06:11 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Nick Piggin escribió:
+> On Tue, Mar 10, 2009 at 05:49:13PM +0100, Jorge Boncompte [DTI2] wrote:
+>> Nick Piggin escribió:
+>>> Ah, of course, it would be due to directory-in-pagecache. You need
+>>> the following patch if you expect this to work.
+>>>
+>>> And that confirms the ext3 problem is a different one because it
+>>> doesn't use directory in pagecache I think. Well, I'll look at
+>>> that one tomorrow.
+>>>
+>>> Thanks,
+>>> Nick
+>>>
+>>> ---
+>>> fs/super.c |    2 ++
+>>> 1 file changed, 2 insertions(+)
+>>>
+>>> Index: linux-2.6/fs/super.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/fs/super.c
+>>> +++ linux-2.6/fs/super.c
+>>> @@ -644,6 +644,8 @@ int do_remount_sb(struct super_block *sb
+>>> 		acct_auto_close(sb);
+>>> 	shrink_dcache_sb(sb);
+>>> 	fsync_super(sb);
+>>> +	if (flags & MS_RDONLY)
+>>> +		invalidate_bdev(sb->s_bdev);
+>>>
+>>> 	/* If we are remounting RDONLY and current sb is read/write,
+>>> 	   make sure there are no rw files opened */
+>>>
+>>>
+>>>
+>>>
+>> 	With this applied it seems I cannot reproduce the corruption, I have 
+> 
+> Ah, that sounds promising.
+> 
+>> 	to do more tests, but the box oopses on reboot after doing "umount -na -r".
+> 
+> Oh, silly me, s_bdev will be NULL for non block device based filesystems.
+> If you check for s_bdev != NULL there too, it should work.
 
-Given that i810 wants special physically contiguous memory for its cursor,
-allocate it with dma_alloc_coherent, which will give us memory with the
-right properties.  This is particularly for Xen, which won't normally
-give us physically contiuous memory.
+	Hi Nick, no problems noticed in the last days running with the below 
+patch...
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: David Airlie <airlied@linux.ie>
----
- drivers/char/agp/intel-agp.c |   26 +++++++++++---------------
- 1 files changed, 11 insertions(+), 15 deletions(-)
+--- linux-2.6.29-rc8/fs/super.c       2009-03-13 13:46:19 +0100
++++ kernel/fs/super.c       2009-03-13 13:47:50 +0100
+@@ -647,6 +647,8 @@ int do_remount_sb(struct super_block *sb
+                 acct_auto_close(sb);
+         shrink_dcache_sb(sb);
+         fsync_super(sb);
++       if (sb->s_bdev && (flags & MS_RDONLY))
++               invalidate_bdev(sb->s_bdev);
 
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index 4373adb..8ba6808 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -244,33 +244,29 @@ static void intel_i810_agp_enable(struct agp_bridge_data *bridge, u32 mode)
- /* Exists to support ARGB cursors */
- static void *i8xx_alloc_pages(void)
- {
--	struct page *page;
--
--	page = alloc_pages(GFP_KERNEL | GFP_DMA32, 2);
--	if (page == NULL)
-+	void *addr;
-+	dma_addr_t _d;
-+	
-+	addr = dma_alloc_coherent(NULL, 4 * PAGE_SIZE, &_d, GFP_KERNEL);
-+	if (addr == NULL)
- 		return NULL;
- 
--	if (set_pages_uc(page, 4) < 0) {
--		set_pages_wb(page, 4);
--		__free_pages(page, 2);
-+	if (set_memory_uc((unsigned long)addr, 4) < 0) {
-+		set_memory_wb((unsigned long)addr, 4);
-+		dma_free_coherent(NULL, 4 * PAGE_SIZE, addr, _d);
- 		return NULL;
- 	}
--	get_page(page);
- 	atomic_inc(&agp_bridge->current_memory_agp);
--	return page_address(page);
-+	return addr;
- }
- 
- static void i8xx_destroy_pages(void *addr)
- {
--	struct page *page;
--
- 	if (addr == NULL)
- 		return;
- 
--	page = virt_to_page(addr);
--	set_pages_wb(page, 4);
--	put_page(page);
--	__free_pages(page, 2);
-+	set_memory_wb((unsigned long)addr, 4);
-+	dma_free_coherent(NULL, 4 * PAGE_SIZE, addr, virt_to_bus(addr));
- 	atomic_dec(&agp_bridge->current_memory_agp);
- }
- 
+         /* If we are remounting RDONLY and current sb is read/write,
+            make sure there are no rw files opened */
+
 -- 
-1.6.0.6
+==============================================================
+Jorge Boncompte - Ingenieria y Gestion de RED
+DTI2 - Desarrollo de la Tecnologia de las Comunicaciones
+--------------------------------------------------------------
+C/ Abogado Enriquez Barrios, 5   14004 CORDOBA (SPAIN)
+Tlf: +34 957 761395 / FAX: +34 957 450380
+==============================================================
+- Sin pistachos no hay Rock & Roll...
+- Without wicker a basket cannot be made.
+==============================================================
 
