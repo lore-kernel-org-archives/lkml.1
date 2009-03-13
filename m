@@ -1,973 +1,1095 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbZCMG1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZCMGaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756744AbZCMG1T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 02:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZCMG1F
+	id S1756146AbZCMGaW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 02:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZCMGaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 02:27:05 -0400
-Received: from mail.renesas.com ([202.234.163.13]:65365 "EHLO
-	mail04.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751396AbZCMG1B (ORCPT
+	Fri, 13 Mar 2009 02:30:07 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:26716 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752716AbZCMGaB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 02:27:01 -0400
-X-AuditID: ac140387-00000006000005fd-6e-49b9fcb147e3
-Date: Fri, 13 Mar 2009 15:26:56 +0900
-From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Subject: [PATCH v2] dmaengine: sh: Add support DMA-Engine driver for DMA of
- SuperH
-To: Linux-sh <linux-sh@vger.kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <49B9FCB0.2030103@renesas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-2022-JP
-Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-X-Brightmail-Tracker: AAAAAA==
+	Fri, 13 Mar 2009 02:30:01 -0400
+X-IronPort-AV: E=Sophos;i="4.38,355,1233550800"; 
+   d="scan'208";a="67837554"
+From: <graff.yang@gmail.com>
+To: <samuel@sortiz.org>
+CC: <irda-users@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
+       <graf.yang@analog.com>, <cooloney@kernel.org>,
+       Graff Yang <graff.yang@gmail.com>
+Subject: [PATCH] [net/irda]: Resend new Blackfin on-chip SIR IrDA driver (v4)
+Date: Fri, 13 Mar 2009 14:29:39 +0800
+Message-ID: <1236925779-26348-1-git-send-email-graff.yang@gmail.com>
+X-Mailer: git-send-email 1.6.1
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This supports DMA-Engine driver for DMA of SuperH.
-This supported all DMA channels, and it was tested in SH7722/SH7780.
-This can not use with SH DMA API and can control this in Kconfig.
+From: Graff Yang <graff.yang@gmail.com>
 
-Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Reviewed-by: Matt Fleming <matt@console-pimps.org>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>
-Cc: Dan Williams <dan.j.williams@intel.com>
+v3-v4: Revised according suggestions from Mike Frysinger
+  1. Use dev_warn(&pdev->dev, ...) in bfin_sir_probe()
+  2. Add sanity check for pdev->id
+
+Signed-off-by: Graff Yang <graff.yang@gmail.com>
 ---
+ drivers/net/irda/Kconfig    |   45 +++
+ drivers/net/irda/Makefile   |    1 +
+ drivers/net/irda/bfin_sir.c |  820 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/net/irda/bfin_sir.h |  148 ++++++++
+ 4 files changed, 1014 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/net/irda/bfin_sir.c
+ create mode 100644 drivers/net/irda/bfin_sir.h
 
-v2: Fix typo and comment style.
-
- arch/sh/drivers/dma/Kconfig  |   12 +-
- arch/sh/drivers/dma/Makefile |    3 +-
- arch/sh/include/asm/dma-sh.h |   13 +
- drivers/dma/Kconfig          |    9 +
- drivers/dma/Makefile         |    2 +
- drivers/dma/shdma.c          |  743 ++++++++++++++++++++++++++++++++++++++++++
- drivers/dma/shdma.h          |   65 ++++
- 7 files changed, 842 insertions(+), 5 deletions(-)
- create mode 100644 drivers/dma/shdma.c
- create mode 100644 drivers/dma/shdma.h
-
-diff --git a/arch/sh/drivers/dma/Kconfig b/arch/sh/drivers/dma/Kconfig
-index 57d95fc..f556629 100644
---- a/arch/sh/drivers/dma/Kconfig
-+++ b/arch/sh/drivers/dma/Kconfig
-@@ -1,14 +1,20 @@
- menu "DMA support"
-
--config SH_DMA_API
--	bool
-
- config SH_DMA
- 	bool "SuperH on-chip DMA controller (DMAC) support"
- 	depends on CPU_SH3 || CPU_SH4
--	select SH_DMA_API
- 	default n
-
-+config SH_DMA_API
-+	depends on SH_DMA
-+	bool "SuperH DMA API support"
+diff --git a/drivers/net/irda/Kconfig b/drivers/net/irda/Kconfig
+index e631755..f763842 100644
+--- a/drivers/net/irda/Kconfig
++++ b/drivers/net/irda/Kconfig
+@@ -17,6 +17,51 @@ config IRTTY_SIR
+ 
+ 	  If unsure, say Y.
+ 
++config BFIN_SIR
++	tristate "Blackfin SIR on UART"
++	depends on BLACKFIN && IRDA
 +	default n
 +	help
-+	  SH_DMA_API always enabled DMA API of used SuperH.
-+	  If you want to use DMA ENGINE, you must not enable this.
-+	  Please enable DMA_ENGINE and SH_DMAE.
++	  Say Y here if your want to enable SIR function on Blackfin UART
++	  devices.
 +
- config NR_ONCHIP_DMA_CHANNELS
- 	int
- 	depends on SH_DMA
-diff --git a/arch/sh/drivers/dma/Makefile b/arch/sh/drivers/dma/Makefile
-index ab956ad..c78ddd3 100644
---- a/arch/sh/drivers/dma/Makefile
-+++ b/arch/sh/drivers/dma/Makefile
-@@ -2,7 +2,6 @@
- # Makefile for the SuperH DMA specific kernel interface routines under Linux.
- #
-
--obj-$(CONFIG_SH_DMA_API)	+= dma-api.o dma-sysfs.o
--obj-$(CONFIG_SH_DMA)		+= dma-sh.o
-+obj-$(CONFIG_SH_DMA_API)	+= dma-sh.o dma-api.o dma-sysfs.o
- obj-$(CONFIG_SH_DREAMCAST)	+= dma-pvr2.o dma-g2.o
- obj-$(CONFIG_SH_DMABRG)		+= dmabrg.o
-diff --git a/arch/sh/include/asm/dma-sh.h b/arch/sh/include/asm/dma-sh.h
-index 0c8f8e1..c62860b 100644
---- a/arch/sh/include/asm/dma-sh.h
-+++ b/arch/sh/include/asm/dma-sh.h
-@@ -115,4 +115,17 @@ static u32 dma_base_addr[] __maybe_unused = {
- #define CHCR    0x0C
- #define DMAOR	0x40
-
-+/*
-+ * For dma engine
-+ *
-+ * SuperH DMA Mode
-+ */
-+#define SHDMA_MIX_IRQ	(1 << 1)
-+#define SHDMA_DMAOR1	(1 << 2)
-+#define SHDMA_DMAE1		(1 << 3)
++	  To activate this driver you can start irattach like:
++	  "irattach irda0 -s"
 +
-+struct sh_dmae_pdata {
-+	unsigned int mode;
-+};
++	  Saying M, it will be built as a module named bfin_sir.
 +
- #endif /* __DMA_SH_H */
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 7f9e1ec..af74ff3 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -81,6 +81,15 @@ config MX3_IPU_IRQS
- 	  To avoid bloating the irq_desc[] array we allocate a sufficient
- 	  number of IRQ slots and map them dynamically to specific sources.
-
-+config SH_DMAE
-+	tristate "Renesas SuperH DMAC support"
-+	depends on SUPERH && SH_DMA
-+	depends on !SH_DMA_API
-+	select DMA_ENGINE
-+	help
-+	  There is SH_DMA_API which is another DMA implementation in SuperH.
-+	  When you want to use this, please enable SH_DMA_API.
++	  Note that you need to turn off one of the serial drivers for SIR
++	  to use that UART.
 +
- config DMA_ENGINE
- 	bool
-
-diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-index 2e5dc96..0d2f3e9 100644
---- a/drivers/dma/Makefile
-+++ b/drivers/dma/Makefile
-@@ -8,3 +8,5 @@ obj-$(CONFIG_FSL_DMA) += fsldma.o
- obj-$(CONFIG_MV_XOR) += mv_xor.o
- obj-$(CONFIG_DW_DMAC) += dw_dmac.o
- obj-$(CONFIG_MX3_IPU) += ipu/
-+obj-$(CONFIG_SH_DMAE) += shdma.o
++config BFIN_SIR0
++	bool "Blackfin SIR on UART0"
++	depends on BFIN_SIR && !SERIAL_BFIN_UART0
 +
-diff --git a/drivers/dma/shdma.c b/drivers/dma/shdma.c
++config BFIN_SIR1
++	bool "Blackfin SIR on UART1"
++	depends on BFIN_SIR && !SERIAL_BFIN_UART1 && (!BF531 && !BF532 && !BF533 && !BF561)
++
++config BFIN_SIR2
++	bool "Blackfin SIR on UART2"
++	depends on BFIN_SIR && !SERIAL_BFIN_UART2 && (BF54x || BF538 || BF539)
++
++config BFIN_SIR3
++	bool "Blackfin SIR on UART3"
++	depends on BFIN_SIR && !SERIAL_BFIN_UART3 && (BF54x)
++
++choice
++	prompt "SIR Mode"
++	depends on BFIN_SIR
++	default SIR_BFIN_DMA
++
++config SIR_BFIN_DMA
++	bool "DMA mode"
++	depends on !DMA_UNCACHED_NONE
++
++config SIR_BFIN_PIO
++	bool "PIO mode"
++endchoice
++
+ comment "Dongle support"
+ 
+ config DONGLE
+diff --git a/drivers/net/irda/Makefile b/drivers/net/irda/Makefile
+index 5d20fde..d82e1e3 100644
+--- a/drivers/net/irda/Makefile
++++ b/drivers/net/irda/Makefile
+@@ -21,6 +21,7 @@ obj-$(CONFIG_MCS_FIR)	        += mcs7780.o
+ obj-$(CONFIG_AU1000_FIR)	+= au1k_ir.o
+ # SIR drivers
+ obj-$(CONFIG_IRTTY_SIR)		+= irtty-sir.o	sir-dev.o
++obj-$(CONFIG_BFIN_SIR)		+= bfin_sir.o
+ # dongle drivers for SIR drivers
+ obj-$(CONFIG_ESI_DONGLE)	+= esi-sir.o
+ obj-$(CONFIG_TEKRAM_DONGLE)	+= tekram-sir.o
+diff --git a/drivers/net/irda/bfin_sir.c b/drivers/net/irda/bfin_sir.c
 new file mode 100644
-index 0000000..540454d
+index 0000000..f3eed6a
 --- /dev/null
-+++ b/drivers/dma/shdma.c
-@@ -0,0 +1,743 @@
++++ b/drivers/net/irda/bfin_sir.c
+@@ -0,0 +1,820 @@
 +/*
-+ * Renesas SuperH DMA Engine support
++ * Blackfin Infra-red Driver
 + *
-+ * base is drivers/dma/flsdma.c
++ * Copyright 2006-2009 Analog Devices Inc.
 + *
-+ * Copyright (C) 2009 Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-+ * Copyright (C) 2009 Renesas Solutions, Inc. All rights reserved.
-+ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
++ * Enter bugs at http://blackfin.uclinux.org/
 + *
-+ * This is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * - DMA of SuperH does not have Hardware DMA chain mode.
-+ * - MAX DMA size is 16MB.
++ * Licensed under the GPL-2 or later.
 + *
 + */
++#include "bfin_sir.h"
 +
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/dmaengine.h>
-+#include <linux/delay.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/dmapool.h>
-+#include <linux/platform_device.h>
-+#include <cpu/dma.h>
-+#include <asm/dma-sh.h>
-+#include "shdma.h"
++#ifdef CONFIG_SIR_BFIN_DMA
++#define DMA_SIR_RX_XCNT        10
++#define DMA_SIR_RX_YCNT        (PAGE_SIZE / DMA_SIR_RX_XCNT)
++#define DMA_SIR_RX_FLUSH_JIFS  (HZ * 4 / 250)
++#endif
 +
-+/* DMA descriptor control */
-+#define DESC_LAST	(-1)
-+#define DESC_COMP	(1)
-+#define DESC_NCOMP	(0)
++#if ANOMALY_05000447
++static int max_rate = 57600;
++#else
++static int max_rate = 115200;
++#endif
 +
-+/*
-+ * Define the default configuration for dual address memory-memory transfer.
-+ * The 0x400 value represents auto-request, external->external.
-+ */
-+#define RS_DEFAULT RS_DUAL
-+
-+#define SH_DMAC_CHAN_BASE(id) (dma_base_addr[id])
-+static void sh_dmae_writel(struct sh_dmae_chan *sh_dc, u32 data, u32 reg)
++static void turnaround_delay(unsigned long last_jif, int mtt)
 +{
-+	ctrl_outl(data, (SH_DMAC_CHAN_BASE(sh_dc->id) + reg));
++	long ticks;
++
++	mtt = mtt < 10000 ? 10000 : mtt;
++	ticks = 1 + mtt / (USEC_PER_SEC / HZ);
++	schedule_timeout_uninterruptible(ticks);
 +}
 +
-+static u32 sh_dmae_readl(struct sh_dmae_chan *sh_dc, u32 reg)
++static void __devinit bfin_sir_init_ports(struct bfin_sir_port *sp, struct platform_device *pdev)
 +{
-+	return ctrl_inl((SH_DMAC_CHAN_BASE(sh_dc->id) + reg));
-+}
++	int i;
++	struct resource *res;
 +
-+static void sh_dmae_writew(struct sh_dmae_chan *sh_dc, u16 data, u32 reg)
-+{
-+	ctrl_outw(data, (SH_DMAC_CHAN_BASE(sh_dc->id) + reg));
-+}
-+
-+static u16 sh_dmae_readw(struct sh_dmae_chan *sh_dc, u32 reg)
-+{
-+	return ctrl_inw((SH_DMAC_CHAN_BASE(sh_dc->id) + reg));
-+}
-+
-+static void dmae_init(struct sh_dmae_chan *sh_chan)
-+{
-+	u32 chcr = RS_DEFAULT; /* default is DUAL mode */
-+	sh_dmae_writel(sh_chan, chcr, CHCR);
-+}
-+
-+/*
-+ * Reset DMA controller
-+ *
-+ * SH7780 has two DMAOR register
-+ */
-+static void sh_dmae_ctl_stop(int id)
-+{
-+	unsigned short dmaor = dmaor_read_reg(id);
-+
-+	dmaor &= ~(DMAOR_NMIF | DMAOR_AE);
-+	dmaor_write_reg(id, dmaor);
-+}
-+
-+static int sh_dmae_rst(int id)
-+{
-+	unsigned short dmaor;
-+
-+	sh_dmae_ctl_stop(id);
-+	dmaor = (dmaor_read_reg(id)|DMAOR_INIT);
-+
-+	dmaor_write_reg(id, dmaor);
-+	if ((dmaor_read_reg(id) & (DMAOR_AE | DMAOR_NMIF))) {
-+		pr_warning(KERN_ERR "dma-sh: Can't initialize DMAOR.\n");
-+		return -EINVAL;
++	for (i = 0; i < pdev->num_resources; i++) {
++		res = &pdev->resource[i];
++		switch (res->flags) {
++		case IORESOURCE_MEM:
++			sp->membase   = (void __iomem *)res->start;
++			break;
++		case IORESOURCE_IRQ:
++			sp->irq = res->start;
++			break;
++		case IORESOURCE_DMA:
++			sp->rx_dma_channel = res->start;
++			sp->tx_dma_channel = res->end;
++			break;
++		default:
++			break;
++		}
 +	}
-+	return 0;
++
++	sp->clk = get_sclk();
++#ifdef CONFIG_SIR_BFIN_DMA
++	sp->tx_done        = 1;
++	init_timer(&(sp->rx_dma_timer));
++#endif
 +}
 +
-+static int dmae_is_idle(struct sh_dmae_chan *sh_chan)
++static void bfin_sir_stop_tx(struct bfin_sir_port *port)
 +{
-+	u32 chcr = sh_dmae_readl(sh_chan, CHCR);
-+	if (chcr & CHCR_DE) {
-+		if (!(chcr & CHCR_TE))
-+			return -EBUSY; /* working */
++#ifdef CONFIG_SIR_BFIN_DMA
++	disable_dma(port->tx_dma_channel);
++#endif
++
++	while (!(SIR_UART_GET_LSR(port) & THRE)) {
++		cpu_relax();
++		continue;
 +	}
-+	return 0; /* waiting */
++
++	SIR_UART_STOP_TX(port);
 +}
 +
-+static inline unsigned int calc_xmit_shift(struct sh_dmae_chan *sh_chan)
++static void bfin_sir_enable_tx(struct bfin_sir_port *port)
 +{
-+	u32 chcr = sh_dmae_readl(sh_chan, CHCR);
-+	return ts_shift[(chcr & CHCR_TS_MASK) >> CHCR_TS_SHIFT];
++	SIR_UART_ENABLE_TX(port);
 +}
 +
-+static void dmae_set_reg(struct sh_dmae_chan *sh_chan, struct sh_dmae_regs hw)
++static void bfin_sir_stop_rx(struct bfin_sir_port *port)
 +{
-+	sh_dmae_writel(sh_chan, hw.sar, SAR);
-+	sh_dmae_writel(sh_chan, hw.dar, DAR);
-+	sh_dmae_writel(sh_chan, hw.tcr, TCR);
++	SIR_UART_STOP_RX(port);
 +}
 +
-+static void dmae_start(struct sh_dmae_chan *sh_chan)
++static void bfin_sir_enable_rx(struct bfin_sir_port *port)
 +{
-+    u32 chcr = sh_dmae_readl(sh_chan, CHCR);
-+
-+    chcr |= (CHCR_DE|CHCR_IE);
-+	sh_dmae_writel(sh_chan, chcr, CHCR);
++	SIR_UART_ENABLE_RX(port);
 +}
 +
-+static void dmae_halt(struct sh_dmae_chan *sh_chan)
++static int bfin_sir_set_speed(struct bfin_sir_port *port, int speed)
 +{
-+    u32 chcr = sh_dmae_readl(sh_chan, CHCR);
-+    chcr &= ~(CHCR_DE | CHCR_TE | CHCR_IE);
-+	sh_dmae_writel(sh_chan, chcr, CHCR);
-+}
++	int ret = -EINVAL;
++	unsigned int quot;
++	unsigned short val, lsr, lcr;
++	static int utime;
++	int count = 10;
 +
-+static int dmae_set_chcr(struct sh_dmae_chan *sh_chan, u32 val)
-+{
-+	int ret = dmae_is_idle(sh_chan);
-+	/* When DMA was working, can not set data to CHCR */
-+	if (ret)
-+		return ret;
-+	sh_dmae_writel(sh_chan, val, CHCR);
-+	return 0;
-+}
++	lcr = WLS(8);
 +
-+#define DMARS1_ADDR	0x04
-+#define DMARS2_ADDR	0x08
-+#define DMARS_SHIFT 8
-+#define DMARS_CHAN_MSK 0x01
-+static int dmae_set_dmars(struct sh_dmae_chan *sh_chan, u16 val)
-+{
-+	u32 addr;
-+	u16 dmars;
-+	int shift = 0;
-+	int ret = dmae_is_idle(sh_chan);
-+	if (ret)
-+		return ret;
++	switch (speed) {
++	case 9600:
++	case 19200:
++	case 38400:
++	case 57600:
++	case 115200:
 +
-+	if (sh_chan->id & DMARS_CHAN_MSK)
-+		shift = DMARS_SHIFT;
++		quot = (port->clk + (8 * speed)) / (16 * speed)\
++						- ANOMALY_05000230;
 +
-+	switch (sh_chan->id) {
-+	/* DMARS0 */
-+	case 0:
-+	case 1:
-+		addr = SH_DMARS_BASE;
-+		break;
-+	/* DMARS1 */
-+	case 2:
-+	case 3:
-+		addr = (SH_DMARS_BASE + DMARS1_ADDR);
-+		break;
-+	/* DMARS2 */
-+	case 4:
-+	case 5:
-+		addr = (SH_DMARS_BASE + DMARS2_ADDR);
++		do {
++			udelay(utime);
++			lsr = SIR_UART_GET_LSR(port);
++		} while (!(lsr & TEMT) && count--);
++
++		/* The useconds for 1 bits to transmit */
++		utime = 1000000 / speed + 1;
++
++		/* Clear UCEN bit to reset the UART state machine
++		 * and control registers
++		 */
++		val = SIR_UART_GET_GCTL(port);
++		val &= ~UCEN;
++		SIR_UART_PUT_GCTL(port, val);
++
++		/* Set DLAB in LCR to Access THR RBR IER */
++		SIR_UART_SET_DLAB(port);
++		SSYNC();
++
++		SIR_UART_PUT_DLL(port, quot & 0xFF);
++		SIR_UART_PUT_DLH(port, (quot >> 8) & 0xFF);
++		SSYNC();
++
++		/* Clear DLAB in LCR */
++		SIR_UART_CLEAR_DLAB(port);
++		SSYNC();
++
++		SIR_UART_PUT_LCR(port, lcr);
++
++		val = SIR_UART_GET_GCTL(port);
++		val |= UCEN;
++		SIR_UART_PUT_GCTL(port, val);
++
++		ret = 0;
 +		break;
 +	default:
-+		return -EINVAL;
++		printk(KERN_WARNING "bfin_sir: Invalid speed %d\n", speed);
++		break;
 +	}
 +
-+	dmars = sh_dmae_readw(sh_chan, addr);
-+	sh_dmae_writew(sh_chan,
-+		(val << shift) | (dmars & (shift ? 0xFF00 : 0x00FF)),
-+		addr);
-+	return 0;
-+}
-+
-+static dma_cookie_t sh_dmae_tx_submit(struct dma_async_tx_descriptor *tx)
-+{
-+	struct sh_desc *desc = tx_to_sh_desc(tx);
-+	struct sh_dmae_chan *sh_chan = to_sh_chan(tx->chan);
-+	unsigned long flags;
-+	dma_cookie_t cookie;
-+
-+	spin_lock_irqsave(&sh_chan->desc_lock, flags);
-+
-+	cookie = sh_chan->common.cookie;
-+	cookie++;
-+	if (cookie < 0)
-+		cookie = 1;
-+
-+	/* If desc only in the case of 1 */
-+	if (desc->async_tx.cookie != -EBUSY)
-+		desc->async_tx.cookie = cookie;
-+	sh_chan->common.cookie = desc->async_tx.cookie;
-+
-+	list_splice_init(&desc->async_tx.tx_list, sh_chan->ld_queue.prev);
-+
-+	spin_unlock_irqrestore(&sh_chan->desc_lock, flags);
-+
-+	return cookie;
-+}
-+
-+static struct sh_desc *sh_dmae_alloc_descriptor(struct sh_dmae_chan *sh_chan)
-+{
-+	struct sh_desc *desc_sw;
-+	desc_sw = kzalloc(sizeof(struct sh_desc), GFP_KERNEL);
-+	if (desc_sw) {
-+		dma_async_tx_descriptor_init(&desc_sw->async_tx,
-+						&sh_chan->common);
-+		desc_sw->async_tx.tx_submit = sh_dmae_tx_submit;
-+		INIT_LIST_HEAD(&desc_sw->async_tx.tx_list);
-+	}
-+
-+	return desc_sw;
-+}
-+
-+static int sh_dmae_alloc_chan_resources(struct dma_chan *chan)
-+{
-+	return 1;
-+}
-+
-+/*
-+ * sh_dma_free_chan_resources - Free all resources of the channel.
-+ */
-+static void sh_dmae_free_chan_resources(struct dma_chan *chan)
-+{
-+	struct sh_dmae_chan *sh_chan = to_sh_chan(chan);
-+	struct sh_desc *desc, *_desc;
-+	unsigned long flags;
-+
-+	dev_dbg(sh_chan->dev, "Free all channel resources.\n");
-+	spin_lock_irqsave(&sh_chan->desc_lock, flags);
-+	list_for_each_entry_safe(desc, _desc, &sh_chan->ld_queue, node) {
-+		list_del(&desc->node);
-+		/* free link descriptor */
-+		kfree(desc);
-+	}
-+	spin_unlock_irqrestore(&sh_chan->desc_lock, flags);
-+}
-+
-+static struct dma_async_tx_descriptor *sh_dmae_prep_memcpy(
-+	struct dma_chan *chan, dma_addr_t dma_dest, dma_addr_t dma_src,
-+	size_t len, unsigned long flags)
-+{
-+	struct sh_dmae_chan *sh_chan;
-+	struct sh_desc *first = NULL, *prev = NULL, *new;
-+	size_t copy_size;
-+	int cnt = 0;
-+	LIST_HEAD(link_chain);
-+
-+	if (!chan)
-+		return NULL;
-+
-+	if (!len)
-+		return NULL;
-+
-+	sh_chan = to_sh_chan(chan);
-+
-+	do {
-+		/* Allocate the link descriptor from DMA pool */
-+		new = sh_dmae_alloc_descriptor(sh_chan);
-+		if (!new) {
-+			dev_err(sh_chan->dev,
-+					"No free memory for link descriptor\n");
-+			return NULL;
-+		}
-+
-+		copy_size = min(len, (size_t)SH_DMA_TCR_MAX);
-+
-+		new->hw.sar = dma_src;
-+		new->hw.dar = dma_dest;
-+		new->hw.tcr = (copy_size >> calc_xmit_shift(sh_chan));
-+		if (!first)
-+			first = new;
-+
-+		new->mark = DESC_NCOMP;
-+		async_tx_ack(&new->async_tx);
-+
-+		prev = new;
-+		len -= copy_size;
-+		dma_src += copy_size;
-+		dma_dest += copy_size;
-+		cnt++;
-+		/* Insert the link descriptor to the LD ring */
-+		list_add_tail(&new->node, &first->async_tx.tx_list);
-+	} while (len);
-+
-+	new->async_tx.flags = flags; /* client is in control of this ack */
-+	new->async_tx.cookie = -EBUSY;
-+
-+	sh_chan->set_chcr = dmae_set_chcr;
-+	sh_chan->set_dmars = dmae_set_dmars;
-+
-+	return first ? &first->async_tx : NULL;
-+}
-+
-+/*
-+ * sh_chan_ld_cleanup - Clean up link descriptors
-+ *
-+ * This function clean up the ld_queue of DMA channel.
-+ */
-+static void sh_dmae_chan_ld_cleanup(struct sh_dmae_chan *sh_chan)
-+{
-+	struct sh_desc *desc, *_desc;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&sh_chan->desc_lock, flags);
-+	list_for_each_entry_safe(desc, _desc, &sh_chan->ld_queue, node) {
-+		dma_async_tx_callback callback;
-+		void *callback_param;
-+
-+		/* non send data */
-+		if (desc->mark == DESC_NCOMP)
-+			break;
-+
-+		/* send data sesc */
-+		callback = desc->async_tx.callback;
-+		callback_param = desc->async_tx.callback_param;
-+
-+		/* Remove from ld_queue list */
-+		list_del(&desc->node);
-+
-+		dev_dbg(sh_chan->dev, "link descriptor %p will be recycle.\n",
-+				desc);
-+		kfree(desc);
-+		/* Run the link descriptor callback function */
-+		if (callback) {
-+			spin_unlock_irqrestore(&sh_chan->desc_lock, flags);
-+			dev_dbg(sh_chan->dev, "link descriptor %p callback\n",
-+					desc);
-+			callback(callback_param);
-+			spin_lock_irqsave(&sh_chan->desc_lock, flags);
-+		}
-+	}
-+	spin_unlock_irqrestore(&sh_chan->desc_lock, flags);
-+}
-+
-+static void sh_chan_xfer_ld_queue(struct sh_dmae_chan *sh_chan)
-+{
-+	struct list_head *ld_node;
-+	unsigned long flags;
-+	struct sh_dmae_regs hw;
-+
-+	if (dmae_is_idle(sh_chan))
-+		return;
-+
-+	dmae_halt(sh_chan);
-+	spin_lock_irqsave(&sh_chan->desc_lock, flags);
-+
-+	/* Find the first un-transfer desciptor */
-+	for (ld_node = sh_chan->ld_queue.next;
-+		(ld_node != &sh_chan->ld_queue)
-+			&& (to_sh_desc(ld_node)->mark == DESC_COMP);
-+		ld_node = ld_node->next)
-+		cpu_relax();
-+
-+	spin_unlock_irqrestore(&sh_chan->desc_lock, flags);
-+
-+	if (ld_node != &sh_chan->ld_queue) {
-+		/* Get the ld start address from ld_queue */
-+		hw = to_sh_desc(ld_node)->hw;
-+		dmae_set_reg(sh_chan, hw);
-+		dmae_start(sh_chan);
-+	}
-+}
-+
-+static void sh_dmae_memcpy_issue_pending(struct dma_chan *chan)
-+{
-+	struct sh_dmae_chan *sh_chan = to_sh_chan(chan);
-+
-+	sh_chan_xfer_ld_queue(sh_chan);
-+}
-+
-+static enum dma_status sh_dmae_is_complete(struct dma_chan *chan,
-+					dma_cookie_t cookie,
-+					dma_cookie_t *done,
-+					dma_cookie_t *used)
-+{
-+	struct sh_dmae_chan *sh_chan = to_sh_chan(chan);
-+	dma_cookie_t last_used;
-+	dma_cookie_t last_complete;
-+
-+	sh_dmae_chan_ld_cleanup(sh_chan);
-+
-+	last_used = chan->cookie;
-+	last_complete = sh_chan->completed_cookie;
-+	if (last_complete == -EBUSY)
-+		last_complete = last_used;
-+
-+	if (done)
-+		*done = last_complete;
-+
-+	if (used)
-+		*used = last_used;
-+
-+	return dma_async_is_complete(cookie, last_complete, last_used);
-+}
-+
-+static irqreturn_t sh_dmae_interrupt(int irq, void *data)
-+{
-+	irqreturn_t ret = IRQ_NONE;
-+	struct sh_dmae_chan *sh_chan = (struct sh_dmae_chan *)data;
-+	u32 chcr = sh_dmae_readl(sh_chan, CHCR);
-+
-+	if (chcr & CHCR_TE) {
-+		struct sh_desc *desc, *cur_desc = NULL;
-+		u32 sar_buf = sh_dmae_readl(sh_chan, SAR);
-+
-+		list_for_each_entry(desc, &sh_chan->ld_queue, node) {
-+			if ((desc->hw.sar + desc->hw.tcr) == sar_buf) {
-+				cur_desc = desc;
-+				break;
-+			}
-+		}
-+		if (cur_desc) {
-+			switch (cur_desc->async_tx.cookie) {
-+			case 0: /* other desc data */
-+				break;
-+			case -EBUSY: /* last desc */
-+				sh_chan->completed_cookie =
-+					cur_desc->async_tx.cookie;
-+				break;
-+			default: /* first desc ( 0 < )*/
-+				sh_chan->completed_cookie =
-+					cur_desc->async_tx.cookie - 1;
-+				break;
-+			}
-+			cur_desc->mark = DESC_COMP;
-+		}
-+		/* Next desc */
-+		sh_chan_xfer_ld_queue(sh_chan);
-+		ret = IRQ_HANDLED;
-+	}
-+	tasklet_schedule(&sh_chan->tasklet);
++	val = SIR_UART_GET_GCTL(port);
++	/* If not add the 'RPOLC', we can't catch the receive interrupt.
++	 * It's related with the HW layout and the IR transiver.
++	 */
++	val |= IREN | RPOLC;
++	SIR_UART_PUT_GCTL(port, val);
 +	return ret;
 +}
 +
-+#if defined(CONFIG_CPU_SH4)
-+static irqreturn_t sh_dmae_err(int irq, void *data)
++static int bfin_sir_is_receiving(struct net_device *dev)
 +{
-+	int err = 0;
-+	struct sh_dmae_device *shdev = (struct sh_dmae_device *)data;
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
 +
-+	/* IRQ Multi */
-+	if (shdev->pdata.mode & SHDMA_MIX_IRQ) {
-+		int cnt = 0;
-+		switch (irq) {
-+#if defined(DMTE6_IRQ) && defined(DMAE1_IRQ)
-+		case DMTE6_IRQ:
-+			cnt++;
-+#endif
-+		case DMTE0_IRQ:
-+			if (dmaor_read_reg(cnt) & (DMAOR_NMIF | DMAOR_AE)) {
-+				disable_irq(irq);
-+				return IRQ_HANDLED;
-+			}
-+		default:
-+			return IRQ_NONE;
-+		}
++	if (!(SIR_UART_GET_IER(port) & ERBFI))
++		return 0;
++	return self->rx_buff.state != OUTSIDE_FRAME;
++}
++
++#ifdef CONFIG_SIR_BFIN_PIO
++static void bfin_sir_tx_chars(struct net_device *dev)
++{
++	unsigned int chr;
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
++
++	if (self->tx_buff.len != 0) {
++		chr = *(self->tx_buff.data);
++		SIR_UART_PUT_CHAR(port, chr);
++		self->tx_buff.data++;
++		self->tx_buff.len--;
 +	} else {
-+		/* reset dma controller */
-+		err = sh_dmae_rst(0);
-+		if (err)
-+			return err;
-+		if (shdev->pdata.mode & SHDMA_DMAOR1) {
-+			err = sh_dmae_rst(1);
-+			if (err)
-+				return err;
++		self->stats.tx_packets++;
++		self->stats.tx_bytes += self->tx_buff.data - self->tx_buff.head;
++		if (self->newspeed) {
++			bfin_sir_set_speed(port, self->newspeed);
++			self->speed = self->newspeed;
++			self->newspeed = 0;
 +		}
-+		disable_irq(irq);
-+		return IRQ_HANDLED;
++		bfin_sir_stop_tx(port);
++		bfin_sir_enable_rx(port);
++		/* I'm hungry! */
++		netif_wake_queue(dev);
 +	}
 +}
-+#endif
 +
-+static void dmae_do_tasklet(unsigned long data)
++static void bfin_sir_rx_chars(struct net_device *dev)
 +{
-+	struct sh_dmae_chan *sh_chan = (struct sh_dmae_chan *)data;
-+	sh_dmae_chan_ld_cleanup(sh_chan);
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
++	unsigned char ch;
++
++	SIR_UART_CLEAR_LSR(port);
++	ch = SIR_UART_GET_CHAR(port);
++	async_unwrap_char(dev, &self->stats, &self->rx_buff, ch);
++	dev->last_rx = jiffies;
 +}
 +
-+static unsigned int get_dmae_irq(unsigned int id)
++static irqreturn_t bfin_sir_rx_int(int irq, void *dev_id)
 +{
-+	unsigned int irq = 0;
-+	if (id < ARRAY_SIZE(dmte_irq_map))
-+		irq = dmte_irq_map[id];
-+	return irq;
++	struct net_device *dev = dev_id;
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
++
++	spin_lock(&self->lock);
++	while ((SIR_UART_GET_LSR(port) & DR))
++		bfin_sir_rx_chars(dev);
++	spin_unlock(&self->lock);
++
++	return IRQ_HANDLED;
 +}
 +
-+static int __devinit sh_dmae_chan_probe(struct sh_dmae_device *shdev, int id)
++static irqreturn_t bfin_sir_tx_int(int irq, void *dev_id)
 +{
-+	int err;
-+	unsigned int irq = get_dmae_irq(id);
-+	unsigned long irqflags = IRQF_DISABLED;
-+	struct sh_dmae_chan *new_sh_chan;
++	struct net_device *dev = dev_id;
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
 +
-+	/* alloc channel */
-+	new_sh_chan = kzalloc(sizeof(struct sh_dmae_chan), GFP_KERNEL);
-+	if (!new_sh_chan) {
-+		dev_err(shdev->dev, "No free memory for allocating "
-+				"dma channels!\n");
-+		return -ENOMEM;
++	spin_lock(&self->lock);
++	if (SIR_UART_GET_LSR(port) & THRE)
++		bfin_sir_tx_chars(dev);
++	spin_unlock(&self->lock);
++
++	return IRQ_HANDLED;
++}
++#endif /* CONFIG_SIR_BFIN_PIO */
++
++#ifdef CONFIG_SIR_BFIN_DMA
++static void bfin_sir_dma_tx_chars(struct net_device *dev)
++{
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
++
++	if (!port->tx_done)
++		return;
++	port->tx_done = 0;
++
++	if (self->tx_buff.len == 0) {
++		self->stats.tx_packets++;
++		if (self->newspeed) {
++			bfin_sir_set_speed(port, self->newspeed);
++			self->speed = self->newspeed;
++			self->newspeed = 0;
++		}
++		bfin_sir_enable_rx(port);
++		port->tx_done = 1;
++		netif_wake_queue(dev);
++		return;
 +	}
 +
-+	new_sh_chan->dev = shdev->dev;
-+	shdev->chan[id] = new_sh_chan;
-+	new_sh_chan->id = id;
-+
-+	/* Init DMA tasklet */
-+	tasklet_init(&new_sh_chan->tasklet, dmae_do_tasklet,
-+			(unsigned long)new_sh_chan);
-+
-+	/* Init the channel */
-+	dmae_init(new_sh_chan);
-+
-+	spin_lock_init(&new_sh_chan->desc_lock);
-+
-+	/* Init descripter manage list */
-+	INIT_LIST_HEAD(&new_sh_chan->ld_queue);
-+
-+	/* copy struct dma_device */
-+	new_sh_chan->common.device = &shdev->common;
-+
-+	/* Add the channel to DMA device channel list */
-+	list_add_tail(&new_sh_chan->common.device_node,
-+			&shdev->common.channels);
-+	shdev->common.chancnt++;
-+
-+	if (shdev->pdata.mode & SHDMA_MIX_IRQ) {
-+		irqflags = IRQF_SHARED;
-+#if defined(DMTE6_IRQ)
-+		if (irq >= DMTE6_IRQ)
-+			irq = DMTE6_IRQ;
-+		else
-+#endif
-+			irq = DMTE0_IRQ;
-+	}
-+
-+	snprintf(new_sh_chan->dev_id, sizeof(new_sh_chan->dev_id),
-+			"sh-dmae%d", new_sh_chan->id);
-+
-+	/* set up channel irq */
-+	err = request_irq(irq, &sh_dmae_interrupt,
-+		irqflags, new_sh_chan->dev_id, new_sh_chan);
-+	if (err) {
-+		dev_err(shdev->dev, "DMA channel %d request_irq error "
-+			"with return %d\n", id, err);
-+		goto err_no_irq;
-+	}
-+
-+	return 0;
-+
-+err_no_irq:
-+	/* remove from dmaengine device node */
-+	list_del(&new_sh_chan->common.device_node);
-+	kfree(new_sh_chan);
-+	return err;
++	blackfin_dcache_flush_range((unsigned long)(self->tx_buff.data),
++		(unsigned long)(self->tx_buff.data+self->tx_buff.len));
++	set_dma_config(port->tx_dma_channel,
++		set_bfin_dma_config(DIR_READ, DMA_FLOW_STOP,
++			INTR_ON_BUF, DIMENSION_LINEAR, DATA_SIZE_8,
++			DMA_SYNC_RESTART));
++	set_dma_start_addr(port->tx_dma_channel,
++		(unsigned long)(self->tx_buff.data));
++	set_dma_x_count(port->tx_dma_channel, self->tx_buff.len);
++	set_dma_x_modify(port->tx_dma_channel, 1);
++	enable_dma(port->tx_dma_channel);
 +}
 +
-+static void sh_dmae_chan_remove(struct sh_dmae_device *shdev)
++static irqreturn_t bfin_sir_dma_tx_int(int irq, void *dev_id)
 +{
++	struct net_device *dev = dev_id;
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
++
++	spin_lock(&self->lock);
++	if (!(get_dma_curr_irqstat(port->tx_dma_channel) & DMA_RUN)) {
++		clear_dma_irqstat(port->tx_dma_channel);
++		bfin_sir_stop_tx(port);
++
++		self->stats.tx_packets++;
++		self->stats.tx_bytes += self->tx_buff.len;
++		self->tx_buff.len = 0;
++		if (self->newspeed) {
++			bfin_sir_set_speed(port, self->newspeed);
++			self->speed = self->newspeed;
++			self->newspeed = 0;
++		}
++		bfin_sir_enable_rx(port);
++		/* I'm hungry! */
++		netif_wake_queue(dev);
++		port->tx_done = 1;
++	}
++	spin_unlock(&self->lock);
++
++	return IRQ_HANDLED;
++}
++
++static void bfin_sir_dma_rx_chars(struct net_device *dev)
++{
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
 +	int i;
 +
-+	for (i = shdev->common.chancnt - 1 ; i >= 0 ; i--) {
-+		if (shdev->chan[i]) {
-+			struct sh_dmae_chan *shchan = shdev->chan[i];
-+			if (!(shdev->pdata.mode & SHDMA_MIX_IRQ))
-+				free_irq(dmte_irq_map[i], shchan);
++	SIR_UART_CLEAR_LSR(port);
 +
-+			list_del(&shchan->common.device_node);
-+			kfree(shchan);
-+			shdev->chan[i] = NULL;
-+		}
-+	}
-+	shdev->common.chancnt = 0;
++	for (i = port->rx_dma_buf.head; i < port->rx_dma_buf.tail; i++)
++		async_unwrap_char(dev, &self->stats, &self->rx_buff, port->rx_dma_buf.buf[i]);
 +}
 +
-+static int __init sh_dmae_probe(struct platform_device *pdev)
++void bfin_sir_rx_dma_timeout(struct net_device *dev)
 +{
-+	int err = 0, cnt, ecnt;
-+	unsigned long irqflags = IRQF_DISABLED;
-+	int eirq[] = { DMAE0_IRQ,
-+#if defined(DMAE1_IRQ)
-+			DMAE1_IRQ
-+#endif
-+		};
-+	struct sh_dmae_device *shdev;
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
++	int x_pos, pos;
++	unsigned long flags;
 +
-+	shdev = kzalloc(sizeof(struct sh_dmae_device), GFP_KERNEL);
-+	if (!shdev) {
-+		dev_err(&pdev->dev, "No enough memory\n");
-+		err = -ENOMEM;
-+		goto shdev_err;
++	spin_lock_irqsave(&self->lock, flags);
++	x_pos = DMA_SIR_RX_XCNT - get_dma_curr_xcount(port->rx_dma_channel);
++	if (x_pos == DMA_SIR_RX_XCNT)
++		x_pos = 0;
++
++	pos = port->rx_dma_nrows * DMA_SIR_RX_XCNT + x_pos;
++
++	if (pos > port->rx_dma_buf.tail) {
++		port->rx_dma_buf.tail = pos;
++		bfin_sir_dma_rx_chars(dev);
++		port->rx_dma_buf.head = port->rx_dma_buf.tail;
 +	}
-+
-+	/* get platform data */
-+	if (!pdev->dev.platform_data)
-+		goto shdev_err;
-+
-+	/* platform data */
-+	memcpy(&shdev->pdata, pdev->dev.platform_data,
-+			sizeof(struct sh_dmae_pdata));
-+
-+	/* reset dma controller */
-+	err = sh_dmae_rst(0);
-+	if (err)
-+		goto rst_err;
-+
-+	/* SH7780/85/23 has DMAOR1 */
-+	if (shdev->pdata.mode & SHDMA_DMAOR1) {
-+		err = sh_dmae_rst(1);
-+		if (err)
-+			goto rst_err;
-+	}
-+
-+	shdev->dev = &pdev->dev;
-+	INIT_LIST_HEAD(&shdev->common.channels);
-+
-+	dma_cap_set(DMA_MEMCPY, shdev->common.cap_mask);
-+	shdev->common.device_alloc_chan_resources
-+		= sh_dmae_alloc_chan_resources;
-+	shdev->common.device_free_chan_resources = sh_dmae_free_chan_resources;
-+	shdev->common.device_prep_dma_memcpy = sh_dmae_prep_memcpy;
-+	shdev->common.device_is_tx_complete = sh_dmae_is_complete;
-+	shdev->common.device_issue_pending = sh_dmae_memcpy_issue_pending;
-+	shdev->common.dev = &pdev->dev;
-+
-+	/* Non Mix IRQ mode SH7722/SH7730 etc... */
-+	if (shdev->pdata.mode & SHDMA_MIX_IRQ) {
-+		irqflags = IRQF_SHARED;
-+		eirq[0] = DMTE0_IRQ;
-+#if defined(DMTE6_IRQ) && defined(DMAE1_IRQ)
-+		eirq[1] = DMTE6_IRQ;
-+#endif
-+	}
-+
-+	for (ecnt = 0 ; ecnt < ARRAY_SIZE(eirq); ecnt++) {
-+		err = request_irq(eirq[ecnt], sh_dmae_err,
-+			irqflags, "DMAC Address Error", shdev);
-+		if (err) {
-+			dev_err(&pdev->dev, "DMA device request_irq"
-+				"erro (irq %d) with return %d\n",
-+				eirq[ecnt], err);
-+			goto eirq_err;
-+		}
-+	}
-+
-+	/* Create DMA Channel */
-+	for (cnt = 0 ; cnt < MAX_DMA_CHANNELS ; cnt++) {
-+		err = sh_dmae_chan_probe(shdev, cnt);
-+		if (err)
-+			goto chan_probe_err;
-+	}
-+
-+	platform_set_drvdata(pdev, shdev);
-+	dma_async_device_register(&shdev->common);
-+
-+	return err;
-+
-+chan_probe_err:
-+	sh_dmae_chan_remove(shdev);
-+
-+eirq_err:
-+	for (ecnt-- ; ecnt >= 0; ecnt--)
-+		free_irq(eirq[ecnt], shdev);
-+
-+rst_err:
-+	kfree(shdev);
-+
-+shdev_err:
-+	return err;
++	spin_unlock_irqrestore(&self->lock, flags);
 +}
 +
-+static int __exit sh_dmae_remove(struct platform_device *pdev)
++static irqreturn_t bfin_sir_dma_rx_int(int irq, void *dev_id)
 +{
-+	struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
++	struct net_device *dev = dev_id;
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
++	unsigned short irqstat;
 +
-+	dma_async_device_unregister(&shdev->common);
++	spin_lock(&self->lock);
 +
-+	if (shdev->pdata.mode & SHDMA_MIX_IRQ) {
-+		free_irq(DMTE0_IRQ, shdev);
-+#if defined(DMTE6_IRQ)
-+		free_irq(DMTE6_IRQ, shdev);
-+#endif
++	port->rx_dma_nrows++;
++	port->rx_dma_buf.tail = DMA_SIR_RX_XCNT * port->rx_dma_nrows;
++	bfin_sir_dma_rx_chars(dev);
++	if (port->rx_dma_nrows >= DMA_SIR_RX_YCNT) {
++		port->rx_dma_nrows = 0;
++		port->rx_dma_buf.tail = 0;
++	}
++	port->rx_dma_buf.head = port->rx_dma_buf.tail;
++
++	irqstat = get_dma_curr_irqstat(port->rx_dma_channel);
++	clear_dma_irqstat(port->rx_dma_channel);
++	spin_unlock(&self->lock);
++
++	mod_timer(&port->rx_dma_timer, jiffies + DMA_SIR_RX_FLUSH_JIFS);
++	return IRQ_HANDLED;
++}
++#endif /* CONFIG_SIR_BFIN_DMA */
++
++static int bfin_sir_startup(struct bfin_sir_port *port, struct net_device *dev)
++{
++#ifdef CONFIG_SIR_BFIN_DMA
++	dma_addr_t dma_handle;
++#endif /* CONFIG_SIR_BFIN_DMA */
++
++	if (request_dma(port->rx_dma_channel, "BFIN_UART_RX") < 0) {
++		dev_warn(&dev->dev, "Unable to attach SIR RX DMA channel\n");
++		return -EBUSY;
 +	}
 +
-+	/* channel data remove */
-+	sh_dmae_chan_remove(shdev);
-+
-+	if (!(shdev->pdata.mode & SHDMA_MIX_IRQ)) {
-+		free_irq(DMAE0_IRQ, shdev);
-+#if defined(DMAE1_IRQ)
-+		free_irq(DMAE1_IRQ, shdev);
-+#endif
++	if (request_dma(port->tx_dma_channel, "BFIN_UART_TX") < 0) {
++		dev_warn(&dev->dev, "Unable to attach SIR TX DMA channel\n");
++		free_dma(port->rx_dma_channel);
++		return -EBUSY;
 +	}
-+	kfree(shdev);
++
++#ifdef CONFIG_SIR_BFIN_DMA
++
++	set_dma_callback(port->rx_dma_channel, bfin_sir_dma_rx_int, dev);
++	set_dma_callback(port->tx_dma_channel, bfin_sir_dma_tx_int, dev);
++
++	port->rx_dma_buf.buf = (unsigned char *)dma_alloc_coherent(NULL, PAGE_SIZE, &dma_handle, GFP_DMA);
++	port->rx_dma_buf.head = 0;
++	port->rx_dma_buf.tail = 0;
++	port->rx_dma_nrows = 0;
++
++	set_dma_config(port->rx_dma_channel,
++				set_bfin_dma_config(DIR_WRITE, DMA_FLOW_AUTO,
++									INTR_ON_ROW, DIMENSION_2D,
++									DATA_SIZE_8, DMA_SYNC_RESTART));
++	set_dma_x_count(port->rx_dma_channel, DMA_SIR_RX_XCNT);
++	set_dma_x_modify(port->rx_dma_channel, 1);
++	set_dma_y_count(port->rx_dma_channel, DMA_SIR_RX_YCNT);
++	set_dma_y_modify(port->rx_dma_channel, 1);
++	set_dma_start_addr(port->rx_dma_channel, (unsigned long)port->rx_dma_buf.buf);
++	enable_dma(port->rx_dma_channel);
++
++	port->rx_dma_timer.data = (unsigned long)(dev);
++	port->rx_dma_timer.function = (void *)bfin_sir_rx_dma_timeout;
++
++#else
++
++	if (request_irq(port->irq, bfin_sir_rx_int, IRQF_DISABLED, "BFIN_SIR_RX", dev)) {
++		dev_warn(&dev->dev, "Unable to attach SIR RX interrupt\n");
++		return -EBUSY;
++	}
++
++	if (request_irq(port->irq+1, bfin_sir_tx_int, IRQF_DISABLED, "BFIN_SIR_TX", dev)) {
++		dev_warn(&dev->dev, "Unable to attach SIR TX interrupt\n");
++		free_irq(port->irq, dev);
++		return -EBUSY;
++	}
++#endif
 +
 +	return 0;
 +}
 +
-+static void sh_dmae_shutdown(struct platform_device *pdev)
++static void bfin_sir_shutdown(struct bfin_sir_port *port, struct net_device *dev)
 +{
-+	struct sh_dmae_device *shdev = platform_get_drvdata(pdev);
-+	sh_dmae_ctl_stop(0);
-+	if (shdev->pdata.mode & SHDMA_DMAOR1)
-+		sh_dmae_ctl_stop(1);
++	unsigned short val;
++
++	bfin_sir_stop_rx(port);
++	SIR_UART_DISABLE_INTS(port);
++
++	val = SIR_UART_GET_GCTL(port);
++	val &= ~(UCEN | IREN | RPOLC);
++	SIR_UART_PUT_GCTL(port, val);
++
++#ifdef CONFIG_SIR_BFIN_DMA
++	disable_dma(port->tx_dma_channel);
++	disable_dma(port->rx_dma_channel);
++	del_timer(&(port->rx_dma_timer));
++	dma_free_coherent(NULL, PAGE_SIZE, port->rx_dma_buf.buf, 0);
++#else
++	free_irq(port->irq+1, dev);
++	free_irq(port->irq, dev);
++#endif
++	free_dma(port->tx_dma_channel);
++	free_dma(port->rx_dma_channel);
 +}
 +
-+static struct platform_driver sh_dmae_driver = {
-+	.remove		= __exit_p(sh_dmae_remove),
-+	.shutdown	= sh_dmae_shutdown,
-+	.driver = {
-+		.name	= "sh-dma-engine",
++#ifdef CONFIG_PM
++static int bfin_sir_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	struct bfin_sir_port *sir_port;
++	struct net_device *dev;
++	struct bfin_sir_self *self;
++
++	sir_port = platform_get_drvdata(pdev);
++	if (!sir_port)
++		return 0;
++
++	dev = sir_port->dev;
++	self = netdev_priv(dev);
++	if (self->open) {
++		flush_work(&self->work);
++		bfin_sir_shutdown(self->sir_port, dev);
++		netif_device_detach(dev);
++	}
++
++	return 0;
++}
++static int bfin_sir_resume(struct platform_device *pdev)
++{
++	struct bfin_sir_port *sir_port;
++	struct net_device *dev;
++	struct bfin_sir_self *self;
++	struct bfin_sir_port *port;
++
++	sir_port = platform_get_drvdata(pdev);
++	if (!sir_port)
++		return 0;
++
++	dev = sir_port->dev;
++	self = netdev_priv(dev);
++	port = self->sir_port;
++	if (self->open) {
++		if (self->newspeed) {
++			self->speed = self->newspeed;
++			self->newspeed = 0;
++		}
++		bfin_sir_startup(port, dev);
++		bfin_sir_set_speed(port, 9600);
++		bfin_sir_enable_rx(port);
++		netif_device_attach(dev);
++	}
++	return 0;
++}
++#else
++#define bfin_sir_suspend   NULL
++#define bfin_sir_resume    NULL
++#endif
++
++static void bfin_sir_send_work(struct work_struct *work)
++{
++	struct bfin_sir_self  *self = container_of(work, struct bfin_sir_self, work);
++	struct net_device *dev = self->sir_port->dev;
++	struct bfin_sir_port *port = self->sir_port;
++	unsigned short val;
++	int tx_cnt = 10;
++
++	while (bfin_sir_is_receiving(dev) && --tx_cnt)
++		turnaround_delay(dev->last_rx, self->mtt);
++
++	bfin_sir_stop_rx(port);
++
++	/* To avoid losting RX interrupt, we reset IR function before
++	 * sending data. We also can set the speed, which will
++	 * reset all the UART.
++	 */
++	val = SIR_UART_GET_GCTL(port);
++	val &= ~(IREN | RPOLC);
++	SIR_UART_PUT_GCTL(port, val);
++	SSYNC();
++	val |= IREN | RPOLC;
++	SIR_UART_PUT_GCTL(port, val);
++	SSYNC();
++	/* bfin_sir_set_speed(port, self->speed); */
++
++#ifdef CONFIG_SIR_BFIN_DMA
++	bfin_sir_dma_tx_chars(dev);
++#endif
++	bfin_sir_enable_tx(port);
++	dev->trans_start = jiffies;
++}
++
++static int bfin_sir_hard_xmit(struct sk_buff *skb, struct net_device *dev)
++{
++	struct bfin_sir_self *self = netdev_priv(dev);
++	int speed = irda_get_next_speed(skb);
++
++	netif_stop_queue(dev);
++
++	self->mtt = irda_get_mtt(skb);
++
++	if (speed != self->speed && speed != -1)
++		self->newspeed = speed;
++
++	self->tx_buff.data = self->tx_buff.head;
++	if (skb->len == 0)
++		self->tx_buff.len = 0;
++	else
++		self->tx_buff.len = async_wrap_skb(skb, self->tx_buff.data, self->tx_buff.truesize);
++
++	schedule_work(&self->work);
++	dev_kfree_skb(skb);
++
++	return 0;
++}
++
++static int bfin_sir_ioctl(struct net_device *dev, struct ifreq *ifreq, int cmd)
++{
++	struct if_irda_req *rq = (struct if_irda_req *)ifreq;
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
++	int ret = 0;
++
++	switch (cmd) {
++	case SIOCSBANDWIDTH:
++		if (capable(CAP_NET_ADMIN)) {
++			if (self->open) {
++				ret = bfin_sir_set_speed(port, rq->ifr_baudrate);
++				bfin_sir_enable_rx(port);
++			} else {
++				dev_warn(&dev->dev, "SIOCSBANDWIDTH: !netif_running\n");
++				ret = 0;
++			}
++		}
++		break;
++
++	case SIOCSMEDIABUSY:
++		ret = -EPERM;
++		if (capable(CAP_NET_ADMIN)) {
++			irda_device_set_media_busy(dev, TRUE);
++			ret = 0;
++		}
++		break;
++
++	case SIOCGRECEIVING:
++		rq->ifr_receiving = bfin_sir_is_receiving(dev);
++		break;
++
++	default:
++		ret = -EOPNOTSUPP;
++		break;
++	}
++
++	return ret;
++}
++
++static struct net_device_stats *bfin_sir_stats(struct net_device *dev)
++{
++	struct bfin_sir_self *self = netdev_priv(dev);
++
++	return &self->stats;
++}
++
++static int bfin_sir_open(struct net_device *dev)
++{
++	struct bfin_sir_self *self = netdev_priv(dev);
++	struct bfin_sir_port *port = self->sir_port;
++	int err = -ENOMEM;
++
++	self->newspeed = 0;
++	self->speed = 9600;
++
++	spin_lock_init(&self->lock);
++
++	err = bfin_sir_startup(port, dev);
++	if (err)
++		goto err_startup;
++
++	bfin_sir_set_speed(port, 9600);
++
++	self->irlap = irlap_open(dev, &self->qos, DRIVER_NAME);
++	if (!self->irlap)
++		goto err_irlap;
++
++	INIT_WORK(&self->work, bfin_sir_send_work);
++
++	/*
++	 * Now enable the interrupt then start the queue
++	 */
++	self->open = 1;
++	bfin_sir_enable_rx(port);
++
++	netif_start_queue(dev);
++
++	return 0;
++
++err_irlap:
++	self->open = 0;
++	bfin_sir_shutdown(port, dev);
++err_startup:
++	return err;
++}
++
++static int bfin_sir_stop(struct net_device *dev)
++{
++	struct bfin_sir_self *self = netdev_priv(dev);
++
++	flush_work(&self->work);
++	bfin_sir_shutdown(self->sir_port, dev);
++
++	if (self->rxskb) {
++		dev_kfree_skb(self->rxskb);
++		self->rxskb = NULL;
++	}
++
++	/* Stop IrLAP */
++	if (self->irlap) {
++		irlap_close(self->irlap);
++		self->irlap = NULL;
++	}
++
++	netif_stop_queue(dev);
++	self->open = 0;
++
++	return 0;
++}
++
++static int bfin_sir_init_iobuf(iobuff_t *io, int size)
++{
++	io->head = kmalloc(size, GFP_KERNEL);
++	if (!io->head)
++		return -ENOMEM;
++	io->truesize = size;
++	io->in_frame = FALSE;
++	io->state    = OUTSIDE_FRAME;
++	io->data     = io->head;
++	return 0;
++}
++
++static int __devinit bfin_sir_probe(struct platform_device *pdev)
++{
++	struct net_device *dev;
++	struct bfin_sir_self *self;
++	unsigned int baudrate_mask;
++	struct bfin_sir_port *sir_port;
++	int err;
++
++	if (pdev->id >= 0 && pdev->id < ARRAY_SIZE(per) && \
++				per[pdev->id][3] == pdev->id) {
++		err = peripheral_request_list(per[pdev->id], DRIVER_NAME);
++		if (err)
++			return err;
++	} else {
++		dev_err(&pdev->dev, "Invalid pdev id, please check board file\n");
++		return -ENODEV;
++	}
++
++	err = -ENOMEM;
++	sir_port = kmalloc(sizeof(*sir_port), GFP_KERNEL);
++	if (!sir_port)
++		goto err_mem_0;
++
++	bfin_sir_init_ports(sir_port, pdev);
++
++	dev = alloc_irdadev(sizeof(*self));
++	if (!dev)
++		goto err_mem_1;
++
++	self = netdev_priv(dev);
++	self->dev = &pdev->dev;
++	self->sir_port = sir_port;
++	sir_port->dev = dev;
++
++	err = bfin_sir_init_iobuf(&self->rx_buff, IRDA_SKB_MAX_MTU);
++	if (err)
++		goto err_mem_2;
++	err = bfin_sir_init_iobuf(&self->tx_buff, IRDA_SIR_MAX_FRAME);
++	if (err)
++		goto err_mem_3;
++
++	dev->hard_start_xmit = bfin_sir_hard_xmit;
++	dev->open            = bfin_sir_open;
++	dev->stop            = bfin_sir_stop;
++	dev->do_ioctl        = bfin_sir_ioctl;
++	dev->get_stats       = bfin_sir_stats;
++	dev->irq             = sir_port->irq;
++
++	irda_init_max_qos_capabilies(&self->qos);
++
++	baudrate_mask = IR_9600;
++
++	switch (max_rate) {
++	case 115200:
++		baudrate_mask |= IR_115200;
++	case 57600:
++		baudrate_mask |= IR_57600;
++	case 38400:
++		baudrate_mask |= IR_38400;
++	case 19200:
++		baudrate_mask |= IR_19200;
++	case 9600:
++		break;
++	default:
++		dev_warn(&pdev->dev, "Invalid maximum baud rate, using 9600\n");
++	}
++
++	self->qos.baud_rate.bits &= baudrate_mask;
++
++	self->qos.min_turn_time.bits = 1; /* 10 ms or more */
++
++	irda_qos_bits_to_value(&self->qos);
++
++	err = register_netdev(dev);
++
++	if (err) {
++		kfree(self->tx_buff.head);
++err_mem_3:
++		kfree(self->rx_buff.head);
++err_mem_2:
++		free_netdev(dev);
++err_mem_1:
++		kfree(sir_port);
++err_mem_0:
++		peripheral_free_list(per[pdev->id]);
++	} else
++		platform_set_drvdata(pdev, sir_port);
++
++	return err;
++}
++
++static int __devexit bfin_sir_remove(struct platform_device *pdev)
++{
++	struct bfin_sir_port *sir_port;
++	struct net_device *dev = NULL;
++	struct bfin_sir_self *self;
++
++	sir_port = platform_get_drvdata(pdev);
++	if (!sir_port)
++		return 0;
++	dev = sir_port->dev;
++	self = netdev_priv(dev);
++	unregister_netdev(dev);
++	kfree(self->tx_buff.head);
++	kfree(self->rx_buff.head);
++	free_netdev(dev);
++	kfree(sir_port);
++	platform_set_drvdata(pdev, NULL);
++
++	return 0;
++}
++
++static struct platform_driver bfin_ir_driver = {
++	.probe   = bfin_sir_probe,
++	.remove  = __devexit_p(bfin_sir_remove),
++	.suspend = bfin_sir_suspend,
++	.resume  = bfin_sir_resume,
++	.driver  = {
++		.name = DRIVER_NAME,
 +	},
 +};
 +
-+static int __init sh_dmae_init(void)
++static int __init bfin_sir_init(void)
 +{
-+	return platform_driver_probe(&sh_dmae_driver, sh_dmae_probe);
++	return platform_driver_register(&bfin_ir_driver);
 +}
-+module_init(sh_dmae_init);
 +
-+static void __exit sh_dmae_exit(void)
++static void __exit bfin_sir_exit(void)
 +{
-+	platform_driver_unregister(&sh_dmae_driver);
++	platform_driver_unregister(&bfin_ir_driver);
 +}
-+module_exit(sh_dmae_exit);
 +
-+MODULE_AUTHOR("Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>");
-+MODULE_DESCRIPTION("Renesas SH DMA Engine driver");
++module_init(bfin_sir_init);
++module_exit(bfin_sir_exit);
++
++module_param(max_rate, int, 0);
++MODULE_PARM_DESC(max_rate, "Maximum baud rate (115200, 57600, 38400, 19200, 9600)");
++
++MODULE_AUTHOR("Graf Yang <graf.yang@analog.com>");
++MODULE_DESCRIPTION("Blackfin IrDA driver");
 +MODULE_LICENSE("GPL");
-diff --git a/drivers/dma/shdma.h b/drivers/dma/shdma.h
+diff --git a/drivers/net/irda/bfin_sir.h b/drivers/net/irda/bfin_sir.h
 new file mode 100644
-index 0000000..5f2d9b6
+index 0000000..dac71b1
 --- /dev/null
-+++ b/drivers/dma/shdma.h
-@@ -0,0 +1,65 @@
++++ b/drivers/net/irda/bfin_sir.h
+@@ -0,0 +1,148 @@
 +/*
-+ * Renesas SuperH DMA Engine support
++ * Blackfin Infra-red Driver
 + *
-+ * Copyright (C) 2009 Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-+ * Copyright (C) 2009 Renesas Solutions, Inc. All rights reserved.
++ * Copyright 2006-2009 Analog Devices Inc.
 + *
-+ * This is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * Enter bugs at http://blackfin.uclinux.org/
++ *
++ * Licensed under the GPL-2 or later.
 + *
 + */
-+#ifndef __DMA_SHDMA_H
-+#define __DMA_SHDMA_H
 +
-+#include <linux/device.h>
-+#include <linux/dmapool.h>
-+#include <linux/dmaengine.h>
++#include <linux/serial.h>
++#include <linux/module.h>
++#include <linux/netdevice.h>
++#include <linux/interrupt.h>
++#include <linux/delay.h>
++#include <linux/platform_device.h>
++#include <linux/dma-mapping.h>
 +
-+#define SH_DMA_TCR_MAX 0x00FFFFFF	/* 16MB */
++#include <net/irda/irda.h>
++#include <net/irda/wrapper.h>
++#include <net/irda/irda_device.h>
 +
-+struct sh_dmae_regs {
-+	u32 sar; /* SAR / source address */
-+	u32 dar; /* DAR / destination address */
-+	u32 tcr; /* TCR / transfer count */
++#include <asm/irq.h>
++#include <asm/cacheflush.h>
++#include <asm/dma.h>
++#include <asm/portmux.h>
++
++#ifdef CONFIG_SIR_BFIN_DMA
++struct dma_rx_buf {
++	char *buf;
++	int head;
++	int tail;
++};
++#endif
++
++struct bfin_sir_port {
++	unsigned char __iomem   *membase;
++	unsigned int            irq;
++	unsigned int            lsr;
++	unsigned long           clk;
++	struct net_device       *dev;
++#ifdef CONFIG_SIR_BFIN_DMA
++	int                     tx_done;
++	struct dma_rx_buf       rx_dma_buf;
++	struct timer_list       rx_dma_timer;
++	int                     rx_dma_nrows;
++#endif
++	unsigned int            tx_dma_channel;
++	unsigned int            rx_dma_channel;
 +};
 +
-+struct sh_desc {
-+	struct sh_dmae_regs hw;
-+	struct list_head node;
-+	struct dma_async_tx_descriptor async_tx;
-+	struct list_head *ld;
-+	int mark;
++struct bfin_sir_port_res {
++	unsigned long   base_addr;
++	int             irq;
++	unsigned int    rx_dma_channel;
++	unsigned int    tx_dma_channel;
 +};
 +
-+struct sh_dmae_chan {
-+	dma_cookie_t completed_cookie;	/* The maximum cookie completed */
-+	spinlock_t desc_lock;			/* Descriptor operation lock */
-+	struct list_head ld_queue;		/* Link descriptors queue */
-+	struct dma_chan common;			/* DMA common channel */
-+	struct device *dev;				/* Channel device */
-+	struct resource reg;			/* Resource for register */
-+	struct tasklet_struct tasklet;
-+	int id;	/* Raw id of this channel */
-+	char dev_id[16];	/* unique name per DMAC of channel */
++struct bfin_sir_self {
++	struct bfin_sir_port    *sir_port;
++	spinlock_t              lock;
++	unsigned int            open;
++	int                     speed;
++	int                     newspeed;
 +
-+	/* Set chcr */
-+	int (*set_chcr)(struct sh_dmae_chan *sh_chan, u32 regs);
-+	/* Set DMA resource */
-+	int (*set_dmars)(struct sh_dmae_chan *sh_chan, u16 res);
++	struct sk_buff          *txskb;
++	struct sk_buff          *rxskb;
++	struct net_device_stats stats;
++	struct device           *dev;
++	struct irlap_cb         *irlap;
++	struct qos_info         qos;
++
++	iobuff_t                tx_buff;
++	iobuff_t                rx_buff;
++
++	struct work_struct      work;
++	int                     mtt;
 +};
 +
-+struct sh_dmae_device {
-+	struct resource reg;	/* Resource for register */
-+	struct device *dev;
-+	struct dma_device common;
-+	struct sh_dmae_chan *chan[CONFIG_NR_ONCHIP_DMA_CHANNELS];
-+	struct sh_dmae_pdata pdata;
++#define DRIVER_NAME "bfin_sir"
++
++#define SIR_UART_GET_CHAR(port)    bfin_read16((port)->membase + OFFSET_RBR)
++#define SIR_UART_GET_DLL(port)     bfin_read16((port)->membase + OFFSET_DLL)
++#define SIR_UART_GET_DLH(port)     bfin_read16((port)->membase + OFFSET_DLH)
++#define SIR_UART_GET_LCR(port)     bfin_read16((port)->membase + OFFSET_LCR)
++#define SIR_UART_GET_GCTL(port)    bfin_read16((port)->membase + OFFSET_GCTL)
++
++#define SIR_UART_PUT_CHAR(port, v) bfin_write16(((port)->membase + OFFSET_THR), v)
++#define SIR_UART_PUT_DLL(port, v)  bfin_write16(((port)->membase + OFFSET_DLL), v)
++#define SIR_UART_PUT_DLH(port, v)  bfin_write16(((port)->membase + OFFSET_DLH), v)
++#define SIR_UART_PUT_LCR(port, v)  bfin_write16(((port)->membase + OFFSET_LCR), v)
++#define SIR_UART_PUT_GCTL(port, v) bfin_write16(((port)->membase + OFFSET_GCTL), v)
++
++#ifdef CONFIG_BF54x
++#define SIR_UART_GET_LSR(port)     bfin_read16((port)->membase + OFFSET_LSR)
++#define SIR_UART_GET_IER(port)     bfin_read16((port)->membase + OFFSET_IER_SET)
++#define SIR_UART_SET_IER(port, v)  bfin_write16(((port)->membase + OFFSET_IER_SET), v)
++#define SIR_UART_CLEAR_IER(port, v) bfin_write16(((port)->membase + OFFSET_IER_CLEAR), v)
++#define SIR_UART_PUT_LSR(port, v)  bfin_write16(((port)->membase + OFFSET_LSR), v)
++#define SIR_UART_CLEAR_LSR(port)   bfin_write16(((port)->membase + OFFSET_LSR), -1)
++
++#define SIR_UART_SET_DLAB(port)
++#define SIR_UART_CLEAR_DLAB(port)
++
++#define SIR_UART_ENABLE_INTS(port, v) SIR_UART_SET_IER(port, v)
++#define SIR_UART_DISABLE_INTS(port)   SIR_UART_CLEAR_IER(port, 0xF)
++#define SIR_UART_STOP_TX(port)     do { SIR_UART_PUT_LSR(port, TFI); SIR_UART_CLEAR_IER(port, ETBEI); } while (0)
++#define SIR_UART_ENABLE_TX(port)   do { SIR_UART_SET_IER(port, ETBEI); } while (0)
++#define SIR_UART_STOP_RX(port)     do { SIR_UART_CLEAR_IER(port, ERBFI); } while (0)
++#define SIR_UART_ENABLE_RX(port)   do { SIR_UART_SET_IER(port, ERBFI); } while (0)
++#else
++
++#define SIR_UART_GET_IIR(port)     bfin_read16((port)->membase + OFFSET_IIR)
++#define SIR_UART_GET_IER(port)     bfin_read16((port)->membase + OFFSET_IER)
++#define SIR_UART_PUT_IER(port, v)  bfin_write16(((port)->membase + OFFSET_IER), v)
++
++#define SIR_UART_SET_DLAB(port)    do { SIR_UART_PUT_LCR(port, SIR_UART_GET_LCR(port) | DLAB); } while (0)
++#define SIR_UART_CLEAR_DLAB(port)  do { SIR_UART_PUT_LCR(port, SIR_UART_GET_LCR(port) & ~DLAB); } while (0)
++
++#define SIR_UART_ENABLE_INTS(port, v) SIR_UART_PUT_IER(port, v)
++#define SIR_UART_DISABLE_INTS(port)   SIR_UART_PUT_IER(port, 0)
++#define SIR_UART_STOP_TX(port)     do { SIR_UART_PUT_IER(port, SIR_UART_GET_IER(port) & ~ETBEI); } while (0)
++#define SIR_UART_ENABLE_TX(port)   do { SIR_UART_PUT_IER(port, SIR_UART_GET_IER(port) | ETBEI); } while (0)
++#define SIR_UART_STOP_RX(port)     do { SIR_UART_PUT_IER(port, SIR_UART_GET_IER(port) & ~ERBFI); } while (0)
++#define SIR_UART_ENABLE_RX(port)   do { SIR_UART_PUT_IER(port, SIR_UART_GET_IER(port) | ERBFI); } while (0)
++
++static inline unsigned int SIR_UART_GET_LSR(struct bfin_sir_port *port)
++{
++	unsigned int lsr = bfin_read16(port->membase + OFFSET_LSR);
++	port->lsr |= (lsr & (BI|FE|PE|OE));
++	return lsr | port->lsr;
++}
++
++static inline void SIR_UART_CLEAR_LSR(struct bfin_sir_port *port)
++{
++	port->lsr = 0;
++	bfin_read16(port->membase + OFFSET_LSR);
++}
++#endif
++
++static const unsigned short per[][4] = {
++	/* rx pin      tx pin     NULL  uart_number */
++	{P_UART0_RX, P_UART0_TX,    0,    0},
++	{P_UART1_RX, P_UART1_TX,    0,    1},
++	{P_UART2_RX, P_UART2_TX,    0,    2},
++	{P_UART3_RX, P_UART3_TX,    0,    3},
 +};
-+
-+#define to_sh_chan(chan) container_of(chan, struct sh_dmae_chan, common)
-+#define to_sh_desc(lh) container_of(lh, struct sh_desc, node)
-+#define tx_to_sh_desc(tx) container_of(tx, struct sh_desc, async_tx)
-+
-+#endif	/* __DMA_SHDMA_H */
 -- 
-1.6.2
-
-
-
-
+1.6.1
