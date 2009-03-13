@@ -1,107 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbZCMRPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbZCMReq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759342AbZCMRPW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 13:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbZCMRPA
+	id S1758107AbZCMReq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 13:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZCMReg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 13:15:00 -0400
-Received: from mga09.intel.com ([134.134.136.24]:49328 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755041AbZCMRO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 13:14:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,358,1233561600"; 
-   d="scan'208";a="394314306"
-Subject: Re: remap_pfn_range() not suitable for physical RAM?
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Frank Mehnert <Frank.Mehnert@Sun.COM>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-In-Reply-To: <200903131600.00463.frank.mehnert@sun.com>
-References: <200903042025.46861.frank.mehnert@sun.com>
-	 <200903100904.22753.frank.mehnert@sun.com>
-	 <7E82351C108FA840AB1866AC776AEC464FD82A88@orsmsx505.amr.corp.intel.com>
-	 <200903131600.00463.frank.mehnert@sun.com>
-Content-Type: text/plain
-Date: Fri, 13 Mar 2009 10:13:36 -0700
-Message-Id: <1236964416.4529.125.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	Fri, 13 Mar 2009 13:34:36 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:52148 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752090AbZCMRef (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 13:34:35 -0400
+From: Frans Pop <elendil@planet.nl>
+To: john stultz <johnstul@us.ibm.com>
+Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator - hang traced
+Date: Fri, 13 Mar 2009 18:34:30 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200903080230.10099.elendil@planet.nl> <200903121805.48041.elendil@planet.nl> <200903131248.03622.elendil@planet.nl>
+In-Reply-To: <200903131248.03622.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903131834.32585.elendil@planet.nl>
+X-OriginalArrivalTime: 13 Mar 2009 17:34:32.0951 (UTC) FILETIME=[F899A070:01C9A401]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 13 March 2009, Frans Pop wrote:
+> I added printks that show changes in clock data. I print info for
+> 3 consecutive calls of update_wall_time every 1000 times the function
+> is called and also after a change of clock source.
 
-Frank,
+Aaarghh. I'm a moron, but most of you will already have concluded that by
+now. I've been looking at nsecs as if they also included secs.
 
-The track and untrack is keeping track of memory type for non-RAM
-regions and making sure that the type is in sync for various mappings
-for such addresses. We are not tracking the RAM pages today, so
-vm_insert_page does not have this. vm_insert_mixed is also not covered
-today, as we deferred that and tracking of RAM pages into our next set
-of changes.
+So, here's a trace with Roman's patches that really shows the relevant
+data. Basic conclusion remains the same though: time really does look to
+be running backwards in the very early part of the boot because the
+seconds are not advancing while the nsecs are going backwards.
 
-Thanks,
-Venki
+     0.004688! jiffies/8 (1): xtime.tv: 1236962306/99461000 -> 1236962306/99461001
+     0.004793!    clock->xtime: 0 -> -256, error: 0 -> -4294867296
+     0.009705! jiffies/8 (2): xtime.tv: 1236962306/99461001 -> 1236962306/99444618
+     0.009821!    clock->xtime: -256 -> -256, error: -4294867296 -> -4292501984672096
+     0.014514! Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
+     0.014944! jiffies/8 (3): xtime.tv: 1236962306/99444618 -> 1236962306/99395467
+     0.015067!    clock->xtime: -256 -> -256, error: -4292501984672096 -> -12807124325236736
+     0.019704! jiffies/8 (4): xtime.tv: 1236962306/99395467 -> 1236962306/99379084
+     0.019811!    clock->xtime: -256 -> -256, error: -12807124325236736 -> -14918180945433952
+     0.140556! Memory: 251008k/262144k available (2144k kernel code, 0k reserved, 897k data, 152k init)
+     0.140913! Write protected kernel read-only data: 0x12000 - 0x2d8fff
+     0.143231! Calibrating delay loop (skipped)... 572.00 BogoMIPS preset
+     0.144675! Security Framework initialized
+     0.144870! SELinux:  Disabled at boot.
+     0.146009! Mount-cache hash table entries: 512
+     0.152474! Initializing cgroup subsys ns
+     0.152671! Initializing cgroup subsys cpuacct
+     0.153095! Initializing cgroup subsys devices
+     0.154303! init: calling smp_prepare_cpus
+     0.189342! CPUs: 2 configured, 0 standby
+     0.189516! s390_smp: smp_detect_cpus calling get_online_cpus
+     0.189742! s390_smp: smp_detect_cpus calling __smp_rescan_cpus
+     0.189964! s390_smp: smp_rescan_cpus_sigp starting loop
+[... System hangs here ...]
 
-On Fri, 2009-03-13 at 08:00 -0700, Frank Mehnert wrote:
-> Venki,
-> 
-> thanks for your reply. May I ask anyway why this check is done in 
-> remap_pfn_range() and vm_insert_pfn() but not in vm_insert_page()?
-> 
-> Kind regards,
-> 
-> Frank
-> 
-> On Tuesday 10 March 2009, Pallipadi, Venkatesh wrote:
-> > Frank,
-> >
-> > Patch here should eliminate the restriction.
-> > http://marc.info/?l=linux-kernel&m=123664923030126&w=1
-> >
-> > Thanks,
-> > Venki
-> >
-> > >-----Original Message-----
-> > >From: linux-kernel-owner@vger.kernel.org
-> > >[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Frank Mehnert
-> > >Sent: Tuesday, March 10, 2009 1:04 AM
-> > >To: linux-kernel@vger.kernel.org
-> > >Cc: peterz@infradead.org; Siddha, Suresh B
-> > >Subject: Re: remap_pfn_range() not suitable for physical RAM?
-> > >
-> > >Hi,
-> > >
-> > >sorry for re-posting this message and sorry for addressing you
-> > >directly.
-> > >Perhaps you can help me again or can you give me a pointer for a proper
-> > >documentation of the various *remap* and *vm_insert* functions:
-> > >
-> > >On Wednesday 04 March 2009, Frank Mehnert wrote:
-> > >> since 2.6.29-rcX it seems to be not allowed anymore to use
-> > >> remap_pfn_range() to remap physical RAM to userland. This restriction
-> > >> applies only if CONFIG_X86_PAT is enabled. It seems that
-> > >
-> > >vm_insert_page()
-> > >
-> > >> does not have this restriction. Am I correct? And what is the reason
-> > >> for this restriction?
-> > >
-> > >Kind regards,
-> > >
-> > >Frank
-> > >--
-> > >Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
-> > >--
-> >
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-> 
-
+[... By this time it looks like the error has stabilized somewhat and nsecs are more stable ...]
+[... nsecs are actually larger now than in the display at 0.019704 ...]
+     0.311447! jiffies/8 (153): xtime.tv: 1236962306/599346640 -> 1236962306/599346640
+     0.311567!    clock->xtime: -228 -> -29, error: -16490881133476192 -> -16490883213850976
+     0.312174! jiffies/8 (154): xtime.tv: 1236962306/599346640 -> 1236962306/599346641
+     0.312292!    clock->xtime: -29 -> -226, error: -16490883213850976 -> -16490885428443488
+     0.312884! jiffies/8 (155): xtime.tv: 1236962306/599346641 -> 1236962306/599346641
+     0.313014!    clock->xtime: -226 -> -31, error: -16490885428443488 -> -16490887508818272
+[... Only here do seconds start to increase ...]
+     0.320129! jiffies/8 (304): xtime.tv: 1236962307/99331656 -> 1236962307/99331656
+     0.320254!    clock->xtime: -201 -> -56, error: -16426767068861792 -> -16426769149236576
+     0.320844! jiffies/8 (305): xtime.tv: 1236962307/99331656 -> 1236962307/99331657
+     0.320954!    clock->xtime: -56 -> -199, error: -16426769149236576 -> -16426781363829088
+     0.321536! jiffies/8 (306): xtime.tv: 1236962307/99331657 -> 1236962307/99331657
+     0.321651!    clock->xtime: -199 -> -58, error: -16426781363829088 -> -16426783444203872
+     0.328758! jiffies/8 (455): xtime.tv: 1236962307/599316731 -> 1236962307/599316732
+     0.328876!    clock->xtime: -82 -> -173, error: -16362926407417856 -> -16362928622010368
+     0.329470! jiffies/8 (456): xtime.tv: 1236962307/599316732 -> 1236962307/599316732
+     0.329598!    clock->xtime: -173 -> -84, error: -16362928622010368 -> -16362920702285152
+     0.330192! jiffies/8 (457): xtime.tv: 1236962307/599316732 -> 1236962307/599316733
+     0.330317!    clock->xtime: -84 -> -171, error: -16362920702285152 -> -16362922916877664
+     0.374500! jiffies/8 (1456): xtime.tv: 1236962311/599199308 -> 1236962311/599199308
+     0.374632!    clock->xtime: -165 -> -92, error: -15860566497065312 -> -15860568577440096
