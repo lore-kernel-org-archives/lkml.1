@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760320AbZCMQre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759164AbZCMQrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760320AbZCMQre (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759589AbZCMQna
+	id S1759164AbZCMQrR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759554AbZCMQnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:43:30 -0400
-Received: from gw.goop.org ([64.81.55.164]:57289 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 12:43:24 -0400
+Received: from gw.goop.org ([64.81.55.164]:57292 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759432AbZCMQn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 12:43:29 -0400
+	id S1759472AbZCMQnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 12:43:23 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 14/17] xen: dynamically allocate irq & event structures
-Date: Fri, 13 Mar 2009 09:42:35 -0700
-Message-Id: <1236962558-13748-15-git-send-email-jeremy@goop.org>
+Subject: [PATCH 17/17] xen: disable MSI
+Date: Fri, 13 Mar 2009 09:42:38 -0700
+Message-Id: <1236962558-13748-18-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1236962558-13748-1-git-send-email-jeremy@goop.org>
 References: <1236962558-13748-1-git-send-email-jeremy@goop.org>
@@ -27,68 +27,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Impact: reduce memory usage
-
-Dynamically allocate the irq_info and evtchn_to_irq arrays, so that
-1) the irq_info array scales to the actual number of possible irqs,
-and 2) we don't needlessly increase the static size of the kernel
-when we aren't running under Xen.
-
-Derived on patch from Mike Travis <travis@sgi.com>.
+Disable MSI until we support it properly.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- drivers/xen/events.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+ arch/x86/xen/apic.c |    3 +++
+ drivers/pci/pci.h   |    2 --
+ include/linux/pci.h |    6 ++++++
+ 3 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 3cf0a1b..e8f08c0 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -27,6 +27,7 @@
- #include <linux/module.h>
- #include <linux/string.h>
- #include <linux/bootmem.h>
-+#include <linux/irqnr.h>
+diff --git a/arch/x86/xen/apic.c b/arch/x86/xen/apic.c
+index e9d9ea7..3f890c4 100644
+--- a/arch/x86/xen/apic.c
++++ b/arch/x86/xen/apic.c
+@@ -1,6 +1,7 @@
+ #include <linux/kernel.h>
+ #include <linux/threads.h>
+ #include <linux/bitmap.h>
++#include <linux/pci.h>
  
- #include <asm/ptrace.h>
- #include <asm/irq.h>
-@@ -91,11 +92,9 @@ struct irq_info
- };
- #define PIRQ_NEEDS_EOI	(1 << 0)
+ #include <asm/io_apic.h>
+ #include <asm/acpi.h>
+@@ -47,6 +48,8 @@ void xen_init_apic(void)
+ 	if (!xen_initial_domain())
+ 		return;
  
--static struct irq_info irq_info[NR_IRQS];
-+static struct irq_info *irq_info;
- 
--static int evtchn_to_irq[NR_EVENT_CHANNELS] = {
--	[0 ... NR_EVENT_CHANNELS-1] = -1
--};
-+static int *evtchn_to_irq;
- struct cpu_evtchn_s {
- 	unsigned long bits[NR_EVENT_CHANNELS/BITS_PER_LONG];
- };
-@@ -509,7 +508,7 @@ static int find_irq_by_gsi(unsigned gsi)
- {
- 	int irq;
- 
--	for(irq = 0; irq < NR_IRQS; irq++) {
-+	for(irq = 0; irq < nr_irqs; irq++) {
- 		struct irq_info *info = info_for_irq(irq);
- 
- 		if (info == NULL || info->type != IRQT_PIRQ)
-@@ -1174,7 +1173,11 @@ void __init xen_init_IRQ(void)
- 	size_t size = nr_cpu_ids * sizeof(struct cpu_evtchn_s);
- 
- 	cpu_evtchn_mask_p = alloc_bootmem(size);
--	BUG_ON(cpu_evtchn_mask_p == NULL);
-+	irq_info = alloc_bootmem(nr_irqs * sizeof(*irq_info));
++	pci_no_msi();
 +
-+	evtchn_to_irq = alloc_bootmem(NR_EVENT_CHANNELS * sizeof(*evtchn_to_irq));
-+	for(i = 0; i < NR_EVENT_CHANNELS; i++)
-+		evtchn_to_irq[i] = -1;
+ #ifdef CONFIG_ACPI
+ 	/*
+ 	 * Pretend ACPI found our lapic even though we've disabled it,
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 07c0aa5..ac1d4ca 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -110,10 +110,8 @@ extern struct rw_semaphore pci_bus_sem;
+ extern unsigned int pci_pm_d3_delay;
  
- 	init_evtchn_cpu_bindings();
+ #ifdef CONFIG_PCI_MSI
+-void pci_no_msi(void);
+ extern void pci_msi_init_pci_dev(struct pci_dev *dev);
+ #else
+-static inline void pci_no_msi(void) { }
+ static inline void pci_msi_init_pci_dev(struct pci_dev *dev) { }
+ #endif
  
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 3085ea4..e2bcd27 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1197,5 +1197,11 @@ int pci_ext_cfg_avail(struct pci_dev *dev);
+ 
+ void __iomem *pci_ioremap_bar(struct pci_dev *pdev, int bar);
+ 
++#ifdef CONFIG_PCI_MSI
++void pci_no_msi(void);
++#else
++static inline void pci_no_msi(void) { }
++#endif
++
+ #endif /* __KERNEL__ */
+ #endif /* LINUX_PCI_H */
 -- 
 1.6.0.6
 
