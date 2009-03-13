@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759569AbZCMWXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758967AbZCMW2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759569AbZCMWXY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 18:23:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbZCMWXN
+	id S1758967AbZCMW2w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 18:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbZCMW2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 18:23:13 -0400
-Received: from kroah.org ([198.145.64.141]:51273 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752058AbZCMWXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 18:23:12 -0400
-Date: Fri, 13 Mar 2009 15:20:44 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       e1000-devel@lists.sourceforge.net
-Subject: Re: [stable] Li-nux 2.6.27.19  2.6.28.7
-Message-ID: <20090313222044.GA18010@kroah.com>
-References: <20090220225448.GA14122@kroah.com> <20090313151051.a9198384.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090313151051.a9198384.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 13 Mar 2009 18:28:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43117
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751998AbZCMW2n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 18:28:43 -0400
+Date: Fri, 13 Mar 2009 15:28:29 -0700 (PDT)
+Message-Id: <20090313.152829.165834070.davem@davemloft.net>
+To: shemminger@linux-foundation.org
+Cc: scott@canonical.com, linux-kernel@vger.kernel.org,
+       bridge@lists.linux-foundation.org
+Subject: Re: [PATCH 01/31] bridge: Auto-load bridge module when socket
+ opened.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090313151200.1cc16255@nehalam>
+References: <74b87ec3359e6e65d59cd6fb62a83fb469e6c8ae.1236702228.git.scott@canonical.com>
+	<20090313.142718.21189207.davem@davemloft.net>
+	<20090313151200.1cc16255@nehalam>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 13, 2009 at 03:10:51PM -0700, Andrew Morton wrote:
-> 
-> I fired up this kernel up on my FC8 laptop and I see
-> http://userweb.kernel.org/~akpm/p3130212.jpg
-> 
-> On the next two boot attempts, the kernel came up OK.
-> 
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Date: Fri, 13 Mar 2009 15:12:00 -0700
 
-That's wierd, it can't find the root filesystem?
+> Let's be supportive of Ubuntu maintainers actually working on
+> upstream resolution for a change. The normal distro maintainer is
+> "patch and ignore".
 
-What driver controls the disk for /dev/root?  It's not the USB
-controller, is it?  Is that normally sda?
+This has nothing to do with being supportive or not.
 
-> Also, during boot the e1000e driver has conniptions:
-> 
-> ------------[ cut here ]------------
-> WARNING: at drivers/net/e1000e/ich8lan.c:408 e1000_acquire_swflag_ich8lan+0x51/0xf2()
-> e1000e mutex contention. Owned by pid 10
-> Modules linked in:
-> Pid: 9, comm: events/0 Not tainted 2.6.28.7 #1
-> Call Trace:
->  [<ffffffff8103a810>] warn_slowpath+0xae/0xcd
->  [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
->  [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
->  [<ffffffff8105d63f>] ? __lock_acquire+0x702/0x760
->  [<ffffffff8105bfc6>] ? mark_held_locks+0x50/0x6d
->  [<ffffffff812dd950>] ? mutex_trylock+0x104/0x118
->  [<ffffffff8105c170>] ? trace_hardirqs_on_caller+0xf8/0x123
->  [<ffffffff8105c1a8>] ? trace_hardirqs_on+0xd/0xf
->  [<ffffffff811ed838>] e1000_acquire_swflag_ich8lan+0x51/0xf2
->  [<ffffffff811f2fe9>] e1000e_read_kmrn_reg+0x1b/0x69
->  [<ffffffff811f63c5>] ? e1000e_downshift_workaround+0x0/0x12
->  [<ffffffff811ed1e9>] e1000e_gig_downshift_workaround_ich8lan+0x2c/0x71
->  [<ffffffff811f63d5>] e1000e_downshift_workaround+0x10/0x12
->  [<ffffffff8104a6ed>] run_workqueue+0xf5/0x1fd
->  [<ffffffff8104a697>] ? run_workqueue+0x9f/0x1fd
->  [<ffffffff8104a8f6>] ? worker_thread+0x0/0xe8
->  [<ffffffff8104a9d1>] worker_thread+0xdb/0xe8
->  [<ffffffff8104de14>] ? autoremove_wake_function+0x0/0x36
->  [<ffffffff8104a8f6>] ? worker_thread+0x0/0xe8
->  [<ffffffff8104db1a>] kthread+0x44/0x6b
->  [<ffffffff8100cf59>] child_rip+0xa/0x11
->  [<ffffffff8100c474>] ? restore_args+0x0/0x30
->  [<ffffffff8104dad6>] ? kthread+0x0/0x6b
->  [<ffffffff8100cf4f>] ? child_rip+0x0/0x11
-> ---[ end trace 09c88554f9900e8b ]---
-> 
-> Config: http://userweb.kernel.org/~akpm/config-t61p.txt
-> dmesg: http://userweb.kernel.org/~akpm/dmesg-t61p.txt
+If the changes are wrong, many of these in fact were, and they were
+not even tested on top of it, I cannot be happy at all about that.
 
-Wierd, I don't know.
-
-thanks,
-
-greg k-h
+And that goes for anyone submitting patches here.
