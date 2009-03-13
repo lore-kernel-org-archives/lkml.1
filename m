@@ -1,92 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760551AbZCMQsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760586AbZCMQtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760551AbZCMQsx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760029AbZCMQoz
+	id S1760586AbZCMQtS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760370AbZCMQru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:44:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47686 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760100AbZCMQox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 12:44:53 -0400
-Date: Fri, 13 Mar 2009 13:43:33 -0300
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, LMML <linux-media@vger.kernel.org>
-Subject: [GIT PATCHES for 2.6.29-rc8] V4L/DVB fixes
-Message-ID: <20090313134333.563c0565@pedra.chehab.org>
-Organization: Red Hat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Mar 2009 12:47:50 -0400
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:63155 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760393AbZCMQrs convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 12:47:48 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AugFAPMpuklMQW1W/2dsb2JhbACBTs8ogUGCPQZh
+Date: Fri, 13 Mar 2009 12:47:43 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>, tglx@linutronix.de,
+       Jason Baron <jbaron@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
+       Martin Bligh <mbligh@google.com>, Michael Davidson <md@google.com>
+Subject: Re: [PATCH 0/2 v2] Syscalls tracing
+Message-ID: <20090313164743.GC3354@Krystal>
+References: <1236955332-10133-1-git-send-email-fweisbec@gmail.com> <20090313151632.GB9867@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090313151632.GB9867@nowhere>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:36:30 up 13 days, 13:02,  2 users,  load average: 1.12, 0.91,
+	0.58
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+* Frederic Weisbecker (fweisbec@gmail.com) wrote:
+> On Fri, Mar 13, 2009 at 03:42:10PM +0100, Frederic Weisbecker wrote:
+> > tracing/syscalls: core infrastructure to trace syscalls
+> > 
+> > This new iteration addresses a good part of the previous reviews.
+> 
+> 
+> Ah I just discovered that you applied the previous version today.
+> But the v2 is not a delta :-s
+> 
+> I can rebase them but not until Sunday.
+> 
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
+Hi Frederic,
 
-With the following fixes for 2.6.29-rc8:
+I like the approach you are taking for syscall tracing. As I read your
+code, I see that your infrastructure basically exports the information
+under ascii format. How hard do you think that would be to get this to
+work for binary output with LTTng ? Ascii output is not exactly a
+high-performance output for a hot path such as system call entry/exit.
+We could :
 
-   - dst: Report tuning algorithm correctly.
-   - m5602-s5k4aa: Split up the initial sensor probe in chunks to avoid breakage;
-   - stb0899: fix a bug on stb0899_send_diseqc_burst by using Diseqc 3/3 mode to send data;
-   - stb0899: Bug: by using signed types, Offsets and range can be negative;
-   - stb0899: Bug: For legacy applications, stv0899 performs search only first time after insmod;
-   - stb6100: init fix, the call to stb6100_set_bandwidth needs an argument;
-   - tvaudio: Avoid breakage with tda9874a, due to the access of a shadow register
-	      that would otherwise be out of range;
-   - zl10353: i2c_gate_ctrl bug fix;
-   - zoran Kconfig: auto-select bt866 needed for AverMedia 6 Eyes;
+1 - Iterate on the table at trace start to dump the syscall names, and
+their arguments, into a syscall-table data channel.
 
-Cheers,
-Mauro.
+2 - We might have to create one event type per syscall argument types.
+Or one event per syscall, this would be great because we would benefit
+from the event identification infrastructure. And actually, the syscall
+declaration macros could declare tiny callbacks that would declare a
+marker name (syscall, <syscall_name>) along with the code that saves the
+system call pr_regs parameters into the event payload.
 
----
+Any thoughts ?
 
- drivers/media/dvb/bt8xx/dst.c                  |    2 +-
- drivers/media/dvb/dvb-core/dvb_frontend.c      |    7 ++++---
- drivers/media/dvb/frontends/stb0899_algo.c     |   14 +++++++-------
- drivers/media/dvb/frontends/stb0899_drv.c      |    2 +-
- drivers/media/dvb/frontends/stb0899_priv.h     |   12 ++++--------
- drivers/media/dvb/frontends/stb6100.c          |    4 ++--
- drivers/media/dvb/frontends/zl10353.c          |    2 +-
- drivers/media/dvb/frontends/zl10353.h          |    3 +++
- drivers/media/video/gspca/m5602/m5602_s5k4aa.c |    6 +++++-
- drivers/media/video/saa7134/saa7134-dvb.c      |    1 +
- drivers/media/video/tvaudio.c                  |    2 +-
- drivers/media/video/zoran/Kconfig              |    1 +
- 12 files changed, 31 insertions(+), 25 deletions(-)
+Mathieu
 
-Antti Palosaari (1):
-      V4L/DVB (10972): zl10353: i2c_gate_ctrl bug fix
+>  
+> > As suggested by Ingo Molnar and Peter Zijlstra, the syscalls
+> > prototypes probing is done by abusing the SYSCALL_DEFINE family
+> > macros.
+> > We now store automatically the arguments names, their types, their number
+> > and the name of the syscall.
+> > 
+> > Also some fixes on output newlines and dangerous exporting of global_trace
+> > are provided.
+> > 
+> > An example of the trace:
+> > 
+> > echo syscall > /debugfs/tracing/current_tracer
+> > 
+> > 
+> > # tracer: syscall
+> > #
+> > #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> > #              | |       |          |         |
+> >            <...>-5080  [001]   132.192228: sys_dup2(oldfd: a, newfd: 1) 
+> >            <...>-5080  [001]   132.192239: sys_dup2 -> 0x1
+> >            <...>-5080  [001]   132.192242: sys_fcntl(fd: a, cmd: 1, arg: 0) 
+> >            <...>-5080  [001]   132.192245: sys_fcntl -> 0x1
+> >            <...>-5080  [001]   132.192248: sys_close(fd: a) 
+> >            <...>-5080  [001]   132.192250: sys_close -> 0x0
+> >            <...>-5080  [001]   132.192265: sys_rt_sigprocmask(how: 0, set: 0, oset: 6cf808, sigsetsize: 8) 
+> >            <...>-5080  [001]   132.192267: sys_rt_sigprocmask -> 0x0
+> >            <...>-5080  [001]   132.192271: sys_rt_sigaction(sig: 2, act: 7fffff4338f0, oact: 7fffff433850, sigsetsize: 8) 
+> >            <...>-5080  [001]   132.192273: sys_rt_sigaction -> 0x0
+> >            <...>-5080  [001]   132.192285: sys_rt_sigprocmask(how: 0, set: 0, oset: 6cf808, sigsetsize: 8) 
+> >            <...>-5080  [001]   132.192287: sys_rt_sigprocmask -> 0x0
+> >            <...>-5080  [001]   132.192415: sys_write(fd: 1, buf: 15dfc08, count: 21) 
+> >            <...>-5080  [001]   132.192436: sys_write -> 0x21
+> >            <...>-4754  [000]   132.192478: sys_read(fd: 8, buf: 2a9340e, count: 1fee) 
+> >            <...>-5080  [001]   132.192487: sys_rt_sigprocmask(how: 0, set: 7fffff432a70, oset: 7fffff4329f0, sigsetsize: 8) 
+> > 
+> > And if you ask for the parameters types:
+> > 
+> > echo syscall_arg_type > trace_options
+> > 
+> > # tracer: syscall
+> > #
+> > #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> > #              | |       |          |         |
+> >            <...>-5080  [001]   132.192228: sys_dup2(unsigned int oldfd: a, unsigned int newfd: 1) 
+> >            <...>-5080  [001]   132.192239: sys_dup2 -> 0x1
+> >            <...>-5080  [001]   132.192242: sys_fcntl(unsigned int fd: a, unsigned int cmd: 1, unsigned long arg: 0) 
+> >            <...>-5080  [001]   132.192245: sys_fcntl -> 0x1
+> >            <...>-5080  [001]   132.192248: sys_close(unsigned int fd: a) 
+> >            <...>-5080  [001]   132.192250: sys_close -> 0x0
+> >            <...>-5080  [001]   132.192265: sys_rt_sigprocmask(int how: 0, sigset_t * set: 0, sigset_t * oset: 6cf808, size_t sigsetsize: 8) 
+> >            <...>-5080  [001]   132.192267: sys_rt_sigprocmask -> 0x0
+> >            <...>-5080  [001]   132.192271: sys_rt_sigaction(int sig: 2, const struct sigaction * act: 7fffff4338f0, struct sigaction * oact: 7fffff433850, size_t sigsetsize: 8) 
+> >            <...>-5080  [001]   132.192273: sys_rt_sigaction -> 0x0
+> >            <...>-5080  [001]   132.192285: sys_rt_sigprocmask(int how: 0, sigset_t * set: 0, sigset_t * oset: 6cf808, size_t sigsetsize: 8) 
+> >            <...>-5080  [001]   132.192287: sys_rt_sigprocmask -> 0x0
+> >            <...>-5080  [001]   132.192415: sys_write(unsigned int fd: 1, const char * buf: 15dfc08, size_t count: 21) 
+> >            <...>-5080  [001]   132.192436: sys_write -> 0x21
+> > 
+> > TODO:
+> > 
+> > - add a single mask on the struct syscall_metadata to provide quickly which arguments is
+> >   a pointer (usually type __user *p) so that the user can decide if he wants to save them of tracing time
+> > 
+> > - now that we have each parameter type as strings, add a new field on struct syscall_metadata to have the parameter types
+> >   encoded as single enum values (for quick checks) so that we can use specific callbacks for each parameter type
+> >   to be displayed.
+> > 
+> > NOTE: this is still not overlapping with a potential future merge of utrace, since the low-level hooks on
+> > the syscalls remain somewhat basic.
+> > 
+> > NOTE2: I've only tested it on x86-64 for now, so only x86-64 support is provided.
+> > --
+> > 
+> > Frederic Weisbecker (2):
+> >   tracing/syscalls: core infrastructure for syscalls tracing
+> >   tracing/syscalls: support for syscalls tracing on x86-64
+> > 
+> >  arch/x86/Kconfig                   |    1 +
+> >  arch/x86/include/asm/ftrace.h      |    7 +
+> >  arch/x86/include/asm/thread_info.h |    9 +-
+> >  arch/x86/kernel/ftrace.c           |   63 +++++++++
+> >  arch/x86/kernel/ptrace.c           |    7 +
+> >  include/asm-generic/vmlinux.lds.h  |   11 ++-
+> >  include/linux/ftrace.h             |   29 +++++
+> >  include/linux/syscalls.h           |   60 +++++++++-
+> >  kernel/trace/Kconfig               |   10 ++
+> >  kernel/trace/Makefile              |    1 +
+> >  kernel/trace/trace.h               |   19 +++
+> >  kernel/trace/trace_syscalls.c      |  243 ++++++++++++++++++++++++++++++++++++
+> >  12 files changed, 454 insertions(+), 6 deletions(-)
+> >  create mode 100644 kernel/trace/trace_syscalls.c
+> > 
+> 
 
-Gregory Lardiere (1):
-      V4L/DVB (10789): m5602-s5k4aa: Split up the initial sensor probe in chunks.
-
-Hans Werner (1):
-      V4L/DVB (10977): STB6100 init fix, the call to stb6100_set_bandwidth needs an argument
-
-Igor M. Liplianin (1):
-      V4L/DVB (10976): Bug fix: For legacy applications stv0899 performs search only first time after insmod.
-
-Manu Abraham (1):
-      V4L/DVB (10975): Bug: Use signed types, Offsets and range can be negative
-
-Matthias Schwarzzot (1):
-      V4L/DVB (10978): Report tuning algorith correctly
-
-Mauro Carvalho Chehab (1):
-      V4L/DVB (10834): zoran: auto-select bt866 for AverMedia 6 Eyes
-
-Sigmund Augdal (1):
-      V4L/DVB (10974): Use Diseqc 3/3 mode to send data
-
-Vitaly Wool (1):
-      V4L/DVB (10832): tvaudio: Avoid breakage with tda9874a
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
