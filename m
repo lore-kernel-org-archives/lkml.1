@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758939AbZCMNMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbZCMNNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758939AbZCMNMX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 09:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754422AbZCMNMJ
+	id S1758823AbZCMNNG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 09:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbZCMNMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 09:12:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47642 "EHLO mx2.redhat.com"
+	Fri, 13 Mar 2009 09:12:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:33718 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751248AbZCMNMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 09:12:08 -0400
-Message-ID: <49BA5B98.90604@redhat.com>
-Date: Fri, 13 Mar 2009 14:11:52 +0100
-From: Ivan Vecera <ivecera@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+	id S1753859AbZCMNMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 09:12:52 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PULL] x86 cpumask work
+Date: Fri, 13 Mar 2009 23:42:42 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mike Travis <travis@sgi.com>
+References: <200903121453.45163.rusty@rustcorp.com.au> <20090313052754.GA20389@elte.hu> <20090313053214.GA21183@elte.hu>
+In-Reply-To: <20090313053214.GA21183@elte.hu>
 MIME-Version: 1.0
-To: Jiri Pirko <jpirko@redhat.com>
-CC: Michal Schmidt <mschmidt@redhat.com>, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, davem@davemloft.net, netdev@vger.kernel.org
-Subject: Re: [PATCH] 8139cp: allow to set mac address on running device
-References: <20090312162730.GA20153@psychotron.englab.brq.redhat.com> <20090312181121.79e297a2@brian.englab.brq.redhat.com> <20090312174641.GC20153@psychotron.englab.brq.redhat.com> <49BA20E1.70607@redhat.com> <20090313111633.GB3436@psychotron.englab.brq.redhat.com>
-In-Reply-To: <20090313111633.GB3436@psychotron.englab.brq.redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903132342.42813.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Pirko wrote:
-> Fri, Mar 13, 2009 at 10:01:21AM CET, ivecera@redhat.com wrote:
->> Jiri Pirko wrote:
->>> Thu, Mar 12, 2009 at 06:11:21PM CET, mschmidt@redhat.com wrote:
->>>> On Thu, 12 Mar 2009 17:27:31 +0100
->>>> Jiri Pirko <jpirko@redhat.com> wrote:
->>>>
->>>>> +	cpw32_f(MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr +
->>>>> 0)));
->>>>> +	cpw32_f(MAC0 + 4, le32_to_cpu (*(__le32 *) (dev->dev_addr +
->>>>> 4)));
->>>> You're writing to the card, so using *_to_cpu looks suspicious.
->>> Well, I'm using the same approach as it is already done in function
->>> cp_init_hw(). Quote:
->>>
->>>  /* Restore our idea of the MAC address. */
->>>  cpw32_f (MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr + 0)));
->>>  cpw32_f (MAC0 + 4, le32_to_cpu (*(__le32 *) (dev->dev_addr + 4)));
->>>
->> Yes, that's right but I would use more cleaner approach:
->> ===
->> u32 low, high;
->> low  = addr[0] | (addr[1] << 8) | (addr[2] << 16) | (addr[3] << 24);
->> high = addr[4] | (addr[5] << 8);
->> cpw32_f(MAC0 + 0, low);
->> cpw32_f(MAC0 + 4, high);
->> ===
-> Well, I have no problem with this (in fact I like this more). I just wanted to
-> stay consistent to existing code. Maybe it would be good to change this chunk
-> of code in cp_init_hw() too, don't you think?
-Yes, you're right.
+On Friday 13 March 2009 16:02:14 Ingo Molnar wrote:
 > 
-> Jirka
->> Ivan
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> another box crashed too, with:
 
+Interestingly, I needed both these patches.  And *both* generated compile
+warnings.  Grr...
+
+Rusty.
+
+Subject: cpumask: fix CONFIG_DEBUG_PER_CPU_MAPS=y cpumask_of_node version.
+
+Impact: Fix crash
+
+c032ef60d1aa9af33730b7a35bbea751b131adc1 "cpumask: convert
+node_to_cpumask_map[] to cpumask_var_t" didn't get this one
+conversion.  There was a compile warning, but I missed it.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff --git a/arch/x86/mm/numa.c b/arch/x86/mm/numa.c
+--- a/arch/x86/mm/numa.c
++++ b/arch/x86/mm/numa.c
+@@ -61,7 +61,7 @@ const cpumask_t *cpumask_of_node(int nod
+ 		dump_stack();
+ 		return cpu_online_mask;
+ 	}
+-	return &node_to_cpumask_map[node];
++	return node_to_cpumask_map[node];
+ }
+ EXPORT_SYMBOL(cpumask_of_node);
+ #endif
