@@ -1,400 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759971AbZCMXRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbZCMXWE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759971AbZCMXRI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 19:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZCMXQv
+	id S1759955AbZCMXWE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 19:22:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbZCMXVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 19:16:51 -0400
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:57900 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbZCMXQt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 19:16:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=aTkcfyFGdmD5kU6Z48j0QjKiz+ru210mZotKJFIwp3ike/vTp3mzIeouMPiZ4Lbit1
-         YZ3UjgtencSAjYQPI1OCY+yULyWYplEhtpaRe9cHwLHr46TdW66auCUKGSR4Mu7OEMu6
-         kA9fH61zquZYiaW4tOvRR5YYn4UKaQ+HxHt/w=
-Message-ID: <49BAE95D.7060001@gmail.com>
-Date: Sat, 14 Mar 2009 00:16:45 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Fri, 13 Mar 2009 19:21:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43563 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752251AbZCMXVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 19:21:53 -0400
+Message-ID: <49BAEA3B.8030808@kernel.org>
+Date: Fri, 13 Mar 2009 16:20:27 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: build bug on kfree(struct sk_buff*)
-References: <49BA8710.20808@gmail.com>
-In-Reply-To: <49BA8710.20808@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] x86: add brk allocator for very early allocations
+References: <49B7EDF4.7060904@goop.org> <49B800B8.2040009@kernel.org> <49B9A1CD.5040704@goop.org> <49B9AC7F.9030302@kernel.org> <49BAC1B0.6050107@goop.org> <49BAE210.7090300@zytor.com> <49BAE55F.40406@goop.org>
+In-Reply-To: <49BAE55F.40406@goop.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
-
-Maybe I should have sent this to you (and netdev) in the first place.
-
-I wrote:
-> I was thinking about forcing a build bug if anyone attempts to kfree a
-> struct sk_buff*, like this:
+Jeremy Fitzhardinge wrote:
+> H. Peter Anvin wrote:
+>> Those references are just the actual reservation of memory.  If all
+>> the users of that memory are converted to either brk or bss,
+>> INIT_MAP_BEYOND_END should be removed.  If all the users of that
+>> memory aren't converted to brk to bss, we should do so.
 > 
-> #define PTR_OR_BB_ON_TYPE(x, type) (&x[sizeof(char[0 -			\
-> 			__builtin_types_compatible_p(typeof(x), type)])])
+> I just added an adapted Yinghai's patch and added it to push/x86/brk.
 > 
-> and:
+>    J
 > 
-> #define kfree(x) _kfree(PTR_OR_BB_ON_TYPE((x), struct sk_buff*))
 > 
-> with _kfree as the function that is currently kfree.
+> The following changes since commit
+> 8131667360004a0b74e4dcadfee8a18d4e2b074f:
+>  Jeremy Fitzhardinge (1):
+>        x86: allow extend_brk users to reserve brk space
 > 
-> It appears to work in my test.c.
-
-My question is, is there something wrong with this? 
-
-> I also compiled this with (defconfig) and there were breakages, which are
-> fixed in the patch below.
-
-I am now trying allyesconfig. The errors are due to:
-
-* In net/core/dev.c +2674 a struct sk_buff* was freed,
-
-* when assigning kfree to a function pointer.
-
-* Several kfrees, but I don't know why gcc complains:
-
-In block/genhd.c:
-struct timer_rand_state *random,
-
-In drivers/gpu/drm/i915/intel_modes.c:
-struct edid *edid,
-
-In kernel/exit.c:
-struct futex_pi_state *pi_state_cache;
-
-In drivers/char/ipmi/ipmi_si_intf.c:
-struct si_sm_data      *si_sm;
-
-e.g:
-/home/roel/dnld/src/kernel/git/linux-2.6/drivers/char/ipmi/ipmi_si_intf.c: In function 'try_smi_init':
-/home/roel/dnld/src/kernel/git/linux-2.6/drivers/char/ipmi/ipmi_si_intf.c:2960: error: invalid use of undefined type 'struct si_sm_data'
-/home/roel/dnld/src/kernel/git/linux-2.6/drivers/char/ipmi/ipmi_si_intf.c:2960: error: dereferencing pointer to incomplete type
-/home/roel/dnld/src/kernel/git/linux-2.6/drivers/char/ipmi/ipmi_si_intf.c: In function 'cleanup_one_si':
-/home/roel/dnld/src/kernel/git/linux-2.6/drivers/char/ipmi/ipmi_si_intf.c:3123: error: invalid use of undefined type 'struct si_sm_data'
-/home/roel/dnld/src/kernel/git/linux-2.6/drivers/char/ipmi/ipmi_si_intf.c:3123: error: dereferencing pointer to incomplete type
-
-However, allyes wasn't finished yet.
-
-> Also increased sparse warnings, like this:
+> are available in the git repository at:
 > 
-> In file included from /home/roel/dnld/src/kernel/git/linux-2.6/include/linux/vmstat.h:5,
->                  from /home/roel/dnld/src/kernel/git/linux-2.6/include/linux/mm.h:595,
->                  from /home/roel/dnld/src/kernel/git/linux-2.6/kernel/exit.c:7:
-> /home/roel/dnld/src/kernel/git/linux-2.6/include/linux/percpu.h: In function 'percpu_free':
-> /home/roel/dnld/src/kernel/git/linux-2.6/include/linux/percpu.h:98: warning: dereferencing 'void *' pointer
+>  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push/x86/brk
 > 
-> This is mostly due to wrappers for kfree that take a void* argument
+> Yinghai Lu (1):
+>      x86: put initial_pg_tables into .bss -v4
+> 
+> arch/x86/kernel/head_32.S        |   47
+> ++++++++++++++-----------------------
+> arch/x86/kernel/vmlinux_32.lds.S |    6 +++++
+> 2 files changed, 24 insertions(+), 29 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+> index 80dc05e..ad7dbbb 100644
+> --- a/arch/x86/kernel/head_32.S
+> +++ b/arch/x86/kernel/head_32.S
+> @@ -38,42 +38,30 @@
+> #define X86_VENDOR_ID    new_cpu_data+CPUINFO_x86_vendor_id
+> 
+> /*
+> - * This is how much memory *in addition to the memory covered up to
+> - * and including _end* we need mapped initially.
+> - * We need:
+> - *  - one bit for each possible page, but only in low memory, which means
+> - *     2^32/4096/8 = 128K worst case (4G/4G split.)
+> + * This is how much memory for page table to and including _end
+> + * we need mapped initially.
+>  *  - enough space to map all low memory, which means
+> - *     (2^32/4096) / 1024 pages (worst case, non PAE)
+> - *     (2^32/4096) / 512 + 4 pages (worst case for PAE)
+> - *  - a few pages for allocator use before the kernel pagetable has
+> - *     been set up
+> + *     (KERNEL_IMAGE_SIZE/4096) / 1024 pages (worst case, non PAE)
+> + *     (KERNEL_IMAGE_SIZE/4096) / 512 + 4 pages (worst case for PAE)
+>  *
+>  * Modulo rounding, each megabyte assigned here requires a kilobyte of
+>  * memory, which is currently unreclaimed.
+>  *
+>  * This should be a multiple of a page.
+> + *
+> + * KERNEL_IMAGE_SIZE should be greater than pa(_end)
+> + * and small than max_low_pfn, otherwise will waste some page table
+> entries
+>  */
+> LOW_PAGES = (KERNEL_IMAGE_SIZE + PAGE_SIZE_asm - 1)>>PAGE_SHIFT
+> 
+> -/*
+> - * To preserve the DMA pool in PAGEALLOC kernels, we'll allocate
+> - * pagetables from above the 16MB DMA limit, so we'll have to set
+> - * up pagetables 16MB more (worst-case):
+> - */
+> -#if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KMEMCHECK)
+> -LOW_PAGES = LOW_PAGES + 0x1000000
+> -#endif
+> -
+> #if PTRS_PER_PMD > 1
+> PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PMD) + PTRS_PER_PGD
+> #else
+> PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PGD)
+> #endif
+> -BOOTBITMAP_SIZE = LOW_PAGES / 8
+> ALLOCATOR_SLOP = 4
+> 
+> -INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE +
+> ALLOCATOR_SLOP)*PAGE_SIZE_asm
+> +INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
+> 
+> RESERVE_BRK(pagetables, PAGE_TABLE_SIZE * PAGE_SIZE)
 
-But also in cases where the variable is a void*, e.g. net/core/dev.c +4720
-below.
+use INIT_MAP_SIZE in RESERVE_BRK directly?
 
-I can quite easily change these kfree's to _kfree, however, I am not sure
-if that's the best strategy.
+> 
+> @@ -168,10 +156,10 @@ num_subarch_entries = (. - subarch_entries) / 4
+> 
+> /*
+>  * Initialize page tables.  This creates a PDE and a set of page
+> - * tables, which are located immediately beyond _end.  The variable
+> + * tables, which are located immediately beyond __brk_base.  The variable
+>  * _brk_end is set up to point to the first "safe" location.
+>  * Mappings are created both at virtual address 0 (identity mapping)
+> - * and PAGE_OFFSET for up to _end+sizeof(page tables)+INIT_MAP_BEYOND_END.
+> + * and PAGE_OFFSET for up to _end.
+>  *
+>  * Note that the stack is not yet set up!
+>  */
+> @@ -210,10 +198,9 @@ default_entry:
+>     loop 11b
+> 
+>     /*
+> -     * End condition: we must map up to and including INIT_MAP_BEYOND_END
+> -     * bytes beyond the end of our own page tables.
+> +     * End condition: we must map up to the end.
+>      */
+> -    leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
+> +    movl $pa(_end) + PTE_IDENT_ATTR, %ebp
+>     cmpl %ebp,%eax
+>     jb 10b
+> 1:
+> @@ -243,11 +230,9 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
+>     addl $0x1000,%eax
+>     loop 11b
+>     /*
+> -     * End condition: we must map up to and including INIT_MAP_BEYOND_END
+> -     * bytes beyond the end of our own page tables; the +0x007 is
+> -     * the attribute bits
+> +     * End condition: we must map up to end
+>      */
+> -    leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
+> +    movl $pa(_end) + PTE_IDENT_ATTR, %ebp
+>     cmpl %ebp,%eax
+>     jb 10b
+>     addl $__PAGE_OFFSET, %edi
+> @@ -638,6 +623,10 @@ swapper_pg_fixmap:
+>     .fill 1024,4,0
+> ENTRY(empty_zero_page)
+>     .fill 4096,1,0
+> +
+> +.section ".bss.extra_page_aligned","wa"
+> +    .align PAGE_SIZE_asm
+> +    .fill INIT_MAP_SIZE,1,0
 
-Roel
+this 4 lines are not needed. you already had RESERVE_BRK for it.
 
-Not meant for inclusion (yet)
----
- block/genhd.c                      |    2 +-
- drivers/char/ipmi/ipmi_si_intf.c   |    4 ++--
- drivers/firmware/dmi-id.c          |    2 +-
- drivers/gpu/drm/i915/intel_modes.c |    2 +-
- drivers/s390/char/vmlogrdr.c       |    2 +-
- drivers/s390/net/netiucv.c         |    2 +-
- fs/nfsd/nfs4xdr.c                  |    4 ++--
- include/linux/kernel.h             |    5 +++++
- include/linux/slab.h               |    5 ++++-
- kernel/exit.c                      |    2 +-
- lib/kref.c                         |    2 +-
- mm/slab.c                          |    4 ++--
- mm/slob.c                          |    4 ++--
- mm/slub.c                          |    4 ++--
- net/core/dev.c                     |    4 ++--
- security/selinux/ss/services.c     |    2 +-
- 16 files changed, 29 insertions(+), 21 deletions(-)
+YH
 
-diff --git a/block/genhd.c b/block/genhd.c
-index a9ec910..e732530 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -972,7 +972,7 @@ static void disk_release(struct device *dev)
- {
- 	struct gendisk *disk = dev_to_disk(dev);
- 
--	kfree(disk->random);
-+	_kfree(disk->random);
- 	disk_replace_part_tbl(disk, NULL);
- 	free_part_stats(&disk->part0);
- 	kfree(disk);
-diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
-index 3000135..f86798d 100644
---- a/drivers/char/ipmi/ipmi_si_intf.c
-+++ b/drivers/char/ipmi/ipmi_si_intf.c
-@@ -2957,7 +2957,7 @@ static int try_smi_init(struct smi_info *new_smi)
- 	if (new_smi->si_sm) {
- 		if (new_smi->handlers)
- 			new_smi->handlers->cleanup(new_smi->si_sm);
--		kfree(new_smi->si_sm);
-+		_kfree(new_smi->si_sm);
- 	}
- 	if (new_smi->addr_source_cleanup)
- 		new_smi->addr_source_cleanup(new_smi);
-@@ -3120,7 +3120,7 @@ static void cleanup_one_si(struct smi_info *to_clean)
- 
- 	to_clean->handlers->cleanup(to_clean->si_sm);
- 
--	kfree(to_clean->si_sm);
-+	_kfree(to_clean->si_sm);
- 
- 	if (to_clean->addr_source_cleanup)
- 		to_clean->addr_source_cleanup(to_clean);
-diff --git a/drivers/firmware/dmi-id.c b/drivers/firmware/dmi-id.c
-index 5a76d05..e4517d7 100644
---- a/drivers/firmware/dmi-id.c
-+++ b/drivers/firmware/dmi-id.c
-@@ -160,7 +160,7 @@ static int dmi_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
- 
- static struct class dmi_class = {
- 	.name = "dmi",
--	.dev_release = (void(*)(struct device *)) kfree,
-+	.dev_release = (void(*)(struct device *)) _kfree,
- 	.dev_uevent = dmi_dev_uevent,
- };
- 
-diff --git a/drivers/gpu/drm/i915/intel_modes.c b/drivers/gpu/drm/i915/intel_modes.c
-index e42019e..0ca35e5 100644
---- a/drivers/gpu/drm/i915/intel_modes.c
-+++ b/drivers/gpu/drm/i915/intel_modes.c
-@@ -76,7 +76,7 @@ int intel_ddc_get_modes(struct intel_output *intel_output)
- 		drm_mode_connector_update_edid_property(&intel_output->base,
- 							edid);
- 		ret = drm_add_edid_modes(&intel_output->base, edid);
--		kfree(edid);
-+		_kfree(edid);
- 	}
- 
- 	return ret;
-diff --git a/drivers/s390/char/vmlogrdr.c b/drivers/s390/char/vmlogrdr.c
-index d8a2289..35471bc 100644
---- a/drivers/s390/char/vmlogrdr.c
-+++ b/drivers/s390/char/vmlogrdr.c
-@@ -736,7 +736,7 @@ static int vmlogrdr_register_device(struct vmlogrdr_priv_t *priv)
- 		 * directly here. (Probably a little bit obfuscating
- 		 * but legitime ...).
- 		 */
--		dev->release = (void (*)(struct device *))kfree;
-+		dev->release = (void (*)(struct device *))_kfree;
- 	} else
- 		return -ENOMEM;
- 	ret = device_register(dev);
-diff --git a/drivers/s390/net/netiucv.c b/drivers/s390/net/netiucv.c
-index 930e2fc..2ab4e65 100644
---- a/drivers/s390/net/netiucv.c
-+++ b/drivers/s390/net/netiucv.c
-@@ -1745,7 +1745,7 @@ static int netiucv_register_device(struct net_device *ndev)
- 		 * directly here. (Probably a little bit obfuscating
- 		 * but legitime ...).
- 		 */
--		dev->release = (void (*)(struct device *))kfree;
-+		dev->release = (void (*)(struct device *))_kfree;
- 		dev->driver = &netiucv_driver;
- 	} else
- 		return -ENOMEM;
-diff --git a/fs/nfsd/nfs4xdr.c b/fs/nfsd/nfs4xdr.c
-index f65953b..3c09abd 100644
---- a/fs/nfsd/nfs4xdr.c
-+++ b/fs/nfsd/nfs4xdr.c
-@@ -215,7 +215,7 @@ static char *savemem(struct nfsd4_compoundargs *argp, __be32 *p, int nbytes)
- 		BUG_ON(p != argp->tmpp);
- 		argp->tmpp = NULL;
- 	}
--	if (defer_free(argp, kfree, p)) {
-+	if (defer_free(argp, _kfree, p)) {
- 		kfree(p);
- 		return NULL;
- 	} else
-@@ -292,7 +292,7 @@ nfsd4_decode_fattr(struct nfsd4_compoundargs *argp, u32 *bmval, struct iattr *ia
- 			host_err = -ENOMEM;
- 			goto out_nfserr;
- 		}
--		defer_free(argp, kfree, *acl);
-+		defer_free(argp, _kfree, *acl);
- 
- 		(*acl)->naces = nace;
- 		for (ace = (*acl)->aces; ace < (*acl)->aces + nace; ace++) {
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 7fa3718..8809c9c 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -526,6 +526,11 @@ struct sysinfo {
-    aren't permitted). */
- #define BUILD_BUG_ON_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
- 
-+/* If the type of pointer x matches type, force a compilation error,
-+   otherwise produce x as a result */
-+#define PTR_OR_BB_ON_TYPE(x, type) (&x[sizeof(char[0 -			\
-+			__builtin_types_compatible_p(typeof(x), type)])])
-+
- /* Trap pasters of __FUNCTION__ at compile-time */
- #define __FUNCTION__ (__func__)
- 
-diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 24c5602..7a17c3e 100644
---- a/include/linux/slab.h
-+++ b/include/linux/slab.h
-@@ -121,12 +121,15 @@ int kmem_ptr_validate(struct kmem_cache *cachep, const void *ptr);
- #define KMALLOC_MAX_SIZE	(1UL << KMALLOC_SHIFT_HIGH)
- #define KMALLOC_MAX_ORDER	(KMALLOC_SHIFT_HIGH - PAGE_SHIFT)
- 
-+/* This ensures that kfree is not called with a struct sk_buff* */
-+#define kfree(x) _kfree(PTR_OR_BB_ON_TYPE((x), struct sk_buff*))
-+
- /*
-  * Common kmalloc functions provided by all allocators
-  */
- void * __must_check __krealloc(const void *, size_t, gfp_t);
- void * __must_check krealloc(const void *, size_t, gfp_t);
--void kfree(const void *);
-+void _kfree(const void *);
- void kzfree(const void *);
- size_t ksize(const void *);
- 
-diff --git a/kernel/exit.c b/kernel/exit.c
-index efd30cc..96eb98a 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1103,7 +1103,7 @@ NORET_TYPE void do_exit(long code)
- 	if (unlikely(!list_empty(&tsk->pi_state_list)))
- 		exit_pi_state_list(tsk);
- 	if (unlikely(current->pi_state_cache))
--		kfree(current->pi_state_cache);
-+		_kfree(current->pi_state_cache);
- #endif
- 	/*
- 	 * Make sure we are holding no locks:
-diff --git a/lib/kref.c b/lib/kref.c
-index 9ecd6e8..a6364df 100644
---- a/lib/kref.c
-+++ b/lib/kref.c
-@@ -62,7 +62,7 @@ void kref_get(struct kref *kref)
- int kref_put(struct kref *kref, void (*release)(struct kref *kref))
- {
- 	WARN_ON(release == NULL);
--	WARN_ON(release == (void (*)(struct kref *))kfree);
-+	WARN_ON(release == (void (*)(struct kref *))_kfree);
- 
- 	if (atomic_dec_and_test(&kref->refcount)) {
- 		release(kref);
-diff --git a/mm/slab.c b/mm/slab.c
-index 4d00855..3acefac 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -3711,7 +3711,7 @@ EXPORT_SYMBOL(kmem_cache_free);
-  * Don't free memory not originally allocated by kmalloc()
-  * or you will run into trouble.
-  */
--void kfree(const void *objp)
-+void _kfree(const void *objp)
- {
- 	struct kmem_cache *c;
- 	unsigned long flags;
-@@ -3726,7 +3726,7 @@ void kfree(const void *objp)
- 	__cache_free(c, (void *)objp);
- 	local_irq_restore(flags);
- }
--EXPORT_SYMBOL(kfree);
-+EXPORT_SYMBOL(_kfree);
- 
- unsigned int kmem_cache_size(struct kmem_cache *cachep)
- {
-diff --git a/mm/slob.c b/mm/slob.c
-index 52bc8a2..1d8a3c4 100644
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -487,7 +487,7 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
- }
- EXPORT_SYMBOL(__kmalloc_node);
- 
--void kfree(const void *block)
-+void _kfree(const void *block)
- {
- 	struct slob_page *sp;
- 
-@@ -502,7 +502,7 @@ void kfree(const void *block)
- 	} else
- 		put_page(&sp->page);
- }
--EXPORT_SYMBOL(kfree);
-+EXPORT_SYMBOL(_kfree);
- 
- /* can't use ksize for kmem_cache_alloc memory, only kmalloc */
- size_t ksize(const void *block)
-diff --git a/mm/slub.c b/mm/slub.c
-index 0280eee..f9fa9e1 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2738,7 +2738,7 @@ size_t ksize(const void *object)
- }
- EXPORT_SYMBOL(ksize);
- 
--void kfree(const void *x)
-+void _kfree(const void *x)
- {
- 	struct page *page;
- 	void *object = (void *)x;
-@@ -2754,7 +2754,7 @@ void kfree(const void *x)
- 	}
- 	slab_free(page->slab, page, object, _RET_IP_);
- }
--EXPORT_SYMBOL(kfree);
-+EXPORT_SYMBOL(_kfree);
- 
- /*
-  * kmem_cache_shrink removes empty slabs from the partial lists and sorts
-diff --git a/net/core/dev.c b/net/core/dev.c
-index f112970..3a7a552 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2671,7 +2671,7 @@ void netif_napi_del(struct napi_struct *napi)
- 	struct sk_buff *skb, *next;
- 
- 	list_del_init(&napi->dev_list);
--	kfree(napi->skb);
-+	kfree_skb(napi->skb);
- 
- 	for (skb = napi->gro_list; skb; skb = next) {
- 		next = skb->next;
-@@ -4720,7 +4720,7 @@ struct net_device *alloc_netdev_mq(int sizeof_priv, const char *name,
- 	if (!tx) {
- 		printk(KERN_ERR "alloc_netdev: Unable to allocate "
- 		       "tx qdiscs.\n");
--		kfree(p);
-+		_kfree(p);
- 		return NULL;
- 	}
- 
-diff --git a/security/selinux/ss/services.c b/security/selinux/ss/services.c
-index c65e4fe..cefe043 100644
---- a/security/selinux/ss/services.c
-+++ b/security/selinux/ss/services.c
-@@ -2862,7 +2862,7 @@ static void security_netlbl_cache_add(struct netlbl_lsm_secattr *secattr,
- 	}
- 
- 	*sid_cache = sid;
--	secattr->cache->free = kfree;
-+	secattr->cache->free = _kfree;
- 	secattr->cache->data = sid_cache;
- 	secattr->flags |= NETLBL_SECATTR_CACHE;
- }
+> /*
+>  * This starts the data section.
+>  */
+> diff --git a/arch/x86/kernel/vmlinux_32.lds.S
+> b/arch/x86/kernel/vmlinux_32.lds.S
+> index 4005279..c318dee 100644
+> --- a/arch/x86/kernel/vmlinux_32.lds.S
+> +++ b/arch/x86/kernel/vmlinux_32.lds.S
+> @@ -210,6 +210,12 @@ SECTIONS
+>   DWARF_DEBUG
+> }
+> 
+> +/*
+> + * Build-time check on the image size:
+> + */
+> +ASSERT((_end - LOAD_OFFSET <= KERNEL_IMAGE_SIZE),
+> +    "kernel image bigger than KERNEL_IMAGE_SIZE")
+> +
+> #ifdef CONFIG_KEXEC
+> /* Link time checks */
+> #include <asm/kexec.h>
+
