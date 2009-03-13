@@ -1,70 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbZCMJHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbZCMJHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757639AbZCMJHW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 05:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbZCMJHG
+	id S1753031AbZCMJHm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 05:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757698AbZCMJHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 05:07:06 -0400
-Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:36012
-	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751251AbZCMJHE convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 05:07:04 -0400
-X-BigFish: VPS-32(z6cekz1432R98dR1805M936fK9371Pzz1202hzzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KGFTBF-02-ECP-01
-Date: Fri, 13 Mar 2009 10:06:50 +0100
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       trenn@suse.de
-Subject: Re: [PATCH] x86: mtrr: don't modify RdDram/WrDram bits of fixed
-	MTRRs
-Message-ID: <20090313090650.GL20716@alberich.amd.com>
-References: <20090311150027.GK10490@alberich.amd.com> <86802c440903120101o2a0c1ad0iec395c45f782078a@mail.gmail.com> <20090312114121.GF20716@alberich.amd.com> <86802c440903121124o10439dcdvf8b9fa0b37c62062@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <86802c440903121124o10439dcdvf8b9fa0b37c62062@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 13 Mar 2009 09:06:52.0187 (UTC) FILETIME=[0C91E6B0:01C9A3BB]
-Content-Transfer-Encoding: 8BIT
+	Fri, 13 Mar 2009 05:07:21 -0400
+Received: from mga10.intel.com ([192.55.52.92]:12581 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757639AbZCMJHS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 05:07:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,356,1233561600"; 
+   d="scan'208";a="438622476"
+Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to
+	submit to upper layer
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       herbert@gondor.apana.org.au, jesse.brandeburg@intel.com,
+       shemminger@vyatta.com, David Miller <davem@davemloft.net>
+In-Reply-To: <20090312143427.GJ11935@one.firstfloor.org>
+References: <1236761624.2567.442.camel@ymzhang>
+	 <877i2wfh1l.fsf@basil.nowhere.org> <1236845792.2567.484.camel@ymzhang>
+	 <20090312143427.GJ11935@one.firstfloor.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 13 Mar 2009 17:06:47 +0800
+Message-Id: <1236935207.2567.559.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 12, 2009 at 11:24:12AM -0700, Yinghai Lu wrote:
-> On Thu, Mar 12, 2009 at 4:41 AM, Andreas Herrmann
-> <andreas.herrmann3@amd.com> wrote:
-> > On Thu, Mar 12, 2009 at 01:01:26AM -0700, Yinghai Lu wrote:
-> >> wonder if you could add one dmi check to tell the user that bios is
-> >> buggy, ask vendor fixed BIOS
-> >> and skip fixed mtrr sync.
-> >
-> > There seem to be several systems affected that do not hide
-> > RdMem/WrMem bits from OS.
-> >
-> >  (Causing Suspend/resume problem:)
-> > - Acer Ferrari 1000
-> > - Acer Ferrari 5000
-> >  (Causing kernel freeze:)
-> > - Asus M51TR-AP003C notebook
-> > - Asus M51Ta notebook
-> > - Asus M3A-H/HDMI mobo
+On Thu, 2009-03-12 at 15:34 +0100, Andi Kleen wrote:
+> On Thu, Mar 12, 2009 at 04:16:32PM +0800, Zhang, Yanmin wrote:
+> > 
+> > > Seems very inconvenient to have to configure this by hand.
+> > A little, but not too much, especially when we consider there is interrupt binding.
 > 
-> they didn't run bios testsuite or bios testsuite miss that checking?
+> Interrupt binding is something popular for benchmarks, but most users
+> don't (and shouldn't need to) care. Having it work well out of the box
+> without special configuration is very important.
+Thanks Andi. You tell the truth. Now I understand why David Miller is working
+on auto TX selection.
 
-Don't know. I'll try to figure that out.
+One thing I want to clarify is, with the default configuration, the processing path
+still goes to current automation selection. That means my method has little impact
+on current automation selection with default configuration, except a small cache miss.
+Another exception is IXGBE prefers to getting one packet and sending one packet
+immediately instead of backlog.
 
-Andreas
+Even when turning on the new capability to separate packet receiving and packet
+processing, TX selection is still following current automatic selection. The difference
+is we use different cpu. Driver still could record RX number into skb which is used
+when sending out.
 
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+> 
+> > 
+> > >  How about
+> > > auto selecting one that shares the same LLC or somesuch?
+> > There are 2 kinds of LLC sharing here.
+> > 1) RX/TX share the LLC;
+> > 2) All RX share the LLC of some cpus and TX share the LLC of other cpus.
+> > 
+> > Item 1) is important, but sometimes item 2) is also important when the sending speed is
+> > very high and huge data is on flight which flushes cpu cache quickly.
+> > It's hard to distinguish the 2 different scenarioes automatically.
+> 
+> Why is it hard if you know the CPUs?
+RX binding depends on interrupt binding totally. If the MSI-X interrupt is sent to cpu A,
+cpu A will collect the packets on the RX queue. By default, interrupt isn't bound. 
+ï»¿Software knows the LLC sharing of cpu A. If cpu A receives the interrupt, it couldn't just
+throw packets to other cpus which share its LLC, because it doesn't know whether other cpus
+are collecting packets from other RX queues now.
+
+> 
+> > >  and just use the hash function on the
+> > > NIC.
+> > Sorry. I can't understand what the hash function of NIC is. Perhaps NIC hardware has something
+> > like hash function to decide the RX queue number based on SRC/DST?
+> 
+> There's a Microsoft spec for a standard hash function that does this
+> on NICs and all the serious ones support it these days. The hash 
+> is normally used to select a MSI-X target based on the input header.
+Thanks for the explanation. The capability defined by the spec is to choose
+a MSI-X number and provides a hint when sending a cloned packet out. Does the NIC
+know how cpu is busy? I assume not. So the hash is trying to distribute packets
+into RX queues evenly while also avoiding reorder. 
+
+We might say irqbalance could balance workload so we expect cpu workload is
+even. My testing shows such evenly distribution of packets on all cpu isn't
+good at performance.
+
+> 
+> I think if that works your manual target shouldn't be necessary.
+Here are 2 targets with my method. The one is packet collecting cpu and the other
+is packet processing cpu. 
+As NIC doesn't know how busy cpu is, why can't we separate the processing?
+
+> 
+> > >  The trick here would
+> > > be to try to avoid reordering inside streams as far as possible,
+> > It's not to solve reorder issue. The start point is 10G NIC is very fast. We need some cpu
+> 
+> Point was that any solution shouldn't add more reordering. But when a RSS
+> hash is used there is no reordering on stream basis.
+Yes.
+
+Thanks again.
+
+Yanmin
 
 
