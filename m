@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758436AbZCMIOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbZCMIOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758436AbZCMIOg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 04:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbZCMIMQ
+	id S1756166AbZCMIOL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 04:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZCMIMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 04:12:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:34806 "EHLO abulafia.goop.org"
+	Fri, 13 Mar 2009 04:12:15 -0400
+Received: from gw.goop.org ([64.81.55.164]:34786 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753160AbZCMIMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 04:12:13 -0400
+	id S1752282AbZCMIMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 04:12:12 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 07/24] xen: remove xen_load_gdt debug
-Date: Fri, 13 Mar 2009 01:11:43 -0700
-Message-Id: <1236931920-6861-8-git-send-email-jeremy@goop.org>
+Subject: [PATCH 01/24] xen: disable preempt for leave_lazy_mmu
+Date: Fri, 13 Mar 2009 01:11:37 -0700
+Message-Id: <1236931920-6861-2-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1236931920-6861-1-git-send-email-jeremy@goop.org>
 References: <1236931920-6861-1-git-send-email-jeremy@goop.org>
@@ -27,27 +27,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Don't need the noise.
+xen_mc_flush() requires preemption to be disabled for its own sanity,
+so disable it while we're flushing.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/enlighten.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ arch/x86/xen/mmu.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 48b399b..75b7a0f 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -310,9 +310,6 @@ static void xen_load_gdt(const struct desc_ptr *dtr)
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 185b547..eceff87 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -1812,8 +1812,10 @@ __init void xen_post_allocator_init(void)
  
- 		frames[f] = mfn;
+ static void xen_leave_lazy_mmu(void)
+ {
++	preempt_disable();
+ 	xen_mc_flush();
+ 	paravirt_leave_lazy_mmu();
++	preempt_enable();
+ }
  
--		printk("xen_load_gdt: %d va=%p mfn=%lx pfn=%lx va'=%p\n",
--		       f, (void *)va, mfn, pfn, virt);
--
- 		make_lowmem_page_readonly((void *)va);
- 		make_lowmem_page_readonly(virt);
- 	}
+ const struct pv_mmu_ops xen_mmu_ops __initdata = {
 -- 
 1.6.0.6
 
