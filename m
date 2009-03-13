@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758952AbZCMNHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbZCMNIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758952AbZCMNHr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 09:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbZCMNHg
+	id S1758388AbZCMNIJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 09:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759053AbZCMNHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 09:07:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36707 "EHLO hera.kernel.org"
+	Fri, 13 Mar 2009 09:07:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44886 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752244AbZCMNHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 09:07:35 -0400
-Date: Fri, 13 Mar 2009 13:06:52 GMT
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090313112301.477871320@chello.nl>
-References: <20090313112301.477871320@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: x86: use ULL postfix for 64bit constants
-Message-ID: <tip-1738302c9b15ec9903f88121b35ff726db304598@git.kernel.org>
-Git-Commit-ID: 1738302c9b15ec9903f88121b35ff726db304598
-X-Mailer: tip-git-log-daemon
+	id S1759034AbZCMNHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 09:07:49 -0400
+Date: Fri, 13 Mar 2009 14:07:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Cc: paulus@samba.org, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/11] generic software counters -v2
+Message-ID: <20090313130730.GA10117@elte.hu>
+References: <20090313112125.886730125@chello.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 13:06:54 +0000 (UTC)
+In-Reply-To: <20090313112125.886730125@chello.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1738302c9b15ec9903f88121b35ff726db304598
-Gitweb:     http://git.kernel.org/tip/1738302c9b15ec9903f88121b35ff726db304598
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 13 Mar 2009 12:21:31 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 14:02:43 +0100
 
-perf_counter: x86: use ULL postfix for 64bit constants
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-Fix a build warning on 32bit machines by explicitly marking the
-constants as 64-bit.
+> This patch set improves the current software counters by 
+> providing sampling events for most of them.
+> 
+> The clock based software counters use hrtimers to generate 
+> events, allowing sample based profiling without hardware 
+> support -- obviously this has limited functionality for kernal 
+> based profiling since we disable interrupts quite frequently, 
+> but should be good for userspace.
+> 
+> Other events like pagefaults insert simple hooks into the 
+> actual pagefault code to generate these events.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090313112301.477871320@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Very nice series! Applied to tip:core/locking and 
+tip:perfcounters/core - thanks Peter!
 
+Fixed a trivial !PERF_COUNTERS build failure as well.
 
----
- arch/x86/kernel/cpu/perf_counter.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+> Future work (in-progress) will hook into the tracepoint 
+> infrastructure to to provide profiling events.
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index a2e3b76..22dab06 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -84,9 +84,9 @@ static u64 pmc_intel_event_map(int event)
- 
- static u64 pmc_intel_raw_event(u64 event)
- {
--#define CORE_EVNTSEL_EVENT_MASK		0x000000FF
--#define CORE_EVNTSEL_UNIT_MASK		0x0000FF00
--#define CORE_EVNTSEL_COUNTER_MASK	0xFF000000
-+#define CORE_EVNTSEL_EVENT_MASK		0x000000FFULL
-+#define CORE_EVNTSEL_UNIT_MASK		0x0000FF00ULL
-+#define CORE_EVNTSEL_COUNTER_MASK	0xFF000000ULL
- 
- #define CORE_EVNTSEL_MASK 		\
- 	(CORE_EVNTSEL_EVENT_MASK |	\
-@@ -116,9 +116,9 @@ static u64 pmc_amd_event_map(int event)
- 
- static u64 pmc_amd_raw_event(u64 event)
- {
--#define K7_EVNTSEL_EVENT_MASK	0x7000000FF
--#define K7_EVNTSEL_UNIT_MASK	0x00000FF00
--#define K7_EVNTSEL_COUNTER_MASK	0x0FF000000
-+#define K7_EVNTSEL_EVENT_MASK	0x7000000FFULL
-+#define K7_EVNTSEL_UNIT_MASK	0x00000FF00ULL
-+#define K7_EVNTSEL_COUNTER_MASK	0x0FF000000ULL
- 
- #define K7_EVNTSEL_MASK			\
- 	(K7_EVNTSEL_EVENT_MASK |	\
+Cool!
+
+Especially for pagefaults we have a number of callbacks there: 
+kmmio, kprobes, kmemcheck, tracing, perfcounters - they could 
+indeed all be consolidated step by step onto a tracepoint.
+
+	Ingo
