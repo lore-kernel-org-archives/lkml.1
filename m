@@ -1,117 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752244AbZCMHFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbZCMHMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752244AbZCMHFT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 03:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbZCMHFD
+	id S1753231AbZCMHMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 03:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbZCMHMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 03:05:03 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:55359 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750761AbZCMHFC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 03:05:02 -0400
-Message-ID: <49BA0599.6070206@snapgear.com>
-Date: Fri, 13 Mar 2009 17:04:57 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 13 Mar 2009 03:12:03 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:50320 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750780AbZCMHMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 03:12:01 -0400
+Message-ID: <49BA06E2.7080807@cn.fujitsu.com>
+Date: Fri, 13 Mar 2009 15:10:26 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       linux-next@vger.kernel.org
-Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
-References: <200903120437.03837.rob@landley.net> <20090312210216.GB14205@uranus.ravnborg.org> <10f740e80903121540i30fdaddr600ce21f4159530a@mail.gmail.com> <200903122225.04560.rob@landley.net>
-In-Reply-To: <200903122225.04560.rob@landley.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Paulo Marques <pmarques@grupopie.com>
+CC: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@osdl.org>, Steven Rostedt <srostedt@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH V3] kallsyms, tracing: output more proper symbol name
+References: <49B7863F.6020804@cn.fujitsu.com> <20090311094621.GA13543@elte.hu> <49B7B70F.5010908@grupopie.com> <49B876BB.50007@cn.fujitsu.com> <49B92B25.6020805@grupopie.com>
+In-Reply-To: <49B92B25.6020805@grupopie.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Paulo Marques wrote:
+> I would probably still place another test to compare the number of
+> underscores, after both symbols are found to be equal in the "linker
+> script provided" criteria.
+> 
+> The way it is now, for my current kallsyms table:
+> 
+>> ffffffff80200000 A _text
+>> ffffffff80200000 T startup_64
+>> ffffffff80209000 T _stext
+>> ffffffff80209000 t init_post
+> 
+> a "startup_64" address would display as "_text" and a "init_post"
+> address would display as "_stext".
+> 
+> You can add all the stext/etext symbols as special cases to the
+> "may_be_linker_script_provide_symbol" function (like it was on your v1
+> patch), but I'm just afraid that we'll find more cases in the future
+> that are not automatically caught by these rules...
+> 
 
-Rob Landley wrote:
-> On Thursday 12 March 2009 17:40:02 Geert Uytterhoeven wrote:
->> On Thu, Mar 12, 2009 at 22:02, Sam Ravnborg <sam@ravnborg.org> wrote:
->>>> And, yes, I can confirm the m68k include/asm/unistd.h from linux-next
->>>> actually has contents, thanks to commit
->>>> 646652bded41f4c3bd375b4e03a25b42da93f40b
->>>>
->>>> Anyway, here's hoping the fix makes it into 2.6.29.
->>> Why not telling the m68k maintainer that you think it should go into
->>> 2.6.29?
-> 
-> I contacted the headers_install maintainer about a headers_install problem, 
-> and was pointed to an existing fix upstream.  This seemed to imply awareness 
-> of the problem?
-> 
-> Happy to follow up more, wasn't aware it was required...
-> 
->> There are a few more:
->>
->> param.h:#include "param_no.h"
->> param.h:#include "param_mm.h"
->> ptrace.h:#include "ptrace_no.h"
->> ptrace.h:#include "ptrace_mm.h"
->> setup.h:#include "setup_no.h"
->> setup.h:#include "setup_mm.h"
->> sigcontext.h:#include "sigcontext_no.h"
->> sigcontext.h:#include "sigcontext_mm.h"
->> siginfo.h:#include "siginfo_no.h"
->> siginfo.h:#include "siginfo_mm.h"
->> signal.h:#include "signal_no.h"
->> signal.h:#include "signal_mm.h"
->> swab.h:#include "swab_no.h"
->> swab.h:#include "swab_mm.h"
->>
->> Rob, do these also causes problems?
->> Some (not all) of them are fixed in linux-next.
-> 
-> I'm trying to build uClibc against the new headers.  I just got around to 
-> extracting the patch to fix that one file and testing it in my build system, 
-> and this time it broke with:
-> 
->   build/cross-compiler-m68k/include/asm/param.h:4:22: error: param_mm.h: No
->   such file or directory
-> 
-> So yeah, it's still unhappy.  Dunno how many of these are still needed to 
-> build the cross compiler, and then who knows what other packages need to 
-> build.  Presumably all of it.
-> 
-> Keep in mind I still haven't found an emulator for m68k that actually boots a 
-> linux kernel, so my m68k support is purely theoretical.  (I poked at mess and 
-> uae a bit today, but they don't do the "qemu -kernel" thing I'm using for the 
-> other targets, and qemu itself only seems to support coldfire and not a full-
-> blown m68k.)  I'm following up on this because it's a regression.  Under 
-> 2.6.28 the m68k target was building a kernel and root filesystem, but I don't 
-> have hardware to run it and have never been able to test it, so isn't really 
-> very useful for me.  It's really just there so that if qemu grows the rest of 
-> m68k support (patches have been submitted but not merged), I'll be ready.
-> 
-> P.S.  If you're bored and want to try my test build for yourself:
-> 
->   wget http://impactlinux.com/hg/firmware/archive/tip.tar.bz2
->   tar xvjf tip.tar.bz2
->   cd firmware-*
->   USE_UNSTABLE=linux ./build.sh m68k
-> 
-> Without the USE_UNSTABLE=linux it uses 2.6.28 and builds to completion, with 
-> it the build uses 2.6.29-rc7 (or whatever URL's listed as the UNSTABLE= value 
-> for linux in download.sh) and it breaks trying to add uClibc to the cross 
-> compiler.
-> 
-> But then anything that actually _uses_ the "make headers_install" output to 
-> build stuff against should notice pretty quickly whether or not it #includes 
-> missing files.
+Subject:  kallsyms, tracing: output more proper symbol name
 
-I pretty quick time I can fix up the last couple on the above list.
-But do we want to put all that change into 2.6.29-rc at this point?
+Impact: bugfix, output reliable result
 
-Regards
-Greg
+Debug tools(dump_stack(), ftrace...) are like to print out symbols.
+But it is always print out the first aliased symbol.(Aliased symbols
+are symbols with the same address), and the first aliased symbol is
+sometime not proper.
 
+# echo function_graph > current_tracer
+# cat trace
+......
+ 1)   1.923 us    |    select_nohz_load_balancer();
+ 1) + 76.692 us   |  }
+ 1)               |  default_idle() {
+ 1)   ==========> |    __irqentry_text_start() {
+ 1)   0.000 us    |      native_apic_mem_write();
+ 1)               |      irq_enter() {
+ 1)   0.000 us    |        idle_cpu();
+ 1)               |        tick_check_idle() {
+ 1)   0.000 us    |          tick_check_oneshot_broadcast();
+ 1)               |          tick_nohz_stop_idle() {
+......
 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+It's very embarrassing, it ouputs "__irqentry_text_start()",
+actually, it should output "smp_apic_timer_interrupt()".
+(these two symbol are the same address, but "__irqentry_text_start"
+is deemed to the first aliased symbol by scripts/kallsyms)
+
+This patch puts symbols like "__irqentry_text_start" to the second
+aliased symbols. And a more proper symbol name becomes the first.
+
+Aliased symbols mostly come from linker script. The solution is
+guessing "is this symbol defined in linker script", the symbols
+defined in linker script will not become the first aliased symbol.
+
+And if symbols are found to be equal in this "linker script provided"
+criteria, symbols are sorted by the number of prefix underscores.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
+index ad2434b..6654cbe 100644
+--- a/scripts/kallsyms.c
++++ b/scripts/kallsyms.c
+@@ -500,6 +500,51 @@ static void optimize_token_table(void)
+ 	optimize_result();
+ }
+ 
++/* guess for "linker script provide" symbol */
++static int may_be_linker_script_provide_symbol(const struct sym_entry *se)
++{
++	const char *symbol = (char *)se->sym + 1;
++	int len = se->len - 1;
++
++	if (len < 8)
++		return 0;
++
++	if (symbol[0] != '_' || symbol[1] != '_')
++		return 0;
++
++	/* __start_XXXXX */
++	if (!memcmp(symbol + 2, "start_", 6))
++		return 1;
++
++	/* __stop_XXXXX */
++	if (!memcmp(symbol + 2, "stop_", 5))
++		return 1;
++
++	/* __end_XXXXX */
++	if (!memcmp(symbol + 2, "end_", 4))
++		return 1;
++
++	/* __XXXXX_start */
++	if (!memcmp(symbol + len - 6, "_start", 6))
++		return 1;
++
++	/* __XXXXX_end */
++	if (!memcmp(symbol + len - 4, "_end", 4))
++		return 1;
++
++	return 0;
++}
++
++static int prefix_underscores_count(const char *str)
++{
++	const char *tail = str;
++
++	while (*tail != '_')
++		tail++;
++
++	return tail - str;
++}
++
+ static int compare_symbols(const void *a, const void *b)
+ {
+ 	const struct sym_entry *sa;
+@@ -521,6 +566,18 @@ static int compare_symbols(const void *a, const void *b)
+ 	if (wa != wb)
+ 		return wa - wb;
+ 
++	/* sort by "linker script provide" type */
++	wa = may_be_linker_script_provide_symbol(sa);
++	wb = may_be_linker_script_provide_symbol(sb);
++	if (wa != wb)
++		return wa - wb;
++
++	/* sort by the number of prefix underscores */
++	wa = prefix_underscores_count((const char *)sa->sym + 1);
++	wb = prefix_underscores_count((const char *)sb->sym + 1);
++	if (wa != wb)
++		return wa - wb;
++
+ 	/* sort by initial order, so that other symbols are left undisturbed */
+ 	return sa->start_pos - sb->start_pos;
+ }
