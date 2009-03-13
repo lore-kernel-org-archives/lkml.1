@@ -1,59 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbZCMRiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759189AbZCMRhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759304AbZCMRiY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 13:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758540AbZCMRiF
+	id S1759189AbZCMRhr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 13:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758540AbZCMRh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 13:38:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36586 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757725AbZCMRiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 13:38:04 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 2/2] NOMMU: Make CONFIG_UNEVICTABLE_LRU available when
-	CONFIG_MMU=n
-To: kosaki.motohiro@jp.fujitsu.com, minchan.kim@gmail.com
-Cc: dhowells@redhat.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, peterz@infradead.org,
-       nrik.Berkhan@ge.com, uclinux-dev@uclinux.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hannes@cmpxchg.org,
-       riel@surriel.com, lee.schermerhorn@hp.com
-Date: Fri, 13 Mar 2009 17:33:53 +0000
-Message-ID: <20090313173353.10169.23515.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090313173343.10169.58053.stgit@warthog.procyon.org.uk>
-References: <20090313173343.10169.58053.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Fri, 13 Mar 2009 13:37:29 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:54329 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758741AbZCMRh1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 13:37:27 -0400
+Date: Fri, 13 Mar 2009 12:37:19 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Ying Han <yinghan@google.com>
+Cc: Greg Kurz <gkurz@fr.ibm.com>, Cedric Le Goater <legoater@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, mpm@selenic.com,
+       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-mm@kvack.org, tglx@linutronix.de, viro@zeniv.linux.org.uk,
+       hpa@zytor.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>, xemul@openvz.org
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
+	do?
+Message-ID: <20090313173719.GA12179@us.ibm.com>
+References: <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226155755.GA1456@x200.localdomain> <20090310215305.GA2078@x200.localdomain> <49B775B4.1040800@free.fr> <20090312145311.GC12390@us.ibm.com> <1236891719.32630.14.camel@bahia> <20090312212124.GA25019@us.ibm.com> <604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make CONFIG_UNEVICTABLE_LRU available when CONFIG_MMU=n.  There's no logical
-reason it shouldn't be available, and it can be used for ramfs.
+Quoting Ying Han (yinghan@google.com):
+> Hi Serge:
+> I made a patch based on Oren's tree recently which implement a new
+> syscall clone_with_pid. I tested with checkpoint/restart process tree
+> and it works as expected.
+> This patch has some hack in it which i made a copy of libc's clone and
+> made modifications of passing one more argument(pid number). I will
+> try to clean up the code and do more testing.
+> 
+> New syscall clone_with_pid
+> Implement a new syscall which clone a thread with a preselected pid number.
+> 
+> clone_with_pid(child_func, child_stack + CHILD_STACK - 16,
+> 			CLONE_WITH_PID|SIGCHLD, pid, NULL);
+> 
+> Signed-off-by: Ying Han <yinghan@google.com>
+> 
+> diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
+> index 87803da..b5a1b03 100644
+> --- a/arch/x86/include/asm/syscalls.h
+> +++ b/arch/x86/include/asm/syscalls.h
+> @@ -26,6 +26,7 @@ asmlinkage int sys_fork(struct pt_regs);
+>  asmlinkage int sys_clone(struct pt_regs);
+>  asmlinkage int sys_vfork(struct pt_regs);
+>  asmlinkage int sys_execve(struct pt_regs);
+> +asmlinkage int sys_clone_with_pid(struct pt_regs);
+> 
+>  /* kernel/signal_32.c */
+>  asmlinkage int sys_sigsuspend(int, int, old_sigset_t);
+> diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32
+> index a5f9e09..f10ca0e 100644
+> --- a/arch/x86/include/asm/unistd_32.h
+> +++ b/arch/x86/include/asm/unistd_32.h
+> @@ -340,6 +340,7 @@
+>  #define __NR_inotify_init1	332
+>  #define __NR_checkpoint		333
+>  #define __NR_restart		334
+> +#define __NR_clone_with_pid	335
+> 
+>  #ifdef __KERNEL__
+> 
+> diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+> index 0a1302f..88ae634 100644
+> --- a/arch/x86/kernel/process_32.c
+> +++ b/arch/x86/kernel/process_32.c
+> @@ -8,7 +8,6 @@
+>  /*
+>   * This file handles the architecture-dependent parts of process handling..
+>   */
+> -
+>  #include <stdarg.h>
+> 
+>  #include <linux/cpu.h>
+> @@ -652,6 +651,28 @@ asmlinkage int sys_clone(struct pt_regs regs)
+>  	return do_fork(clone_flags, newsp, &regs, 0, parent_tidptr, child_tidptr);
+>  }
+> 
+> +/**
+> + * sys_clone_with_pid - clone a thread with pre-select pid number.
+> + */
+> +asmlinkage int sys_clone_with_pid(struct pt_regs regs)
+> +{
+> +	unsigned long clone_flags;
+> +	unsigned long newsp;
+> +	int __user *parent_tidptr, *child_tidptr;
+> +	pid_t pid_nr;
+> +
+> +	clone_flags = regs.bx;
+> +	newsp = regs.cx;
+> +	parent_tidptr = (int __user *)regs.dx;
+> +	child_tidptr = (int __user *)regs.di;
+> +	pid_nr = regs.bp;
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Hi,
 
- mm/Kconfig |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+Thanks for looking at this.  I appreciate the patch.  Two comments
+however.
 
+As I was saying in another email, i think that so long as we are going
+with a new syscall, we should make sure that it suffices for nested
+pid namespaces.  So send in an array of pids and its lengths, then
+use an algorithm like Alexey's to fill in the sent-in pids if possible.
 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index 8c89597..b53427a 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -206,7 +206,6 @@ config VIRT_TO_BUS
- config UNEVICTABLE_LRU
- 	bool "Add LRU list to track non-evictable pages"
- 	default y
--	depends on MMU
- 	help
- 	  Keeps unevictable pages off of the active and inactive pageout
- 	  lists, so kswapd will not waste CPU time or have its balancing
+> +	if (!newsp)
+> +		newsp = regs.sp;
+> +	return do_fork(clone_flags, newsp, &regs, pid_nr, parent_tidptr,
+> +			child_tidptr);
+> +}
+> +
+>  /*
+>   * This is trivial, and on the face of it looks like it
+>   * could equally well be done in user mode.
 
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index 085ce56..262ae1e 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -10,7 +10,7 @@
+>   * Fork is rather simple, once you get the hang of it, but the memory
+>   * management can be a bitch. See 'mm/memory.c': 'copy_page_range()'
+>   */
+> -
+> +#define DEBUG
+>  #include <linux/slab.h>
+>  #include <linux/init.h>
+>  #include <linux/unistd.h>
+> @@ -959,10 +959,19 @@ static struct task_struct *copy_process(unsigned long cl
+>  	int retval;
+>  	struct task_struct *p;
+>  	int cgroup_callbacks_done = 0;
+> +	pid_t clone_pid = stack_size;
+
+Note that some architectures (i.e. ia64) actually use the stack_size
+sent to copy_thread, so you at least need to zero out stack_size here.
+
+And I suspect there are cases where a stack_size is actually sent in,
+so this doesn't seem legitimate, but I haven't tracked down the callers.
+If you tell me you think there should be no case where a real stack_size
+is sent in, well, I'll feel better if you prove it by breaking the patch
+up so that:
+
+1. you remove the stack_size argument from copy_process.  Test such a
+kernel on some architectures (boot+ltp, for instance).
+
+2. add a chosen_pid argument to copy_process.
+
+Then we can be sure noone is using the field.
+
+thanks,
+-serge
