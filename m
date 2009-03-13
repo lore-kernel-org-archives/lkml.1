@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758542AbZCMCmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbZCMCng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758542AbZCMCmx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 12 Mar 2009 22:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756363AbZCMCii
+	id S1758787AbZCMCng (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 12 Mar 2009 22:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbZCMCij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 12 Mar 2009 22:38:38 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43749 "EHLO
+	Thu, 12 Mar 2009 22:38:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48851 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758541AbZCMCi3 (ORCPT
+	with ESMTP id S1758546AbZCMCia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 12 Mar 2009 22:38:29 -0400
-Message-Id: <20090313023826.906365262@goodmis.org>
+	Thu, 12 Mar 2009 22:38:30 -0400
+Message-Id: <20090313023828.029155950@goodmis.org>
 References: <20090313023704.971438367@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 12 Mar 2009 22:37:14 -0400
+Date: Thu, 12 Mar 2009 22:37:19 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -22,54 +22,44 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Lai Jiangshan <laijs@cn.fujitsu.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 10/16] tracing: fix stack tracer header
-Content-Disposition: inline; filename=0010-tracing-fix-stack-tracer-header.patch
+Subject: [PATCH 15/16] tracing: show event name in trace for TRACE_EVENT created events
+Content-Disposition: inline; filename=0015-tracing-show-event-name-in-trace-for-TRACE_EVENT-cr.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The stack tracer use to look like this:
+Unlike TRACE_FORMAT() macros, the TRACE_EVENT() macros do not show
+the event name in the trace file. Knowing the event type in the trace
+output is very useful.
 
- # cat /debug/tracing/stack_trace
-         Depth  Size      Location    (57 entries)
-         -----  ----      --------
-  0)     5088      16   mempool_alloc_slab+0x16/0x18
-  1)     5072     144   mempool_alloc+0x4d/0xfe
-  2)     4928      16   scsi_sg_alloc+0x48/0x4a [scsi_mod]
+Instead of:
 
-Now it looks like this:
+   task swapper:0 [140] ==> ntpd:3308 [120]
 
- # cat /debug/tracing/stack_trace
+We now have:
 
-        Depth    Size      Location    (57 entries)
-        -----    ----      --------
-  0)     5088      16   mempool_alloc_slab+0x16/0x18
-  1)     5072     144   mempool_alloc+0x4d/0xfe
-  2)     4928      16   scsi_sg_alloc+0x48/0x4a [scsi_mod]
+   sched_switch: task swapper:0 [140] ==> ntpd:3308 [120]
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace_stack.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/trace/trace_events_stage_2.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
-index d0871bc..4564fd9 100644
---- a/kernel/trace/trace_stack.c
-+++ b/kernel/trace/trace_stack.c
-@@ -251,9 +251,9 @@ static int t_show(struct seq_file *m, void *v)
- 	int size;
- 
- 	if (v == SEQ_START_TOKEN) {
--		seq_printf(m, "        Depth   Size      Location"
-+		seq_printf(m, "        Depth    Size      Location"
- 			   "    (%d entries)\n"
--			   "        -----   ----      --------\n",
-+			   "        -----    ----      --------\n",
- 			   max_stack_trace.nr_entries);
- 		return 0;
- 	}
+diff --git a/kernel/trace/trace_events_stage_2.h b/kernel/trace/trace_events_stage_2.h
+index ca347af..5117c43 100644
+--- a/kernel/trace/trace_events_stage_2.h
++++ b/kernel/trace/trace_events_stage_2.h
+@@ -57,7 +57,7 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+ 									\
+ 	field = (typeof(field))entry;					\
+ 									\
+-	ret = trace_seq_printf(s, print);				\
++	ret = trace_seq_printf(s, #call ": " print);			\
+ 	if (!ret)							\
+ 		return TRACE_TYPE_PARTIAL_LINE;				\
+ 									\
 -- 
 1.6.1.3
 
