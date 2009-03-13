@@ -1,100 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759038AbZCMTiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759181AbZCMTre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759038AbZCMTiZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 15:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZCMTiS
+	id S1759181AbZCMTre (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 15:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754173AbZCMTrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 15:38:18 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:43019 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751636AbZCMTiR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 15:38:17 -0400
-Date: Fri, 13 Mar 2009 20:40:13 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Paulo Marques <pmarques@grupopie.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@osdl.org>, Steven Rostedt <srostedt@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH V3] kallsyms, tracing: output more proper symbol name
-Message-ID: <20090313194013.GA23304@uranus.ravnborg.org>
-References: <49B7863F.6020804@cn.fujitsu.com> <20090311094621.GA13543@elte.hu> <49B7B70F.5010908@grupopie.com> <49B876BB.50007@cn.fujitsu.com> <49B92B25.6020805@grupopie.com> <49BA06E2.7080807@cn.fujitsu.com> <49BA2704.9040404@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49BA2704.9040404@cn.fujitsu.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 13 Mar 2009 15:47:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44164 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752785AbZCMTrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 15:47:24 -0400
+Message-ID: <49BAB7FF.4030107@kernel.org>
+Date: Fri, 13 Mar 2009 12:46:07 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>, mingo@elte.hu
+CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/mtrr] x86: more MTRR debug printouts
+References: <49B9BA5A.40108@kernel.org>	 <tip-8ad9790588ee2e69118b2b294ddab6f3f0379ad9@git.kernel.org>	 <1236958403.2646.1.camel@ht.satnam> <1236959121.2646.3.camel@ht.satnam>
+In-Reply-To: <1236959121.2646.3.camel@ht.satnam>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 13, 2009 at 05:27:32PM +0800, Lai Jiangshan wrote:
-> Lai Jiangshan wrote:
-> > Paulo Marques wrote:
-> >> I would probably still place another test to compare the number of
-> >> underscores, after both symbols are found to be equal in the "linker
-> >> script provided" criteria.
-> >>
-> >> The way it is now, for my current kallsyms table:
-> >>
-> >>> ffffffff80200000 A _text
-> >>> ffffffff80200000 T startup_64
-> >>> ffffffff80209000 T _stext
-> >>> ffffffff80209000 t init_post
-> >> a "startup_64" address would display as "_text" and a "init_post"
-> >> address would display as "_stext".
-> >>
-> >> You can add all the stext/etext symbols as special cases to the
-> >> "may_be_linker_script_provide_symbol" function (like it was on your v1
-> >> patch), but I'm just afraid that we'll find more cases in the future
-> >> that are not automatically caught by these rules...
-> >>
-> > 
-> 
-> [resend, previous v3 has some mistakes]
-> 
-> Subject:  kallsyms, tracing: output more proper symbol name
-> 
-> Impact: bugfix, output reliable result
-> 
-> Debug tools(dump_stack(), ftrace...) are like to print out symbols.
-> But it is always print out the first aliased symbol.(Aliased symbols
-> are symbols with the same address), and the first aliased symbol is
-> sometime not proper.
-> 
-> # echo function_graph > current_tracer
-> # cat trace
-> ......
->  1)   1.923 us    |    select_nohz_load_balancer();
->  1) + 76.692 us   |  }
->  1)               |  default_idle() {
->  1)   ==========> |    __irqentry_text_start() {
->  1)   0.000 us    |      native_apic_mem_write();
->  1)               |      irq_enter() {
->  1)   0.000 us    |        idle_cpu();
->  1)               |        tick_check_idle() {
->  1)   0.000 us    |          tick_check_oneshot_broadcast();
->  1)               |          tick_nohz_stop_idle() {
-> ......
-> 
-> It's very embarrassing, it ouputs "__irqentry_text_start()",
-> actually, it should output "smp_apic_timer_interrupt()".
-> (these two symbol are the same address, but "__irqentry_text_start"
-> is deemed to the first aliased symbol by scripts/kallsyms)
-> 
-> This patch puts symbols like "__irqentry_text_start" to the second
-> aliased symbols. And a more proper symbol name becomes the first.
-> 
-> Aliased symbols mostly come from linker script. The solution is
-> guessing "is this symbol defined in linker script", the symbols
-> defined in linker script will not become the first aliased symbol.
-> 
-> And if symbols are found to be equal in this "linker script provided"
-> criteria, symbols are sorted by the number of prefix underscores.
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Jaswinder Singh Rajput wrote:
+> On Fri, 2009-03-13 at 21:03 +0530, Jaswinder Singh Rajput wrote:
+>> On Fri, 2009-03-13 at 02:34 +0000, Yinghai Lu wrote:
+>>> Commit-ID:  8ad9790588ee2e69118b2b294ddab6f3f0379ad9
+>>> Gitweb:     http://git.kernel.org/tip/8ad9790588ee2e69118b2b294ddab6f3f0379ad9
+>>> Author:     Yinghai Lu <yinghai@kernel.org>
+>>> AuthorDate: Thu, 12 Mar 2009 18:43:54 -0700
+>>> Commit:     Ingo Molnar <mingo@elte.hu>
+>>> CommitDate: Fri, 13 Mar 2009 02:52:18 +0100
+>>>
+>>> x86: more MTRR debug printouts
+>>>
+>>> Impact: improve MTRR debugging messages
+>>>
+>>> There's still inefficiencies suspected with the MTRR sanitizing
+>>> code, so make sure we get all the info we need from a dmesg.
+>>>
+>>> - Remove unneeded mtrr_show
+>>>
+>>>  (It will only printout one time by first cpu, so it is no big deal.)
+>>>
+>>> - Also print out directly from get_mtrr, because it doesn't update mtrr_state.
+>>>
+>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>> LKML-Reference: <49B9BA5A.40108@kernel.org>
+>>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>>
+>>>
+>>>  		*base = 0;
+>>> @@ -407,6 +410,10 @@ static void generic_get_mtrr(unsigned int reg, unsigned long *base,
+>>>  	*size = -mask_lo;
+>>>  	*base = base_hi << (32 - PAGE_SHIFT) | base_lo >> PAGE_SHIFT;
+>>>  	*type = base_lo & 0xff;
+>>> +
+>>> +	printk(KERN_DEBUG "  get_mtrr: cpu%d reg%02d base=%010lx size=%010lx %s\n",
+>>> +			smp_processor_id(), reg, *base, *size,
+>>> +			mtrr_attrib_to_str(*type & 0xff));
+>>>  }
+>>>  
+>> This leads to:
+>>
+>> Kernel failure message 1:
+>> BUG: using smp_processor_id() in preemptible [00000000] code: Xorg/1983
+>> caller is generic_get_mtrr+0x12a/0x146
+>> Pid: 1983, comm: Xorg Not tainted 2.6.29-rc8-tip #81 SMP PREEMPT Fri Mar
+>> 13 20:43:36 IST 2009
+>> Call Trace:
+>>  [<c0412cc3>] ? printk+0x14/0x16
+>>  [<c02357e3>] debug_smp_processor_id+0xbb/0xd4
+>>  [<c010f0c3>] generic_get_mtrr+0x12a/0x146
+>>  [<c010e351>] mtrr_add_page+0x154/0x332
+>>  [<c010e7b1>] mtrr_file_add+0x72/0x86
+>>  [<c010e9e0>] mtrr_ioctl+0x21b/0x309
+>>  [<c01bc07d>] proc_reg_unlocked_ioctl+0x67/0xb2
+>>  [<c010e7c5>] ? mtrr_ioctl+0x0/0x309
+>>  [<c01bc016>] ? proc_reg_unlocked_ioctl+0x0/0xb2
+>>  [<c0194101>] vfs_ioctl+0x27/0x6e
+>>  [<c0194680>] do_vfs_ioctl+0x46f/0x4a9
+>>  [<c017bfa5>] ? do_mmap_pgoff+0x1e3/0x22e
+>>  [<c01898b0>] ? fget_light+0x40/0x130
+>>  [<c01946ee>] sys_ioctl+0x34/0x61
+>>  [<c0102c73>] sysenter_do_call+0x12/0x25
+>>
 
-Looks good to me.
+please check
 
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+[PATCH] x86: fix get_mtrr warning about smp_processor_id with preempt
+
+Impact: fix warning
+
+Jaswinder noticed that there is warning about smp_processor_id() in get_mtrr
+
+try to fix it by use disable/enable to wrap it.
+
+Reported-by: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/cpu/mtrr/generic.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/generic.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -381,14 +381,18 @@ static void generic_get_mtrr(unsigned in
+ {
+ 	unsigned int mask_lo, mask_hi, base_lo, base_hi;
+ 	unsigned int tmp, hi;
++	int cpu;
+ 
+ 	/*
+ 	 * get_mtrr doesn't need to update mtrr_state, also it could be called
+ 	 * from any cpu, so try to print it out directly.
+ 	 */
++	preempt_disable();
++	cpu = smp_processor_id();
+ 	rdmsr(MTRRphysMask_MSR(reg), mask_lo, mask_hi);
+ 
+ 	if ((mask_lo & 0x800) == 0) {
++		preempt_enable();
+ 		/*  Invalid (i.e. free) range  */
+ 		*base = 0;
+ 		*size = 0;
+@@ -397,6 +401,7 @@ static void generic_get_mtrr(unsigned in
+ 	}
+ 
+ 	rdmsr(MTRRphysBase_MSR(reg), base_lo, base_hi);
++	preempt_enable();
+ 
+ 	/* Work out the shifted address mask. */
+ 	tmp = mask_hi << (32 - PAGE_SHIFT) | mask_lo >> PAGE_SHIFT;
+@@ -419,7 +424,7 @@ static void generic_get_mtrr(unsigned in
+ 	*type = base_lo & 0xff;
+ 
+ 	printk(KERN_DEBUG "  get_mtrr: cpu%d reg%02d base=%010lx size=%010lx %s\n",
+-			smp_processor_id(), reg, *base, *size,
++			cpu, reg, *base, *size,
+ 			mtrr_attrib_to_str(*type & 0xff));
+ }
+ 
