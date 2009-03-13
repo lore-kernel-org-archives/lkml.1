@@ -1,307 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758448AbZCMO4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757931AbZCMO6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758448AbZCMO4g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 10:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbZCMO4V
+	id S1757931AbZCMO6m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 10:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbZCMO6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 10:56:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50383 "EHLO hera.kernel.org"
+	Fri, 13 Mar 2009 10:58:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50486 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755257AbZCMO4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 10:56:20 -0400
-Subject: [git-pull -tip] x86: cpu_debug add support for various AMD CPUs
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 13 Mar 2009 20:25:41 +0530
-Message-Id: <1236956141.16936.1.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1753118AbZCMO6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 10:58:30 -0400
+Date: Fri, 13 Mar 2009 14:57:28 GMT
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090313112301.096138802@chello.nl>
+References: <20090313112301.096138802@chello.nl>
+Subject: [tip:core/locking] hrtimer: fix rq->lock inversion (again)
+Message-ID: <tip-84648567ee357abd8879257018f38f8b6b35334d@git.kernel.org>
+Git-Commit-ID: 84648567ee357abd8879257018f38f8b6b35334d
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 14:57:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 81c183a05e4b9f5468a6db5b20ad430cb8805bbe:
-  Ingo Molnar (1):
-        manual merge of cpus4096
+Commit-ID:  84648567ee357abd8879257018f38f8b6b35334d
+Gitweb:     http://git.kernel.org/tip/84648567ee357abd8879257018f38f8b6b35334d
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Fri, 13 Mar 2009 12:21:27 +0100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 13 Mar 2009 15:31:28 +0100
 
-are available in the git repository at:
+hrtimer: fix rq->lock inversion (again)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-cpu.git master
+It appears I inadvertly introduced rq->lock recursion to the
+hrtimer_start() path when I delegated running already expired
+timers to softirq context.
 
-Jaswinder Singh Rajput (1):
-      x86: cpu_debug add support for various AMD CPUs
+This patch fixes it by introducing a __hrtimer_start_range_ns()
+method that will not use raise_softirq_irqoff() but
+__raise_softirq_irqoff() which avoids the wakeup.
 
- arch/x86/include/asm/cpu_debug.h |   33 ++++++++-
- arch/x86/kernel/cpu/cpu_debug.c  |  150 +++++++++++++++++++++++++++-----------
- 2 files changed, 136 insertions(+), 47 deletions(-)
+It then also changes schedule() to check for pending softirqs and
+do the wakeup then, I'm not quite sure I like this last bit, nor
+am I convinced its really needed.
 
-Complete diff:
-diff --git a/arch/x86/include/asm/cpu_debug.h b/arch/x86/include/asm/cpu_debug.h
-index 56f1635..d79af88 100755
---- a/arch/x86/include/asm/cpu_debug.h
-+++ b/arch/x86/include/asm/cpu_debug.h
-@@ -33,6 +33,8 @@ enum cpu_debug_bit {
- 	CPU_VMX_BIT,				/* VMX			*/
- 	CPU_CALL_BIT,				/* System Call		*/
- 	CPU_BASE_BIT,				/* BASE Address		*/
-+	CPU_VER_BIT,				/* Version ID		*/
-+	CPU_CONF_BIT,				/* Configuration	*/
- 	CPU_SMM_BIT,				/* System mgmt mode	*/
- 	CPU_SVM_BIT,				/*Secure Virtual Machine*/
- 	CPU_OSVM_BIT,				/* OS-Visible Workaround*/
-@@ -69,6 +71,8 @@ enum cpu_debug_bit {
- #define	CPU_VMX			(1 << CPU_VMX_BIT)
- #define	CPU_CALL		(1 << CPU_CALL_BIT)
- #define	CPU_BASE		(1 << CPU_BASE_BIT)
-+#define	CPU_VER			(1 << CPU_VER_BIT)
-+#define	CPU_CONF		(1 << CPU_CONF_BIT)
- #define	CPU_SMM			(1 << CPU_SMM_BIT)
- #define	CPU_SVM			(1 << CPU_SVM_BIT)
- #define	CPU_OSVM		(1 << CPU_OSVM_BIT)
-@@ -123,10 +127,15 @@ enum cpu_processor_bit {
- 	CPU_INTEL_ATOM_BIT,
- 	CPU_INTEL_XEON_P4_BIT,
- 	CPU_INTEL_XEON_MP_BIT,
-+/* AMD */
-+	CPU_AMD_K6_BIT,
-+	CPU_AMD_K7_BIT,
-+	CPU_AMD_K8_BIT,
-+	CPU_AMD_0F_BIT,
-+	CPU_AMD_10_BIT,
-+	CPU_AMD_11_BIT,
- };
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: paulus@samba.org
+LKML-Reference: <20090313112301.096138802@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ include/linux/hrtimer.h   |    5 ++++
+ include/linux/interrupt.h |    1 +
+ kernel/hrtimer.c          |   55 +++++++++++++++++++++++++++-----------------
+ kernel/sched.c            |   14 +++++++++--
+ kernel/softirq.c          |    2 +-
+ 5 files changed, 52 insertions(+), 25 deletions(-)
+
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+index bd37078..0d2f7c8 100644
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -336,6 +336,11 @@ extern int hrtimer_start(struct hrtimer *timer, ktime_t tim,
+ 			 const enum hrtimer_mode mode);
+ extern int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
+ 			unsigned long range_ns, const enum hrtimer_mode mode);
++extern int
++__hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
++			 unsigned long delta_ns,
++			 const enum hrtimer_mode mode, int wakeup);
++
+ extern int hrtimer_cancel(struct hrtimer *timer);
+ extern int hrtimer_try_to_cancel(struct hrtimer *timer);
  
--#define	CPU_ALL			(~0)		/* Select all CPUs	*/
--
- #define	CPU_INTEL_PENTIUM	(1 << CPU_INTEL_PENTIUM_BIT)
- #define	CPU_INTEL_P6		(1 << CPU_INTEL_P6_BIT)
- #define	CPU_INTEL_PENTIUM_M	(1 << CPU_INTEL_PENTIUM_M_BIT)
-@@ -156,9 +165,27 @@ enum cpu_processor_bit {
- #define	CPU_PX_CX_AT		(CPU_INTEL_PX | CPU_CX_AT)
- #define	CPU_PX_CX_AT_XE		(CPU_INTEL_PX | CPU_CX_AT_XE)
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index 169db98..663b8bc 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -274,6 +274,7 @@ extern void softirq_init(void);
+ #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
+ extern void raise_softirq_irqoff(unsigned int nr);
+ extern void raise_softirq(unsigned int nr);
++extern void wakeup_softirqd(void);
  
--/* Select all Intel CPUs*/
-+/* Select all supported Intel CPUs */
- #define	CPU_INTEL_ALL		(CPU_INTEL_PENTIUM | CPU_PX_CX_AT_XE)
- 
-+#define	CPU_AMD_K6		(1 << CPU_AMD_K6_BIT)
-+#define	CPU_AMD_K7		(1 << CPU_AMD_K7_BIT)
-+#define	CPU_AMD_K8		(1 << CPU_AMD_K8_BIT)
-+#define	CPU_AMD_0F		(1 << CPU_AMD_0F_BIT)
-+#define	CPU_AMD_10		(1 << CPU_AMD_10_BIT)
-+#define	CPU_AMD_11		(1 << CPU_AMD_11_BIT)
-+
-+#define	CPU_K10_PLUS		(CPU_AMD_10 | CPU_AMD_11)
-+#define	CPU_K0F_PLUS		(CPU_AMD_0F | CPU_K10_PLUS)
-+#define	CPU_K8_PLUS		(CPU_AMD_K8 | CPU_K10_PLUS)
-+#define	CPU_K7_PLUS		(CPU_AMD_K7 | CPU_K8_PLUS)
-+
-+/* Select all supported AMD CPUs */
-+#define	CPU_AMD_ALL		(CPU_AMD_K6 | CPU_K7_PLUS)
-+
-+/* Select all supported CPUs */
-+#define	CPU_ALL			(CPU_INTEL_ALL | CPU_AMD_ALL)
-+
- #define MAX_CPU_FILES		512
- 
- struct cpu_private {
-diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
-index 21c0cf8..46e29ab 100755
---- a/arch/x86/kernel/cpu/cpu_debug.c
-+++ b/arch/x86/kernel/cpu/cpu_debug.c
-@@ -64,6 +64,8 @@ static struct cpu_debug_base cpu_base[] = {
- 	{ "vmx",	CPU_VMX,	0	},
- 	{ "call",	CPU_CALL,	0	},
- 	{ "base",	CPU_BASE,	0	},
-+	{ "ver",	CPU_VER,	0	},
-+	{ "conf",	CPU_CONF,	0	},
- 	{ "smm",	CPU_SMM,	0	},
- 	{ "svm",	CPU_SVM,	0	},
- 	{ "osvm",	CPU_OSVM,	0	},
-@@ -177,54 +179,59 @@ static struct cpu_debug_range cpu_intel_range[] = {
- 
- /* AMD Registers Range */
- static struct cpu_debug_range cpu_amd_range[] = {
--	{ 0x00000010, 0x00000010, CPU_TIME,	CPU_ALL,		},
--	{ 0x0000001B, 0x0000001B, CPU_APIC,	CPU_ALL,		},
--	{ 0x000000FE, 0x000000FE, CPU_MTRR,	CPU_ALL,		},
--
--	{ 0x00000174, 0x00000176, CPU_SYSENTER,	CPU_ALL,		},
--	{ 0x00000179, 0x0000017A, CPU_MC,	CPU_ALL,		},
--	{ 0x0000017B, 0x0000017B, CPU_MC,	CPU_ALL,		},
--	{ 0x000001D9, 0x000001D9, CPU_DEBUG,	CPU_ALL,		},
--	{ 0x000001DB, 0x000001DE, CPU_LBRANCH,	CPU_ALL,		},
--
--	{ 0x00000200, 0x0000020F, CPU_MTRR,	CPU_ALL,		},
--	{ 0x00000250, 0x00000250, CPU_MTRR,	CPU_ALL,		},
--	{ 0x00000258, 0x00000259, CPU_MTRR,	CPU_ALL,		},
--	{ 0x00000268, 0x0000026F, CPU_MTRR,	CPU_ALL,		},
--	{ 0x00000277, 0x00000277, CPU_PAT,	CPU_ALL,		},
--	{ 0x000002FF, 0x000002FF, CPU_MTRR,	CPU_ALL,		},
--
--	{ 0x00000400, 0x00000417, CPU_MC,	CPU_ALL,		},
--
--	{ 0xC0000080, 0xC0000080, CPU_FEATURES,	CPU_ALL,		},
--	{ 0xC0000081, 0xC0000084, CPU_CALL,	CPU_ALL,		},
--	{ 0xC0000100, 0xC0000102, CPU_BASE,	CPU_ALL,		},
--	{ 0xC0000103, 0xC0000103, CPU_TIME,	CPU_ALL,		},
--
--	{ 0xC0000408, 0xC000040A, CPU_MC,	CPU_ALL,		},
--
--	{ 0xc0010000, 0xc0010007, CPU_PMC,	CPU_ALL,		},
--	{ 0xc0010010, 0xc0010010, CPU_MTRR,	CPU_ALL,		},
--	{ 0xc0010016, 0xc001001A, CPU_MTRR,	CPU_ALL,		},
--	{ 0xc001001D, 0xc001001D, CPU_MTRR,	CPU_ALL,		},
--	{ 0xc0010030, 0xc0010035, CPU_BIOS,	CPU_ALL,		},
--	{ 0xc0010056, 0xc0010056, CPU_SMM,	CPU_ALL,		},
--	{ 0xc0010061, 0xc0010063, CPU_SMM,	CPU_ALL,		},
--	{ 0xc0010074, 0xc0010074, CPU_MC,	CPU_ALL,		},
--	{ 0xc0010111, 0xc0010113, CPU_SMM,	CPU_ALL,		},
--	{ 0xc0010114, 0xc0010118, CPU_SVM,	CPU_ALL,		},
--	{ 0xc0010119, 0xc001011A, CPU_SMM,	CPU_ALL,		},
--	{ 0xc0010140, 0xc0010141, CPU_OSVM,	CPU_ALL,		},
--	{ 0xc0010156, 0xc0010156, CPU_SMM,	CPU_ALL,		},
-+	{ 0x00000000, 0x00000001, CPU_MC,	CPU_K10_PLUS,		},
-+	{ 0x00000010, 0x00000010, CPU_TIME,	CPU_K8_PLUS,		},
-+	{ 0x0000001B, 0x0000001B, CPU_APIC,	CPU_K8_PLUS,		},
-+	{ 0x0000002A, 0x0000002A, CPU_POWERON,	CPU_K7_PLUS		},
-+	{ 0x0000008B, 0x0000008B, CPU_VER,	CPU_K8_PLUS		},
-+	{ 0x000000FE, 0x000000FE, CPU_MTRR,	CPU_K8_PLUS,		},
-+
-+	{ 0x00000174, 0x00000176, CPU_SYSENTER,	CPU_K8_PLUS,		},
-+	{ 0x00000179, 0x0000017B, CPU_MC,	CPU_K8_PLUS,		},
-+	{ 0x000001D9, 0x000001D9, CPU_DEBUG,	CPU_K8_PLUS,		},
-+	{ 0x000001DB, 0x000001DE, CPU_LBRANCH,	CPU_K8_PLUS,		},
-+
-+	{ 0x00000200, 0x0000020F, CPU_MTRR,	CPU_K8_PLUS,		},
-+	{ 0x00000250, 0x00000250, CPU_MTRR,	CPU_K8_PLUS,		},
-+	{ 0x00000258, 0x00000259, CPU_MTRR,	CPU_K8_PLUS,		},
-+	{ 0x00000268, 0x0000026F, CPU_MTRR,	CPU_K8_PLUS,		},
-+	{ 0x00000277, 0x00000277, CPU_PAT,	CPU_K8_PLUS,		},
-+	{ 0x000002FF, 0x000002FF, CPU_MTRR,	CPU_K8_PLUS,		},
-+
-+	{ 0x00000400, 0x00000413, CPU_MC,	CPU_K8_PLUS,		},
-+
-+	{ 0xC0000080, 0xC0000080, CPU_FEATURES,	CPU_AMD_ALL,		},
-+	{ 0xC0000081, 0xC0000084, CPU_CALL,	CPU_K8_PLUS,		},
-+	{ 0xC0000100, 0xC0000102, CPU_BASE,	CPU_K8_PLUS,		},
-+	{ 0xC0000103, 0xC0000103, CPU_TIME,	CPU_K10_PLUS,		},
-+
-+	{ 0xC0010000, 0xC0010007, CPU_PMC,	CPU_K8_PLUS,		},
-+	{ 0xC0010010, 0xC0010010, CPU_CONF,	CPU_K7_PLUS,		},
-+	{ 0xC0010015, 0xC0010015, CPU_CONF,	CPU_K7_PLUS,		},
-+	{ 0xC0010016, 0xC001001A, CPU_MTRR,	CPU_K8_PLUS,		},
-+	{ 0xC001001D, 0xC001001D, CPU_MTRR,	CPU_K8_PLUS,		},
-+	{ 0xC001001F, 0xC001001F, CPU_CONF,	CPU_K8_PLUS,		},
-+	{ 0xC0010030, 0xC0010035, CPU_BIOS,	CPU_K8_PLUS,		},
-+	{ 0xC0010044, 0xC0010048, CPU_MC,	CPU_K8_PLUS,		},
-+	{ 0xC0010050, 0xC0010056, CPU_SMM,	CPU_K0F_PLUS,		},
-+	{ 0xC0010058, 0xC0010058, CPU_CONF,	CPU_K10_PLUS,		},
-+	{ 0xC0010060, 0xC0010060, CPU_CACHE,	CPU_AMD_11,		},
-+	{ 0xC0010061, 0xC0010068, CPU_SMM,	CPU_K10_PLUS,		},
-+	{ 0xC0010069, 0xC001006B, CPU_SMM,	CPU_AMD_11,		},
-+	{ 0xC0010070, 0xC0010071, CPU_SMM,	CPU_K10_PLUS,		},
-+	{ 0xC0010111, 0xC0010113, CPU_SMM,	CPU_K8_PLUS,		},
-+	{ 0xC0010114, 0xC0010118, CPU_SVM,	CPU_K10_PLUS,		},
-+	{ 0xC0010140, 0xC0010141, CPU_OSVM,	CPU_K10_PLUS,		},
-+	{ 0xC0011022, 0xC0011023, CPU_CONF,	CPU_K10_PLUS,		},
- };
- 
- 
--static int get_cpu_modelflag(unsigned cpu)
-+/* Intel */
-+static int get_intel_modelflag(unsigned model)
+ /* This is the worklist that queues up per-cpu softirq work.
+  *
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index f394d2a..cb8a15c 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -651,14 +651,20 @@ static inline void hrtimer_init_timer_hres(struct hrtimer *timer)
+  * and expiry check is done in the hrtimer_interrupt or in the softirq.
+  */
+ static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
+-					    struct hrtimer_clock_base *base)
++					    struct hrtimer_clock_base *base,
++					    int wakeup)
  {
- 	int flag;
- 
--	switch (per_cpu(cpu_model, cpu)) {
--	/* Intel */
-+	switch (model) {
- 	case 0x0501:
- 	case 0x0502:
- 	case 0x0504:
-@@ -271,6 +278,59 @@ static int get_cpu_modelflag(unsigned cpu)
- 	return flag;
+ 	if (base->cpu_base->hres_active && hrtimer_reprogram(timer, base)) {
+-		spin_unlock(&base->cpu_base->lock);
+-		raise_softirq_irqoff(HRTIMER_SOFTIRQ);
+-		spin_lock(&base->cpu_base->lock);
++		if (wakeup) {
++			spin_unlock(&base->cpu_base->lock);
++			raise_softirq_irqoff(HRTIMER_SOFTIRQ);
++			spin_lock(&base->cpu_base->lock);
++		} else
++			__raise_softirq_irqoff(HRTIMER_SOFTIRQ);
++
+ 		return 1;
+ 	}
++
+ 	return 0;
  }
  
-+/* AMD */
-+static int get_amd_modelflag(unsigned model)
-+{
-+	int flag;
-+
-+	switch (model >> 8) {
-+	case 0x6:
-+		flag = CPU_AMD_K6;
-+		break;
-+	case 0x7:
-+		flag = CPU_AMD_K7;
-+		break;
-+	case 0x8:
-+		flag = CPU_AMD_K8;
-+		break;
-+	case 0xf:
-+		flag = CPU_AMD_0F;
-+		break;
-+	case 0x10:
-+		flag = CPU_AMD_10;
-+		break;
-+	case 0x11:
-+		flag = CPU_AMD_11;
-+		break;
-+	default:
-+		flag = CPU_NONE;
-+		break;
-+	}
-+
-+	return flag;
-+}
-+
-+static int get_cpu_modelflag(unsigned cpu)
-+{
-+	int flag;
-+
-+	flag = per_cpu(cpu_model, cpu);
-+
-+	switch (flag >> 16) {
-+	case X86_VENDOR_INTEL:
-+		flag = get_intel_modelflag(flag);
-+		break;
-+	case X86_VENDOR_AMD:
-+		flag = get_amd_modelflag(flag & 0xffff);
-+		break;
-+	default:
-+		flag = CPU_NONE;
-+		break;
-+	}
-+
-+	return flag;
-+}
-+
- static int get_cpu_range_count(unsigned cpu)
+@@ -703,7 +709,8 @@ static inline int hrtimer_is_hres_enabled(void) { return 0; }
+ static inline int hrtimer_switch_to_hres(void) { return 0; }
+ static inline void hrtimer_force_reprogram(struct hrtimer_cpu_base *base) { }
+ static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
+-					    struct hrtimer_clock_base *base)
++					    struct hrtimer_clock_base *base,
++					    int wakeup)
  {
- 	int index;
-@@ -311,7 +371,8 @@ static int is_typeflag_valid(unsigned cpu, unsigned flag)
- 				return 1;
+ 	return 0;
+ }
+@@ -886,20 +893,9 @@ remove_hrtimer(struct hrtimer *timer, struct hrtimer_clock_base *base)
+ 	return 0;
+ }
+ 
+-/**
+- * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
+- * @timer:	the timer to be added
+- * @tim:	expiry time
+- * @delta_ns:	"slack" range for the timer
+- * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
+- *
+- * Returns:
+- *  0 on success
+- *  1 when the timer was active
+- */
+-int
+-hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_ns,
+-			const enum hrtimer_mode mode)
++int __hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
++		unsigned long delta_ns, const enum hrtimer_mode mode,
++		int wakeup)
+ {
+ 	struct hrtimer_clock_base *base, *new_base;
+ 	unsigned long flags;
+@@ -940,12 +936,29 @@ hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_n
+ 	 * XXX send_remote_softirq() ?
+ 	 */
+ 	if (leftmost && new_base->cpu_base == &__get_cpu_var(hrtimer_bases))
+-		hrtimer_enqueue_reprogram(timer, new_base);
++		hrtimer_enqueue_reprogram(timer, new_base, wakeup);
+ 
+ 	unlock_hrtimer_base(timer, &flags);
+ 
+ 	return ret;
+ }
++
++/**
++ * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
++ * @timer:	the timer to be added
++ * @tim:	expiry time
++ * @delta_ns:	"slack" range for the timer
++ * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
++ *
++ * Returns:
++ *  0 on success
++ *  1 when the timer was active
++ */
++int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
++		unsigned long delta_ns, const enum hrtimer_mode mode)
++{
++	return __hrtimer_start_range_ns(timer, tim, delta_ns, mode, 1);
++}
+ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
+ 
+ /**
+@@ -961,7 +974,7 @@ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
+ int
+ hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
+ {
+-	return hrtimer_start_range_ns(timer, tim, 0, mode);
++	return __hrtimer_start_range_ns(timer, tim, 0, mode, 1);
+ }
+ EXPORT_SYMBOL_GPL(hrtimer_start);
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 01275cb..1f43d81 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -231,13 +231,20 @@ static void start_rt_bandwidth(struct rt_bandwidth *rt_b)
+ 
+ 	spin_lock(&rt_b->rt_runtime_lock);
+ 	for (;;) {
++		unsigned long delta;
++		ktime_t soft, hard;
++
+ 		if (hrtimer_active(&rt_b->rt_period_timer))
  			break;
- 		case X86_VENDOR_AMD:
--			if (cpu_amd_range[i].flag & flag)
-+			if ((cpu_amd_range[i].model & modelflag) &&
-+			    (cpu_amd_range[i].flag & flag))
- 				return 1;
- 			break;
- 		}
-@@ -337,7 +398,8 @@ static unsigned get_cpu_range(unsigned cpu, unsigned *min, unsigned *max,
- 		}
- 		break;
- 	case X86_VENDOR_AMD:
--		if (cpu_amd_range[index].flag & flag) {
-+		if ((cpu_amd_range[index].model & modelflag) &&
-+		    (cpu_amd_range[index].flag & flag)) {
- 			*min = cpu_amd_range[index].min;
- 			*max = cpu_amd_range[index].max;
- 		}
-
-
+ 
+ 		now = hrtimer_cb_get_time(&rt_b->rt_period_timer);
+ 		hrtimer_forward(&rt_b->rt_period_timer, now, rt_b->rt_period);
+-		hrtimer_start_expires(&rt_b->rt_period_timer,
+-				HRTIMER_MODE_ABS);
++
++		soft = hrtimer_get_softexpires(&rt_b->rt_period_timer);
++		hard = hrtimer_get_expires(&rt_b->rt_period_timer);
++		delta = ktime_to_ns(ktime_sub(hard, soft));
++		__hrtimer_start_range_ns(&rt_b->rt_period_timer, soft, delta,
++				HRTIMER_MODE_ABS, 0);
+ 	}
+ 	spin_unlock(&rt_b->rt_runtime_lock);
+ }
+@@ -1129,7 +1136,8 @@ static __init void init_hrtick(void)
+  */
+ static void hrtick_start(struct rq *rq, u64 delay)
+ {
+-	hrtimer_start(&rq->hrtick_timer, ns_to_ktime(delay), HRTIMER_MODE_REL);
++	__hrtimer_start_range_ns(&rq->hrtick_timer, ns_to_ktime(delay), 0,
++			HRTIMER_MODE_REL, 0);
+ }
+ 
+ static inline void init_hrtick(void)
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index f813122..34c309d 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -58,7 +58,7 @@ static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
+  * to the pending events, so lets the scheduler to balance
+  * the softirq load for us.
+  */
+-static inline void wakeup_softirqd(void)
++void wakeup_softirqd(void)
+ {
+ 	/* Interrupts are disabled: no need to stop preemption */
+ 	struct task_struct *tsk = __get_cpu_var(ksoftirqd);
