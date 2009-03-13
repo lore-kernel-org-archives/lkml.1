@@ -1,217 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759696AbZCMQe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759233AbZCMQfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759696AbZCMQe5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759048AbZCMQay
+	id S1759233AbZCMQfp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759436AbZCMQcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:30:54 -0400
-Received: from gw.goop.org ([64.81.55.164]:56781 "EHLO abulafia.goop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759059AbZCMQaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 12:30:52 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 11/15] xen: allow enable use of VGA console on dom0
-Date: Fri, 13 Mar 2009 09:29:52 -0700
-Message-Id: <1236961796-13407-12-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1236961796-13407-1-git-send-email-jeremy@goop.org>
-References: <1236961796-13407-1-git-send-email-jeremy@goop.org>
+	Fri, 13 Mar 2009 12:32:14 -0400
+Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:63801 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759419AbZCMQcM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 12:32:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgQGAPAiuklMQW1W/2dsb2JhbACBTpRnulCDfgY
+Date: Fri, 13 Mar 2009 12:32:07 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
+Subject: Re: [RFC][PATCH 2/2] tracing/x86: basic implementation of syscall
+	tracing for x86-64
+Message-ID: <20090313163207.GA3354@Krystal>
+References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-3-git-send-email-fweisbec@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1236401580-5758-3-git-send-email-fweisbec@gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:29:35 up 13 days, 12:55,  2 users,  load average: 0.12, 0.34,
+	0.33
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
- arch/x86/xen/Makefile       |    3 +-
- arch/x86/xen/enlighten.c    |   10 ++++++
- arch/x86/xen/vga.c          |   67 +++++++++++++++++++++++++++++++++++++++++++
- arch/x86/xen/xen-ops.h      |   11 +++++++
- include/xen/interface/xen.h |   39 +++++++++++++++++++++++++
- 5 files changed, 129 insertions(+), 1 deletions(-)
- create mode 100644 arch/x86/xen/vga.c
+* Frederic Weisbecker (fweisbec@gmail.com) wrote:
+> Provide the ptrace hooks and arch specific syscall numbers to ftrace arch indepedant
+> syscall numbers.
+> For now it only supports 4 syscalls to provide an example.
+> 
 
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index 3b767d0..c4cda96 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -10,4 +10,5 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
- 			grant-table.o suspend.o
- 
- obj-$(CONFIG_SMP)		+= smp.o spinlock.o
--obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-\ No newline at end of file
-+obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-+obj-$(CONFIG_XEN_DOM0)		+= vga.o
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index f7c8afb..40a930b 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1036,6 +1036,16 @@ asmlinkage void __init xen_start_kernel(void)
- 		add_preferred_console("xenboot", 0, NULL);
- 		add_preferred_console("tty", 0, NULL);
- 		add_preferred_console("hvc", 0, NULL);
-+
-+		boot_params.screen_info.orig_video_isVGA = 0;
-+	} else {
-+		const struct dom0_vga_console_info *info =
-+			(void *)((char *)xen_start_info +
-+			         xen_start_info->console.dom0.info_off);
-+
-+		xen_init_vga(info, xen_start_info->console.dom0.info_size);
-+		xen_start_info->console.domU.mfn = 0;
-+		xen_start_info->console.domU.evtchn = 0;
- 	}
- 
- 	pat_disable("PAT disabled on Xen");
-diff --git a/arch/x86/xen/vga.c b/arch/x86/xen/vga.c
-new file mode 100644
-index 0000000..f2fca2c
---- /dev/null
-+++ b/arch/x86/xen/vga.c
-@@ -0,0 +1,67 @@
-+#include <linux/screen_info.h>
-+#include <linux/init.h>
-+
-+#include <asm/bootparam.h>
-+#include <asm/setup.h>
-+
-+#include <xen/interface/xen.h>
-+
-+#include "xen-ops.h"
-+
-+void __init xen_init_vga(const struct dom0_vga_console_info *info, size_t size)
-+{
-+	struct screen_info *screen_info = &boot_params.screen_info;
-+
-+	/* This is drawn from a dump from vgacon:startup in
-+	 * standard Linux. */
-+	screen_info->orig_video_mode = 3;
-+	screen_info->orig_video_isVGA = 1;
-+	screen_info->orig_video_lines = 25;
-+	screen_info->orig_video_cols = 80;
-+	screen_info->orig_video_ega_bx = 3;
-+	screen_info->orig_video_points = 16;
-+	screen_info->orig_y = screen_info->orig_video_lines - 1;
-+
-+	switch (info->video_type) {
-+	case XEN_VGATYPE_TEXT_MODE_3:
-+		if (size < offsetof(struct dom0_vga_console_info, u.text_mode_3)
-+		           + sizeof(info->u.text_mode_3))
-+			break;
-+		screen_info->orig_video_lines = info->u.text_mode_3.rows;
-+		screen_info->orig_video_cols = info->u.text_mode_3.columns;
-+		screen_info->orig_x = info->u.text_mode_3.cursor_x;
-+		screen_info->orig_y = info->u.text_mode_3.cursor_y;
-+		screen_info->orig_video_points =
-+			info->u.text_mode_3.font_height;
-+		break;
-+
-+	case XEN_VGATYPE_VESA_LFB:
-+		if (size < offsetof(struct dom0_vga_console_info,
-+		                    u.vesa_lfb.gbl_caps))
-+			break;
-+		screen_info->orig_video_isVGA = VIDEO_TYPE_VLFB;
-+		screen_info->lfb_width = info->u.vesa_lfb.width;
-+		screen_info->lfb_height = info->u.vesa_lfb.height;
-+		screen_info->lfb_depth = info->u.vesa_lfb.bits_per_pixel;
-+		screen_info->lfb_base = info->u.vesa_lfb.lfb_base;
-+		screen_info->lfb_size = info->u.vesa_lfb.lfb_size;
-+		screen_info->lfb_linelength = info->u.vesa_lfb.bytes_per_line;
-+		screen_info->red_size = info->u.vesa_lfb.red_size;
-+		screen_info->red_pos = info->u.vesa_lfb.red_pos;
-+		screen_info->green_size = info->u.vesa_lfb.green_size;
-+		screen_info->green_pos = info->u.vesa_lfb.green_pos;
-+		screen_info->blue_size = info->u.vesa_lfb.blue_size;
-+		screen_info->blue_pos = info->u.vesa_lfb.blue_pos;
-+		screen_info->rsvd_size = info->u.vesa_lfb.rsvd_size;
-+		screen_info->rsvd_pos = info->u.vesa_lfb.rsvd_pos;
-+		if (size >= offsetof(struct dom0_vga_console_info,
-+		                     u.vesa_lfb.gbl_caps)
-+		            + sizeof(info->u.vesa_lfb.gbl_caps))
-+			screen_info->capabilities = info->u.vesa_lfb.gbl_caps;
-+		if (size >= offsetof(struct dom0_vga_console_info,
-+		                     u.vesa_lfb.mode_attrs)
-+		            + sizeof(info->u.vesa_lfb.mode_attrs))
-+			screen_info->vesa_attributes = info->u.vesa_lfb.mode_attrs;
-+		break;
-+	}
-+}
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 8098ed1..4dad0ad 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -74,6 +74,17 @@ static inline void xen_smp_init(void) {}
- #endif
- 
- 
-+struct dom0_vga_console_info;
-+
-+#ifdef CONFIG_XEN_DOM0
-+void xen_init_vga(const struct dom0_vga_console_info *, size_t size);
-+#else
-+static inline void xen_init_vga(const struct dom0_vga_console_info *info,
-+				size_t size)
-+{
-+}
-+#endif
-+
- /* Declare an asm function, along with symbols needed to make it
-    inlineable */
- #define DECL_ASM(ret, name, ...)		\
-diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
-index 18b5599..6c0af21 100644
---- a/include/xen/interface/xen.h
-+++ b/include/xen/interface/xen.h
-@@ -449,6 +449,45 @@ struct start_info {
- 	int8_t cmd_line[MAX_GUEST_CMDLINE];
- };
- 
-+struct dom0_vga_console_info {
-+    uint8_t video_type; /* DOM0_VGA_CONSOLE_??? */
-+#define XEN_VGATYPE_TEXT_MODE_3 0x03
-+#define XEN_VGATYPE_VESA_LFB    0x23
-+
-+    union {
-+        struct {
-+            /* Font height, in pixels. */
-+            uint16_t font_height;
-+            /* Cursor location (column, row). */
-+            uint16_t cursor_x, cursor_y;
-+            /* Number of rows and columns (dimensions in characters). */
-+            uint16_t rows, columns;
-+        } text_mode_3;
-+
-+        struct {
-+            /* Width and height, in pixels. */
-+            uint16_t width, height;
-+            /* Bytes per scan line. */
-+            uint16_t bytes_per_line;
-+            /* Bits per pixel. */
-+            uint16_t bits_per_pixel;
-+            /* LFB physical address, and size (in units of 64kB). */
-+            uint32_t lfb_base;
-+            uint32_t lfb_size;
-+            /* RGB mask offsets and sizes, as defined by VBE 1.2+ */
-+            uint8_t  red_pos, red_size;
-+            uint8_t  green_pos, green_size;
-+            uint8_t  blue_pos, blue_size;
-+            uint8_t  rsvd_pos, rsvd_size;
-+
-+            /* VESA capabilities (offset 0xa, VESA command 0x4f00). */
-+            uint32_t gbl_caps;
-+            /* Mode attributes (offset 0x0, VESA command 0x4f01). */
-+            uint16_t mode_attrs;
-+        } vesa_lfb;
-+    } u;
-+};
-+
- /* These flags are passed in the 'flags' field of start_info_t. */
- #define SIF_PRIVILEGED    (1<<0)  /* Is the domain privileged? */
- #define SIF_INITDOMAIN    (1<<1)  /* Is this the initial control domain? */
+Hi Frederic,
+
+I already have the equivalent TIF_KERNEL_TRACE flag in my LTTng tree
+added to every Linux architecture. You might want to re-use this work
+rather than re-doing this. I don't mind changing the flag name.
+
+Please see the LTTng tree and patchset at http://www.lttng.org. I'll
+answer more precisely if you need more information.
+
+Mathieu
+
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+>  arch/x86/Kconfig                   |    1 +
+>  arch/x86/include/asm/ftrace.h      |    7 +++++++
+>  arch/x86/include/asm/thread_info.h |    9 ++++++---
+>  arch/x86/kernel/ftrace.c           |   15 +++++++++++++++
+>  arch/x86/kernel/ptrace.c           |    7 +++++++
+>  5 files changed, 36 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 2a0ddfe..b5aec1b 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -35,6 +35,7 @@ config X86
+>  	select HAVE_FUNCTION_GRAPH_TRACER
+>  	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
+>  	select HAVE_FTRACE_NMI_ENTER if DYNAMIC_FTRACE
+> +	select HAVE_FTRACE_SYSCALLS if X86_64
+>  	select HAVE_KVM
+>  	select HAVE_ARCH_KGDB
+>  	select HAVE_ARCH_TRACEHOOK
+> diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
+> index db24c22..b2e6855 100644
+> --- a/arch/x86/include/asm/ftrace.h
+> +++ b/arch/x86/include/asm/ftrace.h
+> @@ -28,6 +28,13 @@
+>  
+>  #endif
+>  
+> +/* FIXME: I don't want to stay hardcoded */
+> +#ifdef CONFIG_X86_64
+> +#define FTRACE_SYSCALL_MAX	296
+> +#else
+> +#define FTRACE_SYSCALL_MAX	333
+> +#endif
+> +
+>  #ifdef CONFIG_FUNCTION_TRACER
+>  #define MCOUNT_ADDR		((long)(mcount))
+>  #define MCOUNT_INSN_SIZE	5 /* sizeof mcount call */
+> diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
+> index f6ba6f8..83d2b73 100644
+> --- a/arch/x86/include/asm/thread_info.h
+> +++ b/arch/x86/include/asm/thread_info.h
+> @@ -95,6 +95,7 @@ struct thread_info {
+>  #define TIF_FORCED_TF		24	/* true if TF in eflags artificially */
+>  #define TIF_DEBUGCTLMSR		25	/* uses thread_struct.debugctlmsr */
+>  #define TIF_DS_AREA_MSR		26      /* uses thread_struct.ds_area_msr */
+> +#define TIF_SYSCALL_FTRACE	27	/* for ftrace syscall instrumentation */
+>  
+>  #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+>  #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
+> @@ -117,15 +118,17 @@ struct thread_info {
+>  #define _TIF_FORCED_TF		(1 << TIF_FORCED_TF)
+>  #define _TIF_DEBUGCTLMSR	(1 << TIF_DEBUGCTLMSR)
+>  #define _TIF_DS_AREA_MSR	(1 << TIF_DS_AREA_MSR)
+> +#define _TIF_SYSCALL_FTRACE	(1 << TIF_SYSCALL_FTRACE)
+>  
+>  /* work to do in syscall_trace_enter() */
+>  #define _TIF_WORK_SYSCALL_ENTRY	\
+> -	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_EMU | \
+> +	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_EMU | _TIF_SYSCALL_FTRACE |	\
+>  	 _TIF_SYSCALL_AUDIT | _TIF_SECCOMP | _TIF_SINGLESTEP)
+>  
+>  /* work to do in syscall_trace_leave() */
+>  #define _TIF_WORK_SYSCALL_EXIT	\
+> -	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | _TIF_SINGLESTEP)
+> +	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | _TIF_SINGLESTEP |	\
+> +	 _TIF_SYSCALL_FTRACE)
+>  
+>  /* work to do on interrupt/exception return */
+>  #define _TIF_WORK_MASK							\
+> @@ -134,7 +137,7 @@ struct thread_info {
+>  	   _TIF_SINGLESTEP|_TIF_SECCOMP|_TIF_SYSCALL_EMU))
+>  
+>  /* work to do on any return to user space */
+> -#define _TIF_ALLWORK_MASK (0x0000FFFF & ~_TIF_SECCOMP)
+> +#define _TIF_ALLWORK_MASK ((0x0000FFFF & ~_TIF_SECCOMP) | _TIF_SYSCALL_FTRACE)
+>  
+>  /* Only used for 64 bit */
+>  #define _TIF_DO_NOTIFY_MASK						\
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index a85da17..5bba98b 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -453,3 +453,18 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+>  	}
+>  }
+>  #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+> +
+> +#ifdef CONFIG_FTRACE_SYSCALLS
+> +#ifdef CONFIG_X86_64
+> +/*
+> + * Array that make the arch specific syscall numbers
+> + * matching the ftrace syscall numbers.
+> + */
+> +short arch_syscall_trace_nr[FTRACE_SYSCALL_MAX] = {
+> +	[__NR_open]	= SYSCALL_TRACE_OPEN,
+> +	[__NR_close]	= SYSCALL_TRACE_CLOSE,
+> +	[__NR_read]	= SYSCALL_TRACE_READ,
+> +	[__NR_write]	= SYSCALL_TRACE_WRITE
+> +};
+> +#endif
+> +#endif
+> diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+> index 3d9672e..99749d6 100644
+> --- a/arch/x86/kernel/ptrace.c
+> +++ b/arch/x86/kernel/ptrace.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/audit.h>
+>  #include <linux/seccomp.h>
+>  #include <linux/signal.h>
+> +#include <linux/ftrace.h>
+>  
+>  #include <asm/uaccess.h>
+>  #include <asm/pgtable.h>
+> @@ -1416,6 +1417,9 @@ asmregparm long syscall_trace_enter(struct pt_regs *regs)
+>  	    tracehook_report_syscall_entry(regs))
+>  		ret = -1L;
+>  
+> +	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
+> +		ftrace_syscall_enter(regs);
+> +
+>  	if (unlikely(current->audit_context)) {
+>  		if (IS_IA32)
+>  			audit_syscall_entry(AUDIT_ARCH_I386,
+> @@ -1439,6 +1443,9 @@ asmregparm void syscall_trace_leave(struct pt_regs *regs)
+>  	if (unlikely(current->audit_context))
+>  		audit_syscall_exit(AUDITSC_RESULT(regs->ax), regs->ax);
+>  
+> +	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
+> +		ftrace_syscall_exit(regs);
+> +
+>  	if (test_thread_flag(TIF_SYSCALL_TRACE))
+>  		tracehook_report_syscall_exit(regs, 0);
+>  
+> -- 
+> 1.6.1
+> 
+
 -- 
-1.6.0.6
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
