@@ -1,85 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760083AbZCMWll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbZCMWl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760083AbZCMWll (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 18:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZCMWle
+	id S1760133AbZCMWl4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 18:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZCMWlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 18:41:34 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:34073 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752799AbZCMWld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 18:41:33 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 13 Mar 2009 18:41:44 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55014
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1760060AbZCMWln (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 18:41:43 -0400
+Date: Fri, 13 Mar 2009 15:41:29 -0700 (PDT)
+Message-Id: <20090313.154129.08540488.davem@davemloft.net>
+To: khali@linux-fr.org
+Cc: marcin.slusarz@gmail.com, netdev@vger.kernel.org, afleming@freescale.com,
+       tpiepho@freescale.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] phylib: convert state_queue work to delayed_work
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090307104620.7f2aed57@hyperion.delvare>
+References: <20090306205139.GA30500@joi>
+	<20090307104620.7f2aed57@hyperion.delvare>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18874.57621.950179.972863@cargo.ozlabs.ibm.com>
-Date: Sat, 14 Mar 2009 09:41:25 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] perfcounters: Make s/w counters in a group only count
- when group is on
-In-Reply-To: <1236948283.22447.36.camel@twins>
-References: <18873.48668.562126.113618@cargo.ozlabs.ibm.com>
-	<1236939816.22914.3714.camel@twins>
-	<18874.20538.785519.824803@cargo.ozlabs.ibm.com>
-	<1236948283.22447.36.camel@twins>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
+From: Jean Delvare <khali@linux-fr.org>
+Date: Sat, 7 Mar 2009 10:46:20 +0100
 
-> The issue I have with your approach is two-fold:
->  - it breaks the symmetry between software and hardware counters by
->    treating them differently.
-
-So... I was about to restore that symmetry by implementing lazy PMU
-context switching.  In the case where we have inherited counters, and
-we are switching from one task to another that both have the same set
-of inherited counters, we don't really need to do anything, because it
-doesn't matter which set of counters the events get added into,
-because they all get added together at the end anyway.
-
-That is another situation where you can have counters that are active
-when their associated task is not scheduled in, this time for hardware
-counters as well as software counters.  So this is not just some weird
-special case for software counters, but is actually going to be more
-generally useful.
-
->  - it doesn't make much conceptual sense to me
-
-It seems quite reasonable to me that things could happen that are
-attributable to a task, but which happen when the task isn't running.
-Not just context switches and migrations - there's a whole class of
-things that the system does on behalf of a process that can happen
-asynchronously.  I wouldn't want to say that those kind of things can
-never be counted with software counters.
-
-> For the context switch counter, we could count the event right before we
-> schedule out, which would make it behave like expected.
+> On Fri, 6 Mar 2009 21:51:42 +0100, Marcin Slusarz wrote:
+> > It closes a race in phy_stop_machine when reprogramming of phy_timer
+> > (from phy_state_machine) happens between del_timer_sync and cancel_work_sync.
+> > 
+> > Without this change it could lead to crash if phy_device would be freed after
+> > phy_stop_machine (timer would fire and schedule freed work).
+> > 
+> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > Cc: Andy Fleming <afleming@freescale.com>
+> > Cc: Trent Piepho <tpiepho@freescale.com>
+> > ---
+> > 
+> > This patch was only compile tested.
 > 
-> The same for task migration, most migrations happen when they are in
-> fact running, so there too we can account the migration either before we
-> rip it off the src cpu, or after we place it on the dst cpu.
+> Patch looks good.
 > 
-> There are a few places where this isn't quite so, like affine wakeups,
-> but there we can account after the placement.
+> Acked-by: Jean Delvare <khali@linux-fr.org>
 
-Right - but how do you know whether to do that accounting or not?  At
-the moment there simply isn't enough state information in the counter
-to tell you whether or not you should be adding in those things that
-happened while the task wasn't running.  At the moment you can't tell
-whether a counter is inactive merely because its task is scheduled
-out, or because it's in a group that won't currently fit on the PMU.
-
-By the way, I notice that x86 will do the wrong thing if you have a
-group where the leader is an interrupting hardware counter with
-record_type == PERF_RECORD_GROUP and there is a software counter in
-the group, because perf_handle_group calls x86_perf_counter_update on
-each group member unconditionally, and x86_perf_counter_update assumes
-its argument is a hardware counter.
-
-Paul.
+Applied, thanks.
