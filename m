@@ -1,90 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759298AbZCMR65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758451AbZCMR7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759298AbZCMR65 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 13:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbZCMR6q
+	id S1758451AbZCMR7V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 13:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759012AbZCMR6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 13:58:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41661 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751220AbZCMR6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 13:58:45 -0400
-Date: Fri, 13 Mar 2009 18:58:35 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: ivecera@redhat.com, jgarzik@pobox.com, davem@davemloft.net,
-       netdev@vger.kernel.org
-Subject: [PATCH] 8139too: allow to set mac address on running device
-Message-ID: <20090313175834.GE3436@psychotron.englab.brq.redhat.com>
+	Fri, 13 Mar 2009 13:58:55 -0400
+Received: from mail.fieldses.org ([141.211.133.115]:50488 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756653AbZCMR6y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 13:58:54 -0400
+Date: Fri, 13 Mar 2009 13:58:48 -0400
+To: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Igor Zhbanov <izh1979@gmail.com>,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, neilb@suse.de,
+       Trond.Myklebust@netapp.com, David Howells <dhowells@redhat.com>,
+       James Morris <jmorris@namei.org>
+Subject: Re: VFS, NFS security bug? Should CAP_MKNOD and
+	CAP_LINUX_IMMUTABLE be added to CAP_FS_MASK?
+Message-ID: <20090313175848.GB27891@fieldses.org>
+References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com> <20090311232356.GP13540@fieldses.org> <20090312161047.GA15209@us.ibm.com> <517f3f820903121321sf6d2014q8165b925d5d44db7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <517f3f820903121321sf6d2014q8165b925d5d44db7@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Similar patch as for 8139cp posted yesterday, so the same comment:
+On Fri, Mar 13, 2009 at 09:21:23AM +1300, Michael Kerrisk wrote:
+> On Fri, Mar 13, 2009 at 5:10 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
+> > Quoting J. Bruce Fields (bfields@fieldses.org):
+> >> On Wed, Mar 11, 2009 at 03:53:34PM +0300, Igor Zhbanov wrote:
+> >> > Hello!
+> >> >
+> >> > It seems that CAP_MKNOD and CAP_LINUX_IMMUTABLE were forgotten to be
+> >> > added to CAP_FS_MASK_B0 in linux-2.6.x and to CAP_FS_MASK in
+> >> > linux-2.4.x. Both capabilities affects file system and can be
+> >> > considered file system capabilities.
+> >>
+> >> Sounds right to me--I'd expect rootsquash to guarantee that new device
+> >> nodes can't be created from the network.  Cc'ing random people from the
+> >> git log for include/linux/capability.h in hopes they can help.
+> >
+> > Yeah it seems reasonable.  If it is, then does that mean that we
+> > also need CAP_SYS_ADMIN (to write selinux labels) and CAP_SETFCAP
+> > (to set file capabilities) as well?
+> 
+> If a change is made to CAP_FS_MASK, please do remember to CC
+> mtk.manpages@gmail.com, and linux-api@.
 
-So far there was not a chance to set a mac address on running 8139too device.
-This is for example needed when you want to use this NIC as a bonding slave in
-bonding device in mode balance-alb. This simple patch allows it.
+OK, that's because the exact set of capabilities that is dropped on
+setfsuid is documented in capabilities(7)?  (Anywhere else?)
 
-Jirka
+--b.
 
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-
- drivers/net/8139too.c |   26 +++++++++++++++++++++++++-
- 1 files changed, 25 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
-index a5b2420..0fbd4bc 100644
---- a/drivers/net/8139too.c
-+++ b/drivers/net/8139too.c
-@@ -640,6 +640,7 @@ static int rtl8139_start_xmit (struct sk_buff *skb,
- #ifdef CONFIG_NET_POLL_CONTROLLER
- static void rtl8139_poll_controller(struct net_device *dev);
- #endif
-+static int rtl8139_set_mac_address(struct net_device *dev, void *p);
- static int rtl8139_poll(struct napi_struct *napi, int budget);
- static irqreturn_t rtl8139_interrupt (int irq, void *dev_instance);
- static int rtl8139_close (struct net_device *dev);
-@@ -917,7 +918,7 @@ static const struct net_device_ops rtl8139_netdev_ops = {
- 	.ndo_stop		= rtl8139_close,
- 	.ndo_get_stats		= rtl8139_get_stats,
- 	.ndo_validate_addr	= eth_validate_addr,
--	.ndo_set_mac_address 	= eth_mac_addr,
-+	.ndo_set_mac_address 	= rtl8139_set_mac_address,
- 	.ndo_start_xmit		= rtl8139_start_xmit,
- 	.ndo_set_multicast_list	= rtl8139_set_rx_mode,
- 	.ndo_do_ioctl		= netdev_ioctl,
-@@ -2215,6 +2216,29 @@ static void rtl8139_poll_controller(struct net_device *dev)
- }
- #endif
- 
-+static int rtl8139_set_mac_address(struct net_device *dev, void *p)
-+{
-+	struct rtl8139_private *tp = netdev_priv(dev);
-+	void __iomem *ioaddr = tp->mmio_addr;
-+	struct sockaddr *addr = p;
-+
-+	if (!is_valid_ether_addr(addr->sa_data))
-+		return -EADDRNOTAVAIL;
-+
-+	memcpy(dev->dev_addr, addr->sa_data, dev->addr_len);
-+
-+	spin_lock_irq(&tp->lock);
-+
-+	RTL_W8_F(Cfg9346, Cfg9346_Unlock);
-+	RTL_W32_F(MAC0 + 0, cpu_to_le32 (*(u32 *) (dev->dev_addr + 0)));
-+	RTL_W32_F(MAC0 + 4, cpu_to_le32 (*(u32 *) (dev->dev_addr + 4)));
-+	RTL_W8_F(Cfg9346, Cfg9346_Lock);
-+
-+	spin_unlock_irq(&tp->lock);
-+
-+	return 0;
-+}
-+
- static int rtl8139_close (struct net_device *dev)
- {
- 	struct rtl8139_private *tp = netdev_priv(dev);
+> 
+> Cheers,
+> 
+> Michael
+> 
+> 
+> -- 
+> Michael Kerrisk Linux man-pages maintainer;
+> http://www.kernel.org/doc/man-pages/ Found a documentation bug?
+> http://www.kernel.org/doc/man-pages/reporting_bugs.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
