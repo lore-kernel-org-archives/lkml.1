@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758807AbZCMLEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZCMLH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758807AbZCMLEc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 07:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbZCMLEW
+	id S1757472AbZCMLH3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 07:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbZCMLHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 07:04:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39918 "EHLO mx3.mail.elte.hu"
+	Fri, 13 Mar 2009 07:07:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58754 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752247AbZCMLEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 07:04:21 -0400
-Date: Fri, 13 Mar 2009 12:03:57 +0100
+	id S1750852AbZCMLHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 07:07:16 -0400
+Date: Fri, 13 Mar 2009 11:06:29 GMT
 From: Ingo Molnar <mingo@elte.hu>
-To: Markus Metzger <markus.t.metzger@intel.com>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
-       markus.t.metzger@gmail.com, roland@redhat.com, eranian@googlemail.com,
-       oleg@redhat.com, juan.villacis@intel.com, ak@linux.jf.intel.com
-Subject: Re: [patch 1/5] x86, bts: detect size of DS fields
-Message-ID: <20090313110357.GC31094@elte.hu>
-References: <20090313104218.A30096@sedona.ch.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       markus.t.metzger@intel.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       markus.t.metzger@intel.com, tglx@linutronix.de, mingo@elte.hu
 In-Reply-To: <20090313104218.A30096@sedona.ch.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <20090313104218.A30096@sedona.ch.intel.com>
+Subject: [tip:tracing/hw-branch-tracing] x86, bts: detect size of DS fields, fix
+Message-ID: <tip-79258a354e0c69be94ae2871809a195bf4a647b1@git.kernel.org>
+Git-Commit-ID: 79258a354e0c69be94ae2871809a195bf4a647b1
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 11:06:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  79258a354e0c69be94ae2871809a195bf4a647b1
+Gitweb:     http://git.kernel.org/tip/79258a354e0c69be94ae2871809a195bf4a647b1
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Fri, 13 Mar 2009 12:02:08 +0100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 13 Mar 2009 12:02:08 +0100
 
-Applied your patches to tip:tracing/hw-branch-tracer, thanks 
-Markus!
+x86, bts: detect size of DS fields, fix
 
-I did a small cleanup patch - see it in this thread.
+Impact: build fix
 
-One detail i noticed:
+One usage site was missed in the sizeof_field -> sizeof_ptr_field
+rename.
 
-static DEFINE_PER_CPU(struct ds_configuration, ds_cfg_array);
+Cc: Markus Metzger <markus.t.metzger@intel.com>
+LKML-Reference: <20090313104218.A30096@sedona.ch.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-That PER_CPU indirection should be removed - it's enough to have 
-system-wide configuration settings. We dont generally support 
-assymetric CPU capabilities in the same system, and the per_cpu 
-indirection here slows the code down and obfuscates it.
 
-Thanks,
+---
+ arch/x86/kernel/ds.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-	Ingo
+diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
+index 7363e01..5fd5333 100644
+--- a/arch/x86/kernel/ds.c
++++ b/arch/x86/kernel/ds.c
+@@ -983,7 +983,7 @@ ds_configure(const struct ds_configuration *cfg,
+ 	printk("bts/pebs record: %u/%u bytes\n",
+ 	       ds_cfg.sizeof_rec[ds_bts], ds_cfg.sizeof_rec[ds_pebs]);
+ 
+-	WARN_ON_ONCE(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_field));
++	WARN_ON_ONCE(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
+ }
+ 
+ void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
