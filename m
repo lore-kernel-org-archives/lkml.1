@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758470AbZCMNKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758939AbZCMNMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758470AbZCMNKI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 09:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbZCMNIV
+	id S1758939AbZCMNMX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 09:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754422AbZCMNMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 09:08:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36753 "EHLO hera.kernel.org"
+	Fri, 13 Mar 2009 09:12:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47642 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759216AbZCMNIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 09:08:17 -0400
-Date: Fri, 13 Mar 2009 13:06:43 GMT
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090313112301.384074618@chello.nl>
-References: <20090313112301.384074618@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: add comment to barrier
-Message-ID: <tip-ffd25c2b454557dd5a09b23d2446d1800d497bde@git.kernel.org>
-Git-Commit-ID: ffd25c2b454557dd5a09b23d2446d1800d497bde
-X-Mailer: tip-git-log-daemon
+	id S1751248AbZCMNMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 09:12:08 -0400
+Message-ID: <49BA5B98.90604@redhat.com>
+Date: Fri, 13 Mar 2009 14:11:52 +0100
+From: Ivan Vecera <ivecera@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 13 Mar 2009 13:06:45 +0000 (UTC)
+To: Jiri Pirko <jpirko@redhat.com>
+CC: Michal Schmidt <mschmidt@redhat.com>, linux-kernel@vger.kernel.org,
+       jgarzik@pobox.com, davem@davemloft.net, netdev@vger.kernel.org
+Subject: Re: [PATCH] 8139cp: allow to set mac address on running device
+References: <20090312162730.GA20153@psychotron.englab.brq.redhat.com> <20090312181121.79e297a2@brian.englab.brq.redhat.com> <20090312174641.GC20153@psychotron.englab.brq.redhat.com> <49BA20E1.70607@redhat.com> <20090313111633.GB3436@psychotron.englab.brq.redhat.com>
+In-Reply-To: <20090313111633.GB3436@psychotron.englab.brq.redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ffd25c2b454557dd5a09b23d2446d1800d497bde
-Gitweb:     http://git.kernel.org/tip/ffd25c2b454557dd5a09b23d2446d1800d497bde
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 13 Mar 2009 12:21:30 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 13 Mar 2009 14:02:43 +0100
+Jiri Pirko wrote:
+> Fri, Mar 13, 2009 at 10:01:21AM CET, ivecera@redhat.com wrote:
+>> Jiri Pirko wrote:
+>>> Thu, Mar 12, 2009 at 06:11:21PM CET, mschmidt@redhat.com wrote:
+>>>> On Thu, 12 Mar 2009 17:27:31 +0100
+>>>> Jiri Pirko <jpirko@redhat.com> wrote:
+>>>>
+>>>>> +	cpw32_f(MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr +
+>>>>> 0)));
+>>>>> +	cpw32_f(MAC0 + 4, le32_to_cpu (*(__le32 *) (dev->dev_addr +
+>>>>> 4)));
+>>>> You're writing to the card, so using *_to_cpu looks suspicious.
+>>> Well, I'm using the same approach as it is already done in function
+>>> cp_init_hw(). Quote:
+>>>
+>>>  /* Restore our idea of the MAC address. */
+>>>  cpw32_f (MAC0 + 0, le32_to_cpu (*(__le32 *) (dev->dev_addr + 0)));
+>>>  cpw32_f (MAC0 + 4, le32_to_cpu (*(__le32 *) (dev->dev_addr + 4)));
+>>>
+>> Yes, that's right but I would use more cleaner approach:
+>> ===
+>> u32 low, high;
+>> low  = addr[0] | (addr[1] << 8) | (addr[2] << 16) | (addr[3] << 24);
+>> high = addr[4] | (addr[5] << 8);
+>> cpw32_f(MAC0 + 0, low);
+>> cpw32_f(MAC0 + 4, high);
+>> ===
+> Well, I have no problem with this (in fact I like this more). I just wanted to
+> stay consistent to existing code. Maybe it would be good to change this chunk
+> of code in cp_init_hw() too, don't you think?
+Yes, you're right.
+> 
+> Jirka
+>> Ivan
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-perf_counter: add comment to barrier
-
-We need to ensure the enabled=0 write happens before we
-start disabling the actual counters, so that a pcm_amd_enable()
-will not enable one underneath us.
-
-I think the race is impossible anyway, we always balance the
-ops within any one context and perform enable() with IRQs disabled.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090313112301.384074618@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/cpu/perf_counter.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 1cedc34..a2e3b76 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -247,6 +247,10 @@ static u64 pmc_amd_save_disable_all(void)
- 
- 	enabled = cpuc->enabled;
- 	cpuc->enabled = 0;
-+	/*
-+	 * ensure we write the disable before we start disabling the
-+	 * counters proper, so that pcm_amd_enable() does the right thing.
-+	 */
- 	barrier();
- 
- 	for (idx = 0; idx < nr_counters_generic; idx++) {
