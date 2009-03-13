@@ -1,111 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbZCMKxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758305AbZCMKzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757850AbZCMKxV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 06:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZCMKxI
+	id S1758305AbZCMKzA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 06:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZCMKyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 06:53:08 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:37074 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751939AbZCMKxG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 06:53:06 -0400
-Message-ID: <49BA3B05.9020906@snapgear.com>
-Date: Fri, 13 Mar 2009 20:52:53 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 13 Mar 2009 06:54:50 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:43822 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751636AbZCMKyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 06:54:49 -0400
+Date: Fri, 13 Mar 2009 11:54:46 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, npiggin@suse.de
+Subject: Re: [PATCH 2/7] writeback: switch to per-bdi threads for flushing
+	data
+Message-ID: <20090313105446.GO27476@kernel.dk>
+References: <1236868428-20408-1-git-send-email-jens.axboe@oracle.com> <1236868428-20408-3-git-send-email-jens.axboe@oracle.com> <20090312223321.ccfe51b2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>, Rob Landley <rob@landley.net>,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       linux-next@vger.kernel.org
-Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
-References: <200903120437.03837.rob@landley.net> <20090312210216.GB14205@uranus.ravnborg.org> <10f740e80903121540i30fdaddr600ce21f4159530a@mail.gmail.com> <200903122225.04560.rob@landley.net> <49BA0599.6070206@snapgear.com> <20090313082555.GA19045@uranus.ravnborg.org> <10f740e80903130133r130b8713v690437f0f38eb0b8@mail.gmail.com> <20090313085930.GA19274@uranus.ravnborg.org>
-In-Reply-To: <20090313085930.GA19274@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090312223321.ccfe51b2.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Fri, Mar 13, 2009 at 09:33:18AM +0100, Geert Uytterhoeven wrote:
->> On Fri, Mar 13, 2009 at 09:25, Sam Ravnborg <sam@ravnborg.org> wrote:
->>> On Fri, Mar 13, 2009 at 05:04:57PM +1000, Greg Ungerer wrote:
->>>> I pretty quick time I can fix up the last couple on the above list.
->>>> But do we want to put all that change into 2.6.29-rc at this point?
->>> In general we do not want to have headers_check broken in mainline,
->> headers_check is not broken, headers_install is.
->>
->> Hmm, in some sense headers_check _is_ broken, as it doesn't notice
->> headers_install
->> installs headers that refer to other headers that are not installed...
-> This is what scripts/headers_check are supposed to do - strange.
+On Thu, Mar 12 2009, Andrew Morton wrote:
+> On Thu, 12 Mar 2009 15:33:43 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
->> Greg, I had a quick look at your signcontext.h and signal.h merge, and the MMU
->> part seems to be OK.
->>
->> However, some of the installed headers still have checks for CONFIG_MMU:
->>
->> param.h:#ifdef CONFIG_MMU
->> sigcontext.h:#ifndef CONFIG_MMU
->> sigcontext.h:#ifdef CONFIG_MMU
->> siginfo.h:#ifdef CONFIG_MMU
->> siginfo.h:#ifdef CONFIG_MMU
->> siginfo.h:#endif /* CONFIG_MMU */
->> swab.h:#elif defined(CONFIG_MMU)
->>
->> so these have to be added to the generic unifdef-y list (is that
->> include/asm-generic/Kbuild.asm?).
-
-Hmmm, yes your right.
-
-
-> include/asm-generic/Kbuild.asm impacts all architectures so be carefull there.
-> It looks like some updates to arch/m68k/include/asm/Kbuild is needed,
-> and not the generic list of files to export.
+> > This gets rid of pdflush for bdi writeout and kupdated style cleaning.
+> > This is an experiment to see if we get better writeout behaviour with
+> > per-bdi flushing. Some initial tests look pretty encouraging. A sample
+> > ffsb workload that does random writes to files is about 8% faster here
+> > on a simple SATA drive during the benchmark phase. File layout also seems
+> > a LOT more smooth in vmstat:
+> > 
+> >  r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa
+> >  0  1      0 608848   2652 375372    0    0     0 71024  604    24  1 10 48 42
+> >  0  1      0 549644   2712 433736    0    0     0 60692  505    27  1  8 48 44
+> >  1  0      0 476928   2784 505192    0    0     4 29540  553    24  0  9 53 37
+> >  0  1      0 457972   2808 524008    0    0     0 54876  331    16  0  4 38 58
+> >  0  1      0 366128   2928 614284    0    0     4 92168  710    58  0 13 53 34
+> >  0  1      0 295092   3000 684140    0    0     0 62924  572    23  0  9 53 37
+> >  0  1      0 236592   3064 741704    0    0     4 58256  523    17  0  8 48 44
+> >  0  1      0 165608   3132 811464    0    0     0 57460  560    21  0  8 54 38
+> >  0  1      0 102952   3200 873164    0    0     4 74748  540    29  1 10 48 41
+> >  0  1      0  48604   3252 926472    0    0     0 53248  469    29  0  7 47 45
+> > 
+> > where vanilla tends to fluctuate a lot in the creation phase:
+> > 
+> >  r  b   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id wa
+> >  1  1      0 678716   5792 303380    0    0     0 74064  565    50  1 11 52 36
+> >  1  0      0 662488   5864 319396    0    0     4   352  302   329  0  2 47 51
+> >  0  1      0 599312   5924 381468    0    0     0 78164  516    55  0  9 51 40
+> >  0  1      0 519952   6008 459516    0    0     4 78156  622    56  1 11 52 37
+> >  1  1      0 436640   6092 541632    0    0     0 82244  622    54  0 11 48 41
+> >  0  1      0 436640   6092 541660    0    0     0     8  152    39  0  0 51 49
+> >  0  1      0 332224   6200 644252    0    0     4 102800  728    46  1 13 49 36
+> >  1  0      0 274492   6260 701056    0    0     4 12328  459    49  0  7 50 43
+> >  0  1      0 211220   6324 763356    0    0     0 106940  515    37  1 10 51 39
+> >  1  0      0 160412   6376 813468    0    0     0  8224  415    43  0  6 49 45
+> >  1  1      0  85980   6452 886556    0    0     4 113516  575    39  1 11 54 34
+> >  0  2      0  85968   6452 886620    0    0     0  1640  158   211  0  0 46 54
 > 
-> Also use og CONFIG_MMU suprises me.
-> We used #ifdef __uClinux__ in the non-merged headers to avoid use
-> of a CONFIG_* symbol that is not valid outside the kernel namespace.
-> So if param.h in m68k uses CONFIG_MMU it is broken.
+> Confused.  The two should be equivalent for
+> one-filesystem-per-physical-disk.  What made it change?
 
-I have been trying to use CONFIG_MMU wherever possible (so for non-
-exported headers), since that matches what is actually in the code
-proper. I am concerned at the longer term use of __uClinux__ for
-distinguishing MMU and non-MMU. I plan on switching to use a normal
-m68k toolchain soon. And it won't define __uClinux__ on its own.
-(I already do this on ARM for example - same toolchain on both
-MMU an non-MMU).
+There's at least one difference, and that is the lack of congestion
+checking. With one thread per bdi, we don't need to do nonblocking IO to
+the device. Whether that is the factor that makes the difference, I
+don't know yet. I'll investigate for sure :-)
 
-What I have done so far is or the most part a very simple merge
-of the files. I know there is room for some improvements in quite a
-few of these files.
+> > So apart from seemingly behaving better for buffered writeout, this also
+> > allows us to potentially have more than one bdi thread flushing out data.
+> > This may be useful for NUMA type setups.
+> 
+> Bear in mind that the XFS guys found that one thread per fs had
+> insufficient CPU power to keep up with fast devices.
 
-The use of CONFIG_MMU in swab.h (is this actually exported to user
-space?) is not actually for code that is MMU or non-MMU. It is
-actually architecture specific. Most ColdFire parts don't have the
-"rolw" instruction. The condition test can be better. Geert, any
-ideas on what is more appropriate here?
+Yes, I definitely want to experiment with > 1 thread per device in the
+near future.
 
-I can switch back to using __uClinux__ on siginfo.h and sigcontext.h.
-If I am not mistaken we can't change these structures without breaking
-backwards compatibility?  The sigcontext change is particularly ugly :-(
+-- 
+Jens Axboe
 
-Similarly for param.h, it looks like a switch back to using
-__uClinux__ for now is the only option.
-
-Now after these fixups should I create a git branch with these header
-merges in for inclusion into 2.6.29-rc?  To fix the regression we
-only need to do the handful of files that Rob listed, right?
-
-Regards
-Greg
-
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
