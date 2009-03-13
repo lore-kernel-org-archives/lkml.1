@@ -1,200 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759233AbZCMQfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbZCMQg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759233AbZCMQfp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759436AbZCMQcO
+	id S1759952AbZCMQg2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758944AbZCMQgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:32:14 -0400
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:63801 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759419AbZCMQcM (ORCPT
+	Fri, 13 Mar 2009 12:36:10 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:43877 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758131AbZCMQgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 12:32:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgQGAPAiuklMQW1W/2dsb2JhbACBTpRnulCDfgY
-Date: Fri, 13 Mar 2009 12:32:07 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
-Subject: Re: [RFC][PATCH 2/2] tracing/x86: basic implementation of syscall
-	tracing for x86-64
-Message-ID: <20090313163207.GA3354@Krystal>
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-3-git-send-email-fweisbec@gmail.com>
-Mime-Version: 1.0
+	Fri, 13 Mar 2009 12:36:08 -0400
+Date: Fri, 13 Mar 2009 11:35:31 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Cedric Le Goater <legoater@free.fr>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mingo@elte.hu,
+       mpm@selenic.com, tglx@linutronix.de, torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>, xemul@openvz.org
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
+	do?
+Message-ID: <20090313163531.GA10685@us.ibm.com>
+References: <1234467035.3243.538.camel@calx> <20090212114207.e1c2de82.akpm@linux-foundation.org> <1234475483.30155.194.camel@nimitz> <20090212141014.2cd3d54d.akpm@linux-foundation.org> <1234479845.30155.220.camel@nimitz> <20090226155755.GA1456@x200.localdomain> <20090310215305.GA2078@x200.localdomain> <49B775B4.1040800@free.fr> <20090312145311.GC12390@us.ibm.com> <49BA8013.3030103@free.fr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1236401580-5758-3-git-send-email-fweisbec@gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:29:35 up 13 days, 12:55,  2 users,  load average: 0.12, 0.34,
-	0.33
+In-Reply-To: <49BA8013.3030103@free.fr>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Frederic Weisbecker (fweisbec@gmail.com) wrote:
-> Provide the ptrace hooks and arch specific syscall numbers to ftrace arch indepedant
-> syscall numbers.
-> For now it only supports 4 syscalls to provide an example.
+Quoting Cedric Le Goater (legoater@free.fr):
 > 
-
-Hi Frederic,
-
-I already have the equivalent TIF_KERNEL_TRACE flag in my LTTng tree
-added to every Linux architecture. You might want to re-use this work
-rather than re-doing this. I don't mind changing the flag name.
-
-Please see the LTTng tree and patchset at http://www.lttng.org. I'll
-answer more precisely if you need more information.
-
-Mathieu
-
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  arch/x86/Kconfig                   |    1 +
->  arch/x86/include/asm/ftrace.h      |    7 +++++++
->  arch/x86/include/asm/thread_info.h |    9 ++++++---
->  arch/x86/kernel/ftrace.c           |   15 +++++++++++++++
->  arch/x86/kernel/ptrace.c           |    7 +++++++
->  5 files changed, 36 insertions(+), 3 deletions(-)
+> > No, what you're suggesting does not suffice.
 > 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 2a0ddfe..b5aec1b 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -35,6 +35,7 @@ config X86
->  	select HAVE_FUNCTION_GRAPH_TRACER
->  	select HAVE_FUNCTION_TRACE_MCOUNT_TEST
->  	select HAVE_FTRACE_NMI_ENTER if DYNAMIC_FTRACE
-> +	select HAVE_FTRACE_SYSCALLS if X86_64
->  	select HAVE_KVM
->  	select HAVE_ARCH_KGDB
->  	select HAVE_ARCH_TRACEHOOK
-> diff --git a/arch/x86/include/asm/ftrace.h b/arch/x86/include/asm/ftrace.h
-> index db24c22..b2e6855 100644
-> --- a/arch/x86/include/asm/ftrace.h
-> +++ b/arch/x86/include/asm/ftrace.h
-> @@ -28,6 +28,13 @@
->  
->  #endif
->  
-> +/* FIXME: I don't want to stay hardcoded */
-> +#ifdef CONFIG_X86_64
-> +#define FTRACE_SYSCALL_MAX	296
-> +#else
-> +#define FTRACE_SYSCALL_MAX	333
-> +#endif
-> +
->  #ifdef CONFIG_FUNCTION_TRACER
->  #define MCOUNT_ADDR		((long)(mcount))
->  #define MCOUNT_INSN_SIZE	5 /* sizeof mcount call */
-> diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-> index f6ba6f8..83d2b73 100644
-> --- a/arch/x86/include/asm/thread_info.h
-> +++ b/arch/x86/include/asm/thread_info.h
-> @@ -95,6 +95,7 @@ struct thread_info {
->  #define TIF_FORCED_TF		24	/* true if TF in eflags artificially */
->  #define TIF_DEBUGCTLMSR		25	/* uses thread_struct.debugctlmsr */
->  #define TIF_DS_AREA_MSR		26      /* uses thread_struct.ds_area_msr */
-> +#define TIF_SYSCALL_FTRACE	27	/* for ftrace syscall instrumentation */
->  
->  #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
->  #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
-> @@ -117,15 +118,17 @@ struct thread_info {
->  #define _TIF_FORCED_TF		(1 << TIF_FORCED_TF)
->  #define _TIF_DEBUGCTLMSR	(1 << TIF_DEBUGCTLMSR)
->  #define _TIF_DS_AREA_MSR	(1 << TIF_DS_AREA_MSR)
-> +#define _TIF_SYSCALL_FTRACE	(1 << TIF_SYSCALL_FTRACE)
->  
->  /* work to do in syscall_trace_enter() */
->  #define _TIF_WORK_SYSCALL_ENTRY	\
-> -	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_EMU | \
-> +	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_EMU | _TIF_SYSCALL_FTRACE |	\
->  	 _TIF_SYSCALL_AUDIT | _TIF_SECCOMP | _TIF_SINGLESTEP)
->  
->  /* work to do in syscall_trace_leave() */
->  #define _TIF_WORK_SYSCALL_EXIT	\
-> -	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | _TIF_SINGLESTEP)
-> +	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | _TIF_SINGLESTEP |	\
-> +	 _TIF_SYSCALL_FTRACE)
->  
->  /* work to do on interrupt/exception return */
->  #define _TIF_WORK_MASK							\
-> @@ -134,7 +137,7 @@ struct thread_info {
->  	   _TIF_SINGLESTEP|_TIF_SECCOMP|_TIF_SYSCALL_EMU))
->  
->  /* work to do on any return to user space */
-> -#define _TIF_ALLWORK_MASK (0x0000FFFF & ~_TIF_SECCOMP)
-> +#define _TIF_ALLWORK_MASK ((0x0000FFFF & ~_TIF_SECCOMP) | _TIF_SYSCALL_FTRACE)
->  
->  /* Only used for 64 bit */
->  #define _TIF_DO_NOTIFY_MASK						\
-> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-> index a85da17..5bba98b 100644
-> --- a/arch/x86/kernel/ftrace.c
-> +++ b/arch/x86/kernel/ftrace.c
-> @@ -453,3 +453,18 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
->  	}
->  }
->  #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
-> +
-> +#ifdef CONFIG_FTRACE_SYSCALLS
-> +#ifdef CONFIG_X86_64
-> +/*
-> + * Array that make the arch specific syscall numbers
-> + * matching the ftrace syscall numbers.
-> + */
-> +short arch_syscall_trace_nr[FTRACE_SYSCALL_MAX] = {
-> +	[__NR_open]	= SYSCALL_TRACE_OPEN,
-> +	[__NR_close]	= SYSCALL_TRACE_CLOSE,
-> +	[__NR_read]	= SYSCALL_TRACE_READ,
-> +	[__NR_write]	= SYSCALL_TRACE_WRITE
-> +};
-> +#endif
-> +#endif
-> diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-> index 3d9672e..99749d6 100644
-> --- a/arch/x86/kernel/ptrace.c
-> +++ b/arch/x86/kernel/ptrace.c
-> @@ -21,6 +21,7 @@
->  #include <linux/audit.h>
->  #include <linux/seccomp.h>
->  #include <linux/signal.h>
-> +#include <linux/ftrace.h>
->  
->  #include <asm/uaccess.h>
->  #include <asm/pgtable.h>
-> @@ -1416,6 +1417,9 @@ asmregparm long syscall_trace_enter(struct pt_regs *regs)
->  	    tracehook_report_syscall_entry(regs))
->  		ret = -1L;
->  
-> +	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
-> +		ftrace_syscall_enter(regs);
-> +
->  	if (unlikely(current->audit_context)) {
->  		if (IS_IA32)
->  			audit_syscall_entry(AUDIT_ARCH_I386,
-> @@ -1439,6 +1443,9 @@ asmregparm void syscall_trace_leave(struct pt_regs *regs)
->  	if (unlikely(current->audit_context))
->  		audit_syscall_exit(AUDITSC_RESULT(regs->ax), regs->ax);
->  
-> +	if (unlikely(test_thread_flag(TIF_SYSCALL_FTRACE)))
-> +		ftrace_syscall_exit(regs);
-> +
->  	if (test_thread_flag(TIF_SYSCALL_TRACE))
->  		tracehook_report_syscall_exit(regs, 0);
->  
-> -- 
-> 1.6.1
+> probably. I'm still trying to understand what you mean below :)
 > 
+> Man, I hate these hierarchicals pid_ns. one level would have been enough, 
+> just one vpid attribute in 'struct pid*'
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Well I don't mind - temporarily - saying that nested pid namespaces
+are not checkpointable.  It's just that if we're going to need a new
+syscall anyway, then why not go ahead and address the whole problem?
+It's not hugely more complicated, and seems worth it.
+
+> > Call
+> > (5591,3,1) the task knows as 5591 in the init_pid_ns, 3 in a child pid
+> > ns, and 1 in grandchild pid_ns created from there.  Now assume we are
+> > checkpointing tasks T1=(5592,1), and T2=(5594,3,1).
+> > 
+> > We don't care about the first number in the tuples, so they will be
+> > random numbers after the recreate. 
+> 
+> yes.
+> 
+> > But we do care about the second numbers.  
+> 
+> yes very much and we need a way set these numbers in alloc_pid()
+> 
+> > But specifying CLONE_NEWPID while recreating the process tree
+> > in userspace does not allow you to specify the 3 in (5594,3,1).
+> 
+> I haven't looked closely at hierarchical pid namespaces but as we're
+> using a an array of pid indexed but the pidns level, i don't see why 
+> it shouldn't be possible. you might be right.
+> 
+> anyway, I think that some CLONE_NEW* should be forbidden. Daniel should
+> send soon a little patch for the ns_cgroup restricting the clone flags
+> being used in a container.
+
+Uh, that feels a bit over the top.  We want to make this
+uncheckpointable (if it remains so), not prevent the whole action.
+After all I may be running a container which I don't plan on ever
+checkpointing, and inside that container running a job which i do
+want to migrate.
+
+So depending on if we're doing the Dave or the rest-of-the-world
+way :), we either clear_bit(pidns->may_checkpoint) on the parent
+pid_ns when a child is created, or we walk every task being
+checkpointed and make sure they each are in the same pid_ns.  Doesn't
+that suffice?
+
+-serge
