@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbZCMQuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbZCMQyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752701AbZCMQuk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 12:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbZCMQu3
+	id S1758974AbZCMQyE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 12:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZCMQxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 12:50:29 -0400
-Received: from tomts22.bellnexxia.net ([209.226.175.184]:40252 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759102AbZCMQu2 (ORCPT
+	Fri, 13 Mar 2009 12:53:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37689 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754180AbZCMQxv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 12:50:28 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugFACMnuklMQW1W/2dsb2JhbACBTs86g34G
-Date: Fri, 13 Mar 2009 12:50:20 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+	Fri, 13 Mar 2009 12:53:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
+Subject: Re: [update, rev. 6] Re: [PATCH 1/10] PM: Rework handling of interrupts during suspend-resume (rev. 5)
+Date: Fri, 13 Mar 2009 17:53:37 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc7-tst; KDE/4.2.1; x86_64; ; )
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
-Subject: Re: [RFC][PATCH 2/2] tracing/x86: basic implementation of syscall
-	tracing for x86-64
-Message-ID: <20090313165020.GD3354@Krystal>
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-3-git-send-email-fweisbec@gmail.com> <20090313163207.GA3354@Krystal> <20090313163702.GA9082@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>
+References: <200902221837.49396.rjw@sisk.pl> <200903122243.27452.rjw@sisk.pl> <d6200be20903130015w4a25806bmbf9d4dda12e6825c@mail.gmail.com>
+In-Reply-To: <d6200be20903130015w4a25806bmbf9d4dda12e6825c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090313163702.GA9082@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:48:16 up 13 days, 13:14,  2 users,  load average: 0.98, 1.05,
-	0.82
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903131753.39076.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > * Frederic Weisbecker (fweisbec@gmail.com) wrote:
+On Friday 13 March 2009, Arve Hjønnevåg wrote:
+> On Thu, Mar 12, 2009 at 1:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 > >
-> > > Provide the ptrace hooks and arch specific syscall numbers 
-> > > to ftrace arch indepedant syscall numbers. For now it only 
-> > > supports 4 syscalls to provide an example.
-> > > 
-> > 
-> > Hi Frederic,
-> > 
-> > I already have the equivalent TIF_KERNEL_TRACE flag in my 
-> > LTTng tree added to every Linux architecture. You might want 
-> > to re-use this work rather than re-doing this. I don't mind 
-> > changing the flag name.
+> > +void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
+> > +{
+> > +       if (suspend) {
+> > +               if (desc->action && (desc->action->flags & IRQF_TIMER))
+> > +                       return;
 > 
-> Yeah. Note that the TIF bits are just one part - there are other 
-> bits needed for HAVE_FTRACE_SYSCALLS arch support.
-> 
-> Also, i'd eventually expect the TIF bits to be converted to a 
-> tracehook callback, not spread it to other architectures.
-> 
+> Don't you want "(!desc->action || ..." here to avoid enabling unused
+> interrupts on resume?
 
-The nice part about the TIF bit is that it permits adding this syscall
-tracing feature without increasing the size of the thread_info struct
-nor adding any extra tests in entry.S. Does the tracehook callback have
-these features ?
+Hmm, good idea, thanks.
 
-Mathieu
-
-> 	Ingo
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Best,
+Rafael
