@@ -1,131 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760028AbZCMWjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760083AbZCMWll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760028AbZCMWjt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 18:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754196AbZCMWjj
+	id S1760083AbZCMWll (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 18:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZCMWle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 18:39:39 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:41827 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754309AbZCMWjg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 18:39:36 -0400
-Message-ID: <49BADFCE.8020207@cs.columbia.edu>
-Date: Fri, 13 Mar 2009 18:35:58 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 13 Mar 2009 18:41:34 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:34073 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752799AbZCMWld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 18:41:33 -0400
 MIME-Version: 1.0
-To: Mike Waychison <mikew@google.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mingo@elte.hu,
-       mpm@selenic.com, tglx@linutronix.de,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
- do?
-References: <1234475483.30155.194.camel@nimitz>	<20090212141014.2cd3d54d.akpm@linux-foundation.org>	<1234479845.30155.220.camel@nimitz>	<20090226155755.GA1456@x200.localdomain>	<20090310215305.GA2078@x200.localdomain>	<49B775B4.1040800@free.fr>	<20090312145311.GC12390@us.ibm.com>	<1236891719.32630.14.camel@bahia>	<20090312212124.GA25019@us.ibm.com>	<604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>	<20090313053458.GA28833@us.ibm.com>	<alpine.LFD.2.00.0903131018390.3940@localhost.localdomain> <49BAC6AF.9090607@google.com>
-In-Reply-To: <49BAC6AF.9090607@google.com>
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Message-ID: <18874.57621.950179.972863@cargo.ozlabs.ibm.com>
+Date: Sat, 14 Mar 2009 09:41:25 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] perfcounters: Make s/w counters in a group only count
+ when group is on
+In-Reply-To: <1236948283.22447.36.camel@twins>
+References: <18873.48668.562126.113618@cargo.ozlabs.ibm.com>
+	<1236939816.22914.3714.camel@twins>
+	<18874.20538.785519.824803@cargo.ozlabs.ibm.com>
+	<1236948283.22447.36.camel@twins>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Peter Zijlstra writes:
 
+> The issue I have with your approach is two-fold:
+>  - it breaks the symmetry between software and hardware counters by
+>    treating them differently.
 
-Mike Waychison wrote:
-> Linus Torvalds wrote:
->> On Thu, 12 Mar 2009, Sukadev Bhattiprolu wrote:
->>
->>> Ying Han [yinghan@google.com] wrote:
->>> | Hi Serge:
->>> | I made a patch based on Oren's tree recently which implement a new
->>> | syscall clone_with_pid. I tested with checkpoint/restart process tree
->>> | and it works as expected.
->>>
->>> Yes, I think we had a version of clone() with pid a while ago.
->> Are people _at_all_ thinking about security?
->>
->> Obviously not.
->>
->> There's no way we can do anything like this. Sure, it's trivial to do 
->> inside the kernel. But it also sounds like a _wonderful_ attack vector 
->> against badly written user-land software that sends signals and has small 
->> races.
+So... I was about to restore that symmetry by implementing lazy PMU
+context switching.  In the case where we have inherited counters, and
+we are switching from one task to another that both have the same set
+of inherited counters, we don't really need to do anything, because it
+doesn't matter which set of counters the events get added into,
+because they all get added together at the end anyway.
+
+That is another situation where you can have counters that are active
+when their associated task is not scheduled in, this time for hardware
+counters as well as software counters.  So this is not just some weird
+special case for software counters, but is actually going to be more
+generally useful.
+
+>  - it doesn't make much conceptual sense to me
+
+It seems quite reasonable to me that things could happen that are
+attributable to a task, but which happen when the task isn't running.
+Not just context switches and migrations - there's a whole class of
+things that the system does on behalf of a process that can happen
+asynchronously.  I wouldn't want to say that those kind of things can
+never be counted with software counters.
+
+> For the context switch counter, we could count the event right before we
+> schedule out, which would make it behave like expected.
 > 
-> I'm not really sure how this is different than a malicious app going off 
-> and spawning thousands of threads in an attempt to hit a target pid from 
-> a security pov.  Sure, it makes it easier, but it's not like there is 
-> anything in place to close the attack vector.
+> The same for task migration, most migrations happen when they are in
+> fact running, so there too we can account the migration either before we
+> rip it off the src cpu, or after we place it on the dst cpu.
 > 
->> Quite frankly, from having followed the discussion(s) over the last few 
->> weeks about checkpoint/restart in various forms, my reaction to just about 
->> _all_ of this is that people pushing this are pretty damn borderline. 
->>
->> I think you guys are working on all the wrong problems. 
->>
->> Let's face it, we're not going to _ever_ checkpoint any kind of general 
->> case process. Just TCP makes that fundamentally impossible in the general 
->> case, and there are lots and lots of other cases too (just something as 
->> totally _trivial_ as all the files in the filesystem that don't get rolled 
->> back).
-> 
-> In some instances such as ours, TCP is probably the easiest thing to 
-> migrate.  In an rpc-based cluster application, TCP is nothing more than 
-> an RPC channel and applications already have to handle RPC channel 
-> failure and re-establishment.
-> 
-> I agree that this is not the 'general case' as you mention above 
-> however.  This is the bit that sorta bothers me with the way the 
-> implementation has been going so far on this list.  The implementation 
-> that folks are building on top of Oren's patchset tries to be everything 
-> to everybody.  For our purposes, we need to have the flexibility of 
-> choosing *how* we checkpoint.  The line seems to be arbitrarily drawn at 
-> the kernel being responsible for checkpointing and restoring all 
-> resources associated with a task, and leaving userland with nothing more 
-> than transporting filesystem bits.  This approach isn't flexible enough: 
->   Consider the case where we want to stub out most of the TCP file 
-> descriptors with ECONNRESETed sockets because we know that they are RPC 
-> sockets and can re-establish themselves, but we want to use some other 
-> mechanism for TCP sockets we don't know much about.  The current 
-> monolithic approach has zero flexibility for doing anything like this, 
-> and I figure out how we could even fit anything like this in.
+> There are a few places where this isn't quite so, like affine wakeups,
+> but there we can account after the placement.
 
-The flexibility exists, but wasn't spelled out, so here it is:
+Right - but how do you know whether to do that accounting or not?  At
+the moment there simply isn't enough state information in the counter
+to tell you whether or not you should be adding in those things that
+happened while the task wasn't running.  At the moment you can't tell
+whether a counter is inactive merely because its task is scheduled
+out, or because it's in a group that won't currently fit on the PMU.
 
-1) Similar to madvice(), I envision a cradvice() that could tell the c/r
-something about specific resources, e.g.:
- * cradvice(CR_ADV_MEM, ptr, len)  -> don't save that memory, it's scratch
- * cradvice(CR_ADV_SOCK, fd, CR_ADV_SOCK_RESET)  -> reset connection on restart
-etc .. (nevermind the exact interface right now)
+By the way, I notice that x86 will do the wrong thing if you have a
+group where the leader is an interrupting hardware counter with
+record_type == PERF_RECORD_GROUP and there is a software counter in
+the group, because perf_handle_group calls x86_perf_counter_update on
+each group member unconditionally, and x86_perf_counter_update assumes
+its argument is a hardware counter.
 
-2) Tasks can ask to be notified (e.g. register a signal) when a checkpoint
-or a restart complete successfully. At that time they can do their private
-house-keeping if they know better.
-
-3) If restoring some resource is significantly easier in user space (e.g. a
-file-descriptor of some special device which user space knows how to
-re-initialize), then the restarting task can prepare it ahead of time,
-and, call:
-  * cradvice(CR_ADV_USERFD, fd, 0)  -> use the fd in place instead of trying
-				       to restore it yourself.
-
-Method #3 is what I used in Zap to implement distributed checkpoints, where
-it is so much easier to recreate all network connections in user space then
-putting that logic into the kernel.
-
-Now, on the other hand, doing the c/r from userland is much less flexible
-than in the kernel (e.g. epollfd, futex state and much more) and requires
-exposing tremendous amount of in-kernel data to user space. And we all know
-than exposing internals is always a one-way ticket :(
-
-[...]
-
-Oren.
-
-
+Paul.
