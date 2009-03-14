@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765436AbZCNB4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761188AbZCNB5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765436AbZCNB4s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755778AbZCNBVv
+	id S1761188AbZCNB5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbZCNBVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 13 Mar 2009 21:21:51 -0400
-Received: from kroah.org ([198.145.64.141]:35779 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:35729 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755179AbZCNBVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:21:19 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:45 2009
-Message-Id: <20090314011045.608542421@mini.kroah.org>
+	id S1755269AbZCNBVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:21:20 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:46 2009
+Message-Id: <20090314011045.914471586@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:11:13 -0700
+Date: Fri, 13 Mar 2009 18:11:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dan Carpenter <error27@gmail.com>
-Subject: [patch 096/114] ext4: Fix NULL dereference in ext4_ext_migrate()s error handling
+       alan@lxorguk.ukuu.org.uk,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Jan Kara <jack@suse.cz>
+Subject: [patch 098/114] ext4: Fix deadlock in ext4_write_begin() and ext4_da_write_begin()
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=ext4-fix-null-dereference-in-ext4_ext_migrate-s-error-handling.patch
+Content-Disposition: inline; filename=ext4-fix-deadlock-in-ext4_write_begin-and-ext4_da_write_begin.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,52 +41,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dan Carpenter <error27@gmail.com>
+From: Jan Kara <jack@suse.cz>
 
-(cherry picked from commit 090542641de833c6f756895fc2f139f046e298f9)
+(cherry picked from commit ebd3610b110bbb18ea6f9f2aeed1e1068c537227)
 
-This was found through a code checker (http://repo.or.cz/w/smatch.git/).
-It looks like you might be able to trigger the error by trying to migrate
-a readonly file system.
+Functions ext4_write_begin() and ext4_da_write_begin() call
+grab_cache_page_write_begin() without AOP_FLAG_NOFS. Thus it
+can happen that page reclaim is triggered in that function
+and it recurses back into the filesystem (or some other filesystem).
+But this can lead to various problems as a transaction is already
+started at that point. Add the necessary flag.
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
+http://bugzilla.kernel.org/show_bug.cgi?id=11688
+
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/migrate.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ fs/ext4/inode.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
---- a/fs/ext4/migrate.c
-+++ b/fs/ext4/migrate.c
-@@ -480,7 +480,7 @@ int ext4_ext_migrate(struct inode *inode
- 					+ 1);
- 	if (IS_ERR(handle)) {
- 		retval = PTR_ERR(handle);
--		goto err_out;
-+		return retval;
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1347,6 +1347,10 @@ retry:
+ 		goto out;
  	}
- 	tmp_inode = ext4_new_inode(handle,
- 				inode->i_sb->s_root->d_inode,
-@@ -488,8 +488,7 @@ int ext4_ext_migrate(struct inode *inode
- 	if (IS_ERR(tmp_inode)) {
- 		retval = -ENOMEM;
+ 
++	/* We cannot recurse into the filesystem as the transaction is already
++	 * started */
++	flags |= AOP_FLAG_NOFS;
++
+ 	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page) {
  		ext4_journal_stop(handle);
--		tmp_inode = NULL;
--		goto err_out;
-+		return retval;
+@@ -1356,7 +1360,7 @@ retry:
+ 	*pagep = page;
+ 
+ 	ret = block_write_begin(file, mapping, pos, len, flags, pagep, fsdata,
+-							ext4_get_block);
++				ext4_get_block);
+ 
+ 	if (!ret && ext4_should_journal_data(inode)) {
+ 		ret = walk_page_buffers(handle, page_buffers(page),
+@@ -2603,6 +2607,9 @@ retry:
+ 		ret = PTR_ERR(handle);
+ 		goto out;
  	}
- 	i_size_write(tmp_inode, i_size_read(inode));
- 	/*
-@@ -617,8 +616,7 @@ err_out:
++	/* We cannot recurse into the filesystem as the transaction is already
++	 * started */
++	flags |= AOP_FLAG_NOFS;
  
- 	ext4_journal_stop(handle);
- 
--	if (tmp_inode)
--		iput(tmp_inode);
-+	iput(tmp_inode);
- 
- 	return retval;
- }
+ 	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page) {
 
 
