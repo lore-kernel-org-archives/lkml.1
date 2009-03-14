@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZCNAds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760377AbZCNAjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbZCNAds (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbZCNATO
+	id S1760377AbZCNAjd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZCNATe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:14 -0400
-Received: from kroah.org ([198.145.64.141]:47089 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:34 -0400
+Received: from kroah.org ([198.145.64.141]:34813 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751230AbZCNATH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:07 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:46 2009
-Message-Id: <20090314000746.095871536@mini.kroah.org>
+	id S1753200AbZCNATU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:20 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:48 2009
+Message-Id: <20090314000748.104013773@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:55 -0700
+Date: Fri, 13 Mar 2009 17:06:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>
-Subject: [patch 47/96] md/raid10:  Dont skip more than 1 bitmap-chunk at a time during recovery.
+       alan@lxorguk.ukuu.org.uk, Paul Moore <paul.moore@hp.com>,
+       James Morris <jmorris@namei.org>
+Subject: [patch 60/96] selinux: Fix a panic in selinux_netlbl_inode_permission()
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=md-raid10-don-t-skip-more-than-1-bitmap-chunk-at-a-time-during-recovery.patch
+Content-Disposition: inline; filename=selinux-fix-a-panic-in-selinux_netlbl_inode_permission.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,55 +39,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: NeilBrown <neilb@suse.de>
+From: Paul Moore <paul.moore@hp.com>
 
-commit 09b4068a7fe442efc40e9dcbcf5ff37c3338ab15 upstream.
+commit d7f59dc4642ce2fc7b79fcd4ec02ffce7f21eb02 upstream.
 
-When doing recovery on a raid10 with a write-intent bitmap, we only
-need to recovery chunks that are flagged in the bitmap.
+Rick McNeal from LSI identified a panic in selinux_netlbl_inode_permission()
+caused by a certain sequence of SUNRPC operations.  The problem appears to be
+due to the lack of NULL pointer checking in the function; this patch adds the
+pointer checks so the function will exit safely in the cases where the socket
+is not completely initialized.
 
-However if we choose to skip a chunk as it isn't flag, the code
-currently skips the whole raid10-chunk, thus it might not recovery
-some blocks that need recovering.
-
-This patch fixes it.
-
-In case that is confusing, it might help to understand that there
-is a 'raid10 chunk size' which guides how data is distributed across
-the devices, and a 'bitmap chunk size' which says how much data
-corresponds to a single bit in the bitmap.
-
-This bug only affects cases where the bitmap chunk size is smaller
-than the raid10 chunk size.
-
-
-
-Signed-off-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Paul Moore <paul.moore@hp.com>
+Signed-off-by: James Morris <jmorris@namei.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/raid10.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ security/selinux/netlabel.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/drivers/md/raid10.c
-+++ b/drivers/md/raid10.c
-@@ -2010,13 +2010,13 @@ static sector_t sync_request(mddev_t *md
- 	/* There is nowhere to write, so all non-sync
- 	 * drives must be failed, so try the next chunk...
- 	 */
--	{
--	sector_t sec = max_sector - sector_nr;
--	sectors_skipped += sec;
-+	if (sector_nr + max_sync < max_sector)
-+		max_sector = sector_nr + max_sync;
-+
-+	sectors_skipped += (max_sector - sector_nr);
- 	chunks_skipped ++;
- 	sector_nr = max_sector;
- 	goto skipped;
--	}
- }
+--- a/security/selinux/netlabel.c
++++ b/security/selinux/netlabel.c
+@@ -236,11 +236,12 @@ int selinux_netlbl_inode_permission(stru
+ 	if (!S_ISSOCK(inode->i_mode) ||
+ 	    ((mask & (MAY_WRITE | MAY_APPEND)) == 0))
+ 		return 0;
+-
+ 	sock = SOCKET_I(inode);
+ 	sk = sock->sk;
++	if (sk == NULL)
++		return 0;
+ 	sksec = sk->sk_security;
+-	if (sksec->nlbl_state != NLBL_REQUIRE)
++	if (sksec == NULL || sksec->nlbl_state != NLBL_REQUIRE)
+ 		return 0;
  
- static int run(mddev_t *mddev)
+ 	local_bh_disable();
 
 
