@@ -1,121 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbZCNEBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbZCNED2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752439AbZCNEBt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 00:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbZCNEBk
+	id S1753178AbZCNED2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 00:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbZCNEDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 00:01:40 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:2223 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbZCNEBj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 00:01:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=Bx17pQq2I+4GSv4XiWuztwtv86oldelGCtCWcJsPckmBhov0+ma1LnV8jyNMGT6tp2
-         1X63vb6EDiYsxl2U4hyP7UIdaDYWyGf7jGA0lLUSFqJRssdrGSl7F83Evr54TEdI0Oag
-         jXg8RYvyCYBfX2ShvhxrBg9VqYJasVqyQH8L0=
-MIME-Version: 1.0
-Date: Sat, 14 Mar 2009 12:01:37 +0800
-Message-ID: <804dabb00903132101o6bf812c1r1efd02d069b5c7fa@mail.gmail.com>
-Subject: [PATCH] replace kernel_thread() with kthread_run() in RT2870
-From: Peter Teoh <htmldeveloper@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Greg KH <greg@kroah.com>, Paul Lin <paul_lin@ralinktech.com>
-Content-Type: multipart/mixed; boundary=000e0cd147f21d821804650c46ea
+	Sat, 14 Mar 2009 00:03:18 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:48468 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750716AbZCNEDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 00:03:17 -0400
+Subject: Re: [PATCH] fs: fput() can be called from interrupt context
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, Jeff Moyer <jmoyer@redhat.com>,
+       Avi Kivity <avi@redhat.com>, linux-aio <linux-aio@kvack.org>,
+       zach.brown@oracle.com, Benjamin LaHaise <bcrl@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0903131732300.13254@makko.or.mcafeemobile.com>
+References: <x49bpsaelwa.fsf@segfault.boston.devel.redhat.com>
+	 <49B54143.1010607@redhat.com>
+	 <x49sklmd1fo.fsf@segfault.boston.devel.redhat.com>
+	 <49B57CB0.5020300@cosmosbay.com> <49B875F7.3030305@cosmosbay.com>
+	 <49B87CFE.4000701@cosmosbay.com> <49B89B22.7080303@cosmosbay.com>
+	 <20090311224712.fb8db075.akpm@linux-foundation.org>
+	 <49B8A75E.6040409@cosmosbay.com>
+	 <20090311233903.f036027a.akpm@linux-foundation.org>
+	 <alpine.DEB.1.10.0903120625340.6040@makko.or.mcafeemobile.com>
+	 <1236986902.7265.73.camel@heimdal.trondhjem.org>
+	 <alpine.DEB.1.10.0903131732300.13254@makko.or.mcafeemobile.com>
+Content-Type: text/plain
+Date: Sat, 14 Mar 2009 00:02:08 -0400
+Message-Id: <1237003328.7265.98.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 71EB722F48060EEEDFF4AE327AB16182BFF0AFD4
+X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 54 max/h 3 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---000e0cd147f21d821804650c46ea
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Fri, 2009-03-13 at 18:40 -0700, Davide Libenzi wrote:
+> On Fri, 13 Mar 2009, Trond Myklebust wrote:
+> 
+> > On Thu, 2009-03-12 at 06:39 -0700, Davide Libenzi wrote:
+> > > On Wed, 11 Mar 2009, Andrew Morton wrote:
+> > > 
+> > > > > Take the time to check how fs/aio.c handle the fput(req->ki_filp) case
+> > > > > (or read my 2nd patch, it should spot the thing)
+> > > > 
+> > > > Well yes, a kludge like that seems a bit safer.
+> > > > 
+> > > > It's somewhat encouraging that we're apparently already doing fput()
+> > > > from within keventd (although how frequently?).  There might be
+> > > > problems with file locking, security code, etc from doing fput() from
+> > > > an unexpected thread.  And then there are all the usual weird problem
+> > > > with using the keventd queues which take a long time to get discovered.
+> > > 
+> > > Would it be a huge problem, performance-wise, to stop making ->f_count 
+> > > tricks in __aio_put_req, and always offload to fput_work the task of 
+> > > releasing the requests?
+> > > If that's a huge problem, IMO the lower impact fix would be to use 
+> > > aio_fput_routine to loop into a second list, releasing the eventual 
+> > > eventfd file*. There's no need, IMO, to turn the whole fput() into 
+> > > IRQ-callable just for this case, when we can contain it into the 
+> > > particular KAIO+eventfd usage.
+> > > 
+> > 
+> > Do you really want to see eventd doing umounts and remote flock() calls?
+> > This really needs to be run in a thread that can cope with __long__
+> > waits, unavailable servers, etc...
+> 
+> Did I miss something? This wouldn't be (eventually) on keventd shoulders, 
+> but on aio work queue (aio_wq).
+> I guess we could do the same optimization we're already doing for ki_filp, 
+> for ki_eventfd ...
 
-As advised by Greg KH:
+Last I checked, a call to schedule_work(&fddef->wq) would still run
+fd_defer_queue() under keventd.
 
-http://lkml.org/lkml/2009/3/13/131
+That said, even if you were to run it under aio_wq, the argument remains
+the same: do you really want to add potentially long lasting sleeps onto
+a work queue that was designed to service fast i/o requests?
 
-Replaced the usage of kernel_thread() with kthread_run().   Compiled
-successfully, but not tested as I don't have the hardware.
+Trond
 
-(parsed by scripts/checkpatch.pl as well).
-
-Thanks.
-
--- 
-Regards,
-Peter Teoh
-
---000e0cd147f21d821804650c46ea
-Content-Type: text/x-diff; charset=US-ASCII; name="rt2870_kernel_thread.patch"
-Content-Disposition: attachment; filename="rt2870_kernel_thread.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fs9rp3ex0
-
-UmVwbGFjZSB1c2Ugb2Yga2VybmVsX3RocmVhZCgpIHdpdGgga3RocmVhZF9ydW4oKSwgYXMgdGhl
-IGZvcm1lciBpcyBkZXByZWNhdGVkLgoKU2lnbmVkLW9mZi1ieTogUGV0ZXIgVGVvaCA8aHRtbGRl
-dmVsb3BlckBnbWFpbC5jb20+CgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9zdGFnaW5nL3J0Mjg3MC9j
-b21tb24vMjg3MF9ydG1wX2luaXQuYyBiL2RyaXZlcnMvc3RhZ2luZy9ydDI4NzAvY29tbW9uLzI4
-NzBfcnRtcF9pbml0LmMKaW5kZXggOWY1MTQzYi4uOWE4MWQwZSAxMDA2NDQKLS0tIGEvZHJpdmVy
-cy9zdGFnaW5nL3J0Mjg3MC9jb21tb24vMjg3MF9ydG1wX2luaXQuYworKysgYi9kcml2ZXJzL3N0
-YWdpbmcvcnQyODcwL2NvbW1vbi8yODcwX3J0bXBfaW5pdC5jCkBAIC03NjUsNyArNzY1LDcgQEAg
-TkRJU19TVEFUVVMJIENyZWF0ZVRocmVhZHMoCiB7CiAJUFJUTVBfQURBUFRFUiBwQWQgPSBuZXRf
-ZGV2LT5tbF9wcml2OwogCVBPU19DT09LSUUgcE9iaiA9IChQT1NfQ09PS0lFKSBwQWQtPk9TX0Nv
-b2tpZTsKLQlwaWRfdCBwaWRfbnVtYmVyID0gLTE7CisJc3RydWN0IHRhc2tfc3RydWN0ICp0c2s7
-CiAKIAkvL2luaXRfTVVURVgoJihwQWQtPnVzYmRldl9zZW1hcGhvcmUpKTsKIApAQCAtNzgwLDM1
-ICs3ODAsMzggQEAgTkRJU19TVEFUVVMJIENyZWF0ZVRocmVhZHMoCiAKIAkvLyBDcmVhdCBNTE1F
-IFRocmVhZAogCXBPYmotPk1MTUVUaHJfcGlkPSBUSFJFQURfUElEX0lOSVRfVkFMVUU7Ci0JcGlk
-X251bWJlciA9IGtlcm5lbF90aHJlYWQoTWxtZVRocmVhZCwgcEFkLCBDTE9ORV9WTSk7Ci0JaWYg
-KHBpZF9udW1iZXIgPCAwKQotCXsKKwl0c2sgPSBrdGhyZWFkX3J1bihNbG1lVGhyZWFkLCBwQWQs
-IHBBZC0+bmV0X2Rldi0+bmFtZSk7CisKKwlpZiAoSVNfRVJSKHRzaykpIHsKIAkJcHJpbnRrIChL
-RVJOX1dBUk5JTkcgIiVzOiB1bmFibGUgdG8gc3RhcnQgTWxtZSB0aHJlYWRcbiIscEFkLT5uZXRf
-ZGV2LT5uYW1lKTsKIAkJcmV0dXJuIE5ESVNfU1RBVFVTX0ZBSUxVUkU7CiAJfQotCXBPYmotPk1M
-TUVUaHJfcGlkID0gR0VUX1BJRChwaWRfbnVtYmVyKTsKKworCXBPYmotPk1MTUVUaHJfcGlkID0g
-Z2V0X3BpZCh0YXNrX3BpZCh0c2spKTsKIAkvLyBXYWl0IGZvciB0aGUgdGhyZWFkIHRvIHN0YXJ0
-CiAJd2FpdF9mb3JfY29tcGxldGlvbigmKHBBZC0+bWxtZUNvbXBsZXRlKSk7CiAKIAkvLyBDcmVh
-dCBDb21tYW5kIFRocmVhZAogCXBPYmotPlJUVVNCQ21kVGhyX3BpZD0gVEhSRUFEX1BJRF9JTklU
-X1ZBTFVFOwotCXBpZF9udW1iZXIgPSBrZXJuZWxfdGhyZWFkKFJUVVNCQ21kVGhyZWFkLCBwQWQs
-IENMT05FX1ZNKTsKLQlpZiAocGlkX251bWJlciA8IDApCisJdHNrID0ga3RocmVhZF9ydW4oUlRV
-U0JDbWRUaHJlYWQsIHBBZCwgcEFkLT5uZXRfZGV2LT5uYW1lKTsKKworCWlmIChJU19FUlIodHNr
-KSA8IDApCiAJewogCQlwcmludGsgKEtFUk5fV0FSTklORyAiJXM6IHVuYWJsZSB0byBzdGFydCBS
-VFVTQkNtZCB0aHJlYWRcbiIscEFkLT5uZXRfZGV2LT5uYW1lKTsKIAkJcmV0dXJuIE5ESVNfU1RB
-VFVTX0ZBSUxVUkU7CiAJfQotCXBPYmotPlJUVVNCQ21kVGhyX3BpZCA9IEdFVF9QSUQocGlkX251
-bWJlcik7CisKKwlwT2JqLT5SVFVTQkNtZFRocl9waWQgPSBnZXRfcGlkKHRhc2tfcGlkKHRzaykp
-OwogCXdhaXRfZm9yX2NvbXBsZXRpb24oJihwQWQtPkNtZFFDb21wbGV0ZSkpOwogCiAJcE9iai0+
-VGltZXJRVGhyX3BpZD0gVEhSRUFEX1BJRF9JTklUX1ZBTFVFOwotCXBpZF9udW1iZXIgPSBrZXJu
-ZWxfdGhyZWFkKFRpbWVyUVRocmVhZCwgcEFkLCBDTE9ORV9WTSk7Ci0JaWYgKHBpZF9udW1iZXIg
-PCAwKQorCXRzayA9IGt0aHJlYWRfcnVuKFRpbWVyUVRocmVhZCwgcEFkLCBwQWQtPm5ldF9kZXYt
-Pm5hbWUpOworCWlmIChJU19FUlIodHNrKSA8IDApCiAJewogCQlwcmludGsgKEtFUk5fV0FSTklO
-RyAiJXM6IHVuYWJsZSB0byBzdGFydCBUaW1lclFUaHJlYWRcbiIscEFkLT5uZXRfZGV2LT5uYW1l
-KTsKIAkJcmV0dXJuIE5ESVNfU1RBVFVTX0ZBSUxVUkU7CiAJfQotCXBPYmotPlRpbWVyUVRocl9w
-aWQgPSBHRVRfUElEKHBpZF9udW1iZXIpOworCXBPYmotPlRpbWVyUVRocl9waWQgPSBnZXRfcGlk
-KHRhc2tfcGlkKHRzaykpOwogCS8vIFdhaXQgZm9yIHRoZSB0aHJlYWQgdG8gc3RhcnQKIAl3YWl0
-X2Zvcl9jb21wbGV0aW9uKCYocEFkLT5UaW1lclFDb21wbGV0ZSkpOwogCmRpZmYgLS1naXQgYS9k
-cml2ZXJzL3N0YWdpbmcvcnQyODcwL3J0X2xpbnV4LmggYi9kcml2ZXJzL3N0YWdpbmcvcnQyODcw
-L3J0X2xpbnV4LmgKaW5kZXggODU5ZjljZS4uOWE4ZWQxYiAxMDA2NDQKLS0tIGEvZHJpdmVycy9z
-dGFnaW5nL3J0Mjg3MC9ydF9saW51eC5oCisrKyBiL2RyaXZlcnMvc3RhZ2luZy9ydDI4NzAvcnRf
-bGludXguaApAQCAtNDQsNiArNDQsNyBAQAogI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgogI2lu
-Y2x1ZGUgPGxpbnV4L3ZlcnNpb24uaD4KICNpbmNsdWRlIDxsaW51eC9rZXJuZWwuaD4KKyNpbmNs
-dWRlIDxsaW51eC9rdGhyZWFkLmg+CiAKICNpbmNsdWRlIDxsaW51eC9zcGlubG9jay5oPgogI2lu
-Y2x1ZGUgPGxpbnV4L2luaXQuaD4KZGlmZiAtLWdpdCBhL2RyaXZlcnMvc3RhZ2luZy91c2JpcC91
-c2JpcF9jb21tb24uYyBiL2RyaXZlcnMvc3RhZ2luZy91c2JpcC91c2JpcF9jb21tb24uYwppbmRl
-eCAyMmY5M2RkLi4zYmQ4NWI1IDEwMDY0NAotLS0gYS9kcml2ZXJzL3N0YWdpbmcvdXNiaXAvdXNi
-aXBfY29tbW9uLmMKKysrIGIvZHJpdmVycy9zdGFnaW5nL3VzYmlwL3VzYmlwX2NvbW1vbi5jCkBA
-IC0xOCw2ICsxOCw3IEBACiAgKi8KIAogI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgorI2luY2x1
-ZGUgPGxpbnV4L2t0aHJlYWQuaD4KICNpbmNsdWRlIDxsaW51eC9maWxlLmg+CiAjaW5jbHVkZSA8
-bGludXgvdGNwLmg+CiAjaW5jbHVkZSA8bGludXgvaW4uaD4KQEAgLTQwNiwxNiArNDA3LDE2IEBA
-IHZvaWQgdXNiaXBfc3RhcnRfdGhyZWFkcyhzdHJ1Y3QgdXNiaXBfZGV2aWNlICp1ZCkKIAkvKgog
-CSAqIHRocmVhZHMgYXJlIGludm9rZWQgcGVyIG9uZSBkZXZpY2UgKHBlciBvbmUgY29ubmVjdGlv
-bikuCiAJICovCi0JaW50IHJldHZhbDsKKwlzdHJ1Y3QgdGFza19zdHJ1Y3QgKnRzazsKIAotCXJl
-dHZhbCA9IGtlcm5lbF90aHJlYWQodXNiaXBfdGhyZWFkLCAodm9pZCAqKSZ1ZC0+dGNwX3J4LCAw
-KTsKLQlpZiAocmV0dmFsIDwgMCkgeworCXRzayA9IGt0aHJlYWRfcnVuKHVzYmlwX3RocmVhZCwg
-KHZvaWQgKikmdWQtPnRjcF9yeCwgInVzYmlwX3RjcF9yeCIpOworCWlmIChJU19FUlIodHNrKSA8
-IDApIHsKIAkJcHJpbnRrKEtFUk5fRVJSICJDcmVhdGluZyB0Y3BfcnggdGhyZWFkIGZvciB1ZCAl
-cCBmYWlsZWQuXG4iLAogCQkJCXVkKTsKIAkJcmV0dXJuOwogCX0KLQlyZXR2YWwgPSBrZXJuZWxf
-dGhyZWFkKHVzYmlwX3RocmVhZCwgKHZvaWQgKikmdWQtPnRjcF90eCwgMCk7Ci0JaWYgKHJldHZh
-bCA8IDApIHsKKwl0c2sgPSBrdGhyZWFkX3J1bih1c2JpcF90aHJlYWQsICh2b2lkICopJnVkLT50
-Y3BfdHgsICJ1c2JpcF90Y3BfdHgiKTsKKwlpZiAoSVNfRVJSKHRzaykgPCAwKSB7CiAJCXByaW50
-ayhLRVJOX0VSUiAiQ3JlYXRpbmcgdGNwX3R4IHRocmVhZCBmb3IgdWQgJXAgZmFpbGVkLlxuIiwK
-IAkJCQl1ZCk7CiAJCXJldHVybjsK
---000e0cd147f21d821804650c46ea--
