@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764240AbZCNBku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764280AbZCNBlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764240AbZCNBku (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbZCNBU6
+	id S1764280AbZCNBlO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbZCNBU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:58 -0400
-Received: from kroah.org ([198.145.64.141]:35322 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:59 -0400
+Received: from kroah.org ([198.145.64.141]:35336 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753903AbZCNBUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:38 -0400
+	id S1753344AbZCNBUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:39 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:39 2009
-Message-Id: <20090314011039.709998889@mini.kroah.org>
+Message-Id: <20090314011039.859419404@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:33 -0700
+Date: Fri, 13 Mar 2009 18:10:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Adam Lackorzynski <adam@os.inf.tu-dresden.de>,
-       Scott H Kilau <Scott_Kilau@digi.com>, Wendy Xiong <wendyx@us.ibm.com>
-Subject: [patch 056/114] jsm: additional device support
+       alan@lxorguk.ukuu.org.uk, Robert Hancock <hancockrwd@gmail.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 057/114] libata: Dont trust current capacity values in identify words 57-58
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=jsm-additional-device-support.patch
+Content-Disposition: inline; filename=libata-don-t-trust-current-capacity-values-in-identify-words-57-58.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,56 +39,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
+From: Robert Hancock <hancockrwd@gmail.com>
 
-commit ffa7525c13eb3db0fd19a3e1cffe2ce6f561f5f3 upstream.
+commit 968e594afdbc40b4270f9d4032ae8350475749d6 upstream.
 
-I have a Digi Neo 8 PCI card (114f:00b1) Serial controller: Digi
-International Digi Neo 8 (rev 05)
+Hanno Böck reported a problem where an old Conner CP30254 240MB hard drive
+was reported as 1.1TB in capacity by libata:
 
-that works with the jsm driver after using the following patch.
+http://lkml.org/lkml/2009/2/13/134
 
-Signed-off-by: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
-Cc: Scott H Kilau <Scott_Kilau@digi.com>
-Cc: Wendy Xiong <wendyx@us.ibm.com>
-Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+This was caused by libata trusting the drive's reported current capacity in
+sectors in identify words 57 and 58 if the drive does not support LBA and the
+current CHS translation values appear valid. Unfortunately it seems older
+ATA specs were vague about what this field should contain and a number of drives
+used values with wrong byte order or that were totally bogus. There's no
+unique information that it conveys and so we can just calculate the number
+of sectors from the reported current CHS values.
+
+While we're at it, clean up this function to use named constants for the
+identify word values.
+
+Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/jsm/jsm_driver.c |    3 +++
- include/linux/pci_ids.h         |    1 +
- 2 files changed, 4 insertions(+)
+ drivers/ata/libata-core.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
---- a/drivers/serial/jsm/jsm_driver.c
-+++ b/drivers/serial/jsm/jsm_driver.c
-@@ -84,6 +84,8 @@ static int jsm_probe_one(struct pci_dev 
- 	brd->pci_dev = pdev;
- 	if (pdev->device == PCIE_DEVICE_ID_NEO_4_IBM)
- 		brd->maxports = 4;
-+	else if (pdev->device == PCI_DEVICE_ID_DIGI_NEO_8)
-+		brd->maxports = 8;
- 	else
- 		brd->maxports = 2;
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -1251,14 +1251,16 @@ static u64 ata_id_n_sectors(const u16 *i
+ {
+ 	if (ata_id_has_lba(id)) {
+ 		if (ata_id_has_lba48(id))
+-			return ata_id_u64(id, 100);
++			return ata_id_u64(id, ATA_ID_LBA_CAPACITY_2);
+ 		else
+-			return ata_id_u32(id, 60);
++			return ata_id_u32(id, ATA_ID_LBA_CAPACITY);
+ 	} else {
+ 		if (ata_id_current_chs_valid(id))
+-			return ata_id_u32(id, 57);
++			return id[ATA_ID_CUR_CYLS] * id[ATA_ID_CUR_HEADS] *
++			       id[ATA_ID_CUR_SECTORS];
+ 		else
+-			return id[1] * id[3] * id[6];
++			return id[ATA_ID_CYLS] * id[ATA_ID_HEADS] *
++			       id[ATA_ID_SECTORS];
+ 	}
+ }
  
-@@ -212,6 +214,7 @@ static struct pci_device_id jsm_pci_tbl[
- 	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCI_DEVICE_ID_NEO_2RJ45), 0, 0, 2 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCI_DEVICE_ID_NEO_2RJ45PRI), 0, 0, 3 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCIE_DEVICE_ID_NEO_4_IBM), 0, 0, 4 },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCI_DEVICE_ID_DIGI_NEO_8), 0, 0, 5 },
- 	{ 0, }
- };
- MODULE_DEVICE_TABLE(pci, jsm_pci_tbl);
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -1445,6 +1445,7 @@
- #define PCI_DEVICE_ID_DIGI_DF_M_E	0x0071
- #define PCI_DEVICE_ID_DIGI_DF_M_IOM2_A	0x0072
- #define PCI_DEVICE_ID_DIGI_DF_M_A	0x0073
-+#define PCI_DEVICE_ID_DIGI_NEO_8	0x00B1
- #define PCI_DEVICE_ID_NEO_2DB9          0x00C8
- #define PCI_DEVICE_ID_NEO_2DB9PRI       0x00C9
- #define PCI_DEVICE_ID_NEO_2RJ45         0x00CA
 
 
