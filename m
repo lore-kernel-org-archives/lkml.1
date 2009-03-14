@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbZCNWxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZCNXEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbZCNWxS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 18:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZCNWxH
+	id S1755849AbZCNXEA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 19:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZCNXDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 18:53:07 -0400
-Received: from gw.goop.org ([64.81.55.164]:33166 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751624AbZCNWxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 18:53:07 -0400
-Message-ID: <49BC354E.4070809@goop.org>
-Date: Sat, 14 Mar 2009 15:53:02 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sat, 14 Mar 2009 19:03:50 -0400
+Received: from brm-mailgate-2.brocade.com ([144.49.197.3]:25726 "EHLO
+	brm-mailgate-2.brocade.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751079AbZCNXDt convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 19:03:49 -0400
+X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Mar 2009 19:03:49 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: David Newall <davidn@davidnewall.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Screwy arch/x86/include/asm/string_32.h
-References: <49BBD619.6050809@davidnewall.com>
-In-Reply-To: <49BBD619.6050809@davidnewall.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 0/5] bfa: Brocade BFA FC SCSI driver (overview)
+Date: Sat, 14 Mar 2009 15:48:20 -0700
+Message-ID: <4C94DE2070B172459E4F1EE14BD2364E02AA6C46@HQ-EXCH-5.corp.brocade.com>
+In-Reply-To: <20090314211328.GC3353@uranus.ravnborg.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/5] bfa: Brocade BFA FC SCSI driver (overview)
+Thread-Index: Acmk6XNTGXASMW0WRuSKvR6TLjK2DAADGKGw
+References: <200903141952.n2EJqeHb028773@blc-10-6.brocade.com> <20090314211328.GC3353@uranus.ravnborg.org>
+From: "Jing Huang" <huangj@Brocade.COM>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Cc: <James.Bottomley@HansenPartnership.com>,
+       "Krishna Gudipati" <kgudipat@Brocade.COM>,
+       <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       "Ramkumar Vadivelu" <rvadivel@Brocade.COM>,
+       "Vinodh Ravindran" <vravindr@Brocade.COM>
+X-OriginalArrivalTime: 14 Mar 2009 22:48:38.0052 (UTC) FILETIME=[03919640:01C9A4F7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Newall wrote:
-> There's a lot of weirdness in __constant_memcpy in
-> arch/x86/include/asm/string_32.h (2.6.29-rc7).
->
->    1. The first switch is missing a case for n equal 7.
->   
-That's because there's no way to copy 7 bytes in two operations of 1/2/4 
-bytes; it would need to be 3 (4+2+1), which I guess the author deemed 
-overly complex.
+> 
+> Your submission was screwed up somehow?
+> You had plenty of [0/5]....
+> 
 
->    2. When n < 20, the four tests (n > 16, n > 12, n > 8 & n > 4)
->       execute identical statements; always 'asm volatile("movsl" :
->       "=&D"(edi), "=&S"(esi) : "0"(edi), "1"(esi) : "memory")'.
->   
+Yes, I forgot to increment the number so I sent them again. Sorry about
+the mess.
 
-movs is a string instruction which has the side-effect of incrementing 
-esi and edi, so each if() falls through to copy the next 4 bytes.
+> Have you ran this through checkpatch - and what is the result?
+> Have you run this through sparse - and what is the result?
+> 
 
-However, the tail switch should probably use plain "mov" rather than 
-"movs" because nobody uses esi/edi afterwards.
+We did ran checkpatch and sparse, it used to be 100% clean, but recently
+we made a lot of changes to our driver, and some new issues have been
+introduced, we will fix them in next submission.
 
-    J
+Thanks for the reviewing the code!
