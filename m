@@ -1,123 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbZCNVkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbZCNVkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758285AbZCNVkj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 17:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758041AbZCNVjs
+	id S1758346AbZCNVkx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 17:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758022AbZCNVju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 17:39:48 -0400
+	Sat, 14 Mar 2009 17:39:50 -0400
 Received: from pne-smtpout2-sn2.hy.skanova.net ([81.228.8.164]:57987 "EHLO
 	pne-smtpout2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757728AbZCNVjr (ORCPT
+	by vger.kernel.org with ESMTP id S1758052AbZCNVjt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 17:39:47 -0400
+	Sat, 14 Mar 2009 17:39:49 -0400
 From: =?utf-8?q?Erik=20Andr=C3=A9n?= <erik.andren@gmail.com>
 To: greg@kroah.com
 Cc: linux-kernel@vger.kernel.org,
        =?utf-8?q?Erik=20Andr=C3=A9n?= <erik.andren@gmail.com>
-Subject: [PATCH 02/09] Checkpatch.pl: Fixup debug.h
-Date: Sat, 14 Mar 2009 22:39:29 +0100
-Message-Id: <1237066776-14697-3-git-send-email-erik.andren@gmail.com>
+Subject: [PATCH 03/09] Checkpatch.pl: Fixup pci.c
+Date: Sat, 14 Mar 2009 22:39:30 +0100
+Message-Id: <1237066776-14697-4-git-send-email-erik.andren@gmail.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1237066776-14697-2-git-send-email-erik.andren@gmail.com>
+In-Reply-To: <1237066776-14697-3-git-send-email-erik.andren@gmail.com>
 References: <1>
  <1237066776-14697-1-git-send-email-erik.andren@gmail.com>
  <1237066776-14697-2-git-send-email-erik.andren@gmail.com>
+ <1237066776-14697-3-git-send-email-erik.andren@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erik Andrén <erik.andren@gmail.com>
 ---
- drivers/staging/agnx/debug.h |   21 ++++++++++-----------
- 1 files changed, 10 insertions(+), 11 deletions(-)
+ drivers/staging/agnx/pci.c |   68 +++++++++++++++++++++----------------------
+ 1 files changed, 33 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/staging/agnx/debug.h b/drivers/staging/agnx/debug.h
-index e3e25dd..761d99c 100644
---- a/drivers/staging/agnx/debug.h
-+++ b/drivers/staging/agnx/debug.h
-@@ -23,7 +23,7 @@ static inline void agnx_bug(char *reason)
+diff --git a/drivers/staging/agnx/pci.c b/drivers/staging/agnx/pci.c
+index 854630c..97bbf60 100644
+--- a/drivers/staging/agnx/pci.c
++++ b/drivers/staging/agnx/pci.c
+@@ -39,34 +39,34 @@ static inline void agnx_interrupt_ack(struct agnx_priv *priv, u32 *reason)
+ 	void __iomem *ctl = priv->ctl;
+ 	u32 reg;
  
- static inline void agnx_print_desc(struct agnx_desc *desc)
+-	if ( *reason & AGNX_STAT_RX ) {
++	if (*reason & AGNX_STAT_RX) {
+ 		/* Mark complete RX */
+ 		reg = ioread32(ctl + AGNX_CIR_RXCTL);
+ 		reg |= 0x4;
+ 		iowrite32(reg, ctl + AGNX_CIR_RXCTL);
+ 		/* disable Rx interrupt */
+ 	}
+-	if ( *reason & AGNX_STAT_TX ) {
++	if (*reason & AGNX_STAT_TX) {
+ 		reg = ioread32(ctl + AGNX_CIR_TXDCTL);
+ 		if (reg & 0x4) {
+ 			iowrite32(reg, ctl + AGNX_CIR_TXDCTL);
+ 			*reason |= AGNX_STAT_TXD;
+ 		}
+- 		reg = ioread32(ctl + AGNX_CIR_TXMCTL);
++		reg = ioread32(ctl + AGNX_CIR_TXMCTL);
+ 		if (reg & 0x4) {
+ 			iowrite32(reg, ctl + AGNX_CIR_TXMCTL);
+ 			*reason |= AGNX_STAT_TXM;
+ 		}
+ 	}
+-	if ( *reason & AGNX_STAT_X ) {
+-/* 		reg = ioread32(ctl + AGNX_INT_STAT); */
+-/* 		iowrite32(reg, ctl + AGNX_INT_STAT); */
+-/* 		/\* FIXME reinit interrupt mask *\/ */
+-/* 		reg = 0xc390bf9 & ~IRQ_TX_BEACON; */
+-/* 		reg &= ~IRQ_TX_DISABLE; */
+-/* 		iowrite32(reg, ctl + AGNX_INT_MASK); */
+-/* 		iowrite32(0x800, ctl + AGNX_CIR_BLKCTL); */
+-	}
++/*	if (*reason & AGNX_STAT_X) {
++		reg = ioread32(ctl + AGNX_INT_STAT);
++		iowrite32(reg, ctl + AGNX_INT_STAT);
++		/* FIXME reinit interrupt mask *\/
++		reg = 0xc390bf9 & ~IRQ_TX_BEACON;
++		reg &= ~IRQ_TX_DISABLE;
++		iowrite32(reg, ctl + AGNX_INT_MASK);
++		iowrite32(0x800, ctl + AGNX_CIR_BLKCTL);
++	} */
+ } /* agnx_interrupt_ack */
+ 
+ static irqreturn_t agnx_interrupt_handler(int irq, void *dev_id)
+@@ -79,7 +79,7 @@ static irqreturn_t agnx_interrupt_handler(int irq, void *dev_id)
+ 
+ 	spin_lock(&priv->lock);
+ 
+-//	printk(KERN_ERR PFX "Get a interrupt %s\n", __func__);
++/*	printk(KERN_ERR PFX "Get a interrupt %s\n", __func__); */
+ 
+ 	if (priv->init_status != AGNX_START)
+ 		goto out;
+@@ -92,7 +92,7 @@ static irqreturn_t agnx_interrupt_handler(int irq, void *dev_id)
+ 	ret = IRQ_HANDLED;
+ 	priv->irq_status = ioread32(ctl + AGNX_INT_STAT);
+ 
+-//	printk(PFX "Interrupt reason is 0x%x\n", irq_reason);
++/*	printk(PFX "Interrupt reason is 0x%x\n", irq_reason); */
+ 	/* Make sure the txm and txd flags don't conflict with other unknown
+ 	   interrupt flag, maybe is not necessary */
+ 	irq_reason &= 0xF;
+@@ -101,13 +101,13 @@ static irqreturn_t agnx_interrupt_handler(int irq, void *dev_id)
+ 	/* TODO Make sure the card finished initialized */
+ 	agnx_interrupt_ack(priv, &irq_reason);
+ 
+-	if ( irq_reason & AGNX_STAT_RX )
++	if (irq_reason & AGNX_STAT_RX)
+ 		handle_rx_irq(priv);
+-	if ( irq_reason & AGNX_STAT_TXD )
++	if (irq_reason & AGNX_STAT_TXD)
+ 		handle_txd_irq(priv);
+-	if ( irq_reason & AGNX_STAT_TXM )
++	if (irq_reason & AGNX_STAT_TXM)
+ 		handle_txm_irq(priv);
+-	if ( irq_reason & AGNX_STAT_X )
++	if (irq_reason & AGNX_STAT_X)
+ 		handle_other_irq(priv);
+ 
+ 	enable_rx_interrupt(priv);
+@@ -171,7 +171,7 @@ static int agnx_alloc_rings(struct agnx_priv *priv)
+ 
+ 	len = priv->rx.size + priv->txm.size + priv->txd.size;
+ 
+-//	priv->rx.info = kzalloc(sizeof(struct agnx_info) * len, GFP_KERNEL);
++/*	priv->rx.info = kzalloc(sizeof(struct agnx_info) * len, GFP_KERNEL); */
+ 	priv->rx.info = kzalloc(sizeof(struct agnx_info) * len, GFP_ATOMIC);
+ 	if (!priv->rx.info)
+ 		return -ENOMEM;
+@@ -210,28 +210,27 @@ static void rings_free(struct agnx_priv *priv)
+ #if 0
+ static void agnx_periodic_work_handler(struct work_struct *work)
  {
--        u32 reg = be32_to_cpu(desc->frag);
-+	u32 reg = be32_to_cpu(desc->frag);
+-	struct agnx_priv *priv = container_of(work, struct agnx_priv,
+-                                             periodic_work.work);
+-//	unsigned long flags;
++	struct agnx_priv *priv = container_of(work, struct agnx_priv, periodic_work.work);
++/*	unsigned long flags; */
+ 	unsigned long delay;
  
- 	PRINTK_BITS(DESC, PACKET_LEN);
+ 	/* fixme: using mutex?? */
+-//	spin_lock_irqsave(&priv->lock, flags);
++/*	spin_lock_irqsave(&priv->lock, flags); */
  
-@@ -291,7 +291,7 @@ static inline void agnx_print_sta(struct agnx_priv *priv, unsigned int sta_idx)
- 	PRINTK_LE32(STA, sta->phy_stats_high);
- 	PRINTK_LE32(STA, sta->phy_stats_low);
+ 	/* TODO Recalibrate*/
+-//	calibrate_oscillator(priv);
+-//	antenna_calibrate(priv);
+-//	agnx_send_packet(priv, 997);
++/*	calibrate_oscillator(priv); */
++/*	antenna_calibrate(priv); */
++/*	agnx_send_packet(priv, 997); /
+ 	/* FIXME */
+ /* 	if (debug == 3) */
+ /*                 delay = msecs_to_jiffies(AGNX_PERIODIC_DELAY); */
+ /* 	else */
+ 	delay = msecs_to_jiffies(AGNX_PERIODIC_DELAY);
+-//		delay = round_jiffies(HZ * 15);
++/*	delay = round_jiffies(HZ * 15); */
  
--//	for (i = 0; i < 8; i++)
-+	/* for (i = 0; i < 8; i++) */
- 	agnx_print_sta_traffic(sta->traffic + 0);
+ 	queue_delayed_work(priv->hw->workqueue, &priv->periodic_work, delay);
  
- 	PRINTK_LE16(STA, sta->traffic_class0_frag_success);
-@@ -311,10 +311,10 @@ static inline void agnx_print_sta(struct agnx_priv *priv, unsigned int sta_idx)
- static inline void dump_ieee80211_hdr(struct ieee80211_hdr *hdr, char *tag)
- {
- 	u16 fctl;
--        int hdrlen;
-+	int hdrlen;
- 	DECLARE_MAC_BUF(mac);
+-//	spin_unlock_irqrestore(&priv->lock, flags);
++/*	spin_unlock_irqrestore(&priv->lock, flags); */
+ }
+ #endif
  
--        fctl = le16_to_cpu(hdr->frame_control);
-+	fctl = le16_to_cpu(hdr->frame_control);
- 	switch (fctl & IEEE80211_FCTL_FTYPE) {
- 	case IEEE80211_FTYPE_DATA:
- 		printk(PFX "%s DATA ", tag);
-@@ -324,7 +324,7 @@ static inline void dump_ieee80211_hdr(struct ieee80211_hdr *hdr, char *tag)
- 		break;
- 	case IEEE80211_FTYPE_MGMT:
- 		printk(PFX "%s MGMT ", tag);
--		switch(fctl & IEEE80211_FCTL_STYPE) {
-+		switch (fctl & IEEE80211_FCTL_STYPE) {
- 		case IEEE80211_STYPE_ASSOC_REQ:
- 			printk("SubType: ASSOC_REQ ");
- 			break;
-@@ -369,7 +369,7 @@ static inline void dump_ieee80211_hdr(struct ieee80211_hdr *hdr, char *tag)
- 		printk(PFX "%s Packet type: Unknow\n", tag);
+@@ -255,12 +254,12 @@ static int agnx_start(struct ieee80211_hw *dev)
+ 		goto out;
  	}
  
--        hdrlen = ieee80211_hdrlen(fctl);
-+	hdrlen = ieee80211_hdrlen(fctl);
+-//	mdelay(500);
++/*	mdelay(500); */
  
- 	if (hdrlen >= 4)
- 		printk("FC=0x%04x DUR=0x%04x",
-@@ -389,29 +389,28 @@ static inline void dump_txm_registers(struct agnx_priv *priv)
- {
- 	void __iomem *ctl = priv->ctl;
- 	int i;
--	for (i = 0; i <=0x1e8; i += 4) {
-+	for (i = 0; i <= 0x1e8; i += 4)
- 		printk(KERN_DEBUG PFX "TXM: %x---> 0x%.8x\n", i, ioread32(ctl + i));
--	}
- }
- static inline void dump_rxm_registers(struct agnx_priv *priv)
- {
- 	void __iomem *ctl = priv->ctl;
- 	int i;
--	for (i = 0; i <=0x108; i += 4)
-+	for (i = 0; i <= 0x108; i += 4)
- 		printk(KERN_DEBUG PFX "RXM: %x---> 0x%.8x\n", i, ioread32(ctl + 0x2000 + i));
- }
- static inline void dump_bm_registers(struct agnx_priv *priv)
- {
- 	void __iomem *ctl = priv->ctl;
- 	int i;
--	for (i = 0; i <=0x90; i += 4)
-+	for (i = 0; i <= 0x90; i += 4)
- 		printk(KERN_DEBUG PFX "BM: %x---> 0x%.8x\n", i, ioread32(ctl + 0x2c00 + i));
- }
- static inline void dump_cir_registers(struct agnx_priv *priv)
- {
- 	void __iomem *ctl = priv->ctl;
- 	int i;
--	for (i = 0; i <=0xb8; i += 4)
-+	for (i = 0; i <= 0xb8; i += 4)
- 		printk(KERN_DEBUG PFX "CIR: %x---> 0x%.8x\n", i, ioread32(ctl + 0x3000 + i));
- }
+ 	might_sleep();
+ 	agnx_hw_init(priv);
  
+-//	mdelay(500);
++/*	mdelay(500); */
+ 	might_sleep();
+ 
+ 	priv->init_status = AGNX_START;
+@@ -280,8 +279,8 @@ static void agnx_stop(struct ieee80211_hw *dev)
+ 	/* make sure hardware will not generate irq */
+ 	agnx_hw_reset(priv);
+ 	free_irq(priv->pdev->irq, dev);
+-        flush_workqueue(priv->hw->workqueue);
+-//	cancel_delayed_work_sync(&priv->periodic_work);
++	flush_workqueue(priv->hw->workqueue);
++/*	cancel_delayed_work_sync(&priv->periodic_work); */
+ 	unfill_rings(priv);
+ 	rings_free(priv);
+ }
+@@ -315,7 +314,6 @@ static int agnx_config_interface(struct ieee80211_hw *dev,
+ 	spin_lock(&priv->lock);
+ 
+ 	if (memcmp(conf->bssid, priv->bssid, ETH_ALEN)) {
+-//		u32 reghi, reglo;
+ 		agnx_set_bssid(priv, conf->bssid);
+ 		memcpy(priv->bssid, conf->bssid, ETH_ALEN);
+ 		hash_write(priv, conf->bssid, BSSID_STAID);
+@@ -425,7 +423,7 @@ static struct ieee80211_ops agnx_ops = {
+ 	.remove_interface	= agnx_remove_interface,
+ 	.config			= agnx_config,
+ 	.config_interface	= agnx_config_interface,
+- 	.configure_filter	= agnx_configure_filter,
++	.configure_filter	= agnx_configure_filter,
+ 	.get_stats		= agnx_get_stats,
+ 	.get_tx_stats		= agnx_get_tx_stats,
+ 	.get_tsf		= agnx_get_tsft
+@@ -504,7 +502,7 @@ static int __devinit agnx_pci_probe(struct pci_dev *pdev,
+ 
+ 	/* Map mem #1 and #2 */
+ 	priv->ctl = pci_iomap(pdev, 0, mem_len0);
+-//	printk(KERN_DEBUG PFX"MEM1 mapped address is 0x%p\n", priv->ctl);
++/*	printk(KERN_DEBUG PFX"MEM1 mapped address is 0x%p\n", priv->ctl); */
+ 	if (!priv->ctl) {
+ 		printk(KERN_ERR PFX "Can't map device memory\n");
+ 		goto err_free_dev;
 -- 
 1.6.0.4
 
