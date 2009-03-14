@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbZCNLir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715AbZCNLiB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756995AbZCNLir (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 07:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbZCNLf6
+	id S1756715AbZCNLiB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 07:38:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbZCNLf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 07:35:58 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40262 "EHLO ogre.sisk.pl"
+	Sat, 14 Mar 2009 07:35:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40242 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755376AbZCNLfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 07:35:47 -0400
+	id S1755051AbZCNLfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 07:35:45 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 11/11] PCI PM: Restore config spaces of all devices during early resume
-Date: Sat, 14 Mar 2009 12:34:47 +0100
+Subject: [PATCH 6/11] PCI PM: Consistently use variable name "error" for pm call return values
+Date: Sat, 14 Mar 2009 12:30:35 +0100
 User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,7 +23,7 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
+       Linux PCI <linux-pci@vger.kernel.org>, Frans Pop <elendil@planet.nl>
 References: <200902221837.49396.rjw@sisk.pl> <200903141224.29591.rjw@sisk.pl>
 In-Reply-To: <200903141224.29591.rjw@sisk.pl>
 MIME-Version: 1.0
@@ -31,87 +31,74 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903141234.49095.rjw@sisk.pl>
+Message-Id: <200903141230.36190.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Frans Pop <elendil@planet.nl>
 
-At present the configuration spaces of PCI devices that have no
-drivers or no PM support in the drivers (either legacy or through a
-pm object) are not saved during suspend and, consequently, they are
-not restored during resume.  This generally may lead to the state of
-the system being slightly inconsistent after the resume, so it's
-better to save and restore the configuration spaces of these devices
-as well.
+I noticed two functions use a variable "i" to store the return value of PM
+function calls while the rest of the file uses "error". As "i" normally
+indicates a counter of some sort it seems better to keep this consistent.
 
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-driver.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/pci/pci-driver.c |   20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
 Index: linux-2.6/drivers/pci/pci-driver.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci-driver.c
 +++ linux-2.6/drivers/pci/pci-driver.c
-@@ -516,13 +516,13 @@ static int pci_pm_suspend(struct device 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_SUSPEND);
+@@ -352,17 +352,17 @@ static int pci_legacy_suspend(struct dev
+ {
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	struct pci_driver * drv = pci_dev->driver;
+-	int i = 0;
++	int error = 0;
  
-+	pci_dev->state_saved = false;
-+
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		goto Fixup;
- 	}
- 
--	pci_dev->state_saved = false;
--
- 	if (pm->suspend) {
+ 	if (drv && drv->suspend) {
  		pci_power_t prev = pci_dev->current_state;
- 		int error;
-@@ -554,8 +554,10 @@ static int pci_pm_suspend_noirq(struct d
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
  
--	if (!pm)
-+	if (!pm) {
-+		pci_save_state(pci_dev);
- 		return 0;
-+	}
+ 		pci_dev->state_saved = false;
  
- 	if (pm->suspend_noirq) {
- 		pci_power_t prev = pci_dev->current_state;
-@@ -650,13 +652,13 @@ static int pci_pm_freeze(struct device *
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_FREEZE);
+-		i = drv->suspend(pci_dev, state);
+-		suspend_report_result(drv->suspend, i);
+-		if (i)
+-			return i;
++		error = drv->suspend(pci_dev, state);
++		suspend_report_result(drv->suspend, error);
++		if (error)
++			return error;
  
-+	pci_dev->state_saved = false;
-+
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		return 0;
+ 		if (pci_dev->state_saved)
+ 			goto Fixup;
+@@ -385,20 +385,20 @@ static int pci_legacy_suspend(struct dev
+  Fixup:
+ 	pci_fixup_device(pci_fixup_suspend, pci_dev);
+ 
+-	return i;
++	return error;
+ }
+ 
+ static int pci_legacy_suspend_late(struct device *dev, pm_message_t state)
+ {
+ 	struct pci_dev * pci_dev = to_pci_dev(dev);
+ 	struct pci_driver * drv = pci_dev->driver;
+-	int i = 0;
++	int error = 0;
+ 
+ 	if (drv && drv->suspend_late) {
+-		i = drv->suspend_late(pci_dev, state);
+-		suspend_report_result(drv->suspend_late, i);
++		error = drv->suspend_late(pci_dev, state);
++		suspend_report_result(drv->suspend_late, error);
  	}
+-	return i;
++	return error;
+ }
  
--	pci_dev->state_saved = false;
--
- 	if (pm->freeze) {
- 		int error;
- 
-@@ -738,13 +740,13 @@ static int pci_pm_poweroff(struct device
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
- 
-+	pci_dev->state_saved = false;
-+
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
- 		goto Fixup;
- 	}
- 
--	pci_dev->state_saved = false;
--
- 	if (pm->poweroff) {
- 		int error;
- 
+ static int pci_legacy_resume_early(struct device *dev)
