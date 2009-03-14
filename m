@@ -1,67 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbZCNUvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbZCNVBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757594AbZCNUvt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 16:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZCNUvk
+	id S1757259AbZCNVBK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 17:01:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZCNVAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 16:51:40 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:23799 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbZCNUvj convert rfc822-to-8bit (ORCPT
+	Sat, 14 Mar 2009 17:00:55 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:42795 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751242AbZCNVAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 16:51:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=uE9G+AO8Lz0cpDDq7BAgV/1mz66i11u+MgJGOzycqp7CdHmGZ5VjGufVmaAlbSCUaQ
-         WW0eKj1FvinXEJC8F/NuCWM96vTOr0Yqp7iVvTYwdcsZcQoea7MSh+6EKhHqD3oGz1ma
-         h4Vgcu9PyD5hFKD/N7WEgZLUJyxizXWpTxV/o=
-MIME-Version: 1.0
-Date: Sat, 14 Mar 2009 13:51:36 -0700
-Message-ID: <3aa654a40903141351y26f2e732t67dd1ac69651f909@mail.gmail.com>
-Subject: Generic timeout warnings begin after v2.6.25 but before v2.6.26-rc1 
-	[Was: DRDY ata message > 2.6.24.7-rt14, not before.]
-From: Avuton Olrich <avuton@gmail.com>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux IDE <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jeff@pobox.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 14 Mar 2009 17:00:54 -0400
+Date: Sat, 14 Mar 2009 22:02:51 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jing Huang <huangj@brocade.com>
+Cc: James.Bottomley@HansenPartnership.com, kgudipat@brocade.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       rvadivel@brocade.com, vravindr@brocade.com
+Subject: Re: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver (makefile)
+Message-ID: <20090314210251.GA3353@uranus.ravnborg.org>
+References: <200903141958.n2EJwffd030299@blc-10-6.brocade.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903141958.n2EJwffd030299@blc-10-6.brocade.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 27, 2009 at 3:54 PM, Jeff Garzik <jgarzik@pobox.com> wrote:
-> Avuton Olrich wrote:
->>
->> ata4.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
->> ata4.00: cmd 35/00:10:b0:70:75/00:00:1f:00:00/e0 tag 0 dma 8192 out
->>         res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
->
->
-> Since you are seeing generic timeouts, without additional information, I
-> would guess either a problem with interrupt delivery (not uncommon in -rt
-> kernels) or you need to force your drives to 1.5Gbps.
->
->        Jeff
+On Sat, Mar 14, 2009 at 12:58:41PM -0700, Jing Huang wrote:
+> From: Jing Huang <huangj@brocade.com>
+> 
+> This patch contains Makefile and Kconfig file for scsi and bfa. It is created
+> using 2.6.29-rc8 kernel.
+> 
+> Signed-off-by: Jing Huang <huangj@brocade.com>
+> ---
+>  Kconfig      |    9 +++++++++
+>  Makefile     |    1 +
+>  bfa/Makefile |   28 ++++++++++++++++++++++++++++
+>  3 files changed, 38 insertions(+)
+> 
+> diff -urpN orig/drivers/scsi/bfa/Makefile patch/drivers/scsi/bfa/Makefile
+> --- orig/drivers/scsi/bfa/Makefile	1969-12-31 16:00:00.000000000 -0800
+> +++ patch/drivers/scsi/bfa/Makefile	2009-03-14 11:44:59.337712000 -0700
+> @@ -0,0 +1,28 @@
+> +#
+> +# Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
+> +# All rights reserved
+> +# www.brocade.com
+> +# 
+> +# Linux driver for Brocade Fibre Channel Host Bus Adapter.
+> +#
+> +# This program is free software; you can redistribute it and/or modify it
+> +# under the terms of the GNU General Public License (GPL) Version 2 as
+> +# published by the Free Software Foundation
+> +#
+> +# This program is distributed in the hope that it will be useful, but
+> +# WITHOUT ANY WARRANTY; without even the implied warranty of
+> +# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> +# General Public License for more details.
+> +#
 
-OK, I have tried to bisect it (completely without -rt) and it breaks
-completely somewhere on the outer limits of this bug. Unfortunately,
-there was an unrelated libata bug which made it where 4 of my drives
-were not recognized, and since the drive that has this general timeout
-issue with linux is dedicated to an lvm I depend on those other drives
-so I can mount the lvm so I can reproduce this bug.
+No one else needs this boiler plate - please remove it.
 
-What I do know:
+> +obj-$(CONFIG_SCSI_BFA_FC) := bfa.o
 
-Good: v2.6.25
-Bad: pre v2.6.26-rc1 (9752082560b440e6a45624569d26802e20d1b8b4)
+OK
 
-Please, How can I help further?
--- 
-avuton
---
-|  (\_/)  This is Bunny. Copy and paste Bunny
-| (='.'=) into your signature to help him gain
-| (")_(") world domination.
+> +
+> +bfa-objs := bfad.o bfad_intr.o bfad_os.o bfad_im.o bfad_attr.o bfad_fwimg.o \
+> +	    bfa_core.o bfa_ioc.o bfa_iocfc.o bfa_fcxp.o bfa_diag.o \
+> +	    bfa_fcdiag.o bfa_lps.o bfa_hw_cb.o bfa_hw_ct.o bfa_drv.o  \
+> +            bfa_intr.o bfa_timer.o bfa_rport.o bfa_port.o bfa_uf.o \
+> +            bfa_sgpg.o  bfa_module.o bfa_ioim.o bfa_itnim.o bfa_fcpim.o \
+> +	    bfa_tskim.o bfa_port.o bfa_vport.o bfa_lport.o bfa_fabric.o   \
+> +            bfa_auth.o  bfa_vfapi.o bfa_log.o bfa_log_module.o bfa_csdebug.o \
+> +            bfa_sm.o plog.o
+
+a) use of -objs is deprecated.
+Please use:
+bfa-y := bfad.o ...
+
+b) As a style thing the following is preferred (by me at least):
+bfa-y := bfad.o bfad_intr.o bfad_os.o bfad_im.o bfad_attr.o bfad_fwimg.o
+
+# core stuff 
+bfa-y += bfa_core.o bfa_ioc.o bfa_iocfc.o bfa_fcxp.o bfa_diag.o
+
+# interrup hander
+bfa-y += bfa_intr.o 
+
+No longer any need for escaping the newline with a backslahs
+And you can add descriptive comments too.
+
+> +EXTRA_CFLAGS += -I$(obj) -I$(obj)/include
+
+Neither of the above is needed.
+If you really need to specify addtional options to gcc use:
+ccflags-y := ...
+
+	Sam
