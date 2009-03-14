@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762019AbZCNB3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbZCNB3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762019AbZCNB3Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZCNBUS
+	id S1762165AbZCNB3n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbZCNBUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:18 -0400
-Received: from kroah.org ([198.145.64.141]:34975 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:19 -0400
+Received: from kroah.org ([198.145.64.141]:34979 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751989AbZCNBUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:07 -0400
+	id S1753315AbZCNBUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:08 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:35 2009
-Message-Id: <20090314011035.083555445@mini.kroah.org>
+Message-Id: <20090314011035.242544713@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:02 -0700
+Date: Fri, 13 Mar 2009 18:10:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Phil Sutter <n0-1@freewrt.org>,
-       Wim Van Sebroeck <wim@iguana.be>
-Subject: [patch 025/114] WATCHDOG: rc32434_wdt: fix sections
+       alan@lxorguk.ukuu.org.uk, Faisal Latif <faisal.latif@intel.com>,
+       Roland Dreier <rolandd@cisco.com>
+Subject: [patch 026/114] RDMA/nes: Dont allow userspace QPs to use STag zero
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=watchdog-rc32434_wdt-fix-sections.patch
+Content-Disposition: inline; filename=rdma-nes-don-t-allow-userspace-qps-to-use-stag-zero.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,63 +39,140 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Phil Sutter <n0-1@freewrt.org>
+From: Faisal Latif <faisal.latif@intel.com>
 
-commit d9a8798c4bab5ccd40e45e011f668099cfb3eb83 upstream.
+commit c12e56ef6951f4fce1afe9ef6aab9243ea9a9b04 upstream.
 
-Fix init and exit sections.
+STag zero is a special STag that allows consumers to access any bus
+address without registering memory.  The nes driver unfortunately
+allows STag zero to be used even with QPs created by unprivileged
+userspace consumers, which means that any process with direct verbs
+access to the nes device can read and write any memory accessible to
+the underlying PCI device (usually any memory in the system).  Such
+access is usually given for cluster software such as MPI to use, so
+this is a local privilege escalation bug on most systems running this
+driver.
 
-Signed-off-by: Phil Sutter <n0-1@freewrt.org>
-Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+The driver was using STag zero to receive the last streaming mode
+data; to allow STag zero to be disabled for unprivileged QPs, the
+driver now registers a special MR for this data.
+
+Signed-off-by: Faisal Latif <faisal.latif@intel.com>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/watchdog/rc32434_wdt.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/infiniband/hw/nes/nes_cm.c    |   37 +++++++++++++++++++++++++++++-----
+ drivers/infiniband/hw/nes/nes_verbs.c |    2 +
+ drivers/infiniband/hw/nes/nes_verbs.h |    1 
+ 3 files changed, 35 insertions(+), 5 deletions(-)
 
---- a/drivers/watchdog/rc32434_wdt.c
-+++ b/drivers/watchdog/rc32434_wdt.c
-@@ -34,7 +34,7 @@
- #include <asm/time.h>
- #include <asm/mach-rc32434/integ.h>
+--- a/drivers/infiniband/hw/nes/nes_cm.c
++++ b/drivers/infiniband/hw/nes/nes_cm.c
+@@ -2495,12 +2495,14 @@ static int nes_disconnect(struct nes_qp 
+ 	int ret = 0;
+ 	struct nes_vnic *nesvnic;
+ 	struct nes_device *nesdev;
++	struct nes_ib_device *nesibdev;
  
--#define VERSION "0.3"
-+#define VERSION "0.4"
+ 	nesvnic = to_nesvnic(nesqp->ibqp.device);
+ 	if (!nesvnic)
+ 		return -EINVAL;
  
- static struct {
- 	unsigned long inuse;
-@@ -242,10 +242,10 @@ static struct miscdevice rc32434_wdt_mis
- 	.fops	= &rc32434_wdt_fops,
- };
+ 	nesdev = nesvnic->nesdev;
++	nesibdev = nesvnic->nesibdev;
  
--static char banner[] = KERN_INFO KBUILD_MODNAME
-+static char banner[] __devinitdata = KERN_INFO KBUILD_MODNAME
- 		": Watchdog Timer version " VERSION ", timer margin: %d sec\n";
- 
--static int rc32434_wdt_probe(struct platform_device *pdev)
-+static int __devinit rc32434_wdt_probe(struct platform_device *pdev)
- {
+ 	nes_debug(NES_DBG_CM, "netdev refcnt = %u.\n",
+ 			atomic_read(&nesvnic->netdev->refcnt));
+@@ -2512,6 +2514,8 @@ static int nes_disconnect(struct nes_qp 
+ 	} else {
+ 		/* Need to free the Last Streaming Mode Message */
+ 		if (nesqp->ietf_frame) {
++			if (nesqp->lsmm_mr)
++				nesibdev->ibdev.dereg_mr(nesqp->lsmm_mr);
+ 			pci_free_consistent(nesdev->pcidev,
+ 					nesqp->private_data_len+sizeof(struct ietf_mpa_frame),
+ 					nesqp->ietf_frame, nesqp->ietf_frame_pbase);
+@@ -2545,6 +2549,10 @@ int nes_accept(struct iw_cm_id *cm_id, s
+ 	struct iw_cm_event cm_event;
+ 	struct nes_hw_qp_wqe *wqe;
+ 	struct nes_v4_quad nes_quad;
++	struct nes_ib_device *nesibdev;
++	struct ib_mr *ibmr = NULL;
++	struct ib_phys_buf ibphysbuf;
++	struct nes_pd *nespd;
+ 	u32 crc_value;
  	int ret;
- 	struct resource *r;
-@@ -280,7 +280,7 @@ unmap:
- 	return ret;
- }
  
--static int rc32434_wdt_remove(struct platform_device *pdev)
-+static int __devexit rc32434_wdt_remove(struct platform_device *pdev)
- {
- 	misc_deregister(&rc32434_wdt_miscdev);
- 	iounmap(wdt_reg);
-@@ -289,8 +289,8 @@ static int rc32434_wdt_remove(struct pla
+@@ -2605,6 +2613,26 @@ int nes_accept(struct iw_cm_id *cm_id, s
+ 	if (cm_id->remote_addr.sin_addr.s_addr !=
+ 			cm_id->local_addr.sin_addr.s_addr) {
+ 		u64temp = (unsigned long)nesqp;
++		nesibdev = nesvnic->nesibdev;
++		nespd = nesqp->nespd;
++		ibphysbuf.addr = nesqp->ietf_frame_pbase;
++		ibphysbuf.size = conn_param->private_data_len +
++					sizeof(struct ietf_mpa_frame);
++		ibmr = nesibdev->ibdev.reg_phys_mr((struct ib_pd *)nespd,
++						&ibphysbuf, 1,
++						IB_ACCESS_LOCAL_WRITE,
++						(u64 *)&nesqp->ietf_frame);
++		if (!ibmr) {
++			nes_debug(NES_DBG_CM, "Unable to register memory region"
++					"for lSMM for cm_node = %p \n",
++					cm_node);
++			return -ENOMEM;
++		}
++
++		ibmr->pd = &nespd->ibpd;
++		ibmr->device = nespd->ibpd.device;
++		nesqp->lsmm_mr = ibmr;
++
+ 		u64temp |= NES_SW_CONTEXT_ALIGN>>1;
+ 		set_wqe_64bit_value(wqe->wqe_words,
+ 			NES_IWARP_SQ_WQE_COMP_CTX_LOW_IDX,
+@@ -2615,14 +2643,13 @@ int nes_accept(struct iw_cm_id *cm_id, s
+ 		wqe->wqe_words[NES_IWARP_SQ_WQE_TOTAL_PAYLOAD_IDX] =
+ 			cpu_to_le32(conn_param->private_data_len +
+ 			sizeof(struct ietf_mpa_frame));
+-		wqe->wqe_words[NES_IWARP_SQ_WQE_FRAG0_LOW_IDX] =
+-			cpu_to_le32((u32)nesqp->ietf_frame_pbase);
+-		wqe->wqe_words[NES_IWARP_SQ_WQE_FRAG0_HIGH_IDX] =
+-			cpu_to_le32((u32)((u64)nesqp->ietf_frame_pbase >> 32));
++		set_wqe_64bit_value(wqe->wqe_words,
++					NES_IWARP_SQ_WQE_FRAG0_LOW_IDX,
++					(u64)nesqp->ietf_frame);
+ 		wqe->wqe_words[NES_IWARP_SQ_WQE_LENGTH0_IDX] =
+ 			cpu_to_le32(conn_param->private_data_len +
+ 			sizeof(struct ietf_mpa_frame));
+-		wqe->wqe_words[NES_IWARP_SQ_WQE_STAG0_IDX] = 0;
++		wqe->wqe_words[NES_IWARP_SQ_WQE_STAG0_IDX] = ibmr->lkey;
  
- static struct platform_driver rc32434_wdt = {
- 	.probe	= rc32434_wdt_probe,
--	.remove = rc32434_wdt_remove,
--	.driver = {
-+	.remove	= __devexit_p(rc32434_wdt_remove),
-+	.driver	= {
- 		.name = "rc32434_wdt",
- 	}
- };
+ 		nesqp->nesqp_context->ird_ord_sizes |=
+ 			cpu_to_le32(NES_QPCONTEXT_ORDIRD_LSMM_PRESENT |
+--- a/drivers/infiniband/hw/nes/nes_verbs.c
++++ b/drivers/infiniband/hw/nes/nes_verbs.c
+@@ -1360,8 +1360,10 @@ static struct ib_qp *nes_create_qp(struc
+ 					NES_QPCONTEXT_MISC_RQ_SIZE_SHIFT);
+ 			nesqp->nesqp_context->misc |= cpu_to_le32((u32)nesqp->hwqp.sq_encoded_size <<
+ 					NES_QPCONTEXT_MISC_SQ_SIZE_SHIFT);
++			if (!udata) {
+ 				nesqp->nesqp_context->misc |= cpu_to_le32(NES_QPCONTEXT_MISC_PRIV_EN);
+ 				nesqp->nesqp_context->misc |= cpu_to_le32(NES_QPCONTEXT_MISC_FAST_REGISTER_EN);
++			}
+ 			nesqp->nesqp_context->cqs = cpu_to_le32(nesqp->nesscq->hw_cq.cq_number +
+ 					((u32)nesqp->nesrcq->hw_cq.cq_number << 16));
+ 			u64temp = (u64)nesqp->hwqp.sq_pbase;
+--- a/drivers/infiniband/hw/nes/nes_verbs.h
++++ b/drivers/infiniband/hw/nes/nes_verbs.h
+@@ -134,6 +134,7 @@ struct nes_qp {
+ 	struct ietf_mpa_frame *ietf_frame;
+ 	dma_addr_t            ietf_frame_pbase;
+ 	wait_queue_head_t     state_waitq;
++	struct ib_mr          *lsmm_mr;
+ 	unsigned long         socket;
+ 	struct nes_hw_qp      hwqp;
+ 	struct work_struct    work;
 
 
