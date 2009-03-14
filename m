@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765667AbZCNCCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbZCNCDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765667AbZCNCCr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 22:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbZCNBWH
+	id S1758797AbZCNCDp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 22:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbZCNBWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:22:07 -0400
+	Fri, 13 Mar 2009 21:22:09 -0400
 Received: from kroah.org ([198.145.64.141]:35870 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754403AbZCNBVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:21:33 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:47 2009
-Message-Id: <20090314011047.577830206@mini.kroah.org>
+	id S1754981AbZCNBVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:21:35 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:48 2009
+Message-Id: <20090314011047.891588229@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:11:26 -0700
+Date: Fri, 13 Mar 2009 18:11:28 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Len Brown <lenb@kernel.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -26,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-acpi@vger.kernel.org,
-       Lin Ming <ming.m.lin@intel.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: [patch 109/114] ACPI: fix broken usage of acpi_ut_get_node_name()
+       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
+       Hans de Goede <hdegoede@redhat.com>
+Subject: [patch 111/114] hwmon: (f71882fg) Hide misleading error message
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=acpi-fix-broken-usage-of-acpi_ut_get_node_name.patch
+Content-Disposition: inline; filename=hwmon-hide-misleading-error-message.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,36 +39,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+From: Jean Delvare <khali@linux-fr.org>
 
-This issue was fixed indirectly in mainline by commit
-60a4ce7f4148155d3f28eea4a213f7ee47cd57b7.
+commit 603eaa1bdd3e0402085e815cc531bb0a32827a9e upstream
 
-acpi_ut_get_node_name() returns a four char fixed-size array, not
-NULL-terminated.
+If the F71882FG chip is at address 0x4e, then the probe at 0x2e will
+fail with the following message in the logs:
+f71882fg: Not a Fintek device
 
-This is the minimal fix for stable 2.6.28.
+This is misleading because there is a Fintek device, just at a
+different address. So I propose to degrade this message to a debug
+message.
 
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: stable@kernel.org
-Acked-by: Lin Ming <ming.m.lin@intel.com>
-Acked-by: Len Brown <lenb@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Acked-by: Hans de Goede <hdegoede@redhat.com>
+
 
 ---
- drivers/acpi/power.c |    2 +-
+ drivers/hwmon/f71882fg.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/acpi/power.c
-+++ b/drivers/acpi/power.c
-@@ -151,7 +151,7 @@ static int acpi_power_get_state(acpi_han
- 	*state = (sta & 0x01)?ACPI_POWER_RESOURCE_STATE_ON:
- 			      ACPI_POWER_RESOURCE_STATE_OFF;
+--- a/drivers/hwmon/f71882fg.c
++++ b/drivers/hwmon/f71882fg.c
+@@ -837,7 +837,7 @@ static int __init f71882fg_find(int sioa
  
--	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Resource [%s] is %s\n",
-+	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Resource [%4.4s] is %s\n",
- 			  acpi_ut_get_node_name(handle),
- 				*state ? "on" : "off"));
+ 	devid = superio_inw(sioaddr, SIO_REG_MANID);
+ 	if (devid != SIO_FINTEK_ID) {
+-		printk(KERN_INFO DRVNAME ": Not a Fintek device\n");
++		pr_debug(DRVNAME ": Not a Fintek device\n");
+ 		goto exit;
+ 	}
  
 
 
