@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbZCNWbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbZCNWl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbZCNWbZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 18:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZCNWbQ
+	id S1757941AbZCNWl7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 18:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbZCNWlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 18:31:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42055 "EHLO ogre.sisk.pl"
+	Sat, 14 Mar 2009 18:41:49 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:41342 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751624AbZCNWbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 18:31:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: [RFC][PATCH][0/8] PM: Rework suspend-resume ordering to avoid problems with shared interrupts
-Date: Sat, 14 Mar 2009 23:31:26 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       linux-pm@lists.linux-foundation.org
-References: <200902221837.49396.rjw@sisk.pl> <200903141259.02164.rjw@sisk.pl> <200903141511.58455.elendil@planet.nl>
-In-Reply-To: <200903141511.58455.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+	id S1752137AbZCNWlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 18:41:49 -0400
+Date: Sat, 14 Mar 2009 23:41:38 +0100
+From: Jan Kasprzak <kas@fi.muni.cz>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: MOXA I/O errors on 2.6.28+
+Message-ID: <20090314224138.GC3375@fi.muni.cz>
+References: <20090314213630.GA3375@fi.muni.cz> <20090314214230.352d293e@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200903142331.27304.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090314214230.352d293e@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.2i
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Muni-Envelope-From: kas@fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sat, 14 Mar 2009 23:41:40 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 14 March 2009, Frans Pop wrote:
-> On Saturday 14 March 2009, you wrote:
-> > Could you please also test the last iteration of the $subject patch
-> > series (just sent) with the appended patch applied on top and post
-> > dmesg output?
-> 
-> Here you are:
-> - boot
-> - STR with wireless networking
-> - STD with wireless networking
-> - STR with wired networking and killswitch on wireless
-> 
-> No problems seen :-)
+Alan Cox wrote:
+: On Sat, 14 Mar 2009 22:36:30 +0100
+: Jan Kasprzak <kas@fi.muni.cz> wrote:
+: 
+: > I have several servers with MOXA C320 serial boards. Starting with 2.6.28,
+: > some ports on MOXA boards sometimes get to a state where open("/dev/ttyMX<n>")
+: > returns -EIO. I use the servers with MOXA boards as serial console hubs,
+: > and I think the EIO state is caused by the remote getty or the whole remote
+: > server being restarted.
+: 
+: Sounds like a refcount bug.
+: 
+: > 	2.6.27 is OK, 2.6.28 and 2.6.29-rc8 is faulty. I can git bisect
+: > if you want (I have a spare server which I can reboot at will).
+: 
+: Might be useful but let me take a look first, chances are you've provided
+: enough information
 
-Great, thanks for the log, it looks correct.
+	It is this one:
 
-Best,
-Rafael
+d450b5a0196b6442cf3f29fc611d9c8daa56b559 tty: kref usage for isicom and moxa.
+
+Reverting this commit on top of 2.6.29-rc8 (and resolving a single conflict
+the revert introduces in drivers/char/moxa.c) makes the problem disappear. 
+
+-Yenya
+
+-- 
+| Jan "Yenya" Kasprzak  <kas at {fi.muni.cz - work | yenya.net - private}> |
+| GPG: ID 1024/D3498839      Fingerprint 0D99A7FB206605D7 8B35FCDE05B18A5E |
+| http://www.fi.muni.cz/~kas/    Journal: http://www.fi.muni.cz/~kas/blog/ |
+>>  If you find yourself arguing with Alan Cox, you’re _probably_ wrong.  <<
+>>     --James Morris in "How and Why You Should Become a Kernel Hacker"  <<
