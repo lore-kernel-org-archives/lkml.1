@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762476AbZCNAsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762795AbZCNAvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762476AbZCNAsa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZCNAUH
+	id S1762795AbZCNAvE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:51:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbZCNAUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:20:07 -0400
-Received: from kroah.org ([198.145.64.141]:35054 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:20:21 -0400
+Received: from kroah.org ([198.145.64.141]:35117 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753822AbZCNATq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:46 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:52 2009
-Message-Id: <20090314000752.023337241@mini.kroah.org>
+	id S1753801AbZCNATw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:52 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:53 2009
+Message-Id: <20090314000753.017435723@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:33 -0700
+Date: Fri, 13 Mar 2009 17:06:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, mtosatti@redhat.com,
-       Alexander Graf <agraf@suse.de>
-Subject: [patch 85/96] Fix no_timer_check on x86_64
+       alan@lxorguk.ukuu.org.uk,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [patch 91/96] ext4: Initialize preallocation list_heads properly
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=fix-no_timer_check-on-x86_64.patch
+Content-Disposition: inline; filename=ext4-initialize-preallocation-list_head-s-properly.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,42 +39,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alexander Graf <agraf@suse.de>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-fixed upstream in 2.6.28 in merge of ioapic*.c for x86
+(cherry picked from commit d794bf8e0936dce45104565cd48c571061f4c1e3)
 
-In io_apic_32.c the logic of no_timer_check is "always make timer_irq_works
-return 1".
+When creating a new ext4_prealloc_space structure, we have to
+initialize its list_head pointers before we add them to any prealloc
+lists.  Otherwise, with list debug enabled, we will get list
+corruption warnings.
 
-Io_apic_64.c on the other hand checks for
-  if (!no_timer_check && timer_irq_works())
-basically meaning "make timer_irq_works fail" in the crucial first check.
-
-Now, in order to not move too much code, we can just reverse the logic here
-and should be fine off, basically rendering no_timer_check useful again.
-
-This issue seems to be resolved as of 2.6.28 by the merge of io_apic*.c,
-but still exists for at least 2.6.27.
-
-Signed-off-by: Alexander Graf <agraf@suse.de>
-Acked-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- arch/x86/kernel/io_apic_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/ext4/mballoc.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -1729,7 +1729,7 @@ static inline void __init check_timer(vo
- 			setup_timer_IRQ0_pin(apic1, pin1, cfg->vector);
- 		}
- 		unmask_IO_APIC_irq(0);
--		if (!no_timer_check && timer_irq_works()) {
-+		if (no_timer_check || timer_irq_works()) {
- 			if (nmi_watchdog == NMI_IO_APIC) {
- 				setup_nmi();
- 				enable_8259A_irq(0);
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -3802,6 +3802,8 @@ ext4_mb_new_inode_pa(struct ext4_allocat
+ 	pa->pa_free = pa->pa_len;
+ 	atomic_set(&pa->pa_count, 1);
+ 	spin_lock_init(&pa->pa_lock);
++	INIT_LIST_HEAD(&pa->pa_inode_list);
++	INIT_LIST_HEAD(&pa->pa_group_list);
+ 	pa->pa_deleted = 0;
+ 	pa->pa_linear = 0;
+ 
+@@ -3860,6 +3862,7 @@ ext4_mb_new_group_pa(struct ext4_allocat
+ 	atomic_set(&pa->pa_count, 1);
+ 	spin_lock_init(&pa->pa_lock);
+ 	INIT_LIST_HEAD(&pa->pa_inode_list);
++	INIT_LIST_HEAD(&pa->pa_group_list);
+ 	pa->pa_deleted = 0;
+ 	pa->pa_linear = 1;
+ 
 
 
