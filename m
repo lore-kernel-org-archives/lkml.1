@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757044AbZCNTWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757147AbZCNTez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757044AbZCNTWW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 15:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756549AbZCNTWL
+	id S1757147AbZCNTez (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 15:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756145AbZCNTeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 15:22:11 -0400
-Received: from verein.lst.de ([213.95.11.210]:58639 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756359AbZCNTWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 15:22:10 -0400
-Date: Sat, 14 Mar 2009 20:18:06 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Greg KH <gregkh@suse.de>
-Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [patch 07/96] documnt FMODE_ constants
-Message-ID: <20090314191806.GA3428@lst.de>
-References: <20090314000508.803142980@mini.kroah.org> <20090314000739.667137229@mini.kroah.org> <20090314124620.GA23968@lst.de> <20090314153858.GA5637@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090314153858.GA5637@suse.de>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.127 () BAYES_20
+	Sat, 14 Mar 2009 15:34:46 -0400
+Received: from kotten8a.marieberg.ac ([213.238.238.22]:40484 "HELO
+	iluvatar.nyren.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753804AbZCNTep (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 15:34:45 -0400
+Date: Sat, 14 Mar 2009 20:34:40 +0100 (CET)
+From: Ralf Nyren <ralf@nyren.net>
+X-X-Sender: plumbum@fujje.iml.umu.se
+To: Greg KH <greg@kroah.com>
+cc: linux-kernel@vger.kernel.org, klloyd@sierrawireless.com,
+       rfiler@sierrawireless.com
+Subject: Re: Sierra Wireless (MC8780) HSDPA speed issue
+In-Reply-To: <20090314040322.GB3417@kroah.com>
+Message-ID: <alpine.DEB.1.10.0903142021580.5797@fujje.iml.umu.se>
+References: <alpine.DEB.1.10.0903131551310.5791@fujje.iml.umu.se> <20090314040322.GB3417@kroah.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 14, 2009 at 08:38:58AM -0700, Greg KH wrote:
-> On Sat, Mar 14, 2009 at 01:46:20PM +0100, Christoph Hellwig wrote:
-> > On Fri, Mar 13, 2009 at 05:05:15PM -0700, Greg KH wrote:
-> > > 2.6.27-stable review patch.  If anyone has any objections, please let us kno
-> > 
-> > Why would you even consider this for stable?  It's purely documenting
-> > a couple of constants.
-> 
-> I added it to make the patches after this easier to handle and apply.
+Hi,
 
-Ok, fine with me.
+I choose to only test download speeds for now but upload will also be of
+interest later on.
 
+I had actually tried to change the N_IN_URB/N_OUT_URB before sending of the
+report but now I've been testing with both 8 and 128 but the speed remains the
+same. Download speed max 1.0Mbit/s in Linux while the Windows driver could get
+an average of 2.5Mbit/s at my current location (different location than during
+the last test).
+
+I have also tried the new 1.6.0 driver as kindly supplied by Sierra but the
+speed remained the same 1.0Mbit/s with the new driver as well...
+
+Anything else you think I could try?
+
+Best regards, Ralf
+
+
+On Fri, 13 Mar 2009, Greg KH wrote:
+
+>
+> Are you testing up or down speeds?
+>
+> If you want to, and you think the driver is the problem, try changing
+> the values in drivers/usb/serial/sierra.c:
+> 	/* per port private data */
+> 	#define N_IN_URB        4
+> 	#define N_OUT_URB       4
+> 	#define IN_BUFLEN       4096
+>
+> Try bumping up the N_IN_URB and N_OUT_URB values a bunch and let me know
+> if things go faster now.
+>
+> thanks,
+>
+> greg k-h
+>
