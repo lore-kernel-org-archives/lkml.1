@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761932AbZCNB2x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762350AbZCNBab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761932AbZCNB2x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:28:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZCNBUQ
+	id S1762350AbZCNBab (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZCNBUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:16 -0400
-Received: from kroah.org ([198.145.64.141]:34939 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:22 -0400
+Received: from kroah.org ([198.145.64.141]:34997 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753228AbZCNBUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:03 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:34 2009
-Message-Id: <20090314011034.642813607@mini.kroah.org>
+	id S1753380AbZCNBUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:10 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:35 2009
+Message-Id: <20090314011035.534090635@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:09:59 -0700
+Date: Fri, 13 Mar 2009 18:10:05 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 022/114] rtl8187: New USB IDs for RTL8187L
+       alan@lxorguk.ukuu.org.uk, Karsten Wiese <fzu@wemgehoertderstaat.de>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 028/114] USB: EHCI: slow down ITD reuse
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=rtl8187-new-usb-id-s-for-rtl8187l.patch
+Content-Disposition: inline; filename=usb-ehci-slow-down-itd-reuse.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,54 +39,185 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Larry Finger <Larry.Finger@gmail.com>
+From: Karsten Wiese <fzu@wemgehoertderstaat.de>
 
-commit 046ee5d26ac91316a8ac0a29c0b33139dc9da20d upstream.
+commit 9aa09d2f8f4bc440d6db1c3414d4009642875240 upstream.
 
-Add new USB ID codes. These come from two postings on forums and
-mailing lists, and four are derived from the .inf that accompanies
-the latest Realtek Windows driver for the RTL8187L.
+Currently ITDs are immediately recycled whenever their URB completes.
+However, EHCI hardware can sometimes remember some ITD state.  This
+means that when the ITD is reused before end-of-frame it may sometimes
+cause the hardware to reference bogus state.
 
-Thanks to Viktor Ilijašić <viktor.ilijasic@gmail.com> and Xose Vazquez
-Perez <xose.vazquez@gmail.com> for reporting these new ID's.
+This patch defers reusing such ITDs by moving them into a new ehci member
+cached_itd_list. ITDs resting in cached_itd_list are moved back into their
+stream's free_list once scan_periodic() detects that the active frame has
+elapsed.
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+This makes the snd_usb_us122l driver (in kernel since .28) work right
+when it's hooked up through EHCI.
+
+[ dbrownell@users.sourceforge.net: comment fixups ]
+
+Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
+Tested-by: Philippe Carriere <philippe-f.carriere@wanadoo.fr>
+Tested-by: Federico Briata <federicobriata@gmail.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/rtl8187_dev.c |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/usb/host/ehci-hcd.c   |    2 +
+ drivers/usb/host/ehci-mem.c   |    1 
+ drivers/usb/host/ehci-sched.c |   56 ++++++++++++++++++++++++++++++++++++------
+ drivers/usb/host/ehci.h       |    6 ++++
+ 4 files changed, 57 insertions(+), 8 deletions(-)
 
---- a/drivers/net/wireless/rtl8187_dev.c
-+++ b/drivers/net/wireless/rtl8187_dev.c
-@@ -40,6 +40,10 @@ static struct usb_device_id rtl8187_tabl
- 	{USB_DEVICE(0x0bda, 0x8189), .driver_info = DEVICE_RTL8187B},
- 	{USB_DEVICE(0x0bda, 0x8197), .driver_info = DEVICE_RTL8187B},
- 	{USB_DEVICE(0x0bda, 0x8198), .driver_info = DEVICE_RTL8187B},
-+	/* Surecom */
-+	{USB_DEVICE(0x0769, 0x11F2), .driver_info = DEVICE_RTL8187},
-+	/* Logitech */
-+	{USB_DEVICE(0x0789, 0x010C), .driver_info = DEVICE_RTL8187},
- 	/* Netgear */
- 	{USB_DEVICE(0x0846, 0x6100), .driver_info = DEVICE_RTL8187},
- 	{USB_DEVICE(0x0846, 0x6a00), .driver_info = DEVICE_RTL8187},
-@@ -49,8 +53,16 @@ static struct usb_device_id rtl8187_tabl
- 	/* Sitecom */
- 	{USB_DEVICE(0x0df6, 0x000d), .driver_info = DEVICE_RTL8187},
- 	{USB_DEVICE(0x0df6, 0x0028), .driver_info = DEVICE_RTL8187B},
-+	/* Sphairon Access Systems GmbH */
-+	{USB_DEVICE(0x114B, 0x0150), .driver_info = DEVICE_RTL8187},
-+	/* Dick Smith Electronics */
-+	{USB_DEVICE(0x1371, 0x9401), .driver_info = DEVICE_RTL8187},
- 	/* Abocom */
- 	{USB_DEVICE(0x13d1, 0xabe6), .driver_info = DEVICE_RTL8187},
-+	/* Qcom */
-+	{USB_DEVICE(0x18E8, 0x6232), .driver_info = DEVICE_RTL8187},
-+	/* AirLive */
-+	{USB_DEVICE(0x1b75, 0x8187), .driver_info = DEVICE_RTL8187},
- 	{}
- };
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -87,6 +87,10 @@ struct ehci_hcd {			/* one per controlle
+ 	int			next_uframe;	/* scan periodic, start here */
+ 	unsigned		periodic_sched;	/* periodic activity count */
  
++	/* list of itds completed while clock_frame was still active */
++	struct list_head	cached_itd_list;
++	unsigned		clock_frame;
++
+ 	/* per root hub port */
+ 	unsigned long		reset_done [EHCI_MAX_ROOT_PORTS];
+ 
+@@ -210,6 +214,8 @@ timer_action (struct ehci_hcd *ehci, enu
+ 	}
+ }
+ 
++static void free_cached_itd_list(struct ehci_hcd *ehci);
++
+ /*-------------------------------------------------------------------------*/
+ 
+ #include <linux/usb/ehci_def.h>
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -485,6 +485,7 @@ static int ehci_init(struct usb_hcd *hcd
+ 	 * periodic_size can shrink by USBCMD update if hcc_params allows.
+ 	 */
+ 	ehci->periodic_size = DEFAULT_I_TDPS;
++	INIT_LIST_HEAD(&ehci->cached_itd_list);
+ 	if ((retval = ehci_mem_init(ehci, GFP_KERNEL)) < 0)
+ 		return retval;
+ 
+@@ -497,6 +498,7 @@ static int ehci_init(struct usb_hcd *hcd
+ 
+ 	ehci->reclaim = NULL;
+ 	ehci->next_uframe = -1;
++	ehci->clock_frame = -1;
+ 
+ 	/*
+ 	 * dedicate a qh for the async ring head, since we couldn't unlink
+--- a/drivers/usb/host/ehci-mem.c
++++ b/drivers/usb/host/ehci-mem.c
+@@ -128,6 +128,7 @@ static inline void qh_put (struct ehci_q
+ 
+ static void ehci_mem_cleanup (struct ehci_hcd *ehci)
+ {
++	free_cached_itd_list(ehci);
+ 	if (ehci->async)
+ 		qh_put (ehci->async);
+ 	ehci->async = NULL;
+--- a/drivers/usb/host/ehci-sched.c
++++ b/drivers/usb/host/ehci-sched.c
+@@ -1004,7 +1004,8 @@ iso_stream_put(struct ehci_hcd *ehci, st
+ 
+ 		is_in = (stream->bEndpointAddress & USB_DIR_IN) ? 0x10 : 0;
+ 		stream->bEndpointAddress &= 0x0f;
+-		stream->ep->hcpriv = NULL;
++		if (stream->ep)
++			stream->ep->hcpriv = NULL;
+ 
+ 		if (stream->rescheduled) {
+ 			ehci_info (ehci, "ep%d%s-iso rescheduled "
+@@ -1653,14 +1654,28 @@ itd_complete (
+ 			(stream->bEndpointAddress & USB_DIR_IN) ? "in" : "out");
+ 	}
+ 	iso_stream_put (ehci, stream);
+-	/* OK to recycle this ITD now that its completion callback ran. */
++
+ done:
+ 	usb_put_urb(urb);
+ 	itd->urb = NULL;
+-	itd->stream = NULL;
+-	list_move(&itd->itd_list, &stream->free_list);
+-	iso_stream_put(ehci, stream);
+-
++	if (ehci->clock_frame != itd->frame || itd->index[7] != -1) {
++		/* OK to recycle this ITD now. */
++		itd->stream = NULL;
++		list_move(&itd->itd_list, &stream->free_list);
++		iso_stream_put(ehci, stream);
++	} else {
++		/* HW might remember this ITD, so we can't recycle it yet.
++		 * Move it to a safe place until a new frame starts.
++		 */
++		list_move(&itd->itd_list, &ehci->cached_itd_list);
++		if (stream->refcount == 2) {
++			/* If iso_stream_put() were called here, stream
++			 * would be freed.  Instead, just prevent reuse.
++			 */
++			stream->ep->hcpriv = NULL;
++			stream->ep = NULL;
++		}
++	}
+ 	return retval;
+ }
+ 
+@@ -2101,6 +2116,20 @@ done:
+ 
+ /*-------------------------------------------------------------------------*/
+ 
++static void free_cached_itd_list(struct ehci_hcd *ehci)
++{
++	struct ehci_itd *itd, *n;
++
++	list_for_each_entry_safe(itd, n, &ehci->cached_itd_list, itd_list) {
++		struct ehci_iso_stream	*stream = itd->stream;
++		itd->stream = NULL;
++		list_move(&itd->itd_list, &stream->free_list);
++		iso_stream_put(ehci, stream);
++	}
++}
++
++/*-------------------------------------------------------------------------*/
++
+ static void
+ scan_periodic (struct ehci_hcd *ehci)
+ {
+@@ -2115,10 +2144,17 @@ scan_periodic (struct ehci_hcd *ehci)
+ 	 * Touches as few pages as possible:  cache-friendly.
+ 	 */
+ 	now_uframe = ehci->next_uframe;
+-	if (HC_IS_RUNNING (ehci_to_hcd(ehci)->state))
++	if (HC_IS_RUNNING(ehci_to_hcd(ehci)->state)) {
+ 		clock = ehci_readl(ehci, &ehci->regs->frame_index);
+-	else
++		clock_frame = (clock >> 3) % ehci->periodic_size;
++	} else  {
+ 		clock = now_uframe + mod - 1;
++		clock_frame = -1;
++	}
++	if (ehci->clock_frame != clock_frame) {
++		free_cached_itd_list(ehci);
++		ehci->clock_frame = clock_frame;
++	}
+ 	clock %= mod;
+ 	clock_frame = clock >> 3;
+ 
+@@ -2277,6 +2313,10 @@ restart:
+ 			/* rescan the rest of this frame, then ... */
+ 			clock = now;
+ 			clock_frame = clock >> 3;
++			if (ehci->clock_frame != clock_frame) {
++				free_cached_itd_list(ehci);
++				ehci->clock_frame = clock_frame;
++			}
+ 		} else {
+ 			now_uframe++;
+ 			now_uframe %= mod;
 
 
