@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761434AbZCNAsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762293AbZCNAq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761434AbZCNAsD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:48:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZCNAUD
+	id S1762293AbZCNAq6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZCNAT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:20:03 -0400
-Received: from kroah.org ([198.145.64.141]:35037 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:58 -0400
+Received: from kroah.org ([198.145.64.141]:35020 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753038AbZCNATp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:45 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:52 2009
-Message-Id: <20090314000751.814622372@mini.kroah.org>
+	id S1751326AbZCNATn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:43 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:51 2009
+Message-Id: <20090314000751.512679112@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:32 -0700
+Date: Fri, 13 Mar 2009 17:06:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Russell King <rmk+kernel@arm.linux.org.uk>,
-       Jean Delvare <khali@linux-fr.org>,
-       Alessandro Zummo <a.zummo@towertech.it>
-Subject: [patch 84/96] ARM: Add i2c_board_info for RiscPC PCF8583
+       alan@lxorguk.ukuu.org.uk, Roel Kluin <roel.kluin@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 82/96] i2c: Timeouts reach -1
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=arm-add-i2c_board_info-for-riscpc-pcf8583.patch
+Content-Disposition: inline; filename=i2c-timeouts-reach-1.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,65 +40,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Russell King <rmk+kernel@arm.linux.org.uk>
+From: Roel Kluin <roel.kluin@gmail.com>
 
-commit 531660ef5604c75de6fdead9da1304051af17c09 upstream
+commit a746b578d8406b2db0e9f0d040061bc1f78433cf upstream
 
-Add the necessary i2c_board_info structure to fix the lack of PCF8583
-RTC on RiscPC.
+With a postfix decrement these timeouts reach -1 rather than 0, but
+after the loop it is tested whether they have become 0.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+As pointed out by Jean Delvare, the condition we are waiting for should
+also be tested before the timeout. With the current order, you could
+exit with a timeout error while the job is actually done.
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- arch/arm/mach-rpc/riscpc.c     |    6 ++++++
- drivers/i2c/busses/i2c-acorn.c |    3 ++-
- 2 files changed, 8 insertions(+), 1 deletion(-)
 
---- a/arch/arm/mach-rpc/riscpc.c
-+++ b/arch/arm/mach-rpc/riscpc.c
-@@ -18,6 +18,7 @@
- #include <linux/device.h>
- #include <linux/serial_8250.h>
- #include <linux/ata_platform.h>
-+#include <linux/i2c.h>
- 
- #include <asm/elf.h>
- #include <asm/io.h>
-@@ -201,8 +202,13 @@ static struct platform_device *devs[] __
- 	&pata_device,
- };
- 
-+static struct i2c_board_info i2c_rtc = {
-+	I2C_BOARD_INFO("pcf8583", 0x50)
-+};
-+
- static int __init rpc_init(void)
+---
+ drivers/i2c/busses/i2c-amd8111.c |    4 ++--
+ drivers/i2c/busses/i2c-pxa.c     |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+--- a/drivers/i2c/busses/i2c-amd8111.c
++++ b/drivers/i2c/busses/i2c-amd8111.c
+@@ -72,7 +72,7 @@ static unsigned int amd_ec_wait_write(st
  {
-+	i2c_register_board_info(0, &i2c_rtc, 1);
- 	return platform_add_devices(devs, ARRAY_SIZE(devs));
- }
+ 	int timeout = 500;
  
---- a/drivers/i2c/busses/i2c-acorn.c
-+++ b/drivers/i2c/busses/i2c-acorn.c
-@@ -84,6 +84,7 @@ static struct i2c_algo_bit_data ioc_data
+-	while (timeout-- && (inb(smbus->base + AMD_EC_SC) & AMD_EC_SC_IBF))
++	while ((inb(smbus->base + AMD_EC_SC) & AMD_EC_SC_IBF) && --timeout)
+ 		udelay(1);
  
- static struct i2c_adapter ioc_ops = {
- 	.id			= I2C_HW_B_IOC,
-+	.nr			= 0,
- 	.algo_data		= &ioc_data,
- };
- 
-@@ -91,7 +92,7 @@ static int __init i2c_ioc_init(void)
+ 	if (!timeout) {
+@@ -88,7 +88,7 @@ static unsigned int amd_ec_wait_read(str
  {
- 	force_ones = FORCE_ONES | SCL | SDA;
+ 	int timeout = 500;
  
--	return i2c_bit_add_bus(&ioc_ops);
-+	return i2c_bit_add_numbered_bus(&ioc_ops);
- }
+-	while (timeout-- && (~inb(smbus->base + AMD_EC_SC) & AMD_EC_SC_OBF))
++	while ((~inb(smbus->base + AMD_EC_SC) & AMD_EC_SC_OBF) && --timeout)
+ 		udelay(1);
  
- module_init(i2c_ioc_init);
+ 	if (!timeout) {
+--- a/drivers/i2c/busses/i2c-pxa.c
++++ b/drivers/i2c/busses/i2c-pxa.c
+@@ -604,7 +604,7 @@ static int i2c_pxa_do_pio_xfer(struct px
+ 
+ 	i2c_pxa_start_message(i2c);
+ 
+-	while (timeout-- && i2c->msg_num > 0) {
++	while (i2c->msg_num > 0 && --timeout) {
+ 		i2c_pxa_handler(0, i2c);
+ 		udelay(10);
+ 	}
 
 
