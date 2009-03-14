@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbZCNQk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZCNQnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbZCNQk0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 12:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZCNQkO
+	id S1756237AbZCNQnR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 12:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbZCNQnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 12:40:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43620 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751108AbZCNQkN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 12:40:13 -0400
-Date: Sat, 14 Mar 2009 17:39:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 02/11] x86 architecture implementation of Hardware
-	Breakpoint interfaces
-Message-ID: <20090314163944.GA31930@elte.hu>
-References: <20090314122434.GA14521@elte.hu> <Pine.LNX.4.44L0.0903141157320.8138-100000@netrider.rowland.org>
+	Sat, 14 Mar 2009 12:43:04 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:54915 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751108AbZCNQnD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 12:43:03 -0400
+From: Markus <M4rkusXXL@web.de>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: REGRESSION: 2.6.28.7 => 2.6.29-rc8: pwc mmap always failes with EAGAIN
+Date: Sat, 14 Mar 2009 17:42:53 +0100
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0903141157320.8138-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200903141742.53496.M4rkusXXL@web.de>
+X-Provags-ID: V01U2FsdGVkX18sUWkwOMTRXXtVGOy+e95hgZ+v3XNqB+0VKTJy
+	PGzuPLA7mmxKqb1C/IO/qXFatwQP78AXuIDFEG4mx8/7UdfaiW
+	p93VTkq2E=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello!
 
-* Alan Stern <stern@rowland.harvard.edu> wrote:
+I just tried the 2.6.29-rc8 and run into a problem.
+Running motion (a motion detection software for a webcam: 
+http://www.lavrsen.dk/twiki/bin/view/Motion/WebHome) with the pwc 
+driver will give some error message:
+[1] Error mapping buffer 0 mmap: Resource temporarily unavailable
+[1] MAP_FAILED: Resource temporarily unavailable
 
-> So in the end, you're _agreeing_ with what I wrote.  And yet 
-> the tone of your reply suggests that you seemed to think that 
-> my message had some deep, hostile intent.  It didn't.
+Looking in the sources:
+It opens the video device (/dev/video1 for me) and then tries to mmap 
+with:
+mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, s->fd, 
+buf.m.offset);
 
-Sorry about that - i didnt mean to convey any such message.
+It returns MAP_FAILED and errno is EAGAIN.
+>From the manpages of mmap:
+"EAGAIN   The file has been locked, or too much memory has been locked 
+(see setrlimit(2))."
 
-I guess i'll wait for the next series. All i'm striving for is 
-for the whole series to be a lot simpler than what i've seen 
-before.
+The software is not able to gather a picture from the webcam (its a 
+logitech orbit). Everything works with kernel 2.6.28.7 and before. The 
+config is copied from the 2.6.28.7 (except of some new options: "make 
+oldconfig"). Nothing else is changed! (Only the kernel differs.)
 
-	Ingo
+
+I dont know how that can be debugged further as the pwc module wasn 
+changed (except of a small api-adjustment).
+
+Thanks!
+
+Markus
+
+PS: Please CC me!
