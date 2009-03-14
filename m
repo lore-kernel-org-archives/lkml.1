@@ -1,99 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbZCNBB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762982AbZCNAx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752487AbZCNBB7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbZCNBBp
+	id S1762982AbZCNAx1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbZCNAXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:01:45 -0400
-Received: from mga11.intel.com ([192.55.52.93]:44978 "EHLO mga11.intel.com"
+	Fri, 13 Mar 2009 20:23:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:55611 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750898AbZCNBBo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:01:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,361,1233561600"; 
-   d="scan'208";a="438829451"
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
-CC: "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Date: Fri, 13 Mar 2009 18:01:41 -0700
-Subject: RE: [E1000-devel] [stable] Li-nux 2.6.27.19  2.6.28.7
-Thread-Topic: [E1000-devel] [stable] Li-nux 2.6.27.19  2.6.28.7
-Thread-Index: AcmkKv4pD1wO/iYsR0+SR0qbGLUnZgAFJgzg
-Message-ID: <F169D4F5E1F1974DBFAFABF47F60C10A1E80D63A@orsmsx507.amr.corp.intel.com>
-References: <20090220225448.GA14122@kroah.com>
-	<20090313151051.a9198384.akpm@linux-foundation.org>
- <20090313222044.GA18010@kroah.com>
-In-Reply-To: <20090313222044.GA18010@kroah.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1756633AbZCNAXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:23:08 -0400
+Message-ID: <49BAF8E8.5000602@goop.org>
+Date: Fri, 13 Mar 2009 17:23:04 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] x86: add brk allocator for very early allocations
+References: <49B7EDF4.7060904@goop.org> <49B800B8.2040009@kernel.org> <49B9A1CD.5040704@goop.org> <49B9AC7F.9030302@kernel.org> <49BAC1B0.6050107@goop.org> <49BAE210.7090300@zytor.com> <49BAE55F.40406@goop.org> <49BAEA3B.8030808@kernel.org>
+In-Reply-To: <49BAEA3B.8030808@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Fri, Mar 13, 2009 at 03:10:51PM -0700, Andrew Morton wrote:
->> 
->> I fired up this kernel up on my FC8 laptop and I see
->> http://userweb.kernel.org/~akpm/p3130212.jpg
->> 
->> On the next two boot attempts, the kernel came up OK.
->> 
+Yinghai Lu wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>> H. Peter Anvin wrote:
+>>     
+>>> Those references are just the actual reservation of memory.  If all
+>>> the users of that memory are converted to either brk or bss,
+>>> INIT_MAP_BEYOND_END should be removed.  If all the users of that
+>>> memory aren't converted to brk to bss, we should do so.
+>>>       
+>> I just added an adapted Yinghai's patch and added it to push/x86/brk.
+>>
+>>    J
+>>
+>>
+>> The following changes since commit
+>> 8131667360004a0b74e4dcadfee8a18d4e2b074f:
+>>  Jeremy Fitzhardinge (1):
+>>        x86: allow extend_brk users to reserve brk space
+>>
+>> are available in the git repository at:
+>>
+>>  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push/x86/brk
+>>
+>> Yinghai Lu (1):
+>>      x86: put initial_pg_tables into .bss -v4
+>>
+>> arch/x86/kernel/head_32.S        |   47
+>> ++++++++++++++-----------------------
+>> arch/x86/kernel/vmlinux_32.lds.S |    6 +++++
+>> 2 files changed, 24 insertions(+), 29 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+>> index 80dc05e..ad7dbbb 100644
+>> --- a/arch/x86/kernel/head_32.S
+>> +++ b/arch/x86/kernel/head_32.S
+>> @@ -38,42 +38,30 @@
+>> #define X86_VENDOR_ID    new_cpu_data+CPUINFO_x86_vendor_id
+>>
+>> /*
+>> - * This is how much memory *in addition to the memory covered up to
+>> - * and including _end* we need mapped initially.
+>> - * We need:
+>> - *  - one bit for each possible page, but only in low memory, which means
+>> - *     2^32/4096/8 = 128K worst case (4G/4G split.)
+>> + * This is how much memory for page table to and including _end
+>> + * we need mapped initially.
+>>  *  - enough space to map all low memory, which means
+>> - *     (2^32/4096) / 1024 pages (worst case, non PAE)
+>> - *     (2^32/4096) / 512 + 4 pages (worst case for PAE)
+>> - *  - a few pages for allocator use before the kernel pagetable has
+>> - *     been set up
+>> + *     (KERNEL_IMAGE_SIZE/4096) / 1024 pages (worst case, non PAE)
+>> + *     (KERNEL_IMAGE_SIZE/4096) / 512 + 4 pages (worst case for PAE)
+>>  *
+>>  * Modulo rounding, each megabyte assigned here requires a kilobyte of
+>>  * memory, which is currently unreclaimed.
+>>  *
+>>  * This should be a multiple of a page.
+>> + *
+>> + * KERNEL_IMAGE_SIZE should be greater than pa(_end)
+>> + * and small than max_low_pfn, otherwise will waste some page table
+>> entries
+>>  */
+>> LOW_PAGES = (KERNEL_IMAGE_SIZE + PAGE_SIZE_asm - 1)>>PAGE_SHIFT
+>>
+>> -/*
+>> - * To preserve the DMA pool in PAGEALLOC kernels, we'll allocate
+>> - * pagetables from above the 16MB DMA limit, so we'll have to set
+>> - * up pagetables 16MB more (worst-case):
+>> - */
+>> -#if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KMEMCHECK)
+>> -LOW_PAGES = LOW_PAGES + 0x1000000
+>> -#endif
+>> -
+>> #if PTRS_PER_PMD > 1
+>> PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PMD) + PTRS_PER_PGD
+>> #else
+>> PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PGD)
+>> #endif
+>> -BOOTBITMAP_SIZE = LOW_PAGES / 8
+>> ALLOCATOR_SLOP = 4
+>>
+>> -INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE +
+>> ALLOCATOR_SLOP)*PAGE_SIZE_asm
+>> +INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
+>>
+>> RESERVE_BRK(pagetables, PAGE_TABLE_SIZE * PAGE_SIZE)
+>>     
+>
+> use INIT_MAP_SIZE in RESERVE_BRK directly?
+>   
+OK.
 
-root issue:
-seems that something with the 2.6.newer doesn't like some of the stuff with the fedora nash stuff.  mkinitrd and friends were updated multiple times to work with these newer kernels in the fedora 10 I was using.  I worked around by changing root=LABEL to use root=/dev/foo in grub.conf
- 
->> 
->> ------------[ cut here ]------------
->> WARNING: at drivers/net/e1000e/ich8lan.c:408
->> e1000_acquire_swflag_ich8lan+0x51/0xf2() e1000e mutex contention.
->> Owned by pid 10 
->> Modules linked in:
->> Pid: 9, comm: events/0 Not tainted 2.6.28.7 #1
->> Call Trace:
->>  [<ffffffff8103a810>] warn_slowpath+0xae/0xcd
->>  [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
->>  [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
->>  [<ffffffff8105d63f>] ? __lock_acquire+0x702/0x760
->>  [<ffffffff8105bfc6>] ? mark_held_locks+0x50/0x6d
->>  [<ffffffff812dd950>] ? mutex_trylock+0x104/0x118
->>  [<ffffffff8105c170>] ? trace_hardirqs_on_caller+0xf8/0x123
->>  [<ffffffff8105c1a8>] ? trace_hardirqs_on+0xd/0xf
->>  [<ffffffff811ed838>] e1000_acquire_swflag_ich8lan+0x51/0xf2
->>  [<ffffffff811f2fe9>] e1000e_read_kmrn_reg+0x1b/0x69
->>  [<ffffffff811f63c5>] ? e1000e_downshift_workaround+0x0/0x12
->>  [<ffffffff811ed1e9>]
->>  e1000e_gig_downshift_workaround_ich8lan+0x2c/0x71
->>  [<ffffffff811f63d5>] e1000e_downshift_workaround+0x10/0x12
->>  [<ffffffff8104a6ed>] run_workqueue+0xf5/0x1fd [<ffffffff8104a697>]
->>  ? run_workqueue+0x9f/0x1fd [<ffffffff8104a8f6>] ?
->>  worker_thread+0x0/0xe8 [<ffffffff8104a9d1>] worker_thread+0xdb/0xe8
->>  [<ffffffff8104de14>] ? autoremove_wake_function+0x0/0x36
->>  [<ffffffff8104a8f6>] ? worker_thread+0x0/0xe8
->>  [<ffffffff8104db1a>] kthread+0x44/0x6b
->>  [<ffffffff8100cf59>] child_rip+0xa/0x11
->>  [<ffffffff8100c474>] ? restore_args+0x0/0x30
->>  [<ffffffff8104dad6>] ? kthread+0x0/0x6b
->>  [<ffffffff8100cf4f>] ? child_rip+0x0/0x11
+>   
+>> @@ -168,10 +156,10 @@ num_subarch_entries = (. - subarch_entries) / 4
+>>
+>> /*
+>>  * Initialize page tables.  This creates a PDE and a set of page
+>> - * tables, which are located immediately beyond _end.  The variable
+>> + * tables, which are located immediately beyond __brk_base.  The variable
+>>  * _brk_end is set up to point to the first "safe" location.
+>>  * Mappings are created both at virtual address 0 (identity mapping)
+>> - * and PAGE_OFFSET for up to _end+sizeof(page tables)+INIT_MAP_BEYOND_END.
+>> + * and PAGE_OFFSET for up to _end.
+>>  *
+>>  * Note that the stack is not yet set up!
+>>  */
+>> @@ -210,10 +198,9 @@ default_entry:
+>>     loop 11b
+>>
+>>     /*
+>> -     * End condition: we must map up to and including INIT_MAP_BEYOND_END
+>> -     * bytes beyond the end of our own page tables.
+>> +     * End condition: we must map up to the end.
+>>      */
+>> -    leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
+>> +    movl $pa(_end) + PTE_IDENT_ATTR, %ebp
+>>     cmpl %ebp,%eax
+>>     jb 10b
+>> 1:
+>> @@ -243,11 +230,9 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
+>>     addl $0x1000,%eax
+>>     loop 11b
+>>     /*
+>> -     * End condition: we must map up to and including INIT_MAP_BEYOND_END
+>> -     * bytes beyond the end of our own page tables; the +0x007 is
+>> -     * the attribute bits
+>> +     * End condition: we must map up to end
+>>      */
+>> -    leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
+>> +    movl $pa(_end) + PTE_IDENT_ATTR, %ebp
+>>     cmpl %ebp,%eax
+>>     jb 10b
+>>     addl $__PAGE_OFFSET, %edi
+>> @@ -638,6 +623,10 @@ swapper_pg_fixmap:
+>>     .fill 1024,4,0
+>> ENTRY(empty_zero_page)
+>>     .fill 4096,1,0
+>> +
+>> +.section ".bss.extra_page_aligned","wa"
+>> +    .align PAGE_SIZE_asm
+>> +    .fill INIT_MAP_SIZE,1,0
+>>     
+>
+> this 4 lines are not needed. you already had RESERVE_BRK for it.
+>
+>   
 
-newer kernels have this fixed.  This really is a warning as this is only telling you that it had to wait (but that the mutex worked!)
+OK.
 
-we've isolated all these warnings down to known SMP safe paths (and fixed the relevant issues) and have posted a patch to current net-next that removes the warning.  don't have the commit handy but could probably chase it down.
+I've updated the changeset and repushed.
 
-so, WARNING is noisy but okay.
-
-The tx hang you see is bad (as it appears to be a false hang since status is set correctly and you don't get a NETDEV_WATCHDOG)
-
-Jesse
-
-PS please include netdev on network related issues. :-)
+    J
