@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762159AbZCNApn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbZCNAnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762159AbZCNApn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbZCNATw
+	id S1753976AbZCNAnw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbZCNATp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:52 -0400
-Received: from kroah.org ([198.145.64.141]:34972 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:45 -0400
+Received: from kroah.org ([198.145.64.141]:34925 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752541AbZCNATi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:38 -0400
+	id S1753822AbZCNATd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:33 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:50 2009
-Message-Id: <20090314000750.777191151@mini.kroah.org>
+Message-Id: <20090314000749.947133489@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:25 -0700
+Date: Fri, 13 Mar 2009 17:06:20 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [patch 77/96] [PATCH] V4L: tda8290: fix TDA8290 + TDA18271 initialization
+       alan@lxorguk.ukuu.org.uk, Alok N Kataria <akataria@vmware.com>,
+       Zachary Amsden <zach@vmware.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 72/96] x86, vmi: TSC going backwards check in vmi clocksource
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=0002-V4L-tda8290-fix-TDA8290-TDA18271-initialization.patch
+Content-Disposition: inline; filename=x86-vmi-tsc-going-backwards-check-in-vmi-clocksource.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,33 +39,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Michael Krufky <mkrufky@linuxtv.org>
+From: Alok N Kataria <akataria@vmware.com>
 
-(cherry picked from commit 439b72b69e4992e9ec34b74304f0fa95623934eb)
+commit 48ffc70b675aa7798a52a2e92e20f6cce9140b3d upstream.
 
-Don't call tda8290_init_tuner unless we have either a TDA8275 or TDA8275A
-present. Calling this function will cause a TDA18271 to get sick, so we
-should only call it when needed.
+Impact: fix time warps under vmware
 
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Similar to the check for TSC going backwards in the TSC clocksource,
+we also need this check for VMI clocksource.
+
+Signed-off-by: Alok N Kataria <akataria@vmware.com>
+Cc: Zachary Amsden <zach@vmware.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/common/tuners/tda8290.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/kernel/vmiclock_32.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/drivers/media/common/tuners/tda8290.c
-+++ b/drivers/media/common/tuners/tda8290.c
-@@ -726,7 +726,8 @@ struct dvb_frontend *tda829x_attach(stru
- 	fe->ops.analog_ops.info.name = name;
+--- a/arch/x86/kernel/vmiclock_32.c
++++ b/arch/x86/kernel/vmiclock_32.c
+@@ -280,10 +280,13 @@ void __devinit vmi_time_ap_init(void)
+ #endif
  
- 	if (priv->ver & TDA8290) {
--		tda8290_init_tuner(fe);
-+		if (priv->ver & (TDA8275 | TDA8275A))
-+			tda8290_init_tuner(fe);
- 		tda8290_init_if(fe);
- 	} else if (priv->ver & TDA8295)
- 		tda8295_init_if(fe);
+ /** vmi clocksource */
++static struct clocksource clocksource_vmi;
+ 
+ static cycle_t read_real_cycles(void)
+ {
+-	return vmi_timer_ops.get_cycle_counter(VMI_CYCLES_REAL);
++	cycle_t ret = (cycle_t)vmi_timer_ops.get_cycle_counter(VMI_CYCLES_REAL);
++	return ret >= clocksource_vmi.cycle_last ?
++		ret : clocksource_vmi.cycle_last;
+ }
+ 
+ static struct clocksource clocksource_vmi = {
 
 
