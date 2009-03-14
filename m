@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761277AbZCNAjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761662AbZCNAkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761277AbZCNAjv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbZCNATf
+	id S1761662AbZCNAkk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbZCNATg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:35 -0400
-Received: from kroah.org ([198.145.64.141]:34819 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:36 -0400
+Received: from kroah.org ([198.145.64.141]:34844 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753501AbZCNATV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:21 -0400
+	id S1750857AbZCNATX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:23 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:48 2009
-Message-Id: <20090314000748.256126466@mini.kroah.org>
+Message-Id: <20090314000748.556195682@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:09 -0700
+Date: Fri, 13 Mar 2009 17:06:11 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Paul Moore <paul.moore@hp.com>,
-       James Morris <jmorris@namei.org>
-Subject: [patch 61/96] selinux: Fix the NetLabel glue code for setsockopt()
+       alan@lxorguk.ukuu.org.uk, Clemens Ladisch <clemens@ladisch.de>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 63/96] sound: usb-audio: fix uninitialized variable with M-Audio MIDI interfaces
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=selinux-fix-the-netlabel-glue-code-for-setsockopt.patch
+Content-Disposition: inline; filename=sound-usb-audio-fix-uninitialized-variable-with-m-audio-midi-interfaces.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,45 +39,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Paul Moore <paul.moore@hp.com>
+From: Clemens Ladisch <clemens@ladisch.de>
 
-commit 09c50b4a52c01a1f450b8eec819089e228655bfb upstream.
+commit e156ac4c571e3be741bc411e58820b74a9295c72 upstream.
 
-At some point we (okay, I) managed to break the ability for users to use the
-setsockopt() syscall to set IPv4 options when NetLabel was not active on the
-socket in question.  The problem was noticed by someone trying to use the
-"-R" (record route) option of ping:
+Fix the snd_usbmidi_create_endpoints_midiman() function, which forgot to
+set the out_interval member of the endpoint info structure for Midiman/
+M-Audio devices.  Since kernel 2.6.24, any non-zero value makes the
+driver use interrupt transfers instead of bulk transfers.  With EHCI
+controllers, these random interval values result in unbearably large
+latencies for output MIDI transfers.
 
- # ping -R 10.0.0.1
- ping: record route: No message of desired type
-
-The solution is relatively simple, we catch the unlabeled socket case and
-clear the error code, allowing the operation to succeed.  Please note that we
-still deny users the ability to override IPv4 options on socket's which have
-NetLabel labeling active; this is done to ensure the labeling remains intact.
-
-Signed-off-by: Paul Moore <paul.moore@hp.com>
-Signed-off-by: James Morris <jmorris@namei.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Reported-by: David <devurandom@foobox.com>
+Tested-by: David <devurandom@foobox.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- security/selinux/netlabel.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ sound/usb/usbmidi.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/security/selinux/netlabel.c
-+++ b/security/selinux/netlabel.c
-@@ -340,8 +340,10 @@ int selinux_netlbl_socket_setsockopt(str
- 		lock_sock(sk);
- 		rc = netlbl_sock_getattr(sk, &secattr);
- 		release_sock(sk);
--		if (rc == 0 && secattr.flags != NETLBL_SECATTR_NONE)
-+		if (rc == 0)
- 			rc = -EACCES;
-+		else if (rc == -ENOMSG)
-+			rc = 0;
- 		netlbl_secattr_destroy(&secattr);
+--- a/sound/usb/usbmidi.c
++++ b/sound/usb/usbmidi.c
+@@ -1583,6 +1583,7 @@ static int snd_usbmidi_create_endpoints_
  	}
  
+ 	ep_info.out_ep = get_endpoint(hostif, 2)->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK;
++	ep_info.out_interval = 0;
+ 	ep_info.out_cables = endpoint->out_cables & 0x5555;
+ 	err = snd_usbmidi_out_endpoint_create(umidi, &ep_info, &umidi->endpoints[0]);
+ 	if (err < 0)
 
 
