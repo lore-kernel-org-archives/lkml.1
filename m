@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZCNAax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbZCNAfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422AbZCNAax (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZCNATD
+	id S1760858AbZCNAfo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZCNATV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:03 -0400
-Received: from kroah.org ([198.145.64.141]:47008 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:21 -0400
+Received: from kroah.org ([198.145.64.141]:47128 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753157AbZCNAS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:59 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:45 2009
-Message-Id: <20090314000744.864455450@mini.kroah.org>
+	id S1753530AbZCNATJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:09 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:46 2009
+Message-Id: <20090314000746.394543074@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:47 -0700
+Date: Fri, 13 Mar 2009 17:05:57 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, David Altobelli <david.altobelli@hp.com>
-Subject: [patch 39/96] hpilo: new pci device
+       alan@lxorguk.ukuu.org.uk, Rabin Vincent <rabin@rab.in>,
+       Pierre Ossman <drzeus@drzeus.cx>
+Subject: [patch 49/96] mmc_test: fix basic read test
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=hpilo-new-pci-device.patch
+Content-Disposition: inline; filename=mmc_test-fix-basic-read-test.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,30 +39,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David Altobelli <david.altobelli@hp.com>
+From: Rabin Vincent <rabin@rab.in>
 
-commit 31d8b5631f095cb7100cfccc95c801a2547ffe2b upstream.
+commit 58a5dd3e0e77029d3db1f8fa75d0b54b38169d5d upstream.
 
-Future iLO devices will have an HP vendor id.
+Due to a typo in the Basic Read test, it's currently identical to the
+Basic Write test.  Fix this.
 
-Signed-off-by: David Altobelli <david.altobelli@hp.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Rabin Vincent <rabin@rab.in>
+Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/hpilo.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/mmc/card/mmc_test.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/misc/hpilo.c
-+++ b/drivers/misc/hpilo.c
-@@ -710,6 +710,7 @@ out:
+--- a/drivers/mmc/card/mmc_test.c
++++ b/drivers/mmc/card/mmc_test.c
+@@ -494,7 +494,7 @@ static int mmc_test_basic_read(struct mm
  
- static struct pci_device_id ilo_devices[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xB204) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_HP, 0x3307) },
- 	{ }
- };
- MODULE_DEVICE_TABLE(pci, ilo_devices);
+ 	sg_init_one(&sg, test->buffer, 512);
+ 
+-	ret = mmc_test_simple_transfer(test, &sg, 1, 0, 1, 512, 1);
++	ret = mmc_test_simple_transfer(test, &sg, 1, 0, 1, 512, 0);
+ 	if (ret)
+ 		return ret;
+ 
 
 
