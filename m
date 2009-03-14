@@ -1,79 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761424AbZCNAzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbZCNBB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761424AbZCNAzj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZCNAz0
+	id S1752487AbZCNBB7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbZCNBBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:55:26 -0400
-Received: from n15.bullet.mail.mud.yahoo.com ([68.142.206.42]:29229 "HELO
-	n15.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752165AbZCNAzY (ORCPT
+	Fri, 13 Mar 2009 21:01:45 -0400
+Received: from mga11.intel.com ([192.55.52.93]:44978 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750898AbZCNBBo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:55:24 -0400
-X-Yahoo-Newman-Id: 307581.34537.bm@omp415.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:Reply-To:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=f5ZwXm5wdpeNz639FiJCrjB7h6aBPilLJVMHwTgRBqN8CJ48x0MrUAcRhgPdmN5o50BWGjibWk3Y4Ho7X11HPLJDCGFY4STD7+VQn6Yh/KstoWoo4ckR4eimgYQs4MyT4EP1g0L5rXJ4fmryTuD/qDQGHePj2D6De2Rv5+Ugfac=  ;
-X-YMail-OSG: sSEBL.MVM1kDn_ZDxa824vl.KVC1nj.LDfwZy1FediemdiHU8scHVcsbXfHtmfrMufJFbtO9r8O34_PV0cDQv2SqeWJSoQ.38izIYCVDjd24h2JJoe1IwSYdNa9KA1WvlkoRDvbANXqwalEfMaorIJZwz_PUry9KhCwDVYE4C300Qa2rePbY_Qe5IgjIJwLWOw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-Reply-To: dbrownell@users.sourceforge.net
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: [patch] twl4030-regulator: expose VPLL2
-Date: Fri, 13 Mar 2009 17:54:54 -0700
-User-Agent: KMail/1.9.10
-Cc: Mark Brown <broonie@sirena.org.uk>, OMAP <linux-omap@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
+	Fri, 13 Mar 2009 21:01:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,361,1233561600"; 
+   d="scan'208";a="438829451"
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+CC: "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Date: Fri, 13 Mar 2009 18:01:41 -0700
+Subject: RE: [E1000-devel] [stable] Li-nux 2.6.27.19  2.6.28.7
+Thread-Topic: [E1000-devel] [stable] Li-nux 2.6.27.19  2.6.28.7
+Thread-Index: AcmkKv4pD1wO/iYsR0+SR0qbGLUnZgAFJgzg
+Message-ID: <F169D4F5E1F1974DBFAFABF47F60C10A1E80D63A@orsmsx507.amr.corp.intel.com>
+References: <20090220225448.GA14122@kroah.com>
+	<20090313151051.a9198384.akpm@linux-foundation.org>
+ <20090313222044.GA18010@kroah.com>
+In-Reply-To: <20090313222044.GA18010@kroah.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903131754.54997.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+Greg KH wrote:
+> On Fri, Mar 13, 2009 at 03:10:51PM -0700, Andrew Morton wrote:
+>> 
+>> I fired up this kernel up on my FC8 laptop and I see
+>> http://userweb.kernel.org/~akpm/p3130212.jpg
+>> 
+>> On the next two boot attempts, the kernel came up OK.
+>> 
 
-Add VPLL2 to the set of twl4030-family regulators exposed for
-use by various drivers.  It's commonly used to power the digital
-video outputs (e.g. LCD or DVI displays) on OMAP3 systems.
-
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
-Please apply to regulator-next and linux-omap ... I'll send
-some patches configuring various OMAP boards to use this.
-
- drivers/mfd/twl4030-core.c            |    2 --
- drivers/regulator/twl4030-regulator.c |    2 +-
- 2 files changed, 1 insertion(+), 3 deletions(-)
-
---- a/drivers/mfd/twl4030-core.c
-+++ b/drivers/mfd/twl4030-core.c
-@@ -613,11 +613,9 @@ add_children(struct twl4030_platform_dat
+root issue:
+seems that something with the 2.6.newer doesn't like some of the stuff with the fedora nash stuff.  mkinitrd and friends were updated multiple times to work with these newer kernels in the fedora 10 I was using.  I worked around by changing root=LABEL to use root=/dev/foo in grub.conf
  
- 	/* maybe add LDOs that are omitted on cost-reduced parts */
- 	if (twl_has_regulator() && !(features & TPS_SUBSET)) {
--		/*
- 		child = add_regulator(TWL4030_REG_VPLL2, pdata->vpll2);
- 		if (IS_ERR(child))
- 			return PTR_ERR(child);
--		*/
- 
- 		child = add_regulator(TWL4030_REG_VMMC2, pdata->vmmc2);
- 		if (IS_ERR(child))
---- a/drivers/regulator/twl4030-regulator.c
-+++ b/drivers/regulator/twl4030-regulator.c
-@@ -404,8 +404,8 @@ static struct twlreg_info twl4030_regs[]
- 	TWL_ADJUSTABLE_LDO(VMMC2, 0x2b, 6),
- 	/*
- 	TWL_ADJUSTABLE_LDO(VPLL1, 0x2f, 7),
--	TWL_ADJUSTABLE_LDO(VPLL2, 0x33, 8),
- 	*/
-+	TWL_ADJUSTABLE_LDO(VPLL2, 0x33, 8),
- 	TWL_ADJUSTABLE_LDO(VSIM, 0x37, 9),
- 	TWL_ADJUSTABLE_LDO(VDAC, 0x3b, 10),
- 	/*
+>> 
+>> ------------[ cut here ]------------
+>> WARNING: at drivers/net/e1000e/ich8lan.c:408
+>> e1000_acquire_swflag_ich8lan+0x51/0xf2() e1000e mutex contention.
+>> Owned by pid 10 
+>> Modules linked in:
+>> Pid: 9, comm: events/0 Not tainted 2.6.28.7 #1
+>> Call Trace:
+>>  [<ffffffff8103a810>] warn_slowpath+0xae/0xcd
+>>  [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
+>>  [<ffffffff8104394b>] ? lock_timer_base+0x26/0x4a
+>>  [<ffffffff8105d63f>] ? __lock_acquire+0x702/0x760
+>>  [<ffffffff8105bfc6>] ? mark_held_locks+0x50/0x6d
+>>  [<ffffffff812dd950>] ? mutex_trylock+0x104/0x118
+>>  [<ffffffff8105c170>] ? trace_hardirqs_on_caller+0xf8/0x123
+>>  [<ffffffff8105c1a8>] ? trace_hardirqs_on+0xd/0xf
+>>  [<ffffffff811ed838>] e1000_acquire_swflag_ich8lan+0x51/0xf2
+>>  [<ffffffff811f2fe9>] e1000e_read_kmrn_reg+0x1b/0x69
+>>  [<ffffffff811f63c5>] ? e1000e_downshift_workaround+0x0/0x12
+>>  [<ffffffff811ed1e9>]
+>>  e1000e_gig_downshift_workaround_ich8lan+0x2c/0x71
+>>  [<ffffffff811f63d5>] e1000e_downshift_workaround+0x10/0x12
+>>  [<ffffffff8104a6ed>] run_workqueue+0xf5/0x1fd [<ffffffff8104a697>]
+>>  ? run_workqueue+0x9f/0x1fd [<ffffffff8104a8f6>] ?
+>>  worker_thread+0x0/0xe8 [<ffffffff8104a9d1>] worker_thread+0xdb/0xe8
+>>  [<ffffffff8104de14>] ? autoremove_wake_function+0x0/0x36
+>>  [<ffffffff8104a8f6>] ? worker_thread+0x0/0xe8
+>>  [<ffffffff8104db1a>] kthread+0x44/0x6b
+>>  [<ffffffff8100cf59>] child_rip+0xa/0x11
+>>  [<ffffffff8100c474>] ? restore_args+0x0/0x30
+>>  [<ffffffff8104dad6>] ? kthread+0x0/0x6b
+>>  [<ffffffff8100cf4f>] ? child_rip+0x0/0x11
 
+newer kernels have this fixed.  This really is a warning as this is only telling you that it had to wait (but that the mutex worked!)
+
+we've isolated all these warnings down to known SMP safe paths (and fixed the relevant issues) and have posted a patch to current net-next that removes the warning.  don't have the commit handy but could probably chase it down.
+
+so, WARNING is noisy but okay.
+
+The tx hang you see is bad (as it appears to be a false hang since status is set correctly and you don't get a NETDEV_WATCHDOG)
+
+Jesse
+
+PS please include netdev on network related issues. :-)
