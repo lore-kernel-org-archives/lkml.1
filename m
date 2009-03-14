@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761402AbZCNB1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753473AbZCNBU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761402AbZCNB1w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbZCNBUL
+	id S1753473AbZCNBU7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZCNBTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:11 -0400
-Received: from kroah.org ([198.145.64.141]:34922 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:19:46 -0400
+Received: from kroah.org ([198.145.64.141]:34725 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752842AbZCNBUC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:02 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:34 2009
-Message-Id: <20090314011034.336748926@mini.kroah.org>
+	id S1751539AbZCNBTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:19:44 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:31 2009
+Message-Id: <20090314011031.704352984@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:09:57 -0700
+Date: Fri, 13 Mar 2009 18:09:40 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 020/114] USB: usb-storage: add IGNORE_RESIDUE flag for Genesys Logic adapters
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 003/114] sparc64: Fix crashes in jbusmc_print_dimm()
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=usb-usb-storage-add-ignore_residue-flag-for-genesys-logic-adapters.patch
+Content-Disposition: inline; filename=sparc64-fix-crashes-in-jbusmc_print_dimm.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,40 +38,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: David S. Miller <davem@davemloft.net>
 
-commit 5126a2674ddac0804450f59da25a058cca629d38 upstream.
+[ Upstream commit 1b0e235cc9bfae4bc0f5cd0cba929206fb0f6a64 ]
 
-This patch (as1219) adds the IGNORE_RESIDUE flag to the unusual_devs
-entries for Genesys Logic's USB-IDE adapter.  Although this device
-usually gets the residue correct, there is one command crucial to the
-operation of CD and DVD drives which it messes up.
+Return was missing for the case where there is no dimm
+info match.
 
-Tested-by: Mike Lampard <mike@mtgambier.net>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/sparc64/kernel/chmc.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -876,13 +876,13 @@ UNUSUAL_DEV(  0x05e3, 0x0701, 0x0000, 0x
- 		"Genesys Logic",
- 		"USB to IDE Optical",
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
--		US_FL_GO_SLOW | US_FL_MAX_SECTORS_64 ),
-+		US_FL_GO_SLOW | US_FL_MAX_SECTORS_64 | US_FL_IGNORE_RESIDUE ),
- 
- UNUSUAL_DEV(  0x05e3, 0x0702, 0x0000, 0xffff,
- 		"Genesys Logic",
- 		"USB to IDE Disk",
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
--		US_FL_GO_SLOW | US_FL_MAX_SECTORS_64 ),
-+		US_FL_GO_SLOW | US_FL_MAX_SECTORS_64 | US_FL_IGNORE_RESIDUE ),
- 
- /* Reported by Hanno Boeck <hanno@gmx.de>
-  * Taken from the Lycoris Kernel */
+--- a/arch/sparc64/kernel/chmc.c
++++ b/arch/sparc64/kernel/chmc.c
+@@ -306,6 +306,7 @@ static int jbusmc_print_dimm(int syndrom
+ 		buf[1] = '?';
+ 		buf[2] = '?';
+ 		buf[3] = '\0';
++		return 0;
+ 	}
+ 	p = dp->controller;
+ 	prop = &p->layout;
 
 
