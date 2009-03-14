@@ -1,80 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757693AbZCNUQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbZCNUa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757693AbZCNUQv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 16:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbZCNUQm
+	id S1757257AbZCNUa6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 16:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbZCNUas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 16:16:42 -0400
-Received: from mail-bw0-f175.google.com ([209.85.218.175]:36176 "EHLO
-	mail-bw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752544AbZCNUQm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 16:16:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=ddMtlXszso1d9sAhBMIV0hbKblWaqRHnRv8w8Xxk7hoV7sk/YWrLeJGKnka+mdwHA5
-         0tpcBTFIuuhZX1dyOJ9AcqG1Po6tduKtjQ3yHv2moSEcwbfaSryidKyGgIh5Hi6sk3Az
-         VITDLTq5wB1ZOov6jivt0WeMLFdPH9HMqXLGs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH 11/14] block: implement and use [__]blk_end_request_all()
-Date: Sat, 14 Mar 2009 21:19:09 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7-next-20090311; KDE/4.2.0; i686; ; )
-Cc: Tejun Heo <tj@kernel.org>, axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       Russell King <rmk@arm.linux.org.uk>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Mike Miller <mike.miller@hp.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Jeff Garzik <jgarzik@pobox.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Alex Dubov <oakad@yahoo.com>
-References: <1236920578-2179-1-git-send-email-tj@kernel.org> <200903142023.14747.bzolnier@gmail.com> <1237060560.3907.57.camel@localhost.localdomain>
-In-Reply-To: <1237060560.3907.57.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200903142119.10056.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 14 Mar 2009 16:30:48 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:46831 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752806AbZCNUar (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 16:30:47 -0400
+Date: Sat, 14 Mar 2009 21:30:38 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Cliff Cai <cliff.cai@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH] mmc: align data size for host which only supports
+ power-of-2 block
+Message-ID: <20090314213038.4d14526e@mjolnir.ossman.eu>
+In-Reply-To: <1236309321-23955-1-git-send-email-cooloney@kernel.org>
+References: <1236309321-23955-1-git-send-email-cooloney@kernel.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 14 March 2009, James Bottomley wrote:
-> On Sat, 2009-03-14 at 20:23 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > > More generic comment follows -> this patch is guaranteed to clash
-> > > > with at least linux-next/pata-2.6 tree so why not introduce block
-> > > > layer helpers now, then push all driver updates through respective
-> > > > driver maintainers and deal with end_request() later (after all
-> > > > driver updates are in-tree)?
-> > > 
-> > > Most of the lld changes being trivial, I was hoping to push things
-> > > through blk tree, but IDE seems to be the most intertwined with the
-> > > block layer and it's likely to see quite some amount of not-so-trivial
-> > > changes to subtle paths.  How about pushing !IDE parts into blk tree
-> > > and pulling blk into pata-2.6, make IDE related changes there and
-> > > pulling back into blk tree so that further progresses can be made?
-> > 
-> > There is a "tiny" problem with this -- pata-2.6 is a quilt tree based on
-> > Linus' tree and it is not going to change for now (for various reasons).
+On Fri,  6 Mar 2009 11:15:21 +0800
+Bryan Wu <cooloney@kernel.org> wrote:
+
+> From: Cliff Cai <cliff.cai@analog.com>
 > 
-> Actually this one's easily solvable if you base the quilt on the block
-> tree (just specify it to linux-next in the BASE directive and it will do
-> the right thing).
+> Signed-off-by: Cliff Cai <cliff.cai@analog.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> ---
+
+This patch seems premature as there is no associated modification of
+any of the host drivers.
+
+>  drivers/mmc/core/core.c  |    8 +++++++-
+>  include/linux/mmc/host.h |    1 +
+>  2 files changed, 8 insertions(+), 1 deletions(-)
 > 
-> What I'd do is actually run two quilts: one based on vanilla and one
-> based on block and only add block dependent patches to the latter.  This
-> is like running a postmerge git tree (you can only send a pull request
-> for it after block goes in).
+> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+> index df6ce4a..15119df 100644
+> --- a/drivers/mmc/core/core.c
+> +++ b/drivers/mmc/core/core.c
+> @@ -321,7 +321,13 @@ unsigned int mmc_align_data_size(struct mmc_card *card, unsigned int sz)
+>  	 * the core about its problems yet, so for now we just 32-bit
+>  	 * align the size.
+>  	 */
+> -	sz = ((sz + 3) / 4) * 4;
+> +
+> +	/* Align size for host which only supports power-of-2 block */
+> +	if (card->host->powerof2_block) {
+> +		if (sz & (sz - 1))
+> +			sz = 1 << fls(sz);
+> +	} else
+> +		sz = ((sz + 3) / 4) * 4;
+>  
+>  	return sz;
+>  }
 
-Thanks for the hint but it sounds like a major pain once you hit some
-changes touching the same code areas that block patches do...
+At the very least, the comment at the top of this function must go. But
+really, if we want to improve this we should probably do it properly
+and have flags for the different limitations that are available.
 
-Besides this is guaranteed to inrease the workload on my side so it
-won't happen simply because of -ENOTIME.
+Padding to a power of two size can also mean a rather large padding. We
+might need to check the host data limits after doing the adjustment.
 
-Thanks,
-Bart
+> diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+> index 4e45725..7416ed1 100644
+> --- a/include/linux/mmc/host.h
+> +++ b/include/linux/mmc/host.h
+> @@ -162,6 +162,7 @@ struct mmc_host {
+>  	struct dentry		*debugfs_root;
+>  
+>  	unsigned long		private[0] ____cacheline_aligned;
+> +	unsigned int		powerof2_block;	/* host only supports power-of-2 block */
+>  };
+>  
+>  extern struct mmc_host *mmc_alloc_host(int extra, struct device *);
+
+This is just broken. Putting it after private completely breaks
+accesses to the host driver private data.
+
+Also, there are a whole bunch of alignment issues that can occur. We
+need some kind of flags field or a bitfield for this.
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
