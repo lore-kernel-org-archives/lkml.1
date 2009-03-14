@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbZCNAnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762476AbZCNAsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbZCNAnw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbZCNATp
+	id S1762476AbZCNAsa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:48:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZCNAUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:45 -0400
-Received: from kroah.org ([198.145.64.141]:34925 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:20:07 -0400
+Received: from kroah.org ([198.145.64.141]:35054 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753822AbZCNATd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:33 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:50 2009
-Message-Id: <20090314000749.947133489@mini.kroah.org>
+	id S1753822AbZCNATq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:46 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:52 2009
+Message-Id: <20090314000752.023337241@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:20 -0700
+Date: Fri, 13 Mar 2009 17:06:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alok N Kataria <akataria@vmware.com>,
-       Zachary Amsden <zach@vmware.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 72/96] x86, vmi: TSC going backwards check in vmi clocksource
+       alan@lxorguk.ukuu.org.uk, mtosatti@redhat.com,
+       Alexander Graf <agraf@suse.de>
+Subject: [patch 85/96] Fix no_timer_check on x86_64
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=x86-vmi-tsc-going-backwards-check-in-vmi-clocksource.patch
+Content-Disposition: inline; filename=fix-no_timer_check-on-x86_64.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,40 +39,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alok N Kataria <akataria@vmware.com>
+From: Alexander Graf <agraf@suse.de>
 
-commit 48ffc70b675aa7798a52a2e92e20f6cce9140b3d upstream.
+fixed upstream in 2.6.28 in merge of ioapic*.c for x86
 
-Impact: fix time warps under vmware
+In io_apic_32.c the logic of no_timer_check is "always make timer_irq_works
+return 1".
 
-Similar to the check for TSC going backwards in the TSC clocksource,
-we also need this check for VMI clocksource.
+Io_apic_64.c on the other hand checks for
+  if (!no_timer_check && timer_irq_works())
+basically meaning "make timer_irq_works fail" in the crucial first check.
 
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-Cc: Zachary Amsden <zach@vmware.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Now, in order to not move too much code, we can just reverse the logic here
+and should be fine off, basically rendering no_timer_check useful again.
+
+This issue seems to be resolved as of 2.6.28 by the merge of io_apic*.c,
+but still exists for at least 2.6.27.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+Acked-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- arch/x86/kernel/vmiclock_32.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/arch/x86/kernel/vmiclock_32.c
-+++ b/arch/x86/kernel/vmiclock_32.c
-@@ -280,10 +280,13 @@ void __devinit vmi_time_ap_init(void)
- #endif
- 
- /** vmi clocksource */
-+static struct clocksource clocksource_vmi;
- 
- static cycle_t read_real_cycles(void)
- {
--	return vmi_timer_ops.get_cycle_counter(VMI_CYCLES_REAL);
-+	cycle_t ret = (cycle_t)vmi_timer_ops.get_cycle_counter(VMI_CYCLES_REAL);
-+	return ret >= clocksource_vmi.cycle_last ?
-+		ret : clocksource_vmi.cycle_last;
- }
- 
- static struct clocksource clocksource_vmi = {
+---
+ arch/x86/kernel/io_apic_64.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/arch/x86/kernel/io_apic_64.c
++++ b/arch/x86/kernel/io_apic_64.c
+@@ -1729,7 +1729,7 @@ static inline void __init check_timer(vo
+ 			setup_timer_IRQ0_pin(apic1, pin1, cfg->vector);
+ 		}
+ 		unmask_IO_APIC_irq(0);
+-		if (!no_timer_check && timer_irq_works()) {
++		if (no_timer_check || timer_irq_works()) {
+ 			if (nmi_watchdog == NMI_IO_APIC) {
+ 				setup_nmi();
+ 				enable_8259A_irq(0);
 
 
