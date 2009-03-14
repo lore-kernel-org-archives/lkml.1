@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760546AbZCNArl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762357AbZCNArY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760546AbZCNArl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZCNAUA
+	id S1762357AbZCNArY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbZCNAT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:20:00 -0400
-Received: from kroah.org ([198.145.64.141]:35029 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:57 -0400
+Received: from kroah.org ([198.145.64.141]:35017 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753861AbZCNATo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:44 -0400
+	id S1753724AbZCNATm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:42 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:51 2009
-Message-Id: <20090314000751.654818834@mini.kroah.org>
+Message-Id: <20090314000751.351388146@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:31 -0700
+Date: Fri, 13 Mar 2009 17:06:29 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,46 +25,47 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [patch 83/96] ide-iops: fix odd-length ATAPI PIO transfers
+       alan@lxorguk.ukuu.org.uk, Roel Kluin <roel.kluin@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 81/96] i2c: Fix misplaced parentheses
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=ide-iops-fix-odd-length-atapi-pio-transfers.patch
+Content-Disposition: inline; filename=i2c-fix-misplaced-parentheses.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+From: Roel Kluin <roel.kluin@gmail.com>
 
-commit a509538d4fb4f99cdf0a095213d57cc3b2347615 upstream.
+commit f29d2e0275a4f03ef2fd158e484508dcb0c64efb upstream
 
-Commit 9567b349f7e7dd7e2483db99ee8e4a6fe0caca38 (ide: merge ->atapi_*put_bytes
-and ->ata_*put_data methods) introduced a regression  WRT the odd-length ATAPI
-PIO transfers -- the final word didn't get written (causing command timeouts).
+Fix misplaced parentheses.
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/ide/ide-iops.c |    2 ++
- 1 file changed, 2 insertions(+)
 
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -325,6 +325,8 @@ void ide_output_data(ide_drive_t *drive,
- 	u8 io_32bit = drive->io_32bit;
- 	u8 mmio = (hwif->host_flags & IDE_HFLAG_MMIO) ? 1 : 0;
- 
-+	len++;
-+
- 	if (io_32bit) {
- 		unsigned long uninitialized_var(flags);
- 
+---
+ drivers/i2c/i2c-core.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -1795,7 +1795,8 @@ static s32 i2c_smbus_xfer_emulated(struc
+ 	case I2C_SMBUS_QUICK:
+ 		msg[0].len = 0;
+ 		/* Special case: The read/write field is used as data */
+-		msg[0].flags = flags | (read_write==I2C_SMBUS_READ)?I2C_M_RD:0;
++		msg[0].flags = flags | (read_write == I2C_SMBUS_READ ?
++					I2C_M_RD : 0);
+ 		num = 1;
+ 		break;
+ 	case I2C_SMBUS_BYTE:
 
 
