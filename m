@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761188AbZCNB5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbZCNB5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761188AbZCNB5R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754976AbZCNBVv
+	id S1756226AbZCNB5i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbZCNBVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:51 -0400
-Received: from kroah.org ([198.145.64.141]:35729 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:52 -0400
+Received: from kroah.org ([198.145.64.141]:35738 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755269AbZCNBVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755172AbZCNBVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Mar 2009 21:21:20 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:46 2009
-Message-Id: <20090314011045.914471586@mini.kroah.org>
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:45 2009
+Message-Id: <20090314011045.758367881@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:11:15 -0700
+Date: Fri, 13 Mar 2009 18:11:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,73 +26,59 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Jan Kara <jack@suse.cz>
-Subject: [patch 098/114] ext4: Fix deadlock in ext4_write_begin() and ext4_da_write_begin()
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: [patch 097/114] ext4: Add fallback for find_group_flex
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=ext4-fix-deadlock-in-ext4_write_begin-and-ext4_da_write_begin.patch
+Content-Disposition: inline; filename=ext4-add-fallback-for-find_group_flex.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Jan Kara <jack@suse.cz>
+From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit ebd3610b110bbb18ea6f9f2aeed1e1068c537227)
+(cherry picked from commit 05bf9e839d9de4e8a094274a0a2fd07beb47eaf1)
 
-Functions ext4_write_begin() and ext4_da_write_begin() call
-grab_cache_page_write_begin() without AOP_FLAG_NOFS. Thus it
-can happen that page reclaim is triggered in that function
-and it recurses back into the filesystem (or some other filesystem).
-But this can lead to various problems as a transaction is already
-started at that point. Add the necessary flag.
+This is a workaround for find_group_flex() which badly needs to be
+replaced.  One of its problems (besides ignoring the Orlov algorithm)
+is that it is a bit hyperactive about returning failure under
+suspicious circumstances.  This can lead to spurious ENOSPC failures
+even when there are inodes still available.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11688
+Work around this for now by retrying the search using
+find_group_other() if find_group_flex() returns -1.  If
+find_group_other() succeeds when find_group_flex() has failed, log a
+warning message.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
+A better block/inode allocator that will fix this problem for real has
+been queued up for the next merge window.
+
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/inode.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ fs/ext4/ialloc.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -1347,6 +1347,10 @@ retry:
- 		goto out;
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -703,6 +703,13 @@ struct inode *ext4_new_inode(handle_t *h
+ 
+ 	if (sbi->s_log_groups_per_flex) {
+ 		ret2 = find_group_flex(sb, dir, &group);
++		if (ret2 == -1) {
++			ret2 = find_group_other(sb, dir, &group);
++			if (ret2 == 0 && printk_ratelimit())
++				printk(KERN_NOTICE "ext4: find_group_flex "
++				       "failed, fallback succeeded dir %lu\n",
++				       dir->i_ino);
++		}
+ 		goto got_group;
  	}
  
-+	/* We cannot recurse into the filesystem as the transaction is already
-+	 * started */
-+	flags |= AOP_FLAG_NOFS;
-+
- 	page = grab_cache_page_write_begin(mapping, index, flags);
- 	if (!page) {
- 		ext4_journal_stop(handle);
-@@ -1356,7 +1360,7 @@ retry:
- 	*pagep = page;
- 
- 	ret = block_write_begin(file, mapping, pos, len, flags, pagep, fsdata,
--							ext4_get_block);
-+				ext4_get_block);
- 
- 	if (!ret && ext4_should_journal_data(inode)) {
- 		ret = walk_page_buffers(handle, page_buffers(page),
-@@ -2603,6 +2607,9 @@ retry:
- 		ret = PTR_ERR(handle);
- 		goto out;
- 	}
-+	/* We cannot recurse into the filesystem as the transaction is already
-+	 * started */
-+	flags |= AOP_FLAG_NOFS;
- 
- 	page = grab_cache_page_write_begin(mapping, index, flags);
- 	if (!page) {
 
 
