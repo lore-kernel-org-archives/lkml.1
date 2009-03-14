@@ -1,20 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760408AbZCNVsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760261AbZCNVrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760408AbZCNVsZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 17:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759287AbZCNVnj
+	id S1760261AbZCNVrs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 17:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759201AbZCNVnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 17:43:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41594 "EHLO ogre.sisk.pl"
+	Sat, 14 Mar 2009 17:43:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41567 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759267AbZCNVnh convert rfc822-to-8bit (ORCPT
+	id S1759216AbZCNVnL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 17:43:37 -0400
+	Sat, 14 Mar 2009 17:43:11 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Dave Airlie" <airlied@redhat.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "=?utf-8?q?Michel=20D=C3=A4nzer?=" <michel@daenzer.net>,
-       "Sitsofe Wheeler" <sitsofe@yahoo.com>
+       "Heinz Diehl" <htd@fancy-poultry.org>, "Len Brown" <lenb@kernel.org>
 References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
 In-Reply-To: <MiincthRUSI.A.eKC.F4BvJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -22,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <GCLaknAim2M.A.e2D._4BvJB@chimera>
-Subject: [Bug #12765] i915 VT switch with AIGLX causes X lock up
+Message-ID: <GCLaknAim2M.A.ADE.J5BvJB@chimera>
+Subject: [Bug #12758] ACPI exception with 2.6.29-rc6
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 14 Mar 2009 20:05:32 +0100 (CET)
+Date: Sat, 14 Mar 2009 20:05:31 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,11 +35,12 @@ from 2.6.28.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
-Subject		: i915 VT switch with AIGLX causes X lock up
-Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
-Date		: 2009-02-21 15:38 (22 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
-References	: http://marc.info/?l=linux-kernel&m=123523074304955&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12758
+Subject		: ACPI exception with 2.6.29-rc6
+Submitter	: Heinz Diehl <htd@fancy-poultry.org>
+Date		: 2009-02-23 16:46 (20 days old)
+References	: http://marc.info/?l=linux-kernel&m=123540758700861&w=4
+Handled-By	: Len Brown <lenb@kernel.org>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=20368&action=view
 
 
