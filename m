@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761863AbZCNAlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761334AbZCNAhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761863AbZCNAlr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbZCNATj
+	id S1761334AbZCNAhu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbZCNAT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:39 -0400
-Received: from kroah.org ([198.145.64.141]:34874 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:28 -0400
+Received: from kroah.org ([198.145.64.141]:34751 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753635AbZCNAT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:27 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:49 2009
-Message-Id: <20090314000749.019699698@mini.kroah.org>
+	id S1752998AbZCNATQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:16 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:47 2009
+Message-Id: <20090314000747.348105117@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:14 -0700
+Date: Fri, 13 Mar 2009 17:06:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 66/96] USB: option: add BenQ 3g modem information
+       alan@lxorguk.ukuu.org.uk, Michael Neuling <mikey@neuling.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch 55/96] powerpc: Fix load/store float double alignment handler
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=usb-option-add-benq-3g-modem-information.patch
+Content-Disposition: inline; filename=powerpc-fix-load-store-float-double-alignment-handler.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,41 +39,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jesse Sung <jsung@novell.com>
+From: Michael Neuling <mikey@neuling.org>
 
-commit 28fb66821f884870987a0b5ab064ef651d9f7c16 upstream.
+commit 49f297f8df9adb797334155470ea9ca68bdb041e upstream.
 
-This patch addes the BenQ 3g modem support to the option driver.
+When we introduced VSX, we changed the way FPRs are stored in the
+thread_struct.  Unfortunately we missed the load/store float double
+alignment handler code when updating how we access FPRs in the
+thread_struct.
 
+Below fixes this and merges the little/big endian case.
 
-From: Jesse Sung <jsung@novell.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/option.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/kernel/align.c |   29 +++++++++++++----------------
+ 1 file changed, 13 insertions(+), 16 deletions(-)
 
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -289,6 +289,9 @@ static int  option_send_setup(struct tty
- #define ERICSSON_VENDOR_ID			0x0bdb
- #define ERICSSON_PRODUCT_F3507G			0x1900
+--- a/arch/powerpc/kernel/align.c
++++ b/arch/powerpc/kernel/align.c
+@@ -367,27 +367,24 @@ static int emulate_multiple(struct pt_re
+ static int emulate_fp_pair(unsigned char __user *addr, unsigned int reg,
+ 			   unsigned int flags)
+ {
+-	char *ptr = (char *) &current->thread.TS_FPR(reg);
+-	int i, ret;
++	char *ptr0 = (char *) &current->thread.TS_FPR(reg);
++	char *ptr1 = (char *) &current->thread.TS_FPR(reg+1);
++	int i, ret, sw = 0;
  
-+#define BENQ_VENDOR_ID				0x04a5
-+#define BENQ_PRODUCT_H10			0x4068
-+
- static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
-@@ -498,6 +501,8 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF628) },
- 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_CDMA_TECH) },
- 	{ USB_DEVICE(ERICSSON_VENDOR_ID, ERICSSON_PRODUCT_F3507G) },
-+	{ USB_DEVICE(BENQ_VENDOR_ID, BENQ_PRODUCT_H10) },
-+	{ USB_DEVICE(0x1da5, 0x4515) }, /* BenQ H20 */
- 	{ } /* Terminating entry */
- };
- MODULE_DEVICE_TABLE(usb, option_ids);
+ 	if (!(flags & F))
+ 		return 0;
+ 	if (reg & 1)
+ 		return 0;	/* invalid form: FRS/FRT must be even */
+-	if (!(flags & SW)) {
+-		/* not byte-swapped - easy */
+-		if (!(flags & ST))
+-			ret = __copy_from_user(ptr, addr, 16);
+-		else
+-			ret = __copy_to_user(addr, ptr, 16);
+-	} else {
+-		/* each FPR value is byte-swapped separately */
+-		ret = 0;
+-		for (i = 0; i < 16; ++i) {
+-			if (!(flags & ST))
+-				ret |= __get_user(ptr[i^7], addr + i);
+-			else
+-				ret |= __put_user(ptr[i^7], addr + i);
++	if (flags & SW)
++		sw = 7;
++	ret = 0;
++	for (i = 0; i < 8; ++i) {
++		if (!(flags & ST)) {
++			ret |= __get_user(ptr0[i^sw], addr + i);
++			ret |= __get_user(ptr1[i^sw], addr + i + 8);
++		} else {
++			ret |= __put_user(ptr0[i^sw], addr + i);
++			ret |= __put_user(ptr1[i^sw], addr + i + 8);
+ 		}
+ 	}
+ 	if (ret)
 
 
