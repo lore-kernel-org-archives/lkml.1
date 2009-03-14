@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbZCNB03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbZCNBVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760771AbZCNB03 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZCNBUD
+	id S1755421AbZCNBVg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZCNBTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:03 -0400
-Received: from kroah.org ([198.145.64.141]:34893 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:19:46 -0400
+Received: from kroah.org ([198.145.64.141]:34745 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752950AbZCNBT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:19:58 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:34 2009
-Message-Id: <20090314011033.870367095@mini.kroah.org>
+	id S1751835AbZCNBTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:19:45 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:31 2009
+Message-Id: <20090314011031.814268622@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:09:54 -0700
+Date: Fri, 13 Mar 2009 18:09:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: [patch 017/114] JFFS2: fix mount crash caused by removed nodes
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 004/114] sparc64: Fix DAX handling via userspace access from kernel.
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=jffs2-fix-mount-crash-caused-by-removed-nodes.patch
+Content-Disposition: inline; filename=sparc64-fix-dax-handling-via-userspace-access-from-kernel.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,113 +38,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: David S. Miller <davem@davemloft.net>
 
-commit 4c41bd0ec953954158f92bed5d3062645062b98e upstream.
+[ Upstream commit fcd26f7ae2ea5889134e8b3d60a42ce8b993c95f ]
 
-At scan time we observed following scenario:
+If we do a userspace access from kernel mode, and get a
+data access exception, we need to check the exception
+table just like a normal fault does.
 
-   node A inserted
-   node B inserted
-   node C inserted -> sets overlapped flag on node B
+The spitfire DAX handler was doing this, but such logic
+was missing from the sun4v DAX code.
 
-   node A is removed due to CRC failure -> overlapped flag on node B remains
-
-   while (tn->overlapped)
-   	 tn = tn_prev(tn);
-
-   ==> crash, when tn_prev(B) is referenced.
-
-When the ultimate node is removed at scan time and the overlapped flag
-is set on the penultimate node, then nothing updates the overlapped
-flag of that node. The overlapped iterators blindly expect that the
-ultimate node does not have the overlapped flag set, which causes the
-scan code to crash.
-
-It would be a huge overhead to go through the node chain on node
-removal and fix up the overlapped flags, so detecting such a case on
-the fly in the overlapped iterators is a simpler and reliable
-solution.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Reported-by: Dennis Gilmore <dgilmore@redhat.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jffs2/readinode.c |   42 +++++++++++++++++++++++++++++++++---------
- 1 file changed, 33 insertions(+), 9 deletions(-)
+ arch/sparc64/kernel/traps.c |   17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
---- a/fs/jffs2/readinode.c
-+++ b/fs/jffs2/readinode.c
-@@ -220,7 +220,7 @@ static int jffs2_add_tn_to_tree(struct j
- 				struct jffs2_tmp_dnode_info *tn)
- {
- 	uint32_t fn_end = tn->fn->ofs + tn->fn->size;
--	struct jffs2_tmp_dnode_info *this;
-+	struct jffs2_tmp_dnode_info *this, *ptn;
+--- a/arch/sparc64/kernel/traps.c
++++ b/arch/sparc64/kernel/traps.c
+@@ -1,6 +1,6 @@
+ /* arch/sparc64/kernel/traps.c
+  *
+- * Copyright (C) 1995,1997,2008 David S. Miller (davem@davemloft.net)
++ * Copyright (C) 1995,1997,2008,2009 David S. Miller (davem@davemloft.net)
+  * Copyright (C) 1997,1999,2000 Jakub Jelinek (jakub@redhat.com)
+  */
  
- 	dbg_readinode("insert fragment %#04x-%#04x, ver %u at %08x\n", tn->fn->ofs, fn_end, tn->version, ref_offset(tn->fn->raw));
+@@ -313,6 +313,21 @@ void sun4v_data_access_exception(struct 
+ 		return;
  
-@@ -251,11 +251,18 @@ static int jffs2_add_tn_to_tree(struct j
- 	if (this) {
- 		/* If the node is coincident with another at a lower address,
- 		   back up until the other node is found. It may be relevant */
--		while (this->overlapped)
--			this = tn_prev(this);
--
--		/* First node should never be marked overlapped */
--		BUG_ON(!this);
-+		while (this->overlapped) {
-+			ptn = tn_prev(this);
-+			if (!ptn) {
-+				/*
-+				 * We killed a node which set the overlapped
-+				 * flags during the scan. Fix it up.
-+				 */
-+				this->overlapped = 0;
-+				break;
-+			}
-+			this = ptn;
-+		}
- 		dbg_readinode("'this' found %#04x-%#04x (%s)\n", this->fn->ofs, this->fn->ofs + this->fn->size, this->fn ? "data" : "hole");
- 	}
- 
-@@ -360,7 +367,17 @@ static int jffs2_add_tn_to_tree(struct j
- 			}
- 			if (!this->overlapped)
- 				break;
--			this = tn_prev(this);
+ 	if (regs->tstate & TSTATE_PRIV) {
++		/* Test if this comes from uaccess places. */
++		const struct exception_table_entry *entry;
 +
-+			ptn = tn_prev(this);
-+			if (!ptn) {
-+				/*
-+				 * We killed a node which set the overlapped
-+				 * flags during the scan. Fix it up.
-+				 */
-+				this->overlapped = 0;
-+				break;
-+			}
-+			this = ptn;
- 		}
- 	}
- 
-@@ -456,8 +473,15 @@ static int jffs2_build_inode_fragtree(st
- 		eat_last(&rii->tn_root, &last->rb);
- 		ver_insert(&ver_root, last);
- 
--		if (unlikely(last->overlapped))
--			continue;
-+		if (unlikely(last->overlapped)) {
-+			if (pen)
-+				continue;
-+			/*
-+			 * We killed a node which set the overlapped
-+			 * flags during the scan. Fix it up.
-+			 */
-+			last->overlapped = 0;
++		entry = search_exception_tables(regs->tpc);
++		if (entry) {
++			/* Ouch, somebody is trying VM hole tricks on us... */
++#ifdef DEBUG_EXCEPTIONS
++			printk("Exception: PC<%016lx> faddr<UNKNOWN>\n", regs->tpc);
++			printk("EX_TABLE: insn<%016lx> fixup<%016lx>\n",
++			       regs->tpc, entry->fixup);
++#endif
++			regs->tpc = entry->fixup;
++			regs->tnpc = regs->tpc + 4;
++			return;
 +		}
- 
- 		/* Now we have a bunch of nodes in reverse version
- 		   order, in the tree at ver_root. Most of the time,
+ 		printk("sun4v_data_access_exception: ADDR[%016lx] "
+ 		       "CTX[%04x] TYPE[%04x], going.\n",
+ 		       addr, ctx, type);
 
 
