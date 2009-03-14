@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756553AbZCNLho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbZCNLic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756553AbZCNLho (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 07:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbZCNLfy
+	id S1756837AbZCNLic (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 07:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbZCNLf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 07:35:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40243 "EHLO ogre.sisk.pl"
+	Sat, 14 Mar 2009 07:35:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40250 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754942AbZCNLfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 07:35:45 -0400
+	id S1755146AbZCNLfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 07:35:46 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 8/11] PCI PM: Move pci_restore_standard_config to pci-driver.c
-Date: Sat, 14 Mar 2009 12:32:04 +0100
+Subject: [PATCH 10/11] PCI PM: Make pci_set_power_state() handle devices with no PM support
+Date: Sat, 14 Mar 2009 12:33:55 +0100
 User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -31,92 +31,76 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903141232.05762.rjw@sisk.pl>
+Message-Id: <200903141233.56694.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Move pci_restore_standard_config() from pci.c to pci-driver.c and
-make it static.
+There is a problem with PCI devices without any PM support (either
+native or through the platform) that pci_set_power_state() always
+returns error code for them, even if they are being put into D0.
+However, such devices are always in D0, so pci_set_power_state()
+should return success when attempting to put such a device into D0.
+It also should update the current_state field for these devices as
+appropriate.  This modification is necessary so that the standard
+configuration registers of these devices are successfully restored by
+pci_restore_standard_config() during the "early" phase of resume.
+
+In addition, pci_set_power_state() should check the value of
+current_state before calling the platform to change the power state
+of the device to avoid doing that unnecessarily.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/pci/pci-driver.c |   17 +++++++++++++++++
- drivers/pci/pci.c        |   21 ---------------------
- drivers/pci/pci.h        |    1 -
- 3 files changed, 17 insertions(+), 22 deletions(-)
+ drivers/pci/pci.c |   18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci-driver.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -423,6 +423,23 @@ static int pci_legacy_resume(struct devi
- 
- /* Auxiliary functions used by the new power management framework */
- 
-+/**
-+ * pci_restore_standard_config - restore standard config registers of PCI device
-+ * @pci_dev: PCI device to handle
-+ */
-+static int pci_restore_standard_config(struct pci_dev *pci_dev)
-+{
-+	pci_update_current_state(pci_dev, PCI_UNKNOWN);
-+
-+	if (pci_dev->current_state != PCI_D0) {
-+		int error = pci_set_power_state(pci_dev, PCI_D0);
-+		if (error)
-+			return error;
-+	}
-+
-+	return pci_dev->state_saved ? pci_restore_state(pci_dev) : 0;
-+}
-+
- static void pci_pm_default_resume_noirq(struct pci_dev *pci_dev)
- {
- 	pci_restore_standard_config(pci_dev);
 Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
 --- linux-2.6.orig/drivers/pci/pci.c
 +++ linux-2.6/drivers/pci/pci.c
-@@ -1374,27 +1374,6 @@ void pci_allocate_cap_save_buffers(struc
- }
+@@ -439,6 +439,10 @@ static int pci_raw_set_power_state(struc
+ 	u16 pmcsr;
+ 	bool need_restore = false;
  
- /**
-- * pci_restore_standard_config - restore standard config registers of PCI device
-- * @dev: PCI device to handle
-- *
-- * This function assumes that the device's configuration space is accessible.
-- * If the device needs to be powered up, the function will wait for it to
-- * change the state.
-- */
--int pci_restore_standard_config(struct pci_dev *dev)
--{
--	pci_update_current_state(dev, PCI_UNKNOWN);
--
--	if (dev->current_state != PCI_D0) {
--		int error = pci_set_power_state(dev, PCI_D0);
--		if (error)
--			return error;
--	}
--
--	return dev->state_saved ? pci_restore_state(dev) : 0;
--}
--
--/**
-  * pci_enable_ari - enable ARI forwarding if hardware support it
-  * @dev: the PCI device
-  */
-Index: linux-2.6/drivers/pci/pci.h
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.h
-+++ linux-2.6/drivers/pci/pci.h
-@@ -49,7 +49,6 @@ extern void pci_disable_enabled_device(s
- extern void pci_pm_init(struct pci_dev *dev);
- extern void platform_pci_wakeup_init(struct pci_dev *dev);
- extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
--extern int pci_restore_standard_config(struct pci_dev *dev);
++	/* Check if we're already there */
++	if (dev->current_state == state)
++		return 0;
++
+ 	if (!dev->pm_cap)
+ 		return -EIO;
  
- static inline bool pci_is_bridge(struct pci_dev *pci_dev)
- {
+@@ -449,10 +453,7 @@ static int pci_raw_set_power_state(struc
+ 	 * Can enter D0 from any state, but if we can only go deeper 
+ 	 * to sleep if we're already in a low power state
+ 	 */
+-	if (dev->current_state == state) {
+-		/* we're already there */
+-		return 0;
+-	} else if (state != PCI_D0 && dev->current_state <= PCI_D3cold
++	if (state != PCI_D0 && dev->current_state <= PCI_D3cold
+ 	    && dev->current_state > state) {
+ 		dev_err(&dev->dev, "invalid power transition "
+ 			"(from state %d to %d)\n", dev->current_state, state);
+@@ -570,12 +571,17 @@ int pci_set_power_state(struct pci_dev *
+ 		 */
+ 		return 0;
+ 
+-	if (state == PCI_D0 && platform_pci_power_manageable(dev)) {
++	/* Check if we're already there */
++	if (dev->current_state == state)
++		return 0;
++
++	if (state == PCI_D0) {
+ 		/*
+ 		 * Allow the platform to change the state, for example via ACPI
+ 		 * _PR0, _PS0 and some such, but do not trust it.
+ 		 */
+-		int ret = platform_pci_set_power_state(dev, PCI_D0);
++		int ret = platform_pci_power_manageable(dev) ?
++			platform_pci_set_power_state(dev, PCI_D0) : 0;
+ 		if (!ret)
+ 			pci_update_current_state(dev, PCI_D0);
+ 	}
