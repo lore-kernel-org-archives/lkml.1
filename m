@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbZCNBVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760423AbZCNBZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbZCNBVg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZCNBTq
+	id S1760423AbZCNBZn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbZCNBT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:19:46 -0400
-Received: from kroah.org ([198.145.64.141]:34745 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:19:57 -0400
+Received: from kroah.org ([198.145.64.141]:34866 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751835AbZCNBTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:19:45 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:31 2009
-Message-Id: <20090314011031.814268622@mini.kroah.org>
+	id S1752116AbZCNBT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:19:56 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:33 2009
+Message-Id: <20090314011033.590487332@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:09:41 -0700
+Date: Fri, 13 Mar 2009 18:09:52 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 004/114] sparc64: Fix DAX handling via userspace access from kernel.
+       alan@lxorguk.ukuu.org.uk, Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 015/114] PCI quirk: enable MSI on 8132
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=sparc64-fix-dax-handling-via-userspace-access-from-kernel.patch
+Content-Disposition: inline; filename=pci-quirk-enable-msi-on-8132.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,56 +39,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Yinghai Lu <yinghai@kernel.org>
 
-[ Upstream commit fcd26f7ae2ea5889134e8b3d60a42ce8b993c95f ]
+commit e0ae4f5503235ba4449ffb5bcb4189edcef4d584 upstream.
 
-If we do a userspace access from kernel mode, and get a
-data access exception, we need to check the exception
-table just like a normal fault does.
+David reported that LSI SAS doesn't work with MSI.  It turns out that
+his BIOS doesn't enable it, but the HT MSI 8132 does support HT MSI.
+Add quirk to enable it
 
-The spitfire DAX handler was doing this, but such logic
-was missing from the sun4v DAX code.
-
-Reported-by: Dennis Gilmore <dgilmore@redhat.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Reported-by: David Lang <david@lang.hm>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc64/kernel/traps.c |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+ drivers/pci/quirks.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/arch/sparc64/kernel/traps.c
-+++ b/arch/sparc64/kernel/traps.c
-@@ -1,6 +1,6 @@
- /* arch/sparc64/kernel/traps.c
-  *
-- * Copyright (C) 1995,1997,2008 David S. Miller (davem@davemloft.net)
-+ * Copyright (C) 1995,1997,2008,2009 David S. Miller (davem@davemloft.net)
-  * Copyright (C) 1997,1999,2000 Jakub Jelinek (jakub@redhat.com)
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1778,7 +1778,6 @@ static void __devinit quirk_msi_ht_cap(s
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_HT2000_PCIE,
+ 			quirk_msi_ht_cap);
+ 
+-
+ /* The nVidia CK804 chipset may have 2 HT MSI mappings.
+  * MSI are supported if the MSI capability set in any of these mappings.
   */
+@@ -1829,6 +1828,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_S
+ 			 PCI_DEVICE_ID_SERVERWORKS_HT1000_PXB,
+ 			 ht_enable_msi_mapping);
  
-@@ -313,6 +313,21 @@ void sun4v_data_access_exception(struct 
- 		return;
- 
- 	if (regs->tstate & TSTATE_PRIV) {
-+		/* Test if this comes from uaccess places. */
-+		const struct exception_table_entry *entry;
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_8132_BRIDGE,
++			 ht_enable_msi_mapping);
 +
-+		entry = search_exception_tables(regs->tpc);
-+		if (entry) {
-+			/* Ouch, somebody is trying VM hole tricks on us... */
-+#ifdef DEBUG_EXCEPTIONS
-+			printk("Exception: PC<%016lx> faddr<UNKNOWN>\n", regs->tpc);
-+			printk("EX_TABLE: insn<%016lx> fixup<%016lx>\n",
-+			       regs->tpc, entry->fixup);
-+#endif
-+			regs->tpc = entry->fixup;
-+			regs->tnpc = regs->tpc + 4;
-+			return;
-+		}
- 		printk("sun4v_data_access_exception: ADDR[%016lx] "
- 		       "CTX[%04x] TYPE[%04x], going.\n",
- 		       addr, ctx, type);
+ /* The P5N32-SLI Premium motherboard from Asus has a problem with msi
+  * for the MCP55 NIC. It is not yet determined whether the msi problem
+  * also affects other devices. As for now, turn off msi for this device.
 
 
