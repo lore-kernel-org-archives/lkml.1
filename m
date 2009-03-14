@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765470AbZCNB57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbZCNB6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765470AbZCNB57 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbZCNBVx
+	id S1754970AbZCNB6b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZCNBVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:53 -0400
-Received: from kroah.org ([198.145.64.141]:35810 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:54 -0400
+Received: from kroah.org ([198.145.64.141]:35824 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755073AbZCNBVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:21:22 -0400
+	id S1754501AbZCNBVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:21:23 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:46 2009
-Message-Id: <20090314011046.066141918@mini.kroah.org>
+Message-Id: <20090314011046.207940178@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:11:16 -0700
+Date: Fri, 13 Mar 2009 18:11:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 099/114] x86/paravirt: make arch_flush_lazy_mmu/cpu disable preemption
+       alan@lxorguk.ukuu.org.uk, John Stultz <johnstul@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 100/114] x86, hpet: fix for LS21 + HPET = boot hang
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=x86-paravirt-make-arch_flush_lazy_mmu-cpu-disable-preemption.patch
+Content-Disposition: inline; filename=x86-hpet-fix-for-ls21-hpet-boot-hang.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,97 +39,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+From: john stultz <johnstul@us.ibm.com>
 
-commit d85cf93da66977dbc645352be1b2084a659d8a0b upstream.
+commit b13e24644c138d0ddbc451403c30a96b09bfd556 upstream.
 
-Impact: avoid access to percpu vars in preempible context
+Between 2.6.23 and 2.6.24-rc1 a change was made that broke IBM LS21
+systems that had the HPET enabled in the BIOS, resulting in boot hangs
+for x86_64.
 
-They are intended to be used whenever there's the possibility
-that there's some stale state which is going to be overwritten
-with a queued update, or to force a state change when we may be
-in lazy mode.  Either way, we could end up calling it with
-preemption enabled, so wrap the functions in their own little
-preempt-disable section so they can be safely called in any
-context (though preemption should never be enabled if we're actually
-in a lazy state).
+Specifically commit b8ce33590687888ebb900d09557b8807c4539022, which
+merges the i386 and x86_64 HPET code.
 
-(Move out of line to avoid #include dependencies.)
+Prior to this commit, when we setup the HPET timers in x86_64, we did
+the following:
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+	hpet_writel(HPET_TN_ENABLE | HPET_TN_PERIODIC | HPET_TN_SETVAL |
+                    HPET_TN_32BIT, HPET_T0_CFG);
+
+However after the i386/x86_64 HPET merge, we do the following:
+
+	cfg = hpet_readl(HPET_Tn_CFG(timer));
+	cfg |= HPET_TN_ENABLE | HPET_TN_PERIODIC |
+			HPET_TN_SETVAL | HPET_TN_32BIT;
+	hpet_writel(cfg, HPET_Tn_CFG(timer));
+
+However on LS21s with HPET enabled in the BIOS, the HPET_T0_CFG register
+boots with Level triggered interrupts (HPET_TN_LEVEL) enabled. This
+causes the periodic interrupt to be not so periodic, and that results in
+the boot time hang I reported earlier in the delay calibration.
+
+My fix: Always disable HPET_TN_LEVEL when setting up periodic mode.
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/include/asm/paravirt.h |   17 ++---------------
- arch/x86/kernel/paravirt.c      |   24 ++++++++++++++++++++++++
- 2 files changed, 26 insertions(+), 15 deletions(-)
+ arch/x86/kernel/hpet.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -1352,14 +1352,7 @@ static inline void arch_leave_lazy_cpu_m
- 	PVOP_VCALL0(pv_cpu_ops.lazy_mode.leave);
- }
- 
--static inline void arch_flush_lazy_cpu_mode(void)
--{
--	if (unlikely(paravirt_get_lazy_mode() == PARAVIRT_LAZY_CPU)) {
--		arch_leave_lazy_cpu_mode();
--		arch_enter_lazy_cpu_mode();
--	}
--}
--
-+void arch_flush_lazy_cpu_mode(void);
- 
- #define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
- static inline void arch_enter_lazy_mmu_mode(void)
-@@ -1372,13 +1365,7 @@ static inline void arch_leave_lazy_mmu_m
- 	PVOP_VCALL0(pv_mmu_ops.lazy_mode.leave);
- }
- 
--static inline void arch_flush_lazy_mmu_mode(void)
--{
--	if (unlikely(paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU)) {
--		arch_leave_lazy_mmu_mode();
--		arch_enter_lazy_mmu_mode();
--	}
--}
-+void arch_flush_lazy_mmu_mode(void);
- 
- static inline void __set_fixmap(unsigned /* enum fixed_addresses */ idx,
- 				unsigned long phys, pgprot_t flags)
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -268,6 +268,30 @@ enum paravirt_lazy_mode paravirt_get_laz
- 	return __get_cpu_var(paravirt_lazy_mode);
- }
- 
-+void arch_flush_lazy_mmu_mode(void)
-+{
-+	preempt_disable();
-+
-+	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU) {
-+		arch_leave_lazy_mmu_mode();
-+		arch_enter_lazy_mmu_mode();
-+	}
-+
-+	preempt_enable();
-+}
-+
-+void arch_flush_lazy_cpu_mode(void)
-+{
-+	preempt_disable();
-+
-+	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_CPU) {
-+		arch_leave_lazy_cpu_mode();
-+		arch_enter_lazy_cpu_mode();
-+	}
-+
-+	preempt_enable();
-+}
-+
- struct pv_info pv_info = {
- 	.name = "bare hardware",
- 	.paravirt_enabled = 0,
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -267,6 +267,8 @@ static void hpet_set_mode(enum clock_eve
+ 		now = hpet_readl(HPET_COUNTER);
+ 		cmp = now + (unsigned long) delta;
+ 		cfg = hpet_readl(HPET_Tn_CFG(timer));
++		/* Make sure we use edge triggered interrupts */
++		cfg &= ~HPET_TN_LEVEL;
+ 		cfg |= HPET_TN_ENABLE | HPET_TN_PERIODIC |
+ 		       HPET_TN_SETVAL | HPET_TN_32BIT;
+ 		hpet_writel(cfg, HPET_Tn_CFG(timer));
 
 
