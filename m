@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762192AbZCNBw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932236AbZCNBwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762192AbZCNBw3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbZCNBVl
+	id S932236AbZCNBwu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbZCNBVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:41 -0400
-Received: from kroah.org ([198.145.64.141]:35641 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:42 -0400
+Received: from kroah.org ([198.145.64.141]:35623 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754793AbZCNBVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:21:07 -0400
+	id S1754864AbZCNBVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:21:09 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:44 2009
-Message-Id: <20090314011043.959273650@mini.kroah.org>
+Message-Id: <20090314011044.265489107@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:11:02 -0700
+Date: Fri, 13 Mar 2009 18:11:04 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Devin Heitmueller <dheitmueller@linuxtv.org>,
+       alan@lxorguk.ukuu.org.uk, Martin Dauskardt <martin.dauskardt@gmx.de>,
+       Hans Verkuil <hverkuil@xs4all.nl>,
        Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [patch 085/114] DVB: s5h1409: Perform s5h1409 soft reset after tuning
+Subject: [patch 087/114] V4L: saa7127: fix broken S-Video with saa7129
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=0001-DVB-s5h1409-Perform-s5h1409-soft-reset-after-tunin.patch
+Content-Disposition: inline; filename=0003-V4L-saa7127-fix-broken-S-Video-with-saa7129.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,54 +40,118 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Devin Heitmueller <dheitmueller@linuxtv.org>
+From: Martin Dauskardt <martin.dauskardt@gmx.de>
 
-(cherry picked from commit 67e70baf043cfdcdaf5972bc94be82632071536b)
+(backported from commit 0f3559ef17362a7dd5017521a4dd4cad31263395)
 
-Just like with the s5h1411, the s5h1409 needs a soft-reset in order for it
-to know that the tuner has been told to change frequencies.  This change
-changes the behavior from "random tuning times between 500ms to complete
-tuning lock failures" to "tuning lock consistently within 700ms".
+Register 0x2d has to be set differently in the saa7129 compared to the
+saa7127. This was not done correctly, so S-Video was broken in certain
+circumstances.
 
-Thanks to Robert Krakora <rob.krakora@messagenetsystems.com> for doing
-initial testing of the patch on the KWorld 330U.
+This fixes a regression introduced in 2.6.28.
 
-Thanks to Andy Walls <awalls@radix.net> for doing testing of the patch on
-the HVR-1600.
-
-Thanks to Michael Krufky <mkrufky@linuxtv.org> for doing additional testing.
-
-Signed-off-by: Devin Heitmueller <dheitmueller@linuxtv.org>
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: Martin Dauskardt <martin.dauskardt@gmx.de>
+Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/dvb/frontends/s5h1409.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/media/video/saa7127.c |   52 ++++++++++++++++++++++++------------------
+ 1 file changed, 30 insertions(+), 22 deletions(-)
 
---- a/drivers/media/dvb/frontends/s5h1409.c
-+++ b/drivers/media/dvb/frontends/s5h1409.c
-@@ -545,9 +545,6 @@ static int s5h1409_set_frontend(struct d
+--- a/drivers/media/video/saa7127.c
++++ b/drivers/media/video/saa7127.c
+@@ -149,7 +149,7 @@ static const struct i2c_reg_value saa712
+ 	{ SAA7127_REG_COPYGEN_0, 			0x77 },
+ 	{ SAA7127_REG_COPYGEN_1, 			0x41 },
+ 	{ SAA7127_REG_COPYGEN_2, 			0x00 },	/* Macrovision enable/disable */
+-	{ SAA7127_REG_OUTPUT_PORT_CONTROL, 		0x9e },
++	{ SAA7127_REG_OUTPUT_PORT_CONTROL, 		0xbf },
+ 	{ SAA7127_REG_GAIN_LUMINANCE_RGB, 		0x00 },
+ 	{ SAA7127_REG_GAIN_COLORDIFF_RGB, 		0x00 },
+ 	{ SAA7127_REG_INPUT_PORT_CONTROL_1, 		0x80 },	/* for color bars */
+@@ -479,12 +479,18 @@ static int saa7127_set_output_type(struc
+ 		break;
  
- 	s5h1409_enable_modulation(fe, p->u.vsb.modulation);
+ 	case SAA7127_OUTPUT_TYPE_COMPOSITE:
+-		state->reg_2d = 0x08;	/* 00001000 CVBS only, RGB DAC's off (high impedance mode) */
++		if (state->ident == V4L2_IDENT_SAA7129)
++			state->reg_2d = 0x20;	/* CVBS only */
++		else
++			state->reg_2d = 0x08;	/* 00001000 CVBS only, RGB DAC's off (high impedance mode) */
+ 		state->reg_3a = 0x13;	/* by default switch YUV to RGB-matrix on */
+ 		break;
  
--	/* Allow the demod to settle */
--	msleep(100);
+ 	case SAA7127_OUTPUT_TYPE_SVIDEO:
+-		state->reg_2d = 0xff;	/* 11111111  croma -> R, luma -> CVBS + G + B */
++		if (state->ident == V4L2_IDENT_SAA7129)
++			state->reg_2d = 0x18;	/* Y + C */
++		else
++			state->reg_2d = 0xff;   /*11111111  croma -> R, luma -> CVBS + G + B */
+ 		state->reg_3a = 0x13;	/* by default switch YUV to RGB-matrix on */
+ 		break;
+ 
+@@ -499,7 +505,10 @@ static int saa7127_set_output_type(struc
+ 		break;
+ 
+ 	case SAA7127_OUTPUT_TYPE_BOTH:
+-		state->reg_2d = 0xbf;
++		if (state->ident == V4L2_IDENT_SAA7129)
++			state->reg_2d = 0x38;
++		else
++			state->reg_2d = 0xbf;
+ 		state->reg_3a = 0x13;	/* by default switch YUV to RGB-matrix on */
+ 		break;
+ 
+@@ -691,24 +700,6 @@ static int saa7127_probe(struct i2c_clie
+ 
+ 	i2c_set_clientdata(client, state);
+ 
+-	/* Configure Encoder */
 -
- 	if (fe->ops.tuner_ops.set_params) {
- 		if (fe->ops.i2c_gate_ctrl)
- 			fe->ops.i2c_gate_ctrl(fe, 1);
-@@ -562,6 +559,10 @@ static int s5h1409_set_frontend(struct d
- 		s5h1409_set_qam_interleave_mode(fe);
- 	}
+-	v4l_dbg(1, debug, client, "Configuring encoder\n");
+-	saa7127_write_inittab(client, saa7127_init_config_common);
+-	saa7127_set_std(client, V4L2_STD_NTSC);
+-	saa7127_set_output_type(client, SAA7127_OUTPUT_TYPE_BOTH);
+-	saa7127_set_vps(client, &vbi);
+-	saa7127_set_wss(client, &vbi);
+-	saa7127_set_cc(client, &vbi);
+-	saa7127_set_xds(client, &vbi);
+-	if (test_image == 1)
+-		/* The Encoder has an internal Colorbar generator */
+-		/* This can be used for debugging */
+-		saa7127_set_input_type(client, SAA7127_INPUT_TYPE_TEST_IMAGE);
+-	else
+-		saa7127_set_input_type(client, SAA7127_INPUT_TYPE_NORMAL);
+-	saa7127_set_video_enable(client, 1);
+-
+ 	if (id->driver_data) {	/* Chip type is already known */
+ 		state->ident = id->driver_data;
+ 	} else {		/* Needs detection */
+@@ -730,6 +721,23 @@ static int saa7127_probe(struct i2c_clie
  
-+	/* Issue a reset to the demod so it knows to resync against the
-+	   newly tuned frequency */
-+	s5h1409_softreset(fe);
+ 	v4l_info(client, "%s found @ 0x%x (%s)\n", client->name,
+ 			client->addr << 1, client->adapter->name);
 +
++	v4l_dbg(1, debug, client, "Configuring encoder\n");
++	saa7127_write_inittab(client, saa7127_init_config_common);
++	saa7127_set_std(client, V4L2_STD_NTSC);
++	saa7127_set_output_type(client, SAA7127_OUTPUT_TYPE_BOTH);
++	saa7127_set_vps(client, &vbi);
++	saa7127_set_wss(client, &vbi);
++	saa7127_set_cc(client, &vbi);
++	saa7127_set_xds(client, &vbi);
++	if (test_image == 1)
++		/* The Encoder has an internal Colorbar generator */
++		/* This can be used for debugging */
++		saa7127_set_input_type(client, SAA7127_INPUT_TYPE_TEST_IMAGE);
++	else
++		saa7127_set_input_type(client, SAA7127_INPUT_TYPE_NORMAL);
++	saa7127_set_video_enable(client, 1);
++
+ 	if (state->ident == V4L2_IDENT_SAA7129)
+ 		saa7127_write_inittab(client, saa7129_init_config_extra);
  	return 0;
- }
- 
 
 
