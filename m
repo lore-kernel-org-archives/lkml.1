@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbZCNBXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759687AbZCNBYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758149AbZCNBXq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZCNBTx
+	id S1759687AbZCNBYI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbZCNBTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 13 Mar 2009 21:19:53 -0400
-Received: from kroah.org ([198.145.64.141]:34808 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:34822 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752192AbZCNBTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:19:51 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:32 2009
-Message-Id: <20090314011032.777019901@mini.kroah.org>
+	id S1751539AbZCNBTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:19:52 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:33 2009
+Message-Id: <20090314011032.952425224@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:09:47 -0700
+Date: Fri, 13 Mar 2009 18:09:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -28,9 +28,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Mel Gorman <mel@csn.ul.ie>, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 010/114] mm: clean up for early_pfn_to_nid()
+Subject: [patch 011/114] mm: fix memmap init for handling memory hole
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=mm-clean-up-for-early_pfn_to_nid.patch
+Content-Disposition: inline; filename=mm-fix-memmap-init-for-handling-memory-hole.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -42,74 +42,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-commit f2dbcfa738368c8a40d4a5f0b65dc9879577cb21 upstream.
+commit cc2559bccc72767cb446f79b071d96c30c26439b upstream.
 
-What's happening is that the assertion in mm/page_alloc.c:move_freepages()
-is triggering:
+Now, early_pfn_in_nid(PFN, NID) may returns false if PFN is a hole.
+and memmap initialization was not done. This was a trouble for
+sparc boot.
 
-	BUG_ON(page_zone(start_page) != page_zone(end_page));
-
-Once I knew this is what was happening, I added some annotations:
-
-	if (unlikely(page_zone(start_page) != page_zone(end_page))) {
-		printk(KERN_ERR "move_freepages: Bogus zones: "
-		       "start_page[%p] end_page[%p] zone[%p]\n",
-		       start_page, end_page, zone);
-		printk(KERN_ERR "move_freepages: "
-		       "start_zone[%p] end_zone[%p]\n",
-		       page_zone(start_page), page_zone(end_page));
-		printk(KERN_ERR "move_freepages: "
-		       "start_pfn[0x%lx] end_pfn[0x%lx]\n",
-		       page_to_pfn(start_page), page_to_pfn(end_page));
-		printk(KERN_ERR "move_freepages: "
-		       "start_nid[%d] end_nid[%d]\n",
-		       page_to_nid(start_page), page_to_nid(end_page));
- ...
-
-And here's what I got:
-
-	move_freepages: Bogus zones: start_page[2207d0000] end_page[2207dffc0] zone[fffff8103effcb00]
-	move_freepages: start_zone[fffff8103effcb00] end_zone[fffff8003fffeb00]
-	move_freepages: start_pfn[0x81f600] end_pfn[0x81f7ff]
-	move_freepages: start_nid[1] end_nid[0]
-
-My memory layout on this box is:
-
-[    0.000000] Zone PFN ranges:
-[    0.000000]   Normal   0x00000000 -> 0x0081ff5d
-[    0.000000] Movable zone start PFN for each node
-[    0.000000] early_node_map[8] active PFN ranges
-[    0.000000]     0: 0x00000000 -> 0x00020000
-[    0.000000]     1: 0x00800000 -> 0x0081f7ff
-[    0.000000]     1: 0x0081f800 -> 0x0081fe50
-[    0.000000]     1: 0x0081fed1 -> 0x0081fed8
-[    0.000000]     1: 0x0081feda -> 0x0081fedb
-[    0.000000]     1: 0x0081fedd -> 0x0081fee5
-[    0.000000]     1: 0x0081fee7 -> 0x0081ff51
-[    0.000000]     1: 0x0081ff59 -> 0x0081ff5d
-
-So it's a block move in that 0x81f600-->0x81f7ff region which triggers
-the problem.
-
-This patch:
-
-Declaration of early_pfn_to_nid() is scattered over per-arch include
-files, and it seems it's complicated to know when the declaration is used.
- I think it makes fix-for-memmap-init not easy.
-
-This patch moves all declaration to include/linux/mm.h
-
-After this,
-  if !CONFIG_NODES_POPULATES_NODE_MAP && !CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
-     -> Use static definition in include/linux/mm.h
-  else if !CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
-     -> Use generic definition in mm/page_alloc.c
-  else
-     -> per-arch back end function will be called.
+To fix this, the PFN should be initialized and marked as PG_reserved.
+This patch changes early_pfn_in_nid() return true if PFN is a hole.
 
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Reported-by: David Miller <davem@davemlloft.net>
+Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Cc: Mel Gorman <mel@csn.ul.ie>
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
@@ -117,124 +61,71 @@ Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/ia64/include/asm/mmzone.h   |    4 ----
- arch/ia64/mm/numa.c              |    2 +-
- arch/x86/include/asm/mmzone_32.h |    2 --
- arch/x86/include/asm/mmzone_64.h |    2 --
- arch/x86/mm/numa_64.c            |    2 +-
- include/linux/mm.h               |   19 ++++++++++++++++---
- mm/page_alloc.c                  |    8 +++++++-
- 7 files changed, 25 insertions(+), 14 deletions(-)
+ arch/ia64/mm/numa.c    |    2 +-
+ include/linux/mmzone.h |    2 +-
+ mm/page_alloc.c        |   23 ++++++++++++++++++++---
+ 3 files changed, 22 insertions(+), 5 deletions(-)
 
---- a/arch/ia64/include/asm/mmzone.h
-+++ b/arch/ia64/include/asm/mmzone.h
-@@ -31,10 +31,6 @@ static inline int pfn_to_nid(unsigned lo
- #endif
- }
- 
--#ifdef CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
--extern int early_pfn_to_nid(unsigned long pfn);
--#endif
--
- #ifdef CONFIG_IA64_DIG /* DIG systems are small */
- # define MAX_PHYSNODE_ID	8
- # define NR_NODE_MEMBLKS	(MAX_NUMNODES * 8)
 --- a/arch/ia64/mm/numa.c
 +++ b/arch/ia64/mm/numa.c
-@@ -58,7 +58,7 @@ paddr_to_nid(unsigned long paddr)
-  * SPARSEMEM to allocate the SPARSEMEM sectionmap on the NUMA node where
-  * the section resides.
-  */
--int early_pfn_to_nid(unsigned long pfn)
-+int __meminit __early_pfn_to_nid(unsigned long pfn)
- {
- 	int i, section = pfn >> PFN_SECTION_SHIFT, ssec, esec;
+@@ -70,7 +70,7 @@ int __meminit __early_pfn_to_nid(unsigne
+ 			return node_memblk[i].nid;
+ 	}
  
---- a/arch/x86/include/asm/mmzone_32.h
-+++ b/arch/x86/include/asm/mmzone_32.h
-@@ -32,8 +32,6 @@ static inline void get_memcfg_numa(void)
- 	get_memcfg_numa_flat();
+-	return 0;
++	return -1;
  }
  
--extern int early_pfn_to_nid(unsigned long pfn);
--
- extern void resume_map_numa_kva(pgd_t *pgd);
+ #ifdef CONFIG_MEMORY_HOTPLUG
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -1067,7 +1067,7 @@ void sparse_init(void);
+ #endif /* CONFIG_SPARSEMEM */
  
- #else /* !CONFIG_NUMA */
---- a/arch/x86/include/asm/mmzone_64.h
-+++ b/arch/x86/include/asm/mmzone_64.h
-@@ -40,8 +40,6 @@ static inline __attribute__((pure)) int 
- #define node_end_pfn(nid)       (NODE_DATA(nid)->node_start_pfn +	\
- 				 NODE_DATA(nid)->node_spanned_pages)
- 
--extern int early_pfn_to_nid(unsigned long pfn);
--
- #ifdef CONFIG_NUMA_EMU
- #define FAKE_NODE_MIN_SIZE	(64 * 1024 * 1024)
- #define FAKE_NODE_MIN_HASH_MASK	(~(FAKE_NODE_MIN_SIZE - 1UL))
---- a/arch/x86/mm/numa_64.c
-+++ b/arch/x86/mm/numa_64.c
-@@ -145,7 +145,7 @@ int __init compute_hash_shift(struct boo
- 	return shift;
- }
- 
--int early_pfn_to_nid(unsigned long pfn)
-+int __meminit  __early_pfn_to_nid(unsigned long pfn)
- {
- 	return phys_to_nid(pfn << PAGE_SHIFT);
- }
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1027,10 +1027,23 @@ extern void free_bootmem_with_active_reg
- typedef int (*work_fn_t)(unsigned long, unsigned long, void *);
- extern void work_with_active_regions(int nid, work_fn_t work_fn, void *data);
- extern void sparse_memory_present_with_active_regions(int nid);
--#ifndef CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
--extern int early_pfn_to_nid(unsigned long pfn);
--#endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
- #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
-+
-+#if !defined(CONFIG_ARCH_POPULATES_NODE_MAP) && \
-+    !defined(CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID)
-+static inline int __early_pfn_to_nid(unsigned long pfn)
-+{
-+	return 0;
-+}
-+#else
-+/* please see mm/page_alloc.c */
-+extern int __meminit early_pfn_to_nid(unsigned long pfn);
-+#ifdef CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
-+/* there is a per-arch backend function. */
-+extern int __meminit __early_pfn_to_nid(unsigned long pfn);
-+#endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
-+#endif
-+
- extern void set_dma_reserve(unsigned long new_dma_reserve);
- extern void memmap_init_zone(unsigned long, int, unsigned long,
- 				unsigned long, enum memmap_context);
+ #ifdef CONFIG_NODES_SPAN_OTHER_NODES
+-#define early_pfn_in_nid(pfn, nid)	(early_pfn_to_nid(pfn) == (nid))
++bool early_pfn_in_nid(unsigned long pfn, int nid);
+ #else
+ #define early_pfn_in_nid(pfn, nid)	(1)
+ #endif
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -2974,7 +2974,7 @@ static int __meminit next_active_region_
-  * was used and there are no special requirements, this is a convenient
-  * alternative
-  */
--int __meminit early_pfn_to_nid(unsigned long pfn)
-+int __meminit __early_pfn_to_nid(unsigned long pfn)
- {
- 	int i;
- 
-@@ -2990,6 +2990,12 @@ int __meminit early_pfn_to_nid(unsigned 
+@@ -2985,16 +2985,33 @@ int __meminit __early_pfn_to_nid(unsigne
+ 		if (start_pfn <= pfn && pfn < end_pfn)
+ 			return early_node_map[i].nid;
+ 	}
+-
+-	return 0;
++	/* This is a memory hole */
++	return -1;
  }
  #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
  
-+int __meminit early_pfn_to_nid(unsigned long pfn)
+ int __meminit early_pfn_to_nid(unsigned long pfn)
+ {
+-	return __early_pfn_to_nid(pfn);
++	int nid;
++
++	nid = __early_pfn_to_nid(pfn);
++	if (nid >= 0)
++		return nid;
++	/* just returns 0 */
++	return 0;
+ }
+ 
++#ifdef CONFIG_NODES_SPAN_OTHER_NODES
++bool __meminit early_pfn_in_nid(unsigned long pfn, int node)
 +{
-+	return __early_pfn_to_nid(pfn);
++	int nid;
++
++	nid = __early_pfn_to_nid(pfn);
++	if (nid >= 0 && nid != node)
++		return false;
++	return true;
 +}
-+
-+
++#endif
+ 
  /* Basic iterator support to walk early_node_map[] */
  #define for_each_active_range_index_in_nid(i, nid) \
- 	for (i = first_active_region_index_in_nid(nid); i != -1; \
 
 
