@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbZCNSM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbZCNSPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755668AbZCNSM1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 14:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZCNSMS
+	id S1755518AbZCNSPm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 14:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZCNSPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 14:12:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57062 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752258AbZCNSMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 14:12:18 -0400
-Subject: Re: [PATCH -tip] x86: trampoline.c cleanup
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0903141757000.29264@localhost.localdomain>
-References: <1237045494.4546.22.camel@ht.satnam>
-	 <alpine.LFD.2.00.0903141718120.29264@localhost.localdomain>
-	 <1237048511.4546.34.camel@ht.satnam>
-	 <alpine.LFD.2.00.0903141757000.29264@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 14 Mar 2009 23:41:52 +0530
-Message-Id: <1237054312.3144.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Mar 2009 14:15:31 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:37988 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752486AbZCNSPa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 14:15:30 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=YD0k4/gZChmz6e1ultCjry6D+NOrFbu2h3wSsLCKMiYaSwWdIeg2lAmcgyS8z28I1
+	U5Vo4Ow2xMTzfG33Y43mw==
+MIME-Version: 1.0
+In-Reply-To: <20090313.191951.228619450.davem@davemloft.net>
+References: <65634d660903131459m645eb468y3ad850a1fd56d447@mail.gmail.com>
+	 <20090313.151913.21135937.davem@davemloft.net>
+	 <65634d660903131724s49009177pdc11005aa76a4b56@mail.gmail.com>
+	 <20090313.191951.228619450.davem@davemloft.net>
+Date: Sat, 14 Mar 2009 11:15:21 -0700
+Message-ID: <65634d660903141115w7e164134ycece307f041e93a9@mail.gmail.com>
+Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to submit 
+	to upper layer
+From: Tom Herbert <therbert@google.com>
+To: David Miller <davem@davemloft.net>
+Cc: yanmin_zhang@linux.intel.com, bhutchings@solarflare.com,
+       andi@firstfloor.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
+       jesse.brandeburg@intel.com, shemminger@vyatta.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-14 at 17:58 +0100, Thomas Gleixner wrote:
-> On Sat, 14 Mar 2009, Jaswinder Singh Rajput wrote:
-> > Hello Thomas,
-> > 
-> > On Sat, 2009-03-14 at 17:20 +0100, Thomas Gleixner wrote:
-> > > On Sat, 14 Mar 2009, Jaswinder Singh Rajput wrote:
-> > > 
-> > > > Subject: [PATCH] x86: trampoline.c cleanup
-> > > > 
-> > > > Impact: cleanup
-> > > > 
-> > > >  - fix style problems
-> > > 
-> > > Err. This patch is a style problem itself.
-> > >  
-> > > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > > > ---
-> > > >  arch/x86/kernel/trampoline.c |    3 ++-
-> > > >  1 files changed, 2 insertions(+), 1 deletions(-)
-> > > > 
-> > > > diff --git a/arch/x86/kernel/trampoline.c b/arch/x86/kernel/trampoline.c
-> > > > index 808031a..e3b1f2e 100644
-> > > > --- a/arch/x86/kernel/trampoline.c
-> > > > +++ b/arch/x86/kernel/trampoline.c
-> > > > @@ -15,7 +15,7 @@ void __init reserve_trampoline_memory(void)
-> > > >  	 * trampoline before removing it. (see the GDT stuff)
-> > > >  	 */
-> > > >  	reserve_early(PAGE_SIZE, PAGE_SIZE + PAGE_SIZE, "EX TRAMPOLINE");
-> > > > -#endif
-> > > > +#endif /* CONFIG_X86_32 */
-> > > 
-> > > There is no need for this useless comment. The #ifdef is 5 lines
-> > > above. Such comments are only helpful in large nested sections.
-> > > 
-> > 
-> > Ahh, So
-> > 
-> > 	if (ifdef < 5)
-> > 		Rule #1
-> > 	else
-> > 		Rule #2
-> 
-> Sigh. I asked for applying common sense not for creating another
-> stupid rule.
+On Fri, Mar 13, 2009 at 7:19 PM, David Miller <davem@davemloft.net> wrote:
+> From: Tom Herbert <therbert@google.com>
+> Date: Fri, 13 Mar 2009 17:24:10 -0700
+>
+>> Enabling HW multi-queue has somewhat higher CPU
+>> utilization though, the extra device interrupt load is not coming for
+>> free.  We actually use the HW multi-queue in conjunction with our
+>> software steering to get maximum pps (about 20% more).
+>
+> This is a non-intuitive observation.  Using HW multiqueue should be
+> cheaper than doing it in software, right?
+>
 
-Who made this stupid rule ?
-
---
-JSR
-
+I suppose it may be counter-intuitive, but I am not making a general
+claim.  I would only suggest that these software hacks could be a very
+good approximation or substitute for hardware functionality.  This is
+a generic way to get more performance out of deficient or lower end
+NICs.
