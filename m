@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751619AbZCNAql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762589AbZCNAtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751619AbZCNAql (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbZCNAT4
+	id S1762589AbZCNAtE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:49:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbZCNAUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:56 -0400
-Received: from kroah.org ([198.145.64.141]:35002 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:20:12 -0400
+Received: from kroah.org ([198.145.64.141]:35068 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751198AbZCNATl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:41 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:51 2009
-Message-Id: <20090314000751.215689207@mini.kroah.org>
+	id S1753364AbZCNATs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:48 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:52 2009
+Message-Id: <20090314000752.379159554@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:28 -0700
+Date: Fri, 13 Mar 2009 17:06:35 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,50 +25,68 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
-       Hans de Goede <hdegoede@redhat.com>
-Subject: [patch 80/96] hwmon: (f71882fg) Hide misleading error message
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       Jan Kara <jack@suse.cz>, Eric Sandeen <sandeen@redhat.com>
+Subject: [patch 87/96] Revert "ext4: wait on all pending commits in ext4_sync_fs()"
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=hwmon-hide-misleading-error-message.patch
+Content-Disposition: inline; filename=revert-ext4-wait-on-all-pending-commits-in-ext4_sync_fs.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Jan Kara <jack@suse.cz>
 
-commit 603eaa1bdd3e0402085e815cc531bb0a32827a9e upstream
+(cherry picked from commit 9eddacf9e9c03578ef2c07c9534423e823d677f8)
 
-If the F71882FG chip is at address 0x4e, then the probe at 0x2e will
-fail with the following message in the logs:
-f71882fg: Not a Fintek device
+This undoes commit 14ce0cb411c88681ab8f3a4c9caa7f42e97a3184.
 
-This is misleading because there is a Fintek device, just at a
-different address. So I propose to degrade this message to a debug
-message.
+Since jbd2_journal_start_commit() is now fixed to return 1 when we
+started a transaction commit, there's some transaction waiting to be
+committed or there's a transaction already committing, we don't
+need to call ext4_force_commit() in ext4_sync_fs(). Furthermore
+ext4_force_commit() can unnecessarily create sync transaction which is
+expensive so it's worthwhile to remove it when we can.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Acked-by: Hans de Goede <hdegoede@redhat.com>
+http://bugzilla.kernel.org/show_bug.cgi?id=12224
 
+Signed-off-by: Jan Kara <jack@suse.cz>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Eric Sandeen <sandeen@redhat.com>
+Cc: linux-ext4@vger.kernel.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hwmon/f71882fg.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/ext4/super.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
---- a/drivers/hwmon/f71882fg.c
-+++ b/drivers/hwmon/f71882fg.c
-@@ -837,7 +837,7 @@ static int __init f71882fg_find(int sioa
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -2950,14 +2950,14 @@ static void ext4_write_super(struct supe
  
- 	devid = superio_inw(sioaddr, SIO_REG_MANID);
- 	if (devid != SIO_FINTEK_ID) {
--		printk(KERN_INFO DRVNAME ": Not a Fintek device\n");
-+		pr_debug(DRVNAME ": Not a Fintek device\n");
- 		goto exit;
- 	}
+ static int ext4_sync_fs(struct super_block *sb, int wait)
+ {
+-	int ret = 0;
++	tid_t target;
  
+ 	sb->s_dirt = 0;
+-	if (wait)
+-		ret = ext4_force_commit(sb);
+-	else
+-		jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, NULL);
+-	return ret;
++	if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, &target)) {
++		if (wait)
++			jbd2_log_wait_commit(EXT4_SB(sb)->s_journal, target);
++	}
++	return 0;
+ }
+ 
+ /*
 
 
