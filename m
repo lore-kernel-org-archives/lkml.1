@@ -1,75 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbZCNKg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbZCNKmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987AbZCNKg2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 06:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbZCNKgT
+	id S1753620AbZCNKmU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 06:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbZCNKmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 06:36:19 -0400
-Received: from zelda.netsplit.com ([87.194.19.211]:46406 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbZCNKgS (ORCPT
+	Sat, 14 Mar 2009 06:42:10 -0400
+Received: from relay3-v.mail.gandi.net ([217.70.178.77]:49949 "EHLO
+	relay3-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752177AbZCNKmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 06:36:18 -0400
-Subject: Re: [PATCH 01/31] bridge: Auto-load bridge module when socket
- opened.
-From: Scott James Remnant <scott@canonical.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, shemminger@linux-foundation.org,
-       bridge@lists.linux-foundation.org
-In-Reply-To: <20090313.142718.21189207.davem@davemloft.net>
-References: <cover.1236702228.git.scott@canonical.com>
-	 <74b87ec3359e6e65d59cd6fb62a83fb469e6c8ae.1236702228.git.scott@canonical.com>
-	 <20090313.142718.21189207.davem@davemloft.net>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-dDC1ANfaqXwhvNJEzGrz"
-Date: Sat, 14 Mar 2009 10:36:34 +0000
-Message-Id: <1237026994.29975.19.camel@quest>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Sat, 14 Mar 2009 06:42:09 -0400
+Date: Sat, 14 Mar 2009 11:42:04 +0100
+From: Mathieu Chouquet-Stringer <mchouque@free.fr>
+To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Cc: Len Brown <lenb@kernel.org>, ibm-acpi-devel@lists.sourceforge.net,
+       linux-acpi@vger.kernel.org, stable@kernel.org,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: [PATCH] thinkpad-acpi: fix module autoloading for older models
+Message-ID: <20090314104204.GA11226@mobydick>
+Mail-Followup-To: Mathieu Chouquet-Stringer <mchouque@free.fr>,
+	linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+	Len Brown <lenb@kernel.org>, ibm-acpi-devel@lists.sourceforge.net,
+	linux-acpi@vger.kernel.org, stable@kernel.org,
+	Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Face: %JOeya=Dg!}[/#Go&*&cQ+)){p1c8}u\Fg2Q3&)kothIq|JnWoVzJtCFo~4X<uJ\9cHK
+	'.w 3:{EoxBR
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+	Hello Linus,
 
---=-dDC1ANfaqXwhvNJEzGrz
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Looks like this one liner patch never made it...  Hopefully, it'll go in
+before you release rc9 or 2.6.29.
 
-On Fri, 2009-03-13 at 14:27 -0700, David Miller wrote:
+Best,
+Mathieu
 
-> Did you verify that these changes actually do something?
-> Or did you blindly run around peppering source files with
-> these annotations?
->=20
-I converted existing modprobe aliases that most distributions are
-carrying around into the one-line kernel patches.
+----- Forwarded message from Henrique de Moraes Holschuh <hmh@hmh.eng.br> -----
 
-I tested the important ones such as the floppy and ch changes.
+Delivered-To: online.fr-mchouque@free.fr
+X-Sasl-enc: J0pR0vt90JACc2icrP/7acPg7Vn8fC4jw2hSyELrb8PJ 1234704353
+X-Virus-Scanned: Debian amavisd-new at khazad-dum.debian.net
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Len Brown <lenb@kernel.org>
+Cc: ibm-acpi-devel@lists.sourceforge.net, linux-acpi@vger.kernel.org,
+	Mathieu Chouquet-Stringer <mchouque@free.fr>, stable@kernel.org
+Subject: [PATCH] thinkpad-acpi: fix module autoloading for older models
+Date: Sun, 15 Feb 2009 10:25:51 -0300
+X-Mailer: git-send-email 1.5.6.5
+X-CRM114-Version: 20070301-BlameBaltar ( TRE 0.7.5 (LGPL) ) MF-F8A122EB [pR: -2.3502]
+X-CRM114-CacheID: sfid-20090215_142656_606015_D7CAAB9F 
+X-CRM114-Status: UNSURE (-2.3502) This message is 'unsure'; please train it! 
 
-If the patches are wrong, which I personally suspected many of them
-were, then it's a good example as to why distributions shouldn't hack
-around the kernel in userspace, or keep their own patches.
+From: Mathieu Chouquet-Stringer <mchouque@free.fr>
 
-So yes, they're a bit stinky (hell, I even fluffed up the covering mail
-subject line <g>) - but distros including Ubuntu were trying to do these
-aliases in modprobe rules, so it's a good thing to find out that they're
-wrong; no?
+Looking at the source, there seems to be a missing * to match my DMI
+string.  I mean for newer IBM and Lenovo's laptops you match either one
+of the following:
+MODULE_ALIAS("dmi:bvnIBM:*:svnIBM:*:pvrThinkPad*:rvnIBM:*");
+MODULE_ALIAS("dmi:bvnLENOVO:*:svnLENOVO:*:pvrThinkPad*:rvnLENOVO:*");
 
-Scott
---=20
-Scott James Remnant
-scott@canonical.com
+While for older Thinkpads, you do this (for instance):
+IBM_BIOS_MODULE_ALIAS("1[0,3,6,8,A-G,I,K,M-P,S,T]");
 
---=-dDC1ANfaqXwhvNJEzGrz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+with IBM_BIOS_MODULE_ALIAS being MODULE_ALIAS("dmi:bvnIBM:bvr" __type "ET??WW")
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Note there's no * terminating the string.  As result, udev doesn't load
+anything because modprobe cannot find anything matching this (my
+machine actually):
 
-iEYEABECAAYFAkm7iLIACgkQSnQiFMl4yK75vQCfbMVoqidrsrcITKItzKaAc5SC
-1OoAnioB4Tjlo9IBrxphSw/1wFq/h+D8
-=yi2y
------END PGP SIGNATURE-----
+udevtest: run: '/sbin/modprobe dmi:bvnIBM:bvr1IET71WW(2.10):bd06/16/2006:svnIBM:pn236621U:pvrNotAvailable:rvnIBM:rn236621U:rvrNotAvailable:cvnIBM:ct10:cvrNotAvailable:'
 
---=-dDC1ANfaqXwhvNJEzGrz--
+Signed-off-by: Mathieu Chouquet-Stringer <mchouque@free.fr>
+Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: stable@kernel.org
+---
+ drivers/platform/x86/thinkpad_acpi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+
+Len, please consider this for 2.6.29.  It is an obvious one-liner.
+
+diff --git a/drivers/platform/x86/thinkpad_acpi.c b/drivers/platform/x86/thinkpad_acpi.c
+index 91ae159..d218ecb 100644
+--- a/drivers/platform/x86/thinkpad_acpi.c
++++ b/drivers/platform/x86/thinkpad_acpi.c
+@@ -7524,7 +7524,7 @@ MODULE_ALIAS(TPACPI_DRVR_SHORTNAME);
+  * if it is not there yet.
+  */
+ #define IBM_BIOS_MODULE_ALIAS(__type) \
+-	MODULE_ALIAS("dmi:bvnIBM:bvr" __type "ET??WW")
++	MODULE_ALIAS("dmi:bvnIBM:bvr" __type "ET??WW*")
+ 
+ /* Non-ancient thinkpads */
+ MODULE_ALIAS("dmi:bvnIBM:*:svnIBM:*:pvrThinkPad*:rvnIBM:*");
+-- 
+1.5.6.5
+
 
