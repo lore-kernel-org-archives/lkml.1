@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbZCNCDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765645AbZCNCC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797AbZCNCDp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 22:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbZCNBWJ
+	id S1765645AbZCNCC0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 22:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201AbZCNBWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:22:09 -0400
-Received: from kroah.org ([198.145.64.141]:35870 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:22:06 -0400
+Received: from kroah.org ([198.145.64.141]:35910 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754981AbZCNBVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:21:35 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:48 2009
-Message-Id: <20090314011047.891588229@mini.kroah.org>
+	id S1754179AbZCNBVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:21:31 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:47 2009
+Message-Id: <20090314011047.272638967@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:11:28 -0700
+Date: Fri, 13 Mar 2009 18:11:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,50 +25,47 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
-       Hans de Goede <hdegoede@redhat.com>
-Subject: [patch 111/114] hwmon: (f71882fg) Hide misleading error message
+       alan@lxorguk.ukuu.org.uk, Roel Kluin <roel.kluin@gmail.com>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 107/114] i2c: Fix misplaced parentheses
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=hwmon-hide-misleading-error-message.patch
+Content-Disposition: inline; filename=i2c-fix-misplaced-parentheses.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Roel Kluin <roel.kluin@gmail.com>
 
-commit 603eaa1bdd3e0402085e815cc531bb0a32827a9e upstream
+commit f29d2e0275a4f03ef2fd158e484508dcb0c64efb upstream
 
-If the F71882FG chip is at address 0x4e, then the probe at 0x2e will
-fail with the following message in the logs:
-f71882fg: Not a Fintek device
+Fix misplaced parentheses.
 
-This is misleading because there is a Fintek device, just at a
-different address. So I propose to degrade this message to a debug
-message.
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Acked-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 
 ---
- drivers/hwmon/f71882fg.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/i2c/i2c-core.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/hwmon/f71882fg.c
-+++ b/drivers/hwmon/f71882fg.c
-@@ -837,7 +837,7 @@ static int __init f71882fg_find(int sioa
- 
- 	devid = superio_inw(sioaddr, SIO_REG_MANID);
- 	if (devid != SIO_FINTEK_ID) {
--		printk(KERN_INFO DRVNAME ": Not a Fintek device\n");
-+		pr_debug(DRVNAME ": Not a Fintek device\n");
- 		goto exit;
- 	}
- 
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -1831,7 +1831,8 @@ static s32 i2c_smbus_xfer_emulated(struc
+ 	case I2C_SMBUS_QUICK:
+ 		msg[0].len = 0;
+ 		/* Special case: The read/write field is used as data */
+-		msg[0].flags = flags | (read_write==I2C_SMBUS_READ)?I2C_M_RD:0;
++		msg[0].flags = flags | (read_write == I2C_SMBUS_READ ?
++					I2C_M_RD : 0);
+ 		num = 1;
+ 		break;
+ 	case I2C_SMBUS_BYTE:
 
 
