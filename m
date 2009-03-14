@@ -1,251 +1,332 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865AbZCNIyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbZCNIz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752865AbZCNIyR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 04:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbZCNIyA
+	id S1753634AbZCNIz2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 04:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbZCNIzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 04:54:00 -0400
-Received: from n23.bullet.mail.mud.yahoo.com ([68.142.206.162]:21571 "HELO
-	n23.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751178AbZCNIx7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 04:53:59 -0400
-X-Greylist: delayed 386 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Mar 2009 04:53:58 EDT
-X-Yahoo-Newman-Id: 67720.71307.bm@omp407.mail.mud.yahoo.com
-X-YMail-OSG: BoQt1tAVM1lxd9X.fzuNCMVX2sAkOMy3TPXOrdw1Vsuj8i1UMIRnFZORwJr5wBUhwzulCuQEdz2n2hI5RK4SpfRFWvushLZikINc5i.v.8WTZ8PvAdU_TvOjUNS9n_LQBVqsKvV0HHD09W2HRxnCmo.AYwBRYCatFDLWQypLjy2G3RW7WycoWOylVGNEVF0nRyUZm383VWsE_mtzx_LfdI67YyoyOGpIZgGzzVvrL3uCHlvbI.dQw5iIx5qicaf4TH.nKms-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH] [Target_Core_Mod/Persistent_Reservations]: Add
-	PRO_REGISTER_AND_IGNORE_EXISTING_KEY support
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hannes Reinecke <hare@suse.de>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 14 Mar 2009 01:47:27 -0700
-Message-Id: <1237020447.11120.1101.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Mar 2009 04:55:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50471 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751191AbZCNIzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 04:55:09 -0400
+Date: Sat, 14 Mar 2009 08:54:26 GMT
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jaswinder@kernel.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinder@kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1237009789.4387.2.camel@localhost.localdomain>
+References: <1237009789.4387.2.camel@localhost.localdomain>
+Subject: [tip:x86/cleanups] x86: cpu/common.c cleanups
+Message-ID: <tip-9766cdbcb260389669e9679b2aa87c11832f479f@git.kernel.org>
+Git-Commit-ID: 9766cdbcb260389669e9679b2aa87c11832f479f
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 14 Mar 2009 08:54:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all,
+Commit-ID:  9766cdbcb260389669e9679b2aa87c11832f479f
+Gitweb:     http://git.kernel.org/tip/9766cdbcb260389669e9679b2aa87c11832f479f
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Sat, 14 Mar 2009 11:19:49 +0530
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 14 Mar 2009 08:59:50 +0100
 
-This patch adds support for SPC-3 compliant PRO_REGISTER_AND_IGNORE_EXISTING_KEY
-operation in lio-core-2.6.git.  The patch modifies core_scsi3_emulate_pro_register() by
-adding 'int ignore_key' and ignored the conditional for (res_key != pr_reg->pr_res_key)
-with ignore_key == 1.
+x86: cpu/common.c cleanups
 
-Currently MSFT Windows 2008 cluster services depend upon this PERSISTENT_RESERVE_OUT logic
-being supported (the patch is pretty simple to the existing REGISTER code btw).  If you
-are currently testing LIO v3.0 code against (any) cluster side client setup, please let us
-know your progress on: http://groups.google.com/group/linux-iscsi-target-dev
+- fix various style problems
+ - declare varibles before they get used
+ - introduced clear_all_debug_regs
+ - fix header files issues
 
-This patch are made against lio-core-2.6.git/master and tested on v2.6.29-rc5 x86
-32-bit HVM. The lio-core-2.6.git tree can be found at: 
-
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
-
-This patch has been tested with sg_persist from sg3_utils, here is what it looks like:
-
-initiator# sg_persist --out --register-ignore --param-sark=0x1234abcd -Y -v /dev/sde
-    inquiry cdb: 12 00 00 00 24 00
-  LIO-ORG  IBLOCK  v3.
-  Peripheral device type: disk
-    Persistent Reservation Out cmd: 5f 06 00 00 00 00 00 00 18 00
-PR out: command (Register and ignore existing key) successful
-
-initiator# sg_persist --out --reserve --param-rk=0x1234abcd --prout-type=1 -v /dev/sde
-    inquiry cdb: 12 00 00 00 24 00
-  LIO-ORG  IBLOCK  v3.
-  Peripheral device type: disk
-    Persistent Reservation Out cmd: 5f 01 01 00 00 00 00 00 18 00
-PR out: command (Reserve) successful
-
-initiator# sg_persist --in --read-full-status /dev/sde -v
-    inquiry cdb: 12 00 00 00 24 00
-  LIO-ORG  IBLOCK  v3.
-  Peripheral device type: disk
-    Persistent Reservation In cmd: 5e 03 00 00 00 00 00 20 00 00
-  PR generation=0x1
-    Key=0x1234abcd
-      All target ports bit set
-      << Reservation holder >>
-      scope: LU_SCOPE,  type: Write Exclusive
-      Transport Id of initiator:
-        iSCSI world wide unique port id: iqn.1993-08.org.debian:01:2dadf92d0ef
-
-initiator# sg_persist --out --register-ignore --param-sark=0x4321dcba -Y -v /dev/sde -v
-open /dev/sde with flags=0x800
-    inquiry cdb: 12 00 00 00 24 00 
-  LIO-ORG  IBLOCK  v3.
-  Peripheral device type: disk
-open /dev/sde with flags=0x802
-    Persistent Reservation Out cmd: 5f 06 00 00 00 00 00 00 18 00 
-    Persistent Reservation Out parameters:
- 00     00 00 00 00 00 00 00 00  00 00 00 00 43 21 dc ba    ............C!..
- 10     00 00 00 00 04 00 00 00                             ........        
-PR out: command (Register and ignore existing key) successful
-
-*) dmesg output
-
-PC-3 PR [iSCSI] Service Action: REGISTER_AND_IGNORE_EXISTING_KEY Initiator Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 PR [iSCSI] for ALL TCM Subsystem iblock Object Target Port(s)
-SPC-3 PR [iSCSI] SA Res Key: 0x000000001234abcd PRgeneration: 0x00000000
-SPC-3 PR [iSCSI] Service Action: RESERVE created new reservation holder TYPE: Write Exclusive Access ALL_TG_PT: 1
-SPC-3 PR [iSCSI] RESERVE Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 PR [iSCSI] REGISTER_AND_IGNORE_EXISTING_KEY: Changed Reservation Key for iqn.1993-08.org.debian:01:2dadf92d0ef to: 0x00000000005678ef PRgeneration: 0x00000001
-SPC-3 PR [iSCSI] REGISTER_AND_IGNORE_EXISTING_KEY: Changed Reservation Key for iqn.1993-08.org.debian:01:2dadf92d0ef to: 0x000000004321dcba PRgeneration: 0x00000002
-
-*) cat /sys/kernel/config/target/core/iblock_0/lvm_test0/pr/*
-
-SPC-3 Reservation: iSCSI Initiator: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 Reservation: All Target Ports registration
-0x00000003
-SPC-3 Reservation: iSCSI Target Node Endpoint: iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0
-SPC-3 Reservation: Relative Port Identifer Tag: 1 iSCSI Portal Group Tag: 1 iSCSI Logical Unit: 0
-SPC-3 PR Registrations:
-iSCSI Node: iqn.1993-08.org.debian:01:2dadf92d0ef Key: 0x000000004321dcba PRgen: 0x00000002
-SPC-3 Reservation Type: Write Exclusive Access
-SPC3_PERSISTENT_RESERVATIONS
+LKML-Reference: <1237009789.4387.2.camel@localhost.localdomain>
+Signed-off-by: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 ---
- drivers/lio-core/target_core_pr.c |   53 ++++++++++++++++++-------------------
- 1 files changed, 26 insertions(+), 27 deletions(-)
+ arch/x86/include/asm/processor.h |    3 +
+ arch/x86/kernel/cpu/common.c     |  129 +++++++++++++++++++-------------------
+ 2 files changed, 68 insertions(+), 64 deletions(-)
 
-diff --git a/drivers/lio-core/target_core_pr.c b/drivers/lio-core/target_core_pr.c
-index f948df1..a980e3a 100644
---- a/drivers/lio-core/target_core_pr.c
-+++ b/drivers/lio-core/target_core_pr.c
-@@ -314,7 +314,8 @@ static t10_pr_registration_t *core_scsi3_alloc_registration(
- 	se_node_acl_t *nacl,
- 	se_dev_entry_t *deve,
- 	u64 sa_res_key,
--	int all_tg_pt)
-+	int all_tg_pt,
-+	int ignore_key)
- {
- 	struct target_core_fabric_ops *tfo = nacl->se_tpg->se_tpg_tfo;
- 	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
-@@ -344,8 +345,9 @@ static t10_pr_registration_t *core_scsi3_alloc_registration(
- 	spin_unlock(&pr_tmpl->registration_lock);
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 7613950..dccef5b 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -391,6 +391,9 @@ DECLARE_PER_CPU(union irq_stack_union, irq_stack_union);
+ DECLARE_INIT_PER_CPU(irq_stack_union);
  
- 	deve->deve_flags |= DEF_PR_REGISTERED;
--	printk(KERN_INFO "SPC-3 PR [%s] Service Action: REGISTER Initiator"
--		" Node: %s\n", tfo->get_fabric_name(), nacl->initiatorname);
-+	printk(KERN_INFO "SPC-3 PR [%s] Service Action: REGISTER%s Initiator"
-+		" Node: %s\n", tfo->get_fabric_name(), (ignore_key) ?
-+		"_AND_IGNORE_EXISTING_KEY" : "", nacl->initiatorname);
- 	printk(KERN_INFO "SPC-3 PR [%s] for %s TCM Subsystem %s Object Target"
- 		" Port(s)\n",  tfo->get_fabric_name(),
- 		(pr_reg->pr_reg_all_tg_pt) ? "ALL" : "SINGLE",
-@@ -431,7 +433,8 @@ static int core_scsi3_emulate_pro_register(
- 	u64 sa_res_key,
- 	int aptpl,
- 	int all_tg_pt,
--	int spec_i_pt)
-+	int spec_i_pt,
-+	int ignore_key)
+ DECLARE_PER_CPU(char *, irq_stack_ptr);
++DECLARE_PER_CPU(unsigned int, irq_count);
++extern unsigned long kernel_eflags;
++extern asmlinkage void ignore_sysret(void);
+ #else	/* X86_64 */
+ #ifdef CONFIG_CC_STACKPROTECTOR
+ DECLARE_PER_CPU(unsigned long, stack_canary);
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 826d5c8..cad6878 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -1,52 +1,52 @@
+-#include <linux/init.h>
+-#include <linux/kernel.h>
+-#include <linux/sched.h>
+-#include <linux/string.h>
++#include <linux/topology.h>
+ #include <linux/bootmem.h>
++#include <linux/linkage.h>
+ #include <linux/bitops.h>
++#include <linux/kernel.h>
+ #include <linux/module.h>
+-#include <linux/kgdb.h>
+-#include <linux/topology.h>
++#include <linux/percpu.h>
++#include <linux/string.h>
+ #include <linux/delay.h>
++#include <linux/sched.h>
++#include <linux/init.h>
++#include <linux/kgdb.h>
+ #include <linux/smp.h>
+-#include <linux/percpu.h>
+-#include <asm/i387.h>
+-#include <asm/msr.h>
+-#include <asm/io.h>
+-#include <asm/linkage.h>
++#include <linux/io.h>
++
++#include <asm/stackprotector.h>
+ #include <asm/mmu_context.h>
++#include <asm/hypervisor.h>
++#include <asm/processor.h>
++#include <asm/sections.h>
++#include <asm/cpumask.h>
++#include <asm/pgtable.h>
++#include <asm/atomic.h>
++#include <asm/proto.h>
++#include <asm/setup.h>
++#include <asm/apic.h>
++#include <asm/desc.h>
++#include <asm/i387.h>
+ #include <asm/mtrr.h>
++#include <asm/numa.h>
++#include <asm/asm.h>
++#include <asm/cpu.h>
+ #include <asm/mce.h>
++#include <asm/msr.h>
+ #include <asm/pat.h>
+-#include <asm/asm.h>
+-#include <asm/numa.h>
+ #include <asm/smp.h>
+-#include <asm/cpu.h>
+-#include <asm/cpumask.h>
+-#include <asm/apic.h>
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+ #include <asm/uv/uv.h>
+ #endif
+ 
+-#include <asm/pgtable.h>
+-#include <asm/processor.h>
+-#include <asm/desc.h>
+-#include <asm/atomic.h>
+-#include <asm/proto.h>
+-#include <asm/sections.h>
+-#include <asm/setup.h>
+-#include <asm/hypervisor.h>
+-#include <asm/stackprotector.h>
+-
+ #include "cpu.h"
+ 
+ #ifdef CONFIG_X86_64
+ 
+ /* all of these masks are initialized in setup_cpu_local_masks() */
+-cpumask_var_t cpu_callin_mask;
+-cpumask_var_t cpu_callout_mask;
+ cpumask_var_t cpu_initialized_mask;
++cpumask_var_t cpu_callout_mask;
++cpumask_var_t cpu_callin_mask;
+ 
+ /* representing cpus for which sibling maps can be computed */
+ cpumask_var_t cpu_sibling_setup_mask;
+@@ -62,10 +62,10 @@ void __init setup_cpu_local_masks(void)
+ 
+ #else /* CONFIG_X86_32 */
+ 
+-cpumask_t cpu_callin_map;
++cpumask_t cpu_sibling_setup_map;
+ cpumask_t cpu_callout_map;
+ cpumask_t cpu_initialized;
+-cpumask_t cpu_sibling_setup_map;
++cpumask_t cpu_callin_map;
+ 
+ #endif /* CONFIG_X86_32 */
+ 
+@@ -79,7 +79,7 @@ DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
+ 	 * IRET will check the segment types  kkeil 2000/10/28
+ 	 * Also sysret mandates a special GDT layout
+ 	 *
+-	 * The TLS descriptors are currently at a different place compared to i386.
++	 * TLS descriptors are currently at a different place compared to i386.
+ 	 * Hopefully nobody expects them at a fixed place (Wine?)
+ 	 */
+ 	[GDT_ENTRY_KERNEL32_CS] = { { { 0x0000ffff, 0x00cf9b00 } } },
+@@ -243,6 +243,7 @@ cpuid_dependent_features[] = {
+ static void __cpuinit filter_cpuid_features(struct cpuinfo_x86 *c, bool warn)
  {
- 	se_session_t *se_sess = SE_SESS(cmd);
- 	se_dev_entry_t *se_deve;
-@@ -474,7 +477,7 @@ static int core_scsi3_emulate_pro_register(
- 			 */
- 			pr_reg = core_scsi3_alloc_registration(SE_DEV(cmd),
- 					se_sess->se_node_acl, se_deve,
--					sa_res_key, all_tg_pt);
-+					sa_res_key, all_tg_pt, ignore_key);
- 			if (!(pr_reg)) {
- 				printk(KERN_ERR "Unable to allocate"
- 					" t10_pr_registration_t\n");
-@@ -501,12 +504,15 @@ static int core_scsi3_emulate_pro_register(
- 				" PR_REGISTERED *pr_reg\n");
- 			return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
- 		}
--		if (res_key != pr_reg->pr_res_key) {
--			printk(KERN_ERR "SPC-3 PR REGISTER: Received res_key:"
--				" 0x%016Lx does not match existing SA REGISTER"
--				" res_key: 0x%016Lx\n", res_key,
--				pr_reg->pr_res_key);
--			return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+		if (!(ignore_key)) {
-+			if (res_key != pr_reg->pr_res_key) {
-+				printk(KERN_ERR "SPC-3 PR REGISTER: Received"
-+					" res_key: 0x%016Lx does not match"
-+					" existing SA REGISTER res_key:"
-+					" 0x%016Lx\n", res_key,
-+					pr_reg->pr_res_key);
-+				return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+			}
- 		}
- 		if (spec_i_pt) {
- 			printk(KERN_ERR "SPC-3 PR UNREGISTER: SPEC_I_PT"
-@@ -529,9 +535,10 @@ static int core_scsi3_emulate_pro_register(
- 			pr_reg->pr_res_generation = core_scsi3_pr_generation(
- 							SE_DEV(cmd));
- 			pr_reg->pr_res_key = sa_res_key;
--			printk("SPC-3 PR [%s] REGISTER: Changed Reservation Key"
--				" for %s to: 0x%016Lx PRgeneration: 0x%08x\n",
--				CMD_TFO(cmd)->get_fabric_name(),
-+			printk("SPC-3 PR [%s] REGISTER%s: Changed Reservation"
-+				" Key for %s to: 0x%016Lx PRgeneration:"
-+				" 0x%08x\n", CMD_TFO(cmd)->get_fabric_name(),
-+				(ignore_key) ? "_AND_IGNORE_EXISTING_KEY" : "",
- 				pr_reg->pr_reg_nacl->initiatorname,
- 				pr_reg->pr_res_key, pr_reg->pr_res_generation);
- 		}
-@@ -927,16 +934,6 @@ static int core_scsi3_emulate_pro_preempt_and_abort(
- 	return 0;
+ 	const struct cpuid_dependent_feature *df;
++
+ 	for (df = cpuid_dependent_features; df->feature; df++) {
+ 		/*
+ 		 * Note: cpuid_level is set to -1 if unavailable, but
+@@ -364,12 +365,12 @@ static void __cpuinit get_model_name(struct cpuinfo_x86 *c)
+ 	   undo that brain damage */
+ 	p = q = &c->x86_model_id[0];
+ 	while (*p == ' ')
+-	     p++;
++		p++;
+ 	if (p != q) {
+-	     while (*p)
+-		  *q++ = *p++;
+-	     while (q <= &c->x86_model_id[48])
+-		  *q++ = '\0';	/* Zero-pad the rest */
++		while (*p)
++			*q++ = *p++;
++		while (q <= &c->x86_model_id[48])
++			*q++ = '\0';	/* Zero-pad the rest */
+ 	}
  }
  
--static int core_scsi3_emulate_pro_register_and_ignore_existing_key(
--	se_cmd_t *cmd,
--	int sa_res_key,
--	int aptpl,
--	int all_tg_pt)
--{
--	core_scsi3_pr_generation(SE_DEV(cmd));
--	return 0;
--}
+@@ -441,14 +442,15 @@ void __cpuinit detect_ht(struct cpuinfo_x86 *c)
+ 	} else if (smp_num_siblings > 1) {
+ 
+ 		if (smp_num_siblings > nr_cpu_ids) {
+-			printk(KERN_WARNING "CPU: Unsupported number of siblings %d",
+-					smp_num_siblings);
++			pr_warning("CPU: Unsupported number of siblings %d",
++				   smp_num_siblings);
+ 			smp_num_siblings = 1;
+ 			return;
+ 		}
+ 
+ 		index_msb = get_count_order(smp_num_siblings);
+-		c->phys_proc_id = apic->phys_pkg_id(c->initial_apicid, index_msb);
++		c->phys_proc_id = apic->phys_pkg_id(c->initial_apicid,
++						    index_msb);
+ 
+ 		smp_num_siblings = smp_num_siblings / c->x86_max_cores;
+ 
+@@ -491,7 +493,8 @@ static void __cpuinit get_cpu_vendor(struct cpuinfo_x86 *c)
+ 
+ 	if (!printed) {
+ 		printed++;
+-		printk(KERN_ERR "CPU: vendor_id '%s' unknown, using generic init.\n", v);
++		printk(KERN_ERR "CPU: vendor_id '%s'"
++			"unknown, using generic init.\n", v);
+ 		printk(KERN_ERR "CPU: Your system may be unstable.\n");
+ 	}
+ 
+@@ -637,7 +640,7 @@ void __init early_cpu_init(void)
+ 	struct cpu_dev **cdev;
+ 	int count = 0;
+ 
+-	printk("KERNEL supported cpus:\n");
++	printk(KERN_INFO "KERNEL supported cpus:\n");
+ 	for (cdev = __x86_cpu_dev_start; cdev < __x86_cpu_dev_end; cdev++) {
+ 		struct cpu_dev *cpudev = *cdev;
+ 		unsigned int j;
+@@ -650,7 +653,7 @@ void __init early_cpu_init(void)
+ 		for (j = 0; j < 2; j++) {
+ 			if (!cpudev->c_ident[j])
+ 				continue;
+-			printk("  %s %s\n", cpudev->c_vendor,
++			printk(KERN_INFO "  %s %s\n", cpudev->c_vendor,
+ 				cpudev->c_ident[j]);
+ 		}
+ 	}
+@@ -952,8 +955,6 @@ static DEFINE_PER_CPU_PAGE_ALIGNED(char, exception_stacks
+ 	[(N_EXCEPTION_STACKS - 1) * EXCEPTION_STKSZ + DEBUG_STKSZ])
+ 	__aligned(PAGE_SIZE);
+ 
+-extern asmlinkage void ignore_sysret(void);
 -
- static int core_scsi3_emulate_pro_register_and_move(
- 	se_cmd_t *cmd,
- 	int type,
-@@ -1001,7 +998,7 @@ static int core_scsi3_emulate_pr_out(se_cmd_t *cmd, unsigned char *cdb)
- 	switch (cdb[1] & 0x1f) {
- 	case PRO_REGISTER:
- 		return core_scsi3_emulate_pro_register(cmd,
--			res_key, sa_res_key, aptpl, all_tg_pt, spec_i_pt);
-+			res_key, sa_res_key, aptpl, all_tg_pt, spec_i_pt, 0);
- 	case PRO_RESERVE:
- 		return core_scsi3_emulate_pro_reserve(cmd,
- 			type, scope, res_key);
-@@ -1018,9 +1015,11 @@ static int core_scsi3_emulate_pr_out(se_cmd_t *cmd, unsigned char *cdb)
- 	case PRO_PREEMPT_AND_ABORT:
- 		return core_scsi3_emulate_pro_preempt_and_abort(cmd,
- 			type, scope, res_key, sa_res_key);
-+#endif
- 	case PRO_REGISTER_AND_IGNORE_EXISTING_KEY:
--		return core_scsi3_emulate_pro_register_and_ignore_existing_key(
--			cmd, sa_res_key, aptpl, all_tg_pt);
-+		return core_scsi3_emulate_pro_register(cmd,
-+			0, sa_res_key, aptpl, all_tg_pt, spec_i_pt, 1);
-+#if 0
- 	case PRO_REGISTER_AND_MOVE:
- 		return core_scsi3_emulate_pro_register_and_move(cmd,
- 			type, scope, res_key, sa_res_key);
--- 
-1.5.4.1
-
-
-
-
+ /* May not be marked __init: used by software suspend */
+ void syscall_init(void)
+ {
+@@ -1000,6 +1001,22 @@ struct pt_regs * __cpuinit idle_regs(struct pt_regs *regs)
+ #endif	/* x86_64 */
+ 
+ /*
++ * Clear all 6 debug registers:
++ */
++static void clear_all_debug_regs(void)
++{
++	int i;
++
++	for (i = 0; i < 8; i++) {
++		/* Ignore db4, db5 */
++		if ((i == 4) || (i == 5))
++			continue;
++
++		set_debugreg(0, i);
++	}
++}
++
++/*
+  * cpu_init() initializes state that is per-CPU. Some data is already
+  * initialized (naturally) in the bootstrap process, such as the GDT
+  * and IDT. We reload them nevertheless, this function acts as a
+@@ -1098,17 +1115,7 @@ void __cpuinit cpu_init(void)
+ 		arch_kgdb_ops.correct_hw_break();
+ 	else
+ #endif
+-	{
+-		/*
+-		 * Clear all 6 debug registers:
+-		 */
+-		set_debugreg(0UL, 0);
+-		set_debugreg(0UL, 1);
+-		set_debugreg(0UL, 2);
+-		set_debugreg(0UL, 3);
+-		set_debugreg(0UL, 6);
+-		set_debugreg(0UL, 7);
+-	}
++		clear_all_debug_regs();
+ 
+ 	fpu_init();
+ 
+@@ -1129,7 +1136,8 @@ void __cpuinit cpu_init(void)
+ 
+ 	if (cpumask_test_and_set_cpu(cpu, cpu_initialized_mask)) {
+ 		printk(KERN_WARNING "CPU#%d already initialized!\n", cpu);
+-		for (;;) local_irq_enable();
++		for (;;)
++			local_irq_enable();
+ 	}
+ 
+ 	printk(KERN_INFO "Initializing CPU#%d\n", cpu);
+@@ -1159,13 +1167,7 @@ void __cpuinit cpu_init(void)
+ 	__set_tss_desc(cpu, GDT_ENTRY_DOUBLEFAULT_TSS, &doublefault_tss);
+ #endif
+ 
+-	/* Clear all 6 debug registers: */
+-	set_debugreg(0, 0);
+-	set_debugreg(0, 1);
+-	set_debugreg(0, 2);
+-	set_debugreg(0, 3);
+-	set_debugreg(0, 6);
+-	set_debugreg(0, 7);
++	clear_all_debug_regs();
+ 
+ 	/*
+ 	 * Force FPU initialization:
+@@ -1186,5 +1188,4 @@ void __cpuinit cpu_init(void)
+ 	xsave_init();
+ }
+ 
+-
+ #endif
