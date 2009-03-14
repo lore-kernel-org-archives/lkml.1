@@ -1,110 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbZCNI1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769AbZCNIam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753359AbZCNI1J (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 04:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbZCNI0u
+	id S1752769AbZCNIam (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 04:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbZCNIa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 04:26:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51710 "EHLO mx2.mail.elte.hu"
+	Sat, 14 Mar 2009 04:30:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58098 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750742AbZCNI0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 04:26:46 -0400
-Date: Sat, 14 Mar 2009 09:25:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Ying Han <yinghan@google.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, mpm@selenic.com,
-       Andrew Morton <akpm@linux-foundation.org>, xemul@openvz.org,
-       tglx@linutronix.de
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
-	do?
-Message-ID: <20090314082532.GB16436@elte.hu>
-References: <49B775B4.1040800@free.fr> <20090312145311.GC12390@us.ibm.com> <1236891719.32630.14.camel@bahia> <20090312212124.GA25019@us.ibm.com> <604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com> <20090313053458.GA28833@us.ibm.com> <alpine.LFD.2.00.0903131018390.3940@localhost.localdomain> <20090313193500.GA2285@x200.localdomain> <alpine.LFD.2.00.0903131401070.3940@localhost.localdomain> <20090314002059.GA4167@x200.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090314002059.GA4167@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1750742AbZCNIaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 04:30:25 -0400
+Subject: Re: [tip:tracing/syscalls] x86: entry_32.S fix compile warnings -
+ fix work mask bit width
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinderrajput@gmail.com, fweisbec@gmail.com, hpa@kernel.org,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20090314081359.GA7405@localhost>
+References: <1237012693.18733.3.camel@ht.satnam>
+	 <tip-95baa1a17ff80183317d815189fe1f12fdb653bc@git.kernel.org>
+	 <20090314081359.GA7405@localhost>
+Content-Type: text/plain
+Date: Sat, 14 Mar 2009 13:59:29 +0530
+Message-Id: <1237019369.4135.1.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alexey Dobriyan <adobriyan@gmail.com> wrote:
-
-> On Fri, Mar 13, 2009 at 02:01:50PM -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Fri, 13 Mar 2009, Alexey Dobriyan wrote:
-> > > > 
-> > > > Let's face it, we're not going to _ever_ checkpoint any 
-> > > > kind of general case process. Just TCP makes that 
-> > > > fundamentally impossible in the general case, and there 
-> > > > are lots and lots of other cases too (just something as 
-> > > > totally _trivial_ as all the files in the filesystem 
-> > > > that don't get rolled back).
-> > > 
-> > > What do you mean here? Unlinked files?
-> > 
-> > Or modified files, or anything else. "External state" is a 
-> > pretty damn wide net. It's not just TCP sequence numbers and 
-> > another machine.
+On Sat, 2009-03-14 at 11:13 +0300, Cyrill Gorcunov wrote:
+> [Jaswinder Singh Rajput - Sat, Mar 14, 2009 at 07:18:32AM +0000]
+> | Commit-ID:  95baa1a17ff80183317d815189fe1f12fdb653bc
+> | Gitweb:     http://git.kernel.org/tip/95baa1a17ff80183317d815189fe1f12fdb653bc
+> | Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+> | AuthorDate: Sat, 14 Mar 2009 12:08:13 +0530
+> | Commit:     Ingo Molnar <mingo@elte.hu>
+> | CommitDate: Sat, 14 Mar 2009 08:16:01 +0100
+> | 
+> | x86: entry_32.S fix compile warnings - fix work mask bit width
+> | 
+> | Fix:
+> | 
+> |  arch/x86/kernel/entry_32.S:446: Warning: 00000000080001d1 shortened to 00000000000001d1
+> |  arch/x86/kernel/entry_32.S:457: Warning: 000000000800feff shortened to 000000000000feff
+> |  arch/x86/kernel/entry_32.S:527: Warning: 00000000080001d1 shortened to 00000000000001d1
+> |  arch/x86/kernel/entry_32.S:541: Warning: 000000000800feff shortened to 000000000000feff
+> |  arch/x86/kernel/entry_32.S:676: Warning: 0000000008000091 shortened to 0000000000000091
+> | 
+> | TIF_SYSCALL_FTRACE is 0x08000000 and until now we checked the
+> | first 16 bits of the work mask - bit 27 falls outside of that.
+> | 
+> | Update the entry_32.S code to check the full 32-bit mask.
+> | 
+> | Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> | Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> | Cc: Steven Rostedt <rostedt@goodmis.org>
+> | Cc: "H. Peter Anvin" <hpa@kernel.org>
+> | LKML-Reference: <1237012693.18733.3.camel@ht.satnam>
+> | Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> | 
+> | 
+> | ---
+> |  arch/x86/kernel/entry_32.S |   18 ++++++++----------
+> |  1 files changed, 8 insertions(+), 10 deletions(-)
+> | 
+> ...  
+> |  sysexit_audit:
+> | -	testw $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT), %cx
+> | +	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT), %cx
+> 							^^^^^
+> Better to point ecx here? :)
 > 
-> I think (I think) you're seriously underestimating what's 
-> doable with kernel C/R and what's already done.
-> 
-> I was told (haven't seen it myself) that Oracle installations 
-> and Counter Strike servers were moved between boxes just fine.
-> 
-> They were run in specially prepared environment of course, but 
-> still.
 
-That's the kind of stuff i'd like to see happen.
+Thanks Cyrill :-)
 
-Right now the main 'enterprise' approach to do 
-migration/consolidation of server contexts is based on hardware 
-virtualization - but that pushes runtime overhead to the native 
-kernel and slows down the guest context as well - massively so.
+Subject: [PATCH] x86: entry_32.S fix compile warnings - fix work mask bit width - v2
 
-Before we've blinked twice it will be a 'required' enterprise 
-feature and enterprise people will measure/benchmark Linux 
-server performance in guest context primarily and we'll have a 
-deep performance pit to dig ourselves out of.
+Replace cx with ecx
 
-We can ignore that trend as uninteresting (it is uninteresting 
-in a number of ways because it is partly driven by stupidity), 
-or we can do something about it while still advancing the 
-kernel.
+Reported-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/entry_32.S |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-With containers+checkpointing the code is a lot scarier (we 
-basically do system call virtualization), the environment 
-interactions are a lot wider and thus they are a lot more 
-difficult to handle - but it's all a lot faster as well, and 
-conceptually so. All the runtime overhead is pushed to the 
-checkpointing step - (with some minimal amount of data structure 
-isolation overhead).
+diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
+index 82cf555..c929add 100644
+--- a/arch/x86/kernel/entry_32.S
++++ b/arch/x86/kernel/entry_32.S
+@@ -484,7 +484,7 @@ sysenter_audit:
+ 	jmp sysenter_do_call
+ 
+ sysexit_audit:
+-	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT), %cx
++	testl $(_TIF_ALLWORK_MASK & ~_TIF_SYSCALL_AUDIT), %ecx
+ 	jne syscall_exit_work
+ 	TRACE_IRQS_ON
+ 	ENABLE_INTERRUPTS(CLBR_ANY)
+-- 
+1.6.0.6
 
-I see three conceptual levels of virtualization:
 
- - hardware based virtualization, for 'unaware OSs'
 
- - system call based virtualization, for 'unaware software'
-
- - no virtualization kernel help is needed _at all_ to 
-   checkpoint 'aware' software. We have libraries to checkpoint 
-   'aware' user-space just fine - and had them for a decade.
-
-	Ingo
