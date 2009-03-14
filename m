@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761615AbZCNAk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbZCNAXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761615AbZCNAk6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:40:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbZCNATh
+	id S1757137AbZCNAXo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbZCNASg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:37 -0400
-Received: from kroah.org ([198.145.64.141]:34852 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:36 -0400
+Received: from kroah.org ([198.145.64.141]:46741 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753038AbZCNATZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:25 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:48 2009
-Message-Id: <20090314000748.716629690@mini.kroah.org>
+	id S1750926AbZCNASf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:35 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:41 2009
+Message-Id: <20090314000740.978076249@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:12 -0700
+Date: Fri, 13 Mar 2009 17:05:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Clemens Ladisch <clemens@ladisch.de>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 64/96] sound: virtuoso: revert "do not overwrite EEPROM on Xonar D2/D2X"
+       alan@lxorguk.ukuu.org.uk,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 15/96] mm: fix memmap init for handling memory hole
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=sound-virtuoso-revert-do-not-overwrite-eeprom-on-xonar-d2-d2x.patch
+Content-Disposition: inline; filename=mm-fix-memmap-init-for-handling-memory-hole.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,105 +40,92 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Clemens Ladisch <clemens@ladisch.de>
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-commit 6ce6c473a7fd742fdb0db95841e2c4c6b37337c5 upstream.
+commit cc2559bccc72767cb446f79b071d96c30c26439b upstream.
 
-This reverts commit 7e86c0e6850504ec9516b953f316a47277825e33 ("do not
-overwrite EEPROM on Xonar D2/D2X") because it did not actually help with
-the problem.
+Now, early_pfn_in_nid(PFN, NID) may returns false if PFN is a hole.
+and memmap initialization was not done. This was a trouble for
+sparc boot.
 
-More user reports show that the overwriting of the EEPROM is not
-triggered by using this driver but by installing Linux, and that the
-installation of any other operating system (even one without any CMI8788
-driver) has the same effect.  In other words, the presence of this
-driver does not have any effect on the occurrence of the error.  (So
-far, the available evidence seems to point to a BIOS bug.)
+To fix this, the PFN should be initialized and marked as PG_reserved.
+This patch changes early_pfn_in_nid() return true if PFN is a hole.
 
-Furthermore, it turns out that the EEPROM chip is protected against
-stray write commands by the command format and by requiring a separate
-write-enable command, so the error scenario in the previous commit (that
-SPI writes can be misinterpreted as an EEPROM write command) is not even
-theoretically possible.
-
-The mixer control that was removed as a consequence of the previous
-commit can only be partially emulated in userspace, which also means it
-cannot be seen be the in-kernel OSS API emulation, so it is better to
-revert that change.
-
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Reported-by: David Miller <davem@davemlloft.net>
+Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/oxygen/virtuoso.c |   22 +++++++---------------
- 1 file changed, 7 insertions(+), 15 deletions(-)
+ arch/ia64/mm/numa.c    |    2 +-
+ include/linux/mmzone.h |    2 +-
+ mm/page_alloc.c        |   23 ++++++++++++++++++++---
+ 3 files changed, 22 insertions(+), 5 deletions(-)
 
---- a/sound/pci/oxygen/virtuoso.c
-+++ b/sound/pci/oxygen/virtuoso.c
-@@ -26,7 +26,7 @@
-  * SPI 0 -> 1st PCM1796 (front)
-  * SPI 1 -> 2nd PCM1796 (surround)
-  * SPI 2 -> 3rd PCM1796 (center/LFE)
-- * SPI 4 -> 4th PCM1796 (back) and EEPROM self-destruct (do not use!)
-+ * SPI 4 -> 4th PCM1796 (back)
-  *
-  * GPIO 2 -> M0 of CS5381
-  * GPIO 3 -> M1 of CS5381
-@@ -142,12 +142,6 @@ struct xonar_data {
- static void pcm1796_write(struct oxygen *chip, unsigned int codec,
- 			  u8 reg, u8 value)
- {
--	/*
--	 * We don't want to do writes on SPI 4 because the EEPROM, which shares
--	 * the same pin, might get confused and broken.  We'd better take care
--	 * that the driver works with the default register values ...
--	 */
--#if 0
- 	/* maps ALSA channel pair number to SPI output */
- 	static const u8 codec_map[4] = {
- 		0, 1, 2, 4
-@@ -158,7 +152,6 @@ static void pcm1796_write(struct oxygen 
- 			 (codec_map[codec] << OXYGEN_SPI_CODEC_SHIFT) |
- 			 OXYGEN_SPI_CEN_LATCH_CLOCK_HI,
- 			 (reg << 8) | value);
--#endif
+--- a/arch/ia64/mm/numa.c
++++ b/arch/ia64/mm/numa.c
+@@ -70,7 +70,7 @@ int __meminit __early_pfn_to_nid(unsigne
+ 			return node_memblk[i].nid;
+ 	}
+ 
+-	return 0;
++	return -1;
  }
  
- static void cs4398_write(struct oxygen *chip, u8 reg, u8 value)
-@@ -546,9 +539,6 @@ static const DECLARE_TLV_DB_SCALE(cs4362
+ #ifdef CONFIG_MEMORY_HOTPLUG
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -978,7 +978,7 @@ void sparse_init(void);
+ #endif /* CONFIG_SPARSEMEM */
  
- static int xonar_d2_control_filter(struct snd_kcontrol_new *template)
+ #ifdef CONFIG_NODES_SPAN_OTHER_NODES
+-#define early_pfn_in_nid(pfn, nid)	(early_pfn_to_nid(pfn) == (nid))
++bool early_pfn_in_nid(unsigned long pfn, int nid);
+ #else
+ #define early_pfn_in_nid(pfn, nid)	(1)
+ #endif
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2960,16 +2960,33 @@ int __meminit __early_pfn_to_nid(unsigne
+ 		if (start_pfn <= pfn && pfn < end_pfn)
+ 			return early_node_map[i].nid;
+ 	}
+-
+-	return 0;
++	/* This is a memory hole */
++	return -1;
+ }
+ #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
+ 
+ int __meminit early_pfn_to_nid(unsigned long pfn)
  {
--	if (!strncmp(template->name, "Master Playback ", 16))
--		/* disable volume/mute because they would require SPI writes */
--		return 1;
- 	if (!strncmp(template->name, "CD Capture ", 11))
- 		/* CD in is actually connected to the video in pin */
- 		template->private_value ^= AC97_CD ^ AC97_VIDEO;
-@@ -598,8 +588,9 @@ static const struct oxygen_model xonar_m
- 		.dac_volume_min = 0x0f,
- 		.dac_volume_max = 0xff,
- 		.misc_flags = OXYGEN_MISC_MIDI,
--		.function_flags = OXYGEN_FUNCTION_SPI,
--		.dac_i2s_format = OXYGEN_I2S_FORMAT_I2S,
-+		.function_flags = OXYGEN_FUNCTION_SPI |
-+				  OXYGEN_FUNCTION_ENABLE_SPI_4_5,
-+		.dac_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
- 		.adc_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
- 	},
- 	[MODEL_D2X] = {
-@@ -628,8 +619,9 @@ static const struct oxygen_model xonar_m
- 		.dac_volume_min = 0x0f,
- 		.dac_volume_max = 0xff,
- 		.misc_flags = OXYGEN_MISC_MIDI,
--		.function_flags = OXYGEN_FUNCTION_SPI,
--		.dac_i2s_format = OXYGEN_I2S_FORMAT_I2S,
-+		.function_flags = OXYGEN_FUNCTION_SPI |
-+				  OXYGEN_FUNCTION_ENABLE_SPI_4_5,
-+		.dac_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
- 		.adc_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
- 	},
- 	[MODEL_D1] = {
+-	return __early_pfn_to_nid(pfn);
++	int nid;
++
++	nid = __early_pfn_to_nid(pfn);
++	if (nid >= 0)
++		return nid;
++	/* just returns 0 */
++	return 0;
+ }
+ 
++#ifdef CONFIG_NODES_SPAN_OTHER_NODES
++bool __meminit early_pfn_in_nid(unsigned long pfn, int node)
++{
++	int nid;
++
++	nid = __early_pfn_to_nid(pfn);
++	if (nid >= 0 && nid != node)
++		return false;
++	return true;
++}
++#endif
+ 
+ /* Basic iterator support to walk early_node_map[] */
+ #define for_each_active_range_index_in_nid(i, nid) \
 
 
