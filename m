@@ -1,166 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbZCNI6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbZCNJfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755000AbZCNI6T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 04:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbZCNI6G
+	id S1752974AbZCNJfB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 05:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZCNJet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 04:58:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50533 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbZCNI6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 04:58:03 -0400
-Date: Sat, 14 Mar 2009 08:57:28 GMT
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       sam@ravnborg.org, pmarques@grupopie.com, tglx@linutronix.de,
-       laijs@cn.fujitsu.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org, tglx@linutronix.de, pmarques@grupopie.com,
-       laijs@cn.fujitsu.com, mingo@elte.hu
-In-Reply-To: <49BA06E2.7080807@cn.fujitsu.com>
-References: <49BA06E2.7080807@cn.fujitsu.com>
-Subject: [tip:tracing/ftrace] kallsyms, tracing: output more proper symbol name
-Message-ID: <tip-b478b782e110fdb4135caa3062b6d687e989d994@git.kernel.org>
-Git-Commit-ID: b478b782e110fdb4135caa3062b6d687e989d994
-X-Mailer: tip-git-log-daemon
+	Sat, 14 Mar 2009 05:34:49 -0400
+Received: from smtp03.mail.tnz.yahoo.co.jp ([203.216.246.66]:47880 "HELO
+	smtp03.mail.tnz.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751649AbZCNJes (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 05:34:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=yj20050223; d=yahoo.co.jp;
+  h=Received:X-Apparently-From:Message-ID:From:To:Cc:References:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE;
+  b=HsTnWbJcSW8nVuP+/HQmGwYTGpCBfCf9/AneePxoDc6Q7kB7kykLLpbh/0qUOQwW2gLwidDd6zorNCxlSQpxSu/rGbxyyNoWjIy7/9AhzFrZ9IvClXvuya3+hcPpm8Xc  ;
+X-Apparently-From: <n0diamond@yahoo.co.jp>
+Message-ID: <078E30E4A81049A2847E24B3CF39BB5C@DIAMOND8600>
+From: "Norman Diamond" <n0diamond@yahoo.co.jp>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Robert Hancock" <hancockrwd@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
+       "Jim Paris" <jim@jtan.com>, "Sergei Shtylyov" <sshtylyov@ru.mvista.com>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Mark Lord" <liml@rtr.ca>
+References: <20090313074120.48682.qmail@web4108.mail.ogk.yahoo.co.jp><49BA7172.80908@gmail.com><A88EBC06918A4B0789B55D31ECDAF1BB@DIAMOND8600><49BB1341.2020203@gmail.com> <20090314084827.2f2b05c2@lxorguk.ukuu.org.uk>
+Subject: Re: Off-by-one in both LIBATA and IDE drivers
+Date: Sat, 14 Mar 2009 18:34:23 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 14 Mar 2009 08:57:29 +0000 (UTC)
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b478b782e110fdb4135caa3062b6d687e989d994
-Gitweb:     http://git.kernel.org/tip/b478b782e110fdb4135caa3062b6d687e989d994
-Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Fri, 13 Mar 2009 15:10:26 +0800
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 14 Mar 2009 09:55:04 +0100
+Alan Cox wrote:
+> [attribution stolen:]
+>> ata_piix should definitely attach to 8086/7111 regardless of the 
+>> subsystem IDs. I can't really explain why it's not. You should at least 
+>> be seeing a message about the ata_piix version, if not then somehow the 
+>> driver probe function isn't even being called..
+>
+> Because on at least some kernels
+> hda=noprobe ... etc
+> does not stop the old IDE layer grabbing the PCI device and continuing to 
+> claim ownership (which means ATA cannot attach to it).
 
-kallsyms, tracing: output more proper symbol name
+That could be part of the explanation.  dmesg did include the usual 
+statements about PIIX4 not being 100% native and irqs would be probed later 
+(though of course they weren't probed later).
 
-Impact: bugfix, output more reliable symbol lookup result
+> Arguably this is correct behaviour as the IDE layer was asked to ignore 
+> the devices *NOT* to ignore the controller.
 
-Debug tools(dump_stack(), ftrace...) are like to print out symbols.
-But it is always print out the first aliased symbol.(Aliased symbols
-are symbols with the same address), and the first aliased symbol is
-sometime not proper.
-
- # echo function_graph > current_tracer
- # cat trace
-.....
- 1)   1.923 us    |    select_nohz_load_balancer();
- 1) + 76.692 us   |  }
- 1)               |  default_idle() {
- 1)   ==========> |    __irqentry_text_start() {
- 1)   0.000 us    |      native_apic_mem_write();
- 1)               |      irq_enter() {
- 1)   0.000 us    |        idle_cpu();
- 1)               |        tick_check_idle() {
- 1)   0.000 us    |          tick_check_oneshot_broadcast();
- 1)               |          tick_nohz_stop_idle() {
-.....
-
-It's very embarrassing, it ouputs "__irqentry_text_start()",
-actually, it should output "smp_apic_timer_interrupt()".
-(these two symbol are the same address, but "__irqentry_text_start"
-is deemed to the first aliased symbol by scripts/kallsyms)
-
-This patch puts symbols like "__irqentry_text_start" to the second
-aliased symbols. And a more proper symbol name becomes the first.
-
-Aliased symbols mostly come from linker script. The solution is
-guessing "is this symbol defined in linker script", the symbols
-defined in linker script will not become the first aliased symbol.
-
-And if symbols are found to be equal in this "linker script provided"
-criteria, symbols are sorted by the number of prefix underscores.
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Reviewed-by: Paulo Marques <pmarques@grupopie.com>
-LKML-Reference: <49BA06E2.7080807@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+That doesn't explain why ide0=noprobe ide1=noprobe hda=none hdb=none 
+hdc=none hdd=none still didn't stop the old IDE layer from grabbing 
+something.  ATA didn't report whether there was something it couldn't grab 
+onto, all it did was report loading and that was the end of it.
 
 
----
- scripts/kallsyms.c |   57 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 57 insertions(+), 0 deletions(-)
+Alan Cox also wrote:
+> [Norman Diamond:]
+>> I think the PIIX4 devices of VMware server are well known.  Besides 
+>> vendor 8086 and device 7111, VMware's subsystem is coded into LIBATA's 
+>> PIIX driver.
+>
+> That is a known working case so its something about your setup or build.
 
-diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
-index ad2434b..6654cbe 100644
---- a/scripts/kallsyms.c
-+++ b/scripts/kallsyms.c
-@@ -500,6 +500,51 @@ static void optimize_token_table(void)
- 	optimize_result();
- }
- 
-+/* guess for "linker script provide" symbol */
-+static int may_be_linker_script_provide_symbol(const struct sym_entry *se)
-+{
-+	const char *symbol = (char *)se->sym + 1;
-+	int len = se->len - 1;
-+
-+	if (len < 8)
-+		return 0;
-+
-+	if (symbol[0] != '_' || symbol[1] != '_')
-+		return 0;
-+
-+	/* __start_XXXXX */
-+	if (!memcmp(symbol + 2, "start_", 6))
-+		return 1;
-+
-+	/* __stop_XXXXX */
-+	if (!memcmp(symbol + 2, "stop_", 5))
-+		return 1;
-+
-+	/* __end_XXXXX */
-+	if (!memcmp(symbol + 2, "end_", 4))
-+		return 1;
-+
-+	/* __XXXXX_start */
-+	if (!memcmp(symbol + len - 6, "_start", 6))
-+		return 1;
-+
-+	/* __XXXXX_end */
-+	if (!memcmp(symbol + len - 4, "_end", 4))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+static int prefix_underscores_count(const char *str)
-+{
-+	const char *tail = str;
-+
-+	while (*tail != '_')
-+		tail++;
-+
-+	return tail - str;
-+}
-+
- static int compare_symbols(const void *a, const void *b)
- {
- 	const struct sym_entry *sa;
-@@ -521,6 +566,18 @@ static int compare_symbols(const void *a, const void *b)
- 	if (wa != wb)
- 		return wa - wb;
- 
-+	/* sort by "linker script provide" type */
-+	wa = may_be_linker_script_provide_symbol(sa);
-+	wb = may_be_linker_script_provide_symbol(sb);
-+	if (wa != wb)
-+		return wa - wb;
-+
-+	/* sort by the number of prefix underscores */
-+	wa = prefix_underscores_count((const char *)sa->sym + 1);
-+	wb = prefix_underscores_count((const char *)sb->sym + 1);
-+	if (wa != wb)
-+		return wa - wb;
-+
- 	/* sort by initial order, so that other symbols are left undisturbed */
- 	return sa->start_pos - sb->start_pos;
- }
+I doubt it.  I think your other message explained part of the reason, though 
+something is still missing.
+
+> You might want to try building with CONFIG_IDE=n and CONFIG_ATA + ATA_PIIX 
+> + AHCI = y to double check your config.
+
+CONFIG_ATA + ATA_PIIX + AHCI  were always y all along.  An experiment 
+changing old IDE from y to m got PIIX4 working, but I'm still nervous about 
+lots of cases where I don't have machines with other old IDE chipsets to 
+test. 
+
+--------------------------------------
+Power up the Internet with Yahoo! Toolbar.
+http://pr.mail.yahoo.co.jp/toolbar/
