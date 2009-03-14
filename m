@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbZCNAjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761428AbZCNAic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760286AbZCNAjK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:39:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbZCNATd
+	id S1761428AbZCNAic (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbZCNATa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:33 -0400
-Received: from kroah.org ([198.145.64.141]:34804 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:30 -0400
+Received: from kroah.org ([198.145.64.141]:34778 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751615AbZCNATU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:20 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:48 2009
-Message-Id: <20090314000747.945349883@mini.kroah.org>
+	id S1753363AbZCNATR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:17 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:47 2009
+Message-Id: <20090314000747.629293662@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:07 -0700
+Date: Fri, 13 Mar 2009 17:06:05 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Helmut Schaa <helmut.schaa@googlemail.com>,
-       Pierre Ossman <drzeus@drzeus.cx>
-Subject: [patch 59/96] sdhci: fix led naming
+       alan@lxorguk.ukuu.org.uk, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: [patch 57/96] proc: fix PG_locked reporting in /proc/kpageflags
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=sdhci-fix-led-naming.patch
+Content-Disposition: inline; filename=proc-fix-pg_locked-reporting-in-proc-kpageflags.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,50 +39,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Helmut Schaa <helmut.schaa@googlemail.com>
+From: Helge Bahmann <helge.bahmann@secunet.com>
 
-commit 5dbace0c9ba110c1a3810a89fa6bf12b7574b5a3 upstream.
+commit e07a4b9217d1e97d2f3a62b6b070efdc61212110 upstream.
 
-Fix the led device naming for the sdhci driver.
+Expr always evaluates to zero.
 
-The led class documentation defines the led name to have the
-form "devicename:colour:function" while not applicable sections
-should be left blank.
-
-To comply with the documentation the led device name is changed
-from "mmc*" to "mmc*::".
-
-Signed-off-by: Helmut Schaa <helmut.schaa@googlemail.com>
-Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+Cc: Matt Mackall <mpm@selenic.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/mmc/host/sdhci.c |    4 +++-
- drivers/mmc/host/sdhci.h |    1 +
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ fs/proc/proc_misc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -1690,7 +1690,9 @@ int sdhci_add_host(struct sdhci_host *ho
- #endif
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -824,7 +824,7 @@ static ssize_t kpageflags_read(struct fi
+ 		else
+ 			kflags = ppage->flags;
  
- #ifdef CONFIG_LEDS_CLASS
--	host->led.name = mmc_hostname(mmc);
-+	snprintf(host->led_name, sizeof(host->led_name),
-+		"%s::", mmc_hostname(mmc));
-+	host->led.name = host->led_name;
- 	host->led.brightness = LED_OFF;
- 	host->led.default_trigger = mmc_hostname(mmc);
- 	host->led.brightness_set = sdhci_led_control;
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -220,6 +220,7 @@ struct sdhci_host {
- 
- #ifdef CONFIG_LEDS_CLASS
- 	struct led_classdev	led;		/* LED control */
-+	char   led_name[32];
- #endif
- 
- 	spinlock_t		lock;		/* Mutex */
+-		uflags = kpf_copy_bit(KPF_LOCKED, PG_locked, kflags) |
++		uflags = kpf_copy_bit(kflags, KPF_LOCKED, PG_locked) |
+ 			kpf_copy_bit(kflags, KPF_ERROR, PG_error) |
+ 			kpf_copy_bit(kflags, KPF_REFERENCED, PG_referenced) |
+ 			kpf_copy_bit(kflags, KPF_UPTODATE, PG_uptodate) |
 
 
