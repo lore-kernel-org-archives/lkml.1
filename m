@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbZCNAla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbZCNAdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752608AbZCNAla (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbZCNATi
+	id S1758130AbZCNAdJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZCNATM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:38 -0400
-Received: from kroah.org ([198.145.64.141]:34863 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:12 -0400
+Received: from kroah.org ([198.145.64.141]:47063 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753589AbZCNAT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:26 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:49 2009
-Message-Id: <20090314000748.863538713@mini.kroah.org>
+	id S1753442AbZCNATE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:04 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:45 2009
+Message-Id: <20090314000745.467735200@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:13 -0700
+Date: Fri, 13 Mar 2009 17:05:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Karsten Wiese <fzu@wemgehoertderstaat.de>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 65/96] USB: EHCI: slow down ITD reuse
+       alan@lxorguk.ukuu.org.uk, Robert Hancock <hancockrwd@gmail.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 43/96] libata: Dont trust current capacity values in identify words 57-58
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=usb-ehci-slow-down-itd-reuse.patch
+Content-Disposition: inline; filename=libata-don-t-trust-current-capacity-values-in-identify-words-57-58.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,185 +39,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Karsten Wiese <fzu@wemgehoertderstaat.de>
+From: Robert Hancock <hancockrwd@gmail.com>
 
-commit 9aa09d2f8f4bc440d6db1c3414d4009642875240 upstream.
+commit 968e594afdbc40b4270f9d4032ae8350475749d6 upstream.
 
-Currently ITDs are immediately recycled whenever their URB completes.
-However, EHCI hardware can sometimes remember some ITD state.  This
-means that when the ITD is reused before end-of-frame it may sometimes
-cause the hardware to reference bogus state.
+Hanno Böck reported a problem where an old Conner CP30254 240MB hard drive
+was reported as 1.1TB in capacity by libata:
 
-This patch defers reusing such ITDs by moving them into a new ehci member
-cached_itd_list. ITDs resting in cached_itd_list are moved back into their
-stream's free_list once scan_periodic() detects that the active frame has
-elapsed.
+http://lkml.org/lkml/2009/2/13/134
 
-This makes the snd_usb_us122l driver (in kernel since .28) work right
-when it's hooked up through EHCI.
+This was caused by libata trusting the drive's reported current capacity in
+sectors in identify words 57 and 58 if the drive does not support LBA and the
+current CHS translation values appear valid. Unfortunately it seems older
+ATA specs were vague about what this field should contain and a number of drives
+used values with wrong byte order or that were totally bogus. There's no
+unique information that it conveys and so we can just calculate the number
+of sectors from the reported current CHS values.
 
-[ dbrownell@users.sourceforge.net: comment fixups ]
+While we're at it, clean up this function to use named constants for the
+identify word values.
 
-Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
-Tested-by: Philippe Carriere <philippe-f.carriere@wanadoo.fr>
-Tested-by: Federico Briata <federicobriata@gmail.com>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ehci-hcd.c   |    2 +
- drivers/usb/host/ehci-mem.c   |    1 
- drivers/usb/host/ehci-sched.c |   56 ++++++++++++++++++++++++++++++++++++------
- drivers/usb/host/ehci.h       |    6 ++++
- 4 files changed, 57 insertions(+), 8 deletions(-)
+ drivers/ata/libata-core.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
---- a/drivers/usb/host/ehci.h
-+++ b/drivers/usb/host/ehci.h
-@@ -87,6 +87,10 @@ struct ehci_hcd {			/* one per controlle
- 	int			next_uframe;	/* scan periodic, start here */
- 	unsigned		periodic_sched;	/* periodic activity count */
- 
-+	/* list of itds completed while clock_frame was still active */
-+	struct list_head	cached_itd_list;
-+	unsigned		clock_frame;
-+
- 	/* per root hub port */
- 	unsigned long		reset_done [EHCI_MAX_ROOT_PORTS];
- 
-@@ -208,6 +212,8 @@ timer_action (struct ehci_hcd *ehci, enu
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -1190,14 +1190,16 @@ static u64 ata_id_n_sectors(const u16 *i
+ {
+ 	if (ata_id_has_lba(id)) {
+ 		if (ata_id_has_lba48(id))
+-			return ata_id_u64(id, 100);
++			return ata_id_u64(id, ATA_ID_LBA_CAPACITY_2);
+ 		else
+-			return ata_id_u32(id, 60);
++			return ata_id_u32(id, ATA_ID_LBA_CAPACITY);
+ 	} else {
+ 		if (ata_id_current_chs_valid(id))
+-			return ata_id_u32(id, 57);
++			return id[ATA_ID_CUR_CYLS] * id[ATA_ID_CUR_HEADS] *
++			       id[ATA_ID_CUR_SECTORS];
+ 		else
+-			return id[1] * id[3] * id[6];
++			return id[ATA_ID_CYLS] * id[ATA_ID_HEADS] *
++			       id[ATA_ID_SECTORS];
  	}
  }
  
-+static void free_cached_itd_list(struct ehci_hcd *ehci);
-+
- /*-------------------------------------------------------------------------*/
- 
- /* EHCI register interface, corresponds to EHCI Revision 0.95 specification */
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -485,6 +485,7 @@ static int ehci_init(struct usb_hcd *hcd
- 	 * periodic_size can shrink by USBCMD update if hcc_params allows.
- 	 */
- 	ehci->periodic_size = DEFAULT_I_TDPS;
-+	INIT_LIST_HEAD(&ehci->cached_itd_list);
- 	if ((retval = ehci_mem_init(ehci, GFP_KERNEL)) < 0)
- 		return retval;
- 
-@@ -497,6 +498,7 @@ static int ehci_init(struct usb_hcd *hcd
- 
- 	ehci->reclaim = NULL;
- 	ehci->next_uframe = -1;
-+	ehci->clock_frame = -1;
- 
- 	/*
- 	 * dedicate a qh for the async ring head, since we couldn't unlink
---- a/drivers/usb/host/ehci-mem.c
-+++ b/drivers/usb/host/ehci-mem.c
-@@ -128,6 +128,7 @@ static inline void qh_put (struct ehci_q
- 
- static void ehci_mem_cleanup (struct ehci_hcd *ehci)
- {
-+	free_cached_itd_list(ehci);
- 	if (ehci->async)
- 		qh_put (ehci->async);
- 	ehci->async = NULL;
---- a/drivers/usb/host/ehci-sched.c
-+++ b/drivers/usb/host/ehci-sched.c
-@@ -1004,7 +1004,8 @@ iso_stream_put(struct ehci_hcd *ehci, st
- 
- 		is_in = (stream->bEndpointAddress & USB_DIR_IN) ? 0x10 : 0;
- 		stream->bEndpointAddress &= 0x0f;
--		stream->ep->hcpriv = NULL;
-+		if (stream->ep)
-+			stream->ep->hcpriv = NULL;
- 
- 		if (stream->rescheduled) {
- 			ehci_info (ehci, "ep%d%s-iso rescheduled "
-@@ -1653,14 +1654,28 @@ itd_complete (
- 			(stream->bEndpointAddress & USB_DIR_IN) ? "in" : "out");
- 	}
- 	iso_stream_put (ehci, stream);
--	/* OK to recycle this ITD now that its completion callback ran. */
-+
- done:
- 	usb_put_urb(urb);
- 	itd->urb = NULL;
--	itd->stream = NULL;
--	list_move(&itd->itd_list, &stream->free_list);
--	iso_stream_put(ehci, stream);
--
-+	if (ehci->clock_frame != itd->frame || itd->index[7] != -1) {
-+		/* OK to recycle this ITD now. */
-+		itd->stream = NULL;
-+		list_move(&itd->itd_list, &stream->free_list);
-+		iso_stream_put(ehci, stream);
-+	} else {
-+		/* HW might remember this ITD, so we can't recycle it yet.
-+		 * Move it to a safe place until a new frame starts.
-+		 */
-+		list_move(&itd->itd_list, &ehci->cached_itd_list);
-+		if (stream->refcount == 2) {
-+			/* If iso_stream_put() were called here, stream
-+			 * would be freed.  Instead, just prevent reuse.
-+			 */
-+			stream->ep->hcpriv = NULL;
-+			stream->ep = NULL;
-+		}
-+	}
- 	return retval;
- }
- 
-@@ -2101,6 +2116,20 @@ done:
- 
- /*-------------------------------------------------------------------------*/
- 
-+static void free_cached_itd_list(struct ehci_hcd *ehci)
-+{
-+	struct ehci_itd *itd, *n;
-+
-+	list_for_each_entry_safe(itd, n, &ehci->cached_itd_list, itd_list) {
-+		struct ehci_iso_stream	*stream = itd->stream;
-+		itd->stream = NULL;
-+		list_move(&itd->itd_list, &stream->free_list);
-+		iso_stream_put(ehci, stream);
-+	}
-+}
-+
-+/*-------------------------------------------------------------------------*/
-+
- static void
- scan_periodic (struct ehci_hcd *ehci)
- {
-@@ -2115,10 +2144,17 @@ scan_periodic (struct ehci_hcd *ehci)
- 	 * Touches as few pages as possible:  cache-friendly.
- 	 */
- 	now_uframe = ehci->next_uframe;
--	if (HC_IS_RUNNING (ehci_to_hcd(ehci)->state))
-+	if (HC_IS_RUNNING(ehci_to_hcd(ehci)->state)) {
- 		clock = ehci_readl(ehci, &ehci->regs->frame_index);
--	else
-+		clock_frame = (clock >> 3) % ehci->periodic_size;
-+	} else  {
- 		clock = now_uframe + mod - 1;
-+		clock_frame = -1;
-+	}
-+	if (ehci->clock_frame != clock_frame) {
-+		free_cached_itd_list(ehci);
-+		ehci->clock_frame = clock_frame;
-+	}
- 	clock %= mod;
- 	clock_frame = clock >> 3;
- 
-@@ -2277,6 +2313,10 @@ restart:
- 			/* rescan the rest of this frame, then ... */
- 			clock = now;
- 			clock_frame = clock >> 3;
-+			if (ehci->clock_frame != clock_frame) {
-+				free_cached_itd_list(ehci);
-+				ehci->clock_frame = clock_frame;
-+			}
- 		} else {
- 			now_uframe++;
- 			now_uframe %= mod;
 
 
