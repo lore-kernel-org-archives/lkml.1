@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759908AbZCNA1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbZCNA26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759908AbZCNA1X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZCNASu
+	id S1760252AbZCNA26 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZCNAS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:50 -0400
-Received: from kroah.org ([198.145.64.141]:46871 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:57 -0400
+Received: from kroah.org ([198.145.64.141]:46963 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753173AbZCNASq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:46 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:42 2009
-Message-Id: <20090314000742.835474392@mini.kroah.org>
+	id S1753329AbZCNASz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:55 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:44 2009
+Message-Id: <20090314000744.251980059@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:34 -0700
+Date: Fri, 13 Mar 2009 17:05:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Phil Sutter <n0-1@freewrt.org>,
-       Wim Van Sebroeck <wim@iguana.be>
-Subject: [patch 26/96] WATCHDOG: rc32434_wdt: fix sections
+       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@redhat.com>,
+       Roland McGrath <roland@redhat.com>, David Howells <dhowells@redhat.com>,
+       "Serge E. Hallyn" <serge@hallyn.com>
+Subject: [patch 35/96] copy_process: fix CLONE_PARENT && parent_exec_id interaction
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=watchdog-rc32434_wdt-fix-sections.patch
+Content-Disposition: inline; filename=copy_process-fix-clone_parent-parent_exec_id-interaction.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,63 +40,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Phil Sutter <n0-1@freewrt.org>
+From: Oleg Nesterov <oleg@redhat.com>
 
-commit d9a8798c4bab5ccd40e45e011f668099cfb3eb83 upstream.
+commit 2d5516cbb9daf7d0e342a2e3b0fc6f8c39a81205 upstream.
 
-Fix init and exit sections.
+CLONE_PARENT can fool the ->self_exec_id/parent_exec_id logic. If we
+re-use the old parent, we must also re-use ->parent_exec_id to make
+sure exit_notify() sees the right ->xxx_exec_id's when the CLONE_PARENT'ed
+task exits.
 
-Signed-off-by: Phil Sutter <n0-1@freewrt.org>
-Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+Also, move down the "p->parent_exec_id = p->self_exec_id" thing, to place
+two different cases together.
+
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>
+Cc: Serge E. Hallyn <serge@hallyn.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/watchdog/rc32434_wdt.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ kernel/fork.c |   11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
---- a/drivers/watchdog/rc32434_wdt.c
-+++ b/drivers/watchdog/rc32434_wdt.c
-@@ -33,7 +33,7 @@
- #include <asm/time.h>
- #include <asm/mach-rc32434/integ.h>
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1137,10 +1137,6 @@ static struct task_struct *copy_process(
+ #endif
+ 	clear_all_latency_tracing(p);
  
--#define VERSION "0.3"
-+#define VERSION "0.4"
+-	/* Our parent execution domain becomes current domain
+-	   These must match for thread signalling to apply */
+-	p->parent_exec_id = p->self_exec_id;
+-
+ 	/* ok, now we should be set up.. */
+ 	p->exit_signal = (clone_flags & CLONE_THREAD) ? -1 : (clone_flags & CSIGNAL);
+ 	p->pdeath_signal = 0;
+@@ -1178,10 +1174,13 @@ static struct task_struct *copy_process(
+ 		set_task_cpu(p, smp_processor_id());
  
- static struct {
- 	unsigned long inuse;
-@@ -241,10 +241,10 @@ static struct miscdevice rc32434_wdt_mis
- 	.fops	= &rc32434_wdt_fops,
- };
+ 	/* CLONE_PARENT re-uses the old parent */
+-	if (clone_flags & (CLONE_PARENT|CLONE_THREAD))
++	if (clone_flags & (CLONE_PARENT|CLONE_THREAD)) {
+ 		p->real_parent = current->real_parent;
+-	else
++		p->parent_exec_id = current->parent_exec_id;
++	} else {
+ 		p->real_parent = current;
++		p->parent_exec_id = current->self_exec_id;
++	}
  
--static char banner[] = KERN_INFO KBUILD_MODNAME
-+static char banner[] __devinitdata = KERN_INFO KBUILD_MODNAME
- 		": Watchdog Timer version " VERSION ", timer margin: %d sec\n";
+ 	spin_lock(&current->sighand->siglock);
  
--static int rc32434_wdt_probe(struct platform_device *pdev)
-+static int __devinit rc32434_wdt_probe(struct platform_device *pdev)
- {
- 	int ret;
- 	struct resource *r;
-@@ -279,7 +279,7 @@ unmap:
- 	return ret;
- }
- 
--static int rc32434_wdt_remove(struct platform_device *pdev)
-+static int __devexit rc32434_wdt_remove(struct platform_device *pdev)
- {
- 	misc_deregister(&rc32434_wdt_miscdev);
- 	iounmap(wdt_reg);
-@@ -288,8 +288,8 @@ static int rc32434_wdt_remove(struct pla
- 
- static struct platform_driver rc32434_wdt = {
- 	.probe	= rc32434_wdt_probe,
--	.remove = rc32434_wdt_remove,
--	.driver = {
-+	.remove	= __devexit_p(rc32434_wdt_remove),
-+	.driver	= {
- 		.name = "rc32434_wdt",
- 	}
- };
 
 
