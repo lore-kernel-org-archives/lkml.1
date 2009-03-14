@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZCNATy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762718AbZCNAu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbZCNATy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZCNASZ
+	id S1762718AbZCNAu0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZCNAUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:25 -0400
-Received: from kroah.org ([198.145.64.141]:46611 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:20:18 -0400
+Received: from kroah.org ([198.145.64.141]:35133 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750926AbZCNASY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:24 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:39 2009
-Message-Id: <20090314000739.203280155@mini.kroah.org>
+	id S1754065AbZCNATy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:54 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:53 2009
+Message-Id: <20090314000753.321488608@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:12 -0700
+Date: Fri, 13 Mar 2009 17:06:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 04/96] net: Kill skb_truesize_check(), it only catches false-positives.
+       alan@lxorguk.ukuu.org.uk,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: [patch 93/96] ext4: Add fallback for find_group_flex
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=net-kill-skb_truesize_check-it-only-catches-false-positives.patch
+Content-Disposition: inline; filename=ext4-add-fallback-for-find_group_flex.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,84 +39,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: "Theodore Ts'o" <tytso@mit.edu>
 
-[ Upstream commit 92a0acce186cde8ead56c6915d9479773673ea1a ]
+(cherry picked from commit 05bf9e839d9de4e8a094274a0a2fd07beb47eaf1)
 
-A long time ago we had bugs, primarily in TCP, where we would modify
-skb->truesize (for TSO queue collapsing) in ways which would corrupt
-the socket memory accounting.
+This is a workaround for find_group_flex() which badly needs to be
+replaced.  One of its problems (besides ignoring the Orlov algorithm)
+is that it is a bit hyperactive about returning failure under
+suspicious circumstances.  This can lead to spurious ENOSPC failures
+even when there are inodes still available.
 
-skb_truesize_check() was added in order to try and catch this error
-more systematically.
+Work around this for now by retrying the search using
+find_group_other() if find_group_flex() returns -1.  If
+find_group_other() succeeds when find_group_flex() has failed, log a
+warning message.
 
-However this debugging check has morphed into a Frankenstein of sorts
-and these days it does nothing other than catch false-positives.
+A better block/inode allocator that will fix this problem for real has
+been queued up for the next merge window.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/skbuff.h |    9 ---------
- include/net/sock.h     |    1 -
- net/core/skbuff.c      |    8 --------
- net/core/sock.c        |    1 -
- 4 files changed, 19 deletions(-)
+ fs/ext4/ialloc.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -395,15 +395,6 @@ extern void	      skb_over_panic(struct 
- 				     void *here);
- extern void	      skb_under_panic(struct sk_buff *skb, int len,
- 				      void *here);
--extern void	      skb_truesize_bug(struct sk_buff *skb);
--
--static inline void skb_truesize_check(struct sk_buff *skb)
--{
--	int len = sizeof(struct sk_buff) + skb->len;
--
--	if (unlikely((int)skb->truesize < len))
--		skb_truesize_bug(skb);
--}
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -702,6 +702,13 @@ struct inode *ext4_new_inode(handle_t *h
  
- extern int skb_append_datato_frags(struct sock *sk, struct sk_buff *skb,
- 			int getfrag(void *from, char *to, int offset,
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -777,7 +777,6 @@ static inline void sk_mem_uncharge(struc
+ 	if (sbi->s_log_groups_per_flex) {
+ 		ret2 = find_group_flex(sb, dir, &group);
++		if (ret2 == -1) {
++			ret2 = find_group_other(sb, dir, &group);
++			if (ret2 == 0 && printk_ratelimit())
++				printk(KERN_NOTICE "ext4: find_group_flex "
++				       "failed, fallback succeeded dir %lu\n",
++				       dir->i_ino);
++		}
+ 		goto got_group;
+ 	}
  
- static inline void sk_wmem_free_skb(struct sock *sk, struct sk_buff *skb)
- {
--	skb_truesize_check(skb);
- 	sock_set_flag(sk, SOCK_QUEUE_SHRUNK);
- 	sk->sk_wmem_queued -= skb->truesize;
- 	sk_mem_uncharge(sk, skb->truesize);
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -143,14 +143,6 @@ void skb_under_panic(struct sk_buff *skb
- 	BUG();
- }
- 
--void skb_truesize_bug(struct sk_buff *skb)
--{
--	printk(KERN_ERR "SKB BUG: Invalid truesize (%u) "
--	       "len=%u, sizeof(sk_buff)=%Zd\n",
--	       skb->truesize, skb->len, sizeof(struct sk_buff));
--}
--EXPORT_SYMBOL(skb_truesize_bug);
--
- /* 	Allocate a new skbuff. We do this ourselves so we can fill in a few
-  *	'private' fields and also do memory statistics to find all the
-  *	[BEEP] leaks.
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -1136,7 +1136,6 @@ void sock_rfree(struct sk_buff *skb)
- {
- 	struct sock *sk = skb->sk;
- 
--	skb_truesize_check(skb);
- 	atomic_sub(skb->truesize, &sk->sk_rmem_alloc);
- 	sk_mem_uncharge(skb->sk, skb->truesize);
- }
 
 
