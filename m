@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbZCNAW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759908AbZCNA1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756240AbZCNAW5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:22:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZCNASe
+	id S1759908AbZCNA1X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZCNASu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:34 -0400
-Received: from kroah.org ([198.145.64.141]:46716 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:50 -0400
+Received: from kroah.org ([198.145.64.141]:46871 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752062AbZCNASd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:33 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:40 2009
-Message-Id: <20090314000740.633616698@mini.kroah.org>
+	id S1753173AbZCNASq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:46 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:42 2009
+Message-Id: <20090314000742.835474392@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:21 -0700
+Date: Fri, 13 Mar 2009 17:05:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: [patch 13/96] JFFS2: fix mount crash caused by removed nodes
+       alan@lxorguk.ukuu.org.uk, Phil Sutter <n0-1@freewrt.org>,
+       Wim Van Sebroeck <wim@iguana.be>
+Subject: [patch 26/96] WATCHDOG: rc32434_wdt: fix sections
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=jffs2-fix-mount-crash-caused-by-removed-nodes.patch
+Content-Disposition: inline; filename=watchdog-rc32434_wdt-fix-sections.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,113 +39,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Phil Sutter <n0-1@freewrt.org>
 
-commit 4c41bd0ec953954158f92bed5d3062645062b98e upstream.
+commit d9a8798c4bab5ccd40e45e011f668099cfb3eb83 upstream.
 
-At scan time we observed following scenario:
+Fix init and exit sections.
 
-   node A inserted
-   node B inserted
-   node C inserted -> sets overlapped flag on node B
-
-   node A is removed due to CRC failure -> overlapped flag on node B remains
-
-   while (tn->overlapped)
-   	 tn = tn_prev(tn);
-
-   ==> crash, when tn_prev(B) is referenced.
-
-When the ultimate node is removed at scan time and the overlapped flag
-is set on the penultimate node, then nothing updates the overlapped
-flag of that node. The overlapped iterators blindly expect that the
-ultimate node does not have the overlapped flag set, which causes the
-scan code to crash.
-
-It would be a huge overhead to go through the node chain on node
-removal and fix up the overlapped flags, so detecting such a case on
-the fly in the overlapped iterators is a simpler and reliable
-solution.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Signed-off-by: Phil Sutter <n0-1@freewrt.org>
+Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jffs2/readinode.c |   42 +++++++++++++++++++++++++++++++++---------
- 1 file changed, 33 insertions(+), 9 deletions(-)
+ drivers/watchdog/rc32434_wdt.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
---- a/fs/jffs2/readinode.c
-+++ b/fs/jffs2/readinode.c
-@@ -220,7 +220,7 @@ static int jffs2_add_tn_to_tree(struct j
- 				struct jffs2_tmp_dnode_info *tn)
+--- a/drivers/watchdog/rc32434_wdt.c
++++ b/drivers/watchdog/rc32434_wdt.c
+@@ -33,7 +33,7 @@
+ #include <asm/time.h>
+ #include <asm/mach-rc32434/integ.h>
+ 
+-#define VERSION "0.3"
++#define VERSION "0.4"
+ 
+ static struct {
+ 	unsigned long inuse;
+@@ -241,10 +241,10 @@ static struct miscdevice rc32434_wdt_mis
+ 	.fops	= &rc32434_wdt_fops,
+ };
+ 
+-static char banner[] = KERN_INFO KBUILD_MODNAME
++static char banner[] __devinitdata = KERN_INFO KBUILD_MODNAME
+ 		": Watchdog Timer version " VERSION ", timer margin: %d sec\n";
+ 
+-static int rc32434_wdt_probe(struct platform_device *pdev)
++static int __devinit rc32434_wdt_probe(struct platform_device *pdev)
  {
- 	uint32_t fn_end = tn->fn->ofs + tn->fn->size;
--	struct jffs2_tmp_dnode_info *this;
-+	struct jffs2_tmp_dnode_info *this, *ptn;
+ 	int ret;
+ 	struct resource *r;
+@@ -279,7 +279,7 @@ unmap:
+ 	return ret;
+ }
  
- 	dbg_readinode("insert fragment %#04x-%#04x, ver %u at %08x\n", tn->fn->ofs, fn_end, tn->version, ref_offset(tn->fn->raw));
+-static int rc32434_wdt_remove(struct platform_device *pdev)
++static int __devexit rc32434_wdt_remove(struct platform_device *pdev)
+ {
+ 	misc_deregister(&rc32434_wdt_miscdev);
+ 	iounmap(wdt_reg);
+@@ -288,8 +288,8 @@ static int rc32434_wdt_remove(struct pla
  
-@@ -251,11 +251,18 @@ static int jffs2_add_tn_to_tree(struct j
- 	if (this) {
- 		/* If the node is coincident with another at a lower address,
- 		   back up until the other node is found. It may be relevant */
--		while (this->overlapped)
--			this = tn_prev(this);
--
--		/* First node should never be marked overlapped */
--		BUG_ON(!this);
-+		while (this->overlapped) {
-+			ptn = tn_prev(this);
-+			if (!ptn) {
-+				/*
-+				 * We killed a node which set the overlapped
-+				 * flags during the scan. Fix it up.
-+				 */
-+				this->overlapped = 0;
-+				break;
-+			}
-+			this = ptn;
-+		}
- 		dbg_readinode("'this' found %#04x-%#04x (%s)\n", this->fn->ofs, this->fn->ofs + this->fn->size, this->fn ? "data" : "hole");
+ static struct platform_driver rc32434_wdt = {
+ 	.probe	= rc32434_wdt_probe,
+-	.remove = rc32434_wdt_remove,
+-	.driver = {
++	.remove	= __devexit_p(rc32434_wdt_remove),
++	.driver	= {
+ 		.name = "rc32434_wdt",
  	}
- 
-@@ -360,7 +367,17 @@ static int jffs2_add_tn_to_tree(struct j
- 			}
- 			if (!this->overlapped)
- 				break;
--			this = tn_prev(this);
-+
-+			ptn = tn_prev(this);
-+			if (!ptn) {
-+				/*
-+				 * We killed a node which set the overlapped
-+				 * flags during the scan. Fix it up.
-+				 */
-+				this->overlapped = 0;
-+				break;
-+			}
-+			this = ptn;
- 		}
- 	}
- 
-@@ -456,8 +473,15 @@ static int jffs2_build_inode_fragtree(st
- 		eat_last(&rii->tn_root, &last->rb);
- 		ver_insert(&ver_root, last);
- 
--		if (unlikely(last->overlapped))
--			continue;
-+		if (unlikely(last->overlapped)) {
-+			if (pen)
-+				continue;
-+			/*
-+			 * We killed a node which set the overlapped
-+			 * flags during the scan. Fix it up.
-+			 */
-+			last->overlapped = 0;
-+		}
- 
- 		/* Now we have a bunch of nodes in reverse version
- 		   order, in the tree at ver_root. Most of the time,
+ };
 
 
