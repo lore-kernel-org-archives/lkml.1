@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761148AbZCNAg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760910AbZCNAeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761148AbZCNAg1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbZCNATX
+	id S1760910AbZCNAeq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbZCNATT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:23 -0400
-Received: from kroah.org ([198.145.64.141]:47153 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:19 -0400
+Received: from kroah.org ([198.145.64.141]:46878 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753539AbZCNATL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:11 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:46 2009
-Message-Id: <20090314000746.710349143@mini.kroah.org>
+	id S1753038AbZCNASr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:47 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:43 2009
+Message-Id: <20090314000742.991282118@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:59 -0700
+Date: Fri, 13 Mar 2009 17:05:35 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alexander Duyck <alexander.h.duyck@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: [patch 51/96] PCI: Add PCI quirk to disable L0s ASPM state for 82575 and 82598
+       alan@lxorguk.ukuu.org.uk, Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [patch 27/96] 8250: fix boot hang with serial console when using with Serial Over Lan port
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=pci-add-pci-quirk-to-disable-l0s-aspm-state-for-82575-and-82598.patch
+Content-Disposition: inline; filename=8250-fix-boot-hang-with-serial-console-when-using-with-serial-over-lan-port.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,72 +38,170 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
 
-commit 649426efcfbc67a8b033497151816cbac9fd0cfa upstream.
+commit b6adea334c6c89d5e6c94f9196bbf3a279cb53bd upstream.
 
-This patch is intended to disable L0s ASPM link state for 82598 (ixgbe)
-parts due to the fact that it is possible to corrupt TX data when coming
-back out of L0s on some systems.  The workaround had been added for 82575
-(igb) previously, but did not use the ASPM api.  This quirk uses the ASPM
-api to prevent the ASPM subsystem from re-enabling the L0s state.
+Intel 8257x Ethernet boards have a feature called Serial Over Lan.
 
-Instead of adding the fix in igb to the ixgbe driver as well it was
-decided to move it into a pci quirk.  It is necessary to move the fix out
-of the driver and into a pci quirk in order to prevent the issue from
-occuring prior to driver load to handle the possibility of the device being
-passed to a VM via direct assignment.
+This feature works by emulating a serial port, and it is detected by
+kernel as a normal 8250 port.  However, this emulation is not perfect, as
+also noticed on changeset 7500b1f602aad75901774a67a687ee985d85893f.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+Before this patch, the kernel were trying to check if the serial TX is
+capable of work using IRQ's.
+
+This were done with a code similar this:
+
+        serial_outp(up, UART_IER, UART_IER_THRI);
+        lsr = serial_in(up, UART_LSR);
+        iir = serial_in(up, UART_IIR);
+        serial_outp(up, UART_IER, 0);
+
+        if (lsr & UART_LSR_TEMT && iir & UART_IIR_NO_INT)
+		up->bugs |= UART_BUG_TXEN;
+
+This works fine for other 8250 ports, but, on 8250-emulated SoL port, the
+chip is a little lazy to down UART_IIR_NO_INT at UART_IIR register.
+
+Due to that, UART_BUG_TXEN is sometimes enabled.  However, as TX IRQ keeps
+working, and the TX polling is now enabled, the driver miss-interprets the
+IRQ received later, hanging up the machine until a key is pressed at the
+serial console.
+
+This is the 6 version of this patch.  Previous versions were trying to
+introduce a large enough delay between serial_outp and serial_in(up,
+UART_IIR), but not taking forever.  However, the needed delay couldn't be
+safely determined.
+
+At the experimental tests, a delay of 1us solves most of the cases, but
+still hangs sometimes.  Increasing the delay to 5us was better, but still
+doesn't solve.  A very high delay of 50 ms seemed to work every time.
+
+However, poking around with delays and pray for it to be enough doesn't
+seem to be a good approach, even for a quirk.
+
+So, instead of playing with random large arbitrary delays, let's just
+disable UART_BUG_TXEN for all SoL ports.
+
+[akpm@linux-foundation.org: fix warnings]
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/quirks.c |   25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/serial/8250.c       |   15 +++++++++++++++
+ drivers/serial/8250_pci.c   |   36 ++++++++++++++++++++++++++++++++++++
+ include/linux/pci_ids.h     |    3 +++
+ include/linux/serial_core.h |    1 +
+ 4 files changed, 55 insertions(+)
 
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -22,6 +22,7 @@
- #include <linux/delay.h>
- #include <linux/acpi.h>
- #include <linux/kallsyms.h>
-+#include <linux/pci-aspm.h>
- #include "pci.h"
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1956,6 +1956,20 @@ static int serial8250_startup(struct uar
  
- /* The Mellanox Tavor device gives false positive parity errors
-@@ -1542,6 +1543,30 @@ static void __devinit quirk_e100_interru
- }
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, PCI_ANY_ID, quirk_e100_interrupt);
+ 	serial8250_set_mctrl(&up->port, up->port.mctrl);
  
-+/*
-+ * The 82575 and 82598 may experience data corruption issues when transitioning
-+ * out of L0S.  To prevent this we need to disable L0S on the pci-e link
-+ */
-+static void __devinit quirk_disable_aspm_l0s(struct pci_dev *dev)
-+{
-+	dev_info(&dev->dev, "Disabling L0s\n");
-+	pci_disable_link_state(dev, PCIE_LINK_STATE_L0S);
-+}
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10a7, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10a9, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10b6, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10c6, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10c7, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10c8, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10d6, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10db, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10dd, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10e1, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10ec, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10f1, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10f4, quirk_disable_aspm_l0s);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x1508, quirk_disable_aspm_l0s);
++	/* Serial over Lan (SoL) hack:
++	   Intel 8257x Gigabit ethernet chips have a
++	   16550 emulation, to be used for Serial Over Lan.
++	   Those chips take a longer time than a normal
++	   serial device to signalize that a transmission
++	   data was queued. Due to that, the above test generally
++	   fails. One solution would be to delay the reading of
++	   iir. However, this is not reliable, since the timeout
++	   is variable. So, let's just don't test if we receive
++	   TX irq. This way, we'll never enable UART_BUG_TXEN.
++	 */
++	if (up->port.flags & UPF_NO_TXEN_TEST)
++		goto dont_test_tx_en;
 +
- static void __devinit fixup_rev1_53c810(struct pci_dev* dev)
- {
- 	/* rev 1 ncr53c810 chips don't set the class at all which means
+ 	/*
+ 	 * Do a quick test to see if we receive an
+ 	 * interrupt when we enable the TX irq.
+@@ -1975,6 +1989,7 @@ static int serial8250_startup(struct uar
+ 		up->bugs &= ~UART_BUG_TXEN;
+ 	}
+ 
++dont_test_tx_en:
+ 	spin_unlock_irqrestore(&up->port.lock, flags);
+ 
+ 	/*
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -762,6 +762,21 @@ pci_default_setup(struct serial_private 
+ 	return setup_port(priv, port, bar, offset, board->reg_shift);
+ }
+ 
++static int skip_tx_en_setup(struct serial_private *priv,
++			const struct pciserial_board *board,
++			struct uart_port *port, int idx)
++{
++	port->flags |= UPF_NO_TXEN_TEST;
++	printk(KERN_DEBUG "serial8250: skipping TxEn test for device "
++			  "[%04x:%04x] subsystem [%04x:%04x]\n",
++			  priv->dev->vendor,
++			  priv->dev->device,
++			  priv->dev->subsystem_vendor,
++			  priv->dev->subsystem_device);
++
++	return pci_default_setup(priv, board, port, idx);
++}
++
+ /* This should be in linux/pci_ids.h */
+ #define PCI_VENDOR_ID_SBSMODULARIO	0x124B
+ #define PCI_SUBVENDOR_ID_SBSMODULARIO	0x124B
+@@ -828,6 +843,27 @@ static struct pci_serial_quirk pci_seria
+ 		.init		= pci_inteli960ni_init,
+ 		.setup		= pci_default_setup,
+ 	},
++	{
++		.vendor		= PCI_VENDOR_ID_INTEL,
++		.device		= PCI_DEVICE_ID_INTEL_8257X_SOL,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.setup		= skip_tx_en_setup,
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_INTEL,
++		.device		= PCI_DEVICE_ID_INTEL_82573L_SOL,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.setup		= skip_tx_en_setup,
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_INTEL,
++		.device		= PCI_DEVICE_ID_INTEL_82573E_SOL,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.setup		= skip_tx_en_setup,
++	},
+ 	/*
+ 	 * ITE
+ 	 */
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2283,6 +2283,9 @@
+ #define PCI_DEVICE_ID_INTEL_82378	0x0484
+ #define PCI_DEVICE_ID_INTEL_I960	0x0960
+ #define PCI_DEVICE_ID_INTEL_I960RM	0x0962
++#define PCI_DEVICE_ID_INTEL_8257X_SOL	0x1062
++#define PCI_DEVICE_ID_INTEL_82573E_SOL	0x1085
++#define PCI_DEVICE_ID_INTEL_82573L_SOL	0x108F
+ #define PCI_DEVICE_ID_INTEL_82815_MC	0x1130
+ #define PCI_DEVICE_ID_INTEL_82815_CGC	0x1132
+ #define PCI_DEVICE_ID_INTEL_82092AA_0	0x1221
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -285,6 +285,7 @@ struct uart_port {
+ #define UPF_HARDPPS_CD		((__force upf_t) (1 << 11))
+ #define UPF_LOW_LATENCY		((__force upf_t) (1 << 13))
+ #define UPF_BUGGY_UART		((__force upf_t) (1 << 14))
++#define UPF_NO_TXEN_TEST	((__force upf_t) (1 << 15))
+ #define UPF_MAGIC_MULTIPLIER	((__force upf_t) (1 << 16))
+ #define UPF_CONS_FLOW		((__force upf_t) (1 << 23))
+ #define UPF_SHARE_IRQ		((__force upf_t) (1 << 24))
 
 
