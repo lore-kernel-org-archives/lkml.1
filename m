@@ -1,119 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbZCNCxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755054AbZCNCxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753992AbZCNCxd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 22:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbZCNCxW
+	id S1755054AbZCNCxv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 22:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZCNCx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 22:53:22 -0400
-Received: from mail.suse.de ([195.135.220.2]:49311 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751667AbZCNCxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 22:53:21 -0400
-Date: Sat, 14 Mar 2009 03:53:18 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "elendil@planet.nl" <elendil@planet.nl>,
-       "thellstrom@vmware.com" <thellstrom@vmware.com>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "mingo@elte.hu" <mingo@elte.hu>
-Subject: Re: [PATCH] Add a new vm flag to track full pfnmap at mmap
-Message-ID: <20090314025318.GB32065@wotan.suse.de>
-References: <20090313004527.GA7176@linux-os.sc.intel.com> <tip-4bb9c5c02153dfc89a6c73a6f32091413805ad7d@git.kernel.org> <20090313162530.GA7118@wotan.suse.de> <20090313233543.GA19909@linux-os.sc.intel.com>
+	Fri, 13 Mar 2009 22:53:27 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:46071 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753943AbZCNCxZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 22:53:25 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AugFAJO2uklMQW1W/2dsb2JhbACBTc5Qg34G
+Date: Fri, 13 Mar 2009 22:53:21 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Jason Baron <jbaron@redhat.com>
+Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       acme@ghostprotocols.net, fweisbec@gmail.com, fche@redhat.com,
+       peterz@infradead.org
+Subject: Re: [Patch 1/2] tracepoints for softirq entry/exit - add
+	softirq-to-name array
+Message-ID: <20090314025321.GB22526@Krystal>
+References: <20090312183336.GB3352@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090313233543.GA19909@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090312183336.GB3352@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 22:51:54 up 13 days, 23:18,  2 users,  load average: 0.20, 0.23,
+	0.16
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 13, 2009 at 04:35:44PM -0700, Pallipadi, Venkatesh wrote:
+* Jason Baron (jbaron@redhat.com) wrote:
 > 
-> Add a new vm flag VM_PFN_AT_MMAP to identify a PFNMAP that is
-> fully mapped with remap_pfn_range. Patch removes the overloading
-> of VM_INSERTPAGE from the earlier patch.
+> create a 'softirq_to_name' array, which is indexed by softirq #, so
+> that we can easily convert between the softirq index # and its name, in
+> order to get more meaningful output messages.
 > 
-
-Acked-by: Nick Piggin <npiggin@suse.de>
-
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> 
 > ---
->  include/linux/mm.h |   16 +++-------------
->  mm/memory.c        |    4 ++--
->  2 files changed, 5 insertions(+), 15 deletions(-)
 > 
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 3daa05f..b1ea37f 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -98,12 +98,13 @@ extern unsigned int kobjsize(const void *objp);
->  #define VM_HUGETLB	0x00400000	/* Huge TLB Page VM */
->  #define VM_NONLINEAR	0x00800000	/* Is non-linear (remap_file_pages) */
->  #define VM_MAPPED_COPY	0x01000000	/* T if mapped copy of data (nommu mmap) */
-> -#define VM_INSERTPAGE	0x02000000	/* The vma has had "vm_insert_page()" done on it. Refer note in VM_PFNMAP_AT_MMAP below */
-> +#define VM_INSERTPAGE	0x02000000	/* The vma has had "vm_insert_page()" done on it */
->  #define VM_ALWAYSDUMP	0x04000000	/* Always include in core dumps */
+>  include/linux/interrupt.h |    5 +++++
+>  kernel/softirq.c          |    9 ++++++++-
+>  2 files changed, 13 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+> index e7bcfd7..da82ee4 100644
+> --- a/include/linux/interrupt.h
+> +++ b/include/linux/interrupt.h
+> @@ -258,6 +258,11 @@ enum
+>  	NR_SOFTIRQS
+>  };
 >  
->  #define VM_CAN_NONLINEAR 0x08000000	/* Has ->fault & does nonlinear pages */
->  #define VM_MIXEDMAP	0x10000000	/* Can contain "struct page" and pure PFN pages */
->  #define VM_SAO		0x20000000	/* Strong Access Ordering (powerpc) */
-> +#define VM_PFN_AT_MMAP	0x40000000	/* PFNMAP vma that is fully mapped at mmap time */
+> +/* map softirq index to softirq name. update 'softirq_to_name' in
+> + * kernel/softirq.c when adding a new softirq.
+> + */
+> +extern char *softirq_to_name[NR_SOFTIRQS];
+> +
+>  /* softirq mask and active fields moved to irq_cpustat_t in
+>   * asm/hardirq.h to get better cache usage.  KAO
+>   */
+> diff --git a/kernel/softirq.c b/kernel/softirq.c
+> index 40ff3cf..ba1511f 100644
+> --- a/kernel/softirq.c
+> +++ b/kernel/softirq.c
+> @@ -53,6 +53,12 @@ static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp
 >  
->  #ifndef VM_STACK_DEFAULT_FLAGS		/* arch can override this */
->  #define VM_STACK_DEFAULT_FLAGS VM_DATA_DEFAULT_FLAGS
-> @@ -127,17 +128,6 @@ extern unsigned int kobjsize(const void *objp);
->  #define VM_SPECIAL (VM_IO | VM_DONTEXPAND | VM_RESERVED | VM_PFNMAP)
+>  static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
 >  
+> +char *softirq_to_name[NR_SOFTIRQS] = {
+> +	"HI_SOFTIRQ", "TIMER_SOFTIRQ", "NET_TX_SOFTIRQ", "NET_RX_SOFTIRQ",
+> +	"BLOCK_SOFTIRQ", "TASKLET_SOFTIRQ", "SCHED_SOFTIRQ", "HRTIMER_SOFTIRQ",
+> +	"RCU_SOFTIRQ"
+> +};
+> +
+
+Small nit :
+
+this should be a const char *.
+
+Besides that it looks good, and very useful to a tracer. We just have to
+make sure this table can eventually be saved into a trace.
+
+Mathieu
+
 >  /*
-> - * pfnmap vmas that are fully mapped at mmap time (not mapped on fault).
-> - * Used by x86 PAT to identify such PFNMAP mappings and optimize their handling.
-> - * Note VM_INSERTPAGE flag is overloaded here. i.e,
-> - * VM_INSERTPAGE && !VM_PFNMAP implies
-> - *     The vma has had "vm_insert_page()" done on it
-> - * VM_INSERTPAGE && VM_PFNMAP implies
-> - *     The vma is PFNMAP with full mapping at mmap time
-> - */
-> -#define VM_PFNMAP_AT_MMAP (VM_INSERTPAGE | VM_PFNMAP)
-> -
-> -/*
->   * mapping from the currently active vm_flags protection bits (the
->   * low four bits) to a page protection mask..
->   */
-> @@ -156,7 +146,7 @@ extern pgprot_t protection_map[16];
->   */
->  static inline int is_linear_pfn_mapping(struct vm_area_struct *vma)
->  {
-> -	return ((vma->vm_flags & VM_PFNMAP_AT_MMAP) == VM_PFNMAP_AT_MMAP);
-> +	return (vma->vm_flags & VM_PFN_AT_MMAP);
->  }
+>   * we cannot loop indefinitely here to avoid userspace starvation,
+>   * but we also don't want to introduce a worst case 1/HZ latency
+> @@ -209,9 +215,10 @@ restart:
+>  			h->action(h);
 >  
->  static inline int is_pfn_mapping(struct vm_area_struct *vma)
-> diff --git a/mm/memory.c b/mm/memory.c
-> index e6aced9..302591f 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -1677,7 +1677,7 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
->  	 */
->  	if (addr == vma->vm_start && end == vma->vm_end) {
->  		vma->vm_pgoff = pfn;
-> -		vma->vm_flags |= VM_PFNMAP_AT_MMAP;
-> +		vma->vm_flags |= VM_PFN_AT_MMAP;
->  	} else if (is_cow_mapping(vma->vm_flags))
->  		return -EINVAL;
->  
-> @@ -1690,7 +1690,7 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
->  		 * needed from higher level routine calling unmap_vmas
->  		 */
->  		vma->vm_flags &= ~(VM_IO | VM_RESERVED | VM_PFNMAP);
-> -		vma->vm_flags &= ~VM_PFNMAP_AT_MMAP;
-> +		vma->vm_flags &= ~VM_PFN_AT_MMAP;
->  		return -EINVAL;
->  	}
->  
-> -- 
-> 1.6.0.6
+>  			if (unlikely(prev_count != preempt_count())) {
+> -				printk(KERN_ERR "huh, entered softirq %td %p"
+> +				printk(KERN_ERR "huh, entered softirq %td %s %p"
+>  				       "with preempt_count %08x,"
+>  				       " exited with %08x?\n", h - softirq_vec,
+> +				       softirq_to_name[h - softirq_vec],
+>  				       h->action, prev_count, preempt_count());
+>  				preempt_count() = prev_count;
+>  			}
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
