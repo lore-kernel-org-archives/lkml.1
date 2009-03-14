@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762589AbZCNAtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761617AbZCNAkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762589AbZCNAtE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:49:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbZCNAUM
+	id S1761617AbZCNAkQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbZCNATg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:20:12 -0400
-Received: from kroah.org ([198.145.64.141]:35068 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:36 -0400
+Received: from kroah.org ([198.145.64.141]:34833 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753364AbZCNATs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:48 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:52 2009
-Message-Id: <20090314000752.379159554@mini.kroah.org>
+	id S1750871AbZCNATX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:23 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:48 2009
+Message-Id: <20090314000748.415908501@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:35 -0700
+Date: Fri, 13 Mar 2009 17:06:10 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,68 +25,47 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
-       Jan Kara <jack@suse.cz>, Eric Sandeen <sandeen@redhat.com>
-Subject: [patch 87/96] Revert "ext4: wait on all pending commits in ext4_sync_fs()"
+       alan@lxorguk.ukuu.org.uk, Francois Romieu <romieu@fr.zoreil.com>,
+       Jeff Garzik <jgarzik@redhat.com>, Daniel Drake <dsd@gentoo.org>
+Subject: [patch 62/96] sis190: add identifier for Atheros AR8021 PHY
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=revert-ext4-wait-on-all-pending-commits-in-ext4_sync_fs.patch
+Content-Disposition: inline; filename=sis190-add-identifier-for-atheros-ar8021-phy.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Jan Kara <jack@suse.cz>
+From: Francois Romieu <romieu@fr.zoreil.com>
 
-(cherry picked from commit 9eddacf9e9c03578ef2c07c9534423e823d677f8)
+commit 708f6e27c3f75166433b69174a8348308e55d073 upstream.
 
-This undoes commit 14ce0cb411c88681ab8f3a4c9caa7f42e97a3184.
+Fixes http://bugzilla.kernel.org/show_bug.cgi?id=10994
 
-Since jbd2_journal_start_commit() is now fixed to return 1 when we
-started a transaction commit, there's some transaction waiting to be
-committed or there's a transaction already committing, we don't
-need to call ext4_force_commit() in ext4_sync_fs(). Furthermore
-ext4_force_commit() can unnecessarily create sync transaction which is
-expensive so it's worthwhile to remove it when we can.
+Contributed by pablomme@googlemail.com, coenraad@wish.org.za
+and a few others.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12224
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Eric Sandeen <sandeen@redhat.com>
-Cc: linux-ext4@vger.kernel.org
+Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Cc: Daniel Drake <dsd@gentoo.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/super.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/net/sis190.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -2950,14 +2950,14 @@ static void ext4_write_super(struct supe
- 
- static int ext4_sync_fs(struct super_block *sb, int wait)
- {
--	int ret = 0;
-+	tid_t target;
- 
- 	sb->s_dirt = 0;
--	if (wait)
--		ret = ext4_force_commit(sb);
--	else
--		jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, NULL);
--	return ret;
-+	if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, &target)) {
-+		if (wait)
-+			jbd2_log_wait_commit(EXT4_SB(sb)->s_journal, target);
-+	}
-+	return 0;
- }
- 
- /*
+--- a/drivers/net/sis190.c
++++ b/drivers/net/sis190.c
+@@ -317,6 +317,7 @@ static struct mii_chip_info {
+         unsigned int type;
+ 	u32 feature;
+ } mii_chip_table[] = {
++	{ "Atheros PHY AR8012",   { 0x004d, 0xd020 }, LAN, 0 },
+ 	{ "Broadcom PHY BCM5461", { 0x0020, 0x60c0 }, LAN, F_PHY_BCM5461 },
+ 	{ "Broadcom PHY AC131",   { 0x0143, 0xbc70 }, LAN, 0 },
+ 	{ "Agere PHY ET1101B",    { 0x0282, 0xf010 }, LAN, 0 },
 
 
