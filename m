@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbZCNB36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbZCNBbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760935AbZCNB36 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZCNBUU
+	id S1762715AbZCNBbU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZCNBUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:20 -0400
-Received: from kroah.org ([198.145.64.141]:34991 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:25 -0400
+Received: from kroah.org ([198.145.64.141]:35009 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753329AbZCNBUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:08 -0400
+	id S1753413AbZCNBUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:11 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:35 2009
-Message-Id: <20090314011035.388345080@mini.kroah.org>
+Message-Id: <20090314011035.691806354@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:04 -0700
+Date: Fri, 13 Mar 2009 18:10:06 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 027/114] USB: option: add BenQ 3g modem information
+       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>
+Subject: [patch 029/114] md: avoid races when stopping resync.
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=usb-option-add-benq-3g-modem-information.patch
+Content-Disposition: inline; filename=md-avoid-races-when-stopping-resync.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,41 +38,87 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jesse Sung <jsung@novell.com>
+From: NeilBrown <neilb@suse.de>
 
-commit 28fb66821f884870987a0b5ab064ef651d9f7c16 upstream.
+commit 73d5c38a9536142e062c35997b044e89166e063b upstream.
 
-This patch addes the BenQ 3g modem support to the option driver.
+There has been a race in raid10 and raid1 for a long time
+which has only recently started showing up due to a scheduler changed.
 
+When a sync_read request finishes, as soon as reschedule_retry
+is called, another thread can mark the resync request as having
+completed, so md_do_sync can finish, ->stop can be called, and
+->conf can be freed.  So using conf after reschedule_retry is not
+safe.
 
-From: Jesse Sung <jsung@novell.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Similarly, when finishing a sync_write, calling md_done_sync must be
+the last thing we do, as it allows a chain of events which will free
+conf and other data structures.
+
+The first of these requires action in raid10.c
+The second requires action in raid1.c and raid10.c
+
+Signed-off-by: NeilBrown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/option.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/md/raid1.c  |    3 ++-
+ drivers/md/raid10.c |    7 ++++---
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -289,6 +289,9 @@ static int  option_send_setup(struct tty
- #define ERICSSON_VENDOR_ID			0x0bdb
- #define ERICSSON_PRODUCT_F3507G			0x1900
+--- a/drivers/md/raid10.c
++++ b/drivers/md/raid10.c
+@@ -1236,6 +1236,7 @@ static void end_sync_read(struct bio *bi
+ 	/* for reconstruct, we always reschedule after a read.
+ 	 * for resync, only after all reads
+ 	 */
++	rdev_dec_pending(conf->mirrors[d].rdev, conf->mddev);
+ 	if (test_bit(R10BIO_IsRecover, &r10_bio->state) ||
+ 	    atomic_dec_and_test(&r10_bio->remaining)) {
+ 		/* we have read all the blocks,
+@@ -1243,7 +1244,6 @@ static void end_sync_read(struct bio *bi
+ 		 */
+ 		reschedule_retry(r10_bio);
+ 	}
+-	rdev_dec_pending(conf->mirrors[d].rdev, conf->mddev);
+ }
  
-+#define BENQ_VENDOR_ID				0x04a5
-+#define BENQ_PRODUCT_H10			0x4068
-+
- static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
-@@ -498,6 +501,8 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF628) },
- 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_CDMA_TECH) },
- 	{ USB_DEVICE(ERICSSON_VENDOR_ID, ERICSSON_PRODUCT_F3507G) },
-+	{ USB_DEVICE(BENQ_VENDOR_ID, BENQ_PRODUCT_H10) },
-+	{ USB_DEVICE(0x1da5, 0x4515) }, /* BenQ H20 */
- 	{ } /* Terminating entry */
- };
- MODULE_DEVICE_TABLE(usb, option_ids);
+ static void end_sync_write(struct bio *bio, int error)
+@@ -1264,11 +1264,13 @@ static void end_sync_write(struct bio *b
+ 
+ 	update_head_pos(i, r10_bio);
+ 
++	rdev_dec_pending(conf->mirrors[d].rdev, mddev);
+ 	while (atomic_dec_and_test(&r10_bio->remaining)) {
+ 		if (r10_bio->master_bio == NULL) {
+ 			/* the primary of several recovery bios */
+-			md_done_sync(mddev, r10_bio->sectors, 1);
++			sector_t s = r10_bio->sectors;
+ 			put_buf(r10_bio);
++			md_done_sync(mddev, s, 1);
+ 			break;
+ 		} else {
+ 			r10bio_t *r10_bio2 = (r10bio_t *)r10_bio->master_bio;
+@@ -1276,7 +1278,6 @@ static void end_sync_write(struct bio *b
+ 			r10_bio = r10_bio2;
+ 		}
+ 	}
+-	rdev_dec_pending(conf->mirrors[d].rdev, mddev);
+ }
+ 
+ /*
+--- a/drivers/md/raid1.c
++++ b/drivers/md/raid1.c
+@@ -1233,8 +1233,9 @@ static void end_sync_write(struct bio *b
+ 	update_head_pos(mirror, r1_bio);
+ 
+ 	if (atomic_dec_and_test(&r1_bio->remaining)) {
+-		md_done_sync(mddev, r1_bio->sectors, uptodate);
++		sector_t s = r1_bio->sectors;
+ 		put_buf(r1_bio);
++		md_done_sync(mddev, s, uptodate);
+ 	}
+ }
+ 
 
 
