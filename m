@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759687AbZCNBYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbZCNB03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759687AbZCNBYI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbZCNBTx
+	id S1760771AbZCNB03 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZCNBUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:19:53 -0400
-Received: from kroah.org ([198.145.64.141]:34822 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:03 -0400
+Received: from kroah.org ([198.145.64.141]:34893 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751539AbZCNBTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:19:52 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:33 2009
-Message-Id: <20090314011032.952425224@mini.kroah.org>
+	id S1752950AbZCNBT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:19:58 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:34 2009
+Message-Id: <20090314011033.870367095@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:09:48 -0700
+Date: Fri, 13 Mar 2009 18:09:54 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 011/114] mm: fix memmap init for handling memory hole
+       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <David.Woodhouse@intel.com>
+Subject: [patch 017/114] JFFS2: fix mount crash caused by removed nodes
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=mm-fix-memmap-init-for-handling-memory-hole.patch
+Content-Disposition: inline; filename=jffs2-fix-mount-crash-caused-by-removed-nodes.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,92 +39,113 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit cc2559bccc72767cb446f79b071d96c30c26439b upstream.
+commit 4c41bd0ec953954158f92bed5d3062645062b98e upstream.
 
-Now, early_pfn_in_nid(PFN, NID) may returns false if PFN is a hole.
-and memmap initialization was not done. This was a trouble for
-sparc boot.
+At scan time we observed following scenario:
 
-To fix this, the PFN should be initialized and marked as PG_reserved.
-This patch changes early_pfn_in_nid() return true if PFN is a hole.
+   node A inserted
+   node B inserted
+   node C inserted -> sets overlapped flag on node B
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Reported-by: David Miller <davem@davemlloft.net>
-Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+   node A is removed due to CRC failure -> overlapped flag on node B remains
+
+   while (tn->overlapped)
+   	 tn = tn_prev(tn);
+
+   ==> crash, when tn_prev(B) is referenced.
+
+When the ultimate node is removed at scan time and the overlapped flag
+is set on the penultimate node, then nothing updates the overlapped
+flag of that node. The overlapped iterators blindly expect that the
+ultimate node does not have the overlapped flag set, which causes the
+scan code to crash.
+
+It would be a huge overhead to go through the node chain on node
+removal and fix up the overlapped flags, so detecting such a case on
+the fly in the overlapped iterators is a simpler and reliable
+solution.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/ia64/mm/numa.c    |    2 +-
- include/linux/mmzone.h |    2 +-
- mm/page_alloc.c        |   23 ++++++++++++++++++++---
- 3 files changed, 22 insertions(+), 5 deletions(-)
+ fs/jffs2/readinode.c |   42 +++++++++++++++++++++++++++++++++---------
+ 1 file changed, 33 insertions(+), 9 deletions(-)
 
---- a/arch/ia64/mm/numa.c
-+++ b/arch/ia64/mm/numa.c
-@@ -70,7 +70,7 @@ int __meminit __early_pfn_to_nid(unsigne
- 			return node_memblk[i].nid;
- 	}
- 
--	return 0;
-+	return -1;
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -1067,7 +1067,7 @@ void sparse_init(void);
- #endif /* CONFIG_SPARSEMEM */
- 
- #ifdef CONFIG_NODES_SPAN_OTHER_NODES
--#define early_pfn_in_nid(pfn, nid)	(early_pfn_to_nid(pfn) == (nid))
-+bool early_pfn_in_nid(unsigned long pfn, int nid);
- #else
- #define early_pfn_in_nid(pfn, nid)	(1)
- #endif
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2985,16 +2985,33 @@ int __meminit __early_pfn_to_nid(unsigne
- 		if (start_pfn <= pfn && pfn < end_pfn)
- 			return early_node_map[i].nid;
- 	}
--
--	return 0;
-+	/* This is a memory hole */
-+	return -1;
- }
- #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
- 
- int __meminit early_pfn_to_nid(unsigned long pfn)
+--- a/fs/jffs2/readinode.c
++++ b/fs/jffs2/readinode.c
+@@ -220,7 +220,7 @@ static int jffs2_add_tn_to_tree(struct j
+ 				struct jffs2_tmp_dnode_info *tn)
  {
--	return __early_pfn_to_nid(pfn);
-+	int nid;
-+
-+	nid = __early_pfn_to_nid(pfn);
-+	if (nid >= 0)
-+		return nid;
-+	/* just returns 0 */
-+	return 0;
- }
+ 	uint32_t fn_end = tn->fn->ofs + tn->fn->size;
+-	struct jffs2_tmp_dnode_info *this;
++	struct jffs2_tmp_dnode_info *this, *ptn;
  
-+#ifdef CONFIG_NODES_SPAN_OTHER_NODES
-+bool __meminit early_pfn_in_nid(unsigned long pfn, int node)
-+{
-+	int nid;
-+
-+	nid = __early_pfn_to_nid(pfn);
-+	if (nid >= 0 && nid != node)
-+		return false;
-+	return true;
-+}
-+#endif
+ 	dbg_readinode("insert fragment %#04x-%#04x, ver %u at %08x\n", tn->fn->ofs, fn_end, tn->version, ref_offset(tn->fn->raw));
  
- /* Basic iterator support to walk early_node_map[] */
- #define for_each_active_range_index_in_nid(i, nid) \
+@@ -251,11 +251,18 @@ static int jffs2_add_tn_to_tree(struct j
+ 	if (this) {
+ 		/* If the node is coincident with another at a lower address,
+ 		   back up until the other node is found. It may be relevant */
+-		while (this->overlapped)
+-			this = tn_prev(this);
+-
+-		/* First node should never be marked overlapped */
+-		BUG_ON(!this);
++		while (this->overlapped) {
++			ptn = tn_prev(this);
++			if (!ptn) {
++				/*
++				 * We killed a node which set the overlapped
++				 * flags during the scan. Fix it up.
++				 */
++				this->overlapped = 0;
++				break;
++			}
++			this = ptn;
++		}
+ 		dbg_readinode("'this' found %#04x-%#04x (%s)\n", this->fn->ofs, this->fn->ofs + this->fn->size, this->fn ? "data" : "hole");
+ 	}
+ 
+@@ -360,7 +367,17 @@ static int jffs2_add_tn_to_tree(struct j
+ 			}
+ 			if (!this->overlapped)
+ 				break;
+-			this = tn_prev(this);
++
++			ptn = tn_prev(this);
++			if (!ptn) {
++				/*
++				 * We killed a node which set the overlapped
++				 * flags during the scan. Fix it up.
++				 */
++				this->overlapped = 0;
++				break;
++			}
++			this = ptn;
+ 		}
+ 	}
+ 
+@@ -456,8 +473,15 @@ static int jffs2_build_inode_fragtree(st
+ 		eat_last(&rii->tn_root, &last->rb);
+ 		ver_insert(&ver_root, last);
+ 
+-		if (unlikely(last->overlapped))
+-			continue;
++		if (unlikely(last->overlapped)) {
++			if (pen)
++				continue;
++			/*
++			 * We killed a node which set the overlapped
++			 * flags during the scan. Fix it up.
++			 */
++			last->overlapped = 0;
++		}
+ 
+ 		/* Now we have a bunch of nodes in reverse version
+ 		   order, in the tree at ver_root. Most of the time,
 
 
