@@ -1,74 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbZCNVkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbZCNVkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758161AbZCNVkV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 17:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757630AbZCNVjr
+	id S1758285AbZCNVkj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 17:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758041AbZCNVjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 17:39:47 -0400
+	Sat, 14 Mar 2009 17:39:48 -0400
 Received: from pne-smtpout2-sn2.hy.skanova.net ([81.228.8.164]:57987 "EHLO
 	pne-smtpout2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753248AbZCNVjq (ORCPT
+	by vger.kernel.org with ESMTP id S1757728AbZCNVjr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 17:39:46 -0400
+	Sat, 14 Mar 2009 17:39:47 -0400
 From: =?utf-8?q?Erik=20Andr=C3=A9n?= <erik.andren@gmail.com>
 To: greg@kroah.com
 Cc: linux-kernel@vger.kernel.org,
        =?utf-8?q?Erik=20Andr=C3=A9n?= <erik.andren@gmail.com>
-Subject: [PATCH 01/09] Checkpatch.pl: Fixup agnx.h
-Date: Sat, 14 Mar 2009 22:39:28 +0100
-Message-Id: <1237066776-14697-2-git-send-email-erik.andren@gmail.com>
+Subject: [PATCH 02/09] Checkpatch.pl: Fixup debug.h
+Date: Sat, 14 Mar 2009 22:39:29 +0100
+Message-Id: <1237066776-14697-3-git-send-email-erik.andren@gmail.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1237066776-14697-1-git-send-email-erik.andren@gmail.com>
+In-Reply-To: <1237066776-14697-2-git-send-email-erik.andren@gmail.com>
 References: <1>
  <1237066776-14697-1-git-send-email-erik.andren@gmail.com>
+ <1237066776-14697-2-git-send-email-erik.andren@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Erik Andrén <erik.andren@gmail.com>
 ---
- drivers/staging/agnx/agnx.h |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/staging/agnx/debug.h |   21 ++++++++++-----------
+ 1 files changed, 10 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/staging/agnx/agnx.h b/drivers/staging/agnx/agnx.h
-index 20f36da..9b5fc6c 100644
---- a/drivers/staging/agnx/agnx.h
-+++ b/drivers/staging/agnx/agnx.h
-@@ -41,16 +41,16 @@ static const struct ieee80211_rate agnx_rates_80211g[] = {
- /* 	{ .bitrate = 20, .hw_value = 2, .flags = IEEE80211_RATE_SHORT_PREAMBLE }, */
- /* 	{ .bitrate = 55, .hw_value = 3, .flags = IEEE80211_RATE_SHORT_PREAMBLE }, */
- /* 	{ .bitrate = 110, .hw_value = 4, .flags = IEEE80211_RATE_SHORT_PREAMBLE }, */
-- 	{ .bitrate = 10, .hw_value = 1, },
-- 	{ .bitrate = 20, .hw_value = 2, },
-- 	{ .bitrate = 55, .hw_value = 3, },
-- 	{ .bitrate = 110, .hw_value = 4,},
-+	{ .bitrate = 10, .hw_value = 1, },
-+	{ .bitrate = 20, .hw_value = 2, },
-+	{ .bitrate = 55, .hw_value = 3, },
-+	{ .bitrate = 110, .hw_value = 4,},
+diff --git a/drivers/staging/agnx/debug.h b/drivers/staging/agnx/debug.h
+index e3e25dd..761d99c 100644
+--- a/drivers/staging/agnx/debug.h
++++ b/drivers/staging/agnx/debug.h
+@@ -23,7 +23,7 @@ static inline void agnx_bug(char *reason)
  
- 	{ .bitrate = 60, .hw_value = 0xB, },
- 	{ .bitrate = 90, .hw_value = 0xF, },
- 	{ .bitrate = 120, .hw_value = 0xA },
- 	{ .bitrate = 180, .hw_value = 0xE, },
--//	{ .bitrate = 240, .hw_value = 0xd, },
-+/*	{ .bitrate = 240, .hw_value = 0xd, }, */
- 	{ .bitrate = 360, .hw_value = 0xD, },
- 	{ .bitrate = 480, .hw_value = 0x8, },
- 	{ .bitrate = 540, .hw_value = 0xC, },
-@@ -110,10 +110,10 @@ struct agnx_priv {
- 	/* Need volatile? */
- 	u32 irq_status;
+ static inline void agnx_print_desc(struct agnx_desc *desc)
+ {
+-        u32 reg = be32_to_cpu(desc->frag);
++	u32 reg = be32_to_cpu(desc->frag);
  
--        struct delayed_work periodic_work; /* Periodic tasks like recalibrate*/
-+	struct delayed_work periodic_work; /* Periodic tasks like recalibrate */
- 	struct ieee80211_low_level_stats stats;
+ 	PRINTK_BITS(DESC, PACKET_LEN);
  
--//        unsigned int phymode;
-+	/* unsigned int phymode; */
- 	int mode;
- 	int channel;
- 	u8 bssid[ETH_ALEN];
+@@ -291,7 +291,7 @@ static inline void agnx_print_sta(struct agnx_priv *priv, unsigned int sta_idx)
+ 	PRINTK_LE32(STA, sta->phy_stats_high);
+ 	PRINTK_LE32(STA, sta->phy_stats_low);
+ 
+-//	for (i = 0; i < 8; i++)
++	/* for (i = 0; i < 8; i++) */
+ 	agnx_print_sta_traffic(sta->traffic + 0);
+ 
+ 	PRINTK_LE16(STA, sta->traffic_class0_frag_success);
+@@ -311,10 +311,10 @@ static inline void agnx_print_sta(struct agnx_priv *priv, unsigned int sta_idx)
+ static inline void dump_ieee80211_hdr(struct ieee80211_hdr *hdr, char *tag)
+ {
+ 	u16 fctl;
+-        int hdrlen;
++	int hdrlen;
+ 	DECLARE_MAC_BUF(mac);
+ 
+-        fctl = le16_to_cpu(hdr->frame_control);
++	fctl = le16_to_cpu(hdr->frame_control);
+ 	switch (fctl & IEEE80211_FCTL_FTYPE) {
+ 	case IEEE80211_FTYPE_DATA:
+ 		printk(PFX "%s DATA ", tag);
+@@ -324,7 +324,7 @@ static inline void dump_ieee80211_hdr(struct ieee80211_hdr *hdr, char *tag)
+ 		break;
+ 	case IEEE80211_FTYPE_MGMT:
+ 		printk(PFX "%s MGMT ", tag);
+-		switch(fctl & IEEE80211_FCTL_STYPE) {
++		switch (fctl & IEEE80211_FCTL_STYPE) {
+ 		case IEEE80211_STYPE_ASSOC_REQ:
+ 			printk("SubType: ASSOC_REQ ");
+ 			break;
+@@ -369,7 +369,7 @@ static inline void dump_ieee80211_hdr(struct ieee80211_hdr *hdr, char *tag)
+ 		printk(PFX "%s Packet type: Unknow\n", tag);
+ 	}
+ 
+-        hdrlen = ieee80211_hdrlen(fctl);
++	hdrlen = ieee80211_hdrlen(fctl);
+ 
+ 	if (hdrlen >= 4)
+ 		printk("FC=0x%04x DUR=0x%04x",
+@@ -389,29 +389,28 @@ static inline void dump_txm_registers(struct agnx_priv *priv)
+ {
+ 	void __iomem *ctl = priv->ctl;
+ 	int i;
+-	for (i = 0; i <=0x1e8; i += 4) {
++	for (i = 0; i <= 0x1e8; i += 4)
+ 		printk(KERN_DEBUG PFX "TXM: %x---> 0x%.8x\n", i, ioread32(ctl + i));
+-	}
+ }
+ static inline void dump_rxm_registers(struct agnx_priv *priv)
+ {
+ 	void __iomem *ctl = priv->ctl;
+ 	int i;
+-	for (i = 0; i <=0x108; i += 4)
++	for (i = 0; i <= 0x108; i += 4)
+ 		printk(KERN_DEBUG PFX "RXM: %x---> 0x%.8x\n", i, ioread32(ctl + 0x2000 + i));
+ }
+ static inline void dump_bm_registers(struct agnx_priv *priv)
+ {
+ 	void __iomem *ctl = priv->ctl;
+ 	int i;
+-	for (i = 0; i <=0x90; i += 4)
++	for (i = 0; i <= 0x90; i += 4)
+ 		printk(KERN_DEBUG PFX "BM: %x---> 0x%.8x\n", i, ioread32(ctl + 0x2c00 + i));
+ }
+ static inline void dump_cir_registers(struct agnx_priv *priv)
+ {
+ 	void __iomem *ctl = priv->ctl;
+ 	int i;
+-	for (i = 0; i <=0xb8; i += 4)
++	for (i = 0; i <= 0xb8; i += 4)
+ 		printk(KERN_DEBUG PFX "CIR: %x---> 0x%.8x\n", i, ioread32(ctl + 0x3000 + i));
+ }
+ 
 -- 
 1.6.0.4
 
