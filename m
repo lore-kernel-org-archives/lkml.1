@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751189AbZCNUAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbZCNUAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751189AbZCNUAE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 16:00:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756936AbZCNT7q
+	id S1757436AbZCNUAk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 16:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301AbZCNUAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 15:59:46 -0400
-Received: from mx30.brocade.com ([144.49.194.4]:56444 "EHLO mx30.brocade.com"
+	Sat, 14 Mar 2009 16:00:11 -0400
+Received: from mx10.brocade.com ([208.185.105.18]:25562 "EHLO mx10.brocade.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753938AbZCNT7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 15:59:45 -0400
-X-Greylist: delayed 347 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Mar 2009 15:59:45 EDT
+	id S1753268AbZCNUAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 16:00:06 -0400
+X-Greylist: delayed 443 seconds by postgrey-1.27 at vger.kernel.org; Sat, 14 Mar 2009 16:00:06 EDT
 X-IronPort-AV: E=Sophos;i="4.38,363,1233561600"; 
-   d="scan'208";a="69757980"
-Date: Sat, 14 Mar 2009 12:58:41 -0700
+   d="scan'208";a="169448459"
+Date: Sat, 14 Mar 2009 12:59:52 -0700
 From: Jing Huang <huangj@brocade.com>
-Message-Id: <200903141958.n2EJwffd030299@blc-10-6.brocade.com>
+Message-Id: <200903141959.n2EJxq93030549@blc-10-6.brocade.com>
 To: James.Bottomley@HansenPartnership.com
-Subject: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver (makefile)
+Subject: [PATCH 5/5] bfa: Brocade BFA FC SCSI driver (maint)
 Cc: kgudipat@brocade.com, linux-kernel@vger.kernel.org,
        linux-scsi@vger.kernel.org, rvadivel@brocade.com, vravindr@brocade.com
 Sender: linux-kernel-owner@vger.kernel.org
@@ -25,75 +25,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jing Huang <huangj@brocade.com>
 
-This patch contains Makefile and Kconfig file for scsi and bfa. It is created
-using 2.6.29-rc8 kernel.
+This patch contains updated MAINTAINERS file. It is created using
+2.6.29-rc8 kernel.
 
 Signed-off-by: Jing Huang <huangj@brocade.com>
 ---
- Kconfig      |    9 +++++++++
- Makefile     |    1 +
- bfa/Makefile |   28 ++++++++++++++++++++++++++++
- 3 files changed, 38 insertions(+)
+ MAINTAINERS |    6 ++++++
+ 1 files changed, 6 insertions(+)
 
-diff -urpN orig/drivers/scsi/bfa/Makefile patch/drivers/scsi/bfa/Makefile
---- orig/drivers/scsi/bfa/Makefile	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/Makefile	2009-03-14 11:44:59.337712000 -0700
-@@ -0,0 +1,28 @@
-+#
-+# Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
-+# All rights reserved
-+# www.brocade.com
-+# 
-+# Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+#
-+# This program is free software; you can redistribute it and/or modify it
-+# under the terms of the GNU General Public License (GPL) Version 2 as
-+# published by the Free Software Foundation
-+#
-+# This program is distributed in the hope that it will be useful, but
-+# WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+# General Public License for more details.
-+#
-+obj-$(CONFIG_SCSI_BFA_FC) := bfa.o
-+
-+bfa-objs := bfad.o bfad_intr.o bfad_os.o bfad_im.o bfad_attr.o bfad_fwimg.o \
-+	    bfa_core.o bfa_ioc.o bfa_iocfc.o bfa_fcxp.o bfa_diag.o \
-+	    bfa_fcdiag.o bfa_lps.o bfa_hw_cb.o bfa_hw_ct.o bfa_drv.o  \
-+            bfa_intr.o bfa_timer.o bfa_rport.o bfa_port.o bfa_uf.o \
-+            bfa_sgpg.o  bfa_module.o bfa_ioim.o bfa_itnim.o bfa_fcpim.o \
-+	    bfa_tskim.o bfa_port.o bfa_vport.o bfa_lport.o bfa_fabric.o   \
-+            bfa_auth.o  bfa_vfapi.o bfa_log.o bfa_log_module.o bfa_csdebug.o \
-+            bfa_sm.o plog.o
-+
-+EXTRA_CFLAGS += -I$(obj) -I$(obj)/include
-diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
---- orig/drivers/scsi/Kconfig	2009-03-14 11:44:59.381081000 -0700
-+++ patch/drivers/scsi/Kconfig	2009-03-14 11:44:53.382314000 -0700
-@@ -1797,6 +1797,15 @@ config SCSI_SRP
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called libsrp.
+diff -urpN orig/MAINTAINERS patch/MAINTAINERS
+--- orig/MAINTAINERS	2009-03-14 11:45:01.265599000 -0700
++++ patch/MAINTAINERS	2009-03-14 11:45:01.244760000 -0700
+@@ -1016,6 +1016,12 @@ M:	mchan@broadcom.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
  
-+config SCSI_BFA_FC
-+	tristate "Brocade BFA Fibre Channel Support"
-+	depends on PCI && SCSI
-+	help
-+	  This bfa driver supports all Brocade PCIe Fibre Channel host adapters.
++BROCADE BFA FC SCSI DRIVER
++P:     Jing Huang
++M:     huangj@brocade.com
++L:     linux-scsi@vger.kernel.org
++S:     Supported
 +
-+	  To compile this driver as a module, choose M here. The module will
-+	  be called bfa.
-+
- endif # SCSI_LOWLEVEL
- 
- source "drivers/scsi/pcmcia/Kconfig"
-diff -urpN orig/drivers/scsi/Makefile patch/drivers/scsi/Makefile
---- orig/drivers/scsi/Makefile	2009-03-14 11:44:59.393920000 -0700
-+++ patch/drivers/scsi/Makefile	2009-03-14 11:44:53.417722000 -0700
-@@ -84,6 +84,7 @@ obj-$(CONFIG_SCSI_QLOGIC_1280)	+= qla128
- obj-$(CONFIG_SCSI_QLA_FC)	+= qla2xxx/
- obj-$(CONFIG_SCSI_QLA_ISCSI)	+= qla4xxx/
- obj-$(CONFIG_SCSI_LPFC)		+= lpfc/
-+obj-$(CONFIG_SCSI_BFA_FC)	+= bfa/
- obj-$(CONFIG_SCSI_PAS16)	+= pas16.o
- obj-$(CONFIG_SCSI_T128)		+= t128.o
- obj-$(CONFIG_SCSI_DMX3191D)	+= dmx3191d.o
+ BSG (block layer generic sg v4 driver)
+ P:	FUJITA Tomonori
+ M:	fujita.tomonori@lab.ntt.co.jp
