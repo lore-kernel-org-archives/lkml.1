@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765713AbZCNCDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765667AbZCNCCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765713AbZCNCDT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 22:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbZCNBWI
+	id S1765667AbZCNCCr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 22:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbZCNBWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:22:08 -0400
-Received: from kroah.org ([198.145.64.141]:35832 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:22:07 -0400
+Received: from kroah.org ([198.145.64.141]:35870 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755125AbZCNBVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:21:34 -0400
+	id S1754403AbZCNBVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:21:33 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:47 2009
-Message-Id: <20090314011047.734304002@mini.kroah.org>
+Message-Id: <20090314011047.577830206@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:11:27 -0700
+Date: Fri, 13 Mar 2009 18:11:26 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Len Brown <lenb@kernel.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,11 +26,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>,
-       Kerin Millar <kerframil@gmail.com>
-Subject: [patch 110/114] crypto: api - Fix algorithm test race that broke aead initialisation
+       alan@lxorguk.ukuu.org.uk, linux-acpi@vger.kernel.org,
+       Lin Ming <ming.m.lin@intel.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: [patch 109/114] ACPI: fix broken usage of acpi_ut_get_node_name()
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=crypto-api-fix-algorithm-test-race-that-broke-aead-initialisation.patch
+Content-Disposition: inline; filename=acpi-fix-broken-usage-of-acpi_ut_get_node_name.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,62 +41,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-commit b8e15992b420d09dae831125a623c474c8637cee upstream.
+This issue was fixed indirectly in mainline by commit
+60a4ce7f4148155d3f28eea4a213f7ee47cd57b7.
 
-When we complete a test we'll notify everyone waiting on it, drop
-the mutex, and then remove the test larval (after reacquiring the
-mutex).  If one of the notified parties tries to register another
-algorithm with the same driver name prior to the removal of the
-test larval, they will fail with EEXIST as only one algorithm of
-a given name can be tested at any time.
+acpi_ut_get_node_name() returns a four char fixed-size array, not
+NULL-terminated.
 
-This broke the initialisation of aead and givcipher algorithms as
-they will register two algorithms with the same driver name, in
-sequence.
+This is the minimal fix for stable 2.6.28.
 
-This patch fixes the problem by marking the larval as dead before
-we drop the mutex, and also ignoring all dead or dying algorithms
-on the registration path.
-
-Tested-by: Andreas Steffen <andreas.steffen@strongswan.org>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Kerin Millar <kerframil@gmail.com>
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: stable@kernel.org
+Acked-by: Lin Ming <ming.m.lin@intel.com>
+Acked-by: Len Brown <lenb@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- crypto/algapi.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/acpi/power.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/crypto/algapi.c
-+++ b/crypto/algapi.c
-@@ -149,6 +149,9 @@ static struct crypto_larval *__crypto_re
- 		if (q == alg)
- 			goto err;
+--- a/drivers/acpi/power.c
++++ b/drivers/acpi/power.c
+@@ -151,7 +151,7 @@ static int acpi_power_get_state(acpi_han
+ 	*state = (sta & 0x01)?ACPI_POWER_RESOURCE_STATE_ON:
+ 			      ACPI_POWER_RESOURCE_STATE_OFF;
  
-+		if (crypto_is_moribund(q))
-+			continue;
-+
- 		if (crypto_is_larval(q)) {
- 			if (!strcmp(alg->cra_driver_name, q->cra_driver_name))
- 				goto err;
-@@ -197,7 +200,7 @@ void crypto_alg_tested(const char *name,
+-	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Resource [%s] is %s\n",
++	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Resource [%4.4s] is %s\n",
+ 			  acpi_ut_get_node_name(handle),
+ 				*state ? "on" : "off"));
  
- 	down_write(&crypto_alg_sem);
- 	list_for_each_entry(q, &crypto_alg_list, cra_list) {
--		if (!crypto_is_larval(q))
-+		if (crypto_is_moribund(q) || !crypto_is_larval(q))
- 			continue;
- 
- 		test = (struct crypto_larval *)q;
-@@ -210,6 +213,7 @@ void crypto_alg_tested(const char *name,
- 	goto unlock;
- 
- found:
-+	q->cra_flags |= CRYPTO_ALG_DEAD;
- 	alg = test->adult;
- 	if (err || list_empty(&alg->cra_list))
- 		goto complete;
 
 
