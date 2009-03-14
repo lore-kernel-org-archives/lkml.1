@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762618AbZCNBfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763612AbZCNBgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762618AbZCNBfq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZCNBUo
+	id S1763612AbZCNBgI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbZCNBUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:44 -0400
-Received: from kroah.org ([198.145.64.141]:35166 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:46 -0400
+Received: from kroah.org ([198.145.64.141]:35177 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753379AbZCNBUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:24 -0400
+	id S1753538AbZCNBUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:25 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:37 2009
-Message-Id: <20090314011037.610595405@mini.kroah.org>
+Message-Id: <20090314011037.745513526@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:19 -0700
+Date: Fri, 13 Mar 2009 18:10:20 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 042/114] Fix fixpoint divide exception in acct_update_integrals
+       alan@lxorguk.ukuu.org.uk, Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [patch 043/114] 8250: fix boot hang with serial console when using with Serial Over Lan port
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=fix-fixpoint-divide-exception-in-acct_update_integrals.patch
+Content-Disposition: inline; filename=8250-fix-boot-hang-with-serial-console-when-using-with-serial-over-lan-port.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,100 +38,170 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
 
-commit 6d5b5acca9e566515ef3f1ed617e7295c4f94345 upstream.
+commit b6adea334c6c89d5e6c94f9196bbf3a279cb53bd upstream.
 
-Frans Pop reported the crash below when running an s390 kernel under Hercules:
+Intel 8257x Ethernet boards have a feature called Serial Over Lan.
 
-  Kernel BUG at 000738b4  verbose debug info unavailable!
-  fixpoint divide exception: 0009  #1! SMP
-  Modules linked in: nfs lockd nfs_acl sunrpc ctcm fsm tape_34xx
-     cu3088 tape ccwgroup tape_class ext3 jbd mbcache dm_mirror dm_log dm_snapshot
-     dm_mod dasd_eckd_mod dasd_mod
-  CPU: 0 Not tainted 2.6.27.19 #13
-  Process awk (pid: 2069, task: 0f9ed9b8, ksp: 0f4f7d18)
-  Krnl PSW : 070c1000 800738b4 (acct_update_integrals+0x4c/0x118)
-             R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:1 PM:0
-  Krnl GPRS: 00000000 000007d0 7fffffff fffff830
-             00000000 ffffffff 00000002 0f9ed9b8
-             00000000 00008ca0 00000000 0f9ed9b8
-             0f9edda4 8007386e 0f4f7ec8 0f4f7e98
-  Krnl Code: 800738aa: a71807d0         lhi     %r1,2000
-             800738ae: 8c200001         srdl    %r2,1
-             800738b2: 1d21             dr      %r2,%r1
-            >800738b4: 5810d10e         l       %r1,270(%r13)
-             800738b8: 1823             lr      %r2,%r3
-             800738ba: 4130f060         la      %r3,96(%r15)
-             800738be: 0de1             basr    %r14,%r1
-             800738c0: 5800f060         l       %r0,96(%r15)
-  Call Trace:
-  ( <000000000004fdea>! blocking_notifier_call_chain+0x1e/0x2c)
-    <0000000000038502>! do_exit+0x106/0x7c0
-    <0000000000038c36>! do_group_exit+0x7a/0xb4
-    <0000000000038c8e>! SyS_exit_group+0x1e/0x30
-    <0000000000021c28>! sysc_do_restart+0x12/0x16
-    <0000000077e7e924>! 0x77e7e924
+This feature works by emulating a serial port, and it is detected by
+kernel as a normal 8250 port.  However, this emulation is not perfect, as
+also noticed on changeset 7500b1f602aad75901774a67a687ee985d85893f.
 
-Reason for this is that cpu time accounting usually only happens from
-interrupt context, but acct_update_integrals gets also called from
-process context with interrupts enabled.
+Before this patch, the kernel were trying to check if the serial TX is
+capable of work using IRQ's.
 
-So in acct_update_integrals we may end up with the following scenario:
+This were done with a code similar this:
 
-Between reading tsk->stime/tsk->utime and tsk->acct_timexpd an interrupt
-happens which updates accouting values.  This causes acct_timexpd to be
-greater than the former stime + utime.  The subsequent calculation of
+        serial_outp(up, UART_IER, UART_IER_THRI);
+        lsr = serial_in(up, UART_LSR);
+        iir = serial_in(up, UART_IIR);
+        serial_outp(up, UART_IER, 0);
 
-	dtime = cputime_sub(time, tsk->acct_timexpd);
+        if (lsr & UART_LSR_TEMT && iir & UART_IIR_NO_INT)
+		up->bugs |= UART_BUG_TXEN;
 
-will be negative and the division performed by
+This works fine for other 8250 ports, but, on 8250-emulated SoL port, the
+chip is a little lazy to down UART_IIR_NO_INT at UART_IIR register.
 
-	cputime_to_jiffies(dtime)
+Due to that, UART_BUG_TXEN is sometimes enabled.  However, as TX IRQ keeps
+working, and the TX polling is now enabled, the driver miss-interprets the
+IRQ received later, hanging up the machine until a key is pressed at the
+serial console.
 
-will generate an exception since the result won't fit into a 32 bit
-register.
+This is the 6 version of this patch.  Previous versions were trying to
+introduce a large enough delay between serial_outp and serial_in(up,
+UART_IIR), but not taking forever.  However, the needed delay couldn't be
+safely determined.
 
-In order to fix this just always disable interrupts while accessing any
-of the accounting values.
+At the experimental tests, a delay of 1us solves most of the cases, but
+still hangs sometimes.  Increasing the delay to 5us was better, but still
+doesn't solve.  A very high delay of 50 ms seemed to work every time.
 
-Reported by: Frans Pop <elendil@planet.nl>
-Tested by: Frans Pop <elendil@planet.nl>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+However, poking around with delays and pray for it to be enough doesn't
+seem to be a good approach, even for a quirk.
+
+So, instead of playing with random large arbitrary delays, let's just
+disable UART_BUG_TXEN for all SoL ports.
+
+[akpm@linux-foundation.org: fix warnings]
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/tsacct.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/serial/8250.c       |   15 +++++++++++++++
+ drivers/serial/8250_pci.c   |   36 ++++++++++++++++++++++++++++++++++++
+ include/linux/pci_ids.h     |    3 +++
+ include/linux/serial_core.h |    1 +
+ 4 files changed, 55 insertions(+)
 
---- a/kernel/tsacct.c
-+++ b/kernel/tsacct.c
-@@ -120,8 +120,10 @@ void acct_update_integrals(struct task_s
- 	if (likely(tsk->mm)) {
- 		cputime_t time, dtime;
- 		struct timeval value;
-+		unsigned long flags;
- 		u64 delta;
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -2014,6 +2014,20 @@ static int serial8250_startup(struct uar
  
-+		local_irq_save(flags);
- 		time = tsk->stime + tsk->utime;
- 		dtime = cputime_sub(time, tsk->acct_timexpd);
- 		jiffies_to_timeval(cputime_to_jiffies(dtime), &value);
-@@ -129,10 +131,12 @@ void acct_update_integrals(struct task_s
- 		delta = delta * USEC_PER_SEC + value.tv_usec;
+ 	serial8250_set_mctrl(&up->port, up->port.mctrl);
  
- 		if (delta == 0)
--			return;
-+			goto out;
- 		tsk->acct_timexpd = time;
- 		tsk->acct_rss_mem1 += delta * get_mm_rss(tsk->mm);
- 		tsk->acct_vm_mem1 += delta * tsk->mm->total_vm;
-+	out:
-+		local_irq_restore(flags);
++	/* Serial over Lan (SoL) hack:
++	   Intel 8257x Gigabit ethernet chips have a
++	   16550 emulation, to be used for Serial Over Lan.
++	   Those chips take a longer time than a normal
++	   serial device to signalize that a transmission
++	   data was queued. Due to that, the above test generally
++	   fails. One solution would be to delay the reading of
++	   iir. However, this is not reliable, since the timeout
++	   is variable. So, let's just don't test if we receive
++	   TX irq. This way, we'll never enable UART_BUG_TXEN.
++	 */
++	if (up->port.flags & UPF_NO_TXEN_TEST)
++		goto dont_test_tx_en;
++
+ 	/*
+ 	 * Do a quick test to see if we receive an
+ 	 * interrupt when we enable the TX irq.
+@@ -2033,6 +2047,7 @@ static int serial8250_startup(struct uar
+ 		up->bugs &= ~UART_BUG_TXEN;
  	}
+ 
++dont_test_tx_en:
+ 	spin_unlock_irqrestore(&up->port.lock, flags);
+ 
+ 	/*
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -758,6 +758,21 @@ pci_default_setup(struct serial_private 
+ 	return setup_port(priv, port, bar, offset, board->reg_shift);
  }
  
++static int skip_tx_en_setup(struct serial_private *priv,
++			const struct pciserial_board *board,
++			struct uart_port *port, int idx)
++{
++	port->flags |= UPF_NO_TXEN_TEST;
++	printk(KERN_DEBUG "serial8250: skipping TxEn test for device "
++			  "[%04x:%04x] subsystem [%04x:%04x]\n",
++			  priv->dev->vendor,
++			  priv->dev->device,
++			  priv->dev->subsystem_vendor,
++			  priv->dev->subsystem_device);
++
++	return pci_default_setup(priv, board, port, idx);
++}
++
+ /* This should be in linux/pci_ids.h */
+ #define PCI_VENDOR_ID_SBSMODULARIO	0x124B
+ #define PCI_SUBVENDOR_ID_SBSMODULARIO	0x124B
+@@ -824,6 +839,27 @@ static struct pci_serial_quirk pci_seria
+ 		.init		= pci_inteli960ni_init,
+ 		.setup		= pci_default_setup,
+ 	},
++	{
++		.vendor		= PCI_VENDOR_ID_INTEL,
++		.device		= PCI_DEVICE_ID_INTEL_8257X_SOL,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.setup		= skip_tx_en_setup,
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_INTEL,
++		.device		= PCI_DEVICE_ID_INTEL_82573L_SOL,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.setup		= skip_tx_en_setup,
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_INTEL,
++		.device		= PCI_DEVICE_ID_INTEL_82573E_SOL,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.setup		= skip_tx_en_setup,
++	},
+ 	/*
+ 	 * ITE
+ 	 */
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2317,6 +2317,9 @@
+ #define PCI_DEVICE_ID_INTEL_82378	0x0484
+ #define PCI_DEVICE_ID_INTEL_I960	0x0960
+ #define PCI_DEVICE_ID_INTEL_I960RM	0x0962
++#define PCI_DEVICE_ID_INTEL_8257X_SOL	0x1062
++#define PCI_DEVICE_ID_INTEL_82573E_SOL	0x1085
++#define PCI_DEVICE_ID_INTEL_82573L_SOL	0x108F
+ #define PCI_DEVICE_ID_INTEL_82815_MC	0x1130
+ #define PCI_DEVICE_ID_INTEL_82815_CGC	0x1132
+ #define PCI_DEVICE_ID_INTEL_82092AA_0	0x1221
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -288,6 +288,7 @@ struct uart_port {
+ #define UPF_HARDPPS_CD		((__force upf_t) (1 << 11))
+ #define UPF_LOW_LATENCY		((__force upf_t) (1 << 13))
+ #define UPF_BUGGY_UART		((__force upf_t) (1 << 14))
++#define UPF_NO_TXEN_TEST	((__force upf_t) (1 << 15))
+ #define UPF_MAGIC_MULTIPLIER	((__force upf_t) (1 << 16))
+ #define UPF_CONS_FLOW		((__force upf_t) (1 << 23))
+ #define UPF_SHARE_IRQ		((__force upf_t) (1 << 24))
 
 
