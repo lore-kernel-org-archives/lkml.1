@@ -1,63 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZCNDwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbZCNEBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754503AbZCNDwh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 23:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZCNDw2
+	id S1752439AbZCNEBt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 00:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbZCNEBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 23:52:28 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60784 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751256AbZCNDw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 23:52:27 -0400
-Subject: Re: [patch 02/11] x86 architecture implementation of Hardware
- Breakpoint interfaces
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, prasad@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Gibson <dwgibson@au1.ibm.com>, Torez Smith <torez@us.ibm.com>
-In-Reply-To: <20090312024617.3F392FC3B6@magilla.sf.frob.com>
-References: <20090305043440.189041194@linux.vnet.ibm.com>
-	 <20090305043801.GC17747@in.ibm.com> <20090310140950.GD3850@elte.hu>
-	 <20090312024617.3F392FC3B6@magilla.sf.frob.com>
-Content-Type: text/plain
-Date: Sat, 14 Mar 2009 14:51:06 +1100
-Message-Id: <1237002666.25062.85.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Sat, 14 Mar 2009 00:01:40 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:2223 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbZCNEBj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 00:01:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=Bx17pQq2I+4GSv4XiWuztwtv86oldelGCtCWcJsPckmBhov0+ma1LnV8jyNMGT6tp2
+         1X63vb6EDiYsxl2U4hyP7UIdaDYWyGf7jGA0lLUSFqJRssdrGSl7F83Evr54TEdI0Oag
+         jXg8RYvyCYBfX2ShvhxrBg9VqYJasVqyQH8L0=
+MIME-Version: 1.0
+Date: Sat, 14 Mar 2009 12:01:37 +0800
+Message-ID: <804dabb00903132101o6bf812c1r1efd02d069b5c7fa@mail.gmail.com>
+Subject: [PATCH] replace kernel_thread() with kthread_run() in RT2870
+From: Peter Teoh <htmldeveloper@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg KH <greg@kroah.com>, Paul Lin <paul_lin@ralinktech.com>
+Content-Type: multipart/mixed; boundary=000e0cd147f21d821804650c46ea
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-11 at 19:46 -0700, Roland McGrath wrote:
-> 
-> I think it would be illustrative to have a second arch implementation to
-> compare to the x86 one.  Ingo has a tendency to pretend everything is an
-> x86 until shown the concrete evidence.  The obvious choice is powerpc.
-> Its facility is very simple, so the arch-specific part of the
-> implementation should be trivial--it's the "base case" of simplest
-> available hw_breakpoint arch, really.  Also, it happens that Prasad's
-> employer is interested in having that support.
-> 
-> For example, a sensible powerpc implementation would clearly demonstrate
-> why you need accessors or at least either pre-registration setters or
-> explicit type/len arguments in registration calls.
+--000e0cd147f21d821804650c46ea
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Well, we happen to be just in the middle of implementing support for
-BookE HW debug facilities :-) (which have more HW breakpoints &
-watchpoints than server PPCs along with fancy features like ranged
-breakpoints or value compare) so it's a right time to give that a try.
+As advised by Greg KH:
 
-I'm Ccing David Gibson and Torez Smith who both have been working on the
-infrastructure to control the debug regs. For now we are just giving
-pretty much direct access to the debug regs from ptrace (since they are
-somewhat architected they are very similar if not identical between a
-whole bunch of embedded powerpc's) but a more abstract interface would
-be nice.
+http://lkml.org/lkml/2009/3/13/131
 
-Ben.
+Replaced the usage of kernel_thread() with kthread_run().   Compiled
+successfully, but not tested as I don't have the hardware.
 
+(parsed by scripts/checkpatch.pl as well).
 
+Thanks.
+
+-- 
+Regards,
+Peter Teoh
+
+--000e0cd147f21d821804650c46ea
+Content-Type: text/x-diff; charset=US-ASCII; name="rt2870_kernel_thread.patch"
+Content-Disposition: attachment; filename="rt2870_kernel_thread.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fs9rp3ex0
+
+UmVwbGFjZSB1c2Ugb2Yga2VybmVsX3RocmVhZCgpIHdpdGgga3RocmVhZF9ydW4oKSwgYXMgdGhl
+IGZvcm1lciBpcyBkZXByZWNhdGVkLgoKU2lnbmVkLW9mZi1ieTogUGV0ZXIgVGVvaCA8aHRtbGRl
+dmVsb3BlckBnbWFpbC5jb20+CgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9zdGFnaW5nL3J0Mjg3MC9j
+b21tb24vMjg3MF9ydG1wX2luaXQuYyBiL2RyaXZlcnMvc3RhZ2luZy9ydDI4NzAvY29tbW9uLzI4
+NzBfcnRtcF9pbml0LmMKaW5kZXggOWY1MTQzYi4uOWE4MWQwZSAxMDA2NDQKLS0tIGEvZHJpdmVy
+cy9zdGFnaW5nL3J0Mjg3MC9jb21tb24vMjg3MF9ydG1wX2luaXQuYworKysgYi9kcml2ZXJzL3N0
+YWdpbmcvcnQyODcwL2NvbW1vbi8yODcwX3J0bXBfaW5pdC5jCkBAIC03NjUsNyArNzY1LDcgQEAg
+TkRJU19TVEFUVVMJIENyZWF0ZVRocmVhZHMoCiB7CiAJUFJUTVBfQURBUFRFUiBwQWQgPSBuZXRf
+ZGV2LT5tbF9wcml2OwogCVBPU19DT09LSUUgcE9iaiA9IChQT1NfQ09PS0lFKSBwQWQtPk9TX0Nv
+b2tpZTsKLQlwaWRfdCBwaWRfbnVtYmVyID0gLTE7CisJc3RydWN0IHRhc2tfc3RydWN0ICp0c2s7
+CiAKIAkvL2luaXRfTVVURVgoJihwQWQtPnVzYmRldl9zZW1hcGhvcmUpKTsKIApAQCAtNzgwLDM1
+ICs3ODAsMzggQEAgTkRJU19TVEFUVVMJIENyZWF0ZVRocmVhZHMoCiAKIAkvLyBDcmVhdCBNTE1F
+IFRocmVhZAogCXBPYmotPk1MTUVUaHJfcGlkPSBUSFJFQURfUElEX0lOSVRfVkFMVUU7Ci0JcGlk
+X251bWJlciA9IGtlcm5lbF90aHJlYWQoTWxtZVRocmVhZCwgcEFkLCBDTE9ORV9WTSk7Ci0JaWYg
+KHBpZF9udW1iZXIgPCAwKQotCXsKKwl0c2sgPSBrdGhyZWFkX3J1bihNbG1lVGhyZWFkLCBwQWQs
+IHBBZC0+bmV0X2Rldi0+bmFtZSk7CisKKwlpZiAoSVNfRVJSKHRzaykpIHsKIAkJcHJpbnRrIChL
+RVJOX1dBUk5JTkcgIiVzOiB1bmFibGUgdG8gc3RhcnQgTWxtZSB0aHJlYWRcbiIscEFkLT5uZXRf
+ZGV2LT5uYW1lKTsKIAkJcmV0dXJuIE5ESVNfU1RBVFVTX0ZBSUxVUkU7CiAJfQotCXBPYmotPk1M
+TUVUaHJfcGlkID0gR0VUX1BJRChwaWRfbnVtYmVyKTsKKworCXBPYmotPk1MTUVUaHJfcGlkID0g
+Z2V0X3BpZCh0YXNrX3BpZCh0c2spKTsKIAkvLyBXYWl0IGZvciB0aGUgdGhyZWFkIHRvIHN0YXJ0
+CiAJd2FpdF9mb3JfY29tcGxldGlvbigmKHBBZC0+bWxtZUNvbXBsZXRlKSk7CiAKIAkvLyBDcmVh
+dCBDb21tYW5kIFRocmVhZAogCXBPYmotPlJUVVNCQ21kVGhyX3BpZD0gVEhSRUFEX1BJRF9JTklU
+X1ZBTFVFOwotCXBpZF9udW1iZXIgPSBrZXJuZWxfdGhyZWFkKFJUVVNCQ21kVGhyZWFkLCBwQWQs
+IENMT05FX1ZNKTsKLQlpZiAocGlkX251bWJlciA8IDApCisJdHNrID0ga3RocmVhZF9ydW4oUlRV
+U0JDbWRUaHJlYWQsIHBBZCwgcEFkLT5uZXRfZGV2LT5uYW1lKTsKKworCWlmIChJU19FUlIodHNr
+KSA8IDApCiAJewogCQlwcmludGsgKEtFUk5fV0FSTklORyAiJXM6IHVuYWJsZSB0byBzdGFydCBS
+VFVTQkNtZCB0aHJlYWRcbiIscEFkLT5uZXRfZGV2LT5uYW1lKTsKIAkJcmV0dXJuIE5ESVNfU1RB
+VFVTX0ZBSUxVUkU7CiAJfQotCXBPYmotPlJUVVNCQ21kVGhyX3BpZCA9IEdFVF9QSUQocGlkX251
+bWJlcik7CisKKwlwT2JqLT5SVFVTQkNtZFRocl9waWQgPSBnZXRfcGlkKHRhc2tfcGlkKHRzaykp
+OwogCXdhaXRfZm9yX2NvbXBsZXRpb24oJihwQWQtPkNtZFFDb21wbGV0ZSkpOwogCiAJcE9iai0+
+VGltZXJRVGhyX3BpZD0gVEhSRUFEX1BJRF9JTklUX1ZBTFVFOwotCXBpZF9udW1iZXIgPSBrZXJu
+ZWxfdGhyZWFkKFRpbWVyUVRocmVhZCwgcEFkLCBDTE9ORV9WTSk7Ci0JaWYgKHBpZF9udW1iZXIg
+PCAwKQorCXRzayA9IGt0aHJlYWRfcnVuKFRpbWVyUVRocmVhZCwgcEFkLCBwQWQtPm5ldF9kZXYt
+Pm5hbWUpOworCWlmIChJU19FUlIodHNrKSA8IDApCiAJewogCQlwcmludGsgKEtFUk5fV0FSTklO
+RyAiJXM6IHVuYWJsZSB0byBzdGFydCBUaW1lclFUaHJlYWRcbiIscEFkLT5uZXRfZGV2LT5uYW1l
+KTsKIAkJcmV0dXJuIE5ESVNfU1RBVFVTX0ZBSUxVUkU7CiAJfQotCXBPYmotPlRpbWVyUVRocl9w
+aWQgPSBHRVRfUElEKHBpZF9udW1iZXIpOworCXBPYmotPlRpbWVyUVRocl9waWQgPSBnZXRfcGlk
+KHRhc2tfcGlkKHRzaykpOwogCS8vIFdhaXQgZm9yIHRoZSB0aHJlYWQgdG8gc3RhcnQKIAl3YWl0
+X2Zvcl9jb21wbGV0aW9uKCYocEFkLT5UaW1lclFDb21wbGV0ZSkpOwogCmRpZmYgLS1naXQgYS9k
+cml2ZXJzL3N0YWdpbmcvcnQyODcwL3J0X2xpbnV4LmggYi9kcml2ZXJzL3N0YWdpbmcvcnQyODcw
+L3J0X2xpbnV4LmgKaW5kZXggODU5ZjljZS4uOWE4ZWQxYiAxMDA2NDQKLS0tIGEvZHJpdmVycy9z
+dGFnaW5nL3J0Mjg3MC9ydF9saW51eC5oCisrKyBiL2RyaXZlcnMvc3RhZ2luZy9ydDI4NzAvcnRf
+bGludXguaApAQCAtNDQsNiArNDQsNyBAQAogI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgogI2lu
+Y2x1ZGUgPGxpbnV4L3ZlcnNpb24uaD4KICNpbmNsdWRlIDxsaW51eC9rZXJuZWwuaD4KKyNpbmNs
+dWRlIDxsaW51eC9rdGhyZWFkLmg+CiAKICNpbmNsdWRlIDxsaW51eC9zcGlubG9jay5oPgogI2lu
+Y2x1ZGUgPGxpbnV4L2luaXQuaD4KZGlmZiAtLWdpdCBhL2RyaXZlcnMvc3RhZ2luZy91c2JpcC91
+c2JpcF9jb21tb24uYyBiL2RyaXZlcnMvc3RhZ2luZy91c2JpcC91c2JpcF9jb21tb24uYwppbmRl
+eCAyMmY5M2RkLi4zYmQ4NWI1IDEwMDY0NAotLS0gYS9kcml2ZXJzL3N0YWdpbmcvdXNiaXAvdXNi
+aXBfY29tbW9uLmMKKysrIGIvZHJpdmVycy9zdGFnaW5nL3VzYmlwL3VzYmlwX2NvbW1vbi5jCkBA
+IC0xOCw2ICsxOCw3IEBACiAgKi8KIAogI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgorI2luY2x1
+ZGUgPGxpbnV4L2t0aHJlYWQuaD4KICNpbmNsdWRlIDxsaW51eC9maWxlLmg+CiAjaW5jbHVkZSA8
+bGludXgvdGNwLmg+CiAjaW5jbHVkZSA8bGludXgvaW4uaD4KQEAgLTQwNiwxNiArNDA3LDE2IEBA
+IHZvaWQgdXNiaXBfc3RhcnRfdGhyZWFkcyhzdHJ1Y3QgdXNiaXBfZGV2aWNlICp1ZCkKIAkvKgog
+CSAqIHRocmVhZHMgYXJlIGludm9rZWQgcGVyIG9uZSBkZXZpY2UgKHBlciBvbmUgY29ubmVjdGlv
+bikuCiAJICovCi0JaW50IHJldHZhbDsKKwlzdHJ1Y3QgdGFza19zdHJ1Y3QgKnRzazsKIAotCXJl
+dHZhbCA9IGtlcm5lbF90aHJlYWQodXNiaXBfdGhyZWFkLCAodm9pZCAqKSZ1ZC0+dGNwX3J4LCAw
+KTsKLQlpZiAocmV0dmFsIDwgMCkgeworCXRzayA9IGt0aHJlYWRfcnVuKHVzYmlwX3RocmVhZCwg
+KHZvaWQgKikmdWQtPnRjcF9yeCwgInVzYmlwX3RjcF9yeCIpOworCWlmIChJU19FUlIodHNrKSA8
+IDApIHsKIAkJcHJpbnRrKEtFUk5fRVJSICJDcmVhdGluZyB0Y3BfcnggdGhyZWFkIGZvciB1ZCAl
+cCBmYWlsZWQuXG4iLAogCQkJCXVkKTsKIAkJcmV0dXJuOwogCX0KLQlyZXR2YWwgPSBrZXJuZWxf
+dGhyZWFkKHVzYmlwX3RocmVhZCwgKHZvaWQgKikmdWQtPnRjcF90eCwgMCk7Ci0JaWYgKHJldHZh
+bCA8IDApIHsKKwl0c2sgPSBrdGhyZWFkX3J1bih1c2JpcF90aHJlYWQsICh2b2lkICopJnVkLT50
+Y3BfdHgsICJ1c2JpcF90Y3BfdHgiKTsKKwlpZiAoSVNfRVJSKHRzaykgPCAwKSB7CiAJCXByaW50
+ayhLRVJOX0VSUiAiQ3JlYXRpbmcgdGNwX3R4IHRocmVhZCBmb3IgdWQgJXAgZmFpbGVkLlxuIiwK
+IAkJCQl1ZCk7CiAJCXJldHVybjsK
+--000e0cd147f21d821804650c46ea--
