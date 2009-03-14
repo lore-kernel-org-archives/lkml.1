@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbZCNAY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760709AbZCNAct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754679AbZCNAY3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbZCNASi
+	id S1760709AbZCNAct (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbZCNATL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:38 -0400
-Received: from kroah.org ([198.145.64.141]:46764 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:11 -0400
+Received: from kroah.org ([198.145.64.141]:47034 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751683AbZCNASh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:37 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:41 2009
-Message-Id: <20090314000741.290457012@mini.kroah.org>
+	id S1753473AbZCNATB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:01 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:45 2009
+Message-Id: <20090314000745.161795139@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:25 -0700
+Date: Fri, 13 Mar 2009 17:05:49 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 17/96] rtl8187: New USB IDs for RTL8187L
+       alan@lxorguk.ukuu.org.uk, Lubomir Rintel <lkundrak@v3.sk>,
+       Dave Airlie <airlied@linux.ie>
+Subject: [patch 41/96] intel-agp: fix a panic with 1M of shared memory, no GTT entries
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=rtl8187-new-usb-id-s-for-rtl8187l.patch
+Content-Disposition: inline; filename=intel-agp-fix-a-panic-with-1m-of-shared-memory-no-gtt-entries.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,54 +39,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Larry Finger <Larry.Finger@gmail.com>
+From: Lubomir Rintel <lkundrak@v3.sk>
 
-commit 046ee5d26ac91316a8ac0a29c0b33139dc9da20d upstream.
+commit 9c1e8a4ebcc04226cb6f3a1bf1d72f4cafd6b089 upstream.
 
-Add new USB ID codes. These come from two postings on forums and
-mailing lists, and four are derived from the .inf that accompanies
-the latest Realtek Windows driver for the RTL8187L.
+When GTT size is equal to amount of video memory, the amount of GTT
+entries is computed lower than zero, which is invalid and leads to
+off-by-one error in intel_i915_configure()
 
-Thanks to Viktor Ilijašić <viktor.ilijasic@gmail.com> and Xose Vazquez
-Perez <xose.vazquez@gmail.com> for reporting these new ID's.
+Originally posted here:
+http://bugzilla.kernel.org/show_bug.cgi?id=12539
+http://bugzilla.redhat.com/show_bug.cgi?id=445592
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Dave Airlie <airlied@linux.ie>
+Reviewed-by: Eric Anholt <eric@anholt.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/rtl8187_dev.c |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/char/agp/intel-agp.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
---- a/drivers/net/wireless/rtl8187_dev.c
-+++ b/drivers/net/wireless/rtl8187_dev.c
-@@ -40,6 +40,10 @@ static struct usb_device_id rtl8187_tabl
- 	{USB_DEVICE(0x0bda, 0x8189), .driver_info = DEVICE_RTL8187B},
- 	{USB_DEVICE(0x0bda, 0x8197), .driver_info = DEVICE_RTL8187B},
- 	{USB_DEVICE(0x0bda, 0x8198), .driver_info = DEVICE_RTL8187B},
-+	/* Surecom */
-+	{USB_DEVICE(0x0769, 0x11F2), .driver_info = DEVICE_RTL8187},
-+	/* Logitech */
-+	{USB_DEVICE(0x0789, 0x010C), .driver_info = DEVICE_RTL8187},
- 	/* Netgear */
- 	{USB_DEVICE(0x0846, 0x6100), .driver_info = DEVICE_RTL8187},
- 	{USB_DEVICE(0x0846, 0x6a00), .driver_info = DEVICE_RTL8187},
-@@ -49,8 +53,16 @@ static struct usb_device_id rtl8187_tabl
- 	/* Sitecom */
- 	{USB_DEVICE(0x0df6, 0x000d), .driver_info = DEVICE_RTL8187},
- 	{USB_DEVICE(0x0df6, 0x0028), .driver_info = DEVICE_RTL8187B},
-+	/* Sphairon Access Systems GmbH */
-+	{USB_DEVICE(0x114B, 0x0150), .driver_info = DEVICE_RTL8187},
-+	/* Dick Smith Electronics */
-+	{USB_DEVICE(0x1371, 0x9401), .driver_info = DEVICE_RTL8187},
- 	/* Abocom */
- 	{USB_DEVICE(0x13d1, 0xabe6), .driver_info = DEVICE_RTL8187},
-+	/* Qcom */
-+	{USB_DEVICE(0x18E8, 0x6232), .driver_info = DEVICE_RTL8187},
-+	/* AirLive */
-+	{USB_DEVICE(0x1b75, 0x8187), .driver_info = DEVICE_RTL8187},
- 	{}
- };
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -633,13 +633,15 @@ static void intel_i830_init_gtt_entries(
+ 			break;
+ 		}
+ 	}
+-	if (gtt_entries > 0)
++	if (gtt_entries > 0) {
+ 		dev_info(&agp_bridge->dev->dev, "detected %dK %s memory\n",
+ 		       gtt_entries / KB(1), local ? "local" : "stolen");
+-	else
++		gtt_entries /= KB(4);
++	} else {
+ 		dev_info(&agp_bridge->dev->dev,
+ 		       "no pre-allocated video memory detected\n");
+-	gtt_entries /= KB(4);
++		gtt_entries = 0;
++	}
  
+ 	intel_private.gtt_entries = gtt_entries;
+ }
 
 
