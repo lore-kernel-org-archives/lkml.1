@@ -1,40 +1,39 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756052AbZCNSBY (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 14 Mar 2009 14:01:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbZCNSBO
+	id S1760050AbZCNWJV (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 14 Mar 2009 18:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbZCNWJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 14:01:14 -0400
-Received: from hrndva-commlb.mail.rr.com ([71.74.57.8]:50291 "EHLO
-	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752525AbZCNSBO (ORCPT
+	Sat, 14 Mar 2009 18:09:08 -0400
+Received: from connect-ua-210.dg.net.ua ([213.186.218.210]:60911 "EHLO
+	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754564AbZCNWJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 14:01:14 -0400
-Message-Id: <7h9gbp$cf4ki8@rrcs-agw-01b.hrndva.rr.com>
-X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
-From: siemens Online Promotion <laquinta@yuma.twcbc.com>
-Reply-To: siemens_claimsdept@yahoo.com
-Organization: info@winners.com
-To: <dell@winners.com>
-Subject: FINAL NOTIFICATION
-Date: Sat, 14 Mar 2009 13:01:11 -0500
+	Sat, 14 Mar 2009 18:09:07 -0400
+To: linux-kernel@vger.kernel.org
+Subject: =?UTF-8?B?0JLRltC60YPRgdGPINCa0YPQutGD0YHRjyDQv9GW0LTQvNC+0YDQs9C90YM=?=  =?UTF-8?B?0LthINCS0LDQvA==?=
+Date: Sun, 15 Mar 2009 00:09:03 +0200
+From: =?UTF-8?B?0JrQvtC80LDQvdC00LAgQ29ubmVjdC51YQ==?= 
+	<donotreply@connect.com.ua>
+Reply-to: Connect <donotreply@connect.com.ua>
+Message-ID: <c0c2477f5fd8b5fa0b9a266295babfd4@localhost.localdomain>
+X-Priority: 3
+X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You have just been awarded,the sum of  �750,000GBP in the SIEMENS
-Award 2009, Anniversary Bonanza. held on March. For Claims email your
-details to: help_office.claims@yahoo.com
+Владимир,
 
-Names:............
-Address:..............
-Country:................
-Age:..........
-Sex:..............
-Phone/cellphone........
+Вікуся Кукуся підморгнулa Вам.
+Щоб відповісти, пройдіть за посиланням: http://connect.ua/mailbox/notifications
 
-regard
-Mrs. Rose Wood
+
+Команда Connect.ua
+
+--
+Ви можете налаштувати параметри повідомлень
+http://connect.ua/v2/settings?notifications
 
