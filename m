@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762718AbZCNAu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbZCNAZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762718AbZCNAu0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZCNAUS
+	id S1758775AbZCNAZj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZCNASn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:20:18 -0400
-Received: from kroah.org ([198.145.64.141]:35133 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:43 -0400
+Received: from kroah.org ([198.145.64.141]:46801 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754065AbZCNATy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:54 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:53 2009
-Message-Id: <20090314000753.321488608@mini.kroah.org>
+	id S1752799AbZCNASk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:40 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:41 2009
+Message-Id: <20090314000741.789637355@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:41 -0700
+Date: Fri, 13 Mar 2009 17:05:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: [patch 93/96] ext4: Add fallback for find_group_flex
+       alan@lxorguk.ukuu.org.uk, Michael Kerrisk <mtk.manpages@gmail.com>,
+       Davide Libenzi <davidel@xmailserver.org>
+Subject: [patch 20/96] timerfd: add flags check
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=ext4-add-fallback-for-find_group_flex.patch
+Content-Disposition: inline; filename=timerfd-add-flags-check.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,46 +39,94 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: "Theodore Ts'o" <tytso@mit.edu>
+From: Davide Libenzi <davidel@xmailserver.org>
 
-(cherry picked from commit 05bf9e839d9de4e8a094274a0a2fd07beb47eaf1)
+commit 610d18f4128ebbd88845d0fc60cce67b49af881e upstream.
 
-This is a workaround for find_group_flex() which badly needs to be
-replaced.  One of its problems (besides ignoring the Orlov algorithm)
-is that it is a bit hyperactive about returning failure under
-suspicious circumstances.  This can lead to spurious ENOSPC failures
-even when there are inodes still available.
+As requested by Michael, add a missing check for valid flags in
+timerfd_settime(), and make it return EINVAL in case some extra bits are
+set.
 
-Work around this for now by retrying the search using
-find_group_other() if find_group_flex() returns -1.  If
-find_group_other() succeeds when find_group_flex() has failed, log a
-warning message.
+Michael said:
+If this is to be any use to userland apps that want to check flag
+support (perhaps it is too late already), then the sooner we get it
+into the kernel the better: 2.6.29 would be good; earlier stables as
+well would be even better.
 
-A better block/inode allocator that will fix this problem for real has
-been queued up for the next merge window.
-
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+[akpm@linux-foundation.org: remove unused TFD_FLAGS_SET]
+Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/ialloc.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+ fs/timerfd.c            |   12 ++++++------
+ include/linux/timerfd.h |   16 ++++++++++++----
+ 2 files changed, 18 insertions(+), 10 deletions(-)
 
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -702,6 +702,13 @@ struct inode *ext4_new_inode(handle_t *h
+--- a/fs/timerfd.c
++++ b/fs/timerfd.c
+@@ -188,10 +188,9 @@ SYSCALL_DEFINE2(timerfd_create, int, clo
+ 	BUILD_BUG_ON(TFD_CLOEXEC != O_CLOEXEC);
+ 	BUILD_BUG_ON(TFD_NONBLOCK != O_NONBLOCK);
  
- 	if (sbi->s_log_groups_per_flex) {
- 		ret2 = find_group_flex(sb, dir, &group);
-+		if (ret2 == -1) {
-+			ret2 = find_group_other(sb, dir, &group);
-+			if (ret2 == 0 && printk_ratelimit())
-+				printk(KERN_NOTICE "ext4: find_group_flex "
-+				       "failed, fallback succeeded dir %lu\n",
-+				       dir->i_ino);
-+		}
- 		goto got_group;
- 	}
+-	if (flags & ~(TFD_CLOEXEC | TFD_NONBLOCK))
+-		return -EINVAL;
+-	if (clockid != CLOCK_MONOTONIC &&
+-	    clockid != CLOCK_REALTIME)
++	if ((flags & ~TFD_CREATE_FLAGS) ||
++	    (clockid != CLOCK_MONOTONIC &&
++	     clockid != CLOCK_REALTIME))
+ 		return -EINVAL;
  
+ 	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
+@@ -203,7 +202,7 @@ SYSCALL_DEFINE2(timerfd_create, int, clo
+ 	hrtimer_init(&ctx->tmr, clockid, HRTIMER_MODE_ABS);
+ 
+ 	ufd = anon_inode_getfd("[timerfd]", &timerfd_fops, ctx,
+-			       flags & (O_CLOEXEC | O_NONBLOCK));
++			       flags & TFD_SHARED_FCNTL_FLAGS);
+ 	if (ufd < 0)
+ 		kfree(ctx);
+ 
+@@ -221,7 +220,8 @@ SYSCALL_DEFINE4(timerfd_settime, int, uf
+ 	if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
+ 		return -EFAULT;
+ 
+-	if (!timespec_valid(&ktmr.it_value) ||
++	if ((flags & ~TFD_SETTIME_FLAGS) ||
++	    !timespec_valid(&ktmr.it_value) ||
+ 	    !timespec_valid(&ktmr.it_interval))
+ 		return -EINVAL;
+ 
+--- a/include/linux/timerfd.h
++++ b/include/linux/timerfd.h
+@@ -11,13 +11,21 @@
+ /* For O_CLOEXEC and O_NONBLOCK */
+ #include <linux/fcntl.h>
+ 
+-/* Flags for timerfd_settime.  */
++/*
++ * CAREFUL: Check include/asm-generic/fcntl.h when defining
++ * new flags, since they might collide with O_* ones. We want
++ * to re-use O_* flags that couldn't possibly have a meaning
++ * from eventfd, in order to leave a free define-space for
++ * shared O_* flags.
++ */
+ #define TFD_TIMER_ABSTIME (1 << 0)
+-
+-/* Flags for timerfd_create.  */
+ #define TFD_CLOEXEC O_CLOEXEC
+ #define TFD_NONBLOCK O_NONBLOCK
+ 
++#define TFD_SHARED_FCNTL_FLAGS (TFD_CLOEXEC | TFD_NONBLOCK)
++/* Flags for timerfd_create.  */
++#define TFD_CREATE_FLAGS TFD_SHARED_FCNTL_FLAGS
++/* Flags for timerfd_settime.  */
++#define TFD_SETTIME_FLAGS TFD_TIMER_ABSTIME
+ 
+ #endif /* _LINUX_TIMERFD_H */
+-
 
 
