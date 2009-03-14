@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbZCNB3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZCNBWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762165AbZCNB3n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbZCNBUT
+	id S1756805AbZCNBWc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZCNBTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:19 -0400
-Received: from kroah.org ([198.145.64.141]:34979 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:19:49 -0400
+Received: from kroah.org ([198.145.64.141]:34770 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753315AbZCNBUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:08 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:35 2009
-Message-Id: <20090314011035.242544713@mini.kroah.org>
+	id S1752159AbZCNBTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:19:47 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:32 2009
+Message-Id: <20090314011032.139859319@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:03 -0700
+Date: Fri, 13 Mar 2009 18:09:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Faisal Latif <faisal.latif@intel.com>,
-       Roland Dreier <rolandd@cisco.com>
-Subject: [patch 026/114] RDMA/nes: Dont allow userspace QPs to use STag zero
+       alan@lxorguk.ukuu.org.uk, Eric Biederman <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Paul Turner <pjt@google.com>
+Subject: [patch 006/114] seq_file: properly cope with pread
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=rdma-nes-don-t-allow-userspace-qps-to-use-stag-zero.patch
+Content-Disposition: inline; filename=seq_file-properly-cope-with-pread.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,140 +40,119 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Faisal Latif <faisal.latif@intel.com>
+From: Eric Biederman <ebiederm@xmission.com>
 
-commit c12e56ef6951f4fce1afe9ef6aab9243ea9a9b04 upstream.
+commit 8f19d472935c83d823fa4cf02bcc0a7b9952db30 upstream.
 
-STag zero is a special STag that allows consumers to access any bus
-address without registering memory.  The nes driver unfortunately
-allows STag zero to be used even with QPs created by unprivileged
-userspace consumers, which means that any process with direct verbs
-access to the nes device can read and write any memory accessible to
-the underlying PCI device (usually any memory in the system).  Such
-access is usually given for cluster software such as MPI to use, so
-this is a local privilege escalation bug on most systems running this
-driver.
+Currently seq_read assumes that the offset passed to it is always the
+offset it passed to user space.  In the case pread this assumption is
+broken and we do the wrong thing when presented with pread.
 
-The driver was using STag zero to receive the last streaming mode
-data; to allow STag zero to be disabled for unprivileged QPs, the
-driver now registers a special MR for this data.
+To solve this I introduce an offset cache inside of struct seq_file so we
+know where our logical file position is.  Then in seq_read if we try to
+read from another offset we reset our data structures and attempt to go to
+the offset user space wanted.
 
-Signed-off-by: Faisal Latif <faisal.latif@intel.com>
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
+[akpm@linux-foundation.org: restore FMODE_PWRITE]
+[pjt@google.com: seq_open needs its fmode opened up to take advantage of this]
+Signed-off-by: Eric Biederman <ebiederm@xmission.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Paul Turner <pjt@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/infiniband/hw/nes/nes_cm.c    |   37 +++++++++++++++++++++++++++++-----
- drivers/infiniband/hw/nes/nes_verbs.c |    2 +
- drivers/infiniband/hw/nes/nes_verbs.h |    1 
- 3 files changed, 35 insertions(+), 5 deletions(-)
+ fs/seq_file.c            |   36 ++++++++++++++++++++++++++++++++----
+ include/linux/seq_file.h |    1 +
+ 2 files changed, 33 insertions(+), 4 deletions(-)
 
---- a/drivers/infiniband/hw/nes/nes_cm.c
-+++ b/drivers/infiniband/hw/nes/nes_cm.c
-@@ -2495,12 +2495,14 @@ static int nes_disconnect(struct nes_qp 
- 	int ret = 0;
- 	struct nes_vnic *nesvnic;
- 	struct nes_device *nesdev;
-+	struct nes_ib_device *nesibdev;
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -48,8 +48,16 @@ int seq_open(struct file *file, const st
+ 	 */
+ 	file->f_version = 0;
  
- 	nesvnic = to_nesvnic(nesqp->ibqp.device);
- 	if (!nesvnic)
- 		return -EINVAL;
+-	/* SEQ files support lseek, but not pread/pwrite */
+-	file->f_mode &= ~(FMODE_PREAD | FMODE_PWRITE);
++	/*
++	 * seq_files support lseek() and pread().  They do not implement
++	 * write() at all, but we clear FMODE_PWRITE here for historical
++	 * reasons.
++	 *
++	 * If a client of seq_files a) implements file.write() and b) wishes to
++	 * support pwrite() then that client will need to implement its own
++	 * file.open() which calls seq_open() and then sets FMODE_PWRITE.
++	 */
++	file->f_mode &= ~FMODE_PWRITE;
+ 	return 0;
+ }
+ EXPORT_SYMBOL(seq_open);
+@@ -131,6 +139,22 @@ ssize_t seq_read(struct file *file, char
+ 	int err = 0;
  
- 	nesdev = nesvnic->nesdev;
-+	nesibdev = nesvnic->nesibdev;
- 
- 	nes_debug(NES_DBG_CM, "netdev refcnt = %u.\n",
- 			atomic_read(&nesvnic->netdev->refcnt));
-@@ -2512,6 +2514,8 @@ static int nes_disconnect(struct nes_qp 
- 	} else {
- 		/* Need to free the Last Streaming Mode Message */
- 		if (nesqp->ietf_frame) {
-+			if (nesqp->lsmm_mr)
-+				nesibdev->ibdev.dereg_mr(nesqp->lsmm_mr);
- 			pci_free_consistent(nesdev->pcidev,
- 					nesqp->private_data_len+sizeof(struct ietf_mpa_frame),
- 					nesqp->ietf_frame, nesqp->ietf_frame_pbase);
-@@ -2545,6 +2549,10 @@ int nes_accept(struct iw_cm_id *cm_id, s
- 	struct iw_cm_event cm_event;
- 	struct nes_hw_qp_wqe *wqe;
- 	struct nes_v4_quad nes_quad;
-+	struct nes_ib_device *nesibdev;
-+	struct ib_mr *ibmr = NULL;
-+	struct ib_phys_buf ibphysbuf;
-+	struct nes_pd *nespd;
- 	u32 crc_value;
- 	int ret;
- 
-@@ -2605,6 +2613,26 @@ int nes_accept(struct iw_cm_id *cm_id, s
- 	if (cm_id->remote_addr.sin_addr.s_addr !=
- 			cm_id->local_addr.sin_addr.s_addr) {
- 		u64temp = (unsigned long)nesqp;
-+		nesibdev = nesvnic->nesibdev;
-+		nespd = nesqp->nespd;
-+		ibphysbuf.addr = nesqp->ietf_frame_pbase;
-+		ibphysbuf.size = conn_param->private_data_len +
-+					sizeof(struct ietf_mpa_frame);
-+		ibmr = nesibdev->ibdev.reg_phys_mr((struct ib_pd *)nespd,
-+						&ibphysbuf, 1,
-+						IB_ACCESS_LOCAL_WRITE,
-+						(u64 *)&nesqp->ietf_frame);
-+		if (!ibmr) {
-+			nes_debug(NES_DBG_CM, "Unable to register memory region"
-+					"for lSMM for cm_node = %p \n",
-+					cm_node);
-+			return -ENOMEM;
+ 	mutex_lock(&m->lock);
++
++	/* Don't assume *ppos is where we left it */
++	if (unlikely(*ppos != m->read_pos)) {
++		m->read_pos = *ppos;
++		while ((err = traverse(m, *ppos)) == -EAGAIN)
++			;
++		if (err) {
++			/* With prejudice... */
++			m->read_pos = 0;
++			m->version = 0;
++			m->index = 0;
++			m->count = 0;
++			goto Done;
 +		}
++	}
 +
-+		ibmr->pd = &nespd->ibpd;
-+		ibmr->device = nespd->ibpd.device;
-+		nesqp->lsmm_mr = ibmr;
-+
- 		u64temp |= NES_SW_CONTEXT_ALIGN>>1;
- 		set_wqe_64bit_value(wqe->wqe_words,
- 			NES_IWARP_SQ_WQE_COMP_CTX_LOW_IDX,
-@@ -2615,14 +2643,13 @@ int nes_accept(struct iw_cm_id *cm_id, s
- 		wqe->wqe_words[NES_IWARP_SQ_WQE_TOTAL_PAYLOAD_IDX] =
- 			cpu_to_le32(conn_param->private_data_len +
- 			sizeof(struct ietf_mpa_frame));
--		wqe->wqe_words[NES_IWARP_SQ_WQE_FRAG0_LOW_IDX] =
--			cpu_to_le32((u32)nesqp->ietf_frame_pbase);
--		wqe->wqe_words[NES_IWARP_SQ_WQE_FRAG0_HIGH_IDX] =
--			cpu_to_le32((u32)((u64)nesqp->ietf_frame_pbase >> 32));
-+		set_wqe_64bit_value(wqe->wqe_words,
-+					NES_IWARP_SQ_WQE_FRAG0_LOW_IDX,
-+					(u64)nesqp->ietf_frame);
- 		wqe->wqe_words[NES_IWARP_SQ_WQE_LENGTH0_IDX] =
- 			cpu_to_le32(conn_param->private_data_len +
- 			sizeof(struct ietf_mpa_frame));
--		wqe->wqe_words[NES_IWARP_SQ_WQE_STAG0_IDX] = 0;
-+		wqe->wqe_words[NES_IWARP_SQ_WQE_STAG0_IDX] = ibmr->lkey;
- 
- 		nesqp->nesqp_context->ird_ord_sizes |=
- 			cpu_to_le32(NES_QPCONTEXT_ORDIRD_LSMM_PRESENT |
---- a/drivers/infiniband/hw/nes/nes_verbs.c
-+++ b/drivers/infiniband/hw/nes/nes_verbs.c
-@@ -1360,8 +1360,10 @@ static struct ib_qp *nes_create_qp(struc
- 					NES_QPCONTEXT_MISC_RQ_SIZE_SHIFT);
- 			nesqp->nesqp_context->misc |= cpu_to_le32((u32)nesqp->hwqp.sq_encoded_size <<
- 					NES_QPCONTEXT_MISC_SQ_SIZE_SHIFT);
-+			if (!udata) {
- 				nesqp->nesqp_context->misc |= cpu_to_le32(NES_QPCONTEXT_MISC_PRIV_EN);
- 				nesqp->nesqp_context->misc |= cpu_to_le32(NES_QPCONTEXT_MISC_FAST_REGISTER_EN);
-+			}
- 			nesqp->nesqp_context->cqs = cpu_to_le32(nesqp->nesscq->hw_cq.cq_number +
- 					((u32)nesqp->nesrcq->hw_cq.cq_number << 16));
- 			u64temp = (u64)nesqp->hwqp.sq_pbase;
---- a/drivers/infiniband/hw/nes/nes_verbs.h
-+++ b/drivers/infiniband/hw/nes/nes_verbs.h
-@@ -134,6 +134,7 @@ struct nes_qp {
- 	struct ietf_mpa_frame *ietf_frame;
- 	dma_addr_t            ietf_frame_pbase;
- 	wait_queue_head_t     state_waitq;
-+	struct ib_mr          *lsmm_mr;
- 	unsigned long         socket;
- 	struct nes_hw_qp      hwqp;
- 	struct work_struct    work;
+ 	/*
+ 	 * seq_file->op->..m_start/m_stop/m_next may do special actions
+ 	 * or optimisations based on the file->f_version, so we want to
+@@ -230,8 +254,10 @@ Fill:
+ Done:
+ 	if (!copied)
+ 		copied = err;
+-	else
++	else {
+ 		*ppos += copied;
++		m->read_pos += copied;
++	}
+ 	file->f_version = m->version;
+ 	mutex_unlock(&m->lock);
+ 	return copied;
+@@ -266,16 +292,18 @@ loff_t seq_lseek(struct file *file, loff
+ 			if (offset < 0)
+ 				break;
+ 			retval = offset;
+-			if (offset != file->f_pos) {
++			if (offset != m->read_pos) {
+ 				while ((retval=traverse(m, offset)) == -EAGAIN)
+ 					;
+ 				if (retval) {
+ 					/* with extreme prejudice... */
+ 					file->f_pos = 0;
++					m->read_pos = 0;
+ 					m->version = 0;
+ 					m->index = 0;
+ 					m->count = 0;
+ 				} else {
++					m->read_pos = offset;
+ 					retval = file->f_pos = offset;
+ 				}
+ 			}
+--- a/include/linux/seq_file.h
++++ b/include/linux/seq_file.h
+@@ -19,6 +19,7 @@ struct seq_file {
+ 	size_t from;
+ 	size_t count;
+ 	loff_t index;
++	loff_t read_pos;
+ 	u64 version;
+ 	struct mutex lock;
+ 	const struct seq_operations *op;
 
 
