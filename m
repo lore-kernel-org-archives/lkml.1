@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763859AbZCNBhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763918AbZCNBh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763859AbZCNBhj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZCNBUv
+	id S1763918AbZCNBh5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbZCNBUw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:51 -0400
-Received: from kroah.org ([198.145.64.141]:35226 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:52 -0400
+Received: from kroah.org ([198.145.64.141]:35239 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753324AbZCNBU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:29 -0400
+	id S1753582AbZCNBUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:30 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:38 2009
-Message-Id: <20090314011038.351676800@mini.kroah.org>
+Message-Id: <20090314011038.503177205@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:24 -0700
+Date: Fri, 13 Mar 2009 18:10:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Helmut Schaa <helmut.schaa@googlemail.com>,
-       Pierre Ossman <drzeus@drzeus.cx>
-Subject: [patch 047/114] sdhci: fix led naming
+       alan@lxorguk.ukuu.org.uk, Tim Blechmann <tim@klingt.org>,
+       Robert Richter <robert.richter@amd.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 048/114] x86: oprofile: dont set counter width from cpuid on Core2
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=sdhci-fix-led-naming.patch
+Content-Disposition: inline; filename=x86-oprofile-don-t-set-counter-width-from-cpuid-on-core2.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,50 +39,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Helmut Schaa <helmut.schaa@googlemail.com>
+From: Tim Blechmann <tim@klingt.org>
 
-commit 5dbace0c9ba110c1a3810a89fa6bf12b7574b5a3 upstream.
+commit 780eef9492b16a1543a3b2ae9f9526a735fc9856 upstream.
 
-Fix the led device naming for the sdhci driver.
+Impact: fix stuck NMIs and non-working oprofile on certain CPUs
 
-The led class documentation defines the led name to have the
-form "devicename:colour:function" while not applicable sections
-should be left blank.
+Resetting the counter width of the performance counters on Intel's
+Core2 CPUs, breaks the delivery of NMIs, when running in x86_64 mode.
 
-To comply with the documentation the led device name is changed
-from "mmc*" to "mmc*::".
+This should fix bug #12395:
 
-Signed-off-by: Helmut Schaa <helmut.schaa@googlemail.com>
-Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+  http://bugzilla.kernel.org/show_bug.cgi?id=12395
+
+Signed-off-by: Tim Blechmann <tim@klingt.org>
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+LKML-Reference: <20090303100412.GC10085@erda.amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/mmc/host/sdhci.c |    4 +++-
- drivers/mmc/host/sdhci.h |    1 +
- 2 files changed, 4 insertions(+), 1 deletion(-)
-
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -1718,7 +1718,9 @@ int sdhci_add_host(struct sdhci_host *ho
- #endif
+--- a/arch/x86/oprofile/op_model_ppro.c
++++ b/arch/x86/oprofile/op_model_ppro.c
+@@ -78,8 +78,18 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
+ 	if (cpu_has_arch_perfmon) {
+ 		union cpuid10_eax eax;
+ 		eax.full = cpuid_eax(0xa);
+-		if (counter_width < eax.split.bit_width)
+-			counter_width = eax.split.bit_width;
++
++		/*
++		 * For Core2 (family 6, model 15), don't reset the
++		 * counter width:
++		 */
++		if (!(eax.split.version_id == 0 &&
++			current_cpu_data.x86 == 6 &&
++				current_cpu_data.x86_model == 15)) {
++
++			if (counter_width < eax.split.bit_width)
++				counter_width = eax.split.bit_width;
++		}
+ 	}
  
- #ifdef CONFIG_LEDS_CLASS
--	host->led.name = mmc_hostname(mmc);
-+	snprintf(host->led_name, sizeof(host->led_name),
-+		"%s::", mmc_hostname(mmc));
-+	host->led.name = host->led_name;
- 	host->led.brightness = LED_OFF;
- 	host->led.default_trigger = mmc_hostname(mmc);
- 	host->led.brightness_set = sdhci_led_control;
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -222,6 +222,7 @@ struct sdhci_host {
- 
- #ifdef CONFIG_LEDS_CLASS
- 	struct led_classdev	led;		/* LED control */
-+	char   led_name[32];
- #endif
- 
- 	spinlock_t		lock;		/* Mutex */
+ 	/* clear all counters */
 
 
