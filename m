@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZCNBoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764772AbZCNBpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbZCNBoz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbZCNBVO
+	id S1764772AbZCNBpY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbZCNBVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:14 -0400
-Received: from kroah.org ([198.145.64.141]:35470 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:17 -0400
+Received: from kroah.org ([198.145.64.141]:35477 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754323AbZCNBUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754383AbZCNBUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Mar 2009 21:20:51 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:41 2009
-Message-Id: <20090314011041.472610401@mini.kroah.org>
+Message-Id: <20090314011041.598193480@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:45 -0700
+Date: Fri, 13 Mar 2009 18:10:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, David Altobelli <david.altobelli@hp.com>
-Subject: [patch 068/114] hpilo: new pci device
+       alan@lxorguk.ukuu.org.uk, Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@hobbes.lan>
+Subject: [patch 069/114] PCI: dont enable too many HT MSI mappings
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=hpilo-new-pci-device.patch
+Content-Disposition: inline; filename=pci-don-t-enable-too-many-ht-msi-mappings.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,30 +39,164 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David Altobelli <david.altobelli@hp.com>
+From: Yinghai Lu <yinghai@kernel.org>
 
-commit 31d8b5631f095cb7100cfccc95c801a2547ffe2b upstream.
+commit 1dec6b054dd1fc780e18b815068bf5677409eb2d upstream.
 
-Future iLO devices will have an HP vendor id.
+Prakash reported that his c51-mcp51 ondie sound card doesn't work with
+MSI.  But if he hacks out the HT-MSI quirk, MSI works fine.
 
-Signed-off-by: David Altobelli <david.altobelli@hp.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+So this patch reworks the nv_msi_ht_cap_quirk().  It will now only
+enable ht_msi on own its root device, avoiding enabling it on devices
+following that root dev.
+
+Reported-by: Prakash Punnoor <prakash@punnoor.de>
+Tested-by: Prakash Punnoor <prakash@punnoor.de>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Jesse Barnes <jbarnes@hobbes.lan>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/hpilo.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/pci/quirks.c |  115 ++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 100 insertions(+), 15 deletions(-)
 
---- a/drivers/misc/hpilo.c
-+++ b/drivers/misc/hpilo.c
-@@ -710,6 +710,7 @@ out:
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1847,10 +1847,100 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_NV
+ 			PCI_DEVICE_ID_NVIDIA_NVENET_15,
+ 			nvenet_msi_disable);
  
- static struct pci_device_id ilo_devices[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xB204) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_HP, 0x3307) },
- 	{ }
- };
- MODULE_DEVICE_TABLE(pci, ilo_devices);
+-static void __devinit nv_msi_ht_cap_quirk(struct pci_dev *dev)
++static void __devinit nv_ht_enable_msi_mapping(struct pci_dev *dev)
+ {
+ 	struct pci_dev *host_bridge;
++	int pos;
++	int i, dev_no;
++	int found = 0;
++
++	dev_no = dev->devfn >> 3;
++	for (i = dev_no; i >= 0; i--) {
++		host_bridge = pci_get_slot(dev->bus, PCI_DEVFN(i, 0));
++		if (!host_bridge)
++			continue;
++
++		pos = pci_find_ht_capability(host_bridge, HT_CAPTYPE_SLAVE);
++		if (pos != 0) {
++			found = 1;
++			break;
++		}
++		pci_dev_put(host_bridge);
++	}
++
++	if (!found)
++		return;
++
++	/* root did that ! */
++	if (msi_ht_cap_enabled(host_bridge))
++		goto out;
++
++	ht_enable_msi_mapping(dev);
++
++out:
++	pci_dev_put(host_bridge);
++}
++
++static void __devinit ht_disable_msi_mapping(struct pci_dev *dev)
++{
++	int pos, ttl = 48;
++
++	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
++	while (pos && ttl--) {
++		u8 flags;
++
++		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
++					 &flags) == 0) {
++			dev_info(&dev->dev, "Enabling HT MSI Mapping\n");
++
++			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
++					      flags & ~HT_MSI_FLAGS_ENABLE);
++		}
++		pos = pci_find_next_ht_capability(dev, pos,
++						  HT_CAPTYPE_MSI_MAPPING);
++	}
++}
++
++static int __devinit ht_check_msi_mapping(struct pci_dev *dev)
++{
+ 	int pos, ttl = 48;
++	int found = 0;
++
++	/* check if there is HT MSI cap or enabled on this device */
++	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
++	while (pos && ttl--) {
++		u8 flags;
++
++		if (found < 1)
++			found = 1;
++		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
++					 &flags) == 0) {
++			if (flags & HT_MSI_FLAGS_ENABLE) {
++				if (found < 2) {
++					found = 2;
++					break;
++				}
++			}
++		}
++		pos = pci_find_next_ht_capability(dev, pos,
++						  HT_CAPTYPE_MSI_MAPPING);
++	}
++
++	return found;
++}
++
++static void __devinit nv_msi_ht_cap_quirk(struct pci_dev *dev)
++{
++	struct pci_dev *host_bridge;
++	int pos;
++	int found;
++
++	/* check if there is HT MSI cap or enabled on this device */
++	found = ht_check_msi_mapping(dev);
++
++	/* no HT MSI CAP */
++	if (found == 0)
++		return;
+ 
+ 	/*
+ 	 * HT MSI mapping should be disabled on devices that are below
+@@ -1866,24 +1956,19 @@ static void __devinit nv_msi_ht_cap_quir
+ 	pos = pci_find_ht_capability(host_bridge, HT_CAPTYPE_SLAVE);
+ 	if (pos != 0) {
+ 		/* Host bridge is to HT */
+-		ht_enable_msi_mapping(dev);
++		if (found == 1) {
++			/* it is not enabled, try to enable it */
++			nv_ht_enable_msi_mapping(dev);
++		}
+ 		return;
+ 	}
+ 
+-	/* Host bridge is not to HT, disable HT MSI mapping on this device */
+-	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
+-	while (pos && ttl--) {
+-		u8 flags;
++	/* HT MSI is not enabled */
++	if (found == 1)
++		return;
+ 
+-		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
+-					 &flags) == 0) {
+-			dev_info(&dev->dev, "Disabling HT MSI mapping");
+-			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
+-					      flags & ~HT_MSI_FLAGS_ENABLE);
+-		}
+-		pos = pci_find_next_ht_capability(dev, pos,
+-						  HT_CAPTYPE_MSI_MAPPING);
+-	}
++	/* Host bridge is not to HT, disable HT MSI mapping on this device */
++	ht_disable_msi_mapping(dev);
+ }
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, nv_msi_ht_cap_quirk);
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AL, PCI_ANY_ID, nv_msi_ht_cap_quirk);
 
 
