@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbZCNAZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760467AbZCNAaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758775AbZCNAZj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZCNASn
+	id S1760467AbZCNAaE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbZCNATA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:43 -0400
-Received: from kroah.org ([198.145.64.141]:46801 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:00 -0400
+Received: from kroah.org ([198.145.64.141]:46974 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752799AbZCNASk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:40 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:41 2009
-Message-Id: <20090314000741.789637355@mini.kroah.org>
+	id S1753359AbZCNAS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:56 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:44 2009
+Message-Id: <20090314000744.405317349@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:28 -0700
+Date: Fri, 13 Mar 2009 17:05:44 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Kerrisk <mtk.manpages@gmail.com>,
-       Davide Libenzi <davidel@xmailserver.org>
-Subject: [patch 20/96] timerfd: add flags check
+       alan@lxorguk.ukuu.org.uk, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 36/96] Fix fixpoint divide exception in acct_update_integrals
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=timerfd-add-flags-check.patch
+Content-Disposition: inline; filename=fix-fixpoint-divide-exception-in-acct_update_integrals.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,94 +39,100 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Davide Libenzi <davidel@xmailserver.org>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 610d18f4128ebbd88845d0fc60cce67b49af881e upstream.
+commit 6d5b5acca9e566515ef3f1ed617e7295c4f94345 upstream.
 
-As requested by Michael, add a missing check for valid flags in
-timerfd_settime(), and make it return EINVAL in case some extra bits are
-set.
+Frans Pop reported the crash below when running an s390 kernel under Hercules:
 
-Michael said:
-If this is to be any use to userland apps that want to check flag
-support (perhaps it is too late already), then the sooner we get it
-into the kernel the better: 2.6.29 would be good; earlier stables as
-well would be even better.
+  Kernel BUG at 000738b4  verbose debug info unavailable!
+  fixpoint divide exception: 0009  #1! SMP
+  Modules linked in: nfs lockd nfs_acl sunrpc ctcm fsm tape_34xx
+     cu3088 tape ccwgroup tape_class ext3 jbd mbcache dm_mirror dm_log dm_snapshot
+     dm_mod dasd_eckd_mod dasd_mod
+  CPU: 0 Not tainted 2.6.27.19 #13
+  Process awk (pid: 2069, task: 0f9ed9b8, ksp: 0f4f7d18)
+  Krnl PSW : 070c1000 800738b4 (acct_update_integrals+0x4c/0x118)
+             R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:1 PM:0
+  Krnl GPRS: 00000000 000007d0 7fffffff fffff830
+             00000000 ffffffff 00000002 0f9ed9b8
+             00000000 00008ca0 00000000 0f9ed9b8
+             0f9edda4 8007386e 0f4f7ec8 0f4f7e98
+  Krnl Code: 800738aa: a71807d0         lhi     %r1,2000
+             800738ae: 8c200001         srdl    %r2,1
+             800738b2: 1d21             dr      %r2,%r1
+            >800738b4: 5810d10e         l       %r1,270(%r13)
+             800738b8: 1823             lr      %r2,%r3
+             800738ba: 4130f060         la      %r3,96(%r15)
+             800738be: 0de1             basr    %r14,%r1
+             800738c0: 5800f060         l       %r0,96(%r15)
+  Call Trace:
+  ( <000000000004fdea>! blocking_notifier_call_chain+0x1e/0x2c)
+    <0000000000038502>! do_exit+0x106/0x7c0
+    <0000000000038c36>! do_group_exit+0x7a/0xb4
+    <0000000000038c8e>! SyS_exit_group+0x1e/0x30
+    <0000000000021c28>! sysc_do_restart+0x12/0x16
+    <0000000077e7e924>! 0x77e7e924
 
-[akpm@linux-foundation.org: remove unused TFD_FLAGS_SET]
-Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Reason for this is that cpu time accounting usually only happens from
+interrupt context, but acct_update_integrals gets also called from
+process context with interrupts enabled.
+
+So in acct_update_integrals we may end up with the following scenario:
+
+Between reading tsk->stime/tsk->utime and tsk->acct_timexpd an interrupt
+happens which updates accouting values.  This causes acct_timexpd to be
+greater than the former stime + utime.  The subsequent calculation of
+
+	dtime = cputime_sub(time, tsk->acct_timexpd);
+
+will be negative and the division performed by
+
+	cputime_to_jiffies(dtime)
+
+will generate an exception since the result won't fit into a 32 bit
+register.
+
+In order to fix this just always disable interrupts while accessing any
+of the accounting values.
+
+Reported by: Frans Pop <elendil@planet.nl>
+Tested by: Frans Pop <elendil@planet.nl>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/timerfd.c            |   12 ++++++------
- include/linux/timerfd.h |   16 ++++++++++++----
- 2 files changed, 18 insertions(+), 10 deletions(-)
+ kernel/tsacct.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/fs/timerfd.c
-+++ b/fs/timerfd.c
-@@ -188,10 +188,9 @@ SYSCALL_DEFINE2(timerfd_create, int, clo
- 	BUILD_BUG_ON(TFD_CLOEXEC != O_CLOEXEC);
- 	BUILD_BUG_ON(TFD_NONBLOCK != O_NONBLOCK);
+--- a/kernel/tsacct.c
++++ b/kernel/tsacct.c
+@@ -120,8 +120,10 @@ void acct_update_integrals(struct task_s
+ 	if (likely(tsk->mm)) {
+ 		cputime_t time, dtime;
+ 		struct timeval value;
++		unsigned long flags;
+ 		u64 delta;
  
--	if (flags & ~(TFD_CLOEXEC | TFD_NONBLOCK))
--		return -EINVAL;
--	if (clockid != CLOCK_MONOTONIC &&
--	    clockid != CLOCK_REALTIME)
-+	if ((flags & ~TFD_CREATE_FLAGS) ||
-+	    (clockid != CLOCK_MONOTONIC &&
-+	     clockid != CLOCK_REALTIME))
- 		return -EINVAL;
++		local_irq_save(flags);
+ 		time = tsk->stime + tsk->utime;
+ 		dtime = cputime_sub(time, tsk->acct_timexpd);
+ 		jiffies_to_timeval(cputime_to_jiffies(dtime), &value);
+@@ -129,10 +131,12 @@ void acct_update_integrals(struct task_s
+ 		delta = delta * USEC_PER_SEC + value.tv_usec;
  
- 	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
-@@ -203,7 +202,7 @@ SYSCALL_DEFINE2(timerfd_create, int, clo
- 	hrtimer_init(&ctx->tmr, clockid, HRTIMER_MODE_ABS);
+ 		if (delta == 0)
+-			return;
++			goto out;
+ 		tsk->acct_timexpd = time;
+ 		tsk->acct_rss_mem1 += delta * get_mm_rss(tsk->mm);
+ 		tsk->acct_vm_mem1 += delta * tsk->mm->total_vm;
++	out:
++		local_irq_restore(flags);
+ 	}
+ }
  
- 	ufd = anon_inode_getfd("[timerfd]", &timerfd_fops, ctx,
--			       flags & (O_CLOEXEC | O_NONBLOCK));
-+			       flags & TFD_SHARED_FCNTL_FLAGS);
- 	if (ufd < 0)
- 		kfree(ctx);
- 
-@@ -221,7 +220,8 @@ SYSCALL_DEFINE4(timerfd_settime, int, uf
- 	if (copy_from_user(&ktmr, utmr, sizeof(ktmr)))
- 		return -EFAULT;
- 
--	if (!timespec_valid(&ktmr.it_value) ||
-+	if ((flags & ~TFD_SETTIME_FLAGS) ||
-+	    !timespec_valid(&ktmr.it_value) ||
- 	    !timespec_valid(&ktmr.it_interval))
- 		return -EINVAL;
- 
---- a/include/linux/timerfd.h
-+++ b/include/linux/timerfd.h
-@@ -11,13 +11,21 @@
- /* For O_CLOEXEC and O_NONBLOCK */
- #include <linux/fcntl.h>
- 
--/* Flags for timerfd_settime.  */
-+/*
-+ * CAREFUL: Check include/asm-generic/fcntl.h when defining
-+ * new flags, since they might collide with O_* ones. We want
-+ * to re-use O_* flags that couldn't possibly have a meaning
-+ * from eventfd, in order to leave a free define-space for
-+ * shared O_* flags.
-+ */
- #define TFD_TIMER_ABSTIME (1 << 0)
--
--/* Flags for timerfd_create.  */
- #define TFD_CLOEXEC O_CLOEXEC
- #define TFD_NONBLOCK O_NONBLOCK
- 
-+#define TFD_SHARED_FCNTL_FLAGS (TFD_CLOEXEC | TFD_NONBLOCK)
-+/* Flags for timerfd_create.  */
-+#define TFD_CREATE_FLAGS TFD_SHARED_FCNTL_FLAGS
-+/* Flags for timerfd_settime.  */
-+#define TFD_SETTIME_FLAGS TFD_TIMER_ABSTIME
- 
- #endif /* _LINUX_TIMERFD_H */
--
 
 
