@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762357AbZCNArY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762690AbZCNAt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762357AbZCNArY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbZCNAT5
+	id S1762690AbZCNAt6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbZCNAUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:57 -0400
-Received: from kroah.org ([198.145.64.141]:35017 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:20:17 -0400
+Received: from kroah.org ([198.145.64.141]:35108 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753724AbZCNATm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:42 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:51 2009
-Message-Id: <20090314000751.351388146@mini.kroah.org>
+	id S1753642AbZCNATz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:55 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:53 2009
+Message-Id: <20090314000753.479856434@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:29 -0700
+Date: Fri, 13 Mar 2009 17:06:42 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,47 +25,73 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Roel Kluin <roel.kluin@gmail.com>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [patch 81/96] i2c: Fix misplaced parentheses
+       alan@lxorguk.ukuu.org.uk,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       Jan Kara <jack@suse.cz>
+Subject: [patch 94/96] ext4: Fix deadlock in ext4_write_begin() and ext4_da_write_begin()
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=i2c-fix-misplaced-parentheses.patch
+Content-Disposition: inline; filename=ext4-fix-deadlock-in-ext4_write_begin-and-ext4_da_write_begin.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Roel Kluin <roel.kluin@gmail.com>
+From: Jan Kara <jack@suse.cz>
 
-commit f29d2e0275a4f03ef2fd158e484508dcb0c64efb upstream
+(cherry picked from commit ebd3610b110bbb18ea6f9f2aeed1e1068c537227)
 
-Fix misplaced parentheses.
+Functions ext4_write_begin() and ext4_da_write_begin() call
+grab_cache_page_write_begin() without AOP_FLAG_NOFS. Thus it
+can happen that page reclaim is triggered in that function
+and it recurses back into the filesystem (or some other filesystem).
+But this can lead to various problems as a transaction is already
+started at that point. Add the necessary flag.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+http://bugzilla.kernel.org/show_bug.cgi?id=11688
+
+Signed-off-by: Jan Kara <jack@suse.cz>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- drivers/i2c/i2c-core.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/ext4/inode.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -1795,7 +1795,8 @@ static s32 i2c_smbus_xfer_emulated(struc
- 	case I2C_SMBUS_QUICK:
- 		msg[0].len = 0;
- 		/* Special case: The read/write field is used as data */
--		msg[0].flags = flags | (read_write==I2C_SMBUS_READ)?I2C_M_RD:0;
-+		msg[0].flags = flags | (read_write == I2C_SMBUS_READ ?
-+					I2C_M_RD : 0);
- 		num = 1;
- 		break;
- 	case I2C_SMBUS_BYTE:
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1372,6 +1372,10 @@ retry:
+   		goto out;
+ 	}
+ 
++	/* We cannot recurse into the filesystem as the transaction is already
++	 * started */
++	flags |= AOP_FLAG_NOFS;
++
+ 	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page) {
+ 		ext4_journal_stop(handle);
+@@ -1381,7 +1385,7 @@ retry:
+ 	*pagep = page;
+ 
+ 	ret = block_write_begin(file, mapping, pos, len, flags, pagep, fsdata,
+-							ext4_get_block);
++				ext4_get_block);
+ 
+ 	if (!ret && ext4_should_journal_data(inode)) {
+ 		ret = walk_page_buffers(handle, page_buffers(page),
+@@ -2465,6 +2469,9 @@ retry:
+ 		ret = PTR_ERR(handle);
+ 		goto out;
+ 	}
++	/* We cannot recurse into the filesystem as the transaction is already
++	 * started */
++	flags |= AOP_FLAG_NOFS;
+ 
+ 	page = grab_cache_page_write_begin(mapping, index, flags);
+ 	if (!page) {
 
 
