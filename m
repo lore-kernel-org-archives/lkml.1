@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbZCNAt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbZCNA2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932149AbZCNAt0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbZCNAUO
+	id S1759209AbZCNA2X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZCNASz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:20:14 -0400
-Received: from kroah.org ([198.145.64.141]:35089 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:55 -0400
+Received: from kroah.org ([198.145.64.141]:46948 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753964AbZCNATt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:49 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:52 2009
-Message-Id: <20090314000752.535043759@mini.kroah.org>
+	id S1753308AbZCNASx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:53 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:44 2009
+Message-Id: <20090314000743.963791891@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:36 -0700
+Date: Fri, 13 Mar 2009 17:05:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, mfasheh@suse.de, linux-ext4@vger.kernel.org,
-       Jan Kara <jack@suse.cz>, Dan Carpenter <error27@gmail.com>,
-       ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>
-Subject: [patch 88/96] jbd2: Avoid possible NULL dereference in jbd2_journal_begin_ordered_truncate()
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 33/96] asix: new device ids
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=jbd2-avoid-possible-null-dereference-in-jbd2_journal_begin_ordered_truncate.patch
+Content-Disposition: inline; filename=asix-new-device-ids.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,121 +38,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jan Kara <jack@suse.cz>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-(cherry picked from commit 7f5aa215088b817add9c71914b83650bdd49f8a9)
+commit fef7cc0893146550b286b13c0e6e914556142730 upstream.
 
-If we race with commit code setting i_transaction to NULL, we could
-possibly dereference it.  Proper locking requires the journal pointer
-(to access journal->j_list_lock), which we don't have.  So we have to
-change the prototype of the function so that filesystem passes us the
-journal pointer.  Also add a more detailed comment about why the
-function jbd2_journal_begin_ordered_truncate() does what it does and
-how it should be used.
+This patch adds two new device ids to the asix driver.
 
-Thanks to Dan Carpenter <error27@gmail.com> for pointing to the
-suspitious code.
+One comes directly from the asix driver on their web site, the other was
+reported by Armani Liao as needed for the MSI X320 to get the driver to
+work properly for it.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Acked-by: Joel Becker <joel.becker@oracle.com>
-CC: linux-ext4@vger.kernel.org
-CC: mfasheh@suse.de
-CC: Dan Carpenter <error27@gmail.com>
+Reported-by: Armani Liao <aliao@novell.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
 ---
- fs/ext4/inode.c       |    6 ++++--
- fs/jbd2/transaction.c |   42 +++++++++++++++++++++++++++++++-----------
- include/linux/jbd2.h  |    3 ++-
- 3 files changed, 37 insertions(+), 14 deletions(-)
+ drivers/net/usb/asix.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -46,8 +46,10 @@
- static inline int ext4_begin_ordered_truncate(struct inode *inode,
- 					      loff_t new_size)
- {
--	return jbd2_journal_begin_ordered_truncate(&EXT4_I(inode)->jinode,
--						   new_size);
-+	return jbd2_journal_begin_ordered_truncate(
-+					EXT4_SB(inode->i_sb)->s_journal,
-+					&EXT4_I(inode)->jinode,
-+					new_size);
- }
- 
- static void ext4_invalidatepage(struct page *page, unsigned long offset);
---- a/fs/jbd2/transaction.c
-+++ b/fs/jbd2/transaction.c
-@@ -2049,26 +2049,46 @@ done:
- }
- 
- /*
-- * This function must be called when inode is journaled in ordered mode
-- * before truncation happens. It starts writeout of truncated part in
-- * case it is in the committing transaction so that we stand to ordered
-- * mode consistency guarantees.
-+ * File truncate and transaction commit interact with each other in a
-+ * non-trivial way.  If a transaction writing data block A is
-+ * committing, we cannot discard the data by truncate until we have
-+ * written them.  Otherwise if we crashed after the transaction with
-+ * write has committed but before the transaction with truncate has
-+ * committed, we could see stale data in block A.  This function is a
-+ * helper to solve this problem.  It starts writeout of the truncated
-+ * part in case it is in the committing transaction.
-+ *
-+ * Filesystem code must call this function when inode is journaled in
-+ * ordered mode before truncation happens and after the inode has been
-+ * placed on orphan list with the new inode size. The second condition
-+ * avoids the race that someone writes new data and we start
-+ * committing the transaction after this function has been called but
-+ * before a transaction for truncate is started (and furthermore it
-+ * allows us to optimize the case where the addition to orphan list
-+ * happens in the same transaction as write --- we don't have to write
-+ * any data in such case).
-  */
--int jbd2_journal_begin_ordered_truncate(struct jbd2_inode *inode,
-+int jbd2_journal_begin_ordered_truncate(journal_t *journal,
-+					struct jbd2_inode *jinode,
- 					loff_t new_size)
- {
--	journal_t *journal;
--	transaction_t *commit_trans;
-+	transaction_t *inode_trans, *commit_trans;
- 	int ret = 0;
- 
--	if (!inode->i_transaction && !inode->i_next_transaction)
-+	/* This is a quick check to avoid locking if not necessary */
-+	if (!jinode->i_transaction)
- 		goto out;
--	journal = inode->i_transaction->t_journal;
-+	/* Locks are here just to force reading of recent values, it is
-+	 * enough that the transaction was not committing before we started
-+	 * a transaction adding the inode to orphan list */
- 	spin_lock(&journal->j_state_lock);
- 	commit_trans = journal->j_committing_transaction;
- 	spin_unlock(&journal->j_state_lock);
--	if (inode->i_transaction == commit_trans) {
--		ret = filemap_fdatawrite_range(inode->i_vfs_inode->i_mapping,
-+	spin_lock(&journal->j_list_lock);
-+	inode_trans = jinode->i_transaction;
-+	spin_unlock(&journal->j_list_lock);
-+	if (inode_trans == commit_trans) {
-+		ret = filemap_fdatawrite_range(jinode->i_vfs_inode->i_mapping,
- 			new_size, LLONG_MAX);
- 		if (ret)
- 			jbd2_journal_abort(journal, ret);
---- a/include/linux/jbd2.h
-+++ b/include/linux/jbd2.h
-@@ -1075,7 +1075,8 @@ extern int	   jbd2_journal_clear_err  (j
- extern int	   jbd2_journal_bmap(journal_t *, unsigned long, unsigned long long *);
- extern int	   jbd2_journal_force_commit(journal_t *);
- extern int	   jbd2_journal_file_inode(handle_t *handle, struct jbd2_inode *inode);
--extern int	   jbd2_journal_begin_ordered_truncate(struct jbd2_inode *inode, loff_t new_size);
-+extern int	   jbd2_journal_begin_ordered_truncate(journal_t *journal,
-+				struct jbd2_inode *inode, loff_t new_size);
- extern void	   jbd2_journal_init_jbd_inode(struct jbd2_inode *jinode, struct inode *inode);
- extern void	   jbd2_journal_release_jbd_inode(journal_t *journal, struct jbd2_inode *jinode);
- 
+--- a/drivers/net/usb/asix.c
++++ b/drivers/net/usb/asix.c
+@@ -1448,6 +1448,14 @@ static const struct usb_device_id	produc
+ 	// Cables-to-Go USB Ethernet Adapter
+ 	USB_DEVICE(0x0b95, 0x772a),
+ 	.driver_info = (unsigned long) &ax88772_info,
++}, {
++	// ABOCOM for pci
++	USB_DEVICE(0x14ea, 0xab11),
++	.driver_info = (unsigned long) &ax88178_info,
++}, {
++	// ASIX 88772a
++	USB_DEVICE(0x0db0, 0xa877),
++	.driver_info = (unsigned long) &ax88772_info,
+ },
+ 	{ },		// END
+ };
 
 
