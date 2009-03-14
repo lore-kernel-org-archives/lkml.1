@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764046AbZCNBiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763144AbZCNBjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764046AbZCNBiz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZCNBUy
+	id S1763144AbZCNBjk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbZCNBU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:54 -0400
-Received: from kroah.org ([198.145.64.141]:35268 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:56 -0400
+Received: from kroah.org ([198.145.64.141]:35294 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753780AbZCNBUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:33 -0400
+	id S1753847AbZCNBUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:35 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:39 2009
-Message-Id: <20090314011038.947763527@mini.kroah.org>
+Message-Id: <20090314011039.231422071@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:28 -0700
+Date: Fri, 13 Mar 2009 18:10:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Will Newton <will.newton@gmail.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 051/114] mtd_dataflash: fix probing of AT45DB321C chips.
+       alan@lxorguk.ukuu.org.uk, "Jorge Boncompte [DTI2]" <jorge@dti2.net>,
+       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>
+Subject: [patch 053/114] fs: new inode i_state corruption fix
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=mtd_dataflash-fix-probing-of-at45db321c-chips.patch
+Content-Disposition: inline; filename=fs-new-inode-i_state-corruption-fix.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,38 +39,156 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Will Newton <will.newton@gmail.com>
+From: Nick Piggin <npiggin@suse.de>
 
-commit 229cc58ba2b5a83b0b55764c6cb98695c106238a upstream.
+commit 7ef0d7377cb287e08f3ae94cebc919448e1f5dff upstream.
 
-Commit 771999b65f79264acde4b855e5d35696eca5e80c ("[MTD] DataFlash: bugfix,
-binary page sizes now handled") broke support for probing AT45DB321C flash
-chips.  These chips do not support the "page size" status bit, so if we
-match the JEDEC id return early.
+There was a report of a data corruption
+http://lkml.org/lkml/2008/11/14/121.  There is a script included to
+reproduce the problem.
 
-[akpm@linux-foundation.org: coding-style fixes]
-Signed-off-by: Will Newton <will.newton@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+During testing, I encountered a number of strange things with ext3, so I
+tried ext2 to attempt to reduce complexity of the problem.  I found that
+fsstress would quickly hang in wait_on_inode, waiting for I_LOCK to be
+cleared, even though instrumentation showed that unlock_new_inode had
+already been called for that inode.  This points to memory scribble, or
+synchronisation problme.
+
+i_state of I_NEW inodes is not protected by inode_lock because other
+processes are not supposed to touch them until I_LOCK (and I_NEW) is
+cleared.  Adding WARN_ON(inode->i_state & I_NEW) to sites where we modify
+i_state revealed that generic_sync_sb_inodes is picking up new inodes from
+the inode lists and passing them to __writeback_single_inode without
+waiting for I_NEW.  Subsequently modifying i_state causes corruption.  In
+my case it would look like this:
+
+CPU0                            CPU1
+unlock_new_inode()              __sync_single_inode()
+ reg <- inode->i_state
+ reg -> reg & ~(I_LOCK|I_NEW)   reg <- inode->i_state
+ reg -> inode->i_state          reg -> reg | I_SYNC
+                                reg -> inode->i_state
+
+Non-atomic RMW on CPU1 overwrites CPU0 store and sets I_LOCK|I_NEW again.
+
+Fix for this is rather than wait for I_NEW inodes, just skip over them:
+inodes concurrently being created are not subject to data integrity
+operations, and should not significantly contribute to dirty memory
+either.
+
+After this change, I'm unable to reproduce any of the added warnings or
+hangs after ~1hour of running.  Previously, the new warnings would start
+immediately and hang would happen in under 5 minutes.
+
+I'm also testing on ext3 now, and so far no problems there either.  I
+don't know whether this fixes the problem reported above, but it fixes a
+real problem for me.
+
+Cc: "Jorge Boncompte [DTI2]" <jorge@dti2.net>
+Reported-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: Jan Kara <jack@suse.cz>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/mtd/devices/mtd_dataflash.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/fs-writeback.c |    9 ++++++++-
+ fs/inode.c        |    7 +++++++
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
---- a/drivers/mtd/devices/mtd_dataflash.c
-+++ b/drivers/mtd/devices/mtd_dataflash.c
-@@ -815,7 +815,8 @@ static struct flash_info *__devinit jede
- 					if (!(info->flags & IS_POW2PS))
- 						return info;
- 				}
--			}
-+			} else
-+				return info;
- 		}
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -274,6 +274,7 @@ __sync_single_inode(struct inode *inode,
+ 	int ret;
+ 
+ 	BUG_ON(inode->i_state & I_SYNC);
++	WARN_ON(inode->i_state & I_NEW);
+ 
+ 	/* Set I_SYNC, reset I_DIRTY */
+ 	dirty = inode->i_state & I_DIRTY;
+@@ -298,6 +299,7 @@ __sync_single_inode(struct inode *inode,
  	}
  
+ 	spin_lock(&inode_lock);
++	WARN_ON(inode->i_state & I_NEW);
+ 	inode->i_state &= ~I_SYNC;
+ 	if (!(inode->i_state & I_FREEING)) {
+ 		if (!(inode->i_state & I_DIRTY) &&
+@@ -470,6 +472,11 @@ void generic_sync_sb_inodes(struct super
+ 			break;
+ 		}
+ 
++		if (inode->i_state & I_NEW) {
++			requeue_io(inode);
++			continue;
++		}
++
+ 		if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 			wbc->encountered_congestion = 1;
+ 			if (!sb_is_blkdev_sb(sb))
+@@ -531,7 +538,7 @@ void generic_sync_sb_inodes(struct super
+ 		list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+ 			struct address_space *mapping;
+ 
+-			if (inode->i_state & (I_FREEING|I_WILL_FREE))
++			if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
+ 				continue;
+ 			mapping = inode->i_mapping;
+ 			if (mapping->nrpages == 0)
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -339,6 +339,7 @@ static int invalidate_list(struct list_h
+ 		invalidate_inode_buffers(inode);
+ 		if (!atomic_read(&inode->i_count)) {
+ 			list_move(&inode->i_list, dispose);
++			WARN_ON(inode->i_state & I_NEW);
+ 			inode->i_state |= I_FREEING;
+ 			count++;
+ 			continue;
+@@ -440,6 +441,7 @@ static void prune_icache(int nr_to_scan)
+ 				continue;
+ 		}
+ 		list_move(&inode->i_list, &freeable);
++		WARN_ON(inode->i_state & I_NEW);
+ 		inode->i_state |= I_FREEING;
+ 		nr_pruned++;
+ 	}
+@@ -595,6 +597,7 @@ void unlock_new_inode(struct inode *inod
+ 	 * just created it (so there can be no old holders
+ 	 * that haven't tested I_LOCK).
+ 	 */
++	WARN_ON((inode->i_state & (I_LOCK|I_NEW)) != (I_LOCK|I_NEW));
+ 	inode->i_state &= ~(I_LOCK|I_NEW);
+ 	wake_up_inode(inode);
+ }
+@@ -1041,6 +1044,7 @@ void generic_delete_inode(struct inode *
+ 
+ 	list_del_init(&inode->i_list);
+ 	list_del_init(&inode->i_sb_list);
++	WARN_ON(inode->i_state & I_NEW);
+ 	inode->i_state |= I_FREEING;
+ 	inodes_stat.nr_inodes--;
+ 	spin_unlock(&inode_lock);
+@@ -1082,16 +1086,19 @@ static void generic_forget_inode(struct 
+ 			spin_unlock(&inode_lock);
+ 			return;
+ 		}
++		WARN_ON(inode->i_state & I_NEW);
+ 		inode->i_state |= I_WILL_FREE;
+ 		spin_unlock(&inode_lock);
+ 		write_inode_now(inode, 1);
+ 		spin_lock(&inode_lock);
++		WARN_ON(inode->i_state & I_NEW);
+ 		inode->i_state &= ~I_WILL_FREE;
+ 		inodes_stat.nr_unused--;
+ 		hlist_del_init(&inode->i_hash);
+ 	}
+ 	list_del_init(&inode->i_list);
+ 	list_del_init(&inode->i_sb_list);
++	WARN_ON(inode->i_state & I_NEW);
+ 	inode->i_state |= I_FREEING;
+ 	inodes_stat.nr_inodes--;
+ 	spin_unlock(&inode_lock);
 
 
