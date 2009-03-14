@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbZCNAVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbZCNA0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbZCNAVJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:21:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbZCNAS2
+	id S1759230AbZCNA0V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZCNASp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:28 -0400
-Received: from kroah.org ([198.145.64.141]:46642 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:45 -0400
+Received: from kroah.org ([198.145.64.141]:46825 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752536AbZCNAS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:27 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:39 2009
-Message-Id: <20090314000739.667137229@mini.kroah.org>
+	id S1752865AbZCNASm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:42 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:42 2009
+Message-Id: <20090314000742.172279014@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:15 -0700
+Date: Fri, 13 Mar 2009 17:05:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Christoph Hellwig <hch@lst.de>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: [patch 07/96] documnt FMODE_ constants
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 22/96] USB: usb_get_string should check the descriptor type
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=documnt-fmode_-constants.patch
+Content-Disposition: inline; filename=usb-usb_get_string-should-check-the-descriptor-type.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,55 +38,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Christoph Hellwig <hch@lst.de>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit fc9161e54d0dbf799beff9692ea1cc6237162b85 upstream.
+commit 67f5a4ba9741fcef3f4db3509ad03565d9e33af2 upstream.
 
-Make sure all FMODE_ constants are documents, and ensure a coherent
-style for the already existing comments.
+This patch (as1218) fixes a problem with a radio-control joystick used
+in the "walkera 4#3" helicopter.  This device responds to the initial
+Get-String-Descriptor request for string 0 (which is really the list
+of supported languages) by sending its config descriptor!  The
+usb_get_string() routine needs to check whether it got the right
+type of descriptor.
 
-[This is needed for the next patch in the .27 kernel which
- changes fs.h.  This patch makes it easier to handle. - gkh]
+Oddly enough, this sort of check is already present in
+usb_get_descriptor().  The patch changes the error code from -EPROTO
+to -ENODATA, because -EPROTO shows up in so many other contexts to
+indicate a hardware failure rather than a firmware error.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Guillermo Jarabo <williamjap@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/fs.h |   23 +++++++++++------------
- 1 file changed, 11 insertions(+), 12 deletions(-)
+ drivers/usb/core/message.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -63,18 +63,17 @@ extern int dir_notify_enable;
- #define MAY_ACCESS 16
- #define MAY_OPEN 32
- 
--#define FMODE_READ 1
--#define FMODE_WRITE 2
--
--/* Internal kernel extensions */
--#define FMODE_LSEEK	4
--#define FMODE_PREAD	8
--#define FMODE_PWRITE	FMODE_PREAD	/* These go hand in hand */
--
--/* File is being opened for execution. Primary users of this flag are
--   distributed filesystems that can use it to achieve correct ETXTBUSY
--   behavior for cross-node execution/opening_for_writing of files */
--#define FMODE_EXEC	16
-+/* file is open for reading */
-+#define FMODE_READ		(1)
-+/* file is open for writing */
-+#define FMODE_WRITE		(2)
-+/* file is seekable */
-+#define FMODE_LSEEK		(4)
-+/* file can be accessed using pread/pwrite */
-+#define FMODE_PREAD		(8)
-+#define FMODE_PWRITE		FMODE_PREAD	/* These go hand in hand */
-+/* File is opened for execution with sys_execve / sys_uselib */
-+#define FMODE_EXEC		(16)
- 
- #define RW_MASK		1
- #define RWA_MASK	2
+--- a/drivers/usb/core/message.c
++++ b/drivers/usb/core/message.c
+@@ -651,7 +651,7 @@ int usb_get_descriptor(struct usb_device
+ 		if (result <= 0 && result != -ETIMEDOUT)
+ 			continue;
+ 		if (result > 1 && ((u8 *)buf)[1] != type) {
+-			result = -EPROTO;
++			result = -ENODATA;
+ 			continue;
+ 		}
+ 		break;
+@@ -694,8 +694,13 @@ static int usb_get_string(struct usb_dev
+ 			USB_REQ_GET_DESCRIPTOR, USB_DIR_IN,
+ 			(USB_DT_STRING << 8) + index, langid, buf, size,
+ 			USB_CTRL_GET_TIMEOUT);
+-		if (!(result == 0 || result == -EPIPE))
+-			break;
++		if (result == 0 || result == -EPIPE)
++			continue;
++		if (result > 1 && ((u8 *) buf)[1] != USB_DT_STRING) {
++			result = -ENODATA;
++			continue;
++		}
++		break;
+ 	}
+ 	return result;
+ }
 
 
