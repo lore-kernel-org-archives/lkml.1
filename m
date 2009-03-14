@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764848AbZCNBro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764860AbZCNBsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764848AbZCNBro (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbZCNBV3
+	id S1764860AbZCNBsI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbZCNBVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:29 -0400
-Received: from kroah.org ([198.145.64.141]:35555 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:31 -0400
+Received: from kroah.org ([198.145.64.141]:35563 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753324AbZCNBU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:58 -0400
+	id S1754550AbZCNBU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:59 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:42 2009
-Message-Id: <20090314011042.474559392@mini.kroah.org>
+Message-Id: <20090314011042.626092557@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:52 -0700
+Date: Fri, 13 Mar 2009 18:10:53 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       =?ISO-8859-15?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>,
+       alan@lxorguk.ukuu.org.uk, Dmitriy Taychenachev <dimichxp@gmail.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 075/114] cdc_ether: add usb id for Ericsson F3507g
+Subject: [patch 076/114] zaurus: add usb id for motomagx phones
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=cdc_ether-add-usb-id-for-ericsson-f3507g.patch
+Content-Disposition: inline; filename=zaurus-add-usb-id-for-motomagx-phones.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,42 +39,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Bjørn Mork <bjorn@mork.no>
+From: Dmitriy Taychenachev <dimichxp@gmail.com>
 
-commit cac477e8f1038c41b6f29d3161ce351462ef3df7 upstream.
+commit 52c0326beaa3cb0049d0f1c51c6ad5d4a04e4430 upstream.
 
-The Ericsson F3507g wireless broadband module provides a CDC Ethernet
-compliant interface, but identifies it as a "Mobile Direct Line" CDC
-subclass, thereby preventing the CDC Ethernet class driver from picking
-it up.  This patch adds the device id to cdc_ether.c as a workaround.
+The Motorola MOTOMAGX phones (Z6, E8, Zn5 so far) are providing
+combined ACM/BLAN USB configuration. Since it has Vendor Specific
+class, the corresponding drivers (cdc-acm, zaurus) can't find it just
+by interface info. This patch adds usb id so the zaurus driver can
+properly handle this combined device.
 
-Ericsson has provided a "class" driver for this device:
-http://kerneltrap.org/mailarchive/linux-net/2008/10/28/3832094
-But closer inspection of that driver reveals that it adds little more
-than duplication of code from cdc_ether.c.  See also
-http://marc.info/?l=linux-usb&m=123334979706403&w=2
-
-Signed-off-by: Bjørn Mork <bjorn@mork.no>
+Signed-off-by: Dmitriy Taychenachev <dimichxp@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/usb/cdc_ether.c |    5 +++++
+ drivers/net/usb/zaurus.c |    5 +++++
  1 file changed, 5 insertions(+)
 
---- a/drivers/net/usb/cdc_ether.c
-+++ b/drivers/net/usb/cdc_ether.c
-@@ -559,6 +559,11 @@ static const struct usb_device_id	produc
- 	USB_INTERFACE_INFO(USB_CLASS_COMM, USB_CDC_SUBCLASS_ETHERNET,
+--- a/drivers/net/usb/zaurus.c
++++ b/drivers/net/usb/zaurus.c
+@@ -341,6 +341,11 @@ static const struct usb_device_id	produc
+ 	USB_INTERFACE_INFO(USB_CLASS_COMM, USB_CDC_SUBCLASS_MDLM,
  			USB_CDC_PROTO_NONE),
- 	.driver_info = (unsigned long) &cdc_info,
+ 	.driver_info = (unsigned long) &bogus_mdlm_info,
 +}, {
-+	/* Ericsson F3507g */
-+	USB_DEVICE_AND_INTERFACE_INFO(0x0bdb, 0x1900, USB_CLASS_COMM,
++	/* Motorola MOTOMAGX phones */
++	USB_DEVICE_AND_INTERFACE_INFO(0x22b8, 0x6425, USB_CLASS_COMM,
 +			USB_CDC_SUBCLASS_MDLM, USB_CDC_PROTO_NONE),
-+	.driver_info = (unsigned long) &cdc_info,
++	.driver_info = (unsigned long) &bogus_mdlm_info,
  },
- 	{ },		// END
- };
+ 
+ /* Olympus has some models with a Zaurus-compatible option.
 
 
