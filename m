@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbZCNDst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZCNDwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbZCNDst (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 23:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbZCNDsl
+	id S1754503AbZCNDwh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 23:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZCNDw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 23:48:41 -0400
-Received: from gate.crashing.org ([63.228.1.57]:43208 "EHLO gate.crashing.org"
+	Fri, 13 Mar 2009 23:52:28 -0400
+Received: from gate.crashing.org ([63.228.1.57]:60784 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752055AbZCNDsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 23:48:40 -0400
+	id S1751256AbZCNDw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 23:52:27 -0400
 Subject: Re: [patch 02/11] x86 architecture implementation of Hardware
  Breakpoint interfaces
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: prasad@linux.vnet.ibm.com
-Cc: Alan Stern <stern@rowland.harvard.edu>, Ingo Molnar <mingo@elte.hu>,
+To: Roland McGrath <roland@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, prasad@linux.vnet.ibm.com,
        Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>
-In-Reply-To: <20090311174115.GD9547@in.ibm.com>
-References: <20090311121220.GI2282@elte.hu>
-	 <Pine.LNX.4.44L0.0903111151580.2692-100000@iolanthe.rowland.org>
-	 <20090311174115.GD9547@in.ibm.com>
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Gibson <dwgibson@au1.ibm.com>, Torez Smith <torez@us.ibm.com>
+In-Reply-To: <20090312024617.3F392FC3B6@magilla.sf.frob.com>
+References: <20090305043440.189041194@linux.vnet.ibm.com>
+	 <20090305043801.GC17747@in.ibm.com> <20090310140950.GD3850@elte.hu>
+	 <20090312024617.3F392FC3B6@magilla.sf.frob.com>
 Content-Type: text/plain
-Date: Sat, 14 Mar 2009 14:47:35 +1100
-Message-Id: <1237002455.25062.83.camel@pasglop>
+Date: Sat, 14 Mar 2009 14:51:06 +1100
+Message-Id: <1237002666.25062.85.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
@@ -31,25 +32,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-11 at 23:11 +0530, K.Prasad wrote:
-> With FCFS or an allocation mechanism without the (un)installed()
-> callbacks we'd lose the ability to record requests and service them
-> later when registers become availabile.
+On Wed, 2009-03-11 at 19:46 -0700, Roland McGrath wrote:
 > 
-> Say when (un)installed() callbacks are implemented for the proposed
-> ftrace-plugin to trace kernel symbols, they can automatically stop/start
-> tracing as and when registers become (un)available. This can be helpful when
-> we wish to profile memory access over a kernel variable for a long duration
-> (where small loss of tracing data can be tolerated), while the system would
-> permit simultaneous user-space access (say a GDB session using 'hbreak').
+> I think it would be illustrative to have a second arch implementation to
+> compare to the x86 one.  Ingo has a tendency to pretend everything is an
+> x86 until shown the concrete evidence.  The obvious choice is powerpc.
+> Its facility is very simple, so the arch-specific part of the
+> implementation should be trivial--it's the "base case" of simplest
+> available hw_breakpoint arch, really.  Also, it happens that Prasad's
+> employer is interested in having that support.
 > 
-> Are we fine with disallowing such usage, which if done will let the requester
-> of the breakpoint register 'poll' periodically to check availability.
+> For example, a sensible powerpc implementation would clearly demonstrate
+> why you need accessors or at least either pre-registration setters or
+> explicit type/len arguments in registration calls.
 
-Is that such a big deal ? Can't we just have the kernel degrade to
-classic SW breakpoints ?
+Well, we happen to be just in the middle of implementing support for
+BookE HW debug facilities :-) (which have more HW breakpoints &
+watchpoints than server PPCs along with fancy features like ranged
+breakpoints or value compare) so it's a right time to give that a try.
 
-Smells like overengineering to me ...
+I'm Ccing David Gibson and Torez Smith who both have been working on the
+infrastructure to control the debug regs. For now we are just giving
+pretty much direct access to the debug regs from ptrace (since they are
+somewhat architected they are very similar if not identical between a
+whole bunch of embedded powerpc's) but a more abstract interface would
+be nice.
 
 Ben.
 
