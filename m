@@ -1,55 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbZCNSZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZCNSk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756363AbZCNSZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 14:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbZCNSZL
+	id S1756630AbZCNSk5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 14:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbZCNSkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 14:25:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41065 "EHLO ogre.sisk.pl"
+	Sat, 14 Mar 2009 14:40:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47786 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbZCNSZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 14:25:10 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [Bug #12405] oops in __bounce_end_io_read under kvm
-Date: Sat, 14 Mar 2009 19:25:00 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <r4SCKuuJK0F.A.UrB.QdarJB@chimera> <pRIaSZpQ1ON.A.TND.CearJB@chimera> <20090314150407.GB27604@lst.de>
-In-Reply-To: <20090314150407.GB27604@lst.de>
+	id S1752706AbZCNSkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 14:40:46 -0400
+Date: Sat, 14 Mar 2009 19:40:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/mm] x86: make e820_update_range() handle small range
+	update
+Message-ID: <20090314184010.GA17695@elte.hu>
+References: <49B9F0C1.10402@kernel.org> <tip-78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742@git.kernel.org> <20090314121705.GA13685@elte.hu> <49BBF59D.7060401@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903141925.01318.rjw@sisk.pl>
+In-Reply-To: <49BBF59D.7060401@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 14 March 2009, Christoph Hellwig wrote:
-> On Tue, Mar 03, 2009 at 08:41:32PM +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.27 and 2.6.28.
+
+* Yinghai Lu <yinghai@kernel.org> wrote:
+
+> Ingo Molnar wrote:
+> > * Yinghai Lu <yinghai@kernel.org> wrote:
 > > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> > be listed and let me know (either way).
+> >> Commit-ID:  78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
+> >> Gitweb:     http://git.kernel.org/tip/78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
+> >> Author:     Yinghai Lu <yinghai@kernel.org>
+> >> AuthorDate: Thu, 12 Mar 2009 22:36:01 -0700
+> >> Commit:     Ingo Molnar <mingo@elte.hu>
+> >> CommitDate: Sat, 14 Mar 2009 12:20:07 +0100
+> >>
+> >> x86: make e820_update_range() handle small range update
+> >>
+> >> Impact: enhance e820 code to handle more cases
+> >>
+> >> Try to handle new range which could be covered by one entry.
+> >>
+> >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >> Cc: jbeulich@novell.com
+> >> LKML-Reference: <49B9F0C1.10402@kernel.org>
+> >> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > > 
+> > -tip testing found a bootup crash + reboot due to this patch.
 > > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12405
-> > Subject		: oops in __bounce_end_io_read under kvm
-> > Submitter	: Christoph Hellwig <hch@lst.de>
-> > Date		: 2008-12-26 17:36 (68 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123031303400676&w=4
+> > config attached. The bootup crashes here:
+> > 
+> > [    0.000000] MTRR variable ranges enabled:
+> > [    0.000000]   0 base 0000000000 mask FFC0000000 write-back
+> > [    0.000000]   1 disabled
+> > [    0.000000]   2 disabled
+> > [    0.000000]   3 disabled
+> > [    0.000000]   4 disabled
+> > [    0.000000]   5 disabled
+> > [    0.000000]   6 disabled
+> > [    0.000000]   7 disabled
+> > [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+> > [    0.000000]   get_mtrr: cpu0 reg00 base=0000000000 size=0000040000 write-back
+> > [    reboot  ]
+> > 
 > 
-> I haven't been able to hit this anymore for a while.
+> what does the e820 map look like?
 
-Let's assume it's been fixed, then. :-)
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+[    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+[    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+[    0.000000]  BIOS-e820: 0000000000100000 - 000000003fff0000 (usable)
+[    0.000000]  BIOS-e820: 000000003fff0000 - 000000003fff3000 (ACPI NVS)
+[    0.000000]  BIOS-e820: 000000003fff3000 - 0000000040000000 (ACPI data)
+[    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+[    0.000000]  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
 
-I've closed the bug, please reopen if you see it again.
-
-Thanks,
-Rafael
+	Ingo
