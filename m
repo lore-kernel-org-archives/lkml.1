@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbZCNLSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbZCNLTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755298AbZCNLSP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 07:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754340AbZCNLRn
+	id S1755463AbZCNLTd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 07:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbZCNLTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 07:17:43 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:36123 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754623AbZCNLRm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 07:17:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Ax84/bLslbU0NATZWbxnJgr9C82LT5pyy/ayUtRb9as2ercwXyY47DPWD8FNyJeZ8g
-         yia0FAy/usNKDowOOYrQe1T1L9dETt5Cw6u19Hax51SUUvt8QYRpS2KaCuhCwEyJTH43
-         J2bL6TAZz7C+smRlAB2eZgihnLZASr/Et/VyI=
+	Sat, 14 Mar 2009 07:19:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50390 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754340AbZCNLTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 07:19:23 -0400
+Date: Sat, 14 Mar 2009 12:18:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/mtrr] x86: more MTRR debug printouts
+Message-ID: <20090314111851.GA24536@elte.hu>
+References: <49B9BA5A.40108@kernel.org> <tip-8ad9790588ee2e69118b2b294ddab6f3f0379ad9@git.kernel.org> <1236958403.2646.1.camel@ht.satnam> <1236959121.2646.3.camel@ht.satnam> <49BAB7FF.4030107@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20090313173353.10169.23515.stgit@warthog.procyon.org.uk>
-References: <20090313173343.10169.58053.stgit@warthog.procyon.org.uk>
-	 <20090313173353.10169.23515.stgit@warthog.procyon.org.uk>
-Date: Sat, 14 Mar 2009 20:17:40 +0900
-X-Google-Sender-Auth: 07b565ea9ad856e5
-Message-ID: <2f11576a0903140417p390e15e6o316916c764a16616@mail.gmail.com>
-Subject: Re: [PATCH 2/2] NOMMU: Make CONFIG_UNEVICTABLE_LRU available when 
-	CONFIG_MMU=n
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Howells <dhowells@redhat.com>
-Cc: minchan.kim@gmail.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, peterz@infradead.org,
-       nrik.Berkhan@ge.com, uclinux-dev@uclinux.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hannes@cmpxchg.org,
-       riel@surriel.com, lee.schermerhorn@hp.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49BAB7FF.4030107@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index 8c89597..b53427a 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -206,7 +206,6 @@ config VIRT_TO_BUS
->  config UNEVICTABLE_LRU
->        bool "Add LRU list to track non-evictable pages"
->        default y
-> -       depends on MMU
->        help
->          Keeps unevictable pages off of the active and inactive pageout
->          lists, so kswapd will not waste CPU time or have its balancing
 
-   Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+* Yinghai Lu <yinghai@kernel.org> wrote:
+
+> +	preempt_disable();
+> +	cpu = smp_processor_id();
+
+in such cases it's better to use a get_cpu() / put_cpu() 
+construct.
+
+	Ingo
