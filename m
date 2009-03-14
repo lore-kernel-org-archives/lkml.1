@@ -1,103 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763264AbZCNAyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbZCNAla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763264AbZCNAyZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757834AbZCNA1M
+	id S1752608AbZCNAla (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbZCNATi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:27:12 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:58022 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755144AbZCNA1K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:27:10 -0400
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>,
-       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mingo@elte.hu,
-       mpm@selenic.com, Andrew Morton <akpm@linux-foundation.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de,
-       xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ do?
-References: <1234479845.30155.220.camel@nimitz>
-	<20090226155755.GA1456@x200.localdomain>
-	<20090310215305.GA2078@x200.localdomain> <49B775B4.1040800@free.fr>
-	<20090312145311.GC12390@us.ibm.com> <1236891719.32630.14.camel@bahia>
-	<20090312212124.GA25019@us.ibm.com>
-	<604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>
-	<20090313053458.GA28833@us.ibm.com>
-	<alpine.LFD.2.00.0903131018390.3940@localhost.localdomain>
-	<20090313193500.GA2285@x200.localdomain>
-	<alpine.LFD.2.00.0903131401070.3940@localhost.localdomain>
-	<1236981097.30142.251.camel@nimitz> <49BADAE5.8070900@cs.columbia.edu>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 13 Mar 2009 17:27:02 -0700
-In-Reply-To: <49BADAE5.8070900@cs.columbia.edu> (Oren Laadan's message of "Fri\, 13 Mar 2009 18\:15\:01 -0400")
-Message-ID: <m1hc1xrlt5.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+	Fri, 13 Mar 2009 20:19:38 -0400
+Received: from kroah.org ([198.145.64.141]:34863 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753589AbZCNAT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:26 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:49 2009
+Message-Id: <20090314000748.863538713@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 13 Mar 2009 17:06:13 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Karsten Wiese <fzu@wemgehoertderstaat.de>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 65/96] USB: EHCI: slow down ITD reuse
+References: <20090314000508.803142980@mini.kroah.org>
+Content-Disposition: inline; filename=usb-ehci-slow-down-itd-reuse.patch
+In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oren Laadan <orenl@cs.columbia.edu> writes:
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-> Dave Hansen wrote:
->> On Fri, 2009-03-13 at 14:01 -0700, Linus Torvalds wrote:
->>> On Fri, 13 Mar 2009, Alexey Dobriyan wrote:
->>>>> Let's face it, we're not going to _ever_ checkpoint any kind of general 
->>>>> case process. Just TCP makes that fundamentally impossible in the general 
->>>>> case, and there are lots and lots of other cases too (just something as 
->>>>> totally _trivial_ as all the files in the filesystem that don't get rolled 
->>>>> back).
->>>> What do you mean here? Unlinked files?
->>> Or modified files, or anything else. "External state" is a pretty damn 
->>> wide net. It's not just TCP sequence numbers and another machine.
->> 
->> This is precisely the reason that we've focused so hard on containers,
->> and *didn't* just jump right into checkpoint/restart; we're trying
->> really hard to constrain the _truly_ external things that a process can
->> interact with.  
->> 
->> The approach so far has largely been to make things are external to a
->> process at least *internal* to a container.  Network, pid, ipc, and uts
->> namespaces, for example.  An ipc/sem.c semaphore may be external to a
->> process, so we'll just pick the whole namespace up and checkpoint it
->> along with the process.
->> 
->> In the OpenVZ case, they've at least demonstrated that the filesystem
->> can be moved largely with rsync.  Unlinked files need some in-kernel TLC
->> (or /proc mangling) but it isn't *that* bad.
->
-> And in the Zap we have successfully used a log-based filesystem
-> (specifically NILFS) to continuously snapshot the file-system atomically
-> with taking a checkpoint, so it can easily branch off past checkpoints,
-> including the file system.
->
-> And unlinked files can be (inefficiently) handled by saving their full
-> contents with the checkpoint image - it's not a big toll on many apps
-> (if you exclude Wine and UML...). At least that's a start.
+------------------
 
-Oren we might want to do a proof of concept implementation like I did
-with network namespaces.  That is done in the community and goes far
-enough to show we don't have horribly nasty code.  The patches and
-individual changes don't need to be quite perfect but close enough
-that they can be considered for merging.
+From: Karsten Wiese <fzu@wemgehoertderstaat.de>
 
-For the network namespace that seems to have made a big difference.
+commit 9aa09d2f8f4bc440d6db1c3414d4009642875240 upstream.
 
-I'm afraid in our clean start we may have focused a little too much
-on merging something simple and not gone far enough on showing that
-things will work.
+Currently ITDs are immediately recycled whenever their URB completes.
+However, EHCI hardware can sometimes remember some ITD state.  This
+means that when the ITD is reused before end-of-frame it may sometimes
+cause the hardware to reference bogus state.
 
-After I had that in the network namespace and we had a clear vision of
-the direction.   We started merging the individual patches and things
-went well.
+This patch defers reusing such ITDs by moving them into a new ehci member
+cached_itd_list. ITDs resting in cached_itd_list are moved back into their
+stream's free_list once scan_periodic() detects that the active frame has
+elapsed.
 
-Eric
+This makes the snd_usb_us122l driver (in kernel since .28) work right
+when it's hooked up through EHCI.
+
+[ dbrownell@users.sourceforge.net: comment fixups ]
+
+Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
+Tested-by: Philippe Carriere <philippe-f.carriere@wanadoo.fr>
+Tested-by: Federico Briata <federicobriata@gmail.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/host/ehci-hcd.c   |    2 +
+ drivers/usb/host/ehci-mem.c   |    1 
+ drivers/usb/host/ehci-sched.c |   56 ++++++++++++++++++++++++++++++++++++------
+ drivers/usb/host/ehci.h       |    6 ++++
+ 4 files changed, 57 insertions(+), 8 deletions(-)
+
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -87,6 +87,10 @@ struct ehci_hcd {			/* one per controlle
+ 	int			next_uframe;	/* scan periodic, start here */
+ 	unsigned		periodic_sched;	/* periodic activity count */
+ 
++	/* list of itds completed while clock_frame was still active */
++	struct list_head	cached_itd_list;
++	unsigned		clock_frame;
++
+ 	/* per root hub port */
+ 	unsigned long		reset_done [EHCI_MAX_ROOT_PORTS];
+ 
+@@ -208,6 +212,8 @@ timer_action (struct ehci_hcd *ehci, enu
+ 	}
+ }
+ 
++static void free_cached_itd_list(struct ehci_hcd *ehci);
++
+ /*-------------------------------------------------------------------------*/
+ 
+ /* EHCI register interface, corresponds to EHCI Revision 0.95 specification */
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -485,6 +485,7 @@ static int ehci_init(struct usb_hcd *hcd
+ 	 * periodic_size can shrink by USBCMD update if hcc_params allows.
+ 	 */
+ 	ehci->periodic_size = DEFAULT_I_TDPS;
++	INIT_LIST_HEAD(&ehci->cached_itd_list);
+ 	if ((retval = ehci_mem_init(ehci, GFP_KERNEL)) < 0)
+ 		return retval;
+ 
+@@ -497,6 +498,7 @@ static int ehci_init(struct usb_hcd *hcd
+ 
+ 	ehci->reclaim = NULL;
+ 	ehci->next_uframe = -1;
++	ehci->clock_frame = -1;
+ 
+ 	/*
+ 	 * dedicate a qh for the async ring head, since we couldn't unlink
+--- a/drivers/usb/host/ehci-mem.c
++++ b/drivers/usb/host/ehci-mem.c
+@@ -128,6 +128,7 @@ static inline void qh_put (struct ehci_q
+ 
+ static void ehci_mem_cleanup (struct ehci_hcd *ehci)
+ {
++	free_cached_itd_list(ehci);
+ 	if (ehci->async)
+ 		qh_put (ehci->async);
+ 	ehci->async = NULL;
+--- a/drivers/usb/host/ehci-sched.c
++++ b/drivers/usb/host/ehci-sched.c
+@@ -1004,7 +1004,8 @@ iso_stream_put(struct ehci_hcd *ehci, st
+ 
+ 		is_in = (stream->bEndpointAddress & USB_DIR_IN) ? 0x10 : 0;
+ 		stream->bEndpointAddress &= 0x0f;
+-		stream->ep->hcpriv = NULL;
++		if (stream->ep)
++			stream->ep->hcpriv = NULL;
+ 
+ 		if (stream->rescheduled) {
+ 			ehci_info (ehci, "ep%d%s-iso rescheduled "
+@@ -1653,14 +1654,28 @@ itd_complete (
+ 			(stream->bEndpointAddress & USB_DIR_IN) ? "in" : "out");
+ 	}
+ 	iso_stream_put (ehci, stream);
+-	/* OK to recycle this ITD now that its completion callback ran. */
++
+ done:
+ 	usb_put_urb(urb);
+ 	itd->urb = NULL;
+-	itd->stream = NULL;
+-	list_move(&itd->itd_list, &stream->free_list);
+-	iso_stream_put(ehci, stream);
+-
++	if (ehci->clock_frame != itd->frame || itd->index[7] != -1) {
++		/* OK to recycle this ITD now. */
++		itd->stream = NULL;
++		list_move(&itd->itd_list, &stream->free_list);
++		iso_stream_put(ehci, stream);
++	} else {
++		/* HW might remember this ITD, so we can't recycle it yet.
++		 * Move it to a safe place until a new frame starts.
++		 */
++		list_move(&itd->itd_list, &ehci->cached_itd_list);
++		if (stream->refcount == 2) {
++			/* If iso_stream_put() were called here, stream
++			 * would be freed.  Instead, just prevent reuse.
++			 */
++			stream->ep->hcpriv = NULL;
++			stream->ep = NULL;
++		}
++	}
+ 	return retval;
+ }
+ 
+@@ -2101,6 +2116,20 @@ done:
+ 
+ /*-------------------------------------------------------------------------*/
+ 
++static void free_cached_itd_list(struct ehci_hcd *ehci)
++{
++	struct ehci_itd *itd, *n;
++
++	list_for_each_entry_safe(itd, n, &ehci->cached_itd_list, itd_list) {
++		struct ehci_iso_stream	*stream = itd->stream;
++		itd->stream = NULL;
++		list_move(&itd->itd_list, &stream->free_list);
++		iso_stream_put(ehci, stream);
++	}
++}
++
++/*-------------------------------------------------------------------------*/
++
+ static void
+ scan_periodic (struct ehci_hcd *ehci)
+ {
+@@ -2115,10 +2144,17 @@ scan_periodic (struct ehci_hcd *ehci)
+ 	 * Touches as few pages as possible:  cache-friendly.
+ 	 */
+ 	now_uframe = ehci->next_uframe;
+-	if (HC_IS_RUNNING (ehci_to_hcd(ehci)->state))
++	if (HC_IS_RUNNING(ehci_to_hcd(ehci)->state)) {
+ 		clock = ehci_readl(ehci, &ehci->regs->frame_index);
+-	else
++		clock_frame = (clock >> 3) % ehci->periodic_size;
++	} else  {
+ 		clock = now_uframe + mod - 1;
++		clock_frame = -1;
++	}
++	if (ehci->clock_frame != clock_frame) {
++		free_cached_itd_list(ehci);
++		ehci->clock_frame = clock_frame;
++	}
+ 	clock %= mod;
+ 	clock_frame = clock >> 3;
+ 
+@@ -2277,6 +2313,10 @@ restart:
+ 			/* rescan the rest of this frame, then ... */
+ 			clock = now;
+ 			clock_frame = clock >> 3;
++			if (ehci->clock_frame != clock_frame) {
++				free_cached_itd_list(ehci);
++				ehci->clock_frame = clock_frame;
++			}
+ 		} else {
+ 			now_uframe++;
+ 			now_uframe %= mod;
+
+
