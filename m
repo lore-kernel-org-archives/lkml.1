@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763524AbZCNBet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763536AbZCNBfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763524AbZCNBet (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbZCNBUm
+	id S1763536AbZCNBfW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbZCNBUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:42 -0400
-Received: from kroah.org ([198.145.64.141]:35143 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:43 -0400
+Received: from kroah.org ([198.145.64.141]:35123 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753473AbZCNBUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753502AbZCNBUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Mar 2009 21:20:22 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:37 2009
-Message-Id: <20090314011037.297941272@mini.kroah.org>
+Message-Id: <20090314011037.453800119@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:17 -0700
+Date: Fri, 13 Mar 2009 18:10:18 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,14 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Spang <mspang@csclub.uwaterloo.ca>,
-       Thomas Renninger <trenn@suse.de>, Zhang Rui <rui.zhang@intel.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [patch 040/114] acer-wmi: fix regression in backlight detection
+       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
+       Nick Piggin <npiggin@suse.de>, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 041/114] vmalloc: call flush_cache_vunmap() from unmap_kernel_range()
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=acer-wmi-fix-regression-in-backlight-detection.patch
+Content-Disposition: inline; filename=vmalloc-call-flush_cache_vunmap-from-unmap_kernel_range.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -42,46 +39,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Michael Spang <mspang@csclub.uwaterloo.ca>
+From: Tejun Heo <tj@kernel.org>
 
-commit 1ba869ec581fd9078b684c56c399ffe3d2345e27 upstream.
+commit f6fcba7014f9cc535fa75ef98c008b24e49e2212 upstream.
 
-Currently we disable the Acer WMI backlight device if there is no ACPI
-backlight device.  As a result, we end up with no backlight device at all.
- We should instead disable it if there is an ACPI device, as the other
-laptop drivers do.  This regression was introduced in febf2d9 ("Acer-WMI:
-fingers off backlight if video.ko is serving this functionality").
+Impact: proper vcache flush on unmap_kernel_range()
 
-Each laptop driver with backlight support got a similar change around
-febf2d9.  The changes to the other drivers look correct; see e.g.
-a598c82f for a similar but correct change.  The regression is also in
-2.6.28.
+flush_cache_vunmap() should be called before pages are unmapped.  Add
+a call to it in unmap_kernel_range().
 
-Signed-off-by: Michael Spang <mspang@csclub.uwaterloo.ca>
-Acked-by: Thomas Renninger <trenn@suse.de>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: Len Brown <len.brown@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: Nick Piggin <npiggin@suse.de>
+Acked-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/acer-wmi.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/vmalloc.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/misc/acer-wmi.c
-+++ b/drivers/misc/acer-wmi.c
-@@ -1297,7 +1297,7 @@ static int __init acer_wmi_init(void)
- 
- 	set_quirks();
- 
--	if (!acpi_video_backlight_support() && has_cap(ACER_CAP_BRIGHTNESS)) {
-+	if (acpi_video_backlight_support() && has_cap(ACER_CAP_BRIGHTNESS)) {
- 		interface->capability &= ~ACER_CAP_BRIGHTNESS;
- 		printk(ACER_INFO "Brightness must be controlled by "
- 		       "generic video driver\n");
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -997,6 +997,8 @@ void __init vmalloc_init(void)
+ void unmap_kernel_range(unsigned long addr, unsigned long size)
+ {
+ 	unsigned long end = addr + size;
++
++	flush_cache_vunmap(addr, end);
+ 	vunmap_page_range(addr, end);
+ 	flush_tlb_kernel_range(addr, end);
+ }
 
 
