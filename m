@@ -1,102 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbZCNLjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbZCNLke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757439AbZCNLjp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 07:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbZCNLgE
+	id S1757653AbZCNLke (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 07:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757605AbZCNLkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 07:36:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40249 "EHLO ogre.sisk.pl"
+	Sat, 14 Mar 2009 07:40:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40106 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755148AbZCNLfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 07:35:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [PATCH 5/11] kexec: Change kexec jump code ordering
-Date: Sat, 14 Mar 2009 12:29:30 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Len Brown <lenb@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-References: <200902221837.49396.rjw@sisk.pl> <200903141224.29591.rjw@sisk.pl>
-In-Reply-To: <200903141224.29591.rjw@sisk.pl>
+	id S1757471AbZCNLkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 07:40:03 -0400
+Date: Sat, 14 Mar 2009 11:39:24 GMT
+From: Yinghai Lu <yinghai@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49B9F0C1.10402@kernel.org>
+References: <49B9F0C1.10402@kernel.org>
+Subject: [tip:x86/mm] x86: make e820_update_range() handle small range update
+Message-ID: <tip-78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742@git.kernel.org>
+Git-Commit-ID: 78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200903141229.31860.rjw@sisk.pl>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 14 Mar 2009 11:39:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Commit-ID:  78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
+Gitweb:     http://git.kernel.org/tip/78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
+Author:     Yinghai Lu <yinghai@kernel.org>
+AuthorDate: Thu, 12 Mar 2009 22:36:01 -0700
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 14 Mar 2009 12:20:07 +0100
 
-Change the ordering of the kexec jump code so that the nonboot CPUs
-are disabled after calling device drivers' "late suspend" methods.
+x86: make e820_update_range() handle small range update
 
-This change reflects the recent modifications of the power management
-code that is also used by kexec jump.
+Impact: enhance e820 code to handle more cases
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Try to handle new range which could be covered by one entry.
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: jbeulich@novell.com
+LKML-Reference: <49B9F0C1.10402@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- kernel/kexec.c |   19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
+ arch/x86/kernel/e820.c |   23 +++++++++++++++++++----
+ 1 files changed, 19 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/kernel/kexec.c
-===================================================================
---- linux-2.6.orig/kernel/kexec.c
-+++ linux-2.6/kernel/kexec.c
-@@ -1450,9 +1450,6 @@ int kernel_kexec(void)
- 		error = device_suspend(PMSG_FREEZE);
- 		if (error)
- 			goto Resume_console;
--		error = disable_nonboot_cpus();
--		if (error)
--			goto Resume_devices;
- 		device_pm_lock();
- 		/* At this point, device_suspend() has been called,
- 		 * but *not* device_power_down(). We *must*
-@@ -1463,13 +1460,15 @@ int kernel_kexec(void)
- 		 */
- 		error = device_power_down(PMSG_FREEZE);
- 		if (error)
--			goto Unlock_pm;
--
-+			goto Resume_devices;
-+		error = disable_nonboot_cpus();
-+		if (error)
-+			goto Enable_cpus;
- 		local_irq_disable();
- 		/* Suspend system devices */
- 		error = sysdev_suspend(PMSG_FREEZE);
- 		if (error)
--			goto Power_up_devices;
-+			goto Enable_irqs;
- 	} else
- #endif
- 	{
-@@ -1483,13 +1482,13 @@ int kernel_kexec(void)
- #ifdef CONFIG_KEXEC_JUMP
- 	if (kexec_image->preserve_context) {
- 		sysdev_resume();
-- Power_up_devices:
-+ Enable_irqs:
- 		local_irq_enable();
--		device_power_up(PMSG_RESTORE);
-- Unlock_pm:
--		device_pm_unlock();
-+ Enable_cpus:
- 		enable_nonboot_cpus();
-+		device_power_up(PMSG_RESTORE);
-  Resume_devices:
-+		device_pm_unlock();
- 		device_resume(PMSG_RESTORE);
-  Resume_console:
- 		resume_console();
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 95b81c1..0c34ff4 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -427,6 +427,7 @@ static u64 __init __e820_update_range(struct e820map *e820x, u64 start,
+ 					u64 size, unsigned old_type,
+ 					unsigned new_type)
+ {
++	u64 end;
+ 	unsigned int i;
+ 	u64 real_updated_size = 0;
+ 
+@@ -435,21 +436,35 @@ static u64 __init __e820_update_range(struct e820map *e820x, u64 start,
+ 	if (size > (ULLONG_MAX - start))
+ 		size = ULLONG_MAX - start;
+ 
++	end = start + size;
+ 	for (i = 0; i < e820x->nr_map; i++) {
+ 		struct e820entry *ei = &e820x->map[i];
+ 		u64 final_start, final_end;
++		u64 ei_end;
++
+ 		if (ei->type != old_type)
+ 			continue;
+-		/* totally covered? */
+-		if (ei->addr >= start &&
+-		    (ei->addr + ei->size) <= (start + size)) {
++
++		ei_end = ei->addr + ei->size;
++		/* totally covered by new range? */
++		if (ei->addr >= start && ei_end <= end) {
+ 			ei->type = new_type;
+ 			real_updated_size += ei->size;
+ 			continue;
+ 		}
++
++		/* new range is totally covered? */
++		if (ei->addr < start && ei_end > end) {
++			__e820_add_region(e820x, start, size, new_type);
++			__e820_add_region(e820x, end, ei_end - end, ei->type);
++			ei->size = start - ei->addr;
++			real_updated_size += size;
++			continue;
++		}
++
+ 		/* partially covered */
+ 		final_start = max(start, ei->addr);
+-		final_end = min(start + size, ei->addr + ei->size);
++		final_end = min(end, ei_end);
+ 		if (final_start >= final_end)
+ 			continue;
+ 
