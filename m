@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbZCNBbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762791AbZCNBbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762715AbZCNBbU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZCNBUZ
+	id S1762791AbZCNBbh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbZCNBU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:25 -0400
-Received: from kroah.org ([198.145.64.141]:35009 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:27 -0400
+Received: from kroah.org ([198.145.64.141]:35029 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753413AbZCNBUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:11 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:35 2009
-Message-Id: <20090314011035.691806354@mini.kroah.org>
+	id S1751690AbZCNBUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:13 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:36 2009
+Message-Id: <20090314011035.961760837@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:06 -0700
+Date: Fri, 13 Mar 2009 18:10:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,9 +26,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>
-Subject: [patch 029/114] md: avoid races when stopping resync.
+Subject: [patch 031/114] md/raid10:  Dont skip more than 1 bitmap-chunk at a time during recovery.
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=md-avoid-races-when-stopping-resync.patch
+Content-Disposition: inline; filename=md-raid10-don-t-skip-more-than-1-bitmap-chunk-at-a-time-during-recovery.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,85 +40,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: NeilBrown <neilb@suse.de>
 
-commit 73d5c38a9536142e062c35997b044e89166e063b upstream.
+commit 09b4068a7fe442efc40e9dcbcf5ff37c3338ab15 upstream.
 
-There has been a race in raid10 and raid1 for a long time
-which has only recently started showing up due to a scheduler changed.
+When doing recovery on a raid10 with a write-intent bitmap, we only
+need to recovery chunks that are flagged in the bitmap.
 
-When a sync_read request finishes, as soon as reschedule_retry
-is called, another thread can mark the resync request as having
-completed, so md_do_sync can finish, ->stop can be called, and
-->conf can be freed.  So using conf after reschedule_retry is not
-safe.
+However if we choose to skip a chunk as it isn't flag, the code
+currently skips the whole raid10-chunk, thus it might not recovery
+some blocks that need recovering.
 
-Similarly, when finishing a sync_write, calling md_done_sync must be
-the last thing we do, as it allows a chain of events which will free
-conf and other data structures.
+This patch fixes it.
 
-The first of these requires action in raid10.c
-The second requires action in raid1.c and raid10.c
+In case that is confusing, it might help to understand that there
+is a 'raid10 chunk size' which guides how data is distributed across
+the devices, and a 'bitmap chunk size' which says how much data
+corresponds to a single bit in the bitmap.
+
+This bug only affects cases where the bitmap chunk size is smaller
+than the raid10 chunk size.
+
+
 
 Signed-off-by: NeilBrown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/raid1.c  |    3 ++-
- drivers/md/raid10.c |    7 ++++---
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ drivers/md/raid10.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 --- a/drivers/md/raid10.c
 +++ b/drivers/md/raid10.c
-@@ -1236,6 +1236,7 @@ static void end_sync_read(struct bio *bi
- 	/* for reconstruct, we always reschedule after a read.
- 	 * for resync, only after all reads
+@@ -2011,13 +2011,13 @@ static sector_t sync_request(mddev_t *md
+ 	/* There is nowhere to write, so all non-sync
+ 	 * drives must be failed, so try the next chunk...
  	 */
-+	rdev_dec_pending(conf->mirrors[d].rdev, conf->mddev);
- 	if (test_bit(R10BIO_IsRecover, &r10_bio->state) ||
- 	    atomic_dec_and_test(&r10_bio->remaining)) {
- 		/* we have read all the blocks,
-@@ -1243,7 +1244,6 @@ static void end_sync_read(struct bio *bi
- 		 */
- 		reschedule_retry(r10_bio);
- 	}
--	rdev_dec_pending(conf->mirrors[d].rdev, conf->mddev);
+-	{
+-	sector_t sec = max_sector - sector_nr;
+-	sectors_skipped += sec;
++	if (sector_nr + max_sync < max_sector)
++		max_sector = sector_nr + max_sync;
++
++	sectors_skipped += (max_sector - sector_nr);
+ 	chunks_skipped ++;
+ 	sector_nr = max_sector;
+ 	goto skipped;
+-	}
  }
  
- static void end_sync_write(struct bio *bio, int error)
-@@ -1264,11 +1264,13 @@ static void end_sync_write(struct bio *b
- 
- 	update_head_pos(i, r10_bio);
- 
-+	rdev_dec_pending(conf->mirrors[d].rdev, mddev);
- 	while (atomic_dec_and_test(&r10_bio->remaining)) {
- 		if (r10_bio->master_bio == NULL) {
- 			/* the primary of several recovery bios */
--			md_done_sync(mddev, r10_bio->sectors, 1);
-+			sector_t s = r10_bio->sectors;
- 			put_buf(r10_bio);
-+			md_done_sync(mddev, s, 1);
- 			break;
- 		} else {
- 			r10bio_t *r10_bio2 = (r10bio_t *)r10_bio->master_bio;
-@@ -1276,7 +1278,6 @@ static void end_sync_write(struct bio *b
- 			r10_bio = r10_bio2;
- 		}
- 	}
--	rdev_dec_pending(conf->mirrors[d].rdev, mddev);
- }
- 
- /*
---- a/drivers/md/raid1.c
-+++ b/drivers/md/raid1.c
-@@ -1233,8 +1233,9 @@ static void end_sync_write(struct bio *b
- 	update_head_pos(mirror, r1_bio);
- 
- 	if (atomic_dec_and_test(&r1_bio->remaining)) {
--		md_done_sync(mddev, r1_bio->sectors, uptodate);
-+		sector_t s = r1_bio->sectors;
- 		put_buf(r1_bio);
-+		md_done_sync(mddev, s, uptodate);
- 	}
- }
- 
+ static int run(mddev_t *mddev)
 
 
