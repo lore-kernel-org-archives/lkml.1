@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751822AbZCNAgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761278AbZCNAhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751822AbZCNAgn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZCNATY
+	id S1761278AbZCNAhI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbZCNATZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:24 -0400
-Received: from kroah.org ([198.145.64.141]:47160 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:25 -0400
+Received: from kroah.org ([198.145.64.141]:47173 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753190AbZCNATM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:12 -0400
+	id S1753515AbZCNATN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:13 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:47 2009
-Message-Id: <20090314000746.939556618@mini.kroah.org>
+Message-Id: <20090314000747.064874718@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:00 -0700
+Date: Fri, 13 Mar 2009 17:06:01 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Yinghai Lu <yinghai@kernel.org>,
+       alan@lxorguk.ukuu.org.uk, Andrew Patterson <andrew.patterson@hp.com>,
        Jesse Barnes <jbarnes@hobbes.lan>
-Subject: [patch 52/96] PCI: dont enable too many HT MSI mappings
+Subject: [patch 53/96] PCI: Enable PCIe AER only after checking firmware support
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=pci-don-t-enable-too-many-ht-msi-mappings.patch
+Content-Disposition: inline; filename=pci-enable-pcie-aer-only-after-checking-firmware-support.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,164 +39,109 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Yinghai Lu <yinghai@kernel.org>
+From: Andrew Patterson <andrew.patterson@hp.com>
 
-commit 1dec6b054dd1fc780e18b815068bf5677409eb2d upstream.
+commit 1f9f13c8d59c1d8da1a602b71d1ab96d1d37d69e upstream.
 
-Prakash reported that his c51-mcp51 ondie sound card doesn't work with
-MSI.  But if he hacks out the HT-MSI quirk, MSI works fine.
+The PCIe port driver currently sets the PCIe AER error reporting bits for
+any root or switch port without first checking to see if firmware will grant
+control. This patch moves setting these bits to the AER service driver
+aer_enable_port routine.  The bits are then set for the root port and any
+downstream switch ports after the check for firmware support (aer_osc_setup)
+is made. The patch also unsets the bits in a similar fashion when the AER
+service driver is unloaded.
 
-So this patch reworks the nv_msi_ht_cap_quirk().  It will now only
-enable ht_msi on own its root device, avoiding enabling it on devices
-following that root dev.
-
-Reported-by: Prakash Punnoor <prakash@punnoor.de>
-Tested-by: Prakash Punnoor <prakash@punnoor.de>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Reviewed-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
 Signed-off-by: Jesse Barnes <jbarnes@hobbes.lan>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/quirks.c |  115 ++++++++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 100 insertions(+), 15 deletions(-)
+ drivers/pci/pcie/aer/aerdrv_core.c |   48 ++++++++++++++++++++++++++++++-------
+ drivers/pci/pcie/portdrv_pci.c     |    2 -
+ 2 files changed, 39 insertions(+), 11 deletions(-)
 
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1934,10 +1934,100 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_S
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_8132_BRIDGE,
- 			 ht_enable_msi_mapping);
- 
--static void __devinit nv_msi_ht_cap_quirk(struct pci_dev *dev)
-+static void __devinit nv_ht_enable_msi_mapping(struct pci_dev *dev)
- {
- 	struct pci_dev *host_bridge;
-+	int pos;
-+	int i, dev_no;
-+	int found = 0;
-+
-+	dev_no = dev->devfn >> 3;
-+	for (i = dev_no; i >= 0; i--) {
-+		host_bridge = pci_get_slot(dev->bus, PCI_DEVFN(i, 0));
-+		if (!host_bridge)
-+			continue;
-+
-+		pos = pci_find_ht_capability(host_bridge, HT_CAPTYPE_SLAVE);
-+		if (pos != 0) {
-+			found = 1;
-+			break;
-+		}
-+		pci_dev_put(host_bridge);
-+	}
-+
-+	if (!found)
-+		return;
-+
-+	/* root did that ! */
-+	if (msi_ht_cap_enabled(host_bridge))
-+		goto out;
-+
-+	ht_enable_msi_mapping(dev);
-+
-+out:
-+	pci_dev_put(host_bridge);
-+}
-+
-+static void __devinit ht_disable_msi_mapping(struct pci_dev *dev)
-+{
-+	int pos, ttl = 48;
-+
-+	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
-+	while (pos && ttl--) {
-+		u8 flags;
-+
-+		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
-+					 &flags) == 0) {
-+			dev_info(&dev->dev, "Enabling HT MSI Mapping\n");
-+
-+			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
-+					      flags & ~HT_MSI_FLAGS_ENABLE);
-+		}
-+		pos = pci_find_next_ht_capability(dev, pos,
-+						  HT_CAPTYPE_MSI_MAPPING);
-+	}
-+}
-+
-+static int __devinit ht_check_msi_mapping(struct pci_dev *dev)
-+{
- 	int pos, ttl = 48;
-+	int found = 0;
-+
-+	/* check if there is HT MSI cap or enabled on this device */
-+	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
-+	while (pos && ttl--) {
-+		u8 flags;
-+
-+		if (found < 1)
-+			found = 1;
-+		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
-+					 &flags) == 0) {
-+			if (flags & HT_MSI_FLAGS_ENABLE) {
-+				if (found < 2) {
-+					found = 2;
-+					break;
-+				}
-+			}
-+		}
-+		pos = pci_find_next_ht_capability(dev, pos,
-+						  HT_CAPTYPE_MSI_MAPPING);
-+	}
-+
-+	return found;
-+}
-+
-+static void __devinit nv_msi_ht_cap_quirk(struct pci_dev *dev)
-+{
-+	struct pci_dev *host_bridge;
-+	int pos;
-+	int found;
-+
-+	/* check if there is HT MSI cap or enabled on this device */
-+	found = ht_check_msi_mapping(dev);
-+
-+	/* no HT MSI CAP */
-+	if (found == 0)
-+		return;
- 
- 	/*
- 	 * HT MSI mapping should be disabled on devices that are below
-@@ -1953,24 +2043,19 @@ static void __devinit nv_msi_ht_cap_quir
- 	pos = pci_find_ht_capability(host_bridge, HT_CAPTYPE_SLAVE);
- 	if (pos != 0) {
- 		/* Host bridge is to HT */
--		ht_enable_msi_mapping(dev);
-+		if (found == 1) {
-+			/* it is not enabled, try to enable it */
-+			nv_ht_enable_msi_mapping(dev);
-+		}
- 		return;
- 	}
- 
--	/* Host bridge is not to HT, disable HT MSI mapping on this device */
--	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
--	while (pos && ttl--) {
--		u8 flags;
-+	/* HT MSI is not enabled */
-+	if (found == 1)
-+		return;
- 
--		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
--					 &flags) == 0) {
--			dev_info(&dev->dev, "Disabling HT MSI mapping");
--			pci_write_config_byte(dev, pos + HT_MSI_FLAGS,
--					      flags & ~HT_MSI_FLAGS_ENABLE);
--		}
--		pos = pci_find_next_ht_capability(dev, pos,
--						  HT_CAPTYPE_MSI_MAPPING);
--	}
-+	/* Host bridge is not to HT, disable HT MSI mapping on this device */
-+	ht_disable_msi_mapping(dev);
+--- a/drivers/pci/pcie/aer/aerdrv_core.c
++++ b/drivers/pci/pcie/aer/aerdrv_core.c
+@@ -134,6 +134,34 @@ int pci_cleanup_aer_correct_error_status
  }
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, nv_msi_ht_cap_quirk);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AL, PCI_ANY_ID, nv_msi_ht_cap_quirk);
+ #endif  /*  0  */
+ 
++
++static void set_device_error_reporting(struct pci_dev *dev, void *data)
++{
++	bool enable = *((bool *)data);
++
++	if (dev->pcie_type != PCIE_RC_PORT &&
++	    dev->pcie_type != PCIE_SW_UPSTREAM_PORT &&
++	    dev->pcie_type != PCIE_SW_DOWNSTREAM_PORT)
++		return;
++
++	if (enable)
++		pci_enable_pcie_error_reporting(dev);
++	else
++		pci_disable_pcie_error_reporting(dev);
++}
++
++/**
++ * set_downstream_devices_error_reporting - enable/disable the error reporting  bits on the root port and its downstream ports.
++ * @dev: pointer to root port's pci_dev data structure
++ * @enable: true = enable error reporting, false = disable error reporting.
++ */
++static void set_downstream_devices_error_reporting(struct pci_dev *dev,
++						   bool enable)
++{
++	set_device_error_reporting(dev, &enable);
++	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
++}
++
+ static int find_device_iter(struct device *device, void *data)
+ {
+ 	struct pci_dev *dev;
+@@ -551,15 +579,11 @@ void aer_enable_rootport(struct aer_rpc 
+ 	pci_read_config_dword(pdev, aer_pos + PCI_ERR_UNCOR_STATUS, &reg32);
+ 	pci_write_config_dword(pdev, aer_pos + PCI_ERR_UNCOR_STATUS, reg32);
+ 
+-	/* Enable Root Port device reporting error itself */
+-	pci_read_config_word(pdev, pos+PCI_EXP_DEVCTL, &reg16);
+-	reg16 = reg16 |
+-		PCI_EXP_DEVCTL_CERE |
+-		PCI_EXP_DEVCTL_NFERE |
+-		PCI_EXP_DEVCTL_FERE |
+-		PCI_EXP_DEVCTL_URRE;
+-	pci_write_config_word(pdev, pos+PCI_EXP_DEVCTL,
+-		reg16);
++	/*
++	 * Enable error reporting for the root port device and downstream port
++	 * devices.
++	 */
++	set_downstream_devices_error_reporting(pdev, true);
+ 
+ 	/* Enable Root Port's interrupt in response to error messages */
+ 	pci_write_config_dword(pdev,
+@@ -579,6 +603,12 @@ static void disable_root_aer(struct aer_
+ 	u32 reg32;
+ 	int pos;
+ 
++	/*
++	 * Disable error reporting for the root port device and downstream port
++	 * devices.
++	 */
++	set_downstream_devices_error_reporting(pdev, false);
++
+ 	pos = pci_find_aer_capability(pdev);
+ 	/* Disable Root's interrupt in response to error messages */
+ 	pci_write_config_dword(pdev, pos + PCI_ERR_ROOT_COMMAND, 0);
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -109,8 +109,6 @@ static int __devinit pcie_portdrv_probe 
+ 
+ 	pcie_portdrv_save_config(dev);
+ 
+-	pci_enable_pcie_error_reporting(dev);
+-
+ 	return 0;
+ }
+ 
 
 
