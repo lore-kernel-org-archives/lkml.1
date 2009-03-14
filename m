@@ -1,97 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbZCNV3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbZCNVeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242AbZCNV3i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 17:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZCNV32
+	id S1756550AbZCNVeS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 17:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbZCNVeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 17:29:28 -0400
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:22198 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751012AbZCNV31 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 17:29:27 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=PiK7FZvGQpP73AFKczqrNJrnURi5UIT9LCnt4GJCXjyt3WtkoAsb34Z9usNxNfs8NaB4G9pmfiXF+REVUchGPTv6GeB9Sdd1uyIFnaM6+5NBeIoMpKzfVfDBjMrauZJqIjJtyoaEsE9JB1pUQ3Dt6zYbGz39yPQgQX4jZgklfas=  ;
-X-YMail-OSG: tXlxS3AVM1nm69Nw9D3IPqCwZBJkB8YXdfpISRJlpo0a08aTfTeASRVBb5u8JnRKTtt7x8Ob5XDmvkkjka67JqtH3hHuP2.o4BBCmJXkKRwrHlTONOiKxJmY21eG5L0eYwpLa.jRXcDPS1jqqOOkUrfj
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch 2.6.29-rc7 regulator-next] regulator: refcount fixes
-Date: Sat, 14 Mar 2009 14:29:24 -0700
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-References: <200903111743.34708.david-b@pacbell.net> <200903121602.55570.david-b@pacbell.net> <20090313013813.GK24376@sirena.org.uk>
-In-Reply-To: <20090313013813.GK24376@sirena.org.uk>
+	Sat, 14 Mar 2009 17:34:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53774 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751379AbZCNVeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 17:34:04 -0400
+Message-ID: <49BC2279.2030101@kernel.org>
+Date: Sat, 14 Mar 2009 14:32:41 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/mm] x86: make e820_update_range() handle small range
+ update
+References: <49B9F0C1.10402@kernel.org> <tip-78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742@git.kernel.org> <20090314121705.GA13685@elte.hu> <49BBF59D.7060401@kernel.org> <20090314184010.GA17695@elte.hu>
+In-Reply-To: <20090314184010.GA17695@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903141429.24534.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 March 2009, Mark Brown wrote:
-> On Thu, Mar 12, 2009 at 03:02:55PM -0800, David Brownell wrote:
->
-> > One could as easily have "handle" and "regulator" be the
-> > same ... so the get/put idioms could work like they do
-> > elsewhere in the kernel.
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
 > 
-> I really don't see that there is any meaningful difference here; from
-> the point of view of the consumer the fact that the thing it gets back
-> is a handle to a structure the core uses to keep track of the consumer
-> rather than the underlying hardware object is an implementation detail
-> that shouldn't make any difference to them.  In terms of the programming
-> model it seems like a layering violation to know the difference between
-> one opaque structure and another.
-
-You're not stepping back from the current interface, which is
-a prerequisite to understanding the points I was making:
-
- * Almost everywhere else in the kernel, there's only one
-   handle (no per-client facet idiom), for which get/put
-   works.
-
-   Having the handle alloc/free methods be called get/put
-   is a kind of problem.  We want models and idioms to
-   converge, not diverge, in almost all cases ... using
-   the same names to mean different things isn't good.
-
- * The thing that *is* per-client is basically a constraint
-   set ... but it's called a "regulator", which again is
-   confusing.
-
-In the regulator-next tree you've now moved regulator_dev
-into the public interface ... that's the handle to the
-real hardware.  Sort of a hint that it can't really be
-hidden in the way you originally thought.
-
-
-> > See above.  Currently constraints are hidden for "consumers",
-> > behind functional accessors like regulator_set_voltage().
-> > There are no explicit constraint objects, as there are for
-> > the machines.
+>> Ingo Molnar wrote:
+>>> * Yinghai Lu <yinghai@kernel.org> wrote:
+>>>
+>>>> Commit-ID:  78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
+>>>> Gitweb:     http://git.kernel.org/tip/78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
+>>>> Author:     Yinghai Lu <yinghai@kernel.org>
+>>>> AuthorDate: Thu, 12 Mar 2009 22:36:01 -0700
+>>>> Commit:     Ingo Molnar <mingo@elte.hu>
+>>>> CommitDate: Sat, 14 Mar 2009 12:20:07 +0100
+>>>>
+>>>> x86: make e820_update_range() handle small range update
+>>>>
+>>>> Impact: enhance e820 code to handle more cases
+>>>>
+>>>> Try to handle new range which could be covered by one entry.
+>>>>
+>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>> Cc: jbeulich@novell.com
+>>>> LKML-Reference: <49B9F0C1.10402@kernel.org>
+>>>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>> -tip testing found a bootup crash + reboot due to this patch.
+>>>
+>>> config attached. The bootup crashes here:
+>>>
+>>> [    0.000000] MTRR variable ranges enabled:
+>>> [    0.000000]   0 base 0000000000 mask FFC0000000 write-back
+>>> [    0.000000]   1 disabled
+>>> [    0.000000]   2 disabled
+>>> [    0.000000]   3 disabled
+>>> [    0.000000]   4 disabled
+>>> [    0.000000]   5 disabled
+>>> [    0.000000]   6 disabled
+>>> [    0.000000]   7 disabled
+>>> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+>>> [    0.000000]   get_mtrr: cpu0 reg00 base=0000000000 size=0000040000 write-back
+>>> [    reboot  ]
+>>>
+>> what does the e820 map look like?
 > 
-> The current interface has been driven by the needs of the users: the
-> majority of consumers want to do one operation on a regular basis -
-> normally that's enable/disable, most devices are just powering
-> themselves up and down, though for some things voltage changes are much
-> more common (DVFS being the prime example).  Overall it's been fairly
-> similar to the clock API in terms of usage pattern.
+> [    0.000000] BIOS-provided physical RAM map:
+> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+> [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000000100000 - 000000003fff0000 (usable)
+> [    0.000000]  BIOS-e820: 000000003fff0000 - 000000003fff3000 (ACPI NVS)
+> [    0.000000]  BIOS-e820: 000000003fff3000 - 0000000040000000 (ACPI data)
+> [    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+> 
 
-Except that the clock interface uses put/get in the normal way;
-they are not alloc/free calls, just lookup/refcount calls.
+it seems that patch revealed the bug in setup_bios_corruption_check
 
+please check, and apply follow at first, and apply that patch later.
 
-> In terms of looking at redesigning the API
+YH
 
-You were the one suggesting the need for a new call, formalizing
-a model that didn't previously exist ... not me!  :)
+[PATCH] x86: fix 64k corruption checking
 
-Which is why I suggested taht if you were going to add calls,
-it'd be worth thinking a bit more about some existing glitches.
+Impact: fix crash
+
+need that exit early if the addr far above 64k
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/check.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/check.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/check.c
++++ linux-2.6/arch/x86/kernel/check.c
+@@ -86,12 +86,12 @@ void __init setup_bios_corruption_check(
+ 		if (!(addr + 1))
+ 			break;
+ 
++		if (addr >= corruption_check_size)
++			break;
++
+ 		if ((addr + size) > corruption_check_size)
+ 			size = corruption_check_size - addr;
+ 
+-		if (size == 0)
+-			break;
+-
+ 		e820_update_range(addr, size, E820_RAM, E820_RESERVED);
+ 		scan_areas[num_scan_areas].addr = addr;
+ 		scan_areas[num_scan_areas].size = size;
