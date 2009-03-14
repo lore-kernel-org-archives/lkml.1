@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764210AbZCNBk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764240AbZCNBku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764210AbZCNBk3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbZCNBU5
+	id S1764240AbZCNBku (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbZCNBU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:57 -0400
-Received: from kroah.org ([198.145.64.141]:35313 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:58 -0400
+Received: from kroah.org ([198.145.64.141]:35322 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753872AbZCNBUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:37 -0400
+	id S1753903AbZCNBUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:38 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:39 2009
-Message-Id: <20090314011039.556622621@mini.kroah.org>
+Message-Id: <20090314011039.709998889@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:32 -0700
+Date: Fri, 13 Mar 2009 18:10:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andrew Patterson <andrew.patterson@hp.com>,
-       Jesse Barnes <jbarnes@hobbes.lan>
-Subject: [patch 055/114] PCI: Enable PCIe AER only after checking firmware support
+       alan@lxorguk.ukuu.org.uk, Adam Lackorzynski <adam@os.inf.tu-dresden.de>,
+       Scott H Kilau <Scott_Kilau@digi.com>, Wendy Xiong <wendyx@us.ibm.com>
+Subject: [patch 056/114] jsm: additional device support
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=pci-enable-pcie-aer-only-after-checking-firmware-support.patch
+Content-Disposition: inline; filename=jsm-additional-device-support.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,109 +39,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andrew Patterson <andrew.patterson@hp.com>
+From: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
 
-commit 1f9f13c8d59c1d8da1a602b71d1ab96d1d37d69e upstream.
+commit ffa7525c13eb3db0fd19a3e1cffe2ce6f561f5f3 upstream.
 
-The PCIe port driver currently sets the PCIe AER error reporting bits for
-any root or switch port without first checking to see if firmware will grant
-control. This patch moves setting these bits to the AER service driver
-aer_enable_port routine.  The bits are then set for the root port and any
-downstream switch ports after the check for firmware support (aer_osc_setup)
-is made. The patch also unsets the bits in a similar fashion when the AER
-service driver is unloaded.
+I have a Digi Neo 8 PCI card (114f:00b1) Serial controller: Digi
+International Digi Neo 8 (rev 05)
 
-Reviewed-by: Alex Chiang <achiang@hp.com>
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
-Signed-off-by: Jesse Barnes <jbarnes@hobbes.lan>
+that works with the jsm driver after using the following patch.
+
+Signed-off-by: Adam Lackorzynski <adam@os.inf.tu-dresden.de>
+Cc: Scott H Kilau <Scott_Kilau@digi.com>
+Cc: Wendy Xiong <wendyx@us.ibm.com>
+Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pcie/aer/aerdrv_core.c |   48 ++++++++++++++++++++++++++++++-------
- drivers/pci/pcie/portdrv_pci.c     |    2 -
- 2 files changed, 39 insertions(+), 11 deletions(-)
+ drivers/serial/jsm/jsm_driver.c |    3 +++
+ include/linux/pci_ids.h         |    1 +
+ 2 files changed, 4 insertions(+)
 
---- a/drivers/pci/pcie/aer/aerdrv_core.c
-+++ b/drivers/pci/pcie/aer/aerdrv_core.c
-@@ -108,6 +108,34 @@ int pci_cleanup_aer_correct_error_status
- }
- #endif  /*  0  */
+--- a/drivers/serial/jsm/jsm_driver.c
++++ b/drivers/serial/jsm/jsm_driver.c
+@@ -84,6 +84,8 @@ static int jsm_probe_one(struct pci_dev 
+ 	brd->pci_dev = pdev;
+ 	if (pdev->device == PCIE_DEVICE_ID_NEO_4_IBM)
+ 		brd->maxports = 4;
++	else if (pdev->device == PCI_DEVICE_ID_DIGI_NEO_8)
++		brd->maxports = 8;
+ 	else
+ 		brd->maxports = 2;
  
-+
-+static void set_device_error_reporting(struct pci_dev *dev, void *data)
-+{
-+	bool enable = *((bool *)data);
-+
-+	if (dev->pcie_type != PCIE_RC_PORT &&
-+	    dev->pcie_type != PCIE_SW_UPSTREAM_PORT &&
-+	    dev->pcie_type != PCIE_SW_DOWNSTREAM_PORT)
-+		return;
-+
-+	if (enable)
-+		pci_enable_pcie_error_reporting(dev);
-+	else
-+		pci_disable_pcie_error_reporting(dev);
-+}
-+
-+/**
-+ * set_downstream_devices_error_reporting - enable/disable the error reporting  bits on the root port and its downstream ports.
-+ * @dev: pointer to root port's pci_dev data structure
-+ * @enable: true = enable error reporting, false = disable error reporting.
-+ */
-+static void set_downstream_devices_error_reporting(struct pci_dev *dev,
-+						   bool enable)
-+{
-+	set_device_error_reporting(dev, &enable);
-+	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
-+}
-+
- static int find_device_iter(struct device *device, void *data)
- {
- 	struct pci_dev *dev;
-@@ -525,15 +553,11 @@ void aer_enable_rootport(struct aer_rpc 
- 	pci_read_config_dword(pdev, aer_pos + PCI_ERR_UNCOR_STATUS, &reg32);
- 	pci_write_config_dword(pdev, aer_pos + PCI_ERR_UNCOR_STATUS, reg32);
- 
--	/* Enable Root Port device reporting error itself */
--	pci_read_config_word(pdev, pos+PCI_EXP_DEVCTL, &reg16);
--	reg16 = reg16 |
--		PCI_EXP_DEVCTL_CERE |
--		PCI_EXP_DEVCTL_NFERE |
--		PCI_EXP_DEVCTL_FERE |
--		PCI_EXP_DEVCTL_URRE;
--	pci_write_config_word(pdev, pos+PCI_EXP_DEVCTL,
--		reg16);
-+	/*
-+	 * Enable error reporting for the root port device and downstream port
-+	 * devices.
-+	 */
-+	set_downstream_devices_error_reporting(pdev, true);
- 
- 	/* Enable Root Port's interrupt in response to error messages */
- 	pci_write_config_dword(pdev,
-@@ -553,6 +577,12 @@ static void disable_root_aer(struct aer_
- 	u32 reg32;
- 	int pos;
- 
-+	/*
-+	 * Disable error reporting for the root port device and downstream port
-+	 * devices.
-+	 */
-+	set_downstream_devices_error_reporting(pdev, false);
-+
- 	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_ERR);
- 	/* Disable Root's interrupt in response to error messages */
- 	pci_write_config_dword(pdev, pos + PCI_ERR_ROOT_COMMAND, 0);
---- a/drivers/pci/pcie/portdrv_pci.c
-+++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -101,8 +101,6 @@ static int __devinit pcie_portdrv_probe 
- 
- 	pcie_portdrv_save_config(dev);
- 
--	pci_enable_pcie_error_reporting(dev);
--
- 	return 0;
- }
- 
+@@ -212,6 +214,7 @@ static struct pci_device_id jsm_pci_tbl[
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCI_DEVICE_ID_NEO_2RJ45), 0, 0, 2 },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCI_DEVICE_ID_NEO_2RJ45PRI), 0, 0, 3 },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCIE_DEVICE_ID_NEO_4_IBM), 0, 0, 4 },
++	{ PCI_DEVICE(PCI_VENDOR_ID_DIGI, PCI_DEVICE_ID_DIGI_NEO_8), 0, 0, 5 },
+ 	{ 0, }
+ };
+ MODULE_DEVICE_TABLE(pci, jsm_pci_tbl);
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -1445,6 +1445,7 @@
+ #define PCI_DEVICE_ID_DIGI_DF_M_E	0x0071
+ #define PCI_DEVICE_ID_DIGI_DF_M_IOM2_A	0x0072
+ #define PCI_DEVICE_ID_DIGI_DF_M_A	0x0073
++#define PCI_DEVICE_ID_DIGI_NEO_8	0x00B1
+ #define PCI_DEVICE_ID_NEO_2DB9          0x00C8
+ #define PCI_DEVICE_ID_NEO_2DB9PRI       0x00C9
+ #define PCI_DEVICE_ID_NEO_2RJ45         0x00CA
 
 
