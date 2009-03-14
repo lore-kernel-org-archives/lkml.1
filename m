@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762202AbZCNAp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751619AbZCNAql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762202AbZCNAp7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZCNATx
+	id S1751619AbZCNAql (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbZCNAT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:53 -0400
-Received: from kroah.org ([198.145.64.141]:34980 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:56 -0400
+Received: from kroah.org ([198.145.64.141]:35002 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750871AbZCNATj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:39 -0400
+	id S1751198AbZCNATl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:41 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:51 2009
-Message-Id: <20090314000750.928991728@mini.kroah.org>
+Message-Id: <20090314000751.215689207@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:26 -0700
+Date: Fri, 13 Mar 2009 17:06:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Hans Verkuil <hverkuil@xs4all.nl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [patch 78/96] V4L: ivtv: fix decoder crash regression
+       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
+       Hans de Goede <hdegoede@redhat.com>
+Subject: [patch 80/96] hwmon: (f71882fg) Hide misleading error message
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=0003-V4L-ivtv-fix-decoder-crash-regression.patch
+Content-Disposition: inline; filename=hwmon-hide-misleading-error-message.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,67 +39,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Hans Verkuil <hverkuil@xs4all.nl>
+From: Jean Delvare <khali@linux-fr.org>
 
-(cherry picked from commit ac9575f75c52bcb455120f8c43376b556acba048)
+commit 603eaa1bdd3e0402085e815cc531bb0a32827a9e upstream
 
-The video_ioctl2 conversion of ivtv in kernel 2.6.27 introduced a bug
-causing decoder commands to crash. The decoder commands should have been
-handled from the video_ioctl2 default handler, ensuring correct mapping
-of the argument between user and kernel space. Unfortunately they ended
-up before the video_ioctl2 call, causing random crashes.
+If the F71882FG chip is at address 0x4e, then the probe at 0x2e will
+fail with the following message in the logs:
+f71882fg: Not a Fintek device
 
-Thanks to hannes@linus.priv.at for testing and helping me track down the
-cause!
+This is misleading because there is a Fintek device, just at a
+different address. So I propose to degrade this message to a debug
+message.
 
-Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Acked-by: Hans de Goede <hdegoede@redhat.com>
+
 
 ---
- drivers/media/video/ivtv/ivtv-ioctl.c |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ drivers/hwmon/f71882fg.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/media/video/ivtv/ivtv-ioctl.c
-+++ b/drivers/media/video/ivtv/ivtv-ioctl.c
-@@ -1744,6 +1744,18 @@ static int ivtv_default(struct file *fil
- 		break;
+--- a/drivers/hwmon/f71882fg.c
++++ b/drivers/hwmon/f71882fg.c
+@@ -837,7 +837,7 @@ static int __init f71882fg_find(int sioa
+ 
+ 	devid = superio_inw(sioaddr, SIO_REG_MANID);
+ 	if (devid != SIO_FINTEK_ID) {
+-		printk(KERN_INFO DRVNAME ": Not a Fintek device\n");
++		pr_debug(DRVNAME ": Not a Fintek device\n");
+ 		goto exit;
  	}
  
-+	case IVTV_IOC_DMA_FRAME:
-+	case VIDEO_GET_PTS:
-+	case VIDEO_GET_FRAME_COUNT:
-+	case VIDEO_GET_EVENT:
-+	case VIDEO_PLAY:
-+	case VIDEO_STOP:
-+	case VIDEO_FREEZE:
-+	case VIDEO_CONTINUE:
-+	case VIDEO_COMMAND:
-+	case VIDEO_TRY_COMMAND:
-+		return ivtv_decoder_ioctls(file, cmd, (void *)arg);
-+
- 	default:
- 		return -EINVAL;
- 	}
-@@ -1786,18 +1798,6 @@ static int ivtv_serialized_ioctl(struct 
- 		ivtv_vapi(itv, CX2341X_DEC_SET_AUDIO_MODE, 2, itv->audio_bilingual_mode, itv->audio_stereo_mode);
- 		return 0;
- 
--	case IVTV_IOC_DMA_FRAME:
--	case VIDEO_GET_PTS:
--	case VIDEO_GET_FRAME_COUNT:
--	case VIDEO_GET_EVENT:
--	case VIDEO_PLAY:
--	case VIDEO_STOP:
--	case VIDEO_FREEZE:
--	case VIDEO_CONTINUE:
--	case VIDEO_COMMAND:
--	case VIDEO_TRY_COMMAND:
--		return ivtv_decoder_ioctls(filp, cmd, (void *)arg);
--
- 	default:
- 		break;
- 	}
 
 
