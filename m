@@ -1,38 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbZCNSpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbZCNSpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbZCNSpV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 14:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZCNSpG
+	id S1756827AbZCNSpt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 14:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbZCNSph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 14:45:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41143 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754087AbZCNSpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 14:45:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 2.6.29-rc5+: cf card no longer detected
-Date: Sat, 14 Mar 2009 19:44:53 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
-Cc: kernel list <linux-kernel@vger.kernel.org>
-References: <20090310112330.GE1337@ucw.cz>
-In-Reply-To: <20090310112330.GE1337@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 14 Mar 2009 14:45:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37877
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754441AbZCNSpg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 14:45:36 -0400
+Date: Sat, 14 Mar 2009 11:45:22 -0700 (PDT)
+Message-Id: <20090314.114522.19720687.davem@davemloft.net>
+To: therbert@google.com
+Cc: yanmin_zhang@linux.intel.com, bhutchings@solarflare.com,
+       andi@firstfloor.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
+       jesse.brandeburg@intel.com, shemminger@vyatta.com
+Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to
+ submit to upper layer
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <65634d660903141115w7e164134ycece307f041e93a9@mail.gmail.com>
+References: <65634d660903131724s49009177pdc11005aa76a4b56@mail.gmail.com>
+	<20090313.191951.228619450.davem@davemloft.net>
+	<65634d660903141115w7e164134ycece307f041e93a9@mail.gmail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903141944.54036.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 10 March 2009, Pavel Machek wrote:
-> Hi!
-> 
-> compact flash card in pcmcia slot seems to be no longer
->  detected. Thinkpad x60.
+From: Tom Herbert <therbert@google.com>
+Date: Sat, 14 Mar 2009 11:15:21 -0700
 
-Where "no longer" means what exactly?  Is 2.6.28 OK?
+> I suppose it may be counter-intuitive, but I am not making a general
+> claim.  I would only suggest that these software hacks could be a very
+> good approximation or substitute for hardware functionality.  This is
+> a generic way to get more performance out of deficient or lower end
+> NICs.
 
-Rafael
+They certainly could.  Why don't you post the current version
+of your patches so we have something concrete to discuss?
