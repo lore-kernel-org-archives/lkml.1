@@ -1,17 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762221AbZCNWCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762329AbZCNWCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762221AbZCNWCT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 18:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760671AbZCNV6J
+	id S1762329AbZCNWCu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 18:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759487AbZCNV6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 17:58:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41857 "EHLO ogre.sisk.pl"
+	Sat, 14 Mar 2009 17:58:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41889 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760483AbZCNV54 convert rfc822-to-8bit (ORCPT
+	id S1758991AbZCNV62 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 17:57:56 -0400
+	Sat, 14 Mar 2009 17:58:28 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Michal Graczyk" <zazulas@gmail.com>, "Zhang Rui" <rui.zhang@intel.com>
+       "Andi Kleen" <ak@linux.intel.com>,
+       "Carlos Corbacho" <carlos@strangeworlds.co.uk>,
+       "Len Brown" <len.brown@intel.com>,
+       "Michael Spang" <mspang@csclub.uwaterloo.ca>,
+       "Thomas Renninger" <trenn@suse.de>, "Zhang Rui" <rui.zhang@intel.com>
 References: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera>
 In-Reply-To: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +23,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <qm8_cedJGaP.A.emG.pOCvJB@chimera>
-Subject: [Bug #12798] No wake up after suspend.
+Message-ID: <qm8_cedJGaP.A.waG.lOCvJB@chimera>
+Subject: [Bug #12835] Regression in backlight detection
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 14 Mar 2009 20:20:19 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,11 +39,12 @@ introduced between 2.6.27 and 2.6.28.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12798
-Subject		: No wake up after suspend.
-Submitter	: Michal Graczyk <zazulas@gmail.com>
-Date		: 2009-03-01 15:30 (14 days old)
-Handled-By	: Zhang Rui <rui.zhang@intel.com>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=20402&action=view
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12835
+Subject		: Regression in backlight detection
+Submitter	: Michael Spang <mspang@csclub.uwaterloo.ca>
+Date		: 2009-02-24 5:41 (19 days old)
+References	: http://marc.info/?l=linux-kernel&m=123545411502396&w=4
+Handled-By	: Michael Spang <mspang@csclub.uwaterloo.ca>
+Patch		: http://marc.info/?l=linux-kernel&m=123545411502396&w=4
 
 
