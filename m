@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbZCNA2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761304AbZCNAhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759209AbZCNA2X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZCNASz
+	id S1761304AbZCNAhh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbZCNAT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:55 -0400
-Received: from kroah.org ([198.145.64.141]:46948 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:26 -0400
+Received: from kroah.org ([198.145.64.141]:34741 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753308AbZCNASx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:53 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:44 2009
-Message-Id: <20090314000743.963791891@mini.kroah.org>
+	id S1752777AbZCNATO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:14 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:47 2009
+Message-Id: <20090314000747.199528565@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:41 -0700
+Date: Fri, 13 Mar 2009 17:06:02 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 33/96] asix: new device ids
+       alan@lxorguk.ukuu.org.uk, Alex Chiang <achiang@hp.com>,
+       Matthew Wilcox <willy@linux.intel.com>
+Subject: [patch 54/96] PCIe: portdrv: call pci_disable_device during remove
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=asix-new-device-ids.patch
+Content-Disposition: inline; filename=pcie-portdrv-call-pci_disable_device-during-remove.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,40 +39,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+From: Alex Chiang <achiang@hp.com>
 
-commit fef7cc0893146550b286b13c0e6e914556142730 upstream.
+commit d89987193631bf23d1735c55d13a06d4b8d0e9bd upstream.
 
-This patch adds two new device ids to the asix driver.
+The PCIe port driver calls pci_enable_device() during probe but
+never calls pci_disable_device() during remove.
 
-One comes directly from the asix driver on their web site, the other was
-reported by Armani Liao as needed for the MSI X320 to get the driver to
-work properly for it.
-
-Reported-by: Armani Liao <aliao@novell.com>
+Signed-off-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: David S. Miller <davem@davemloft.net>
 
 ---
- drivers/net/usb/asix.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/pci/pcie/portdrv_pci.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/net/usb/asix.c
-+++ b/drivers/net/usb/asix.c
-@@ -1448,6 +1448,14 @@ static const struct usb_device_id	produc
- 	// Cables-to-Go USB Ethernet Adapter
- 	USB_DEVICE(0x0b95, 0x772a),
- 	.driver_info = (unsigned long) &ax88772_info,
-+}, {
-+	// ABOCOM for pci
-+	USB_DEVICE(0x14ea, 0xab11),
-+	.driver_info = (unsigned long) &ax88178_info,
-+}, {
-+	// ASIX 88772a
-+	USB_DEVICE(0x0db0, 0xa877),
-+	.driver_info = (unsigned long) &ax88772_info,
- },
- 	{ },		// END
- };
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -115,6 +115,7 @@ static int __devinit pcie_portdrv_probe 
+ static void pcie_portdrv_remove (struct pci_dev *dev)
+ {
+ 	pcie_port_device_remove(dev);
++	pci_disable_device(dev);
+ 	kfree(pci_get_drvdata(dev));
+ }
+ 
 
 
