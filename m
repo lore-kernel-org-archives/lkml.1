@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759636AbZCNBuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbZCNBvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759636AbZCNBuo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbZCNBVj
+	id S1761477AbZCNBvQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbZCNBVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:39 -0400
-Received: from kroah.org ([198.145.64.141]:35641 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:38 -0400
+Received: from kroah.org ([198.145.64.141]:35623 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754698AbZCNBVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754690AbZCNBVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Mar 2009 21:21:05 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:43 2009
-Message-Id: <20090314011043.647123722@mini.kroah.org>
+Message-Id: <20090314011043.500507452@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:11:00 -0700
+Date: Fri, 13 Mar 2009 18:10:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andres Salomon <dilinger@debian.org>,
+       alan@lxorguk.ukuu.org.uk, Ben Dooks <ben-linux@fluff.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
        Pierre Ossman <drzeus@drzeus.cx>
-Subject: [patch 083/114] sdhci: Add NO_BUSY_IRQ quirk for Marvell CAFE host chip
+Subject: [patch 082/114] sdhci: Add quirk for controllers with no end-of-busy IRQ
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=sdhci-add-no_busy_irq-quirk-for-marvell-cafe-host-chip.patch
+Content-Disposition: inline; filename=sdhci-add-quirk-for-controllers-with-no-end-of-busy-irq.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,33 +40,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andres Salomon <dilinger@debian.org>
+From: Ben Dooks <ben-linux@fluff.org>
 
-commit a0874897b1ba106298e4303a25456a473fc40f3d upstream.
+commit f945405cdecd9e0ae3e58ff84cabd19b4522965e upstream.
 
-As described here: http://lkml.org/lkml/2009/2/20/265
+The Samsung SDHCI (and FSL eSDHC) controller block seems to fail
+to generate an INT_DATA_END after the transfer has completed and
+the bus busy state finished.
 
-The CAFE chip is broken due to commit e809517f6fa5803a5a1cd5602.
-Anton added a quirk here: http://lkml.org/lkml/2009/2/20/279 that fixes
-CAFE's problem.  This adds the quirk for CAFE.
+Changes in e809517f6fa5803a5a1cd56026f0e2190fc13d5c to use the
+new busy method are the cause of the behaviour change.
 
-Signed-off-by: Andres Salomon <dilinger@debian.org>
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/mmc/host/sdhci-pci.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/mmc/host/sdhci.c |    5 ++++-
+ drivers/mmc/host/sdhci.h |    2 ++
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
---- a/drivers/mmc/host/sdhci-pci.c
-+++ b/drivers/mmc/host/sdhci-pci.c
-@@ -107,6 +107,7 @@ static const struct sdhci_pci_fixes sdhc
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -1286,8 +1286,11 @@ static void sdhci_cmd_irq(struct sdhci_h
+ 		if (host->cmd->data)
+ 			DBG("Cannot wait for busy signal when also "
+ 				"doing a data transfer");
+-		else
++		else if (!(host->quirks & SDHCI_QUIRK_NO_BUSY_IRQ))
+ 			return;
++
++		/* The controller does not support the end-of-busy IRQ,
++		 * fall through and take the SDHCI_INT_RESPONSE */
+ 	}
  
- static const struct sdhci_pci_fixes sdhci_cafe = {
- 	.quirks		= SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER |
-+			  SDHCI_QUIRK_NO_BUSY_IRQ |
- 			  SDHCI_QUIRK_BROKEN_TIMEOUT_VAL,
- };
+ 	if (intmask & SDHCI_INT_RESPONSE)
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -210,6 +210,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_BROKEN_SMALL_PIO			(1<<13)
+ /* Controller supports high speed but doesn't have the caps bit set */
+ #define SDHCI_QUIRK_FORCE_HIGHSPEED			(1<<14)
++/* Controller does not provide transfer-complete interrupt when not busy */
++#define SDHCI_QUIRK_NO_BUSY_IRQ				(1<<15)
  
+ 	int			irq;		/* Device IRQ */
+ 	void __iomem *		ioaddr;		/* Mapped address */
 
 
