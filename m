@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761304AbZCNAhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761393AbZCNAiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761304AbZCNAhh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbZCNAT0
+	id S1761393AbZCNAiN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbZCNAT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:26 -0400
-Received: from kroah.org ([198.145.64.141]:34741 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:29 -0400
+Received: from kroah.org ([198.145.64.141]:34762 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752777AbZCNATO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:14 -0400
+	id S1753196AbZCNATQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:16 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:47 2009
-Message-Id: <20090314000747.199528565@mini.kroah.org>
+Message-Id: <20090314000747.483821602@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:02 -0700
+Date: Fri, 13 Mar 2009 17:06:04 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alex Chiang <achiang@hp.com>,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: [patch 54/96] PCIe: portdrv: call pci_disable_device during remove
+       alan@lxorguk.ukuu.org.uk, Wu Fengguang <fengguang.wu@intel.com>
+Subject: [patch 56/96] proc: fix kflags to uflags copying in /proc/kpageflags
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=pcie-portdrv-call-pci_disable_device-during-remove.patch
+Content-Disposition: inline; filename=proc-fix-kflags-to-uflags-copying-in-proc-kpageflags.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,30 +38,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alex Chiang <achiang@hp.com>
+From: Wu Fengguang <fengguang.wu@intel.com>
 
-commit d89987193631bf23d1735c55d13a06d4b8d0e9bd upstream.
+commit ad3bdefe877afb47480418fdb05ecd42842de65e upstream.
 
-The PCIe port driver calls pci_enable_device() during probe but
-never calls pci_disable_device() during remove.
+Fix kpf_copy_bit(src,dst) to be kpf_copy_bit(dst,src) to match the
+actual call patterns, e.g. kpf_copy_bit(kflags, KPF_LOCKED, PG_locked).
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+This misplacement of src/dst only affected reporting of PG_writeback,
+PG_reclaim and PG_buddy. For others kflags==uflags so not affected.
+
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pcie/portdrv_pci.c |    1 +
- 1 file changed, 1 insertion(+)
+ fs/proc/proc_misc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/pci/pcie/portdrv_pci.c
-+++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -115,6 +115,7 @@ static int __devinit pcie_portdrv_probe 
- static void pcie_portdrv_remove (struct pci_dev *dev)
- {
- 	pcie_port_device_remove(dev);
-+	pci_disable_device(dev);
- 	kfree(pci_get_drvdata(dev));
- }
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -797,7 +797,7 @@ static struct file_operations proc_kpage
+ #define KPF_RECLAIM    9
+ #define KPF_BUDDY     10
  
+-#define kpf_copy_bit(flags, srcpos, dstpos) (((flags >> srcpos) & 1) << dstpos)
++#define kpf_copy_bit(flags, dstpos, srcpos) (((flags >> srcpos) & 1) << dstpos)
+ 
+ static ssize_t kpageflags_read(struct file *file, char __user *buf,
+ 			     size_t count, loff_t *ppos)
 
 
