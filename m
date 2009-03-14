@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbZCNSXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbZCNSZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755410AbZCNSXZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 14:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbZCNSXQ
+	id S1756363AbZCNSZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 14:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbZCNSZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 14:23:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55472 "EHLO hera.kernel.org"
+	Sat, 14 Mar 2009 14:25:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41065 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751394AbZCNSXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 14:23:16 -0400
-Message-ID: <49BBF59D.7060401@kernel.org>
-Date: Sat, 14 Mar 2009 11:21:17 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751394AbZCNSZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 14:25:10 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [Bug #12405] oops in __bounce_end_io_read under kvm
+Date: Sat, 14 Mar 2009 19:25:00 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+References: <r4SCKuuJK0F.A.UrB.QdarJB@chimera> <pRIaSZpQ1ON.A.TND.CearJB@chimera> <20090314150407.GB27604@lst.de>
+In-Reply-To: <20090314150407.GB27604@lst.de>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/mm] x86: make e820_update_range() handle small range
- update
-References: <49B9F0C1.10402@kernel.org> <tip-78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742@git.kernel.org> <20090314121705.GA13685@elte.hu>
-In-Reply-To: <20090314121705.GA13685@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903141925.01318.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
+On Saturday 14 March 2009, Christoph Hellwig wrote:
+> On Tue, Mar 03, 2009 at 08:41:32PM +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.27 and 2.6.28.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> > be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12405
+> > Subject		: oops in __bounce_end_io_read under kvm
+> > Submitter	: Christoph Hellwig <hch@lst.de>
+> > Date		: 2008-12-26 17:36 (68 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123031303400676&w=4
 > 
->> Commit-ID:  78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
->> Gitweb:     http://git.kernel.org/tip/78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
->> Author:     Yinghai Lu <yinghai@kernel.org>
->> AuthorDate: Thu, 12 Mar 2009 22:36:01 -0700
->> Commit:     Ingo Molnar <mingo@elte.hu>
->> CommitDate: Sat, 14 Mar 2009 12:20:07 +0100
->>
->> x86: make e820_update_range() handle small range update
->>
->> Impact: enhance e820 code to handle more cases
->>
->> Try to handle new range which could be covered by one entry.
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->> Cc: jbeulich@novell.com
->> LKML-Reference: <49B9F0C1.10402@kernel.org>
->> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> -tip testing found a bootup crash + reboot due to this patch.
-> 
-> config attached. The bootup crashes here:
-> 
-> [    0.000000] MTRR variable ranges enabled:
-> [    0.000000]   0 base 0000000000 mask FFC0000000 write-back
-> [    0.000000]   1 disabled
-> [    0.000000]   2 disabled
-> [    0.000000]   3 disabled
-> [    0.000000]   4 disabled
-> [    0.000000]   5 disabled
-> [    0.000000]   6 disabled
-> [    0.000000]   7 disabled
-> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-> [    0.000000]   get_mtrr: cpu0 reg00 base=0000000000 size=0000040000 write-back
-> [    reboot  ]
-> 
+> I haven't been able to hit this anymore for a while.
 
-what does the e820 map look like?
+Let's assume it's been fixed, then. :-)
 
-YH
+I've closed the bug, please reopen if you see it again.
+
+Thanks,
+Rafael
