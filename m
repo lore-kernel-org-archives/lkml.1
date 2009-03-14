@@ -1,149 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbZCNLpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbZCNLsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757415AbZCNLpO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 07:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbZCNLo4
+	id S1757953AbZCNLsU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 07:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbZCNLsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 07:44:56 -0400
-Received: from gmp-eb-inf-1.sun.com ([192.18.6.21]:52826 "EHLO
-	gmp-eb-inf-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756366AbZCNLoy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 07:44:54 -0400
-MIME-version: 1.0
-Date: Sat, 14 Mar 2009 12:44:42 +0100
-From: Frank Mehnert <Frank.Mehnert@Sun.COM>
-Subject: Re: remap_pfn_range() not suitable for physical RAM?
-In-reply-to: <1236964416.4529.125.camel@localhost.localdomain>
-To: linux-kernel@vger.kernel.org
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Message-id: <200903141244.45321.frank.mehnert@sun.com>
-Organization: Sun Microsystems
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=nextPart3384037.3asJlLO9yH
-Content-transfer-encoding: 7BIT
-References: <200903042025.46861.frank.mehnert@sun.com>
- <200903131600.00463.frank.mehnert@sun.com>
- <1236964416.4529.125.camel@localhost.localdomain>
-User-Agent: KMail/1.9.9
+	Sat, 14 Mar 2009 07:48:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42666 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754299AbZCNLsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 07:48:05 -0400
+Date: Sat, 14 Mar 2009 12:47:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Cc: linux-crypto@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org,
+       herbert@gondor.apana.org.au, mail@tobiasvolk.de
+Subject: Re: enable padlock on x86_64
+Message-ID: <20090314114732.GB3805@elte.hu>
+References: <49B83002.9040705@tobiasvolk.de> <1237029843-28076-1-git-send-email-sebastian@breakpoint.cc>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1237029843-28076-1-git-send-email-sebastian@breakpoint.cc>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---nextPart3384037.3asJlLO9yH
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+* Sebastian Andrzej Siewior <sebastian@breakpoint.cc> wrote:
 
-Venki,
+> To enable the padlock unit, two msr bits have to flipped. This is allready
+> done in the 32bit path and is missing in the other. Instead of copy paste
+> the code, I merged the 64bit part into the 32bit part. The things that
+> changed during the merge:
+> - the fixups from x86_64 (family 6, model >= 15) were not present in 32bit
+>   path but are now. They might be usefull if this CPU is booted in 32bit
+>   mode.
+> - the fixups which are executed via ->c_early_init() are now executed
+>   again via ->c_init(). This was done in the 64bit path and without this I
+>   lost the constant_tsc flag. However, tsc is not useable due to
+> | [    2.023006] Marking TSC unstable due to TSC halts in idle
+> | [    2.500082] Clocksource tsc unstable (delta = -326436711 ns)
+> 
+> The two patches are against the current tip tree. A version of 
+> patch 1 against current -rc8 is available at [0].
 
-thanks for these explanations. So vm_insert_page() is only meant for
-RAM pages and remap_pfn_range() can be used for any mappings (inclusive
-I/O memory), is that right?
+thanks, looks good. We can apply #1 to -tip just fine - but a 
+drivers/crypto/ change should go via the crypto tree. Can the 
+crypto tree apply #2 without having #1 right away? [i.e. will it 
+still build and boot fine - even though the padlock 
+functionality might not be fully present on 32-bit? ]
 
-Thanks,
+Then in 2.6.30 once both the x86 tree and the crypto tree are 
+merged we'll have both changes combined.
 
-=46rank
+Does that sound good?
 
-On Friday 13 March 2009, Pallipadi, Venkatesh wrote:
-> Frank,
->
-> The track and untrack is keeping track of memory type for non-RAM
-> regions and making sure that the type is in sync for various mappings
-> for such addresses. We are not tracking the RAM pages today, so
-> vm_insert_page does not have this. vm_insert_mixed is also not covered
-> today, as we deferred that and tracking of RAM pages into our next set
-> of changes.
->
-> Thanks,
-> Venki
->
-> On Fri, 2009-03-13 at 08:00 -0700, Frank Mehnert wrote:
-> > Venki,
-> >
-> > thanks for your reply. May I ask anyway why this check is done in
-> > remap_pfn_range() and vm_insert_pfn() but not in vm_insert_page()?
-> >
-> > Kind regards,
-> >
-> > Frank
-> >
-> > On Tuesday 10 March 2009, Pallipadi, Venkatesh wrote:
-> > > Frank,
-> > >
-> > > Patch here should eliminate the restriction.
-> > > http://marc.info/?l=3Dlinux-kernel&m=3D123664923030126&w=3D1
-> > >
-> > > Thanks,
-> > > Venki
-> > >
-> > > >-----Original Message-----
-> > > >From: linux-kernel-owner@vger.kernel.org
-> > > >[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Frank Mehne=
-rt
-> > > >Sent: Tuesday, March 10, 2009 1:04 AM
-> > > >To: linux-kernel@vger.kernel.org
-> > > >Cc: peterz@infradead.org; Siddha, Suresh B
-> > > >Subject: Re: remap_pfn_range() not suitable for physical RAM?
-> > > >
-> > > >Hi,
-> > > >
-> > > >sorry for re-posting this message and sorry for addressing you
-> > > >directly.
-> > > >Perhaps you can help me again or can you give me a pointer for a
-> > > > proper documentation of the various *remap* and *vm_insert*
-> > > > functions:
-> > > >
-> > > >On Wednesday 04 March 2009, Frank Mehnert wrote:
-> > > >> since 2.6.29-rcX it seems to be not allowed anymore to use
-> > > >> remap_pfn_range() to remap physical RAM to userland. This
-> > > >> restriction applies only if CONFIG_X86_PAT is enabled. It seems th=
-at
-> > > >
-> > > >vm_insert_page()
-> > > >
-> > > >> does not have this restriction. Am I correct? And what is the reas=
-on
-> > > >> for this restriction?
-> > > >
-> > > >Kind regards,
-> > > >
-> > > >Frank
-> > > >--
-> > > >Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
-> > > >--
-> > >
-> > > To unsubscribe from this list: send the line "unsubscribe linux-kerne=
-l"
-> > > in the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > Please read the FAQ at  http://www.tux.org/lkml/
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
-=2D-=20
-Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
-
---nextPart3384037.3asJlLO9yH
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkm7mKoACgkQ6z8pigLf3Ec7UwCeNnnFL4Yh/Q7Fe1TvyjvhO918
-ABwAn3dmlu4m7J5KYxWOoJbC9pWk55b4
-=Zx9n
------END PGP SIGNATURE-----
-
---nextPart3384037.3asJlLO9yH--
+	Ingo
