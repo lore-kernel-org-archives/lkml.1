@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763571AbZCNBoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764690AbZCNBoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763571AbZCNBoS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbZCNBVK
+	id S1764690AbZCNBoj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbZCNBVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:10 -0400
-Received: from kroah.org ([198.145.64.141]:35446 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:12 -0400
+Received: from kroah.org ([198.145.64.141]:35458 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754149AbZCNBUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:48 -0400
+	id S1754328AbZCNBUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:50 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:41 2009
-Message-Id: <20090314011041.178682760@mini.kroah.org>
+Message-Id: <20090314011041.327731579@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:43 -0700
+Date: Fri, 13 Mar 2009 18:10:44 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Paul Moore <paul.moore@hp.com>,
        James Morris <jmorris@namei.org>
-Subject: [patch 066/114] selinux: Fix a panic in selinux_netlbl_inode_permission()
+Subject: [patch 067/114] selinux: Fix the NetLabel glue code for setsockopt()
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=selinux-fix-a-panic-in-selinux_netlbl_inode_permission.patch
+Content-Disposition: inline; filename=selinux-fix-the-netlabel-glue-code-for-setsockopt.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,13 +41,20 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paul Moore <paul.moore@hp.com>
 
-commit d7f59dc4642ce2fc7b79fcd4ec02ffce7f21eb02 upstream.
+commit 09c50b4a52c01a1f450b8eec819089e228655bfb upstream.
 
-Rick McNeal from LSI identified a panic in selinux_netlbl_inode_permission()
-caused by a certain sequence of SUNRPC operations.  The problem appears to be
-due to the lack of NULL pointer checking in the function; this patch adds the
-pointer checks so the function will exit safely in the cases where the socket
-is not completely initialized.
+At some point we (okay, I) managed to break the ability for users to use the
+setsockopt() syscall to set IPv4 options when NetLabel was not active on the
+socket in question.  The problem was noticed by someone trying to use the
+"-R" (record route) option of ping:
+
+ # ping -R 10.0.0.1
+ ping: record route: No message of desired type
+
+The solution is relatively simple, we catch the unlabeled socket case and
+clear the error code, allowing the operation to succeed.  Please note that we
+still deny users the ability to override IPv4 options on socket's which have
+NetLabel labeling active; this is done to ensure the labeling remains intact.
 
 Signed-off-by: Paul Moore <paul.moore@hp.com>
 Signed-off-by: James Morris <jmorris@namei.org>
@@ -55,25 +62,22 @@ Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- security/selinux/netlabel.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ security/selinux/netlabel.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 --- a/security/selinux/netlabel.c
 +++ b/security/selinux/netlabel.c
-@@ -386,11 +386,12 @@ int selinux_netlbl_inode_permission(stru
- 	if (!S_ISSOCK(inode->i_mode) ||
- 	    ((mask & (MAY_WRITE | MAY_APPEND)) == 0))
- 		return 0;
--
- 	sock = SOCKET_I(inode);
- 	sk = sock->sk;
-+	if (sk == NULL)
-+		return 0;
- 	sksec = sk->sk_security;
--	if (sksec->nlbl_state != NLBL_REQUIRE)
-+	if (sksec == NULL || sksec->nlbl_state != NLBL_REQUIRE)
- 		return 0;
+@@ -491,8 +491,10 @@ int selinux_netlbl_socket_setsockopt(str
+ 		lock_sock(sk);
+ 		rc = netlbl_sock_getattr(sk, &secattr);
+ 		release_sock(sk);
+-		if (rc == 0 && secattr.flags != NETLBL_SECATTR_NONE)
++		if (rc == 0)
+ 			rc = -EACCES;
++		else if (rc == -ENOMSG)
++			rc = 0;
+ 		netlbl_secattr_destroy(&secattr);
+ 	}
  
- 	local_bh_disable();
 
 
