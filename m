@@ -1,129 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZCNI43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbZCNI6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbZCNI43 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 04:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbZCNI4J
+	id S1755000AbZCNI6T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 04:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbZCNI6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 04:56:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50489 "EHLO hera.kernel.org"
+	Sat, 14 Mar 2009 04:58:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50533 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754755AbZCNI4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 04:56:05 -0400
-Date: Sat, 14 Mar 2009 08:54:34 GMT
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+	id S1751805AbZCNI6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 04:58:03 -0400
+Date: Sat, 14 Mar 2009 08:57:28 GMT
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de, hpa@zytor.com,
-       mingo@redhat.com, venkatesh.pallipadi@intel.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090313233543.GA19909@linux-os.sc.intel.com>
-References: <20090313233543.GA19909@linux-os.sc.intel.com>
-Subject: [tip:x86/urgent] VM, x86, PAT: add a new vm flag to track full pfnmap at mmap
-Message-ID: <tip-895791dac6946d535991edd11341046f8e85ea77@git.kernel.org>
-Git-Commit-ID: 895791dac6946d535991edd11341046f8e85ea77
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       sam@ravnborg.org, pmarques@grupopie.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org, tglx@linutronix.de, pmarques@grupopie.com,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+In-Reply-To: <49BA06E2.7080807@cn.fujitsu.com>
+References: <49BA06E2.7080807@cn.fujitsu.com>
+Subject: [tip:tracing/ftrace] kallsyms, tracing: output more proper symbol name
+Message-ID: <tip-b478b782e110fdb4135caa3062b6d687e989d994@git.kernel.org>
+Git-Commit-ID: b478b782e110fdb4135caa3062b6d687e989d994
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 14 Mar 2009 08:54:36 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 14 Mar 2009 08:57:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  895791dac6946d535991edd11341046f8e85ea77
-Gitweb:     http://git.kernel.org/tip/895791dac6946d535991edd11341046f8e85ea77
-Author:     Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-AuthorDate: Fri, 13 Mar 2009 16:35:44 -0700
+Commit-ID:  b478b782e110fdb4135caa3062b6d687e989d994
+Gitweb:     http://git.kernel.org/tip/b478b782e110fdb4135caa3062b6d687e989d994
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Fri, 13 Mar 2009 15:10:26 +0800
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 14 Mar 2009 09:47:44 +0100
+CommitDate: Sat, 14 Mar 2009 09:55:04 +0100
 
-VM, x86, PAT: add a new vm flag to track full pfnmap at mmap
+kallsyms, tracing: output more proper symbol name
 
-Impact: cleanup
+Impact: bugfix, output more reliable symbol lookup result
 
-Add a new vm flag VM_PFN_AT_MMAP to identify a PFNMAP that is
-fully mapped with remap_pfn_range. Patch removes the overloading
-of VM_INSERTPAGE from the earlier patch.
+Debug tools(dump_stack(), ftrace...) are like to print out symbols.
+But it is always print out the first aliased symbol.(Aliased symbols
+are symbols with the same address), and the first aliased symbol is
+sometime not proper.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Acked-by: Nick Piggin <npiggin@suse.de>
-LKML-Reference: <20090313233543.GA19909@linux-os.sc.intel.com>
+ # echo function_graph > current_tracer
+ # cat trace
+.....
+ 1)   1.923 us    |    select_nohz_load_balancer();
+ 1) + 76.692 us   |  }
+ 1)               |  default_idle() {
+ 1)   ==========> |    __irqentry_text_start() {
+ 1)   0.000 us    |      native_apic_mem_write();
+ 1)               |      irq_enter() {
+ 1)   0.000 us    |        idle_cpu();
+ 1)               |        tick_check_idle() {
+ 1)   0.000 us    |          tick_check_oneshot_broadcast();
+ 1)               |          tick_nohz_stop_idle() {
+.....
+
+It's very embarrassing, it ouputs "__irqentry_text_start()",
+actually, it should output "smp_apic_timer_interrupt()".
+(these two symbol are the same address, but "__irqentry_text_start"
+is deemed to the first aliased symbol by scripts/kallsyms)
+
+This patch puts symbols like "__irqentry_text_start" to the second
+aliased symbols. And a more proper symbol name becomes the first.
+
+Aliased symbols mostly come from linker script. The solution is
+guessing "is this symbol defined in linker script", the symbols
+defined in linker script will not become the first aliased symbol.
+
+And if symbols are found to be equal in this "linker script provided"
+criteria, symbols are sorted by the number of prefix underscores.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Paulo Marques <pmarques@grupopie.com>
+LKML-Reference: <49BA06E2.7080807@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/mm.h |   16 +++-------------
- mm/memory.c        |    4 ++--
- 2 files changed, 5 insertions(+), 15 deletions(-)
+ scripts/kallsyms.c |   57 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 57 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 3daa05f..b1ea37f 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -98,12 +98,13 @@ extern unsigned int kobjsize(const void *objp);
- #define VM_HUGETLB	0x00400000	/* Huge TLB Page VM */
- #define VM_NONLINEAR	0x00800000	/* Is non-linear (remap_file_pages) */
- #define VM_MAPPED_COPY	0x01000000	/* T if mapped copy of data (nommu mmap) */
--#define VM_INSERTPAGE	0x02000000	/* The vma has had "vm_insert_page()" done on it. Refer note in VM_PFNMAP_AT_MMAP below */
-+#define VM_INSERTPAGE	0x02000000	/* The vma has had "vm_insert_page()" done on it */
- #define VM_ALWAYSDUMP	0x04000000	/* Always include in core dumps */
- 
- #define VM_CAN_NONLINEAR 0x08000000	/* Has ->fault & does nonlinear pages */
- #define VM_MIXEDMAP	0x10000000	/* Can contain "struct page" and pure PFN pages */
- #define VM_SAO		0x20000000	/* Strong Access Ordering (powerpc) */
-+#define VM_PFN_AT_MMAP	0x40000000	/* PFNMAP vma that is fully mapped at mmap time */
- 
- #ifndef VM_STACK_DEFAULT_FLAGS		/* arch can override this */
- #define VM_STACK_DEFAULT_FLAGS VM_DATA_DEFAULT_FLAGS
-@@ -127,17 +128,6 @@ extern unsigned int kobjsize(const void *objp);
- #define VM_SPECIAL (VM_IO | VM_DONTEXPAND | VM_RESERVED | VM_PFNMAP)
- 
- /*
-- * pfnmap vmas that are fully mapped at mmap time (not mapped on fault).
-- * Used by x86 PAT to identify such PFNMAP mappings and optimize their handling.
-- * Note VM_INSERTPAGE flag is overloaded here. i.e,
-- * VM_INSERTPAGE && !VM_PFNMAP implies
-- *     The vma has had "vm_insert_page()" done on it
-- * VM_INSERTPAGE && VM_PFNMAP implies
-- *     The vma is PFNMAP with full mapping at mmap time
-- */
--#define VM_PFNMAP_AT_MMAP (VM_INSERTPAGE | VM_PFNMAP)
--
--/*
-  * mapping from the currently active vm_flags protection bits (the
-  * low four bits) to a page protection mask..
-  */
-@@ -156,7 +146,7 @@ extern pgprot_t protection_map[16];
-  */
- static inline int is_linear_pfn_mapping(struct vm_area_struct *vma)
- {
--	return ((vma->vm_flags & VM_PFNMAP_AT_MMAP) == VM_PFNMAP_AT_MMAP);
-+	return (vma->vm_flags & VM_PFN_AT_MMAP);
+diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
+index ad2434b..6654cbe 100644
+--- a/scripts/kallsyms.c
++++ b/scripts/kallsyms.c
+@@ -500,6 +500,51 @@ static void optimize_token_table(void)
+ 	optimize_result();
  }
  
- static inline int is_pfn_mapping(struct vm_area_struct *vma)
-diff --git a/mm/memory.c b/mm/memory.c
-index d7df5ba..2032ad2 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1667,7 +1667,7 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
- 	 */
- 	if (addr == vma->vm_start && end == vma->vm_end) {
- 		vma->vm_pgoff = pfn;
--		vma->vm_flags |= VM_PFNMAP_AT_MMAP;
-+		vma->vm_flags |= VM_PFN_AT_MMAP;
- 	} else if (is_cow_mapping(vma->vm_flags))
- 		return -EINVAL;
++/* guess for "linker script provide" symbol */
++static int may_be_linker_script_provide_symbol(const struct sym_entry *se)
++{
++	const char *symbol = (char *)se->sym + 1;
++	int len = se->len - 1;
++
++	if (len < 8)
++		return 0;
++
++	if (symbol[0] != '_' || symbol[1] != '_')
++		return 0;
++
++	/* __start_XXXXX */
++	if (!memcmp(symbol + 2, "start_", 6))
++		return 1;
++
++	/* __stop_XXXXX */
++	if (!memcmp(symbol + 2, "stop_", 5))
++		return 1;
++
++	/* __end_XXXXX */
++	if (!memcmp(symbol + 2, "end_", 4))
++		return 1;
++
++	/* __XXXXX_start */
++	if (!memcmp(symbol + len - 6, "_start", 6))
++		return 1;
++
++	/* __XXXXX_end */
++	if (!memcmp(symbol + len - 4, "_end", 4))
++		return 1;
++
++	return 0;
++}
++
++static int prefix_underscores_count(const char *str)
++{
++	const char *tail = str;
++
++	while (*tail != '_')
++		tail++;
++
++	return tail - str;
++}
++
+ static int compare_symbols(const void *a, const void *b)
+ {
+ 	const struct sym_entry *sa;
+@@ -521,6 +566,18 @@ static int compare_symbols(const void *a, const void *b)
+ 	if (wa != wb)
+ 		return wa - wb;
  
-@@ -1680,7 +1680,7 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
- 		 * needed from higher level routine calling unmap_vmas
- 		 */
- 		vma->vm_flags &= ~(VM_IO | VM_RESERVED | VM_PFNMAP);
--		vma->vm_flags &= ~VM_PFNMAP_AT_MMAP;
-+		vma->vm_flags &= ~VM_PFN_AT_MMAP;
- 		return -EINVAL;
- 	}
- 
++	/* sort by "linker script provide" type */
++	wa = may_be_linker_script_provide_symbol(sa);
++	wb = may_be_linker_script_provide_symbol(sb);
++	if (wa != wb)
++		return wa - wb;
++
++	/* sort by the number of prefix underscores */
++	wa = prefix_underscores_count((const char *)sa->sym + 1);
++	wb = prefix_underscores_count((const char *)sb->sym + 1);
++	if (wa != wb)
++		return wa - wb;
++
+ 	/* sort by initial order, so that other symbols are left undisturbed */
+ 	return sa->start_pos - sb->start_pos;
+ }
