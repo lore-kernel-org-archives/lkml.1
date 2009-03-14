@@ -1,197 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbZCNPCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbZCNPE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbZCNPCb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 11:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbZCNPCW
+	id S1756708AbZCNPE2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 11:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZCNPEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 11:02:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56116 "EHLO hera.kernel.org"
+	Sat, 14 Mar 2009 11:04:20 -0400
+Received: from verein.lst.de ([213.95.11.210]:55876 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750974AbZCNPCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 11:02:21 -0400
-Subject: [PATCH -tip] x86: kdebugfs.c cleanup
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 14 Mar 2009 20:31:57 +0530
-Message-Id: <1237042917.4546.15.camel@ht.satnam>
+	id S1750974AbZCNPEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 11:04:20 -0400
+Date: Sat, 14 Mar 2009 16:04:07 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Christoph Hellwig <hch@lst.de>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [Bug #12405] oops in __bounce_end_io_read under kvm
+Message-ID: <20090314150407.GB27604@lst.de>
+References: <r4SCKuuJK0F.A.UrB.QdarJB@chimera> <pRIaSZpQ1ON.A.TND.CearJB@chimera>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <pRIaSZpQ1ON.A.TND.CearJB@chimera>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] x86: kdebugfs.c cleanup
+On Tue, Mar 03, 2009 at 08:41:32PM +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.27 and 2.6.28.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12405
+> Subject		: oops in __bounce_end_io_read under kvm
+> Submitter	: Christoph Hellwig <hch@lst.de>
+> Date		: 2008-12-26 17:36 (68 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123031303400676&w=4
 
-Impact: cleanup
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/kdebugfs.c |   35 +++++++++++++++++++++++------------
- 1 files changed, 23 insertions(+), 12 deletions(-)
-
-diff --git a/arch/x86/kernel/kdebugfs.c b/arch/x86/kernel/kdebugfs.c
-index ff7d3b0..3d292f0 100644
---- a/arch/x86/kernel/kdebugfs.c
-+++ b/arch/x86/kernel/kdebugfs.c
-@@ -8,11 +8,11 @@
-  */
- #include <linux/debugfs.h>
- #include <linux/uaccess.h>
--#include <linux/stat.h>
-+#include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/stat.h>
- #include <linux/io.h>
- #include <linux/mm.h>
--#include <linux/module.h>
- 
- #include <asm/setup.h>
- 
-@@ -26,9 +26,8 @@ struct setup_data_node {
- 	u32 len;
- };
- 
--static ssize_t
--setup_data_read(struct file *file, char __user *user_buf, size_t count,
--		loff_t *ppos)
-+static ssize_t setup_data_read(struct file *file, char __user *user_buf,
-+			       size_t count, loff_t *ppos)
- {
- 	struct setup_data_node *node = file->private_data;
- 	unsigned long remain;
-@@ -39,20 +38,21 @@ setup_data_read(struct file *file, char __user *user_buf, size_t count,
- 
- 	if (pos < 0)
- 		return -EINVAL;
-+
- 	if (pos >= node->len)
- 		return 0;
- 
- 	if (count > node->len - pos)
- 		count = node->len - pos;
-+
- 	pa = node->paddr + sizeof(struct setup_data) + pos;
- 	pg = pfn_to_page((pa + count - 1) >> PAGE_SHIFT);
- 	if (PageHighMem(pg)) {
- 		p = ioremap_cache(pa, count);
- 		if (!p)
- 			return -ENXIO;
--	} else {
-+	} else
- 		p = __va(pa);
--	}
- 
- 	remain = copy_to_user(user_buf, p, count);
- 
-@@ -70,12 +70,13 @@ setup_data_read(struct file *file, char __user *user_buf, size_t count,
- static int setup_data_open(struct inode *inode, struct file *file)
- {
- 	file->private_data = inode->i_private;
-+
- 	return 0;
- }
- 
- static const struct file_operations fops_setup_data = {
--	.read =		setup_data_read,
--	.open =		setup_data_open,
-+	.read		= setup_data_read,
-+	.open		= setup_data_open,
- };
- 
- static int __init
-@@ -92,16 +93,19 @@ create_setup_data_node(struct dentry *parent, int no,
- 		error = -ENOMEM;
- 		goto err_return;
- 	}
-+
- 	type = debugfs_create_x32("type", S_IRUGO, d, &node->type);
- 	if (!type) {
- 		error = -ENOMEM;
- 		goto err_dir;
- 	}
-+
- 	data = debugfs_create_file("data", S_IRUGO, d, node, &fops_setup_data);
- 	if (!data) {
- 		error = -ENOMEM;
- 		goto err_type;
- 	}
-+
- 	return 0;
- 
- err_type:
-@@ -135,6 +139,7 @@ static int __init create_setup_data_nodes(struct dentry *parent)
- 			error = -ENOMEM;
- 			goto err_dir;
- 		}
-+
- 		pg = pfn_to_page((pa_data+sizeof(*data)-1) >> PAGE_SHIFT);
- 		if (PageHighMem(pg)) {
- 			data = ioremap_cache(pa_data, sizeof(*data));
-@@ -143,9 +148,8 @@ static int __init create_setup_data_nodes(struct dentry *parent)
- 				error = -ENXIO;
- 				goto err_dir;
- 			}
--		} else {
-+		} else
- 			data = __va(pa_data);
--		}
- 
- 		node->paddr = pa_data;
- 		node->type = data->type;
-@@ -155,10 +159,13 @@ static int __init create_setup_data_nodes(struct dentry *parent)
- 
- 		if (PageHighMem(pg))
- 			iounmap(data);
-+
- 		if (error)
- 			goto err_dir;
-+
- 		no++;
- 	}
-+
- 	return 0;
- 
- err_dir:
-@@ -182,21 +189,25 @@ static int __init boot_params_kdebugfs_init(void)
- 		error = -ENOMEM;
- 		goto err_return;
- 	}
-+
- 	version = debugfs_create_x16("version", S_IRUGO, dbp,
- 				     &boot_params.hdr.version);
- 	if (!version) {
- 		error = -ENOMEM;
- 		goto err_dir;
- 	}
-+
- 	data = debugfs_create_blob("data", S_IRUGO, dbp,
- 				   &boot_params_blob);
- 	if (!data) {
- 		error = -ENOMEM;
- 		goto err_version;
- 	}
-+
- 	error = create_setup_data_nodes(dbp);
- 	if (error)
- 		goto err_data;
-+
- 	return 0;
- 
- err_data:
-@@ -208,7 +219,7 @@ err_dir:
- err_return:
- 	return error;
- }
--#endif
-+#endif /* CONFIG_DEBUG_BOOT_PARAMS */
- 
- static int __init arch_kdebugfs_init(void)
- {
--- 
-1.6.0.6
-
-
-
+I haven't been able to hit this anymore for a while.
