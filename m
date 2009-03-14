@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZCNAVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbZCNAWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbZCNAVp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbZCNASa
+	id S1755790AbZCNAWZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbZCNASc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:30 -0400
-Received: from kroah.org ([198.145.64.141]:46669 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:32 -0400
+Received: from kroah.org ([198.145.64.141]:46692 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752184AbZCNAS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:29 -0400
+	id S1752484AbZCNASb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:31 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:40 2009
-Message-Id: <20090314000740.010155467@mini.kroah.org>
+Message-Id: <20090314000740.315750518@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:17 -0700
+Date: Fri, 13 Mar 2009 17:05:19 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Biederman <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Paul Turner <pjt@google.com>
-Subject: [patch 09/96] seq_file: properly cope with pread
+       alan@lxorguk.ukuu.org.uk, Ed Cashin <ecashin@coraid.com>,
+       Alex Buell <alex.buell@munted.org.uk>
+Subject: [patch 11/96] aoe: ignore vendor extension AoE responses
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=seq_file-properly-cope-with-pread.patch
+Content-Disposition: inline; filename=aoe-ignore-vendor-extension-aoe-responses.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,119 +39,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eric Biederman <ebiederm@xmission.com>
+From: Ed Cashin <ecashin@coraid.com>
 
-commit 8f19d472935c83d823fa4cf02bcc0a7b9952db30 upstream.
+commit b6d6c5175809934e04a606d9193ef04924a7a7d9 upstream.
 
-Currently seq_read assumes that the offset passed to it is always the
-offset it passed to user space.  In the case pread this assumption is
-broken and we do the wrong thing when presented with pread.
+The Welland ME-747K-SI AoE target generates unsolicited AoE responses that
+are marked as vendor extensions.  Instead of ignoring these packets, the
+aoe driver was generating kernel messages for each unrecognized response
+received.  This patch corrects the behavior.
 
-To solve this I introduce an offset cache inside of struct seq_file so we
-know where our logical file position is.  Then in seq_read if we try to
-read from another offset we reset our data structures and attempt to go to
-the offset user space wanted.
-
-[akpm@linux-foundation.org: restore FMODE_PWRITE]
-[pjt@google.com: seq_open needs its fmode opened up to take advantage of this]
-Signed-off-by: Eric Biederman <ebiederm@xmission.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Paul Turner <pjt@google.com>
+Signed-off-by: Ed Cashin <ecashin@coraid.com>
+Reported-by: <karaluh@karaluh.pl>
+Tested-by: <karaluh@karaluh.pl>
+Cc: Alex Buell <alex.buell@munted.org.uk>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/seq_file.c            |   36 ++++++++++++++++++++++++++++++++----
- include/linux/seq_file.h |    1 +
- 2 files changed, 33 insertions(+), 4 deletions(-)
+ drivers/block/aoe/aoe.h    |    1 +
+ drivers/block/aoe/aoenet.c |    2 ++
+ 2 files changed, 3 insertions(+)
 
---- a/fs/seq_file.c
-+++ b/fs/seq_file.c
-@@ -48,8 +48,16 @@ int seq_open(struct file *file, const st
- 	 */
- 	file->f_version = 0;
+--- a/drivers/block/aoe/aoe.h
++++ b/drivers/block/aoe/aoe.h
+@@ -18,6 +18,7 @@
+ enum {
+ 	AOECMD_ATA,
+ 	AOECMD_CFG,
++	AOECMD_VEND_MIN = 0xf0,
  
--	/* SEQ files support lseek, but not pread/pwrite */
--	file->f_mode &= ~(FMODE_PREAD | FMODE_PWRITE);
-+	/*
-+	 * seq_files support lseek() and pread().  They do not implement
-+	 * write() at all, but we clear FMODE_PWRITE here for historical
-+	 * reasons.
-+	 *
-+	 * If a client of seq_files a) implements file.write() and b) wishes to
-+	 * support pwrite() then that client will need to implement its own
-+	 * file.open() which calls seq_open() and then sets FMODE_PWRITE.
-+	 */
-+	file->f_mode &= ~FMODE_PWRITE;
- 	return 0;
- }
- EXPORT_SYMBOL(seq_open);
-@@ -131,6 +139,22 @@ ssize_t seq_read(struct file *file, char
- 	int err = 0;
- 
- 	mutex_lock(&m->lock);
-+
-+	/* Don't assume *ppos is where we left it */
-+	if (unlikely(*ppos != m->read_pos)) {
-+		m->read_pos = *ppos;
-+		while ((err = traverse(m, *ppos)) == -EAGAIN)
-+			;
-+		if (err) {
-+			/* With prejudice... */
-+			m->read_pos = 0;
-+			m->version = 0;
-+			m->index = 0;
-+			m->count = 0;
-+			goto Done;
-+		}
-+	}
-+
- 	/*
- 	 * seq_file->op->..m_start/m_stop/m_next may do special actions
- 	 * or optimisations based on the file->f_version, so we want to
-@@ -230,8 +254,10 @@ Fill:
- Done:
- 	if (!copied)
- 		copied = err;
--	else
-+	else {
- 		*ppos += copied;
-+		m->read_pos += copied;
-+	}
- 	file->f_version = m->version;
- 	mutex_unlock(&m->lock);
- 	return copied;
-@@ -266,16 +292,18 @@ loff_t seq_lseek(struct file *file, loff
- 			if (offset < 0)
- 				break;
- 			retval = offset;
--			if (offset != file->f_pos) {
-+			if (offset != m->read_pos) {
- 				while ((retval=traverse(m, offset)) == -EAGAIN)
- 					;
- 				if (retval) {
- 					/* with extreme prejudice... */
- 					file->f_pos = 0;
-+					m->read_pos = 0;
- 					m->version = 0;
- 					m->index = 0;
- 					m->count = 0;
- 				} else {
-+					m->read_pos = offset;
- 					retval = file->f_pos = offset;
- 				}
- 			}
---- a/include/linux/seq_file.h
-+++ b/include/linux/seq_file.h
-@@ -19,6 +19,7 @@ struct seq_file {
- 	size_t from;
- 	size_t count;
- 	loff_t index;
-+	loff_t read_pos;
- 	u64 version;
- 	struct mutex lock;
- 	const struct seq_operations *op;
+ 	AOEFL_RSP = (1<<3),
+ 	AOEFL_ERR = (1<<2),
+--- a/drivers/block/aoe/aoenet.c
++++ b/drivers/block/aoe/aoenet.c
+@@ -154,6 +154,8 @@ aoenet_rcv(struct sk_buff *skb, struct n
+ 		aoecmd_cfg_rsp(skb);
+ 		break;
+ 	default:
++		if (h->cmd >= AOECMD_VEND_MIN)
++			break;	/* don't complain about vendor commands */
+ 		printk(KERN_INFO "aoe: unknown cmd %d\n", h->cmd);
+ 	}
+ exit:
 
 
