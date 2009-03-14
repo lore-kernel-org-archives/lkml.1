@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbZCNUDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757656AbZCNUD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757956AbZCNUDg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 16:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZCNUDW
+	id S1757656AbZCNUD7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 16:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758005AbZCNUDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 16:03:22 -0400
-Received: from mx30.brocade.com ([144.49.194.4]:8870 "EHLO mx30.brocade.com"
+	Sat, 14 Mar 2009 16:03:44 -0400
+Received: from mx30.brocade.com ([144.49.194.4]:51887 "EHLO mx30.brocade.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751621AbZCNUDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 16:03:13 -0400
+	id S1757989AbZCNUDc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 16:03:32 -0400
 X-IronPort-AV: E=Sophos;i="4.38,363,1233561600"; 
-   d="scan'208";a="69758344"
-Date: Sat, 14 Mar 2009 13:03:09 -0700
+   d="scan'208";a="69757585"
+Date: Sat, 14 Mar 2009 12:53:56 -0700
 From: Jing Huang <huangj@brocade.com>
-Message-Id: <200903142003.n2EK39r4031547@blc-10-6.brocade.com>
+Message-Id: <200903141953.n2EJruPu029022@blc-10-6.brocade.com>
 To: James.Bottomley@HansenPartnership.com
-Subject: [PATCH 1/5] bfa: Brocade BFA FC SCSI driver (bfad)
+Subject: [PATCH 0/5] bfa: Brocade BFA FC SCSI driver (bfad)
 Cc: kgudipat@brocade.com, linux-kernel@vger.kernel.org,
        linux-scsi@vger.kernel.org, rvadivel@brocade.com, vravindr@brocade.com
 Sender: linux-kernel-owner@vger.kernel.org
