@@ -1,80 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZCNC3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755023AbZCNCcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752551AbZCNC3i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 22:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbZCNC3Z
+	id S1755023AbZCNCcg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 22:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751619AbZCNCcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 22:29:25 -0400
-Received: from mail-gx0-f165.google.com ([209.85.217.165]:45501 "EHLO
-	mail-gx0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbZCNC3Y (ORCPT
+	Fri, 13 Mar 2009 22:32:25 -0400
+Received: from mail-qy0-f122.google.com ([209.85.221.122]:62150 "EHLO
+	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751337AbZCNCcY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 22:29:24 -0400
-X-Greylist: delayed 374 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Mar 2009 22:29:23 EDT
+	Fri, 13 Mar 2009 22:32:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lKH4bNPIPsk7Vd5w+BtF6sTMT7eVRtGXZN67mr6SZWbEymd1SAWHfRoOxqvvGOhtJy
-         7oLdERuhtgGSOATOWwqJhjDWejsIMbN1X0CYHZ2PgqJ7TU6KZMvMAQfIk3BSlq8Af6Gm
-         6hYLShS7DMT9RflI24GfmcG51fNzNla8Hj7uA=
+        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=aOx3I99c/mAdJc22dOybdlVZFT9eir+9mkQmaNc/AIh7bftuSM3Tnwzwjz4Cw3k1Xv
+         lVNSOo+MpA7WHwwRuTO5xuhj63h7ZDBiuv+nTs7H1wLqSgwyiz78troKkW9X+FM/+ar1
+         QqPenGZUgioV2O78E6Xw1gz62c3IZllEUPxNI=
+Message-ID: <49BB172D.5060609@gmail.com>
+Date: Fri, 13 Mar 2009 20:32:13 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <20090313201511.GA27827@electric-eye.fr.zoreil.com>
-References: <200903092029.n29KT1DS004531@harpo.it.uu.se>
-	 <20090313201511.GA27827@electric-eye.fr.zoreil.com>
-Date: Fri, 13 Mar 2009 22:23:04 -0400
-Message-ID: <9e246b4d0903131923lecba2bah940f41c9c5fa6b03@mail.gmail.com>
-Subject: Re: [BUG] 2.6.29-rc7 broke r8169 MAC on Thecus n2100 ARM board
-From: Tim Durack <tdurack@gmail.com>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, ivecera@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
+Newsgroups: gmane.linux.kernel
+To: Gene Heskett <gene.heskett@gmail.com>
+CC: Robin.Laing@drdc-rddc.gc.ca, LKML <linux-kernel@vger.kernel.org>,
+       David Newall <davidn@davidnewall.com>, yhlu.kernel@gmail.com
+Subject: Re: New ASUS 1701 bios for M2N SLI DELUXE
+References: <200903131642.54925.gene.heskett@gmail.com>
+In-Reply-To: <200903131642.54925.gene.heskett@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 13, 2009 at 4:15 PM, Francois Romieu <romieu@fr.zoreil.com> wrote:
-> Mikael Pettersson <mikpe@it.uu.se> :
->> With the 2.6.29-rc7 kernel I'm unable to 'ifup' eth0 on my ARM-based
->> Thecus n2100 NAS box, which has an RTL8169 NIC (10ec:8169 (rev 10)).
->> A diff of the kernel logs from 2.6.29-rc6 and -rc7 shows that -rc7
->> first mangles and then zaps the MAC addresses:
->
-> Can you apply the attached patch and see if it fixes any of these
-> problems ?
->
-> Tim, could you give it a try too ? It applies with "patch -p1" from
-> the kernel tree directory.
->
-> --
-> Ueimor
->
+Gene Heskett wrote:
+> Hi Robin, David and lkml list;
+> 
+> I said I would report.
+> 
+> I just reinstalled the 1502 version bios after spending the last 2 days 
+> trying to get an hours worth of uptime without an oops.  Gave up.
+> 
+> David Newell and I have been trying to find the cause of the oops, but 
+> when the compile instructions David is sending me don't work, its a bit 
+> difficult to troubleshoot beyond renaming the function just to see if 
+> the oops follows the rename, which it does.  And with the boot girations
+> to get a working radeonhd driver now broken again, apparently by the 
+> 'make mrproper' that David had me do, I'm now stuck on issue drivers for 
+> drm, radeon, and radeonhd and those are noticably slower.
+> 
+> So I'm back on the 1502 version of the bios, it does an oops as I sent 
+> before right at entering vmlinuz, which marks me tainted, but the machine 
+> is dead stable after that.
+> 
+> Here is another snip of that to refresh memories:
+> [    0.000000] DMI 2.4 present.
+> [    0.000000] Phoenix BIOS detected: BIOS may corrupt low RAM, working it around.
+> [    0.000000] last_pfn = 0x120000 max_arch_pfn = 0x1000000
+> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+> [    0.000000] ------------[ cut here ]------------
+> [    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 generic_get_mtrr+0xea/0x120()
+> [    0.000000] mtrr: your BIOS has set up an incorrect mask, fixing it up.
+> [    0.000000] Modules linked in:
+> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.28.7 #7
+> [    0.000000] Call Trace:
+> [    0.000000]  [<c042858f>] warn_slowpath+0x6f/0x90
+> [    0.000000]  [<c05193b0>] vsnprintf+0x3c0/0x7e0
+> [    0.000000]  [<c0627a00>] panic+0x15/0xee
+> [    0.000000]  [<c041a78c>] pat_init+0x7c/0xa0
+> [    0.000000]  [<c040f9fc>] post_set+0x1c/0x50
+> [    0.000000]  [<c0733f35>] dmi_string_nosave+0x4c/0x6d
+> [    0.000000]  [<c0441031>] up+0x11/0x40
+> [    0.000000]  [<c040f7ea>] generic_get_mtrr+0xea/0x120
+> [    0.000000]  [<c071f91f>] mtrr_trim_uncached_memory+0x7d/0x374
+> [    0.000000]  [<c042e583>] request_resource+0xa3/0x150
+> [    0.000000]  [<c0627af0>] printk+0x17/0x1f
+> [    0.000000]  [<c071be82>] e820_end_pfn+0xb5/0xd3
+> [    0.000000]  [<c0719fc9>] setup_arch+0x501/0xb68
+> [    0.000000]  [<c0428d89>] release_console_sem+0x189/0x1d0
+> [    0.000000]  [<c071d027>] reserve_early_overlap_ok+0x3f/0x47
+> [    0.000000]  [<c07138a4>] start_kernel+0x58/0x314
+> [    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
 
-No luck:
+That's not an oops, it's a warning. Those do normally taint the kernel. 
+I don't think this should really be a WARN, IMHO, as it's a BIOS bug and 
+not the kernel's fault, and it's fixed up the problem. CCing Yinghai Lu, 
+which it looks like wrote this warning.
 
-B-25-1NOC-CFG-1:~# modprobe -if r8169
-[  120.938729] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-[  120.945018] r8169 0000:00:09.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
-[  120.953409] r8169 0000:00:09.0: no PCI Express capability
-[  120.960359] r8169 0000:00:09.0: MAC address found in EEPROM:
-00:30:18:ab:f0:34
-[  120.978441] eth1: RTL8169sc/8110sc at 0xf8154000,
-00:00:00:00:f0:34, XID 18000000 IRQ 18
-[  120.988468] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-[  120.994119] r8169 0000:00:0b.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-[  121.001139] r8169 0000:00:0b.0: no PCI Express capability
-[  121.006922] r8169 0000:00:0b.0: MAC address found in EEPROM:
-00:30:18:ab:f0:35
-[  121.063615] eth2: RTL8169sc/8110sc at 0xf801e000,
-00:00:00:00:f0:35, XID 18000000 IRQ 19
-[  121.072495] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-[  121.078188] r8169 0000:00:0c.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-[  121.085239] r8169 0000:00:0c.0: no PCI Express capability
-[  121.091025] r8169 0000:00:0c.0: MAC address found in EEPROM:
-00:30:18:ab:f0:36
-[  121.147502] eth3: RTL8169sc/8110sc at 0xf8022000,
-00:00:00:00:f0:36, XID 18000000 IRQ 16
+> 
+> So based on that, I'll now go build a 2.6.29-rc8 and see how that runs.
+> 
+> The biggest problem with the 2.6.29 series is that apparently, for security 
+> reasons, they are now doing a PHY disable in a graceful shutdown, which 
+> none of the previous kernels knows how to re-enable.
+> 
+> So to reboot to the 2.6.28.7 stable, you have to use the front panel reset 
+> button to reboot or you will not have any onboard ethernet until you do a 
+> full, pull ALL the power plugs for at least 30 seconds (I go make a cup of 
+> tea, about 3 minutes) to reset the PHY's back to operational status. TBT,
+> the reset button is easier.
+> 
+> Frankly, that seems like a thoroughly busted security idea, but I suppose 
+> we're stuck with it.
 
-Tim:>
+I doubt it's for security reasons. Could be due to power management or 
+suspend/resume changes?
+
+> 
+> It also seems to me, that to mark my kernel as tainted over a fix-up that 
+> makes the system dead stable, is executing the messenger.  IMNSHO, its ASUS 
+> who ought to be shot for not having any method of filing a bug report 
+> against their crappy bios.  3 emails sent to the only address I was able to 
+> find for ASUS have had the same effect as sending them to /dev/null.
+> 
+> If anyone on the LKML knows how to contact ASUS, please advise them that 
+> there is at least one VERY unhappy camper/user of the 
+> $285 USD M2N SLI DELUXE motherboard, I'm sorry I ever laid eyes on it. 
+> The newly released version 1701 bios (it unzips as M2N-SLI-Deluxe-1701.BIN) 
+> still doesn't get it right AFAIAC.  The kernel writers at least know what
+> to do about the older version bios.  Maybe ASUS coded the new bios to get
+> past your test, but is it still fscked?  That is certainly my opinion...
+> 
+> Thanks everybody.  Now back to your regularly scheduled programming. :)
+> 
+
