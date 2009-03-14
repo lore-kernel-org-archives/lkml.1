@@ -1,68 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZCRJp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757080AbZCRJqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbZCRJp2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 05:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbZCRJpS
+	id S1757080AbZCRJqI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 05:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbZCRJpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 05:45:18 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:48008 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751949AbZCRJpQ (ORCPT
+	Wed, 18 Mar 2009 05:45:54 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33340 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751035AbZCRJpx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 05:45:16 -0400
-Message-ID: <49C0C273.4070408@cs.columbia.edu>
-Date: Wed, 18 Mar 2009 05:44:19 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 18 Mar 2009 05:45:53 -0400
+Date: Sat, 14 Mar 2009 17:24:25 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       jan sonnek <ha2nny@gmail.com>, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: Regression - locking (all from 2.6.28)
+Message-ID: <20090314162425.GC1526@ucw.cz>
+References: <20090302121127.e46dc4be.akpm@linux-foundation.org> <1236367186.10626.84.camel@nimitz> <20090306192812.GA26767@elf.ucw.cz> <200903162304.28944.rjw@sisk.pl> <20090317090732.bbb97825.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Alexey Dobriyan <adobriyan@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: C/R review
-References: <20090317210110.GA3897@x200.localdomain> <20090318004742.GA14308@us.ibm.com>
-In-Reply-To: <20090318004742.GA14308@us.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Disposition: inline
+In-Reply-To: <20090317090732.bbb97825.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 2009-03-17 09:07:32, KAMEZAWA Hiroyuki wrote:
+> On Mon, 16 Mar 2009 23:04:27 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > On Friday 06 March 2009, Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > On Fri 2009-03-06 11:19:46, Dave Hansen wrote:
+> > > > On Fri, 2009-03-06 at 18:00 +0000, Catalin Marinas wrote:
+> > > > > > I think you should be more worried about consistency rather than missing
+> > > > > > entries.  Take these two lines of code:
+> > > > > > 
+> > > > > >       start_pfn = node->node_start_pfn;
+> > > > > >       /* hotplug occurs here */
+> > > > > >       end_pfn = start_pfn + node->node_spanned_pages;
+> > > > > > 
+> > > > > > What if someone comes in and adds memory to the node, at the beginning
+> > > > > > of the node, after you have calculated start_pfn?  Try to think of what
+> > > > > > value you'll get for end_pfn and whether it is consistent and was *ever*
+> > > > > > valid at all.  Would that oops the kernel?
+> > > > > 
+> > > > > I assume pfn_valid() should handle this and kmemleak wouldn't scan the
+> > > > > page, unless we need locks around pfn_valid as well but I haven't seen
+> > > > > any used in the kernel.
+> > > > 
+> > > > You assume incorrectly. :(
+> > > > 
+> > > > Take my above example, and assume that you have two nodes which are
+> > > > right next to each other.  You might run over the end of one node and
+> > > > into the next one.  Your pages will be pfn_valid() but you will be on
+> > > > the wrong node.
+> > > > 
+> > > > Please take a look at those locks that I mentioned.  Notice that they
+> > > > are lock the pgdat *span*, not the validity of pages inside the pgdat.
+> > > > Your code deals with what pages the pgdats *span* and thus needs that
+> > > > lock.  Notice that my example also had to do with those two lines of
+> > > > code incorrectly guessing the pgdat's *span*.
+> > > > 
+> > > > We recently went to some pain to make sure that the software suspend
+> > > > code (which walks pgdat ranges as well) worked with memory hotplug.
+> > > > There really isn't that much code around that actually cares at runtime
+> > > > about which physical areas a particular node or zone spans.  Yours is a
+> > > > rarity and will require some caution.
+> > > > 
+> > > > You could probably also use the memory hotplug mutex found here:
+> > > > 
+> > > > https://lists.linux-foundation.org/pipermail/linux-pm/2008-November/018884.html
+> > > > 
+> > > > But I'm not sure where those patches have gone.  Hmmm.  Pavel?
+> > > 
+> > > I don't think they were applied. They probably should... Rafael was
+> > > about to look into that, but he lost the patch pointer.
+> > 
+> > Yes.  In fact, sending the patch again to me would be appreciated.
+> > 
+> 
+> Ah...but as I wrote, for me, testing this is difficult.
+> Could some expert of hibernation update and post this again ? For memoyr hotplug.
+> it seems enough that sending the patch witch CC: to linux-mm and including
+> "Memory Hotplug" in the subject.
+> 
 
+Well, testing this is probably difficult for everyone, as
+hotplug-capable machines are rare/expensive.
 
-Serge E. Hallyn wrote:
-> Quoting Alexey Dobriyan (adobriyan@gmail.com):
->>> +Keeping the restart procedure to operate within the limits of the
->>> +caller's credentials means that there various scenarios that cannot
->>> +be supported. For instance, a setuid program that opened a protected
->>> +log file and then dropped privileges will fail the restart, because
->>> +the user won't have enough credentials to reopen the file.
->> That's a bug.
+Can youjust retransmit the patch to rafael?
 > 
-> What is described is not a bug, but I think the way it is done is in
-> fact a bug.
-> 
-> Note that just because you *can* do the restart without privilege
-> doesn't mean that you have to.  If you do a restart with privilege,
-> then you should be able to open that file, then drop down to the
-> original task's uid.
-> 
-> But to say that letting an unprivileged user do restart, and that
-> it will only succeed if it can access the resources its allowed to
-> access, is bogus.
-> 
-> But I do think the way it's implemented will become buggy and needs to
-> be fixed.  That is, we do cr_read_task_struct() before we do
-> cr_read_files().  So in fact if I'm root doing restart of such a
-> checkpoint image, I'll first drop down to uid 500, then open the files.
-> 
-> That would obviously be a bug.
-> 
-> Now, we don't actually restore uids yet in the current code, so
-> it's still a theoretical bug :)
 
-Good point. And that's why uid's will be restored at the end :)
-(when we get there ...)
-
-Oren.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
