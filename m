@@ -1,185 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762982AbZCNAx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZCNATy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762982AbZCNAx1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbZCNAXJ
+	id S1754082AbZCNATy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZCNASZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:23:09 -0400
-Received: from gw.goop.org ([64.81.55.164]:55611 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756633AbZCNAXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:23:08 -0400
-Message-ID: <49BAF8E8.5000602@goop.org>
-Date: Fri, 13 Mar 2009 17:23:04 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] x86: add brk allocator for very early allocations
-References: <49B7EDF4.7060904@goop.org> <49B800B8.2040009@kernel.org> <49B9A1CD.5040704@goop.org> <49B9AC7F.9030302@kernel.org> <49BAC1B0.6050107@goop.org> <49BAE210.7090300@zytor.com> <49BAE55F.40406@goop.org> <49BAEA3B.8030808@kernel.org>
-In-Reply-To: <49BAEA3B.8030808@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 13 Mar 2009 20:18:25 -0400
+Received: from kroah.org ([198.145.64.141]:46611 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750926AbZCNASY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:24 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:39 2009
+Message-Id: <20090314000739.203280155@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 13 Mar 2009 17:05:12 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 04/96] net: Kill skb_truesize_check(), it only catches false-positives.
+References: <20090314000508.803142980@mini.kroah.org>
+Content-Disposition: inline; filename=net-kill-skb_truesize_check-it-only-catches-false-positives.patch
+In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> Jeremy Fitzhardinge wrote:
->   
->> H. Peter Anvin wrote:
->>     
->>> Those references are just the actual reservation of memory.  If all
->>> the users of that memory are converted to either brk or bss,
->>> INIT_MAP_BEYOND_END should be removed.  If all the users of that
->>> memory aren't converted to brk to bss, we should do so.
->>>       
->> I just added an adapted Yinghai's patch and added it to push/x86/brk.
->>
->>    J
->>
->>
->> The following changes since commit
->> 8131667360004a0b74e4dcadfee8a18d4e2b074f:
->>  Jeremy Fitzhardinge (1):
->>        x86: allow extend_brk users to reserve brk space
->>
->> are available in the git repository at:
->>
->>  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push/x86/brk
->>
->> Yinghai Lu (1):
->>      x86: put initial_pg_tables into .bss -v4
->>
->> arch/x86/kernel/head_32.S        |   47
->> ++++++++++++++-----------------------
->> arch/x86/kernel/vmlinux_32.lds.S |    6 +++++
->> 2 files changed, 24 insertions(+), 29 deletions(-)
->>
->> diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
->> index 80dc05e..ad7dbbb 100644
->> --- a/arch/x86/kernel/head_32.S
->> +++ b/arch/x86/kernel/head_32.S
->> @@ -38,42 +38,30 @@
->> #define X86_VENDOR_ID    new_cpu_data+CPUINFO_x86_vendor_id
->>
->> /*
->> - * This is how much memory *in addition to the memory covered up to
->> - * and including _end* we need mapped initially.
->> - * We need:
->> - *  - one bit for each possible page, but only in low memory, which means
->> - *     2^32/4096/8 = 128K worst case (4G/4G split.)
->> + * This is how much memory for page table to and including _end
->> + * we need mapped initially.
->>  *  - enough space to map all low memory, which means
->> - *     (2^32/4096) / 1024 pages (worst case, non PAE)
->> - *     (2^32/4096) / 512 + 4 pages (worst case for PAE)
->> - *  - a few pages for allocator use before the kernel pagetable has
->> - *     been set up
->> + *     (KERNEL_IMAGE_SIZE/4096) / 1024 pages (worst case, non PAE)
->> + *     (KERNEL_IMAGE_SIZE/4096) / 512 + 4 pages (worst case for PAE)
->>  *
->>  * Modulo rounding, each megabyte assigned here requires a kilobyte of
->>  * memory, which is currently unreclaimed.
->>  *
->>  * This should be a multiple of a page.
->> + *
->> + * KERNEL_IMAGE_SIZE should be greater than pa(_end)
->> + * and small than max_low_pfn, otherwise will waste some page table
->> entries
->>  */
->> LOW_PAGES = (KERNEL_IMAGE_SIZE + PAGE_SIZE_asm - 1)>>PAGE_SHIFT
->>
->> -/*
->> - * To preserve the DMA pool in PAGEALLOC kernels, we'll allocate
->> - * pagetables from above the 16MB DMA limit, so we'll have to set
->> - * up pagetables 16MB more (worst-case):
->> - */
->> -#if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KMEMCHECK)
->> -LOW_PAGES = LOW_PAGES + 0x1000000
->> -#endif
->> -
->> #if PTRS_PER_PMD > 1
->> PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PMD) + PTRS_PER_PGD
->> #else
->> PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PGD)
->> #endif
->> -BOOTBITMAP_SIZE = LOW_PAGES / 8
->> ALLOCATOR_SLOP = 4
->>
->> -INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + (PAGE_TABLE_SIZE +
->> ALLOCATOR_SLOP)*PAGE_SIZE_asm
->> +INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
->>
->> RESERVE_BRK(pagetables, PAGE_TABLE_SIZE * PAGE_SIZE)
->>     
->
-> use INIT_MAP_SIZE in RESERVE_BRK directly?
->   
-OK.
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
->   
->> @@ -168,10 +156,10 @@ num_subarch_entries = (. - subarch_entries) / 4
->>
->> /*
->>  * Initialize page tables.  This creates a PDE and a set of page
->> - * tables, which are located immediately beyond _end.  The variable
->> + * tables, which are located immediately beyond __brk_base.  The variable
->>  * _brk_end is set up to point to the first "safe" location.
->>  * Mappings are created both at virtual address 0 (identity mapping)
->> - * and PAGE_OFFSET for up to _end+sizeof(page tables)+INIT_MAP_BEYOND_END.
->> + * and PAGE_OFFSET for up to _end.
->>  *
->>  * Note that the stack is not yet set up!
->>  */
->> @@ -210,10 +198,9 @@ default_entry:
->>     loop 11b
->>
->>     /*
->> -     * End condition: we must map up to and including INIT_MAP_BEYOND_END
->> -     * bytes beyond the end of our own page tables.
->> +     * End condition: we must map up to the end.
->>      */
->> -    leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
->> +    movl $pa(_end) + PTE_IDENT_ATTR, %ebp
->>     cmpl %ebp,%eax
->>     jb 10b
->> 1:
->> @@ -243,11 +230,9 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
->>     addl $0x1000,%eax
->>     loop 11b
->>     /*
->> -     * End condition: we must map up to and including INIT_MAP_BEYOND_END
->> -     * bytes beyond the end of our own page tables; the +0x007 is
->> -     * the attribute bits
->> +     * End condition: we must map up to end
->>      */
->> -    leal (INIT_MAP_BEYOND_END+PTE_IDENT_ATTR)(%edi),%ebp
->> +    movl $pa(_end) + PTE_IDENT_ATTR, %ebp
->>     cmpl %ebp,%eax
->>     jb 10b
->>     addl $__PAGE_OFFSET, %edi
->> @@ -638,6 +623,10 @@ swapper_pg_fixmap:
->>     .fill 1024,4,0
->> ENTRY(empty_zero_page)
->>     .fill 4096,1,0
->> +
->> +.section ".bss.extra_page_aligned","wa"
->> +    .align PAGE_SIZE_asm
->> +    .fill INIT_MAP_SIZE,1,0
->>     
->
-> this 4 lines are not needed. you already had RESERVE_BRK for it.
->
->   
+------------------
 
-OK.
+From: David S. Miller <davem@davemloft.net>
 
-I've updated the changeset and repushed.
+[ Upstream commit 92a0acce186cde8ead56c6915d9479773673ea1a ]
 
-    J
+A long time ago we had bugs, primarily in TCP, where we would modify
+skb->truesize (for TSO queue collapsing) in ways which would corrupt
+the socket memory accounting.
+
+skb_truesize_check() was added in order to try and catch this error
+more systematically.
+
+However this debugging check has morphed into a Frankenstein of sorts
+and these days it does nothing other than catch false-positives.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ include/linux/skbuff.h |    9 ---------
+ include/net/sock.h     |    1 -
+ net/core/skbuff.c      |    8 --------
+ net/core/sock.c        |    1 -
+ 4 files changed, 19 deletions(-)
+
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -395,15 +395,6 @@ extern void	      skb_over_panic(struct 
+ 				     void *here);
+ extern void	      skb_under_panic(struct sk_buff *skb, int len,
+ 				      void *here);
+-extern void	      skb_truesize_bug(struct sk_buff *skb);
+-
+-static inline void skb_truesize_check(struct sk_buff *skb)
+-{
+-	int len = sizeof(struct sk_buff) + skb->len;
+-
+-	if (unlikely((int)skb->truesize < len))
+-		skb_truesize_bug(skb);
+-}
+ 
+ extern int skb_append_datato_frags(struct sock *sk, struct sk_buff *skb,
+ 			int getfrag(void *from, char *to, int offset,
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -777,7 +777,6 @@ static inline void sk_mem_uncharge(struc
+ 
+ static inline void sk_wmem_free_skb(struct sock *sk, struct sk_buff *skb)
+ {
+-	skb_truesize_check(skb);
+ 	sock_set_flag(sk, SOCK_QUEUE_SHRUNK);
+ 	sk->sk_wmem_queued -= skb->truesize;
+ 	sk_mem_uncharge(sk, skb->truesize);
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -143,14 +143,6 @@ void skb_under_panic(struct sk_buff *skb
+ 	BUG();
+ }
+ 
+-void skb_truesize_bug(struct sk_buff *skb)
+-{
+-	printk(KERN_ERR "SKB BUG: Invalid truesize (%u) "
+-	       "len=%u, sizeof(sk_buff)=%Zd\n",
+-	       skb->truesize, skb->len, sizeof(struct sk_buff));
+-}
+-EXPORT_SYMBOL(skb_truesize_bug);
+-
+ /* 	Allocate a new skbuff. We do this ourselves so we can fill in a few
+  *	'private' fields and also do memory statistics to find all the
+  *	[BEEP] leaks.
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -1136,7 +1136,6 @@ void sock_rfree(struct sk_buff *skb)
+ {
+ 	struct sock *sk = skb->sk;
+ 
+-	skb_truesize_check(skb);
+ 	atomic_sub(skb->truesize, &sk->sk_rmem_alloc);
+ 	sk_mem_uncharge(skb->sk, skb->truesize);
+ }
+
+
