@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbZCNBr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764848AbZCNBro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753130AbZCNBr0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbZCNBV2
+	id S1764848AbZCNBro (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbZCNBV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:28 -0400
-Received: from kroah.org ([198.145.64.141]:35537 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:29 -0400
+Received: from kroah.org ([198.145.64.141]:35555 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754372AbZCNBU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:56 -0400
+	id S1753324AbZCNBU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:58 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:42 2009
-Message-Id: <20090314011042.322664316@mini.kroah.org>
+Message-Id: <20090314011042.474559392@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:51 -0700
+Date: Fri, 13 Mar 2009 18:10:52 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 074/114] asix: new device ids
+       alan@lxorguk.ukuu.org.uk,
+       =?ISO-8859-15?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 075/114] cdc_ether: add usb id for Ericsson F3507g
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=asix-new-device-ids.patch
+Content-Disposition: inline; filename=cdc_ether-add-usb-id-for-ericsson-f3507g.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,38 +40,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+From: Bjørn Mork <bjorn@mork.no>
 
-commit fef7cc0893146550b286b13c0e6e914556142730 upstream.
+commit cac477e8f1038c41b6f29d3161ce351462ef3df7 upstream.
 
-This patch adds two new device ids to the asix driver.
+The Ericsson F3507g wireless broadband module provides a CDC Ethernet
+compliant interface, but identifies it as a "Mobile Direct Line" CDC
+subclass, thereby preventing the CDC Ethernet class driver from picking
+it up.  This patch adds the device id to cdc_ether.c as a workaround.
 
-One comes directly from the asix driver on their web site, the other was
-reported by Armani Liao as needed for the MSI X320 to get the driver to
-work properly for it.
+Ericsson has provided a "class" driver for this device:
+http://kerneltrap.org/mailarchive/linux-net/2008/10/28/3832094
+But closer inspection of that driver reveals that it adds little more
+than duplication of code from cdc_ether.c.  See also
+http://marc.info/?l=linux-usb&m=123334979706403&w=2
 
-Reported-by: Armani Liao <aliao@novell.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Bjørn Mork <bjorn@mork.no>
 Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/usb/asix.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/net/usb/cdc_ether.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/drivers/net/usb/asix.c
-+++ b/drivers/net/usb/asix.c
-@@ -1450,6 +1450,14 @@ static const struct usb_device_id	produc
- 	// Cables-to-Go USB Ethernet Adapter
- 	USB_DEVICE(0x0b95, 0x772a),
- 	.driver_info = (unsigned long) &ax88772_info,
+--- a/drivers/net/usb/cdc_ether.c
++++ b/drivers/net/usb/cdc_ether.c
+@@ -559,6 +559,11 @@ static const struct usb_device_id	produc
+ 	USB_INTERFACE_INFO(USB_CLASS_COMM, USB_CDC_SUBCLASS_ETHERNET,
+ 			USB_CDC_PROTO_NONE),
+ 	.driver_info = (unsigned long) &cdc_info,
 +}, {
-+	// ABOCOM for pci
-+	USB_DEVICE(0x14ea, 0xab11),
-+	.driver_info = (unsigned long) &ax88178_info,
-+}, {
-+	// ASIX 88772a
-+	USB_DEVICE(0x0db0, 0xa877),
-+	.driver_info = (unsigned long) &ax88772_info,
++	/* Ericsson F3507g */
++	USB_DEVICE_AND_INTERFACE_INFO(0x0bdb, 0x1900, USB_CLASS_COMM,
++			USB_CDC_SUBCLASS_MDLM, USB_CDC_PROTO_NONE),
++	.driver_info = (unsigned long) &cdc_info,
  },
  	{ },		// END
  };
