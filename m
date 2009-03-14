@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762690AbZCNAt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762891AbZCNAvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762690AbZCNAt6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbZCNAUR
+	id S1762891AbZCNAvo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbZCNAUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:20:17 -0400
-Received: from kroah.org ([198.145.64.141]:35108 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:20:23 -0400
+Received: from kroah.org ([198.145.64.141]:35117 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753642AbZCNATz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:55 -0400
+	id S1753025AbZCNAT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:56 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:53 2009
-Message-Id: <20090314000753.479856434@mini.kroah.org>
+Message-Id: <20090314000753.621377363@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:42 -0700
+Date: Fri, 13 Mar 2009 17:06:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       Jan Kara <jack@suse.cz>
-Subject: [patch 94/96] ext4: Fix deadlock in ext4_write_begin() and ext4_da_write_begin()
+       alan@lxorguk.ukuu.org.uk, Ralf Baechle <ralf@linux-mips.org>
+Subject: [patch 95/96] MIPS: compat: Implement is_compat_task.
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=ext4-fix-deadlock-in-ext4_write_begin-and-ext4_da_write_begin.patch
+Content-Disposition: inline; filename=mips-compat-implement-is_compat_task.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,58 +38,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jan Kara <jack@suse.cz>
+From: Ralf Baechle <ralf@linux-mips.org>
 
-(cherry picked from commit ebd3610b110bbb18ea6f9f2aeed1e1068c537227)
+commit 4302e5d53b9166d45317e3ddf0a7a9dab3efd43b upstream.
 
-Functions ext4_write_begin() and ext4_da_write_begin() call
-grab_cache_page_write_begin() without AOP_FLAG_NOFS. Thus it
-can happen that page reclaim is triggered in that function
-and it recurses back into the filesystem (or some other filesystem).
-But this can lead to various problems as a transaction is already
-started at that point. Add the necessary flag.
+This is a build fix required after "x86-64: seccomp: fix 32/64 syscall
+hole" (commit 5b1017404aea6d2e552e991b3fd814d839e9cd67).  MIPS doesn't
+have the issue that was fixed for x86-64 by that patch.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11688
+This also doesn't solve the N32 issue which is that N32 seccomp processes
+will be treated as non-compat processes thus only have access to N64
+syscalls.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/inode.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ include/asm-mips/compat.h |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -1372,6 +1372,10 @@ retry:
-   		goto out;
- 	}
+--- a/include/asm-mips/compat.h
++++ b/include/asm-mips/compat.h
+@@ -3,6 +3,8 @@
+ /*
+  * Architecture specific compatibility types
+  */
++#include <linux/seccomp.h>
++#include <linux/thread_info.h>
+ #include <linux/types.h>
+ #include <asm/page.h>
+ #include <asm/ptrace.h>
+@@ -218,4 +220,9 @@ struct compat_shmid64_ds {
+ 	compat_ulong_t	__unused2;
+ };
  
-+	/* We cannot recurse into the filesystem as the transaction is already
-+	 * started */
-+	flags |= AOP_FLAG_NOFS;
++static inline int is_compat_task(void)
++{
++	return test_thread_flag(TIF_32BIT);
++}
 +
- 	page = grab_cache_page_write_begin(mapping, index, flags);
- 	if (!page) {
- 		ext4_journal_stop(handle);
-@@ -1381,7 +1385,7 @@ retry:
- 	*pagep = page;
- 
- 	ret = block_write_begin(file, mapping, pos, len, flags, pagep, fsdata,
--							ext4_get_block);
-+				ext4_get_block);
- 
- 	if (!ret && ext4_should_journal_data(inode)) {
- 		ret = walk_page_buffers(handle, page_buffers(page),
-@@ -2465,6 +2469,9 @@ retry:
- 		ret = PTR_ERR(handle);
- 		goto out;
- 	}
-+	/* We cannot recurse into the filesystem as the transaction is already
-+	 * started */
-+	flags |= AOP_FLAG_NOFS;
- 
- 	page = grab_cache_page_write_begin(mapping, index, flags);
- 	if (!page) {
+ #endif /* _ASM_COMPAT_H */
 
 
