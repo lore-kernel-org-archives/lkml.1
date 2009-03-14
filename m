@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761662AbZCNAkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbZCNAjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761662AbZCNAkk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbZCNATg
+	id S1760286AbZCNAjK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbZCNATd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:36 -0400
-Received: from kroah.org ([198.145.64.141]:34844 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:33 -0400
+Received: from kroah.org ([198.145.64.141]:34804 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750857AbZCNATX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:23 -0400
+	id S1751615AbZCNATU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:20 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:48 2009
-Message-Id: <20090314000748.556195682@mini.kroah.org>
+Message-Id: <20090314000747.945349883@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:11 -0700
+Date: Fri, 13 Mar 2009 17:06:07 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Clemens Ladisch <clemens@ladisch.de>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 63/96] sound: usb-audio: fix uninitialized variable with M-Audio MIDI interfaces
+       alan@lxorguk.ukuu.org.uk, Helmut Schaa <helmut.schaa@googlemail.com>,
+       Pierre Ossman <drzeus@drzeus.cx>
+Subject: [patch 59/96] sdhci: fix led naming
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=sound-usb-audio-fix-uninitialized-variable-with-m-audio-midi-interfaces.patch
+Content-Disposition: inline; filename=sdhci-fix-led-naming.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,36 +39,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Clemens Ladisch <clemens@ladisch.de>
+From: Helmut Schaa <helmut.schaa@googlemail.com>
 
-commit e156ac4c571e3be741bc411e58820b74a9295c72 upstream.
+commit 5dbace0c9ba110c1a3810a89fa6bf12b7574b5a3 upstream.
 
-Fix the snd_usbmidi_create_endpoints_midiman() function, which forgot to
-set the out_interval member of the endpoint info structure for Midiman/
-M-Audio devices.  Since kernel 2.6.24, any non-zero value makes the
-driver use interrupt transfers instead of bulk transfers.  With EHCI
-controllers, these random interval values result in unbearably large
-latencies for output MIDI transfers.
+Fix the led device naming for the sdhci driver.
 
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-Reported-by: David <devurandom@foobox.com>
-Tested-by: David <devurandom@foobox.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+The led class documentation defines the led name to have the
+form "devicename:colour:function" while not applicable sections
+should be left blank.
+
+To comply with the documentation the led device name is changed
+from "mmc*" to "mmc*::".
+
+Signed-off-by: Helmut Schaa <helmut.schaa@googlemail.com>
+Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/usb/usbmidi.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/mmc/host/sdhci.c |    4 +++-
+ drivers/mmc/host/sdhci.h |    1 +
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
---- a/sound/usb/usbmidi.c
-+++ b/sound/usb/usbmidi.c
-@@ -1583,6 +1583,7 @@ static int snd_usbmidi_create_endpoints_
- 	}
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -1690,7 +1690,9 @@ int sdhci_add_host(struct sdhci_host *ho
+ #endif
  
- 	ep_info.out_ep = get_endpoint(hostif, 2)->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK;
-+	ep_info.out_interval = 0;
- 	ep_info.out_cables = endpoint->out_cables & 0x5555;
- 	err = snd_usbmidi_out_endpoint_create(umidi, &ep_info, &umidi->endpoints[0]);
- 	if (err < 0)
+ #ifdef CONFIG_LEDS_CLASS
+-	host->led.name = mmc_hostname(mmc);
++	snprintf(host->led_name, sizeof(host->led_name),
++		"%s::", mmc_hostname(mmc));
++	host->led.name = host->led_name;
+ 	host->led.brightness = LED_OFF;
+ 	host->led.default_trigger = mmc_hostname(mmc);
+ 	host->led.brightness_set = sdhci_led_control;
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -220,6 +220,7 @@ struct sdhci_host {
+ 
+ #ifdef CONFIG_LEDS_CLASS
+ 	struct led_classdev	led;		/* LED control */
++	char   led_name[32];
+ #endif
+ 
+ 	spinlock_t		lock;		/* Mutex */
 
 
