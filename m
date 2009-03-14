@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbZCNAWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZCNAVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752024AbZCNAWm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZCNASd
+	id S1755287AbZCNAVp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbZCNASa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:33 -0400
-Received: from kroah.org ([198.145.64.141]:46706 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:30 -0400
+Received: from kroah.org ([198.145.64.141]:46669 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752491AbZCNASc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:32 -0400
+	id S1752184AbZCNAS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:29 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:40 2009
-Message-Id: <20090314000740.462842888@mini.kroah.org>
+Message-Id: <20090314000740.010155467@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:20 -0700
+Date: Fri, 13 Mar 2009 17:05:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jeff Layton <jlayton@redhat.com>,
-       Steve French <sfrench@us.ibm.com>
-Subject: [patch 12/96] [CIFS] Fix oops in cifs_strfromUCS_le mounting to servers which do not specify their OS
+       alan@lxorguk.ukuu.org.uk, Eric Biederman <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Paul Turner <pjt@google.com>
+Subject: [patch 09/96] seq_file: properly cope with pread
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=fix-oops-in-cifs_strfromucs_le-mounting-to-servers-which-do-not-specify-their-os.patch
+Content-Disposition: inline; filename=seq_file-properly-cope-with-pread.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,54 +40,119 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Steve French <sfrench@us.ibm.com>
+From: Eric Biederman <ebiederm@xmission.com>
 
-commit 69765529d701c838df19ea1f5ad2f33a528261ae upstream.
+commit 8f19d472935c83d823fa4cf02bcc0a7b9952db30 upstream.
 
-Fixes kernel bug #10451 http://bugzilla.kernel.org/show_bug.cgi?id=10451
+Currently seq_read assumes that the offset passed to it is always the
+offset it passed to user space.  In the case pread this assumption is
+broken and we do the wrong thing when presented with pread.
 
-Certain NAS appliances do not set the operating system or network operating system
-fields in the session setup response on the wire.  cifs was oopsing on the unexpected
-zero length response fields (when trying to null terminate a zero length field).
+To solve this I introduce an offset cache inside of struct seq_file so we
+know where our logical file position is.  Then in seq_read if we try to
+read from another offset we reset our data structures and attempt to go to
+the offset user space wanted.
 
-This fixes the oops.
-
-Acked-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
+[akpm@linux-foundation.org: restore FMODE_PWRITE]
+[pjt@google.com: seq_open needs its fmode opened up to take advantage of this]
+Signed-off-by: Eric Biederman <ebiederm@xmission.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Paul Turner <pjt@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/CHANGES |    2 ++
- fs/cifs/sess.c  |    4 ++--
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ fs/seq_file.c            |   36 ++++++++++++++++++++++++++++++++----
+ include/linux/seq_file.h |    1 +
+ 2 files changed, 33 insertions(+), 4 deletions(-)
 
---- a/fs/cifs/CHANGES
-+++ b/fs/cifs/CHANGES
-@@ -1,3 +1,5 @@
-+Fix oops in cifs_dfs_ref.c when prefixpath is not reachable when using DFS.
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -48,8 +48,16 @@ int seq_open(struct file *file, const st
+ 	 */
+ 	file->f_version = 0;
+ 
+-	/* SEQ files support lseek, but not pread/pwrite */
+-	file->f_mode &= ~(FMODE_PREAD | FMODE_PWRITE);
++	/*
++	 * seq_files support lseek() and pread().  They do not implement
++	 * write() at all, but we clear FMODE_PWRITE here for historical
++	 * reasons.
++	 *
++	 * If a client of seq_files a) implements file.write() and b) wishes to
++	 * support pwrite() then that client will need to implement its own
++	 * file.open() which calls seq_open() and then sets FMODE_PWRITE.
++	 */
++	file->f_mode &= ~FMODE_PWRITE;
+ 	return 0;
+ }
+ EXPORT_SYMBOL(seq_open);
+@@ -131,6 +139,22 @@ ssize_t seq_read(struct file *file, char
+ 	int err = 0;
+ 
+ 	mutex_lock(&m->lock);
 +
- Version 1.54
- ------------
- Fix premature write failure on congested networks (we would give up
---- a/fs/cifs/sess.c
-+++ b/fs/cifs/sess.c
-@@ -228,7 +228,7 @@ static int decode_unicode_ssetup(char **
- 
- 	kfree(ses->serverOS);
- 	/* UTF-8 string will not grow more than four times as big as UCS-16 */
--	ses->serverOS = kzalloc(4 * len, GFP_KERNEL);
-+	ses->serverOS = kzalloc((4 * len) + 2 /* trailing null */, GFP_KERNEL);
- 	if (ses->serverOS != NULL)
- 		cifs_strfromUCS_le(ses->serverOS, (__le16 *)data, len, nls_cp);
- 	data += 2 * (len + 1);
-@@ -241,7 +241,7 @@ static int decode_unicode_ssetup(char **
- 		return rc;
- 
- 	kfree(ses->serverNOS);
--	ses->serverNOS = kzalloc(4 * len, GFP_KERNEL); /* BB this is wrong length FIXME BB */
-+	ses->serverNOS = kzalloc((4 * len) + 2 /* trailing null */, GFP_KERNEL);
- 	if (ses->serverNOS != NULL) {
- 		cifs_strfromUCS_le(ses->serverNOS, (__le16 *)data, len,
- 				   nls_cp);
++	/* Don't assume *ppos is where we left it */
++	if (unlikely(*ppos != m->read_pos)) {
++		m->read_pos = *ppos;
++		while ((err = traverse(m, *ppos)) == -EAGAIN)
++			;
++		if (err) {
++			/* With prejudice... */
++			m->read_pos = 0;
++			m->version = 0;
++			m->index = 0;
++			m->count = 0;
++			goto Done;
++		}
++	}
++
+ 	/*
+ 	 * seq_file->op->..m_start/m_stop/m_next may do special actions
+ 	 * or optimisations based on the file->f_version, so we want to
+@@ -230,8 +254,10 @@ Fill:
+ Done:
+ 	if (!copied)
+ 		copied = err;
+-	else
++	else {
+ 		*ppos += copied;
++		m->read_pos += copied;
++	}
+ 	file->f_version = m->version;
+ 	mutex_unlock(&m->lock);
+ 	return copied;
+@@ -266,16 +292,18 @@ loff_t seq_lseek(struct file *file, loff
+ 			if (offset < 0)
+ 				break;
+ 			retval = offset;
+-			if (offset != file->f_pos) {
++			if (offset != m->read_pos) {
+ 				while ((retval=traverse(m, offset)) == -EAGAIN)
+ 					;
+ 				if (retval) {
+ 					/* with extreme prejudice... */
+ 					file->f_pos = 0;
++					m->read_pos = 0;
+ 					m->version = 0;
+ 					m->index = 0;
+ 					m->count = 0;
+ 				} else {
++					m->read_pos = offset;
+ 					retval = file->f_pos = offset;
+ 				}
+ 			}
+--- a/include/linux/seq_file.h
++++ b/include/linux/seq_file.h
+@@ -19,6 +19,7 @@ struct seq_file {
+ 	size_t from;
+ 	size_t count;
+ 	loff_t index;
++	loff_t read_pos;
+ 	u64 version;
+ 	struct mutex lock;
+ 	const struct seq_operations *op;
 
 
