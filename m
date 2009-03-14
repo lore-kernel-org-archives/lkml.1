@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765357AbZCNBzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763499AbZCNBzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765357AbZCNBzg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZCNBVs
+	id S1763499AbZCNBzx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbZCNBVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:48 -0400
-Received: from kroah.org ([198.145.64.141]:35729 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:49 -0400
+Received: from kroah.org ([198.145.64.141]:35738 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754846AbZCNBVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:21:15 -0400
+	id S1754366AbZCNBVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:21:17 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:45 2009
-Message-Id: <20090314011045.159567971@mini.kroah.org>
+Message-Id: <20090314011045.310960315@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:11:10 -0700
+Date: Fri, 13 Mar 2009 18:11:11 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [patch 093/114] ext4: Fix lockdep warning
+Subject: [patch 094/114] ext4: Initialize preallocation list_heads properly
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=ext4-fix-lockdep-warning.patch
+Content-Disposition: inline; filename=ext4-initialize-preallocation-list_head-s-properly.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -42,73 +42,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit ba4439165f0f0d25b2fe065cf0c1ff8130b802eb)
+(cherry picked from commit d794bf8e0936dce45104565cd48c571061f4c1e3)
 
-We should not call ext4_mb_add_n_trim while holding alloc_semp.
-
-    =============================================
-    [ INFO: possible recursive locking detected ]
-    2.6.29-rc4-git1-dirty #124
-    ---------------------------------------------
-    ffsb/3116 is trying to acquire lock:
-     (&meta_group_info[i]->alloc_sem){----}, at: [<ffffffff8035a6e8>]
-     ext4_mb_load_buddy+0xd2/0x343
-
-    but task is already holding lock:
-     (&meta_group_info[i]->alloc_sem){----}, at: [<ffffffff8035a6e8>]
-     ext4_mb_load_buddy+0xd2/0x343
-
-http://bugzilla.kernel.org/show_bug.cgi?id=12672
+When creating a new ext4_prealloc_space structure, we have to
+initialize its list_head pointers before we add them to any prealloc
+lists.  Otherwise, with list debug enabled, we will get list
+corruption warnings.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/mballoc.c |   29 ++++++++++++++++-------------
- 1 file changed, 16 insertions(+), 13 deletions(-)
+ fs/ext4/mballoc.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
 --- a/fs/ext4/mballoc.c
 +++ b/fs/ext4/mballoc.c
-@@ -4456,23 +4456,26 @@ static int ext4_mb_release_context(struc
- 			pa->pa_free -= ac->ac_b_ex.fe_len;
- 			pa->pa_len -= ac->ac_b_ex.fe_len;
- 			spin_unlock(&pa->pa_lock);
--			/*
--			 * We want to add the pa to the right bucket.
--			 * Remove it from the list and while adding
--			 * make sure the list to which we are adding
--			 * doesn't grow big.
--			 */
--			if (likely(pa->pa_free)) {
--				spin_lock(pa->pa_obj_lock);
--				list_del_rcu(&pa->pa_inode_list);
--				spin_unlock(pa->pa_obj_lock);
--				ext4_mb_add_n_trim(ac);
--			}
- 		}
--		ext4_mb_put_pa(ac, ac->ac_sb, pa);
- 	}
- 	if (ac->alloc_semp)
- 		up_read(ac->alloc_semp);
-+	if (pa) {
-+		/*
-+		 * We want to add the pa to the right bucket.
-+		 * Remove it from the list and while adding
-+		 * make sure the list to which we are adding
-+		 * doesn't grow big.  We need to release
-+		 * alloc_semp before calling ext4_mb_add_n_trim()
-+		 */
-+		if (pa->pa_linear && likely(pa->pa_free)) {
-+			spin_lock(pa->pa_obj_lock);
-+			list_del_rcu(&pa->pa_inode_list);
-+			spin_unlock(pa->pa_obj_lock);
-+			ext4_mb_add_n_trim(ac);
-+		}
-+		ext4_mb_put_pa(ac, ac->ac_sb, pa);
-+	}
- 	if (ac->ac_bitmap_page)
- 		page_cache_release(ac->ac_bitmap_page);
- 	if (ac->ac_buddy_page)
+@@ -3690,6 +3690,8 @@ ext4_mb_new_inode_pa(struct ext4_allocat
+ 	pa->pa_free = pa->pa_len;
+ 	atomic_set(&pa->pa_count, 1);
+ 	spin_lock_init(&pa->pa_lock);
++	INIT_LIST_HEAD(&pa->pa_inode_list);
++	INIT_LIST_HEAD(&pa->pa_group_list);
+ 	pa->pa_deleted = 0;
+ 	pa->pa_linear = 0;
+ 
+@@ -3748,6 +3750,7 @@ ext4_mb_new_group_pa(struct ext4_allocat
+ 	atomic_set(&pa->pa_count, 1);
+ 	spin_lock_init(&pa->pa_lock);
+ 	INIT_LIST_HEAD(&pa->pa_inode_list);
++	INIT_LIST_HEAD(&pa->pa_group_list);
+ 	pa->pa_deleted = 0;
+ 	pa->pa_linear = 1;
+ 
 
 
