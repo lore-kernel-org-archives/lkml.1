@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761428AbZCNAic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761976AbZCNAmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761428AbZCNAic (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbZCNATa
+	id S1761976AbZCNAmq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbZCNATm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:30 -0400
-Received: from kroah.org ([198.145.64.141]:34778 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:42 -0400
+Received: from kroah.org ([198.145.64.141]:34894 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753363AbZCNATR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:17 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:47 2009
-Message-Id: <20090314000747.629293662@mini.kroah.org>
+	id S1753747AbZCNATa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:30 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:49 2009
+Message-Id: <20090314000749.490953375@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:05 -0700
+Date: Fri, 13 Mar 2009 17:06:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [patch 57/96] proc: fix PG_locked reporting in /proc/kpageflags
+       alan@lxorguk.ukuu.org.uk, Roland McGrath <roland@redhat.com>
+Subject: [patch 69/96] x86-64: syscall-audit: fix 32/64 syscall hole
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=proc-fix-pg_locked-reporting-in-proc-kpageflags.patch
+Content-Disposition: inline; filename=x86-64-syscall-audit-fix-32-64-syscall-hole.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,31 +38,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Helge Bahmann <helge.bahmann@secunet.com>
+From: Roland McGrath <roland@redhat.com>
 
-commit e07a4b9217d1e97d2f3a62b6b070efdc61212110 upstream.
+commit ccbe495caa5e604b04d5a31d7459a6f6a76a756c upstream.
 
-Expr always evaluates to zero.
+On x86-64, a 32-bit process (TIF_IA32) can switch to 64-bit mode with
+ljmp, and then use the "syscall" instruction to make a 64-bit system
+call.  A 64-bit process make a 32-bit system call with int $0x80.
 
-Cc: Matt Mackall <mpm@selenic.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+In both these cases, audit_syscall_entry() will use the wrong system
+call number table and the wrong system call argument registers.  This
+could be used to circumvent a syscall audit configuration that filters
+based on the syscall numbers or argument details.
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/proc/proc_misc.c |    2 +-
+ arch/x86/kernel/ptrace.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -824,7 +824,7 @@ static ssize_t kpageflags_read(struct fi
- 		else
- 			kflags = ppage->flags;
- 
--		uflags = kpf_copy_bit(KPF_LOCKED, PG_locked, kflags) |
-+		uflags = kpf_copy_bit(kflags, KPF_LOCKED, PG_locked) |
- 			kpf_copy_bit(kflags, KPF_ERROR, PG_error) |
- 			kpf_copy_bit(kflags, KPF_REFERENCED, PG_referenced) |
- 			kpf_copy_bit(kflags, KPF_UPTODATE, PG_uptodate) |
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -1403,7 +1403,7 @@ static void syscall_trace(struct pt_regs
+ #ifdef CONFIG_X86_32
+ # define IS_IA32	1
+ #elif defined CONFIG_IA32_EMULATION
+-# define IS_IA32	test_thread_flag(TIF_IA32)
++# define IS_IA32	is_compat_task()
+ #else
+ # define IS_IA32	0
+ #endif
 
 
