@@ -1,44 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbZCNCU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZCNC3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbZCNCU3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 22:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbZCNCUH
+	id S1752551AbZCNC3i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 22:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbZCNC3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 22:20:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47447
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752500AbZCNCUG (ORCPT
+	Fri, 13 Mar 2009 22:29:25 -0400
+Received: from mail-gx0-f165.google.com ([209.85.217.165]:45501 "EHLO
+	mail-gx0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751282AbZCNC3Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 22:20:06 -0400
-Date: Fri, 13 Mar 2009 19:19:51 -0700 (PDT)
-Message-Id: <20090313.191951.228619450.davem@davemloft.net>
-To: therbert@google.com
-Cc: yanmin_zhang@linux.intel.com, bhutchings@solarflare.com,
-       andi@firstfloor.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
-       jesse.brandeburg@intel.com, shemminger@vyatta.com
-Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to
- submit to upper layer
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <65634d660903131724s49009177pdc11005aa76a4b56@mail.gmail.com>
-References: <65634d660903131459m645eb468y3ad850a1fd56d447@mail.gmail.com>
-	<20090313.151913.21135937.davem@davemloft.net>
-	<65634d660903131724s49009177pdc11005aa76a4b56@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 13 Mar 2009 22:29:24 -0400
+X-Greylist: delayed 374 seconds by postgrey-1.27 at vger.kernel.org; Fri, 13 Mar 2009 22:29:23 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=lKH4bNPIPsk7Vd5w+BtF6sTMT7eVRtGXZN67mr6SZWbEymd1SAWHfRoOxqvvGOhtJy
+         7oLdERuhtgGSOATOWwqJhjDWejsIMbN1X0CYHZ2PgqJ7TU6KZMvMAQfIk3BSlq8Af6Gm
+         6hYLShS7DMT9RflI24GfmcG51fNzNla8Hj7uA=
+MIME-Version: 1.0
+In-Reply-To: <20090313201511.GA27827@electric-eye.fr.zoreil.com>
+References: <200903092029.n29KT1DS004531@harpo.it.uu.se>
+	 <20090313201511.GA27827@electric-eye.fr.zoreil.com>
+Date: Fri, 13 Mar 2009 22:23:04 -0400
+Message-ID: <9e246b4d0903131923lecba2bah940f41c9c5fa6b03@mail.gmail.com>
+Subject: Re: [BUG] 2.6.29-rc7 broke r8169 MAC on Thecus n2100 ARM board
+From: Tim Durack <tdurack@gmail.com>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, ivecera@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tom Herbert <therbert@google.com>
-Date: Fri, 13 Mar 2009 17:24:10 -0700
+On Fri, Mar 13, 2009 at 4:15 PM, Francois Romieu <romieu@fr.zoreil.com> wrote:
+> Mikael Pettersson <mikpe@it.uu.se> :
+>> With the 2.6.29-rc7 kernel I'm unable to 'ifup' eth0 on my ARM-based
+>> Thecus n2100 NAS box, which has an RTL8169 NIC (10ec:8169 (rev 10)).
+>> A diff of the kernel logs from 2.6.29-rc6 and -rc7 shows that -rc7
+>> first mangles and then zaps the MAC addresses:
+>
+> Can you apply the attached patch and see if it fixes any of these
+> problems ?
+>
+> Tim, could you give it a try too ? It applies with "patch -p1" from
+> the kernel tree directory.
+>
+> --
+> Ueimor
+>
 
-> Enabling HW multi-queue has somewhat higher CPU
-> utilization though, the extra device interrupt load is not coming for
-> free.  We actually use the HW multi-queue in conjunction with our
-> software steering to get maximum pps (about 20% more).
+No luck:
 
-This is a non-intuitive observation.  Using HW multiqueue should be
-cheaper than doing it in software, right?
+B-25-1NOC-CFG-1:~# modprobe -if r8169
+[  120.938729] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+[  120.945018] r8169 0000:00:09.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+[  120.953409] r8169 0000:00:09.0: no PCI Express capability
+[  120.960359] r8169 0000:00:09.0: MAC address found in EEPROM:
+00:30:18:ab:f0:34
+[  120.978441] eth1: RTL8169sc/8110sc at 0xf8154000,
+00:00:00:00:f0:34, XID 18000000 IRQ 18
+[  120.988468] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+[  120.994119] r8169 0000:00:0b.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
+[  121.001139] r8169 0000:00:0b.0: no PCI Express capability
+[  121.006922] r8169 0000:00:0b.0: MAC address found in EEPROM:
+00:30:18:ab:f0:35
+[  121.063615] eth2: RTL8169sc/8110sc at 0xf801e000,
+00:00:00:00:f0:35, XID 18000000 IRQ 19
+[  121.072495] r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+[  121.078188] r8169 0000:00:0c.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[  121.085239] r8169 0000:00:0c.0: no PCI Express capability
+[  121.091025] r8169 0000:00:0c.0: MAC address found in EEPROM:
+00:30:18:ab:f0:36
+[  121.147502] eth3: RTL8169sc/8110sc at 0xf8022000,
+00:00:00:00:f0:36, XID 18000000 IRQ 16
+
+Tim:>
