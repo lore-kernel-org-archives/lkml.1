@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761334AbZCNAhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758665AbZCNA1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761334AbZCNAhu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbZCNAT2
+	id S1758665AbZCNA1m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753040AbZCNASv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:28 -0400
-Received: from kroah.org ([198.145.64.141]:34751 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:51 -0400
+Received: from kroah.org ([198.145.64.141]:46843 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752998AbZCNATQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:16 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:47 2009
-Message-Id: <20090314000747.348105117@mini.kroah.org>
+	id S1752844AbZCNASo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:44 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:42 2009
+Message-Id: <20090314000742.507112552@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:03 -0700
+Date: Fri, 13 Mar 2009 17:05:32 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Neuling <mikey@neuling.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 55/96] powerpc: Fix load/store float double alignment handler
+       alan@lxorguk.ukuu.org.uk, Alexey Dobriyan <adobriyan@gmail.com>,
+       Wim Van Sebroeck <wim@iguana.be>
+Subject: [patch 24/96] WATCHDOG: ks8695_wdt.c: CLOCK_TICK_RATE undeclared
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=powerpc-fix-load-store-float-double-alignment-handler.patch
+Content-Disposition: inline; filename=watchdog-ks8695_wdt.c-clock_tick_rate-undeclared.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,67 +39,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Michael Neuling <mikey@neuling.org>
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-commit 49f297f8df9adb797334155470ea9ca68bdb041e upstream.
+commit b02c387892fc6b3cc59c78ab2f79413d55f50190 upstream.
 
-When we introduced VSX, we changed the way FPRs are stored in the
-thread_struct.  Unfortunately we missed the load/store float double
-alignment handler code when updating how we access FPRs in the
-thread_struct.
+On arm-acs5k_tiny:
 
-Below fixes this and merges the little/big endian case.
+drivers/watchdog/ks8695_wdt.c:68: error: 'CLOCK_TICK_RATE' undeclared
+	(first use in this function)
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/kernel/align.c |   29 +++++++++++++----------------
- 1 file changed, 13 insertions(+), 16 deletions(-)
+ drivers/watchdog/ks8695_wdt.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -367,27 +367,24 @@ static int emulate_multiple(struct pt_re
- static int emulate_fp_pair(unsigned char __user *addr, unsigned int reg,
- 			   unsigned int flags)
- {
--	char *ptr = (char *) &current->thread.TS_FPR(reg);
--	int i, ret;
-+	char *ptr0 = (char *) &current->thread.TS_FPR(reg);
-+	char *ptr1 = (char *) &current->thread.TS_FPR(reg+1);
-+	int i, ret, sw = 0;
+--- a/drivers/watchdog/ks8695_wdt.c
++++ b/drivers/watchdog/ks8695_wdt.c
+@@ -21,6 +21,7 @@
+ #include <linux/watchdog.h>
+ #include <linux/io.h>
+ #include <linux/uaccess.h>
++#include <mach/timex.h>
+ #include <mach/regs-timer.h>
  
- 	if (!(flags & F))
- 		return 0;
- 	if (reg & 1)
- 		return 0;	/* invalid form: FRS/FRT must be even */
--	if (!(flags & SW)) {
--		/* not byte-swapped - easy */
--		if (!(flags & ST))
--			ret = __copy_from_user(ptr, addr, 16);
--		else
--			ret = __copy_to_user(addr, ptr, 16);
--	} else {
--		/* each FPR value is byte-swapped separately */
--		ret = 0;
--		for (i = 0; i < 16; ++i) {
--			if (!(flags & ST))
--				ret |= __get_user(ptr[i^7], addr + i);
--			else
--				ret |= __put_user(ptr[i^7], addr + i);
-+	if (flags & SW)
-+		sw = 7;
-+	ret = 0;
-+	for (i = 0; i < 8; ++i) {
-+		if (!(flags & ST)) {
-+			ret |= __get_user(ptr0[i^sw], addr + i);
-+			ret |= __get_user(ptr1[i^sw], addr + i + 8);
-+		} else {
-+			ret |= __put_user(ptr0[i^sw], addr + i);
-+			ret |= __put_user(ptr1[i^sw], addr + i + 8);
- 		}
- 	}
- 	if (ret)
+ #define WDT_DEFAULT_TIME	5	/* seconds */
 
 
