@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764690AbZCNBoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZCNBoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764690AbZCNBoj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbZCNBVM
+	id S1756658AbZCNBoz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbZCNBVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:12 -0400
-Received: from kroah.org ([198.145.64.141]:35458 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:14 -0400
+Received: from kroah.org ([198.145.64.141]:35470 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754328AbZCNBUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:50 -0400
+	id S1754323AbZCNBUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:51 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:41 2009
-Message-Id: <20090314011041.327731579@mini.kroah.org>
+Message-Id: <20090314011041.472610401@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:44 -0700
+Date: Fri, 13 Mar 2009 18:10:45 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Paul Moore <paul.moore@hp.com>,
-       James Morris <jmorris@namei.org>
-Subject: [patch 067/114] selinux: Fix the NetLabel glue code for setsockopt()
+       alan@lxorguk.ukuu.org.uk, David Altobelli <david.altobelli@hp.com>
+Subject: [patch 068/114] hpilo: new pci device
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=selinux-fix-the-netlabel-glue-code-for-setsockopt.patch
+Content-Disposition: inline; filename=hpilo-new-pci-device.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,45 +38,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Paul Moore <paul.moore@hp.com>
+From: David Altobelli <david.altobelli@hp.com>
 
-commit 09c50b4a52c01a1f450b8eec819089e228655bfb upstream.
+commit 31d8b5631f095cb7100cfccc95c801a2547ffe2b upstream.
 
-At some point we (okay, I) managed to break the ability for users to use the
-setsockopt() syscall to set IPv4 options when NetLabel was not active on the
-socket in question.  The problem was noticed by someone trying to use the
-"-R" (record route) option of ping:
+Future iLO devices will have an HP vendor id.
 
- # ping -R 10.0.0.1
- ping: record route: No message of desired type
-
-The solution is relatively simple, we catch the unlabeled socket case and
-clear the error code, allowing the operation to succeed.  Please note that we
-still deny users the ability to override IPv4 options on socket's which have
-NetLabel labeling active; this is done to ensure the labeling remains intact.
-
-Signed-off-by: Paul Moore <paul.moore@hp.com>
-Signed-off-by: James Morris <jmorris@namei.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: David Altobelli <david.altobelli@hp.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- security/selinux/netlabel.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/misc/hpilo.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/security/selinux/netlabel.c
-+++ b/security/selinux/netlabel.c
-@@ -491,8 +491,10 @@ int selinux_netlbl_socket_setsockopt(str
- 		lock_sock(sk);
- 		rc = netlbl_sock_getattr(sk, &secattr);
- 		release_sock(sk);
--		if (rc == 0 && secattr.flags != NETLBL_SECATTR_NONE)
-+		if (rc == 0)
- 			rc = -EACCES;
-+		else if (rc == -ENOMSG)
-+			rc = 0;
- 		netlbl_secattr_destroy(&secattr);
- 	}
+--- a/drivers/misc/hpilo.c
++++ b/drivers/misc/hpilo.c
+@@ -710,6 +710,7 @@ out:
  
+ static struct pci_device_id ilo_devices[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_COMPAQ, 0xB204) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_HP, 0x3307) },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(pci, ilo_devices);
 
 
