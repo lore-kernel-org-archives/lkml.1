@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbZCNBUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbZCNBT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbZCNBUb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZCNBTp
+	id S1752974AbZCNBT6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbZCNBTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:19:45 -0400
-Received: from kroah.org ([198.145.64.141]:34714 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751218AbZCNBTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 13 Mar 2009 21:19:43 -0400
+Received: from kroah.org ([198.145.64.141]:34692 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751174AbZCNBTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:19:42 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:31 2009
-Message-Id: <20090314011031.547932190@mini.kroah.org>
+Message-Id: <20090314011031.415433705@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:09:39 -0700
+Date: Fri, 13 Mar 2009 18:09:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 002/114] net: Kill skb_truesize_check(), it only catches false-positives.
+       alan@lxorguk.ukuu.org.uk, Eugene Teo <eugeneteo@kernel.sg>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 001/114] net: amend the fix for SO_BSDCOMPAT gsopt infoleak
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=net-kill-skb_truesize_check-it-only-catches-false-positives.patch
+Content-Disposition: inline; filename=net-amend-the-fix-for-so_bsdcompat-gsopt-infoleak.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,84 +39,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Eugene Teo <eugeneteo@kernel.sg>
 
-[ Upstream commit 92a0acce186cde8ead56c6915d9479773673ea1a ]
+[ Upstream commit 50fee1dec5d71b8a14c1b82f2f42e16adc227f8b ]
 
-A long time ago we had bugs, primarily in TCP, where we would modify
-skb->truesize (for TSO queue collapsing) in ways which would corrupt
-the socket memory accounting.
+The fix for CVE-2009-0676 (upstream commit df0bca04) is incomplete. Note
+that the same problem of leaking kernel memory will reappear if someone
+on some architecture uses struct timeval with some internal padding (for
+example tv_sec 64-bit and tv_usec 32-bit) --- then, you are going to
+leak the padded bytes to userspace.
 
-skb_truesize_check() was added in order to try and catch this error
-more systematically.
-
-However this debugging check has morphed into a Frankenstein of sorts
-and these days it does nothing other than catch false-positives.
-
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+Reported-by: Mikulas Patocka <mpatocka@redhat.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/skbuff.h |    9 ---------
- include/net/sock.h     |    1 -
- net/core/skbuff.c      |    8 --------
- net/core/sock.c        |    1 -
- 4 files changed, 19 deletions(-)
+ net/core/sock.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -411,15 +411,6 @@ extern void	      skb_over_panic(struct 
- 				     void *here);
- extern void	      skb_under_panic(struct sk_buff *skb, int len,
- 				      void *here);
--extern void	      skb_truesize_bug(struct sk_buff *skb);
--
--static inline void skb_truesize_check(struct sk_buff *skb)
--{
--	int len = sizeof(struct sk_buff) + skb->len;
--
--	if (unlikely((int)skb->truesize < len))
--		skb_truesize_bug(skb);
--}
- 
- extern int skb_append_datato_frags(struct sock *sk, struct sk_buff *skb,
- 			int getfrag(void *from, char *to, int offset,
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -784,7 +784,6 @@ static inline void sk_mem_uncharge(struc
- 
- static inline void sk_wmem_free_skb(struct sock *sk, struct sk_buff *skb)
- {
--	skb_truesize_check(skb);
- 	sock_set_flag(sk, SOCK_QUEUE_SHRUNK);
- 	sk->sk_wmem_queued -= skb->truesize;
- 	sk_mem_uncharge(sk, skb->truesize);
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -143,14 +143,6 @@ void skb_under_panic(struct sk_buff *skb
- 	BUG();
- }
- 
--void skb_truesize_bug(struct sk_buff *skb)
--{
--	WARN(net_ratelimit(), KERN_ERR "SKB BUG: Invalid truesize (%u) "
--	       "len=%u, sizeof(sk_buff)=%Zd\n",
--	       skb->truesize, skb->len, sizeof(struct sk_buff));
--}
--EXPORT_SYMBOL(skb_truesize_bug);
--
- /* 	Allocate a new skbuff. We do this ourselves so we can fill in a few
-  *	'private' fields and also do memory statistics to find all the
-  *	[BEEP] leaks.
 --- a/net/core/sock.c
 +++ b/net/core/sock.c
-@@ -1137,7 +1137,6 @@ void sock_rfree(struct sk_buff *skb)
- {
- 	struct sock *sk = skb->sk;
+@@ -696,7 +696,7 @@ int sock_getsockopt(struct socket *sock,
+ 	if (len < 0)
+ 		return -EINVAL;
  
--	skb_truesize_check(skb);
- 	atomic_sub(skb->truesize, &sk->sk_rmem_alloc);
- 	sk_mem_uncharge(skb->sk, skb->truesize);
- }
+-	v.val = 0;
++	memset(&v, 0, sizeof(v));
+ 
+ 	switch(optname) {
+ 	case SO_DEBUG:
 
 
