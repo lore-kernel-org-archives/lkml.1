@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbZCNB6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765504AbZCNB64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754970AbZCNB6b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZCNBVy
+	id S1765504AbZCNB64 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbZCNBVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:54 -0400
-Received: from kroah.org ([198.145.64.141]:35824 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:55 -0400
+Received: from kroah.org ([198.145.64.141]:35845 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754501AbZCNBVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:21:23 -0400
+	id S1755216AbZCNBVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:21:24 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:46 2009
-Message-Id: <20090314011046.207940178@mini.kroah.org>
+Message-Id: <20090314011046.519991983@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:11:17 -0700
+Date: Fri, 13 Mar 2009 18:11:19 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, John Stultz <johnstul@us.ibm.com>,
+       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [patch 100/114] x86, hpet: fix for LS21 + HPET = boot hang
+Subject: [patch 102/114] x86: fix math_emu register frame access
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=x86-hpet-fix-for-ls21-hpet-boot-hang.patch
+Content-Disposition: inline; filename=x86-fix-math_emu-register-frame-access.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,55 +39,287 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: john stultz <johnstul@us.ibm.com>
+From: Tejun Heo <tj@kernel.org>
 
-commit b13e24644c138d0ddbc451403c30a96b09bfd556 upstream.
+commit d315760ffa261c15ff92699ac6f514112543d7ca upstream.
 
-Between 2.6.23 and 2.6.24-rc1 a change was made that broke IBM LS21
-systems that had the HPET enabled in the BIOS, resulting in boot hangs
-for x86_64.
+do_device_not_available() is the handler for #NM and it declares that
+it takes a unsigned long and calls math_emu(), which takes a long
+argument and surprisingly expects the stack frame starting at the zero
+argument would match struct math_emu_info, which isn't true regardless
+of configuration in the current code.
 
-Specifically commit b8ce33590687888ebb900d09557b8807c4539022, which
-merges the i386 and x86_64 HPET code.
+This patch makes do_device_not_available() take struct pt_regs like
+other exception handlers and initialize struct math_emu_info with
+pointer to it and pass pointer to the math_emu_info to math_emulate()
+like normal C functions do.  This way, unless gcc makes a copy of
+struct pt_regs in do_device_not_available(), the register frame is
+correctly accessed regardless of kernel configuration or compiler
+used.
 
-Prior to this commit, when we setup the HPET timers in x86_64, we did
-the following:
+This doesn't fix all math_emu problems but it at least gets it
+somewhat working.
 
-	hpet_writel(HPET_TN_ENABLE | HPET_TN_PERIODIC | HPET_TN_SETVAL |
-                    HPET_TN_32BIT, HPET_T0_CFG);
-
-However after the i386/x86_64 HPET merge, we do the following:
-
-	cfg = hpet_readl(HPET_Tn_CFG(timer));
-	cfg |= HPET_TN_ENABLE | HPET_TN_PERIODIC |
-			HPET_TN_SETVAL | HPET_TN_32BIT;
-	hpet_writel(cfg, HPET_Tn_CFG(timer));
-
-However on LS21s with HPET enabled in the BIOS, the HPET_T0_CFG register
-boots with Level triggered interrupts (HPET_TN_LEVEL) enabled. This
-causes the periodic interrupt to be not so periodic, and that results in
-the boot time hang I reported earlier in the delay calibration.
-
-My fix: Always disable HPET_TN_LEVEL when setting up periodic mode.
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/hpet.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86/include/asm/math_emu.h |    4 +-
+ arch/x86/include/asm/traps.h    |    4 +-
+ arch/x86/kernel/traps.c         |   15 +++++----
+ arch/x86/math-emu/fpu_entry.c   |    4 +-
+ arch/x86/math-emu/fpu_proto.h   |    2 -
+ arch/x86/math-emu/fpu_system.h  |   16 +++------
+ arch/x86/math-emu/get_address.c |   66 ++++++++++++++++++++--------------------
+ 7 files changed, 55 insertions(+), 56 deletions(-)
 
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -267,6 +267,8 @@ static void hpet_set_mode(enum clock_eve
- 		now = hpet_readl(HPET_COUNTER);
- 		cmp = now + (unsigned long) delta;
- 		cfg = hpet_readl(HPET_Tn_CFG(timer));
-+		/* Make sure we use edge triggered interrupts */
-+		cfg &= ~HPET_TN_LEVEL;
- 		cfg |= HPET_TN_ENABLE | HPET_TN_PERIODIC |
- 		       HPET_TN_SETVAL | HPET_TN_32BIT;
- 		hpet_writel(cfg, HPET_Tn_CFG(timer));
+--- a/arch/x86/include/asm/math_emu.h
++++ b/arch/x86/include/asm/math_emu.h
+@@ -11,8 +11,8 @@
+ struct math_emu_info {
+ 	long ___orig_eip;
+ 	union {
+-		struct pt_regs regs;
+-		struct kernel_vm86_regs vm86;
++		struct pt_regs *regs;
++		struct kernel_vm86_regs *vm86;
+ 	};
+ };
+ #endif /* _ASM_X86_MATH_EMU_H */
+--- a/arch/x86/include/asm/traps.h
++++ b/arch/x86/include/asm/traps.h
+@@ -41,7 +41,7 @@ dotraplinkage void do_int3(struct pt_reg
+ dotraplinkage void do_overflow(struct pt_regs *, long);
+ dotraplinkage void do_bounds(struct pt_regs *, long);
+ dotraplinkage void do_invalid_op(struct pt_regs *, long);
+-dotraplinkage void do_device_not_available(struct pt_regs *, long);
++dotraplinkage void do_device_not_available(struct pt_regs);
+ dotraplinkage void do_coprocessor_segment_overrun(struct pt_regs *, long);
+ dotraplinkage void do_invalid_TSS(struct pt_regs *, long);
+ dotraplinkage void do_segment_not_present(struct pt_regs *, long);
+@@ -74,8 +74,8 @@ extern int kstack_depth_to_print;
+ 
+ #ifdef CONFIG_X86_32
+ void math_error(void __user *);
++void math_emulate(struct math_emu_info *);
+ unsigned long patch_espfix_desc(unsigned long, unsigned long);
+-asmlinkage void math_emulate(long);
+ #endif
+ 
+ #endif /* _ASM_X86_TRAPS_H */
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -912,7 +912,7 @@ asmlinkage void math_state_restore(void)
+ EXPORT_SYMBOL_GPL(math_state_restore);
+ 
+ #ifndef CONFIG_MATH_EMULATION
+-asmlinkage void math_emulate(long arg)
++void math_emulate(struct math_emu_info *info)
+ {
+ 	printk(KERN_EMERG
+ 		"math-emulation not enabled and no coprocessor found.\n");
+@@ -922,16 +922,19 @@ asmlinkage void math_emulate(long arg)
+ }
+ #endif /* CONFIG_MATH_EMULATION */
+ 
+-dotraplinkage void __kprobes
+-do_device_not_available(struct pt_regs *regs, long error)
++dotraplinkage void __kprobes do_device_not_available(struct pt_regs regs)
+ {
+ #ifdef CONFIG_X86_32
+ 	if (read_cr0() & X86_CR0_EM) {
+-		conditional_sti(regs);
+-		math_emulate(0);
++		struct math_emu_info info = { };
++
++		conditional_sti(&regs);
++
++		info.regs = &regs;
++		math_emulate(&info);
+ 	} else {
+ 		math_state_restore(); /* interrupts still off */
+-		conditional_sti(regs);
++		conditional_sti(&regs);
+ 	}
+ #else
+ 	math_state_restore();
+--- a/arch/x86/math-emu/fpu_entry.c
++++ b/arch/x86/math-emu/fpu_entry.c
+@@ -131,7 +131,7 @@ u_char emulating = 0;
+ static int valid_prefix(u_char *Byte, u_char __user ** fpu_eip,
+ 			overrides * override);
+ 
+-asmlinkage void math_emulate(long arg)
++void math_emulate(struct math_emu_info *info)
+ {
+ 	u_char FPU_modrm, byte1;
+ 	unsigned short code;
+@@ -161,7 +161,7 @@ asmlinkage void math_emulate(long arg)
+ 	RE_ENTRANT_CHECK_ON;
+ #endif /* RE_ENTRANT_CHECKING */
+ 
+-	SETUP_DATA_AREA(arg);
++	FPU_info = info;
+ 
+ 	FPU_ORIG_EIP = FPU_EIP;
+ 
+--- a/arch/x86/math-emu/fpu_proto.h
++++ b/arch/x86/math-emu/fpu_proto.h
+@@ -51,7 +51,7 @@ extern void ffreep(void);
+ extern void fst_i_(void);
+ extern void fstp_i(void);
+ /* fpu_entry.c */
+-asmlinkage extern void math_emulate(long arg);
++extern void math_emulate(struct math_emu_info *info);
+ extern void math_abort(struct math_emu_info *info, unsigned int signal);
+ /* fpu_etc.c */
+ extern void FPU_etc(void);
+--- a/arch/x86/math-emu/fpu_system.h
++++ b/arch/x86/math-emu/fpu_system.h
+@@ -16,10 +16,6 @@
+ #include <linux/kernel.h>
+ #include <linux/mm.h>
+ 
+-/* This sets the pointer FPU_info to point to the argument part
+-   of the stack frame of math_emulate() */
+-#define SETUP_DATA_AREA(arg)	FPU_info = (struct math_emu_info *) &arg
+-
+ /* s is always from a cpu register, and the cpu does bounds checking
+  * during register load --> no further bounds checks needed */
+ #define LDT_DESCRIPTOR(s)	(((struct desc_struct *)current->mm->context.ldt)[(s) >> 3])
+@@ -38,12 +34,12 @@
+ #define I387			(current->thread.xstate)
+ #define FPU_info		(I387->soft.info)
+ 
+-#define FPU_CS			(*(unsigned short *) &(FPU_info->regs.cs))
+-#define FPU_SS			(*(unsigned short *) &(FPU_info->regs.ss))
+-#define FPU_DS			(*(unsigned short *) &(FPU_info->regs.ds))
+-#define FPU_EAX			(FPU_info->regs.ax)
+-#define FPU_EFLAGS		(FPU_info->regs.flags)
+-#define FPU_EIP			(FPU_info->regs.ip)
++#define FPU_CS			(*(unsigned short *) &(FPU_info->regs->cs))
++#define FPU_SS			(*(unsigned short *) &(FPU_info->regs->ss))
++#define FPU_DS			(*(unsigned short *) &(FPU_info->regs->ds))
++#define FPU_EAX			(FPU_info->regs->ax)
++#define FPU_EFLAGS		(FPU_info->regs->flags)
++#define FPU_EIP			(FPU_info->regs->ip)
+ #define FPU_ORIG_EIP		(FPU_info->___orig_eip)
+ 
+ #define FPU_lookahead           (I387->soft.lookahead)
+--- a/arch/x86/math-emu/get_address.c
++++ b/arch/x86/math-emu/get_address.c
+@@ -29,43 +29,43 @@
+ #define FPU_WRITE_BIT 0x10
+ 
+ static int reg_offset[] = {
+-	offsetof(struct math_emu_info, regs.ax),
+-	offsetof(struct math_emu_info, regs.cx),
+-	offsetof(struct math_emu_info, regs.dx),
+-	offsetof(struct math_emu_info, regs.bx),
+-	offsetof(struct math_emu_info, regs.sp),
+-	offsetof(struct math_emu_info, regs.bp),
+-	offsetof(struct math_emu_info, regs.si),
+-	offsetof(struct math_emu_info, regs.di)
++	offsetof(struct pt_regs, ax),
++	offsetof(struct pt_regs, cx),
++	offsetof(struct pt_regs, dx),
++	offsetof(struct pt_regs, bx),
++	offsetof(struct pt_regs, sp),
++	offsetof(struct pt_regs, bp),
++	offsetof(struct pt_regs, si),
++	offsetof(struct pt_regs, di)
+ };
+ 
+-#define REG_(x) (*(long *)(reg_offset[(x)]+(u_char *) FPU_info))
++#define REG_(x) (*(long *)(reg_offset[(x)] + (u_char *)FPU_info->regs))
+ 
+ static int reg_offset_vm86[] = {
+-	offsetof(struct math_emu_info, regs.cs),
+-	offsetof(struct math_emu_info, vm86.ds),
+-	offsetof(struct math_emu_info, vm86.es),
+-	offsetof(struct math_emu_info, vm86.fs),
+-	offsetof(struct math_emu_info, vm86.gs),
+-	offsetof(struct math_emu_info, regs.ss),
+-	offsetof(struct math_emu_info, vm86.ds)
++	offsetof(struct pt_regs, cs),
++	offsetof(struct kernel_vm86_regs, ds),
++	offsetof(struct kernel_vm86_regs, es),
++	offsetof(struct kernel_vm86_regs, fs),
++	offsetof(struct kernel_vm86_regs, gs),
++	offsetof(struct pt_regs, ss),
++	offsetof(struct kernel_vm86_regs, ds)
+ };
+ 
+ #define VM86_REG_(x) (*(unsigned short *) \
+-		      (reg_offset_vm86[((unsigned)x)]+(u_char *) FPU_info))
++		(reg_offset_vm86[((unsigned)x)] + (u_char *)FPU_info->regs))
+ 
+ static int reg_offset_pm[] = {
+-	offsetof(struct math_emu_info, regs.cs),
+-	offsetof(struct math_emu_info, regs.ds),
+-	offsetof(struct math_emu_info, regs.es),
+-	offsetof(struct math_emu_info, regs.fs),
+-	offsetof(struct math_emu_info, regs.ds), /* dummy, not saved on stack */
+-	offsetof(struct math_emu_info, regs.ss),
+-	offsetof(struct math_emu_info, regs.ds)
++	offsetof(struct pt_regs, cs),
++	offsetof(struct pt_regs, ds),
++	offsetof(struct pt_regs, es),
++	offsetof(struct pt_regs, fs),
++	offsetof(struct pt_regs, ds),	/* dummy, not saved on stack */
++	offsetof(struct pt_regs, ss),
++	offsetof(struct pt_regs, ds)
+ };
+ 
+ #define PM_REG_(x) (*(unsigned short *) \
+-		      (reg_offset_pm[((unsigned)x)]+(u_char *) FPU_info))
++		(reg_offset_pm[((unsigned)x)] + (u_char *)FPU_info->regs))
+ 
+ /* Decode the SIB byte. This function assumes mod != 0 */
+ static int sib(int mod, unsigned long *fpu_eip)
+@@ -346,34 +346,34 @@ void __user *FPU_get_address_16(u_char F
+ 	}
+ 	switch (rm) {
+ 	case 0:
+-		address += FPU_info->regs.bx + FPU_info->regs.si;
++		address += FPU_info->regs->bx + FPU_info->regs->si;
+ 		break;
+ 	case 1:
+-		address += FPU_info->regs.bx + FPU_info->regs.di;
++		address += FPU_info->regs->bx + FPU_info->regs->di;
+ 		break;
+ 	case 2:
+-		address += FPU_info->regs.bp + FPU_info->regs.si;
++		address += FPU_info->regs->bp + FPU_info->regs->si;
+ 		if (addr_modes.override.segment == PREFIX_DEFAULT)
+ 			addr_modes.override.segment = PREFIX_SS_;
+ 		break;
+ 	case 3:
+-		address += FPU_info->regs.bp + FPU_info->regs.di;
++		address += FPU_info->regs->bp + FPU_info->regs->di;
+ 		if (addr_modes.override.segment == PREFIX_DEFAULT)
+ 			addr_modes.override.segment = PREFIX_SS_;
+ 		break;
+ 	case 4:
+-		address += FPU_info->regs.si;
++		address += FPU_info->regs->si;
+ 		break;
+ 	case 5:
+-		address += FPU_info->regs.di;
++		address += FPU_info->regs->di;
+ 		break;
+ 	case 6:
+-		address += FPU_info->regs.bp;
++		address += FPU_info->regs->bp;
+ 		if (addr_modes.override.segment == PREFIX_DEFAULT)
+ 			addr_modes.override.segment = PREFIX_SS_;
+ 		break;
+ 	case 7:
+-		address += FPU_info->regs.bx;
++		address += FPU_info->regs->bx;
+ 		break;
+ 	}
+ 
 
 
