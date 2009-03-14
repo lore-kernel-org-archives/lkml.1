@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbZCNAUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbZCNAVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbZCNAUt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZCNAS1
+	id S1755216AbZCNAVa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbZCNAS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:27 -0400
-Received: from kroah.org ([198.145.64.141]:46632 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:29 -0400
+Received: from kroah.org ([198.145.64.141]:46656 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751228AbZCNAS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:26 -0400
+	id S1752497AbZCNAS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:28 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:39 2009
-Message-Id: <20090314000739.505817345@mini.kroah.org>
+Message-Id: <20090314000739.850067727@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:14 -0700
+Date: Fri, 13 Mar 2009 17:05:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 06/96] sparc: We need to implement arch_ptrace_stop().
+       alan@lxorguk.ukuu.org.uk, Paul Turner <pjt@google.com>,
+       Eric Biederman <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [patch 08/96] vfs: separate FMODE_PREAD/FMODE_PWRITE into separate flags
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=sparc-we-need-to-implement-arch_ptrace_stop.patch
+Content-Disposition: inline; filename=vfs-separate-fmode_pread-fmode_pwrite-into-separate-flags.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,79 +41,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Paul Turner <pjt@google.com>
 
-[ Upstream commit 878a5535957b563c447d32866a9e606c55fef091 ]
+commit 55ec82176eca52e4e0530a82a0eb59160a1a95a1 upstream.
 
-In order to always provide fully synchronized state to the debugger,
-we might need to do a synchronize_user_stack().
+Separate FMODE_PREAD and FMODE_PWRITE into separate flags to reflect the
+reality that the read and write paths may have independent restrictions.
 
-A pair of hooks, arch_ptrace_stop_needed() and arch_ptrace_stop(),
-exist to handle this kind of situation.  It was created for
-the sake of IA64.
+A git grep verifies that these flags are always cleared together so this
+new behavior will only apply to interfaces that change to clear flags
+individually.
 
-Use them, to flush the kernel side cached register windows
-to the user stack, when necessary.
+This is required for "seq_file: properly cope with pread", a post-2.6.25
+regression fix.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
+[akpm@linux-foundation.org: add comment]
+Signed-off-by: Paul Turner <pjt@google.com>
+Cc: Eric Biederman <ebiederm@xmission.com>
+Cc:  Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc/include/asm/ptrace_32.h |   10 ++++++++++
- arch/sparc/include/asm/ptrace_64.h |   10 ++++++++++
- 2 files changed, 20 insertions(+)
+ include/linux/fs.h |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
---- a/arch/sparc/include/asm/ptrace_32.h
-+++ b/arch/sparc/include/asm/ptrace_32.h
-@@ -62,6 +62,8 @@ struct sparc_stackf {
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -63,17 +63,23 @@ extern int dir_notify_enable;
+ #define MAY_ACCESS 16
+ #define MAY_OPEN 32
  
- #ifdef __KERNEL__
++/*
++ * flags in file.f_mode.  Note that FMODE_READ and FMODE_WRITE must correspond
++ * to O_WRONLY and O_RDWR via the strange trick in __dentry_open()
++ */
++
+ /* file is open for reading */
+ #define FMODE_READ		(1)
+ /* file is open for writing */
+ #define FMODE_WRITE		(2)
+ /* file is seekable */
+ #define FMODE_LSEEK		(4)
+-/* file can be accessed using pread/pwrite */
++/* file can be accessed using pread */
+ #define FMODE_PREAD		(8)
+-#define FMODE_PWRITE		FMODE_PREAD	/* These go hand in hand */
++/* file can be accessed using pwrite */
++#define FMODE_PWRITE		(16)
+ /* File is opened for execution with sys_execve / sys_uselib */
+-#define FMODE_EXEC		(16)
++#define FMODE_EXEC		(32)
  
-+#include <asm/system.h>
-+
- static inline bool pt_regs_is_syscall(struct pt_regs *regs)
- {
- 	return (regs->psr & PSR_SYSCALL);
-@@ -72,6 +74,14 @@ static inline bool pt_regs_clear_syscall
- 	return (regs->psr &= ~PSR_SYSCALL);
- }
- 
-+#define arch_ptrace_stop_needed(exit_code, info) \
-+({	flush_user_windows(); \
-+	current_thread_info()->w_saved != 0;	\
-+})
-+
-+#define arch_ptrace_stop(exit_code, info) \
-+	synchronize_user_stack()
-+
- #define user_mode(regs) (!((regs)->psr & PSR_PS))
- #define instruction_pointer(regs) ((regs)->pc)
- #define user_stack_pointer(regs) ((regs)->u_regs[UREG_FP])
---- a/arch/sparc/include/asm/ptrace_64.h
-+++ b/arch/sparc/include/asm/ptrace_64.h
-@@ -113,6 +113,8 @@ struct sparc_trapf {
- 
- #ifdef __KERNEL__
- 
-+#include <asm/system.h>
-+
- static inline int pt_regs_trap_type(struct pt_regs *regs)
- {
- 	return regs->magic & 0x1ff;
-@@ -128,6 +130,14 @@ static inline bool pt_regs_clear_syscall
- 	return (regs->tstate &= ~TSTATE_SYSCALL);
- }
- 
-+#define arch_ptrace_stop_needed(exit_code, info) \
-+({	flush_user_windows(); \
-+	get_thread_wsaved() != 0; \
-+})
-+
-+#define arch_ptrace_stop(exit_code, info) \
-+	synchronize_user_stack()
-+
- struct global_reg_snapshot {
- 	unsigned long		tstate;
- 	unsigned long		tpc;
+ #define RW_MASK		1
+ #define RWA_MASK	2
 
 
