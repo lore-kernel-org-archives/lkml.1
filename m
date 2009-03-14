@@ -1,65 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763116AbZCNAxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763264AbZCNAyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763116AbZCNAxo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756496AbZCNAYS
+	id S1763264AbZCNAyZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757834AbZCNA1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:24:18 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:1925 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757858AbZCNAYQ (ORCPT
+	Fri, 13 Mar 2009 20:27:12 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:58022 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755144AbZCNA1K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:24:16 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=S+3MTkAHSjWs15L5rEifNIurhwcuDZbzJuWAtW2zk700vthsnjutI/hnC0GqgxV8i
-	6/08aIRDAO+DEivDCLXEg==
+	Fri, 13 Mar 2009 20:27:10 -0400
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>,
+       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mingo@elte.hu,
+       mpm@selenic.com, Andrew Morton <akpm@linux-foundation.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de,
+       xemul@openvz.org
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ do?
+References: <1234479845.30155.220.camel@nimitz>
+	<20090226155755.GA1456@x200.localdomain>
+	<20090310215305.GA2078@x200.localdomain> <49B775B4.1040800@free.fr>
+	<20090312145311.GC12390@us.ibm.com> <1236891719.32630.14.camel@bahia>
+	<20090312212124.GA25019@us.ibm.com>
+	<604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>
+	<20090313053458.GA28833@us.ibm.com>
+	<alpine.LFD.2.00.0903131018390.3940@localhost.localdomain>
+	<20090313193500.GA2285@x200.localdomain>
+	<alpine.LFD.2.00.0903131401070.3940@localhost.localdomain>
+	<1236981097.30142.251.camel@nimitz> <49BADAE5.8070900@cs.columbia.edu>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 13 Mar 2009 17:27:02 -0700
+In-Reply-To: <49BADAE5.8070900@cs.columbia.edu> (Oren Laadan's message of "Fri\, 13 Mar 2009 18\:15\:01 -0400")
+Message-ID: <m1hc1xrlt5.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20090313.151913.21135937.davem@davemloft.net>
-References: <65634d660903131358h765bef64y6a0f1b0db7400f6f@mail.gmail.com>
-	 <20090313.140217.143696945.davem@davemloft.net>
-	 <65634d660903131459m645eb468y3ad850a1fd56d447@mail.gmail.com>
-	 <20090313.151913.21135937.davem@davemloft.net>
-Date: Fri, 13 Mar 2009 17:24:10 -0700
-Message-ID: <65634d660903131724s49009177pdc11005aa76a4b56@mail.gmail.com>
-Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to submit 
-	to upper layer
-From: Tom Herbert <therbert@google.com>
-To: David Miller <davem@davemloft.net>
-Cc: yanmin_zhang@linux.intel.com, bhutchings@solarflare.com,
-       andi@firstfloor.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
-       jesse.brandeburg@intel.com, shemminger@vyatta.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> I appreciate this philosophy, but unfortunately I don't have the
->> luxury of working with a NIC that solves these problems.  The reality
->> may be that we're trying to squeeze performance out of crappy hardware
->> to scale on multi-core.  Left alone we couldn't get the stack to
->> scale, but with these "destable hacks" we've gotten 3X or so
->                         ^^^^^^^^
->
-> Spelling.
->
->> improvement in packets per second across both our dumb 1G and 10G
->> NICs
->
-> Do these NICs at least support multiqueue?
->
+Oren Laadan <orenl@cs.columbia.edu> writes:
 
-Yes, we are using a 10G NIC that supports multi-queue.  The number of
-RX queues supported is half the number of cores on our platform, so
-that is going to limit the parallelism.  With multi-queue turned on we
-do see about 4X improvement in pps over just using a single queue;
-this is about the same improvement we see using a single queue with
-our software steering techniques (this particular device provides the
-Toeplitz hash).  Enabling HW multi-queue has somewhat higher CPU
-utilization though, the extra device interrupt load is not coming for
-free.  We actually use the HW multi-queue in conjunction with our
-software steering to get maximum pps (about 20% more).
+> Dave Hansen wrote:
+>> On Fri, 2009-03-13 at 14:01 -0700, Linus Torvalds wrote:
+>>> On Fri, 13 Mar 2009, Alexey Dobriyan wrote:
+>>>>> Let's face it, we're not going to _ever_ checkpoint any kind of general 
+>>>>> case process. Just TCP makes that fundamentally impossible in the general 
+>>>>> case, and there are lots and lots of other cases too (just something as 
+>>>>> totally _trivial_ as all the files in the filesystem that don't get rolled 
+>>>>> back).
+>>>> What do you mean here? Unlinked files?
+>>> Or modified files, or anything else. "External state" is a pretty damn 
+>>> wide net. It's not just TCP sequence numbers and another machine.
+>> 
+>> This is precisely the reason that we've focused so hard on containers,
+>> and *didn't* just jump right into checkpoint/restart; we're trying
+>> really hard to constrain the _truly_ external things that a process can
+>> interact with.  
+>> 
+>> The approach so far has largely been to make things are external to a
+>> process at least *internal* to a container.  Network, pid, ipc, and uts
+>> namespaces, for example.  An ipc/sem.c semaphore may be external to a
+>> process, so we'll just pick the whole namespace up and checkpoint it
+>> along with the process.
+>> 
+>> In the OpenVZ case, they've at least demonstrated that the filesystem
+>> can be moved largely with rsync.  Unlinked files need some in-kernel TLC
+>> (or /proc mangling) but it isn't *that* bad.
+>
+> And in the Zap we have successfully used a log-based filesystem
+> (specifically NILFS) to continuously snapshot the file-system atomically
+> with taking a checkpoint, so it can easily branch off past checkpoints,
+> including the file system.
+>
+> And unlinked files can be (inefficiently) handled by saving their full
+> contents with the checkpoint image - it's not a big toll on many apps
+> (if you exclude Wine and UML...). At least that's a start.
+
+Oren we might want to do a proof of concept implementation like I did
+with network namespaces.  That is done in the community and goes far
+enough to show we don't have horribly nasty code.  The patches and
+individual changes don't need to be quite perfect but close enough
+that they can be considered for merging.
+
+For the network namespace that seems to have made a big difference.
+
+I'm afraid in our clean start we may have focused a little too much
+on merging something simple and not gone far enough on showing that
+things will work.
+
+After I had that in the network namespace and we had a clear vision of
+the direction.   We started merging the individual patches and things
+went well.
+
+Eric
