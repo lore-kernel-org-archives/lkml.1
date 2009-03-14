@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764576AbZCNBne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763571AbZCNBoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764576AbZCNBne (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZCNBVI
+	id S1763571AbZCNBoS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbZCNBVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:08 -0400
-Received: from kroah.org ([198.145.64.141]:35417 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:10 -0400
+Received: from kroah.org ([198.145.64.141]:35446 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754288AbZCNBUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:46 -0400
+	id S1754149AbZCNBUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:48 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:41 2009
-Message-Id: <20090314011040.889516597@mini.kroah.org>
+Message-Id: <20090314011041.178682760@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:41 -0700
+Date: Fri, 13 Mar 2009 18:10:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 064/114] x86: tone down mtrr_trim_uncached_memory() warning
+       alan@lxorguk.ukuu.org.uk, Paul Moore <paul.moore@hp.com>,
+       James Morris <jmorris@namei.org>
+Subject: [patch 066/114] selinux: Fix a panic in selinux_netlbl_inode_permission()
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=x86-tone-down-mtrr_trim_uncached_memory-warning.patch
+Content-Disposition: inline; filename=selinux-fix-a-panic-in-selinux_netlbl_inode_permission.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,45 +39,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ingo Molnar <mingo@elte.hu>
+From: Paul Moore <paul.moore@hp.com>
 
-commit bf3647c44bc76c43c4b2ebb4c37a559e899ac70e upstream.
+commit d7f59dc4642ce2fc7b79fcd4ec02ffce7f21eb02 upstream.
 
-kerneloops.org is reporting a lot of these warnings that come due to
-vmware not setting up any MTRRs for emulated CPUs:
+Rick McNeal from LSI identified a panic in selinux_netlbl_inode_permission()
+caused by a certain sequence of SUNRPC operations.  The problem appears to be
+due to the lack of NULL pointer checking in the function; this patch adds the
+pointer checks so the function will exit safely in the cases where the socket
+is not completely initialized.
 
-| Reported 709 times (14696 total reports)
-| BIOS bug (often in VMWare) where the MTRR's are set up incorrectly
-| or not at all
-|
-| This warning was last seen in version 2.6.29-rc2-git1, and first
-| seen in 2.6.24.
-|
-| More info:
-|   http://www.kerneloops.org/searchweek.php?search=mtrr_trim_uncached_memory
-
-Keep a one-liner KERN_INFO about it - so that we have so notice if empty
-MTRRs are caused by native hardware/BIOS weirdness.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Paul Moore <paul.moore@hp.com>
+Signed-off-by: James Morris <jmorris@namei.org>
 Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/cpu/mtrr/main.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ security/selinux/netlabel.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/cpu/mtrr/main.c
-+++ b/arch/x86/kernel/cpu/mtrr/main.c
-@@ -1600,8 +1600,7 @@ int __init mtrr_trim_uncached_memory(uns
- 
- 	/* kvm/qemu doesn't have mtrr set right, don't trim them all */
- 	if (!highest_pfn) {
--		WARN(!kvm_para_available(), KERN_WARNING
--				"WARNING: strange, CPU MTRRs all blank?\n");
-+		printk(KERN_INFO "CPU MTRRs all blank - virtualized system.\n");
+--- a/security/selinux/netlabel.c
++++ b/security/selinux/netlabel.c
+@@ -386,11 +386,12 @@ int selinux_netlbl_inode_permission(stru
+ 	if (!S_ISSOCK(inode->i_mode) ||
+ 	    ((mask & (MAY_WRITE | MAY_APPEND)) == 0))
  		return 0;
- 	}
+-
+ 	sock = SOCKET_I(inode);
+ 	sk = sock->sk;
++	if (sk == NULL)
++		return 0;
+ 	sksec = sk->sk_security;
+-	if (sksec->nlbl_state != NLBL_REQUIRE)
++	if (sksec == NULL || sksec->nlbl_state != NLBL_REQUIRE)
+ 		return 0;
  
+ 	local_bh_disable();
 
 
