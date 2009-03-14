@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762891AbZCNAvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762234AbZCNAqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762891AbZCNAvo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbZCNAUX
+	id S1762234AbZCNAqX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753785AbZCNATy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:20:23 -0400
-Received: from kroah.org ([198.145.64.141]:35117 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:54 -0400
+Received: from kroah.org ([198.145.64.141]:34991 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753025AbZCNAT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:56 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:53 2009
-Message-Id: <20090314000753.621377363@mini.kroah.org>
+	id S1753642AbZCNATk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:40 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:51 2009
+Message-Id: <20090314000751.065212331@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:43 -0700
+Date: Fri, 13 Mar 2009 17:06:27 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Len Brown <lenb@kernel.org>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,10 +26,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ralf Baechle <ralf@linux-mips.org>
-Subject: [patch 95/96] MIPS: compat: Implement is_compat_task.
+       alan@lxorguk.ukuu.org.uk, linux-acpi@vger.kernel.org,
+       Lin Ming <ming.m.lin@intel.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: [patch 79/96] ACPI: fix broken usage of name.ascii
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=mips-compat-implement-is_compat_task.patch
+Content-Disposition: inline; filename=acpi-fix-broken-usage-of-name.ascii.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,46 +41,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ralf Baechle <ralf@linux-mips.org>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-commit 4302e5d53b9166d45317e3ddf0a7a9dab3efd43b upstream.
+This issue was fixed indirectly in mainline by commit
+0175d562a29ad052c510782c7e76bc63d5155b9b.
 
-This is a build fix required after "x86-64: seccomp: fix 32/64 syscall
-hole" (commit 5b1017404aea6d2e552e991b3fd814d839e9cd67).  MIPS doesn't
-have the issue that was fixed for x86-64 by that patch.
+acpi_namespace_node's name.ascii field is four chars, and not NULL-
+terminated except by pure luck.  So, it cannot be used by sscanf() without
+a length restriction.
 
-This also doesn't solve the N32 issue which is that N32 seccomp processes
-will be treated as non-compat processes thus only have access to N64
-syscalls.
+This is the minimal fix for both stable 2.6.27 and 2.6.28.
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Lin Ming <ming.m.lin@intel.com>
+Cc: Len Brown <lenb@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/asm-mips/compat.h |    7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/acpi/ec.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/include/asm-mips/compat.h
-+++ b/include/asm-mips/compat.h
-@@ -3,6 +3,8 @@
- /*
-  * Architecture specific compatibility types
-  */
-+#include <linux/seccomp.h>
-+#include <linux/thread_info.h>
- #include <linux/types.h>
- #include <asm/page.h>
- #include <asm/ptrace.h>
-@@ -218,4 +220,9 @@ struct compat_shmid64_ds {
- 	compat_ulong_t	__unused2;
- };
- 
-+static inline int is_compat_task(void)
-+{
-+	return test_thread_flag(TIF_32BIT);
-+}
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -759,9 +759,10 @@ acpi_ec_register_query_methods(acpi_hand
+ 	struct acpi_namespace_node *node = handle;
+ 	struct acpi_ec *ec = context;
+ 	int value = 0;
+-	if (sscanf(node->name.ascii, "_Q%x", &value) == 1) {
 +
- #endif /* _ASM_COMPAT_H */
++	if (sscanf(node->name.ascii, "_Q%2x", &value) == 1)
+ 		acpi_ec_add_query_handler(ec, value, handle, NULL, NULL);
+-	}
++
+ 	return AE_OK;
+ }
+ 
 
 
