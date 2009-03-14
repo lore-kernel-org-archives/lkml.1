@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763492AbZCNBea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763524AbZCNBet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763492AbZCNBea (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbZCNBUl
+	id S1763524AbZCNBet (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbZCNBUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:41 -0400
-Received: from kroah.org ([198.145.64.141]:35123 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:42 -0400
+Received: from kroah.org ([198.145.64.141]:35143 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753437AbZCNBUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:21 -0400
+	id S1753473AbZCNBUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:22 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:37 2009
-Message-Id: <20090314011037.141690419@mini.kroah.org>
+Message-Id: <20090314011037.297941272@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:16 -0700
+Date: Fri, 13 Mar 2009 18:10:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Anssi Hannula <anssi.hannula@gmail.com>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 039/114] ALSA: aw2: do not grab every saa7146 based device
+       alan@lxorguk.ukuu.org.uk, Michael Spang <mspang@csclub.uwaterloo.ca>,
+       Thomas Renninger <trenn@suse.de>, Zhang Rui <rui.zhang@intel.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [patch 040/114] acer-wmi: fix regression in backlight detection
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-aw2-do-not-grab-every-saa7146-based-device.patch
+Content-Disposition: inline; filename=acer-wmi-fix-regression-in-backlight-detection.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,38 +42,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Anssi Hannula <anssi.hannula@gmail.com>
+From: Michael Spang <mspang@csclub.uwaterloo.ca>
 
-commit e8bf069c419c1dc0657e02636441fe1179a9db14 upstream.
+commit 1ba869ec581fd9078b684c56c399ffe3d2345e27 upstream.
 
-Audiowerk2 driver snd-aw2 is bound to any saa7146 device as it does not
-check subsystem ids. Many DVB devices are saa7146 based, so aw2 driver
-grabs them as well.
+Currently we disable the Acer WMI backlight device if there is no ACPI
+backlight device.  As a result, we end up with no backlight device at all.
+ We should instead disable it if there is an ACPI device, as the other
+laptop drivers do.  This regression was introduced in febf2d9 ("Acer-WMI:
+fingers off backlight if video.ko is serving this functionality").
 
-According to http://lkml.org/lkml/2008/10/15/311 aw2 devices have the
-subsystem ids set to 0, the saa7146 default.
+Each laptop driver with backlight support got a similar change around
+febf2d9.  The changes to the other drivers look correct; see e.g.
+a598c82f for a similar but correct change.  The regression is also in
+2.6.28.
 
-Fix conflicts with DVB devices by checking for subsystem ids = 0
-specifically.
-
-Signed-off-by: Anssi Hannula <anssi.hannula@gmail.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Michael Spang <mspang@csclub.uwaterloo.ca>
+Acked-by: Thomas Renninger <trenn@suse.de>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: Len Brown <len.brown@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/aw2/aw2-alsa.c |    2 +-
+ drivers/misc/acer-wmi.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/sound/pci/aw2/aw2-alsa.c
-+++ b/sound/pci/aw2/aw2-alsa.c
-@@ -165,7 +165,7 @@ module_param_array(enable, bool, NULL, 0
- MODULE_PARM_DESC(enable, "Enable Audiowerk2 soundcard.");
+--- a/drivers/misc/acer-wmi.c
++++ b/drivers/misc/acer-wmi.c
+@@ -1297,7 +1297,7 @@ static int __init acer_wmi_init(void)
  
- static struct pci_device_id snd_aw2_ids[] = {
--	{PCI_VENDOR_ID_SAA7146, PCI_DEVICE_ID_SAA7146, PCI_ANY_ID, PCI_ANY_ID,
-+	{PCI_VENDOR_ID_SAA7146, PCI_DEVICE_ID_SAA7146, 0, 0,
- 	 0, 0, 0},
- 	{0}
- };
+ 	set_quirks();
+ 
+-	if (!acpi_video_backlight_support() && has_cap(ACER_CAP_BRIGHTNESS)) {
++	if (acpi_video_backlight_support() && has_cap(ACER_CAP_BRIGHTNESS)) {
+ 		interface->capability &= ~ACER_CAP_BRIGHTNESS;
+ 		printk(ACER_INFO "Brightness must be controlled by "
+ 		       "generic video driver\n");
 
 
