@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760059AbZCNA2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbZCNAU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760059AbZCNA2m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZCNAS4
+	id S1754372AbZCNAU1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZCNAS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:56 -0400
-Received: from kroah.org ([198.145.64.141]:46958 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:26 -0400
+Received: from kroah.org ([198.145.64.141]:46622 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753176AbZCNASy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:54 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:44 2009
-Message-Id: <20090314000744.116792352@mini.kroah.org>
+	id S1752483AbZCNASZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:25 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:39 2009
+Message-Id: <20090314000739.347995187@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:42 -0700
+Date: Fri, 13 Mar 2009 17:05:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       =?ISO-8859-15?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 34/96] cdc_ether: add usb id for Ericsson F3507g
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 05/96] sparc64: Fix DAX handling via userspace access from kernel.
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=cdc_ether-add-usb-id-for-ericsson-f3507g.patch
+Content-Disposition: inline; filename=sparc64-fix-dax-handling-via-userspace-access-from-kernel.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,42 +38,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Bjørn Mork <bjorn@mork.no>
+From: David S. Miller <davem@davemloft.net>
 
-commit cac477e8f1038c41b6f29d3161ce351462ef3df7 upstream.
+[ Upstream commit fcd26f7ae2ea5889134e8b3d60a42ce8b993c95f ]
 
-The Ericsson F3507g wireless broadband module provides a CDC Ethernet
-compliant interface, but identifies it as a "Mobile Direct Line" CDC
-subclass, thereby preventing the CDC Ethernet class driver from picking
-it up.  This patch adds the device id to cdc_ether.c as a workaround.
+If we do a userspace access from kernel mode, and get a
+data access exception, we need to check the exception
+table just like a normal fault does.
 
-Ericsson has provided a "class" driver for this device:
-http://kerneltrap.org/mailarchive/linux-net/2008/10/28/3832094
-But closer inspection of that driver reveals that it adds little more
-than duplication of code from cdc_ether.c.  See also
-http://marc.info/?l=linux-usb&m=123334979706403&w=2
+The spitfire DAX handler was doing this, but such logic
+was missing from the sun4v DAX code.
 
-Signed-off-by: Bjørn Mork <bjorn@mork.no>
+Reported-by: Dennis Gilmore <dgilmore@redhat.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/usb/cdc_ether.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ arch/sparc64/kernel/traps.c |   17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
---- a/drivers/net/usb/cdc_ether.c
-+++ b/drivers/net/usb/cdc_ether.c
-@@ -559,6 +559,11 @@ static const struct usb_device_id	produc
- 	USB_INTERFACE_INFO(USB_CLASS_COMM, USB_CDC_SUBCLASS_ETHERNET,
- 			USB_CDC_PROTO_NONE),
- 	.driver_info = (unsigned long) &cdc_info,
-+}, {
-+	/* Ericsson F3507g */
-+	USB_DEVICE_AND_INTERFACE_INFO(0x0bdb, 0x1900, USB_CLASS_COMM,
-+			USB_CDC_SUBCLASS_MDLM, USB_CDC_PROTO_NONE),
-+	.driver_info = (unsigned long) &cdc_info,
- },
- 	{ },		// END
- };
+--- a/arch/sparc64/kernel/traps.c
++++ b/arch/sparc64/kernel/traps.c
+@@ -1,6 +1,6 @@
+ /* arch/sparc64/kernel/traps.c
+  *
+- * Copyright (C) 1995,1997,2008 David S. Miller (davem@davemloft.net)
++ * Copyright (C) 1995,1997,2008,2009 David S. Miller (davem@davemloft.net)
+  * Copyright (C) 1997,1999,2000 Jakub Jelinek (jakub@redhat.com)
+  */
+ 
+@@ -262,6 +262,21 @@ void sun4v_data_access_exception(struct 
+ 		return;
+ 
+ 	if (regs->tstate & TSTATE_PRIV) {
++		/* Test if this comes from uaccess places. */
++		const struct exception_table_entry *entry;
++
++		entry = search_exception_tables(regs->tpc);
++		if (entry) {
++			/* Ouch, somebody is trying VM hole tricks on us... */
++#ifdef DEBUG_EXCEPTIONS
++			printk("Exception: PC<%016lx> faddr<UNKNOWN>\n", regs->tpc);
++			printk("EX_TABLE: insn<%016lx> fixup<%016lx>\n",
++			       regs->tpc, entry->fixup);
++#endif
++			regs->tpc = entry->fixup;
++			regs->tnpc = regs->tpc + 4;
++			return;
++		}
+ 		printk("sun4v_data_access_exception: ADDR[%016lx] "
+ 		       "CTX[%04x] TYPE[%04x], going.\n",
+ 		       addr, ctx, type);
 
 
