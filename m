@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbZCNBYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbZCNBZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760236AbZCNBYs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbZCNBT4
+	id S1760302AbZCNBZO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZCNBT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:19:56 -0400
-Received: from kroah.org ([198.145.64.141]:34843 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:19:57 -0400
+Received: from kroah.org ([198.145.64.141]:34858 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752770AbZCNBTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:19:54 -0400
+	id S1752546AbZCNBTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:19:55 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:33 2009
-Message-Id: <20090314011033.285021056@mini.kroah.org>
+Message-Id: <20090314011033.444403324@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:09:50 -0700
+Date: Fri, 13 Mar 2009 18:09:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [patch 013/114] mm: fix lazy vmap purging (use-after-free error)
+       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>
+Subject: [patch 014/114] mm: vmap fix overflow
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=mm-fix-lazy-vmap-purging.patch
+Content-Disposition: inline; filename=mm-vmap-fix-overflow.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,91 +38,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Vegard Nossum <vegard.nossum@gmail.com>
+From: Nick Piggin <npiggin@suse.de>
 
-commit cbb766766f3f2f6d9326c561b1020590642c6e39 upstream.
+commit 7766970cc13e9071b356b1f2a48a9eb8675bfcce upstream.
 
-I just got this new warning from kmemcheck:
+The new vmap allocator can wrap the address and get confused in the case
+of large allocations or VMALLOC_END near the end of address space.
 
-    WARNING: kmemcheck: Caught 32-bit read from freed memory (c7806a60)
-    a06a80c7ecde70c1a04080c700000000a06709c1000000000000000000000000
-     f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f f
-     ^
+Problem reported by Christoph Hellwig on a 32-bit XFS workload.
 
-    Pid: 0, comm: swapper Not tainted (2.6.29-rc4 #230)
-    EIP: 0060:[<c1096df7>] EFLAGS: 00000286 CPU: 0
-    EIP is at __purge_vmap_area_lazy+0x117/0x140
-    EAX: 00070f43 EBX: c7806a40 ECX: c1677080 EDX: 00027b66
-    ESI: 00002001 EDI: c170df0c EBP: c170df00 ESP: c178830c
-     DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-    CR0: 80050033 CR2: c7806b14 CR3: 01775000 CR4: 00000690
-    DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-    DR6: 00004000 DR7: 00000000
-     [<c1096f3e>] free_unmap_vmap_area_noflush+0x6e/0x70
-     [<c1096f6a>] remove_vm_area+0x2a/0x70
-     [<c1097025>] __vunmap+0x45/0xe0
-     [<c10970de>] vunmap+0x1e/0x30
-     [<c1008ba5>] text_poke+0x95/0x150
-     [<c1008ca9>] alternatives_smp_unlock+0x49/0x60
-     [<c171ef47>] alternative_instructions+0x11b/0x124
-     [<c171f991>] check_bugs+0xbd/0xdc
-     [<c17148c5>] start_kernel+0x2ed/0x360
-     [<c171409e>] __init_begin+0x9e/0xa9
-     [<ffffffff>] 0xffffffff
-
-It happened here:
-
-    $ addr2line -e vmlinux -i c1096df7
-    mm/vmalloc.c:540
-
-Code:
-
-	list_for_each_entry(va, &valist, purge_list)
-		__free_vmap_area(va);
-
-It's this instruction:
-
-    mov    0x20(%ebx),%edx
-
-Which corresponds to a dereference of va->purge_list.next:
-
-    (gdb) p ((struct vmap_area *) 0)->purge_list.next
-    Cannot access memory at address 0x20
-
-It seems that we should use "safe" list traversal here, as the element
-is freed inside the loop. Please verify that this is the right fix.
-
-Acked-by: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Reported-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/vmalloc.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ mm/vmalloc.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
 --- a/mm/vmalloc.c
 +++ b/mm/vmalloc.c
-@@ -476,6 +476,7 @@ static void __purge_vmap_area_lazy(unsig
- 	static DEFINE_SPINLOCK(purge_lock);
- 	LIST_HEAD(valist);
- 	struct vmap_area *va;
-+	struct vmap_area *n_va;
- 	int nr = 0;
+@@ -323,6 +323,7 @@ static struct vmap_area *alloc_vmap_area
+ 	unsigned long addr;
+ 	int purged = 0;
  
- 	/*
-@@ -515,7 +516,7 @@ static void __purge_vmap_area_lazy(unsig
++	BUG_ON(!size);
+ 	BUG_ON(size & ~PAGE_MASK);
  
- 	if (nr) {
- 		spin_lock(&vmap_area_lock);
--		list_for_each_entry(va, &valist, purge_list)
-+		list_for_each_entry_safe(va, n_va, &valist, purge_list)
- 			__free_vmap_area(va);
- 		spin_unlock(&vmap_area_lock);
+ 	va = kmalloc_node(sizeof(struct vmap_area),
+@@ -334,6 +335,9 @@ retry:
+ 	addr = ALIGN(vstart, align);
+ 
+ 	spin_lock(&vmap_area_lock);
++	if (addr + size - 1 < addr)
++		goto overflow;
++
+ 	/* XXX: could have a last_hole cache */
+ 	n = vmap_area_root.rb_node;
+ 	if (n) {
+@@ -365,6 +369,8 @@ retry:
+ 
+ 		while (addr + size > first->va_start && addr + size <= vend) {
+ 			addr = ALIGN(first->va_end + PAGE_SIZE, align);
++			if (addr + size - 1 < addr)
++				goto overflow;
+ 
+ 			n = rb_next(&first->rb_node);
+ 			if (n)
+@@ -375,6 +381,7 @@ retry:
  	}
+ found:
+ 	if (addr + size > vend) {
++overflow:
+ 		spin_unlock(&vmap_area_lock);
+ 		if (!purged) {
+ 			purge_vmap_area_lazy();
 
 
