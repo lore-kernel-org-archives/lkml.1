@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762178AbZCNCHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764853AbZCNCIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762178AbZCNCHR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 22:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761922AbZCNBvw
+	id S1764853AbZCNCIs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 22:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761851AbZCNB77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:51:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34372 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761977AbZCNBvu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:51:50 -0400
-Date: Sat, 14 Mar 2009 02:51:50 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Tom Herbert <therbert@google.com>
-Cc: David Miller <davem@davemloft.net>, yanmin_zhang@linux.intel.com,
-       bhutchings@solarflare.com, andi@firstfloor.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
-       jesse.brandeburg@intel.com, shemminger@vyatta.com
-Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to submit to upper layer
-Message-ID: <20090314015150.GL11935@one.firstfloor.org>
-References: <1236866906.3221.11.camel@achroite> <1236926602.2567.528.camel@ymzhang> <65634d660903131006n44f068dw18b2fe9dce25399e@mail.gmail.com> <20090313.115137.254924980.davem@davemloft.net> <65634d660903131358h765bef64y6a0f1b0db7400f6f@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <65634d660903131358h765bef64y6a0f1b0db7400f6f@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 13 Mar 2009 21:59:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45607 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761870AbZCNB76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:59:58 -0400
+Message-ID: <49BB0FB7.2070109@kernel.org>
+Date: Sat, 14 Mar 2009 11:00:23 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: axboe@kernel.dk, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] block: cleanup patches
+References: <1236920578-2179-1-git-send-email-tj@kernel.org>
+In-Reply-To: <1236920578-2179-1-git-send-email-tj@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 14 Mar 2009 01:59:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We are trying to follow the decisions scheduler as opposed to leading it.
-> This works on very loaded systems, with applications binding to cpusets,
+Tejun Heo wrote:
+> Hello,
+> 
+> This patchset is available in the following git tree.
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-cleanup
+> 
+> This patchset contains the following 14 cleanup patches.
 
-One possible solution would be then to just not bind to cpusets and
-give the scheduler the freedom it needs instead?
+Jens, once you're okay with the rest of the changes, I'll remove IDE
+related stuff and repost the patchset.
 
--Andi
+Thanks.
+
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+tejun
