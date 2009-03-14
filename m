@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761278AbZCNAhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762765AbZCNAur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761278AbZCNAhI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:37:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbZCNATZ
+	id S1762765AbZCNAur (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbZCNAUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:25 -0400
-Received: from kroah.org ([198.145.64.141]:47173 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:20:20 -0400
+Received: from kroah.org ([198.145.64.141]:35126 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753515AbZCNATN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:13 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:47 2009
-Message-Id: <20090314000747.064874718@mini.kroah.org>
+	id S1750871AbZCNATx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:53 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:53 2009
+Message-Id: <20090314000753.161016409@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:06:01 -0700
+Date: Fri, 13 Mar 2009 17:06:40 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andrew Patterson <andrew.patterson@hp.com>,
-       Jesse Barnes <jbarnes@hobbes.lan>
-Subject: [patch 53/96] PCI: Enable PCIe AER only after checking firmware support
+       alan@lxorguk.ukuu.org.uk, Dan Carpenter <error27@gmail.com>
+Subject: [patch 92/96] ext4: Fix NULL dereference in ext4_ext_migrate()s error handling
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=pci-enable-pcie-aer-only-after-checking-firmware-support.patch
+Content-Disposition: inline; filename=ext4-fix-null-dereference-in-ext4_ext_migrate-s-error-handling.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,109 +38,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andrew Patterson <andrew.patterson@hp.com>
+From: Dan Carpenter <error27@gmail.com>
 
-commit 1f9f13c8d59c1d8da1a602b71d1ab96d1d37d69e upstream.
+(cherry picked from commit 090542641de833c6f756895fc2f139f046e298f9)
 
-The PCIe port driver currently sets the PCIe AER error reporting bits for
-any root or switch port without first checking to see if firmware will grant
-control. This patch moves setting these bits to the AER service driver
-aer_enable_port routine.  The bits are then set for the root port and any
-downstream switch ports after the check for firmware support (aer_osc_setup)
-is made. The patch also unsets the bits in a similar fashion when the AER
-service driver is unloaded.
+This was found through a code checker (http://repo.or.cz/w/smatch.git/).
+It looks like you might be able to trigger the error by trying to migrate
+a readonly file system.
 
-Reviewed-by: Alex Chiang <achiang@hp.com>
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
-Signed-off-by: Jesse Barnes <jbarnes@hobbes.lan>
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pcie/aer/aerdrv_core.c |   48 ++++++++++++++++++++++++++++++-------
- drivers/pci/pcie/portdrv_pci.c     |    2 -
- 2 files changed, 39 insertions(+), 11 deletions(-)
+ fs/ext4/migrate.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
---- a/drivers/pci/pcie/aer/aerdrv_core.c
-+++ b/drivers/pci/pcie/aer/aerdrv_core.c
-@@ -134,6 +134,34 @@ int pci_cleanup_aer_correct_error_status
+--- a/fs/ext4/migrate.c
++++ b/fs/ext4/migrate.c
+@@ -480,7 +480,7 @@ int ext4_ext_migrate(struct inode *inode
+ 					+ 1);
+ 	if (IS_ERR(handle)) {
+ 		retval = PTR_ERR(handle);
+-		goto err_out;
++		return retval;
+ 	}
+ 	tmp_inode = ext4_new_inode(handle,
+ 				inode->i_sb->s_root->d_inode,
+@@ -488,8 +488,7 @@ int ext4_ext_migrate(struct inode *inode
+ 	if (IS_ERR(tmp_inode)) {
+ 		retval = -ENOMEM;
+ 		ext4_journal_stop(handle);
+-		tmp_inode = NULL;
+-		goto err_out;
++		return retval;
+ 	}
+ 	i_size_write(tmp_inode, i_size_read(inode));
+ 	/*
+@@ -617,8 +616,7 @@ err_out:
+ 
+ 	ext4_journal_stop(handle);
+ 
+-	if (tmp_inode)
+-		iput(tmp_inode);
++	iput(tmp_inode);
+ 
+ 	return retval;
  }
- #endif  /*  0  */
- 
-+
-+static void set_device_error_reporting(struct pci_dev *dev, void *data)
-+{
-+	bool enable = *((bool *)data);
-+
-+	if (dev->pcie_type != PCIE_RC_PORT &&
-+	    dev->pcie_type != PCIE_SW_UPSTREAM_PORT &&
-+	    dev->pcie_type != PCIE_SW_DOWNSTREAM_PORT)
-+		return;
-+
-+	if (enable)
-+		pci_enable_pcie_error_reporting(dev);
-+	else
-+		pci_disable_pcie_error_reporting(dev);
-+}
-+
-+/**
-+ * set_downstream_devices_error_reporting - enable/disable the error reporting  bits on the root port and its downstream ports.
-+ * @dev: pointer to root port's pci_dev data structure
-+ * @enable: true = enable error reporting, false = disable error reporting.
-+ */
-+static void set_downstream_devices_error_reporting(struct pci_dev *dev,
-+						   bool enable)
-+{
-+	set_device_error_reporting(dev, &enable);
-+	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
-+}
-+
- static int find_device_iter(struct device *device, void *data)
- {
- 	struct pci_dev *dev;
-@@ -551,15 +579,11 @@ void aer_enable_rootport(struct aer_rpc 
- 	pci_read_config_dword(pdev, aer_pos + PCI_ERR_UNCOR_STATUS, &reg32);
- 	pci_write_config_dword(pdev, aer_pos + PCI_ERR_UNCOR_STATUS, reg32);
- 
--	/* Enable Root Port device reporting error itself */
--	pci_read_config_word(pdev, pos+PCI_EXP_DEVCTL, &reg16);
--	reg16 = reg16 |
--		PCI_EXP_DEVCTL_CERE |
--		PCI_EXP_DEVCTL_NFERE |
--		PCI_EXP_DEVCTL_FERE |
--		PCI_EXP_DEVCTL_URRE;
--	pci_write_config_word(pdev, pos+PCI_EXP_DEVCTL,
--		reg16);
-+	/*
-+	 * Enable error reporting for the root port device and downstream port
-+	 * devices.
-+	 */
-+	set_downstream_devices_error_reporting(pdev, true);
- 
- 	/* Enable Root Port's interrupt in response to error messages */
- 	pci_write_config_dword(pdev,
-@@ -579,6 +603,12 @@ static void disable_root_aer(struct aer_
- 	u32 reg32;
- 	int pos;
- 
-+	/*
-+	 * Disable error reporting for the root port device and downstream port
-+	 * devices.
-+	 */
-+	set_downstream_devices_error_reporting(pdev, false);
-+
- 	pos = pci_find_aer_capability(pdev);
- 	/* Disable Root's interrupt in response to error messages */
- 	pci_write_config_dword(pdev, pos + PCI_ERR_ROOT_COMMAND, 0);
---- a/drivers/pci/pcie/portdrv_pci.c
-+++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -109,8 +109,6 @@ static int __devinit pcie_portdrv_probe 
- 
- 	pcie_portdrv_save_config(dev);
- 
--	pci_enable_pcie_error_reporting(dev);
--
- 	return 0;
- }
- 
 
 
