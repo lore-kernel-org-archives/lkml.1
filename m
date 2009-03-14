@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbZCNBgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763859AbZCNBhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758235AbZCNBgp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbZCNBUt
+	id S1763859AbZCNBhj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZCNBUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:20:49 -0400
-Received: from kroah.org ([198.145.64.141]:35196 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:20:51 -0400
+Received: from kroah.org ([198.145.64.141]:35226 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753380AbZCNBU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:20:27 -0400
+	id S1753324AbZCNBU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:20:29 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:38 2009
-Message-Id: <20090314011038.052964195@mini.kroah.org>
+Message-Id: <20090314011038.351676800@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:10:22 -0700
+Date: Fri, 13 Mar 2009 18:10:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: [patch 045/114] HID: fix bus endianity in file2alias
+       alan@lxorguk.ukuu.org.uk, Helmut Schaa <helmut.schaa@googlemail.com>,
+       Pierre Ossman <drzeus@drzeus.cx>
+Subject: [patch 047/114] sdhci: fix led naming
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=hid-fix-bus-endianity-in-file2alias.patch
+Content-Disposition: inline; filename=sdhci-fix-led-naming.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,30 +39,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Helmut Schaa <helmut.schaa@googlemail.com>
 
-commit 2b639386a2a26c84c8d26c649cf657ebd43a7bc8 upstream.
+commit 5dbace0c9ba110c1a3810a89fa6bf12b7574b5a3 upstream.
 
-Fix endianness of bus member of hid_device_id in modpost.
+Fix the led device naming for the sdhci driver.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Reported-by: Nye Liu <nyet@mrv.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+The led class documentation defines the led name to have the
+form "devicename:colour:function" while not applicable sections
+should be left blank.
+
+To comply with the documentation the led device name is changed
+from "mmc*" to "mmc*::".
+
+Signed-off-by: Helmut Schaa <helmut.schaa@googlemail.com>
+Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- scripts/mod/file2alias.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/mmc/host/sdhci.c |    4 +++-
+ drivers/mmc/host/sdhci.h |    1 +
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -210,6 +210,7 @@ static void do_usb_table(void *symval, u
- static int do_hid_entry(const char *filename,
- 			     struct hid_device_id *id, char *alias)
- {
-+	id->bus = TO_NATIVE(id->bus);
- 	id->vendor = TO_NATIVE(id->vendor);
- 	id->product = TO_NATIVE(id->product);
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -1718,7 +1718,9 @@ int sdhci_add_host(struct sdhci_host *ho
+ #endif
  
+ #ifdef CONFIG_LEDS_CLASS
+-	host->led.name = mmc_hostname(mmc);
++	snprintf(host->led_name, sizeof(host->led_name),
++		"%s::", mmc_hostname(mmc));
++	host->led.name = host->led_name;
+ 	host->led.brightness = LED_OFF;
+ 	host->led.default_trigger = mmc_hostname(mmc);
+ 	host->led.brightness_set = sdhci_led_control;
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -222,6 +222,7 @@ struct sdhci_host {
+ 
+ #ifdef CONFIG_LEDS_CLASS
+ 	struct led_classdev	led;		/* LED control */
++	char   led_name[32];
+ #endif
+ 
+ 	spinlock_t		lock;		/* Mutex */
 
 
