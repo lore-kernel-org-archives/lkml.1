@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758477AbZCNBX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760066AbZCNBYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758477AbZCNBX3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbZCNBTv
+	id S1760066AbZCNBYb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbZCNBTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:19:51 -0400
-Received: from kroah.org ([198.145.64.141]:34805 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:19:54 -0400
+Received: from kroah.org ([198.145.64.141]:34839 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752545AbZCNBTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:19:50 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:32 2009
-Message-Id: <20090314011032.610697374@mini.kroah.org>
+	id S1752684AbZCNBTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:19:53 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:33 2009
+Message-Id: <20090314011033.090722418@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:09:46 -0700
+Date: Fri, 13 Mar 2009 18:09:49 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ed Cashin <ecashin@coraid.com>,
-       Alex Buell <alex.buell@munted.org.uk>
-Subject: [patch 009/114] aoe: ignore vendor extension AoE responses
+       alan@lxorguk.ukuu.org.uk, Jeff Layton <jlayton@redhat.com>,
+       Steve French <sfrench@us.ibm.com>
+Subject: [patch 012/114] [CIFS] Fix oops in cifs_strfromUCS_le mounting to servers which do not specify their OS
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=aoe-ignore-vendor-extension-aoe-responses.patch
+Content-Disposition: inline; filename=fix-oops-in-cifs_strfromucs_le-mounting-to-servers-which-do-not-specify-their-os.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,48 +39,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ed Cashin <ecashin@coraid.com>
+From: Steve French <sfrench@us.ibm.com>
 
-commit b6d6c5175809934e04a606d9193ef04924a7a7d9 upstream.
+commit 69765529d701c838df19ea1f5ad2f33a528261ae upstream.
 
-The Welland ME-747K-SI AoE target generates unsolicited AoE responses that
-are marked as vendor extensions.  Instead of ignoring these packets, the
-aoe driver was generating kernel messages for each unrecognized response
-received.  This patch corrects the behavior.
+Fixes kernel bug #10451 http://bugzilla.kernel.org/show_bug.cgi?id=10451
 
-Signed-off-by: Ed Cashin <ecashin@coraid.com>
-Reported-by: <karaluh@karaluh.pl>
-Tested-by: <karaluh@karaluh.pl>
-Cc: Alex Buell <alex.buell@munted.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Certain NAS appliances do not set the operating system or network operating system
+fields in the session setup response on the wire.  cifs was oopsing on the unexpected
+zero length response fields (when trying to null terminate a zero length field).
+
+This fixes the oops.
+
+Acked-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/block/aoe/aoe.h    |    1 +
- drivers/block/aoe/aoenet.c |    2 ++
- 2 files changed, 3 insertions(+)
+ fs/cifs/CHANGES |    2 ++
+ fs/cifs/sess.c  |    4 ++--
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
---- a/drivers/block/aoe/aoe.h
-+++ b/drivers/block/aoe/aoe.h
-@@ -18,6 +18,7 @@
- enum {
- 	AOECMD_ATA,
- 	AOECMD_CFG,
-+	AOECMD_VEND_MIN = 0xf0,
+--- a/fs/cifs/CHANGES
++++ b/fs/cifs/CHANGES
+@@ -1,3 +1,5 @@
++Fix oops in cifs_dfs_ref.c when prefixpath is not reachable when using DFS.
++
+ Version 1.55
+ ------------
+ Various fixes to make delete of open files behavior more predictable
+--- a/fs/cifs/sess.c
++++ b/fs/cifs/sess.c
+@@ -228,7 +228,7 @@ static int decode_unicode_ssetup(char **
  
- 	AOEFL_RSP = (1<<3),
- 	AOEFL_ERR = (1<<2),
---- a/drivers/block/aoe/aoenet.c
-+++ b/drivers/block/aoe/aoenet.c
-@@ -153,6 +153,8 @@ aoenet_rcv(struct sk_buff *skb, struct n
- 		aoecmd_cfg_rsp(skb);
- 		break;
- 	default:
-+		if (h->cmd >= AOECMD_VEND_MIN)
-+			break;	/* don't complain about vendor commands */
- 		printk(KERN_INFO "aoe: unknown cmd %d\n", h->cmd);
- 	}
- exit:
+ 	kfree(ses->serverOS);
+ 	/* UTF-8 string will not grow more than four times as big as UCS-16 */
+-	ses->serverOS = kzalloc(4 * len, GFP_KERNEL);
++	ses->serverOS = kzalloc((4 * len) + 2 /* trailing null */, GFP_KERNEL);
+ 	if (ses->serverOS != NULL)
+ 		cifs_strfromUCS_le(ses->serverOS, (__le16 *)data, len, nls_cp);
+ 	data += 2 * (len + 1);
+@@ -241,7 +241,7 @@ static int decode_unicode_ssetup(char **
+ 		return rc;
+ 
+ 	kfree(ses->serverNOS);
+-	ses->serverNOS = kzalloc(4 * len, GFP_KERNEL); /* BB this is wrong length FIXME BB */
++	ses->serverNOS = kzalloc((4 * len) + 2 /* trailing null */, GFP_KERNEL);
+ 	if (ses->serverNOS != NULL) {
+ 		cifs_strfromUCS_le(ses->serverNOS, (__le16 *)data, len,
+ 				   nls_cp);
 
 
