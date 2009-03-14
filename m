@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbZCNAU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbZCNAY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754372AbZCNAU1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZCNAS0
+	id S1754679AbZCNAY3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbZCNASi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:18:26 -0400
-Received: from kroah.org ([198.145.64.141]:46622 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:18:38 -0400
+Received: from kroah.org ([198.145.64.141]:46764 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752483AbZCNASZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:18:25 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:39 2009
-Message-Id: <20090314000739.347995187@mini.kroah.org>
+	id S1751683AbZCNASh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:18:37 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:41 2009
+Message-Id: <20090314000741.290457012@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:13 -0700
+Date: Fri, 13 Mar 2009 17:05:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 05/96] sparc64: Fix DAX handling via userspace access from kernel.
+       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 17/96] rtl8187: New USB IDs for RTL8187L
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=sparc64-fix-dax-handling-via-userspace-access-from-kernel.patch
+Content-Disposition: inline; filename=rtl8187-new-usb-id-s-for-rtl8187l.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,56 +39,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Larry Finger <Larry.Finger@gmail.com>
 
-[ Upstream commit fcd26f7ae2ea5889134e8b3d60a42ce8b993c95f ]
+commit 046ee5d26ac91316a8ac0a29c0b33139dc9da20d upstream.
 
-If we do a userspace access from kernel mode, and get a
-data access exception, we need to check the exception
-table just like a normal fault does.
+Add new USB ID codes. These come from two postings on forums and
+mailing lists, and four are derived from the .inf that accompanies
+the latest Realtek Windows driver for the RTL8187L.
 
-The spitfire DAX handler was doing this, but such logic
-was missing from the sun4v DAX code.
+Thanks to Viktor Ilijašić <viktor.ilijasic@gmail.com> and Xose Vazquez
+Perez <xose.vazquez@gmail.com> for reporting these new ID's.
 
-Reported-by: Dennis Gilmore <dgilmore@redhat.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc64/kernel/traps.c |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+ drivers/net/wireless/rtl8187_dev.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
---- a/arch/sparc64/kernel/traps.c
-+++ b/arch/sparc64/kernel/traps.c
-@@ -1,6 +1,6 @@
- /* arch/sparc64/kernel/traps.c
-  *
-- * Copyright (C) 1995,1997,2008 David S. Miller (davem@davemloft.net)
-+ * Copyright (C) 1995,1997,2008,2009 David S. Miller (davem@davemloft.net)
-  * Copyright (C) 1997,1999,2000 Jakub Jelinek (jakub@redhat.com)
-  */
+--- a/drivers/net/wireless/rtl8187_dev.c
++++ b/drivers/net/wireless/rtl8187_dev.c
+@@ -40,6 +40,10 @@ static struct usb_device_id rtl8187_tabl
+ 	{USB_DEVICE(0x0bda, 0x8189), .driver_info = DEVICE_RTL8187B},
+ 	{USB_DEVICE(0x0bda, 0x8197), .driver_info = DEVICE_RTL8187B},
+ 	{USB_DEVICE(0x0bda, 0x8198), .driver_info = DEVICE_RTL8187B},
++	/* Surecom */
++	{USB_DEVICE(0x0769, 0x11F2), .driver_info = DEVICE_RTL8187},
++	/* Logitech */
++	{USB_DEVICE(0x0789, 0x010C), .driver_info = DEVICE_RTL8187},
+ 	/* Netgear */
+ 	{USB_DEVICE(0x0846, 0x6100), .driver_info = DEVICE_RTL8187},
+ 	{USB_DEVICE(0x0846, 0x6a00), .driver_info = DEVICE_RTL8187},
+@@ -49,8 +53,16 @@ static struct usb_device_id rtl8187_tabl
+ 	/* Sitecom */
+ 	{USB_DEVICE(0x0df6, 0x000d), .driver_info = DEVICE_RTL8187},
+ 	{USB_DEVICE(0x0df6, 0x0028), .driver_info = DEVICE_RTL8187B},
++	/* Sphairon Access Systems GmbH */
++	{USB_DEVICE(0x114B, 0x0150), .driver_info = DEVICE_RTL8187},
++	/* Dick Smith Electronics */
++	{USB_DEVICE(0x1371, 0x9401), .driver_info = DEVICE_RTL8187},
+ 	/* Abocom */
+ 	{USB_DEVICE(0x13d1, 0xabe6), .driver_info = DEVICE_RTL8187},
++	/* Qcom */
++	{USB_DEVICE(0x18E8, 0x6232), .driver_info = DEVICE_RTL8187},
++	/* AirLive */
++	{USB_DEVICE(0x1b75, 0x8187), .driver_info = DEVICE_RTL8187},
+ 	{}
+ };
  
-@@ -262,6 +262,21 @@ void sun4v_data_access_exception(struct 
- 		return;
- 
- 	if (regs->tstate & TSTATE_PRIV) {
-+		/* Test if this comes from uaccess places. */
-+		const struct exception_table_entry *entry;
-+
-+		entry = search_exception_tables(regs->tpc);
-+		if (entry) {
-+			/* Ouch, somebody is trying VM hole tricks on us... */
-+#ifdef DEBUG_EXCEPTIONS
-+			printk("Exception: PC<%016lx> faddr<UNKNOWN>\n", regs->tpc);
-+			printk("EX_TABLE: insn<%016lx> fixup<%016lx>\n",
-+			       regs->tpc, entry->fixup);
-+#endif
-+			regs->tpc = entry->fixup;
-+			regs->tnpc = regs->tpc + 4;
-+			return;
-+		}
- 		printk("sun4v_data_access_exception: ADDR[%016lx] "
- 		       "CTX[%04x] TYPE[%04x], going.\n",
- 		       addr, ctx, type);
 
 
