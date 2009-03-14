@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbZCNPpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbZCNPvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756636AbZCNPpd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 11:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbZCNPpZ
+	id S1756942AbZCNPvj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 11:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbZCNPva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 11:45:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37530 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751560AbZCNPpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 11:45:24 -0400
-Subject: [PATCH -tip] x86: trampoline.c cleanup
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+	Sat, 14 Mar 2009 11:51:30 -0400
+Received: from kroah.org ([198.145.64.141]:55698 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752005AbZCNPva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 11:51:30 -0400
+Date: Sat, 14 Mar 2009 08:41:57 -0700
+From: Greg KH <greg@kroah.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-pci <linux-pci@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 14 Mar 2009 21:14:54 +0530
-Message-Id: <1237045494.4546.22.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Subject: Re: more than 50 percent of dmesg belongs only to PCI and USB
+Message-ID: <20090314154157.GA5864@kroah.com>
+References: <1237016485.2935.12.camel@ht.satnam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1237016485.2935.12.camel@ht.satnam>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] x86: trampoline.c cleanup
+On Sat, Mar 14, 2009 at 01:11:25PM +0530, Jaswinder Singh Rajput wrote:
+> Can we make dmesg little bit better and remove some noise and put these
+> debug messages on /sys/kernel/debug/ :
 
-Impact: cleanup
+Are you sure you don't have some debugging options enabled in your
+kernel?
 
- - fix style problems
+Also, patches gladly accepted :)
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/trampoline.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+thanks,
 
-diff --git a/arch/x86/kernel/trampoline.c b/arch/x86/kernel/trampoline.c
-index 808031a..e3b1f2e 100644
---- a/arch/x86/kernel/trampoline.c
-+++ b/arch/x86/kernel/trampoline.c
-@@ -15,7 +15,7 @@ void __init reserve_trampoline_memory(void)
- 	 * trampoline before removing it. (see the GDT stuff)
- 	 */
- 	reserve_early(PAGE_SIZE, PAGE_SIZE + PAGE_SIZE, "EX TRAMPOLINE");
--#endif
-+#endif /* CONFIG_X86_32 */
- 	/* Has to be in very low memory so we can execute real-mode AP code. */
- 	reserve_early(TRAMPOLINE_BASE, TRAMPOLINE_BASE + TRAMPOLINE_SIZE,
- 			"TRAMPOLINE");
-@@ -29,5 +29,6 @@ void __init reserve_trampoline_memory(void)
- unsigned long setup_trampoline(void)
- {
- 	memcpy(trampoline_base, trampoline_data, TRAMPOLINE_SIZE);
-+
- 	return virt_to_phys(trampoline_base);
- }
--- 
-1.6.0.6
-
-
-
+greg k-h
