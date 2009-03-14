@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbZCNB5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765470AbZCNB57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756226AbZCNB5i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 21:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500AbZCNBVw
+	id S1765470AbZCNB57 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 21:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbZCNBVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 21:21:52 -0400
-Received: from kroah.org ([198.145.64.141]:35738 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 21:21:53 -0400
+Received: from kroah.org ([198.145.64.141]:35810 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755172AbZCNBVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 21:21:20 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:45 2009
-Message-Id: <20090314011045.758367881@mini.kroah.org>
+	id S1755073AbZCNBVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 21:21:22 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 18:10:46 2009
+Message-Id: <20090314011046.066141918@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 18:11:14 -0700
+Date: Fri, 13 Mar 2009 18:11:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,10 +26,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: [patch 097/114] ext4: Add fallback for find_group_flex
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 099/114] x86/paravirt: make arch_flush_lazy_mmu/cpu disable preemption
 References: <20090314010937.416083662@mini.kroah.org>
-Content-Disposition: inline; filename=ext4-add-fallback-for-find_group_flex.patch
+Content-Disposition: inline; filename=x86-paravirt-make-arch_flush_lazy_mmu-cpu-disable-preemption.patch
 In-Reply-To: <20090314011649.GA26170@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,46 +40,97 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: "Theodore Ts'o" <tytso@mit.edu>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 
-(cherry picked from commit 05bf9e839d9de4e8a094274a0a2fd07beb47eaf1)
+commit d85cf93da66977dbc645352be1b2084a659d8a0b upstream.
 
-This is a workaround for find_group_flex() which badly needs to be
-replaced.  One of its problems (besides ignoring the Orlov algorithm)
-is that it is a bit hyperactive about returning failure under
-suspicious circumstances.  This can lead to spurious ENOSPC failures
-even when there are inodes still available.
+Impact: avoid access to percpu vars in preempible context
 
-Work around this for now by retrying the search using
-find_group_other() if find_group_flex() returns -1.  If
-find_group_other() succeeds when find_group_flex() has failed, log a
-warning message.
+They are intended to be used whenever there's the possibility
+that there's some stale state which is going to be overwritten
+with a queued update, or to force a state change when we may be
+in lazy mode.  Either way, we could end up calling it with
+preemption enabled, so wrap the functions in their own little
+preempt-disable section so they can be safely called in any
+context (though preemption should never be enabled if we're actually
+in a lazy state).
 
-A better block/inode allocator that will fix this problem for real has
-been queued up for the next merge window.
+(Move out of line to avoid #include dependencies.)
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext4/ialloc.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/x86/include/asm/paravirt.h |   17 ++---------------
+ arch/x86/kernel/paravirt.c      |   24 ++++++++++++++++++++++++
+ 2 files changed, 26 insertions(+), 15 deletions(-)
 
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -703,6 +703,13 @@ struct inode *ext4_new_inode(handle_t *h
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -1352,14 +1352,7 @@ static inline void arch_leave_lazy_cpu_m
+ 	PVOP_VCALL0(pv_cpu_ops.lazy_mode.leave);
+ }
  
- 	if (sbi->s_log_groups_per_flex) {
- 		ret2 = find_group_flex(sb, dir, &group);
-+		if (ret2 == -1) {
-+			ret2 = find_group_other(sb, dir, &group);
-+			if (ret2 == 0 && printk_ratelimit())
-+				printk(KERN_NOTICE "ext4: find_group_flex "
-+				       "failed, fallback succeeded dir %lu\n",
-+				       dir->i_ino);
-+		}
- 		goto got_group;
- 	}
+-static inline void arch_flush_lazy_cpu_mode(void)
+-{
+-	if (unlikely(paravirt_get_lazy_mode() == PARAVIRT_LAZY_CPU)) {
+-		arch_leave_lazy_cpu_mode();
+-		arch_enter_lazy_cpu_mode();
+-	}
+-}
+-
++void arch_flush_lazy_cpu_mode(void);
  
+ #define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
+ static inline void arch_enter_lazy_mmu_mode(void)
+@@ -1372,13 +1365,7 @@ static inline void arch_leave_lazy_mmu_m
+ 	PVOP_VCALL0(pv_mmu_ops.lazy_mode.leave);
+ }
+ 
+-static inline void arch_flush_lazy_mmu_mode(void)
+-{
+-	if (unlikely(paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU)) {
+-		arch_leave_lazy_mmu_mode();
+-		arch_enter_lazy_mmu_mode();
+-	}
+-}
++void arch_flush_lazy_mmu_mode(void);
+ 
+ static inline void __set_fixmap(unsigned /* enum fixed_addresses */ idx,
+ 				unsigned long phys, pgprot_t flags)
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -268,6 +268,30 @@ enum paravirt_lazy_mode paravirt_get_laz
+ 	return __get_cpu_var(paravirt_lazy_mode);
+ }
+ 
++void arch_flush_lazy_mmu_mode(void)
++{
++	preempt_disable();
++
++	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU) {
++		arch_leave_lazy_mmu_mode();
++		arch_enter_lazy_mmu_mode();
++	}
++
++	preempt_enable();
++}
++
++void arch_flush_lazy_cpu_mode(void)
++{
++	preempt_disable();
++
++	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_CPU) {
++		arch_leave_lazy_cpu_mode();
++		arch_enter_lazy_cpu_mode();
++	}
++
++	preempt_enable();
++}
++
+ struct pv_info pv_info = {
+ 	.name = "bare hardware",
+ 	.paravirt_enabled = 0,
 
 
