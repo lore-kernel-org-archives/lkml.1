@@ -1,28 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbZCOJhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbZCOJi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757084AbZCOJhT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 05:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbZCOJhF
+	id S1757734AbZCOJi1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 05:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbZCOJiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 05:37:05 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:50063 "EHLO
+	Sun, 15 Mar 2009 05:38:19 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:50069 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753562AbZCOJhE (ORCPT
+	with ESMTP id S1754048AbZCOJiS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 05:37:04 -0400
+	Sun, 15 Mar 2009 05:38:18 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jan Yenya Kasprzak <kas@fi.muni.cz>, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: [PATCH 1/1] Char: moxa, fix refcounting in moxa_poll_port
-Date: Sun, 15 Mar 2009 10:36:08 +0100
-Message-Id: <1237109768-3820-1-git-send-email-jirislaby@gmail.com>
+Date: Sun, 15 Mar 2009 10:37:24 +0100
+Message-Id: <1237109844-3866-1-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <49BCCAE0.6010303@gmail.com>
 References: <49BCCAE0.6010303@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+Repost, sorry, scripts don't understand Reported-by.
+
+--
 
 There is missing tty_kref_put on some paths in moxa_poll_port,
 although the reference is always taken. Fix it.
