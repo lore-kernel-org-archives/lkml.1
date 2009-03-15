@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbZCOKpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759072AbZCOKrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759210AbZCOKpb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 06:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbZCOKpV
+	id S1759072AbZCOKrX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 06:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbZCOKrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 06:45:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43057 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754835AbZCOKpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 06:45:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Graham Murray <graham@gmurray.org.uk>
-Subject: Re: [Bug #12444] X hangs following switch from radeonfb console - Bisected
-Date: Sun, 15 Mar 2009 11:45:32 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera> <GCLaknAim2M.A.NXF.F7BvJB@chimera> <87wsardroy.fsf@newton.gmurray.org.uk>
-In-Reply-To: <87wsardroy.fsf@newton.gmurray.org.uk>
+	Sun, 15 Mar 2009 06:47:14 -0400
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:59478 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755400AbZCOKrN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 06:47:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=JC1+zTTY3w0zp4nbK09NyexGL31MfaUBLrPFRP7CeQT+xH0HpQmKYCSXsvUI/ieglW
+         ijKn0WF7lRc0+WcgjUaoH3Et+B57NoTCpQ7EDXNbOrDHRUNOuV8rNNkmJt2kv9BVqcae
+         /4oNKZCuHCLr8LN3pJBB3GqxDx62/QpWIsb+o=
+Message-ID: <49BCDCAA.8040309@gmail.com>
+Date: Sun, 15 Mar 2009 11:47:06 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Len Brown <lenb@kernel.org>
+CC: linux-acpi@vger.kernel.org, rjw@sisk.pl,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org
+Subject: 2.6.29 acpi regression: acpi_ex_extract_from_field -- div by zero
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903151145.32859.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 March 2009, Graham Murray wrote:
-> I am no longer seeing this problem with 2.6.29-rc8-00090g326d851, but I
-> have also upgrade various parts of X including the radeon driver to
-> version 6.12.0. 
+Hi,
 
-This is a code fix anyway, closing. :-)
+sometimes, when booting up/resuming from disk, I get an oops[1].
 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.28.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12444
-> > Subject		: X hangs following switch from radeonfb console - Bisected
-> > Submitter	: Graham Murray <graham@gmurray.org.uk>
-> > Date		: 2009-01-13 14:03 (61 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7c1c2871a6a3a114853ec6836e9035ac1c0c7f7a
+obj_desc->common_field.access_bit_width is zero, but even after the 
+loop. Division before the loop is apparently OK.
 
-Thanks,
-Rafael
+This is the case:
+         /* Mask off any extra bits in the last datum */
+
+         buffer_tail_bits = obj_desc->common_field.bit_length %
+             obj_desc->common_field.access_bit_width;
+
+.L39:
+         xorl    %edx, %edx      #
+         movzbl  37(%rbx), %esi  # 
+<variable>.common_field.access_bit_width, 
+<variable>.common_field.access_bit_width
+         movl    24(%rbx), %eax  # <variable>.common_field.bit_length, 
+<variable>.common_field.bit_length
+--------------- here:
+         divl    %esi    # <variable>.common_field.access_bit_width
+         movl    %edx, %ecx      #, tmp121
+         testl   %edx, %edx      # tmp121
+         je      .L41    #,
+
+[1] http://www.fi.muni.cz/~xslaby/sklad/panics/acpi_oops.png
