@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758686AbZCOD7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZCOEDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758686AbZCOD7S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 23:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757509AbZCOD7E
+	id S1752516AbZCOEDk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 00:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbZCOEDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 23:59:04 -0400
-Received: from phunq.net ([64.81.85.152]:39861 "EHLO moonbase.phunq.net"
+	Sun, 15 Mar 2009 00:03:32 -0400
+Received: from phunq.net ([64.81.85.152]:52666 "EHLO moonbase.phunq.net"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755678AbZCOD7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 23:59:03 -0400
+	id S1750819AbZCOEDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 00:03:31 -0400
 From: Daniel Phillips <phillips@phunq.net>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Roland Dreier <rdreier@cisco.com>
 Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
-Date: Sat, 14 Mar 2009 20:58:57 -0700
+Date: Sat, 14 Mar 2009 21:02:56 -0700
 User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, tux3@tux3.org,
+Cc: tux3@tux3.org, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-References: <200903110925.37614.phillips@phunq.net> <20090312130222.b149cf36.akpm@linux-foundation.org> <87k56ulb9s.fsf@devron.myhome.or.jp>
-In-Reply-To: <87k56ulb9s.fsf@devron.myhome.or.jp>
+References: <200903110925.37614.phillips@phunq.net> <200903112238.55864.phillips@phunq.net> <aday6vaqwtk.fsf@cisco.com>
+In-Reply-To: <aday6vaqwtk.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903142058.58124.phillips@phunq.net>
+Message-Id: <200903142102.56602.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 March 2009, OGAWA Hirofumi wrote:
-> Andrew Morton <akpm@linux-foundation.org> writes:
+On Thursday 12 March 2009, Roland Dreier wrote:
+>  > By the way, the endian comment in bitmap.c needs some loving:
+>  > 
+>  >    http://lxr.linux.no/linux+v2.6.28.7/lib/bitmap.c#L35
+>  > 
+>  > The s390 file needs to be config-independent:
+>  > 
+>  > -	include/asm-s390/bitops.h
+>  > +	arch/s390/include/asm/bitops.h
+>  > 
+>  > and the ppc file is nowhere to be seen.  I will put a driveby patch on
+>  > the to.do list.
 > 
-> > On Fri, 13 Mar 2009 01:18:29 +0900
-> > OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
-> >
-> >> Andrew Morton <akpm@linux-foundation.org> writes:
-> >> 
-> >> > - When 'bh' is known to be non-NULL, use put_bh() rather than brelse().
-> >> 
-> >> It sounds strange. Almost all bh is non-NULL. This means we are going to
-> >> replace almost all brelse() by put_bh()?
-> >> 
-> >
-> > Well..  you can make up your own mind about this.  If you see benefit
-> > in the NULL-checking and extra debugging which brelse() provides then
-> > continue to use brelse().
-> 
-> I thought someone started to convert it. Ok, personally, I think
-> NULL-check is just not needed always, and if it is needed, check it
-> explicitly.
+> The ppc file is arch/powerpc/include/asm/bitops.h.
 
-I checked in a patch last week to convert all the brelses to "blockput"
-(note how close the spelling is to Nick's block_put, an unsurprising
-accident).  This should mean a little less work when the time comes to
-try out the block handles idea, and it surely doesn't hurt anything.
+Ah right, so the commentary should just reference arch/ instead of
+/..asm-<arch>.  I am still hoping to hear an actual argument why little
+endian bitops are "more natural" than big endian.  I don't know of any
+myself, either in terms of machine instructions, cycle times or
+whatever.
 
 Regards,
 
