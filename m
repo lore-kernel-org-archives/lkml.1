@@ -1,68 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZCOJs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbZCOJzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758317AbZCOJs4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 05:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbZCOJsp
+	id S1756999AbZCOJzU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 05:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbZCOJzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 05:48:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40179 "EHLO mx2.mail.elte.hu"
+	Sun, 15 Mar 2009 05:55:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56332 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754814AbZCOJso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 05:48:44 -0400
-Date: Sun, 15 Mar 2009 10:48:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>
-Cc: Kevin Shanahan <kmshanah@ucwb.org.au>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-Message-ID: <20090315094807.GB21169@elte.hu>
-References: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera> <qm8_cedJGaP.A.-NH.CPCvJB@chimera> <1237107837.27699.27.camel@kulgan.wumi.org.au> <49BCC7C8.2020503@redhat.com>
+	id S1751982AbZCOJzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 05:55:03 -0400
+Date: Sun, 15 Mar 2009 09:54:28 GMT
+From: Yinghai Lu <yinghai@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49BCB557.3030000@kernel.org>
+References: <49BCB557.3030000@kernel.org>
+Subject: [tip:x86/mm] x86: print out more info in e820_update_range()
+Message-ID: <tip-c61cf4cfe7c73c7aa62dde3ff82cd475b9c41481@git.kernel.org>
+Git-Commit-ID: c61cf4cfe7c73c7aa62dde3ff82cd475b9c41481
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <49BCC7C8.2020503@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 15 Mar 2009 09:54:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  c61cf4cfe7c73c7aa62dde3ff82cd475b9c41481
+Gitweb:     http://git.kernel.org/tip/c61cf4cfe7c73c7aa62dde3ff82cd475b9c41481
+Author:     Yinghai Lu <yinghai@kernel.org>
+AuthorDate: Sun, 15 Mar 2009 00:59:19 -0700
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 15 Mar 2009 10:01:59 +0100
 
-* Avi Kivity <avi@redhat.com> wrote:
+x86: print out more info in e820_update_range()
 
-> Kevin Shanahan wrote:
->> On Sat, 2009-03-14 at 20:20 +0100, Rafael J. Wysocki wrote:
->>   
->>> This message has been generated automatically as a part of a report
->>> of regressions introduced between 2.6.27 and 2.6.28.
->>>
->>> The following bug entry is on the current list of known regressions
->>> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
->>> be listed and let me know (either way).
->>>
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12465
->>> Subject		: KVM guests stalling on 2.6.28 (bisected)
->>> Submitter	: Kevin Shanahan <kmshanah@ucwb.org.au>
->>> Date		: 2009-01-17 03:37 (57 days old)
->>> Handled-By	: Avi Kivity <avi@redhat.com>
->>>     
->>
->> No further updates since the last reminder.
->> The bug should still be listed.
->>   
->
-> I've looked at the traces but lack the skill to make any sense 
-> out of them.
+Impact: help debug e820 bugs
 
-Do you have specific questions about them that we could answer?
+Try to print out more info, to catch wrong call parameters.
 
-	Ingo
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <49BCB557.3030000@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/e820.c |   56 ++++++++++++++++++++++++++++++------------------
+ 1 files changed, 35 insertions(+), 21 deletions(-)
+
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 0c34ff4..fb638d9 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -131,6 +131,31 @@ void __init e820_add_region(u64 start, u64 size, int type)
+ 	__e820_add_region(&e820, start, size, type);
+ }
+ 
++static void __init e820_print_type(u32 type)
++{
++	switch (type) {
++	case E820_RAM:
++	case E820_RESERVED_KERN:
++		printk(KERN_CONT "(usable)");
++		break;
++	case E820_RESERVED:
++		printk(KERN_CONT "(reserved)");
++		break;
++	case E820_ACPI:
++		printk(KERN_CONT "(ACPI data)");
++		break;
++	case E820_NVS:
++		printk(KERN_CONT "(ACPI NVS)");
++		break;
++	case E820_UNUSABLE:
++		printk(KERN_CONT "(unusable)");
++		break;
++	default:
++		printk(KERN_CONT "type %u", type);
++		break;
++	}
++}
++
+ void __init e820_print_map(char *who)
+ {
+ 	int i;
+@@ -140,27 +165,8 @@ void __init e820_print_map(char *who)
+ 		       (unsigned long long) e820.map[i].addr,
+ 		       (unsigned long long)
+ 		       (e820.map[i].addr + e820.map[i].size));
+-		switch (e820.map[i].type) {
+-		case E820_RAM:
+-		case E820_RESERVED_KERN:
+-			printk(KERN_CONT "(usable)\n");
+-			break;
+-		case E820_RESERVED:
+-			printk(KERN_CONT "(reserved)\n");
+-			break;
+-		case E820_ACPI:
+-			printk(KERN_CONT "(ACPI data)\n");
+-			break;
+-		case E820_NVS:
+-			printk(KERN_CONT "(ACPI NVS)\n");
+-			break;
+-		case E820_UNUSABLE:
+-			printk("(unusable)\n");
+-			break;
+-		default:
+-			printk(KERN_CONT "type %u\n", e820.map[i].type);
+-			break;
+-		}
++		e820_print_type(e820.map[i].type);
++		printk(KERN_CONT "\n");
+ 	}
+ }
+ 
+@@ -437,6 +443,14 @@ static u64 __init __e820_update_range(struct e820map *e820x, u64 start,
+ 		size = ULLONG_MAX - start;
+ 
+ 	end = start + size;
++	printk(KERN_DEBUG "e820 update range: %016Lx - %016Lx ",
++		       (unsigned long long) start,
++		       (unsigned long long) end);
++	e820_print_type(old_type);
++	printk(KERN_CONT " ==> ");
++	e820_print_type(new_type);
++	printk(KERN_CONT "\n");
++
+ 	for (i = 0; i < e820x->nr_map; i++) {
+ 		struct e820entry *ei = &e820x->map[i];
+ 		u64 final_start, final_end;
