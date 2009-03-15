@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbZCOTjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760660AbZCOTjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757909AbZCOTjP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 15:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758874AbZCOTca
+	id S1760660AbZCOTjc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 15:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759487AbZCOTdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 15:32:30 -0400
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:63799 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758351AbZCOTc2 (ORCPT
+	Sun, 15 Mar 2009 15:33:35 -0400
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:51205 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759531AbZCOTde (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 15:32:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=x96xYvvlYfwNz4VD/YbYELzjL7hBSZf2mWamQXFTxzBLSjHgqnnND8W92VeuDjRFAY
-         xLjFkNATZ4WlLDBGdRVXHA9KJ+6S3E22GHIw8Zf52Bm0G456j7UCCdIQ69QuCsuRyvbf
-         P4XZKPU3uSimxsM5N/cD97wp2biHrYHmT1N7o=
-Message-ID: <49BD57C2.1060906@gmail.com>
-Date: Sun, 15 Mar 2009 20:32:18 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: "Moore, Robert" <robert.moore@intel.com>
-CC: Len Brown <lenb@kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "rjw@sisk.pl" <rjw@sisk.pl>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>
-Subject: Re: 2.6.29 acpi regression: acpi_ex_extract_from_field -- div by
- zero
-References: <49BCDCAA.8040309@gmail.com> <4911F71203A09E4D9981D27F9D83085814F8A39D@orsmsx503.amr.corp.intel.com>
-In-Reply-To: <4911F71203A09E4D9981D27F9D83085814F8A39D@orsmsx503.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 15 Mar 2009 15:33:34 -0400
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <49BD2FDF.5050504@gmail.com>
+References: <49BA8710.20808@gmail.com> <49BAE95D.7060001@gmail.com>
+	 <49BD2FDF.5050504@gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Solarflare Communications
+Date: Sun, 15 Mar 2009 19:33:28 +0000
+Message-Id: <1237145608.4209.49.camel@hashbaz.i.decadent.org.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-SA-Exim-Connect-IP: 192.168.2.253
+X-SA-Exim-Mail-From: bhutchings@solarflare.com
+Subject: Re: build bug on kfree(struct sk_buff*)
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15.3.2009 20:08, Moore, Robert wrote:
-> Can you please send or post the acpidump for the machine? Thanks.
+On Sun, 2009-03-15 at 17:42 +0100, Roel Kluin wrote:
+> I noticed that my initial attempt was invalid. The one below appears to be
+> correct, although I am not sure whether there is a better implementation.
+> 
+> this patch also fixes a kfree(skb) in net/core/dev.c, what do you think?
+[...]
 
-Sure:
-http://www.fi.muni.cz/~xslaby/sklad/adump
+There are many types that should not be allocated and freed using the
+general-purpose heap functions.  Why provide this check only for struct
+skbuff?
+
+Perhaps you should try to find a general way of detecting this, such as
+a type annotation for sparse.
+
+Ben.
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
