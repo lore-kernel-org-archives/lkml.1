@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbZCOLXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757553AbZCOL1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350AbZCOLXW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 07:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZCOLXN
+	id S1757553AbZCOL1u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 07:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZCOL1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 07:23:13 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:48787 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751369AbZCOLXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 07:23:12 -0400
-Date: Sun, 15 Mar 2009 12:23:04 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: David Brownell <david-b@pacbell.net>
-Cc: Wolfgang =?UTF-8?B?TcO8ZXM=?= <wolfgang.mues@auerswald.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Fleming" <matt@console-pimps.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] mmc_spi: adjust for delayed data token response
-Message-ID: <20090315122304.34cc0f00@mjolnir.ossman.eu>
-In-Reply-To: <200903120224.38260.david-b@pacbell.net>
-References: <200903111345.33154.david-b@pacbell.net>
-	<200903120920.06935.wolfgang.mues@auerswald.de>
-	<200903120224.38260.david-b@pacbell.net>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-26504-1237116186-0001-2"
+	Sun, 15 Mar 2009 07:27:41 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:42344 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752073AbZCOL1k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 07:27:40 -0400
+Date: Sun, 15 Mar 2009 12:27:35 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: David Miller <davem@davemloft.net>
+Cc: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org, ben@simtec.co.uk
+Subject: Re: [PATCH] drivers/net/ax88796.c: take IRQ flags from
+	platform_device
+Message-ID: <20090315112735.GC27915@buzzloop.caiaq.de>
+References: <1236955851-14763-1-git-send-email-daniel@caiaq.de> <20090313.115342.89774843.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090313.115342.89774843.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi,
 
---=_freyr.ossman.eu-26504-1237116186-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+(the reverse-DNS check is disabled now, sorry for the trouble)
 
-On Thu, 12 Mar 2009 01:24:37 -0800
-David Brownell <david-b@pacbell.net> wrote:
+On Fri, Mar 13, 2009 at 11:53:42AM -0700, David Miller wrote:
+> > This patch adds support to the ax88796 ethernet driver to take IRQ flags
+> > given by the platform_device definition.
+> > 
+> > The patch depends on the platform_get_irq_flags() function which I added
+> > in a patch posted here:
+> > 
+> > 	http://lkml.org/lkml/2009/3/13/267
+> > 
+> > Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> 
+> Few things:
+> 
+> 1) Send networking patches to netdev@vger.kernel.org, not linux-net
+>    which is for user questions.
 
->=20
-> Well, aligned to zero bytes is the same as "immediately".  ;)
->=20
-> And that description matches up with your other patch.  But
-> either way, the comment was confusing.
->=20
+Ok, wasn't aware of that, sorry.
 
-I guess we need a new one then to avoid this happening again. ;)
+> 2) That platform_get_irq_flags() does not exist in any of the networking
+>    trees so I cannot apply this.
 
-And what about that changed if-clause?
+Jep, the other one would need to me merged first. Could you ack on the
+patch[*] in case you're fine with it?
 
-Rgds
---=20
-     -- Pierre Ossman
+Thanks,
+Daniel
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+[*] http://lkml.org/lkml/2009/3/13/267
 
---=_freyr.ossman.eu-26504-1237116186-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkm85RsACgkQ7b8eESbyJLj2nQCg87jzYJMelVFTa5cHaFcqaxBS
-x38AoLIlifmDMpX359ADGpnHL/EpwUIG
-=etU4
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-26504-1237116186-0001-2--
