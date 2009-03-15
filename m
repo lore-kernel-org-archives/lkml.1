@@ -1,63 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbZCOTOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbZCOTWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642AbZCOTOw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 15:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZCOTOn
+	id S1757255AbZCOTWV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 15:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZCOTWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 15:14:43 -0400
-Received: from brigitte.telenet-ops.be ([195.130.137.66]:43258 "EHLO
-	brigitte.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751511AbZCOTOn (ORCPT
+	Sun, 15 Mar 2009 15:22:11 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:53437 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751511AbZCOTWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 15:14:43 -0400
-Date: Sun, 15 Mar 2009 20:14:37 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: [PATCH] pci: Use kzalloc() in pci_create_bus()
-Message-ID: <Pine.LNX.4.64.0903152009400.2201@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 15 Mar 2009 15:22:10 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtMEAFzsvElMQW1W/2dsb2JhbACBTs42g38G
+Date: Sun, 15 Mar 2009 15:22:05 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
+Subject: Re: [RFC][PATCH 2/2] tracing/x86: basic implementation of syscall
+	tracing for x86-64
+Message-ID: <20090315192205.GA10131@Krystal>
+References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-3-git-send-email-fweisbec@gmail.com> <20090313163207.GA3354@Krystal> <20090313163702.GA9082@elte.hu> <20090313165020.GD3354@Krystal> <20090315044405.GB11150@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090315044405.GB11150@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:19:59 up 15 days, 15:46,  2 users,  load average: 0.82, 0.59,
+	0.46
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-1. Untested ;-)
-2. Probably none of the static analyzers noticed, because of the amount of
-   code in between the kmalloc() and the memset()
+* Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > * Ingo Molnar (mingo@elte.hu) wrote:
+> > > 
+> > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > > 
+> > > > * Frederic Weisbecker (fweisbec@gmail.com) wrote:
+> > > >
+> > > > > Provide the ptrace hooks and arch specific syscall numbers 
+> > > > > to ftrace arch indepedant syscall numbers. For now it only 
+> > > > > supports 4 syscalls to provide an example.
+> > > > > 
+> > > > 
+> > > > Hi Frederic,
+> > > > 
+> > > > I already have the equivalent TIF_KERNEL_TRACE flag in my 
+> > > > LTTng tree added to every Linux architecture. You might want 
+> > > > to re-use this work rather than re-doing this. I don't mind 
+> > > > changing the flag name.
+> > > 
+> > > Yeah. Note that the TIF bits are just one part - there are other 
+> > > bits needed for HAVE_FTRACE_SYSCALLS arch support.
+> > > 
+> > > Also, i'd eventually expect the TIF bits to be converted to a 
+> > > tracehook callback, not spread it to other architectures.
+> > > 
+> > 
+> > The nice part about the TIF bit is that it permits adding this 
+> > syscall tracing feature without increasing the size of the 
+> > thread_info struct nor adding any extra tests in entry.S. Does 
+> > the tracehook callback have these features ?
+> 
+> yes. Tracehook just factors out common interfacing points - with 
+> one specific implementation for now: ptrace. For syscall tracing 
+> that means it wraps TIF_SYSCALL_TRACE in essence.
+> 
+> 	Ingo
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 55ec44a..fa0999f 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1114,7 +1114,7 @@ struct pci_bus * pci_create_bus(struct device *parent,
- 	if (!b)
- 		return NULL;
- 
--	dev = kmalloc(sizeof(*dev), GFP_KERNEL);
-+	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
- 	if (!dev){
- 		kfree(b);
- 		return NULL;
-@@ -1133,7 +1133,6 @@ struct pci_bus * pci_create_bus(struct device *parent,
- 	list_add_tail(&b->node, &pci_root_buses);
- 	up_write(&pci_bus_sem);
- 
--	memset(dev, 0, sizeof(*dev));
- 	dev->parent = parent;
- 	dev->release = pci_release_bus_bridge_dev;
- 	dev_set_name(dev, "pci%04x:%02x", pci_domain_nr(b), bus);
+What overhead and latency does tracehooks add when
 
-Gr{oetje,eeting}s,
+- they are being enabled/disabled
+- once they are enabled ?
 
-						Geert
+Do they require to stop each and every thread upon activation ?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I'll post my lttng trace flags for RFC, as it could save Frederic some
+duplicated work. Feel free to comment.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks,
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
