@@ -1,104 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759946AbZCOV3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752409AbZCOVcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759946AbZCOV3Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 17:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbZCOV3P
+	id S1752409AbZCOVcS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 17:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZCOVcB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 17:29:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42404 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753974AbZCOV3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 17:29:15 -0400
-Date: Sun, 15 Mar 2009 22:28:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-Message-ID: <20090315212854.GA23960@elte.hu>
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org>
+	Sun, 15 Mar 2009 17:32:01 -0400
+Received: from proxy.quengel.org ([213.146.113.159]:44086 "EHLO
+	gerlin1.hsp-law.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753128AbZCOVcA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 17:32:00 -0400
+X-From-Line: nobody Tue Mar 10 12:52:45 2009
+To: "Matthias Schwarzzot" <zzam@gentoo.org>, "Manu Abraham" <manu@linuxtv.org>,
+       "Mauro Carvalho Chehab" <mchehab@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org
+Subject: [Resend][resolved]Twinhan DVB-T card does not tune with 2.6.29
+References: <8763ihy4qc.fsf@gerlin1.hsp-law.de>
+From: Ralf Gerbig <rge@quengel.org>
+Date: Tue, 15 Mar 2009 22:52:43 +0100
+User-Agent: Gnus/5.101 (Gnus v5.10.10) Emacs/22.3 (gnu/linux)
+Message-ID: <87r60y322c.fsf@gerlin1.hsp-law.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49BD70EF.7010204@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Manu, Matthias, Mauro, everybody else,
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+this:
 
-> Ingo Molnar wrote:
->> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->>
->>   
->>> H. Peter Anvin wrote:
->>>     
->>>> Well, the semantics are different; the .bss section is zeroed while the
->>>> brk isn't, and the brk symbols don't necessarily point to the data
->>>> associated with those particular symbols, unlike (of course) the bss.
->>>>
->>>> It's not a big issue, obviously, it just seems cleaner to me that way.
->>>>         
->>> OK, I just added a couple of changes to:
->>>
->>>    * make the brk reservation symbols have the form ".brk.NAME" to make
->>>      them inaccessible from C, and to make them look obviously
->>>      different from normal symbols (more like sections, since it is
->>>      their size that's more important than their address)
->>>    * Put all the brk stuff in a .brk section
->>>    * Mention alignment in the comment for the slop space
->>>
->>>    J
->>>
->>> The following changes since commit 1e08816af0bc345995c3f26ce4eaba1171ffb531:
->>>  Ingo Molnar (1):
->>>        Merge branch 'linus'
->>>
->>> are available in the git repository at:
->>>
->>>  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push/x86/brk
->>>     
->>
->> the previous kit in tip:x86/setup-memory is causing crashes. One of 
->> them is:
->>
->> init_memory_mapping: 0000000000000000-00000000377fe000                  
->>              0000000000 - 00377fe000 page 4k                            
->>                         Kernel panic - not syncing: Cannot find space 
->> for the kernel page tables            Pid: 0, comm: swapper Not tainted 
->> 2.6.29-rc8-tip-02516-g83219b0-dirty #35476        Call Trace:           
->>                                                                
->> [<c0128b7b>] panic+0x4b/0x100                                           
->>             [<c074a989>] init_memory_mapping+0x429/0x430                
->>                         [<c0cde790>] setup_arch+0x430/0x890             
->>                                     [<c0148f4e>] ? 
->> lockdep_init_map+0x2e/0x150                                          
->> [<c036f392>] ? __spin_lock_init+0x32/0x60                               
->>             [<c01298d0>] ? printk+0x20/0x30                             
->>                         [<c0cdc966>] start_kernel+0xc6/0x330            
->>                                     [<c0cdc321>] 
->> i386_start_kernel+0x41/0x50               
->>
->> full crashlog below, config attached.
->>   
->
-> What branch is this?  I'm trying to build with your config 
-> with current tip/master w/ tip/x86/setup-memory merged into 
-> it, but "make ARCH=i386 oldconfig" is asking me about 
-> CONFIG_SMP, which makes me think the config file is 
-> incomplete.
+commit a00d0bb86b20a86a72f4df9d6e31dda94c02b4fa
+Author: Matthias Schwarzzot <zzam@gentoo.org>
+Date:   Tue Jan 27 16:29:44 2009 -0300
 
-just accept the defaults in 'make oldconfig' and you'll get the 
-right config.
+    V4L/DVB (10978): Report tuning algorith correctly
+    
+    Signed-off-by: Manu Abraham <manu@linuxtv.org>
+    Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 
-	Ingo
+solved the problem.
+
+> Hi Mauro, everybody else,
+
+> it is a Twinhan VisionPlus DVB, works perfectly with 2.6.28 and
+> previous.
+
+> I tried rc6, rc7 and current git. The only thing that stands out (to
+> my untrained eye) is:
+
+>IRQ 17/bt878: IRQF_DISABLED is not guaranteed on shared IRQs
+
+> messages, /proc/interrupts, modules, lspci included, config.gz
+> attached.
+
+I hope this helps,
+
+thanks Ralf
+
+debugging stuff elided
+[...]
