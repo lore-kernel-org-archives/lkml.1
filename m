@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbZCOFer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbZCOFiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755587AbZCOFer (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 01:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbZCOFej
+	id S1757293AbZCOFiy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 01:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbZCOFiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 01:34:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39659 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751838AbZCOFej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 01:34:39 -0400
-Message-ID: <49BC933F.3090507@kernel.org>
-Date: Sat, 14 Mar 2009 22:33:51 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 15 Mar 2009 01:38:46 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43784 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750807AbZCOFip (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 01:38:45 -0400
+Date: Sun, 15 Mar 2009 01:38:42 -0400
+From: Kyle McMartin <kyle@infradead.org>
+To: axboe@kernel.dk
+Cc: mike.miller@hp.com, linux-kernel@vger.kernel.org
+Subject: [PATCH trivial] cpqarray: enable bus mastering
+Message-ID: <20090315053842.GI3167@bombadil.infradead.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC5BCF.1070602@zytor.com> <49BC878D.5090402@kernel.org> <49BC8955.5070009@zytor.com>
-In-Reply-To: <49BC8955.5070009@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Yinghai Lu wrote:
->> H. Peter Anvin wrote:
->>> On this subject, what is the point of the 64 K "slop space", and if it
->>> is necessary, why not just put it as a RESERVE_BRK() somewhere (*with* a
->>>  significant comment as to its necessity) instead of putting it as a
->>> hack in the linker script?
->>>
->>
->> 32bit already have that
->>
->> +INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
->> +RESERVE_BRK(pagetables, INIT_MAP_SIZE)
->>
->> in head_32.S
->>
->> so need to update vmlinux_32.lds.S
->>
-> 
-> What about 64 bits?  Also, do we really need the "allocator slop", or
-> can we push that into the user location, which is where it really
-> belongs?  What does use this?
+From: Dave Jones <davej@redhat.com>
 
-64 bit does not has this problem.
-32 bit we already removed bootmem there, that is not needed. 
+We've been carrying this patch for the last 3 years in Fedora,
+long past time we got it upstream...
 
-ALLOCATOR_SLOP is needed...
+Call pci_set_master to enable bus-mastering if the BIOS hasn't
+done it already.
 
-+ *     (KERNEL_IMAGE_SIZE/4096) / 1024 pages (worst case, non PAE)
-+ *     (KERNEL_IMAGE_SIZE/4096) / 512 + 4 pages (worst case for PAE)
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
+Signed-off-by: Dave Jones <davej@redhat.com>
 
-
-YH
+--- a/drivers/block/cpqarray.c	2006-10-06 14:23:34.000000000 -0400
++++ b/drivers/block/cpqarray.c	2006-10-06 14:25:16.000000000 -0400
+@@ -614,6 +614,7 @@ static int cpqarray_pci_init(ctlr_info_t
+ 	int i;
+ 
+ 	c->pci_dev = pdev;
++	pci_set_master(pdev);
+ 	if (pci_enable_device(pdev)) {
+ 		printk(KERN_ERR "cpqarray: Unable to Enable PCI device\n");
+ 		return -1;
