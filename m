@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758405AbZCOTgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbZCOTfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758405AbZCOTgU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 15:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758345AbZCOTcB
+	id S1758832AbZCOTfx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 15:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758272AbZCOTcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 15:32:01 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:56502 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758378AbZCOTcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 15 Mar 2009 15:32:00 -0400
-Message-Id: <20090315191103.901222737@polymtl.ca>
+Received: from smtp.polymtl.ca ([132.207.4.11]:56498 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758340AbZCOTb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 15:31:59 -0400
+Message-Id: <20090315191105.438901940@polymtl.ca>
 References: <20090315190340.229569867@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sun, 15 Mar 2009 15:03:50 -0400
+Date: Sun, 15 Mar 2009 15:04:00 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        LKML <linux-kernel@vger.kernel.org>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 10/21] LTTng Kernel Trace Thread Flag m68k
-Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-m68k.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sun, 15 Mar 2009 19:30:28 +0000
+Subject: [RFC patch 20/21] LTTng Kernel Trace Thread Flag xtensa
+Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-xtensa.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sun, 15 Mar 2009 19:30:30 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -30,45 +30,35 @@ Add a thread flag to activate system-wide syscall tracing.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- arch/m68k/include/asm/thread_info_mm.h |    1 +
- arch/m68k/include/asm/thread_info_no.h |    4 +++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ arch/xtensa/include/asm/thread_info.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/arch/m68k/include/asm/thread_info_mm.h
+Index: linux-2.6-lttng/arch/xtensa/include/asm/thread_info.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/m68k/include/asm/thread_info_mm.h	2009-01-30 11:12:17.000000000 -0500
-+++ linux-2.6-lttng/arch/m68k/include/asm/thread_info_mm.h	2009-01-30 11:12:54.000000000 -0500
-@@ -49,6 +49,7 @@ struct thread_info {
-  */
- #define TIF_SIGPENDING		6	/* signal pending */
- #define TIF_NEED_RESCHED	7	/* rescheduling necessary */
-+#define TIF_KERNEL_TRACE	13	/* kernel trace active */
- #define TIF_DELAYED_TRACE	14	/* single step a syscall */
- #define TIF_SYSCALL_TRACE	15	/* syscall trace active */
- #define TIF_MEMDIE		16
-Index: linux-2.6-lttng/arch/m68k/include/asm/thread_info_no.h
-===================================================================
---- linux-2.6-lttng.orig/arch/m68k/include/asm/thread_info_no.h	2009-01-30 11:13:07.000000000 -0500
-+++ linux-2.6-lttng/arch/m68k/include/asm/thread_info_no.h	2009-01-30 11:15:16.000000000 -0500
-@@ -84,6 +84,7 @@ static inline struct thread_info *curren
- #define TIF_POLLING_NRFLAG	3	/* true if poll_idle() is polling
- 					   TIF_NEED_RESCHED */
- #define TIF_MEMDIE		4
-+#define TIF_KERNEL_TRACE	5	/* kernel trace active */
- #define TIF_FREEZE		16	/* is freezing for suspend */
+--- linux-2.6-lttng.orig/arch/xtensa/include/asm/thread_info.h	2009-01-09 18:15:54.000000000 -0500
++++ linux-2.6-lttng/arch/xtensa/include/asm/thread_info.h	2009-01-09 18:17:49.000000000 -0500
+@@ -133,6 +133,7 @@ static inline struct thread_info *curren
+ #define TIF_IRET		4	/* return with iret */
+ #define TIF_MEMDIE		5
+ #define TIF_RESTORE_SIGMASK	6	/* restore signal mask in do_signal() */
++#define TIF_KERNEL_TRACE	7	/* kernel trace active */
+ #define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+ #define TIF_FREEZE		17	/* is freezing for suspend */
  
- /* as above, but as bit values */
-@@ -92,8 +93,9 @@ static inline struct thread_info *curren
+@@ -141,11 +142,12 @@ static inline struct thread_info *curren
  #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
+ #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
+ #define _TIF_IRET		(1<<TIF_IRET)
 +#define _TIF_KERNEL_TRACE	(1<<TIF_KERNEL_TRACE)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
  
 -#define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
-+#define _TIF_WORK_MASK		0x0000FFDE	/* work to do on interrupt/exception return */
++#define _TIF_WORK_MASK		0x0000FF7E	/* work to do on interrupt/exception return */
+ #define _TIF_ALLWORK_MASK	0x0000FFFF	/* work to do on any return to u-space */
  
- #endif /* __KERNEL__ */
- 
+ /*
 
 -- 
 Mathieu Desnoyers
