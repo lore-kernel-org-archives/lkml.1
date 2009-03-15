@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZCONyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753473AbZCOOXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbZCONyG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 09:54:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZCONxy
+	id S1753473AbZCOOXk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 10:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZCOOXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 09:53:54 -0400
-Received: from support.balabit.hu ([195.70.41.86]:46571 "EHLO lists.balabit.hu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751553AbZCONxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 09:53:53 -0400
-Subject: Re: [patch] Re: scheduler oddity [bug?]
-From: Balazs Scheidler <bazsi@balabit.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Willy Tarreau <w@1wt.eu>
-In-Reply-To: <1236619694.5998.9.camel@marge.simson.net>
-References: <1236448069.16726.21.camel@bzorp.balabit>
-	 <1236505323.6281.57.camel@marge.simson.net>
-	 <1236506309.6972.8.camel@marge.simson.net> <20090308153956.GB19658@elte.hu>
-	 <1236529200.7110.16.camel@marge.simson.net>
-	 <20090308175255.GA22802@elte.hu>
-	 <1236585731.6118.24.camel@marge.simson.net>
-	 <20090309080714.GB24904@elte.hu>  <1236596664.8389.331.camel@laptop>
-	 <1236604563.6027.8.camel@marge.simson.net>
-	 <1236605870.6515.5.camel@marge.simson.net>
-	 <1236606389.8389.518.camel@laptop>
-	 <1236607083.5980.8.camel@marge.simson.net>
-	 <1236607890.6168.7.camel@marge.simson.net>
-	 <1236609711.8389.583.camel@laptop>
-	 <1236612649.6019.38.camel@marge.simson.net>
-	 <1236615158.8389.705.camel@laptop>
-	 <1236619694.5998.9.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Sun, 15 Mar 2009 14:53:47 +0100
-Message-Id: <1237125227.6919.1.camel@bzorp.balabit>
-Mime-Version: 1.0
+	Sun, 15 Mar 2009 10:23:30 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:61221 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751204AbZCOOXa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 10:23:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=l3tvD2ftSTa3bRql+gfXTZcEb6XSlDY7Z7nAlgjlQA3U879KW4Xr4s6CQF+f0aN5bD
+         TEGM9D/5T/dpjD1mWWgXZrDTa3WTtecV3EfM0FxqiA/JYeS9g4cJrBA3dK3YDr6Uedl7
+         YYT0sM6+5s9NaOLNapfbTkYDulXwwZ70dtYp0=
+MIME-Version: 1.0
+Date: Sun, 15 Mar 2009 11:16:24 -0300
+Message-ID: <ce0170d90903150716t14033a9dr3b3bf028933dde7c@mail.gmail.com>
+Subject: x86: asm doubt
+From: Sergio Luis <eeeesti@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@suse.cz>,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-09 at 18:28 +0100, Mike Galbraith wrote:
-> On Mon, 2009-03-09 at 17:12 +0100, Peter Zijlstra wrote:
-> > On Mon, 2009-03-09 at 16:30 +0100, Mike Galbraith wrote:
-> > > +static void put_prev_task(struct rq *rq, struct task_struct *prev)
-> > > +{
-> > > +       if (prev->state == TASK_RUNNING) {
-> > > +               u64 runtime = prev->se.sum_exec_runtime;
-> > > +
-> > > +               runtime -= prev->se.prev_sum_exec_runtime;
-> > > +               runtime = min_t(u64, runtime, 2*sysctl_sched_migration_cost);
-> > > +
-> > > +               /*
-> > > +                * In order to avoid avg_overlap growing stale when we are
-> > > +                * indeed overlapping and hence not getting put to sleep, grow
-> > > +                * the avg_overlap on preemption.
-> > > +                */
-> > > +               update_avg(&prev->se.avg_overlap, runtime);
-> > > +       }
-> > > +       prev->sched_class->put_prev_task(rq, prev);
-> > > +}
-> > 
-> > Right, so we both found it worked quite well, I'm still slightly puzzled
-> > but it.
-> > 
-> > If something gets preempted a lot and will therefore have short runtimes
-> > it will be seen as sync even though it might not at all be.
-> 
-> Yes, and the netperf on 2 CPUs with shared cache numbers show that's
-> happening.  It just so happens that in the non-shared case, netperf's
-> cache pain far outweighs the benefit of having more CPU available :-/
+Hi there,
 
-Any news on this? I haven't seen a patch that was actually integrated,
-or I just missed something?
+taking a look at arch/x86/power/cpu_(32|64).c, I saw the 32.c one
+using the following macros
 
--- 
-Bazsi
+#define savesegment(seg, value)                         \
+        asm("mov %%" #seg ",%0":"=r" (value) : : "memory")
 
 
+#define loadsegment(seg, value)                 \
+        asm volatile("\n"                       \
+                     "1:\t"                     \
+                     "movl %k0,%%" #seg "\n"    \
+                     "2:\n"                     \
+                     ".section .fixup,\"ax\"\n" \
+                     "3:\t"                     \
+                     "movl %k1, %%" #seg "\n\t" \
+                     "jmp 2b\n"                 \
+                     ".previous\n"              \
+                     _ASM_EXTABLE(1b,3b)        \
+                     : :"r" (value), "r" (0) : "memory")
+
+
+saving and loading segment registers as in
+
+savesegment(es, ctxt->es);
+loadsegment(es, ctxt->es);
+
+the code in cpu_64.c doesn't make use of such macros, doing the following:
+
+saving:
+ asm volatile ("movw %%es, %0" : "=m" (ctxt->es));
+
+loading:
+asm volatile ("movw %0, %%es" :: "r" (ctxt->es));
+
+So, my question is... what's the actual difference between both
+versions? Aren't the macros suitable for the 64 version as well?
+
+Thanks,
+Sergio.
