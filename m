@@ -1,173 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbZCOUDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbZCOUJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758540AbZCOUDu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 16:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754963AbZCOUDl
+	id S1758278AbZCOUJE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 16:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZCOUIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 16:03:41 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:33730 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751694AbZCOUDl (ORCPT
+	Sun, 15 Mar 2009 16:08:52 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:55464 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752452AbZCOUIw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 16:03:41 -0400
+	Sun, 15 Mar 2009 16:08:52 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Al8FAPP5vElMQW1W/2dsb2JhbACBTs4yg38GYQ
-Date: Sun, 15 Mar 2009 16:03:37 -0400
+X-IronPort-Anti-Spam-Result: As0FAC73vElMQW1W/2dsb2JhbACBTpRzuUWDfwZh
+Date: Sun, 15 Mar 2009 16:08:46 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
        Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC patch 21/21] LTTng Kernel Trace Thread Flag API
-Message-ID: <20090315200337.GA11749@Krystal>
-References: <20090315190340.229569867@polymtl.ca> <20090315191105.594651713@polymtl.ca>
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC patch 19/21] LTTng Linux Kernel Trace Thread Flag x86
+Message-ID: <20090315200846.GB11749@Krystal>
+References: <20090315190340.229569867@polymtl.ca> <20090315191105.269978012@polymtl.ca> <20090315195649.GA5212@nowhere>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090315191105.594651713@polymtl.ca>
+In-Reply-To: <20090315195649.GA5212@nowhere>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:02:48 up 15 days, 16:29,  2 users,  load average: 0.35, 0.43,
-	0.32
+X-Uptime: 16:07:13 up 15 days, 16:33,  2 users,  load average: 0.42, 0.36,
+	0.31
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> Add an API to set/clear the kernel wide tracing thread flags. Implemented in
-> kernel/sched.c. Updates thread flags *asynchronously* while holding the tasklist
-> lock.
+* Frederic Weisbecker (fweisbec@gmail.com) wrote:
+> On Sun, Mar 15, 2009 at 03:03:59PM -0400, Mathieu Desnoyers wrote:
+> > Add a thread flag to activate system-wide syscall tracing.
+> > 
+> > Make x86_64 support TIF_SYSCALL_TRACE async flag set in entry.S
 > 
-> Upon fork, the flag must be re-copied while the tasklist lock is held.
+> 
+> x86-32 :-)
+> 
+>  
+> > When the flag is inactive upon syscall entry and concurrently activated before
+> > exit, we seem to reach a state where the top of stack is incorrect upon return
+> > to user space.
+> > 
+> > Fix this by fixing the top of stack and jumping to int_ret_from_sys_call if we
+> > detect that thread flags has been modified.
+> 
+> 
+> I don't see where you do that. May be you forgot some parts that match your changelog?
 > 
 
-This comment should be clearer :
+Oh, I see. I moved the *.S modifications to the LTTng instrumentation
+patches. Maybe those belong more to the kernel trace thread flags
+patches. I'll move them and repost.
 
-Add an API to set/clear the kernel wide tracing thread flags.
-Implemented in kernel/sched.c. Updates thread flags *asynchronously*
-while holding the tasklist read lock.
-
-Upon fork, the flag must be re-copied while the tasklist write lock is
-held.
-
-We are holding the read lock only to make sure we don't delay thread
-creation for too long while iterating on all threads.
-
+Thanks,
 
 Mathieu
 
-
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> ---
->  include/linux/sched.h |    3 ++
->  kernel/fork.c         |    9 ++++++++
->  kernel/sched.c        |   55 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 67 insertions(+)
+> > 
+> > We make sure that the thread flag read is coherent between our new test and the ALLWORK_MASK test by first saving it in a register used for both comparisons.
 > 
-> Index: linux-2.6-lttng/include/linux/sched.h
-> ===================================================================
-> --- linux-2.6-lttng.orig/include/linux/sched.h	2009-01-09 18:15:54.000000000 -0500
-> +++ linux-2.6-lttng/include/linux/sched.h	2009-01-09 18:17:50.000000000 -0500
-> @@ -2300,6 +2300,9 @@ static inline void mm_init_owner(struct 
->  
->  #define TASK_STATE_TO_CHAR_STR "RSDTtZX"
->  
-> +extern void clear_kernel_trace_flag_all_tasks(void);
-> +extern void set_kernel_trace_flag_all_tasks(void);
-> +
->  #endif /* __KERNEL__ */
->  
->  #endif
-> Index: linux-2.6-lttng/kernel/fork.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/kernel/fork.c	2009-01-09 18:17:38.000000000 -0500
-> +++ linux-2.6-lttng/kernel/fork.c	2009-01-09 18:17:50.000000000 -0500
-> @@ -1218,6 +1218,15 @@ static struct task_struct *copy_process(
->  			!cpu_online(task_cpu(p))))
->  		set_task_cpu(p, smp_processor_id());
->  
-> +	/*
-> +	 * The state of the parent's TIF_KTRACE flag may have changed
-> +	 * since it was copied in dup_task_struct() so we re-copy it here.
-> +	 */
-> +	if (test_thread_flag(TIF_KERNEL_TRACE))
-> +		set_tsk_thread_flag(p, TIF_KERNEL_TRACE);
-> +	else
-> +		clear_tsk_thread_flag(p, TIF_KERNEL_TRACE);
-> +
->  	/* CLONE_PARENT re-uses the old parent */
->  	if (clone_flags & (CLONE_PARENT|CLONE_THREAD))
->  		p->real_parent = current->real_parent;
-> Index: linux-2.6-lttng/kernel/sched.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/kernel/sched.c	2009-01-09 18:17:38.000000000 -0500
-> +++ linux-2.6-lttng/kernel/sched.c	2009-01-09 18:17:50.000000000 -0500
-> @@ -9395,3 +9395,58 @@ struct cgroup_subsys cpuacct_subsys = {
->  	.subsys_id = cpuacct_subsys_id,
->  };
->  #endif	/* CONFIG_CGROUP_CPUACCT */
-> +
-> +static DEFINE_MUTEX(kernel_trace_mutex);
-> +static int kernel_trace_refcount;
-> +
-> +/**
-> + * clear_kernel_trace_flag_all_tasks - clears all TIF_KERNEL_TRACE thread flags.
-> + *
-> + * This function iterates on all threads in the system to clear their
-> + * TIF_KERNEL_TRACE flag. Setting the TIF_KERNEL_TRACE flag with the
-> + * tasklist_lock held in copy_process() makes sure that once we finish clearing
-> + * the thread flags, all threads have their flags cleared.
-> + */
-> +void clear_kernel_trace_flag_all_tasks(void)
-> +{
-> +	struct task_struct *p;
-> +	struct task_struct *t;
-> +
-> +	mutex_lock(&kernel_trace_mutex);
-> +	if (--kernel_trace_refcount)
-> +		goto end;
-> +	read_lock(&tasklist_lock);
-> +	do_each_thread(p, t) {
-> +		clear_tsk_thread_flag(t, TIF_KERNEL_TRACE);
-> +	} while_each_thread(p, t);
-> +	read_unlock(&tasklist_lock);
-> +end:
-> +	mutex_unlock(&kernel_trace_mutex);
-> +}
-> +EXPORT_SYMBOL_GPL(clear_kernel_trace_flag_all_tasks);
-> +
-> +/**
-> + * set_kernel_trace_flag_all_tasks - sets all TIF_KERNEL_TRACE thread flags.
-> + *
-> + * This function iterates on all threads in the system to set their
-> + * TIF_KERNEL_TRACE flag. Setting the TIF_KERNEL_TRACE flag with the
-> + * tasklist_lock held in copy_process() makes sure that once we finish setting
-> + * the thread flags, all threads have their flags set.
-> + */
-> +void set_kernel_trace_flag_all_tasks(void)
-> +{
-> +	struct task_struct *p;
-> +	struct task_struct *t;
-> +
-> +	mutex_lock(&kernel_trace_mutex);
-> +	if (kernel_trace_refcount++)
-> +		goto end;
-> +	read_lock(&tasklist_lock);
-> +	do_each_thread(p, t) {
-> +		set_tsk_thread_flag(t, TIF_KERNEL_TRACE);
-> +	} while_each_thread(p, t);
-> +	read_unlock(&tasklist_lock);
-> +end:
-> +	mutex_unlock(&kernel_trace_mutex);
-> +}
-> +EXPORT_SYMBOL_GPL(set_kernel_trace_flag_all_tasks);
+> Ditto.
 > 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> Thanks,
+> Frederic.
+> 
+> > 
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > CC: Andi Kleen <ak@muc.de>
+> > CC: Thomas Gleixner <tglx@linutronix.de>
+> > CC: Ingo Molnar <mingo@redhat.com>
+> > CC: H. Peter Anvin <hpa@zytor.com>
+> > ---
+> >  arch/x86/include/asm/thread_info.h |    9 ++++++---
+> >  arch/x86/kernel/entry_32.S         |    3 ++-
+> >  2 files changed, 8 insertions(+), 4 deletions(-)
+> > 
+> > Index: linux-2.6-lttng/arch/x86/include/asm/thread_info.h
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/arch/x86/include/asm/thread_info.h	2009-01-14 22:10:38.000000000 -0500
+> > +++ linux-2.6-lttng/arch/x86/include/asm/thread_info.h	2009-01-14 22:25:08.000000000 -0500
+> > @@ -79,6 +79,7 @@ struct thread_info {
+> >  #define TIF_SYSCALL_EMU		6	/* syscall emulation active */
+> >  #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
+> >  #define TIF_SECCOMP		8	/* secure computing */
+> > +#define TIF_KERNEL_TRACE	9	/* kernel trace active */
+> >  #define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
+> >  #define TIF_NOTSC		16	/* TSC is not accessible in userland */
+> >  #define TIF_IA32		17	/* 32bit process */
+> > @@ -102,6 +103,7 @@ struct thread_info {
+> >  #define _TIF_SYSCALL_EMU	(1 << TIF_SYSCALL_EMU)
+> >  #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
+> >  #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
+> > +#define _TIF_KERNEL_TRACE	(1 << TIF_KERNEL_TRACE)
+> >  #define _TIF_MCE_NOTIFY		(1 << TIF_MCE_NOTIFY)
+> >  #define _TIF_NOTSC		(1 << TIF_NOTSC)
+> >  #define _TIF_IA32		(1 << TIF_IA32)
+> > @@ -117,17 +119,18 @@ struct thread_info {
+> >  
+> >  /* work to do in syscall_trace_enter() */
+> >  #define _TIF_WORK_SYSCALL_ENTRY	\
+> > -	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_EMU | \
+> > +	(_TIF_SYSCALL_TRACE | _TIF_KERNEL_TRACE | _TIF_SYSCALL_EMU | \
+> >  	 _TIF_SYSCALL_AUDIT | _TIF_SECCOMP | _TIF_SINGLESTEP)
+> >  
+> >  /* work to do in syscall_trace_leave() */
+> >  #define _TIF_WORK_SYSCALL_EXIT	\
+> > -	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | _TIF_SINGLESTEP)
+> > +	(_TIF_SYSCALL_TRACE | _TIF_KERNEL_TRACE | _TIF_SYSCALL_AUDIT | \
+> > +	 _TIF_SINGLESTEP)
+> >  
+> >  /* work to do on interrupt/exception return */
+> >  #define _TIF_WORK_MASK							\
+> >  	(0x0000FFFF &							\
+> > -	 ~(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|			\
+> > +	 ~(_TIF_SYSCALL_TRACE|_TIF_KERNEL_TRACE|_TIF_SYSCALL_AUDIT|	\
+> >  	   _TIF_SINGLESTEP|_TIF_SECCOMP|_TIF_SYSCALL_EMU))
+> >  
+> >  /* work to do on any return to user space */
+> > Index: linux-2.6-lttng/arch/x86/kernel/entry_32.S
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/arch/x86/kernel/entry_32.S	2009-01-14 22:22:40.000000000 -0500
+> > +++ linux-2.6-lttng/arch/x86/kernel/entry_32.S	2009-01-14 22:25:44.000000000 -0500
+> > @@ -571,7 +571,8 @@ END(syscall_trace_entry)
+> >  	# perform syscall exit tracing
+> >  	ALIGN
+> >  syscall_exit_work:
+> > -	testb $_TIF_WORK_SYSCALL_EXIT, %cl
+> > +	/* Note, _TIF_KERNEL_TRACE is bit number 9, and so it needs testw and not testb */
+> > +	testw $_TIF_WORK_SYSCALL_EXIT, %cx
+> >  	jz work_pending
+> >  	TRACE_IRQS_ON
+> >  	ENABLE_INTERRUPTS(CLBR_ANY)	# could let syscall_trace_leave() call
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
 
 -- 
 Mathieu Desnoyers
