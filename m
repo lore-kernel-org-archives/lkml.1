@@ -1,79 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbZCOTC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757143AbZCOTFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756886AbZCOTC7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 15:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbZCOTCr
+	id S1757143AbZCOTFn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 15:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbZCOTFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 15:02:47 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:40203 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755027AbZCOTCq (ORCPT
+	Sun, 15 Mar 2009 15:05:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42375 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752906AbZCOTFd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 15:02:46 -0400
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Sun, 15 Mar 2009 15:05:33 -0400
+Date: Sun, 15 Mar 2009 12:02:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jesper Krogh <jesper@krogh.cc>
+cc: john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-	 <b6a2187b0903141958u9dae0fdk1f44b387108b99e4@mail.gmail.com>
-	 <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com>
-	 (sfid-20090315_040645_344726_0E746861) <1237140665.24621.2.camel@johannes.local>
-	 <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Ty5qBmsrFy6A05TEzAuf"
-Date: Sun, 15 Mar 2009 20:01:22 +0100
-Message-Id: <1237143683.24621.7.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+       Len Brown <len.brown@intel.com>
+Subject: Re: Linux 2.6.29-rc6
+In-Reply-To: <49BD4B2D.7000501@krogh.cc>
+Message-ID: <alpine.LFD.2.00.0903151146550.3131@localhost.localdomain>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>  <49A70B24.6090706@krogh.cc> 
+ <1235685269.6811.11.camel@localhost.localdomain>  <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>  <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>  <1235766936.7402.5.camel@localhost.localdomain> <49AD90E2.7050209@krogh.cc>
+  <1236118969.6068.87.camel@localhost> <49AE9EA4.2080500@krogh.cc>  <49AECA3B.5030503@krogh.cc>  <1236193075.3793.63.camel@jstultz-laptop>  <1236220759.6863.7.camel@localhost.localdomain> <1236221530.6863.9.camel@localhost.localdomain> <49B57F3D.5030008@krogh.cc>
+ <alpine.LFD.2.00.0903141814180.7421@localhost.localdomain> <49BD225C.4070305@krogh.cc> <alpine.LFD.2.00.0903151050070.3131@localhost.localdomain> <49BD4B2D.7000501@krogh.cc>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-Ty5qBmsrFy6A05TEzAuf
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Sun, 2009-03-15 at 11:44 -0700, Linus Torvalds wrote:
+On Sun, 15 Mar 2009, Jesper Krogh wrote:
+> > > 
+> > > [    0.000000] Fast TSC delta=34227730, error=6223+6219=12442
+> > > [    0.000000] Fast TSC calibration using PIT
+> > > [    0.000000] Detected 2312.045 MHz processor.
+> 
+> My conclusion was that I would get a time reset after some time since the
+> offset just increased as time went by (being reasonably small at the
+> beginning).
+> 
+> I had it up for around 30 minutes... Should I have tested longer?
 
-> Johannes - "not believable" is simply not an argument. If Jeff can show a=
-=20
-> difference, then your disbelief is totally irrelevant, and clearly shows=20
-> that you are basing your beliefs on incorrect assumptions (like some=20
-> specific version of firmware that isn't the whole story).
+It would be good to test longer. Your previous emails showed:
 
-Linus, Jeff is totally unbelievable here -- I just realised that the
-commit he quotes doesn't even change the driver he's working with.
+	2.6.26: time.c: Detected 2311.847 MHz processor.
+	2.6.29: Detected 2310.029 MHz processor.
 
-johannes
+where that first one was a successful boot, and the second one was a 
+failing one. So let's assume that 2311.847 is the "correct" frequency.
 
---=-Ty5qBmsrFy6A05TEzAuf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+The difference between the correct one and your failing one is ~790 ppm, 
+which is above the 500ppm ntpd threshhold. And as we saw earlier, those 
+differences were pretty consistent, ie in your list of four successive 
+boots, the old code consistently gave a frequency error that was roughly 
+.7 permille off (ie exactly that 700 ppm).
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+HOWEVER! With that patch you just tried, you got 
 
-iQIcBAABAgAGBQJJvVCAAAoJEKVg1VMiehFYC/oP/18iaAIm9hloJMk3hiw9txt8
-Rrf7ltM/C71hX880Vz9gCFZeF2I0h09Wuv91mVPDPSXCpBS/9lwAB1JWoLYpBMnl
-NovC3y1SI7eRNrfjjLpPzOeSh8GWN2TMr63+pcdCzkkGmw4Bg7Q+EPeT0FV/azif
-9yxu6MsC88xaVOsH/AXHmL+KLtOUs3NIcqBxn9NLR38YvNhPou7ihbVuZ5Rbulo8
-sR5rcWPK9uYAZharvfPWkIgPsPOejpFOXvB+aAGBxHPro4/4bOvKb24/Ga/zoEUv
-zSwERpiGohVTmOiHVYw+gxN7Vk8WZl2kc4Pi0u6jM2CG8rZYBUU/L/ZUP09lpBus
-8ffLA3VRaJA4dKQPvjIoHJGq5HjDVv+fmRMcL0HH2IJk5BbUYX3yLBdPfOd8LqzG
-1nAOX1vFQTRB6TZrd83LbZOSwRtIQpqdF8dPoCVlKIhl1gDA4Q8vdgwPkShxGM28
-5K1yz4rUR/U9CayX1NRfKGaeMzr3DQQZHg4Wll1Oy+Cs+QxRrHEq005n2NKUkqff
-SXSIQypK6PkgeLCg4G3UzojuDweoXYIRR1EDftPkL5lknaNbAdxT1DY931D4Wh3/
-nHiSEK+VasnhMPPpNXYCX03i3VFwcxR1KB3RHF5iKYBYXBdrd44MMMdyiOV32Jvx
-vu6u1odGf2SLY3W7UknF
-=esYI
------END PGP SIGNATURE-----
+	Detected 2312.045 MHz processor.
 
---=-Ty5qBmsrFy6A05TEzAuf--
+and the difference between _that_ and the assumed-correct-one is actually 
+just 85 ppm. Which should be perfectly fine.
 
+[ With the "test against PM timer, you had:
+
+	[    0.000000] ref_freq: 2311825  pit_freq: 2310386
+	[    0.000000] ref_freq: 2311803  pit_freq: 2310190
+	[    0.000000] ref_freq: 2311824  pit_freq: 2310080
+	[    0.000000] ref_freq: 2311831  pit_freq: 2310130
+
+  on four boots, so averaging them gives 2311.82 Mhz, and the 2312.045MHz 
+  you got with the improved fast-PIT code is still _way_ below 500ppm from 
+  that - it's ~95 ppm away.
+
+  IOW, the new frequency realy looks likely to work. ]
+
+Quite frankly, we don't know how exact the PM-timer is either - we just 
+know that the detection is "stable" (but so was the old PIT timer 
+detection: it was stably at 700ppm lower from the PM timer. So there is 
+nothing that says that 2311.82Mhz is the "correct" frequency, but we 
+obviously know from your ntpd saga that it is much closer to correct than 
+the old 2310.029 was.
+
+End result of all this: I'd really like you to try the modified PIT 
+frequency code for longer. Also, remember that getting one (or a couple) 
+"time reset" messages from ntpd while it's trying to sync up is not a 
+problem per se - it can validly take a while to synchronize. The problem 
+is literally only if it doesn't synchonize over time at all.
+
+			Linus
