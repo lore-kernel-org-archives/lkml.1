@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbZCOS5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbZCOS5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbZCOS5N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 14:57:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZCOS45
+	id S1757255AbZCOS5q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 14:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbZCOS5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 14:56:57 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59611 "EHLO mx3.mail.elte.hu"
+	Sun, 15 Mar 2009 14:57:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59700 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752759AbZCOS44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 14:56:56 -0400
-Date: Sun, 15 Mar 2009 19:56:18 +0100
+	id S1750765AbZCOS5f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 14:57:35 -0400
+Date: Sun, 15 Mar 2009 19:57:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-tip-commits@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de
-Subject: Re: SLOB lockup (was: Re: [tip:core/locking] lockdep: annotate
-	reclaim context (__GFP_NOFS), fix SLOB)
-Message-ID: <20090315185618.GC19737@elte.hu>
-References: <20090128135457.350751756@chello.nl> <tip-bf722c9d324864b4256edaa330751b77f2a19861@git.kernel.org> <20090315064818.GA1193@elte.hu> <200903152006.21160.nickpiggin@yahoo.com.au>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Balazs Scheidler <bazsi@balabit.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Willy Tarreau <w@1wt.eu>
+Subject: Re: [patch] Re: scheduler oddity [bug?]
+Message-ID: <20090315185719.GD19737@elte.hu>
+References: <1236605870.6515.5.camel@marge.simson.net> <1236606389.8389.518.camel@laptop> <1236607083.5980.8.camel@marge.simson.net> <1236607890.6168.7.camel@marge.simson.net> <1236609711.8389.583.camel@laptop> <1236612649.6019.38.camel@marge.simson.net> <1236615158.8389.705.camel@laptop> <1236619694.5998.9.camel@marge.simson.net> <1237125227.6919.1.camel@bzorp.balabit> <1237137414.5980.2.camel@marge.simson.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200903152006.21160.nickpiggin@yahoo.com.au>
+In-Reply-To: <1237137414.5980.2.camel@marge.simson.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,12 +36,49 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+* Mike Galbraith <efault@gmx.de> wrote:
 
-> +		spin_lock_irqrestore(&slob_lock, flags);
+> On Sun, 2009-03-15 at 14:53 +0100, Balazs Scheidler wrote:
+> > On Mon, 2009-03-09 at 18:28 +0100, Mike Galbraith wrote:
+> > > On Mon, 2009-03-09 at 17:12 +0100, Peter Zijlstra wrote:
+> > > > On Mon, 2009-03-09 at 16:30 +0100, Mike Galbraith wrote:
+> > > > > +static void put_prev_task(struct rq *rq, struct task_struct *prev)
+> > > > > +{
+> > > > > +       if (prev->state == TASK_RUNNING) {
+> > > > > +               u64 runtime = prev->se.sum_exec_runtime;
+> > > > > +
+> > > > > +               runtime -= prev->se.prev_sum_exec_runtime;
+> > > > > +               runtime = min_t(u64, runtime, 2*sysctl_sched_migration_cost);
+> > > > > +
+> > > > > +               /*
+> > > > > +                * In order to avoid avg_overlap growing stale when we are
+> > > > > +                * indeed overlapping and hence not getting put to sleep, grow
+> > > > > +                * the avg_overlap on preemption.
+> > > > > +                */
+> > > > > +               update_avg(&prev->se.avg_overlap, runtime);
+> > > > > +       }
+> > > > > +       prev->sched_class->put_prev_task(rq, prev);
+> > > > > +}
+> > > > 
+> > > > Right, so we both found it worked quite well, I'm still slightly puzzled
+> > > > but it.
+> > > > 
+> > > > If something gets preempted a lot and will therefore have short runtimes
+> > > > it will be seen as sync even though it might not at all be.
+> > > 
+> > > Yes, and the netperf on 2 CPUs with shared cache numbers show that's
+> > > happening.  It just so happens that in the non-shared case, netperf's
+> > > cache pain far outweighs the benefit of having more CPU available :-/
+> > 
+> > Any news on this? I haven't seen a patch that was actually integrated,
+> > or I just missed something?
+> 
+> It's in tip, as df1c99d416500da8d26a4d78777467c53ee7689e.
 
-that should be:
+testable via:
 
-		spin_unlock_irqrestore(&slob_lock, flags);
+  http://people.redhat.com/mingo/tip.git/README
+
+Balazs, could you please try it?
 
 	Ingo
