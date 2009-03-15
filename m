@@ -1,139 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZCOUdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbZCOUgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756473AbZCOUdF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 16:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760361AbZCOUcu
+	id S1758706AbZCOUgM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 16:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZCOUf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 16:32:50 -0400
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:49069 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754719AbZCOUcs (ORCPT
+	Sun, 15 Mar 2009 16:35:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60824 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751375AbZCOUfz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 16:32:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=cWw/TRruk0GFX4TxTlE1LxItmmj//1bDdkWFy6BizSzrg3rMFfYF5lAZ+DIj3x7wZw
-         oLRahnxAE2AUPVeb4snfqfxuc4hcGcOaq7oyJsFfZPfnBs4XXw+Jf5Qh4uxTQ+J/SG7D
-         yDAlHOoY0JuyA5KgmE5KT0WNpmInMKOlX56Rk=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 11/14] block: implement and use [__]blk_end_request_all()
-Date: Sun, 15 Mar 2009 21:34:46 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7-next-20090311; KDE/4.2.0; i686; ; )
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       Russell King <rmk@arm.linux.org.uk>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Mike Miller <mike.miller@hp.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Jeff Garzik <jgarzik@pobox.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Alex Dubov <oakad@yahoo.com>
-References: <1236920578-2179-1-git-send-email-tj@kernel.org> <200903151840.21087.bzolnier@gmail.com> <20090315183950.GF27476@kernel.dk>
-In-Reply-To: <20090315183950.GF27476@kernel.dk>
+	Sun, 15 Mar 2009 16:35:55 -0400
+Date: Sun, 15 Mar 2009 13:32:42 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jesper Krogh <jesper@krogh.cc>
+cc: john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: Linux 2.6.29-rc6
+In-Reply-To: <49BD4B2D.7000501@krogh.cc>
+Message-ID: <alpine.LFD.2.00.0903151323260.3131@localhost.localdomain>
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>  <49A70B24.6090706@krogh.cc> 
+ <1235685269.6811.11.camel@localhost.localdomain>  <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>  <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>  <1235766936.7402.5.camel@localhost.localdomain> <49AD90E2.7050209@krogh.cc>
+  <1236118969.6068.87.camel@localhost> <49AE9EA4.2080500@krogh.cc>  <49AECA3B.5030503@krogh.cc>  <1236193075.3793.63.camel@jstultz-laptop>  <1236220759.6863.7.camel@localhost.localdomain> <1236221530.6863.9.camel@localhost.localdomain> <49B57F3D.5030008@krogh.cc>
+ <alpine.LFD.2.00.0903141814180.7421@localhost.localdomain> <49BD225C.4070305@krogh.cc> <alpine.LFD.2.00.0903151050070.3131@localhost.localdomain> <49BD4B2D.7000501@krogh.cc>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200903152134.46385.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 March 2009, Jens Axboe wrote:
-> On Sun, Mar 15 2009, Bartlomiej Zolnierkiewicz wrote:
-> > On Sunday 15 March 2009, Jens Axboe wrote:
-> > > On Sat, Mar 14 2009, Bartlomiej Zolnierkiewicz wrote:
-> > > > On Saturday 14 March 2009, James Bottomley wrote:
-> > > > > On Sat, 2009-03-14 at 20:23 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > > > > > > More generic comment follows -> this patch is guaranteed to clash
-> > > > > > > > with at least linux-next/pata-2.6 tree so why not introduce block
-> > > > > > > > layer helpers now, then push all driver updates through respective
-> > > > > > > > driver maintainers and deal with end_request() later (after all
-> > > > > > > > driver updates are in-tree)?
-> > > > > > > 
-> > > > > > > Most of the lld changes being trivial, I was hoping to push things
-> > > > > > > through blk tree, but IDE seems to be the most intertwined with the
-> > > > > > > block layer and it's likely to see quite some amount of not-so-trivial
-> > > > > > > changes to subtle paths.  How about pushing !IDE parts into blk tree
-> > > > > > > and pulling blk into pata-2.6, make IDE related changes there and
-> > > > > > > pulling back into blk tree so that further progresses can be made?
-> > > > > > 
-> > > > > > There is a "tiny" problem with this -- pata-2.6 is a quilt tree based on
-> > > > > > Linus' tree and it is not going to change for now (for various reasons).
-> > > > > 
-> > > > > Actually this one's easily solvable if you base the quilt on the block
-> > > > > tree (just specify it to linux-next in the BASE directive and it will do
-> > > > > the right thing).
-> > > > > 
-> > > > > What I'd do is actually run two quilts: one based on vanilla and one
-> > > > > based on block and only add block dependent patches to the latter.  This
-> > > > > is like running a postmerge git tree (you can only send a pull request
-> > > > > for it after block goes in).
-> > > > 
-> > > > Thanks for the hint but it sounds like a major pain once you hit some
-> > > > changes touching the same code areas that block patches do...
-> > > > 
-> > > > Besides this is guaranteed to inrease the workload on my side so it
-> > > > won't happen simply because of -ENOTIME.
-> > > 
-> > > When things collide, it is more work for everyone. But such is life for
-> > > middle/core layer changes. Rebasing _really_ should not be a lot of
-> > > work. And you are going to have to do it sooner or later, either upfront
-> > > or after your patches stop applying because the block changes went
-> > > upstream.
-> > 
-> > The task of running the secondary tree is not merely rebasing of patches
-> > (which I already do on a daily basis) as it also involves extra coordination,
-> > testing, updates etc.
+
+
+On Sun, 15 Mar 2009, Jesper Krogh wrote:
 > 
-> Coordination with whom? If people develop off your pata tree, then there
-> should be no difference.
+> I went on to trying Thomas Gleixners patch (which seems to do excactly the
+> same .. ), I'll write a reply in to that message in a few minutes.
 
-Coordination between trees.
+Side note: no, Thomas' patch doesn't do at all exactly the same. It does 
+something similar, in that it looks at the time differences between calls 
+to the whole "wait for the PIT MSB to change" function, but those 
+differences _could_ in theory be very small, even if the error is very 
+big.
 
-Moreover people often develop against linux-next (this is perfectly fine with
-the current development model) which after change would mean that their patches
-could end up being dependent also on block (more work for me to sort it out).
+That's especially true if the PIT read ends up serializing with the PIT, 
+so that the "wait for MSB" essentially always takes exactly the same 
+amount of cycles (giving a zero error estimation in Thomas' version), but 
+the reads themselves can still be quite slow (giving a non-zero error term 
+in the end result).
 
-> > Really, no more IDE workload on my side is possible and this is a fact not
-> > something to be discussed about (unless someone is willing to help with IDE
-> > maintainance tasks or sponsor my kernel work).
-> 
-> Rate of ide/ changes is pretty high, so I'd say you are doing quite well
-> on that account.
+IOW, Thomas' patch is good at finding variability in the reads - which 
+could be the result of SMM interaction, while my patch literally measures 
+how long it takes to read the MSB change.
 
-The historical rate of change have very little to do with the fact that I'm
-currently very time constrained.
+Now in practice I suspect the variability in the MSB reads _probably_ 
+correlate reasonably well with how long a single PIT read will take (ie 
+rather than finding variability due to SMM interaction, it will find 
+variability due to the "quanitization" effect of the reads taking a 
+reasonably long time), so I suspect that in many cases Thomas' patch will 
+error out for the same cases mine does.
 
-> > > The only sane way to handle conflicts like this is from the bottom and
-> > > up.
-> > > 
-> > > You could try a more helpful approach, Bart.
-> > 
-> > Well, see my initial reply.  I proposed the middle-point approach
-> > which would spread an extra effort across all parties involved and
-> > should also result in a better review/testing of changes...
-> 
-> That approach makes sense for more involved changes. Honestly, all it
-> would do in this case is slow things down and create more work for Tejun
-> or me. Potentially a lot, at least a lot more than the little extra
-> effort it would be to rebase the pata tree.
+But the two patches are rather fundamentally different.
 
-It could be "the little extra effort" after things settle down but not for
-the transition period so asking me to do it now is just plain wrong.  Sorry
-but we are week or so before merge window and I have to prepare for it!
-
-> Bart, we use this approach all the time with the SCSI branch and it has
-> worked fine. It's not going to change for the ide tree. It's
-> contradictory to fanning out work at the ends.
-
-I can look into separate trees (or maybe just having one tree based on block
-tree like discussed before) after 2.6.30-rc1/2.
-
-Thanks,
-Bart
+		Linus
