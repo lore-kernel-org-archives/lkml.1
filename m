@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbZCONHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbZCONm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758235AbZCONHn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 09:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbZCONHd
+	id S1753827AbZCONm7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 09:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZCONmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 09:07:33 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:60550 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751465AbZCONHc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 09:07:32 -0400
-Date: Sun, 15 Mar 2009 14:09:30 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/2] kconfig: improve seed in randconfig
-Message-ID: <20090315130930.GA7146@uranus.ravnborg.org>
-References: <20090315102341.GA6051@uranus.ravnborg.org> <20090315102856.GB6292@uranus.ravnborg.org> <10f740e80903150353i233d0da5rabde6e97607e3435@mail.gmail.com>
+	Sun, 15 Mar 2009 09:42:49 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42273 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751512AbZCONms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 09:42:48 -0400
+Date: Mon, 16 Mar 2009 00:42:40 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for March 12 (tty)
+Message-Id: <20090316004240.568cdd42.sfr@canb.auug.org.au>
+In-Reply-To: <20090314165424.46f7dd56@lxorguk.ukuu.org.uk>
+References: <20090312171154.11c6ec31.sfr@canb.auug.org.au>
+	<200903141411.50185.bzolnier@gmail.com>
+	<20090314165424.46f7dd56@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <10f740e80903150353i233d0da5rabde6e97607e3435@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__16_Mar_2009_00_42_40_+1100_OsgV/_fY_jL_BR+B"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 15, 2009 at 11:53:03AM +0100, Geert Uytterhoeven wrote:
-> On Sun, Mar 15, 2009 at 11:28, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > 'make randconfig' uses glibc's rand function, and the seed of
-> > that PRNG is set via:
-> >
-> >                        srand(time(NULL));
-> >
-> > But 'time()' only increases once every second - freezing the
-> > randconfig result within a single second.
-> >
-> > My Nehalem testbox does randconfig much faster than 1 second
-> >  and i have a few scripts that do 'randconfig until condition X'
-> > loops.
-> >
-> > Those scripts currently waste a lot of CPU time due to randconfig
-> > changing its seed only once per second currently.
-> >
-> > Change the seed to be micrseconds based. (I checked the statistical
-> > spread of the seed - the now.tv_sec*now.tv_usec multiplication
-> > there further improves it.)
-> 
-> > +                       gettimeofday(&now, NULL);
-> > +
-> > +                       seed = (unsigned int)(now.tv_sec*now.tv_usec);
-> 
-> Just wondering: may there be some platforms that don't offer microsecond
-> resolution, and tv_usec is always zero?
-That would indeed be bad for the seed.
-Googling did not turn up anything.
+--Signature=_Mon__16_Mar_2009_00_42_40_+1100_OsgV/_fY_jL_BR+B
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	Sam
+Hi Alan,
+
+On Sat, 14 Mar 2009 16:54:24 +0000 Alan Cox <alan@lxorguk.ukuu.org.uk> wrot=
+e:
+>
+> Stephen: I've dropped this patch out and pushed a revised tree as well so
+> it doesn't block other folks.
+
+Thanks.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__16_Mar_2009_00_42_40_+1100_OsgV/_fY_jL_BR+B
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkm9BdAACgkQjjKRsyhoI8xb8ACgpeNL/GDDHzrsLhkavJHsZp6D
+A/sAn317e8oEykL8FOYRyFiy6oWo5ehE
+=HlPZ
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__16_Mar_2009_00_42_40_+1100_OsgV/_fY_jL_BR+B--
