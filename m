@@ -1,65 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbZCOTxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbZCOT5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbZCOTxs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 15:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbZCOTxj
+	id S1758065AbZCOT5L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 15:57:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756293AbZCOT4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 15:53:39 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:39848 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753069AbZCOTxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 15:53:39 -0400
-Message-ID: <49BD5CB6.1030700@krogh.cc>
-Date: Sun, 15 Mar 2009 20:53:26 +0100
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sun, 15 Mar 2009 15:56:55 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:58638 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756133AbZCOT4y convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 15:56:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Du1JVoEpAcuRnLUrLfmt3Ox3vm3oshvnw19fJkzEpOXOXGSqcAbGrmHf97+8CLjgtT
+         QDcXY1ScoT4voocA/9AtgnJoxp+1rL+ZR3TcfCsuegxukTN+r3OvuU51sWaiyShugx9a
+         hz+sRJ+g+LUFyVe8hEFibqQFxCnumNV7pracQ=
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       john stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Linux 2.6.29-rc6
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <alpine.LFD.2.00.0902261232570.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>  <49A70B24.6090706@krogh.cc>  <1235685269.6811.11.camel@localhost.localdomain>  <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>  <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>  <1235766936.7402.5.camel@localhost.localdomain> <49AD90E2.7050209@krogh.cc>  <1236118969.6068.87.camel@localhost> <49AE9EA4.2080500@krogh.cc>  <49AECA3B.5030503@krogh.cc>  <1236193075.3793.63.camel@jstultz-laptop>  <1236220759.6863.7.camel@localhost.localdomain> <1236221530.6863.9.camel@localhost.localdomain> <49B57F3D.5030008@krogh.cc> <alpine.LFD.2.00.0903092109460.19207@localhost.localdomain> <alpine.LFD.2.00.0903101103510.29264@localhost.localdomain> <49B6C2B8.7000407@krogh.cc> <alpine.LFD.2.00.0903102107580.29264@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903102107580.29264@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090313134846.24B6.E1E9C6FF@jp.fujitsu.com>
+References: <20090313134846.24B6.E1E9C6FF@jp.fujitsu.com>
+Date: Sun, 15 Mar 2009 15:56:52 -0400
+X-Google-Sender-Auth: 8d9ef862a83c57c6
+Message-ID: <7d1d9c250903151256l36586764wfbd5e2578a45663c@mail.gmail.com>
+Subject: Re: [Patch] Fix the possibility of insane return value of 
+	hpet_calibrate() against SMI.
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: clemens@ladisch.de, Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       robert.picco@hp.com, venkatesh.pallipadi@intel.com, vojtech@suse.cz,
+       mingo@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
+On Fri, Mar 13, 2009 at 1:00 AM, Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+> Hello.
+>
+> I think there is a possibility that HPET driver will return
+> insane value due to a SMI interruption (or switching guests by hypervisor).
+> I found it by reviewing, and I would like to fix it.
+>
+> Current HPET driver calibrates the adjustment value
+> by calculation the elapse time in CPU busy loop.
+> However this way is too dangerous against SMI interruption.
+>
+> Here is the calibration code in hpet_calibrate()
+>
+>  701 static unsigned long hpet_calibrate(struct hpets *hpetp)
+>             :
+>             :
+>  728         do {
+>  729                 m = read_counter(&hpet->hpet_mc);
+>  730                 write_counter(t + m + hpetp->hp_delta, &timer->hpet_compare);
+>  731         } while (i++, (m - start) < count);
+>  732
+>  733         local_irq_restore(flags);
+>  734
+>  735         return (m - start) / i;
+>
+> If SMI interruption occurs between 728 to 731, then return value will be
+> bigger value than correct one. (SMI is not able to be controlled by OS.)
+>
+>
+> This patch is a simple solution to fix it.
+> hpet_calibrate() is called 5 times, and one of them is expected as
+> correct value.
 
-> slow calibration path on every boot on your machine.
-> 
->     (tscmax - tscmin) / avg = 0.064 (result from third run)
-> 
-> On my test machines I get values below 0.02
-> 
-> While it's statistically not really correct we still can use that info
-> to catch cases like we see on your machines.
-> 
->> While booting up I saw this one on the serial console..
->> root@quad12:~# hwclock --systohc
->> Cannot access the Hardware Clock via any known method.
->> Use the --debug option to see the details of our search for an access method.
->> root@quad12:~# hwclock --systohc --debug
->> hwclock from util-linux-ng 2.13.1
->> hwclock: Open of /dev/rtc failed, errno=2: No such file or directory.
->> No usable clock interface found.
->> Cannot access the Hardware Clock via any known method.
-> 
-> Can you provide your .config file please ?
+I've no sense of feel for how long each calibration run would take.
+Would doing it 5 times show up as a significant increase in the boot
+time for those that care about boot time being as quick as possible?
 
-http://krogh.cc/~jesper/config-2.6.29-rc8.txt
+Paul.
 
-I testet the attached patch.. and after 1.5 hours it seems to work. I'll 
-remain on this one at least a day to see how it works. I'll keep it on 
-for now and report back in 24 hours or so.
-
-Its still using tsc as clock-source.
-
-Jesper
-
--- 
-Jesper
+>
+> Thanks.
+>
+>
+> ---
+>
+> hpet_calibrate() has a possibility of miss-calibration due to SMI.
+> If SMI interrupts in the while loop of calibration, then return value
+> will be big. This changes it tries 5 times and get minimum value as
+> correct value.
+>
+> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+>
+> ---
+>
+> Index: hpet_test/drivers/char/hpet.c
+> ===================================================================
+> --- hpet_test.orig/drivers/char/hpet.c  2008-12-04 16:24:02.000000000 +0900
+> +++ hpet_test/drivers/char/hpet.c       2008-12-04 16:34:59.000000000 +0900
+> @@ -713,7 +713,7 @@
+>  */
+>  #define        TICK_CALIBRATE  (1000UL)
+>
+> -static unsigned long hpet_calibrate(struct hpets *hpetp)
+> +static unsigned long __hpet_calibrate(struct hpets *hpetp)
+>  {
+>        struct hpet_timer __iomem *timer = NULL;
+>        unsigned long t, m, count, i, flags, start;
+> @@ -750,6 +750,17 @@
+>        return (m - start) / i;
+>  }
+>
+> +static unsigned long hpet_calibrate(struct hpets *hpetp)
+> +{
+> +       unsigned long ret = ~0UL, i;
+> +
+> +       /* Try 5 times to remove impact of SMI.*/
+> +       for (i = 0; i < 5; i++)
+> +               ret = min(ret, __hpet_calibrate(hpetp));
+> +
+> +       return ret;
+> +}
+> +
+>  int hpet_alloc(struct hpet_data *hdp)
+>  {
+>        u64 cap, mcfg;
+>
+> --
+> Yasunori Goto
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
