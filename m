@@ -1,80 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbZCORd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754999AbZCORkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754348AbZCORd1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 13:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZCORdS
+	id S1754999AbZCORkg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 13:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZCORk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 13:33:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49745 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752973AbZCORdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 13:33:17 -0400
-Date: Sun, 15 Mar 2009 18:29:26 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: =?iso-8859-1?Q?G=E1bor?= Melis <mega@retes.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Signal delivery order
-Message-ID: <20090315172926.GA21095@redhat.com>
-References: <200903141750.37238.mega@retes.hu> <20090315094400.GA455@redhat.com> <200903151540.00542.mega@retes.hu>
+	Sun, 15 Mar 2009 13:40:27 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:37361 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648AbZCORk0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 13:40:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=UsfgqXkg7UaZIbSYXWouw11iCzp6GzeswgEswKuK++TQjAf08xL6Njt8jutUxyFgZ1
+         +Vvig9RSZ4N2izXC1Tlo9jE05+90N/mgxjzeXbS8E9vOr3TC7tCMqSTzBRjKrhWyOzvJ
+         Qk0IfakxkGg1HrkMq+xO7QEuv01bpbQRQk1b0=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 11/14] block: implement and use [__]blk_end_request_all()
+Date: Sun, 15 Mar 2009 18:40:20 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7-next-20090311; KDE/4.2.0; i686; ; )
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       Russell King <rmk@arm.linux.org.uk>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Mike Miller <mike.miller@hp.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Jeff Garzik <jgarzik@pobox.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Alex Dubov <oakad@yahoo.com>
+References: <1236920578-2179-1-git-send-email-tj@kernel.org> <200903142119.10056.bzolnier@gmail.com> <20090315164837.GE27476@kernel.dk>
+In-Reply-To: <20090315164837.GE27476@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200903151540.00542.mega@retes.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903151840.21087.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/15, Gábor Melis wrote:
->
-> On Domingo 15 Marzo 2009, Oleg Nesterov wrote:
-> >
-> > If test_signal (SIGUSR1) is blocked, this means it is already
-> > delivered, and the handler will be invoked when we return from
-> > sigsegv_handler(), please see below.
->
-> SIGUSR1 is delivered, its sigmask is added to the current mask but the
-> handler is not yet invoked and in this instant synchronous sigsegv is
-> delivered, its handler invoked?
+On Sunday 15 March 2009, Jens Axboe wrote:
+> On Sat, Mar 14 2009, Bartlomiej Zolnierkiewicz wrote:
+> > On Saturday 14 March 2009, James Bottomley wrote:
+> > > On Sat, 2009-03-14 at 20:23 +0100, Bartlomiej Zolnierkiewicz wrote:
+> > > > > > More generic comment follows -> this patch is guaranteed to clash
+> > > > > > with at least linux-next/pata-2.6 tree so why not introduce block
+> > > > > > layer helpers now, then push all driver updates through respective
+> > > > > > driver maintainers and deal with end_request() later (after all
+> > > > > > driver updates are in-tree)?
+> > > > > 
+> > > > > Most of the lld changes being trivial, I was hoping to push things
+> > > > > through blk tree, but IDE seems to be the most intertwined with the
+> > > > > block layer and it's likely to see quite some amount of not-so-trivial
+> > > > > changes to subtle paths.  How about pushing !IDE parts into blk tree
+> > > > > and pulling blk into pata-2.6, make IDE related changes there and
+> > > > > pulling back into blk tree so that further progresses can be made?
+> > > > 
+> > > > There is a "tiny" problem with this -- pata-2.6 is a quilt tree based on
+> > > > Linus' tree and it is not going to change for now (for various reasons).
+> > > 
+> > > Actually this one's easily solvable if you base the quilt on the block
+> > > tree (just specify it to linux-next in the BASE directive and it will do
+> > > the right thing).
+> > > 
+> > > What I'd do is actually run two quilts: one based on vanilla and one
+> > > based on block and only add block dependent patches to the latter.  This
+> > > is like running a postmerge git tree (you can only send a pull request
+> > > for it after block goes in).
+> > 
+> > Thanks for the hint but it sounds like a major pain once you hit some
+> > changes touching the same code areas that block patches do...
+> > 
+> > Besides this is guaranteed to inrease the workload on my side so it
+> > won't happen simply because of -ENOTIME.
+> 
+> When things collide, it is more work for everyone. But such is life for
+> middle/core layer changes. Rebasing _really_ should not be a lot of
+> work. And you are going to have to do it sooner or later, either upfront
+> or after your patches stop applying because the block changes went
+> upstream.
 
-Can't understand the question. Could you reiterate?
+The task of running the secondary tree is not merely rebasing of patches
+(which I already do on a daily basis) as it also involves extra coordination,
+testing, updates etc.
 
-> > When sigprocmask(SIG_UNBLOCK) returns, both signals are delivered.
-> > The kernel deques 1 first, then 2. This means that the handler for
-> > "2" will be called first.
->
-> My mental model that matches what I quickly glean from the sources (from 
-> kernel/signal.c, arch/x86/kernel/signal_32.c) goes like this:
->
-> - signal 1 and signal 2 are generated and made pending
-> - they are unblocked by sigprocmask
-> - signal 1 is delivered: signals in its mask (only itself here) are
-> blocked
+Really, no more IDE workload on my side is possible and this is a fact not
+something to be discussed about (unless someone is willing to help with IDE
+maintainance tasks or sponsor my kernel work).
 
-yes.
+> The only sane way to handle conflicts like this is from the bottom and
+> up.
+> 
+> You could try a more helpful approach, Bart.
 
-the kernel changes ip (instruction pointer) to sig_1.
+Well, see my initial reply.  I proposed the middle-point approach which would
+spread an extra effort across all parties involved and should also result in
+a better review/testing of changes...
 
-> its handler is invoked
-
-no.
-
-We never return to user-space with a pending signal. We dequeue signal 2
-too, and change ip to sig_2.
-
-Now, since there are no more pending signals, we return to the user space,
-and start sig_2().
-
-> I can't find how 'handler for "2" will be called first'.
-
-see above,
-
-> Furthermore, if
-> it's indeed sig_2 that's invoked first then sig_1's sigmask is added to
-> the current mask upon dequeueing???
-
-sig_1's sigmask was added to ->blocked when we dequeued signal 1.
-
-Oleg.
-
+Thanks,
+Bart
