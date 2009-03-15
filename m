@@ -1,98 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbZCOPRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZCOPRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754635AbZCOPRU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 11:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZCOPRH
+	id S1755027AbZCOPRe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 11:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbZCOPRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 11:17:07 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:9022 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752226AbZCOPRE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 11:17:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=DJBH5jigkGQWKVTfAk6gJDaJ/VJwVu2vpq5euM+uyZav0Oucin0M0JZ4QXFfq9BIgs
-         YGwPSQeMqzaoBKVALaqPFQPyBV0PuVH677h4VrZh3wLYRx4H6CG9s9z0RF0Rs4UiCK4e
-         TDbOZStd3uQ1BIy3xNLGNGv7F1cc729c7JpR8=
-Date: Sun, 15 Mar 2009 16:16:58 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: LKML <linux-kernel@vger.kernel.org>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
-Subject: Re: [RFC][PATCH 2/2] tracing/x86: basic implementation of syscall
-	tracing for x86-64
-Message-ID: <20090315151657.GB5105@nowhere>
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-3-git-send-email-fweisbec@gmail.com> <20090313163207.GA3354@Krystal> <20090313163702.GA9082@elte.hu> <20090313165020.GD3354@Krystal> <20090315044405.GB11150@elte.hu>
+	Sun, 15 Mar 2009 11:17:13 -0400
+Received: from www.tglx.de ([62.245.132.106]:42048 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754200AbZCOPRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 11:17:11 -0400
+Date: Sun, 15 Mar 2009 16:16:34 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Ingo Molnar <mingo@elte.hu>, linux-tip-commits@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com
+Subject: Re: SLOB lockup (was: Re: [tip:core/locking] lockdep: annotate
+ reclaim context (__GFP_NOFS), fix SLOB)
+In-Reply-To: <200903152104.25683.nickpiggin@yahoo.com.au>
+Message-ID: <alpine.LFD.2.00.0903151614320.29264@localhost.localdomain>
+References: <20090128135457.350751756@chello.nl> <200903152006.21160.nickpiggin@yahoo.com.au> <20090315094704.GA21169@elte.hu> <200903152104.25683.nickpiggin@yahoo.com.au>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090315044405.GB11150@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 15, 2009 at 05:44:05AM +0100, Ingo Molnar wrote:
-> 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > * Ingo Molnar (mingo@elte.hu) wrote:
-> > > 
-> > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > > 
-> > > > * Frederic Weisbecker (fweisbec@gmail.com) wrote:
+On Sun, 15 Mar 2009, Nick Piggin wrote:
+> On Sunday 15 March 2009 20:47:04 Ingo Molnar wrote:
+> > * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > > On Sunday 15 March 2009 17:48:18 Ingo Molnar wrote:
+> > > > > Cc: Nick Piggin <npiggin@suse.de>
+> > > > > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > > > LKML-Reference: <20090128135457.350751756@chello.nl>
+> > > > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > > > >
-> > > > > Provide the ptrace hooks and arch specific syscall numbers 
-> > > > > to ftrace arch indepedant syscall numbers. For now it only 
-> > > > > supports 4 syscalls to provide an example.
-> > > > > 
-> > > > 
-> > > > Hi Frederic,
-> > > > 
-> > > > I already have the equivalent TIF_KERNEL_TRACE flag in my 
-> > > > LTTng tree added to every Linux architecture. You might want 
-> > > > to re-use this work rather than re-doing this. I don't mind 
-> > > > changing the flag name.
-> > > 
-> > > Yeah. Note that the TIF bits are just one part - there are other 
-> > > bits needed for HAVE_FTRACE_SYSCALLS arch support.
-> > > 
-> > > Also, i'd eventually expect the TIF bits to be converted to a 
-> > > tracehook callback, not spread it to other architectures.
-> > > 
-> > 
-> > The nice part about the TIF bit is that it permits adding this 
-> > syscall tracing feature without increasing the size of the 
-> > thread_info struct nor adding any extra tests in entry.S. Does 
-> > the tracehook callback have these features ?
+> > > > and with this fixed, and with SLOB now being tested in -tip, the
+> > > > new lockdep assert attached below (followed by a real lockup)
+> > > > pops up.
+> > > >
+> > > > Seems like a genuine SLOB bug, probably present upstream as
+> > > > well.
+> > >
+> > > Hmmf. debugobjects calls back into the slab allocator from the
+> > > page allocator. The following patch would improve SLOB, but I
+> > > think it would be a good idea to avoid a dependency in that
+> > > direction. Can debugobjects defer this freeing?
+> >
+> > dunno - that's a question for Thomas.
 > 
-> yes. Tracehook just factors out common interfacing points - with 
-> one specific implementation for now: ptrace. For syscall tracing 
-> that means it wraps TIF_SYSCALL_TRACE in essence.
+> Well I think it could, and it should (just add them to a list and
+> kick off a workqueue or something). It is not a good idea for
+> fringe debug functionality like this to introduce such a connection
+> between core code like this. Unless there is a *really* good reason.
 > 
-> 	Ingo
+> Apart from the locking issue, I wonder if the recursion is bounded?
 
+Yes. debugobject free does not call back into debugobjects, but you
+are right it should defer the free. I have rcu based deferred free in
+-rt for the very same reason. I'll whip up a solution for mainline as
+well.
 
-Since I didn't want to experience conflicts against ptrace, I haven't
-played with the tracehooks.
+Thanks,
 
-But anyway, I wrote this low level part of syscall tracing having in mind
-the fact that utrace does this work very much better. That's why I wrote it
-to be very basic and simple enough to do the job, but waiting for a better
-code that is already written somewhere else.
-
-So now there is some code which does that on both utrace and Lttng.
-
-I would be pleased to see these patches which handle these flags properly
-on LKML :-)
-
-Frederic.
-
-
-
+	tglx
