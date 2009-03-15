@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbZCOGNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbZCOGNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752726AbZCOGNU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 02:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZCOGNI
+	id S1758784AbZCOGNe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 02:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbZCOGNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 02:13:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47192 "EHLO hera.kernel.org"
+	Sun, 15 Mar 2009 02:13:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47195 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbZCOGNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 02:13:06 -0400
-Date: Sun, 15 Mar 2009 06:12:26 GMT
-From: Yinghai Lu <yinghai@kernel.org>
+	id S1758192AbZCOGNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 02:13:18 -0400
+Date: Sun, 15 Mar 2009 06:12:36 GMT
+From: Tim Blechmann <tim@klingt.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, stable@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
+       tglx@linutronix.de, tim@klingt.org, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, stable@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <49BC2279.2030101@kernel.org>
-References: <49BC2279.2030101@kernel.org>
-Subject: [tip:x86/mm] x86: fix 64k corruption-check
-Message-ID: <tip-6d7942dc2a70a7e74c352107b150265602671588@git.kernel.org>
-Git-Commit-ID: 6d7942dc2a70a7e74c352107b150265602671588
+       tglx@linutronix.de, tim@klingt.org, mingo@elte.hu
+In-Reply-To: <20090314142925.49c29c17@thinkpad>
+References: <20090314142925.49c29c17@thinkpad>
+Subject: [tip:perfcounters/core] perf_counter: include missing header
+Message-ID: <tip-c04b033bfe196bb4cac45e46d20d3affbaebf23b@git.kernel.org>
+Git-Commit-ID: c04b033bfe196bb4cac45e46d20d3affbaebf23b
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 15 Mar 2009 06:12:28 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 15 Mar 2009 06:12:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6d7942dc2a70a7e74c352107b150265602671588
-Gitweb:     http://git.kernel.org/tip/6d7942dc2a70a7e74c352107b150265602671588
-Author:     Yinghai Lu <yinghai@kernel.org>
-AuthorDate: Sat, 14 Mar 2009 14:32:41 -0700
+Commit-ID:  c04b033bfe196bb4cac45e46d20d3affbaebf23b
+Gitweb:     http://git.kernel.org/tip/c04b033bfe196bb4cac45e46d20d3affbaebf23b
+Author:     Tim Blechmann <tim@klingt.org>
+AuthorDate: Sat, 14 Mar 2009 14:29:25 +0100
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 15 Mar 2009 07:03:15 +0100
+CommitDate: Sun, 15 Mar 2009 07:09:22 +0100
 
-x86: fix 64k corruption-check
+perf_counter: include missing header
 
-Impact: fix boot crash
+Impact: build fix
 
-Need to exit early if the addr is far above 64k.
+In order to compile a kernel with performance counter patches,
+<asm/irq_regs.h> has to be included to provide the declaration of
+struct pt_regs *get_irq_regs(void);
 
-The crash got exposed by:
+[ This bug was masked by unrelated x86 header file changes in the
+  x86 tree, but occurs in the tip:perfcounters/core standalone
+  tree. ]
 
-  78a8b35: x86: make e820_update_range() handle small range update
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: <stable@kernel.org>
-LKML-Reference: <49BC2279.2030101@kernel.org>
+Signed-off-by: Tim Blechmann <tim@klingt.org>
+LKML-Reference: <20090314142925.49c29c17@thinkpad>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/check.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ kernel/perf_counter.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/check.c b/arch/x86/kernel/check.c
-index b617b11..fc999e6 100644
---- a/arch/x86/kernel/check.c
-+++ b/arch/x86/kernel/check.c
-@@ -86,12 +86,12 @@ void __init setup_bios_corruption_check(void)
- 		if (!(addr + 1))
- 			break;
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index d6cc222..0018c5e 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -24,6 +24,8 @@
+ #include <linux/vmstat.h>
+ #include <linux/rculist.h>
  
-+		if (addr >= corruption_check_size)
-+			break;
++#include <asm/irq_regs.h>
 +
- 		if ((addr + size) > corruption_check_size)
- 			size = corruption_check_size - addr;
- 
--		if (size == 0)
--			break;
--
- 		e820_update_range(addr, size, E820_RAM, E820_RESERVED);
- 		scan_areas[num_scan_areas].addr = addr;
- 		scan_areas[num_scan_areas].size = size;
+ /*
+  * Each CPU has a list of per CPU counters:
+  */
