@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbZCOSzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbZCOS5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757574AbZCOSzv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 14:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZCOSzm
+	id S1757710AbZCOS5N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 14:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZCOS45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 14:55:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54823 "EHLO mx2.mail.elte.hu"
+	Sun, 15 Mar 2009 14:56:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59611 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752759AbZCOSzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 14:55:42 -0400
-Date: Sun, 15 Mar 2009 19:55:19 +0100
+	id S1752759AbZCOS44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 14:56:56 -0400
+Date: Sun, 15 Mar 2009 19:56:18 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: print out in e820_update_range()
-Message-ID: <20090315185519.GB19737@elte.hu>
-References: <49BCB557.3030000@kernel.org> <20090315080717.GA18978@elte.hu> <49BD42F5.7070808@kernel.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-tip-commits@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de
+Subject: Re: SLOB lockup (was: Re: [tip:core/locking] lockdep: annotate
+	reclaim context (__GFP_NOFS), fix SLOB)
+Message-ID: <20090315185618.GC19737@elte.hu>
+References: <20090128135457.350751756@chello.nl> <tip-bf722c9d324864b4256edaa330751b77f2a19861@git.kernel.org> <20090315064818.GA1193@elte.hu> <200903152006.21160.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49BD42F5.7070808@kernel.org>
+In-Reply-To: <200903152006.21160.nickpiggin@yahoo.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,25 +39,12 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-> Ingo Molnar wrote:
-> > * Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> >> Impact: to find crazy calling
-> >>
-> >> try to print out more info, to catch wrong calling
-> > 
-> > Could we detect incorrect parameters more directly as well, via 
-> > a check and a panic()?
-> 
-> only valid checking seems to be 
-> virt_to_phys(_text), virt_to_phys(_end)
-> 
-> 
-> if (new_type == E820_RESERVED && start >= virt_to_phys(_text) && start <= virt_to_phys(_end)) 
-> 	panic("try to update to e820 range for kernel to RESERVED!");
+> +		spin_lock_irqrestore(&slob_lock, flags);
 
-hm, seems a bit too specialized.
+that should be:
+
+		spin_unlock_irqrestore(&slob_lock, flags);
 
 	Ingo
