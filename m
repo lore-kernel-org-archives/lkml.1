@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZCOFdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbZCOFer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752516AbZCOFdp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 01:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZCOFdg
+	id S1755587AbZCOFer (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 01:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbZCOFej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 01:33:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47343 "EHLO mx2.mail.elte.hu"
+	Sun, 15 Mar 2009 01:34:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39659 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbZCOFdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 01:33:35 -0400
-Date: Sun, 15 Mar 2009 06:33:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Jason Baron <jbaron@redhat.com>, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
-       fweisbec@gmail.com, fche@redhat.com, peterz@infradead.org
-Subject: Re: [Patch 2/2] tracepoints for softirq entry/exit - tracepoints
-Message-ID: <20090315053301.GC20949@elte.hu>
-References: <20090312183603.GC3352@redhat.com> <20090314025701.GC22526@Krystal>
+	id S1751838AbZCOFej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 01:34:39 -0400
+Message-ID: <49BC933F.3090507@kernel.org>
+Date: Sat, 14 Mar 2009 22:33:51 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090314025701.GC22526@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC5BCF.1070602@zytor.com> <49BC878D.5090402@kernel.org> <49BC8955.5070009@zytor.com>
+In-Reply-To: <49BC8955.5070009@zytor.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
-
-> * Jason Baron (jbaron@redhat.com) wrote:
-> > 
-> > introduce softirq entry/exit tracepoints. These are useful for
-> > augmenting existing tracers, and to figure out softirq frequencies and
-> > timings.
-> > 
-> > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > 
-> > ---
-> > 
-> >  include/trace/irq_event_types.h |   12 ++++++++++++
-> >  kernel/softirq.c                |    7 ++++++-
-> >  2 files changed, 18 insertions(+), 1 deletions(-)
-> > 
-> > 
-> > diff --git a/include/trace/irq_event_types.h b/include/trace/irq_event_types.h
-> > index 214bb92..38b4bdd 100644
-> > --- a/include/trace/irq_event_types.h
-> > +++ b/include/trace/irq_event_types.h
-> > @@ -40,4 +40,16 @@ TRACE_EVENT(irq_handler_exit,
-> >  		  __entry->irq, __entry->ret ? "handled" : "unhandled")
-> >  );
-> >  
-> > +TRACE_FORMAT(irq_softirq_entry,
-> > +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-> > +	TP_ARGS(h, vec),
-> > +	TP_FMT("softirq=%d action=%s", h - vec, softirq_to_name[h-vec])
-> > +	);
-> > +
-> > +TRACE_FORMAT(irq_softirq_exit,
-> > +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-> > +	TP_ARGS(h, vec),
-> > +	TP_FMT("softirq=%d action=%s", h - vec, softirq_to_name[h-vec])
+H. Peter Anvin wrote:
+> Yinghai Lu wrote:
+>> H. Peter Anvin wrote:
+>>> On this subject, what is the point of the 64 K "slop space", and if it
+>>> is necessary, why not just put it as a RESERVE_BRK() somewhere (*with* a
+>>>  significant comment as to its necessity) instead of putting it as a
+>>> hack in the linker script?
+>>>
+>>
+>> 32bit already have that
+>>
+>> +INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
+>> +RESERVE_BRK(pagetables, INIT_MAP_SIZE)
+>>
+>> in head_32.S
+>>
+>> so need to update vmlinux_32.lds.S
+>>
 > 
-> The softirq tracepoints are a good idea indeed (I have similar 
-> ones in the LTTng tree). My main concern is about the fact 
-> that you output the softirq name in plain text to the trace 
-> buffers. I would rather prefer to save only the softirq 
-> (h-vec) into the trace and dump the mapping (h-vec) to name 
-> only once, so we can save precious trace bytes.
+> What about 64 bits?  Also, do we really need the "allocator slop", or
+> can we push that into the user location, which is where it really
+> belongs?  What does use this?
 
-The right solution is to change this tracepoint to TRACE_EVENT() 
-format. Jason, do you have time to do that?
+64 bit does not has this problem.
+32 bit we already removed bootmem there, that is not needed. 
 
-	Ingo
+ALLOCATOR_SLOP is needed...
+
++ *     (KERNEL_IMAGE_SIZE/4096) / 1024 pages (worst case, non PAE)
++ *     (KERNEL_IMAGE_SIZE/4096) / 512 + 4 pages (worst case for PAE)
+
+
+YH
