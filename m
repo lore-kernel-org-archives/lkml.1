@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbZCOJi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbZCOJrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757734AbZCOJi1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 05:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbZCOJiT
+	id S1757084AbZCOJrt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 05:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZCOJrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 05:38:19 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:50069 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754048AbZCOJiS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 05:38:18 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jan Yenya Kasprzak <kas@fi.muni.cz>, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 1/1] Char: moxa, fix refcounting in moxa_poll_port
-Date: Sun, 15 Mar 2009 10:37:24 +0100
-Message-Id: <1237109844-3866-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.2
-In-Reply-To: <49BCCAE0.6010303@gmail.com>
-References: <49BCCAE0.6010303@gmail.com>
+	Sun, 15 Mar 2009 05:47:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40073 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752767AbZCOJri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 05:47:38 -0400
+Date: Sun, 15 Mar 2009 10:47:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-tip-commits@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com
+Subject: Re: SLOB lockup (was: Re: [tip:core/locking] lockdep: annotate
+	reclaim context (__GFP_NOFS), fix SLOB)
+Message-ID: <20090315094704.GA21169@elte.hu>
+References: <20090128135457.350751756@chello.nl> <tip-bf722c9d324864b4256edaa330751b77f2a19861@git.kernel.org> <20090315064818.GA1193@elte.hu> <200903152006.21160.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903152006.21160.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Repost, sorry, scripts don't understand Reported-by.
 
---
+* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-There is missing tty_kref_put on some paths in moxa_poll_port,
-although the reference is always taken. Fix it.
+> On Sunday 15 March 2009 17:48:18 Ingo Molnar wrote:
+> 
+> > > Cc: Nick Piggin <npiggin@suse.de>
+> > > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > LKML-Reference: <20090128135457.350751756@chello.nl>
+> > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> >
+> > and with this fixed, and with SLOB now being tested in -tip, the
+> > new lockdep assert attached below (followed by a real lockup)
+> > pops up.
+> >
+> > Seems like a genuine SLOB bug, probably present upstream as
+> > well.
+> 
+> Hmmf. debugobjects calls back into the slab allocator from the 
+> page allocator. The following patch would improve SLOB, but I 
+> think it would be a good idea to avoid a dependency in that 
+> direction. Can debugobjects defer this freeing?
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Reported-by: Jan 'Yenya' Kasprzak <kas@fi.muni.cz>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
- drivers/char/moxa.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+dunno - that's a question for Thomas.
 
-diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index 8b0da97..4a4cab7 100644
---- a/drivers/char/moxa.c
-+++ b/drivers/char/moxa.c
-@@ -1486,11 +1486,11 @@ static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
- 	}
- 
- 	if (!handle) /* nothing else to do */
--		return 0;
-+		goto put;
- 
- 	intr = readw(ip); /* port irq status */
- 	if (intr == 0)
--		return 0;
-+		goto put;
- 
- 	writew(0, ip); /* ACK port */
- 	ofsAddr = p->tableAddr;
-@@ -1499,16 +1499,17 @@ static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
- 				ofsAddr + HostStat);
- 
- 	if (!inited)
--		return 0;
-+		goto put;
- 
- 	if (tty && (intr & IntrBreak) && !I_IGNBRK(tty)) { /* BREAK */
- 		tty_insert_flip_char(tty, 0, TTY_BREAK);
- 		tty_schedule_flip(tty);
- 	}
--	tty_kref_put(tty);
- 
- 	if (intr & IntrLine)
- 		moxa_new_dcdstate(p, readb(ofsAddr + FlagStat) & DCD_state);
-+put:
-+	tty_kref_put(tty);
- 
- 	return 0;
- }
--- 
-1.6.2
+this lockup does not trigger under any of the other allocators.
 
+	Ingo
