@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756852AbZCOWly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZCOWwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756852AbZCOWly (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 18:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZCOWln
+	id S1756113AbZCOWwy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 18:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZCOWwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 18:41:43 -0400
-Received: from phunq.net ([64.81.85.152]:55197 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751859AbZCOWln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 18:41:43 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Theodore Tso <tytso@mit.edu>
-Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
-Date: Sun, 15 Mar 2009 15:41:35 -0700
-User-Agent: KMail/1.9.9
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-fsdevel@vger.kernel.org,
-       tux3@tux3.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <200903110925.37614.phillips@phunq.net> <200903151445.04552.nickpiggin@yahoo.com.au> <20090315214426.GA6357@mit.edu>
-In-Reply-To: <20090315214426.GA6357@mit.edu>
+	Sun, 15 Mar 2009 18:52:42 -0400
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:44305 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751184AbZCOWwl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 18:52:41 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAOcjvUl5LAJ7/2dsb2JhbADPYoN/Bg
+X-IronPort-AV: E=Sophos;i="4.38,368,1233495000"; 
+   d="scan'208";a="339266119"
+Date: Mon, 16 Mar 2009 09:52:15 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com, npiggin@suse.de
+Subject: Re: [PATCH 2/7] writeback: switch to per-bdi threads for flushing
+	data
+Message-ID: <20090315225215.GA26138@disturbed>
+Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	chris.mason@oracle.com, npiggin@suse.de
+References: <1236868428-20408-1-git-send-email-jens.axboe@oracle.com> <1236868428-20408-3-git-send-email-jens.axboe@oracle.com> <20090312223321.ccfe51b2.akpm@linux-foundation.org> <20090313105446.GO27476@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903151541.36223.phillips@phunq.net>
+In-Reply-To: <20090313105446.GO27476@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ted,
-
-On Sunday 15 March 2009, Theodore Tso wrote:
-> On Sun, Mar 15, 2009 at 02:45:04PM +1100, Nick Piggin wrote:
-> > > As it happens, Tux3 also physically allocates each _physical_ metadata
-> > > block (i.e., what is currently called buffer cache) at the time it is
-> > > dirtied.  I don't know if this is the best thing to do, but it is
-> > > interesting that you do the same thing.  I also don't know if I want to
-> > > trust a library to get this right, before having completely proved out
-> > > the idea in a non-trival filesystem.  But good luck with that!  It
-> > 
-> > I'm not sure why it would be a big problem. fsblock isn't allocating
-> > the block itself of course, it just asks the filesystem to. It's
-> > trivial to do for fsblock.
+On Fri, Mar 13, 2009 at 11:54:46AM +0100, Jens Axboe wrote:
+> On Thu, Mar 12 2009, Andrew Morton wrote:
+> > On Thu, 12 Mar 2009 15:33:43 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > Bear in mind that the XFS guys found that one thread per fs had
+> > insufficient CPU power to keep up with fast devices.
 > 
-> So the really unfortunate thing about allocating the block as soon as
-> the page is dirty is that it spikes out delayed allocation.  By
-> delaying the physical allocation of the logical->physical mapping as
-> long as possible, the filesystem can select the best possible physical
-> location.
+> Yes, I definitely want to experiment with > 1 thread per device in the
+> near future.
 
-Tux3 does not dirty the metadata until data cache is flushed, so the
-allocation decisions for data and metadata are made at the same time.
-That is the reason for the distinction between physical metadata above,
-and logical metadata such as directory data and bitmaps, which are
-delayed.  Though physical metadata is positioned when first dirtied,
-physical metadata dirtying is delayed until delta commit.
+The question here is how to do this efficiently. Even if XFS is
+operating on a single device, it is not optimal just to throw
+multiple threads at the bdi. Ideally we want a thread per region
+(allocation group) of the filesystem as each allocation group has
+it's own inode cache (radix tree) to traverse. These traversals can
+be done completely in parallel and won't contend either at the
+traversal level or in the IO hardware....
 
-Implementing this model (we are still working on it) requires taking
-care of a lot of subtle details that are specific to the Tux3 cache
-model.  I have a hard time imagining those allocation decisions driven
-by callbacks from a buffer-like library.
+i.e. what I'd like to see is the ability so any new flushing
+mechanism to be able to offload responsibility of tracking,
+traversing and flushing of dirty inodes to the filesystem.
+Filesystems that don't do such things could use a generic
+bdi-based implementation.
 
-Regards,
+FWIW, we also want to avoid the current pattern of flushing
+data, then the inode, then data, then the inode, ....
+By offloading into the filesystem, this writeback ordering can
+be done as efficiently as possible for each given filesystem.
+XFs already has all the hooks to be able to do this
+effectively....
 
-Daniel
+I know that Christoph was doing some work towards this end;
+perhaps he can throw his 2c worth in here...
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
