@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757034AbZCOAc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbZCOAiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757034AbZCOAc5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 20:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbZCOAcs
+	id S1754832AbZCOAiH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 20:38:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZCOAhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 20:32:48 -0400
-Received: from gw.goop.org ([64.81.55.164]:56354 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752137AbZCOAcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 20:32:47 -0400
-Message-ID: <49BC4CAC.202@goop.org>
-Date: Sat, 14 Mar 2009 17:32:44 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sat, 14 Mar 2009 20:37:54 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:2850 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbZCOAhx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 20:37:53 -0400
+Date: Sun, 15 Mar 2009 00:37:44 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+Message-ID: <20090315003743.GB11052@sirena.org.uk>
+References: <200903111743.34708.david-b@pacbell.net> <200903111932.16317.david-b@pacbell.net> <20090312120119.GB24376@sirena.org.uk> <200903141725.35541.david-b@pacbell.net>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com>
-In-Reply-To: <49BC413B.5020104@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903141725.35541.david-b@pacbell.net>
+X-Cookie: Long life is in store for you.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [patch 2.6.29-rc8 regulator-next] regulator: init fixes (v4)
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Hi guys,
->
-> I was reviewing the latest brk patchset, and I have a question:
->
-> Why is the brk merged into the .bss, instead of being left in its own
-> (nobits) segment:
->
->   .bss : AT(ADDR(.bss) - LOAD_OFFSET) {
-> 	__init_end = .;
-> 	__bss_start = .;		/* BSS */
-> 	*(.bss.page_aligned)
-> 	*(.bss)
-> 	. = ALIGN(4);
-> 	__bss_stop = .;
->
-> 	. = ALIGN(PAGE_SIZE);
-> 	__brk_base = . ;
-> 	. += 64 * 1024 ;	/* 64k slop space */
-> 	*(.brk_reservation)	/* areas brk users have reserved */
-> 	__brk_limit = . ;
->
->   	_end = . ;
->   }
->
-> It really doesn't make much sense to me, and is more than a bit
-> confusing given the symbols.
->   
+On Sat, Mar 14, 2009 at 05:25:35PM -0700, David Brownell wrote:
 
-Mostly because I knew that the bss would get mapped into the appropriate 
-phdr segment correctly, but I wasn't sure that another bss-like section 
-would be.  Also because historically the brk segment was just an 
-extension of the executable's bss, and its more or less the same too.
+> +	} else if (ops->is_enabled) {
+> +		/* ... if the bootloader left it on, drivers need a
+> +		 * nonzero enable count else it can't be disabled.
+> +		 */
+> +		ret = ops->is_enabled(rdev);
+> +		if (ret > 0)
+> +			rdev->use_count = 1;
+> +		ret = 0;
 
-Is there any real benefit in putting it into another section?
-
-    J
+This means that drivers that do balanced enables and disables will never
+be able to cause the regulator to actually be disabled since there will
+always be this extra reference count there.  Without this patch what'll
+happen with those drivers is that they'll do an enable then later on
+when the last one disables its supply the reference count will fall to
+zero and the regulator will be disabled.
