@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbZCOFze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbZCOGBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757028AbZCOFze (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 01:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbZCOFzZ
+	id S1757897AbZCOGBU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 02:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZCOGBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 01:55:25 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34362 "EHLO mx2.mail.elte.hu"
+	Sun, 15 Mar 2009 02:01:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47528 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbZCOFzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 01:55:25 -0400
-Date: Sun, 15 Mar 2009 06:55:10 +0100
+	id S1750807AbZCOGBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 02:01:07 -0400
+Date: Sun, 15 Mar 2009 07:00:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: cpu/intel.c cleanup
-Message-ID: <20090315055510.GD20949@elte.hu>
-References: <1237034492.4546.1.camel@ht.satnam> <20090314131142.GA29582@uranus.ravnborg.org> <20090314132004.GD17727@elte.hu> <1237037822.4546.8.camel@ht.satnam> <19f34abd0903140700r6c23da9aq6747fbcce7bcc4b2@mail.gmail.com> <20090314153138.GA19459@elte.hu> <1237046650.4546.30.camel@ht.satnam> <20090314170445.GF31930@elte.hu> <1237053903.3144.11.camel@localhost.localdomain>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mike Travis <travis@sgi.com>
+Subject: Re: [PULL] x86 cpumask work
+Message-ID: <20090315060044.GE20949@elte.hu>
+References: <200903121453.45163.rusty@rustcorp.com.au> <200903132342.42813.rusty@rustcorp.com.au> <20090313152742.GA11800@elte.hu> <200903151326.34114.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1237053903.3144.11.camel@localhost.localdomain>
+In-Reply-To: <200903151326.34114.rusty@rustcorp.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,69 +34,65 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> On Sat, 2009-03-14 at 18:04 +0100, Ingo Molnar wrote:
-> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> On Saturday 14 March 2009 01:57:42 Ingo Molnar wrote:
+> > Note, it might have crashed in a cpu hotplug test i'm conducting 
+> > during bootup:
 > > 
-> > > On Sat, 2009-03-14 at 16:31 +0100, Ingo Molnar wrote:
-> > > > > 
-> > > > > I don't really like this change (last hunk). Doesn't it seem a 
-> > > > > bit pointless? It breaks the symmetry with the masked CPUID 
-> > > > > levels at the beginning of the function. If somebody wants to 
-> > > > > add something else to this function, it might have to be 
-> > > > > reindented again. Or is there a problem with too long lines 
-> > > > > here?
-> > > > 
-> > > > yes, it would be cleaner to put the whole family 15 branch into 
-> > > > a helper inline function instead.
-> > > > 
-> > > 
-> > > OK, better I keep it unchanged :-)
-> > 
-> > Why not implement the cleanup i suggested?
+> > echo 0 > /sys/devices/system/cpu/cpu1/online
 > 
-> I followed your approached and made new helper function. But the result
-> was same, in that helper function I have to check for family 15 and rest
-> of things. So I found nothing was gained, So I again reverted it and
-> provided you this patch.
+> Indeed, thanks!
+> 
+> Subject: cpumask: fix crash when offlining cpus
+> 
+> Impact: Fix cpu offline when CONFIG_MAXSMP=y
+> 
+> Changeset bc9b83dd1f66402b870301c3c7117b9c1484abb4 "cpumask: convert c1e_mask
+> in arch/x86/kernel/process.c to cpumask_var_t" contained a bug: c1e_mask is
+> manipulated even if C1E isn't detected (and hence not allocated).  This is
+> simply fixed by checking for NULL (which gcc optimizes out anyway of
+> CONFIG_CPUMASK_OFFSTACK=n, since it knows ce1_mask can never be NULL).
+> 
+> In addition, fix a leak where select_idle_routine re-allocates (and re-clears)
+> c1e_mask on every cpu init.
+> 
+> Reported-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+> index cad5431..91a8c26 100644
+> --- a/arch/x86/kernel/process.c
+> +++ b/arch/x86/kernel/process.c
+> @@ -479,7 +479,8 @@ static int c1e_detected;
+>  
+>  void c1e_remove_cpu(int cpu)
+>  {
+> -	cpumask_clear_cpu(cpu, c1e_mask);
+> +	if (c1e_mask != NULL)
+> +		cpumask_clear_cpu(cpu, c1e_mask);
+>  }
+>  
+>  /*
+> @@ -556,8 +557,11 @@ void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+>  		pm_idle = mwait_idle;
+>  	} else if (check_c1e_idle(c)) {
+>  		printk(KERN_INFO "using C1E aware idle routine\n");
+> -		alloc_cpumask_var(&c1e_mask, GFP_KERNEL);
+> -		cpumask_clear(c1e_mask);
+> +		/* c1e_mask can only be NULL during boot of first cpu. */
+> +		if (c1e_mask == NULL) {
+> +			alloc_cpumask_var(&c1e_mask, GFP_KERNEL);
 
-Well my suggestion was to:
+Sigh, there are two bugs here:
 
-> > > > yes, it would be cleaner to put the whole family 15 branch into 
-> > > > a helper inline function instead.
+   1) what if the GFP_KERNEL allocation fails?
 
-I.e. replace this branch:
+   2) this code is called with interrupts disabled, so a 
+      GFP_KERNEL allocation can be lethal.
 
-#ifdef CONFIG_KMEMCHECK
-	/*
-	 * P4s have a "fast strings" feature which causes single-
-	 * stepping REP instructions to only generate a #DB on
-	 * cache-line boundaries.
-	 *
-	 * Ingo Molnar reported a Pentium D (model 6) and a Xeon
-	 * (model 2) with the same problem.
-	 */
-	if (c->x86 == 15) {
-		u64 misc_enable;
+c1e_mask should stay a static cpumask...
 
-		rdmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
-
-		if (misc_enable & MSR_IA32_MISC_ENABLE_FAST_STRING) {
-			printk(KERN_INFO "kmemcheck: Disabling fast string operations\n");
-
-			misc_enable &= ~MSR_IA32_MISC_ENABLE_FAST_STRING;
-			wrmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
-		}
-	}
-#endif
-
-With a helper inline function:
-
-	if (c->x86 == 15)
-		early_init_intel_fam15();
-
-Why would you have to check family 15 inside 
-early_init_intel_fam15() again?
+Why do we convert static, standalone masks to cpumask_var?
 
 	Ingo
