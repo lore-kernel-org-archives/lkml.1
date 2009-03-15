@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758294AbZCOWxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757872AbZCOXCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758294AbZCOWxT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 18:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915AbZCOWwy
+	id S1757872AbZCOXCf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 19:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZCOXCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 18:52:54 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36236 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756293AbZCOWwx (ORCPT
+	Sun, 15 Mar 2009 19:02:25 -0400
+Received: from mailrelay003.isp.belgacom.be ([195.238.6.53]:53969 "EHLO
+	mailrelay003.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750761AbZCOXCZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 18:52:53 -0400
-Date: Sun, 15 Mar 2009 15:47:18 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jan Beulich <jbeulich@novell.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH 10/24] xen: mask XSAVE from cpuid
-Message-ID: <20090315154718.00353625@infradead.org>
-In-Reply-To: <49BD6D0E.1010107@goop.org>
-References: <1236931920-6861-1-git-send-email-jeremy@goop.org>
-	<1236931920-6861-11-git-send-email-jeremy@goop.org>
-	<49BA3A84.76E4.0078.0@novell.com>
-	<49BA7810.6090807@goop.org>
-	<49BD4CE1.6040100@zytor.com>
-	<49BD6D0E.1010107@goop.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 15 Mar 2009 19:02:25 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Al8FAJokvUlR88Bs/2dsb2JhbACBTs4Yg38G
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: "Robin H. Johnson" <robbat2@orbis-terrarum.net>
+Subject: Re: [PATCH UVC] Add UVC entry for Logitech Quickcam Orbit AF.
+Date: Mon, 16 Mar 2009 00:02:52 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.28; KDE/4.2.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <1237080405-13437-1-git-send-email-robbat2@orbis-terrarum.net> <200903151153.36688.laurent.pinchart@skynet.be> <20090315152845.GB9084@curie-int>
+In-Reply-To: <20090315152845.GB9084@curie-int>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200903160002.53181.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Mar 2009 14:03:10 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Hi Robin,
 
-> H. Peter Anvin wrote:
-> > Jeremy Fitzhardinge wrote:
-> >   
-> >> Jan Beulich wrote:
-> >>     
-> >>> As pointed out on an earlier thread, it seems inappropriate to do
-> >>> probing like this when there is a cpuid feature flag (osxsave)
-> >>> that can be used to
-> >>> determine whether XSAVE can be used. And even without that flag,
-> >>> simply reading CR4 and checking whether osxsave is set there would
-> >>> suffice. This is under the assumption that Xen's to-be-done
-> >>> implementation
-> >>> of XSAVE support would match that of FXSAVE (Xen turns its
-> >>> support on unconditionally and for all [pv] guests).
-> >>>       
-> >> I didn't want to make too many assumptions about how Xen's XSAVE
-> >> support would look.  In particular, I thought it might virtualize
-> >> the state of OSXSAVE to give the guest the honour of appearing to
-> >> enable it.  A guest kernel may get confused if it starts with
-> >> OSXSAVE set, as it may use it to control its own init logic.
-> >>     
+On Sunday 15 March 2009 16:28:45 Robin H. Johnson wrote:
+> On Sun, Mar 15, 2009 at 11:53:36AM +0100, Laurent Pinchart wrote:
+> > Hi Robin,
 > >
-> > That wouldn't be an issue if you use the *native* CPUID to look for
-> > OSXSAVE early on, since such virtualization would only be visible
-> > though the PV interface, right?
+> > On Sunday 15 March 2009 02:26:45 Robin H. Johnson wrote:
+> > > Need explicit entry like many of the other Logitech devices as it does
+> > > not match the class otherwise.
 > >
-> > It seems cleaner than probing, to be sure...
-> >   
-> 
-> Well, at the moment the problem is that cpuid (both PV and native)
-> show XSAVE, but Xen prevents cr4.OSXSAVE from being set, crashing the 
-> kernel.  There's now a patch in Xen to mask XSAVE in CPUID, so that 
-> guests don't try to use it; the patch in the kernel is just to
-> support non-bleeding-edge versions of Xen.
+> > Are you sure about that ? The Logitech Quickcam Orbit AF I got here
+> > matches the standard UVC class. Could you please post the output of
+> > lsusb -v -d 046d:0994
+> > on your system with the camera plugged in ?
+>
+> See attached camera-046d-0994
 
-This is indicative of something that might be a huge bug in Xen:
-Xen should never ever pass through CPUID bits it does not know.
-If Xen does not honor that, there is a fundamental and eternally
-recurring problem.... every time something new gets introduced Xen
-likely breaks.
+Thanks. Your camera descriptors are definitely UVC compliant, the patch is 
+thus unneeded.
 
+> I meant to send in the patch sooner, but I've been carrying it in my
+> local tree since 2.6.28 in December.
+>
+> If the automatic detection and PTZ control work fine now, then I
+> apologize for the spurious patch, but booting back to my older kernels
+> finds it not working in stock 2.6.28.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Pan and tilt controls on Logitech devices require an external tool called 
+uvcdynctrl to configure the driver.
+
+Best regards,
+
+Laurent Pinchart
+
