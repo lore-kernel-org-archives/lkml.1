@@ -1,100 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbZCOIPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZCOIcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753983AbZCOIPs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 04:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZCOIPc
+	id S1754623AbZCOIcc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 04:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZCOIcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 04:15:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60455 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751177AbZCOIP3 (ORCPT
+	Sun, 15 Mar 2009 04:32:22 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:41127 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751383AbZCOIcV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 04:15:29 -0400
-Date: Sun, 15 Mar 2009 01:02:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>, tglx@linutronix.de,
-       Jason Baron <jbaron@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Jiaying Zhang <jiayingz@google.com>, Michael Rubin <mrubin@google.com>,
-       Martin Bligh <mbligh@google.com>, Michael Davidson <md@google.com>
-Subject: Re: [PATCH 1/2 v2] tracing/syscalls: core infrastructure for
- syscalls tracing
-Message-Id: <20090315010239.d4a8b3ac.akpm@linux-foundation.org>
-In-Reply-To: <20090315045904.GA20949@elte.hu>
-References: <1236955332-10133-1-git-send-email-fweisbec@gmail.com>
-	<1236955332-10133-2-git-send-email-fweisbec@gmail.com>
-	<20090314205105.b67bdb6a.akpm@linux-foundation.org>
-	<20090315045904.GA20949@elte.hu>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 15 Mar 2009 04:32:21 -0400
+Message-ID: <49BCBD0E.40401@in.ibm.com>
+Date: Sun, 15 Mar 2009 14:02:14 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Bug #12792] 2.6.29-rc6-git4 boot failure
+References: <MiincthRUSI.A.eKC.F4BvJB@chimera> <GCLaknAim2M.A.RoD.14BvJB@chimera>
+In-Reply-To: <GCLaknAim2M.A.RoD.14BvJB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 15 Mar 2009 05:59:04 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+Rafael J. Wysocki wrote:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12792
+> Subject		: 2.6.29-rc6-git4 boot failure
+> Submitter	: Sachin P. Sant <sachinp@in.ibm.com>
+> Date		: 2009-02-27 23:19 (16 days old)
+> References	: http://ozlabs.org/pipermail/linuxppc-dev/2009-February/068771.html
+>   
+I can still recreate this with 2.6.29-rc8-git1. Same trace and same
+point of failure.
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Fri, 13 Mar 2009 15:42:11 +0100 Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > +void start_ftrace_syscalls(void)
-> > > +{
-> > > +	unsigned long flags;
-> > > +	struct task_struct *g, *t;
-> > > +
-> > > +	if (atomic_inc_return(&refcount) != 1)
-> > > +		goto out;
-> > > +
-> > > +	arch_init_ftrace_syscalls();
-> > > +	read_lock_irqsave(&tasklist_lock, flags);
-> > > +
-> > > +	do_each_thread(g, t) {
-> > > +		set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> > > +	} while_each_thread(g, t);
-> > > +
-> > > +	read_unlock_irqrestore(&tasklist_lock, flags);
-> > > +out:
-> > > +	atomic_dec(&refcount);
-> > > +}
-> > > +
-> > > +void stop_ftrace_syscalls(void)
-> > > +{
-> > > +	unsigned long flags;
-> > > +	struct task_struct *g, *t;
-> > > +
-> > > +	if (atomic_dec_return(&refcount))
-> > > +		goto out;
-> > > +
-> > > +	read_lock_irqsave(&tasklist_lock, flags);
-> > > +
-> > > +	do_each_thread(g, t) {
-> > > +		clear_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> > > +	} while_each_thread(g, t);
-> > > +
-> > > +	read_unlock_irqrestore(&tasklist_lock, flags);
-> > > +out:
-> > > +	atomic_inc(&refcount);
-> > > +}
-> > 
-> > What is this `refcount' thing trying to do?  afacit it does 
-> > not prevent the two loops from running concurrently and making 
-> > a mess.
-> > 
-> > If it _is_ trying to prevent that from happening, then why not 
-> > use plain old mutex_lock()?
-> 
-> yeah - already commented about that to Frederic over IRC. A 
-> plain flag, checked inside the tasklist lock is more than 
-> enough.
-> 
+Thanks
+-Sachin
 
-That would require write_lock().
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
+
