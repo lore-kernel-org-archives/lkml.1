@@ -1,148 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758167AbZCOXNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758147AbZCOXRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758167AbZCOXNu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 19:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbZCOXNh
+	id S1758147AbZCOXRr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 19:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbZCOXRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 19:13:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53547 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752748AbZCOXNg (ORCPT
+	Sun, 15 Mar 2009 19:17:36 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:63276 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754271AbZCOXRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 19:13:36 -0400
-Date: Sun, 15 Mar 2009 16:12:17 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jiri Pirko <jpirko@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
-       davem@davemloft.net, bridge@lists.linux-foundation.org,
-       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net
-Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work
- properly in bridge
-Message-ID: <20090315161217.7fa2c3a7@nehalam>
-In-Reply-To: <20090314094911.GA3455@psychotron.englab.brq.redhat.com>
-References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
-	<20090313223932.50ebbd88@nehalam>
-	<20090314094911.GA3455@psychotron.englab.brq.redhat.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.15.5; x86_64-pc-linux-gnu)
+	Sun, 15 Mar 2009 19:17:35 -0400
+X-Trace: 163768754/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.47.161/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 80.41.47.161
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.3 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Al8FAA4pvUlQKS+h/2dsb2JhbACBTc4Ug38G
+X-IronPort-AV: E=Sophos;i="4.38,368,1233532800"; 
+   d="scan'208";a="163768754"
+Subject: [PATCH] Documentation/filesystems: remove out of date reference to
+ BKL being held
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>, linux-doc@vger.kernel.org
+Content-Type: text/plain
+Date: Sun, 15 Mar 2009 23:17:22 +0000
+Message-Id: <1237159042.6636.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Mar 2009 10:49:11 +0100
-Jiri Pirko <jpirko@redhat.com> wrote:
+Documentation/filesystems/vfs.txt incorrectly states that the kernel is
+locked during the call to statfs (Documentation/filesystems/Locking
+correctly says it is not). This patch removes the offending sentence.
 
-> Sat, Mar 14, 2009 at 06:39:32AM CET, shemminger@linux-foundation.org wrote:
-> >On Fri, 13 Mar 2009 19:33:04 +0100
-> >Jiri Pirko <jpirko@redhat.com> wrote:
-> >
-> >> Hi all.
-> >> 
-> >> This is only a draft of patch to consult. I'm aware that it should be divided
-> >> into multiple patches. I want to know opinion from you folks.
-> >> 
-> >> The problem is described in following bugzilla:
-> >> https://bugzilla.redhat.com/show_bug.cgi?id=487763
-> >> 
-> >> Basically here's what's going on. In every mode, bonding interface uses the same
-> >> mac address for all enslaved devices. Except for mode balance-alb. When you put
-> >> this kind of bond device into a bridge it will only add one of mac adresses into
-> >> a hash list of mac addresses, say X. This mac address is marked as local. But
-> >> this bonding interface also has mac address Y. Now then packet arrives with
-> >> destination address Y, this address is not marked as local and the packed looks
-> >> like it needs to be forwarded. This packet is then lost which is wrong.
-> >> 
-> >> Notice that interfaces can be added and removed from bond while it is in bridge.
-> >> Therefore I introduce another function pointer in struct net_device_ops -
-> >> ndo_check_mac_address. This function when it's implemented should check passed
-> >> mac address against the one set in device. I'm using this in bonding driver when
-> >> the bond is in mode balance-alb to walk thru all slaves and checking if any of
-> >> them equals passed address.
-> >> 
-> >> Then in bridge function br_handle_frame_finish() I'm using ndo_check_mac_address
-> >> to recognize the destination mac address as local.
-> >> 
-> >> Please look at this and tell me what you think about it.
-> >> 
-> >> Thanks
-> >> 
-> >> Jirka
-> >>
-> >
-> >A better and more general way to do this have the dev_set_mac_address
-> >function check the return of the notifier and unwind. Then any protocol
-> >can easily prevent address from changing.
-> 
-> Can you please describe this thougth a bit more? I can't understand it now...
-> 
-> Thanks
-> 
-> Jirka
+remove reference to BKL being held in statfs
 
-Something like this:
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+---
 
---- a/net/core/dev.c	2009-03-15 15:55:02.098126056 -0700
-+++ b/net/core/dev.c	2009-03-15 16:02:43.999251305 -0700
-@@ -3830,6 +3830,7 @@ int dev_set_mac_address(struct net_devic
- {
- 	const struct net_device_ops *ops = dev->netdev_ops;
- 	int err;
-+	char save_addr[MAX_ADDR_LEN];
+diff --git a/Documentation/filesystems/vfs.txt b/Documentation/filesystems/vfs.txt
+index deeeed0..f49eecf 100644
+--- a/Documentation/filesystems/vfs.txt
++++ b/Documentation/filesystems/vfs.txt
+@@ -277,8 +277,7 @@ or bottom half).
+   unfreeze_fs: called when VFS is unlocking a filesystem and making it writable
+   	again.
  
- 	if (!ops->ndo_set_mac_address)
- 		return -EOPNOTSUPP;
-@@ -3837,9 +3838,17 @@ int dev_set_mac_address(struct net_devic
- 		return -EINVAL;
- 	if (!netif_device_present(dev))
- 		return -ENODEV;
-+
-+	memcpy(save_addr, dev->dev_addr, dev->addr_len);
- 	err = ops->ndo_set_mac_address(dev, sa);
--	if (!err)
--		call_netdevice_notifiers(NETDEV_CHANGEADDR, dev);
-+	if (err)
-+		return err;
-+
-+	err = call_netdevice_notifiers(NETDEV_CHANGEADDR, dev);
-+	if (err) {
-+		memcpy(sa->sa_data, save_addr, dev->addr_len);
-+		ops->ndo_set_mac_address(dev, sa);
-+	}
- 	return err;
- }
+-  statfs: called when the VFS needs to get filesystem statistics. This
+-	is called with the kernel lock held
++  statfs: called when the VFS needs to get filesystem statistics.
  
-
-And something like this:
-
---- a/drivers/net/bonding/bond_main.c	2009-03-15 16:03:53.909000973 -0700
-+++ b/drivers/net/bonding/bond_main.c	2009-03-15 16:11:43.227127031 -0700
-@@ -3534,6 +3534,7 @@ static int bond_slave_netdev_event(unsig
- {
- 	struct net_device *bond_dev = slave_dev->master;
- 	struct bonding *bond = netdev_priv(bond_dev);
-+	int err;
- 
- 	switch (event) {
- 	case NETDEV_UNREGISTER:
-@@ -3570,6 +3571,15 @@ static int bond_slave_netdev_event(unsig
- 		 * servitude.
- 		 */
- 		break;
-+	case NETDEV_CHANGEADDR:
-+		if (bond->params.mode == BOND_MODE_ALB)
-+			err = bond_alb_check_mac_address(bond);
-+		else if (compare_ether_addr(bond_dev->dev_addr, addr) != 0)
-+			err = -EINVAL;
-+
-+		if (err)
-+			return notifier_from_errno(err);
-+		break;
- 	case NETDEV_CHANGENAME:
- 		/*
- 		 * TODO: handle changing the primary's name
-
-
+   remount_fs: called when the filesystem is remounted. This is called
+ 	with the kernel lock held
 
