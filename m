@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbZCOGFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbZCOGJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758590AbZCOGFs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 02:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbZCOGFg
+	id S1757464AbZCOGJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 02:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZCOGJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 02:05:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33466 "EHLO mx3.mail.elte.hu"
+	Sun, 15 Mar 2009 02:09:51 -0400
+Received: from gw.goop.org ([64.81.55.164]:57024 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754857AbZCOGFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 02:05:35 -0400
-Date: Sun, 15 Mar 2009 07:04:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/mm] x86: make e820_update_range() handle small range
-	update
-Message-ID: <20090315060456.GF20949@elte.hu>
-References: <49B9F0C1.10402@kernel.org> <tip-78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742@git.kernel.org> <20090314121705.GA13685@elte.hu> <49BBF59D.7060401@kernel.org> <20090314184010.GA17695@elte.hu> <49BC2279.2030101@kernel.org>
+	id S1750807AbZCOGJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 02:09:50 -0400
+Message-ID: <49BC9BAC.6090201@goop.org>
+Date: Sat, 14 Mar 2009 23:09:48 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49BC2279.2030101@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Yinghai Lu <yinghai@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com>
+In-Reply-To: <49BC4DB6.9070403@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>>> It really doesn't make much sense to me, and is more than a bit
+>>> confusing given the symbols.
+>>>       
+>> Mostly because I knew that the bss would get mapped into the appropriate
+>> phdr segment correctly, but I wasn't sure that another bss-like section
+>> would be.
+>>     
+>
+> It will; in fact if they are adjacent then ld will typically merge the
+> PHDRs.
+>
+>   
+>> Also because historically the brk segment was just an
+>> extension of the executable's bss, and its more or less the same too.
+>>     
+>
+> An extension of, yes, but not a part of.
+>
+>   
+>> Is there any real benefit in putting it into another section?
+>>     
+>
+> Well, the semantics are different; the .bss section is zeroed while the
+> brk isn't,
+Traditionally, brk is always zeroed.  extend_brk() zeros the memory it 
+returns (to be consistent with bootmem, and to make it easier to migrate 
+from bss -> brk).
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+>  and the brk symbols don't necessarily point to the data
+> associated with those particular symbols, unlike (of course) the bss.
+>   
 
-> Ingo Molnar wrote:
-> > * Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> >> Ingo Molnar wrote:
-> >>> * Yinghai Lu <yinghai@kernel.org> wrote:
-> >>>
-> >>>> Commit-ID:  78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
-> >>>> Gitweb:     http://git.kernel.org/tip/78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
-> >>>> Author:     Yinghai Lu <yinghai@kernel.org>
-> >>>> AuthorDate: Thu, 12 Mar 2009 22:36:01 -0700
-> >>>> Commit:     Ingo Molnar <mingo@elte.hu>
-> >>>> CommitDate: Sat, 14 Mar 2009 12:20:07 +0100
-> >>>>
-> >>>> x86: make e820_update_range() handle small range update
-> >>>>
-> >>>> Impact: enhance e820 code to handle more cases
-> >>>>
-> >>>> Try to handle new range which could be covered by one entry.
-> >>>>
-> >>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> >>>> Cc: jbeulich@novell.com
-> >>>> LKML-Reference: <49B9F0C1.10402@kernel.org>
-> >>>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> >>> -tip testing found a bootup crash + reboot due to this patch.
-> >>>
-> >>> config attached. The bootup crashes here:
-> >>>
-> >>> [    0.000000] MTRR variable ranges enabled:
-> >>> [    0.000000]   0 base 0000000000 mask FFC0000000 write-back
-> >>> [    0.000000]   1 disabled
-> >>> [    0.000000]   2 disabled
-> >>> [    0.000000]   3 disabled
-> >>> [    0.000000]   4 disabled
-> >>> [    0.000000]   5 disabled
-> >>> [    0.000000]   6 disabled
-> >>> [    0.000000]   7 disabled
-> >>> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-> >>> [    0.000000]   get_mtrr: cpu0 reg00 base=0000000000 size=0000040000 write-back
-> >>> [    reboot  ]
-> >>>
-> >> what does the e820 map look like?
-> > 
-> > [    0.000000] BIOS-provided physical RAM map:
-> > [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
-> > [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
-> > [    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
-> > [    0.000000]  BIOS-e820: 0000000000100000 - 000000003fff0000 (usable)
-> > [    0.000000]  BIOS-e820: 000000003fff0000 - 000000003fff3000 (ACPI NVS)
-> > [    0.000000]  BIOS-e820: 000000003fff3000 - 0000000040000000 (ACPI data)
-> > [    0.000000]  BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
-> > [    0.000000]  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
-> > 
-> 
-> it seems that patch revealed the bug in 
-> setup_bios_corruption_check
+Yes, its a bit of a pitfall.  I guess the symbols are useful as a way to 
+identify brk users just from looking at the vmlinux, but they're not 
+really all that useful.  I'm half thinking we should put some non-C 
+identifier characters in them to make sure that C code can never refer 
+to them.
 
-Cool. I'm wondering, could this explain:
-
-   http://bugzilla.kernel.org/show_bug.cgi?id=12645
-
-?
-
-	Ingo
+    J
