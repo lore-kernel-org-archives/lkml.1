@@ -1,43 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbZCOJb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757084AbZCOJhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbZCOJb3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 05:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbZCOJbT
+	id S1757084AbZCOJhT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 05:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbZCOJhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 05:31:19 -0400
-Received: from mail-bw0-f175.google.com ([209.85.218.175]:48198 "EHLO
-	mail-bw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752995AbZCOJbS (ORCPT
+	Sun, 15 Mar 2009 05:37:05 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:50063 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753562AbZCOJhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 05:31:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=B+5nGUNf7HzX/7Hs6PsUpTiyQVW3RRTTmhbgzfd2GP6p8lcDYnbyaETLrWONb2jVvx
-         J8mu17V3OgU2g76/k9xYpPs9HeTkgtFYaj0qSUuaaPKNv/QTiJJq1aa+WEjmjYG36w89
-         rWEXlLP0EGg3RVKzHawPwO2UEEXa4BX3DnJns=
-Message-ID: <49BCCAE0.6010303@gmail.com>
-Date: Sun, 15 Mar 2009 10:31:12 +0100
+	Sun, 15 Mar 2009 05:37:04 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Jan Kasprzak <kas@fi.muni.cz>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: MOXA I/O errors on 2.6.28+
-References: <20090314213630.GA3375@fi.muni.cz> <20090314214230.352d293e@lxorguk.ukuu.org.uk> <20090314224138.GC3375@fi.muni.cz>
-In-Reply-To: <20090314224138.GC3375@fi.muni.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 1/1] Char: moxa, fix refcounting in moxa_poll_port
+Date: Sun, 15 Mar 2009 10:36:08 +0100
+Message-Id: <1237109768-3820-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.2
+In-Reply-To: <49BCCAE0.6010303@gmail.com>
+References: <49BCCAE0.6010303@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14.3.2009 23:41, Jan Kasprzak wrote:
-> Alan Cox wrote:
-> : Sounds like a refcount bug.
-...
-> d450b5a0196b6442cf3f29fc611d9c8daa56b559 tty: kref usage for isicom and moxa.
+There is missing tty_kref_put on some paths in moxa_poll_port,
+although the reference is always taken. Fix it.
 
-Thanks a heap. moxa_poll_port is a good candidate for fixing. A patch 
-will follow, could you try it?
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Reported-by: Jan 'Yenya' Kasprzak <kas@fi.muni.cz>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+---
+ drivers/char/moxa.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
+index 8b0da97..4a4cab7 100644
+--- a/drivers/char/moxa.c
++++ b/drivers/char/moxa.c
+@@ -1486,11 +1486,11 @@ static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
+ 	}
+ 
+ 	if (!handle) /* nothing else to do */
+-		return 0;
++		goto put;
+ 
+ 	intr = readw(ip); /* port irq status */
+ 	if (intr == 0)
+-		return 0;
++		goto put;
+ 
+ 	writew(0, ip); /* ACK port */
+ 	ofsAddr = p->tableAddr;
+@@ -1499,16 +1499,17 @@ static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
+ 				ofsAddr + HostStat);
+ 
+ 	if (!inited)
+-		return 0;
++		goto put;
+ 
+ 	if (tty && (intr & IntrBreak) && !I_IGNBRK(tty)) { /* BREAK */
+ 		tty_insert_flip_char(tty, 0, TTY_BREAK);
+ 		tty_schedule_flip(tty);
+ 	}
+-	tty_kref_put(tty);
+ 
+ 	if (intr & IntrLine)
+ 		moxa_new_dcdstate(p, readb(ofsAddr + FlagStat) & DCD_state);
++put:
++	tty_kref_put(tty);
+ 
+ 	return 0;
+ }
+-- 
+1.6.2
+
