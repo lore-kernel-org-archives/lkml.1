@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbZCOE1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbZCOEfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757350AbZCOE1j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 00:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZCOE1a
+	id S1758036AbZCOEfi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 00:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbZCOEf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 00:27:30 -0400
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:20870 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751357AbZCOE13 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 00:27:29 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:Reply-To:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qwM0FYcJMnKxJGNxl+KSGLcWhU6y3L8cZd1zEH9+M9jG/xI9a1qGX3hLeGL3Ms/cJhczR49VcAyR8/eADuZzrwaVrrh3+5UAIaCJ1wI3bX1SadW4vqNasnsAto2VDpiLssA6ThNpSZaOigKCRualV3M5TDw/Cp+BHKb2dO+z/jI=  ;
-X-YMail-OSG: O389pL8VM1kbyGw9ljCGhljgOEDu9EsNyCobFdyVkmBEm2azqKqn5ymniW_Yd5COB9l7qtJdVURTVCmy2LdRvG.9.mqM62xiKmMwIe5Iaf7ZbILfAYg7bXM6vtWp9HURcibtlgvZxbbXDRmKc3E1JYyQ
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-Reply-To: dbrownell@users.sourceforge.net
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch 2.6.29-rc7 regulator-next] regulator: refcount fixes
-Date: Sat, 14 Mar 2009 21:27:26 -0700
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-References: <200903111743.34708.david-b@pacbell.net> <200903141429.24534.david-b@pacbell.net> <20090315003039.GA11052@sirena.org.uk>
-In-Reply-To: <20090315003039.GA11052@sirena.org.uk>
+	Sun, 15 Mar 2009 00:35:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41717 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751357AbZCOEf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 00:35:28 -0400
+Date: Sun, 15 Mar 2009 05:35:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86: trampoline.c cleanup
+Message-ID: <20090315043508.GA11150@elte.hu>
+References: <1237045494.4546.22.camel@ht.satnam> <alpine.LFD.2.00.0903141718120.29264@localhost.localdomain> <1237048511.4546.34.camel@ht.satnam> <alpine.LFD.2.00.0903141757000.29264@localhost.localdomain> <1237054312.3144.12.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903142127.26182.david-b@pacbell.net>
+In-Reply-To: <1237054312.3144.12.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 14 March 2009, Mark Brown wrote:
-> Looking at things from the point of view of the consumer I just don't
-> find that it makes any difference since as far as the consumer is
-> concerned it's all opaque objects manipulated via an API.
 
-These put()/get() calls are not refcount calls.  They're
-what might be called alloc()/free() calls instead.
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
->         foo = foo_get(dev, name);
+> On Sat, 2009-03-14 at 17:58 +0100, Thomas Gleixner wrote:
+> > On Sat, 14 Mar 2009, Jaswinder Singh Rajput wrote:
+> > > Hello Thomas,
+> > > 
+> > > On Sat, 2009-03-14 at 17:20 +0100, Thomas Gleixner wrote:
+> > > > On Sat, 14 Mar 2009, Jaswinder Singh Rajput wrote:
+> > > > 
+> > > > > Subject: [PATCH] x86: trampoline.c cleanup
+> > > > > 
+> > > > > Impact: cleanup
+> > > > > 
+> > > > >  - fix style problems
+> > > > 
+> > > > Err. This patch is a style problem itself.
+> > > >  
+> > > > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > > > ---
+> > > > >  arch/x86/kernel/trampoline.c |    3 ++-
+> > > > >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > > > > 
+> > > > > diff --git a/arch/x86/kernel/trampoline.c b/arch/x86/kernel/trampoline.c
+> > > > > index 808031a..e3b1f2e 100644
+> > > > > --- a/arch/x86/kernel/trampoline.c
+> > > > > +++ b/arch/x86/kernel/trampoline.c
+> > > > > @@ -15,7 +15,7 @@ void __init reserve_trampoline_memory(void)
+> > > > >  	 * trampoline before removing it. (see the GDT stuff)
+> > > > >  	 */
+> > > > >  	reserve_early(PAGE_SIZE, PAGE_SIZE + PAGE_SIZE, "EX TRAMPOLINE");
+> > > > > -#endif
+> > > > > +#endif /* CONFIG_X86_32 */
+> > > > 
+> > > > There is no need for this useless comment. The #ifdef is 5 lines
+> > > > above. Such comments are only helpful in large nested sections.
+> > > > 
+> > > 
+> > > Ahh, So
+> > > 
+> > > 	if (ifdef < 5)
+> > > 		Rule #1
+> > > 	else
+> > > 		Rule #2
+> > 
+> > Sigh. I asked for applying common sense not for creating another
+> > stupid rule.
+> 
+> Who made this stupid rule ?
 
-The normal idiom is
+What Thomas is saying is that instead of you trying to create 
+some sort of rigid rule, you should apply common sense instead.
 
-	bar = foo_get(foo)
-
-which just increments a refcount.  Then if "bar" were handed
-to something else ("baz") right here, and "baz" needed to keep a
-copy of that reference, it would be expected to grab its own
-refcount via foo_get(bar), and later release via foo_put(bar).
-
-
->         foo_enable(foo);
->         foo_disable(foo);
->         foo_put(foo);
-
-Until "baz" called foo_put(bar), that reference would still be
-usable.  But ... regulator_put(foo) does a kfree, it's not
-just updating refcounts.
+	Ingo
