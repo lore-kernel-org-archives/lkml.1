@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbZCOWVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbZCOWXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759521AbZCOWVB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 18:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754963AbZCOWUw
+	id S1756799AbZCOWXV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 18:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbZCOWXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 18:20:52 -0400
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:55053 "EHLO
+	Sun, 15 Mar 2009 18:23:11 -0400
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:56013 "EHLO
 	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752475AbZCOWUv (ORCPT
+	by vger.kernel.org with ESMTP id S1752475AbZCOWXK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 18:20:51 -0400
-Date: Mon, 16 Mar 2009 09:19:21 +1100
+	Sun, 15 Mar 2009 18:23:10 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAN8cvUl5LAJ7/2dsb2JhbADPcoN/Bg
+X-IronPort-AV: E=Sophos;i="4.38,368,1233495000"; 
+   d="scan'208";a="339248040"
+Date: Mon, 16 Mar 2009 09:23:01 +1100
 From: Dave Chinner <david@fromorbit.com>
-To: Denys Fedoryschenko <denys@visp.net.lb>
-Cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: XFS lock warning, 2.6.29-rc8
-Message-ID: <20090315221921.GY26138@disturbed>
-Mail-Followup-To: Denys Fedoryschenko <denys@visp.net.lb>, xfs@oss.sgi.com,
-	linux-kernel@vger.kernel.org
-References: <200903151459.01320.denys@visp.net.lb>
+To: Alexey Fisher <bug-track@fisher-privat.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: smart cache. ist is possible?
+Message-ID: <20090315222301.GZ26138@disturbed>
+Mail-Followup-To: Alexey Fisher <bug-track@fisher-privat.net>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <49BD1EB7.6080109@fisher-privat.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200903151459.01320.denys@visp.net.lb>
+In-Reply-To: <49BD1EB7.6080109@fisher-privat.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ changed cc to xfs@oss.sgi.com. linux-xfs@vger.kernel.org does not
-exist. ]
+On Sun, Mar 15, 2009 at 04:28:55PM +0100, Alexey Fisher wrote:
+> Hallo all.
+> I found for my self how great is cache in linux. If read one file from
+> disk, so i don't need to do it second time, chace will do the job. It
+> speed up thing greatly. But i found it not working with realy big files.
+> Like i have 4GB RAM, so if i read a file like 4.6GB, cache won't work.
+> Is it possible to have some sort of smart cache wich will read for
+> exaplme 1GB from disk and other part from cache?
 
-On Sun, Mar 15, 2009 at 02:59:01PM +0200, Denys Fedoryschenko wrote:
-> hi
-> 
-> Here is what i got suddently. But seems everything is working.
-> If any other information required, please let me know.
+You're asking for a cache algorithm that can predict the future.
+i.e. which bit of that file that is larger than memory is going
+to be reused in 10s time?
 
-Known issue.
-
-> [39993.560234] the existing dependency chain (in reverse order) is:
-> [39993.560236]
-> [39993.560236] -> #1 (&mm->mmap_sem){----}:
-> [39993.560240]        [<ffffffff8105b9fc>] __lock_acquire+0x12b0/0x161a
-> [39993.560244]        [<ffffffff8105bdbb>] lock_acquire+0x55/0x71
-> [39993.560247]        [<ffffffff813fc2a5>] down_read+0x34/0x41
-> [39993.560252]        [<ffffffff813ffbfe>] do_page_fault+0x3fa/0x848
-> [39993.560256]        [<ffffffff813fda2f>] page_fault+0x1f/0x30
-> [39993.560258]        [<ffffffff8107e13d>] generic_file_aio_read+0x35f/0x5da
-> [39993.560268]        [<ffffffff811650d8>] xfs_read+0x17d/0x1f5
-> [39993.560272]        [<ffffffff81161646>] xfs_file_aio_read+0x5f/0x61
-> [39993.560275]        [<ffffffff810a88ff>] do_sync_read+0xe7/0x12d
-> [39993.560284]        [<ffffffff810a928c>] vfs_read+0xab/0x134
-> [39993.560287]        [<ffffffff810a93d9>] sys_read+0x47/0x6f
-> [39993.560289]        [<ffffffff8100c0db>] system_call_fastpath+0x16/0x1b
-> [39993.560293]        [<ffffffffffffffff>] 0xffffffffffffffff
-> [39993.560302]
-> [39993.560302] -> #0 (&(&ip->i_iolock)->mr_lock){----}:
-> [39993.560306]        [<ffffffff8105b6cb>] __lock_acquire+0xf7f/0x161a
-> [39993.560309]        [<ffffffff8105bdbb>] lock_acquire+0x55/0x71
-> [39993.560312]        [<ffffffff8104ebde>] down_write_nested+0x37/0x46
-> [39993.560316]        [<ffffffff811426aa>] xfs_ilock+0x27/0x79
-> [39993.560318]        [<ffffffff8115b40e>] xfs_inactive+0x14d/0x411
-> [39993.560322]        [<ffffffff8116552f>] xfs_fs_clear_inode+0x83/0x85
-> [39993.560325]        [<ffffffff810ba8f7>] clear_inode+0x8a/0xe3
-> [39993.560329]        [<ffffffff810bb044>] generic_delete_inode+0xf8/0x173
-> [39993.560332]        [<ffffffff810bb0d6>] generic_drop_inode+0x17/0x1d5
-> [39993.560335]        [<ffffffff810ba1c7>] iput+0x61/0x65
-> [39993.560338]        [<ffffffff810b7554>] dentry_iput+0xa9/0xc1
-> [39993.560341]        [<ffffffff810b7651>] d_kill+0x40/0x60
-> [39993.560344]        [<ffffffff810b942d>] dput+0x141/0x14e
-> [39993.560347]        [<ffffffff810a9a85>] __fput+0x173/0x198
-> [39993.560350]        [<ffffffff810a9ac2>] fput+0x18/0x1a
-> [39993.560353]        [<ffffffff8109411e>] remove_vma+0x3e/0x63
-> [39993.560355]        [<ffffffff8109503c>] do_munmap+0x2e9/0x30b
-> [39993.560358]        [<ffffffff8109509e>] sys_munmap+0x40/0x59
-> [39993.560361]        [<ffffffff8100c0db>] system_call_fastpath+0x16/0x1b
-> [39993.560363]        [<ffffffffffffffff>] 0xffffffffffffffff
-
-This is a VM problem where it calls fput() with the mmap_sem() held
-in remove_vma(). It makes the incorrect assumption that filesystems
-will never use the same lock in the IO path and the inode release path.
-
-This can deadlock if you are really unlucky.
+If you find an algorithm that can tell you this, please let me
+know so I can use it to build a flux capacitor. ;)
 
 Cheers,
 
