@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbZCOEoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbZCOEo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbZCOEoe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 00:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbZCOEo0
+	id S1758819AbZCOEo6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 00:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbZCOEou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 00:44:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39232 "EHLO mx3.mail.elte.hu"
+	Sun, 15 Mar 2009 00:44:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53181 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751369AbZCOEoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 00:44:25 -0400
-Date: Sun, 15 Mar 2009 05:44:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
-Subject: Re: [RFC][PATCH 2/2] tracing/x86: basic implementation of syscall
-	tracing for x86-64
-Message-ID: <20090315044405.GB11150@elte.hu>
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-3-git-send-email-fweisbec@gmail.com> <20090313163207.GA3354@Krystal> <20090313163702.GA9082@elte.hu> <20090313165020.GD3354@Krystal>
+	id S1751369AbZCOEot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 00:44:49 -0400
+Message-ID: <49BC878D.5090402@kernel.org>
+Date: Sat, 14 Mar 2009 21:43:57 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090313165020.GD3354@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC5BCF.1070602@zytor.com>
+In-Reply-To: <49BC5BCF.1070602@zytor.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> * Ingo Molnar (mingo@elte.hu) wrote:
-> > 
-> > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > 
-> > > * Frederic Weisbecker (fweisbec@gmail.com) wrote:
-> > >
-> > > > Provide the ptrace hooks and arch specific syscall numbers 
-> > > > to ftrace arch indepedant syscall numbers. For now it only 
-> > > > supports 4 syscalls to provide an example.
-> > > > 
-> > > 
-> > > Hi Frederic,
-> > > 
-> > > I already have the equivalent TIF_KERNEL_TRACE flag in my 
-> > > LTTng tree added to every Linux architecture. You might want 
-> > > to re-use this work rather than re-doing this. I don't mind 
-> > > changing the flag name.
-> > 
-> > Yeah. Note that the TIF bits are just one part - there are other 
-> > bits needed for HAVE_FTRACE_SYSCALLS arch support.
-> > 
-> > Also, i'd eventually expect the TIF bits to be converted to a 
-> > tracehook callback, not spread it to other architectures.
-> > 
+H. Peter Anvin wrote:
+> On this subject, what is the point of the 64 K "slop space", and if it
+> is necessary, why not just put it as a RESERVE_BRK() somewhere (*with* a
+>  significant comment as to its necessity) instead of putting it as a
+> hack in the linker script?
 > 
-> The nice part about the TIF bit is that it permits adding this 
-> syscall tracing feature without increasing the size of the 
-> thread_info struct nor adding any extra tests in entry.S. Does 
-> the tracehook callback have these features ?
 
-yes. Tracehook just factors out common interfacing points - with 
-one specific implementation for now: ptrace. For syscall tracing 
-that means it wraps TIF_SYSCALL_TRACE in essence.
+32bit already have that
 
-	Ingo
++INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
++RESERVE_BRK(pagetables, INIT_MAP_SIZE)
+
+in head_32.S
+
+so need to update vmlinux_32.lds.S
+
+YH
