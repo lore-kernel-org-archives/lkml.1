@@ -1,39 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbZCOKH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758336AbZCOKI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758221AbZCOKH6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 06:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbZCOKHq
+	id S1758336AbZCOKI1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 06:08:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbZCOKIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 06:07:46 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:40503 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752702AbZCOKHq (ORCPT
+	Sun, 15 Mar 2009 06:08:17 -0400
+Received: from newton.gmurray.org.uk ([81.2.114.237]:33574 "EHLO
+	newton.gmurray.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755609AbZCOKIQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 06:07:46 -0400
-Date: Sun, 15 Mar 2009 11:09:53 +0100
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Tim Durack <tdurack@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, ivecera@redhat.com
-Subject: Re: [BUG] 2.6.29-rc7 broke r8169 MAC on Thecus n2100 ARM board
-Message-ID: <20090315100953.GA16632@electric-eye.fr.zoreil.com>
-References: <200903092029.n29KT1DS004531@harpo.it.uu.se> <20090313201511.GA27827@electric-eye.fr.zoreil.com> <9e246b4d0903131921k6fba9b04ge945c2902d4117d0@mail.gmail.com> <18875.38673.270977.133982@pilspetsen.it.uu.se>
+	Sun, 15 Mar 2009 06:08:16 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 newton.gmurray.org.uk n2FA8Dkg007519
+From: Graham Murray <graham@gmurray.org.uk>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [Bug #12444] X hangs following switch from radeonfb console - Bisected
+References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
+	<GCLaknAim2M.A.NXF.F7BvJB@chimera>
+X-Hashcash: 1:22:090315:linux-kernel@vger.kernel.org::WlBHr/Bh3qXa4xoq:000000000000000000000000000000000QBfP
+Date: Sun, 15 Mar 2009 10:08:13 +0000
+In-Reply-To: <GCLaknAim2M.A.NXF.F7BvJB@chimera> (Rafael J. Wysocki's message
+	of "Sat, 14 Mar 2009 20:05:28 +0100 (CET)")
+Message-ID: <87wsardroy.fsf@newton.gmurray.org.uk>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18875.38673.270977.133982@pilspetsen.it.uu.se>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson <mikpe@it.uu.se> :
-[...]
-> May I suggest that 6709fe9a27e43a4931938fe0d7f2cc5edef31386 is reverted
-> until this regression is debugged and fixed?
+I am no longer seeing this problem with 2.6.29-rc8-00090g326d851, but I
+have also upgrade various parts of X including the radeon driver to
+version 6.12.0. 
 
-Yes.
-
--- 
-Ueimor
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12444
+> Subject		: X hangs following switch from radeonfb console - Bisected
+> Submitter	: Graham Murray <graham@gmurray.org.uk>
+> Date		: 2009-01-13 14:03 (61 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=7c1c2871a6a3a114853ec6836e9035ac1c0c7f7a
