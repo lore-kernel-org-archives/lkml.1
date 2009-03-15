@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbZCOTWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbZCOTbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbZCOTWV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 15:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZCOTWL
+	id S1755971AbZCOTbb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 15:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZCOTbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 15:22:11 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:53437 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751511AbZCOTWK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 15:22:10 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtMEAFzsvElMQW1W/2dsb2JhbACBTs42g38G
-Date: Sun, 15 Mar 2009 15:22:05 -0400
+	Sun, 15 Mar 2009 15:31:20 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56365 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751511AbZCOTbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 15:31:20 -0400
+Message-Id: <20090315191104.335392654@polymtl.ca>
+References: <20090315190340.229569867@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Sun, 15 Mar 2009 15:03:53 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
+To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>
-Subject: Re: [RFC][PATCH 2/2] tracing/x86: basic implementation of syscall
-	tracing for x86-64
-Message-ID: <20090315192205.GA10131@Krystal>
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-3-git-send-email-fweisbec@gmail.com> <20090313163207.GA3354@Krystal> <20090313163702.GA9082@elte.hu> <20090313165020.GD3354@Krystal> <20090315044405.GB11150@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090315044405.GB11150@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:19:59 up 15 days, 15:46,  2 users,  load average: 0.82, 0.59,
-	0.46
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [RFC patch 13/21] LTTng Kernel Trace Thread Flag powerpc
+Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-powerpc.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sun, 15 Mar 2009 19:30:28 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > * Ingo Molnar (mingo@elte.hu) wrote:
-> > > 
-> > > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > > 
-> > > > * Frederic Weisbecker (fweisbec@gmail.com) wrote:
-> > > >
-> > > > > Provide the ptrace hooks and arch specific syscall numbers 
-> > > > > to ftrace arch indepedant syscall numbers. For now it only 
-> > > > > supports 4 syscalls to provide an example.
-> > > > > 
-> > > > 
-> > > > Hi Frederic,
-> > > > 
-> > > > I already have the equivalent TIF_KERNEL_TRACE flag in my 
-> > > > LTTng tree added to every Linux architecture. You might want 
-> > > > to re-use this work rather than re-doing this. I don't mind 
-> > > > changing the flag name.
-> > > 
-> > > Yeah. Note that the TIF bits are just one part - there are other 
-> > > bits needed for HAVE_FTRACE_SYSCALLS arch support.
-> > > 
-> > > Also, i'd eventually expect the TIF bits to be converted to a 
-> > > tracehook callback, not spread it to other architectures.
-> > > 
-> > 
-> > The nice part about the TIF bit is that it permits adding this 
-> > syscall tracing feature without increasing the size of the 
-> > thread_info struct nor adding any extra tests in entry.S. Does 
-> > the tracehook callback have these features ?
-> 
-> yes. Tracehook just factors out common interfacing points - with 
-> one specific implementation for now: ptrace. For syscall tracing 
-> that means it wraps TIF_SYSCALL_TRACE in essence.
-> 
-> 	Ingo
+Add a thread flag to activate system-wide syscall tracing.
 
-What overhead and latency does tracehooks add when
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/powerpc/include/asm/thread_info.h |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-- they are being enabled/disabled
-- once they are enabled ?
-
-Do they require to stop each and every thread upon activation ?
-
-I'll post my lttng trace flags for RFC, as it could save Frederic some
-duplicated work. Feel free to comment.
-
-Thanks,
-
-Mathieu
+Index: linux-2.6-lttng/arch/powerpc/include/asm/thread_info.h
+===================================================================
+--- linux-2.6-lttng.orig/arch/powerpc/include/asm/thread_info.h	2009-01-09 18:15:55.000000000 -0500
++++ linux-2.6-lttng/arch/powerpc/include/asm/thread_info.h	2009-01-09 18:17:48.000000000 -0500
+@@ -100,7 +100,7 @@ static inline struct thread_info *curren
+ #define TIF_POLLING_NRFLAG	3	/* true if poll_idle() is polling
+ 					   TIF_NEED_RESCHED */
+ #define TIF_32BIT		4	/* 32 bit binary */
+-#define TIF_PERFMON_WORK	5	/* work for pfm_handle_work() */
++#define TIF_KERNEL_TRACE	5	/* kernel trace active */
+ #define TIF_PERFMON_CTXSW	6	/* perfmon needs ctxsw calls */
+ #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
+ #define TIF_SINGLESTEP		8	/* singlestepping active */
+@@ -112,6 +112,7 @@ static inline struct thread_info *curren
+ #define TIF_FREEZE		14	/* Freezing for suspend */
+ #define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
+ #define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
++#define TIF_PERFMON_WORK	17	/* work for pfm_handle_work() */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -119,7 +120,7 @@ static inline struct thread_info *curren
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_32BIT		(1<<TIF_32BIT)
+-#define _TIF_PERFMON_WORK	(1<<TIF_PERFMON_WORK)
++#define _TIF_KERNEL_TRACE	(1<<TIF_KERNEL_TRACE)
+ #define _TIF_PERFMON_CTXSW	(1<<TIF_PERFMON_CTXSW)
+ #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+ #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
+@@ -130,7 +131,8 @@ static inline struct thread_info *curren
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
+ #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
+ #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+-#define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
++#define _TIF_PERFMON_WORK	(1<<TIF_PERFMON_WORK)
++#define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP|_TIF_KERNEL_TRACE)
+ 
+ #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+ 				 _TIF_NOTIFY_RESUME)
 
 -- 
 Mathieu Desnoyers
