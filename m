@@ -1,119 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbZCOSNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757372AbZCOSNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756594AbZCOSNU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 14:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbZCOSMq
+	id S1757372AbZCOSNw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 14:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756569AbZCOSNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 14:12:46 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:27409 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754921AbZCOSMn (ORCPT
+	Sun, 15 Mar 2009 14:13:19 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:52813 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756068AbZCOSNS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 14:12:43 -0400
-Message-ID: <49BD449C.8090301@panasas.com>
-Date: Sun, 15 Mar 2009 20:10:36 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Evgeniy Polyakov <zbr@ioremap.net>
-CC: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [PATCH 5/8] exofs: dir_inode and directory operations
-References: <49902A9E.3070002@panasas.com> <1234185853-7873-1-git-send-email-bharrosh@panasas.com> <20090215170840.GA18115@ioremap.net> <4999328B.8000705@panasas.com>
-In-Reply-To: <4999328B.8000705@panasas.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 Mar 2009 18:11:35.0094 (UTC) FILETIME=[79ED3D60:01C9A599]
+	Sun, 15 Mar 2009 14:13:18 -0400
+Date: Sun, 15 Mar 2009 18:13:15 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Alexey Fisher <bug-track@fisher-privat.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: smart cache. ist is possible?
+Message-ID: <20090315181315.GA4369@silver.sucs.org>
+References: <49BD1EB7.6080109@fisher-privat.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49BD1EB7.6080109@fisher-privat.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> Evgeniy Polyakov wrote:
->> Hi.
->>
->> On Mon, Feb 09, 2009 at 03:24:13PM +0200, Boaz Harrosh (bharrosh@panasas.com) wrote:
->>
-<snip>
-> <snip>
->>> +
->>> +	atomic_inc(&inode->i_count);
->>> +
->>> +	ret = exofs_async_op(or, create_done, inode, oi->i_cred);
->>> +	if (ret) {
->>> +		atomic_dec(&inode->i_count);
->> igrab()/iput()?
->>
-> 
-> Thanks, makes much more sense. Sorry leftovers from 2.6.10
-> 
+Hi,
 
-It's the same at ext2. I looked at the igrab()/iput() code it does some extra
-locks which I'm afraid of at this stage. I'll postpone this to the next (next)
-merge window, after I ran with it for a while.
+On Sun, Mar 15, 2009 at 04:28:55PM +0100, Alexey Fisher wrote:
+> I found for my self how great is cache in linux. If read one file from
+> disk, so i don't need to do it second time, chace will do the job. It
+> speed up thing greatly. But i found it not working with realy big files.
+> Like i have 4GB RAM, so if i read a file like 4.6GB, cache won't work.
 
->>> +		osd_end_request(or);
->>> +		return ERR_PTR(-EIO);
->>> +	}
->>> +	atomic_inc(&sbi->s_curr_pending);
->>> +
->>> +	return inode;
->>> +}
->>> +static int exofs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
->>> +{
->>> +	struct inode *inode;
->>> +	int err = -EMLINK;
->>> +
->>> +	if (dir->i_nlink >= EXOFS_LINK_MAX)
->>> +		goto out;
->>> +
->>> +	inode_inc_link_count(dir);
->>> +
->>> +	inode = exofs_new_inode(dir, S_IFDIR | mode);
->>> +	err = PTR_ERR(inode);
->>> +	if (IS_ERR(inode))
->>> +		goto out_dir;
->>> +
->>> +	inode->i_op = &exofs_dir_inode_operations;
->>> +	inode->i_fop = &exofs_dir_operations;
->>> +	inode->i_mapping->a_ops = &exofs_aops;
->>> +
->>> +	inode_inc_link_count(inode);
->>> +
->>> +	err = exofs_make_empty(inode, dir);
->>> +	if (err)
->>> +		goto out_fail;
->>> +
->>> +	err = exofs_add_link(dentry, inode);
->>> +	if (err)
->>> +		goto out_fail;
->>> +
->>> +	d_instantiate(dentry, inode);
->>> +out:
->>> +	return err;
->>> +
->>> +out_fail:
->>> +	inode_dec_link_count(inode);
->>> +	inode_dec_link_count(inode);
->> Why two decrements, will it be ok after exofs_make_empty() fail when it
->> was incremented only once?
->>
-> 
-> That's hard to say, I'll investigate it some more.
-> Thanks
-> 
+Watch out - if you are doing cache tests you really want to be using
+drop_caches ( http://linux-mm.org/Drop_Caches ) before your "cold" runs
+so you can be sure that the cache really was empty before you started...
 
-I've put some prints and current code is correct. inode->i_nlink (the target
-of inode_dec_link_count()) is 1 after exofs_new_inode() and 2 after
-inode_inc_link_count() (Just before exofs_make_empty()). Very confusing, but
-exofs_add_link() does not touch inode->i_nlink.
-
-I will be posting a new set tomorrow
-
-Thanks
-Boaz
-
+-- 
+Sitsofe | http://sucs.org/~sits/
