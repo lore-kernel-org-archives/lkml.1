@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbZCOKOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759235AbZCOKQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757524AbZCOKOX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 06:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbZCOKON
+	id S1759235AbZCOKQW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 06:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbZCOKQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 06:14:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45449 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752993AbZCOKON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 06:14:13 -0400
-Message-ID: <49BCD4C9.3050806@redhat.com>
-Date: Sun, 15 Mar 2009 12:13:29 +0200
-From: Avi Kivity <avi@redhat.com>
+	Sun, 15 Mar 2009 06:16:13 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:9402 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757872AbZCOKQM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 06:16:12 -0400
+Message-ID: <49BCD50B.4020501@panasas.com>
+Date: Sun, 15 Mar 2009 12:14:35 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Kevin Shanahan <kmshanah@ucwb.org.au>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-References: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera> <qm8_cedJGaP.A.-NH.CPCvJB@chimera> <1237107837.27699.27.camel@kulgan.wumi.org.au> <49BCC7C8.2020503@redhat.com> <20090315094807.GB21169@elte.hu> <49BCD0E9.9000305@redhat.com> <20090315100329.GA23577@elte.hu>
-In-Reply-To: <20090315100329.GA23577@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29-rcx triviality - How to have foo.ko module with same name
+ as foo.c source file
+References: <49BCD2F6.6030903@panasas.com> <20090315101210.GA5669@uranus.ravnborg.org>
+In-Reply-To: <20090315101210.GA5669@uranus.ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Mar 2009 10:15:30.0590 (UTC) FILETIME=[F827D3E0:01C9A556]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->> A specific question for now is how can I identify long latency 
->> within qemu here?  As far as I can tell all qemu latencies in 
->> trace6.txt are sub 100ms, which, while long, don't explain the 
->> guest stalling for many seconds.
->>     
->
-> Exactly - that in turn means that there's no scheduler latency 
-> on the host/native kernel side - in turn it must be a KVM 
-> related latency. (If there was any host side scheduler wakeup or 
-> other type of latency we'd see it in the trace.)
->   
+Sam Ravnborg wrote:
+> On Sun, Mar 15, 2009 at 12:05:42PM +0200, Boaz Harrosh wrote:
+>> Since sometime in the 2.6.29-rc I'm no longer able to produce an
+>> out-of-tree module that has the same base-name as a source file.
+>>
+>> This is what I had in 2.6.28:
+>> <Kbuild>
+>>     obj-m += foo.o
+>> </Kbuild>
+>> Where foo.c is a source file in the same directory.
+>>
+>> But since 2.6.29-rcx it will no longer build my foo.ko module. I
+>> had to change it to:
+>> <Kbuild>
+>>     foo_mod-y = foo.o
+>>     obj-m += foo_mod.o
+>> </Kbuild>
+>> Which changed my module name in scripts and packages.
+> 
+> We use the single .c file for a module with the same name as the
+> module all over the kernel.
+> 
+> What is more likely is that your module started to include an
+> additional sourcefile (antoehr .o) in which case you no longer
+> can have a source file sharing the name of the module.
+> 
+>> P.S:
+>>   Just asking I realized that I can just add an "mv ..." command to my make file.
+> 
+> Using mv is no-no..
+> 
+> 	Sam
 
-But if there's a missing wakeup (which is the likeliest candidate for 
-the bug) then we would have seen high latencies, no?
+Hey hi, that was really fast ;) Thanks
 
-Can you explain what the patch in question (14800984706) does?  Maybe 
-that will give us a clue.
+I realize that in-tree it works for sure. It's when I use the "make -M ..." out-of-tree
+and... No, I changed nothing, I had this, one liner, one source, one module and all of a sudden
+it does not build. Let me check if it is a dependency problem (not rebuilding when things change)
+or does it not build at all. Checking ...
 
-> The most useful trace would be a specific set of trace_printk() 
-> calls (available on the latest tracing tree), coupled with a 
-> hyper_trace_printk() which injects a trace entry from the guest 
-> side into the host kernel trace buffer. (== that would mean a 
-> hypercall that does a trace_printk().)
-
-Yes, that would provide all the information.  Not sure if I would be up 
-to decoding it, though.
-
--- 
-error compiling committee.c: too many arguments to function
-
+Boaz
