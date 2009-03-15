@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759617AbZCOTeD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759666AbZCOTer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759617AbZCOTeD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 15:34:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758271AbZCOTbw
+	id S1759666AbZCOTer (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 15:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbZCOTb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 15:31:52 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:56469 "EHLO smtp.polymtl.ca"
+	Sun, 15 Mar 2009 15:31:57 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56486 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757730AbZCOTbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 15:31:51 -0400
-Message-Id: <20090315190340.229569867@polymtl.ca>
+	id S1758259AbZCOTb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 15:31:56 -0400
+Message-Id: <20090315191103.704235282@polymtl.ca>
+References: <20090315190340.229569867@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sun, 15 Mar 2009 15:03:40 -0400
+Date: Sun, 15 Mar 2009 15:03:49 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC patch 00/21] TIF_KERNEL_TRACE thread flags
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sun, 15 Mar 2009 19:30:26 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [RFC patch 09/21] LTTng Kernel Trace Thread Flag m32r
+Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-m32r.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sun, 15 Mar 2009 19:30:28 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Add a thread flag to activate system-wide syscall tracing.
 
-This is the implementatino of TIF_KERNEL_TRACE thread flags I did in the LTTng
-tree. Basically, it offers :
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ include/asm-m32r/thread_info.h |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-- Setting a per-thread flag for _all_ threads to enable system-wide syscall
-  tracing.
-- No performance impact when disabled, no need to stop threads upon
-  activation/deactivation (does not add latency to userspace threads upon
-  activation).
-
-The most tricky bits are in the x86_64 architecture, because its entry_64.S
-code does not expect the thread flags to be changed concurrently while the
-thread is running. I modified entry_64.S so that the architecture does not
-suffer of any performance impact when syscall audit or secure computing is
-enabled, but tests for the TIF_KERNEL_TRACE flag upon return to userspace too.
-
-Given this looks very much like what Frederic is currently doing, I think it's
-good to post it for comments.
-
-utrace tracehooks could potentially make this patchset obsolete, but I an not
-yet convinced that utrace offers the same low-latency guarantees as this code.
-
-It applies on top of kernel 2.6.29-rc7.
-
-Mathieu
+Index: linux-2.6-lttng/include/asm-m32r/thread_info.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-m32r/thread_info.h	2009-01-09 18:15:55.000000000 -0500
++++ linux-2.6-lttng/include/asm-m32r/thread_info.h	2009-01-09 18:17:46.000000000 -0500
+@@ -151,6 +151,7 @@ static inline unsigned int get_thread_fa
+ #define TIF_NEED_RESCHED	2	/* rescheduling necessary */
+ #define TIF_SINGLESTEP		3	/* restore singlestep on return to user mode */
+ #define TIF_IRET		4	/* return with iret */
++#define TIF_KERNEL_TRACE	5	/* kernel trace active */
+ #define TIF_RESTORE_SIGMASK	8	/* restore signal mask in do_signal() */
+ #define TIF_USEDFPU		16	/* FPU was used by this task this quantum (SMP) */
+ #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+@@ -162,13 +163,17 @@ static inline unsigned int get_thread_fa
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
+ #define _TIF_IRET		(1<<TIF_IRET)
++#define _TIF_KERNEL_TRACE	(1<<TIF_KERNEL_TRACE)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+-#define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+-#define _TIF_ALLWORK_MASK	0x0000FFFF	/* work to do on any return to u-space */
++/* work to do on any return to u-space */
++#define _TIF_ALLWORK_MASK	0x0000FFFF
++/* work to do on interrupt/exception return */
++#define _TIF_WORK_MASK \
++	(0x0000FFFF & ~(_TIF_SYSCALL_TRACE | _TIF_KERNEL_TRACE))
+ 
+ /*
+  * Thread-synchronous status.
 
 -- 
 Mathieu Desnoyers
