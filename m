@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbZCOSZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbZCOSZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756849AbZCOSZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 14:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756328AbZCOSYy
+	id S1757452AbZCOSZp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 14:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756157AbZCOSY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 14:24:54 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42366 "EHLO
+	Sun, 15 Mar 2009 14:24:59 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42367 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755057AbZCOSYx convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1756594AbZCOSY5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 14:24:53 -0400
-Date: Sun, 15 Mar 2009 11:24:38 -0700
+	Sun, 15 Mar 2009 14:24:57 -0400
+Date: Sun, 15 Mar 2009 11:25:03 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: Arjan van de Ven <arjan@infradead.org>
-Subject: [PATCH] async: remove the temporary (2.6.29) "async is off by
- default" code
-Message-ID: <20090315112438.79f40526@infradead.org>
+Subject: [PATCH] ide/net: flip the order of SATA and network init
+Message-ID: <20090315112503.686b1e73@infradead.org>
 In-Reply-To: <20090315112345.764fc4ac@infradead.org>
 References: <20090315112345.764fc4ac@infradead.org>
 Organization: Intel
@@ -31,42 +30,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From bfcfecd5ccfaa76011d8eba8f6c8ed486d57e0ab Mon Sep 17 00:00:00 2001
+>From 7c73393acfcce11a8d8ee661e08bae24fc17af61 Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sun, 15 Mar 2009 11:11:44 -0700
-Subject: [PATCH] async: remove the temporary (2.6.29) "async is off by default" code
+Date: Mon, 26 Jan 2009 18:58:11 -0800
+Subject: [PATCH] ide/net: flip the order of SATA and network init
 
-Now that everyone has been able to test the async code (and it's being used
-in the Moblin betas by default), we can enable it by default.
-The various fixes needed have gone into 2.6.29 already.
+this patch flips the order in which sata and network drivers are initialized.
+
+SATA probing takes quite a bit of time, and with the asynchronous infrastructure
+other drivers that run after it can execute in parallel. Network drivers do tend
+to take some real time talking to the hardware, so running these later is
+a good thing (the sata probe then runs concurrent)
+
+This saves about 15% of my kernels boot time.
+
+Both Dave and Jeff acked this patch and suggested it should go via the async
+tree.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Jeff Garzik <jeff@garzik.org>
 ---
- kernel/async.c |   10 +---------
- 1 files changed, 1 insertions(+), 9 deletions(-)
+ drivers/Makefile |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/async.c b/kernel/async.c
-index f565891..247ab12 100644
---- a/kernel/async.c
-+++ b/kernel/async.c
-@@ -391,16 +391,8 @@ static int __init async_init(void)
- 		if (IS_ERR(kthread_run(async_manager_thread, NULL,
- 				       "async/mgr")))
- 			async_enabled = 0;
--	return 0;
--}
--
--static int __init setup_async(char *str)
--{
- 	async_enabled = 1;
--	return 1;
-+	return 0;
- }
+diff --git a/drivers/Makefile b/drivers/Makefile
+index c1bf417..2618a61 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -36,13 +36,14 @@ obj-$(CONFIG_FB_INTEL)          += video/intelfb/
  
--__setup("fastboot", setup_async);
--
--
- core_initcall(async_init);
+ obj-y				+= serial/
+ obj-$(CONFIG_PARPORT)		+= parport/
+-obj-y				+= base/ block/ misc/ mfd/ net/ media/
++obj-y				+= base/ block/ misc/ mfd/ media/
+ obj-$(CONFIG_NUBUS)		+= nubus/
+-obj-$(CONFIG_ATM)		+= atm/
+ obj-y				+= macintosh/
+ obj-$(CONFIG_IDE)		+= ide/
+ obj-$(CONFIG_SCSI)		+= scsi/
+ obj-$(CONFIG_ATA)		+= ata/
++obj-y				+= net/
++obj-$(CONFIG_ATM)		+= atm/
+ obj-$(CONFIG_FUSION)		+= message/
+ obj-$(CONFIG_FIREWIRE)		+= firewire/
+ obj-y				+= ieee1394/
 -- 
 1.6.0.6
 
