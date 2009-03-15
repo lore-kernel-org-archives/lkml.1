@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbZCOSyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbZCOSzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707AbZCOSyg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 14:54:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbZCOSy1
+	id S1757574AbZCOSzv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 14:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZCOSzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 14:54:27 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44717 "EHLO mx3.mail.elte.hu"
+	Sun, 15 Mar 2009 14:55:42 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54823 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750765AbZCOSy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 14:54:26 -0400
-Date: Sun, 15 Mar 2009 19:54:07 +0100
+	id S1752759AbZCOSzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 14:55:42 -0400
+Date: Sun, 15 Mar 2009 19:55:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [PATCH 2/2] kconfig: improve seed in randconfig
-Message-ID: <20090315185406.GA19737@elte.hu>
-References: <20090315102341.GA6051@uranus.ravnborg.org> <20090315102856.GB6292@uranus.ravnborg.org> <10f740e80903150353i233d0da5rabde6e97607e3435@mail.gmail.com> <20090315130930.GA7146@uranus.ravnborg.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: print out in e820_update_range()
+Message-ID: <20090315185519.GB19737@elte.hu>
+References: <49BCB557.3030000@kernel.org> <20090315080717.GA18978@elte.hu> <49BD42F5.7070808@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090315130930.GA7146@uranus.ravnborg.org>
+In-Reply-To: <49BD42F5.7070808@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,42 +35,25 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-> On Sun, Mar 15, 2009 at 11:53:03AM +0100, Geert Uytterhoeven wrote:
-> > On Sun, Mar 15, 2009 at 11:28, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > > 'make randconfig' uses glibc's rand function, and the seed of
-> > > that PRNG is set via:
-> > >
-> > >                        srand(time(NULL));
-> > >
-> > > But 'time()' only increases once every second - freezing the
-> > > randconfig result within a single second.
-> > >
-> > > My Nehalem testbox does randconfig much faster than 1 second
-> > >  and i have a few scripts that do 'randconfig until condition X'
-> > > loops.
-> > >
-> > > Those scripts currently waste a lot of CPU time due to randconfig
-> > > changing its seed only once per second currently.
-> > >
-> > > Change the seed to be micrseconds based. (I checked the statistical
-> > > spread of the seed - the now.tv_sec*now.tv_usec multiplication
-> > > there further improves it.)
+> Ingo Molnar wrote:
+> > * Yinghai Lu <yinghai@kernel.org> wrote:
 > > 
-> > > +                       gettimeofday(&now, NULL);
-> > > +
-> > > +                       seed = (unsigned int)(now.tv_sec*now.tv_usec);
+> >> Impact: to find crazy calling
+> >>
+> >> try to print out more info, to catch wrong calling
 > > 
-> > Just wondering: may there be some platforms that don't offer microsecond
-> > resolution, and tv_usec is always zero?
-> That would indeed be bad for the seed.
-> Googling did not turn up anything.
+> > Could we detect incorrect parameters more directly as well, via 
+> > a check and a panic()?
+> 
+> only valid checking seems to be 
+> virt_to_phys(_text), virt_to_phys(_end)
+> 
+> 
+> if (new_type == E820_RESERVED && start >= virt_to_phys(_text) && start <= virt_to_phys(_end)) 
+> 	panic("try to update to e820 range for kernel to RESERVED!");
 
-doing:
+hm, seems a bit too specialized.
 
-         seed = (unsigned int)((now.tv_sec+1)*(now.tv_usec+1));
-
-ought to settle any practical doubts.
-
-	Ing
+	Ingo
