@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbZCOGJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbZCOGNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757464AbZCOGJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 02:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZCOGJv
+	id S1752726AbZCOGNU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 02:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZCOGNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 02:09:51 -0400
-Received: from gw.goop.org ([64.81.55.164]:57024 "EHLO mail.goop.org"
+	Sun, 15 Mar 2009 02:13:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47192 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbZCOGJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 02:09:50 -0400
-Message-ID: <49BC9BAC.6090201@goop.org>
-Date: Sat, 14 Mar 2009 23:09:48 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1750807AbZCOGNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 02:13:06 -0400
+Date: Sun, 15 Mar 2009 06:12:26 GMT
+From: Yinghai Lu <yinghai@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, stable@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, stable@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <49BC2279.2030101@kernel.org>
+References: <49BC2279.2030101@kernel.org>
+Subject: [tip:x86/mm] x86: fix 64k corruption-check
+Message-ID: <tip-6d7942dc2a70a7e74c352107b150265602671588@git.kernel.org>
+Git-Commit-ID: 6d7942dc2a70a7e74c352107b150265602671588
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com>
-In-Reply-To: <49BC4DB6.9070403@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 15 Mar 2009 06:12:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeremy Fitzhardinge wrote:
->   
->>> It really doesn't make much sense to me, and is more than a bit
->>> confusing given the symbols.
->>>       
->> Mostly because I knew that the bss would get mapped into the appropriate
->> phdr segment correctly, but I wasn't sure that another bss-like section
->> would be.
->>     
->
-> It will; in fact if they are adjacent then ld will typically merge the
-> PHDRs.
->
->   
->> Also because historically the brk segment was just an
->> extension of the executable's bss, and its more or less the same too.
->>     
->
-> An extension of, yes, but not a part of.
->
->   
->> Is there any real benefit in putting it into another section?
->>     
->
-> Well, the semantics are different; the .bss section is zeroed while the
-> brk isn't,
-Traditionally, brk is always zeroed.  extend_brk() zeros the memory it 
-returns (to be consistent with bootmem, and to make it easier to migrate 
-from bss -> brk).
+Commit-ID:  6d7942dc2a70a7e74c352107b150265602671588
+Gitweb:     http://git.kernel.org/tip/6d7942dc2a70a7e74c352107b150265602671588
+Author:     Yinghai Lu <yinghai@kernel.org>
+AuthorDate: Sat, 14 Mar 2009 14:32:41 -0700
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 15 Mar 2009 07:03:15 +0100
 
->  and the brk symbols don't necessarily point to the data
-> associated with those particular symbols, unlike (of course) the bss.
->   
+x86: fix 64k corruption-check
 
-Yes, its a bit of a pitfall.  I guess the symbols are useful as a way to 
-identify brk users just from looking at the vmlinux, but they're not 
-really all that useful.  I'm half thinking we should put some non-C 
-identifier characters in them to make sure that C code can never refer 
-to them.
+Impact: fix boot crash
 
-    J
+Need to exit early if the addr is far above 64k.
+
+The crash got exposed by:
+
+  78a8b35: x86: make e820_update_range() handle small range update
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: <stable@kernel.org>
+LKML-Reference: <49BC2279.2030101@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/check.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/kernel/check.c b/arch/x86/kernel/check.c
+index b617b11..fc999e6 100644
+--- a/arch/x86/kernel/check.c
++++ b/arch/x86/kernel/check.c
+@@ -86,12 +86,12 @@ void __init setup_bios_corruption_check(void)
+ 		if (!(addr + 1))
+ 			break;
+ 
++		if (addr >= corruption_check_size)
++			break;
++
+ 		if ((addr + size) > corruption_check_size)
+ 			size = corruption_check_size - addr;
+ 
+-		if (size == 0)
+-			break;
+-
+ 		e820_update_range(addr, size, E820_RAM, E820_RESERVED);
+ 		scan_areas[num_scan_areas].addr = addr;
+ 		scan_areas[num_scan_areas].size = size;
