@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbZCODgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757145AbZCODhG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757889AbZCODgQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 23:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZCODf7
+	id S1757145AbZCODhG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 23:37:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbZCODgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 23:35:59 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:59918 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754143AbZCODf6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 23:35:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=AbTAL7SgNX+SSgI6kvyShmhNekPv2fI8+0eMShrVZh3IU+K9lPaXqgMJePaqH47VCV
-         /vxi8SP43YUygR0fv+Dp6aN0zgrWl4sEJ5EdJXl5DLQGVmbLQkZrAD9Z4O3eMTl3dQs+
-         2zC1uzxDw2gNE8YwNsalOYLh18KJ1JycYUAaE=
-Subject: Re: [Bug #12806] i915 broken STR
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>, Eric Anholt <eric@anholt.net>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <GCLaknAim2M.A.LaD.u4BvJB@chimera>
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-	 <GCLaknAim2M.A.LaD.u4BvJB@chimera>
-Content-Type: text/plain
-Date: Sat, 14 Mar 2009 20:35:54 -0700
-Message-Id: <1237088154.4064.0.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
+	Sat, 14 Mar 2009 23:36:55 -0400
+Received: from phunq.net ([64.81.85.152]:47007 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755210AbZCODgy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 23:36:54 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
+Date: Sat, 14 Mar 2009 20:36:50 -0700
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, tux3@tux3.org,
+       linux-kernel@vger.kernel.org
+References: <200903110925.37614.phillips@phunq.net> <200903120133.02645.phillips@phunq.net> <87ljraof5u.fsf@devron.myhome.or.jp>
+In-Reply-To: <87ljraof5u.fsf@devron.myhome.or.jp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903142036.50335.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-14 at 20:05 +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Thursday 12 March 2009, OGAWA Hirofumi wrote:
+> Daniel Phillips <phillips@phunq.net> writes:
+> >> > > - What's "L"?
+> >> > > 
+> >> > > 		printf("%Lx-", (L)begin);
+> >> > 
+> >> > A very handy way of working around 32/64 bit format string issues.  We
+> >> > just cast all the messy cases to (long long), aka (L).  All other
+> >> > solutions to this messy problem are worse in my opinion, but whatever
+> >> > the ruling is, is what we will do.  This is used heavily in tracing and
+> >> > dumping code, which can all be turned off with ifdefs, so it doesn't
+> >> > affect production kernel text.
+> >> 
+> >> What format string issues are we talking about here?
+> >> 
+> >> See, a number of them will be fixed real soon now (geologically
+> >> speaking) when various 64-bit architectures switch their s64/u64
+> >> implementation from `long' to `long long'.
+> >
+> > Ah, that would be helpful.  But not done yet?  How long until it
+> > happens, and does it make sense to wait, so we can reduce the number
+> > of problems cases?  And... will it be all 64 bit arches or just some?
+> > Because this issue isn't solved if it isn't fixed for all arches.
+> >
+> > There are a couple of issues, one is u64 being (long) instead of
+> > (long long) as you say, and the other is variable type sizes like
+> > loff_t.  That specific one isn't actually a problem, we can just refuse
+> > to support 32 bit libc file ops, but there may be others.  We had a
+> > world of pain before (L) arrived, then with (L) it was easy.  Maybe
+> > just edit them all to (long long) for now, and damn the line length.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
+> BTW, those are almost because of userland issue. Kernel are more and
+> more using same type. But, glibc is not. And we (tux3) are sharing the
+> same code with kernel and userland. Some types are depending to
+> CONFIG_*, so if we have generic cast type like (L).
 > 
+> [The fatfs also has own type (llu), if it become generic, fatfs will
+> also be happy.]
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12806
-> Subject		: i915 broken STR
-> Submitter	: Harvey Harrison <harvey.harrison@gmail.com>
-> Date		: 2009-02-28 4:20 (15 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5669fcacc58bf3a7386057addffd280d75380858
-> References	: http://marc.info/?l=linux-kernel&m=123579487801064&w=4
-> 
-> 
+> Thanks.
 
-You can close this, turns out KMS got enabled in my config and userspace
-was too old to cope.
+Maybe we should argue for some generic flavor of the (L)/(llu) idea
+then.  I suppose we should figure out exactly how much of our usage
+will remain after the kernel issue is resolved.  One small thing we
+could do is make it a typedef instead of a macro.  And spelling it
+out completely as (long long) is not so bad, except it loses the
+desirable property of being able to grep for the messy thing, and
+adds a painful amount of useless line length, given how frequently
+the issue shows up.
 
-Harvey
+Regards,
 
+Daniel
