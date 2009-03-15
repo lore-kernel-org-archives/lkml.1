@@ -1,155 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbZCOQmY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbZCOQph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbZCOQmY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 12:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbZCOQmL
+	id S1755527AbZCOQph (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 12:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbZCOQp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 12:42:11 -0400
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:55288 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753162AbZCOQmJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 12:42:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=gz+TNEMAMrN/2MBafDG+e1fZFJaeFVX04ry9AfTY2b1MnrXWMG/LV/6WK/O2UezC/D
-         iM32jIWO3ABm2JqCqUxtiRc4AsrGLS/hFSFZKSzOs4aIiGVckhYWnSFI00BJlq5uqROd
-         9Uo45o7ZTE7vD7aWhBEoAErThZUqybzhZhtBk=
-Message-ID: <49BD2FDF.5050504@gmail.com>
-Date: Sun, 15 Mar 2009 17:42:07 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Sun, 15 Mar 2009 12:45:29 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:49807 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753051AbZCOQp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 12:45:28 -0400
+Date: Sun, 15 Mar 2009 17:45:26 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] block: cleanup patches
+Message-ID: <20090315164526.GD27476@kernel.dk>
+References: <1236920578-2179-1-git-send-email-tj@kernel.org> <49BB0FB7.2070109@kernel.org>
 MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: build bug on kfree(struct sk_buff*)
-References: <49BA8710.20808@gmail.com> <49BAE95D.7060001@gmail.com>
-In-Reply-To: <49BAE95D.7060001@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49BB0FB7.2070109@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed that my initial attempt was invalid. The one below appears to be
-correct, although I am not sure whether there is a better implementation.
+On Sat, Mar 14 2009, Tejun Heo wrote:
+> Tejun Heo wrote:
+> > Hello,
+> > 
+> > This patchset is available in the following git tree.
+> > 
+> >  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-cleanup
+> > 
+> > This patchset contains the following 14 cleanup patches.
+> 
+> Jens, once you're okay with the rest of the changes, I'll remove IDE
+> related stuff and repost the patchset.
 
-this patch also fixes a kfree(skb) in net/core/dev.c, what do you think?
+I only gave it a quick glance, looks mostly OK. Though I don't like
+putting elv_ prefixed stuff in blk-core. I agree it belongs there
+though, it's really block layer functionality and not io scheduler
+interfacing. So rename it blk_ instead and put compatability names in
+the header file instead.
 
-Roel
+I'll give it a more thorough review and integration test tomorrow.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- include/linux/kernel.h |    4 ++++
- include/linux/slab.h   |    3 +++
- mm/slab.c              |    2 ++
- mm/slob.c              |    2 ++
- mm/slub.c              |    2 ++
- net/core/dev.c         |    2 +-
- 6 files changed, 14 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 7fa3718..b7f22d8 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -526,6 +526,10 @@ struct sysinfo {
-    aren't permitted). */
- #define BUILD_BUG_ON_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
- 
-+/* If the type of x is TYPE, force a compilation error, otherwise produce x */
-+#define BUILD_BUG_ON_TYPE(x, TYPE) __builtin_choose_expr(		\
-+		__builtin_types_compatible_p(typeof(x), TYPE), (void)0, (x))
-+
- /* Trap pasters of __FUNCTION__ at compile-time */
- #define __FUNCTION__ (__func__)
- 
-diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 24c5602..30c28f9 100644
---- a/include/linux/slab.h
-+++ b/include/linux/slab.h
-@@ -130,6 +130,9 @@ void kfree(const void *);
- void kzfree(const void *);
- size_t ksize(const void *);
- 
-+/* This ensures that kfree is not called with a struct sk_buff* */
-+#define kfree(x) kfree(BUILD_BUG_ON_TYPE(x, struct sk_buff*))
-+
- /*
-  * Allocator specific definitions. These are mainly used to establish optimized
-  * ways to convert kmalloc() calls to kmem_cache_alloc() invocations by
-diff --git a/mm/slab.c b/mm/slab.c
-index 4d00855..cbcd28a 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -3711,6 +3711,7 @@ EXPORT_SYMBOL(kmem_cache_free);
-  * Don't free memory not originally allocated by kmalloc()
-  * or you will run into trouble.
-  */
-+#undef kfree
- void kfree(const void *objp)
- {
- 	struct kmem_cache *c;
-@@ -3727,6 +3728,7 @@ void kfree(const void *objp)
- 	local_irq_restore(flags);
- }
- EXPORT_SYMBOL(kfree);
-+#define kfree(x) kfree(BUILD_BUG_ON_TYPE(x, struct sk_buff*))
- 
- unsigned int kmem_cache_size(struct kmem_cache *cachep)
- {
-diff --git a/mm/slob.c b/mm/slob.c
-index 52bc8a2..451325c 100644
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -487,6 +487,7 @@ void *__kmalloc_node(size_t size, gfp_t gfp, int node)
- }
- EXPORT_SYMBOL(__kmalloc_node);
- 
-+#undef kfree
- void kfree(const void *block)
- {
- 	struct slob_page *sp;
-@@ -503,6 +504,7 @@ void kfree(const void *block)
- 		put_page(&sp->page);
- }
- EXPORT_SYMBOL(kfree);
-+#define kfree(x) kfree(BUILD_BUG_ON_TYPE(x, struct sk_buff*))
- 
- /* can't use ksize for kmem_cache_alloc memory, only kmalloc */
- size_t ksize(const void *block)
-diff --git a/mm/slub.c b/mm/slub.c
-index 0280eee..41943fc 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2738,6 +2738,7 @@ size_t ksize(const void *object)
- }
- EXPORT_SYMBOL(ksize);
- 
-+#undef kfree
- void kfree(const void *x)
- {
- 	struct page *page;
-@@ -2755,6 +2756,7 @@ void kfree(const void *x)
- 	slab_free(page->slab, page, object, _RET_IP_);
- }
- EXPORT_SYMBOL(kfree);
-+#define kfree(x) kfree(BUILD_BUG_ON_TYPE(x, struct sk_buff*))
- 
- /*
-  * kmem_cache_shrink removes empty slabs from the partial lists and sorts
-diff --git a/net/core/dev.c b/net/core/dev.c
-index f112970..c1e9dc0 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2671,7 +2671,7 @@ void netif_napi_del(struct napi_struct *napi)
- 	struct sk_buff *skb, *next;
- 
- 	list_del_init(&napi->dev_list);
--	kfree(napi->skb);
-+	kfree_skb(napi->skb);
- 
- 	for (skb = napi->gro_list; skb; skb = next) {
- 		next = skb->next;
+-- 
+Jens Axboe
 
