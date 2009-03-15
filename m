@@ -1,193 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbZCOVm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbZCOVpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759656AbZCOVm6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 17:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZCOVmt
+	id S1759437AbZCOVpB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 17:45:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbZCOVou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 17:42:49 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:38034 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753128AbZCOVms (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 17:42:48 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Al8FAAsPvUlMQW1W/2dsb2JhbACBTc4Ug38GYQ
-Date: Sun, 15 Mar 2009 17:42:44 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [RFC patch 21/21] LTTng Kernel Trace Thread Flag API
-Message-ID: <20090315214244.GA12965@Krystal>
-References: <20090315190340.229569867@polymtl.ca> <20090315191105.594651713@polymtl.ca> <20090315205017.GB5212@nowhere>
-Mime-Version: 1.0
+	Sun, 15 Mar 2009 17:44:50 -0400
+Received: from thunk.org ([69.25.196.29]:43156 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753128AbZCOVot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 17:44:49 -0400
+Date: Sun, 15 Mar 2009 17:44:26 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Daniel Phillips <phillips@phunq.net>, linux-fsdevel@vger.kernel.org,
+       tux3@tux3.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
+Message-ID: <20090315214426.GA6357@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Daniel Phillips <phillips@phunq.net>, linux-fsdevel@vger.kernel.org,
+	tux3@tux3.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <200903110925.37614.phillips@phunq.net> <200903130004.40483.nickpiggin@yahoo.com.au> <200903141941.10030.phillips@phunq.net> <200903151445.04552.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090315205017.GB5212@nowhere>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:05:45 up 15 days, 17:31,  1 user,  load average: 0.77, 0.43,
-	0.30
+In-Reply-To: <200903151445.04552.nickpiggin@yahoo.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Frederic Weisbecker (fweisbec@gmail.com) wrote:
-> On Sun, Mar 15, 2009 at 03:04:01PM -0400, Mathieu Desnoyers wrote:
-> > Add an API to set/clear the kernel wide tracing thread flags. Implemented in
-> > kernel/sched.c. Updates thread flags *asynchronously* while holding the tasklist
-> > lock.
-> > 
-> > Upon fork, the flag must be re-copied while the tasklist lock is held.
-> > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > ---
-> >  include/linux/sched.h |    3 ++
-> >  kernel/fork.c         |    9 ++++++++
-> >  kernel/sched.c        |   55 ++++++++++++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 67 insertions(+)
-> > 
-> > Index: linux-2.6-lttng/include/linux/sched.h
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/include/linux/sched.h	2009-01-09 18:15:54.000000000 -0500
-> > +++ linux-2.6-lttng/include/linux/sched.h	2009-01-09 18:17:50.000000000 -0500
-> > @@ -2300,6 +2300,9 @@ static inline void mm_init_owner(struct 
-> >  
-> >  #define TASK_STATE_TO_CHAR_STR "RSDTtZX"
-> >  
-> > +extern void clear_kernel_trace_flag_all_tasks(void);
-> > +extern void set_kernel_trace_flag_all_tasks(void);
-> > +
-> >  #endif /* __KERNEL__ */
-> >  
-> >  #endif
-> > Index: linux-2.6-lttng/kernel/fork.c
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/kernel/fork.c	2009-01-09 18:17:38.000000000 -0500
-> > +++ linux-2.6-lttng/kernel/fork.c	2009-01-09 18:17:50.000000000 -0500
-> > @@ -1218,6 +1218,15 @@ static struct task_struct *copy_process(
-> >  			!cpu_online(task_cpu(p))))
-> >  		set_task_cpu(p, smp_processor_id());
-> >  
-> > +	/*
-> > +	 * The state of the parent's TIF_KTRACE flag may have changed
-> > +	 * since it was copied in dup_task_struct() so we re-copy it here.
-> > +	 */
-> > +	if (test_thread_flag(TIF_KERNEL_TRACE))
-> > +		set_tsk_thread_flag(p, TIF_KERNEL_TRACE);
-> > +	else
-> > +		clear_tsk_thread_flag(p, TIF_KERNEL_TRACE);
-> > +
+On Sun, Mar 15, 2009 at 02:45:04PM +1100, Nick Piggin wrote:
+> > As it happens, Tux3 also physically allocates each _physical_ metadata
+> > block (i.e., what is currently called buffer cache) at the time it is
+> > dirtied.  I don't know if this is the best thing to do, but it is
+> > interesting that you do the same thing.  I also don't know if I want to
+> > trust a library to get this right, before having completely proved out
+> > the idea in a non-trival filesystem.  But good luck with that!  It
 > 
-> 
-> I thought about that too. But the thread info is already
-> copied on a fork right? Which includes the thread flags.
-> 
-> But perhaps I'm wrong and miss one detail about this copy...
-> 
+> I'm not sure why it would be a big problem. fsblock isn't allocating
+> the block itself of course, it just asks the filesystem to. It's
+> trivial to do for fsblock.
 
-If I remember correctly, the copy you are talking about is done before
-taking the task list write lock, and therefore races with the task list
-read lock we take below.
+So the really unfortunate thing about allocating the block as soon as
+the page is dirty is that it spikes out delayed allocation.  By
+delaying the physical allocation of the logical->physical mapping as
+long as possible, the filesystem can select the best possible physical
+location.  XFS, for example, keeps a btree of free regions indexed by
+size so that it can select the perfect location for a newly written
+file which is 24k or 56k long.  If fsblock forces the physical
+allocation of blocks the moment the page is dirty, it will destroy
+XFS's capability to select the perfect file.
 
+In addition, XFS uses delayed allocation to avoid the problem of
+uninitalized data becoming visible in the event of a crash.  If
+fsblock immediately allocates the physical block, then either the
+unitialized data might become available on a system crash (which is a
+security problem), or XFS is going to have to force all newly written
+data blocks to disk before a commit.  If that sounds familiar it's
+what ext3's data=ordered mode does, and it's what is responsible for
+the Firefox 3.0 fsync performance problem.
 
-> 
-> >  	/* CLONE_PARENT re-uses the old parent */
-> >  	if (clone_flags & (CLONE_PARENT|CLONE_THREAD))
-> >  		p->real_parent = current->real_parent;
-> > Index: linux-2.6-lttng/kernel/sched.c
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/kernel/sched.c	2009-01-09 18:17:38.000000000 -0500
-> > +++ linux-2.6-lttng/kernel/sched.c	2009-01-09 18:17:50.000000000 -0500
-> > @@ -9395,3 +9395,58 @@ struct cgroup_subsys cpuacct_subsys = {
-> >  	.subsys_id = cpuacct_subsys_id,
-> >  };
-> >  #endif	/* CONFIG_CGROUP_CPUACCT */
-> > +
-> > +static DEFINE_MUTEX(kernel_trace_mutex);
-> > +static int kernel_trace_refcount;
-> > +
-> > +/**
-> > + * clear_kernel_trace_flag_all_tasks - clears all TIF_KERNEL_TRACE thread flags.
-> > + *
-> > + * This function iterates on all threads in the system to clear their
-> > + * TIF_KERNEL_TRACE flag. Setting the TIF_KERNEL_TRACE flag with the
-> > + * tasklist_lock held in copy_process() makes sure that once we finish clearing
-> > + * the thread flags, all threads have their flags cleared.
-> > + */
-> > +void clear_kernel_trace_flag_all_tasks(void)
-> > +{
-> > +	struct task_struct *p;
-> > +	struct task_struct *t;
-> > +
-> > +	mutex_lock(&kernel_trace_mutex);
-> > +	if (--kernel_trace_refcount)
-> > +		goto end;
-> > +	read_lock(&tasklist_lock);
-> > +	do_each_thread(p, t) {
-> > +		clear_tsk_thread_flag(t, TIF_KERNEL_TRACE);
-> > +	} while_each_thread(p, t);
-> > +	read_unlock(&tasklist_lock);
-> > +end:
-> > +	mutex_unlock(&kernel_trace_mutex);
-> > +}
-> > +EXPORT_SYMBOL_GPL(clear_kernel_trace_flag_all_tasks);
-> > +
-> > +/**
-> > + * set_kernel_trace_flag_all_tasks - sets all TIF_KERNEL_TRACE thread flags.
-> > + *
-> > + * This function iterates on all threads in the system to set their
-> > + * TIF_KERNEL_TRACE flag. Setting the TIF_KERNEL_TRACE flag with the
-> > + * tasklist_lock held in copy_process() makes sure that once we finish setting
-> > + * the thread flags, all threads have their flags set.
-> > + */
-> > +void set_kernel_trace_flag_all_tasks(void)
-> > +{
-> > +	struct task_struct *p;
-> > +	struct task_struct *t;
-> > +
-> > +	mutex_lock(&kernel_trace_mutex);
-> > +	if (kernel_trace_refcount++)
-> > +		goto end;
-> > +	read_lock(&tasklist_lock);
-> > +	do_each_thread(p, t) {
-> > +		set_tsk_thread_flag(t, TIF_KERNEL_TRACE);
-> > +	} while_each_thread(p, t);
-> > +	read_unlock(&tasklist_lock);
-> > +end:
-> > +	mutex_unlock(&kernel_trace_mutex);
-> > +}
-> > +EXPORT_SYMBOL_GPL(set_kernel_trace_flag_all_tasks);
-> 
-> 
-> Speaking about optimizations and latency. If you want to avoid
-> the overhead of a whole tasklist iteration making any writer spinning on
-> you, may be you can iterate it using rcu.
-> 
-> But it can be slightly racy in that you could miss a freshly inserted
-> task while playing with a nano delayed version of the list. So this is not
-> necessarily a good idea.
+A similar issue exists for ext4's delayed allocation.
 
-I have not found any good way to do it racelessly with RCU read lock
-yet. We'd have to think carefully about it.
-
-Mathieu
-
-
-
-> 
-> 
-> > 
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+							- Ted
