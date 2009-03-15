@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760456AbZCOTie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760567AbZCOTiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760456AbZCOTie (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 15:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758350AbZCOTcI
+	id S1760567AbZCOTiu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 15:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758548AbZCOTcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 15:32:08 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:56514 "EHLO smtp.polymtl.ca"
+	Sun, 15 Mar 2009 15:32:10 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:56532 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757463AbZCOTcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 15:32:03 -0400
-Message-Id: <20090315191104.491335172@polymtl.ca>
+	id S1756628AbZCOTcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 15:32:08 -0400
+Message-Id: <20090315191105.269978012@polymtl.ca>
 References: <20090315190340.229569867@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sun, 15 Mar 2009 15:03:54 -0400
+Date: Sun, 15 Mar 2009 15:03:59 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        LKML <linux-kernel@vger.kernel.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 14/21] LTTng Kernel Trace Thread Flag s390
-Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-s390.patch
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [RFC patch 19/21] LTTng Linux Kernel Trace Thread Flag x86
+Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-x86.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sun, 15 Mar 2009 19:30:29 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,31 +30,83 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Add a thread flag to activate system-wide syscall tracing.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- arch/s390/include/asm/thread_info.h |    2 ++
- 1 file changed, 2 insertions(+)
+Make x86_64 support TIF_SYSCALL_TRACE async flag set in entry.S
 
-Index: linux-2.6-lttng/arch/s390/include/asm/thread_info.h
+When the flag is inactive upon syscall entry and concurrently activated before
+exit, we seem to reach a state where the top of stack is incorrect upon return
+to user space.
+
+Fix this by fixing the top of stack and jumping to int_ret_from_sys_call if we
+detect that thread flags has been modified.
+
+We make sure that the thread flag read is coherent between our new test and the ALLWORK_MASK test by first saving it in a register used for both comparisons.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Andi Kleen <ak@muc.de>
+CC: Thomas Gleixner <tglx@linutronix.de>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/include/asm/thread_info.h |    9 ++++++---
+ arch/x86/kernel/entry_32.S         |    3 ++-
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+Index: linux-2.6-lttng/arch/x86/include/asm/thread_info.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/s390/include/asm/thread_info.h	2009-01-09 18:15:55.000000000 -0500
-+++ linux-2.6-lttng/arch/s390/include/asm/thread_info.h	2009-01-09 18:17:48.000000000 -0500
-@@ -88,6 +88,7 @@ static inline struct thread_info *curren
- #define TIF_SYSCALL_AUDIT	5	/* syscall auditing active */
- #define TIF_SINGLE_STEP		6	/* deliver sigtrap on return to user */
- #define TIF_MCCK_PENDING	7	/* machine check handling is pending */
-+#define TIF_KERNEL_TRACE	8	/* kernel trace active */
- #define TIF_USEDFPU		16	/* FPU was used by this task this quantum (SMP) */
- #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling 
- 					   TIF_NEED_RESCHED */
-@@ -105,6 +106,7 @@ static inline struct thread_info *curren
- #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
- #define _TIF_SINGLE_STEP	(1<<TIF_SINGLE_STEP)
- #define _TIF_MCCK_PENDING	(1<<TIF_MCCK_PENDING)
-+#define _TIF_KERNEL_TRACE	(1<<TIF_KERNEL_TRACE)
- #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_31BIT		(1<<TIF_31BIT)
+--- linux-2.6-lttng.orig/arch/x86/include/asm/thread_info.h	2009-01-14 22:10:38.000000000 -0500
++++ linux-2.6-lttng/arch/x86/include/asm/thread_info.h	2009-01-14 22:25:08.000000000 -0500
+@@ -79,6 +79,7 @@ struct thread_info {
+ #define TIF_SYSCALL_EMU		6	/* syscall emulation active */
+ #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
+ #define TIF_SECCOMP		8	/* secure computing */
++#define TIF_KERNEL_TRACE	9	/* kernel trace active */
+ #define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
+ #define TIF_NOTSC		16	/* TSC is not accessible in userland */
+ #define TIF_IA32		17	/* 32bit process */
+@@ -102,6 +103,7 @@ struct thread_info {
+ #define _TIF_SYSCALL_EMU	(1 << TIF_SYSCALL_EMU)
+ #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
+ #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
++#define _TIF_KERNEL_TRACE	(1 << TIF_KERNEL_TRACE)
+ #define _TIF_MCE_NOTIFY		(1 << TIF_MCE_NOTIFY)
+ #define _TIF_NOTSC		(1 << TIF_NOTSC)
+ #define _TIF_IA32		(1 << TIF_IA32)
+@@ -117,17 +119,18 @@ struct thread_info {
+ 
+ /* work to do in syscall_trace_enter() */
+ #define _TIF_WORK_SYSCALL_ENTRY	\
+-	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_EMU | \
++	(_TIF_SYSCALL_TRACE | _TIF_KERNEL_TRACE | _TIF_SYSCALL_EMU | \
+ 	 _TIF_SYSCALL_AUDIT | _TIF_SECCOMP | _TIF_SINGLESTEP)
+ 
+ /* work to do in syscall_trace_leave() */
+ #define _TIF_WORK_SYSCALL_EXIT	\
+-	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | _TIF_SINGLESTEP)
++	(_TIF_SYSCALL_TRACE | _TIF_KERNEL_TRACE | _TIF_SYSCALL_AUDIT | \
++	 _TIF_SINGLESTEP)
+ 
+ /* work to do on interrupt/exception return */
+ #define _TIF_WORK_MASK							\
+ 	(0x0000FFFF &							\
+-	 ~(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|			\
++	 ~(_TIF_SYSCALL_TRACE|_TIF_KERNEL_TRACE|_TIF_SYSCALL_AUDIT|	\
+ 	   _TIF_SINGLESTEP|_TIF_SECCOMP|_TIF_SYSCALL_EMU))
+ 
+ /* work to do on any return to user space */
+Index: linux-2.6-lttng/arch/x86/kernel/entry_32.S
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/kernel/entry_32.S	2009-01-14 22:22:40.000000000 -0500
++++ linux-2.6-lttng/arch/x86/kernel/entry_32.S	2009-01-14 22:25:44.000000000 -0500
+@@ -571,7 +571,8 @@ END(syscall_trace_entry)
+ 	# perform syscall exit tracing
+ 	ALIGN
+ syscall_exit_work:
+-	testb $_TIF_WORK_SYSCALL_EXIT, %cl
++	/* Note, _TIF_KERNEL_TRACE is bit number 9, and so it needs testw and not testb */
++	testw $_TIF_WORK_SYSCALL_EXIT, %cx
+ 	jz work_pending
+ 	TRACE_IRQS_ON
+ 	ENABLE_INTERRUPTS(CLBR_ANY)	# could let syscall_trace_leave() call
 
 -- 
 Mathieu Desnoyers
