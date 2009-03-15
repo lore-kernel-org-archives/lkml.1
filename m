@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbZCODZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbZCODgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbZCODZG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 14 Mar 2009 23:25:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbZCODYx
+	id S1757889AbZCODgQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 14 Mar 2009 23:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZCODf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 14 Mar 2009 23:24:53 -0400
-Received: from phunq.net ([64.81.85.152]:34062 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750903AbZCODYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 14 Mar 2009 23:24:52 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [Tux3] Tux3 report: Tux3 Git tree available
-Date: Sat, 14 Mar 2009 20:24:29 -0700
-User-Agent: KMail/1.9.9
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-fsdevel@vger.kernel.org,
-       tux3@tux3.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <200903110925.37614.phillips@phunq.net> <200903130004.40483.nickpiggin@yahoo.com.au> <20090312135940.GB14425@parisc-linux.org>
-In-Reply-To: <20090312135940.GB14425@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 14 Mar 2009 23:35:59 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:59918 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754143AbZCODf6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 14 Mar 2009 23:35:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=AbTAL7SgNX+SSgI6kvyShmhNekPv2fI8+0eMShrVZh3IU+K9lPaXqgMJePaqH47VCV
+         /vxi8SP43YUygR0fv+Dp6aN0zgrWl4sEJ5EdJXl5DLQGVmbLQkZrAD9Z4O3eMTl3dQs+
+         2zC1uzxDw2gNE8YwNsalOYLh18KJ1JycYUAaE=
+Subject: Re: [Bug #12806] i915 broken STR
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@redhat.com>, Eric Anholt <eric@anholt.net>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <GCLaknAim2M.A.LaD.u4BvJB@chimera>
+References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
+	 <GCLaknAim2M.A.LaD.u4BvJB@chimera>
+Content-Type: text/plain
+Date: Sat, 14 Mar 2009 20:35:54 -0700
+Message-Id: <1237088154.4064.0.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903142024.30142.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 12 March 2009, Matthew Wilcox wrote:
-> On Fri, Mar 13, 2009 at 12:04:40AM +1100, Nick Piggin wrote:
-> > As far as the per-block pagecache state (as opposed to the per-block fs
-> > state), I don't see any reason it is a problem for efficiency. We have to
-> > do per-page operations anyway.
+On Sat, 2009-03-14 at 20:05 +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Why?  Wouldn't it be nice if we could do arbitrary extents?  I suppose
-> superpages or soft page sizes get us most of the way there, but the
-> rounding or pieces at the end are a bit of a pain.  Sure, it'll be a
-> huge upheaval for the VM, but we're good at huge upheavals ;-)
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12806
+> Subject		: i915 broken STR
+> Submitter	: Harvey Harrison <harvey.harrison@gmail.com>
+> Date		: 2009-02-28 4:20 (15 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5669fcacc58bf3a7386057addffd280d75380858
+> References	: http://marc.info/?l=linux-kernel&m=123579487801064&w=4
+> 
+> 
 
-Actually, filesystem extents tend to erode the argument for superpages.
-There are three reasons we have seen for wanting big pages: 1) support
-larger block buffers without adding messy changes to buffer.c; 2) TLB
-efficiency; 3) less per-page state in kernel memory.  TLB efficiency is
-only there if the hardware supports it, which X86 arguably doesn't.
-The main argument for larger block buffers is less per-block transfer
-setup overhead, but the BIO model combined with filesystem extents
-does that job better, or at least it will when filesystems learn to
-take better advantage of this.
+You can close this, turns out KMS got enabled in my config and userspace
+was too old to cope.
 
-VM extents on the other hand could possibly do a really good job of
-reducing per-page VM overhead, if anybody still cares about that now
-that 64 bit machines rule the big iron world.
+Harvey
 
-I expect implementing VM extents to be a brutally complex project, as
-filesystem extents always turn out to be, even though one tends to
-enter such projects thinking, how hard could this be?  Answer: harder
-than you think.  But VM extents would be good for a modest speedup, so
-somebody is sure to get brave enough to try it sometime.
-
-Regards,
-
-Daniel
