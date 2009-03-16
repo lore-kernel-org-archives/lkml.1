@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbZCPKWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbZCPKXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760165AbZCPKWn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 06:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757100AbZCPKWc
+	id S1760116AbZCPKXO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 06:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758846AbZCPKW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 06:22:32 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47794 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756408AbZCPKWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 06:22:32 -0400
-Date: Mon, 16 Mar 2009 11:22:30 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
+	Mon, 16 Mar 2009 06:22:56 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49528 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755617AbZCPKWy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 06:22:54 -0400
+Date: Mon, 16 Mar 2009 06:22:53 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, npiggin@suse.de
-Subject: Re: [PATCH 4/7] writeback: get rid of task/current_is_pdflush()
-Message-ID: <20090316102229.GP27476@kernel.dk>
-References: <1236868428-20408-1-git-send-email-jens.axboe@oracle.com> <1236868428-20408-5-git-send-email-jens.axboe@oracle.com> <20090316101425.GB21118@infradead.org>
+       chris.mason@oracle.com, david@fromorbit.com, npiggin@suse.de,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2/7] writeback: switch to per-bdi threads for flushing
+	data
+Message-ID: <20090316102253.GB9510@infradead.org>
+References: <1236868428-20408-1-git-send-email-jens.axboe@oracle.com> <1236868428-20408-3-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090316101425.GB21118@infradead.org>
+In-Reply-To: <1236868428-20408-3-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16 2009, Christoph Hellwig wrote:
-> On Thu, Mar 12, 2009 at 03:33:45PM +0100, Jens Axboe wrote:
-> > There's just a single user in the kernel and Chris says it's safe to kill.
-> 
-> I'll defer about the use to Chris, but if this can go it should now,
-> not deep inside the series.
+On Thu, Mar 12, 2009 at 03:33:43PM +0100, Jens Axboe wrote:
+> +static void bdi_kupdated(struct backing_dev_info *bdi)
+> +{
+> +	long nr_to_write;
+> +	struct writeback_control wbc = {
+> +		.bdi		= bdi,
+> +		.sync_mode	= WB_SYNC_NONE,
+> +		.nr_to_write	= 0,
+> +		.for_kupdate	= 1,
+> +		.range_cyclic	= 1,
+> +	};
+> +
+> +	sync_supers();
 
-Oh agree, the series was more of an RFC, it wasn't a submission. It's
-not even well tested yet. I'll snip the emergency sync/remount stuff and
-this out of the series and put it at the front, so it can go in seperate
-and earlier.
-
--- 
-Jens Axboe
+Not directly related to your patch, but can someone explain WTF
+sync_supers is doing here or in the old kupdated?  We're writing back
+dirty pages from the VM, and for some reason we try to also write back
+superblocks.   This doesn't really make any sense.
 
