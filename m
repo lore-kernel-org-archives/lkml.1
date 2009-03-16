@@ -1,116 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761431AbZCPJ4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbZCPJ4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761431AbZCPJ4h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 05:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbZCPJou
+	id S1761468AbZCPJ4x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 05:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbZCPJpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 05:44:50 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:35460 "EHLO gir.skynet.ie"
+	Mon, 16 Mar 2009 05:45:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49283 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754203AbZCPJom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 05:44:42 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Mel Gorman <mel@csn.ul.ie>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 35/35] Allow up to 4MB PCP lists due to compound pages
-Date: Mon, 16 Mar 2009 09:46:30 +0000
-Message-Id: <1237196790-7268-36-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1237196790-7268-1-git-send-email-mel@csn.ul.ie>
-References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie>
+	id S1756664AbZCPJpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 05:45:38 -0400
+Message-ID: <49BE1FB8.6000505@kernel.org>
+Date: Mon, 16 Mar 2009 18:45:28 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/14] block: clean up request completion API
+References: <1236920578-2179-1-git-send-email-tj@kernel.org> <1236920578-2179-10-git-send-email-tj@kernel.org> <49BE180A.7010904@panasas.com>
+In-Reply-To: <49BE180A.7010904@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 16 Mar 2009 09:45:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Compound pages from SLUB on the free lists can occupy a fair percentage of
-the 512K that is currently allowed on the PCP lists. This can push out cache
-hot order-0 pages even though the compound page may be relatively sparsely
-used in the short term. This patch changes pcp->count to count pages (1
-per page regardless of order) instead of accounting for the number of base
-pages on the list. This keeps cache hot pages on the list at the cost of
-the PCP lists being up to 4MB in size instead of 512K.
+Boaz Harrosh wrote:
+> I have a small request below, if it's OK?
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- mm/page_alloc.c |   23 +++++++++--------------
- 1 files changed, 9 insertions(+), 14 deletions(-)
+Sure.
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 1ac4c3d..d5161cf 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -572,11 +572,10 @@ static inline int check_freepage_flags(struct page *page,
- static inline void rmv_pcp_page(struct per_cpu_pages *pcp, struct page *page)
- {
- 	int migratetype = page_private(page);
--	int basepage_count = 1 << page->index;
- 
- 	list_del(&page->lru);
--	pcp->count -= basepage_count;
--	pcp->mocount[migratetype][page->index] -= basepage_count;
-+	pcp->count--;
-+	pcp->mocount[migratetype][page->index]--;
- }
- 
- static inline void add_pcp_page(struct per_cpu_pages *pcp,
-@@ -584,22 +583,20 @@ static inline void add_pcp_page(struct per_cpu_pages *pcp,
- 					int cold)
- {
- 	int migratetype = page_private(page);
--	int basepage_count = 1 << page->index;
- 
- 	if (cold)
- 		list_add_tail(&page->lru, &pcp->lists[migratetype]);
- 	else
- 		list_add(&page->lru, &pcp->lists[migratetype]);
--	pcp->count += basepage_count;
--	pcp->mocount[migratetype][page->index] += basepage_count;
-+	pcp->count++;
-+	pcp->mocount[migratetype][page->index]++;
- }
- 
- static inline void bulk_add_pcp_page(struct per_cpu_pages *pcp,
- 					int migratetype, int order, int count)
- {
--	int basepage_count = count << order;
--	pcp->count += basepage_count;
--	pcp->mocount[migratetype][order] += basepage_count;
-+	pcp->count += count;
-+	pcp->mocount[migratetype][order] += count;
- }
- 
- /*
-@@ -627,9 +624,8 @@ static void free_pcppages_bulk(struct zone *zone, int count,
- 
- 	list = &pcp->lists[migratetype];
- 	bulkcount = 1 + (count / (MIGRATE_PCPTYPES * 2));
--	while (freed < count) {
-+	while (count--) {
- 		struct page *page;
--		int thisfreed;
- 
- 		/*
- 		 * Move to another migratetype if this list is depleted or
-@@ -645,9 +641,8 @@ static void free_pcppages_bulk(struct zone *zone, int count,
- 		/* Remove from list and update counters */
- 		page = list_entry(list->prev, struct page, lru);
- 		rmv_pcp_page(pcp, page);
--		thisfreed = 1 << page->index;
--		freed += thisfreed;
--		bulkcount -= thisfreed;
-+		freed += 1 << page->index;
-+		bulkcount--;
- 
- 		__free_one_page(page, zone, page->index, migratetype);
- 	}
+> 
+> + *     Drivers that supports bidi can safely call this member for any type
+> + *     of request, bidi or uni. In the later case @bidi_bytes is just
+> + *     ignored.
+> 
+> Please add some comment like above, the subject arose a few times before
+> where programmers thought they need to do an if() and call this or above
+> blk_end_request.
+
+Comment added as suggested and patch description updated accordingly.
+Git tree has been rebased.  New commit ID is
+5b437c316dcdb30598a73b03f529df89e880ac15.
+
+Thanks.
+
 -- 
-1.5.6.5
-
+tejun
