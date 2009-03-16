@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbZCPEQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbZCPEPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937AbZCPEQs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 00:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZCPEOr
+	id S1754969AbZCPEPr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 00:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZCPEOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 00:14:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:57336 "EHLO ozlabs.org"
+	Mon, 16 Mar 2009 00:14:40 -0400
+Received: from ozlabs.org ([203.10.76.45]:57323 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752485AbZCPEOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 00:14:46 -0400
-Subject: [PULL] cpumask updates for s390
+	id S1751274AbZCPEOi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 00:14:38 -0400
+Subject: [PULL] cpumask updates for m32r
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
-       linux-kernel@vger.kernel.org, mingo@redhat.com, travis@sgi.com
-Cc: linux390@de.ibm.com
+To: Hirokazu Takata <takata@linux-m32r.org>
+Cc: linux-m32r@ml.linux-m32r.org, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, travis@sgi.com
 CC: linux-kernel@vger.kernel.org
 CC: mingo@redhat.com
 CC: travis@sgi.com
-Date: Mon, 16 Mar 2009 14:44:38 +1030
+Date: Mon, 16 Mar 2009 14:44:29 +1030
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903161444.38974.rusty@rustcorp.com.au>
+Message-Id: <200903161444.30227.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,27 +34,26 @@ The following changes since commit 5bee17f18b595937e6beafeee5197868a3f74a06:
 
 are available in the git repository at:
 
-  ssh://master.kernel.org/home/ftp/pub/scm/linux/kernel/git/rusty/linux-2.6-cpumask-for-s390.git master
+  ssh://master.kernel.org/home/ftp/pub/scm/linux/kernel/git/rusty/linux-2.6-cpumask-for-m32r.git master
 
 Rusty Russell (4):
-      cpumask: remove cpu_coregroup_map: s390
-      cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: s390
-      cpumask: Use accessors code.: s390
-      cpumask: use mm_cpumask() wrapper: s390
+      cpumask: arch_send_call_function_ipi_mask: m32r
+      cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: m32r
+      cpumask: Use accessors code.: m32r
+      cpumask: use mm_cpumask() wrapper: m32r
 
- arch/s390/include/asm/mmu_context.h |    2 +-
- arch/s390/include/asm/tlbflush.h    |    4 ++--
- arch/s390/include/asm/topology.h    |    1 -
- arch/s390/kernel/smp.c              |   21 ++++++++++-----------
- arch/s390/kernel/topology.c         |    2 +-
- arch/s390/mm/pgtable.c              |    2 +-
- 6 files changed, 15 insertions(+), 17 deletions(-)
+ arch/m32r/kernel/setup.c       |    2 +-
+ arch/m32r/kernel/smp.c         |   30 +++++++++++++++---------------
+ arch/m32r/kernel/smpboot.c     |    2 +-
+ include/asm-m32r/mmu_context.h |    4 ++--
+ include/asm-m32r/smp.h         |    3 ++-
+ 5 files changed, 21 insertions(+), 20 deletions(-)
 
-commit a7996abc7d90ba828601f385a3a4ba9a1300c24e
+commit 159a7579964b51bb11437a83935eab6ca2656e2a
 Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Mon Mar 16 14:20:43 2009 +1030
+Date:   Mon Mar 16 14:14:40 2009 +1030
 
-    cpumask: use mm_cpumask() wrapper: s390
+    cpumask: use mm_cpumask() wrapper: m32r
     
     Makes code futureproof against the impending change to mm->cpu_vm_mask.
     
@@ -64,60 +62,74 @@ Date:   Mon Mar 16 14:20:43 2009 +1030
     
     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-diff --git a/arch/s390/include/asm/mmu_context.h b/arch/s390/include/asm/mmu_context.h
-index 28ec870..fc7edd6 100644
---- a/arch/s390/include/asm/mmu_context.h
-+++ b/arch/s390/include/asm/mmu_context.h
-@@ -74,7 +74,7 @@ static inline void update_mm(struct mm_struct *mm, struct task_struct *tsk)
- static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
- 			     struct task_struct *tsk)
- {
--	cpu_set(smp_processor_id(), next->cpu_vm_mask);
-+	cpumask_set_cpu(smp_processor_id(), mm_cpumask(next));
- 	update_mm(next, tsk);
- }
- 
-diff --git a/arch/s390/include/asm/tlbflush.h b/arch/s390/include/asm/tlbflush.h
-index d60394b..1b14afe 100644
---- a/arch/s390/include/asm/tlbflush.h
-+++ b/arch/s390/include/asm/tlbflush.h
-@@ -51,7 +51,7 @@ static inline void __tlb_flush_full(struct mm_struct *mm)
- 	 * If the process only ran on the local cpu, do a local flush.
- 	 */
- 	local_cpumask = cpumask_of_cpu(smp_processor_id());
--	if (cpus_equal(mm->cpu_vm_mask, local_cpumask))
-+	if (cpumask_equal(mm_cpumask(mm), local_cpumask))
- 		__tlb_flush_local();
- 	else
- 		__tlb_flush_global();
-@@ -73,7 +73,7 @@ static inline void __tlb_flush_idte(unsigned long asce)
- 
- static inline void __tlb_flush_mm(struct mm_struct * mm)
- {
--	if (unlikely(cpus_empty(mm->cpu_vm_mask)))
-+	if (unlikely(cpumask_empty(mm_cpumask(mm))))
- 		return;
- 	/*
- 	 * If the machine has IDTE we prefer to do a per mm flush
-diff --git a/arch/s390/mm/pgtable.c b/arch/s390/mm/pgtable.c
-index 0767827..4b48ffb 100644
---- a/arch/s390/mm/pgtable.c
-+++ b/arch/s390/mm/pgtable.c
-@@ -290,7 +290,7 @@ int s390_enable_sie(void)
- 	tsk->mm = tsk->active_mm = mm;
+diff --git a/arch/m32r/kernel/smp.c b/arch/m32r/kernel/smp.c
+index 45c512b..e6ec3cc 100644
+--- a/arch/m32r/kernel/smp.c
++++ b/arch/m32r/kernel/smp.c
+@@ -264,7 +264,7 @@ void smp_flush_tlb_mm(struct mm_struct *mm)
  	preempt_disable();
- 	update_mm(mm, tsk);
--	cpu_set(smp_processor_id(), mm->cpu_vm_mask);
-+	cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
- 	preempt_enable();
- 	task_unlock(tsk);
- 	mmput(old_mm);
+ 	cpu_id = smp_processor_id();
+ 	mmc = &mm->context[cpu_id];
+-	cpu_mask = mm->cpu_vm_mask;
++	cpu_mask = *mm_cpumask(mm);
+ 	cpu_clear(cpu_id, cpu_mask);
+ 
+ 	if (*mmc != NO_CONTEXT) {
+@@ -273,7 +273,7 @@ void smp_flush_tlb_mm(struct mm_struct *mm)
+ 		if (mm == current->mm)
+ 			activate_context(mm);
+ 		else
+-			cpu_clear(cpu_id, mm->cpu_vm_mask);
++			cpumask_clear_cpu(cpu_id, mm_cpumask(mm));
+ 		local_irq_restore(flags);
+ 	}
+ 	if (!cpus_empty(cpu_mask))
+@@ -334,7 +334,7 @@ void smp_flush_tlb_page(struct vm_area_struct *vma, unsigned long va)
+ 	preempt_disable();
+ 	cpu_id = smp_processor_id();
+ 	mmc = &mm->context[cpu_id];
+-	cpu_mask = mm->cpu_vm_mask;
++	cpu_mask = *mm_cpumask(mm);
+ 	cpu_clear(cpu_id, cpu_mask);
+ 
+ #ifdef DEBUG_SMP
+@@ -469,7 +469,7 @@ void smp_invalidate_interrupt(void)
+ 		if (flush_mm == current->active_mm)
+ 			activate_context(flush_mm);
+ 		else
+-			cpu_clear(cpu_id, flush_mm->cpu_vm_mask);
++			cpumask_clear(cpu_id, mm_cpumask(flush_mm));
+ 	} else {
+ 		unsigned long va = flush_va;
+ 
+diff --git a/include/asm-m32r/mmu_context.h b/include/asm-m32r/mmu_context.h
+index 91909e5..a735cc5 100644
+--- a/include/asm-m32r/mmu_context.h
++++ b/include/asm-m32r/mmu_context.h
+@@ -127,7 +127,7 @@ static inline void switch_mm(struct mm_struct *prev,
+ 
+ 	if (prev != next) {
+ #ifdef CONFIG_SMP
+-		cpu_set(cpu, next->cpu_vm_mask);
++		cpumask_set_cpu(cpu, mm_cpumask(next));
+ #endif /* CONFIG_SMP */
+ 		/* Set MPTB = next->pgd */
+ 		*(volatile unsigned long *)MPTB = (unsigned long)next->pgd;
+@@ -135,7 +135,7 @@ static inline void switch_mm(struct mm_struct *prev,
+ 	}
+ #ifdef CONFIG_SMP
+ 	else
+-		if (!cpu_test_and_set(cpu, next->cpu_vm_mask))
++		if (!cpumask_test_and_set_cpu(cpu, mm_cpumask(next))
+ 			activate_context(next);
+ #endif /* CONFIG_SMP */
+ }
 
-commit 493317ecbfbe24d1b2a9d5073b3b810316f1628b
+commit 961a0229106f860cc024a5bb4cc84cbcd9676409
 Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Mon Mar 16 14:20:43 2009 +1030
+Date:   Mon Mar 16 14:14:39 2009 +1030
 
-    cpumask: Use accessors code.: s390
+    cpumask: Use accessors code.: m32r
     
     Impact: use new API
     
@@ -127,35 +139,31 @@ Date:   Mon Mar 16 14:20:43 2009 +1030
     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
     Signed-off-by: Mike Travis <travis@sgi.com>
 
-diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-index a46752b..6c7ed44 100644
---- a/arch/s390/kernel/smp.c
-+++ b/arch/s390/kernel/smp.c
-@@ -589,9 +589,8 @@ static int __init setup_possible_cpus(char *s)
- 	int pcpus, cpu;
+diff --git a/arch/m32r/kernel/smpboot.c b/arch/m32r/kernel/smpboot.c
+index 2547d6c..ffc3bbc 100644
+--- a/arch/m32r/kernel/smpboot.c
++++ b/arch/m32r/kernel/smpboot.c
+@@ -178,7 +178,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+ 	for (phys_id = 0 ; phys_id < nr_cpu ; phys_id++)
+ 		physid_set(phys_id, phys_cpu_present_map);
+ #ifndef CONFIG_HOTPLUG_CPU
+-	cpu_present_map = cpu_possible_map;
++	init_cpu_present(&cpu_possible_map);
+ #endif
  
- 	pcpus = simple_strtoul(s, NULL, 0);
--	cpu_possible_map = cpumask_of_cpu(0);
--	for (cpu = 1; cpu < pcpus && cpu < nr_cpu_ids; cpu++)
--		cpu_set(cpu, cpu_possible_map);
-+	for (cpu = 0; cpu < pcpus && cpu < nr_cpu_ids; cpu++)
-+		set_cpu_possible(cpu, true);
- 	return 0;
- }
- early_param("possible_cpus", setup_possible_cpus);
+ 	show_mp_info(nr_cpu);
 
-commit 74b5d3675e733bb1bd405f66e1caaf319362872f
+commit 6d3a98781fb054cbdbd6836ce6839dadc2e7a953
 Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Mon Mar 16 14:20:42 2009 +1030
+Date:   Mon Mar 16 14:14:39 2009 +1030
 
-    cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: s390
+    cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: m32r
     
     Impact: cleanup, futureproof
     
     In fact, all cpumask ops will only be valid (in general) for bit
     numbers < nr_cpu_ids.  So use that instead of NR_CPUS in various
-    places (I also updated the immediate sites to use the new cpumask_
-    operators).
+    places.
     
     This is always safe: no cpu number can be >= nr_cpu_ids, and
     nr_cpu_ids is initialized to NR_CPUS at boot.
@@ -164,101 +172,139 @@ Date:   Mon Mar 16 14:20:42 2009 +1030
     Signed-off-by: Mike Travis <travis@sgi.com>
     Acked-by: Ingo Molnar <mingo@elte.hu>
 
-diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-index 2d337cb..a46752b 100644
---- a/arch/s390/kernel/smp.c
-+++ b/arch/s390/kernel/smp.c
-@@ -304,8 +304,8 @@ static int smp_rescan_cpus_sigp(cpumask_t avail)
+diff --git a/arch/m32r/kernel/setup.c b/arch/m32r/kernel/setup.c
+index 0392112..f48e727 100644
+--- a/arch/m32r/kernel/setup.c
++++ b/arch/m32r/kernel/setup.c
+@@ -356,7 +356,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 
+ static void *c_start(struct seq_file *m, loff_t *pos)
  {
- 	int cpu_id, logical_cpu;
- 
--	logical_cpu = first_cpu(avail);
--	if (logical_cpu == NR_CPUS)
-+	logical_cpu = cpumask_first(&avail);
-+	if (logical_cpu >= nr_cpu_ids)
- 		return 0;
- 	for (cpu_id = 0; cpu_id <= 65535; cpu_id++) {
- 		if (cpu_known(cpu_id))
-@@ -316,8 +316,8 @@ static int smp_rescan_cpus_sigp(cpumask_t avail)
- 			continue;
- 		cpu_set(logical_cpu, cpu_present_map);
- 		smp_cpu_state[logical_cpu] = CPU_STATE_CONFIGURED;
--		logical_cpu = next_cpu(logical_cpu, avail);
--		if (logical_cpu == NR_CPUS)
-+		logical_cpu = cpumask_next(logical_cpu, &avail);
-+		if (logical_cpu >= nr_cpu_ids)
- 			break;
- 	}
- 	return 0;
-@@ -329,8 +329,8 @@ static int smp_rescan_cpus_sclp(cpumask_t avail)
- 	int cpu_id, logical_cpu, cpu;
- 	int rc;
- 
--	logical_cpu = first_cpu(avail);
--	if (logical_cpu == NR_CPUS)
-+	logical_cpu = cpumask_first(&avail);
-+	if (logical_cpu >= nr_cpu_ids)
- 		return 0;
- 	info = kmalloc(sizeof(*info), GFP_KERNEL);
- 	if (!info)
-@@ -351,8 +351,8 @@ static int smp_rescan_cpus_sclp(cpumask_t avail)
- 			smp_cpu_state[logical_cpu] = CPU_STATE_STANDBY;
- 		else
- 			smp_cpu_state[logical_cpu] = CPU_STATE_CONFIGURED;
--		logical_cpu = next_cpu(logical_cpu, avail);
--		if (logical_cpu == NR_CPUS)
-+		logical_cpu = cpumask_next(logical_cpu, &avail);
-+		if (logical_cpu >= nr_cpu_ids)
- 			break;
- 	}
- out:
-@@ -590,7 +590,7 @@ static int __init setup_possible_cpus(char *s)
- 
- 	pcpus = simple_strtoul(s, NULL, 0);
- 	cpu_possible_map = cpumask_of_cpu(0);
--	for (cpu = 1; cpu < pcpus && cpu < NR_CPUS; cpu++)
-+	for (cpu = 1; cpu < pcpus && cpu < nr_cpu_ids; cpu++)
- 		cpu_set(cpu, cpu_possible_map);
- 	return 0;
+-	return *pos < NR_CPUS ? cpu_data + *pos : NULL;
++	return *pos < nr_cpu_ids ? cpu_data + *pos : NULL;
  }
+ 
+ static void *c_next(struct seq_file *m, void *v, loff_t *pos)
 
-commit bb837fbf10976c8d1cc0ec2d07ae4abd31705c44
+commit 6b72c3446e7af10acb7a32c0bbd7fb4871d61205
 Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Mon Mar 16 14:20:42 2009 +1030
+Date:   Mon Mar 16 14:14:37 2009 +1030
 
-    cpumask: remove cpu_coregroup_map: s390
+    cpumask: arch_send_call_function_ipi_mask: m32r
     
-    Impact: cleanup
+    We're weaning the core code off handing cpumask's around on-stack.
+    This introduces arch_send_call_function_ipi_mask(), and by defining
+    it, the old arch_send_call_function_ipi is defined by the core code.
     
-    cpu_coregroup_mask is the New Hotness.
-    
-    As S/390 uses theirs internally, so we just make it static.
+    We also take the chance to wean the implementations off the
+    obsolescent for_each_cpu_mask(): making send_ipi_mask take the pointer
+    seemed the most natural way to ensure all implementations used
+    for_each_cpu.
     
     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-diff --git a/arch/s390/include/asm/topology.h b/arch/s390/include/asm/topology.h
-index c93eb50..97c376e 100644
---- a/arch/s390/include/asm/topology.h
-+++ b/arch/s390/include/asm/topology.h
-@@ -5,7 +5,6 @@
+diff --git a/arch/m32r/kernel/smp.c b/arch/m32r/kernel/smp.c
+index 929e5c9..45c512b 100644
+--- a/arch/m32r/kernel/smp.c
++++ b/arch/m32r/kernel/smp.c
+@@ -85,7 +85,7 @@ void smp_ipi_timer_interrupt(struct pt_regs *);
+ void smp_local_timer_interrupt(void);
  
- #define mc_capable()	(1)
+ static void send_IPI_allbutself(int, int);
+-static void send_IPI_mask(cpumask_t, int, int);
++static void send_IPI_mask(const struct cpumask *, int, int);
+ unsigned long send_IPI_mask_phys(cpumask_t, int, int);
  
--cpumask_t cpu_coregroup_map(unsigned int cpu);
- const struct cpumask *cpu_coregroup_mask(unsigned int cpu);
- 
- extern cpumask_t cpu_core_map[NR_CPUS];
-diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
-index cc362c9..3c72c9c 100644
---- a/arch/s390/kernel/topology.c
-+++ b/arch/s390/kernel/topology.c
-@@ -74,7 +74,7 @@ static DEFINE_SPINLOCK(topology_lock);
- 
- cpumask_t cpu_core_map[NR_CPUS];
- 
--cpumask_t cpu_coregroup_map(unsigned int cpu)
-+static cpumask_t cpu_coregroup_map(unsigned int cpu)
+ /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
+@@ -113,7 +113,7 @@ unsigned long send_IPI_mask_phys(cpumask_t, int, int);
+ void smp_send_reschedule(int cpu_id)
  {
- 	struct core_info *core = &core_info;
- 	unsigned long flags;
+ 	WARN_ON(cpu_is_offline(cpu_id));
+-	send_IPI_mask(cpumask_of_cpu(cpu_id), RESCHEDULE_IPI, 1);
++	send_IPI_mask(cpumask_of(cpu_id), RESCHEDULE_IPI, 1);
+ }
+ 
+ /*==========================================================================*
+@@ -168,7 +168,7 @@ void smp_flush_cache_all(void)
+ 	spin_lock(&flushcache_lock);
+ 	mask=cpus_addr(cpumask);
+ 	atomic_set_mask(*mask, (atomic_t *)&flushcache_cpumask);
+-	send_IPI_mask(cpumask, INVALIDATE_CACHE_IPI, 0);
++	send_IPI_mask(&cpumask, INVALIDATE_CACHE_IPI, 0);
+ 	_flush_cache_copyback_all();
+ 	while (flushcache_cpumask)
+ 		mb();
+@@ -424,7 +424,7 @@ static void flush_tlb_others(cpumask_t cpumask, struct mm_struct *mm,
+ 	 * We have to send the IPI only to
+ 	 * CPUs affected.
+ 	 */
+-	send_IPI_mask(cpumask, INVALIDATE_TLB_IPI, 0);
++	send_IPI_mask(&cpumask, INVALIDATE_TLB_IPI, 0);
+ 
+ 	while (!cpus_empty(flush_cpumask)) {
+ 		/* nothing. lockup detection does not belong here */
+@@ -546,14 +546,14 @@ static void stop_this_cpu(void *dummy)
+ 	for ( ; ; );
+ }
+ 
+-void arch_send_call_function_ipi(cpumask_t mask)
++void arch_send_call_function_ipi_mask(const struct cpumask *mask)
+ {
+ 	send_IPI_mask(mask, CALL_FUNCTION_IPI, 0);
+ }
+ 
+ void arch_send_call_function_single_ipi(int cpu)
+ {
+-	send_IPI_mask(cpumask_of_cpu(cpu), CALL_FUNC_SINGLE_IPI, 0);
++	send_IPI_mask(cpumask_of(cpu), CALL_FUNC_SINGLE_IPI, 0);
+ }
+ 
+ /*==========================================================================*
+@@ -729,7 +729,7 @@ static void send_IPI_allbutself(int ipi_num, int try)
+ 	cpumask = cpu_online_map;
+ 	cpu_clear(smp_processor_id(), cpumask);
+ 
+-	send_IPI_mask(cpumask, ipi_num, try);
++	send_IPI_mask(&cpumask, ipi_num, try);
+ }
+ 
+ /*==========================================================================*
+@@ -752,7 +752,7 @@ static void send_IPI_allbutself(int ipi_num, int try)
+  * ---------- --- --------------------------------------------------------
+  *
+  *==========================================================================*/
+-static void send_IPI_mask(cpumask_t cpumask, int ipi_num, int try)
++static void send_IPI_mask(const struct cpumask *cpumask, int ipi_num, int try)
+ {
+ 	cpumask_t physid_mask, tmp;
+ 	int cpu_id, phys_id;
+@@ -761,11 +761,11 @@ static void send_IPI_mask(cpumask_t cpumask, int ipi_num, int try)
+ 	if (num_cpus <= 1)	/* NO MP */
+ 		return;
+ 
+-	cpus_and(tmp, cpumask, cpu_online_map);
+-	BUG_ON(!cpus_equal(cpumask, tmp));
++	cpumask_and(&tmp, cpumask, cpu_online_mask);
++	BUG_ON(!cpumask_equal(cpumask, &tmp));
+ 
+ 	physid_mask = CPU_MASK_NONE;
+-	for_each_cpu_mask(cpu_id, cpumask){
++	for_each_cpu(cpu_id, cpumask) {
+ 		if ((phys_id = cpu_to_physid(cpu_id)) != -1)
+ 			cpu_set(phys_id, physid_mask);
+ 	}
+diff --git a/include/asm-m32r/smp.h b/include/asm-m32r/smp.h
+index b96a6d2..c2be49d 100644
+--- a/include/asm-m32r/smp.h
++++ b/include/asm-m32r/smp.h
+@@ -88,7 +88,8 @@ extern void smp_send_timer(void);
+ extern unsigned long send_IPI_mask_phys(cpumask_t, int, int);
+ 
+ extern void arch_send_call_function_single_ipi(int cpu);
+-extern void arch_send_call_function_ipi(cpumask_t mask);
++extern void arch_send_call_function_ipi_mask(const struct cpumask *mask);
++#define arch_send_call_function_ipi_mask arch_send_call_function_ipi_mask
+ 
+ #endif	/* not __ASSEMBLY__ */
+ 
 
