@@ -1,43 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755761AbZCPUBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761309AbZCPUB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755761AbZCPUBF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 16:01:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZCPUAv
+	id S1761309AbZCPUB3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 16:01:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbZCPUBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 16:00:51 -0400
-Received: from gw.goop.org ([64.81.55.164]:56120 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752173AbZCPUAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 16:00:50 -0400
-Message-ID: <49BEAFEC.7020400@goop.org>
-Date: Mon, 16 Mar 2009 13:00:44 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 16 Mar 2009 16:01:13 -0400
+Received: from relay1.ptmail.sapo.pt ([212.55.154.21]:56188 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1758689AbZCPUBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 16:01:10 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Mon, 16 Mar 2009 19:59:02 +0000
+From: Luis Henriques <henrix@sapo.pt>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2 -tip] sched: small optimisation on can_migrate_task
+Message-ID: <20090316195902.GA6197@hades.domain.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org>
-In-Reply-To: <49BEAD27.3050801@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
->> -INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
->> -RESERVE_BRK(pagetables, INIT_MAP_SIZE)
->> +/* Enough space to fit pagetables for the low memory linear map */
->> +MAPPING_BEYOND_END = (PAGE_TABLE_SIZE(1 << (32 - PAGE_SHIFT)) * PAGE_SIZE)
->>     
->
-> that is for 4g?
->   
+There were 3 invocation to task_hot() in function can_migrate_task().  These 3
+invocations have been replaced by only one invocation, cached in a local
+variable.
 
-Yes, I suppose it only needs to be 1G.  But it doesn't make much 
-difference in practice.
+Signed-off-by: Luis Henriques <henrix@sapo.pt>
+---
+ kernel/sched.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-    J
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 0a5d929..4000304 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3072,6 +3072,7 @@ int can_migrate_task(struct task_struct *p, struct rq *rq, int this_cpu,
+ 		     struct sched_domain *sd, enum cpu_idle_type idle,
+ 		     int *all_pinned)
+ {
++	int tsk_cache_hot = 0;
+ 	/*
+ 	 * We do not migrate tasks that are:
+ 	 * 1) running (obviously), or
+@@ -3095,10 +3096,11 @@ int can_migrate_task(struct task_struct *p, struct rq *rq, int this_cpu,
+ 	 * 2) too many balance attempts have failed.
+ 	 */
+ 
+-	if (!task_hot(p, rq->clock, sd) ||
+-			sd->nr_balance_failed > sd->cache_nice_tries) {
++	tsk_cache_hot = task_hot(p, rq->clock, sd);
++	if (!tsk_cache_hot ||
++		sd->nr_balance_failed > sd->cache_nice_tries) {
+ #ifdef CONFIG_SCHEDSTATS
+-		if (task_hot(p, rq->clock, sd)) {
++		if (tsk_cache_hot) {
+ 			schedstat_inc(sd, lb_hot_gained[idle]);
+ 			schedstat_inc(p, se.nr_forced_migrations);
+ 		}
+@@ -3106,7 +3108,7 @@ int can_migrate_task(struct task_struct *p, struct rq *rq, int this_cpu,
+ 		return 1;
+ 	}
+ 
+-	if (task_hot(p, rq->clock, sd)) {
++	if (tsk_cache_hot) {
+ 		schedstat_inc(p, se.nr_failed_migrations_hot);
+ 		return 0;
+ 	}
+-- 
+1.6.2
+
