@@ -1,54 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759861AbZCPSU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761496AbZCPSVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759861AbZCPSU0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbZCPSUL
+	id S1761496AbZCPSVW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbZCPSVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:20:11 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33640 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754297AbZCPSUK (ORCPT
+	Mon, 16 Mar 2009 14:21:13 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:4363 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755140AbZCPSVM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:20:10 -0400
-Message-ID: <49BE9756.6070401@zytor.com>
-Date: Mon, 16 Mar 2009 11:15:50 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 16 Mar 2009 14:21:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=H1OcdZ9j0ZolWULVWyGzuUl0BdEwP9crZ7Bd4HMu9q5EHQBlj6Oz8OoxJYsAgvkuiF
+         27aeetoy+bUs+OsN3uA+L3kDc8exM4Sn39tVa1cYvDtO84Yvp422OpjnkobiPw8zP6G0
+         H7qow6+Oea8uMIQRS8335V3HmJfb3StRj22kM=
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org>
-In-Reply-To: <49BE9248.6050707@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <49BE58BA.1000907@pardus.org.tr>
+References: <49BE58BA.1000907@pardus.org.tr>
+Date: Mon, 16 Mar 2009 11:21:09 -0700
+X-Google-Sender-Auth: 96d3ff9f46915f56
+Message-ID: <86802c440903161121s3ba18abaiaa3ccf6847e0eafe@mail.gmail.com>
+Subject: Re: [BUG 2.6.29_rc8] BIOS Bug: CPU MTRRs don't cover all of memory, 
+	losing 0MB of RAM.
+From: Yinghai Lu <yinghai@kernel.org>
+To: =?ISO-8859-9?Q?Ozan_=C7a=F0layan?= <ozan@pardus.org.tr>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-9
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Yinghai Lu wrote:
->> could be max_pfn_mapped change in head_32.S that reduce mapping range 
->> to _end only.
->>   
-> 
-> Yes, I would say you're right.  Trimming the mapping to _end only leaves 
-> the space under the kernel avaliable for allocating pagetable from e820 
-> space.  In this case we've got DEBUG_PAGEALLOC enabled, which inhibits 
-> the use of PSE, and BIOS corruption checking on, which eats a chunk of 
-> low memory.  In combination, there's only 0x8f000 bytes free below the 
-> kernel, and it needs 0xe1000 to allocate for pagetables.
-> 
-> Reverting 2bd2753ff46346543ab92e80df9d96366e21baa5 fixes the problem for 
-> me, though it does result in a kernel with a 73MB BSS...
-> 
+On Mon, Mar 16, 2009 at 6:48 AM, Ozan Çaðlayan <ozan@pardus.org.tr> wrote:
+> Hi,
+>
+> Just compiled and tried to boot it on an HP ProLiant DL580 G5. Here's the
+> interesting part:
+>
+> ..
+> -- last_pfn = 0x82ffff max_arch_pfn = 0x1000000
+> x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+> WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 0MB of RAM.
+> ------------[ cut here ]------------
+> WARNING: at arch/x86/kernel/cpu/mtrr/main.c:1655 mtrr_trim_uncached_memory+0x2a9/0x2cd()
+> Hardware name: ProLiant DL580 G5
+> Modules linked in:
+> Pid: 0, comm: swapper Not tainted 2.6.29_rc8-115 #1
+> Call Trace:
+>  [<c013134d>] warn_slowpath+0x71/0xa8
+>  [<c039971c>] ? _spin_unlock_irqrestore+0x19/0x1f
+>  [<c039971c>] ? _spin_unlock_irqrestore+0x19/0x1f
+>  [<c01319c4>] ? release_console_sem+0x185/0x1b2
+>  [<c0131e49>] ? vprintk+0x280/0x2a5
+>  [<c03973da>] ? printk+0xf/0x15
+>  [<c053423f>] mtrr_trim_uncached_memory+0x2a9/0x2cd
+>  [<c052f4bd>] setup_arch+0x439/0x99e
+>  [<c01319c4>] ? release_console_sem+0x185/0x1b2
+>  [<c0131e49>] ? vprintk+0x280/0x2a5
+>  [<c0531b37>] ? __reserve_early+0xe4/0xf8
+>  [<c03973da>] ? printk+0xf/0x15
+>  [<c052b5b6>] start_kernel+0x7b/0x345
+>  [<c052b085>] __init_begin+0x85/0x8d
+> ---[ end trace 4eaa2a86a8e2da22 ]---
+> update e820 for mtrr
+> ..
+>
+> This is a quite generic x86 desktop kernel with only the
+> following differences for the server:
+>
+> CONFIG_X86_GENERICARCH=y
+> CONFIG_X86_BIGSMP=y
+> CONFIG_MCORE2=y
+> CONFIG_HIGHMEM64G=y
+> # CONFIG_X86_GENERIC is not set
+>
+> I didn't want to add full dmesg and config for not flooding the e-mail but
+> if you need them or other output/information, i can send them.
+>
 
-I did kind of think that was a bit fishy, but I somehow assumed you'd 
-taken the consequences into account.  Obviously not.
+can you check tip/master?
 
-The 73 MB brk isn't a problem per se as it will not be used in most 
-systems.  This, in fact, is the whole reason for using brk and not just 
-bss: it allows unused brk to be reclaimed at a relatively early stage.
+http://people.redhat.com/mingo/tip.git/readme.txt
 
-	-hpa
+and post boot log.
+
+YH
