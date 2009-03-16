@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757147AbZCPBGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758015AbZCPBQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757147AbZCPBGw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 21:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbZCPBGn
+	id S1758015AbZCPBQN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 21:16:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755653AbZCPBP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 21:06:43 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57828 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbZCPBGn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 21:06:43 -0400
-Message-ID: <49BDA415.9060502@zytor.com>
-Date: Sun, 15 Mar 2009 17:57:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 15 Mar 2009 21:15:57 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52408 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755617AbZCPBP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 21:15:56 -0400
+Message-ID: <49BDA842.1090208@kernel.org>
+Date: Mon, 16 Mar 2009 10:15:46 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Jan Beulich <jbeulich@novell.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH 10/24] xen: mask XSAVE from cpuid
-References: <1236931920-6861-1-git-send-email-jeremy@goop.org>	<1236931920-6861-11-git-send-email-jeremy@goop.org>	<49BA3A84.76E4.0078.0@novell.com>	<49BA7810.6090807@goop.org>	<49BD4CE1.6040100@zytor.com>	<49BD6D0E.1010107@goop.org>	<20090315154718.00353625@infradead.org>	<49BD97C6.2070401@goop.org> <20090315170945.08344b86@infradead.org>
-In-Reply-To: <20090315170945.08344b86@infradead.org>
-Content-Type: text/plain; charset=UTF-8
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] block: cleanup patches
+References: <1236920578-2179-1-git-send-email-tj@kernel.org> <49BB0FB7.2070109@kernel.org> <20090315164526.GD27476@kernel.dk>
+In-Reply-To: <20090315164526.GD27476@kernel.dk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 16 Mar 2009 01:15:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
+Jens Axboe wrote:
+> On Sat, Mar 14 2009, Tejun Heo wrote:
+>> Tejun Heo wrote:
+>>> Hello,
+>>>
+>>> This patchset is available in the following git tree.
+>>>
+>>>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-cleanup
+>>>
+>>> This patchset contains the following 14 cleanup patches.
+>> Jens, once you're okay with the rest of the changes, I'll remove IDE
+>> related stuff and repost the patchset.
 > 
-> Well.. pretty much all new instructions need Xen modifications due to
-> the need to be emulate to deal with traps/vmexits/etc right? 
-> So I don't quite see many cpuid bits that would NOT involve some Xen
-> modification or another ;)
-> 
+> I only gave it a quick glance, looks mostly OK. Though I don't like
+> putting elv_ prefixed stuff in blk-core. I agree it belongs there
+> though, it's really block layer functionality and not io scheduler
+> interfacing. So rename it blk_ instead and put compatability names in
+> the header file instead.
 
-There are going to be a very small number which need only userspace
-support.  However, there will be absolutely no way for Xen to know this
-a priori.
+Yeap, that exactly is what's planned (the peek/fetch patches :-).
 
-	-hpa
+> I'll give it a more thorough review and integration test tomorrow.
+
+Thanks.
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+tejun
