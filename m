@@ -1,264 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760288AbZCPLMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760311AbZCPLNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760288AbZCPLMt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 07:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZCPLMj
+	id S1760311AbZCPLNU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 07:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZCPLM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 07:12:39 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:33321 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbZCPLMi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 07:12:38 -0400
-Date: Mon, 16 Mar 2009 16:42:24 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
-       svaidy@linux.vnet.ibm.com, Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: [v3 PATCH 1/4] timers: Framework for identifying pinned timers
-Message-ID: <20090316111224.GB4686@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090316111045.GA4686@linux.vnet.ibm.com>
+	Mon, 16 Mar 2009 07:12:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36678 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751772AbZCPLM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 07:12:57 -0400
+Date: Mon, 16 Mar 2009 12:11:28 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       davem@davemloft.net, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net
+Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work
+	properly in bridge
+Message-ID: <20090316111127.GB3484@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090313223932.50ebbd88@nehalam> <20090314094911.GA3455@psychotron.englab.brq.redhat.com> <20090315161217.7fa2c3a7@nehalam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090316111045.GA4686@linux.vnet.ibm.com>
+In-Reply-To: <20090315161217.7fa2c3a7@nehalam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-03-16 16:40:45]:
+Mon, Mar 16, 2009 at 12:12:17AM CET, shemminger@linux-foundation.org wrote:
+>On Sat, 14 Mar 2009 10:49:11 +0100
+>Jiri Pirko <jpirko@redhat.com> wrote:
+>
+>> Sat, Mar 14, 2009 at 06:39:32AM CET, shemminger@linux-foundation.org wrote:
+>> >On Fri, 13 Mar 2009 19:33:04 +0100
+>> >Jiri Pirko <jpirko@redhat.com> wrote:
+>> >
+>> >> Hi all.
+>> >> 
+>> >> This is only a draft of patch to consult. I'm aware that it should be divided
+>> >> into multiple patches. I want to know opinion from you folks.
+>> >> 
+>> >> The problem is described in following bugzilla:
+>> >> https://bugzilla.redhat.com/show_bug.cgi?id=487763
+>> >> 
+>> >> Basically here's what's going on. In every mode, bonding interface uses the same
+>> >> mac address for all enslaved devices. Except for mode balance-alb. When you put
+>> >> this kind of bond device into a bridge it will only add one of mac adresses into
+>> >> a hash list of mac addresses, say X. This mac address is marked as local. But
+>> >> this bonding interface also has mac address Y. Now then packet arrives with
+>> >> destination address Y, this address is not marked as local and the packed looks
+>> >> like it needs to be forwarded. This packet is then lost which is wrong.
+>> >> 
+>> >> Notice that interfaces can be added and removed from bond while it is in bridge.
+>> >> Therefore I introduce another function pointer in struct net_device_ops -
+>> >> ndo_check_mac_address. This function when it's implemented should check passed
+>> >> mac address against the one set in device. I'm using this in bonding driver when
+>> >> the bond is in mode balance-alb to walk thru all slaves and checking if any of
+>> >> them equals passed address.
+>> >> 
+>> >> Then in bridge function br_handle_frame_finish() I'm using ndo_check_mac_address
+>> >> to recognize the destination mac address as local.
+>> >> 
+>> >> Please look at this and tell me what you think about it.
+>> >> 
+>> >> Thanks
+>> >> 
+>> >> Jirka
+>> >>
+>> >
+>> >A better and more general way to do this have the dev_set_mac_address
+>> >function check the return of the notifier and unwind. Then any protocol
+>> >can easily prevent address from changing.
+>> 
+>> Can you please describe this thougth a bit more? I can't understand it now...
+>> 
+>> Thanks
+>> 
+>> Jirka
+>
+>Something like this:
+>
+>--- a/net/core/dev.c	2009-03-15 15:55:02.098126056 -0700
+>+++ b/net/core/dev.c	2009-03-15 16:02:43.999251305 -0700
+>@@ -3830,6 +3830,7 @@ int dev_set_mac_address(struct net_devic
+> {
+> 	const struct net_device_ops *ops = dev->netdev_ops;
+> 	int err;
+>+	char save_addr[MAX_ADDR_LEN];
+> 
+> 	if (!ops->ndo_set_mac_address)
+> 		return -EOPNOTSUPP;
+>@@ -3837,9 +3838,17 @@ int dev_set_mac_address(struct net_devic
+> 		return -EINVAL;
+> 	if (!netif_device_present(dev))
+> 		return -ENODEV;
+>+
+>+	memcpy(save_addr, dev->dev_addr, dev->addr_len);
+> 	err = ops->ndo_set_mac_address(dev, sa);
+>-	if (!err)
+>-		call_netdevice_notifiers(NETDEV_CHANGEADDR, dev);
+>+	if (err)
+>+		return err;
+>+
+>+	err = call_netdevice_notifiers(NETDEV_CHANGEADDR, dev);
+>+	if (err) {
+>+		memcpy(sa->sa_data, save_addr, dev->addr_len);
+>+		ops->ndo_set_mac_address(dev, sa);
+>+	}
+> 	return err;
+> }
+> 
+>
+>And something like this:
+>
+>--- a/drivers/net/bonding/bond_main.c	2009-03-15 16:03:53.909000973 -0700
+>+++ b/drivers/net/bonding/bond_main.c	2009-03-15 16:11:43.227127031 -0700
+>@@ -3534,6 +3534,7 @@ static int bond_slave_netdev_event(unsig
+> {
+> 	struct net_device *bond_dev = slave_dev->master;
+> 	struct bonding *bond = netdev_priv(bond_dev);
+>+	int err;
+> 
+> 	switch (event) {
+> 	case NETDEV_UNREGISTER:
+>@@ -3570,6 +3571,15 @@ static int bond_slave_netdev_event(unsig
+> 		 * servitude.
+> 		 */
+> 		break;
+>+	case NETDEV_CHANGEADDR:
+>+		if (bond->params.mode == BOND_MODE_ALB)
+>+			err = bond_alb_check_mac_address(bond);
+>+		else if (compare_ether_addr(bond_dev->dev_addr, addr) != 0)
+>+			err = -EINVAL;
+>+
+>+		if (err)
+>+			return notifier_from_errno(err);
+>+		break;
+> 	case NETDEV_CHANGENAME:
+> 		/*
+> 		 * TODO: handle changing the primary's name
+>
+Yes, I think the changing mac address of slaves should be also handled by
+bonding driver. But my patch fixes a different issue. See, unlike in any other
+bonding modes, in balance-alb mode incoming packets have multiple MAC adresses
+(of any of enslaved devices). This causes problem because bridge only recognize
+one of them (the mac of master which is the mac on one of the slaves) as local -
+the other MAC's are not recognized as they are a part of port and therefore
+handled as general MAC adresses. This is the problem.
 
-This patch creates a new framework for identifying cpu-pinned timers
-and hrtimers.
+I can see two solutions. Either like my patch or somehow allow bridge to know
+more MAC addressses per port (maybe netdev can be changed to know more then
+one MAC address).
 
+Any thoughts?
 
-This framework is needed because pinned timers are expected to fire on
-the same CPU on which they are queued. So it is essential to identify
-these and not migrate them, in case there are any.
+Thanks
 
-For regular timers, the currently existing add_timer_on() can be used
-queue pinned timers and subsequently mod_timer_pinned() can be used
-to modify the 'expires' field.
-
-For hrtimers, a new interface hrtimer_start_pinned() is created,
-which can be used to queue cpu-pinned hrtimer.
-
-
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
----
- include/linux/hrtimer.h |   24 ++++++++++++++++++++----
- include/linux/timer.h   |    3 +++
- kernel/hrtimer.c        |   34 ++++++++++++++++++++++++++++------
- kernel/timer.c          |   31 +++++++++++++++++++++++++++----
- 4 files changed, 78 insertions(+), 14 deletions(-)
-
-Index: linux.trees.git/include/linux/hrtimer.h
-===================================================================
---- linux.trees.git.orig/include/linux/hrtimer.h
-+++ linux.trees.git/include/linux/hrtimer.h
-@@ -331,23 +331,39 @@ static inline void hrtimer_init_on_stack
- static inline void destroy_hrtimer_on_stack(struct hrtimer *timer) { }
- #endif
- 
-+#define HRTIMER_NOT_PINNED	0
-+#define HRTIMER_PINNED		1
- /* Basic timer operations: */
- extern int hrtimer_start(struct hrtimer *timer, ktime_t tim,
- 			 const enum hrtimer_mode mode);
-+extern int hrtimer_start_pinned(struct hrtimer *timer, ktime_t tim,
-+			const enum hrtimer_mode mode);
- extern int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
--			unsigned long range_ns, const enum hrtimer_mode mode);
-+	unsigned long range_ns, const enum hrtimer_mode mode, int pinned);
- extern int hrtimer_cancel(struct hrtimer *timer);
- extern int hrtimer_try_to_cancel(struct hrtimer *timer);
- 
--static inline int hrtimer_start_expires(struct hrtimer *timer,
--						enum hrtimer_mode mode)
-+static inline int __hrtimer_start_expires(struct hrtimer *timer,
-+					enum hrtimer_mode mode, int pinned)
- {
- 	unsigned long delta;
- 	ktime_t soft, hard;
- 	soft = hrtimer_get_softexpires(timer);
- 	hard = hrtimer_get_expires(timer);
- 	delta = ktime_to_ns(ktime_sub(hard, soft));
--	return hrtimer_start_range_ns(timer, soft, delta, mode);
-+	return hrtimer_start_range_ns(timer, soft, delta, mode, pinned);
-+}
-+
-+static inline int hrtimer_start_expires(struct hrtimer *timer,
-+						enum hrtimer_mode mode)
-+{
-+	return __hrtimer_start_expires(timer, mode, HRTIMER_NOT_PINNED);
-+}
-+
-+static inline int hrtimer_start_expires_pinned(struct hrtimer *timer,
-+						enum hrtimer_mode mode)
-+{
-+	return __hrtimer_start_expires(timer, mode, HRTIMER_PINNED);
- }
- 
- static inline int hrtimer_restart(struct hrtimer *timer)
-Index: linux.trees.git/kernel/hrtimer.c
-===================================================================
---- linux.trees.git.orig/kernel/hrtimer.c
-+++ linux.trees.git/kernel/hrtimer.c
-@@ -193,7 +193,8 @@ struct hrtimer_clock_base *lock_hrtimer_
-  * Switch the timer base to the current CPU when possible.
-  */
- static inline struct hrtimer_clock_base *
--switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base)
-+switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base,
-+	int pinned)
- {
- 	struct hrtimer_clock_base *new_base;
- 	struct hrtimer_cpu_base *new_cpu_base;
-@@ -897,9 +898,8 @@ remove_hrtimer(struct hrtimer *timer, st
-  *  0 on success
-  *  1 when the timer was active
-  */
--int
--hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_ns,
--			const enum hrtimer_mode mode)
-+int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-+	unsigned long delta_ns, const enum hrtimer_mode mode, int pinned)
- {
- 	struct hrtimer_clock_base *base, *new_base;
- 	unsigned long flags;
-@@ -911,7 +911,7 @@ hrtimer_start_range_ns(struct hrtimer *t
- 	ret = remove_hrtimer(timer, base);
- 
- 	/* Switch the timer base, if necessary: */
--	new_base = switch_hrtimer_base(timer, base);
-+	new_base = switch_hrtimer_base(timer, base, pinned);
- 
- 	if (mode == HRTIMER_MODE_REL) {
- 		tim = ktime_add_safe(tim, new_base->get_time());
-@@ -948,6 +948,12 @@ hrtimer_start_range_ns(struct hrtimer *t
- }
- EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
- 
-+int __hrtimer_start(struct hrtimer *timer, ktime_t tim,
-+	const enum hrtimer_mode mode, int pinned)
-+{
-+	return hrtimer_start_range_ns(timer, tim, 0, mode, pinned);
-+}
-+
- /**
-  * hrtimer_start - (re)start an hrtimer on the current CPU
-  * @timer:	the timer to be added
-@@ -961,10 +967,26 @@ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns
- int
- hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
- {
--	return hrtimer_start_range_ns(timer, tim, 0, mode);
-+	return __hrtimer_start(timer, tim, mode, HRTIMER_NOT_PINNED);
- }
- EXPORT_SYMBOL_GPL(hrtimer_start);
- 
-+/**
-+ * hrtimer_start_pinned - start a CPU-pinned hrtimer
-+ * @timer:      the timer to be added
-+ * @tim:        expiry time
-+ * @mode:       expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
-+ *
-+ * Returns:
-+ *  0 on success
-+ *  1 when the timer was active
-+ */
-+int hrtimer_start_pinned(struct hrtimer *timer,
-+	ktime_t tim, const enum hrtimer_mode mode)
-+{
-+	return __hrtimer_start(timer, tim, mode, HRTIMER_PINNED);
-+}
-+EXPORT_SYMBOL_GPL(hrtimer_start_pinned);
- 
- /**
-  * hrtimer_try_to_cancel - try to deactivate a timer
-Index: linux.trees.git/include/linux/timer.h
-===================================================================
---- linux.trees.git.orig/include/linux/timer.h
-+++ linux.trees.git/include/linux/timer.h
-@@ -163,7 +163,10 @@ extern void add_timer_on(struct timer_li
- extern int del_timer(struct timer_list * timer);
- extern int mod_timer(struct timer_list *timer, unsigned long expires);
- extern int mod_timer_pending(struct timer_list *timer, unsigned long expires);
-+extern int mod_timer_pinned(struct timer_list *timer, unsigned long expires);
- 
-+#define TIMER_NOT_PINNED	0
-+#define TIMER_PINNED		1
- /*
-  * The jiffies value which is added to now, when there is no timer
-  * in the timer wheel:
-Index: linux.trees.git/kernel/timer.c
-===================================================================
---- linux.trees.git.orig/kernel/timer.c
-+++ linux.trees.git/kernel/timer.c
-@@ -601,7 +601,8 @@ static struct tvec_base *lock_timer_base
- }
- 
- static inline int
--__mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
-+__mod_timer(struct timer_list *timer, unsigned long expires,
-+						bool pending_only, int pinned)
- {
- 	struct tvec_base *base, *new_base;
- 	unsigned long flags;
-@@ -665,7 +666,7 @@ out_unlock:
-  */
- int mod_timer_pending(struct timer_list *timer, unsigned long expires)
- {
--	return __mod_timer(timer, expires, true);
-+	return __mod_timer(timer, expires, true, TIMER_NOT_PINNED);
- }
- EXPORT_SYMBOL(mod_timer_pending);
- 
-@@ -699,11 +700,33 @@ int mod_timer(struct timer_list *timer, 
- 	if (timer->expires == expires && timer_pending(timer))
- 		return 1;
- 
--	return __mod_timer(timer, expires, false);
-+	return __mod_timer(timer, expires, false, TIMER_NOT_PINNED);
- }
- EXPORT_SYMBOL(mod_timer);
- 
- /**
-+ * mod_timer_pinned - modify a timer's timeout
-+ * @timer: the timer to be modified
-+ * @expires: new timeout in jiffies
-+ *
-+ * mod_timer_pinned() is a way to update the expire field of an
-+ * active timer (if the timer is inactive it will be activated)
-+ * and not allow the timer to be migrated to a different CPU.
-+ *
-+ * mod_timer_pinned(timer, expires) is equivalent to:
-+ *
-+ *     del_timer(timer); timer->expires = expires; add_timer(timer);
-+ */
-+int mod_timer_pinned(struct timer_list *timer, unsigned long expires)
-+{
-+	if (timer->expires == expires && timer_pending(timer))
-+		return 1;
-+
-+	return __mod_timer(timer, expires, false, TIMER_PINNED);
-+}
-+EXPORT_SYMBOL(mod_timer_pinned);
-+
-+/**
-  * add_timer - start a timer
-  * @timer: the timer to be added
-  *
-@@ -1350,7 +1373,7 @@ signed long __sched schedule_timeout(sig
- 	expire = timeout + jiffies;
- 
- 	setup_timer_on_stack(&timer, process_timeout, (unsigned long)current);
--	__mod_timer(&timer, expire, false);
-+	__mod_timer(&timer, expire, false, TIMER_NOT_PINNED);
- 	schedule();
- 	del_singleshot_timer_sync(&timer);
- 
+Jirka
+>
+>
