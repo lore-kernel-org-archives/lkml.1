@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761817AbZCPSA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761908AbZCPSBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761817AbZCPSA1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757757AbZCPRvp
+	id S1761908AbZCPSBL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760790AbZCPRyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:51:45 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:51192 "EHLO gir.skynet.ie"
+	Mon, 16 Mar 2009 13:54:25 -0400
+Received: from gw.goop.org ([64.81.55.164]:56606 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757189AbZCPRvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 13:51:40 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Mel Gorman <mel@csn.ul.ie>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 26/27] Get the pageblock migratetype without disabling interrupts
-Date: Mon, 16 Mar 2009 17:53:40 +0000
-Message-Id: <1237226020-14057-27-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1237226020-14057-1-git-send-email-mel@csn.ul.ie>
-References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie>
+	id S1760782AbZCPRyX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 13:54:23 -0400
+Message-ID: <49BE9248.6050707@goop.org>
+Date: Mon, 16 Mar 2009 10:54:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org>
+In-Reply-To: <49BE84D6.3010006@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Local interrupts are disabled when freeing pages to the PCP list. Part
-of that free checks what the migratetype of the pageblock the page is in
-but it checks this with interrupts disabled. This patch checks the
-pagetype with interrupts enabled. The impact is that it is possible a
-page is freed to the wrong list when a pageblock changes type but as
-that block is now already considered mixed from an anti-fragmentation
-perspective, it's not of vital importance.
+Yinghai Lu wrote:
+> could be max_pfn_mapped change in head_32.S that reduce mapping range to _end only.
+>   
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- mm/page_alloc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Yes, I would say you're right.  Trimming the mapping to _end only leaves 
+the space under the kernel avaliable for allocating pagetable from e820 
+space.  In this case we've got DEBUG_PAGEALLOC enabled, which inhibits 
+the use of PSE, and BIOS corruption checking on, which eats a chunk of 
+low memory.  In combination, there's only 0x8f000 bytes free below the 
+kernel, and it needs 0xe1000 to allocate for pagetables.
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index f71091a..ca7bc04 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1039,6 +1039,7 @@ static void free_hot_cold_page(struct page *page, int cold)
- 	kernel_map_pages(page, 1, 0);
- 
- 	pcp = &zone_pcp(zone, get_cpu())->pcp;
-+	set_page_private(page, get_pageblock_migratetype(page));
- 	local_irq_save(flags);
- 	if (unlikely(clearMlocked))
- 		free_page_mlock(page);
-@@ -1048,7 +1049,6 @@ static void free_hot_cold_page(struct page *page, int cold)
- 		list_add_tail(&page->lru, &pcp->list);
- 	else
- 		list_add(&page->lru, &pcp->list);
--	set_page_private(page, get_pageblock_migratetype(page));
- 	pcp->count++;
- 	if (pcp->count >= pcp->high) {
- 		free_pages_bulk(zone, pcp->batch, &pcp->list, 0);
--- 
-1.5.6.5
+Reverting 2bd2753ff46346543ab92e80df9d96366e21baa5 fixes the problem for 
+me, though it does result in a kernel with a 73MB BSS...
 
+    J
