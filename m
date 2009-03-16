@@ -1,45 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762007AbZCPTin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759442AbZCPTkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762007AbZCPTin (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 15:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761335AbZCPTid
+	id S1759442AbZCPTkA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 15:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbZCPTju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 15:38:33 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42479 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760485AbZCPTic (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 15:38:32 -0400
-Message-ID: <49BEA9AE.9030805@zytor.com>
-Date: Mon, 16 Mar 2009 12:34:06 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 16 Mar 2009 15:39:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37369 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752320AbZCPTju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 15:39:50 -0400
+Date: Mon, 16 Mar 2009 15:38:40 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
+       fweisbec@gmail.com, fche@redhat.com, peterz@infradead.org,
+       compudj@krystal.dyndns.org
+Subject: Re: [Patch 2/2] tracepoints for softirq entry/exit - tracepoints
+Message-ID: <20090316193840.GC3111@redhat.com>
+References: <20090312183603.GC3352@redhat.com> <20090316190047.GB3111@redhat.com> <alpine.DEB.2.00.0903161514590.27978@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org>
-In-Reply-To: <49BEA7BE.6050400@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0903161514590.27978@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
+On Mon, Mar 16, 2009 at 03:17:09PM -0400, Steven Rostedt wrote:
+> memcpy isn't fast ;-)
 > 
-> Yes, something odd happened there.
+> What you want is this:
 > 
-> Anyway, this patch fixes it.  I also removed ALLOCATOR_SLOP, because it 
-> is left over from when we used the bootmem allocator for the linear 
-> mapping pagetable, before using e820 allocation.
+> 	TP_STRUCT__entry(
+> 		__field(	int,	vec	)
+> 	),
 > 
-> Did you also want to pull the changes to put the brk in .brk and rename 
-> the reservation symbols?
-> 
+> 	TP_fast_assign(
+> 		__entry->vec = h - vec;
 
-Yes, I was going to do that.  I was just holding off waiting for this 
-issue to be resolved.
+definitely simplifies things! ok, re-spun patch again.
 
-	-hpa
+use TRACE_EVENT to record the softirq vector number in the trace and then use
+the new softirq_to_name array to output the softirq vector name.
+
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+
+
+---
+
+ include/trace/irq_event_types.h |   34 ++++++++++++++++++++++++++++++++++
+ kernel/softirq.c                |    7 ++++++-
+ 2 files changed, 40 insertions(+), 1 deletions(-)
+
+
+diff --git a/include/trace/irq_event_types.h b/include/trace/irq_event_types.h
+index 214bb92..acb8217 100644
+--- a/include/trace/irq_event_types.h
++++ b/include/trace/irq_event_types.h
+@@ -40,4 +40,38 @@ TRACE_EVENT(irq_handler_exit,
+ 		  __entry->irq, __entry->ret ? "handled" : "unhandled")
+ );
+ 
++TRACE_EVENT(softirq_action_entry,
++
++	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
++
++	TP_ARGS(h, vec),
++
++	TP_STRUCT__entry(
++		__field(	int,	vec	)
++	),
++
++	TP_fast_assign(
++		__entry->vec = h - vec;
++	),
++
++	TP_printk("softirq entry: %s", softirq_to_name[__entry->vec])
++);
++
++TRACE_EVENT(softirq_action_exit,
++
++	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
++
++	TP_ARGS(h, vec),
++
++	TP_STRUCT__entry(
++		__field(	int,	vec	)
++	),
++
++	TP_fast_assign(
++		__entry->vec = h - vec;
++	),
++
++	TP_printk("softirq exit: %s", softirq_to_name[__entry->vec])
++);
++
+ #undef TRACE_SYSTEM
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 8f3ae57..5e96c77 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -24,6 +24,7 @@
+ #include <linux/ftrace.h>
+ #include <linux/smp.h>
+ #include <linux/tick.h>
++#include <trace/irq.h>
+ 
+ #include <asm/irq.h>
+ /*
+@@ -185,6 +186,9 @@ EXPORT_SYMBOL(local_bh_enable_ip);
+  */
+ #define MAX_SOFTIRQ_RESTART 10
+ 
++DEFINE_TRACE(softirq_action_entry);
++DEFINE_TRACE(softirq_action_exit);
++
+ asmlinkage void __do_softirq(void)
+ {
+ 	struct softirq_action *h;
+@@ -211,8 +215,9 @@ restart:
+ 		if (pending & 1) {
+ 			int prev_count = preempt_count();
+ 
++			trace_softirq_action_entry(h, softirq_vec);
+ 			h->action(h);
+-
++			trace_softirq_action_exit(h, softirq_vec);
+ 			if (unlikely(prev_count != preempt_count())) {
+ 				printk(KERN_ERR "huh, entered softirq %td %s %p"
+ 				       "with preempt_count %08x,"
+
+ 
