@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761913AbZCPSAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761948AbZCPSBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761913AbZCPSAs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760743AbZCPRyY
+	id S1761948AbZCPSBg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760408AbZCPRz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:54:24 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:38814 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760771AbZCPRyX (ORCPT
+	Mon, 16 Mar 2009 13:55:27 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:43533 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761021AbZCPRzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 13:54:23 -0400
-Date: Mon, 16 Mar 2009 17:54:19 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: [Bug #12765] i915 VT switch with AIGLX causes X lock up
-Message-ID: <20090316175419.GC10814@silver.sucs.org>
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera> <GCLaknAim2M.A.e2D._4BvJB@chimera>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <GCLaknAim2M.A.e2D._4BvJB@chimera>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 16 Mar 2009 13:55:25 -0400
+Date: Mon, 16 Mar 2009 12:30:02 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 29/35] Do not store the PCP high and batch watermarks in
+ the per-cpu structure
+In-Reply-To: <1237196790-7268-30-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0903161228120.32577@qirst.com>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <1237196790-7268-30-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 14, 2009 at 08:05:32PM +0100, Rafael J. Wysocki wrote:
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
-> Subject		: i915 VT switch with AIGLX causes X lock up
-> Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
-> Date		: 2009-02-21 15:38 (22 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
-> References	: http://marc.info/?l=linux-kernel&m=123523074304955&w=4
+On Mon, 16 Mar 2009, Mel Gorman wrote:
 
-Still here in 2.6.29-rc8.
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -166,8 +166,6 @@ static inline int is_unevictable_lru(enum lru_list l)
+>
+>  struct per_cpu_pages {
+>  	int count;		/* number of pages in the list */
+> -	int high;		/* high watermark, emptying needed */
+> -	int batch;		/* chunk size for buddy add/remove */
 
--- 
-Sitsofe | http://sucs.org/~sits/
+
+There is a hole here on 64 bit systems.
+
+>
+>  	/* Lists of pages, one per migrate type stored on the pcp-lists */
+>  	struct list_head lists[MIGRATE_PCPTYPES];
+> @@ -285,6 +283,12 @@ struct zone {
+>  		unsigned long pages_mark[3];
+>  	};
+>
+> +	/* high watermark for per-cpu lists, emptying needed */
+> +	u16 pcp_high;
+> +
+> +	/* chunk size for buddy add/remove to per-cpu lists*/
+> +	u16 pcp_batch;
+> +
+
+Move this up to fill the hole?
+
