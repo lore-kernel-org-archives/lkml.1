@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbZCPJyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761067AbZCPJy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760979AbZCPJyD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 05:54:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZCPJoo
+	id S1761067AbZCPJy1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 05:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZCPJop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 05:44:44 -0400
+	Mon, 16 Mar 2009 05:44:45 -0400
 Received: from gir.skynet.ie ([193.1.99.77]:35432 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755022AbZCPJog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 05:44:36 -0400
+	id S1755413AbZCPJoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 05:44:38 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -20,9 +20,9 @@ Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
        Lin Ming <ming.m.lin@intel.com>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 27/35] Split per-cpu list into one-list-per-migrate-type
-Date: Mon, 16 Mar 2009 09:46:22 +0000
-Message-Id: <1237196790-7268-28-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 30/35] Skip the PCP list search by counting the order and type of pages on list
+Date: Mon, 16 Mar 2009 09:46:25 +0000
+Message-Id: <1237196790-7268-31-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1237196790-7268-1-git-send-email-mel@csn.ul.ie>
 References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie>
@@ -30,245 +30,135 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the per-cpu page allocator searches the PCP list for pages of the
-correct migrate-type to reduce the possibility of pages being inappropriate
-placed from a fragmentation perspective. This search is potentially expensive
-in a fast-path and undesirable. Splitting the per-cpu list into multiple
-lists increases the size of a per-cpu structure and this was potentially
-a major problem at the time the search was introduced. These problem has
-been mitigated as now only the necessary number of structures is allocated
-for the running system.
-
-This patch replaces a list search in the per-cpu allocator with one list
-per migrate type. It is still searched but for a page of the correct
-order which is expected to be a lot less costly.
+The PCP lists are searched for free pages of the right size but due to
+multiple orders, the list may be searched uselessly.  This patch records how
+many pages there are of each order and migratetype on the list to determine
+if a list search will succeed.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- include/linux/mmzone.h |    5 ++-
- mm/page_alloc.c        |   82 +++++++++++++++++++++++++++++++++--------------
- 2 files changed, 61 insertions(+), 26 deletions(-)
+ include/linux/mmzone.h |    6 +++++-
+ mm/page_alloc.c        |   46 +++++++++++++++++++++++++---------------------
+ 2 files changed, 30 insertions(+), 22 deletions(-)
 
 diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index c20c662..eed6867 100644
+index b4fba09..5be2386 100644
 --- a/include/linux/mmzone.h
 +++ b/include/linux/mmzone.h
-@@ -38,6 +38,7 @@
- #define MIGRATE_UNMOVABLE     0
- #define MIGRATE_RECLAIMABLE   1
- #define MIGRATE_MOVABLE       2
-+#define MIGRATE_PCPTYPES      3 /* the number of types on the pcp lists */
- #define MIGRATE_RESERVE       3
- #define MIGRATE_ISOLATE       4 /* can't allocate from here */
- #define MIGRATE_TYPES         5
-@@ -167,7 +168,9 @@ struct per_cpu_pages {
- 	int count;		/* number of pages in the list */
- 	int high;		/* high watermark, emptying needed */
- 	int batch;		/* chunk size for buddy add/remove */
--	struct list_head list;	/* the list of pages */
-+
-+	/* Lists of pages, one per migrate type stored on the pcp-lists */
-+	struct list_head lists[MIGRATE_PCPTYPES];
- };
+@@ -165,7 +165,11 @@ static inline int is_unevictable_lru(enum lru_list l)
+ }
  
- struct per_cpu_pageset {
+ struct per_cpu_pages {
+-	int count;		/* number of pages in the list */
++	/* The total number of pages on the PCP lists */
++	int count;
++
++	/* Count of each migratetype and order */
++	u8 mocount[MIGRATE_PCPTYPES][PAGE_ALLOC_COSTLY_ORDER+1];
+ 
+ 	/* Lists of pages, one per migrate type stored on the pcp-lists */
+ 	struct list_head lists[MIGRATE_PCPTYPES];
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 42280c1..3516b87 100644
+index 77e9970..bb5bd5e 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -521,10 +521,11 @@ static inline void add_pcp_page(struct per_cpu_pages *pcp,
- 					struct page *page,
- 					int cold)
+@@ -513,8 +513,12 @@ static inline int free_pages_check(struct page *page)
+ 
+ static inline void rmv_pcp_page(struct per_cpu_pages *pcp, struct page *page)
  {
 +	int migratetype = page_private(page);
++	int basepage_count = 1 << page->index;
++
+ 	list_del(&page->lru);
+-	pcp->count -= 1 << page->index;
++	pcp->count -= basepage_count;
++	pcp->mocount[migratetype][page->index] -= basepage_count;
+ }
+ 
+ static inline void add_pcp_page(struct per_cpu_pages *pcp,
+@@ -522,17 +526,22 @@ static inline void add_pcp_page(struct per_cpu_pages *pcp,
+ 					int cold)
+ {
+ 	int migratetype = page_private(page);
++	int basepage_count = 1 << page->index;
++
  	if (cold)
--		list_add_tail(&page->lru, &pcp->list);
-+		list_add_tail(&page->lru, &pcp->lists[migratetype]);
+ 		list_add_tail(&page->lru, &pcp->lists[migratetype]);
  	else
--		list_add(&page->lru, &pcp->list);
-+		list_add(&page->lru, &pcp->lists[migratetype]);
- 	pcp->count += 1 << page->index;
+ 		list_add(&page->lru, &pcp->lists[migratetype]);
+-	pcp->count += 1 << page->index;
++	pcp->count += basepage_count;
++	pcp->mocount[migratetype][page->index] += basepage_count;
  }
  
-@@ -545,11 +546,11 @@ static inline void bulk_add_pcp_page(struct per_cpu_pages *pcp,
-  * And clear the zone's pages_scanned counter, to hold off the "all pages are
-  * pinned" detection logic.
-  */
--static void free_pages_bulk(struct zone *zone, int count,
-+static void free_pcppages_bulk(struct zone *zone, int count,
- 					struct per_cpu_pages *pcp)
+ static inline void bulk_add_pcp_page(struct per_cpu_pages *pcp,
+-					int order, int count)
++					int migratetype, int order, int count)
  {
-+	int migratetype = 0;
- 	unsigned int freed = 0;
--	struct list_head *list = &pcp->list;
- 
- 	spin_lock(&zone->lock);
- 	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
-@@ -557,8 +558,16 @@ static void free_pages_bulk(struct zone *zone, int count,
- 
- 	while (freed < count) {
- 		struct page *page;
-+		struct list_head *list;
-+
-+		/* Remove pages from lists in a round-robin fashion */
-+		do {
-+			if (migratetype == MIGRATE_PCPTYPES)
-+				migratetype = 0;
-+			list = &pcp->lists[migratetype];
-+			migratetype++;
-+		} while (list_empty(list));
- 
--		VM_BUG_ON(list_empty(list));
- 		page = list_entry(list->prev, struct page, lru);
- 		rmv_pcp_page(pcp, page);
- 
-@@ -960,7 +969,7 @@ void drain_zone_pages(struct zone *zone, struct per_cpu_pages *pcp)
- 		to_drain = pcp->batch;
- 	else
- 		to_drain = pcp->count;
--	free_pages_bulk(zone, to_drain, &pcp->list);
-+	free_pcppages_bulk(zone, to_drain, pcp);
- 	local_irq_restore(flags);
- }
- #endif
-@@ -988,7 +997,7 @@ static void drain_pages(unsigned int cpu)
- 
- 		pcp = &pset->pcp;
- 		local_irq_save(flags);
--		free_pages_bulk(zone, pcp->count, pcp);
-+		free_pcppages_bulk(zone, pcp->count, pcp);
- 		BUG_ON(pcp->count);
- 		local_irq_restore(flags);
- 	}
-@@ -1054,6 +1063,7 @@ static void free_hot_cold_page(struct page *page, int order, int cold)
- 	struct zone *zone = page_zone(page);
- 	struct per_cpu_pages *pcp;
- 	unsigned long flags;
-+	int migratetype;
- 	int clearMlocked = PageMlocked(page);
- 
- 	/* SLUB can return lowish-order compound pages that need handling */
-@@ -1073,18 +1083,36 @@ static void free_hot_cold_page(struct page *page, int order, int cold)
- 	arch_free_page(page, order);
- 	kernel_map_pages(page, 1 << order, 0);
- 
-+	migratetype = get_pageblock_migratetype(page);
-+
- 	pcp = &zone_pcp(zone, get_cpu())->pcp;
- 	local_irq_save(flags);
- 	__count_vm_event(PGFREE);
- 	if (clearMlocked)
- 		free_page_mlock(page);
- 
--	set_page_private(page, get_pageblock_migratetype(page));
-+	/*
-+	 * We only track unreclaimable, reclaimable and movable on pcp lists.
-+	 * Free ISOLATE pages back to the allocator because they are being
-+	 * offlined but treat RESERVE as movable pages so we can get those
-+	 * areas back if necessary. Otherwise, we may have to free
-+	 * excessively into the page allocator
-+	 */
-+	if (migratetype >= MIGRATE_PCPTYPES) {
-+		if (unlikely(migratetype == MIGRATE_ISOLATE)) {
-+			free_one_page(zone, page, order, migratetype);
-+			goto out;
-+		}
-+		migratetype = MIGRATE_MOVABLE;
-+	}
-+
-+	set_page_private(page, migratetype);
- 	page->index = order;
- 	add_pcp_page(pcp, page, cold);
--
- 	if (pcp->count >= pcp->high)
--		free_pages_bulk(zone, pcp->batch, pcp);
-+		free_pcppages_bulk(zone, pcp->batch, pcp);
-+
-+out:
- 	local_irq_restore(flags);
- 	put_cpu();
- }
-@@ -1117,9 +1145,9 @@ void split_page(struct page *page, unsigned int order)
- 		set_page_refcounted(page + i);
- }
- 
--static inline int pcp_page_suit(struct page *page, int migratetype, int order)
-+static inline int pcp_page_suit(struct page *page, int order)
- {
--	return page_private(page) == migratetype && page->index == order;
-+	return page->index == order;
+-	pcp->count += count << order;
++	int basepage_count = count << order;
++	pcp->count += basepage_count;
++	pcp->mocount[migratetype][order] += basepage_count;
  }
  
  /*
-@@ -1142,36 +1170,38 @@ again:
+@@ -1178,20 +1187,23 @@ again:
+ 	cpu  = get_cpu();
+ 	if (likely(order <= PAGE_ALLOC_COSTLY_ORDER)) {
  		struct per_cpu_pages *pcp;
- 		int batch;
- 		int delta;
-+		struct list_head *list;
+-		int batch;
+-		int delta;
+ 		struct list_head *list;
  
  		pcp = &zone_pcp(zone, cpu)->pcp;
-+		list = &pcp->lists[migratetype];
- 		batch = max(1, pcp->batch >> order);
+ 		list = &pcp->lists[migratetype];
+-		batch = max(1, zone->pcp_batch >> order);
  		local_irq_save(flags);
--		if (!pcp->count) {
-+		if (list_empty(list)) {
- 			delta = rmqueue_bulk(zone, order, batch,
--					&pcp->list, migratetype);
-+							list, migratetype);
- 			bulk_add_pcp_page(pcp, order, delta);
--			if (unlikely(!pcp->count))
-+			if (unlikely(list_empty(list)))
+-		if (list_empty(list)) {
+-			delta = rmqueue_bulk(zone, order, batch,
++
++		/* Allocate more if no suitable page is in list */
++		if (!pcp->mocount[migratetype][order]) {
++			int batch = max(1, zone->pcp_batch >> order);
++			int delta = rmqueue_bulk(zone, order, batch,
+ 							list, migratetype);
+-			bulk_add_pcp_page(pcp, order, delta);
+-			if (unlikely(list_empty(list)))
++			bulk_add_pcp_page(pcp, migratetype, order, delta);
++			if (unlikely(!pcp->mocount[migratetype][order]))
  				goto failed;
- 		}
- 
--		/* Find a page of the appropriate migrate type */
-+		/* Find a page of the appropriate order */
- 		if (cold) {
--			list_for_each_entry_reverse(page, &pcp->list, lru)
--				if (pcp_page_suit(page, migratetype, order))
-+			list_for_each_entry_reverse(page, list, lru)
-+				if (pcp_page_suit(page, order))
- 					break;
- 		} else {
--			list_for_each_entry(page, &pcp->list, lru)
--				if (pcp_page_suit(page, migratetype, order))
-+			list_for_each_entry(page, list, lru)
-+				if (pcp_page_suit(page, order))
- 					break;
- 		}
- 
- 		/* Allocate more to the pcp list if necessary */
--		if (unlikely(&page->lru == &pcp->list)) {
-+		if (unlikely(&page->lru == list)) {
- 			delta = rmqueue_bulk(zone, order, batch,
--					&pcp->list, migratetype);
-+					list, migratetype);
- 			bulk_add_pcp_page(pcp, order, delta);
--			page = list_entry(pcp->list.next, struct page, lru);
--			if (!pcp_page_suit(page, migratetype, order))
++
 +			page = list_entry(list->next, struct page, lru);
-+			if (!pcp_page_suit(page, order))
- 				goto failed;
++			goto found;
  		}
  
-@@ -2938,6 +2968,7 @@ static int zone_batchsize(struct zone *zone)
- static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
- {
- 	struct per_cpu_pages *pcp;
-+	int migratetype;
+ 		/* Find a page of the appropriate order */
+@@ -1205,16 +1217,7 @@ again:
+ 					break;
+ 		}
  
- 	memset(p, 0, sizeof(*p));
+-		/* Allocate more to the pcp list if necessary */
+-		if (unlikely(&page->lru == list)) {
+-			delta = rmqueue_bulk(zone, order, batch,
+-					list, migratetype);
+-			bulk_add_pcp_page(pcp, order, delta);
+-			page = list_entry(list->next, struct page, lru);
+-			if (!pcp_page_suit(page, order))
+-				goto failed;
+-		}
+-
++found:
+ 		rmv_pcp_page(pcp, page);
+ 	} else {
+ 		LIST_HEAD(list);
+@@ -2985,6 +2988,7 @@ static void setup_pageset(struct zone *zone,
  
-@@ -2945,7 +2976,8 @@ static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
+ 	pcp = &p->pcp;
  	pcp->count = 0;
- 	pcp->high = 6 * batch;
- 	pcp->batch = max(1UL, 1 * batch);
--	INIT_LIST_HEAD(&pcp->list);
-+	for (migratetype = 0; migratetype < MIGRATE_TYPES; migratetype++)
-+		INIT_LIST_HEAD(&pcp->lists[migratetype]);
- }
- 
- /*
++	memset(pcp->mocount, 0, sizeof(pcp->mocount));
+ 	zone->pcp_high = 6 * batch;
+ 	zone->pcp_batch = max(1UL, 1 * batch);
+ 	for (migratetype = 0; migratetype < MIGRATE_TYPES; migratetype++)
 -- 
 1.5.6.5
 
