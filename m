@@ -1,124 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760455AbZCPUTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761234AbZCPUVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760455AbZCPUTa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 16:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbZCPUTV
+	id S1761234AbZCPUVV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 16:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZCPUVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 16:19:21 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:32867 "EHLO pardus.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753819AbZCPUTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 16:19:21 -0400
-Message-ID: <49BEB3C9.8070705@pardus.org.tr>
-Date: Mon, 16 Mar 2009 22:17:13 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Mon, 16 Mar 2009 16:21:09 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:60217
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754052AbZCPUVF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 16:21:05 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Greg Ungerer <gerg@snapgear.com>
+Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
+Date: Mon, 16 Mar 2009 15:20:58 -0500
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       linux-next@vger.kernel.org, linux-m68k@vger.kernel.org
+References: <200903120437.03837.rob@landley.net> <10f740e80903130514k194fbdackd373d2951a9f76ba@mail.gmail.com> <49BE48B3.6060108@snapgear.com>
+In-Reply-To: <49BE48B3.6060108@snapgear.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [BUG 2.6.29_rc8] BIOS Bug: CPU MTRRs don't cover all of memory,
- 	losing 0MB of RAM.
-References: <49BE58BA.1000907@pardus.org.tr> <86802c440903161121s3ba18abaiaa3ccf6847e0eafe@mail.gmail.com>
-In-Reply-To: <86802c440903161121s3ba18abaiaa3ccf6847e0eafe@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903161521.00036.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
+On Monday 16 March 2009 07:40:19 Greg Ungerer wrote:
+> Geert Uytterhoeven wrote:
+> > On Fri, Mar 13, 2009 at 11:52, Greg Ungerer <gerg@snapgear.com> wrote:
+> >> Sam Ravnborg wrote:
+> >>> On Fri, Mar 13, 2009 at 09:33:18AM +0100, Geert Uytterhoeven wrote:
+> >>>> On Fri, Mar 13, 2009 at 09:25, Sam Ravnborg <sam@ravnborg.org> wrote:
+> >>>>> On Fri, Mar 13, 2009 at 05:04:57PM +1000, Greg Ungerer wrote:
+> >>>>>> I pretty quick time I can fix up the last couple on the above list.
+> >>>>>> But do we want to put all that change into 2.6.29-rc at this point?
+> >>>>>
+> >>>>> In general we do not want to have headers_check broken in mainline,
+> >>>>
+> >>>> headers_check is not broken, headers_install is.
+> >>>>
+> >>>> Hmm, in some sense headers_check _is_ broken, as it doesn't notice
+> >>>> headers_install
+> >>>> installs headers that refer to other headers that are not installed...
+> >>>
+> >>> This is what scripts/headers_check are supposed to do - strange.
+> >>>
+> >>>> Greg, I had a quick look at your signcontext.h and signal.h merge, and
+> >>>> the MMU
+> >>>> part seems to be OK.
+> >>>>
+> >>>> However, some of the installed headers still have checks for
+> >>>> CONFIG_MMU:
+> >>>>
+> >>>> param.h:#ifdef CONFIG_MMU
+> >>>> sigcontext.h:#ifndef CONFIG_MMU
+> >>>> sigcontext.h:#ifdef CONFIG_MMU
+> >>>> siginfo.h:#ifdef CONFIG_MMU
+> >>>> siginfo.h:#ifdef CONFIG_MMU
+> >>>> siginfo.h:#endif /* CONFIG_MMU */
+> >>>> swab.h:#elif defined(CONFIG_MMU)
+> >>>>
+> >>>> so these have to be added to the generic unifdef-y list (is that
+> >>>> include/asm-generic/Kbuild.asm?).
+> >>
+> >> Hmmm, yes your right.
+> >>
+> >>> include/asm-generic/Kbuild.asm impacts all architectures so be carefull
+> >>> there.
+> >>> It looks like some updates to arch/m68k/include/asm/Kbuild is needed,
+> >>> and not the generic list of files to export.
+> >>>
+> >>> Also use og CONFIG_MMU suprises me.
+> >>> We used #ifdef __uClinux__ in the non-merged headers to avoid use
+> >>> of a CONFIG_* symbol that is not valid outside the kernel namespace.
+> >>> So if param.h in m68k uses CONFIG_MMU it is broken.
+> >>
+> >> I have been trying to use CONFIG_MMU wherever possible (so for non-
+> >> exported headers), since that matches what is actually in the code
+> >> proper. I am concerned at the longer term use of __uClinux__ for
+> >> distinguishing MMU and non-MMU. I plan on switching to use a normal
+> >> m68k toolchain soon. And it won't define __uClinux__ on its own.
+> >> (I already do this on ARM for example - same toolchain on both
+> >> MMU an non-MMU).
+> >>
+> >> What I have done so far is or the most part a very simple merge
+> >> of the files. I know there is room for some improvements in quite a
+> >> few of these files.
+> >>
+> >> The use of CONFIG_MMU in swab.h (is this actually exported to user
+> >> space?) is not actually for code that is MMU or non-MMU. It is
+> >> actually architecture specific. Most ColdFire parts don't have the
+> >> "rolw" instruction. The condition test can be better. Geert, any
+> >> ideas on what is more appropriate here?
+> >
+> > The `rolw' variant is already protected by `#if defined
+> > (__mcfisaaplus__) || defined (__mcfisac__)',
+> > so I think you can replace the `#elif defined(CONFIG_MMU)' by a plain
+> > `#else'. Or are there cases where you don't want to have __arch_swab32 at
+> > all?
+>
+> Not all ColdFire fit into '(__mcfisaaplus__) || defined (__mcfisac__)'
+> so #else won't be good enough. Though I suspect it is true that the
+> older m68k varients (68328, etc) can do "rolw" - or I am I mistaken on
+> that?
+>
+> >> I can switch back to using __uClinux__ on siginfo.h and sigcontext.h.
+> >> If I am not mistaken we can't change these structures without breaking
+> >> backwards compatibility?  The sigcontext change is particularly ugly :-(
+> >
+> > Copying the signal experts on linux-m68k...
+> >
+> >> Similarly for param.h, it looks like a switch back to using
+> >> __uClinux__ for now is the only option.
+> >>
+> >> Now after these fixups should I create a git branch with these header
+> >> merges in for inclusion into 2.6.29-rc?  To fix the regression we
+> >> only need to do the handful of files that Rob listed, right?
+> >
+> > Yes.
+>
+> Ok, I have created a git branch for this as:
+>
+> The following changes since commit
+> 5bee17f18b595937e6beafeee5197868a3f74a06: Kyle McMartin (1):
+>          parisc: sba_iommu: fix build bug when CONFIG_PARISC_AGP=y
+>
+> are available in the git repository at:
+>
+>    git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git
+> fix-includes
+>
+> Greg Ungerer (8):
+>        m68k: merge the non-MMU and MMU versions of param.h
+>        m68k: merge the non-MMU and MMU versions of swab.h
+>        m68k: merge the non-MMU and MMU versions of sigcontext.h
+>        m68k: merge the non-MMU and MMU versions of siginfo.h
+>        m68k: use MMU version of setup.h for both MMU and non-MMU
+>        m68k: merge the non-MMU and MMU versions of ptrace.h
+>        m68k: merge the non-MMU and MMU versions of signal.h
+>        m68k: use the MMU version of unistd.h for all m68k platforms
+>
+>   arch/m68k/include/asm/param.h         |   25 ++-
+>   arch/m68k/include/asm/param_mm.h      |   22 --
+>   arch/m68k/include/asm/param_no.h      |   22 --
+>   arch/m68k/include/asm/ptrace.h        |   88 ++++++++-
+>   arch/m68k/include/asm/ptrace_mm.h     |   80 -------
+>   arch/m68k/include/asm/ptrace_no.h     |   87 --------
+>   arch/m68k/include/asm/setup.h         |  377
+> ++++++++++++++++++++++++++++++++-
+>   arch/m68k/include/asm/setup_mm.h      |  376
+> --------------------------------
+>   arch/m68k/include/asm/setup_no.h      |   10 -
+>   arch/m68k/include/asm/sigcontext.h    |   25 ++-
+>   arch/m68k/include/asm/sigcontext_mm.h |   19 --
+>   arch/m68k/include/asm/sigcontext_no.h |   17 --
+>   arch/m68k/include/asm/siginfo.h       |   95 ++++++++-
+>   arch/m68k/include/asm/siginfo_mm.h    |   92 --------
+>   arch/m68k/include/asm/siginfo_no.h    |    6 -
+>   arch/m68k/include/asm/signal.h        |  216 ++++++++++++++++++-
+>   arch/m68k/include/asm/signal_mm.h     |  206 ------------------
+>   arch/m68k/include/asm/signal_no.h     |  159 --------------
+>   arch/m68k/include/asm/swab.h          |   30 +++-
+>   arch/m68k/include/asm/swab_mm.h       |   16 --
+>   arch/m68k/include/asm/swab_no.h       |   24 --
+>   arch/m68k/include/asm/unistd.h        |  377
+> ++++++++++++++++++++++++++++++++-
+>   arch/m68k/include/asm/unistd_mm.h     |  372
+> --------------------------------
+>   arch/m68k/include/asm/unistd_no.h     |  372
+> --------------------------------
+>   24 files changed, 1206 insertions(+), 1907 deletions(-)
+>   delete mode 100644 arch/m68k/include/asm/param_mm.h
+>   delete mode 100644 arch/m68k/include/asm/param_no.h
+>   delete mode 100644 arch/m68k/include/asm/ptrace_mm.h
+>   delete mode 100644 arch/m68k/include/asm/ptrace_no.h
+>   delete mode 100644 arch/m68k/include/asm/setup_mm.h
+>   delete mode 100644 arch/m68k/include/asm/setup_no.h
+>   delete mode 100644 arch/m68k/include/asm/sigcontext_mm.h
+>   delete mode 100644 arch/m68k/include/asm/sigcontext_no.h
+>   delete mode 100644 arch/m68k/include/asm/siginfo_mm.h
+>   delete mode 100644 arch/m68k/include/asm/siginfo_no.h
+>   delete mode 100644 arch/m68k/include/asm/signal_mm.h
+>   delete mode 100644 arch/m68k/include/asm/signal_no.h
+>   delete mode 100644 arch/m68k/include/asm/swab_mm.h
+>   delete mode 100644 arch/m68k/include/asm/swab_no.h
+>   delete mode 100644 arch/m68k/include/asm/unistd_mm.h
+>   delete mode 100644 arch/m68k/include/asm/unistd_no.h
+>
+>
+> I have only patched those files that I saw mentioned in the previous
+> emails in this thread.
+>
+> Geert, can you check an m68k build?
+> Rob, can you check that you can build what you used to be able to?
 
-> can you check tip/master?
-> 
-> http://people.redhat.com/mingo/tip.git/readme.txt
-> 
-> and post boot log.
+Nope.  Pulled the repository, tarred it up, stuck it in my build system, and 
+the uClibc build still dies attempting to generate syscalls:
 
-I compiled tip/master with the same configuration. Here's the head of the dmesg:
-(BTW, I'm not getting this backtrace with 2.6.25.20. I know its rather old but maybe
-it will help)
+  GEN include/bits/sysnum.h
+In file included from <stdin>:1:
+/home/landley/firmware/firmware/build/cross-compiler-
+m68k/include/asm/unistd.h:4:23: error: unistd_mm.h: No such file or directory
+In file included from <stdin>:1:
+/home/landley/firmware/firmware/build/cross-compiler-
+m68k/include/asm/unistd.h:4:23: error: unistd_mm.h: No such file or directory
+ERROR: Could not generate syscalls.
 
----
-
-Initializing cgroup subsys cpuset
-Linux version 2.6.29-rc8-tip-tip (root@stinson) (gcc version 4.3.2 (Pardus Linux) ) #1 SMP Mon Mar 16 21:26:14 EET 2009
-KERNEL supported cpus:
-  Intel GenuineIntel
-  AMD AuthenticAMD
-  NSC Geode by NSC
-  Cyrix CyrixInstead
-  Centaur CentaurHauls
-  Transmeta GenuineTMx86
-  Transmeta TransmetaCPU
-  UMC UMC UMC UMC
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009f400 (usable)
- BIOS-e820: 000000000009f400 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 00000000cfd43000 (usable)
- BIOS-e820: 00000000cfd43000 - 00000000cfd4c000 (ACPI data)
- BIOS-e820: 00000000cfd4c000 - 00000000cfd4d000 (usable)
- BIOS-e820: 00000000cfd4d000 - 00000000d0000000 (reserved)
- BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
- BIOS-e820: 00000000fec00000 - 00000000fed00000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee10000 (reserved)
- BIOS-e820: 00000000ffc00000 - 0000000100000000 (reserved)
- BIOS-e820: 0000000100000000 - 000000082ffff000 (usable)
-DMI 2.5 present.
-last_pfn = 0x82ffff max_arch_pfn = 0x1000000
-MTRR default type: uncachable
-MTRR fixed ranges enabled:
-  00000-9FFFF write-back
-  A0000-BFFFF uncachable
-  C0000-FFFFF write-protect
-MTRR variable ranges enabled:
-  0 base 0000000000 mask 0000000000 write-back
-  1 base 00CFF00000 mask FFFFF00000 uncachable
-  2 base 00D0000000 mask FFF0000000 uncachable
-  3 base 00E0000000 mask FFE0000000 uncachable
-  4 base 0000004000 mask FFFFFFF000 uncachable
-  5 base 0000005000 mask FFFFFFF000 uncachable
-  6 base 0000006000 mask FFFFFFF000 uncachable
-  7 base 0000007000 mask FFFFFFF000 uncachable
-x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-  get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
-  get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
-  get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
-  get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
-  get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
-  get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
-  get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
-  get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
-e820 update range: 0000000000004000 - 0000000000008000 (usable) ==> (reserved)
-e820 update range: 00000000cff00000 - 0000000100000000 (usable) ==> (reserved)
-WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 0MB of RAM.
-------------[ cut here ]------------
-WARNING: at arch/x86/kernel/cpu/mtrr/cleanup.c:1079 mtrr_trim_uncached_memory+0x2a9/0x2cd()
-Hardware name: ProLiant DL580 G5
-Modules linked in:
-Pid: 0, comm: swapper Not tainted 2.6.29-rc8-tip-tip #1
-Call Trace:
- [<c0133871>] warn_slowpath+0x71/0xa8
- [<c011e23a>] ? default_spin_lock_flags+0x9/0xb
- [<c03aad3c>] ? _spin_unlock_irqrestore+0x17/0x1b
- [<c011e23a>] ? default_spin_lock_flags+0x9/0xb
- [<c03aad3c>] ? _spin_unlock_irqrestore+0x17/0x1b
- [<c0133edd>] ? release_console_sem+0x176/0x1a3
- [<c0134358>] ? vprintk+0x276/0x299
- [<c03a87cc>] ? printk+0xf/0x13
- [<c054aece>] mtrr_trim_uncached_memory+0x2a9/0x2cd
- [<c0545cf5>] setup_arch+0x43c/0x9ab
- [<c0133edd>] ? release_console_sem+0x176/0x1a3
- [<c0134358>] ? vprintk+0x276/0x299
- [<c0134358>] ? vprintk+0x276/0x299
- [<c0548759>] ? __reserve_early+0xe4/0xf8
- [<c03a87cc>] ? printk+0xf/0x13
- [<c0543580>] start_kernel+0x77/0x323
- [<c0543085>] __init_begin+0x85/0x8d
----[ end trace 4eaa2a86a8e2da22 ]---
-update e820 for mtrr
-
--- 
-
-Ozan Çağlayan
-<ozan_at_pardus.org.tr>
+Rob
