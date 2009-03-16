@@ -1,54 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbZCPTS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760646AbZCPTVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759489AbZCPTS0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 15:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbZCPTSP
+	id S1760646AbZCPTVZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 15:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbZCPTVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 15:18:15 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:15092 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbZCPTSO (ORCPT
+	Mon, 16 Mar 2009 15:21:16 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:46487 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753425AbZCPTVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 15:18:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=O+WyncDkFjbqRdrXDodeMrGL+2bcY9rC5pW1K/x+Y9/Lr51y6ASXREGFL7oI8M5PTB
-         WhH/DK3+kJqEwlofWVQu8gF5+1QX6UGXqNdCGqXHFmb2zYSv100u1jeAPVlSjdVPYC5y
-         oBxccx/SDNTXJmYGOQ/U7MZ3xqamQMJoLvXY0=
-MIME-Version: 1.0
-In-Reply-To: <43e72e890903161215u343cbb19v6d6cbf36794e252a@mail.gmail.com>
-References: <43e72e890903161215u343cbb19v6d6cbf36794e252a@mail.gmail.com>
-Date: Mon, 16 Mar 2009 12:18:12 -0700
-Message-ID: <43e72e890903161218o6896e58bqadc7e80f6a975bc0@mail.gmail.com>
-Subject: Re: AMD Quad core - PCI-DMA: Out of IOMMU space on > 4 GB RAM
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: wireless <linux-wireless@vger.kernel.org>, joerg.roedel@amd.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       iommu@lists.linux-foundation.org
-Content-Type: text/plain; charset=UTF-8
+	Mon, 16 Mar 2009 15:21:16 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtsEAFE9vklMQW1W/2dsb2JhbACBTtQog38G
+Date: Mon, 16 Mar 2009 15:21:00 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jason Baron <jbaron@redhat.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
+       fweisbec@gmail.com, fche@redhat.com, peterz@infradead.org
+Subject: Re: [Patch 2/2] tracepoints for softirq entry/exit - tracepoints
+Message-ID: <20090316192100.GA11878@Krystal>
+References: <20090312183603.GC3352@redhat.com> <20090316190047.GB3111@redhat.com> <alpine.DEB.2.00.0903161514590.27978@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0903161514590.27978@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:20:03 up 16 days, 15:46,  3 users,  load average: 0.23, 0.57,
+	0.64
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 12:15 PM, Luis R. Rodriguez <mcgrof@gmail.com> wrote:
-> I've run into "PCI-DMA: Out of IOMMU space" messages after loading and
-> unloading a module 30 times. The interesting thing is this only
-> happens if I have > 4 GB of memory. The box this occurs has AMD Phenom
-> quad core CPU so I take it a harware IOMMU is being used. Below are
-> example relevant messages with > 4 GB and then < 4 GB of memory. The
-> driver I tested this with was ath9k. It could be an issue perhaps with
-> ath9k but I am unable to find an issue in our probe/removal.
->
-> Could this be an issue with the AMD IOMMU used? Or is it more likely a
-> driver issue?
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Mon, 16 Mar 2009, Jason Baron wrote:
+> 
+> > hi,
+> > 
+> > ok, below is a re-spun patch 2/2 which converts to the TRACE_EVENT
+> > format.
+> 
+> Thanks, some comments though.
+> 
+> > 
+> > thanks,
+> > 
+> > -Jason
+> > 
+> > 
+> > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > 
+> > ---
+> > 
+> >  include/trace/irq_event_types.h |   36 ++++++++++++++++++++++++++++++++++++
+> >  kernel/softirq.c                |    7 ++++++-
+> >  2 files changed, 42 insertions(+), 1 deletions(-)
+> > 
+> > 
+> > diff --git a/include/trace/irq_event_types.h b/include/trace/irq_event_types.h
+> > index 214bb92..de1f2a9 100644
+> > --- a/include/trace/irq_event_types.h
+> > +++ b/include/trace/irq_event_types.h
+> > @@ -40,4 +40,40 @@ TRACE_EVENT(irq_handler_exit,
+> >  		  __entry->irq, __entry->ret ? "handled" : "unhandled")
+> >  );
+> >  
+> > +TRACE_EVENT(softirq_action_entry,
+> > +
+> > +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
+> > +
+> > +	TP_ARGS(h, vec),
+> > +
+> > +	TP_STRUCT__entry(
+> > +		__array(	char,	softirq_name,	MAX_SOFTIRQ_NAME_LEN )
+> > +	),
+> > +
+> > +	TP_fast_assign(
+> > +		memcpy(__entry->softirq_name, softirq_to_name[h-vec],
+> > +			MAX_SOFTIRQ_NAME_LEN);
+> 
+> memcpy isn't fast ;-)
+> 
 
-I forgot to mention I'm using l Linus 2.6.29-rc8 with some
-serialization patches applied for ath9k (which are unrelated to
-DMA/IOMMU/probe) [1].
+When given a constant size, memcpy is inlined by the compiler and turned
+into a simple mov instruction. That shouldn't change a thing.
 
-http://www.kernel.org/pub/linux/kernel/people/mcgrof/patches/ath9k/2009-03-12/serialization-v6/for-2.6.29/
+Mathieu
 
-  Luis
+> What you want is this:
+> 
+> 	TP_STRUCT__entry(
+> 		__field(	int,	vec	)
+> 	),
+> 
+> 	TP_fast_assign(
+> 		__entry->vec = h - vec;
+> > +	),
+> > +
+> > +	TP_printk("softirq entry: %s", __entry->softirq_name)
+> 
+> 	TP_printk("softirq entry: %s", softirq_to_name[__entry->vec])
+> 
+> > +);
+> > +
+> > +TRACE_EVENT(softirq_action_exit,
+> > +
+> > +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
+> > +
+> > +	TP_ARGS(h, vec),
+> > +
+> > +	TP_STRUCT__entry(
+> > +		__array(	char,	softirq_name,	MAX_SOFTIRQ_NAME_LEN )
+> > +	),
+> > +
+> > +	TP_fast_assign(
+> > +		memcpy(__entry->softirq_name, softirq_to_name[h-vec],
+> > +			MAX_SOFTIRQ_NAME_LEN);
+> > +	),
+> > +
+> > +	TP_printk("softirq exit: %s", __entry->softirq_name)
+> 
+> 
+> And do the same here.
+> 
+> -- Steve
+> 
+> > +);
+> > +
+> >  #undef TRACE_SYSTEM
+> > diff --git a/kernel/softirq.c b/kernel/softirq.c
+> > index 8f3ae57..5e96c77 100644
+> > --- a/kernel/softirq.c
+> > +++ b/kernel/softirq.c
+> > @@ -24,6 +24,7 @@
+> >  #include <linux/ftrace.h>
+> >  #include <linux/smp.h>
+> >  #include <linux/tick.h>
+> > +#include <trace/irq.h>
+> >  
+> >  #include <asm/irq.h>
+> >  /*
+> > @@ -185,6 +186,9 @@ EXPORT_SYMBOL(local_bh_enable_ip);
+> >   */
+> >  #define MAX_SOFTIRQ_RESTART 10
+> >  
+> > +DEFINE_TRACE(softirq_action_entry);
+> > +DEFINE_TRACE(softirq_action_exit);
+> > +
+> >  asmlinkage void __do_softirq(void)
+> >  {
+> >  	struct softirq_action *h;
+> > @@ -211,8 +215,9 @@ restart:
+> >  		if (pending & 1) {
+> >  			int prev_count = preempt_count();
+> >  
+> > +			trace_softirq_action_entry(h, softirq_vec);
+> >  			h->action(h);
+> > -
+> > +			trace_softirq_action_exit(h, softirq_vec);
+> >  			if (unlikely(prev_count != preempt_count())) {
+> >  				printk(KERN_ERR "huh, entered softirq %td %s %p"
+> >  				       "with preempt_count %08x,"
+> > 
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
