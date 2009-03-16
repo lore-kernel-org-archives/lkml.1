@@ -1,208 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760117AbZCPVhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbZCPVha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760117AbZCPVhH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 17:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759879AbZCPVga
+	id S1762103AbZCPVha (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 17:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760556AbZCPVge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 17:36:30 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:26328 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760348AbZCPVg3 (ORCPT
+	Mon, 16 Mar 2009 17:36:34 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:43383 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760871AbZCPVgd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 17:36:29 -0400
+	Mon, 16 Mar 2009 17:36:33 -0400
 From: Kevin Hilman <khilman@deeprootsystems.com>
 To: linux-kernel@vger.kernel.org
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
        Kevin Hilman <khilman@deeprootsystems.com>
-Subject: [PATCH v3 2/3] Implement the new memory_accessor interface for I2C EEPROM
-Date: Mon, 16 Mar 2009 14:36:18 -0700
-Message-Id: <1237239379-24186-3-git-send-email-khilman@deeprootsystems.com>
+Subject: [PATCH v3 3/3] Implement the new memory_accessor interfaces for SPI EEPROMs:
+Date: Mon, 16 Mar 2009 14:36:19 -0700
+Message-Id: <1237239379-24186-4-git-send-email-khilman@deeprootsystems.com>
 X-Mailer: git-send-email 1.6.1.3
-In-Reply-To: <1237239379-24186-2-git-send-email-khilman@deeprootsystems.com>
+In-Reply-To: <1237239379-24186-3-git-send-email-khilman@deeprootsystems.com>
 References: <1237239379-24186-1-git-send-email-khilman@deeprootsystems.com>
  <1237239379-24186-2-git-send-email-khilman@deeprootsystems.com>
+ <1237239379-24186-3-git-send-email-khilman@deeprootsystems.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the case of at24, the platform code registers a 'setup' callback
-with the at24_platform_data.  When the at24 driver detects an EEPROM,
-it fills out the read and write functions of the memory_accessor and
-calls the setup callback passing the memory_accessor struct.  The
-platform code can then use the read/write functions in the
-memory_accessor struct for reading and writing the EEPROM.
+From: David Brownell <dbrownell@users.sourceforge.net>
 
+From: David Brownell <dbrownell@users.sourceforge.net>
+
+ - Define new setup() hook to export the accessor
+ - Implement accessor methods
+
+Moves some error checking out of the sysfs interface code
+into the layer below it, which is now shared by both sysfs
+and memory access code.
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
 ---
- drivers/misc/eeprom/at24.c |   67 +++++++++++++++++++++++++++++++++++--------
- include/linux/i2c/at24.h   |    4 ++
- 2 files changed, 58 insertions(+), 13 deletions(-)
+ drivers/misc/eeprom/at25.c |   58 +++++++++++++++++++++++++++++++++----------
+ include/linux/spi/eeprom.h |    6 ++++
+ 2 files changed, 50 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/misc/eeprom/at24.c b/drivers/misc/eeprom/at24.c
-index d477552..d184dfa 100644
---- a/drivers/misc/eeprom/at24.c
-+++ b/drivers/misc/eeprom/at24.c
-@@ -53,6 +53,7 @@
+diff --git a/drivers/misc/eeprom/at25.c b/drivers/misc/eeprom/at25.c
+index 290dbe9..6bc0dac 100644
+--- a/drivers/misc/eeprom/at25.c
++++ b/drivers/misc/eeprom/at25.c
+@@ -30,6 +30,7 @@
  
- struct at24_data {
- 	struct at24_platform_data chip;
-+	struct memory_accessor macc;
- 	bool use_smbus;
+ struct at25_data {
+ 	struct spi_device	*spi;
++	struct memory_accessor	mem;
+ 	struct mutex		lock;
+ 	struct spi_eeprom	chip;
+ 	struct bin_attribute	bin;
+@@ -75,6 +76,13 @@ at25_ee_read(
+ 	struct spi_transfer	t[2];
+ 	struct spi_message	m;
  
- 	/*
-@@ -225,14 +226,11 @@ static ssize_t at24_eeprom_read(struct at24_data *at24, char *buf,
- 		return status;
- }
- 
--static ssize_t at24_bin_read(struct kobject *kobj, struct bin_attribute *attr,
-+static ssize_t at24_read(struct at24_data *at24,
- 		char *buf, loff_t off, size_t count)
- {
--	struct at24_data *at24;
- 	ssize_t retval = 0;
- 
--	at24 = dev_get_drvdata(container_of(kobj, struct device, kobj));
--
- 	if (unlikely(!count))
- 		return count;
- 
-@@ -262,12 +260,14 @@ static ssize_t at24_bin_read(struct kobject *kobj, struct bin_attribute *attr,
- 	return retval;
- }
- 
-+static ssize_t at24_bin_read(struct kobject *kobj, struct bin_attribute *attr,
-+		char *buf, loff_t off, size_t count)
-+{
-+	struct at24_data *at24;
- 
--/*
-- * REVISIT: export at24_bin{read,write}() to let other kernel code use
-- * eeprom data. For example, it might hold a board's Ethernet address, or
-- * board-specific calibration data generated on the manufacturing floor.
-- */
-+	at24 = dev_get_drvdata(container_of(kobj, struct device, kobj));
-+	return at24_read(at24, buf, off, count);
-+}
- 
- 
- /*
-@@ -347,14 +347,11 @@ static ssize_t at24_eeprom_write(struct at24_data *at24, char *buf,
- 	return -ETIMEDOUT;
- }
- 
--static ssize_t at24_bin_write(struct kobject *kobj, struct bin_attribute *attr,
-+static ssize_t at24_write(struct at24_data *at24,
- 		char *buf, loff_t off, size_t count)
- {
--	struct at24_data *at24;
- 	ssize_t retval = 0;
- 
--	at24 = dev_get_drvdata(container_of(kobj, struct device, kobj));
--
- 	if (unlikely(!count))
- 		return count;
- 
-@@ -384,6 +381,39 @@ static ssize_t at24_bin_write(struct kobject *kobj, struct bin_attribute *attr,
- 	return retval;
- }
- 
-+static ssize_t at24_bin_write(struct kobject *kobj, struct bin_attribute *attr,
-+		char *buf, loff_t off, size_t count)
-+{
-+	struct at24_data *at24;
++	if (unlikely(offset >= at25->bin.size))
++		return 0;
++	if ((offset + count) > at25->bin.size)
++		count = at25->bin.size - offset;
++	if (unlikely(!count))
++		return count;
 +
-+	at24 = dev_get_drvdata(container_of(kobj, struct device, kobj));
-+	return at24_write(at24, buf, off, count);
+ 	cp = command;
+ 	*cp++ = AT25_READ;
+ 
+@@ -127,13 +135,6 @@ at25_bin_read(struct kobject *kobj, struct bin_attribute *bin_attr,
+ 	dev = container_of(kobj, struct device, kobj);
+ 	at25 = dev_get_drvdata(dev);
+ 
+-	if (unlikely(off >= at25->bin.size))
+-		return 0;
+-	if ((off + count) > at25->bin.size)
+-		count = at25->bin.size - off;
+-	if (unlikely(!count))
+-		return count;
+-
+ 	return at25_ee_read(at25, buf, off, count);
+ }
+ 
+@@ -146,6 +147,13 @@ at25_ee_write(struct at25_data *at25, char *buf, loff_t off, size_t count)
+ 	unsigned		buf_size;
+ 	u8			*bounce;
+ 
++	if (unlikely(off >= at25->bin.size))
++		return -EFBIG;
++	if ((off + count) > at25->bin.size)
++		count = at25->bin.size - off;
++	if (unlikely(!count))
++		return count;
++
+ 	/* Temp buffer starts with command and address */
+ 	buf_size = at25->chip.page_size;
+ 	if (buf_size > io_limit)
+@@ -253,18 +261,31 @@ at25_bin_write(struct kobject *kobj, struct bin_attribute *bin_attr,
+ 	dev = container_of(kobj, struct device, kobj);
+ 	at25 = dev_get_drvdata(dev);
+ 
+-	if (unlikely(off >= at25->bin.size))
+-		return -EFBIG;
+-	if ((off + count) > at25->bin.size)
+-		count = at25->bin.size - off;
+-	if (unlikely(!count))
+-		return count;
+-
+ 	return at25_ee_write(at25, buf, off, count);
+ }
+ 
+ /*-------------------------------------------------------------------------*/
+ 
++/* Let in-kernel code access the eeprom data. */
++
++static ssize_t at25_mem_read(struct memory_accessor *mem, char *buf,
++			 off_t offset, size_t count)
++{
++	struct at25_data *at25 = container_of(mem, struct at25_data, mem);
++
++	return at25_ee_read(at25, buf, offset, count);
++}
++
++static ssize_t at25_mem_write(struct memory_accessor *mem, char *buf,
++			  off_t offset, size_t count)
++{
++	struct at25_data *at25 = container_of(mem, struct at25_data, mem);
++
++	return at25_ee_write(at25, buf, offset, count);
 +}
 +
 +/*-------------------------------------------------------------------------*/
 +
-+/*
-+ * This lets other kernel code access the eeprom data. For example, it
-+ * might hold a board's Ethernet address, or board-specific calibration
-+ * data generated on the manufacturing floor.
-+ */
-+
-+static ssize_t at24_macc_read(struct memory_accessor *macc, char *buf,
-+			 off_t offset, size_t count)
-+{
-+	struct at24_data *at24 = container_of(macc, struct at24_data, macc);
-+
-+	return at24_read(at24, buf, offset, count);
-+}
-+
-+static ssize_t at24_macc_write(struct memory_accessor *macc, char *buf,
-+			  off_t offset, size_t count)
-+{
-+	struct at24_data *at24 = container_of(macc, struct at24_data, macc);
-+
-+	return at24_write(at24, buf, offset, count);
-+}
-+
- /*-------------------------------------------------------------------------*/
+ static int at25_probe(struct spi_device *spi)
+ {
+ 	struct at25_data	*at25 = NULL;
+@@ -317,6 +338,10 @@ static int at25_probe(struct spi_device *spi)
+ 	at25->addrlen = addrlen;
  
- static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
-@@ -413,6 +443,9 @@ static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 		 * is recommended anyhow.
- 		 */
- 		chip.page_size = 1;
-+
-+		chip.setup = NULL;
-+		chip.context = NULL;
+ 	/* Export the EEPROM bytes through sysfs, since that's convenient.
++	 * And maybe to other kernel code; it might hold a board's Ethernet
++	 * address, or board-specific calibration data generated on the
++	 * manufacturing floor.
++	 *
+ 	 * Default to root-only access to the data; EEPROMs often hold data
+ 	 * that's sensitive for read and/or write, like ethernet addresses,
+ 	 * security codes, board-specific manufacturing calibrations, etc.
+@@ -324,17 +349,22 @@ static int at25_probe(struct spi_device *spi)
+ 	at25->bin.attr.name = "eeprom";
+ 	at25->bin.attr.mode = S_IRUSR;
+ 	at25->bin.read = at25_bin_read;
++	at25->mem.read = at25_mem_read;
+ 
+ 	at25->bin.size = at25->chip.byte_len;
+ 	if (!(chip->flags & EE_READONLY)) {
+ 		at25->bin.write = at25_bin_write;
+ 		at25->bin.attr.mode |= S_IWUSR;
++		at25->mem.write = at25_mem_write;
  	}
  
- 	if (!is_power_of_2(chip.byte_len))
-@@ -463,6 +496,8 @@ static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 	at24->bin.read = at24_bin_read;
- 	at24->bin.size = chip.byte_len;
+ 	err = sysfs_create_bin_file(&spi->dev.kobj, &at25->bin);
+ 	if (err)
+ 		goto fail;
  
-+	at24->macc.read = at24_macc_read;
++	if (chip->setup)
++		chip->setup(&at25->mem, chip->context);
 +
- 	writable = !(chip.flags & AT24_FLAG_READONLY);
- 	if (writable) {
- 		if (!use_smbus || i2c_check_functionality(client->adapter,
-@@ -470,6 +505,8 @@ static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ 	dev_info(&spi->dev, "%Zd %s %s eeprom%s, pagesize %u\n",
+ 		(at25->bin.size < 1024)
+ 			? at25->bin.size
+diff --git a/include/linux/spi/eeprom.h b/include/linux/spi/eeprom.h
+index 1085212..306e7b1 100644
+--- a/include/linux/spi/eeprom.h
++++ b/include/linux/spi/eeprom.h
+@@ -1,6 +1,8 @@
+ #ifndef __LINUX_SPI_EEPROM_H
+ #define __LINUX_SPI_EEPROM_H
  
- 			unsigned write_max = chip.page_size;
- 
-+			at24->macc.write = at24_macc_write;
-+
- 			at24->bin.write = at24_bin_write;
- 			at24->bin.attr.mode |= S_IWUSR;
- 
-@@ -520,6 +557,10 @@ static int at24_probe(struct i2c_client *client, const struct i2c_device_id *id)
- 		at24->write_max,
- 		use_smbus ? ", use_smbus" : "");
- 
-+	/* export data to kernel code */
-+	if (chip.setup)
-+		chip.setup(&at24->macc, chip.context);
-+
- 	return 0;
- 
- err_clients:
-diff --git a/include/linux/i2c/at24.h b/include/linux/i2c/at24.h
-index f6edd52..8ace930 100644
---- a/include/linux/i2c/at24.h
-+++ b/include/linux/i2c/at24.h
-@@ -2,6 +2,7 @@
- #define _LINUX_AT24_H
- 
- #include <linux/types.h>
 +#include <linux/memory.h>
- 
- /*
-  * As seen through Linux I2C, differences between the most common types of I2C
-@@ -23,6 +24,9 @@ struct at24_platform_data {
- #define AT24_FLAG_READONLY	0x40	/* sysfs-entry will be read-only */
- #define AT24_FLAG_IRUGO		0x20	/* sysfs-entry will be world-readable */
- #define AT24_FLAG_TAKE8ADDR	0x10	/* take always 8 addresses (24c00) */
 +
-+	void		(*setup)(struct memory_accessor *, void *context);
-+	void		*context;
+ /*
+  * Put one of these structures in platform_data for SPI EEPROMS handled
+  * by the "at25" driver.  On SPI, most EEPROMS understand the same core
+@@ -17,6 +19,10 @@ struct spi_eeprom {
+ #define	EE_ADDR2	0x0002			/* 16 bit addrs */
+ #define	EE_ADDR3	0x0004			/* 24 bit addrs */
+ #define	EE_READONLY	0x0008			/* disallow writes */
++
++	/* for exporting this chip's data to other kernel code */
++	void (*setup)(struct memory_accessor *mem, void *context);
++	void *context;
  };
  
- #endif /* _LINUX_AT24_H */
+ #endif /* __LINUX_SPI_EEPROM_H */
 -- 
 1.6.1.3
 
