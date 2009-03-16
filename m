@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbZCPPyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbZCPQBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757526AbZCPPyY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 11:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbZCPPyJ
+	id S1755273AbZCPQBv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 12:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbZCPQBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 11:54:09 -0400
-Received: from pro-237-180.rediffmailpro.com ([202.137.237.180]:44016 "HELO
-	pro-237-180.rediffmailpro.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755162AbZCPPyI convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 11:54:08 -0400
-X-Greylist: delayed 394 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Mar 2009 11:54:06 EDT
-Date: 16 Mar 2009 15:46:51 -0000
-Message-ID: <20090316154651.64686.qmail@pro-237-180.rediffmailpro.com>
+	Mon, 16 Mar 2009 12:01:41 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:54973 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752267AbZCPQBk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 12:01:40 -0400
+Date: Mon, 16 Mar 2009 16:01:37 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       Manuel Lauss <mano@roarinelk.homelinux.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ASoC: Only deregister AC97 dev if it's name was not
+	"AC97"
+Message-ID: <20090316160137.GA24994@rakim.wolfsonmicro.main>
+References: <20090316.232620.95066093.anemo@mba.ocn.ne.jp> <s5hbps1r10t.wl%tiwai@suse.de>
 MIME-Version: 1.0
-From: "Mr Karim Jack" <karim@ltdoffice.net>
-Reply-To: "Mr Karim Jack" <karim@ltdoffice.net>
-To: karim@ltdoffice.net
-Subject: Read carefuly and respond!
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <s5hbps1r10t.wl%tiwai@suse.de>
+X-Cookie: Prices higher in Alaska and Hawaii.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 16, 2009 at 03:32:50PM +0100, Takashi Iwai wrote:
 
-Good Day My good friend,  
+> Hm, codec->ac97->dev.bus should be NULL unless it's registered,
+> so calling soc_ac97_dev_unregister() should be harmless...
 
-Let me start by introducing myself, I am Mr Karim Jack,an ACCOUNTS OFFICER with an African Bank in Burkina-Faso of West Africa. I am writing you this  letter based on the latest development at my bank which I will like to bring to your personal edification,($9million transfer claims ).
-This is a legitimate transaction and you will be paid 30% for your "Assistance".If you are interested, kindly fill the below for the next step. 
+Atsushi, are you using ac97.c as your codec driver?  Could you please
+post the actual backtrace you're seeing?
 
-full names:
-phone line:
-country of origin:
-age:
-occupation:
-marital status:
+> Maybe I miss something?
 
-your bank information 
-
-account name:
-account type:
-account number:
-bank address and phone/fax: 
-
-yours Sincerely
-
-Mr Karim Jack 
-
-my email id karim.jack50@gmail.com                             
-
-
-
-
+There's some fun and games here due to ac97.c which provides the ability
+to use the standard ALSA AC97 functionality as a codec driver (that's
+why there's the check on init) - I suspect there may be a double free.
