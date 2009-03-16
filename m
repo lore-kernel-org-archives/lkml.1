@@ -1,137 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760899AbZCPMg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760747AbZCPMhP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760899AbZCPMg2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 08:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbZCPMgS
+	id S1760747AbZCPMhP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 08:37:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbZCPMg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 08:36:18 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:27780 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752094AbZCPMgR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 08:36:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CBkjSX2AKgOZVYxYDDYn1XTwHsU2RAsAQkfMxtEw5UUTqkpVFoae9tHulgpYnTAcxi
-         RUHNRuvc0h9zU5wcCznsvFL/QNDNLUZCLWIhq1gyIeN/o/ZU9PzjvrncTPHT52fd4Te4
-         6vX4GBQ5CLAaRNP8j38Iw/YwumjGqfbsuCF0g=
-Date: Mon, 16 Mar 2009 13:36:09 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       srostedt@redhat.com, tglx@linutronix.de, laijs@cn.fujitsu.com,
-       mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/ftrace] ftrace: remove struct list_head from
-	struct dyn_ftrace
-Message-ID: <20090316123607.GA5096@nowhere>
-References: <49BA2C9F.8020009@cn.fujitsu.com> <tip-e94142a67f8bad494c593f0a07c9fc2fbec98c0e@git.kernel.org>
-MIME-Version: 1.0
+	Mon, 16 Mar 2009 08:36:59 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58303 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751101AbZCPMg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 08:36:58 -0400
+Date: Mon, 16 Mar 2009 13:36:54 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+       akpm@linux-foundation.org, Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH] fix/improve generic page table walker
+Message-ID: <20090316123654.GF30802@wotan.suse.de>
+References: <20090311144951.58c6ab60@skybase> <1236792263.3205.45.camel@calx> <20090312093335.6dd67251@skybase> <1236867014.3213.16.camel@calx> <20090312154229.3ee463eb@skybase> <1236873494.3213.55.camel@calx> <20090316132717.69f6f4ce@skybase>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <tip-e94142a67f8bad494c593f0a07c9fc2fbec98c0e@git.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090316132717.69f6f4ce@skybase>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 13, 2009 at 10:39:36AM +0000, Lai Jiangshan wrote:
-> Commit-ID:  e94142a67f8bad494c593f0a07c9fc2fbec98c0e
-> Gitweb:     http://git.kernel.org/tip/e94142a67f8bad494c593f0a07c9fc2fbec98c0e
-> Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-> AuthorDate: Fri, 13 Mar 2009 17:51:27 +0800
-> Commit:     Ingo Molnar <mingo@elte.hu>
-> CommitDate: Fri, 13 Mar 2009 11:36:20 +0100
+On Mon, Mar 16, 2009 at 01:27:17PM +0100, Martin Schwidefsky wrote:
+> On Thu, 12 Mar 2009 10:58:14 -0500
+> Matt Mackall <mpm@selenic.com> wrote:
 > 
-> ftrace: remove struct list_head from struct dyn_ftrace
+> > On Thu, 2009-03-12 at 15:42 +0100, Martin Schwidefsky wrote:
+> > > Then what exactly is a pgd_t? For me it is the top level page table
+> > > which can have very different meaning for the various architectures.
+> > 
+> > The important thing is that it's always 3 levels removed from the
+> > bottom, whether or not those 3 levels actually have hardware
+> > manifestations. From your description, it sounds like that's not how
+> > things work in S390 land.
 > 
-> Impact: save memory
+> With the page table folding "3 levels removed from the bottom" doesn't
+> tell me much since there is no real representation in hardware AND in
+> memory for the missing page table levels. So the only valid meaning of
+> a pgd_t is that you have to use pud_offset, pmd_offset and pte_offset
+> to get to a pte. If I do the page table folding at runtime or at
+> compile time is a minor detail.
+
+I don't know if it would be helpful to you, but I solve a similar
+kind of problem in the lockless radix tree by encoding node height
+in the node itself. Maybe you could use some bits in the page table
+pointers or even in the struct pages for this.
+
+
 > 
-> The struct dyn_ftrace table is very large, this patch will save
-> about 50%.
+> > > Well, the hardware can do up to 5 levels of page tables for the full
+> > > 64 bit address space. With the introduction of pud's we wanted to
+> > > extend our address space from 3 levels / 42 bits to 4 levels / 53 bits.
+> > > But this comes at a cost: additional page table levels cost memory and
+> > > performance. In particular for the compat processes which can only
+> > > address a maximum of 2 GB it is a waste to allocate 4 levels. With the
+> > > dynamic page tables we allocate as much as required by each process.
+> > 
+> > X86 uses 1-entry tables at higher levels to maintain consistency with
+> > fairly minimal overhead. In some of the sillier addressing modes, we may
+> > even use a 4-entry table in some places. I think table size is fixed at
+> > compile time, but I don't think that's essential. Very little code in
+> > the x86 architecture has any notion of how many hardware levels actually
+> > exist.
 > 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> Cc: Steven Rostedt <srostedt@redhat.com>
-> LKML-Reference: <49BA2C9F.8020009@cn.fujitsu.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Indeed very little code needs to know how many page table levels
+> exist. The page table folding works as long as the access to a
+> particular page is done with the sequence
 > 
+> 	pgd = pgd_offset(mm, address);
+> 	pud = pud_offset(pgd, address);
+> 	pmd = pmd_offset(pud, address);
+> 	pte = pte_offset(pmd, address);
+> 
+> The indivitual pointers pgd/pud/pmd/pte can be incremented as long as
+> they stay in the valid address range, e.g. pmd_addr_end checks for the
+> next pmd segment boundary and the end address of the walk.
+> 
+> If the page table folding is static or dynamic is irrelevant. The only
+> thing we are arguing is what makes a valid end address for a walk. It
+> has to be smaller than TASK_SIZE. With the current definitions the s390
+> code has the additional assumption that the address has to be smaller
+> than the highest vma as well. The patch below changes TASK_SIZE to
+> reflect the size of the address space in use by the process. Then the
+> generic page table walker works fine. What doesn't work anymore is the
+> automatic upgrade from 3 to 4 levels via mmap. I'm still thinking about
+> a clever solution, the best I have so far is a patch that introduces
+> TASK_SIZE_MAX which reflects the maximum possible size as opposed to
+> TASK_SIZE that gives you the current size. The code in do_mmap_pgoff
+> then uses TASK_SIZE_MAX instead of TASK_SIZE.
+> 
+> -- 
+> blue skies,
+>    Martin.
+> 
+> "Reality continues to ruin my life." - Calvin.
 > 
 > ---
->  include/linux/ftrace.h |    1 -
->  kernel/trace/ftrace.c  |   14 ++++++++------
->  2 files changed, 8 insertions(+), 7 deletions(-)
+> Subject: [PATCH] make page table walking more robust
 > 
-> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> index c146c10..9d598bb 100644
-> --- a/include/linux/ftrace.h
-> +++ b/include/linux/ftrace.h
-> @@ -145,7 +145,6 @@ enum {
->  };
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> Make page table walking on s390 more robust. The current code requires
+> that the pgd/pud/pmd/pte loop is only done for address ranges that are
+> below the end address of the last vma of the address space. But this
+> is not always true, e.g. the generic page table walker does not
+> guarantee this. Change TASK_SIZE/TASK_SIZE_OF to reflect the current
+> size of the address space. This makes the generic page table walker
+> happy but it breaks the upgrade of a 3 level page table to a 4 level
+> page table. To make the upgrade work again another fix is required.
+> 
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+> 
+>  arch/s390/include/asm/processor.h |    5 ++---
+>  arch/s390/mm/mmap.c               |    4 ++--
+>  arch/s390/mm/pgtable.c            |    2 ++
+>  3 files changed, 6 insertions(+), 5 deletions(-)
+> 
+> diff -urpN linux-2.6/arch/s390/include/asm/processor.h
+> linux-2.6-patched/arch/s390/include/asm/processor.h ---
+> linux-2.6/arch/s390/include/asm/processor.h	2009-03-16
+> 12:24:26.000000000 +0100 +++
+> linux-2.6-patched/arch/s390/include/asm/processor.h	2009-03-16
+> 12:24:28.000000000 +0100 @@ -47,7 +47,7 @@ extern void
+> print_cpu_info(void); extern int get_cpu_capability(unsigned int *); /*
+> - * User space process size: 2GB for 31 bit, 4TB for 64 bit.
+> + * User space process size: 2GB for 31 bit, 4TB or 8PT for 64 bit.
+>   */
+>  #ifndef __s390x__
 >  
->  struct dyn_ftrace {
-> -	struct list_head	list;
->  	unsigned long		ip; /* address of mcount call-site */
->  	unsigned long		flags;
->  	struct dyn_arch_ftrace	arch;
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index bf78a4c..90d5729 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -272,7 +272,7 @@ enum {
+> @@ -56,8 +56,7 @@ extern int get_cpu_capability(unsigned i
 >  
->  static int ftrace_filtered;
+>  #else /* __s390x__ */
 >  
-> -static LIST_HEAD(ftrace_new_addrs);
-> +static struct dyn_ftrace *ftrace_new_addrs;
+> -#define TASK_SIZE_OF(tsk)
+> (test_tsk_thread_flag(tsk,TIF_31BIT) ? \
+> -					(1UL << 31) : (1UL << 53))
+> +#define TASK_SIZE_OF(tsk)	((tsk)->mm->context.asce_limit)
+>  #define TASK_UNMAPPED_BASE	(test_thread_flag(TIF_31BIT) ? \
+>  					(1UL << 30) : (1UL << 41))
+>  #define TASK_SIZE		TASK_SIZE_OF(current)
+> diff -urpN linux-2.6/arch/s390/mm/mmap.c
+> linux-2.6-patched/arch/s390/mm/mmap.c ---
+> linux-2.6/arch/s390/mm/mmap.c	2008-12-25 00:26:37.000000000
+> +0100 +++ linux-2.6-patched/arch/s390/mm/mmap.c	2009-03-16
+> 12:24:28.000000000 +0100 @@ -35,7 +35,7 @@
+>   * Leave an at least ~128 MB hole.
+>   */
+>  #define MIN_GAP (128*1024*1024)
+> -#define MAX_GAP (TASK_SIZE/6*5)
+> +#define MAX_GAP (STACK_TOP/6*5)
 >  
->  static DEFINE_MUTEX(ftrace_regex_lock);
->  
-> @@ -409,8 +409,8 @@ ftrace_record_ip(unsigned long ip)
->  		return NULL;
->  
->  	rec->ip = ip;
-> -
-> -	list_add(&rec->list, &ftrace_new_addrs);
-> +	rec->flags = (unsigned long)ftrace_new_addrs;
-> +	ftrace_new_addrs = rec;
-
-
-But... you are overwritting all the ftrace flags infrastructure by
-using it as a list pointer.
-
-This is breaking dynamic tracing.
-
->  
->  	return rec;
->  }
-> @@ -716,19 +716,21 @@ unsigned long		ftrace_update_tot_cnt;
->  
->  static int ftrace_update_code(struct module *mod)
+>  static inline unsigned long mmap_base(void)
 >  {
-> -	struct dyn_ftrace *p, *t;
-> +	struct dyn_ftrace *p;
->  	cycle_t start, stop;
+> @@ -46,7 +46,7 @@ static inline unsigned long mmap_base(vo
+>  	else if (gap > MAX_GAP)
+>  		gap = MAX_GAP;
 >  
->  	start = ftrace_now(raw_smp_processor_id());
->  	ftrace_update_cnt = 0;
+> -	return TASK_SIZE - (gap & PAGE_MASK);
+> +	return STACK_TOP - (gap & PAGE_MASK);
+>  }
 >  
-> -	list_for_each_entry_safe(p, t, &ftrace_new_addrs, list) {
-> +	while (ftrace_new_addrs) {
->  
->  		/* If something went wrong, bail without enabling anything */
->  		if (unlikely(ftrace_disabled))
->  			return -1;
->  
-> -		list_del_init(&p->list);
-> +		p = ftrace_new_addrs;
-> +		ftrace_new_addrs = (struct dyn_ftrace *)p->flags;
-> +		p->flags = 0L;
->  
->  		/* convert record (i.e, patch mcount-call with NOP) */
->  		if (ftrace_code_disable(mod, p)) {
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-tip-commits" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+>  static inline int mmap_is_legacy(void)
+> diff -urpN linux-2.6/arch/s390/mm/pgtable.c
+> linux-2.6-patched/arch/s390/mm/pgtable.c ---
+> linux-2.6/arch/s390/mm/pgtable.c	2009-03-16 12:24:09.000000000
+> +0100 +++ linux-2.6-patched/arch/s390/mm/pgtable.c	2009-03-16
+> 12:24:28.000000000 +0100 @@ -117,6 +117,7 @@ repeat:
+> crst_table_init(table, entry); pgd_populate(mm, (pgd_t *) table, (pud_t
+> *) pgd); mm->pgd = (pgd_t *) table;
+> +		mm->task_size = mm->context.asce_limit;
+>  		table = NULL;
+>  	}
+>  	spin_unlock(&mm->page_table_lock);
+> @@ -154,6 +155,7 @@ void crst_table_downgrade(struct mm_stru
+>  			BUG();
+>  		}
+>  		mm->pgd = (pgd_t *) (pgd_val(*pgd) &
+> _REGION_ENTRY_ORIGIN);
+> +		mm->task_size = mm->context.asce_limit;
+>  		crst_table_free(mm, (unsigned long *) pgd);
+>  	}
+>  	update_mm(mm, current);
