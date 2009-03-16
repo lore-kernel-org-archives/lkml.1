@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbZCPNnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbZCPNsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760818AbZCPNnt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 09:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbZCPNnk
+	id S1756370AbZCPNsc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 09:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbZCPNsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 09:43:40 -0400
-Received: from mail122.emailantidote.com ([80.169.59.122]:55148 "EHLO
-	SC-MTA-03.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751846AbZCPNnk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 09:43:40 -0400
-Message-ID: <49BE4DCB.1000705@draigBrady.com>
-Date: Mon, 16 Mar 2009 13:02:03 +0000
-From: =?UTF-8?B?UMOhZHJhaWcgQnJhZHk=?= <P@draigBrady.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Mon, 16 Mar 2009 09:48:23 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:60471 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752391AbZCPNsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 09:48:22 -0400
+Message-ID: <49BE58BA.1000907@pardus.org.tr>
+Date: Mon, 16 Mar 2009 15:48:42 +0200
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20071115)
 MIME-Version: 1.0
-To: Alexey Fisher <bug-track@fisher-privat.net>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: smart cache. ist is possible?
-References: <49BD1EB7.6080109@fisher-privat.net>
-In-Reply-To: <49BD1EB7.6080109@fisher-privat.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 16 Mar 2009 13:43:31.0344 (UTC) FILETIME=[31AD8100:01C9A63D]
-x-MXSweep-KeywordsCount: 0
-x-MXSweep-MetaScanResult: Clean
-x-MXSweep-MetaScanThreat: 
-x-MXSweep-VirusScanned: OK
-x-MXPurifier-SpamScore: 0
-x-MXPurifier-VirusScore: 0
-x-MXSweep-Threat: Clean
-X-MXUniqueID: 5425717f-2d8c-4879-a7f6-81e9609aff9b
+To: linux-kernel@vger.kernel.org
+Subject: [BUG 2.6.29_rc8] BIOS Bug: CPU MTRRs don't cover all of memory, losing
+ 0MB of RAM.
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Fisher wrote:
-> Hallo all.
-> I found for my self how great is cache in linux. If read one file from
-> disk, so i don't need to do it second time, chace will do the job. It
-> speed up thing greatly. But i found it not working with realy big files.
-> Like i have 4GB RAM, so if i read a file like 4.6GB, cache won't work.
-> Is it possible to have some sort of smart cache wich will read for
-> exaplme 1GB from disk and other part from cache?
-> 
-> here is some simple test:
-> =====================cache not working==========================
-> dd if=dvd.iso of=/dev/null
-> 9017680+0 Datensätze ein
-> 9017680+0 Datensätze aus
-> 4617052160 Bytes (4,6 GB) kopiert, 90,7817 s, *50,9 MB/s*
-> 
-> dd if=dvd.iso of=/dev/null
-> 9017680+0 Datensätze ein
-> 9017680+0 Datensätze aus
-> 4617052160 Bytes (4,6 GB) kopiert, 90,7817 s, *50,9 MB/s*
-> ===============================================================
+Hi,
 
-Right. The cache is being cycled.
-I.E. the block you want is never in the cache
-as it has previously clobbered be data your reading in.
-That's just a consequence of preferring to cache blocks
-you have recently read from file, over older blocks.
-This is usually the right thing to do, but exactly
-the wrong thing to do in your case.
+Just compiled and tried to boot it on an HP ProLiant DL580 G5. Here's the
+interesting part:
 
-So you would need to provide more info to the
-kernel for it to behave as you want.
-I.E. never evict a block belonging to the same file
-as the block you're trying to insert.
+..
+-- last_pfn = 0x82ffff max_arch_pfn = 0x1000000
+x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 0MB of RAM.
+------------[ cut here ]------------
+WARNING: at arch/x86/kernel/cpu/mtrr/main.c:1655 mtrr_trim_uncached_memory+0x2a9/0x2cd()
+Hardware name: ProLiant DL580 G5
+Modules linked in:
+Pid: 0, comm: swapper Not tainted 2.6.29_rc8-115 #1
+Call Trace:
+ [<c013134d>] warn_slowpath+0x71/0xa8
+ [<c039971c>] ? _spin_unlock_irqrestore+0x19/0x1f
+ [<c039971c>] ? _spin_unlock_irqrestore+0x19/0x1f
+ [<c01319c4>] ? release_console_sem+0x185/0x1b2
+ [<c0131e49>] ? vprintk+0x280/0x2a5
+ [<c03973da>] ? printk+0xf/0x15
+ [<c053423f>] mtrr_trim_uncached_memory+0x2a9/0x2cd
+ [<c052f4bd>] setup_arch+0x439/0x99e
+ [<c01319c4>] ? release_console_sem+0x185/0x1b2
+ [<c0131e49>] ? vprintk+0x280/0x2a5
+ [<c0531b37>] ? __reserve_early+0xe4/0xf8
+ [<c03973da>] ? printk+0xf/0x15
+ [<c052b5b6>] start_kernel+0x7b/0x345
+ [<c052b085>] __init_begin+0x85/0x8d
+---[ end trace 4eaa2a86a8e2da22 ]---
+update e820 for mtrr
+..
 
-I wonder should posix_fadvise(...POSIX_FADV_SEQUENTIAL)
-do what you want. I don't think it does at present.
-Note dd doesn't use posix_fadvise() yet, and it probably
-should (at least for POSIX_FADV_DONTNEED).
-Pity there is no interface like Robert Love's old O_STREAM
-patch to just specify the intent for an fd rather than
-worrying about ranges.
+This is a quite generic x86 desktop kernel with only the
+following differences for the server:
 
-cheers,
-Pádraig.
+CONFIG_X86_GENERICARCH=y
+CONFIG_X86_BIGSMP=y
+CONFIG_MCORE2=y
+CONFIG_HIGHMEM64G=y
+# CONFIG_X86_GENERIC is not set
+
+I didn't want to add full dmesg and config for not flooding the e-mail but
+if you need them or other output/information, i can send them.
+
+Thanks,
+
+
+Ozan Çağlayan
 
