@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761741AbZCPUkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760814AbZCPU7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761741AbZCPUkA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 16:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758908AbZCPUjv
+	id S1760814AbZCPU7W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 16:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbZCPU7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 16:39:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:31989 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757878AbZCPUjv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 16:39:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Zn2yBl1HiU8L8os6QjXL6r1wCmPbdzcJyNdoNW6fvspf4WR+CNPgsBQlVG/w8uyxwb
-         tm4x2khAdstS8uzfNNBd98lsOkSjonNrVEhdcAe9shMIdPJ14ZYgbw4runMC1ISz9NM4
-         74+X16IdNVXf62uLlrdHLIbI3SeSuOvabZxok=
+	Mon, 16 Mar 2009 16:59:10 -0400
+Received: from gw.goop.org ([64.81.55.164]:39254 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754494AbZCPU7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 16:59:09 -0400
+Message-ID: <49BEBD98.3090905@goop.org>
+Date: Mon, 16 Mar 2009 13:59:04 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <1236337634-5110-1-git-send-email-anemo@mba.ocn.ne.jp>
-References: <1236337634-5110-1-git-send-email-anemo@mba.ocn.ne.jp>
-Date: Mon, 16 Mar 2009 13:39:49 -0700
-X-Google-Sender-Auth: 542e7d63df8669cf
-Message-ID: <e9c3a7c20903161339o31470datdb2e82649a52bcf0@mail.gmail.com>
-Subject: Re: [PATCH] dmaengine: Add privatecnt to revert DMA_PRIVATE propery
-From: Dan Williams <dan.j.williams@intel.com>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org> <49BEB5FE.7050601@zytor.com>
+In-Reply-To: <49BEB5FE.7050601@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 6, 2009 at 4:07 AM, Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-> Currently dma_request_channel() set DMA_PRIVATE capability but never
-> clear it.  So if a public channel was once grabbed by
-> dma_request_channel(), the device stay PRIVATE forever.  Add
-> privatecnt member to dma_device to correctly revert it.
+H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+>> Yinghai Lu wrote:
+>>>> -INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
+>>>> -RESERVE_BRK(pagetables, INIT_MAP_SIZE)
+>>>> +/* Enough space to fit pagetables for the low memory linear map */
+>>>> +MAPPING_BEYOND_END = (PAGE_TABLE_SIZE(1 << (32 - PAGE_SHIFT)) * 
+>>>> PAGE_SIZE)
+>>>>     
+>>>
+>>> that is for 4g?
+>>>   
+>>
+>> Yes, I suppose it only needs to be 1G.  But it doesn't make much 
+>> difference in practice.
+>>
 >
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-> ---
+> A tighter bound would probably be nice, if nothing else because 
+> tighter bounds tend to catch more bugs.
 
-This looks good to me.  Please rebase it on top of the 'next' branch
-of the async_tx tree[1] and I will queue it for -next.
+Well, its a bit more complex than that; we'd need to make it conditional 
+on the user/kernel split, which seems all a bit fiddly.  I guess it 
+could be something like:
 
-Thanks,
-Dan
+MAPPING_BEYOND_END = PAGE_TABLE_SIZE((1<<(32-PAGE_SHIFT)) - (PAGE_OFFSET / PAGE_SIZE)) * PAGE_SIZE
 
-http://git.kernel.org/?p=linux/kernel/git/djbw/async_tx.git;a=shortlog;h=next
+    J
