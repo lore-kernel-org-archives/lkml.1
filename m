@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbZCPSlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760126AbZCPSnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758888AbZCPSlD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:41:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbZCPSkv
+	id S1760126AbZCPSnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZCPSnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:40:51 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:48833 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752919AbZCPSku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:40:50 -0400
-Message-ID: <49BE9D21.6080400@krogh.cc>
-Date: Mon, 16 Mar 2009 19:40:33 +0100
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 16 Mar 2009 14:43:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53887 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754174AbZCPSnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 14:43:06 -0400
+Date: Mon, 16 Mar 2009 18:42:27 GMT
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, linuxppc-dev@ozlabs.org, tglx@linutronix.de,
+       sfr@canb.auug.org.au, mingo@elte.hu
+In-Reply-To: <20090316185256.4a160374.sfr@canb.auug.org.au>
+References: <20090316185256.4a160374.sfr@canb.auug.org.au>
+Subject: [tip:irq/sparseirq] sparseirq, powerpc/cell: fix unused variable warning in interrupt.c
+Message-ID: <tip-a6bc3262c561780d2a6587aa3d5715b1e7d8fa13@git.kernel.org>
+Git-Commit-ID: a6bc3262c561780d2a6587aa3d5715b1e7d8fa13
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       john stultz <johnstul@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Linux 2.6.29-rc6
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>  <49A70B24.6090706@krogh.cc>  <1235685269.6811.11.camel@localhost.localdomain>  <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>  <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>  <1235766936.7402.5.camel@localhost.localdomain> <49AD90E2.7050209@krogh.cc>  <1236118969.6068.87.camel@localhost> <49AE9EA4.2080500@krogh.cc>  <49AECA3B.5030503@krogh.cc>  <1236193075.3793.63.camel@jstultz-laptop>  <1236220759.6863.7.camel@localhost.localdomain> <1236221530.6863.9.camel@localhost.localdomain> <49B57F3D.5030008@krogh.cc> <alpine.LFD.2.00.0903092109460.19207@localhost.localdomain> <alpine.LFD.2.00.0903101103510.29264@localhost.localdomain> <49B6C2B8.7000407@krogh.cc> <alpine.LFD.2.00.0903102107580.29264@localhost.localdomain> <49BD5CB6.1030700@krogh.cc>
-In-Reply-To: <49BD5CB6.1030700@krogh.cc>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 16 Mar 2009 18:42:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Krogh wrote:
-> Thomas Gleixner wrote:
-> 
->> slow calibration path on every boot on your machine.
->>
->>     (tscmax - tscmin) / avg = 0.064 (result from third run)
->>
->> On my test machines I get values below 0.02
->>
->> While it's statistically not really correct we still can use that info
->> to catch cases like we see on your machines.
->>
->>> While booting up I saw this one on the serial console..
->>> root@quad12:~# hwclock --systohc
->>> Cannot access the Hardware Clock via any known method.
->>> Use the --debug option to see the details of our search for an access 
->>> method.
->>> root@quad12:~# hwclock --systohc --debug
->>> hwclock from util-linux-ng 2.13.1
->>> hwclock: Open of /dev/rtc failed, errno=2: No such file or directory.
->>> No usable clock interface found.
->>> Cannot access the Hardware Clock via any known method.
->>
->> Can you provide your .config file please ?
-> 
-> http://krogh.cc/~jesper/config-2.6.29-rc8.txt
-> 
-> I testet the attached patch.. and after 1.5 hours it seems to work. I'll 
-> remain on this one at least a day to see how it works. I'll keep it on 
-> for now and report back in 24 hours or so.
-> 
-> Its still using tsc as clock-source.
+Commit-ID:  a6bc3262c561780d2a6587aa3d5715b1e7d8fa13
+Gitweb:     http://git.kernel.org/tip/a6bc3262c561780d2a6587aa3d5715b1e7d8fa13
+Author:     Stephen Rothwell <sfr@canb.auug.org.au>
+AuthorDate: Mon, 16 Mar 2009 18:52:56 +1100
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 16 Mar 2009 09:21:57 +0100
 
-No resets after 24 hours..  it works.
+sparseirq, powerpc/cell: fix unused variable warning in interrupt.c
 
--- 
-Jesper
+This new compiler warning:
+
+   arch/powerpc/platforms/cell/interrupt.c: In function 'handle_iic_irq':
+   arch/powerpc/platforms/cell/interrupt.c:240: warning: unused variable 'cpu'
+
+Triggers because the local variable 'cpu' became unused due to commit:
+
+   dee4102: sparseirq: use kstat_irqs_cpu instead
+
+Remove the variable.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+LKML-Reference: <20090316185256.4a160374.sfr@canb.auug.org.au>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/powerpc/platforms/cell/interrupt.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 1f0d774..882e470 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -237,8 +237,6 @@ extern int noirqdebug;
+ 
+ static void handle_iic_irq(unsigned int irq, struct irq_desc *desc)
+ {
+-	const unsigned int cpu = smp_processor_id();
+-
+ 	spin_lock(&desc->lock);
+ 
+ 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
