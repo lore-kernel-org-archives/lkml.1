@@ -1,148 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbZCPRn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbZCPRvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757053AbZCPRn0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 13:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbZCPRnR
+	id S1758556AbZCPRvl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 13:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbZCPRvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:43:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45408 "EHLO mx2.redhat.com"
+	Mon, 16 Mar 2009 13:51:25 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51137 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756017AbZCPRnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 13:43:17 -0400
-Subject: Re: [PATCH] ftrace: protect executing nmi
-From: Steven Rostedt <srostedt@redhat.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <49BE4BF7.6050407@cn.fujitsu.com>
-References: <49BE4BF7.6050407@cn.fujitsu.com>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Mon, 16 Mar 2009 13:42:52 -0400
-Message-Id: <1237225372.3624.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1754096AbZCPRvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 13:51:25 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Mel Gorman <mel@csn.ul.ie>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 01/27] Replace __alloc_pages_internal() with __alloc_pages_nodemask()
+Date: Mon, 16 Mar 2009 17:53:15 +0000
+Message-Id: <1237226020-14057-2-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1237226020-14057-1-git-send-email-mel@csn.ul.ie>
+References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+__alloc_pages_internal is the core page allocator function but
+essentially it is an alias of __alloc_pages_nodemask. Naming a publicly
+available and exported function "internal" is also a big ugly. This
+patch renames __alloc_pages_internal() to __alloc_pages_nodemask() and
+deletes the old nodemask function.
 
-On Mon, 2009-03-16 at 20:54 +0800, Lai Jiangshan wrote:
-> When I review the sensitive code ftrace_nmi_enter(), I found
-> the atomic variable nmi_running does protect NMI VS do_ftrace_mod_code(),
-> but it can not protects NMI(entered nmi) VS NMI(ftrace_nmi_enter()).
-> 
-> cpu#1                   | cpu#2                 | cpu#3
-> ftrace_nmi_enter()      | do_ftrace_mod_code()  |
->   not modify            |                       |
-> ------------------------|-----------------------|--
-> executing               | set mod_code_write = 1|
-> executing             --|-----------------------|--------------------
-> executing               |                       | ftrace_nmi_enter()
-> executing               |                       |    do modify
-> ------------------------|-----------------------|-----------------
-> ftrace_nmi_exit()       |                       |
+Warning - This patch renames an exported symbol. No kernel driver is
+affected by external drivers calling __alloc_pages_internal() should
+change the call to __alloc_pages_nodemask() without any alteration of
+parameters.
 
-Very good review!
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+---
+ include/linux/gfp.h |   12 ++----------
+ mm/page_alloc.c     |    4 ++--
+ 2 files changed, 4 insertions(+), 12 deletions(-)
 
-This race is possible, although very unlikely, but must be fixed
-regardless.
-
-> 
-> cpu#3 may be being modified the code which is still being executed on cpu#1,
-> it will have undefined results and possibly take a GPF, this patch
-> prevents it occurred.
-
-Unfortunately your patch does not solve the problem. It only makes the
-race window smaller.
-
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-> index 1d0d7f4..e016f5e 100644
-> --- a/arch/x86/kernel/ftrace.c
-> +++ b/arch/x86/kernel/ftrace.c
-> @@ -87,7 +87,8 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
->   *
->   * If an NMI is executed, the first thing it does is to call
->   * "ftrace_nmi_enter". This will check if the flag is set to write
-> - * and if it is, it will write what is in the IP and "code" buffers.
-> + * and if it is, and there is no executing nmi, it will write
-> + * what is in the IP and "code" buffers.
->   *
->   * The trick is, it does not matter if everyone is writing the same
->   * content to the code location. Also, if a CPU is executing code
-> @@ -96,6 +97,7 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
->   */
->  
->  static atomic_t nmi_running = ATOMIC_INIT(0);
-> +static atomic_t nmi_executing = ATOMIC_INIT(0);
->  static int mod_code_status;		/* holds return value of text write */
->  static int mod_code_write;		/* set when NMI should do the write */
->  static void *mod_code_ip;		/* holds the IP to write to */
-> @@ -135,14 +137,18 @@ void ftrace_nmi_enter(void)
->  	atomic_inc(&nmi_running);
->  	/* Must have nmi_running seen before reading write flag */
->  	smp_mb();
-> -	if (mod_code_write) {
-> +	if (!atomic_read(&nmi_executing) && mod_code_write) {
->  		ftrace_mod_code();
->  		atomic_inc(&nmi_update_count);
->  	}
-
-Here we have another race window. If cpu#1 has that NMI and right here
-we get a SMI (something to make the race window bigger). cpu#2 could
-have set the mod_code_write and cpu#3 could have another NMI that sees
-it but does not see the nmi_executing flag. Now we are in the same
-scenario as you nicely described up above.
-
-> +	atomic_inc(&nmi_executing);
-> +	smp_mb();
->  }
->  
->  void ftrace_nmi_exit(void)
->  {
-> +	smp_mb();
-> +	atomic_dec(&nmi_executing);
->  	/* Finish all executions before clearing nmi_running */
->  	smp_wmb();
->  	atomic_dec(&nmi_running);
-> 
-
-
-The solution is to connect the mod_code_write with the nmi_enter and
-nmi_exit. Make mod_code_write an atomic.
-
-void ftrace_nmi_enter(void)
-{	
-	if (atomic_inc_return(&mod_code_write) > 10000) {
-		ftrace_mod_code();
-		atomic_inc(&nmi_update_count);
-	}
-	smp_mb();
-}
-
-void ftrace_nmi_exit(void)
-{
-	smp_mb();
-	atomic_dec(&mod_code_write);
-}
-
-Then in do_ftrace_mod_code ...
-
-
-	while (atomic_cmpxchg(&mod_code_write, 0, 10001) != 0)
-		;
-
-	[...]
-
-
-	while (atomic_cmpxchg(&mode_code_write, 10001, 0) != 10001)
-		;
-
-
-Does this look like it would solve the issue?
-
--- Steve
-
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index dd20cd7..dcf0ab8 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -168,24 +168,16 @@ static inline void arch_alloc_page(struct page *page, int order) { }
+ #endif
+ 
+ struct page *
+-__alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
++__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 		       struct zonelist *zonelist, nodemask_t *nodemask);
+ 
+ static inline struct page *
+ __alloc_pages(gfp_t gfp_mask, unsigned int order,
+ 		struct zonelist *zonelist)
+ {
+-	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
++	return __alloc_pages_nodemask(gfp_mask, order, zonelist, NULL);
+ }
+ 
+-static inline struct page *
+-__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+-		struct zonelist *zonelist, nodemask_t *nodemask)
+-{
+-	return __alloc_pages_internal(gfp_mask, order, zonelist, nodemask);
+-}
+-
+-
+ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
+ 						unsigned int order)
+ {
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 5c44ed4..0671b3f 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1464,7 +1464,7 @@ try_next_zone:
+  * This is the 'heart' of the zoned buddy allocator.
+  */
+ struct page *
+-__alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
++__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 			struct zonelist *zonelist, nodemask_t *nodemask)
+ {
+ 	const gfp_t wait = gfp_mask & __GFP_WAIT;
+@@ -1670,7 +1670,7 @@ nopage:
+ got_pg:
+ 	return page;
+ }
+-EXPORT_SYMBOL(__alloc_pages_internal);
++EXPORT_SYMBOL(__alloc_pages_nodemask);
+ 
+ /*
+  * Common helper functions.
+-- 
+1.5.6.5
 
