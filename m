@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145AbZCPCbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbZCPCb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756145AbZCPCbG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 22:31:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbZCPC3S
+	id S1756541AbZCPCb3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 22:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbZCPC3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 22:29:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44292 "EHLO hera.kernel.org"
+	Sun, 15 Mar 2009 22:29:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44299 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752729AbZCPC3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 22:29:17 -0400
+	id S1752900AbZCPC3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 22:29:18 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 06/17] block: don't set REQ_NOMERGE unnecessarily
-Date: Mon, 16 Mar 2009 11:28:49 +0900
-Message-Id: <1237170540-19130-7-git-send-email-tj@kernel.org>
+Subject: [PATCH 05/17] block: kill blk_start_queueing()
+Date: Mon, 16 Mar 2009 11:28:48 +0900
+Message-Id: <1237170540-19130-6-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1237170540-19130-1-git-send-email-tj@kernel.org>
 References: <1237170540-19130-1-git-send-email-tj@kernel.org>
@@ -23,54 +23,173 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+Impact: removal of mostly duplicate interface function
 
-RQ_NOMERGE_FLAGS already clears defines which REQ flags aren't
-mergeable.  There is no reason to specify it superflously.  It only
-adds to confusion.  Don't set REQ_NOMERGE for barriers and requests
-with specific queueing directive.  REQ_NOMERGE is now exclusively used
-by the merging code.
+blk_start_queueing() is identical to __blk_run_queue() except that it
+doesn't check for recursion.  None of the current users depends on
+blk_start_queueing() running request_fn directly.  Replace usages of
+blk_start_queueing() with [__]blk_run_queue() and kill it.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- block/blk-core.c |    5 +----
- block/blk-exec.c |    1 -
- 2 files changed, 1 insertions(+), 5 deletions(-)
+ block/as-iosched.c     |    6 +-----
+ block/blk-core.c       |   28 ++--------------------------
+ block/cfq-iosched.c    |   10 +++-------
+ block/elevator.c       |    7 +++----
+ include/linux/blkdev.h |    1 -
+ 5 files changed, 9 insertions(+), 43 deletions(-)
 
+diff --git a/block/as-iosched.c b/block/as-iosched.c
+index 631f6f4..da8e272 100644
+--- a/block/as-iosched.c
++++ b/block/as-iosched.c
+@@ -1315,12 +1315,8 @@ static void as_merged_requests(struct request_queue *q, struct request *req,
+ static void as_work_handler(struct work_struct *work)
+ {
+ 	struct as_data *ad = container_of(work, struct as_data, antic_work);
+-	struct request_queue *q = ad->q;
+-	unsigned long flags;
+ 
+-	spin_lock_irqsave(q->queue_lock, flags);
+-	blk_start_queueing(q);
+-	spin_unlock_irqrestore(q->queue_lock, flags);
++	blk_run_queue(ad->q);
+ }
+ 
+ static int as_may_queue(struct request_queue *q, int rw)
 diff --git a/block/blk-core.c b/block/blk-core.c
-index 7c2d836..d7b2cc9 100644
+index 95dc76f..7c2d836 100644
 --- a/block/blk-core.c
 +++ b/block/blk-core.c
-@@ -1077,16 +1077,13 @@ void init_request_from_bio(struct request *req, struct bio *bio)
- 	if (bio_failfast_driver(bio))
- 		req->cmd_flags |= REQ_FAILFAST_DRIVER;
+@@ -433,9 +433,7 @@ EXPORT_SYMBOL(__blk_run_queue);
+  *
+  * Description:
+  *    Invoke request handling on this queue, if it has pending work to do.
+- *    May be used to restart queueing when a request has completed. Also
+- *    See @blk_start_queueing.
+- *
++ *    May be used to restart queueing when a request has completed.
+  */
+ void blk_run_queue(struct request_queue *q)
+ {
+@@ -893,28 +891,6 @@ struct request *blk_get_request(struct request_queue *q, int rw, gfp_t gfp_mask)
+ EXPORT_SYMBOL(blk_get_request);
  
--	/*
--	 * REQ_BARRIER implies no merging, but lets make it explicit
--	 */
- 	if (unlikely(bio_discard(bio))) {
- 		req->cmd_flags |= REQ_DISCARD;
- 		if (bio_barrier(bio))
- 			req->cmd_flags |= REQ_SOFTBARRIER;
- 		req->q->prepare_discard_fn(req->q, req);
- 	} else if (unlikely(bio_barrier(bio)))
--		req->cmd_flags |= (REQ_HARDBARRIER | REQ_NOMERGE);
-+		req->cmd_flags |= REQ_HARDBARRIER;
+ /**
+- * blk_start_queueing - initiate dispatch of requests to device
+- * @q:		request queue to kick into gear
+- *
+- * This is basically a helper to remove the need to know whether a queue
+- * is plugged or not if someone just wants to initiate dispatch of requests
+- * for this queue. Should be used to start queueing on a device outside
+- * of ->request_fn() context. Also see @blk_run_queue.
+- *
+- * The queue lock must be held with interrupts disabled.
+- */
+-void blk_start_queueing(struct request_queue *q)
+-{
+-	if (!blk_queue_plugged(q)) {
+-		if (unlikely(blk_queue_stopped(q)))
+-			return;
+-		q->request_fn(q);
+-	} else
+-		__generic_unplug_device(q);
+-}
+-EXPORT_SYMBOL(blk_start_queueing);
+-
+-/**
+  * blk_requeue_request - put a request back on queue
+  * @q:		request queue where request should be inserted
+  * @rq:		request to be inserted
+@@ -982,7 +958,7 @@ void blk_insert_request(struct request_queue *q, struct request *rq,
  
- 	if (bio_sync(bio))
- 		req->cmd_flags |= REQ_RW_SYNC;
-diff --git a/block/blk-exec.c b/block/blk-exec.c
-index 6af716d..49557e9 100644
---- a/block/blk-exec.c
-+++ b/block/blk-exec.c
-@@ -51,7 +51,6 @@ void blk_execute_rq_nowait(struct request_queue *q, struct gendisk *bd_disk,
- 	int where = at_head ? ELEVATOR_INSERT_FRONT : ELEVATOR_INSERT_BACK;
+ 	drive_stat_acct(rq, 1);
+ 	__elv_add_request(q, rq, where, 0);
+-	blk_start_queueing(q);
++	__blk_run_queue(q);
+ 	spin_unlock_irqrestore(q->queue_lock, flags);
+ }
+ EXPORT_SYMBOL(blk_insert_request);
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 664ebfd..8190db8 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1900,7 +1900,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 		if (cfq_cfqq_wait_request(cfqq)) {
+ 			cfq_mark_cfqq_must_dispatch(cfqq);
+ 			del_timer(&cfqd->idle_slice_timer);
+-			blk_start_queueing(cfqd->queue);
++			__blk_run_queue(cfqd->queue);
+ 		}
+ 	} else if (cfq_should_preempt(cfqd, cfqq, rq)) {
+ 		/*
+@@ -1911,7 +1911,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 		 */
+ 		cfq_preempt_queue(cfqd, cfqq);
+ 		cfq_mark_cfqq_must_dispatch(cfqq);
+-		blk_start_queueing(cfqd->queue);
++		__blk_run_queue(cfqd->queue);
+ 	}
+ }
  
- 	rq->rq_disk = bd_disk;
--	rq->cmd_flags |= REQ_NOMERGE;
- 	rq->end_io = done;
- 	WARN_ON(irqs_disabled());
- 	spin_lock_irq(q->queue_lock);
+@@ -2143,12 +2143,8 @@ static void cfq_kick_queue(struct work_struct *work)
+ {
+ 	struct cfq_data *cfqd =
+ 		container_of(work, struct cfq_data, unplug_work);
+-	struct request_queue *q = cfqd->queue;
+-	unsigned long flags;
+ 
+-	spin_lock_irqsave(q->queue_lock, flags);
+-	blk_start_queueing(q);
+-	spin_unlock_irqrestore(q->queue_lock, flags);
++	blk_run_queue(cfqd->queue);
+ }
+ 
+ /*
+diff --git a/block/elevator.c b/block/elevator.c
+index 98259ed..fca4436 100644
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -618,8 +618,7 @@ void elv_insert(struct request_queue *q, struct request *rq, int where)
+ 		 *   with anything.  There's no point in delaying queue
+ 		 *   processing.
+ 		 */
+-		blk_remove_plug(q);
+-		blk_start_queueing(q);
++		__blk_run_queue(q);
+ 		break;
+ 
+ 	case ELEVATOR_INSERT_SORT:
+@@ -946,7 +945,7 @@ void elv_completed_request(struct request_queue *q, struct request *rq)
+ 		    blk_ordered_cur_seq(q) == QUEUE_ORDSEQ_DRAIN &&
+ 		    (!next || blk_ordered_req_seq(next) > QUEUE_ORDSEQ_DRAIN)) {
+ 			blk_ordered_complete_seq(q, QUEUE_ORDSEQ_DRAIN, 0);
+-			blk_start_queueing(q);
++			__blk_run_queue(q);
+ 		}
+ 	}
+ }
+@@ -1107,7 +1106,7 @@ static int elevator_switch(struct request_queue *q, struct elevator_type *new_e)
+ 	elv_drain_elevator(q);
+ 
+ 	while (q->rq.elvpriv) {
+-		blk_start_queueing(q);
++		__blk_run_queue(q);
+ 		spin_unlock_irq(q->queue_lock);
+ 		msleep(10);
+ 		spin_lock_irq(q->queue_lock);
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index 465d6ba..4c05bb9 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -775,7 +775,6 @@ extern void blk_sync_queue(struct request_queue *q);
+ extern void __blk_stop_queue(struct request_queue *q);
+ extern void __blk_run_queue(struct request_queue *);
+ extern void blk_run_queue(struct request_queue *);
+-extern void blk_start_queueing(struct request_queue *);
+ extern int blk_rq_map_user(struct request_queue *, struct request *,
+ 			   struct rq_map_data *, void __user *, unsigned long,
+ 			   gfp_t);
 -- 
 1.6.0.2
 
