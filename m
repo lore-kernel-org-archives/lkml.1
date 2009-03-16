@@ -1,65 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZCPDDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516AbZCPDRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553AbZCPDDe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 23:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZCPDD0
+	id S1755516AbZCPDRS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 23:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZCPDQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 23:03:26 -0400
-Received: from ozlabs.org ([203.10.76.45]:38597 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752037AbZCPDDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 23:03:25 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PULL] x86 cpumask work
-Date: Mon, 16 Mar 2009 13:33:16 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mike Travis <travis@sgi.com>
-References: <200903121453.45163.rusty@rustcorp.com.au> <200903151326.34114.rusty@rustcorp.com.au> <20090315060044.GE20949@elte.hu>
-In-Reply-To: <20090315060044.GE20949@elte.hu>
+	Sun, 15 Mar 2009 23:16:59 -0400
+Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:27214
+	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751901AbZCPDQ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 23:16:58 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAIphvUl8qWbQ/2dsb2JhbADQQYN/Bg
+X-IronPort-AV: E=Sophos;i="4.38,370,1233500400"; 
+   d="scan'208";a="325654582"
+From: Ian Kent <raven@themaw.net>
+Subject: [REPOST PATCH] autofs4 - cleanup expire code duplication
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: autofs mailing list <autofs@linux.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Date: Mon, 16 Mar 2009 12:16:53 +0900
+Message-ID: <20090316031653.26866.50267.stgit@zeus.themaw.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903161333.16632.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 15 March 2009 16:30:44 Ingo Molnar wrote:
-> 
-> >  	} else if (check_c1e_idle(c)) {
-> >  		printk(KERN_INFO "using C1E aware idle routine\n");
-> > -		alloc_cpumask_var(&c1e_mask, GFP_KERNEL);
-> > -		cpumask_clear(c1e_mask);
-> > +		/* c1e_mask can only be NULL during boot of first cpu. */
-> > +		if (c1e_mask == NULL) {
-> > +			alloc_cpumask_var(&c1e_mask, GFP_KERNEL);
-> 
-> Sigh, there are two bugs here:
-> 
->    1) what if the GFP_KERNEL allocation fails?
+A significant portion of the autofs_dev_ioctl_expire() and
+autofs4_expire_multi() functions is duplicated code. This patch
+cleans that up.
 
-As the comments says, it can only be NULL during boot of the first CPU.
+Signed-off-by: Ian Kent <raven@themaw.net>
+Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+---
 
-start_kernel -> check_bugs -> identify_boot_cpu -> identify_cpu
-  -> select_idle_routine.
+ fs/autofs4/autofs_i.h  |    2 ++
+ fs/autofs4/dev-ioctl.c |   29 +----------------------------
+ fs/autofs4/expire.c    |   27 +++++++++++++++++----------
+ 3 files changed, 20 insertions(+), 38 deletions(-)
 
-Did you want me to panic if it fails?
+diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
+index a768031..b7ff33c 100644
+--- a/fs/autofs4/autofs_i.h
++++ b/fs/autofs4/autofs_i.h
+@@ -186,6 +186,8 @@ int autofs4_expire_wait(struct dentry *dentry);
+ int autofs4_expire_run(struct super_block *, struct vfsmount *,
+ 			struct autofs_sb_info *,
+ 			struct autofs_packet_expire __user *);
++int autofs4_do_expire_multi(struct super_block *sb, struct vfsmount *mnt,
++			    struct autofs_sb_info *sbi, int when);
+ int autofs4_expire_multi(struct super_block *, struct vfsmount *,
+ 			struct autofs_sb_info *, int __user *);
+ struct dentry *autofs4_expire_direct(struct super_block *sb,
+diff --git a/fs/autofs4/dev-ioctl.c b/fs/autofs4/dev-ioctl.c
+index 025e105..9e5ae8a 100644
+--- a/fs/autofs4/dev-ioctl.c
++++ b/fs/autofs4/dev-ioctl.c
+@@ -525,40 +525,13 @@ static int autofs_dev_ioctl_expire(struct file *fp,
+ 				   struct autofs_sb_info *sbi,
+ 				   struct autofs_dev_ioctl *param)
+ {
+-	struct dentry *dentry;
+ 	struct vfsmount *mnt;
+-	int err = -EAGAIN;
+ 	int how;
+ 
+ 	how = param->expire.how;
+ 	mnt = fp->f_path.mnt;
+ 
+-	if (autofs_type_trigger(sbi->type))
+-		dentry = autofs4_expire_direct(sbi->sb, mnt, sbi, how);
+-	else
+-		dentry = autofs4_expire_indirect(sbi->sb, mnt, sbi, how);
+-
+-	if (dentry) {
+-		struct autofs_info *ino = autofs4_dentry_ino(dentry);
+-
+-		/*
+-		 * This is synchronous because it makes the daemon a
+-		 * little easier
+-		*/
+-		err = autofs4_wait(sbi, dentry, NFY_EXPIRE);
+-
+-		spin_lock(&sbi->fs_lock);
+-		if (ino->flags & AUTOFS_INF_MOUNTPOINT) {
+-			ino->flags &= ~AUTOFS_INF_MOUNTPOINT;
+-			sbi->sb->s_root->d_mounted++;
+-		}
+-		ino->flags &= ~AUTOFS_INF_EXPIRING;
+-		complete_all(&ino->expire_complete);
+-		spin_unlock(&sbi->fs_lock);
+-		dput(dentry);
+-	}
+-
+-	return err;
++	return autofs4_do_expire_multi(sbi->sb, mnt, sbi, how);
+ }
+ 
+ /* Check if autofs mount point is in use */
+diff --git a/fs/autofs4/expire.c b/fs/autofs4/expire.c
+index e3bd507..75f7dda 100644
+--- a/fs/autofs4/expire.c
++++ b/fs/autofs4/expire.c
+@@ -478,22 +478,16 @@ int autofs4_expire_run(struct super_block *sb,
+ 	return ret;
+ }
+ 
+-/* Call repeatedly until it returns -EAGAIN, meaning there's nothing
+-   more to be done */
+-int autofs4_expire_multi(struct super_block *sb, struct vfsmount *mnt,
+-			struct autofs_sb_info *sbi, int __user *arg)
++int autofs4_do_expire_multi(struct super_block *sb, struct vfsmount *mnt,
++			    struct autofs_sb_info *sbi, int when)
+ {
+ 	struct dentry *dentry;
+ 	int ret = -EAGAIN;
+-	int do_now = 0;
+-
+-	if (arg && get_user(do_now, arg))
+-		return -EFAULT;
+ 
+ 	if (autofs_type_trigger(sbi->type))
+-		dentry = autofs4_expire_direct(sb, mnt, sbi, do_now);
++		dentry = autofs4_expire_direct(sb, mnt, sbi, when);
+ 	else
+-		dentry = autofs4_expire_indirect(sb, mnt, sbi, do_now);
++		dentry = autofs4_expire_indirect(sb, mnt, sbi, when);
+ 
+ 	if (dentry) {
+ 		struct autofs_info *ino = autofs4_dentry_ino(dentry);
+@@ -516,3 +510,16 @@ int autofs4_expire_multi(struct super_block *sb, struct vfsmount *mnt,
+ 	return ret;
+ }
+ 
++/* Call repeatedly until it returns -EAGAIN, meaning there's nothing
++   more to be done */
++int autofs4_expire_multi(struct super_block *sb, struct vfsmount *mnt,
++			struct autofs_sb_info *sbi, int __user *arg)
++{
++	int do_now = 0;
++
++	if (arg && get_user(do_now, arg))
++		return -EFAULT;
++
++	return autofs4_do_expire_multi(sb, mnt, sbi, do_now);
++}
++
 
->    2) this code is called with interrupts disabled, so a 
->       GFP_KERNEL allocation can be lethal.
-
-I don't see that in my analysis of the code.
-
-> c1e_mask should stay a static cpumask...
-> 
-> Why do we convert static, standalone masks to cpumask_var?
-
-Because we can't undefine struct cpumask while there are any left.  If we
-really want to we can make it a bitmap, but that's not a good thing to
-encourage.
-
-Hope that clarifies,
-Rusty.
