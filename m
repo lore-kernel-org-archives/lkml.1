@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758773AbZCPRzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760913AbZCPRys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758773AbZCPRzM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 13:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757891AbZCPRve
+	id S1760913AbZCPRys (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 13:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757834AbZCPRvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:51:34 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:51192 "EHLO gir.skynet.ie"
+	Mon, 16 Mar 2009 13:51:33 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51205 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757363AbZCPRvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 13:51:31 -0400
+	id S1757211AbZCPRva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 13:51:30 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -20,9 +20,9 @@ Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
        Lin Ming <ming.m.lin@intel.com>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 12/27] Remove a branch by assuming __GFP_HIGH == ALLOC_HIGH
-Date: Mon, 16 Mar 2009 17:53:26 +0000
-Message-Id: <1237226020-14057-13-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 10/27] Calculate the alloc_flags for allocation only once
+Date: Mon, 16 Mar 2009 17:53:24 +0000
+Message-Id: <1237226020-14057-11-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1237226020-14057-1-git-send-email-mel@csn.ul.ie>
 References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie>
@@ -30,30 +30,156 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allocations that specify __GFP_HIGH get the ALLOC_HIGH flag. If these
-flags are equal to each other, we can eliminate a branch.
+Factor out the mapping between GFP and alloc_flags only once. Once factored
+out, it only needs to be calculated once but some care must be taken.
 
-[akpm@linux-foundation.org: Suggested the hack]
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+[neilb@suse.de says]
+As the test:
+
+-       if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+-                       && !in_interrupt()) {
+-               if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+
+has been replaced with a slightly weaker one:
+
++       if (alloc_flags & ALLOC_NO_WATERMARKS) {
+
+we need to ensure we don't recurse when PF_MEMALLOC is set.
+
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- mm/page_alloc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ mm/page_alloc.c |   88 +++++++++++++++++++++++++++++++-----------------------
+ 1 files changed, 50 insertions(+), 38 deletions(-)
 
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index ad26052..1e8b4b6 100644
+index 8771de3..0558eb4 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -1640,8 +1640,8 @@ gfp_to_alloc_flags(gfp_t gfp_mask)
- 	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
- 	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
+@@ -1593,16 +1593,6 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
+ 	return page;
+ }
+ 
+-static inline int
+-is_allocation_high_priority(struct task_struct *p, gfp_t gfp_mask)
+-{
+-	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+-			&& !in_interrupt())
+-		if (!(gfp_mask & __GFP_NOMEMALLOC))
+-			return 1;
+-	return 0;
+-}
+-
+ /*
+  * This is called in the allocator slow-path if the allocation request is of
+  * sufficient urgency to ignore watermarks and take other desperate measures
+@@ -1638,6 +1628,42 @@ void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
+ 		wakeup_kswapd(zone, order);
+ }
+ 
++static inline int
++gfp_to_alloc_flags(gfp_t gfp_mask)
++{
++	struct task_struct *p = current;
++	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
++	const gfp_t wait = gfp_mask & __GFP_WAIT;
++
++	/*
++	 * The caller may dip into page reserves a bit more if the caller
++	 * cannot run direct reclaim, or if the caller has realtime scheduling
++	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
++	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
++	 */
++	if (gfp_mask & __GFP_HIGH)
++		alloc_flags |= ALLOC_HIGH;
++
++	if (!wait) {
++		alloc_flags |= ALLOC_HARDER;
++		/*
++		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
++		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
++		 */
++		alloc_flags &= ~ALLOC_CPUSET;
++	} else if (unlikely(rt_task(p)) && !in_interrupt())
++		alloc_flags |= ALLOC_HARDER;
++
++	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
++		if (!in_interrupt() &&
++		    ((p->flags & PF_MEMALLOC) ||
++		     unlikely(test_thread_flag(TIF_MEMDIE))))
++			alloc_flags |= ALLOC_NO_WATERMARKS;
++	}
++
++	return alloc_flags;
++}
++
+ static inline struct page *
+ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+ 	struct zonelist *zonelist, enum zone_type high_zoneidx,
+@@ -1668,48 +1694,34 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+ 	 * OK, we're below the kswapd watermark and have kicked background
+ 	 * reclaim. Now things get more complex, so set up alloc_flags according
+ 	 * to how we want to proceed.
+-	 *
+-	 * The caller may dip into page reserves a bit more if the caller
+-	 * cannot run direct reclaim, or if the caller has realtime scheduling
+-	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
+-	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
  	 */
+-	alloc_flags = ALLOC_WMARK_MIN;
+-	if ((unlikely(rt_task(p)) && !in_interrupt()) || !wait)
+-		alloc_flags |= ALLOC_HARDER;
 -	if (gfp_mask & __GFP_HIGH)
 -		alloc_flags |= ALLOC_HIGH;
-+	VM_BUG_ON(__GFP_HIGH != ALLOC_HIGH);
-+	alloc_flags |= (gfp_mask & __GFP_HIGH);
+-	if (wait)
+-		alloc_flags |= ALLOC_CPUSET;
++	alloc_flags = gfp_to_alloc_flags(gfp_mask);
  
- 	if (!wait) {
- 		alloc_flags |= ALLOC_HARDER;
+ restart:
+-	/*
+-	 * Go through the zonelist again. Let __GFP_HIGH and allocations
+-	 * coming from realtime tasks go deeper into reserves.
+-	 *
+-	 * This is the last chance, in general, before the goto nopage.
+-	 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
+-	 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+-	 */
++	/* This is the last chance, in general, before the goto nopage. */
+ 	page = get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
+-						high_zoneidx, alloc_flags,
+-						preferred_zone,
+-						migratetype);
++			high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
++			preferred_zone, migratetype);
+ 	if (page)
+ 		goto got_pg;
+ 
+ 	/* Allocate without watermarks if the context allows */
+-	if (is_allocation_high_priority(p, gfp_mask))
++	if (alloc_flags & ALLOC_NO_WATERMARKS) {
+ 		page = __alloc_pages_high_priority(gfp_mask, order,
+-			zonelist, high_zoneidx, nodemask, preferred_zone,
+-			migratetype);
+-	if (page)
+-		goto got_pg;
++				zonelist, high_zoneidx, nodemask,
++				preferred_zone, migratetype);
++		if (page)
++			goto got_pg;
++	}
+ 
+ 	/* Atomic allocations - we can't balance anything */
+ 	if (!wait)
+ 		goto nopage;
+ 
++	/* Avoid recursion of direct reclaim */
++	if (p->flags & PF_MEMALLOC)
++		goto nopage;
++
+ 	/* Try direct reclaim and then allocating */
+ 	page = __alloc_pages_direct_reclaim(gfp_mask, order,
+ 					zonelist, high_zoneidx,
 -- 
 1.5.6.5
 
