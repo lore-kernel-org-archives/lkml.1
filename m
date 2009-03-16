@@ -1,198 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761991AbZCPWSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762148AbZCPWTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761991AbZCPWSz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 18:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761868AbZCPWSg
+	id S1762148AbZCPWTd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 18:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760023AbZCPWTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 18:18:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52783 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761859AbZCPWSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 18:18:34 -0400
-Date: Mon, 16 Mar 2009 18:18:00 -0400
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       utrace-devel@redhat.com
-Subject: Re: [RFC][PATCH 1/2] tracing/ftrace: syscall tracing infrastructure
-Message-ID: <20090316221800.GE12974@redhat.com>
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-2-git-send-email-fweisbec@gmail.com> <49BEAA5A.4030708@redhat.com> <20090316201526.GE8393@nowhere> <49BEB8C4.2010606@redhat.com> <20090316214526.GA15119@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090316214526.GA15119@Krystal>
-User-Agent: Mutt/1.4.1i
+	Mon, 16 Mar 2009 18:19:22 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:58605 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753308AbZCPWTV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 18:19:21 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=oNE7kGNAK15Idtdx9Bmzjo3ZyjkOkT0u6xm7g1cixJyZs+LKUDPqq4V5M8fR5ed/d
+	mJOmmsOwR6H/0P2tX7XzQ==
+Date: Mon, 16 Mar 2009 15:17:10 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm v2] cpusets: add memory_slab_hardwall flag
+In-Reply-To: <alpine.DEB.1.10.0903161239450.17730@qirst.com>
+Message-ID: <alpine.DEB.2.00.0903161512120.26565@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903091920100.7539@chino.kir.corp.google.com> <alpine.DEB.1.10.0903101651480.20363@qirst.com> <alpine.DEB.2.00.0903101416160.4495@chino.kir.corp.google.com> <alpine.DEB.1.10.0903121145510.27660@qirst.com>
+ <alpine.DEB.2.00.0903121137320.1514@chino.kir.corp.google.com> <alpine.DEB.1.10.0903121510380.21607@qirst.com> <alpine.DEB.2.00.0903121224430.5306@chino.kir.corp.google.com> <alpine.DEB.1.10.0903131630530.1741@qirst.com> <alpine.DEB.2.00.0903131620200.1881@chino.kir.corp.google.com>
+ <alpine.DEB.1.10.0903161239450.17730@qirst.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+On Mon, 16 Mar 2009, Christoph Lameter wrote:
 
+> If the nodes are exclusive to a load then the cpus attached to those nodes
+> are also exclusive?
 
-On Mon, Mar 16, 2009 at 05:45:26PM -0400, Mathieu Desnoyers wrote:
+No, they are not exclusive.
 
-> [...]
-> > As far as I know, utrace supports multiple trace-engines on a process.
-> > Since ptrace is just an engine of utrace, you can add another engine on utrace.
-> > 
-> > utrace-+-ptrace_engine---owner_process
-> >        |
-> >        +-systemtap_module
-> >        |
-> >        +-ftrace_plugin
+Here is my example (for the third time) if, for example, mems are grouped 
+by the cpus for which they have affinity:
 
-Right.  In this way, utrace is simply a multiplexing intermediary.
+/dev/cpuset
+	--> cpuset_A (cpus 0-1, mems 0-3)
+	--> cpuset_B (cpus 2-3, mems 4-7)
+	--> cpuset_C (cpus 4-5, mems 8-11)
+	--> ...
 
+Within that, we isolate mems for specific jobs:
 
-> > Here, Frank had posted an example of utrace->ftrace engine.
-> > http://lkml.org/lkml/2009/1/27/294
-> > 
-> > And here is the latest his patch(which seems to support syscall tracing...)
-> > http://git.kernel.org/?p=linux/kernel/git/frob/linux-2.6-utrace.git;a=blob;f=kernel/trace/trace_process.c;h=619815f6c2543d0d82824139773deb4ca460a280;hb=ab20efa8d8b5ded96e8f8c3663dda3b4cb532124
-> > 
+/dev/cpuset
+	--> cpuset_A (cpus 0-1, mems 0-3)
+		--> job_1 (mem 0)
+		--> job_2 (mem 1-2)
+		--> job_3 (mem 3)
+	--> ...
+
+> If so then there is no problem since the percpu queues
+> are only in use for a specific load with a consistent restriction on
+> cpusets and a consistent memory policy. Thus there is no need for
+> memory_slab_hardwall.
 > 
-> Reminder : we are looking at system-wide tracing here. Here are some
-> comments about the current utrace implementation.
-> 
-> Looking at include/linux/utrace.h from the tree
-> 
-> 17  * A tracing engine starts by calling utrace_attach_task() or
-> 18  * utrace_attach_pid() on the chosen thread, passing in a set of hooks
-> 19  * (&struct utrace_engine_ops), and some associated data.  This produces a
-> 20  * &struct utrace_engine, which is the handle used for all other
-> 21  * operations.  An attached engine has its ops vector, its data, and an
-> 22  * event mask controlled by utrace_set_events().
-> 
-> So if the system has, say 3000 threads, then we have 3000 struct
-> utrace_engine created ? I wonder what effet this could have one
-> cachelines if this is used to trace hot paths like system call
-> entry/exit. Have you benchmarked this kind of scenario under tbench ?
 
-It has not been a problem, since utrace_engines are designed to be
-lightweight.  Starting or stopping a systemtap script of the form
+All of those jobs may have different mempolicy requirements.  
+Specifically, some cpusets may require slab hardwall behavior while 
+others do not for true memory isolation or NUMA optimizations.
 
-    probe process.syscall {}
-
-appears to have no noticable impact on a tbench suite.
-
-
-> 24  * For each event bit that is set, that engine will get the
-> 25  * appropriate ops->report_*() callback when the event occurs.  The
-> 26  * &struct utrace_engine_ops need not provide callbacks for an event
-> 27  * unless the engine sets one of the associated event bits.
-> 
-> Looking at utrace_set_events(), we seem to be limited to 32 events on a
-> 32-bits architectures because it uses a bitmask ? Isn't it a bit small?
-
-There are only a few types of thread events that involve different
-classes of treatment, or different degrees of freedom in terms of
-interference with the uninstrumented fast path of the threads.
-
-For example, it does not make sense to have different flag bits for
-different system calls, since choosing to trace *any* system call
-involves taking the thread off of the fast path with the TIF_ flag.
-Once it's off the fast path, it doesn't matter whether the utrace core
-or some client performs syscall discrimination, so it is left to the
-client.
-
-
-> 682 /**
-> 683  * utrace_set_events_pid - choose which event reports a tracing engine gets
-> 684  * @pid:                thread to affect
-> 685  * @engine:             attached engine to affect
-> 686  * @eventmask:          new event mask
-> 687  *
-> 688  * This is the same as utrace_set_events(), but takes a &struct pid
-> 689  * pointer rather than a &struct task_struct pointer.  The caller must
-> 690  * hold a ref on @pid, but does not need to worry about the task
-> 691  * staying valid.  If it's been reaped so that @pid points nowhere,
-> 692  * then this call returns -%ESRCH.
-> 
-> 
-> Comments like "but does not need to worry about the task staying valid"
-> does not make me feel safe and comfortable at all, could you explain
-> how you can assume that derefencing an "invalid" pointer will return
-> NULL ?
-
-(We're doing a final round of "internal" (pre-LKML) reviews of the
-utrace implementation right now on utrace-devel@redhat.com, where such
-comments get fastest attention from the experts.)
-
-For this particular issue, the utrace documentation file explains the
-liveness rules for the various pointers that can be fed to or received
-from utrace functions.  This is not about "feeling" safe, it's about
-what the mechanism is deliberately designed to permit.
-
-
-> About the utrace_attach_task() :
-> 
-> 244         if (unlikely(target->flags & PF_KTHREAD))
-> 245                 /*
-> 246                  * Silly kernel, utrace is for users!
-> 247                  */
-> 248                 return ERR_PTR(-EPERM);
-> 
-> So we cannot trace kernel threads ?
-
-I'm not quite sure about all the reasons for this, but I believe that
-kernel threads don't tend to engage in job control / signal /
-system-call activities the same way as normal user threads do.
-
-
-> 118 /*
-> 119  * Called without locks, when we might be the first utrace engine to attach.
-> 120  * If this is a newborn thread and we are not the creator, we have to wait
-> 121  * for it.  The creator gets the first chance to attach.  The PF_STARTING
-> 122  * flag is cleared after its report_clone hook has had a chance to run.
-> 123  */
-> 124 static inline int utrace_attach_delay(struct task_struct *target)
-> 125 {
-> 126         if ((target->flags & PF_STARTING) && target->real_parent != current)
-> 127                 do {
-> 128                         schedule_timeout_interruptible(1);
-> 129                         if (signal_pending(current))
-> 130                                 return -ERESTARTNOINTR;
-> 131                 } while (target->flags & PF_STARTING);
-> 132
-> 133         return 0;
-> 134 }
-> 
-> Why do we absolutely have to poll until the thread has started ?
-
-(I don't know off the top of my head - Roland?)
-
-
-> utrace_add_engine()
->   set_notify_resume(target);
-> 
-> ok, so this is where the TIF_NOTIFY_RESUME thread flag is set. I notice
-> that it is set asynchronously with the execution of the target thread
-> (as I do with my TIF_KERNEL_TRACE thread flag).
-> 
-> However, on x86_64, _TIF_DO_NOTIFY_MASK is only tested in 
-> entry_64.S
-> 
-> int_signal:
-> and
-> retint_signal:
-> 
-> code paths. However, if there is no syscall tracing to do upon syscall
-> entry, the thread flags are not re-read at syscall exit and you will
-> miss the syscall exit returning from your target thread if this thread
-> was blocked while you set its TIF_NOTIFY_RESUME. Or is it handled in
-> some subtle way I did not figure out ? BTW re-reading the TIF flags from
-> the thread_info at syscall exit on the fast path is out of question
-> because it considerably degrades the kernel performances. entry_*.S is
-> a very, very critical path.
-
-(I don't know off the top of my head - Roland?)
-
-
-- FChE
+In other words, there is _no_ way with slub to isolate slab allocations 
+for job_1 from job_2, job_3, etc.  That is what memory_slab_hardwall 
+intends to address.
