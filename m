@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757637AbZCPHxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbZCPHyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757637AbZCPHxl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 03:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbZCPHxa
+	id S1758079AbZCPHyb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 03:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZCPHyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 03:53:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44131 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752604AbZCPHx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 03:53:29 -0400
-Message-ID: <49BE0570.6000907@kernel.org>
-Date: Mon, 16 Mar 2009 16:53:20 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] block: cleanup patches
-References: <1236920578-2179-1-git-send-email-tj@kernel.org> <49BB0FB7.2070109@kernel.org> <20090315164526.GD27476@kernel.dk> <49BDA842.1090208@kernel.org> <20090316072211.GI27476@kernel.dk>
-In-Reply-To: <20090316072211.GI27476@kernel.dk>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 16 Mar 2009 03:54:21 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:19833 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752331AbZCPHyU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 03:54:20 -0400
+X-Trace: 164439132/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.47.161/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 80.41.47.161
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.3 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FALSivUlQKS+h/2dsb2JhbACBTtBtg38GYQ
+X-IronPort-AV: E=Sophos;i="4.38,372,1233532800"; 
+   d="scan'208";a="164439132"
+Subject: Re: [PATCH] snd: aica - fix annoying compiler warning
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Alsa-devel <alsa-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-sh <linux-sh@vger.kernel.org>
+In-Reply-To: <s5htz5urnae.wl%tiwai@suse.de>
+References: <1237154740.6636.4.camel@localhost.localdomain>
+	 <s5htz5urnae.wl%tiwai@suse.de>
+Content-Type: text/plain
+Date: Mon, 16 Mar 2009 07:54:09 +0000
+Message-Id: <1237190049.6513.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 16 Mar 2009 07:53:24 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Mon, Mar 16 2009, Tejun Heo wrote:
->> Jens Axboe wrote:
->>> On Sat, Mar 14 2009, Tejun Heo wrote:
->>>> Tejun Heo wrote:
->>>>> Hello,
->>>>>
->>>>> This patchset is available in the following git tree.
->>>>>
->>>>>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-cleanup
->>>>>
->>>>> This patchset contains the following 14 cleanup patches.
->>>> Jens, once you're okay with the rest of the changes, I'll remove IDE
->>>> related stuff and repost the patchset.
->>> I only gave it a quick glance, looks mostly OK. Though I don't like
->>> putting elv_ prefixed stuff in blk-core. I agree it belongs there
->>> though, it's really block layer functionality and not io scheduler
->>> interfacing. So rename it blk_ instead and put compatability names in
->>> the header file instead.
->> Yeap, that exactly is what's planned (the peek/fetch patches :-).
+On Mon, 2009-03-16 at 07:31 +0100, Takashi Iwai wrote:
+> At Sun, 15 Mar 2009 22:05:40 +0000,
+> Adrian McMenamin wrote:
+> > 
+> > Cast pointer to data member of struct firmware as a void to end an
+> > annoying compiler warning.
+> > 
+> > fix annoying compiler warning
+> > 
+> > Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+> > ---
+> > 
+> > diff --git a/sound/sh/aica.c b/sound/sh/aica.c
+> > index 7c920f3..822b119 100644
+> > --- a/sound/sh/aica.c
+> > +++ b/sound/sh/aica.c
+> > @@ -567,7 +567,7 @@ static int load_aica_firmware(void)
+> >  		return err;
+> >  	/* write firware into memory */
+> >  	spu_disable();
+> > -	spu_memload(0, fw_entry->data, fw_entry->size);
+> > +	spu_memload(0, (void *)fw_entry->data, fw_entry->size);
 > 
-> I figured that is where it's going :-)
-> How far along with that are you? We are getting really close to the
-> merge window, so it basically has to be ready _now_ to hit 2.6.30.
+> IMO, it's better to fix spu_memload() to take const pointer instead of 
+> cast.
+> 
 
-The peek/fetch patchset is almost ready.  They just need to be
-refreshed for for-2.6.30.  I'm currently trying to clean up rq->data,
-->buffer and data length handling and was thinking about putting
-peek/fetch patchset on top of those, which I don't think will be ready
-soon enough for 2.6.30 merge window.  Given the nature of these
-patches, I think we can wait for 31 window?
+If that's what you want I can do that but it adds to kernel bloat by
+having two functions essentially do the same thing.
 
-Thanks.
-
--- 
-tejun
