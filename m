@@ -1,39 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbZCPK73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbZCPLBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759412AbZCPK73 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 06:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbZCPK7U
+	id S1757686AbZCPLBV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 07:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbZCPLBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 06:59:20 -0400
-Received: from mail-ew0-f177.google.com ([209.85.219.177]:33179 "EHLO
-	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752097AbZCPK7T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 06:59:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=OTl+m4cHPHh0AtNGYjO+XfJfqoZoRekrW01B3j4Wh0hmA/nBYmUUl+Th9ZwuD1ASO8
-         l5z4GdApVdkrjafojDy36afuC8ILMqqB6sqLzR97lU23qgroD+fokexXrll9Q4UmhH+P
-         V8Hou7azrFLGGntn35bsPJy5WQeqF/1uXYzBg=
-Message-ID: <49BE3102.6090302@gmail.com>
-Date: Mon, 16 Mar 2009 11:59:14 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
+	Mon, 16 Mar 2009 07:01:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57826 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752634AbZCPLBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 07:01:10 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Point the UNEVICTABLE_LRU config option at the documentation
+To: lee.schermerhorn@hp.com, kosaki.motohiro@jp.fujitsu.com,
+       minchan.kim@gmail.com
+Cc: dhowells@redhat.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Date: Mon, 16 Mar 2009 10:59:45 +0000
+Message-ID: <20090316105945.18131.82359.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Char: isicom, prolong tty reference holding
-References: <1237199665-10675-1-git-send-email-jirislaby@gmail.com> <20090316105026.610a0b9a@lxorguk.ukuu.org.uk> <49BE3052.5080801@gmail.com>
-In-Reply-To: <49BE3052.5080801@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16.3.2009 11:56, Jiri Slaby wrote:
-> Hmm, but the tty_port_tty_set drops the reference, right?
+Point the UNEVICTABLE_LRU config option at the documentation describing the
+option.
 
-I see it. Ignore this.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ mm/Kconfig |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+
+diff --git a/mm/Kconfig b/mm/Kconfig
+index b53427a..57971d2 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -213,6 +213,8 @@ config UNEVICTABLE_LRU
+ 	  will use one page flag and increase the code size a little,
+ 	  say Y unless you know what you are doing.
+ 
++	  See Documentation/vm/unevictable-lru.txt for more information.
++
+ config HAVE_MLOCK
+ 	bool
+ 	default y if MMU=y
+
