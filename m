@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761324AbZCPSJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbZCPSLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761324AbZCPSJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755871AbZCPSJQ
+	id S1760110AbZCPSLp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZCPSLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:09:16 -0400
-Received: from kroah.org ([198.145.64.141]:53672 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754651AbZCPSJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:09:15 -0400
-Date: Mon, 16 Mar 2009 11:05:38 -0700
-From: Greg KH <greg@kroah.com>
-To: "J. R. Okajima" <hooanon05@yahoo.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC Aufs2 #2 21/28] aufs sysfs entries
-Message-ID: <20090316180538.GA7069@kroah.com>
-References: <1237188040-11404-1-git-send-email-hooanon05@yahoo.co.jp> <1237188040-11404-22-git-send-email-hooanon05@yahoo.co.jp>
+	Mon, 16 Mar 2009 14:11:35 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:43573 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752732AbZCPSLf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 14:11:35 -0400
+Date: Mon, 16 Mar 2009 19:11:32 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: System tick rate
+In-Reply-To: <1236934167.5188.195.camel@laptop>
+Message-ID: <alpine.LSU.2.00.0903161911090.21735@fbirervta.pbzchgretzou.qr>
+References: <alpine.LSU.2.00.0903121435190.3835@fbirervta.pbzchgretzou.qr>  <20090312072110.0a325543@infradead.org>  <alpine.LSU.2.00.0903121541410.8068@fbirervta.pbzchgretzou.qr> <1236934167.5188.195.camel@laptop>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237188040-11404-22-git-send-email-hooanon05@yahoo.co.jp>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 04:20:33PM +0900, J. R. Okajima wrote:
-> initial commit
-> sysfs entries, compiled only when CONFIG_SYSFS is enabled
 
-debug stuff should be in debugfs, not sysfs.
-
-Also, any sysfs files that are created, need to be documented in
-Documentation/ABI/.
-
-> +#ifdef CONFIG_AUFS_DEBUG
-> +static ssize_t debug_show(struct kobject *kobj __maybe_unused,
-> +			  struct kobj_attribute *attr __maybe_unused,
-> +			  char *buf)
-> +{
-> +	return sprintf(buf, "%d\n", au_debug_test());
-> +}
-> +
-> +static ssize_t debug_store(struct kobject *kobj __maybe_unused,
-> +			   struct kobj_attribute *attr __maybe_unused,
-> +			   const char *buf, size_t sz)
-> +{
-> +	if (unlikely(!sz || (*buf != '0' && *buf != '1')))
-> +		return -EOPNOTSUPP;
-> +
-> +	if (*buf == '0')
-> +		au_debug(0);
-> +	else if (*buf == '1')
-> +		au_debug(1);
-> +	return sz;
-> +}
-
-This should be a simple module parameter, like almost all drivers have
-it.  That way it shows up in /sys/modules/aufs/ properly, as a boolean
-value.  No need to reinvent the wheel here.
-
-> +/* todo: file size may exceed PAGE_SIZE */
-> +ssize_t sysaufs_si_show(struct kobject *kobj, struct attribute *attr,
-> +			 char *buf)
-
-NO IT CAN NOT!!!!
-
-You are using sysfs wrong if you even think you are getting close to
-PAGE_SIZE.
-
-Please, use debugfs for this.  sysfs is a "one value per file" type
-filesystem.  You should never be using the seqfile interface for a sysfs
-file, that's a sure sign something is wrong in your design.
-
-I think I'll stop reading now :(
-
-thanks,
-
-greg k-h
+On Friday 2009-03-13 09:49, Peter Zijlstra wrote:
+>On Thu, 2009-03-12 at 15:45 +0100, Jan Engelhardt wrote:
+>> On Thursday 2009-03-12 15:21, Arjan van de Ven wrote:
+>> >On Thu, 12 Mar 2009 14:38:19 +0100 (CET) Jan Engelhardt wrote:
+>> >> 
+>> >> is there an "official" way of obtaining the current tick rate when 
+>> >> CONFIG_NO_HZ? 
+>> >
+>> >what does "current tick rate" mean for you in a no-hz situation ?
+>> >is it the HZ value (which is supposed to be invisible from userspace,
+>> >so good luck) or the wakeup count ?
+>> 
+>> Hm, I guess what I want is the number of timer interrupts which
+>> occurred within the observation period that called the scheduler
+>> code. (So that excludes RTC on usual x86en.)
+>
+>There is no tick rate with NO_HZ mode, only a max tick rate, but as
+>Arjan said, not even that is exposed to user-space.
+>
+>I think Dave's Niagra has the crown here, because he ran into some bug
+>in the NO_HZ code some while back because he idled longer than we ever
+>seen before. I think it was in the order of 30 minutes or something
+>without a single wakeup of the CPU.
+>
+Well if it idled that long, it surely did not run any processes, did it?
