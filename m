@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757702AbZCPKgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbZCPKml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757702AbZCPKgK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 06:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757681AbZCPKfq
+	id S1757879AbZCPKml (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 06:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbZCPKmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 06:35:46 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:39200 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757442AbZCPKfp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 06:35:45 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 1/2] Char: isicom, prolong tty reference holding
-Date: Mon, 16 Mar 2009 11:34:24 +0100
-Message-Id: <1237199665-10675-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.2
+	Mon, 16 Mar 2009 06:42:32 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52431 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754757AbZCPKmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 06:42:31 -0400
+Date: Mon, 16 Mar 2009 11:40:54 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 00/35] Cleanup and optimise the page allocator V3
+Message-ID: <20090316104054.GA23046@wotan.suse.de>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1237196790-7268-1-git-send-email-mel@csn.ul.ie>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hold the tty reference a bit longer in isicom_shutdown_port, because
-we use it later in the function, so that it won't disappear in the
-meantime.
+On Mon, Mar 16, 2009 at 09:45:55AM +0000, Mel Gorman wrote:
+> Here is V3 of an attempt to cleanup and optimise the page allocator and should
+> be ready for general testing. The page allocator is now faster (16%
+> reduced time overall for kernbench on one machine) and it has a smaller cache
+> footprint (16.5% less L1 cache misses and 19.5% less L2 cache misses for
+> kernbench on one machine). The text footprint has unfortunately increased,
+> largely due to the introduction of a form of lazy buddy merging mechanism
+> that avoids cache misses by postponing buddy merging until a high-order
+> allocation needs it.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
- drivers/char/isicom.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+You!? You want to do lazy buddy? ;) That's wonderful, but it would
+significantly increase the fragmentation problem, wouldn't it?
+(although pcp lists are conceptually a form of lazy buddy already)
 
-diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
-index 24aa6e8..855f375 100644
---- a/drivers/char/isicom.c
-+++ b/drivers/char/isicom.c
-@@ -897,8 +897,6 @@ static void isicom_shutdown_port(struct isi_port *port)
- 
- 	tty_port_free_xmit_buf(&port->port);
- 	port->port.flags &= ~ASYNC_INITIALIZED;
--	/* 3rd October 2000 : Vinayak P Risbud */
--	tty_port_tty_set(&port->port, NULL);
- 
- 	/*Fix done by Anil .S on 30-04-2001
- 	remote login through isi port has dtr toggle problem
-@@ -925,6 +923,7 @@ static void isicom_shutdown_port(struct isi_port *port)
- 		if (!card->count)
- 			isicom_shutdown_board(card);
- 	}
-+	tty_port_tty_set(&port->port, NULL);
- }
- 
- static void isicom_flush_buffer(struct tty_struct *tty)
--- 
-1.6.2
+No objections from me of course, if it is making significant
+speedups. I assume you mean overall time on kernbench is overall sys
+time?
 
