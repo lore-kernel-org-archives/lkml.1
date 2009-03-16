@@ -1,139 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZCPXLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760099AbZCPXNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbZCPXLs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 19:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbZCPXLi
+	id S1760099AbZCPXNz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 19:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbZCPXNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 19:11:38 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:56896 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758886AbZCPXLg convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 19:11:36 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApQFANx5vklMQW1W/2dsb2JhbACBTtNIg38GYQ
-Date: Mon, 16 Mar 2009 19:11:22 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: ltt-dev@lists.casi.polymtl.ca, danymadden@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] kernel/irq/handle.c fix kstat_irqs_cpu and irq_to_desc
-	symbols
-Message-ID: <20090316231122.GA18113@Krystal>
-References: <20090316182227.GA2444@yoda.jdub.homelinux.org> <20090316194459.GD11878@Krystal> <20090316200115.GA22538@yoda.jdub.homelinux.org> <20090316202500.GA13872@Krystal> <20090316205829.GB22538@yoda.jdub.homelinux.org> <20090316215337.GB15119@Krystal> <20090316220518.GD22538@yoda.jdub.homelinux.org>
+	Mon, 16 Mar 2009 19:13:46 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:53598 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754323AbZCPXNp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 19:13:45 -0400
+Date: Mon, 16 Mar 2009 18:13:40 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Igor Zhbanov <izh1979@gmail.com>, "J. Bruce Fields" <bfields@fieldses.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
+       David Howells <dhowells@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       SELinux <selinux@tycho.nsa.gov>
+Subject: Re: =?utf-8?B?0J7RgtCy0LXRgjogVkZTLCBORlMg?=
+	=?utf-8?Q?security_bug=3F_Shoul?=
+	=?utf-8?Q?d?= CAP_MKNOD and CAP_LINUX_IMMUTABLE be added to
+	CAP_FS_MASK?
+Message-ID: <20090316231340.GC15522@us.ibm.com>
+References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com> <20090311232356.GP13540@fieldses.org> <20090312161047.GA15209@us.ibm.com> <517f3f820903121321sf6d2014q8165b925d5d44db7@mail.gmail.com> <20090313175848.GB27891@fieldses.org> <f44001920903131137j158c5f76y6a71b58ee964df77@mail.gmail.com> <20090313190002.GA16025@us.ibm.com> <1237227705.1035.93.camel@localhost.localdomain> <20090316184926.GA6729@us.ibm.com> <1237237216.1035.195.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20090316220518.GD22538@yoda.jdub.homelinux.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:01:50 up 16 days, 19:28,  1 user,  load average: 0.38, 0.43,
-	0.45
+In-Reply-To: <1237237216.1035.195.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 05:53:37PM -0400, Mathieu Desnoyers wrote:
->* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
->> On Mon, Mar 16, 2009 at 04:25:00PM -0400, Mathieu Desnoyers wrote:
->> >* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
->> >> On Mon, Mar 16, 2009 at 03:44:59PM -0400, Mathieu Desnoyers wrote:
->> >> >* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
->> >> >> Hi All,
->> >> >> 
->> >> >> I was attempting to build a simple ppc64_defconfig using
->> >> >> the latest LTTng tag from git.  When doing a:
->> >> >> 
->> >> >> 	make ppc64_defconfig
->> >> >> 	make
->> >> >> 
->> >> >> I get the error below.
->> >> >> 
->> >> >
->> >> >Hi Josh,
->> >> >
->> >> >Yes, LTTng has been tested with slub, but not for the powerpc64
->> >> >cross-build. Thanks for the report, this is actually a header circular
->> >> >dependency I caused. It should be fixed in LTTng 0.111.
->> >> 
->> >> Bah. Yes, I should have clarified on ppc/ppc64.  Sorry for the confusion
->> >> there.
->> >> 
->> >> >I'll have to update my powerpc64 cross compiler to test it, because I am
->> >> >stucked with a broken gcc 4.1. Please tell me if 0.111 fixes the problem
->> >> >for you or if you encounter other problems.
->> >> 
->> >> Yep, the extern on tb_ticks_per_sec is what I had come up with locally.
->> >> It should work fine, and does indeed get past the error I was seeing.  The
->> >> build now dies with:
->> >> 
->> >> kernel/irq/handle.c:259: error: __ksymtab_irq_to_desc causes a section type conflict
->> >> kernel/irq/handle.c:259: error: __ksymtab_irq_to_desc causes a section type conflict
->> >> make[2]: *** [kernel/irq/handle.o] Error 1
->> >> make[1]: *** [kernel/irq] Error 2
->> >> make: *** [kernel] Error 2
->> >> make: *** Waiting for unfinished jobs....
->> >> 
->> >
->> >Can I get your full .config ?
->> 
->> Sure, attached.  Note, this is just:
->> 
->> make ppc64_defconfig
->> make vmlinux
->> 
->> josh
->
->Can you try moving this code around ?
+Quoting Stephen Smalley (sds@tycho.nsa.gov):
+> On Mon, 2009-03-16 at 13:49 -0500, Serge E. Hallyn wrote:
+> > Quoting Stephen Smalley (sds@tycho.nsa.gov):
+> > > On Fri, 2009-03-13 at 14:00 -0500, Serge E. Hallyn wrote:
+> > > > Quoting Igor Zhbanov (izh1979@gmail.com):
+> > > > > But ordinary users can't create devices. It seems to me that in time
+> > > > > of implementation of capabilities in kernel 2.4, capabilities related
+> > > > > to filesystem was added first. And mark for them contains all above in
+> > > > > header file. And when CAP_MKNOD was added later, author just forget to
+> > > > > update mask.
+> > > > > 
+> > > > > If mask was designed to drop all filesystem related capabilities, then
+> > > > > it must be expanded, because ordinary users cannot create devices etc.
+> > > > 
+> > > > I think you thought Bruce was saying we shouldn't change the set of
+> > > > capabilities, but he was just asking exactly what changes Michael was
+> > > > interested in.
+> > > > 
+> > > > Igor, thanks for finding this.  I never got your original message.  Do
+> > > > you have a patdch to add the two capabilities?  Do you think the
+> > > > other two I mentioned (CAP_SYS_ADMIN and CAP_SETFCAP) need to be
+> > > > added too?
+> > > > 
+> > > > I've added Andrew Morgan, LSM and SELinux mailing lists to get another
+> > > > opinion about adding those two.  In particular, we'd be adding them
+> > > > to the fs_masks becuase CAP_SYS_ADMIN lets you change the selinux
+> > > > label, and CAP_SETFCAP lets you change the file capabilities.
+> > > 
+> > > I'd be inclined against adding CAP_SYS_ADMIN to the mask; note that it
+> > > is only checked for setting SELinux security contexts (or more broadly
+> > > any attributes in the security namespace) when SELinux is disabled.  In
+> > > the SELinux-enabled case, we are checking SELinux-specific permissions
+> > > when setting the SELinux attributes, whether on the client or the
+> > > server.
+> > 
+> > But that's exactly why it seemed like it ought to be in there.  If
+> > SELinux is enabled, then SELinux will continue to perform it's own
+> > checks based on security context and ignoring privileged root.  But
+> > outside of that, since we are in a root-is-privileged mode, should it
+> > not be the case that having fsuid=0 means that you can set extended
+> > attributes in the security namespace?
+> > 
+> > Conversely, if setting fsuid to non-zero, shouldn't all of the
+> > privileged ways of setting file attributes be lost?  Or, will we run
+> > into a problem where software wanted to set its fsuid to non-0 but
+> > still be able to call sethostname(2), for instance?  In which case
+> > we simply cannot put CAP_SYS_ADMIN in CAP_FS_MASK.
+> > 
+> > I guess it comes back down to whether those xattrs are considered a
+> > security attribute or a simple file property.
+> 
+> Well, they are a security attribute, but CAP_SYS_ADMIN was never
+> supposed to cover them.  In fact, none of the upstream security modules
 
-Yep, allows vmlinux and modules to build just fine.  Here's a patch for you ;)
+So do you think it makes sense to have CAP_MAC_ADMIN and CAP_FOWNER
+in CAP_FS_MASK?  In other words are you objecting to CAP_SYS_ADMIN
+because of all of its other implications, or because you disagree
+that labels for security modules should be treated as mere fs data
+here?
 
-Mathieu :
+> uses CAP_SYS_ADMIN to control setting of its own attributes:
+> - SELinux applies a DAC check and its own set of MAC file permission
+> checks,
+> - Smack applies CAP_MAC_ADMIN,
+> - Capabilities applies CAP_SETFCAP.
+> 
+> Checking CAP_SYS_ADMIN was really just a fallback to prevent unchecked
+> setting of attributes in the no-LSM case.  It might make more sense to
+> return EOPNOTSUPP for any attributes unknown to the enabled security
 
-This build problem was exhibited because of the added
-EXPORT_SYMBOL(irq_to_desc) in the LTTng tree, but only on powerpc.
+I suspect that would create a LOT of bug reports.  Would requiring
+CAP_MAC_ADMIN seem reasonable?
 
-Applies on 2.6.29-rc8.
+> module and require you to enable the desired module before setting the
+> attributes these days.
+> http://marc.info/?t=107428809400002&r=1&w=2
+> 
+> I don't think this will make any difference for labeled NFS at present,
+> as the current labeled NFS patches only export the MAC label attribute
+> if the server has the MAC model enabled.  So CAP_SYS_ADMIN won't get
+> checked regardless.
+> 
+> Trusted namespace is another case where CAP_SYS_ADMIN check is applied
+> on file operations.
 
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- include/linux/irqnr.h |    4 ++++
- kernel/irq/handle.c   |    2 +-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+Which seems like all the more reason why CAP_SYS_ADMIN would need to
+be added to the CAP_FS_MASK.  Or do you mean that check should also be
+changed for something else?  (CAP_MAC_ADMIN, or some new CAP_FS_XATTR?)
 
-Index: linux-2.6-lttng/include/linux/irqnr.h
-===================================================================
---- linux-2.6-lttng.orig/include/linux/irqnr.h	2009-02-10 22:53:36.000000000 -0500
-+++ linux-2.6-lttng/include/linux/irqnr.h	2009-03-16 18:40:01.000000000 -0400
-@@ -38,6 +38,10 @@ extern struct irq_desc *irq_to_desc(unsi
- 
- #endif /* CONFIG_GENERIC_HARDIRQS */
- 
-+extern int nr_irqs;
-+struct irq_desc;
-+extern struct irq_desc *irq_to_desc(unsigned int irq);
-+
- #define for_each_irq_nr(irq)                   \
-        for (irq = 0; irq < nr_irqs; irq++)
- 
-Index: linux-2.6-lttng/kernel/irq/handle.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/irq/handle.c	2009-03-16 18:38:51.000000000 -0400
-+++ linux-2.6-lttng/kernel/irq/handle.c	2009-03-16 18:40:01.000000000 -0400
-@@ -473,6 +473,6 @@ unsigned int kstat_irqs_cpu(unsigned int
- 	struct irq_desc *desc = irq_to_desc(irq);
- 	return desc ? desc->kstat_irqs[cpu] : 0;
- }
--#endif
- EXPORT_SYMBOL(kstat_irqs_cpu);
-+#endif
- 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+-serge
