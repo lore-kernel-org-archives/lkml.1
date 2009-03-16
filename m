@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759654AbZCPO0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZCPO30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759654AbZCPO0e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 10:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZCPO00
+	id S1758030AbZCPO30 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 10:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbZCPO3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 10:26:26 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:52621 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752496AbZCPO0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 10:26:25 -0400
-Date: Mon, 16 Mar 2009 23:26:20 +0900 (JST)
-Message-Id: <20090316.232620.95066093.anemo@mba.ocn.ne.jp>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Manuel Lauss <mano@roarinelk.homelinux.net>, Takashi Iwai <tiwai@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] ASoC: Only deregister AC97 dev if it's name was not "AC97"
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 16 Mar 2009 10:29:16 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43447 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754816AbZCPO3Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 10:29:16 -0400
+Date: Mon, 16 Mar 2009 07:29:04 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Jan Beulich" <jbeulich@novell.com>
+Cc: "Jeremy Fitzhardinge" <jeremy.fitzhardinge@citrix.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       "Xen-devel" <xen-devel@lists.xensource.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [Xen-devel] [PATCH 10/24] xen: mask XSAVE from cpuid
+Message-ID: <20090316072904.733e7e43@infradead.org>
+In-Reply-To: <49BE6D50.76E4.0078.0@novell.com>
+References: <1236931920-6861-1-git-send-email-jeremy@goop.org>
+	<1236931920-6861-11-git-send-email-jeremy@goop.org>
+	<49BA3A84.76E4.0078.0@novell.com>
+	<49BA7810.6090807@goop.org>
+	<49BD4CE1.6040100@zytor.com>
+	<49BD6D0E.1010107@goop.org>
+	<20090315154718.00353625@infradead.org>
+	<49BD97C6.2070401@goop.org>
+	<20090315170945.08344b86@infradead.org>
+	<49BE6D50.76E4.0078.0@novell.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The commit 14fa43f53ff3a9c3d8b9662574b7369812a31a97 ("ASoC: Only
-register AC97 bus if it's not done already") added a condition for
-calling of soc_ac97_dev_register() but not added for calling of
-soc_ac97_dev_unregister().  This patch adds same condition for
-soc_ac97_dev_unregister().  Without this fix, kernel crashes when
-unloading an asoc driver.
+On Mon, 16 Mar 2009 14:16:32 +0000
+"Jan Beulich" <jbeulich@novell.com> wrote:
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-I found this problem when I start debugging a new asoc driver.  While
-the driver is in very early stage, it should lack many things and have
-many bugs.  So I'm not sure this is asoc's bug or my driver's bug.
+> >>> Arjan van de Ven <arjan@infradead.org> 16.03.09 01:09 >>>
+> >Well.. pretty much all new instructions need Xen modifications due to
+> >the need to be emulate to deal with traps/vmexits/etc right? 
+> >So I don't quite see many cpuid bits that would NOT involve some Xen
+> >modification or another ;)
+> 
+> No, new (user-mode accessible) instructions represent precisely the
+> kind of extension that do not require hypervisor (or OS) awareness
+> (see SSE2 etc, AES, FMA). 
 
- sound/soc/soc-core.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+so Xen doesn't need to handle a case where the kernel does AES on
+uncached IO memory ?
 
-diff --git a/sound/soc/soc-core.c b/sound/soc/soc-core.c
-index ec3f8bb..fec57a3 100644
---- a/sound/soc/soc-core.c
-+++ b/sound/soc/soc-core.c
-@@ -1435,7 +1435,8 @@ void snd_soc_free_pcms(struct snd_soc_device *socdev)
- #ifdef CONFIG_SND_SOC_AC97_BUS
- 	for (i = 0; i < codec->num_dai; i++) {
- 		codec_dai = &codec->dai[i];
--		if (codec_dai->ac97_control && codec->ac97) {
-+		if (codec_dai->ac97_control && codec->ac97 &&
-+		    strcmp(codec->name, "AC97") != 0) {
- 			soc_ac97_dev_unregister(codec);
- 			goto free_card;
- 		}
+
 -- 
-1.5.6.3
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
