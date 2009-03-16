@@ -1,346 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbZCPNTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759271AbZCPNY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760696AbZCPNTS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 09:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbZCPNTG
+	id S1759271AbZCPNY3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 09:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbZCPNYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 09:19:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57678 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbZCPNTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 09:19:04 -0400
-Subject: Re: [git-pull -tip] x86: cleanup patches
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+	Mon, 16 Mar 2009 09:24:18 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:2904 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751116AbZCPNYQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 09:24:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Uss+RP14VBiKdjih9X9qf9E/+wU627kUdlAe/h2fx6KLmKjcIqU5WfwrktacxDO6Yb
+         qrbm7HpsdAcFGTvGuNRV3+v4XrYaoSvtLW91AD3xhczwfkY0hxpmd/ccJJF1SJCwrwgp
+         NviFtWxhzwpjgWsp8iHjVzaUjnbj8sxwzEo8E=
+MIME-Version: 1.0
+In-Reply-To: <20090315202603.GA9077@elte.hu>
+References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
+	 <b6a2187b0903141958u9dae0fdk1f44b387108b99e4@mail.gmail.com>
+	 <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com>
+	 <1237140665.24621.2.camel@johannes.local>
+	 <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
+	 <1237143683.24621.7.camel@johannes.local>
+	 <20090315202603.GA9077@elte.hu>
+Date: Mon, 16 Mar 2009 21:24:14 +0800
+Message-ID: <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
+Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
+From: Jeff Chua <jeff.chua.linux@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <1237205895.6638.38.camel@localhost.localdomain>
-References: <1237047188.4546.31.camel@ht.satnam>
-	 <20090314170355.GE31930@elte.hu>
-	 <1237205895.6638.38.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 16 Mar 2009 18:48:22 +0530
-Message-Id: <1237209502.15711.2.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Content-Type: multipart/mixed; boundary=00504502ccc3e05c4f04653c5d96
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-16 at 17:48 +0530, Jaswinder Singh Rajput wrote:
->  
-> 
-> Here is the patch for skip_entry, I cannot check this patch on my side,
-> so please check it and let me know the feedbacks:
-> >From ff5a4d728b42af867dc8f6aef43107c7a015a5b4 Mon Sep 17 00:00:00 2001
-> From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Date: Mon, 16 Mar 2009 17:06:49 +0530
-> Subject: [PATCH] x86: mpparse cleanup
-> 
-> Impact: cleanup
-> 
-> Introduced helper function skip_entry and check_irq_src
+--00504502ccc3e05c4f04653c5d96
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-hmm, this one seems much better:
+On Mon, Mar 16, 2009 at 4:26 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> * Johannes Berg <johannes@sipsolutions.net> wrote:
+>> that the commit he quotes doesn't even change the driver he's
+>> working with.
 
-Subject: [PATCH] x86: mpparse cleanup
+Here's what I did, and it's repeatable.
 
-Impact: cleanup
+Take the attached bisect log and replay it, and the last offending
+commit is this ...
+# git log
+commit 71c11fb57b924c160297ccd9e1761db598d00ac2
+Author: Johannes Berg <johannes@sipsolutions.net>
+Date:   Tue Oct 28 18:29:48 2008 +0100
 
-Introduced helper function skip_entry and check_irq_src
+    b43/legacy: remove SSID code
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/mpparse.c |  202 ++++++++++++++++++++-------------------------
- 1 files changed, 88 insertions(+), 114 deletions(-)
+Yes, this is not the real problem, but it's the last commit that cause
+the problem, and I couldn't bisect further, typing the next "git
+bisect bad" and the commit is
 
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 47673e0..9347602 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -7,29 +7,29 @@
-  *      (c) 2008 Alexey Starikovskiy <astarikovskiy@suse.de>
-  */
- 
--#include <linux/mm.h>
--#include <linux/init.h>
--#include <linux/delay.h>
--#include <linux/bootmem.h>
- #include <linux/kernel_stat.h>
- #include <linux/mc146818rtc.h>
-+#include <linux/bootmem.h>
- #include <linux/bitops.h>
--#include <linux/acpi.h>
- #include <linux/module.h>
-+#include <linux/delay.h>
-+#include <linux/acpi.h>
-+#include <linux/init.h>
- #include <linux/smp.h>
-+#include <linux/mm.h>
- 
--#include <asm/mtrr.h>
--#include <asm/mpspec.h>
-+#include <asm/trampoline.h>
-+#include <asm/bios_ebda.h>
- #include <asm/pgalloc.h>
- #include <asm/io_apic.h>
-+#include <asm/mpspec.h>
- #include <asm/proto.h>
--#include <asm/bios_ebda.h>
--#include <asm/e820.h>
--#include <asm/trampoline.h>
- #include <asm/setup.h>
-+#include <asm/apic.h>
-+#include <asm/e820.h>
-+#include <asm/mtrr.h>
- #include <asm/smp.h>
- 
--#include <asm/apic.h>
- /*
-  * Checksum an MP configuration block.
-  */
-@@ -109,9 +109,6 @@ static void __init MP_bus_info(struct mpc_bus *m)
- 	} else
- 		printk(KERN_WARNING "Unknown bustype %s - ignoring\n", str);
- }
--#endif
--
--#ifdef CONFIG_X86_IO_APIC
- 
- static int bad_ioapic(unsigned long address)
- {
-@@ -224,8 +221,12 @@ static void __init MP_intsrc_info(struct mpc_intsrc *m)
- 	if (++mp_irq_entries == MAX_IRQ_SOURCES)
- 		panic("Max # of irq sources exceeded!!\n");
- }
-+#else /* CONFIG_X86_IO_APIC */
-+static inline void __init MP_bus_info(struct mpc_bus *m) {}
-+static inline void __init MP_ioapic_info(struct mpc_ioapic *m) {}
-+static inline void __init MP_intsrc_info(struct mpc_intsrc *m) {}
-+#endif /* CONFIG_X86_IO_APIC */
- 
--#endif
- 
- static void __init MP_lintsrc_info(struct mpc_lintsrc *m)
- {
-@@ -275,6 +276,12 @@ static int __init smp_check_mpc(struct mpc_table *mpc, char *oem, char *str)
- 	return 1;
- }
- 
-+static void skip_entry(unsigned char **ptr, int *count, int size)
-+{
-+	*ptr += size;
-+	*count += size;
-+}
-+
- static int __init smp_read_mpc(struct mpc_table *mpc, unsigned early)
- {
- 	char str[16];
-@@ -310,55 +317,27 @@ static int __init smp_read_mpc(struct mpc_table *mpc, unsigned early)
- 	while (count < mpc->length) {
- 		switch (*mpt) {
- 		case MP_PROCESSOR:
--			{
--				struct mpc_cpu *m = (struct mpc_cpu *)mpt;
--				/* ACPI may have already provided this data */
--				if (!acpi_lapic)
--					MP_processor_info(m);
--				mpt += sizeof(*m);
--				count += sizeof(*m);
--				break;
--			}
-+			/* ACPI may have already provided this data */
-+			if (!acpi_lapic)
-+				MP_processor_info((struct mpc_cpu *)&mpt);
-+			skip_entry(&mpt, &count, sizeof(struct mpc_cpu));
-+			break;
- 		case MP_BUS:
--			{
--				struct mpc_bus *m = (struct mpc_bus *)mpt;
--#ifdef CONFIG_X86_IO_APIC
--				MP_bus_info(m);
--#endif
--				mpt += sizeof(*m);
--				count += sizeof(*m);
--				break;
--			}
-+			MP_bus_info((struct mpc_bus *)&mpt);
-+			skip_entry(&mpt, &count, sizeof(struct mpc_bus));
-+			break;
- 		case MP_IOAPIC:
--			{
--#ifdef CONFIG_X86_IO_APIC
--				struct mpc_ioapic *m = (struct mpc_ioapic *)mpt;
--				MP_ioapic_info(m);
--#endif
--				mpt += sizeof(struct mpc_ioapic);
--				count += sizeof(struct mpc_ioapic);
--				break;
--			}
-+			MP_ioapic_info((struct mpc_ioapic *)&mpt);
-+			skip_entry(&mpt, &count, sizeof(struct mpc_ioapic));
-+			break;
- 		case MP_INTSRC:
--			{
--#ifdef CONFIG_X86_IO_APIC
--				struct mpc_intsrc *m = (struct mpc_intsrc *)mpt;
--
--				MP_intsrc_info(m);
--#endif
--				mpt += sizeof(struct mpc_intsrc);
--				count += sizeof(struct mpc_intsrc);
--				break;
--			}
-+			MP_intsrc_info((struct mpc_intsrc *)&mpt);
-+			skip_entry(&mpt, &count, sizeof(struct mpc_intsrc));
-+			break;
- 		case MP_LINTSRC:
--			{
--				struct mpc_lintsrc *m =
--				    (struct mpc_lintsrc *)mpt;
--				MP_lintsrc_info(m);
--				mpt += sizeof(*m);
--				count += sizeof(*m);
--				break;
--			}
-+			MP_lintsrc_info((struct mpc_lintsrc *)&mpt);
-+			skip_entry(&mpt, &count, sizeof(struct mpc_lintsrc));
-+			break;
- 		default:
- 			/* wrong mptable */
- 			printk(KERN_ERR "Your mptable is wrong, contact your HW vendor!\n");
-@@ -848,7 +827,43 @@ static int  __init get_MP_intsrc_index(struct mpc_intsrc *m)
- #define SPARE_SLOT_NUM 20
- 
- static struct mpc_intsrc __initdata *m_spare[SPARE_SLOT_NUM];
--#endif
-+
-+static int check_irq_src(struct mpc_intsrc *m)
-+{
-+	int nr_m_spare = 0;
-+	int i;
-+
-+	apic_printk(APIC_VERBOSE, "OLD ");
-+	print_MP_intsrc_info(m);
-+
-+	i = get_MP_intsrc_index(m);
-+	if (i > 0) {
-+		assign_to_mpc_intsrc(&mp_irqs[i], m);
-+		apic_printk(APIC_VERBOSE, "NEW ");
-+		print_mp_irq_info(&mp_irqs[i]);
-+		return 0;
-+	}
-+	if (!i) {
-+		/* legacy, do nothing */
-+		return 0;
-+	}
-+
-+	/*
-+	 * not found (-1), or duplicated (-2)
-+	 * are invalid entries,
-+	 * we need to use the slot  later
-+	 */
-+	m_spare[nr_m_spare] = m;
-+	nr_m_spare++;
-+
-+	return nr_m_spare;
-+}
-+#else /* CONFIG_X86_IO_APIC */
-+static inline int check_irq_src(struct mpc_intsrc *m)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_X86_IO_APIC */
- 
- static int  __init replace_intsrc_all(struct mpc_table *mpc,
- 					unsigned long mpc_new_phys,
-@@ -856,9 +871,8 @@ static int  __init replace_intsrc_all(struct mpc_table *mpc,
- {
- #ifdef CONFIG_X86_IO_APIC
- 	int i;
--	int nr_m_spare = 0;
- #endif
--
-+	int nr_m_spare = 0;
- 	int count = sizeof(*mpc);
- 	unsigned char *mpt = ((unsigned char *)mpc) + count;
- 
-@@ -866,61 +880,21 @@ static int  __init replace_intsrc_all(struct mpc_table *mpc,
- 	while (count < mpc->length) {
- 		switch (*mpt) {
- 		case MP_PROCESSOR:
--			{
--				struct mpc_cpu *m = (struct mpc_cpu *)mpt;
--				mpt += sizeof(*m);
--				count += sizeof(*m);
--				break;
--			}
-+			skip_entry(&mpt, &count, sizeof(struct mpc_cpu));
-+			break;
- 		case MP_BUS:
--			{
--				struct mpc_bus *m = (struct mpc_bus *)mpt;
--				mpt += sizeof(*m);
--				count += sizeof(*m);
--				break;
--			}
-+			skip_entry(&mpt, &count, sizeof(struct mpc_bus));
-+			break;
- 		case MP_IOAPIC:
--			{
--				mpt += sizeof(struct mpc_ioapic);
--				count += sizeof(struct mpc_ioapic);
--				break;
--			}
-+			skip_entry(&mpt, &count, sizeof(struct mpc_ioapic));
-+			break;
- 		case MP_INTSRC:
--			{
--#ifdef CONFIG_X86_IO_APIC
--				struct mpc_intsrc *m = (struct mpc_intsrc *)mpt;
--
--				apic_printk(APIC_VERBOSE, "OLD ");
--				print_MP_intsrc_info(m);
--				i = get_MP_intsrc_index(m);
--				if (i > 0) {
--					assign_to_mpc_intsrc(&mp_irqs[i], m);
--					apic_printk(APIC_VERBOSE, "NEW ");
--					print_mp_irq_info(&mp_irqs[i]);
--				} else if (!i) {
--					/* legacy, do nothing */
--				} else if (nr_m_spare < SPARE_SLOT_NUM) {
--					/*
--					 * not found (-1), or duplicated (-2)
--					 * are invalid entries,
--					 * we need to use the slot  later
--					 */
--					m_spare[nr_m_spare] = m;
--					nr_m_spare++;
--				}
--#endif
--				mpt += sizeof(struct mpc_intsrc);
--				count += sizeof(struct mpc_intsrc);
--				break;
--			}
-+			nr_m_spare = check_irq_src((struct mpc_intsrc *)&mpt);
-+			skip_entry(&mpt, &count, sizeof(struct mpc_intsrc));
-+			break;
- 		case MP_LINTSRC:
--			{
--				struct mpc_lintsrc *m =
--				    (struct mpc_lintsrc *)mpt;
--				mpt += sizeof(*m);
--				count += sizeof(*m);
--				break;
--			}
-+			skip_entry(&mpt, &count, sizeof(struct mpc_lintsrc));
-+			break;
- 		default:
- 			/* wrong mptable */
- 			printk(KERN_ERR "Your mptable is wrong, contact your HW vendor!\n");
--- 
-1.6.0.6
+# git bisect bad
+71c11fb57b924c160297ccd9e1761db598d00ac2 is first bad commit
+commit 71c11fb57b924c160297ccd9e1761db598d00ac2
+Author: Johannes Berg <johannes@sipsolutions.net>
+Date:   Tue Oct 28 18:29:48 2008 +0100
+
+    b43/legacy: remove SSID code
+
+
+Johannes, Ok, this is not the commit causing the problem, but anything
+after this commit doesn't associate with my hidden APs. I may not have
+run over every single commits since, but 2.6.29-rc8 is definitely not
+associating at all automatically -- only manually by specifying the
+AP.
+
+This bug is quite hard to trigger, and it doesn't shows easily in
+2.6.28-rc3. May be once every 10 times you tried.
 
 
 
+# git reset --hard 71c11fb57b924c160297ccd9e1761db598d00ac2
+
+I've tried on two different Linksys's AP. Association with WAG354G  is
+better than with WAG200G ... meaning it's harder to get association
+failure on 2.6.28-rc3. 1/10 fail on WAG354G, and 9/10 fails on
+WAG200G.
+
+Here's how I associate with the AP.
+
+# modprobe -r iwlagn
+# modprobe iwlagn
+# iwconfig wlan0 mode Managed
+# ifconfig wlan0 up
+# iwconfig wlan0 essid "myessid"
+# iwconfig wlan0 key restricted "hex key"
+# iwconfig wlan0 ap auto channel auto
+# ... wait for association
+# ping -c 3 <IP of the AP>
+# shutdown the interface
+# ifconfig wlan0 down
+# modprobe -r iwlagn
+
+
+Repeat these and it'll fail to associate. On WAG200G, can't associate
+after 2nd attempt.
+
+
+Next revert these two commits
+
+commit 4607816f608b42a5379aca97ceed08378804c99f
+Author: Johannes Berg <johannes@sipsolutions.net>
+Date:   Tue Oct 28 18:25:43 2008 +0100
+
+    iwlwifi: remove unused essid variable
+
+commit a57a59f247b651e8ed6d3eeb7e2f9d83b83134c9
+Author: Johannes Berg <johannes@sipsolutions.net>
+Date:   Tue Oct 28 18:21:05 2008 +0100
+
+    iwlwifi: remove implicit direct scan
+
+
+With these patches reverted, associating with the APs are always
+successful 10 out of 10 times with the same steps as above.
+
+I've even used the bad modules and when it failed, I can associate
+again with the patched module. Same 2.6.28-rc3 kernel.
+
+
+Here's part of the dmesg
+cfg80211: Using static regulatory domain info
+cfg80211: Regulatory domain: US
+        (start_freq - end_freq @ bandwidth), (max_antenna_gain, max_eirp)
+        (2402000 KHz - 2472000 KHz @ 40000 KHz), (600 mBi, 2700 mBm)
+        (5170000 KHz - 5190000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+        (5190000 KHz - 5210000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+        (5210000 KHz - 5230000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+        (5230000 KHz - 5330000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
+        (5735000 KHz - 5835000 KHz @ 40000 KHz), (600 mBi, 3000 mBm)
+cfg80211: Calling CRDA for country: US
+iwlagn: Intel(R) Wireless WiFi Link AGN driver for Linux, 1.3.27ks
+iwlagn: Copyright(c) 2003-2008 Intel Corporation
+iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+iwlagn 0000:03:00.0: setting latency timer to 64
+iwlagn: Detected Intel Wireless WiFi Link 4965AGN REV=0x4
+iwlagn: Tunable channels: 11 802.11bg, 13 802.11a channels
+iwlagn 0000:03:00.0: PCI INT A disabled
+wmaster0 (iwlagn): not using net_device_ops yet
+phy0: Selected rate control algorithm 'iwl-agn-rs'
+wlan0 (iwlagn): not using net_device_ops yet
+iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+iwlagn 0000:03:00.0: restoring config space at offset 0x1 (was
+0x100102, writing 0
+x100106)
+iwlagn 0000:03:00.0: irq 28 for MSI/MSI-X
+iwlagn 0000:03:00.0: firmware: requesting iwlwifi-4965-2.ucode
+iwlagn loaded firmware version 228.57.2.23
+Registered led device: iwl-phy0:radio
+Registered led device: iwl-phy0:assoc
+Registered led device: iwl-phy0:RX
+Registered led device: iwl-phy0:TX
+iwlagn: TX Power requested while scanning!
+
+Anything I can help to debug further, just let me know.
+
+Thanks,
+Jeff.
+
+--00504502ccc3e05c4f04653c5d96
+Content-Type: application/octet-stream; name="bisect.log"
+Content-Disposition: attachment; filename="bisect.log"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fsd5ozkt0
+
+Z2l0IGJpc2VjdCBzdGFydAojIGJhZDogWzAxOTFiNjI1Y2E1YTQ2MjA2ZDJmYjg2MmJiMDhmMzZm
+MmZjYjNiMzFdIE1lcmdlIGdpdDovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVs
+L2dpdC9kYXZlbS9uZXQtbmV4dC0yLjYKZ2l0IGJpc2VjdCBiYWQgMDE5MWI2MjVjYTVhNDYyMDZk
+MmZiODYyYmIwOGYzNmYyZmNiM2IzMQojIGdvb2Q6IFsxZDI0OGIyNTkzZTkyZGI2YzUxY2EwNzIz
+NTk4NWE5NWM2MjVhOTNmXSBNZXJnZSBicmFuY2ggJ2Zvci1saW51cycgb2YgZ2l0Oi8vZ2l0Lmtl
+cm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L3JvbGFuZC9pbmZpbmliYW5kCmdpdCBi
+aXNlY3QgZ29vZCAxZDI0OGIyNTkzZTkyZGI2YzUxY2EwNzIzNTk4NWE5NWM2MjVhOTNmCiMgYmFk
+OiBbN2QzNTlkYWFmZTEyYjM2YjZkYTdlYzYyNDdjYWRkZjUzNDE4M2FlZF0gYXBuZTogY29udmVy
+dCB0byBuZXRfZGV2aWNlX29wcwpnaXQgYmlzZWN0IGJhZCA3ZDM1OWRhYWZlMTJiMzZiNmRhN2Vj
+NjI0N2NhZGRmNTM0MTgzYWVkCiMgYmFkOiBbMGE4ODhmZDFmNjMyMGQxZDkzMThjNThkZTliY2Ez
+Y2VmNDE1NDZkNl0gdmlydGlvX25ldDogUmVjeWNsZSBzb21lIG1vcmUgcnggYnVmZmVyIHBhZ2Vz
+CmdpdCBiaXNlY3QgYmFkIDBhODg4ZmQxZjYzMjBkMWQ5MzE4YzU4ZGU5YmNhM2NlZjQxNTQ2ZDYK
+IyBnb29kOiBbYzM1NGUxMjQ2MzQ4ZTI1YzcxNGU2YjI5NzNmMzI1NzE4M2QwNmUyY10gbmV0OiBj
+bGVhbiB1cCBuZXQvaXB2NC9pcG1yLmMKZ2l0IGJpc2VjdCBnb29kIGMzNTRlMTI0NjM0OGUyNWM3
+MTRlNmIyOTczZjMyNTcxODNkMDZlMmMKIyBnb29kOiBbZjIxZjIzN2NmNTU0OTRjM2E0MjA5ZGUz
+MjMyODFhM2IwNTI4ZGExMF0gTWVyZ2UgYnJhbmNoICd0aW1lcnMtZml4ZXMtZm9yLWxpbnVzJyBv
+ZiBnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdGlwL2xpbnV4
+LTIuNi10aXAKZ2l0IGJpc2VjdCBnb29kIGYyMWYyMzdjZjU1NDk0YzNhNDIwOWRlMzIzMjgxYTNi
+MDUyOGRhMTAKIyBiYWQ6IFswNWExZTJkMTExYzk4MzQwZmIxN2VjNzAyY2YwOTQ1MGVlYzNhOTQ3
+XSBhdGg5azogRW5hYmxlIGludGVycnVwdHMgYXQgdGhlIHByb3BlciBwbGFjZQpnaXQgYmlzZWN0
+IGJhZCAwNWExZTJkMTExYzk4MzQwZmIxN2VjNzAyY2YwOTQ1MGVlYzNhOTQ3CiMgZ29vZDogWzRi
+YWIwZWExZDQyZGQxOTI3YWY5ZGY2ZmJmMDAwM2ZjMDA2MTdjNTBdIE1lcmdlIGdpdDovL2dpdC5r
+ZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9kYXZlbS9uZXQtMi42CmdpdCBiaXNl
+Y3QgZ29vZCA0YmFiMGVhMWQ0MmRkMTkyN2FmOWRmNmZiZjAwMDNmYzAwNjE3YzUwCiMgZ29vZDog
+WzBhOTVmNTYzMjNjZTkzZGFjMzU0YzFiMmQ1NGJmOTU5YTk4NWNmN2RdIHNmYzogQ2xlYW4gdXAg
+bm9uLXZvbGF0aWxlIG1lbW9yeSBwYXJ0aXRpb25pbmcKZ2l0IGJpc2VjdCBnb29kIDBhOTVmNTYz
+MjNjZTkzZGFjMzU0YzFiMmQ1NGJmOTU5YTk4NWNmN2QKIyBnb29kOiBbMTIzOWNkNThkMjM3ZmE2
+YWQ1MDFhY2FlYzg3NzYyNjJhNTc4NGVjOF0gd2lyZWxlc3M6IG1vdmUgbWVzaCBjb25maWcgbGVu
+Z3RoIGNvbnN0YW50CmdpdCBiaXNlY3QgZ29vZCAxMjM5Y2Q1OGQyMzdmYTZhZDUwMWFjYWVjODc3
+NjI2MmE1Nzg0ZWM4CiMgYmFkOiBbMTc2ODNjNjVjOGE1ZjNmMjlmNTQwODMzNDk5Mjk4NmI5OTZk
+ODIwNV0gYXRoNWs6IGZpeCBrZXl0YWJsZSB0eXBlIGJ1Z2xldCBpbiBhdGg1a19od19yZXNldF9r
+ZXkKZ2l0IGJpc2VjdCBiYWQgMTc2ODNjNjVjOGE1ZjNmMjlmNTQwODMzNDk5Mjk4NmI5OTZkODIw
+NQojIGJhZDogWzcxYzExZmI1N2I5MjRjMTYwMjk3Y2NkOWUxNzYxZGI1OThkMDBhYzJdIGI0My9s
+ZWdhY3k6IHJlbW92ZSBTU0lEIGNvZGUKZ2l0IGJpc2VjdCBiYWQgNzFjMTFmYjU3YjkyNGMxNjAy
+OTdjY2Q5ZTE3NjFkYjU5OGQwMGFjMgojIGdvb2Q6IFs0MzBjZmU5NWE0MDFiYWEwZGMyMDIyZGVh
+YWQwMmNiNzVkNjNjNzNjXSBpd2wzOTQ1OiByZW1vdmUgZGVhZCBjb2RlCmdpdCBiaXNlY3QgZ29v
+ZCA0MzBjZmU5NWE0MDFiYWEwZGMyMDIyZGVhYWQwMmNiNzVkNjNjNzNjCg==
+--00504502ccc3e05c4f04653c5d96--
