@@ -1,113 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758474AbZCPMCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbZCPMDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758474AbZCPMCa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 08:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZCPMCV
+	id S1757605AbZCPMDZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 08:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbZCPMDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 08:02:21 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:48266 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751784AbZCPMCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 08:02:20 -0400
-Date: Mon, 16 Mar 2009 12:02:17 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 00/35] Cleanup and optimise the page allocator V3
-Message-ID: <20090316120216.GB6382@csn.ul.ie>
-References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <20090316104054.GA23046@wotan.suse.de> <20090316111906.GA6382@csn.ul.ie> <20090316113358.GA30802@wotan.suse.de>
+	Mon, 16 Mar 2009 08:03:16 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:56481 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbZCPMDP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 08:03:15 -0400
+Date: Mon, 16 Mar 2009 13:03:12 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Takashi Iwai <tiwai@suse.de>, Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [alsa-devel] Bugs on aspire one A150
+Message-ID: <20090316120312.GA19299@rhlx01.hs-esslingen.de>
+References: <20081109151323.GA18705@rhlx01.hs-esslingen.de> <s5h7i7c916e.wl%tiwai@suse.de> <20081109200929.GA29333@rhlx01.hs-esslingen.de> <s5hiqqtkxqr.wl%tiwai@suse.de> <491B0D38.1050207@gmail.com> <20081112180519.GA21919@rhlx01.hs-esslingen.de> <491DBDEA.9010104@gmail.com> <492856C2.8000707@gmail.com> <s5hy6z9i44h.wl%tiwai@suse.de> <20090315092117.GA1567@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090316113358.GA30802@wotan.suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090315092117.GA1567@rhlx01.hs-esslingen.de>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 12:33:58PM +0100, Nick Piggin wrote:
-> On Mon, Mar 16, 2009 at 11:19:06AM +0000, Mel Gorman wrote:
-> > On Mon, Mar 16, 2009 at 11:40:54AM +0100, Nick Piggin wrote:
-> > > That's wonderful, but it would
-> > > significantly increase the fragmentation problem, wouldn't it?
+Hi,
+
+On Sun, Mar 15, 2009 at 10:21:17AM +0100, Andreas Mohr wrote:
+> Hi,
+> 
+> On Mon, Nov 24, 2008 at 03:35:10PM +0100, Takashi Iwai wrote:
+> > At Sat, 22 Nov 2008 21:00:18 +0200,
+> > Maxim Levitsky wrote:
+> > > Finally, I found how to reproduce that bug,
+> > > I mean to get normal volume on internal mic, I have to increase volume
+> > > only on left or right channel.
+> > > 
+> > > So, this happens always, and _only_ when recording _mono_ sound from internal
+> > > mic.
+> > > 
+> > > Since hardware doesn't support hardware mono input, tested with -D hw:0
+> > > I suspect this to be alsa-lib bug, any ideas?
+> > > Happens with arecord -D plughw:0 -c1 .
 > > 
-> > Not necessarily, anti-fragmentation groups movable pages within a
-> > hugepage-aligned block and high-order allocations will trigger a merge of
-> > buddies from PAGE_ALLOC_MERGE_ORDER (defined in the relevant patch) up to
-> > MAX_ORDER-1. Critically, a merge is also triggered when anti-fragmentation
-> > wants to fallback to another migratetype to satisfy an allocation. As
-> > long as the grouping works, it doesn't matter if they were only merged up
-> > to PAGE_ALLOC_MERGE_ORDER as a full merge will still free up hugepages.
-> > So two slow paths are made slower but the fast path should be faster and it
-> > should be causing fewer cache line bounces due to writes to struct page.
+> > What does show with -v option?
 > 
-> Oh, but the anti-fragmentation stuff is orthogonal to this. Movable
-> groups should always be defragmentable (at some cost)... the bane of
-> anti-frag is fragmentation of the non-movable groups.
+> OK, I could fully reproduce this now (sorry for the delay!).
 > 
+> Currently 2.6.28, u8.10, model acer-aspire, libasound2 1.0.17a-0ubuntu4,
+> libasound2-plugins 1.0.17-0ubuntu5.
 
-True, the reclaimable area has varying degrees of success and the
-non-movable groups are almost unworkable and depend on how much of them
-depend on pagetables.
+Same microphone behaviour on 2.6.29-rc8 (additionally remembered to enable
+CONFIG_SND_HDA_HWDEP for further testing!), u9.04, model acer-aspire,
+libasound2 1.0.18-1ubuntu7, libasound2-plugins 1.0.18-1ubuntu4
+(yes, I've just done some monster upgrade).
 
-> And one reason why buddy is so good at avoiding fragmentation is
-> because it will pick up _any_ pages that go past the allocator if
-> they have any free buddies. And it hands out ones that don't have
-> free buddies. So in that way it is naturally continually filtering
-> out pages which can be merged.
-> 
-> Wheras if you defer this until the point you need a higher order
-> page, the only thing you have to work with are the pages that are
-> free *right now*.
-> 
+Will try to eventually analyze things using your _HWDEP-related tools.
 
-Well, buddy always uses the smallest available page first. Even with
-deferred coalescing, it will merge up to order-5 at least. Lets say they
-could have merged up to order-10 in ordinary circumstances, they are
-still avoided for as long as possible. Granted, it might mean that an
-order-5 is split that could have been merged but it's hard to tell how
-much of a difference that makes.
 
-> It will almost definitely increase fragmentation of non movable zones,
-> and if you have a workload doing non-trivial, non movable higher order
-> allocations that are likely to cause fragmentation, it will result
-> in these allocations eating movable groups sooner I think.
-> 
+2.6.29-rc8, in contrast to several other kernel upgrade occasions,
+seems pretty solid so far, BTW.
 
-I think the effect will be same unless the non-movable high-order
-allocations are order-5 or higher in which case we are likely going to
-hit trouble anyway.
-
-> 
-> > When I last checked (about 10 days) ago, I hadn't damaged anti-fragmentation
-> > but that was a lot of revisions ago. I'm redoing the tests to make sure
-> > anti-fragmentation is still ok.
-> 
-> Your anti-frag tests probably don't stress this long term fragmentation
-> problem.
-> 
-
-Probably not, but we have little data on long-term fragmentation other than
-anecdotal evidence that it's ok these days.
-
-> Still, it's significant enough that I think it should be made
-> optional (and arguably default to on) even if it does harm higher
-> order allocations a bit.
-> 
-
-I could make PAGE_ORDER_MERGE_ORDER a proc tunable? If it's placed as a
-read-mostly variable beside the gfp_zone table, it might even fit in the
-same cache line.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Andreas Mohr
