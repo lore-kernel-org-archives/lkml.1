@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbZCPQyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758491AbZCPQ4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758847AbZCPQyP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 12:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756434AbZCPQxz
+	id S1758491AbZCPQ4l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 12:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbZCPQ4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 12:53:55 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:28710 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754961AbZCPQxy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 12:53:54 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=eskPh4Ebv+ZXQpuuA9BlLeXPfi85abqrzTnCeCmydzgUBT28sWl+btjqLX8fFjNeG
-	68t62jF62YPSqtRHJakxQ==
+	Mon, 16 Mar 2009 12:56:32 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:50386 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753709AbZCPQ4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 12:56:32 -0400
+Date: Mon, 16 Mar 2009 16:56:28 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 00/35] Cleanup and optimise the page allocator V3
+Message-ID: <20090316165628.GP24293@csn.ul.ie>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <20090316104054.GA23046@wotan.suse.de> <20090316111906.GA6382@csn.ul.ie> <20090316113358.GA30802@wotan.suse.de> <20090316120216.GB6382@csn.ul.ie> <20090316122505.GD30802@wotan.suse.de> <20090316133232.GA24293@csn.ul.ie> <20090316155342.GH30802@wotan.suse.de>
 MIME-Version: 1.0
-In-Reply-To: <20090314.114522.19720687.davem@davemloft.net>
-References: <65634d660903131724s49009177pdc11005aa76a4b56@mail.gmail.com>
-	 <20090313.191951.228619450.davem@davemloft.net>
-	 <65634d660903141115w7e164134ycece307f041e93a9@mail.gmail.com>
-	 <20090314.114522.19720687.davem@davemloft.net>
-Date: Mon, 16 Mar 2009 09:53:47 -0700
-Message-ID: <65634d660903160953o563385f8p29c0da5e3128f6f@mail.gmail.com>
-Subject: Re: [RFC v2: Patch 1/3] net: hand off skb list to other cpu to submit 
-	to upper layer
-From: Tom Herbert <therbert@google.com>
-To: David Miller <davem@davemloft.net>
-Cc: yanmin_zhang@linux.intel.com, bhutchings@solarflare.com,
-       andi@firstfloor.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au,
-       jesse.brandeburg@intel.com, shemminger@vyatta.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090316155342.GH30802@wotan.suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 14, 2009 at 11:45 AM, David Miller <davem@davemloft.net> wrote:
->
-> From: Tom Herbert <therbert@google.com>
-> Date: Sat, 14 Mar 2009 11:15:21 -0700
->
-> > I suppose it may be counter-intuitive, but I am not making a general
-> > claim.  I would only suggest that these software hacks could be a very
-> > good approximation or substitute for hardware functionality.  This is
-> > a generic way to get more performance out of deficient or lower end
-> > NICs.
->
-> They certainly could.  Why don't you post the current version
-> of your patches so we have something concrete to discuss?
+On Mon, Mar 16, 2009 at 04:53:42PM +0100, Nick Piggin wrote:
+> On Mon, Mar 16, 2009 at 01:32:32PM +0000, Mel Gorman wrote:
+> > On Mon, Mar 16, 2009 at 01:25:05PM +0100, Nick Piggin wrote:
+> > > > Well, buddy always uses the smallest available page first. Even with
+> > > > deferred coalescing, it will merge up to order-5 at least. Lets say they
+> > > > could have merged up to order-10 in ordinary circumstances, they are
+> > > > still avoided for as long as possible. Granted, it might mean that an
+> > > > order-5 is split that could have been merged but it's hard to tell how
+> > > > much of a difference that makes.
+> > > 
+> > > But the kinds of pages *you* are interested in are order-10, right?
+> > > 
+> > 
+> > Yes, but my expectation is that multiple free order-5 pages can be
+> > merged to make up an order-10.
+> 
+> Yes, but lazy buddy will give out part of an order-10 free area
+> to an order-5 request even when there are genuine order-5,6,7,8,9
+> free areas available.
+> 
 
-I'll do that.
+True.
+
+> Now it could be assumed that not too much else in the kernel
+> asks for anything over order-3, so you are unlikely to get these
+> kinds of requests.
+
+Which is an assumption I was working with.
+
+> But it's worse than that actually, because
+> lazy buddy will also split half of an order-10 free area in order
+> to satisfy an order-0 allocation in cases that there are no smaller
+> orders than 5 available.
+> 
+
+Also true. In movable areas it probably makes no difference but it might
+if large high-order unmovable allocations were common.
+
+> So yes definitely I think there should be a very real impact on
+> higher order coalescing no matter what you do.
+> 
+
+Because this is not straight-forward at all, I'll put lazy buddy onto
+the back-burner and exhaust all other possibilities before revisiting it
+again.
+
+> 
+> > If they can't, then lumpy reclaim kicks
+> > in as normal. My expectation actually is that order-10 allocations often
+> > end up using lumpy reclaim and the pages are not automatically
+> > available.
+> 
+> movable zone is less interesting, although it will make it harder
+> to allocate these guys from movable zone. But the pages are
+> movable so eventually they should be able to be reclaimed.
+> 
+
+Exactly.
+
+> unmovable zone fragmentation is more important point because it
+> eventually can destroy the movable zone.
+> 
+
+Which is why rmqueue_fallback() also merges up all buddies before making
+any decisions but I accept your points. This is hard enough to
+mind-experiment with that it should be considered last.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
