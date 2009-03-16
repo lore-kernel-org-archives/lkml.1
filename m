@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbZCPPPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZCPPW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbZCPPPi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 11:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZCPPP2
+	id S1753374AbZCPPW7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 11:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZCPPWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 11:15:28 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:37782 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbZCPPP1 (ORCPT
+	Mon, 16 Mar 2009 11:22:50 -0400
+Received: from mail-bw0-f175.google.com ([209.85.218.175]:50877 "EHLO
+	mail-bw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750847AbZCPPWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 11:15:27 -0400
-Message-ID: <49BE6D0B.7020507@grupopie.com>
-Date: Mon, 16 Mar 2009 15:15:23 +0000
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 16 Mar 2009 11:22:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vsOoz6VRAIz6rYIXpTUtS7012LIj+N3ijItlV9ZPIZMIk0AEqtiifqLCFolNeYTFOa
+         GZYKQZkTZayv4scIhxFbiG2xUQCqvfH35wp9sJ3ettWZCPmWjCo3GSjptfHhbS1h3n87
+         D4TLyh7P2Km9yjwZ2lylbHCiCOIaAhVZBD7Ks=
+Date: Mon, 16 Mar 2009 18:29:56 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       a.p.zijlstra@chello.nl, ego@in.ibm.com, tglx@linutronix.de,
+       mingo@elte.hu, andi@firstfloor.org, venkatesh.pallipadi@intel.com,
+       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
+       svaidy@linux.vnet.ibm.com
+Subject: Re: [v3 PATCH 3/4] timers: /proc/sys sysctl hook to enable timer
+	migration
+Message-ID: <20090316152956.GA2344@x200.localdomain>
+References: <20090316111045.GA4686@linux.vnet.ibm.com> <20090316111444.GD4686@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Alexey Fisher <bug-track@fisher-privat.net>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: smart cache. ist is possible?
-References: <49BD1EB7.6080109@fisher-privat.net>
-In-Reply-To: <49BD1EB7.6080109@fisher-privat.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090316111444.GD4686@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Fisher wrote:
-> Hallo all.
+On Mon, Mar 16, 2009 at 04:44:44PM +0530, Arun R Bharadwaj wrote:
+> echo 0 > /proc/sys/kernel/timer_migration
 
-Hi,
+There should be no sysctl for this.
 
-> I found for my self how great is cache in linux. If read one file from
-> disk, so i don't need to do it second time, chace will do the job. It
-> speed up thing greatly. But i found it not working with realy big files.
-> Like i have 4GB RAM, so if i read a file like 4.6GB, cache won't work.
-> Is it possible to have some sort of smart cache wich will read for
-> exaplme 1GB from disk and other part from cache?
-
-This is something that depends on the page replacement algorithm. A
-different page replacement algorithm might do better and there has been
-some work in the past on this.
-
-Check, for instance, this paper on Clock-Pro:
-
-http://www.cse.ohio-state.edu/hpcs/WWW/HTML/publications/papers/TR-05-3.pdf
-
-ISTR that Rik van Riel was doing an implementation of this algorithm for
-the 2.6 kernel, but I don't remember how that ended up...
-
--- 
-Paulo Marques - www.grupopie.com
-
-"God is real, unless declared integer."
+Timer migration should be good enough to be always enabled.
