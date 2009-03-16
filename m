@@ -1,104 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbZCPOvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761017AbZCPOxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758784AbZCPOvm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 10:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZCPOvc
+	id S1761017AbZCPOxt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 10:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZCPOxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 10:51:32 -0400
-Received: from mail-qy0-f122.google.com ([209.85.221.122]:59320 "EHLO
-	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753215AbZCPOva convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 10:51:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bEL9I5IhlSRGdg2iksIZUhwqN0xuPqGjPtYHLY93nTpDwkC5i7aEce3+ozMdTwVPkF
-         PaOYaGAyzachetSePhJ3v20K1q4UmesQ8d/7ajJb7f0AYXpuY12vjzYExoABUe2XvyA0
-         Y87eJjYpDaMQu1zOtpwMs24ruV/aKCu5rRfLM=
-MIME-Version: 1.0
-In-Reply-To: <49A70379.3050306@zytor.com>
-References: <1235600698-6446-1-git-send-email-matthew@wil.cx>
-	 <49A5CBF7.9000501@zytor.com> <yq1hc2iumg9.fsf@sermon.lab.mkp.net>
-	 <20090226025043.GJ1363@mit.edu>
-	 <20090226030735.GA16891@parisc-linux.org>
-	 <yq1eixlg4mn.fsf@sermon.lab.mkp.net> <49A6B604.1060702@zytor.com>
-	 <yq1iqmxey1o.fsf@sermon.lab.mkp.net> <49A70379.3050306@zytor.com>
-Date: Mon, 16 Mar 2009 10:51:28 -0400
-Message-ID: <87f94c370903160751t6de5ed2t40163a6590ba633@mail.gmail.com>
-Subject: Re: ATA support for 4k sector size
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Matthew Wilcox <matthew@wil.cx>, Theodore Tso <tytso@mit.edu>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sandeen@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 16 Mar 2009 10:53:39 -0400
+Received: from waste.org ([66.93.16.53]:56765 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751794AbZCPOxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 10:53:38 -0400
+Subject: Re: SLOB lockup (was: Re: [tip:core/locking] lockdep: annotate
+	reclaim context (__GFP_NOFS), fix SLOB)
+From: Matt Mackall <mpm@selenic.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-tip-commits@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de
+In-Reply-To: <200903162100.30029.nickpiggin@yahoo.com.au>
+References: <20090128135457.350751756@chello.nl>
+	 <200903152006.21160.nickpiggin@yahoo.com.au>
+	 <1237128960.3213.133.camel@calx>
+	 <200903162100.30029.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Mon, 16 Mar 2009 09:52:09 -0500
+Message-Id: <1237215129.3213.193.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 5:02 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Martin K. Petersen wrote:
->>>>>>>
->>>>>>> "hpa" == H Peter Anvin <hpa@zytor.com> writes:
->>
->>>> Quick answer from one of my contacts.  Desktop drives will indeed
->>>> ship with an alignment of 1(*).  The alignment is hardwired at time
->>>> of manufacture and can't be changed.
->>>>
->>
->> hpa> Oh God.
->>
->> hpa> This is a disaster.
->>
->> Rationale being that modern Microsoft operating systems know how to
->> interpret the alignment bits.  Legacy XP will work without changes
->> thanks to the shifted alignment.  And Vista+ will do the right thing to
->> align partition 1 to what the drive reports.
->>
->> Also note that Windows only aligns the first partition.  That's
->> something we need to be aware of when setting up dual boot systems.
->>
->
-> Yeah, but all of this completely breaks the disk image abstraction, which is
-> a very powerful paradigm.
->
->        -hpa
->
-If the reported geometry of these drives was changed to have sectors /
-track be a multiple of 8, wouldn't that fix most of the issues.
+On Mon, 2009-03-16 at 21:00 +1100, Nick Piggin wrote:
+> On Monday 16 March 2009 01:56:00 Matt Mackall wrote:
+> > On Sun, 2009-03-15 at 20:06 +1100, Nick Piggin wrote:
+> > > On Sunday 15 March 2009 17:48:18 Ingo Molnar wrote:
+> > > > > Cc: Nick Piggin <npiggin@suse.de>
+> > > > > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > > > LKML-Reference: <20090128135457.350751756@chello.nl>
+> > > > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > >
+> > > > and with this fixed, and with SLOB now being tested in -tip, the
+> > > > new lockdep assert attached below (followed by a real lockup)
+> > > > pops up.
+> > > >
+> > > > Seems like a genuine SLOB bug, probably present upstream as
+> > > > well.
+> > >
+> > > Hmmf. debugobjects calls back into the slab allocator from the page
+> > > allocator. The following patch would improve SLOB, but I think it
+> > > would be a good idea to avoid a dependency in that direction. Can
+> > > debugobjects defer this freeing?
+> >
+> > Yeah. I don't think any of the allocators are designed with recursion in
+> > mind. That the others aren't (visibly) failing here is blind luck.
+> >
+> > Nick, not really sure what your patch is accomplishing. It narrows the
+> > lock window, but it doesn't eliminate it. But I think we can take the
+> > page allocator case out from under the lock entirely, no?
+> 
+> Oh, it was trying to accomplish exactly this, but wasn't tested (just
+> for illustration).
+> 
+> I think Thomas's deferred freeing work should be a good way to fix this
+> problem, but of course reducing locking in SLOB doesn't hurt in the
+> slightest either ;)
+> 
+> 
+> > diff -r 8e0f1cee0a71 mm/slob.c
+> > --- a/mm/slob.c	Sat Jan 24 15:41:13 2009 -0600
+> > +++ b/mm/slob.c	Sun Mar 15 09:50:42 2009 -0500
+> > @@ -387,8 +387,6 @@
+> >  	sp = (struct slob_page *)virt_to_page(block);
+> >  	units = SLOB_UNITS(size);
+> >
+> > -	spin_lock_irqsave(&slob_lock, flags);
+> > -
+> >  	if (sp->units + units == SLOB_UNITS(PAGE_SIZE)) {
+> >  		/* Go directly to page allocator. Do not pass slob allocator */
+> >  		if (slob_page_free(sp))
+> 
+> This doesn't work because you have to hold the lock over the test
+> otherwise another thread can concurrently meddle with sp->units.
 
-ie. If the drive were to report 56 sectors per track, then a
-traditional partitioning tool would start the first partition as
-sector 56 and a Vista like partitioning tool would place the first
-partition at sector 2048.  Both would have the same 4K sector
-alignment.
+Ahh, yes, I was glossing over that code because of the misleading
+comment. I was assuming this was the case where the object itself was a
+page, rather than object is the only allocation on the page. 
 
-If my logic is sound, anyway to get this recommendation upstream to
-hardware manufacturers.  It seems like an almost trivial change for
-them.
+> For that matter my previous patch was buggy, aside from the obvious
+> that Ingo pointed out, because I unlocked before removing the page
+> from the freelist too.
+> 
+> This should be pretty close to correct ;)
 
-FYI: It sounds to me like partitioning tools should totally drop
-efforts to align with cylinders, instead they should start asking what
-the unit of atomic read/writes is at the physical layer and if any
-offsets are needed to align the partition with the atomic write areas.
+Yes. Now the only question that remains is if we want to change a nearly
+negligible performance improvement for a nearly negligible size
+increase.
 
-That would fit better for both SSD technology and for this 4K sectors
-issue than trying to continue to support cylinders at all.
+> --
+> 
+> Don't hold SLOB lock when freeing the page. Reduces lock hold width.
+> 
+> Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-Thanks
-Greg
+Acked-by: Matt Mackall <mpm@selenic.com>
+
+> ---
+>  mm/slob.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/mm/slob.c
+> ===================================================================
+> --- linux-2.6.orig/mm/slob.c
+> +++ linux-2.6/mm/slob.c
+> @@ -393,10 +393,11 @@ static void slob_free(void *block, int s
+>  		/* Go directly to page allocator. Do not pass slob allocator */
+>  		if (slob_page_free(sp))
+>  			clear_slob_page_free(sp);
+> +		spin_unlock_irqrestore(&slob_lock, flags);
+>  		clear_slob_page(sp);
+>  		free_slob_page(sp);
+>  		free_page((unsigned long)b);
+> -		goto out;
+> +		return;
+>  	}
+>  
+>  	if (!slob_page_free(sp)) {
 -- 
-Greg Freemyer
-Head of EDD Tape Extraction and Processing team
-Litigation Triage Solutions Specialist
-http://www.linkedin.com/in/gregfreemyer
-First 99 Days Litigation White Paper -
-http://www.norcrossgroup.com/forms/whitepapers/99%20Days%20whitepaper.pdf
+http://selenic.com : development and support for Mercurial and Linux
 
-The Norcross Group
-The Intersection of Evidence & Technology
-http://www.norcrossgroup.com
+
