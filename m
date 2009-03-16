@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762082AbZCPSCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762156AbZCPSDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762082AbZCPSCe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761030AbZCPRzn
+	id S1762156AbZCPSDM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761261AbZCPRzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:55:43 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:41402 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761047AbZCPRzm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 13:55:42 -0400
-Date: Mon, 16 Mar 2009 12:41:24 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: David Rientjes <rientjes@google.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm v2] cpusets: add memory_slab_hardwall flag
-In-Reply-To: <alpine.DEB.2.00.0903131620200.1881@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0903161239450.17730@qirst.com>
-References: <alpine.DEB.2.00.0903091920100.7539@chino.kir.corp.google.com> <alpine.DEB.1.10.0903101651480.20363@qirst.com> <alpine.DEB.2.00.0903101416160.4495@chino.kir.corp.google.com> <alpine.DEB.1.10.0903121145510.27660@qirst.com>
- <alpine.DEB.2.00.0903121137320.1514@chino.kir.corp.google.com> <alpine.DEB.1.10.0903121510380.21607@qirst.com> <alpine.DEB.2.00.0903121224430.5306@chino.kir.corp.google.com> <alpine.DEB.1.10.0903131630530.1741@qirst.com>
- <alpine.DEB.2.00.0903131620200.1881@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 16 Mar 2009 13:55:54 -0400
+Received: from gw.goop.org ([64.81.55.164]:46909 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761049AbZCPRzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 13:55:53 -0400
+Message-ID: <49BE92A6.2070406@goop.org>
+Date: Mon, 16 Mar 2009 10:55:50 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: bderzhavets@yahoo.com
+CC: Xen-devel <xen-devel@lists.xensource.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Xen-devel] Re: tip.git regression from "vsprintf: unify the
+ format decoding layer for its 3 users"
+References: <459064.87775.qm@web56105.mail.re3.yahoo.com>
+In-Reply-To: <459064.87775.qm@web56105.mail.re3.yahoo.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the nodes are exclusive to a load then the cpus attached to those nodes
-are also exclusive? If so then there is no problem since the percpu queues
-are only in use for a specific load with a consistent restriction on
-cpusets and a consistent memory policy. Thus there is no need for
-memory_slab_hardwall.
+Boris Derzhavets wrote:
+> Performed:-
+>
+> root@ServerIntrepid:/usr/src/linux-2.6-xen# git reset --hard 
+> remotes/origin/xen/dom0/hackery
+> HEAD is now at a38db50 Merge commit 'tip/core/printk' into 
+> xen/dom0/hackery
+> make clean
+> make
+> make modules_install install
+> mkinitramfs -o /boot/initrd-2.6.29-rc7-tip.img 2.6.29-rc7-tip
+>
+> Booted with new kernel under Xen (19355) and get same bug in place.
+> Cannot shutdown any PV DomU . Xen Host dies.
+>
+OK, so we're talking about a new bug now, right?
+
+When you say "Xen Host dies", do you mean that Xen itself crashes?  Or 
+that the dom0 kernel crashes?  Hangs?  Non-responsive?
+
+Do you have a serial console?
+
+    J
