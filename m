@@ -1,48 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760206AbZCPMZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760240AbZCPM0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760206AbZCPMZs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 08:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758578AbZCPMZU
+	id S1760240AbZCPM0V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 08:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760055AbZCPM0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 08:25:20 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52847 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758145AbZCPMZT (ORCPT
+	Mon, 16 Mar 2009 08:26:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60011 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759718AbZCPMZ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 08:25:19 -0400
-Date: Mon, 16 Mar 2009 21:22:32 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] Point the UNEVICTABLE_LRU config option at the documentation
-Cc: kosaki.motohiro@jp.fujitsu.com, David Howells <dhowells@redhat.com>,
-       lee.schermerhorn@hp.com, minchan.kim@gmail.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20090316120224.GA16506@infradead.org>
-References: <20090316105945.18131.82359.stgit@warthog.procyon.org.uk> <20090316120224.GA16506@infradead.org>
-Message-Id: <20090316211830.1FE8.A69D9226@jp.fujitsu.com>
+	Mon, 16 Mar 2009 08:25:58 -0400
+Date: Mon, 16 Mar 2009 13:28:47 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Rob Landley <rob@landley.net>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       mtk.manpages@gmail.com, tytso@mit.edu, rdunlap@xenotime.net,
+       linux-doc@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: ext2/3: document conditions when reliable operation is possible
+Message-ID: <20090316122847.GI2405@elf.ucw.cz>
+References: <20090312092114.GC6949@elf.ucw.cz> <200903121413.04434.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903121413.04434.rob@landley.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, Mar 16, 2009 at 10:59:45AM +0000, David Howells wrote:
-> > Point the UNEVICTABLE_LRU config option at the documentation describing the
-> > option.
+Hi!
+
+> > +Write errors not allowed (NO-WRITE-ERRORS)
+> > +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> > +
+> > +Writes to media never fail. Even if disk returns error condition
+> > +during write, filesystems can't handle that correctly, because success
+> > +on fsync was already returned when data hit the journal.
+> > +
+> > +	Fortunately writes failing are very uncommon on traditional
+> > +	spinning disks, as they have spare sectors they use when write
+> > +	fails.
 > 
-> Didn't we decide a while ago that the option is pointless and the code
-> should always be enabled?
+> I vaguely recall that the behavior of when a write error _does_ occur is to 
+> remount the filesystem read only?  (Is this VFS or per-fs?)
 
-Yeah.
-CONFIG_UNEVICTABLE_LRU lost existing reason by David's good patch recently.
+Per-fs.
 
-if nobody of nommu user post bug report in .30 age, I plan to remove
-this config option at .31 age.
+> Is there any kind of hotplug event associated with this?
 
-his patch is really really good job.
+I don't think so.
+
+> I'm aware write errors shouldn't happen, and by the time they do it's too late 
+> to gracefully handle them, and all we can do is fail.  So how do we
+> fail?
+
+Well, even remount-ro may be too late, IIRC.
+
+> > +	Unfortuantely, none of the cheap USB/SD flash cards I seen do
+> 
+> I've seen
+> 
+> > +	behave like this, and are unsuitable for all linux filesystems
+> 
+> "are thus unsuitable", perhaps?  (Too pretentious? :)
+
+ACK, thanks.
+
+> > +	I know.
+> > +
+> > +		An inherent problem with using flash as a normal block
+> > +		device is that the flash erase size is bigger than
+> > +		most filesystem sector sizes.  So when you request a
+> > +		write, it may erase and rewrite the next 64k, 128k, or
+> > +		even a couple megabytes on the really _big_ ones.
+> 
+> Somebody corrected me, it's not "the next" it's "the surrounding".
+
+Its "some" ... due to wear leveling logic.
+
+> (Writes aren't always cleanly at the start of an erase block, so critical data 
+> _before_ what you touch is endangered too.)
+
+Well, flashes do remap, so it is actually "random blocks".
+
+> > +	otherwise, disks may write garbage during powerfail.
+> > +	Not sure how common that problem is on generic PC machines.
+> > +
+> > +	Note that atomic write is very hard to guarantee for RAID-4/5/6,
+> > +	because it needs to write both changed data, and parity, to
+> > +	different disks.
+> 
+> These days instead of "atomic" it's better to think in terms of
+> "barriers".  
+
+This is not about barriers (that should be different topic). Atomic
+write means that either whole sector is written, or nothing at all is
+written. Because raid5 needs to update both master data and parity at
+the same time, I don't think it can guarantee this during powerfail.
 
 
+> > +Requirements
+> > +* write errors not allowed
+> > +
+> > +* sector writes are atomic
+> > +
+> > +(see expectations.txt; note that most/all linux block-based
+> > +filesystems have similar expectations)
+> > +
+> > +* write caching is disabled. ext2 does not know how to issue barriers
+> > +  as of 2.6.28. hdparm -W0 disables it on SATA disks.
+> 
+> And here we're talking about ext2.  Does neither one know about write 
+> barriers, or does this just apply to ext2?  (What about ext4?)
 
+This document is about ext2. Ext3 can support barriers in
+2.6.28. Someone else needs to write ext4 docs :-).
+
+> Also I remember a historical problem that not all disks honor write barriers, 
+> because actual data integrity makes for horrible benchmark numbers.  Dunno how 
+> current that is with SATA, Alan Cox would probably know.
+
+Sounds like broken disk, then. We should blacklist those.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
