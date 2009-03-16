@@ -1,126 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760099AbZCPXNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760063AbZCPXPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760099AbZCPXNz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 19:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbZCPXNq
+	id S1760063AbZCPXPw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 19:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbZCPXPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 19:13:46 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:53598 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754323AbZCPXNp (ORCPT
+	Mon, 16 Mar 2009 19:15:38 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:34576 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753378AbZCPXPg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 19:13:45 -0400
-Date: Mon, 16 Mar 2009 18:13:40 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: Igor Zhbanov <izh1979@gmail.com>, "J. Bruce Fields" <bfields@fieldses.org>,
-       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
-       David Howells <dhowells@redhat.com>, Andrew Morgan <morgan@kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       SELinux <selinux@tycho.nsa.gov>
-Subject: Re: =?utf-8?B?0J7RgtCy0LXRgjogVkZTLCBORlMg?=
-	=?utf-8?Q?security_bug=3F_Shoul?=
-	=?utf-8?Q?d?= CAP_MKNOD and CAP_LINUX_IMMUTABLE be added to
-	CAP_FS_MASK?
-Message-ID: <20090316231340.GC15522@us.ibm.com>
-References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com> <20090311232356.GP13540@fieldses.org> <20090312161047.GA15209@us.ibm.com> <517f3f820903121321sf6d2014q8165b925d5d44db7@mail.gmail.com> <20090313175848.GB27891@fieldses.org> <f44001920903131137j158c5f76y6a71b58ee964df77@mail.gmail.com> <20090313190002.GA16025@us.ibm.com> <1237227705.1035.93.camel@localhost.localdomain> <20090316184926.GA6729@us.ibm.com> <1237237216.1035.195.camel@localhost.localdomain>
+	Mon, 16 Mar 2009 19:15:36 -0400
+Date: Mon, 16 Mar 2009 19:14:24 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
+Subject: pull request: wireless-2.6 2009-03-16
+Message-ID: <20090316231423.GA3633@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1237237216.1035.195.camel@localhost.localdomain>
+Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Stephen Smalley (sds@tycho.nsa.gov):
-> On Mon, 2009-03-16 at 13:49 -0500, Serge E. Hallyn wrote:
-> > Quoting Stephen Smalley (sds@tycho.nsa.gov):
-> > > On Fri, 2009-03-13 at 14:00 -0500, Serge E. Hallyn wrote:
-> > > > Quoting Igor Zhbanov (izh1979@gmail.com):
-> > > > > But ordinary users can't create devices. It seems to me that in time
-> > > > > of implementation of capabilities in kernel 2.4, capabilities related
-> > > > > to filesystem was added first. And mark for them contains all above in
-> > > > > header file. And when CAP_MKNOD was added later, author just forget to
-> > > > > update mask.
-> > > > > 
-> > > > > If mask was designed to drop all filesystem related capabilities, then
-> > > > > it must be expanded, because ordinary users cannot create devices etc.
-> > > > 
-> > > > I think you thought Bruce was saying we shouldn't change the set of
-> > > > capabilities, but he was just asking exactly what changes Michael was
-> > > > interested in.
-> > > > 
-> > > > Igor, thanks for finding this.  I never got your original message.  Do
-> > > > you have a patdch to add the two capabilities?  Do you think the
-> > > > other two I mentioned (CAP_SYS_ADMIN and CAP_SETFCAP) need to be
-> > > > added too?
-> > > > 
-> > > > I've added Andrew Morgan, LSM and SELinux mailing lists to get another
-> > > > opinion about adding those two.  In particular, we'd be adding them
-> > > > to the fs_masks becuase CAP_SYS_ADMIN lets you change the selinux
-> > > > label, and CAP_SETFCAP lets you change the file capabilities.
-> > > 
-> > > I'd be inclined against adding CAP_SYS_ADMIN to the mask; note that it
-> > > is only checked for setting SELinux security contexts (or more broadly
-> > > any attributes in the security namespace) when SELinux is disabled.  In
-> > > the SELinux-enabled case, we are checking SELinux-specific permissions
-> > > when setting the SELinux attributes, whether on the client or the
-> > > server.
-> > 
-> > But that's exactly why it seemed like it ought to be in there.  If
-> > SELinux is enabled, then SELinux will continue to perform it's own
-> > checks based on security context and ignoring privileged root.  But
-> > outside of that, since we are in a root-is-privileged mode, should it
-> > not be the case that having fsuid=0 means that you can set extended
-> > attributes in the security namespace?
-> > 
-> > Conversely, if setting fsuid to non-zero, shouldn't all of the
-> > privileged ways of setting file attributes be lost?  Or, will we run
-> > into a problem where software wanted to set its fsuid to non-0 but
-> > still be able to call sethostname(2), for instance?  In which case
-> > we simply cannot put CAP_SYS_ADMIN in CAP_FS_MASK.
-> > 
-> > I guess it comes back down to whether those xattrs are considered a
-> > security attribute or a simple file property.
-> 
-> Well, they are a security attribute, but CAP_SYS_ADMIN was never
-> supposed to cover them.  In fact, none of the upstream security modules
+Dave,
 
-So do you think it makes sense to have CAP_MAC_ADMIN and CAP_FOWNER
-in CAP_FS_MASK?  In other words are you objecting to CAP_SYS_ADMIN
-because of all of its other implications, or because you disagree
-that labels for security modules should be treated as mere fs data
-here?
+Here is a group of patches intended for 2.6.29.  The one from me is
+minor, but it cuts-down on log SPAM for ipw2100, ipw2200, and hostap
+users.  The two from Jouni fix some panics he observed himself.
 
-> uses CAP_SYS_ADMIN to control setting of its own attributes:
-> - SELinux applies a DAC check and its own set of MAC file permission
-> checks,
-> - Smack applies CAP_MAC_ADMIN,
-> - Capabilities applies CAP_SETFCAP.
-> 
-> Checking CAP_SYS_ADMIN was really just a fallback to prevent unchecked
-> setting of attributes in the no-LSM case.  It might make more sense to
-> return EOPNOTSUPP for any attributes unknown to the enabled security
+The first one from Luis fixes bug 12110 at bugzilla.kernel.org.  I know
+he has worked on it for a long time and I've had several desperate users
+asking for it, so it must be good. :-)  Unfortunately, it causes some
+nasty merge errors with what is in net-next-2.6 and wireless-next-2.6.
+I created a merge-test branch in wireless-next-2.6, and the merge commit
+log goes into more detail about resolving the issue.  In short, you
+probably want to diff drivers/net/ath9k against the merge-test branch...
 
-I suspect that would create a LOT of bug reports.  Would requiring
-CAP_MAC_ADMIN seem reasonable?
+Please let me know if there are problems!
 
-> module and require you to enable the desired module before setting the
-> attributes these days.
-> http://marc.info/?t=107428809400002&r=1&w=2
-> 
-> I don't think this will make any difference for labeled NFS at present,
-> as the current labeled NFS patches only export the MAC label attribute
-> if the server has the MAC model enabled.  So CAP_SYS_ADMIN won't get
-> checked regardless.
-> 
-> Trusted namespace is another case where CAP_SYS_ADMIN check is applied
-> on file operations.
+Thanks,
 
-Which seems like all the more reason why CAP_SYS_ADMIN would need to
-be added to the CAP_FS_MASK.  Or do you mean that check should also be
-changed for something else?  (CAP_MAC_ADMIN, or some new CAP_FS_XATTR?)
+John
 
--serge
+---
+
+Individual patches are available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit ea8dbdd17099a9a5864ebd4c87e01e657b19c7ab:
+  françois romieu (1):
+        r8169: revert "r8169: read MAC address from EEPROM on init (2nd attempt)"
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+John W. Linville (1):
+      lib80211: silence excessive crypto debugging messages
+
+Jouni Malinen (2):
+      mac80211: Fix panic on fragmentation with power saving
+      zd1211rw: Do not panic on device eject when associated
+
+Luis R. Rodriguez (2):
+      ath9k: implement IO serialization
+      ath9k: AR9280 PCI devices must serialize IO as well
+
+ drivers/net/wireless/ath9k/ath9k.h     |    4 +-
+ drivers/net/wireless/ath9k/core.h      |   33 ++++++++++++++++++++++++++++++++
+ drivers/net/wireless/ath9k/hw.c        |   22 ++++++++++++++++++++-
+ drivers/net/wireless/ath9k/main.c      |    1 +
+ drivers/net/wireless/zd1211rw/zd_mac.c |    8 +++++-
+ net/mac80211/tx.c                      |    2 +
+ net/wireless/Kconfig                   |   10 +++++++++
+ net/wireless/lib80211_crypt_ccmp.c     |    2 +
+ net/wireless/lib80211_crypt_tkip.c     |    4 +++
+ 9 files changed, 81 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/wireless/ath9k/ath9k.h b/drivers/net/wireless/ath9k/ath9k.h
+index d278135..6650f60 100644
+--- a/drivers/net/wireless/ath9k/ath9k.h
++++ b/drivers/net/wireless/ath9k/ath9k.h
+@@ -587,8 +587,8 @@ struct ath9k_country_entry {
+ 	u8 iso[3];
+ };
+ 
+-#define REG_WRITE(_ah, _reg, _val) iowrite32(_val, _ah->ah_sh + _reg)
+-#define REG_READ(_ah, _reg) ioread32(_ah->ah_sh + _reg)
++#define REG_WRITE(_ah, _reg, _val) ath9k_iowrite32((_ah), (_reg), (_val))
++#define REG_READ(_ah, _reg) ath9k_ioread32((_ah), (_reg))
+ 
+ #define SM(_v, _f)  (((_v) << _f##_S) & _f)
+ #define MS(_v, _f)  (((_v) & _f) >> _f##_S)
+diff --git a/drivers/net/wireless/ath9k/core.h b/drivers/net/wireless/ath9k/core.h
+index 4ca2aed..139566c 100644
+--- a/drivers/net/wireless/ath9k/core.h
++++ b/drivers/net/wireless/ath9k/core.h
+@@ -701,6 +701,7 @@ struct ath_softc {
+ 	struct ath_hal *sc_ah;
+ 	void __iomem *mem;
+ 	spinlock_t sc_resetlock;
++	spinlock_t sc_serial_rw;
+ 	struct mutex mutex;
+ 
+ 	u8 sc_curbssid[ETH_ALEN];
+@@ -751,4 +752,36 @@ int ath_get_hal_qnum(u16 queue, struct ath_softc *sc);
+ int ath_get_mac80211_qnum(u32 queue, struct ath_softc *sc);
+ int ath_cabq_update(struct ath_softc *);
+ 
++/*
++ * Read and write, they both share the same lock. We do this to serialize
++ * reads and writes on Atheros 802.11n PCI devices only. This is required
++ * as the FIFO on these devices can only accept sanely 2 requests. After
++ * that the device goes bananas. Serializing the reads/writes prevents this
++ * from happening.
++ */
++
++static inline void ath9k_iowrite32(struct ath_hal *ah, u32 reg_offset, u32 val)
++{
++	if (ah->ah_config.serialize_regmode == SER_REG_MODE_ON) {
++		unsigned long flags;
++		spin_lock_irqsave(&ah->ah_sc->sc_serial_rw, flags);
++		iowrite32(val, ah->ah_sc->mem + reg_offset);
++		spin_unlock_irqrestore(&ah->ah_sc->sc_serial_rw, flags);
++	} else
++		iowrite32(val, ah->ah_sc->mem + reg_offset);
++}
++
++static inline unsigned int ath9k_ioread32(struct ath_hal *ah, u32 reg_offset)
++{
++	u32 val;
++	if (ah->ah_config.serialize_regmode == SER_REG_MODE_ON) {
++		unsigned long flags;
++		spin_lock_irqsave(&ah->ah_sc->sc_serial_rw, flags);
++		val = ioread32(ah->ah_sc->mem + reg_offset);
++		spin_unlock_irqrestore(&ah->ah_sc->sc_serial_rw, flags);
++	} else
++		val = ioread32(ah->ah_sc->mem + reg_offset);
++	return val;
++}
++
+ #endif /* CORE_H */
+diff --git a/drivers/net/wireless/ath9k/hw.c b/drivers/net/wireless/ath9k/hw.c
+index 34474ed..c38a00b 100644
+--- a/drivers/net/wireless/ath9k/hw.c
++++ b/drivers/net/wireless/ath9k/hw.c
+@@ -437,6 +437,25 @@ static void ath9k_hw_set_defaults(struct ath_hal *ah)
+ 	}
+ 
+ 	ah->ah_config.intr_mitigation = 1;
++
++	/*
++	 * We need this for PCI devices only (Cardbus, PCI, miniPCI)
++	 * _and_ if on non-uniprocessor systems (Multiprocessor/HT).
++	 * This means we use it for all AR5416 devices, and the few
++	 * minor PCI AR9280 devices out there.
++	 *
++	 * Serialization is required because these devices do not handle
++	 * well the case of two concurrent reads/writes due to the latency
++	 * involved. During one read/write another read/write can be issued
++	 * on another CPU while the previous read/write may still be working
++	 * on our hardware, if we hit this case the hardware poops in a loop.
++	 * We prevent this by serializing reads and writes.
++	 *
++	 * This issue is not present on PCI-Express devices or pre-AR5416
++	 * devices (legacy, 802.11abg).
++	 */
++	if (num_possible_cpus() > 1)
++		ah->ah_config.serialize_regmode = SER_REG_MODE_AUTO;
+ }
+ 
+ static struct ath_hal_5416 *ath9k_hw_newstate(u16 devid,
+@@ -668,7 +687,8 @@ static struct ath_hal *ath9k_hw_do_attach(u16 devid, struct ath_softc *sc,
+ 	}
+ 
+ 	if (ah->ah_config.serialize_regmode == SER_REG_MODE_AUTO) {
+-		if (ah->ah_macVersion == AR_SREV_VERSION_5416_PCI) {
++		if (ah->ah_macVersion == AR_SREV_VERSION_5416_PCI ||
++		    (AR_SREV_9280(ah) && !ah->ah_isPciExpress)) {
+ 			ah->ah_config.serialize_regmode =
+ 				SER_REG_MODE_ON;
+ 		} else {
+diff --git a/drivers/net/wireless/ath9k/main.c b/drivers/net/wireless/ath9k/main.c
+index 0e80990..3c04044 100644
+--- a/drivers/net/wireless/ath9k/main.c
++++ b/drivers/net/wireless/ath9k/main.c
+@@ -1336,6 +1336,7 @@ static int ath_init(u16 devid, struct ath_softc *sc)
+ 		printk(KERN_ERR "Unable to create debugfs files\n");
+ 
+ 	spin_lock_init(&sc->sc_resetlock);
++	spin_lock_init(&sc->sc_serial_rw);
+ 	mutex_init(&sc->mutex);
+ 	tasklet_init(&sc->intr_tq, ath9k_tasklet, (unsigned long)sc);
+ 	tasklet_init(&sc->bcon_tasklet, ath9k_beacon_tasklet,
+diff --git a/drivers/net/wireless/zd1211rw/zd_mac.c b/drivers/net/wireless/zd1211rw/zd_mac.c
+index a611ad8..847057d 100644
+--- a/drivers/net/wireless/zd1211rw/zd_mac.c
++++ b/drivers/net/wireless/zd1211rw/zd_mac.c
+@@ -575,13 +575,17 @@ static int zd_op_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
+ 
+ 	r = fill_ctrlset(mac, skb);
+ 	if (r)
+-		return r;
++		goto fail;
+ 
+ 	info->rate_driver_data[0] = hw;
+ 
+ 	r = zd_usb_tx(&mac->chip.usb, skb);
+ 	if (r)
+-		return r;
++		goto fail;
++	return 0;
++
++fail:
++	dev_kfree_skb(skb);
+ 	return 0;
+ }
+ 
+diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
+index 94de503..37e3d5e 100644
+--- a/net/mac80211/tx.c
++++ b/net/mac80211/tx.c
+@@ -752,6 +752,8 @@ ieee80211_tx_h_fragment(struct ieee80211_tx_data *tx)
+ 		skb_copy_queue_mapping(frag, first);
+ 
+ 		frag->do_not_encrypt = first->do_not_encrypt;
++		frag->dev = first->dev;
++		frag->iif = first->iif;
+ 
+ 		pos += copylen;
+ 		left -= copylen;
+diff --git a/net/wireless/Kconfig b/net/wireless/Kconfig
+index e28e2b8..092ae6f 100644
+--- a/net/wireless/Kconfig
++++ b/net/wireless/Kconfig
+@@ -102,3 +102,13 @@ config LIB80211_CRYPT_CCMP
+ 
+ config LIB80211_CRYPT_TKIP
+ 	tristate
++
++config LIB80211_DEBUG
++	bool "lib80211 debugging messages"
++	depends on LIB80211
++	default n
++	---help---
++	  You can enable this if you want verbose debugging messages
++	  from lib80211.
++
++	  If unsure, say N.
+diff --git a/net/wireless/lib80211_crypt_ccmp.c b/net/wireless/lib80211_crypt_ccmp.c
+index db42819..2301dc1 100644
+--- a/net/wireless/lib80211_crypt_ccmp.c
++++ b/net/wireless/lib80211_crypt_ccmp.c
+@@ -337,6 +337,7 @@ static int lib80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
+ 	pos += 8;
+ 
+ 	if (ccmp_replay_check(pn, key->rx_pn)) {
++#ifdef CONFIG_LIB80211_DEBUG
+ 		if (net_ratelimit()) {
+ 			printk(KERN_DEBUG "CCMP: replay detected: STA=%pM "
+ 				 "previous PN %02x%02x%02x%02x%02x%02x "
+@@ -346,6 +347,7 @@ static int lib80211_ccmp_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
+ 				 key->rx_pn[3], key->rx_pn[4], key->rx_pn[5],
+ 				 pn[0], pn[1], pn[2], pn[3], pn[4], pn[5]);
+ 		}
++#endif
+ 		key->dot11RSNAStatsCCMPReplays++;
+ 		return -4;
+ 	}
+diff --git a/net/wireless/lib80211_crypt_tkip.c b/net/wireless/lib80211_crypt_tkip.c
+index 7e8e22b..c362873 100644
+--- a/net/wireless/lib80211_crypt_tkip.c
++++ b/net/wireless/lib80211_crypt_tkip.c
+@@ -465,12 +465,14 @@ static int lib80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
+ 	pos += 8;
+ 
+ 	if (tkip_replay_check(iv32, iv16, tkey->rx_iv32, tkey->rx_iv16)) {
++#ifdef CONFIG_LIB80211_DEBUG
+ 		if (net_ratelimit()) {
+ 			printk(KERN_DEBUG "TKIP: replay detected: STA=%pM"
+ 			       " previous TSC %08x%04x received TSC "
+ 			       "%08x%04x\n", hdr->addr2,
+ 			       tkey->rx_iv32, tkey->rx_iv16, iv32, iv16);
+ 		}
++#endif
+ 		tkey->dot11RSNAStatsTKIPReplays++;
+ 		return -4;
+ 	}
+@@ -505,10 +507,12 @@ static int lib80211_tkip_decrypt(struct sk_buff *skb, int hdr_len, void *priv)
+ 			 * it needs to be recalculated for the next packet. */
+ 			tkey->rx_phase1_done = 0;
+ 		}
++#ifdef CONFIG_LIB80211_DEBUG
+ 		if (net_ratelimit()) {
+ 			printk(KERN_DEBUG "TKIP: ICV error detected: STA="
+ 			       "%pM\n", hdr->addr2);
+ 		}
++#endif
+ 		tkey->dot11RSNAStatsTKIPICVErrors++;
+ 		return -5;
+ 	}
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
