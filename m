@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbZCPKHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755680AbZCPKN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757895AbZCPKHq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 06:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZCPKHg
+	id S1755680AbZCPKN4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 06:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbZCPKNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 06:07:36 -0400
-Received: from smtprelay04.ispgateway.de ([80.67.18.16]:35665 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752073AbZCPKHf (ORCPT
+	Mon, 16 Mar 2009 06:13:46 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56909 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752272AbZCPKNp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 06:07:35 -0400
-X-Greylist: delayed 382 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Mar 2009 06:07:35 EDT
-Message-ID: <49BE2365.2070708@ladisch.de>
-Date: Mon, 16 Mar 2009 11:01:09 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Mon, 16 Mar 2009 06:13:45 -0400
+Date: Mon, 16 Mar 2009 06:13:43 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, npiggin@suse.de
+Subject: Re: [PATCH 3/7] writeback: get rid of pdflush_operation() in
+	emergency sync and remount
+Message-ID: <20090316101343.GA21118@infradead.org>
+References: <1236868428-20408-1-git-send-email-jens.axboe@oracle.com> <1236868428-20408-4-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
-To: Jussi Laako <jussi@sonarnerd.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: HPET mmap() problem
-References: <49BC2D93.8090507@sonarnerd.net>
-In-Reply-To: <49BC2D93.8090507@sonarnerd.net>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
+Content-Disposition: inline
+In-Reply-To: <1236868428-20408-4-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jussi Laako wrote:
-> In the JACK audio connection kit we have support for mmap() of /dev/hpet
-> as our time source (as one of the possibilities). However, there's a
-> nasty issue with the current driver as it reserves one of the three
-> comparator-timers per each open() and denies further opens when the
-> timers are exhausted. And in case it's already used as a system clock
-> source, two of the timers are already reserved...
+On Thu, Mar 12, 2009 at 03:33:44PM +0100, Jens Axboe wrote:
+> Opencode a cheasy approach with kevent. The idea here is that we'll
+> add some generic delayed work infrastructure, which probably wont be
+> based on pdflush (or maybe it will, in which case we can just add it
+> back).
+
+Good idea.  Care to submit this early outside of the series?
+
 > 
-> However, we are only interested on the main counter value, and would
-> like to have unlimited access from number of processes to this value
-> through mmap() of the device.
-> 
-> Any ideas/recommendations/suggestions on which way to change the driver
-> to support this?
-
-Don't allocate a hpet_dev in hpet_open but when hpet_ioctl is called for
-the first time.
-
-> Or even better, if someone is already working on this?
-
-I'm planning to work on this.
-
-
-HTH
-Clemens
