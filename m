@@ -1,38 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761661AbZCPVb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761336AbZCPVgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761661AbZCPVb5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 17:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757964AbZCPVbs
+	id S1761336AbZCPVgh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 17:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbZCPVgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 17:31:48 -0400
-Received: from gw.goop.org ([64.81.55.164]:33598 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753374AbZCPVbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 17:31:46 -0400
-Message-ID: <49BEC53F.20200@goop.org>
-Date: Mon, 16 Mar 2009 14:31:43 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org> <49BEB5FE.7050601@zytor.com> <49BEBD98.3090905@goop.org> <49BEC143.6030104@zytor.com>
-In-Reply-To: <49BEC143.6030104@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Mar 2009 17:36:24 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:43383 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753063AbZCPVgY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 17:36:24 -0400
+From: Kevin Hilman <khilman@deeprootsystems.com>
+To: linux-kernel@vger.kernel.org
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Kevin Hilman <khilman@deeprootsystems.com>
+Subject: [PATCH v3 0/3] new memory_accessor interface and usage
+Date: Mon, 16 Mar 2009 14:36:16 -0700
+Message-Id: <1237239379-24186-1-git-send-email-khilman@deeprootsystems.com>
+X-Mailer: git-send-email 1.6.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Or simplified:
->
-> PAGE_TABLE_SIZE(((1 << 32)-PAGE_OFFSET) >> PAGE_SHIFT) << PAGE_SHIFT
+This series adds an interface by which other kernel code can read/write
+persistent memory such as I2C or SPI EEPROMs, or devices which provide
+NVRAM.  Use cases include storage of board-specific configuration data
+like Ethernet addresses and sensor calibrations, etc.
 
-Was worried about 1<<32 overflowing.  Never really sure what gas's type 
-system is.
+David Brownell (1):
+  Implement the new memory_accessor interfaces for SPI EEPROMs:
 
-    J
+Kevin Hilman (2):
+  memory_accessor: new interface for reading/writing persistent memory
+  Implement the new memory_accessor interface for I2C EEPROM
+
+ drivers/misc/eeprom/at24.c |   67 +++++++++++++++++++++++++++++++++++--------
+ drivers/misc/eeprom/at25.c |   58 +++++++++++++++++++++++++++++---------
+ include/linux/i2c/at24.h   |    4 ++
+ include/linux/memory.h     |   11 +++++++
+ include/linux/spi/eeprom.h |    6 ++++
+ 5 files changed, 119 insertions(+), 27 deletions(-)
+
