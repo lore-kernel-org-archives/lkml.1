@@ -1,82 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759557AbZCPMZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760206AbZCPMZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759557AbZCPMZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 08:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbZCPMZN
+	id S1760206AbZCPMZs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 08:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758578AbZCPMZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 08:25:13 -0400
-Received: from cantor.suse.de ([195.135.220.2]:54305 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752702AbZCPMZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 08:25:12 -0400
-Date: Mon, 16 Mar 2009 13:25:05 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 00/35] Cleanup and optimise the page allocator V3
-Message-ID: <20090316122505.GD30802@wotan.suse.de>
-References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <20090316104054.GA23046@wotan.suse.de> <20090316111906.GA6382@csn.ul.ie> <20090316113358.GA30802@wotan.suse.de> <20090316120216.GB6382@csn.ul.ie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090316120216.GB6382@csn.ul.ie>
-User-Agent: Mutt/1.5.9i
+	Mon, 16 Mar 2009 08:25:20 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52847 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758145AbZCPMZT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 08:25:19 -0400
+Date: Mon, 16 Mar 2009 21:22:32 +0900 (JST)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] Point the UNEVICTABLE_LRU config option at the documentation
+Cc: kosaki.motohiro@jp.fujitsu.com, David Howells <dhowells@redhat.com>,
+       lee.schermerhorn@hp.com, minchan.kim@gmail.com,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20090316120224.GA16506@infradead.org>
+References: <20090316105945.18131.82359.stgit@warthog.procyon.org.uk> <20090316120224.GA16506@infradead.org>
+Message-Id: <20090316211830.1FE8.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 12:02:17PM +0000, Mel Gorman wrote:
-> On Mon, Mar 16, 2009 at 12:33:58PM +0100, Nick Piggin wrote:
-> > Wheras if you defer this until the point you need a higher order
-> > page, the only thing you have to work with are the pages that are
-> > free *right now*.
-> > 
+> On Mon, Mar 16, 2009 at 10:59:45AM +0000, David Howells wrote:
+> > Point the UNEVICTABLE_LRU config option at the documentation describing the
+> > option.
 > 
-> Well, buddy always uses the smallest available page first. Even with
-> deferred coalescing, it will merge up to order-5 at least. Lets say they
-> could have merged up to order-10 in ordinary circumstances, they are
-> still avoided for as long as possible. Granted, it might mean that an
-> order-5 is split that could have been merged but it's hard to tell how
-> much of a difference that makes.
+> Didn't we decide a while ago that the option is pointless and the code
+> should always be enabled?
 
-But the kinds of pages *you* are interested in are order-10, right?
+Yeah.
+CONFIG_UNEVICTABLE_LRU lost existing reason by David's good patch recently.
 
- 
-> > Your anti-frag tests probably don't stress this long term fragmentation
-> > problem.
-> > 
-> 
-> Probably not, but we have little data on long-term fragmentation other than
-> anecdotal evidence that it's ok these days.
+if nobody of nommu user post bug report in .30 age, I plan to remove
+this config option at .31 age.
 
-Well, I think before anti-frag there was lots of anecdotal evidence
-that it's "ok", except for loads heavily using large higher order
-allocations. I don't know if we'd have many systems running with
-hundreds of days of uptime on such workloads post-anti-frag? 
+his patch is really really good job.
 
-Google might? But I don't know how long their uptimes are. I expect
-we'd have a better idea in a couple more years after the next
-enterprise distro release cycles with anti-frag.
 
- 
-> > Still, it's significant enough that I think it should be made
-> > optional (and arguably default to on) even if it does harm higher
-> > order allocations a bit.
-> > 
-> 
-> I could make PAGE_ORDER_MERGE_ORDER a proc tunable? If it's placed as a
-> read-mostly variable beside the gfp_zone table, it might even fit in the
-> same cache line.
-
-Hmm, possibly. OTOH I don't like tunables. If you don't think it will
-be a problem for hugepage allocations, then I would prefer just to
-leave it on and 5 by default (or even less? COSTLY_ORDER?)
 
