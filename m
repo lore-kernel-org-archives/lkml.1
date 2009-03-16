@@ -1,99 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759794AbZCPShy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760638AbZCPSk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759794AbZCPShy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbZCPShp
+	id S1760638AbZCPSk1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbZCPSkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:37:45 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:57010 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753118AbZCPSho (ORCPT
+	Mon, 16 Mar 2009 14:40:14 -0400
+Received: from n20.bullet.mail.mud.yahoo.com ([68.142.206.147]:31103 "HELO
+	n20.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753727AbZCPSkN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:37:44 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtsEAO84vklMQW1W/2dsb2JhbACBTtREg38G
-Date: Mon, 16 Mar 2009 14:37:39 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jason Baron <jbaron@redhat.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
-       fweisbec@gmail.com, fche@redhat.com, peterz@infradead.org
-Subject: Re: [Patch 2/2] tracepoints for softirq entry/exit - tracepoints
-Message-ID: <20090316183739.GA10292@Krystal>
-References: <20090312183603.GC3352@redhat.com> <20090314025701.GC22526@Krystal> <alpine.DEB.2.00.0903160934010.26431@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Mar 2009 14:40:13 -0400
+X-Yahoo-Newman-Id: 846135.23067.bm@omp410.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=i7gZuQfztFjiW6PBM9iYGLZzpwQHaLV+Tgx23Dg4bGgV2EOhNDijb8ANas3KgsxW8R0XK98YD9Ai2mDkWgRRLUAHNbUaYnY9YFbrvINrnk4+SjSWeA8s6JWVvVZHgarzrnV2JSKOtBAsQ97OC78fmJshC66l2fyzApHxTuXa6lA=  ;
+X-YMail-OSG: nLuKPXAVM1n.RqqKvWKNOu_iC5sgJ.zJfH5Besu5JZgIBDQytqqTXIS6YG5YG4FZoiChUBQ.8vACIhUIaSxyYwYdIEdeZuxuzaJbjH7fmlZAcIfFfAqGGcmo_QgU5JYXg9dzhWUxhhGbEPu_o26cTH1ltmF7cyE9Hv0bRhugv3hf7KKFKO3RCQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Purushotam Kumar <purushotam@ti.com>
+Subject: Re: [PATCH 1/1] DaVinci: MMC: MMC/SD controller driver for DaVinci/DM6446.
+Date: Mon, 16 Mar 2009 11:40:00 -0700
+User-Agent: KMail/1.9.10
+Cc: davinci-linux-open-source@linux.davincidsp.com,
+       linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx
+References: <1237214559-31345-1-git-send-email-purushotam@ti.com>
+In-Reply-To: <1237214559-31345-1-git-send-email-purushotam@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903160934010.26431@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:34:37 up 16 days, 15:00,  2 users,  load average: 0.41, 0.70,
-	0.75
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903161140.01121.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
+On Monday 16 March 2009, Purushotam Kumar wrote:
+> From: Purshotam Kumar <purushotam@ti.com>
 > 
-> On Fri, 13 Mar 2009, Mathieu Desnoyers wrote:
-> 
-> > * Jason Baron (jbaron@redhat.com) wrote:
-> > > 
-> > > introduce softirq entry/exit tracepoints. These are useful for
-> > > augmenting existing tracers, and to figure out softirq frequencies and
-> > > timings.
-> > > 
-> > > Signed-off-by: Jason Baron <jbaron@redhat.com>
-> > > 
-> > > ---
-> > > 
-> > >  include/trace/irq_event_types.h |   12 ++++++++++++
-> > >  kernel/softirq.c                |    7 ++++++-
-> > >  2 files changed, 18 insertions(+), 1 deletions(-)
-> > > 
-> > > 
-> > > diff --git a/include/trace/irq_event_types.h b/include/trace/irq_event_types.h
-> > > index 214bb92..38b4bdd 100644
-> > > --- a/include/trace/irq_event_types.h
-> > > +++ b/include/trace/irq_event_types.h
-> > > @@ -40,4 +40,16 @@ TRACE_EVENT(irq_handler_exit,
-> > >  		  __entry->irq, __entry->ret ? "handled" : "unhandled")
-> > >  );
-> > >  
-> > > +TRACE_FORMAT(irq_softirq_entry,
-> > > +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-> > > +	TP_ARGS(h, vec),
-> > > +	TP_FMT("softirq=%d action=%s", h - vec, softirq_to_name[h-vec])
-> > > +	);
-> > > +
-> > > +TRACE_FORMAT(irq_softirq_exit,
-> > > +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-> > > +	TP_ARGS(h, vec),
-> > > +	TP_FMT("softirq=%d action=%s", h - vec, softirq_to_name[h-vec])
-> > 
-> > The softirq tracepoints are a good idea indeed (I have similar ones in
-> > the LTTng tree). My main concern is about the fact that you output the
-> > softirq name in plain text to the trace buffers. I would rather prefer
-> > to save only the softirq (h-vec) into the trace and dump the mapping
-> > (h-vec) to name only once, so we can save precious trace bytes.
-> 
-> The TP_FMT is only used by those tracers that want to use it. Any tracer 
-> can still hook directly to the trace point and do what every they want.
-> 
-> -- Steve
-> 
+> This patch adds support for DaVinci (DM6446) MMC/SD controller driver. This
 
-By doing so, you are removing the ability to use the TP_FMT information
-to perform high-speed system-wide tracing. I thought the goal was to
-create a unified buffering, but sadly I don't see the high-speed
-requirements being part of that plan.
+The dm6446 is the only chip with current mainline support;
+but dm355 can use it too, "support on the way" to mainline.
+(Only for 2.6.30 if Kevin still has time...)
 
-Mathieu
+And there are other DaVinci chips that support MMC too ...
+some are compatible with those two chips, some not, all
+should use a version of this driver.  (And OMAP-L137 too,
+same tech family but with a different marketing label.)
+
+So I'd remove the implication that DaVinci == DM6446, or
+that this driver is specific to that SoC.
 
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> @@ -171,6 +171,14 @@ config MMC_TIFM_SD
+>            To compile this driver as a module, choose M here: the
+>  	  module will be called tifm_sd.
+>  
+> +config MMC_DAVINCI
+> +        tristate "TI DAVINCI Multimedia Card Interface support"
+> +        depends on MMC
+
+Everything in that menu depends on MMC.  This should
+depend on ARCH_DAVINCI instead.  :)
+
+
+> +       host->clk = clk_get(&pdev->dev, NULL);
+
+The NULL won't work with the clock code currently
+included in mainline ... "MMCSDCLK" will though.
+
+It's probably simplest to list the updated DaVinci
+clock framework code as a runtime dependency, much
+like EDMA support is a build-time one, for this patch.
+
+
+> +       if (pdata->max_freq)
+> +               mmc->f_max = pdata->max_freq;
+> +       if (pdata->caps)
+> +               mmc->caps |= pdata->caps;
+
+A build-time issue is that "struct davinci_mmc_config"
+is missing.  You could update this patch to include
+"arch/arm/mach-davinci/include/mach/mmc.h" too.
+
+- Dave
+
