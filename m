@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760384AbZCPSPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761280AbZCPSSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760384AbZCPSPt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbZCPSPi
+	id S1761280AbZCPSSY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbZCPSSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:15:38 -0400
-Received: from mx1.wp.pl ([212.77.101.5]:61294 "EHLO mx1.wp.pl"
+	Mon, 16 Mar 2009 14:18:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39248 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754977AbZCPSPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:15:37 -0400
-Date: Mon, 16 Mar 2009 19:21:56 +0100
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-To: Lubomir Rintel <lkundrak@v3.sk>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-sound@vger.kernel.org, Krzysztof Helt <krzysztof.h1@wp.pl>,
-       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix NULL dereference when suspending snd_opl3sa2
-Message-Id: <20090316192156.80709aff.krzysztof.h1@wp.pl>
-In-Reply-To: <1237212968.11067.3.camel@localhost.localdomain>
-References: <1237197709.7210.2.camel@localhost.localdomain>
-	<1237212968.11067.3.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752590AbZCPSSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 14:18:14 -0400
+Message-ID: <49BE97B0.8000004@kernel.org>
+Date: Mon, 16 Mar 2009 11:17:20 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org>
+In-Reply-To: <49BE9248.6050707@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
-X-WP-SPAM: NO 0000000 [EVP0]                               
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Mar 2009 15:16:08 +0100
-Lubomir Rintel <lkundrak@v3.sk> wrote:
-
-> On Mon, 2009-03-16 at 11:01 +0100, Lubomir Rintel wrote:
-> > This should fix the following OOPS:
-> > http://www.kerneloops.org/raw.php?rawid=80591&msgid=
+Jeremy Fitzhardinge wrote:
+> Yinghai Lu wrote:
+>> could be max_pfn_mapped change in head_32.S that reduce mapping range
+>> to _end only.
+>>   
+> 
+> Yes, I would say you're right.  Trimming the mapping to _end only leaves
+> the space under the kernel avaliable for allocating pagetable from e820
+> space.  In this case we've got DEBUG_PAGEALLOC enabled, which inhibits
+> the use of PSE, and BIOS corruption checking on, which eats a chunk of
+> low memory.  In combination, there's only 0x8f000 bytes free below the
+> kernel, and it needs 0xe1000 to allocate for pagetables.
+> 
+> Reverting 2bd2753ff46346543ab92e80df9d96366e21baa5 fixes the problem for
+> me, though it does result in a kernel with a 73MB BSS...
 > 
 
-> 
-> This is the same issue, with 2.6.28:
-> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=519939
-> 
-> 
+need more extra check for INIT_MAP_SIZE calculating...
 
-I'll look into this.
+YH
 
-Regards,
-Krzysztof
+
+
