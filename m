@@ -1,182 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760513AbZCPM2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757596AbZCPM2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760513AbZCPM2T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 08:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760406AbZCPM2A
+	id S1757596AbZCPM2f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 08:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760557AbZCPM2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 08:28:00 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60134 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760413AbZCPM16 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 08:27:58 -0400
-Date: Mon, 16 Mar 2009 13:30:51 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Rob Landley <rob@landley.net>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       mtk.manpages@gmail.com, tytso@mit.edu, rdunlap@xenotime.net,
-       linux-doc@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: ext2/3: document conditions when reliable operation is possible
-Message-ID: <20090316123051.GJ2405@elf.ucw.cz>
-References: <20090312092114.GC6949@elf.ucw.cz> <200903121413.04434.rob@landley.net>
-MIME-Version: 1.0
+	Mon, 16 Mar 2009 08:28:14 -0400
+Received: from mail.suse.de ([195.135.220.2]:54961 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760477AbZCPM2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 08:28:13 -0400
+Date: Mon, 16 Mar 2009 13:28:06 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 00/35] Cleanup and optimise the page allocator V3
+Message-ID: <20090316122806.GE30802@wotan.suse.de>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <20090316114555.GB30802@wotan.suse.de> <20090316121122.GC6382@csn.ul.ie>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200903121413.04434.rob@landley.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090316121122.GC6382@csn.ul.ie>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Updated version here.
+On Mon, Mar 16, 2009 at 12:11:22PM +0000, Mel Gorman wrote:
+> On Mon, Mar 16, 2009 at 12:45:55PM +0100, Nick Piggin wrote:
+> > On Mon, Mar 16, 2009 at 09:45:55AM +0000, Mel Gorman wrote:
+> > > Here is V3 of an attempt to cleanup and optimise the page allocator and should
+> > > be ready for general testing. The page allocator is now faster (16%
+> > > reduced time overall for kernbench on one machine) and it has a smaller cache
+> > > footprint (16.5% less L1 cache misses and 19.5% less L2 cache misses for
+> > > kernbench on one machine). The text footprint has unfortunately increased,
+> > > largely due to the introduction of a form of lazy buddy merging mechanism
+> > > that avoids cache misses by postponing buddy merging until a high-order
+> > > allocation needs it.
+> > 
+> > BTW. I would feel better about this if it gets merged in stages, with
+> > functional changes split out, and also code optimisations and omore
+> > obvious performace improvements split out and preferably merged first.
+> > 
+> 
+> The ordering of the patches was such that least-controversial stuff is
+> at the start of the patchset. The intention was to be able to select a
+> cut-off point and say "that's enough for now"
+> 
+> > At a very quick glance, the first 25 or so patches should go in first,
+> > and that gives a much better base to compare subsequent functional
+> > changes with.
+> 
+> That's reasonable. I've requeued tests for the patchset up to 25 to see what
+> that looks like. There is also a part of a later patch that reduces how much
+> time is spent with interrupts disabled. I should split that out and move it
+> back to within the cut-off point as something that is "obviously good".
 
-On Thu 2009-03-12 14:13:03, Rob Landley wrote:
-> On Thursday 12 March 2009 04:21:14 Pavel Machek wrote:
-> > Not all block devices are suitable for all filesystems. In fact, some
-> > block devices are so broken that reliable operation is pretty much
-> > impossible. Document stuff ext2/ext3 needs for reliable operation.
-> >
-> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+OK cool. It also means we can start getting benefit of some of them
+sooner. I hope most of the obvious ones can be merged in 2.6.30.
 
-
-diff --git a/Documentation/filesystems/expectations.txt b/Documentation/filesystems/expectations.txt
-new file mode 100644
-index 0000000..710d119
---- /dev/null
-+++ b/Documentation/filesystems/expectations.txt
-@@ -0,0 +1,47 @@
-+Linux block-backed filesystems can only work correctly when several
-+conditions are met in the block layer and below (disks, flash
-+cards). Some of them are obvious ("data on media should not change
-+randomly"), some are less so.
-+
-+Write errors not allowed (NO-WRITE-ERRORS)
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+
-+Writes to media never fail. Even if disk returns error condition
-+during write, filesystems can't handle that correctly, because success
-+on fsync was already returned when data hit the journal.
-+
-+	Fortunately writes failing are very uncommon on traditional 
-+	spinning disks, as they have spare sectors they use when write
-+	fails.
-+
-+Sector writes are atomic (ATOMIC-SECTORS)
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+
-+Either whole sector is correctly written or nothing is written during
-+powerfail.
-+
-+	Unfortunately, none of the cheap USB/SD flash cards I've seen
-+	do behave like this, and are thus unsuitable for all Linux
-+	filesystems I know.
-+
-+		An inherent problem with using flash as a normal block
-+		device is that the flash erase size is bigger than
-+		most filesystem sector sizes.  So when you request a
-+		write, it may erase and rewrite some 64k, 128k, or
-+		even a couple megabytes on the really _big_ ones.
-+
-+		If you lose power in the middle of that, filesystem
-+		won't notice that data in the "sectors" _around_ the
-+		one your were trying to write to got trashed.
-+
-+	Because RAM tends to fail faster than rest of system during 
-+	powerfail, special hw killing DMA transfers may be necessary;
-+	otherwise, disks may write garbage during powerfail.
-+	Not sure how common that problem is on generic PC machines.
-+
-+	Note that atomic write is very hard to guarantee for RAID-4/5/6,
-+	because it needs to write both changed data, and parity, to 
-+	different disks. UPS for RAID array should help.
-+
-+
-+
-diff --git a/Documentation/filesystems/ext2.txt b/Documentation/filesystems/ext2.txt
-index 4333e83..41fd2ec 100644
---- a/Documentation/filesystems/ext2.txt
-+++ b/Documentation/filesystems/ext2.txt
-@@ -338,27 +339,25 @@ enough 4-character names to make up unique directory entries, so they
- have to be 8 character filenames, even then we are fairly close to
- running out of unique filenames.
  
-+Requirements
-+============
-+
-+Ext2 expects disk/storage subsystem to behave sanely. On sanely
-+behaving disk subsystem, data that have been successfully synced will
-+stay on the disk. Sane means:
-+
-+* write errors not allowed
-+
-+* sector writes are atomic
-+
-+(see expectations.txt; note that most/all linux block-based
-+filesystems have similar expectations)
-+
-+* write caching is disabled. ext2 does not know how to issue barriers
-+  as of 2.6.28. hdparm -W0 disables it on SATA disks.
-+
- Journaling
------------
--
--A journaling extension to the ext2 code has been developed by Stephen
--Tweedie.  It avoids the risks of metadata corruption and the need to
--wait for e2fsck to complete after a crash, without requiring a change
--to the on-disk ext2 layout.  In a nutshell, the journal is a regular
--file which stores whole metadata (and optionally data) blocks that have
--been modified, prior to writing them into the filesystem.  This means
--it is possible to add a journal to an existing ext2 filesystem without
--the need for data conversion.
--
--When changes to the filesystem (e.g. a file is renamed) they are stored in
--a transaction in the journal and can either be complete or incomplete at
--the time of a crash.  If a transaction is complete at the time of a crash
--(or in the normal case where the system does not crash), then any blocks
--in that transaction are guaranteed to represent a valid filesystem state,
--and are copied into the filesystem.  If a transaction is incomplete at
--the time of the crash, then there is no guarantee of consistency for
--the blocks in that transaction so they are discarded (which means any
--filesystem changes they represent are also lost).
-+==========
- Check Documentation/filesystems/ext3.txt if you want to read more about
- ext3 and journaling.
- 
-diff --git a/Documentation/filesystems/ext3.txt b/Documentation/filesystems/ext3.txt
-index 9dd2a3b..02a9bd5 100644
---- a/Documentation/filesystems/ext3.txt
-+++ b/Documentation/filesystems/ext3.txt
-@@ -188,6 +200,27 @@ mke2fs: 	create a ext3 partition with the -j flag.
- debugfs: 	ext2 and ext3 file system debugger.
- ext2online:	online (mounted) ext2 and ext3 filesystem resizer
- 
-+Requirements
-+============
-+
-+Ext3 expects disk/storage subsystem to behave sanely. On sanely
-+behaving disk subsystem, data that have been successfully synced will
-+stay on the disk. Sane means:
-+
-+* write errors not allowed
-+
-+* sector writes are atomic
-+
-+(see expectations.txt; note that most/all linux block-based
-+filesystems have similar expectations)
-+
-+* either write caching is disabled, or hw can do barriers and they are enabled.
-+
-+	   (Note that barriers are disabled by default, use "barrier=1"
-+	   mount option after making sure hw can support them). 
-+
-+	   hdparm -I reports disk features. If you have "Native
-+	   Command Queueing" is the feature you are looking for.
- 
- References
- ==========
+> > Patch 18 for example is really significant, and should
+> > almost be 2.6.29/-stable material IMO.
+> > 
+> 
+> My impression was that -stable was only for functional regressions where
+> as this is really a performance thing.
 
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+A performance regression like this in the core page allocator is a
+pretty important problem. The fix is obvious. But maybe you're right.
