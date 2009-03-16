@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757636AbZCPLnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbZCPLqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757636AbZCPLnw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 07:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbZCPLnl
+	id S1758079AbZCPLqS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 07:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbZCPLqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 07:43:41 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:36247 "EHLO slimlogic.co.uk"
+	Mon, 16 Mar 2009 07:46:03 -0400
+Received: from mail.suse.de ([195.135.220.2]:45765 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751088AbZCPLnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 07:43:40 -0400
-Subject: Re: [patch] twl4030-regulator: expose VPLL2
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: dbrownell@users.sourceforge.net, Samuel Ortiz <sameo@openedhand.com>
-Cc: Mark Brown <broonie@sirena.org.uk>, OMAP <linux-omap@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <200903131754.54997.david-b@pacbell.net>
-References: <200903131754.54997.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Mon, 16 Mar 2009 11:43:35 +0000
-Message-Id: <1237203815.6781.294.camel@vega.slimlogic.co.uk>
+	id S1751821AbZCPLqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 07:46:01 -0400
+Date: Mon, 16 Mar 2009 12:45:55 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 00/35] Cleanup and optimise the page allocator V3
+Message-ID: <20090316114555.GB30802@wotan.suse.de>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1237196790-7268-1-git-send-email-mel@csn.ul.ie>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-13 at 17:54 -0700, David Brownell wrote:
-> From: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> Add VPLL2 to the set of twl4030-family regulators exposed for
-> use by various drivers.  It's commonly used to power the digital
-> video outputs (e.g. LCD or DVI displays) on OMAP3 systems.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
-> Please apply to regulator-next and linux-omap ... I'll send
-> some patches configuring various OMAP boards to use this.
-> 
->  drivers/mfd/twl4030-core.c            |    2 --
->  drivers/regulator/twl4030-regulator.c |    2 +-
->  2 files changed, 1 insertion(+), 3 deletions(-)
-> 
-> --- a/drivers/mfd/twl4030-core.c
-> +++ b/drivers/mfd/twl4030-core.c
-> @@ -613,11 +613,9 @@ add_children(struct twl4030_platform_dat
->  
->  	/* maybe add LDOs that are omitted on cost-reduced parts */
->  	if (twl_has_regulator() && !(features & TPS_SUBSET)) {
-> -		/*
->  		child = add_regulator(TWL4030_REG_VPLL2, pdata->vpll2);
->  		if (IS_ERR(child))
->  			return PTR_ERR(child);
-> -		*/
->  
->  		child = add_regulator(TWL4030_REG_VMMC2, pdata->vmmc2);
->  		if (IS_ERR(child))
-> --- a/drivers/regulator/twl4030-regulator.c
-> +++ b/drivers/regulator/twl4030-regulator.c
-> @@ -404,8 +404,8 @@ static struct twlreg_info twl4030_regs[]
->  	TWL_ADJUSTABLE_LDO(VMMC2, 0x2b, 6),
->  	/*
->  	TWL_ADJUSTABLE_LDO(VPLL1, 0x2f, 7),
-> -	TWL_ADJUSTABLE_LDO(VPLL2, 0x33, 8),
->  	*/
-> +	TWL_ADJUSTABLE_LDO(VPLL2, 0x33, 8),
->  	TWL_ADJUSTABLE_LDO(VSIM, 0x37, 9),
->  	TWL_ADJUSTABLE_LDO(VDAC, 0x3b, 10),
->  	/*
-> 
+On Mon, Mar 16, 2009 at 09:45:55AM +0000, Mel Gorman wrote:
+> Here is V3 of an attempt to cleanup and optimise the page allocator and should
+> be ready for general testing. The page allocator is now faster (16%
+> reduced time overall for kernbench on one machine) and it has a smaller cache
+> footprint (16.5% less L1 cache misses and 19.5% less L2 cache misses for
+> kernbench on one machine). The text footprint has unfortunately increased,
+> largely due to the introduction of a form of lazy buddy merging mechanism
+> that avoids cache misses by postponing buddy merging until a high-order
+> allocation needs it.
 
-Samuel, I'm fine putting this through regulator if its fine with you ?
+BTW. I would feel better about this if it gets merged in stages, with
+functional changes split out, and also code optimisations and omore
+obvious performace improvements split out and preferably merged first.
 
-Thanks
-
-Liam
+At a very quick glance, the first 25 or so patches should go in first,
+and that gives a much better base to compare subsequent functional
+changes with. Patch 18 for example is really significant, and should
+almost be 2.6.29/-stable material IMO.
 
