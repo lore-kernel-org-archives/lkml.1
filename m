@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbZCPIfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbZCPIiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758830AbZCPIfT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 04:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbZCPIfD
+	id S1758922AbZCPIiu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 04:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbZCPIih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 04:35:03 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39692 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752615AbZCPIfA (ORCPT
+	Mon, 16 Mar 2009 04:38:37 -0400
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:42023 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753135AbZCPIig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 04:35:00 -0400
-Date: Mon, 16 Mar 2009 08:34:57 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Zhang Le <r0bertz@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, alan@redhat.com
-Subject: Re: [PATCH] filp->f_pos not correctly updated in proc_task_readdir
-Message-ID: <20090316083457.GV28946@ZenIV.linux.org.uk>
-References: <1237185871-3343-1-git-send-email-r0bertz@gentoo.org>
+	Mon, 16 Mar 2009 04:38:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=fkTKaqYPO8OvIiLTip0/Neifs+TBH07dj4C76IUnhtpm4UBnlXA7DpkUcy9yn/b6BgvyPI6NCCeIJMhgopUSSjgvQw+WVAhvUxlfaVHsIpk4duW3wk3l9Row/COqjiaaL/PwoClTLPaA0RFWdZkk0J+0JPrL7EYk56TlC3nXK1s=  ;
+X-YMail-OSG: S5R3hwgVM1mJQyCa9zqbPbNcvyWV.gboSGNUWOYNyMWTAmu9eu1MXJt0caQGxVhc4cG2GRUcd7U5Ts4_S.Z8pnaFACMSij9riJZHZDKMx08rr38xdcSv3yVeXkZr4hAqTUfJezQ396MDxtz.zgSnaMjZttuy2E.U.H3i.DqAC0J3uMFjXC2EwYTukzLU
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: yann.poupet@free.fr
+Subject: Re: [PROBLEM]: potential unaligned memory access in drivers/usb/gadget/rndis.c
+Date: Mon, 16 Mar 2009 01:38:32 -0700
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, Harvey Harrison <harvey.harrison@gmail.com>,
+       netdev@vger.kernel.org
+References: <3848726.1723791236775868071.JavaMail.root@spooler2-g27.priv.proxad.net> <20090311235119.f4609775.akpm@linux-foundation.org>
+In-Reply-To: <20090311235119.f4609775.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1237185871-3343-1-git-send-email-r0bertz@gentoo.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200903160138.32964.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 02:44:31PM +0800, Zhang Le wrote:
-> filp->f_pos only get updated at the end of the function. Thus d_off of those
-> dirents who are in the middle will be 0, and this will cause a problem in
-> glibc's readdir implementation, specifically endless loop. Because when overflow
-> occurs, f_pos will be set to next dirent to read, however it will be 0, unless
-> the next one is the last one. So it will start over again and again.
+On Wednesday 11 March 2009, Andrew Morton wrote:
+> 
+> > It happened to me that skb_pull() returns a pointer to a
+> > location not aligned on a 4 bytes boundary. 
 
-Eh...  Here's what's really going on:
+Does this arch set NET_IP_ALIGN appropriately?
 
-proc_..._fill_cache() API is rather kludgy and far too convoluted.  In
-particular, it calls filldir() and passes file->f_pos to it, expecting
-the caller to update file->f_pos between the calls.  proc_task_readdir()
-uses that sucker, but doesn't update ->f_pos until the very end.  As
-the result, d_off of direntries produced by it gets screwed.
-Broken-by: commit 61a28784028e6d55755e4d0f39bee8d9bf2ee8d9
-Author: Eric W. Biederman <ebiederm@xmission.com>
-Date:   Mon Oct 2 02:18:49 2006 -0700
+If worst comes to worst, use put_unaligned() instead of
+a static (non-const) template for that header.
 
-    [PATCH] proc: Remove the hard coded inode numbers
 
-Patch is fine, but I'd rather rip the layers of ..._fill_cache() abstractions
-out and see what falls out.  Anyway, for -rc your variant is definitely the
-way to go.
