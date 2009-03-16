@@ -1,143 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760372AbZCPXph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbZCPXrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760372AbZCPXph (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 19:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZCPXp1
+	id S1754131AbZCPXrT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 19:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbZCPXrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 19:45:27 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33007 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751088AbZCPXp0 (ORCPT
+	Mon, 16 Mar 2009 19:47:07 -0400
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:53821 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750847AbZCPXrF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 19:45:26 -0400
-Date: Tue, 17 Mar 2009 08:44:00 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Gene Heskett <gene.heskett@gmail.com>,
-       David Newall <davidn@davidnewall.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: BUG?: PAGE_FLAGS_CHECK_AT_PREP seems to be cleared too early
- (Was Re: I just got got another Oops
-Message-Id: <20090317084400.919c75ae.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0903162101110.13164@blonde.anvils>
-References: <200903120133.11583.gene.heskett@gmail.com>
-	<49B8C98D.3020309@davidnewall.com>
-	<200903121431.49437.gene.heskett@gmail.com>
-	<20090316115509.40ea13da.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090316170359.858e7a4e.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0903162101110.13164@blonde.anvils>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Mar 2009 19:47:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JXTtj0VXTKZxF5Cnz9tjDBeJn3UAHTCpYWb2blQaDECaC0e4V2aEYpU66qMov2oYj5
+         AOC2BceXsZHoEZAQD79MzUODYovY/ip2/5HX50cKJrPh+nT8W97+Tnqt2PXCIEUdcN2W
+         ejpU6bzNdx0ILPizVWfeJ6Ho8ZqpsOhPO/HBQ=
+Date: Tue, 17 Mar 2009 00:46:58 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       utrace-devel@redhat.com
+Subject: Re: [RFC][PATCH 1/2] tracing/ftrace: syscall tracing infrastructure
+Message-ID: <20090316234657.GC6150@nowhere>
+References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-2-git-send-email-fweisbec@gmail.com> <49BEAA5A.4030708@redhat.com> <20090316201526.GE8393@nowhere> <49BEB8C4.2010606@redhat.com> <20090316214526.GA15119@Krystal> <20090316221800.GE12974@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090316221800.GE12974@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Mar 2009 21:44:11 +0000 (GMT)
-Hugh Dickins <hugh@veritas.com> wrote:
-
-> On Mon, 16 Mar 2009, KAMEZAWA Hiroyuki wrote:
-> > Hi,
-> > I'm sorry if I miss something..
+On Mon, Mar 16, 2009 at 06:18:00PM -0400, Frank Ch. Eigler wrote:
+> Hi -
 > 
-> I think it's me who missed something, and needs to say sorry.
 > 
+> On Mon, Mar 16, 2009 at 05:45:26PM -0400, Mathieu Desnoyers wrote:
+> 
+> > [...]
+> > > As far as I know, utrace supports multiple trace-engines on a process.
+> > > Since ptrace is just an engine of utrace, you can add another engine on utrace.
+> > > 
+> > > utrace-+-ptrace_engine---owner_process
+> > >        |
+> > >        +-systemtap_module
+> > >        |
+> > >        +-ftrace_plugin
+> 
+> Right.  In this way, utrace is simply a multiplexing intermediary.
+> 
+> 
+> > > Here, Frank had posted an example of utrace->ftrace engine.
+> > > http://lkml.org/lkml/2009/1/27/294
+> > > 
+> > > And here is the latest his patch(which seems to support syscall tracing...)
+> > > http://git.kernel.org/?p=linux/kernel/git/frob/linux-2.6-utrace.git;a=blob;f=kernel/trace/trace_process.c;h=619815f6c2543d0d82824139773deb4ca460a280;hb=ab20efa8d8b5ded96e8f8c3663dda3b4cb532124
+> > > 
 > > 
-> > >From this patch
-> > ==
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=79f4b7bf393e67bbffec807cc68caaefc72b82ee
-> > ==
-> > #define PAGE_FLAGS_CHECK_AT_PREP       ((1 << NR_PAGEFLAGS) - 1)
-> > ...
-> > @@ -468,16 +467,16 @@ static inline int free_pages_check(struct page *page)
-> >                 (page_count(page) != 0)  |
-> >                 (page->flags & PAGE_FLAGS_CHECK_AT_FREE)))
-> > ....
-> > +       if (PageReserved(page))
-> > +               return 1;
-> > +       if (page->flags & PAGE_FLAGS_CHECK_AT_PREP)
-> > +               page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
-> > +       return 0;
-> >  }
-> > ==
+> > Reminder : we are looking at system-wide tracing here. Here are some
+> > comments about the current utrace implementation.
 > > 
-> > PAGE_FLAGS_CHECK_AT_PREP is cleared by free_pages_check().
+> > Looking at include/linux/utrace.h from the tree
 > > 
-> > This means PG_head/PG_tail(PG_compound) flags are cleared here
+> > 17  * A tracing engine starts by calling utrace_attach_task() or
+> > 18  * utrace_attach_pid() on the chosen thread, passing in a set of hooks
+> > 19  * (&struct utrace_engine_ops), and some associated data.  This produces a
+> > 20  * &struct utrace_engine, which is the handle used for all other
+> > 21  * operations.  An attached engine has its ops vector, its data, and an
+> > 22  * event mask controlled by utrace_set_events().
+> > 
+> > So if the system has, say 3000 threads, then we have 3000 struct
+> > utrace_engine created ? I wonder what effet this could have one
+> > cachelines if this is used to trace hot paths like system call
+> > entry/exit. Have you benchmarked this kind of scenario under tbench ?
 > 
-> Yes, well spotted.  How embarrassing.  I must have got confused
-> about when the checking occurred when freeing a compound page.
+> It has not been a problem, since utrace_engines are designed to be
+> lightweight.  Starting or stopping a systemtap script of the form
 > 
-> > and Compound page will never be freed in sane way.
+>     probe process.syscall {}
 > 
-> But is that so?  I'll admit I've not tried this out yet, but my
-> understanding is that the Compound page actually gets freed fine:
-> free_compound_page() should have passed the right order down, and this
-> PAGE_FLAGS_CHECK_AT_PREP clearing should remove the Head/Tail/Compound
-> flags - doesn't it all work out sanely, without any leaking?
+> appears to have no noticable impact on a tbench suite.
 > 
-I think it works sanely and pages are freed in valid way.
-But bad_page() checking for compound pages (at destroy_compound_page())
-is not done.
+> 
+> > 24  * For each event bit that is set, that engine will get the
+> > 25  * appropriate ops->report_*() callback when the event occurs.  The
+> > 26  * &struct utrace_engine_ops need not provide callbacks for an event
+> > 27  * unless the engine sets one of the associated event bits.
+> > 
+> > Looking at utrace_set_events(), we seem to be limited to 32 events on a
+> > 32-bits architectures because it uses a bitmask ? Isn't it a bit small?
+> 
+> There are only a few types of thread events that involve different
+> classes of treatment, or different degrees of freedom in terms of
+> interference with the uninstrumented fast path of the threads.
+> 
+> For example, it does not make sense to have different flag bits for
+> different system calls, since choosing to trace *any* system call
+> involves taking the thread off of the fast path with the TIF_ flag.
+> Once it's off the fast path, it doesn't matter whether the utrace core
+> or some client performs syscall discrimination, so it is left to the
+> client.
+> 
+> 
+> > 682 /**
+> > 683  * utrace_set_events_pid - choose which event reports a tracing engine gets
+> > 684  * @pid:                thread to affect
+> > 685  * @engine:             attached engine to affect
+> > 686  * @eventmask:          new event mask
+> > 687  *
+> > 688  * This is the same as utrace_set_events(), but takes a &struct pid
+> > 689  * pointer rather than a &struct task_struct pointer.  The caller must
+> > 690  * hold a ref on @pid, but does not need to worry about the task
+> > 691  * staying valid.  If it's been reaped so that @pid points nowhere,
+> > 692  * then this call returns -%ESRCH.
+> > 
+> > 
+> > Comments like "but does not need to worry about the task staying valid"
+> > does not make me feel safe and comfortable at all, could you explain
+> > how you can assume that derefencing an "invalid" pointer will return
+> > NULL ?
+> 
+> (We're doing a final round of "internal" (pre-LKML) reviews of the
+> utrace implementation right now on utrace-devel@redhat.com, where such
+> comments get fastest attention from the experts.)
+> 
+> For this particular issue, the utrace documentation file explains the
+> liveness rules for the various pointers that can be fed to or received
+> from utrace functions.  This is not about "feeling" safe, it's about
+> what the mechanism is deliberately designed to permit.
+> 
+> 
+> > About the utrace_attach_task() :
+> > 
+> > 244         if (unlikely(target->flags & PF_KTHREAD))
+> > 245                 /*
+> > 246                  * Silly kernel, utrace is for users!
+> > 247                  */
+> > 248                 return ERR_PTR(-EPERM);
+> > 
+> > So we cannot trace kernel threads ?
+> 
+> I'm not quite sure about all the reasons for this, but I believe that
+> kernel threads don't tend to engage in job control / signal /
+> system-call activities the same way as normal user threads do.
+> 
 
 
-> What goes missing is all the destroy_compound_page() checks:
-> that's at present just dead code.
-> 
-> There's several things we could do about this.
-> 
-> 1.  We could regard destroy_compound_page() as legacy debugging code
-> from when compound pages were first introduced, and sanctify my error
-> by removing it.  Obviously that's appealing to me, makes me look like
-> a prophet rather than idiot!  That's not necessarily the right thing to
-> do, but might appeal also to those cutting overhead from page_alloc.c.
-> 
-> 2.  We could do the destroy_compound_page() stuff in free_compound_page()
-> before calling __free_pages_ok(), and add the Head/Tail/Compound flags
-> into PAGE_FLAGS_CHECK_AT_FREE.  That seems a more natural ordering to
-> me, and would remove the PageCompound check from a hotter path; but
-> I've a suspicion there's a good reason why it was not done that way,
-> that I'm overlooking at this moment.
-> 
-> 3.  We can define a PAGE_FLAGS_CLEAR_AT_FREE which omits the Head/Tail/
-> Compound flags, and lets destroy_compound_page() be called as before
-> where it's currently intended.
-> 
-> What do you think?  I suspect I'm going to have to spend tomorrow
-> worrying about something else entirely, and won't return here until
-> Wednesday.
-> 
-I like "2". 
+Some of them use some syscalls, but it doesn't involve a user/kernel switch.
+So it's not tracable by hooking syscall_entry/exit or using tracehooks.
+It would require specific hooks on sys_* functions for that.
 
+So this check is right (writing on each thread info seems somewhat costly so
+it's better if it is avoided like here).
 
-> But as regards the original "I just got got another Oops": my bug
-> that you point out here doesn't account for that, does it?  It's
-> still a mystery, isn't it, how the PageTail bit came to be set at
-> that point?
+Frederic.
+
+ 
+> > 118 /*
+> > 119  * Called without locks, when we might be the first utrace engine to attach.
+> > 120  * If this is a newborn thread and we are not the creator, we have to wait
+> > 121  * for it.  The creator gets the first chance to attach.  The PF_STARTING
+> > 122  * flag is cleared after its report_clone hook has had a chance to run.
+> > 123  */
+> > 124 static inline int utrace_attach_delay(struct task_struct *target)
+> > 125 {
+> > 126         if ((target->flags & PF_STARTING) && target->real_parent != current)
+> > 127                 do {
+> > 128                         schedule_timeout_interruptible(1);
+> > 129                         if (signal_pending(current))
+> > 130                                 return -ERESTARTNOINTR;
+> > 131                 } while (target->flags & PF_STARTING);
+> > 132
+> > 133         return 0;
+> > 134 }
+> > 
+> > Why do we absolutely have to poll until the thread has started ?
 > 
-I never find "who set it/where does it set". But page_alloc.c is an only
-file which modifies PageTail bit and I'm the last modifier of it.
-So, I'm intersted in this Oops.
-
-
-> But that Oops does demonstrate that it's a very bad idea to be using
-> the deceptive page_count() in those bad_page() checks: we need to be
-> checking page->_count directly.
+> (I don't know off the top of my head - Roland?)
 > 
-I think so.
-
-> And in looking at this, I notice something else to worry about:
-> that CONFIG_HUGETLBFS prep_compound_gigantic_page(), which seems
-> to exist for a more general case than "p = page + i" - what happens
-> when such a gigantic page is freed, and arrives at the various
-> "p = page + i" assumptions on the freeing path?
 > 
-Ah, I missed that path. I'll look into that today.
-
-Thanks,
--Kame
+> > utrace_add_engine()
+> >   set_notify_resume(target);
+> > 
+> > ok, so this is where the TIF_NOTIFY_RESUME thread flag is set. I notice
+> > that it is set asynchronously with the execution of the target thread
+> > (as I do with my TIF_KERNEL_TRACE thread flag).
+> > 
+> > However, on x86_64, _TIF_DO_NOTIFY_MASK is only tested in 
+> > entry_64.S
+> > 
+> > int_signal:
+> > and
+> > retint_signal:
+> > 
+> > code paths. However, if there is no syscall tracing to do upon syscall
+> > entry, the thread flags are not re-read at syscall exit and you will
+> > miss the syscall exit returning from your target thread if this thread
+> > was blocked while you set its TIF_NOTIFY_RESUME. Or is it handled in
+> > some subtle way I did not figure out ? BTW re-reading the TIF flags from
+> > the thread_info at syscall exit on the fast path is out of question
+> > because it considerably degrades the kernel performances. entry_*.S is
+> > a very, very critical path.
+> 
+> (I don't know off the top of my head - Roland?)
+> 
+> 
+> - FChE
 
