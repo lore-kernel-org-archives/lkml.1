@@ -1,63 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760660AbZCPLTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760890AbZCPLT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760660AbZCPLTJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 07:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbZCPLSz
+	id S1760890AbZCPLT0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 07:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760795AbZCPLTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 07:18:55 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:37977 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754071AbZCPLSz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 07:18:55 -0400
-Date: Mon, 16 Mar 2009 16:48:11 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Rolando Martins <rolando.martins@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: cgroup, RT cpu balance question
-Message-ID: <20090316111811.GB3949@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <b6a2d2e20903160356y67db8472k43577d706a393d96@mail.gmail.com>
+	Mon, 16 Mar 2009 07:19:12 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:45275 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760697AbZCPLTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 07:19:10 -0400
+Date: Mon, 16 Mar 2009 11:19:06 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 00/35] Cleanup and optimise the page allocator V3
+Message-ID: <20090316111906.GA6382@csn.ul.ie>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <20090316104054.GA23046@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <b6a2d2e20903160356y67db8472k43577d706a393d96@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090316104054.GA23046@wotan.suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 10:56:04AM +0000, Rolando Martins wrote:
-> Hi,
-> I have one question regarding RT cpu balance using cgroup.
+On Mon, Mar 16, 2009 at 11:40:54AM +0100, Nick Piggin wrote:
+> On Mon, Mar 16, 2009 at 09:45:55AM +0000, Mel Gorman wrote:
+> > Here is V3 of an attempt to cleanup and optimise the page allocator and should
+> > be ready for general testing. The page allocator is now faster (16%
+> > reduced time overall for kernbench on one machine) and it has a smaller cache
+> > footprint (16.5% less L1 cache misses and 19.5% less L2 cache misses for
+> > kernbench on one machine). The text footprint has unfortunately increased,
+> > largely due to the introduction of a form of lazy buddy merging mechanism
+> > that avoids cache misses by postponing buddy merging until a high-order
+> > allocation needs it.
 > 
-> cgroup
-> echo 1 > cpuset.sched_load_balance
-> 
-> cgroup/2
-> echo 0 > cpuset.mems
-> echo 0-2 > cpuset.cpus
-> echo 450000 > cpu.rt_runtime_us
-> 
-> cgroup/3
-> echo 0 > cpuset.mems
-> echo 3 > cpuset.cpus
-> echo 450000 > cpu.rt_runtime_us
-> 
-> 
-> I have a small test that uses a loop to utilize 100% cpu (SCHED_FIFO).
-> When I run 2 tests on cgroup/3, it only uses bandwidth from cpu 3
-> (100%), the balancing isn't happening.
-> As I use the SCHED_FIFO, the 2 processes run sequentially.
-> 
-> Is this the expected behavior? Shouldn't the domains balance the spare
-> cpu bandwidth?
+> You!? You want to do lazy buddy? ;)
+
+I'm either a man of surprises, an idiot or just plain inconsistent :)
+
+> That's wonderful, but it would
+> significantly increase the fragmentation problem, wouldn't it?
+
+Not necessarily, anti-fragmentation groups movable pages within a
+hugepage-aligned block and high-order allocations will trigger a merge of
+buddies from PAGE_ALLOC_MERGE_ORDER (defined in the relevant patch) up to
+MAX_ORDER-1. Critically, a merge is also triggered when anti-fragmentation
+wants to fallback to another migratetype to satisfy an allocation. As
+long as the grouping works, it doesn't matter if they were only merged up
+to PAGE_ALLOC_MERGE_ORDER as a full merge will still free up hugepages.
+So two slow paths are made slower but the fast path should be faster and it
+should be causing fewer cache line bounces due to writes to struct page.
+
+The success rate of high-order allocations should be roughly the same but
+they will be slower, particularly as I remerge more often than required. This
+slowdown is undesirable but the assumptions are that either a) it's the
+static hugepage pool being resized in which case the delay is irrelevant or
+b) the pool is being dynamically resized but the expected lifetime of the
+page far exceeds the allocation cost of merging.
+
+I fully agree with you that it's more important that order-0 allocations
+are faster than order-9 allocations but I'm not totally off high-order
+allocs either. You'll see the patchset allows higher-order pages (up to
+PAGE_ALLOC_COSTLY_ORDER) onto the PCP lists for order-1 allocations used
+by sig handlers, stacks and the like (important for fork-heavy loads I am
+guessing) and because SLUB uses high-order allocations that are currently
+bypassing the PCP lists altogether. I haven't measured it but SLUB-heavy
+workloads must be contending on the zone->lock to some extent.
+
+When I last checked (about 10 days) ago, I hadn't damaged anti-fragmentation
+but that was a lot of revisions ago. I'm redoing the tests to make sure
+anti-fragmentation is still ok.
+
+> (although pcp lists are conceptually a form of lazy buddy already)
 > 
 
-Yes, this is expected behavior. The cpuset has limited the task's allowed
-CPUs to CPU 3. With that, it will use the bandwidth only from CPU 3. As
-you noted, since the process are SCHED_FIFO, they will run sequentially.
+Indeed.
+
+> No objections from me of course, if it is making significant
+> speedups. I assume you mean overall time on kernbench is overall sys
+> time?
+
+Both, I should be clearer. The amount of oprofile samples measured in the
+page allocator is reduced by a large amount but it does not always translate
+into overall speedups although it did for 8 out of 9 machines I tested. On
+most machines the overall "System Time" for kernbench is reduced but in 2
+out of 9 test machines, the elapsed time increases due to some other caching
+weirdness or due to a change in timing with respect to locking.
+
+Pinning down the exact problem is tricky as profile sometimes reverses the
+performance effects. i.e. without profiling I'll see a slowdown and
+with profiling I see significant speedups so I can't measure what is going
+on.
 
 -- 
-regards,
-Dhaval
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
