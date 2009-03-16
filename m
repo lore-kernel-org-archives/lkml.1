@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759029AbZCPK4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbZCPK47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759029AbZCPK4f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 06:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbZCPK4Z
+	id S1759351AbZCPK47 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 06:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754173AbZCPK4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 06:56:25 -0400
-Received: from mail-ew0-f164.google.com ([209.85.219.164]:36456 "EHLO
-	mail-ew0-f164.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754173AbZCPK4Y (ORCPT
+	Mon, 16 Mar 2009 06:56:49 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44835 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755130AbZCPK4s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 06:56:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=gHbmprFpLNQNTKsSLkt+fF+gf0nYGKqBTHW5Cx83s6F2YJfhiy4J9yxyNy8FUMBZ/k
-         0ldgVORgmkgIdJikOE917/QZjo6IZqZHFNP2SWNxgykSM4pMsbwZRLe+xTGMo3nggMVD
-         tB3H6v6cO0bP73KE9JXGlqUPUQUiaFpxhQSmQ=
-Message-ID: <49BE3052.5080801@gmail.com>
-Date: Mon, 16 Mar 2009 11:56:18 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Char: isicom, prolong tty reference holding
-References: <1237199665-10675-1-git-send-email-jirislaby@gmail.com> <20090316105026.610a0b9a@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090316105026.610a0b9a@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 16 Mar 2009 06:56:48 -0400
+Date: Mon, 16 Mar 2009 10:57:28 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Gabor Kovacs <kgabor@bolyai.elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Lava dual parallel PCI card IRQ problem
+Message-ID: <20090316105728.4380454c@lxorguk.ukuu.org.uk>
+In-Reply-To: <200903130051.18119.kgabor@bolyai.elte.hu>
+References: <200903130051.18119.kgabor@bolyai.elte.hu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16.3.2009 11:50, Alan Cox wrote:
-> On Mon, 16 Mar 2009 11:34:24 +0100
-> Jiri Slaby<jirislaby@gmail.com>  wrote:
->
->> Hold the tty reference a bit longer in isicom_shutdown_port, because
->> we use it later in the function, so that it won't disappear in the
->> meantime.
->
-> NAK - we do have a bug there but I don't think that is it.
->
-> The tty_kref_get takes an additional reference so the tty_port_tty_set is
-> fine, but we don't then drop the kref we took temporarily. I think we
-> need this:
+On Fri, 13 Mar 2009 00:51:18 -0400
+Gabor Kovacs <kgabor@bolyai.elte.hu> wrote:
 
-Hmm, but the tty_port_tty_set drops the reference, right?
+> Hi All,
+> 
+> I have problems in setting up IRQ mode operation of parallel ports using 
+> onboard port and a LAVA dual parallel PCI card. IRQ is needed to catch events 
+> of an external instrument.
+
+The current driver never tries to initialise IRQ support for parallel PCI
+ports and never has. I am not sure why this should be the case but I can
+send you a patch to see what happens if we enable it.
