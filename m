@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbZCPSOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760384AbZCPSPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760645AbZCPSOU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756739AbZCPSOJ
+	id S1760384AbZCPSPt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbZCPSPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:14:09 -0400
-Received: from mail-qy0-f122.google.com ([209.85.221.122]:56139 "EHLO
-	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753630AbZCPSOH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:14:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=nzXw43PFMpP8gWO4EWw9glPH0BJqZ0xgWiQk+txk+bvghFehOIVKA6iisEYWxK2+Bi
-         jZk7xjwPQssGiGJ9/Fue7PlUjbM4cRK3rS4mwFYcyhN7wnNIRI8Bb9vzAHckup8ji8Al
-         LD8bxo4SxlKZ6CxHLaP5KeHBhCrY5qV+9tXys=
-MIME-Version: 1.0
-In-Reply-To: <1237214559-31345-1-git-send-email-purushotam@ti.com>
-References: <1237214559-31345-1-git-send-email-purushotam@ti.com>
-Date: Mon, 16 Mar 2009 23:44:04 +0530
-Message-ID: <5d5443650903161114q4aa63bb9s405031c8a5bd0317@mail.gmail.com>
-Subject: Re: [PATCH 1/1] DaVinci: MMC: MMC/SD controller driver for 
-	DaVinci/DM6446.
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Purushotam Kumar <purushotam@ti.com>
-Cc: davinci-linux-open-source@linux.davincidsp.com,
-       linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 16 Mar 2009 14:15:38 -0400
+Received: from mx1.wp.pl ([212.77.101.5]:61294 "EHLO mx1.wp.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754977AbZCPSPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 14:15:37 -0400
+Date: Mon, 16 Mar 2009 19:21:56 +0100
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-sound@vger.kernel.org, Krzysztof Helt <krzysztof.h1@wp.pl>,
+       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix NULL dereference when suspending snd_opl3sa2
+Message-Id: <20090316192156.80709aff.krzysztof.h1@wp.pl>
+In-Reply-To: <1237212968.11067.3.camel@localhost.localdomain>
+References: <1237197709.7210.2.camel@localhost.localdomain>
+	<1237212968.11067.3.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
+X-WP-SPAM: NO 0000000 [EVP0]                               
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Purshotam,
+On Mon, 16 Mar 2009 15:16:08 +0100
+Lubomir Rintel <lkundrak@v3.sk> wrote:
 
-> +
-> +
-> +/* MMCSD Init clock in Hz in opendain mode */
+> On Mon, 2009-03-16 at 11:01 +0100, Lubomir Rintel wrote:
+> > This should fix the following OOPS:
+> > http://www.kerneloops.org/raw.php?rawid=80591&msgid=
+> 
 
-s/opendain/opendrain
+> 
+> This is the same issue, with 2.6.28:
+> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=519939
+> 
+> 
 
-> +
-> +static irqreturn_t mmc_davinci_irq(int irq, void *dev_id)
-> +{
-> +       struct mmc_davinci_host *host = (struct mmc_davinci_host *)dev_id;
+I'll look into this.
 
-
-Unnecessary casting from void *.
-
-> +
-> +       ret = -EBUSY;
-> +       mem_size = r->end - r->start + 1;
-
-How about using resource_size(...) ?
-
-> +       mem = request_mem_region(r->start, mem_size, pdev->name);
-> +       if (!mem)
-> +               goto out;
-> +
-> +
-> +MODULE_LICENSE("GPL");
-> +MODULE_DESCRIPTION("MMC/SD driver for Davinci MMC controller");
-
-Adding MODULE_AUTHOR and MODULE_ALIAS would be great. You can also add
-MAINTAINERS entry if you want.
-
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+Regards,
+Krzysztof
