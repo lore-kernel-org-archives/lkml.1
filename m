@@ -1,116 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbZCPSHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZCPSIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759554AbZCPSHh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZCPSH1
+	id S1758174AbZCPSIX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbZCPSID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:07:27 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:59510 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752191AbZCPSH0 (ORCPT
+	Mon, 16 Mar 2009 14:08:03 -0400
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:57360 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752191AbZCPSIA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:07:26 -0400
-Date: Mon, 16 Mar 2009 19:01:32 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+	Mon, 16 Mar 2009 14:08:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=unJR6wzI7mSOEoWP0SOz+KMzbFTyGgC04QMINqCPRquHlI0mWb1M5lv2teA69LdqZv
+         cv0ZIxlVxqgDL/GxQBYsCDztz+AkV7mABX0YwddErcvdeyiXE/8fK6Qb9ybVrY/c19cn
+         /5WY3pTISuI9frw0W5Xu5+Hwpcv2FDqd4o7Ho=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: Tejun Heo <tj@kernel.org>
-Cc: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com
-Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
- percpu allocator
-Message-ID: <20090316190132.7965a49a@skybase>
-In-Reply-To: <1236671631-9305-1-git-send-email-tj@kernel.org>
-References: <1236671631-9305-1-git-send-email-tj@kernel.org>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [GIT PATCH] block: cleanup patches, take#2
+Date: Mon, 16 Mar 2009 18:53:14 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7-next-20090311; KDE/4.2.0; i686; ; )
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
+References: <1237170540-19130-1-git-send-email-tj@kernel.org>
+In-Reply-To: <1237170540-19130-1-git-send-email-tj@kernel.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200903161853.14268.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tejun,
-
-On Tue, 10 Mar 2009 16:53:46 +0900
-Tejun Heo <tj@kernel.org> wrote:
-
-> The only differences are 1. there can be more space between percpu
-> areas for each cpu to accomodate minimum allocation size and first
-> chunk dynamic reserve and 2. dynamic percpu variables use the same
-> address translation mechanism as static ones.
+On Monday 16 March 2009, Tejun Heo wrote:
+> Hello,
 > 
-> #1 shouldn't cause any trouble and #2 shouldn't too because the
-> offsets for dynamic percpu variables are carried in full pointer-width
-> variables, so as long as the calculations don't make wrong assumptions
-> (should be masked by RELOC_HIDE), it should be okay, but if your arch
-> has addressing limitations (alpha, s390), please take a second look.
+> This patchset is available in the following git tree.
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-cleanup
+> 
+> This patchset contains the following 17 cleanup patches.
+> 
+>  0001-ide-use-blk_run_queue-instead-of-blk_start_queuei.patch
+>  0002-ide-don-t-set-REQ_SOFTBARRIER.patch
+>  0003-ide-use-blk_update_request-instead-of-blk_end_req.patch
+>  0004-block-merge-blk_invoke_request_fn-into-__blk_run_.patch
+>  0005-block-kill-blk_start_queueing.patch
+>  0006-block-don-t-set-REQ_NOMERGE-unnecessarily.patch
+>  0007-block-cleanup-REQ_SOFTBARRIER-usages.patch
+>  0008-block-clean-up-misc-stuff-after-block-layer-timeout.patch
+>  0009-block-reorder-request-completion-functions.patch
+>  0010-block-reorganize-request-fetching-functions.patch
+>  0011-block-kill-blk_end_request_callback.patch
+>  0012-block-clean-up-request-completion-API.patch
+>  0013-block-move-rq-start_time-initialization-to-blk_rq_.patch
+>  0014-block-implement-and-use-__-blk_end_request_all.patch
+>  0015-block-kill-end_request.patch
+>  0016-ubd-simplify-block-request-completion.patch
+>  0017-block-clean-up-unnecessary-stuff-from-block-drivers.patch
+> 
+> It's on top of the current linux-2.6-block/for-2.6.30[1].  Changes
+> from the last take[2] are.
+> 
+> * IDE changes separated out to 0001-0003
+> * IDE end_all conversion dropped
+> 
+> Bartlomiej, 0001-0003 are mostly trivial and shouldn't cause too much
+> merge headaches later.  Can these go through block tree?  I'll base
 
-We do have a problem with #2, the dynamic percpu patches currently
-breaks s390. But the nice thing is that we can now get rid of the GOTENT
-relocation for the percpu symbols. If the code is changed to use
-RELOC_HIDE for the SHIFT_PERCPU_PTR define, everything works just fine.
-Patch attached. Nice works guys.
+Patches look fine but 0002-0003 will cause pata/block merge conflicts
+for linux-next once they go into block tree so no ACK from me for this
+approach.
 
--- 
-blue skies,
-   Martin.
+$ patch -p1 --dry-run < 0002.patch
+patching file drivers/ide/ide-disk.c
+Hunk #1 FAILED at 405.
+1 out of 1 hunk FAILED -- saving rejects to file drivers/ide/ide-disk.c.rej
+patching file drivers/ide/ide-ioctls.c
 
-"Reality continues to ruin my life." - Calvin.
+$ patch -p1 --dry-run < 0003.patch
+patching file drivers/ide/ide-cd.c
+Reversed (or previously applied) patch detected!  Assume -R? [n]
 
----
-Subject: [PATCH] s390: percpu access.
-
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-
-With the dynamic percpu allocator there is no need anymore to play
-tricks with the GOTENT relocation for the access to the percpu
-symbols. A simple RELOC_HIDE gets the job done.
-
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- arch/s390/include/asm/percpu.h |   26 +-------------------------
- 1 file changed, 1 insertion(+), 25 deletions(-)
-
-diff -urpN linux-next/arch/s390/include/asm/percpu.h linux-patched/arch/s390/include/asm/percpu.h
---- linux-next/arch/s390/include/asm/percpu.h	2009-03-16 18:53:47.000000000 +0100
-+++ linux-patched/arch/s390/include/asm/percpu.h	2009-03-16 18:53:35.000000000 +0100
-@@ -4,31 +4,7 @@
- #include <linux/compiler.h>
- #include <asm/lowcore.h>
- 
--/*
-- * s390 uses its own implementation for per cpu data, the offset of
-- * the cpu local data area is cached in the cpu's lowcore memory.
-- * For 64 bit module code s390 forces the use of a GOT slot for the
-- * address of the per cpu variable. This is needed because the module
-- * may be more than 4G above the per cpu area.
-- */
--#if defined(__s390x__) && defined(MODULE)
--
--#define SHIFT_PERCPU_PTR(ptr,offset) (({			\
--	extern int simple_identifier_##var(void);	\
--	unsigned long *__ptr;				\
--	asm ( "larl %0, %1@GOTENT"		\
--	    : "=a" (__ptr) : "X" (ptr) );		\
--	(typeof(ptr))((*__ptr) + (offset));	}))
--
--#else
--
--#define SHIFT_PERCPU_PTR(ptr, offset) (({				\
--	extern int simple_identifier_##var(void);		\
--	unsigned long __ptr;					\
--	asm ( "" : "=a" (__ptr) : "0" (ptr) );			\
--	(typeof(ptr)) (__ptr + (offset)); }))
--
--#endif
-+#define SHIFT_PERCPU_PTR(var, offset) RELOC_HIDE(&per_cpu_var(var), (offset))
- 
- #define __my_cpu_offset S390_lowcore.percpu_offset
- 
+Thanks,
+Bart
