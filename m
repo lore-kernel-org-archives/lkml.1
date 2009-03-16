@@ -1,46 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761035AbZCPOUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbZCPOWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761035AbZCPOUh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 10:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZCPOU2
+	id S1760935AbZCPOWh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 10:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757681AbZCPOW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 10:20:28 -0400
-Received: from gw.goop.org ([64.81.55.164]:38371 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754054AbZCPOU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 10:20:27 -0400
-Message-ID: <49BE6027.60805@goop.org>
-Date: Mon, 16 Mar 2009 07:20:23 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 16 Mar 2009 10:22:27 -0400
+Received: from h155.mvista.com ([63.81.120.155]:39181 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756145AbZCPOW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 10:22:26 -0400
+Message-ID: <49BE60CD.3030302@ru.mvista.com>
+Date: Mon, 16 Mar 2009 17:23:09 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-To: bderzhavets@yahoo.com
-CC: Vegard Nossum <vegard.nossum@gmail.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] Re: tip.git regression from "vsprintf: unify the
- format decoding layer for its 3 users"
-References: <50370.4113.qm@web56105.mail.re3.yahoo.com>
-In-Reply-To: <50370.4113.qm@web56105.mail.re3.yahoo.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] ide: set hwif->expiry prior to calling [__]ide_set_handler()
+References: <20090209231945.32406.14874.sendpatchset@localhost.localdomain> <20090209232005.32406.20153.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090209232005.32406.20153.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boris Derzhavets wrote:
-> What is the issue status in meantime ?
-> git pull reports conflicting merge ./lib/vsprintf.c
-> PV DomUs  may be brought up , but cannot be
-> shutdown.
->
+Bartlomiej Zolnierkiewicz wrote:
 
-Do a "git checkout xen/dom0/hackery; git reset --hard 
-remotes/xen/xen/dom0/hackery" to rebase your local hackery branch to the 
-upstream one.  I did a bit of a history-rewrite to replace the reverts 
-with the proper fix.
+> * Set hwif->expiry prior to calling [__]ide_set_handler()
+>   and drop 'expiry' argument.
 
-    J
+> * Set hwif->expiry to NULL in ide_{timer_expiry,intr}()
+>   and remove 'hwif->expiry = NULL' assignments.
+
+> There should be no functional changes caused by this patch.
+
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
