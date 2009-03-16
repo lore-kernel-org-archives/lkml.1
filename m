@@ -1,57 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762156AbZCPSDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761067AbZCPSCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762156AbZCPSDM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:03:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761261AbZCPRzy
+	id S1761067AbZCPSCS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760396AbZCPRzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:55:54 -0400
-Received: from gw.goop.org ([64.81.55.164]:46909 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761049AbZCPRzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 13:55:53 -0400
-Message-ID: <49BE92A6.2070406@goop.org>
-Date: Mon, 16 Mar 2009 10:55:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: bderzhavets@yahoo.com
-CC: Xen-devel <xen-devel@lists.xensource.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
+	Mon, 16 Mar 2009 13:55:41 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:41402 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760322AbZCPRzk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 13:55:40 -0400
+Date: Mon, 16 Mar 2009 12:47:01 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Xen-devel] Re: tip.git regression from "vsprintf: unify the
- format decoding layer for its 3 users"
-References: <459064.87775.qm@web56105.mail.re3.yahoo.com>
-In-Reply-To: <459064.87775.qm@web56105.mail.re3.yahoo.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 34/35] Allow compound pages to be stored on the PCP
+ lists
+In-Reply-To: <1237196790-7268-35-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0903161246400.17730@qirst.com>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <1237196790-7268-35-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boris Derzhavets wrote:
-> Performed:-
->
-> root@ServerIntrepid:/usr/src/linux-2.6-xen# git reset --hard 
-> remotes/origin/xen/dom0/hackery
-> HEAD is now at a38db50 Merge commit 'tip/core/printk' into 
-> xen/dom0/hackery
-> make clean
-> make
-> make modules_install install
-> mkinitramfs -o /boot/initrd-2.6.29-rc7-tip.img 2.6.29-rc7-tip
->
-> Booted with new kernel under Xen (19355) and get same bug in place.
-> Cannot shutdown any PV DomU . Xen Host dies.
->
-OK, so we're talking about a new bug now, right?
 
-When you say "Xen Host dies", do you mean that Xen itself crashes?  Or 
-that the dom0 kernel crashes?  Hangs?  Non-responsive?
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 
-Do you have a serial console?
-
-    J
