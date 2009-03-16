@@ -1,138 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760753AbZCPXfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759279AbZCPXg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760753AbZCPXfz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 19:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbZCPXfp
+	id S1759279AbZCPXg0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 19:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbZCPXgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 19:35:45 -0400
-Received: from emailgw01.pnl.gov ([192.101.109.33]:7408 "EHLO
-	emailgw01.pnl.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752165AbZCPXfo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 19:35:44 -0400
-X-Greylist: delayed 3603 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Mar 2009 19:35:43 EDT
-X-IronPort-AV: E=Sophos;i="4.38,375,1233561600"; 
-   d="scan'208";a="93722935"
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
- do?
-From: Kevin Fox <Kevin.Fox@pnl.gov>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       mpm@selenic.com, linux-mm@kvack.org, tglx@linutronix.de,
-       viro@zeniv.linux.org.uk, linux-api@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, xemul@openvz.org
-In-Reply-To: <20090314081207.GA16436@elte.hu>
-References: <1236891719.32630.14.camel@bahia>
-	 <20090312212124.GA25019@us.ibm.com>
-	 <604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>
-	 <20090313053458.GA28833@us.ibm.com>
-	 <alpine.LFD.2.00.0903131018390.3940@localhost.localdomain>
-	 <20090313193500.GA2285@x200.localdomain>
-	 <alpine.LFD.2.00.0903131401070.3940@localhost.localdomain>
-	 <1236981097.30142.251.camel@nimitz><49BADAE5.8070900@cs.columbia.edu>
-	 <m1hc1xrlt5.fsf@fess.ebiederm.org>  <20090314081207.GA16436@elte.hu>
-Content-Type: text/plain
-Date: Mon, 16 Mar 2009 15:33:28 -0700
-Message-Id: <1237242808.23841.38.camel@sledge.emsl.pnl.gov>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Mar 2009 19:36:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39323 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755185AbZCPXgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 19:36:14 -0400
+Message-ID: <49BEE1E7.7020706@kernel.org>
+Date: Mon, 16 Mar 2009 16:33:59 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org,
+       =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+Subject: [PATCH] x86: workaround system with stange var MTRR -v2
+References: <49BE58BA.1000907@pardus.org.tr> <86802c440903161121s3ba18abaiaa3ccf6847e0eafe@mail.gmail.com> <49BEB3C9.8070705@pardus.org.tr> <49BECBF4.1000508@kernel.org> <49BED5D5.2000801@pardus.org.tr>
+In-Reply-To: <49BED5D5.2000801@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-14 at 01:12 -0700, Ingo Molnar wrote:
-> 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
-> 
-> > >> In the OpenVZ case, they've at least demonstrated that the
-> > >> filesystem can be moved largely with rsync.  Unlinked files
-> > >> need some in-kernel TLC (or /proc mangling) but it isn't
-> > >> *that* bad.
-> > >
-> > > And in the Zap we have successfully used a log-based
-> > > filesystem (specifically NILFS) to continuously snapshot the
-> > > file-system atomically with taking a checkpoint, so it can
-> > > easily branch off past checkpoints, including the file
-> > > system.
-> > >
-> > > And unlinked files can be (inefficiently) handled by saving
-> > > their full contents with the checkpoint image - it's not a
-> > > big toll on many apps (if you exclude Wine and UML...). At
-> > > least that's a start.
-> >
-> > Oren we might want to do a proof of concept implementation
-> > like I did with network namespaces.  That is done in the
-> > community and goes far enough to show we don't have horribly
-> > nasty code.  The patches and individual changes don't need to
-> > be quite perfect but close enough that they can be considered
-> > for merging.
-> >
-> > For the network namespace that seems to have made a big
-> > difference.
-> >
-> > I'm afraid in our clean start we may have focused a little too
-> > much on merging something simple and not gone far enough on
-> > showing that things will work.
-> >
-> > After I had that in the network namespace and we had a clear
-> > vision of the direction.  We started merging the individual
-> > patches and things went well.
-> 
-> I'm curious: what is the actual end result other than good
-> looking code? In terms of tangible benefits to the everyday
-> Linux distro user. [This is not meant to be sarcastic, i'm
-> truly curious.]
 
->From an ordinary user perspective, I hate loosing my desktop state every
-time there is a power bump or a new kernel/video driver comes down from
-the distro provider. Some of the stuff I loose:
-*All my terminals
-    *many tabs and windows
-    *each in a different directory
-    *vi
-       *which files I was editing
-       *which function I was coding
-    *screen
-    *scrollback buffer's contents
-         *history for debugging code
-    *command line arguments
-*State of running apps
-    *web browser
-        *Tabs, yes it saves urls on crash, but sometimes the page cant
-come back up (say, because of a form)
-        *where the windows are on the desktop
-    *evolution
-        *what folder is selected
-        *which message within the folder is selected
-    *rhythmbox
-    *misc other apps
+Impact: don't trim e820 according to wrong mtrr
 
-Being able to reboot and get back to exactly where I was before the
-reboot would save me a lot of time restarting apps and getting my
-desktop back to where it was before the reboot. I'd also be more
-inclined to reboot to get security updates more frequently if I didn't
-loose track of what I was doing in the session, making machines more
-secure in the process.
+Ozan report his branded server emit strange warning.
+it turns out MTRR is some wrong.
 
-Kevin
+Ignore those strange range, and don't trim e820. just emit one warning about
+BIOS
 
-PS: Yes, I know both GNOME and KDE have tried to deal with some of this
-with their session manager stuff, but it doesn't restore everything and
-only supported by some apps. It would probably take more work to get all
-apps working with the session management stuff then supporting kernel
-C/R.
+Reported-by: Ozan Çağlayan <ozan@pardus.org.tr>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
->         Ingo
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
-> 
-> 
+---
+ arch/x86/kernel/cpu/mtrr/cleanup.c |   11 +++++++++++
+ arch/x86/kernel/cpu/mtrr/main.c    |   16 ++++++++--------
+ arch/x86/kernel/cpu/mtrr/mtrr.h    |    1 +
+ 3 files changed, 20 insertions(+), 8 deletions(-)
 
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/cleanup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/cleanup.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/cleanup.c
+@@ -189,6 +189,17 @@ x86_get_mtrr_mem_range(struct res_range
+ 		if (!size)
+ 			continue;
+ 		base = range_state[i].base_pfn;
++		if (base < (1<<(20-PAGE_SHIFT)) && mtrr_state.have_fixed &&
++		    (mtrr_state.enabled & 1)) {
++			/* var MTRR contain UC below 1M ?  skip it*/
++			printk(KERN_WARNING "WARNING: BIOS bug: VAR MTRR "
++				"contains strange UC entry under 1M, check "
++				"with your system vendor!\n");
++			if (base + size <= (1<<(20-PAGE_SHIFT)))
++				continue;
++			size -= (1<<(20-PAGE_SHIFT)) - base;
++			base = 1<<(20-PAGE_SHIFT);
++		}
+ 		subtract_range(range, base, base + size - 1);
+ 	}
+ 	if (extra_remove_size)
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/mtrr.h
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/mtrr.h
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/mtrr.h
+@@ -79,6 +79,7 @@ extern struct mtrr_ops * mtrr_if;
+ 
+ extern unsigned int num_var_ranges;
+ extern u64 mtrr_tom2;
++extern struct mtrr_state_type mtrr_state;
+ 
+ void mtrr_state_warn(void);
+ const char *mtrr_attrib_to_str(int x);
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/main.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/main.c
+@@ -574,7 +574,7 @@ struct mtrr_value {
+ 	unsigned long	lsize;
+ };
+ 
+-static struct mtrr_value mtrr_state[MTRR_MAX_VAR_RANGES];
++static struct mtrr_value mtrr_value[MTRR_MAX_VAR_RANGES];
+ 
+ static int mtrr_save(struct sys_device * sysdev, pm_message_t state)
+ {
+@@ -582,9 +582,9 @@ static int mtrr_save(struct sys_device *
+ 
+ 	for (i = 0; i < num_var_ranges; i++) {
+ 		mtrr_if->get(i,
+-			     &mtrr_state[i].lbase,
+-			     &mtrr_state[i].lsize,
+-			     &mtrr_state[i].ltype);
++			     &mtrr_value[i].lbase,
++			     &mtrr_value[i].lsize,
++			     &mtrr_value[i].ltype);
+ 	}
+ 	return 0;
+ }
+@@ -594,11 +594,11 @@ static int mtrr_restore(struct sys_devic
+ 	int i;
+ 
+ 	for (i = 0; i < num_var_ranges; i++) {
+-		if (mtrr_state[i].lsize) 
++		if (mtrr_value[i].lsize)
+ 			set_mtrr(i,
+-				 mtrr_state[i].lbase,
+-				 mtrr_state[i].lsize,
+-				 mtrr_state[i].ltype);
++				 mtrr_value[i].lbase,
++				 mtrr_value[i].lsize,
++				 mtrr_value[i].ltype);
+ 	}
+ 	return 0;
+ }
