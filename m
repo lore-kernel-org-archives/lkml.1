@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbZCPAc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZCPAks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758095AbZCPAc3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 20:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbZCPAcU
+	id S1759385AbZCPAks (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 20:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZCPAkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 20:32:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35934 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753526AbZCPAcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 20:32:20 -0400
-Date: Mon, 16 Mar 2009 01:28:33 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: =?iso-8859-1?Q?G=E1bor?= Melis <mega@retes.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Signal delivery order
-Message-ID: <20090316002833.GA17615@redhat.com>
-References: <200903141750.37238.mega@retes.hu> <200903151540.00542.mega@retes.hu> <20090315172926.GA21095@redhat.com> <200903152306.53031.mega@retes.hu>
+	Sun, 15 Mar 2009 20:40:39 -0400
+Received: from kroah.org ([198.145.64.141]:37618 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752143AbZCPAki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 20:40:38 -0400
+Date: Sun, 15 Mar 2009 17:39:32 -0700
+From: Greg KH <greg@kroah.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Matthew Wilcox <matthew@wil.cx>, linux-pci <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: more than 50 percent of dmesg belongs only to PCI and USB
+Message-ID: <20090316003932.GB15098@kroah.com>
+References: <1237016485.2935.12.camel@ht.satnam> <1237159729.8619.7.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200903152306.53031.mega@retes.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1237159729.8619.7.camel@localhost>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/15, Gábor Melis wrote:
->
-> On Domingo 15 Marzo 2009, Oleg Nesterov wrote:
-> > >
-> > Now, since there are no more pending signals, we return to the user
-> > space, and start sig_2().
->
-> I see. I guess in addition to changing the ip, the stack frobbing magic
-> arranges that sig_2 returns to sig_1 or some code that calls sig_1.
+On Mon, Mar 16, 2009 at 10:28:49AM +1100, Michael Ellerman wrote:
+> On Sat, 2009-03-14 at 13:11 +0530, Jaswinder Singh Rajput wrote:
+> > Can we make dmesg little bit better and remove some noise and put these
+> > debug messages on /sys/kernel/debug/ :
+> 
+> I think they should just be KERN_DEBUG, that way they won't be displayed
+> to most users, except people who want to see them.
+> 
+> The problem is it's easier to write:
+> 
+>   dev_info(&dev->dev, "transparent bridge\n");
+> 
+> than:
+> 
+>   dev_printk(KERN_DEBUG, &dev->dev, "transparent bridge\n");
+> 
+> and, dev_dbg() does not do what you want in this case.
 
-yes. "some code" == rt_sigreturn,
+Why not?  It prints it out if you enable the config option at run-time,
+which is what you want.
 
-> The revised signal-delivery-order.c (also attached) outputs:
->
-> test_handler=8048727
-> sigsegv_handler=804872c
-> eip: 8048727
-> esp: b7d94cb8
->
-> which shows that sigsegv_handler also has incorrect eip in the context.
+thanks,
 
-Why do you think it is not correct?
-
-I didn't try your test-case, but I can't see where "esp: b7d94cb8"
-comes from. But "eip: 8048727" looks exactly right, this is the
-address of test_handler.
-
-Oleg.
-
+greg k-h
