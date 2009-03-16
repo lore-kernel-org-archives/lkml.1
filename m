@@ -1,224 +1,583 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761371AbZCPTgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbZCPTgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761371AbZCPTgG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 15:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbZCPTfx
+	id S1755637AbZCPTgq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 15:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758219AbZCPTgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 15:35:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36296 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754494AbZCPTfw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 15:35:52 -0400
-Date: Mon, 16 Mar 2009 12:32:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jesper Krogh <jesper@krogh.cc>
-cc: john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Linux 2.6.29-rc6
-In-Reply-To: <49BEA1AD.1090901@krogh.cc>
-Message-ID: <alpine.LFD.2.00.0903161225210.3675@localhost.localdomain>
-References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>  <49A70B24.6090706@krogh.cc>  <1235685269.6811.11.camel@localhost.localdomain> 
- <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>  <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>  <1235766936.7402.5.camel@localhost.localdomain> <49AE9EA4.2080500@krogh.cc>  <49AECA3B.5030503@krogh.cc> 
- <1236193075.3793.63.camel@jstultz-laptop>  <1236220759.6863.7.camel@localhost.localdomain> <1236221530.6863.9.camel@localhost.localdomain> <49B57F3D.5030008@krogh.cc> <alpine.LFD.2.00.0903141814180.7421@localhost.localdomain> <49BD225C.4070305@krogh.cc>
- <alpine.LFD.2.00.0903151050070.3131@localhost.localdomain> <49BD4B2D.7000501@krogh.cc> <alpine.LFD.2.00.0903151146550.3131@localhost.localdomain> <49BD5C7C.2060605@krogh.cc> <49BEA1AD.1090901@krogh.cc>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 16 Mar 2009 15:36:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52595 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754889AbZCPTgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 15:36:33 -0400
+Message-ID: <49BEAA5A.4030708@redhat.com>
+Date: Mon, 16 Mar 2009 15:36:58 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [RFC][PATCH 1/2] tracing/ftrace: syscall tracing infrastructure
+References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-2-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1236401580-5758-2-git-send-email-fweisbec@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Frederic,
 
+Out of curiously, could you tell me why did you introduce new TIF instead of
+using utrace's tracehook API?
+For example, systemtap already use current utrace/tracehook api for tracing
+all syscalls. If there is any new advantage, it would be good to enhance
+existing utrace/tracehook.
 
-On Mon, 16 Mar 2009, Jesper Krogh wrote:
+Thank you,
+
+Frederic Weisbecker wrote:
+> The most important drawback that implies the syscall tracing is the variable
+> number of parameters that takes a syscall. Assuming there is a large number of
+> syscall, the goal is to provide as much as possible a generic layer on it.
 > 
-> you were right. It works. No resets so far.
+> What we want on tracing time (the hot path):
+> 
+> - Save the parameters and the number of the syscall. That's all. The rest of the
+>   job can be done on the "output path".
+> 
+> On output time:
+> 
+> - Get the raw-binary saved parameters and the syscall number as well as some
+>   usual infos such as the pid, the time...
+> - Depending on the tracing requirements, the user should have the choice to
+>   dump the raw datas or a formatted version.
+> 
+> The core infrastructure has a static array which contains the necessary
+> informations for each syscall (ok, I've only implemented 4 for now).
+> 
+> When a syscall triggers, the tracer look at this array (O(1) access) and get the
+> number of parameters for this syscall. Then these parameters are saved in a
+> binary form on the ring buffer with the syscall number (a generic version, arch
+> independent).
+> 
+> On output time the parameters, the name of the syscall and very basic
+> informations to format the parameters are picket from the ring-buffer and the
+> generic syscall array.
+> 
+> Depending of the level of implementation we want for the syscall inside this
+> array, we can provide just a single mask where the n bit matches the n
+> parameter. If the bit is set, then the parameter will be considered as a string
+> pointer. Otherwise its raw hexadecimal value will be printed.
+> 
+> If needed, we can otherwise provide a specific callback to print the syscall
+> event.
+> 
+> The probem with these approaches comes from the fact that the string might have
+> disappeared from the user memory on output time. Even if we protect against
+> faults, it can give unreliable traces.
+> So perhaps we could think about copying the string on tracing time.
+> 
+> Concerning the return value, it doesn't make any problem, a single raw
+> value is printed for each one.
+> 
+> Note that the current implementation can be easily scaled further to give only
+> binary informations to the user and the matching metadata to decode it.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+>  include/linux/ftrace.h        |   44 +++++++
+>  kernel/trace/Kconfig          |   10 ++
+>  kernel/trace/Makefile         |    1 +
+>  kernel/trace/trace.c          |    6 +
+>  kernel/trace/trace.h          |   32 +++++
+>  kernel/trace/trace_syscalls.c |  284 +++++++++++++++++++++++++++++++++++++++++
+>  6 files changed, 377 insertions(+), 0 deletions(-)
+>  create mode 100644 kernel/trace/trace_syscalls.c
+> 
+> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> index e1583f2..1798692 100644
+> --- a/include/linux/ftrace.h
+> +++ b/include/linux/ftrace.h
+> @@ -503,4 +503,48 @@ static inline void trace_hw_branch_oops(void) {}
+>  
+>  #endif /* CONFIG_HW_BRANCH_TRACER */
+>  
+> +/* Index for the ftrace syscalls array */
+> +enum syscall_trace_nr {
+> +	SYSCALL_TRACE_OPEN = 1,
+> +	SYSCALL_TRACE_CLOSE,
+> +	SYSCALL_TRACE_READ,
+> +	SYSCALL_TRACE_WRITE,
+> +
+> +	__SYSCALL_TRACE_END
+> +};
+> +
+> +/*
+> + * A syscall entry in the ftrace syscalls array.
+> + *
+> + * @name: name of the syscall
+> + * @nb_args: number of parameters it takes
+> + * @simple_format: if true, we use string_mask, otherwise the print callback
+> + * @string_mask: rudimentary format mask. If bit nr is set, the nr parameter
+> + *		 will be displayed as a string, otherwise it will be considered
+> + *		 as a raw number (hex displayed).
+> + * @print: implement it if you want a custom output for a given syscall
+> + */
+> +struct syscall_trace_entry {
+> +	const char	*name;
+> +	int		nb_args;
+> +	bool		simple_format;
+> +	union {
+> +		unsigned long string_mask;
+> +		int (*print)(unsigned long *);
+> +	} output;
+> +};
+> +
+> +#ifdef CONFIG_FTRACE_SYSCALLS
+> +extern short arch_syscall_trace_nr[];
+> +extern void start_ftrace_syscalls(void);
+> +extern void stop_ftrace_syscalls(void);
+> +extern void ftrace_syscall_enter(struct pt_regs *regs);
+> +extern void ftrace_syscall_exit(struct pt_regs *regs);
+> +#else
+> +static inline void start_ftrace_syscalls(void) { }
+> +static inline void stop_ftrace_syscalls(void) { }
+> +static inline void ftrace_syscall_enter(struct pt_regs *regs) { }
+> +static inline void ftrace_syscall_exit(struct pt_regs *regs) { }
+> +#endif
+> +
+>  #endif /* _LINUX_FTRACE_H */
+> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> index 8e4a2a6..95a0ad1 100644
+> --- a/kernel/trace/Kconfig
+> +++ b/kernel/trace/Kconfig
+> @@ -34,6 +34,9 @@ config HAVE_FTRACE_MCOUNT_RECORD
+>  config HAVE_HW_BRANCH_TRACER
+>  	bool
+>  
+> +config HAVE_FTRACE_SYSCALLS
+> +	bool
+> +
+>  config TRACER_MAX_TRACE
+>  	bool
+>  
+> @@ -175,6 +178,13 @@ config EVENT_TRACER
+>  	  allowing the user to pick and choose which trace point they
+>  	  want to trace.
+>  
+> +config FTRACE_SYSCALLS
+> +	bool "Trace syscalls"
+> +	depends on HAVE_FTRACE_SYSCALLS
+> +	select TRACING
+> +	help
+> +	  Basic tracer to catch the syscall entry and exit events.
+> +
+>  config BOOT_TRACER
+>  	bool "Trace boot initcalls"
+>  	select TRACING
+> diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+> index c7a2943..c3feea0 100644
+> --- a/kernel/trace/Makefile
+> +++ b/kernel/trace/Makefile
+> @@ -43,5 +43,6 @@ obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
+>  obj-$(CONFIG_EVENT_TRACER) += trace_events.o
+>  obj-$(CONFIG_EVENT_TRACER) += events.o
+>  obj-$(CONFIG_EVENT_TRACER) += trace_export.o
+> +obj-$(CONFIG_FTRACE_SYSCALLS) += trace_syscalls.o
+>  
+>  libftrace-y := ftrace.o
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index cc94f86..5152be3 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -242,6 +242,12 @@ static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
+>  unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
+>  	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO;
+>  
+> +
+> +struct trace_array *__get_global_trace(void)
+> +{
+> +	return &global_trace;
+> +}
+> +
+>  /**
+>   * trace_wake_up - wake up tasks waiting for trace input
+>   *
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 2bfb7d1..9583830 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -30,6 +30,8 @@ enum trace_type {
+>  	TRACE_GRAPH_ENT,
+>  	TRACE_USER_STACK,
+>  	TRACE_HW_BRANCHES,
+> +	TRACE_SYSCALL_ENTER,
+> +	TRACE_SYSCALL_EXIT,
+>  	TRACE_KMEM_ALLOC,
+>  	TRACE_KMEM_FREE,
+>  	TRACE_POWER,
+> @@ -192,6 +194,19 @@ struct kmemtrace_free_entry {
+>  	const void *ptr;
+>  };
+>  
+> +struct syscall_trace_enter {
+> +	struct trace_entry	ent;
+> +	enum syscall_trace_nr	nr;
+> +	unsigned long		args[];
+> +};
+> +
+> +struct syscall_trace_exit {
+> +	struct trace_entry	ent;
+> +	enum syscall_trace_nr	nr;
+> +	unsigned long		ret;
+> +};
+> +
+> +
+>  /*
+>   * trace_flag_type is an enumeration that holds different
+>   * states when a trace occurs. These are:
+> @@ -304,6 +319,10 @@ extern void __ftrace_bad_type(void);
+>  			  TRACE_KMEM_ALLOC);	\
+>  		IF_ASSIGN(var, ent, struct kmemtrace_free_entry,	\
+>  			  TRACE_KMEM_FREE);	\
+> +		IF_ASSIGN(var, ent, struct syscall_trace_enter,		\
+> +			  TRACE_SYSCALL_ENTER);				\
+> +		IF_ASSIGN(var, ent, struct syscall_trace_exit,		\
+> +			  TRACE_SYSCALL_EXIT);				\
+>  		__ftrace_bad_type();					\
+>  	} while (0)
+>  
+> @@ -568,6 +587,7 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+>  #endif /* CONFIG_FTRACE_STARTUP_TEST */
+>  
+>  extern void *head_page(struct trace_array_cpu *data);
+> +extern struct trace_array *__get_global_trace(void);
+>  extern long ns2usecs(cycle_t nsec);
+>  extern int
+>  trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args);
+> @@ -627,6 +647,18 @@ static inline int ftrace_trace_task(struct task_struct *task)
+>  	return test_tsk_trace_trace(task);
+>  }
+>  
+> +#ifdef CONFIG_FTRACE_SYSCALLS
+> +extern enum print_line_t
+> +print_syscall_enter(struct trace_iterator *iter, int flags);
+> +extern enum print_line_t
+> +print_syscall_exit(struct trace_iterator *iter, int flags);
+> +#else
+> +static inline enum print_line_t
+> +print_syscall_enter(struct trace_iterator *iter, int flags) { }
+> +static inline enum print_line_t
+> +print_syscall_exit(struct trace_iterator *iter, int flags) { }
+> +#endif
+> +
+>  /*
+>   * trace_iterator_flags is an enumeration that defines bit
+>   * positions into trace_flags that controls the output.
+> diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+> new file mode 100644
+> index 0000000..470bb9d
+> --- /dev/null
+> +++ b/kernel/trace/trace_syscalls.c
+> @@ -0,0 +1,284 @@
+> +#include <linux/kernel.h>
+> +#include <linux/ftrace.h>
+> +#include <asm/syscall.h>
+> +
+> +#include "trace_output.h"
+> +#include "trace.h"
+> +
+> +/* Create basic entry on syscall array (with the rudimentary string mask) */
+> +#define SYS_TRACE_ENTRY(sname, args, mask)			  \
+> +	{.name = #sname, .nb_args = args, .simple_format = true,  \
+> +	.output.string_mask = mask}
+> +
+> +/*
+> + * Create a custom defined entry on the syscall array, you will have to
+> + * implement a callback to output the syscall.
+> + */
+> +#define SYS_TRACE_ENTRY_SPECIAL(sname, args, printer)		  \
+> +	{.name = #sname, .nb_args = args, .simple_format = false, \
+> +	.print = printer}
+> +
+> +static const struct syscall_trace_entry syscall_trace_entries[] = {
+> +	/* For open, the first argument is a string, hence the given mask */
+> +	[SYSCALL_TRACE_OPEN]	= SYS_TRACE_ENTRY(open, 3, 0x1),
+> +	[SYSCALL_TRACE_CLOSE]	= SYS_TRACE_ENTRY(close, 1, 0),
+> +	[SYSCALL_TRACE_READ]	= SYS_TRACE_ENTRY(read, 3, 0),
+> +	[SYSCALL_TRACE_WRITE]	= SYS_TRACE_ENTRY(read, 3, 0),
+> +};
+> +
+> +
+> +static atomic_t refcount;
+> +
+> +enum print_line_t
+> +print_syscall_enter(struct trace_iterator *iter, int flags)
+> +{
+> +	struct trace_seq *s = &iter->seq;
+> +	struct trace_entry *ent = iter->ent;
+> +	struct syscall_trace_enter *trace;
+> +	enum syscall_trace_nr syscall;
+> +	const struct syscall_trace_entry *entry;
+> +	char *str = NULL;
+> +	int i, ret;
+> +
+> +	trace_assign_type(trace, ent);
+> +
+> +	syscall = trace->nr;
+> +
+> +	if (!syscall || syscall >= __SYSCALL_TRACE_END)
+> +		return TRACE_TYPE_HANDLED;
+> +
+> +	entry = &syscall_trace_entries[syscall];
+> +	if (!entry->simple_format) {
+> +		ret = entry->output.print(trace->args);
+> +		if (!ret)
+> +			return TRACE_TYPE_PARTIAL_LINE;
+> +	}
+> +
+> +	ret = trace_seq_printf(s, "syscall %s :", entry->name);
+> +	if (!ret)
+> +		return TRACE_TYPE_PARTIAL_LINE;
+> +
+> +	for (i = 0; i < entry->nb_args; i++) {
+> +		/*
+> +		 * FIXME: the string comes from the user, but on tracing
+> +		 * output time, it may have disappeared from the memory.
+> +		 * May be better to strdup it on tracing time.
+> +		 */
+> +		if (entry->output.string_mask & (1 << i)) {
+> +			/* 128 is enough for most path */
+> +			str = strndup_user((char *)trace->args[i], 128);
+> +
+> +			/* If it faulted badly, the error shoud have been
+> +			 * handled while servicing the syscall, just ignore.
+> +			 */
+> +			if (str == ERR_PTR(-EFAULT) || str == ERR_PTR(-EINVAL)
+> +			    || str == ERR_PTR(-ENOMEM))
+> +				return TRACE_TYPE_HANDLED;
+> +
+> +			ret = trace_seq_printf(s, " %s", str);
+> +		} else {
+> +			ret = trace_seq_printf(s, " 0x%lx", trace->args[i]);
+> +		}
+> +		if (!ret)
+> +			goto end_partial;
+> +	}
+> +	if (!trace_seq_printf(s, "\n"))
+> +		goto end_partial;
+> +
+> +	kfree(str);
+> +	return TRACE_TYPE_HANDLED;
+> +
+> +end_partial:
+> +	kfree(str);
+> +	return TRACE_TYPE_PARTIAL_LINE;
+> +}
+> +
+> +enum print_line_t
+> +print_syscall_exit(struct trace_iterator *iter, int flags)
+> +{
+> +	struct trace_seq *s = &iter->seq;
+> +	struct trace_entry *ent = iter->ent;
+> +	struct syscall_trace_exit *trace;
+> +	enum syscall_trace_nr syscall;
+> +	const struct syscall_trace_entry *entry;
+> +	int ret;
+> +
+> +	trace_assign_type(trace, ent);
+> +
+> +	syscall = trace->nr;
+> +
+> +	if (!syscall || syscall >= __SYSCALL_TRACE_END)
+> +		return TRACE_TYPE_HANDLED;
+> +
+> +	entry = &syscall_trace_entries[syscall];
+> +
+> +	ret = trace_seq_printf(s, "syscall %s -> 0x%lx\n", entry->name,
+> +				trace->ret);
+> +	if (!ret)
+> +		return TRACE_TYPE_PARTIAL_LINE;
+> +
+> +	return TRACE_TYPE_HANDLED;
+> +}
+> +
+> +void start_ftrace_syscalls(void)
+> +{
+> +	unsigned long flags;
+> +	struct task_struct *g, *t;
+> +
+> +	if (atomic_inc_return(&refcount) != 1)
+> +		goto out;
+> +
+> +	read_lock_irqsave(&tasklist_lock, flags);
+> +
+> +	do_each_thread(g, t) {
+> +		set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
+> +	} while_each_thread(g, t);
+> +
+> +	read_unlock_irqrestore(&tasklist_lock, flags);
+> +out:
+> +	atomic_dec(&refcount);
+> +}
+> +
+> +void stop_ftrace_syscalls(void)
+> +{
+> +	unsigned long flags;
+> +	struct task_struct *g, *t;
+> +
+> +	if (atomic_dec_return(&refcount))
+> +		goto out;
+> +
+> +	read_lock_irqsave(&tasklist_lock, flags);
+> +
+> +	do_each_thread(g, t) {
+> +		clear_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
+> +	} while_each_thread(g, t);
+> +
+> +	read_unlock_irqrestore(&tasklist_lock, flags);
+> +out:
+> +	atomic_inc(&refcount);
+> +}
+> +
+> +void ftrace_syscall_enter(struct pt_regs *regs)
+> +{
+> +	struct trace_array *tr = __get_global_trace();
+> +	struct syscall_trace_enter *entry;
+> +	const struct syscall_trace_entry *sys_data;
+> +	struct ring_buffer_event *event;
+> +	struct trace_array_cpu *data;
+> +	int size;
+> +	int syscall_nr;
+> +	int nr_offset;
+> +	int cpu;
+> +
+> +	syscall_nr = syscall_get_nr(current, regs);
+> +	nr_offset = arch_syscall_trace_nr[syscall_nr];
+> +	if (!nr_offset || nr_offset >= __SYSCALL_TRACE_END)
+> +		return;
+> +
+> +	cpu = raw_smp_processor_id();
+> +	data = tr->data[cpu];
+> +
+> +	if (unlikely(atomic_read(&data->disabled)))
+> +		return;
+> +
+> +	sys_data = &syscall_trace_entries[nr_offset];
+> +	size = sizeof(*entry) + sizeof(unsigned long) * sys_data->nb_args;
+> +
+> +	event = trace_buffer_lock_reserve(tr, TRACE_SYSCALL_ENTER, size, 0, 0);
+> +	if (!event)
+> +		return;
+> +
+> +	entry = ring_buffer_event_data(event);
+> +	entry->nr = nr_offset;
+> +	syscall_get_arguments(current, regs, 0, sys_data->nb_args, entry->args);
+> +
+> +	ring_buffer_unlock_commit(tr->buffer, event);
+> +	trace_wake_up();
+> +}
+> +
+> +void ftrace_syscall_exit(struct pt_regs *regs)
+> +{
+> +	struct trace_array *tr = __get_global_trace();
+> +	struct syscall_trace_exit *entry;
+> +	const struct syscall_trace_entry *sys_data;
+> +	struct ring_buffer_event *event;
+> +	struct trace_array_cpu *data;
+> +	int syscall_nr;
+> +	int nr_offset;
+> +	int cpu;
+> +
+> +	syscall_nr = syscall_get_nr(current, regs);
+> +	nr_offset = arch_syscall_trace_nr[syscall_nr];
+> +	if (!nr_offset || nr_offset >= __SYSCALL_TRACE_END)
+> +		return;
+> +
+> +	cpu = raw_smp_processor_id();
+> +	data = tr->data[cpu];
+> +
+> +	if (unlikely(atomic_read(&data->disabled)))
+> +		return;
+> +
+> +	sys_data = &syscall_trace_entries[nr_offset];
+> +
+> +	event = trace_buffer_lock_reserve(tr, TRACE_SYSCALL_EXIT,
+> +				sizeof(*entry), 0, 0);
+> +	if (!event)
+> +		return;
+> +
+> +	entry = ring_buffer_event_data(event);
+> +	entry->nr = nr_offset;
+> +	entry->ret = syscall_get_return_value(current, regs);
+> +
+> +	ring_buffer_unlock_commit(tr->buffer, event);
+> +	trace_wake_up();
+> +}
+> +
+> +static int init_syscall_tracer(struct trace_array *tr)
+> +{
+> +	start_ftrace_syscalls();
+> +
+> +	return 0;
+> +}
+> +
+> +static void reset_syscall_tracer(struct trace_array *tr)
+> +{
+> +	stop_ftrace_syscalls();
+> +}
+> +
+> +static struct trace_event syscall_enter_event = {
+> +	.type	 	= TRACE_SYSCALL_ENTER,
+> +	.trace		= print_syscall_enter,
+> +};
+> +
+> +static struct trace_event syscall_exit_event = {
+> +	.type	 	= TRACE_SYSCALL_EXIT,
+> +	.trace		= print_syscall_exit,
+> +};
+> +
+> +static struct tracer syscall_tracer __read_mostly = {
+> +	.name	     	= "syscall",
+> +	.init		= init_syscall_tracer,
+> +	.reset		= reset_syscall_tracer
+> +};
+> +
+> +__init int register_ftrace_syscalls(void)
+> +{
+> +	int ret;
+> +
+> +	ret = register_ftrace_event(&syscall_enter_event);
+> +	if (!ret) {
+> +		printk(KERN_WARNING "event %d failed to register\n",
+> +		       syscall_enter_event.type);
+> +		WARN_ON_ONCE(1);
+> +	}
+> +
+> +	ret = register_ftrace_event(&syscall_exit_event);
+> +	if (!ret) {
+> +		printk(KERN_WARNING "event %d failed to register\n",
+> +		       syscall_exit_event.type);
+> +		WARN_ON_ONCE(1);
+> +	}
+> +
+> +	return register_tracer(&syscall_tracer);
+> +}
+> +device_initcall(register_ftrace_syscalls);
 
-Goodie.
+-- 
+Masami Hiramatsu
 
-Here's a slightly cleaned-up patch that removes the debug messages, and 
-also re-organizes the code a bit so that it actually uses the "better than 
-500 ppm" as the way to decide when to stop calibrating.
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-Why?
+e-mail: mhiramat@redhat.com
 
-I tested the 500 ppm check on some slower machines, and the old algorithm 
-of just waiting for 15ms actually failed that 500 ppm test. It was _very_ 
-close - 16ms was enough - but it convinced me that the logic was too damn 
-fragile.
-
-I also think I know why John reported this:
-
-> Ingo, Thomas: On the hardware I'm testing the fast-pit calibration only
-> triggers probably 80-90% of the time. About 10-20% of the time, the
-> initial check to pit_expect_msb(0xff) fails (count=0), so we may need to
-> look more at this approach.
-
-and the reason is that when we re-program the PIT, it will actually take 
-until the next timer edge (the incoming 1.1MHz timer) for the new values 
-to take effect. So before the first call to pit_expect_msb(), we should 
-make sure to delay for at least one PIT cycle. The simplest way to do that 
-is to simply read the PIT latch once, it will take about 2us.
-
-So this patch fixes that too.
-
-John, does that make the PIT calibration work reliably on your machine?
-
-The patch looks bigger than it is: most of the noise is just 
-re-indentation and some trivial re-organizing.
-
-			Linus
-
----
- arch/x86/kernel/tsc.c |  110 +++++++++++++++++++++++++++++--------------------
- 1 files changed, 65 insertions(+), 45 deletions(-)
-
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 599e581..d5cebb5 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -273,30 +273,43 @@ static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
-  * use the TSC value at the transitions to calculate a pretty
-  * good value for the TSC frequencty.
-  */
--static inline int pit_expect_msb(unsigned char val)
-+static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *deltap)
- {
--	int count = 0;
-+	int count;
-+	u64 tsc = 0;
- 
- 	for (count = 0; count < 50000; count++) {
- 		/* Ignore LSB */
- 		inb(0x42);
- 		if (inb(0x42) != val)
- 			break;
-+		tsc = get_cycles();
- 	}
--	return count > 50;
-+	*deltap = get_cycles() - tsc;
-+	*tscp = tsc;
-+
-+	/*
-+	 * We require _some_ success, but the quality control
-+	 * will be based on the error terms on the TSC values.
-+	 */
-+	return count > 5;
- }
- 
- /*
-- * How many MSB values do we want to see? We aim for a
-- * 15ms calibration, which assuming a 2us counter read
-- * error should give us roughly 150 ppm precision for
-- * the calibration.
-+ * How many MSB values do we want to see? We aim for
-+ * a maximum error rate of 500ppm (in practice the
-+ * real error is much smaller), but refuse to spend
-+ * more than 25ms on it.
-  */
--#define QUICK_PIT_MS 15
--#define QUICK_PIT_ITERATIONS (QUICK_PIT_MS * PIT_TICK_RATE / 1000 / 256)
-+#define MAX_QUICK_PIT_MS 25
-+#define MAX_QUICK_PIT_ITERATIONS (MAX_QUICK_PIT_MS * PIT_TICK_RATE / 1000 / 256)
- 
- static unsigned long quick_pit_calibrate(void)
- {
-+	int i;
-+	u64 tsc, delta;
-+	unsigned long d1, d2;
-+
- 	/* Set the Gate high, disable speaker */
- 	outb((inb(0x61) & ~0x02) | 0x01, 0x61);
- 
-@@ -315,45 +328,52 @@ static unsigned long quick_pit_calibrate(void)
- 	outb(0xff, 0x42);
- 	outb(0xff, 0x42);
- 
--	if (pit_expect_msb(0xff)) {
--		int i;
--		u64 t1, t2, delta;
--		unsigned char expect = 0xfe;
--
--		t1 = get_cycles();
--		for (i = 0; i < QUICK_PIT_ITERATIONS; i++, expect--) {
--			if (!pit_expect_msb(expect))
--				goto failed;
-+	/*
-+	 * The PIT starts counting at the next edge, so we
-+	 * need to delay for a microsecond. The easiest way
-+	 * to do that is to just read back the 16-bit counter
-+	 * once from the PIT.
-+	 */
-+	inb(0x42);
-+	inb(0x42);
-+
-+	if (pit_expect_msb(0xff, &tsc, &d1)) {
-+		for (i = 1; i <= MAX_QUICK_PIT_ITERATIONS; i++) {
-+			if (!pit_expect_msb(0xff-i, &delta, &d2))
-+				break;
-+
-+			/*
-+			 * Iterate until the error is less than 500 ppm
-+			 */
-+			delta -= tsc;
-+			if (d1+d2 < delta >> 11)
-+				goto success;
- 		}
--		t2 = get_cycles();
--
--		/*
--		 * Make sure we can rely on the second TSC timestamp:
--		 */
--		if (!pit_expect_msb(expect))
--			goto failed;
--
--		/*
--		 * Ok, if we get here, then we've seen the
--		 * MSB of the PIT decrement QUICK_PIT_ITERATIONS
--		 * times, and each MSB had many hits, so we never
--		 * had any sudden jumps.
--		 *
--		 * As a result, we can depend on there not being
--		 * any odd delays anywhere, and the TSC reads are
--		 * reliable.
--		 *
--		 * kHz = ticks / time-in-seconds / 1000;
--		 * kHz = (t2 - t1) / (QPI * 256 / PIT_TICK_RATE) / 1000
--		 * kHz = ((t2 - t1) * PIT_TICK_RATE) / (QPI * 256 * 1000)
--		 */
--		delta = (t2 - t1)*PIT_TICK_RATE;
--		do_div(delta, QUICK_PIT_ITERATIONS*256*1000);
--		printk("Fast TSC calibration using PIT\n");
--		return delta;
- 	}
--failed:
-+	printk("Fast TSC calibration failed\n");
- 	return 0;
-+
-+success:
-+	/*
-+	 * Ok, if we get here, then we've seen the
-+	 * MSB of the PIT decrement 'i' times, and the
-+	 * error has shrunk to less than 500 ppm.
-+	 *
-+	 * As a result, we can depend on there not being
-+	 * any odd delays anywhere, and the TSC reads are
-+	 * reliable (within the error). We also adjust the
-+	 * delta to the middle of the error bars, just
-+	 * because it looks nicer.
-+	 *
-+	 * kHz = ticks / time-in-seconds / 1000;
-+	 * kHz = (t2 - t1) / (I * 256 / PIT_TICK_RATE) / 1000
-+	 * kHz = ((t2 - t1) * PIT_TICK_RATE) / (I * 256 * 1000)
-+	 */
-+	delta += (long)(d2 - d1)/2;
-+	delta *= PIT_TICK_RATE;
-+	do_div(delta, i*256*1000);
-+	printk("Fast TSC calibration using PIT\n");
-+	return delta;
- }
- 
- /**
