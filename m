@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbZCPWDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbZCPWEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752669AbZCPWDo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 18:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZCPWDe
+	id S1756837AbZCPWEq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 18:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZCPWEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 18:03:34 -0400
-Received: from gw.goop.org ([64.81.55.164]:40417 "EHLO mail.goop.org"
+	Mon, 16 Mar 2009 18:04:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50955 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750821AbZCPWDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 18:03:33 -0400
-Message-ID: <49BECCB0.4010804@goop.org>
-Date: Mon, 16 Mar 2009 15:03:28 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1750779AbZCPWEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 18:04:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Regression - locking (all from 2.6.28)
+Date: Mon, 16 Mar 2009 23:04:27 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       jan sonnek <ha2nny@gmail.com>, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andy Whitcroft <apw@shadowen.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090302121127.e46dc4be.akpm@linux-foundation.org> <1236367186.10626.84.camel@nimitz> <20090306192812.GA26767@elf.ucw.cz>
+In-Reply-To: <20090306192812.GA26767@elf.ucw.cz>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, akataria@vmware.com,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: VMI broken on tip/master...
-References: <1236966968.14680.15.camel@alok-dev1> <1237072800.8939.813.camel@laptop> <alpine.DEB.2.00.0903161200320.26431@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0903161200320.26431@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903162304.28944.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Sun, 15 Mar 2009, Peter Zijlstra wrote:
->   
->> Looking at arch/x86/include/asm/paravirt.h (god I wish paravirt would go
->> away, not only does it screw over ctags, it also hurts my brain), it
->> appears its playing icky games with primitives like
->> raw_local_irq_disable():
->>
->> static inline void raw_local_irq_disable(void)
->> {
->>         asm volatile(paravirt_alt(PARAVIRT_CALL)
->>                      :
->>                      : paravirt_type(pv_irq_ops.irq_disable),
->>                        paravirt_clobber(CLBR_EAX)
->>                      : "memory", "eax", "cc");
->> }
->>
->> So what was supposed to be a simple op, now gets expanded into god knows
->> what, and might lead to tracer recursion or something.
->>     
->
-> It should only blow up if a guest is using tracing, and the code to call
-> the hypervisor is also being traced.
->
->   
->> Maybe a simple notrace annotation somewhere in that paravirt code is all
->> it takes, who knows.
->>
->> Steve, you've been known to work on virt stuff too, happen to have a
->> bright idea? :-)
->>     
->
-> I have noticed that some paravirt ops calls (like this 
-> raw_local_irq_disable) does not get inlined. It sometimes gets made into a 
-> function.  This would cause raw_local_irq_disable to actually be traced!
->
-> One answer is to use "always_inline" or I can dig out a patch that makes 
-> inline also include "notrace".
+On Friday 06 March 2009, Pavel Machek wrote:
+> Hi!
+> 
+> On Fri 2009-03-06 11:19:46, Dave Hansen wrote:
+> > On Fri, 2009-03-06 at 18:00 +0000, Catalin Marinas wrote:
+> > > > I think you should be more worried about consistency rather than missing
+> > > > entries.  Take these two lines of code:
+> > > > 
+> > > >       start_pfn = node->node_start_pfn;
+> > > >       /* hotplug occurs here */
+> > > >       end_pfn = start_pfn + node->node_spanned_pages;
+> > > > 
+> > > > What if someone comes in and adds memory to the node, at the beginning
+> > > > of the node, after you have calculated start_pfn?  Try to think of what
+> > > > value you'll get for end_pfn and whether it is consistent and was *ever*
+> > > > valid at all.  Would that oops the kernel?
+> > > 
+> > > I assume pfn_valid() should handle this and kmemleak wouldn't scan the
+> > > page, unless we need locks around pfn_valid as well but I haven't seen
+> > > any used in the kernel.
+> > 
+> > You assume incorrectly. :(
+> > 
+> > Take my above example, and assume that you have two nodes which are
+> > right next to each other.  You might run over the end of one node and
+> > into the next one.  Your pages will be pfn_valid() but you will be on
+> > the wrong node.
+> > 
+> > Please take a look at those locks that I mentioned.  Notice that they
+> > are lock the pgdat *span*, not the validity of pages inside the pgdat.
+> > Your code deals with what pages the pgdats *span* and thus needs that
+> > lock.  Notice that my example also had to do with those two lines of
+> > code incorrectly guessing the pgdat's *span*.
+> > 
+> > We recently went to some pain to make sure that the software suspend
+> > code (which walks pgdat ranges as well) worked with memory hotplug.
+> > There really isn't that much code around that actually cares at runtime
+> > about which physical areas a particular node or zone spans.  Yours is a
+> > rarity and will require some caution.
+> > 
+> > You could probably also use the memory hotplug mutex found here:
+> > 
+> > https://lists.linux-foundation.org/pipermail/linux-pm/2008-November/018884.html
+> > 
+> > But I'm not sure where those patches have gone.  Hmmm.  Pavel?
+> 
+> I don't think they were applied. They probably should... Rafael was
+> about to look into that, but he lost the patch pointer.
 
-Yes, these should probably be always_inline and notrace (just in case 
-gcc gets it into its head that it might be a good idea to put mcount 
-calls into inlined functions).
+Yes.  In fact, sending the patch again to me would be appreciated.
 
-    J
+Thanks,
+Rafael
