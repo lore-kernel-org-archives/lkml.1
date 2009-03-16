@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761336AbZCPR5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761446AbZCPR6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761336AbZCPR5X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 13:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758231AbZCPRvi
+	id S1761446AbZCPR6X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 13:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758474AbZCPRvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:51:38 -0400
+	Mon, 16 Mar 2009 13:51:40 -0400
 Received: from gir.skynet.ie ([193.1.99.77]:51192 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756727AbZCPRve (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 13:51:34 -0400
+	id S1758023AbZCPRvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 13:51:36 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
        Linux Memory Management List <linux-mm@kvack.org>
@@ -20,9 +20,9 @@ Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
        Lin Ming <ming.m.lin@intel.com>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 17/27] Do not call get_pageblock_migratetype() more than necessary
-Date: Mon, 16 Mar 2009 17:53:31 +0000
-Message-Id: <1237226020-14057-18-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 20/27] Use a pre-calculated value for num_online_nodes()
+Date: Mon, 16 Mar 2009 17:53:34 +0000
+Message-Id: <1237226020-14057-21-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1237226020-14057-1-git-send-email-mel@csn.ul.ie>
 References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie>
@@ -30,77 +30,88 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-get_pageblock_migratetype() is potentially called twice for every page
-free. Once, when being freed to the pcp lists and once when being freed
-back to buddy. When freeing from the pcp lists, it is known what the
-pageblock type was at the time of free so use it rather than rechecking.
-In low memory situations under memory pressure, this might skew
-anti-fragmentation slightly but the interference is minimal and
-decisions that are fragmenting memory are being made anyway.
+num_online_nodes() is called by the page allocator to decide whether the
+zonelist needs to be filtered based on cpusets or the zonelist cache.
+This is actually a heavy function and touches a number of cache lines.
+This patch stores the number of online nodes at boot time and when
+nodes get onlined and offlined.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
 ---
- mm/page_alloc.c |   16 ++++++++++------
- 1 files changed, 10 insertions(+), 6 deletions(-)
+ include/linux/nodemask.h |   16 ++++++++++++++--
+ mm/page_alloc.c          |    6 ++++--
+ 2 files changed, 18 insertions(+), 4 deletions(-)
 
+diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
+index 848025c..4749e30 100644
+--- a/include/linux/nodemask.h
++++ b/include/linux/nodemask.h
+@@ -449,13 +449,25 @@ static inline int num_node_state(enum node_states state)
+ 	node;					\
+ })
+ 
++/* Recorded value for num_online_nodes() */
++extern int static_num_online_nodes;
++
+ #define num_online_nodes()	num_node_state(N_ONLINE)
+ #define num_possible_nodes()	num_node_state(N_POSSIBLE)
+ #define node_online(node)	node_state((node), N_ONLINE)
+ #define node_possible(node)	node_state((node), N_POSSIBLE)
+ 
+-#define node_set_online(node)	   node_set_state((node), N_ONLINE)
+-#define node_set_offline(node)	   node_clear_state((node), N_ONLINE)
++static inline void node_set_online(int nid)
++{
++	node_set_state(nid, N_ONLINE);
++	static_num_online_nodes = num_node_state(N_ONLINE);
++}
++
++static inline void node_set_offline(int nid)
++{
++	node_clear_state(nid, N_ONLINE);
++	static_num_online_nodes = num_node_state(N_ONLINE);
++}
+ 
+ #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
+ #define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 795cfc5..349c64d 100644
+index 01cd489..799e2bf 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -455,16 +455,18 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
-  */
+@@ -70,6 +70,7 @@ EXPORT_SYMBOL(node_states);
+ unsigned long totalram_pages __read_mostly;
+ unsigned long totalreserve_pages __read_mostly;
+ unsigned long highest_memmap_pfn __read_mostly;
++int static_num_online_nodes __read_mostly;
+ int percpu_pagelist_fraction;
  
- static inline void __free_one_page(struct page *page,
--		struct zone *zone, unsigned int order)
-+		struct zone *zone, unsigned int order,
-+		int migratetype)
- {
- 	unsigned long page_idx;
- 	int order_size = 1 << order;
--	int migratetype = get_pageblock_migratetype(page);
+ #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
+@@ -1442,7 +1443,7 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+ 	/* Determine in advance if the zonelist needs filtering */
+ 	if ((alloc_flags & ALLOC_CPUSET) && unlikely(number_of_cpusets > 1))
+ 		zonelist_filter = 1;
+-	if (num_online_nodes() > 1)
++	if (static_num_online_nodes > 1)
+ 		zonelist_filter = 1;
  
- 	if (unlikely(PageCompound(page)))
- 		if (unlikely(destroy_compound_page(page, order)))
- 			return;
+ zonelist_scan:
+@@ -1488,7 +1489,7 @@ this_zone_full:
+ 			zlc_mark_zone_full(zonelist, z);
+ try_next_zone:
+ 		if (NUMA_BUILD && zonelist_filter) {
+-			if (!did_zlc_setup && num_online_nodes() > 1) {
++			if (!did_zlc_setup && static_num_online_nodes > 1) {
+ 				/*
+ 				 * do zlc_setup after the first zone is tried
+ 				 * but only if there are multiple nodes to make
+@@ -2645,6 +2646,7 @@ void build_all_zonelists(void)
+ 	else
+ 		page_group_by_mobility_disabled = 0;
  
-+	VM_BUG_ON(migratetype == -1);
-+
- 	page_idx = page_to_pfn(page) & ((1 << MAX_ORDER) - 1);
- 
- 	VM_BUG_ON(page_idx & (order_size - 1));
-@@ -533,17 +535,18 @@ static void free_pages_bulk(struct zone *zone, int count,
- 		page = list_entry(list->prev, struct page, lru);
- 		/* have to delete it as __free_one_page list manipulates */
- 		list_del(&page->lru);
--		__free_one_page(page, zone, order);
-+		__free_one_page(page, zone, order, page_private(page));
- 	}
- 	spin_unlock(&zone->lock);
- }
- 
--static void free_one_page(struct zone *zone, struct page *page, int order)
-+static void free_one_page(struct zone *zone, struct page *page, int order,
-+				int migratetype)
- {
- 	spin_lock(&zone->lock);
- 	zone_clear_flag(zone, ZONE_ALL_UNRECLAIMABLE);
- 	zone->pages_scanned = 0;
--	__free_one_page(page, zone, order);
-+	__free_one_page(page, zone, order, migratetype);
- 	spin_unlock(&zone->lock);
- }
- 
-@@ -568,7 +571,8 @@ static void __free_pages_ok(struct page *page, unsigned int order)
- 
- 	local_irq_save(flags);
- 	__count_vm_events(PGFREE, 1 << order);
--	free_one_page(page_zone(page), page, order);
-+	free_one_page(page_zone(page), page, order,
-+					get_pageblock_migratetype(page));
- 	local_irq_restore(flags);
- }
- 
++	static_num_online_nodes = num_node_state(N_ONLINE);
+ 	printk("Built %i zonelists in %s order, mobility grouping %s.  "
+ 		"Total pages: %ld\n",
+ 			num_online_nodes(),
 -- 
 1.5.6.5
 
