@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761299AbZCPVFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761237AbZCPVHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761299AbZCPVFz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 17:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759198AbZCPVFq
+	id S1761237AbZCPVHj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 17:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZCPVH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 17:05:46 -0400
-Received: from [213.79.90.228] ([213.79.90.228]:1931 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758998AbZCPVFp (ORCPT
+	Mon, 16 Mar 2009 17:07:29 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:54318 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752726AbZCPVH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 17:05:45 -0400
-Date: Tue, 17 Mar 2009 00:05:42 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 05/13] sdhci: Add support for card-detection polling
-Message-ID: <20090316210542.GA1991@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090213144630.GA13436@oksana.dev.rtsoft.ru> <20090213144718.GE23889@oksana.dev.rtsoft.ru> <20090221165821.1239aa5a@mjolnir.ossman.eu> <20090304174917.GD7477@oksana.dev.rtsoft.ru> <20090308151121.291f1abb@mjolnir.ossman.eu>
+	Mon, 16 Mar 2009 17:07:29 -0400
+Date: Mon, 16 Mar 2009 15:07:26 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
+       linux-kernel@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH 6/6] PCI MSI: Add support for multiple MSI
+Message-ID: <20090316210726.GO14127@parisc-linux.org>
+References: <1235410082-5016-1-git-send-email-matthew@wil.cx> <1235410082-5016-7-git-send-email-matthew@wil.cx> <1236039373.8230.107.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090308151121.291f1abb@mjolnir.ossman.eu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1236039373.8230.107.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 08, 2009 at 03:11:21PM +0100, Pierre Ossman wrote:
-> On Wed, 4 Mar 2009 20:49:17 +0300
-> Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > On Sat, Feb 21, 2009 at 04:58:21PM +0100, Pierre Ossman wrote:
-> > > Just modify the if-clause and
-> > > things will work.
-> > 
-> > That would look horrid...
-> > 
-> >         if ((!(host->quirks & SDHCI_QUIRK_BROKEN_CARD_DETECTION) &&
-> >                         !(sdhci_readl(host, SDHCI_PRESENT_STATE) &
-> >                                 SDHCI_CARD_PRESENT)) ||
-> >                         (host->flags & SDHCI_DEVICE_DEAD)) {
-> > 
-> 
-> There are worse ones in that code, but I see your point. :)
-> 
-> > > Might want to add a comment also to make it more obvious what the
-> > > if-clause does.
-> > 
-> > Let's try to avoid the if-clause above? How about this:
-> > 
-> 
-> Looks ok.
-> 
-> > @@ -1096,6 +1099,7 @@ out:
-> >  static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
-> >  {
-> >  	struct sdhci_host *host;
-> > +	bool present;
-> >  	unsigned long flags;
+On Tue, Mar 03, 2009 at 11:16:13AM +1100, Michael Ellerman wrote:
+> > diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
+> > index 3bb7d3d..0c16e2a 100644
+> > --- a/arch/powerpc/kernel/msi.c
+> > +++ b/arch/powerpc/kernel/msi.c
+> > @@ -19,6 +19,10 @@ int arch_msi_check_device(struct pci_dev* dev, int nvec, int type)
+> >  		return -ENOSYS;
+> >  	}
 > >  
-> >  	host = mmc_priv(mmc);
+> > +	/* PowerPC doesn't support multiple MSI yet */
+> > +	if (type == PCI_CAP_ID_MSI && nvec > 1)
+> > +		return 1;
+> > +
+> >  	if (ppc_md.msi_check_device) {
+> >  		pr_debug("msi: Using platform check routine.\n");
+> >  		return ppc_md.msi_check_device(dev, nvec, type);
 > 
-> Can we use bool in the kernel?
+> That bit:
+> 
+> Acked-by: Michael Ellerman <michael@ellerman.id.au>
+> 
+> I'll tell benh to expect this hunk to show up sometime via Jesse's tree.
 
-Sure, it's widely used in the kernel, even in such places as
-mm/ or kernel/.
+Thanks!
 
+> Looks good otherwise, not sure if we'll ever implement it, but good to
+> have. Is AHCI the only driver you're planning on using it for ATM?
 
-Thanks for the review!
+That's the only one I know where it's important.  I think some PCIe
+bridges would like to have multiple MSI.  And I think some hardware
+designs (not from Intel, from other companies who've talked to me) are
+in the pipe to use multiple MSI, because it's cheaper than using MSI-X.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
