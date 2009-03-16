@@ -1,89 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbZCPCeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbZCPCe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758726AbZCPCeV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 22:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbZCPC30
+	id S1759554AbZCPCe5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 22:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbZCPCar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 22:29:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44324 "EHLO hera.kernel.org"
+	Sun, 15 Mar 2009 22:30:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44361 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752159AbZCPC3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 22:29:24 -0400
+	id S1755578AbZCPCaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 22:30:46 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com
-Cc: Tejun Heo <tj@kernel.org>, Jeff Dike <jdike@linux.intel.com>
-Subject: [PATCH 16/17] ubd: simplify block request completion
-Date: Mon, 16 Mar 2009 11:28:59 +0900
-Message-Id: <1237170540-19130-17-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>,
+       =?utf-8?q?J=C3=B6rg=20Dorchain?= <joerg@dorchain.net>,
+       Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH 17/17] block: clean up unnecessary stuff from block drivers
+Date: Mon, 16 Mar 2009 11:29:00 +0900
+Message-Id: <1237170540-19130-18-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1237170540-19130-1-git-send-email-tj@kernel.org>
 References: <1237170540-19130-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 16 Mar 2009 02:29:19 +0000 (UTC)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 16 Mar 2009 02:29:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup
 
-ubd had its own block request partial completion mechanism, which is
-unnecessary as block layer already does it.  Kill ubd_end_request()
-and ubd_finish() and replace them with direct call to
-blk_end_request().
+rq_data_dir() can only be READ or WRITE and rq->sector and nr_sectors
+are always automatically updated after partial request completion.
+Don't worry about rq_data_dir() not being either READ or WRITE or
+manually update sector and nr_sectors.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Jeff Dike <jdike@linux.intel.com>
+Cc: Jörg Dorchain <joerg@dorchain.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/um/drivers/ubd_kern.c |   23 +----------------------
- 1 files changed, 1 insertions(+), 22 deletions(-)
+ drivers/block/amiflop.c |    7 -------
+ drivers/block/ataflop.c |    4 ----
+ drivers/block/xd.c      |    9 ++-------
+ 3 files changed, 2 insertions(+), 18 deletions(-)
 
-diff --git a/arch/um/drivers/ubd_kern.c b/arch/um/drivers/ubd_kern.c
-index 0a86811..906ecdf 100644
---- a/arch/um/drivers/ubd_kern.c
-+++ b/arch/um/drivers/ubd_kern.c
-@@ -451,23 +451,6 @@ static void do_ubd_request(struct request_queue * q);
+diff --git a/drivers/block/amiflop.c b/drivers/block/amiflop.c
+index 163750e..72ee010 100644
+--- a/drivers/block/amiflop.c
++++ b/drivers/block/amiflop.c
+@@ -1371,11 +1371,6 @@ static void redo_fd_request(void)
+ 		       "0x%08lx\n", track, sector, data);
+ #endif
  
- /* Only changed by ubd_init, which is an initcall. */
- static int thread_fd = -1;
--
--static void ubd_end_request(struct request *req, int bytes, int error)
--{
--	blk_end_request(req, error, bytes);
--}
--
--/* Callable only from interrupt context - otherwise you need to do
-- * spin_lock_irq()/spin_lock_irqsave() */
--static inline void ubd_finish(struct request *req, int bytes)
--{
--	if(bytes < 0){
--		ubd_end_request(req, 0, -EIO);
--		return;
--	}
--	ubd_end_request(req, bytes, 0);
--}
--
- static LIST_HEAD(restart);
- 
- /* XXX - move this inside ubd_intr. */
-@@ -475,7 +458,6 @@ static LIST_HEAD(restart);
- static void ubd_handler(void)
- {
- 	struct io_thread_req *req;
--	struct request *rq;
- 	struct ubd *ubd;
- 	struct list_head *list, *next_ele;
- 	unsigned long flags;
-@@ -492,10 +474,7 @@ static void ubd_handler(void)
- 			return;
+-		if ((rq_data_dir(CURRENT) != READ) && (rq_data_dir(CURRENT) != WRITE)) {
+-			printk(KERN_WARNING "do_fd_request: unknown command\n");
+-			__blk_end_request_all(CURRENT, -EIO);
+-			goto repeat;
+-		}
+ 		if (get_track(drive, track) == -1) {
+ 			__blk_end_request_all(CURRENT, -EIO);
+ 			goto repeat;
+@@ -1407,8 +1402,6 @@ static void redo_fd_request(void)
+ 			break;
  		}
- 
--		rq = req->req;
--		rq->nr_sectors -= req->length >> 9;
--		if(rq->nr_sectors == 0)
--			ubd_finish(rq, rq->hard_nr_sectors << 9);
-+		blk_end_request(req->req, 0, req->length);
- 		kfree(req);
  	}
- 	reactivate_fd(thread_fd, UBD_IRQ);
+-	CURRENT->nr_sectors -= CURRENT->current_nr_sectors;
+-	CURRENT->sector += CURRENT->current_nr_sectors;
+ 
+ 	__blk_end_request_all(CURRENT, 0);
+ 	goto repeat;
+diff --git a/drivers/block/ataflop.c b/drivers/block/ataflop.c
+index c9844f0..d19c9d6 100644
+--- a/drivers/block/ataflop.c
++++ b/drivers/block/ataflop.c
+@@ -732,8 +732,6 @@ static void do_fd_action( int drive )
+ 		    }
+ 		    else {
+ 			/* all sectors finished */
+-			CURRENT->nr_sectors -= CURRENT->current_nr_sectors;
+-			CURRENT->sector += CURRENT->current_nr_sectors;
+ 			__blk_end_request_all(CURRENT, 0);
+ 			redo_fd_request();
+ 			return;
+@@ -1139,8 +1137,6 @@ static void fd_rwsec_done1(int status)
+ 	}
+ 	else {
+ 		/* all sectors finished */
+-		CURRENT->nr_sectors -= CURRENT->current_nr_sectors;
+-		CURRENT->sector += CURRENT->current_nr_sectors;
+ 		__blk_end_request_all(CURRENT, 0);
+ 		redo_fd_request();
+ 	}
+diff --git a/drivers/block/xd.c b/drivers/block/xd.c
+index 291ddc3..85d8ef3 100644
+--- a/drivers/block/xd.c
++++ b/drivers/block/xd.c
+@@ -308,7 +308,6 @@ static void do_xd_request (struct request_queue * q)
+ 	while ((req = elv_next_request(q)) != NULL) {
+ 		unsigned block = req->sector;
+ 		unsigned count = req->nr_sectors;
+-		int rw = rq_data_dir(req);
+ 		XD_INFO *disk = req->rq_disk->private_data;
+ 		int res = 0;
+ 		int retry;
+@@ -321,13 +320,9 @@ static void do_xd_request (struct request_queue * q)
+ 			__blk_end_request_all(req, -EIO);
+ 			continue;
+ 		}
+-		if (rw != READ && rw != WRITE) {
+-			printk("do_xd_request: unknown request\n");
+-			__blk_end_request_all(req, -EIO);
+-			continue;
+-		}
+ 		for (retry = 0; (retry < XD_RETRIES) && !res; retry++)
+-			res = xd_readwrite(rw, disk, req->buffer, block, count);
++			res = xd_readwrite(rq_data_dir(req), disk, req->buffer,
++					   block, count);
+ 		/* wrap up, 0 = success, -errno = fail */
+ 		__blk_end_request_all(req, res);
+ 	}
 -- 
 1.6.0.2
 
