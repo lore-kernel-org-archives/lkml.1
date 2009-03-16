@@ -1,190 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760280AbZCPTPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbZCPTRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760280AbZCPTPw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 15:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbZCPTPm
+	id S1759198AbZCPTRW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 15:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZCPTRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 15:15:42 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:38547 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752796AbZCPTPl (ORCPT
+	Mon, 16 Mar 2009 15:17:13 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58732 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290AbZCPTRM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 15:15:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=pFcGraGaqHovYudrvutLWk7zXQ1VIdkpSeHthgzDELKsy68sDA5zpTtmIFyCqv3ydy
-         oDQwV1gow0OehpKPiHOxdPkQFffO2DhiXMtzKilIsE9MFLEzUE+ePtRGgHF/JBw0dlh7
-         SW30nHWBvqmgdRGOwKRNSjk2UwKQNUU9H7vhY=
+	Mon, 16 Mar 2009 15:17:12 -0400
+Date: Mon, 16 Mar 2009 15:17:09 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jason Baron <jbaron@redhat.com>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
+       fweisbec@gmail.com, fche@redhat.com, peterz@infradead.org,
+       compudj@krystal.dyndns.org
+Subject: Re: [Patch 2/2] tracepoints for softirq entry/exit - tracepoints
+In-Reply-To: <20090316190047.GB3111@redhat.com>
+Message-ID: <alpine.DEB.2.00.0903161514590.27978@gandalf.stny.rr.com>
+References: <20090312183603.GC3352@redhat.com> <20090316190047.GB3111@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Date: Mon, 16 Mar 2009 12:15:37 -0700
-Message-ID: <43e72e890903161215u343cbb19v6d6cbf36794e252a@mail.gmail.com>
-Subject: AMD Quad core - PCI-DMA: Out of IOMMU space on > 4 GB RAM
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: wireless <linux-wireless@vger.kernel.org>, joerg.roedel@amd.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       iommu@lists.linux-foundation.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've run into "PCI-DMA: Out of IOMMU space" messages after loading and
-unloading a module 30 times. The interesting thing is this only
-happens if I have > 4 GB of memory. The box this occurs has AMD Phenom
-quad core CPU so I take it a harware IOMMU is being used. Below are
-example relevant messages with > 4 GB and then < 4 GB of memory. The
-driver I tested this with was ath9k. It could be an issue perhaps with
-ath9k but I am unable to find an issue in our probe/removal.
 
-Could this be an issue with the AMD IOMMU used? Or is it more likely a
-driver issue?
+On Mon, 16 Mar 2009, Jason Baron wrote:
 
-With > 4 GB of RAM:
+> hi,
+> 
+> ok, below is a re-spun patch 2/2 which converts to the TRACE_EVENT
+> format.
 
-phy0: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011820000, irq=19
-phy1: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20012520000, irq=19
-phy2: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy3: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy4: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy5: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy6: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy7: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy8: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy9: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy10: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy11: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy12: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy13: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy14: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy15: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy16: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy17: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy18: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy19: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy20: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy21: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy22: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy23: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy24: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy25: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy26: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy27: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy28: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-phy29: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117c0000, irq=19
-phy30: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200117a0000, irq=19
-ath9k 0000:01:06.0: PCI-DMA: Out of IOMMU space for 3904 bytes
-ath9k 0000:01:06.0: PCI-DMA: Out of IOMMU space for 3904 bytes
-ath9k 0000:01:06.0: PCI-DMA: Out of IOMMU space for 3904 bytes
-... etc
+Thanks, some comments though.
 
-The full log can be seen at:
+> 
+> thanks,
+> 
+> -Jason
+> 
+> 
+> Signed-off-by: Jason Baron <jbaron@redhat.com>
+> 
+> ---
+> 
+>  include/trace/irq_event_types.h |   36 ++++++++++++++++++++++++++++++++++++
+>  kernel/softirq.c                |    7 ++++++-
+>  2 files changed, 42 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/include/trace/irq_event_types.h b/include/trace/irq_event_types.h
+> index 214bb92..de1f2a9 100644
+> --- a/include/trace/irq_event_types.h
+> +++ b/include/trace/irq_event_types.h
+> @@ -40,4 +40,40 @@ TRACE_EVENT(irq_handler_exit,
+>  		  __entry->irq, __entry->ret ? "handled" : "unhandled")
+>  );
+>  
+> +TRACE_EVENT(softirq_action_entry,
+> +
+> +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
+> +
+> +	TP_ARGS(h, vec),
+> +
+> +	TP_STRUCT__entry(
+> +		__array(	char,	softirq_name,	MAX_SOFTIRQ_NAME_LEN )
+> +	),
+> +
+> +	TP_fast_assign(
+> +		memcpy(__entry->softirq_name, softirq_to_name[h-vec],
+> +			MAX_SOFTIRQ_NAME_LEN);
 
-http://bombadil.infradead.org/~mcgrof/logs/log-out-of-mem-full
+memcpy isn't fast ;-)
 
-With < 4GB RAM:
+What you want is this:
 
-phy0: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011200000, irq=19
-phy1: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200125a0000, irq=19
-phy2: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy3: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy4: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy5: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy6: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy7: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy8: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy9: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy10: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy11: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy12: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy13: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy14: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy15: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy16: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy17: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy18: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy19: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy20: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy21: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy22: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy23: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy24: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy25: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy26: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy27: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy28: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy29: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-phy30: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc200110a0000, irq=19
-phy31: Atheros AR5416 MAC/BB Rev:2 AR2122 RF Rev:81:
-mem=0xffffc20011140000, irq=19
-..etc goes on and on
+	TP_STRUCT__entry(
+		__field(	int,	vec	)
+	),
 
-The full log can be seen at:
+	TP_fast_assign(
+		__entry->vec = h - vec;
+> +	),
+> +
+> +	TP_printk("softirq entry: %s", __entry->softirq_name)
 
-http://bombadil.infradead.org/~mcgrof/logs/log-out-of-mem-full-NOT
+	TP_printk("softirq entry: %s", softirq_to_name[__entry->vec])
 
-  Luis
+> +);
+> +
+> +TRACE_EVENT(softirq_action_exit,
+> +
+> +	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
+> +
+> +	TP_ARGS(h, vec),
+> +
+> +	TP_STRUCT__entry(
+> +		__array(	char,	softirq_name,	MAX_SOFTIRQ_NAME_LEN )
+> +	),
+> +
+> +	TP_fast_assign(
+> +		memcpy(__entry->softirq_name, softirq_to_name[h-vec],
+> +			MAX_SOFTIRQ_NAME_LEN);
+> +	),
+> +
+> +	TP_printk("softirq exit: %s", __entry->softirq_name)
+
+
+And do the same here.
+
+-- Steve
+
+> +);
+> +
+>  #undef TRACE_SYSTEM
+> diff --git a/kernel/softirq.c b/kernel/softirq.c
+> index 8f3ae57..5e96c77 100644
+> --- a/kernel/softirq.c
+> +++ b/kernel/softirq.c
+> @@ -24,6 +24,7 @@
+>  #include <linux/ftrace.h>
+>  #include <linux/smp.h>
+>  #include <linux/tick.h>
+> +#include <trace/irq.h>
+>  
+>  #include <asm/irq.h>
+>  /*
+> @@ -185,6 +186,9 @@ EXPORT_SYMBOL(local_bh_enable_ip);
+>   */
+>  #define MAX_SOFTIRQ_RESTART 10
+>  
+> +DEFINE_TRACE(softirq_action_entry);
+> +DEFINE_TRACE(softirq_action_exit);
+> +
+>  asmlinkage void __do_softirq(void)
+>  {
+>  	struct softirq_action *h;
+> @@ -211,8 +215,9 @@ restart:
+>  		if (pending & 1) {
+>  			int prev_count = preempt_count();
+>  
+> +			trace_softirq_action_entry(h, softirq_vec);
+>  			h->action(h);
+> -
+> +			trace_softirq_action_exit(h, softirq_vec);
+>  			if (unlikely(prev_count != preempt_count())) {
+>  				printk(KERN_ERR "huh, entered softirq %td %s %p"
+>  				       "with preempt_count %08x,"
+> 
