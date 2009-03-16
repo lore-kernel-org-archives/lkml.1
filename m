@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbZCPUbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761518AbZCPUdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760690AbZCPUbR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 16:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbZCPUbC
+	id S1761518AbZCPUdh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 16:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbZCPUd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 16:31:02 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44251 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754109AbZCPUbB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 16:31:01 -0400
-Message-ID: <49BEB5FE.7050601@zytor.com>
-Date: Mon, 16 Mar 2009 13:26:38 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 16 Mar 2009 16:33:28 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50639 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754317AbZCPUd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 16:33:27 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>, Rolf Eike Beer <eike-kernel@sf-tec.de>
+Subject: Re: No warning on resume with different kernel version
+Date: Mon, 16 Mar 2009 21:33:10 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <200903141629.05282.eike-kernel@sf-tec.de> <20090316113850.GA2423@elf.ucw.cz>
+In-Reply-To: <20090316113850.GA2423@elf.ucw.cz>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org>
-In-Reply-To: <49BEAFEC.7020400@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903162133.10526.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Yinghai Lu wrote:
->>> -INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
->>> -RESERVE_BRK(pagetables, INIT_MAP_SIZE)
->>> +/* Enough space to fit pagetables for the low memory linear map */
->>> +MAPPING_BEYOND_END = (PAGE_TABLE_SIZE(1 << (32 - PAGE_SHIFT)) * 
->>> PAGE_SIZE)
->>>     
->>
->> that is for 4g?
->>   
+On Monday 16 March 2009, Pavel Machek wrote:
+> On Sat 2009-03-14 16:28:59, Rolf Eike Beer wrote:
+> > Hi,
+> > 
+> > I'm sure this had worked before. And since I don't do that on a regular basis, 
+> > but only by accident, I have no idea when it stopped working. But with my 
+> > 2.6.28 kernel and everything more recent I don't get a warning if there is a 
+> > suspend image of a different kernel version, but simply the new kernel starts 
+> > and throws everything away. Is this a kernel fault or something with the 
+> > userspace stuff? Whom to blame for this?
 > 
-> Yes, I suppose it only needs to be 1G.  But it doesn't make much 
-> difference in practice.
-> 
+> Actually, it should now be possible to resume with different kernel
+> than the one that did the suspendding...
 
-A tighter bound would probably be nice, if nothing else because tighter 
-bounds tend to catch more bugs.
+As long as it is 64-bit.
 
-	-hpa
+Something broke if that doesn't work.
 
+Rolf, is your kernel 64-bit?
+
+Thanks,
+Rafael
