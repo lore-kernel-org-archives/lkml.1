@@ -1,111 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbZCPWNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761236AbZCPWOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759605AbZCPWNT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 18:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbZCPWNE
+	id S1761236AbZCPWOI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 18:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZCPWNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 18:13:04 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:58120 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753117AbZCPWND (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 18:13:03 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=MtjJYFKqORwx7trpQNsRYddm7R0gU4Rg3NUrxjgTZHl7zKzA6A7CBP6NcFiuLJXH4
-	uLEhYPm7emOOc/WmIRHfA==
-Date: Mon, 16 Mar 2009 15:11:38 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, balbir@in.ibm.com,
-       menage@google.com, vatsa@linux.vnet.ibm.com,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpuset: fix cpuset vs PF_THREAD_BOUND weirdness
-In-Reply-To: <1237029434.8939.68.camel@laptop>
-Message-ID: <alpine.DEB.2.00.0903161457040.26565@chino.kir.corp.google.com>
-References: <200903122251.n2CMpvpT014007@imap1.linux-foundation.org>  <alpine.DEB.2.00.0903121619540.19505@chino.kir.corp.google.com>  <20090313134635.GE17927@linux.vnet.ibm.com>  <alpine.DEB.2.00.0903131143040.17621@chino.kir.corp.google.com> 
- <20090314092345.GA3339@linux.vnet.ibm.com>  <alpine.DEB.2.00.0903140233510.457@chino.kir.corp.google.com> <1237029434.8939.68.camel@laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 16 Mar 2009 18:13:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53107 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755945AbZCPWNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 18:13:54 -0400
+Message-ID: <49BECF10.60505@redhat.com>
+Date: Mon, 16 Mar 2009 18:13:36 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Eric Dumazet <dada1@cosmosbay.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: [PATCH -rc][BUGFIX] module: fix refptr allocation and release order
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Mar 2009, Peter Zijlstra wrote:
+Fix refptr bug: Change refptr allocation and release order not to access a module
+data structure pointed by 'mod' after freeing mod->module_core.
+This bug will cause kernel panic(e.g. failed to find undefined symbols).
 
-> David, I'm not sure what you're arguing.
-> 
-> Letting a kernel thread in a subset, but then not letting it back out
-> again seems really weird to me, esp. since PF_THREAD_BOUND is a fairly
-> recent thing.
-> 
+This bug was reported on systemtap bugzilla.
+http://sources.redhat.com/bugzilla/show_bug.cgi?id=9927
 
-The addition of PF_THREAD_BOUND impacted cpusets because, for the first 
-time, it was possible that setting the new set of allowed cpus wouldn't 
-succeed (cpusets already deals with the hotplug exception).
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 
-That introduced a new requirement: that set_cpus_allowed_ptr() succeeds 
-for the attachment of a task to the cpuset changes.  The cpu affinity of 
-a task is changed to match that of the cpuset anytime it is moved and then 
-imposed a superset for subsequent sched_setaffinity() calls from 
-userspace.  Your change would do the latter but neglect the former if it 
-doesn't succeed; I'm not immediately opposed to that, but I wasn't 
-satisfied with the additional inconsistency that the earlier patch added 
-(i.e. changing a cpuset's cpumask that now is disjoint from threads with a 
-bound cpu).  So to be clear, I'm not disagreeing with resolving a 
-perceived inconsistency with cpuset movement, but I am disagreeing with an 
-incomplete solution.
+ kernel/module.c |   26 ++++++++++++++------------
+ 1 files changed, 14 insertions(+), 12 deletions(-)
 
-Your solution appears to be more complete, although I have not tested it.  
-So thanks for looking at this particular issue.
+diff --git a/kernel/module.c b/kernel/module.c
+index ba22484..1196f5d 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2015,14 +2015,6 @@ static noinline struct module *load_module(void __user *umod,
+ 	if (err < 0)
+ 		goto free_mod;
 
-Let me propose my own patch, however, that would be less intrusive and, if 
-anything, more logical.  It would also not require a change to the cgroup 
-interface for attachment callbacks.
-
-This patch simply denies PF_THREAD_BOUND tasks from ever moving out of the 
-root cpuset.  These kthreads do not require mempolicies that disallow 
-access to certain nodes and their cpumask can never be changed; thus, 
-cpusets isn't applicable to these threads.  They will forever reside in 
-the root cpuset so the interface with userspace remains consistent (i.e. 
-`cat tasks' for the root cpuset will still work).
-
-Unless a use-case can be shown for a single PF_THREAD_BOUND task where 
-manipulating its cpuset attachment or mempolicy matters, I think this is 
-the most appropriate solution.
-
-Signed-off-by: David Rientjes <rientjes@google.com>
----
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -1360,12 +1360,16 @@ static int cpuset_can_attach(struct cgroup_subsys *ss,
- 	if (cpumask_empty(cs->cpus_allowed) || nodes_empty(cs->mems_allowed))
- 		return -ENOSPC;
- 
--	if (tsk->flags & PF_THREAD_BOUND) {
--		mutex_lock(&callback_mutex);
--		if (!cpumask_equal(&tsk->cpus_allowed, cs->cpus_allowed))
--			ret = -EINVAL;
--		mutex_unlock(&callback_mutex);
+-#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
+-	mod->refptr = percpu_modalloc(sizeof(local_t), __alignof__(local_t),
+-				      mod->name);
+-	if (!mod->refptr) {
+-		err = -ENOMEM;
+-		goto free_mod;
 -	}
-+	/*
-+	 * Kthreads bound to specific cpus cannot be moved to a new cpuset; we
-+	 * cannot change their cpu affinity and isolating such threads by their
-+	 * set of allowed nodes is unnecessary.  Thus, cpusets are not
-+	 * applicable for such threads.  This prevents checking for success of
-+	 * set_cpus_allowed_ptr() on all attached tasks before cpus_allowed may
-+	 * be changed.
-+	 */
-+	if (tsk->flags & PF_THREAD_BOUND)
-+		return -EINVAL;
- 
- 	return ret < 0 ? ret : security_task_setscheduler(tsk, 0, NULL);
- }
+-#endif
+ 	if (pcpuindex) {
+ 		/* We have a special allocation for this section. */
+ 		percpu = percpu_modalloc(sechdrs[pcpuindex].sh_size,
+@@ -2030,7 +2022,7 @@ static noinline struct module *load_module(void __user *umod,
+ 					 mod->name);
+ 		if (!percpu) {
+ 			err = -ENOMEM;
+-			goto free_percpu;
++			goto free_mod;
+ 		}
+ 		sechdrs[pcpuindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
+ 		mod->percpu = percpu;
+@@ -2082,6 +2074,14 @@ static noinline struct module *load_module(void __user *umod,
+ 	/* Module has been moved. */
+ 	mod = (void *)sechdrs[modindex].sh_addr;
+
++#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
++	mod->refptr = percpu_modalloc(sizeof(local_t), __alignof__(local_t),
++				      mod->name);
++	if (!mod->refptr) {
++		err = -ENOMEM;
++		goto free_init;
++	}
++#endif
+ 	/* Now we've moved module, initialize linked lists, etc. */
+ 	module_unload_init(mod);
+
+@@ -2288,15 +2288,17 @@ static noinline struct module *load_module(void __user *umod,
+ 	ftrace_release(mod->module_core, mod->core_size);
+  free_unload:
+ 	module_unload_free(mod);
++ free_init:
++#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
++	percpu_modfree(mod->refptr);
++#endif
+ 	module_free(mod, mod->module_init);
+  free_core:
+ 	module_free(mod, mod->module_core);
++	/* mod will be freed with core. Don't access it beyond this line! */
+  free_percpu:
+ 	if (percpu)
+ 		percpu_modfree(percpu);
+-#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
+-	percpu_modfree(mod->refptr);
+-#endif
+  free_mod:
+ 	kfree(args);
+  free_hdr:
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
+
