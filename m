@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZCPHxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757637AbZCPHxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755666AbZCPHxR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 03:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbZCPHxB
+	id S1757637AbZCPHxl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 03:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbZCPHxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 03:53:01 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56704 "EHLO smtps.tip.net.au"
+	Mon, 16 Mar 2009 03:53:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44131 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751656AbZCPHxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 03:53:00 -0400
-Date: Mon, 16 Mar 2009 18:52:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-next@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/cell: fix unused variable warning in interrupt.c
-Message-Id: <20090316185256.4a160374.sfr@canb.auug.org.au>
-In-Reply-To: <20090202174817.dd4a26f0.sfr@canb.auug.org.au>
-References: <20090202174817.dd4a26f0.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752604AbZCPHx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 03:53:29 -0400
+Message-ID: <49BE0570.6000907@kernel.org>
+Date: Mon, 16 Mar 2009 16:53:20 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] block: cleanup patches
+References: <1236920578-2179-1-git-send-email-tj@kernel.org> <49BB0FB7.2070109@kernel.org> <20090315164526.GD27476@kernel.dk> <49BDA842.1090208@kernel.org> <20090316072211.GI27476@kernel.dk>
+In-Reply-To: <20090316072211.GI27476@kernel.dk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 16 Mar 2009 07:53:24 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-arch/powerpc/platforms/cell/interrupt.c: In function 'handle_iic_irq':
-arch/powerpc/platforms/cell/interrupt.c:240: warning: unused variable 'cpu'
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/cell/interrupt.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-On Mon, 2 Feb 2009 17:48:17 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+Jens Axboe wrote:
+> On Mon, Mar 16 2009, Tejun Heo wrote:
+>> Jens Axboe wrote:
+>>> On Sat, Mar 14 2009, Tejun Heo wrote:
+>>>> Tejun Heo wrote:
+>>>>> Hello,
+>>>>>
+>>>>> This patchset is available in the following git tree.
+>>>>>
+>>>>>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-cleanup
+>>>>>
+>>>>> This patchset contains the following 14 cleanup patches.
+>>>> Jens, once you're okay with the rest of the changes, I'll remove IDE
+>>>> related stuff and repost the patchset.
+>>> I only gave it a quick glance, looks mostly OK. Though I don't like
+>>> putting elv_ prefixed stuff in blk-core. I agree it belongs there
+>>> though, it's really block layer functionality and not io scheduler
+>>> interfacing. So rename it blk_ instead and put compatability names in
+>>> the header file instead.
+>> Yeap, that exactly is what's planned (the peek/fetch patches :-).
 > 
-> arch/powerpc/platforms/cell/interrupt.c: In function 'handle_iic_irq':
-> arch/powerpc/platforms/cell/interrupt.c:240: warning: unused variable 'cpu'
-> 
-> Caused by commit dee4102a9a5882b4f7d5cc165ba29e8cc63cf92e ("sparseirq:
-> use kstat_irqs_cpu instead").
+> I figured that is where it's going :-)
+> How far along with that are you? We are getting really close to the
+> merge window, so it basically has to be ready _now_ to hit 2.6.30.
 
-This patch is relative to next-20090312 and updates the sparseirq tree.
+The peek/fetch patchset is almost ready.  They just need to be
+refreshed for for-2.6.30.  I'm currently trying to clean up rq->data,
+->buffer and data length handling and was thinking about putting
+peek/fetch patchset on top of those, which I don't think will be ready
+soon enough for 2.6.30 merge window.  Given the nature of these
+patches, I think we can wait for 31 window?
 
-diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index 1f0d774..882e470 100644
---- a/arch/powerpc/platforms/cell/interrupt.c
-+++ b/arch/powerpc/platforms/cell/interrupt.c
-@@ -237,8 +237,6 @@ extern int noirqdebug;
- 
- static void handle_iic_irq(unsigned int irq, struct irq_desc *desc)
- {
--	const unsigned int cpu = smp_processor_id();
--
- 	spin_lock(&desc->lock);
- 
- 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
--- 
-1.6.2
+Thanks.
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+tejun
