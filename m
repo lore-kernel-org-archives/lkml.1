@@ -1,602 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759496AbZCPUPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760455AbZCPUTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759496AbZCPUPx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 16:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758970AbZCPUPi
+	id S1760455AbZCPUTa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 16:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbZCPUTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 16:15:38 -0400
-Received: from mail-bw0-f175.google.com ([209.85.218.175]:58858 "EHLO
-	mail-bw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759062AbZCPUPe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 16:15:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GgMzESnxb1Ce4p2LSkL4bEINALGt8TJsPhEPkNL2lM/fy9mZs3ZcYCkvjxzHpQcu9c
-         D0YBb0hIexqpxeqTB+bU1dvLzz0NZGTL5H/vPlJFdLeKB2XDuvFEvU1oNBv3x7gsmziD
-         QAjPXyYBAopsnUISFAAqR80atkorzju29D9YE=
-Date: Mon, 16 Mar 2009 21:15:27 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [RFC][PATCH 1/2] tracing/ftrace: syscall tracing infrastructure
-Message-ID: <20090316201526.GE8393@nowhere>
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-2-git-send-email-fweisbec@gmail.com> <49BEAA5A.4030708@redhat.com>
+	Mon, 16 Mar 2009 16:19:21 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:32867 "EHLO pardus.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753819AbZCPUTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 16:19:21 -0400
+Message-ID: <49BEB3C9.8070705@pardus.org.tr>
+Date: Mon, 16 Mar 2009 22:17:13 +0200
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49BEAA5A.4030708@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [BUG 2.6.29_rc8] BIOS Bug: CPU MTRRs don't cover all of memory,
+ 	losing 0MB of RAM.
+References: <49BE58BA.1000907@pardus.org.tr> <86802c440903161121s3ba18abaiaa3ccf6847e0eafe@mail.gmail.com>
+In-Reply-To: <86802c440903161121s3ba18abaiaa3ccf6847e0eafe@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 03:36:58PM -0400, Masami Hiramatsu wrote:
-> Hi Frederic,
-> 
-> Out of curiously, could you tell me why did you introduce new TIF instead of
-> using utrace's tracehook API?
-> For example, systemtap already use current utrace/tracehook api for tracing
-> all syscalls. If there is any new advantage, it would be good to enhance
-> existing utrace/tracehook.
-> 
-> Thank you,
+Yinghai Lu wrote:
 
-
-Hi,
-
-Because the tracehooks rely on ptrace work and both ftrace and ptrace would overlap
-in a same flag, creating racy issues. At least ss far as I understood it.
-How does systemtap manage it?
-
-Thanks.
-
+> can you check tip/master?
 > 
-> Frederic Weisbecker wrote:
-> > The most important drawback that implies the syscall tracing is the variable
-> > number of parameters that takes a syscall. Assuming there is a large number of
-> > syscall, the goal is to provide as much as possible a generic layer on it.
-> > 
-> > What we want on tracing time (the hot path):
-> > 
-> > - Save the parameters and the number of the syscall. That's all. The rest of the
-> >   job can be done on the "output path".
-> > 
-> > On output time:
-> > 
-> > - Get the raw-binary saved parameters and the syscall number as well as some
-> >   usual infos such as the pid, the time...
-> > - Depending on the tracing requirements, the user should have the choice to
-> >   dump the raw datas or a formatted version.
-> > 
-> > The core infrastructure has a static array which contains the necessary
-> > informations for each syscall (ok, I've only implemented 4 for now).
-> > 
-> > When a syscall triggers, the tracer look at this array (O(1) access) and get the
-> > number of parameters for this syscall. Then these parameters are saved in a
-> > binary form on the ring buffer with the syscall number (a generic version, arch
-> > independent).
-> > 
-> > On output time the parameters, the name of the syscall and very basic
-> > informations to format the parameters are picket from the ring-buffer and the
-> > generic syscall array.
-> > 
-> > Depending of the level of implementation we want for the syscall inside this
-> > array, we can provide just a single mask where the n bit matches the n
-> > parameter. If the bit is set, then the parameter will be considered as a string
-> > pointer. Otherwise its raw hexadecimal value will be printed.
-> > 
-> > If needed, we can otherwise provide a specific callback to print the syscall
-> > event.
-> > 
-> > The probem with these approaches comes from the fact that the string might have
-> > disappeared from the user memory on output time. Even if we protect against
-> > faults, it can give unreliable traces.
-> > So perhaps we could think about copying the string on tracing time.
-> > 
-> > Concerning the return value, it doesn't make any problem, a single raw
-> > value is printed for each one.
-> > 
-> > Note that the current implementation can be easily scaled further to give only
-> > binary informations to the user and the matching metadata to decode it.
-> > 
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > ---
-> >  include/linux/ftrace.h        |   44 +++++++
-> >  kernel/trace/Kconfig          |   10 ++
-> >  kernel/trace/Makefile         |    1 +
-> >  kernel/trace/trace.c          |    6 +
-> >  kernel/trace/trace.h          |   32 +++++
-> >  kernel/trace/trace_syscalls.c |  284 +++++++++++++++++++++++++++++++++++++++++
-> >  6 files changed, 377 insertions(+), 0 deletions(-)
-> >  create mode 100644 kernel/trace/trace_syscalls.c
-> > 
-> > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> > index e1583f2..1798692 100644
-> > --- a/include/linux/ftrace.h
-> > +++ b/include/linux/ftrace.h
-> > @@ -503,4 +503,48 @@ static inline void trace_hw_branch_oops(void) {}
-> >  
-> >  #endif /* CONFIG_HW_BRANCH_TRACER */
-> >  
-> > +/* Index for the ftrace syscalls array */
-> > +enum syscall_trace_nr {
-> > +	SYSCALL_TRACE_OPEN = 1,
-> > +	SYSCALL_TRACE_CLOSE,
-> > +	SYSCALL_TRACE_READ,
-> > +	SYSCALL_TRACE_WRITE,
-> > +
-> > +	__SYSCALL_TRACE_END
-> > +};
-> > +
-> > +/*
-> > + * A syscall entry in the ftrace syscalls array.
-> > + *
-> > + * @name: name of the syscall
-> > + * @nb_args: number of parameters it takes
-> > + * @simple_format: if true, we use string_mask, otherwise the print callback
-> > + * @string_mask: rudimentary format mask. If bit nr is set, the nr parameter
-> > + *		 will be displayed as a string, otherwise it will be considered
-> > + *		 as a raw number (hex displayed).
-> > + * @print: implement it if you want a custom output for a given syscall
-> > + */
-> > +struct syscall_trace_entry {
-> > +	const char	*name;
-> > +	int		nb_args;
-> > +	bool		simple_format;
-> > +	union {
-> > +		unsigned long string_mask;
-> > +		int (*print)(unsigned long *);
-> > +	} output;
-> > +};
-> > +
-> > +#ifdef CONFIG_FTRACE_SYSCALLS
-> > +extern short arch_syscall_trace_nr[];
-> > +extern void start_ftrace_syscalls(void);
-> > +extern void stop_ftrace_syscalls(void);
-> > +extern void ftrace_syscall_enter(struct pt_regs *regs);
-> > +extern void ftrace_syscall_exit(struct pt_regs *regs);
-> > +#else
-> > +static inline void start_ftrace_syscalls(void) { }
-> > +static inline void stop_ftrace_syscalls(void) { }
-> > +static inline void ftrace_syscall_enter(struct pt_regs *regs) { }
-> > +static inline void ftrace_syscall_exit(struct pt_regs *regs) { }
-> > +#endif
-> > +
-> >  #endif /* _LINUX_FTRACE_H */
-> > diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> > index 8e4a2a6..95a0ad1 100644
-> > --- a/kernel/trace/Kconfig
-> > +++ b/kernel/trace/Kconfig
-> > @@ -34,6 +34,9 @@ config HAVE_FTRACE_MCOUNT_RECORD
-> >  config HAVE_HW_BRANCH_TRACER
-> >  	bool
-> >  
-> > +config HAVE_FTRACE_SYSCALLS
-> > +	bool
-> > +
-> >  config TRACER_MAX_TRACE
-> >  	bool
-> >  
-> > @@ -175,6 +178,13 @@ config EVENT_TRACER
-> >  	  allowing the user to pick and choose which trace point they
-> >  	  want to trace.
-> >  
-> > +config FTRACE_SYSCALLS
-> > +	bool "Trace syscalls"
-> > +	depends on HAVE_FTRACE_SYSCALLS
-> > +	select TRACING
-> > +	help
-> > +	  Basic tracer to catch the syscall entry and exit events.
-> > +
-> >  config BOOT_TRACER
-> >  	bool "Trace boot initcalls"
-> >  	select TRACING
-> > diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-> > index c7a2943..c3feea0 100644
-> > --- a/kernel/trace/Makefile
-> > +++ b/kernel/trace/Makefile
-> > @@ -43,5 +43,6 @@ obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
-> >  obj-$(CONFIG_EVENT_TRACER) += trace_events.o
-> >  obj-$(CONFIG_EVENT_TRACER) += events.o
-> >  obj-$(CONFIG_EVENT_TRACER) += trace_export.o
-> > +obj-$(CONFIG_FTRACE_SYSCALLS) += trace_syscalls.o
-> >  
-> >  libftrace-y := ftrace.o
-> > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> > index cc94f86..5152be3 100644
-> > --- a/kernel/trace/trace.c
-> > +++ b/kernel/trace/trace.c
-> > @@ -242,6 +242,12 @@ static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
-> >  unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
-> >  	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO;
-> >  
-> > +
-> > +struct trace_array *__get_global_trace(void)
-> > +{
-> > +	return &global_trace;
-> > +}
-> > +
-> >  /**
-> >   * trace_wake_up - wake up tasks waiting for trace input
-> >   *
-> > diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> > index 2bfb7d1..9583830 100644
-> > --- a/kernel/trace/trace.h
-> > +++ b/kernel/trace/trace.h
-> > @@ -30,6 +30,8 @@ enum trace_type {
-> >  	TRACE_GRAPH_ENT,
-> >  	TRACE_USER_STACK,
-> >  	TRACE_HW_BRANCHES,
-> > +	TRACE_SYSCALL_ENTER,
-> > +	TRACE_SYSCALL_EXIT,
-> >  	TRACE_KMEM_ALLOC,
-> >  	TRACE_KMEM_FREE,
-> >  	TRACE_POWER,
-> > @@ -192,6 +194,19 @@ struct kmemtrace_free_entry {
-> >  	const void *ptr;
-> >  };
-> >  
-> > +struct syscall_trace_enter {
-> > +	struct trace_entry	ent;
-> > +	enum syscall_trace_nr	nr;
-> > +	unsigned long		args[];
-> > +};
-> > +
-> > +struct syscall_trace_exit {
-> > +	struct trace_entry	ent;
-> > +	enum syscall_trace_nr	nr;
-> > +	unsigned long		ret;
-> > +};
-> > +
-> > +
-> >  /*
-> >   * trace_flag_type is an enumeration that holds different
-> >   * states when a trace occurs. These are:
-> > @@ -304,6 +319,10 @@ extern void __ftrace_bad_type(void);
-> >  			  TRACE_KMEM_ALLOC);	\
-> >  		IF_ASSIGN(var, ent, struct kmemtrace_free_entry,	\
-> >  			  TRACE_KMEM_FREE);	\
-> > +		IF_ASSIGN(var, ent, struct syscall_trace_enter,		\
-> > +			  TRACE_SYSCALL_ENTER);				\
-> > +		IF_ASSIGN(var, ent, struct syscall_trace_exit,		\
-> > +			  TRACE_SYSCALL_EXIT);				\
-> >  		__ftrace_bad_type();					\
-> >  	} while (0)
-> >  
-> > @@ -568,6 +587,7 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
-> >  #endif /* CONFIG_FTRACE_STARTUP_TEST */
-> >  
-> >  extern void *head_page(struct trace_array_cpu *data);
-> > +extern struct trace_array *__get_global_trace(void);
-> >  extern long ns2usecs(cycle_t nsec);
-> >  extern int
-> >  trace_vprintk(unsigned long ip, int depth, const char *fmt, va_list args);
-> > @@ -627,6 +647,18 @@ static inline int ftrace_trace_task(struct task_struct *task)
-> >  	return test_tsk_trace_trace(task);
-> >  }
-> >  
-> > +#ifdef CONFIG_FTRACE_SYSCALLS
-> > +extern enum print_line_t
-> > +print_syscall_enter(struct trace_iterator *iter, int flags);
-> > +extern enum print_line_t
-> > +print_syscall_exit(struct trace_iterator *iter, int flags);
-> > +#else
-> > +static inline enum print_line_t
-> > +print_syscall_enter(struct trace_iterator *iter, int flags) { }
-> > +static inline enum print_line_t
-> > +print_syscall_exit(struct trace_iterator *iter, int flags) { }
-> > +#endif
-> > +
-> >  /*
-> >   * trace_iterator_flags is an enumeration that defines bit
-> >   * positions into trace_flags that controls the output.
-> > diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-> > new file mode 100644
-> > index 0000000..470bb9d
-> > --- /dev/null
-> > +++ b/kernel/trace/trace_syscalls.c
-> > @@ -0,0 +1,284 @@
-> > +#include <linux/kernel.h>
-> > +#include <linux/ftrace.h>
-> > +#include <asm/syscall.h>
-> > +
-> > +#include "trace_output.h"
-> > +#include "trace.h"
-> > +
-> > +/* Create basic entry on syscall array (with the rudimentary string mask) */
-> > +#define SYS_TRACE_ENTRY(sname, args, mask)			  \
-> > +	{.name = #sname, .nb_args = args, .simple_format = true,  \
-> > +	.output.string_mask = mask}
-> > +
-> > +/*
-> > + * Create a custom defined entry on the syscall array, you will have to
-> > + * implement a callback to output the syscall.
-> > + */
-> > +#define SYS_TRACE_ENTRY_SPECIAL(sname, args, printer)		  \
-> > +	{.name = #sname, .nb_args = args, .simple_format = false, \
-> > +	.print = printer}
-> > +
-> > +static const struct syscall_trace_entry syscall_trace_entries[] = {
-> > +	/* For open, the first argument is a string, hence the given mask */
-> > +	[SYSCALL_TRACE_OPEN]	= SYS_TRACE_ENTRY(open, 3, 0x1),
-> > +	[SYSCALL_TRACE_CLOSE]	= SYS_TRACE_ENTRY(close, 1, 0),
-> > +	[SYSCALL_TRACE_READ]	= SYS_TRACE_ENTRY(read, 3, 0),
-> > +	[SYSCALL_TRACE_WRITE]	= SYS_TRACE_ENTRY(read, 3, 0),
-> > +};
-> > +
-> > +
-> > +static atomic_t refcount;
-> > +
-> > +enum print_line_t
-> > +print_syscall_enter(struct trace_iterator *iter, int flags)
-> > +{
-> > +	struct trace_seq *s = &iter->seq;
-> > +	struct trace_entry *ent = iter->ent;
-> > +	struct syscall_trace_enter *trace;
-> > +	enum syscall_trace_nr syscall;
-> > +	const struct syscall_trace_entry *entry;
-> > +	char *str = NULL;
-> > +	int i, ret;
-> > +
-> > +	trace_assign_type(trace, ent);
-> > +
-> > +	syscall = trace->nr;
-> > +
-> > +	if (!syscall || syscall >= __SYSCALL_TRACE_END)
-> > +		return TRACE_TYPE_HANDLED;
-> > +
-> > +	entry = &syscall_trace_entries[syscall];
-> > +	if (!entry->simple_format) {
-> > +		ret = entry->output.print(trace->args);
-> > +		if (!ret)
-> > +			return TRACE_TYPE_PARTIAL_LINE;
-> > +	}
-> > +
-> > +	ret = trace_seq_printf(s, "syscall %s :", entry->name);
-> > +	if (!ret)
-> > +		return TRACE_TYPE_PARTIAL_LINE;
-> > +
-> > +	for (i = 0; i < entry->nb_args; i++) {
-> > +		/*
-> > +		 * FIXME: the string comes from the user, but on tracing
-> > +		 * output time, it may have disappeared from the memory.
-> > +		 * May be better to strdup it on tracing time.
-> > +		 */
-> > +		if (entry->output.string_mask & (1 << i)) {
-> > +			/* 128 is enough for most path */
-> > +			str = strndup_user((char *)trace->args[i], 128);
-> > +
-> > +			/* If it faulted badly, the error shoud have been
-> > +			 * handled while servicing the syscall, just ignore.
-> > +			 */
-> > +			if (str == ERR_PTR(-EFAULT) || str == ERR_PTR(-EINVAL)
-> > +			    || str == ERR_PTR(-ENOMEM))
-> > +				return TRACE_TYPE_HANDLED;
-> > +
-> > +			ret = trace_seq_printf(s, " %s", str);
-> > +		} else {
-> > +			ret = trace_seq_printf(s, " 0x%lx", trace->args[i]);
-> > +		}
-> > +		if (!ret)
-> > +			goto end_partial;
-> > +	}
-> > +	if (!trace_seq_printf(s, "\n"))
-> > +		goto end_partial;
-> > +
-> > +	kfree(str);
-> > +	return TRACE_TYPE_HANDLED;
-> > +
-> > +end_partial:
-> > +	kfree(str);
-> > +	return TRACE_TYPE_PARTIAL_LINE;
-> > +}
-> > +
-> > +enum print_line_t
-> > +print_syscall_exit(struct trace_iterator *iter, int flags)
-> > +{
-> > +	struct trace_seq *s = &iter->seq;
-> > +	struct trace_entry *ent = iter->ent;
-> > +	struct syscall_trace_exit *trace;
-> > +	enum syscall_trace_nr syscall;
-> > +	const struct syscall_trace_entry *entry;
-> > +	int ret;
-> > +
-> > +	trace_assign_type(trace, ent);
-> > +
-> > +	syscall = trace->nr;
-> > +
-> > +	if (!syscall || syscall >= __SYSCALL_TRACE_END)
-> > +		return TRACE_TYPE_HANDLED;
-> > +
-> > +	entry = &syscall_trace_entries[syscall];
-> > +
-> > +	ret = trace_seq_printf(s, "syscall %s -> 0x%lx\n", entry->name,
-> > +				trace->ret);
-> > +	if (!ret)
-> > +		return TRACE_TYPE_PARTIAL_LINE;
-> > +
-> > +	return TRACE_TYPE_HANDLED;
-> > +}
-> > +
-> > +void start_ftrace_syscalls(void)
-> > +{
-> > +	unsigned long flags;
-> > +	struct task_struct *g, *t;
-> > +
-> > +	if (atomic_inc_return(&refcount) != 1)
-> > +		goto out;
-> > +
-> > +	read_lock_irqsave(&tasklist_lock, flags);
-> > +
-> > +	do_each_thread(g, t) {
-> > +		set_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> > +	} while_each_thread(g, t);
-> > +
-> > +	read_unlock_irqrestore(&tasklist_lock, flags);
-> > +out:
-> > +	atomic_dec(&refcount);
-> > +}
-> > +
-> > +void stop_ftrace_syscalls(void)
-> > +{
-> > +	unsigned long flags;
-> > +	struct task_struct *g, *t;
-> > +
-> > +	if (atomic_dec_return(&refcount))
-> > +		goto out;
-> > +
-> > +	read_lock_irqsave(&tasklist_lock, flags);
-> > +
-> > +	do_each_thread(g, t) {
-> > +		clear_tsk_thread_flag(t, TIF_SYSCALL_FTRACE);
-> > +	} while_each_thread(g, t);
-> > +
-> > +	read_unlock_irqrestore(&tasklist_lock, flags);
-> > +out:
-> > +	atomic_inc(&refcount);
-> > +}
-> > +
-> > +void ftrace_syscall_enter(struct pt_regs *regs)
-> > +{
-> > +	struct trace_array *tr = __get_global_trace();
-> > +	struct syscall_trace_enter *entry;
-> > +	const struct syscall_trace_entry *sys_data;
-> > +	struct ring_buffer_event *event;
-> > +	struct trace_array_cpu *data;
-> > +	int size;
-> > +	int syscall_nr;
-> > +	int nr_offset;
-> > +	int cpu;
-> > +
-> > +	syscall_nr = syscall_get_nr(current, regs);
-> > +	nr_offset = arch_syscall_trace_nr[syscall_nr];
-> > +	if (!nr_offset || nr_offset >= __SYSCALL_TRACE_END)
-> > +		return;
-> > +
-> > +	cpu = raw_smp_processor_id();
-> > +	data = tr->data[cpu];
-> > +
-> > +	if (unlikely(atomic_read(&data->disabled)))
-> > +		return;
-> > +
-> > +	sys_data = &syscall_trace_entries[nr_offset];
-> > +	size = sizeof(*entry) + sizeof(unsigned long) * sys_data->nb_args;
-> > +
-> > +	event = trace_buffer_lock_reserve(tr, TRACE_SYSCALL_ENTER, size, 0, 0);
-> > +	if (!event)
-> > +		return;
-> > +
-> > +	entry = ring_buffer_event_data(event);
-> > +	entry->nr = nr_offset;
-> > +	syscall_get_arguments(current, regs, 0, sys_data->nb_args, entry->args);
-> > +
-> > +	ring_buffer_unlock_commit(tr->buffer, event);
-> > +	trace_wake_up();
-> > +}
-> > +
-> > +void ftrace_syscall_exit(struct pt_regs *regs)
-> > +{
-> > +	struct trace_array *tr = __get_global_trace();
-> > +	struct syscall_trace_exit *entry;
-> > +	const struct syscall_trace_entry *sys_data;
-> > +	struct ring_buffer_event *event;
-> > +	struct trace_array_cpu *data;
-> > +	int syscall_nr;
-> > +	int nr_offset;
-> > +	int cpu;
-> > +
-> > +	syscall_nr = syscall_get_nr(current, regs);
-> > +	nr_offset = arch_syscall_trace_nr[syscall_nr];
-> > +	if (!nr_offset || nr_offset >= __SYSCALL_TRACE_END)
-> > +		return;
-> > +
-> > +	cpu = raw_smp_processor_id();
-> > +	data = tr->data[cpu];
-> > +
-> > +	if (unlikely(atomic_read(&data->disabled)))
-> > +		return;
-> > +
-> > +	sys_data = &syscall_trace_entries[nr_offset];
-> > +
-> > +	event = trace_buffer_lock_reserve(tr, TRACE_SYSCALL_EXIT,
-> > +				sizeof(*entry), 0, 0);
-> > +	if (!event)
-> > +		return;
-> > +
-> > +	entry = ring_buffer_event_data(event);
-> > +	entry->nr = nr_offset;
-> > +	entry->ret = syscall_get_return_value(current, regs);
-> > +
-> > +	ring_buffer_unlock_commit(tr->buffer, event);
-> > +	trace_wake_up();
-> > +}
-> > +
-> > +static int init_syscall_tracer(struct trace_array *tr)
-> > +{
-> > +	start_ftrace_syscalls();
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static void reset_syscall_tracer(struct trace_array *tr)
-> > +{
-> > +	stop_ftrace_syscalls();
-> > +}
-> > +
-> > +static struct trace_event syscall_enter_event = {
-> > +	.type	 	= TRACE_SYSCALL_ENTER,
-> > +	.trace		= print_syscall_enter,
-> > +};
-> > +
-> > +static struct trace_event syscall_exit_event = {
-> > +	.type	 	= TRACE_SYSCALL_EXIT,
-> > +	.trace		= print_syscall_exit,
-> > +};
-> > +
-> > +static struct tracer syscall_tracer __read_mostly = {
-> > +	.name	     	= "syscall",
-> > +	.init		= init_syscall_tracer,
-> > +	.reset		= reset_syscall_tracer
-> > +};
-> > +
-> > +__init int register_ftrace_syscalls(void)
-> > +{
-> > +	int ret;
-> > +
-> > +	ret = register_ftrace_event(&syscall_enter_event);
-> > +	if (!ret) {
-> > +		printk(KERN_WARNING "event %d failed to register\n",
-> > +		       syscall_enter_event.type);
-> > +		WARN_ON_ONCE(1);
-> > +	}
-> > +
-> > +	ret = register_ftrace_event(&syscall_exit_event);
-> > +	if (!ret) {
-> > +		printk(KERN_WARNING "event %d failed to register\n",
-> > +		       syscall_exit_event.type);
-> > +		WARN_ON_ONCE(1);
-> > +	}
-> > +
-> > +	return register_tracer(&syscall_tracer);
-> > +}
-> > +device_initcall(register_ftrace_syscalls);
+> http://people.redhat.com/mingo/tip.git/readme.txt
 > 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America) Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
+> and post boot log.
 
+I compiled tip/master with the same configuration. Here's the head of the dmesg:
+(BTW, I'm not getting this backtrace with 2.6.25.20. I know its rather old but maybe
+it will help)
+
+---
+
+Initializing cgroup subsys cpuset
+Linux version 2.6.29-rc8-tip-tip (root@stinson) (gcc version 4.3.2 (Pardus Linux) ) #1 SMP Mon Mar 16 21:26:14 EET 2009
+KERNEL supported cpus:
+  Intel GenuineIntel
+  AMD AuthenticAMD
+  NSC Geode by NSC
+  Cyrix CyrixInstead
+  Centaur CentaurHauls
+  Transmeta GenuineTMx86
+  Transmeta TransmetaCPU
+  UMC UMC UMC UMC
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009f400 (usable)
+ BIOS-e820: 000000000009f400 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 00000000cfd43000 (usable)
+ BIOS-e820: 00000000cfd43000 - 00000000cfd4c000 (ACPI data)
+ BIOS-e820: 00000000cfd4c000 - 00000000cfd4d000 (usable)
+ BIOS-e820: 00000000cfd4d000 - 00000000d0000000 (reserved)
+ BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+ BIOS-e820: 00000000fec00000 - 00000000fed00000 (reserved)
+ BIOS-e820: 00000000fee00000 - 00000000fee10000 (reserved)
+ BIOS-e820: 00000000ffc00000 - 0000000100000000 (reserved)
+ BIOS-e820: 0000000100000000 - 000000082ffff000 (usable)
+DMI 2.5 present.
+last_pfn = 0x82ffff max_arch_pfn = 0x1000000
+MTRR default type: uncachable
+MTRR fixed ranges enabled:
+  00000-9FFFF write-back
+  A0000-BFFFF uncachable
+  C0000-FFFFF write-protect
+MTRR variable ranges enabled:
+  0 base 0000000000 mask 0000000000 write-back
+  1 base 00CFF00000 mask FFFFF00000 uncachable
+  2 base 00D0000000 mask FFF0000000 uncachable
+  3 base 00E0000000 mask FFE0000000 uncachable
+  4 base 0000004000 mask FFFFFFF000 uncachable
+  5 base 0000005000 mask FFFFFFF000 uncachable
+  6 base 0000006000 mask FFFFFFF000 uncachable
+  7 base 0000007000 mask FFFFFFF000 uncachable
+x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+  get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
+  get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
+  get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
+  get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
+  get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
+  get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
+  get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
+  get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
+e820 update range: 0000000000004000 - 0000000000008000 (usable) ==> (reserved)
+e820 update range: 00000000cff00000 - 0000000100000000 (usable) ==> (reserved)
+WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 0MB of RAM.
+------------[ cut here ]------------
+WARNING: at arch/x86/kernel/cpu/mtrr/cleanup.c:1079 mtrr_trim_uncached_memory+0x2a9/0x2cd()
+Hardware name: ProLiant DL580 G5
+Modules linked in:
+Pid: 0, comm: swapper Not tainted 2.6.29-rc8-tip-tip #1
+Call Trace:
+ [<c0133871>] warn_slowpath+0x71/0xa8
+ [<c011e23a>] ? default_spin_lock_flags+0x9/0xb
+ [<c03aad3c>] ? _spin_unlock_irqrestore+0x17/0x1b
+ [<c011e23a>] ? default_spin_lock_flags+0x9/0xb
+ [<c03aad3c>] ? _spin_unlock_irqrestore+0x17/0x1b
+ [<c0133edd>] ? release_console_sem+0x176/0x1a3
+ [<c0134358>] ? vprintk+0x276/0x299
+ [<c03a87cc>] ? printk+0xf/0x13
+ [<c054aece>] mtrr_trim_uncached_memory+0x2a9/0x2cd
+ [<c0545cf5>] setup_arch+0x43c/0x9ab
+ [<c0133edd>] ? release_console_sem+0x176/0x1a3
+ [<c0134358>] ? vprintk+0x276/0x299
+ [<c0134358>] ? vprintk+0x276/0x299
+ [<c0548759>] ? __reserve_early+0xe4/0xf8
+ [<c03a87cc>] ? printk+0xf/0x13
+ [<c0543580>] start_kernel+0x77/0x323
+ [<c0543085>] __init_begin+0x85/0x8d
+---[ end trace 4eaa2a86a8e2da22 ]---
+update e820 for mtrr
+
+-- 
+
+Ozan Çağlayan
+<ozan_at_pardus.org.tr>
