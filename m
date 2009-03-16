@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbZCPOWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759654AbZCPO0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760935AbZCPOWh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 10:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757681AbZCPOW1
+	id S1759654AbZCPO0e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 10:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZCPO00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 10:22:27 -0400
-Received: from h155.mvista.com ([63.81.120.155]:39181 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756145AbZCPOW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 10:22:26 -0400
-Message-ID: <49BE60CD.3030302@ru.mvista.com>
-Date: Mon, 16 Mar 2009 17:23:09 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>,
+	Mon, 16 Mar 2009 10:26:26 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:52621 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752496AbZCPO0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 10:26:25 -0400
+Date: Mon, 16 Mar 2009 23:26:20 +0900 (JST)
+Message-Id: <20090316.232620.95066093.anemo@mba.ocn.ne.jp>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Manuel Lauss <mano@roarinelk.homelinux.net>, Takashi Iwai <tiwai@suse.de>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/6] ide: set hwif->expiry prior to calling [__]ide_set_handler()
-References: <20090209231945.32406.14874.sendpatchset@localhost.localdomain> <20090209232005.32406.20153.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090209232005.32406.20153.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: [PATCH] ASoC: Only deregister AC97 dev if it's name was not "AC97"
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+The commit 14fa43f53ff3a9c3d8b9662574b7369812a31a97 ("ASoC: Only
+register AC97 bus if it's not done already") added a condition for
+calling of soc_ac97_dev_register() but not added for calling of
+soc_ac97_dev_unregister().  This patch adds same condition for
+soc_ac97_dev_unregister().  Without this fix, kernel crashes when
+unloading an asoc driver.
 
-> * Set hwif->expiry prior to calling [__]ide_set_handler()
->   and drop 'expiry' argument.
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+I found this problem when I start debugging a new asoc driver.  While
+the driver is in very early stage, it should lack many things and have
+many bugs.  So I'm not sure this is asoc's bug or my driver's bug.
 
-> * Set hwif->expiry to NULL in ide_{timer_expiry,intr}()
->   and remove 'hwif->expiry = NULL' assignments.
+ sound/soc/soc-core.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-> There should be no functional changes caused by this patch.
-
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-MBR, Sergei
+diff --git a/sound/soc/soc-core.c b/sound/soc/soc-core.c
+index ec3f8bb..fec57a3 100644
+--- a/sound/soc/soc-core.c
++++ b/sound/soc/soc-core.c
+@@ -1435,7 +1435,8 @@ void snd_soc_free_pcms(struct snd_soc_device *socdev)
+ #ifdef CONFIG_SND_SOC_AC97_BUS
+ 	for (i = 0; i < codec->num_dai; i++) {
+ 		codec_dai = &codec->dai[i];
+-		if (codec_dai->ac97_control && codec->ac97) {
++		if (codec_dai->ac97_control && codec->ac97 &&
++		    strcmp(codec->name, "AC97") != 0) {
+ 			soc_ac97_dev_unregister(codec);
+ 			goto free_card;
+ 		}
+-- 
+1.5.6.3
