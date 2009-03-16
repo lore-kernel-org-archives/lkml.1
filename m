@@ -1,94 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761277AbZCPT2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759442AbZCPT13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761277AbZCPT2c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 15:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbZCPT2X
+	id S1759442AbZCPT13 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 15:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756739AbZCPT1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 15:28:23 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:39387 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753830AbZCPT2W (ORCPT
+	Mon, 16 Mar 2009 15:27:19 -0400
+Received: from n19.bullet.mail.mud.yahoo.com ([68.142.206.146]:41709 "HELO
+	n19.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756478AbZCPT1S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 15:28:22 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtsEAONEvklMQW1W/2dsb2JhbACBTtNTg38G
-Date: Mon, 16 Mar 2009 15:28:17 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Jason Baron <jbaron@redhat.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
-       fweisbec@gmail.com, fche@redhat.com, peterz@infradead.org
-Subject: Re: [Patch 2/2] tracepoints for softirq entry/exit - tracepoints
-Message-ID: <20090316192817.GC11878@Krystal>
-References: <20090312183603.GC3352@redhat.com> <20090314025701.GC22526@Krystal> <alpine.DEB.2.00.0903160934010.26431@gandalf.stny.rr.com> <20090316183739.GA10292@Krystal> <alpine.DEB.2.00.0903161441210.27978@gandalf.stny.rr.com> <alpine.DEB.2.00.0903161446510.27978@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 16 Mar 2009 15:27:18 -0400
+X-Yahoo-Newman-Id: 254521.96230.bm@omp418.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Bkrv8UqzCbNyJrZXEDiMinT9k7TRgH2+OPMjT3BuKIVhzxb/6NJybD4S20FtU52F13CD6WXfKZ6LL4m6dGJO+BjLmK+wAFaddp8BB8o6EYHcf/BE9SMlMjrY4AZ3AhAUDn6cp7C/RPnCbSa/6fN59R72lnRqNfFfpzak00UpLV8=  ;
+X-YMail-OSG: w0IjaBIVM1nEYNvEjmA0fh7a4b0I1urcAVBlj6.AN4YfAlPBtgOj37q1kunwCyRj._OqEoRcgQ4VNOudbsLfYqzJujRiFS8kPLxt2lGaceByyfpN773ZA9K2S1rMpipLvN4D8ULurZ4HaYCGlEfn8U6Q
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [PATCH v2] memory_accessor: new interface for reading/writing persistent memory
+Date: Mon, 16 Mar 2009 12:27:01 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
+References: <1236478048-11075-1-git-send-email-khilman@deeprootsystems.com>
+In-Reply-To: <1236478048-11075-1-git-send-email-khilman@deeprootsystems.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903161446510.27978@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:24:28 up 16 days, 15:50,  3 users,  load average: 0.20, 0.46,
-	0.58
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903161227.01938.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> 
-> On Mon, 16 Mar 2009, Steven Rostedt wrote:
-> 
-> > 
-> > On Mon, 16 Mar 2009, Mathieu Desnoyers wrote:
-> > > > > 
-> > > > > The softirq tracepoints are a good idea indeed (I have similar ones in
-> > > > > the LTTng tree). My main concern is about the fact that you output the
-> > > > > softirq name in plain text to the trace buffers. I would rather prefer
-> > > > > to save only the softirq (h-vec) into the trace and dump the mapping
-> > > > > (h-vec) to name only once, so we can save precious trace bytes.
-> > > > 
-> > > > The TP_FMT is only used by those tracers that want to use it. Any tracer 
-> > > > can still hook directly to the trace point and do what every they want.
-> > > > 
-> > > > -- Steve
-> > > > 
-> > > 
-> > > By doing so, you are removing the ability to use the TP_FMT information
-> > > to perform high-speed system-wide tracing. I thought the goal was to
-> > > create a unified buffering, but sadly I don't see the high-speed
-> > > requirements being part of that plan.
-> > 
-> > TP_FMT has nothing to do with the unified buffering. The unified buffer 
-> > does not even know about it. But if you want high-speed event tracing, 
-> > that is what the TRACE_EVENT was created for.
-> 
-> Here's an example:
-> 
-> The "event tracing" uses the format field to show those events for the 
-> hook in the sched switching, and wake ups.
-> 
-> The wake up tracer on the other hand, does not care about the format, it 
-> only cares about having a hook where a a task is woken up, and where it 
-> gets scheduled in, and perhaps events in between. But it uses its own 
-> formatting to do the output.
-> 
-> -- Steve
-> 
+I was kind of hoping you'd address the locking and chunking 
+comments I made ... I'll ack if it includes something like
+the appended patch.
 
-If I understand you correctly, the format string is only useful to the
-text-output tracer ? Why can't it be used to identify both text and
-binary events ?
+---
+ drivers/misc/eeprom/at24.c |   43 ++++++++++++++++++++++++++++---------------
+ 1 file changed, 28 insertions(+), 15 deletions(-)
 
-And remember that from my perspective, information is only useful if
-available for system-wide tracing. Specialized tracers come as a subset
-of system-wide tracing anyway when the latter is implemented with the
-proper hooks.
+--- a/drivers/misc/eeprom/at24.c
++++ b/drivers/misc/eeprom/at24.c
+@@ -226,14 +226,11 @@ static ssize_t at24_eeprom_read(struct a
+ 		return status;
+ }
+ 
+-static ssize_t at24_bin_read(struct kobject *kobj, struct bin_attribute *attr,
++static ssize_t at24_read(struct at24_data *at24,
+ 		char *buf, loff_t off, size_t count)
+ {
+-	struct at24_data *at24;
+ 	ssize_t retval = 0;
+ 
+-	at24 = dev_get_drvdata(container_of(kobj, struct device, kobj));
+-
+ 	if (unlikely(!count))
+ 		return count;
+ 
+@@ -263,6 +260,15 @@ static ssize_t at24_bin_read(struct kobj
+ 	return retval;
+ }
+ 
++static ssize_t at24_bin_read(struct kobject *kobj, struct bin_attribute *attr,
++		char *buf, loff_t off, size_t count)
++{
++	struct at24_data *at24;
++
++	at24 = dev_get_drvdata(container_of(kobj, struct device, kobj));
++	return at24_read(at24, buf, off, count);
++}
++
+ 
+ /*
+  * Note that if the hardware write-protect pin is pulled high, the whole
+@@ -341,14 +347,11 @@ static ssize_t at24_eeprom_write(struct 
+ 	return -ETIMEDOUT;
+ }
+ 
+-static ssize_t at24_bin_write(struct kobject *kobj, struct bin_attribute *attr,
++static ssize_t at24_write(struct at24_data *at24,
+ 		char *buf, loff_t off, size_t count)
+ {
+-	struct at24_data *at24;
+ 	ssize_t retval = 0;
+ 
+-	at24 = dev_get_drvdata(container_of(kobj, struct device, kobj));
+-
+ 	if (unlikely(!count))
+ 		return count;
+ 
+@@ -378,6 +381,15 @@ static ssize_t at24_bin_write(struct kob
+ 	return retval;
+ }
+ 
++static ssize_t at24_bin_write(struct kobject *kobj, struct bin_attribute *attr,
++		char *buf, loff_t off, size_t count)
++{
++	struct at24_data *at24;
++
++	at24 = dev_get_drvdata(container_of(kobj, struct device, kobj));
++	return at24_write(at24, buf, off, count);
++}
++
+ /*-------------------------------------------------------------------------*/
+ 
+ /*
+@@ -386,20 +398,20 @@ static ssize_t at24_bin_write(struct kob
+  * data generated on the manufacturing floor.
+  */
+ 
+-static ssize_t at24_read(struct memory_accessor *macc, char *buf,
++static ssize_t at24_macc_read(struct memory_accessor *macc, char *buf,
+ 			 off_t offset, size_t count)
+ {
+ 	struct at24_data *at24 = container_of(macc, struct at24_data, macc);
+ 
+-	return at24_eeprom_read(at24, buf, offset, count);
++	return at24_read(at24, buf, offset, count);
+ }
+ 
+-static ssize_t at24_write(struct memory_accessor *macc, char *buf,
++static ssize_t at24_macc_write(struct memory_accessor *macc, char *buf,
+ 			  off_t offset, size_t count)
+ {
+ 	struct at24_data *at24 = container_of(macc, struct at24_data, macc);
+ 
+-	return at24_eeprom_write(at24, buf, offset, count);
++	return at24_write(at24, buf, offset, count);
+ }
+ 
+ /*-------------------------------------------------------------------------*/
+@@ -470,9 +482,6 @@ static int at24_probe(struct i2c_client 
+ 		goto err_out;
+ 	}
+ 
+-	at24->macc.read = at24_read;
+-	at24->macc.write = at24_write;
+-
+ 	mutex_init(&at24->lock);
+ 	at24->use_smbus = use_smbus;
+ 	at24->chip = chip;
+@@ -487,6 +496,8 @@ static int at24_probe(struct i2c_client 
+ 	at24->bin.read = at24_bin_read;
+ 	at24->bin.size = chip.byte_len;
+ 
++	at24->macc.read = at24_macc_read;
++
+ 	writable = !(chip.flags & AT24_FLAG_READONLY);
+ 	if (writable) {
+ 		if (!use_smbus || i2c_check_functionality(client->adapter,
+@@ -494,6 +505,8 @@ static int at24_probe(struct i2c_client 
+ 
+ 			unsigned write_max = chip.page_size;
+ 
++			at24->macc.write = at24_macc_write;
++
+ 			at24->bin.write = at24_bin_write;
+ 			at24->bin.attr.mode |= S_IWUSR;
+ 
 
-Mathieu
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
