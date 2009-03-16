@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZCPBC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757147AbZCPBGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758870AbZCPBC1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 21:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbZCPBCO
+	id S1757147AbZCPBGw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 21:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbZCPBGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 21:02:14 -0400
-Received: from mga02.intel.com ([134.134.136.20]:1030 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751861AbZCPBCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 21:02:12 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,369,1233561600"; 
-   d="scan'208";a="394724892"
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-From: Zhang Rui <rui.zhang@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-In-Reply-To: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-Content-Type: text/plain
-Date: Mon, 16 Mar 2009 09:02:53 +0800
-Message-Id: <1237165373.2807.140.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Sun, 15 Mar 2009 21:06:43 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57828 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbZCPBGn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 21:06:43 -0400
+Message-ID: <49BDA415.9060502@zytor.com>
+Date: Sun, 15 Mar 2009 17:57:57 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Jan Beulich <jbeulich@novell.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [PATCH 10/24] xen: mask XSAVE from cpuid
+References: <1236931920-6861-1-git-send-email-jeremy@goop.org>	<1236931920-6861-11-git-send-email-jeremy@goop.org>	<49BA3A84.76E4.0078.0@novell.com>	<49BA7810.6090807@goop.org>	<49BD4CE1.6040100@zytor.com>	<49BD6D0E.1010107@goop.org>	<20090315154718.00353625@infradead.org>	<49BD97C6.2070401@goop.org> <20090315170945.08344b86@infradead.org>
+In-Reply-To: <20090315170945.08344b86@infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-15 at 03:01 +0800, Rafael J. Wysocki wrote:
-> This message contains a list of some regressions from 2.6.28, for which there
-> are no fixes in the mainline I know of.  If any of them have been fixed already,
-> please let me know.
+Arjan van de Ven wrote:
 > 
-> If you know of any other unresolved regressions from 2.6.28, please let me know
-> either and I'll add them to the list.  Also, please let me know if any of the
-> entries below are invalid.
+> Well.. pretty much all new instructions need Xen modifications due to
+> the need to be emulate to deal with traps/vmexits/etc right? 
+> So I don't quite see many cpuid bits that would NOT involve some Xen
+> modification or another ;)
 > 
-> Each entry from the list will be sent additionally in an automatic reply to
-> this message with CCs to the people involved in reporting and handling the
-> issue.
-> 
-> 
-> Listed regressions statistics:
-> 
->   Date          Total  Pending  Unresolved
->   ----------------------------------------
->   2009-03-14      124       36          32
->   2009-03-03      108       33          28
->   2009-02-24       95       32          24
->   2009-02-14       85       33          27
->   2009-02-08       82       45          36
->   2009-02-04       66       51          39
->   2009-01-20       38       35          27
->   2009-01-11       13       13          10
-> 
-> 
-> Unresolved regressions
-> ----------------------
 
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12831
-> Subject         : Hot/Fn Keys do not work EEEPC 1000HE (eeepc_laptop)
-> Submitter       : Matthew <pyther@pyther.net>
-> Date            : 2009-03-07 10:05 (8 days old)
+There are going to be a very small number which need only userspace
+support.  However, there will be absolutely no way for Xen to know this
+a priori.
 
-patch is available at
-http://bugzilla.kernel.org/show_bug.cgi?id=12831#c11
+	-hpa
 
-thanks,
-rui
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
