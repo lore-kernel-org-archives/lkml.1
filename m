@@ -1,77 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbZCPWuc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbZCPWyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756693AbZCPWuc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 18:50:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZCPWuX
+	id S1760690AbZCPWyT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 18:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZCPWyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 18:50:23 -0400
-Received: from mail.fieldses.org ([141.211.133.115]:34516 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753425AbZCPWuW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 18:50:22 -0400
-Date: Mon, 16 Mar 2009 18:48:48 -0400
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, Igor Zhbanov <izh1979@gmail.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
-       David Howells <dhowells@redhat.com>, Andrew Morgan <morgan@kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       SELinux <selinux@tycho.nsa.gov>
-Subject: Re: =?utf-8?B?0J7RgtCy0LXRgjogVkZTLCBORlMg?=
-	=?utf-8?Q?security_bug=3F_Shoul?=
-	=?utf-8?Q?d?= CAP_MKNOD and CAP_LINUX_IMMUTABLE be added to
-	CAP_FS_MASK?
-Message-ID: <20090316224848.GC17738@fieldses.org>
-References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com> <20090311232356.GP13540@fieldses.org> <20090312161047.GA15209@us.ibm.com> <517f3f820903121321sf6d2014q8165b925d5d44db7@mail.gmail.com> <20090313175848.GB27891@fieldses.org> <f44001920903131137j158c5f76y6a71b58ee964df77@mail.gmail.com> <20090313190002.GA16025@us.ibm.com> <1237227705.1035.93.camel@localhost.localdomain> <20090316184926.GA6729@us.ibm.com>
+	Mon, 16 Mar 2009 18:54:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36973 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754042AbZCPWyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 18:54:04 -0400
+Message-ID: <49BED813.1090405@kernel.org>
+Date: Mon, 16 Mar 2009 15:52:03 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090316184926.GA6729@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG 2.6.29_rc8] BIOS Bug: CPU MTRRs don't cover all of memory,
+ 	losing 0MB of RAM.
+References: <49BE58BA.1000907@pardus.org.tr> <86802c440903161121s3ba18abaiaa3ccf6847e0eafe@mail.gmail.com> <49BEB3C9.8070705@pardus.org.tr> <49BECBF4.1000508@kernel.org> <49BED5D5.2000801@pardus.org.tr>
+In-Reply-To: <49BED5D5.2000801@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seems this isn't entirely obvious in the general case.  In the specific
-case of nfsd, however, this is pretty obvious.  So I'm inclined to
-submit the following now (and leave it to be reverted by a later patch
-if CAP_FS_MASK ends up including CAP_MKNOD, as seems likely).
+Ozan Çağlayan wrote:
+> Yinghai Lu wrote:
+> 
+>> please check
+>>
+>> [PATCH] x86: workaround system with strange var MTRR
+>>
+> 
+> Thanks for your interest.
+> 
+> Oops is now replaced with a warning after applying the patch on top of tip/master.
+that is intended...
+> 
+> BTW, do that kind of BIOS bugs have a negative impact on the performance of the system?
 
---b.
+should not, FIXED MTRR should override VAR MTRR if fixed mtrr is enabled.
 
-commit 2ec8f8f0c0005ffe3cf93bbf3d9976de76cf4652
-Author: J. Bruce Fields <bfields@citi.umich.edu>
-Date:   Mon Mar 16 18:34:20 2009 -0400
+> 
+> 
+> I'm sending the head of dmesg. And also I just noticed that there were MTRR related
+> stuff at the tail of the log buffer(with/without the patch). I'm posting them also:
+> 
+> --
+> 
+> MTRR default type: uncachable
+> MTRR fixed ranges enabled:
+>   00000-9FFFF write-back
+>   A0000-BFFFF uncachable
+>   C0000-FFFFF write-protect
+> MTRR variable ranges enabled:
+>   0 base 0000000000 mask 0000000000 write-back
+>   1 base 00CFF00000 mask FFFFF00000 uncachable
+>   2 base 00D0000000 mask FFF0000000 uncachable
+>   3 base 00E0000000 mask FFE0000000 uncachable
+>   4 base 0000004000 mask FFFFFFF000 uncachable
+>   5 base 0000005000 mask FFFFFFF000 uncachable
+>   6 base 0000006000 mask FFFFFFF000 uncachable
+>   7 base 0000007000 mask FFFFFFF000 uncachable
+> x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+>   get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
+>   get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
+>   get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
+>   get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
+>   get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
+> WARNING: BIOS bug: VAR MTRR contains strange UC entry under 1M, check with your system vendor!
+> WARNING: BIOS bug: VAR MTRR contains strange UC entry under 1M, check with your system vendor!
+> WARNING: BIOS bug: VAR MTRR contains strange UC entry under 1M, check with your system vendor!
+> WARNING: BIOS bug: VAR MTRR contains strange UC entry under 1M, check with your system vendor!
 
-    nfsd: nfsd should drop CAP_MKNOD for non-root
-    
-    Since creating a device node is normally an operation requiring special
-    privilege, Igor Zhbanov points out that it is surprising (to say the
-    least) that a client can, for example, create a device node on a
-    filesystem exported with root_squash.
-    
-    So, make sure CAP_MKNOD is among the capabilities dropped when an nfsd
-    thread handles a request from a non-root user.
-    
-    Reported-by: Igor Zhbanov <izh1979@gmail.com>
-    Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+you got four wrong entries
 
-diff --git a/include/linux/capability.h b/include/linux/capability.h
-index 02bdb76..7824483 100644
---- a/include/linux/capability.h
-+++ b/include/linux/capability.h
-@@ -393,8 +393,10 @@ struct cpu_vfs_cap_data {
- # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
- # define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
- # define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
--# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
--					CAP_FS_MASK_B1 } })
-+# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
-+					    | CAP_TO_MASK(CAP_SYS_RESOURCE) \
-+					    | CAP_TO_MASK(CAP_MKNOD), \
-+					    CAP_FS_MASK_B1 } })
- 
- #endif /* _KERNEL_CAPABILITY_U32S != 2 */
- 
+> e820 update range: 00000000cff00000 - 0000000100000000 (usable) ==> (reserved)
+> init_memory_mapping: 0000000000000000-00000000379fe000
+>  0000000000 - 0000200000 page 4k
+>  0000200000 - 0037800000 page 2M
+>  0037800000 - 00379fe000 page 4k
+> ...
+> ...
+> ...
+> ...
+> NET: Registered protocol family 10
+> lo: Disabled Privacy Extensions
+> ADDRCONF(NETDEV_UP): eth1: link is not ready
+>   get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
+>   get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
+>   get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
+>   get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
+>   get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
+>   get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
+>   get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
+>   get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
+>   get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
+> bnx2: eth1 NIC Copper Link is Up, 1000 Mbps full duplex, receive & transmit flow control ON
+> ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
+>   get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
+>   get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
+>   get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
+>   get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
+>   get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
+>   get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
+>   get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
+>   get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
+>   get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
+>   get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
+>   get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
+>   get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
+>   get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
+> mtrr: type mismatch for d8000000,4000000 old: write-back new: write-combining
+>   get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
+>   get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
+>   get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
+>   get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
+>   get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
+>   get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
+> 
+
+you may try MTRR cleanup
+CONFIG_MTRR=y
+CONFIG_MTRR_SANITIZER=y
+CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
+CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
+
+it should clear the strange entries and find some spare one for your driver that need ...
+it will get some performance improvement.
+
+or talk to your system vendor to get a new BIOS.
+
+YH
