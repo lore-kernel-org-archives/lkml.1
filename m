@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbZCPQbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbZCPQfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbZCPQbu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 12:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbZCPQbk
+	id S1756563AbZCPQfG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 12:35:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZCPQez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 12:31:40 -0400
-Received: from mail-bw0-f175.google.com ([209.85.218.175]:54813 "EHLO
-	mail-bw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752014AbZCPQbj (ORCPT
+	Mon, 16 Mar 2009 12:34:55 -0400
+Received: from xylophone.i-cable.com ([203.83.115.99]:41761 "HELO
+	xylophone.i-cable.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752706AbZCPQey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 12:31:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=TNv97w9VcbVG+DWSdeqgn+SsGa2C2UE6YTFcZoP/JCUIhk/4mpSY/y3xXzPkxgRVYA
-         13ETLVohA86/yDakXApNBO8+zAsQx0jrW5xK2+m0CQnGdInPdr76Z3mvIXGpDjgV4LMP
-         gCl4RSPXgFlSKpP7Bzw6vLxpeTT60YG/ngmYA=
-Message-ID: <49BE7EE6.3070107@gmail.com>
-Date: Mon, 16 Mar 2009 17:31:34 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
+	Mon, 16 Mar 2009 12:34:54 -0400
+X-Greylist: delayed 436 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Mar 2009 12:34:53 EDT
+Date: Tue, 17 Mar 2009 00:27:20 +0800
+From: Zhang Le <r0bertz@gentoo.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, alan@redhat.com
+Subject: Re: [PATCH] filp->f_pos not correctly updated in proc_task_readdir
+Message-ID: <20090316162719.GA7548@adriano.hkcable.com.hk>
+References: <1237185871-3343-1-git-send-email-r0bertz@gentoo.org> <20090316083457.GV28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: Lin Ming <ming.m.lin@intel.com>
-CC: robert.moore@intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       torvalds@linux-foundation.org
-Subject: Re: 2.6.29 acpi regression: acpi_ex_extract_from_field -- div by
- zero
-References: <49BCDCAA.8040309@gmail.com>	 <d3f22a0903152046m891dc0aq6ca01eed32a9eb32@mail.gmail.com> <1237174943.4193.37.camel@minggr.sh.intel.com>
-In-Reply-To: <1237174943.4193.37.camel@minggr.sh.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090316083457.GV28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16.3.2009 04:42, Lin Ming wrote:
->> sometimes, when booting up/resuming from disk, I get an oops[1].
->>
->> obj_desc->common_field.access_bit_width is zero, but even after the
->> loop. Division before the loop is apparently OK.
->
-> Would please try below debug patch to see which region filed is
-> accessed?
+On 08:34 Mon 16 Mar     , Al Viro wrote:
+> On Mon, Mar 16, 2009 at 02:44:31PM +0800, Zhang Le wrote:
+> > filp->f_pos only get updated at the end of the function. Thus d_off of those
+> > dirents who are in the middle will be 0, and this will cause a problem in
+> > glibc's readdir implementation, specifically endless loop. Because when overflow
+> > occurs, f_pos will be set to next dirent to read, however it will be 0, unless
+> > the next one is the last one. So it will start over again and again.
+> 
+> Eh...  Here's what's really going on:
+> 
+> proc_..._fill_cache() API is rather kludgy and far too convoluted.  In
+> particular, it calls filldir() and passes file->f_pos to it, expecting
+> the caller to update file->f_pos between the calls.  proc_task_readdir()
+> uses that sucker, but doesn't update ->f_pos until the very end.  As
+> the result, d_off of direntries produced by it gets screwed.
+> Broken-by: commit 61a28784028e6d55755e4d0f39bee8d9bf2ee8d9
+> Author: Eric W. Biederman <ebiederm@xmission.com>
+> Date:   Mon Oct 2 02:18:49 2006 -0700
+> 
+>     [PATCH] proc: Remove the hard coded inode numbers
+> 
 
-Yes, except the fact, we wouldn't see anything :) -- I'll add inside the 
-if a return statement or something to disallow the oops to flood screen.
+Thanks for sharing the insights.
 
-Also, it doesn't happen regularly. Mostly several first tries after cold 
-start. I hope this is a regression and not a HW problem, but it emerged 
-after switching to 2.6.29-*, I will keep you informed.
+> Patch is fine, but I'd rather rip the layers of ..._fill_cache() abstractions
+> out and see what falls out.  Anyway, for -rc your variant is definitely the
+> way to go.
 
-Thanks.
+So, will you take care of it? Or who else should I ask? Thanks in advance!
+
+Zhang, Le
+http://zhangle.is-a-geek.org
