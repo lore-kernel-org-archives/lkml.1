@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZCPSIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761324AbZCPSJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbZCPSIX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbZCPSID
+	id S1761324AbZCPSJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755871AbZCPSJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:08:03 -0400
-Received: from mail-fx0-f176.google.com ([209.85.220.176]:57360 "EHLO
-	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752191AbZCPSIA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:08:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=unJR6wzI7mSOEoWP0SOz+KMzbFTyGgC04QMINqCPRquHlI0mWb1M5lv2teA69LdqZv
-         cv0ZIxlVxqgDL/GxQBYsCDztz+AkV7mABX0YwddErcvdeyiXE/8fK6Qb9ybVrY/c19cn
-         /5WY3pTISuI9frw0W5Xu5+Hwpcv2FDqd4o7Ho=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [GIT PATCH] block: cleanup patches, take#2
-Date: Mon, 16 Mar 2009 18:53:14 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc7-next-20090311; KDE/4.2.0; i686; ; )
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
-References: <1237170540-19130-1-git-send-email-tj@kernel.org>
-In-Reply-To: <1237170540-19130-1-git-send-email-tj@kernel.org>
+	Mon, 16 Mar 2009 14:09:16 -0400
+Received: from kroah.org ([198.145.64.141]:53672 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754651AbZCPSJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 14:09:15 -0400
+Date: Mon, 16 Mar 2009 11:05:38 -0700
+From: Greg KH <greg@kroah.com>
+To: "J. R. Okajima" <hooanon05@yahoo.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC Aufs2 #2 21/28] aufs sysfs entries
+Message-ID: <20090316180538.GA7069@kroah.com>
+References: <1237188040-11404-1-git-send-email-hooanon05@yahoo.co.jp> <1237188040-11404-22-git-send-email-hooanon05@yahoo.co.jp>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903161853.14268.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1237188040-11404-22-git-send-email-hooanon05@yahoo.co.jp>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 March 2009, Tejun Heo wrote:
-> Hello,
-> 
-> This patchset is available in the following git tree.
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-cleanup
-> 
-> This patchset contains the following 17 cleanup patches.
-> 
->  0001-ide-use-blk_run_queue-instead-of-blk_start_queuei.patch
->  0002-ide-don-t-set-REQ_SOFTBARRIER.patch
->  0003-ide-use-blk_update_request-instead-of-blk_end_req.patch
->  0004-block-merge-blk_invoke_request_fn-into-__blk_run_.patch
->  0005-block-kill-blk_start_queueing.patch
->  0006-block-don-t-set-REQ_NOMERGE-unnecessarily.patch
->  0007-block-cleanup-REQ_SOFTBARRIER-usages.patch
->  0008-block-clean-up-misc-stuff-after-block-layer-timeout.patch
->  0009-block-reorder-request-completion-functions.patch
->  0010-block-reorganize-request-fetching-functions.patch
->  0011-block-kill-blk_end_request_callback.patch
->  0012-block-clean-up-request-completion-API.patch
->  0013-block-move-rq-start_time-initialization-to-blk_rq_.patch
->  0014-block-implement-and-use-__-blk_end_request_all.patch
->  0015-block-kill-end_request.patch
->  0016-ubd-simplify-block-request-completion.patch
->  0017-block-clean-up-unnecessary-stuff-from-block-drivers.patch
-> 
-> It's on top of the current linux-2.6-block/for-2.6.30[1].  Changes
-> from the last take[2] are.
-> 
-> * IDE changes separated out to 0001-0003
-> * IDE end_all conversion dropped
-> 
-> Bartlomiej, 0001-0003 are mostly trivial and shouldn't cause too much
-> merge headaches later.  Can these go through block tree?  I'll base
+On Mon, Mar 16, 2009 at 04:20:33PM +0900, J. R. Okajima wrote:
+> initial commit
+> sysfs entries, compiled only when CONFIG_SYSFS is enabled
 
-Patches look fine but 0002-0003 will cause pata/block merge conflicts
-for linux-next once they go into block tree so no ACK from me for this
-approach.
+debug stuff should be in debugfs, not sysfs.
 
-$ patch -p1 --dry-run < 0002.patch
-patching file drivers/ide/ide-disk.c
-Hunk #1 FAILED at 405.
-1 out of 1 hunk FAILED -- saving rejects to file drivers/ide/ide-disk.c.rej
-patching file drivers/ide/ide-ioctls.c
+Also, any sysfs files that are created, need to be documented in
+Documentation/ABI/.
 
-$ patch -p1 --dry-run < 0003.patch
-patching file drivers/ide/ide-cd.c
-Reversed (or previously applied) patch detected!  Assume -R? [n]
+> +#ifdef CONFIG_AUFS_DEBUG
+> +static ssize_t debug_show(struct kobject *kobj __maybe_unused,
+> +			  struct kobj_attribute *attr __maybe_unused,
+> +			  char *buf)
+> +{
+> +	return sprintf(buf, "%d\n", au_debug_test());
+> +}
+> +
+> +static ssize_t debug_store(struct kobject *kobj __maybe_unused,
+> +			   struct kobj_attribute *attr __maybe_unused,
+> +			   const char *buf, size_t sz)
+> +{
+> +	if (unlikely(!sz || (*buf != '0' && *buf != '1')))
+> +		return -EOPNOTSUPP;
+> +
+> +	if (*buf == '0')
+> +		au_debug(0);
+> +	else if (*buf == '1')
+> +		au_debug(1);
+> +	return sz;
+> +}
 
-Thanks,
-Bart
+This should be a simple module parameter, like almost all drivers have
+it.  That way it shows up in /sys/modules/aufs/ properly, as a boolean
+value.  No need to reinvent the wheel here.
+
+> +/* todo: file size may exceed PAGE_SIZE */
+> +ssize_t sysaufs_si_show(struct kobject *kobj, struct attribute *attr,
+> +			 char *buf)
+
+NO IT CAN NOT!!!!
+
+You are using sysfs wrong if you even think you are getting close to
+PAGE_SIZE.
+
+Please, use debugfs for this.  sysfs is a "one value per file" type
+filesystem.  You should never be using the seqfile interface for a sysfs
+file, that's a sure sign something is wrong in your design.
+
+I think I'll stop reading now :(
+
+thanks,
+
+greg k-h
