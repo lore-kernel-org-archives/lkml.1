@@ -1,190 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760747AbZCPMhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756934AbZCPMkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760747AbZCPMhP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 08:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbZCPMg7
+	id S1756934AbZCPMkg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 08:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbZCPMk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 08:36:59 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58303 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751101AbZCPMg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 08:36:58 -0400
-Date: Mon, 16 Mar 2009 13:36:54 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       akpm@linux-foundation.org, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH] fix/improve generic page table walker
-Message-ID: <20090316123654.GF30802@wotan.suse.de>
-References: <20090311144951.58c6ab60@skybase> <1236792263.3205.45.camel@calx> <20090312093335.6dd67251@skybase> <1236867014.3213.16.camel@calx> <20090312154229.3ee463eb@skybase> <1236873494.3213.55.camel@calx> <20090316132717.69f6f4ce@skybase>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090316132717.69f6f4ce@skybase>
-User-Agent: Mutt/1.5.9i
+	Mon, 16 Mar 2009 08:40:26 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:39214 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752482AbZCPMkY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 08:40:24 -0400
+Message-ID: <49BE48B3.6060108@snapgear.com>
+Date: Mon, 16 Mar 2009 22:40:19 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Sam Ravnborg <sam@ravnborg.org>, Rob Landley <rob@landley.net>,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       linux-next@vger.kernel.org, linux-m68k@vger.kernel.org
+Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
+References: <200903120437.03837.rob@landley.net>	 <20090312210216.GB14205@uranus.ravnborg.org>	 <10f740e80903121540i30fdaddr600ce21f4159530a@mail.gmail.com>	 <200903122225.04560.rob@landley.net> <49BA0599.6070206@snapgear.com>	 <20090313082555.GA19045@uranus.ravnborg.org>	 <10f740e80903130133r130b8713v690437f0f38eb0b8@mail.gmail.com>	 <20090313085930.GA19274@uranus.ravnborg.org>	 <49BA3B05.9020906@snapgear.com> <10f740e80903130514k194fbdackd373d2951a9f76ba@mail.gmail.com>
+In-Reply-To: <10f740e80903130514k194fbdackd373d2951a9f76ba@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 01:27:17PM +0100, Martin Schwidefsky wrote:
-> On Thu, 12 Mar 2009 10:58:14 -0500
-> Matt Mackall <mpm@selenic.com> wrote:
+Geert Uytterhoeven wrote:
+> On Fri, Mar 13, 2009 at 11:52, Greg Ungerer <gerg@snapgear.com> wrote:
+>> Sam Ravnborg wrote:
+>>> On Fri, Mar 13, 2009 at 09:33:18AM +0100, Geert Uytterhoeven wrote:
+>>>> On Fri, Mar 13, 2009 at 09:25, Sam Ravnborg <sam@ravnborg.org> wrote:
+>>>>> On Fri, Mar 13, 2009 at 05:04:57PM +1000, Greg Ungerer wrote:
+>>>>>> I pretty quick time I can fix up the last couple on the above list.
+>>>>>> But do we want to put all that change into 2.6.29-rc at this point?
+>>>>> In general we do not want to have headers_check broken in mainline,
+>>>> headers_check is not broken, headers_install is.
+>>>>
+>>>> Hmm, in some sense headers_check _is_ broken, as it doesn't notice
+>>>> headers_install
+>>>> installs headers that refer to other headers that are not installed...
+>>> This is what scripts/headers_check are supposed to do - strange.
+>>>
+>>>> Greg, I had a quick look at your signcontext.h and signal.h merge, and
+>>>> the MMU
+>>>> part seems to be OK.
+>>>>
+>>>> However, some of the installed headers still have checks for CONFIG_MMU:
+>>>>
+>>>> param.h:#ifdef CONFIG_MMU
+>>>> sigcontext.h:#ifndef CONFIG_MMU
+>>>> sigcontext.h:#ifdef CONFIG_MMU
+>>>> siginfo.h:#ifdef CONFIG_MMU
+>>>> siginfo.h:#ifdef CONFIG_MMU
+>>>> siginfo.h:#endif /* CONFIG_MMU */
+>>>> swab.h:#elif defined(CONFIG_MMU)
+>>>>
+>>>> so these have to be added to the generic unifdef-y list (is that
+>>>> include/asm-generic/Kbuild.asm?).
+>> Hmmm, yes your right.
+>>
+>>
+>>> include/asm-generic/Kbuild.asm impacts all architectures so be carefull
+>>> there.
+>>> It looks like some updates to arch/m68k/include/asm/Kbuild is needed,
+>>> and not the generic list of files to export.
+>>>
+>>> Also use og CONFIG_MMU suprises me.
+>>> We used #ifdef __uClinux__ in the non-merged headers to avoid use
+>>> of a CONFIG_* symbol that is not valid outside the kernel namespace.
+>>> So if param.h in m68k uses CONFIG_MMU it is broken.
+>> I have been trying to use CONFIG_MMU wherever possible (so for non-
+>> exported headers), since that matches what is actually in the code
+>> proper. I am concerned at the longer term use of __uClinux__ for
+>> distinguishing MMU and non-MMU. I plan on switching to use a normal
+>> m68k toolchain soon. And it won't define __uClinux__ on its own.
+>> (I already do this on ARM for example - same toolchain on both
+>> MMU an non-MMU).
+>>
+>> What I have done so far is or the most part a very simple merge
+>> of the files. I know there is room for some improvements in quite a
+>> few of these files.
+>>
+>> The use of CONFIG_MMU in swab.h (is this actually exported to user
+>> space?) is not actually for code that is MMU or non-MMU. It is
+>> actually architecture specific. Most ColdFire parts don't have the
+>> "rolw" instruction. The condition test can be better. Geert, any
+>> ideas on what is more appropriate here?
 > 
-> > On Thu, 2009-03-12 at 15:42 +0100, Martin Schwidefsky wrote:
-> > > Then what exactly is a pgd_t? For me it is the top level page table
-> > > which can have very different meaning for the various architectures.
-> > 
-> > The important thing is that it's always 3 levels removed from the
-> > bottom, whether or not those 3 levels actually have hardware
-> > manifestations. From your description, it sounds like that's not how
-> > things work in S390 land.
-> 
-> With the page table folding "3 levels removed from the bottom" doesn't
-> tell me much since there is no real representation in hardware AND in
-> memory for the missing page table levels. So the only valid meaning of
-> a pgd_t is that you have to use pud_offset, pmd_offset and pte_offset
-> to get to a pte. If I do the page table folding at runtime or at
-> compile time is a minor detail.
+> The `rolw' variant is already protected by `#if defined
+> (__mcfisaaplus__) || defined (__mcfisac__)',
+> so I think you can replace the `#elif defined(CONFIG_MMU)' by a plain `#else'.
+> Or are there cases where you don't want to have __arch_swab32 at all?
 
-I don't know if it would be helpful to you, but I solve a similar
-kind of problem in the lockless radix tree by encoding node height
-in the node itself. Maybe you could use some bits in the page table
-pointers or even in the struct pages for this.
+Not all ColdFire fit into '(__mcfisaaplus__) || defined (__mcfisac__)'
+so #else won't be good enough. Though I suspect it is true that the
+older m68k varients (68328, etc) can do "rolw" - or I am I mistaken on
+that?
 
 
+>> I can switch back to using __uClinux__ on siginfo.h and sigcontext.h.
+>> If I am not mistaken we can't change these structures without breaking
+>> backwards compatibility?  The sigcontext change is particularly ugly :-(
 > 
-> > > Well, the hardware can do up to 5 levels of page tables for the full
-> > > 64 bit address space. With the introduction of pud's we wanted to
-> > > extend our address space from 3 levels / 42 bits to 4 levels / 53 bits.
-> > > But this comes at a cost: additional page table levels cost memory and
-> > > performance. In particular for the compat processes which can only
-> > > address a maximum of 2 GB it is a waste to allocate 4 levels. With the
-> > > dynamic page tables we allocate as much as required by each process.
-> > 
-> > X86 uses 1-entry tables at higher levels to maintain consistency with
-> > fairly minimal overhead. In some of the sillier addressing modes, we may
-> > even use a 4-entry table in some places. I think table size is fixed at
-> > compile time, but I don't think that's essential. Very little code in
-> > the x86 architecture has any notion of how many hardware levels actually
-> > exist.
+> Copying the signal experts on linux-m68k...
 > 
-> Indeed very little code needs to know how many page table levels
-> exist. The page table folding works as long as the access to a
-> particular page is done with the sequence
+>> Similarly for param.h, it looks like a switch back to using
+>> __uClinux__ for now is the only option.
+>>
+>> Now after these fixups should I create a git branch with these header
+>> merges in for inclusion into 2.6.29-rc?  To fix the regression we
+>> only need to do the handful of files that Rob listed, right?
 > 
-> 	pgd = pgd_offset(mm, address);
-> 	pud = pud_offset(pgd, address);
-> 	pmd = pmd_offset(pud, address);
-> 	pte = pte_offset(pmd, address);
-> 
-> The indivitual pointers pgd/pud/pmd/pte can be incremented as long as
-> they stay in the valid address range, e.g. pmd_addr_end checks for the
-> next pmd segment boundary and the end address of the walk.
-> 
-> If the page table folding is static or dynamic is irrelevant. The only
-> thing we are arguing is what makes a valid end address for a walk. It
-> has to be smaller than TASK_SIZE. With the current definitions the s390
-> code has the additional assumption that the address has to be smaller
-> than the highest vma as well. The patch below changes TASK_SIZE to
-> reflect the size of the address space in use by the process. Then the
-> generic page table walker works fine. What doesn't work anymore is the
-> automatic upgrade from 3 to 4 levels via mmap. I'm still thinking about
-> a clever solution, the best I have so far is a patch that introduces
-> TASK_SIZE_MAX which reflects the maximum possible size as opposed to
-> TASK_SIZE that gives you the current size. The code in do_mmap_pgoff
-> then uses TASK_SIZE_MAX instead of TASK_SIZE.
-> 
-> -- 
-> blue skies,
->    Martin.
-> 
-> "Reality continues to ruin my life." - Calvin.
-> 
-> ---
-> Subject: [PATCH] make page table walking more robust
-> 
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> Make page table walking on s390 more robust. The current code requires
-> that the pgd/pud/pmd/pte loop is only done for address ranges that are
-> below the end address of the last vma of the address space. But this
-> is not always true, e.g. the generic page table walker does not
-> guarantee this. Change TASK_SIZE/TASK_SIZE_OF to reflect the current
-> size of the address space. This makes the generic page table walker
-> happy but it breaks the upgrade of a 3 level page table to a 4 level
-> page table. To make the upgrade work again another fix is required.
-> 
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
-> 
->  arch/s390/include/asm/processor.h |    5 ++---
->  arch/s390/mm/mmap.c               |    4 ++--
->  arch/s390/mm/pgtable.c            |    2 ++
->  3 files changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff -urpN linux-2.6/arch/s390/include/asm/processor.h
-> linux-2.6-patched/arch/s390/include/asm/processor.h ---
-> linux-2.6/arch/s390/include/asm/processor.h	2009-03-16
-> 12:24:26.000000000 +0100 +++
-> linux-2.6-patched/arch/s390/include/asm/processor.h	2009-03-16
-> 12:24:28.000000000 +0100 @@ -47,7 +47,7 @@ extern void
-> print_cpu_info(void); extern int get_cpu_capability(unsigned int *); /*
-> - * User space process size: 2GB for 31 bit, 4TB for 64 bit.
-> + * User space process size: 2GB for 31 bit, 4TB or 8PT for 64 bit.
->   */
->  #ifndef __s390x__
->  
-> @@ -56,8 +56,7 @@ extern int get_cpu_capability(unsigned i
->  
->  #else /* __s390x__ */
->  
-> -#define TASK_SIZE_OF(tsk)
-> (test_tsk_thread_flag(tsk,TIF_31BIT) ? \
-> -					(1UL << 31) : (1UL << 53))
-> +#define TASK_SIZE_OF(tsk)	((tsk)->mm->context.asce_limit)
->  #define TASK_UNMAPPED_BASE	(test_thread_flag(TIF_31BIT) ? \
->  					(1UL << 30) : (1UL << 41))
->  #define TASK_SIZE		TASK_SIZE_OF(current)
-> diff -urpN linux-2.6/arch/s390/mm/mmap.c
-> linux-2.6-patched/arch/s390/mm/mmap.c ---
-> linux-2.6/arch/s390/mm/mmap.c	2008-12-25 00:26:37.000000000
-> +0100 +++ linux-2.6-patched/arch/s390/mm/mmap.c	2009-03-16
-> 12:24:28.000000000 +0100 @@ -35,7 +35,7 @@
->   * Leave an at least ~128 MB hole.
->   */
->  #define MIN_GAP (128*1024*1024)
-> -#define MAX_GAP (TASK_SIZE/6*5)
-> +#define MAX_GAP (STACK_TOP/6*5)
->  
->  static inline unsigned long mmap_base(void)
->  {
-> @@ -46,7 +46,7 @@ static inline unsigned long mmap_base(vo
->  	else if (gap > MAX_GAP)
->  		gap = MAX_GAP;
->  
-> -	return TASK_SIZE - (gap & PAGE_MASK);
-> +	return STACK_TOP - (gap & PAGE_MASK);
->  }
->  
->  static inline int mmap_is_legacy(void)
-> diff -urpN linux-2.6/arch/s390/mm/pgtable.c
-> linux-2.6-patched/arch/s390/mm/pgtable.c ---
-> linux-2.6/arch/s390/mm/pgtable.c	2009-03-16 12:24:09.000000000
-> +0100 +++ linux-2.6-patched/arch/s390/mm/pgtable.c	2009-03-16
-> 12:24:28.000000000 +0100 @@ -117,6 +117,7 @@ repeat:
-> crst_table_init(table, entry); pgd_populate(mm, (pgd_t *) table, (pud_t
-> *) pgd); mm->pgd = (pgd_t *) table;
-> +		mm->task_size = mm->context.asce_limit;
->  		table = NULL;
->  	}
->  	spin_unlock(&mm->page_table_lock);
-> @@ -154,6 +155,7 @@ void crst_table_downgrade(struct mm_stru
->  			BUG();
->  		}
->  		mm->pgd = (pgd_t *) (pgd_val(*pgd) &
-> _REGION_ENTRY_ORIGIN);
-> +		mm->task_size = mm->context.asce_limit;
->  		crst_table_free(mm, (unsigned long *) pgd);
->  	}
->  	update_mm(mm, current);
+> Yes.
+
+Ok, I have created a git branch for this as:
+
+The following changes since commit 5bee17f18b595937e6beafeee5197868a3f74a06:
+   Kyle McMartin (1):
+         parisc: sba_iommu: fix build bug when CONFIG_PARISC_AGP=y
+
+are available in the git repository at:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git 
+fix-includes
+
+Greg Ungerer (8):
+       m68k: merge the non-MMU and MMU versions of param.h
+       m68k: merge the non-MMU and MMU versions of swab.h
+       m68k: merge the non-MMU and MMU versions of sigcontext.h
+       m68k: merge the non-MMU and MMU versions of siginfo.h
+       m68k: use MMU version of setup.h for both MMU and non-MMU
+       m68k: merge the non-MMU and MMU versions of ptrace.h
+       m68k: merge the non-MMU and MMU versions of signal.h
+       m68k: use the MMU version of unistd.h for all m68k platforms
+
+  arch/m68k/include/asm/param.h         |   25 ++-
+  arch/m68k/include/asm/param_mm.h      |   22 --
+  arch/m68k/include/asm/param_no.h      |   22 --
+  arch/m68k/include/asm/ptrace.h        |   88 ++++++++-
+  arch/m68k/include/asm/ptrace_mm.h     |   80 -------
+  arch/m68k/include/asm/ptrace_no.h     |   87 --------
+  arch/m68k/include/asm/setup.h         |  377 
+++++++++++++++++++++++++++++++++-
+  arch/m68k/include/asm/setup_mm.h      |  376 
+--------------------------------
+  arch/m68k/include/asm/setup_no.h      |   10 -
+  arch/m68k/include/asm/sigcontext.h    |   25 ++-
+  arch/m68k/include/asm/sigcontext_mm.h |   19 --
+  arch/m68k/include/asm/sigcontext_no.h |   17 --
+  arch/m68k/include/asm/siginfo.h       |   95 ++++++++-
+  arch/m68k/include/asm/siginfo_mm.h    |   92 --------
+  arch/m68k/include/asm/siginfo_no.h    |    6 -
+  arch/m68k/include/asm/signal.h        |  216 ++++++++++++++++++-
+  arch/m68k/include/asm/signal_mm.h     |  206 ------------------
+  arch/m68k/include/asm/signal_no.h     |  159 --------------
+  arch/m68k/include/asm/swab.h          |   30 +++-
+  arch/m68k/include/asm/swab_mm.h       |   16 --
+  arch/m68k/include/asm/swab_no.h       |   24 --
+  arch/m68k/include/asm/unistd.h        |  377 
+++++++++++++++++++++++++++++++++-
+  arch/m68k/include/asm/unistd_mm.h     |  372 
+--------------------------------
+  arch/m68k/include/asm/unistd_no.h     |  372 
+--------------------------------
+  24 files changed, 1206 insertions(+), 1907 deletions(-)
+  delete mode 100644 arch/m68k/include/asm/param_mm.h
+  delete mode 100644 arch/m68k/include/asm/param_no.h
+  delete mode 100644 arch/m68k/include/asm/ptrace_mm.h
+  delete mode 100644 arch/m68k/include/asm/ptrace_no.h
+  delete mode 100644 arch/m68k/include/asm/setup_mm.h
+  delete mode 100644 arch/m68k/include/asm/setup_no.h
+  delete mode 100644 arch/m68k/include/asm/sigcontext_mm.h
+  delete mode 100644 arch/m68k/include/asm/sigcontext_no.h
+  delete mode 100644 arch/m68k/include/asm/siginfo_mm.h
+  delete mode 100644 arch/m68k/include/asm/siginfo_no.h
+  delete mode 100644 arch/m68k/include/asm/signal_mm.h
+  delete mode 100644 arch/m68k/include/asm/signal_no.h
+  delete mode 100644 arch/m68k/include/asm/swab_mm.h
+  delete mode 100644 arch/m68k/include/asm/swab_no.h
+  delete mode 100644 arch/m68k/include/asm/unistd_mm.h
+  delete mode 100644 arch/m68k/include/asm/unistd_no.h
+
+
+I have only patched those files that I saw mentioned in the previous
+emails in this thread.
+
+Geert, can you check an m68k build?
+Rob, can you check that you can build what you used to be able to?
+
+Regards
+Greg
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
