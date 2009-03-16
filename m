@@ -1,91 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZCPLzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758474AbZCPMCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432AbZCPLzl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 07:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZCPLzc
+	id S1758474AbZCPMCa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 08:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZCPMCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 07:55:32 -0400
-Received: from support.balabit.hu ([195.70.41.86]:41032 "EHLO lists.balabit.hu"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751340AbZCPLzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 07:55:31 -0400
-Subject: Re: [patch] Re: scheduler oddity [bug?]
-From: Balazs Scheidler <bazsi@balabit.hu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Willy Tarreau <w@1wt.eu>
-In-Reply-To: <20090315185719.GD19737@elte.hu>
-References: <1236605870.6515.5.camel@marge.simson.net>
-	 <1236606389.8389.518.camel@laptop>
-	 <1236607083.5980.8.camel@marge.simson.net>
-	 <1236607890.6168.7.camel@marge.simson.net>
-	 <1236609711.8389.583.camel@laptop>
-	 <1236612649.6019.38.camel@marge.simson.net>
-	 <1236615158.8389.705.camel@laptop>
-	 <1236619694.5998.9.camel@marge.simson.net>
-	 <1237125227.6919.1.camel@bzorp.balabit>
-	 <1237137414.5980.2.camel@marge.simson.net> <20090315185719.GD19737@elte.hu>
-Content-Type: text/plain
-Date: Mon, 16 Mar 2009 12:55:23 +0100
-Message-Id: <1237204523.18422.38.camel@bzorp.balabit>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Mar 2009 08:02:21 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:48266 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751784AbZCPMCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 08:02:20 -0400
+Date: Mon, 16 Mar 2009 12:02:17 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 00/35] Cleanup and optimise the page allocator V3
+Message-ID: <20090316120216.GB6382@csn.ul.ie>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <20090316104054.GA23046@wotan.suse.de> <20090316111906.GA6382@csn.ul.ie> <20090316113358.GA30802@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090316113358.GA30802@wotan.suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-15 at 19:57 +0100, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
-> 
-> > On Sun, 2009-03-15 at 14:53 +0100, Balazs Scheidler wrote:
-> > > On Mon, 2009-03-09 at 18:28 +0100, Mike Galbraith wrote:
-> > > > On Mon, 2009-03-09 at 17:12 +0100, Peter Zijlstra wrote:
-> > > > > On Mon, 2009-03-09 at 16:30 +0100, Mike Galbraith wrote:
-> > > > > > +static void put_prev_task(struct rq *rq, struct task_struct *prev)
-> > > > > > +{
-> > > > > > +       if (prev->state == TASK_RUNNING) {
-> > > > > > +               u64 runtime = prev->se.sum_exec_runtime;
-> > > > > > +
-> > > > > > +               runtime -= prev->se.prev_sum_exec_runtime;
-> > > > > > +               runtime = min_t(u64, runtime, 2*sysctl_sched_migration_cost);
-> > > > > > +
-> > > > > > +               /*
-> > > > > > +                * In order to avoid avg_overlap growing stale when we are
-> > > > > > +                * indeed overlapping and hence not getting put to sleep, grow
-> > > > > > +                * the avg_overlap on preemption.
-> > > > > > +                */
-> > > > > > +               update_avg(&prev->se.avg_overlap, runtime);
-> > > > > > +       }
-> > > > > > +       prev->sched_class->put_prev_task(rq, prev);
-> > > > > > +}
-> > > > > 
-> > > > > Right, so we both found it worked quite well, I'm still slightly puzzled
-> > > > > but it.
-> > > > > 
-> > > > > If something gets preempted a lot and will therefore have short runtimes
-> > > > > it will be seen as sync even though it might not at all be.
-> > > > 
-> > > > Yes, and the netperf on 2 CPUs with shared cache numbers show that's
-> > > > happening.  It just so happens that in the non-shared case, netperf's
-> > > > cache pain far outweighs the benefit of having more CPU available :-/
-> > > 
-> > > Any news on this? I haven't seen a patch that was actually integrated,
-> > > or I just missed something?
+On Mon, Mar 16, 2009 at 12:33:58PM +0100, Nick Piggin wrote:
+> On Mon, Mar 16, 2009 at 11:19:06AM +0000, Mel Gorman wrote:
+> > On Mon, Mar 16, 2009 at 11:40:54AM +0100, Nick Piggin wrote:
+> > > That's wonderful, but it would
+> > > significantly increase the fragmentation problem, wouldn't it?
 > > 
-> > It's in tip, as df1c99d416500da8d26a4d78777467c53ee7689e.
+> > Not necessarily, anti-fragmentation groups movable pages within a
+> > hugepage-aligned block and high-order allocations will trigger a merge of
+> > buddies from PAGE_ALLOC_MERGE_ORDER (defined in the relevant patch) up to
+> > MAX_ORDER-1. Critically, a merge is also triggered when anti-fragmentation
+> > wants to fallback to another migratetype to satisfy an allocation. As
+> > long as the grouping works, it doesn't matter if they were only merged up
+> > to PAGE_ALLOC_MERGE_ORDER as a full merge will still free up hugepages.
+> > So two slow paths are made slower but the fast path should be faster and it
+> > should be causing fewer cache line bounces due to writes to struct page.
 > 
-> testable via:
+> Oh, but the anti-fragmentation stuff is orthogonal to this. Movable
+> groups should always be defragmentable (at some cost)... the bane of
+> anti-frag is fragmentation of the non-movable groups.
 > 
->   http://people.redhat.com/mingo/tip.git/README
-> 
-> Balazs, could you please try it?
 
-Sure I'll try, although not today as my first son was born yesterday,
-and I have a lot of things to do, but hopefully I can give a spin
-tomorrow.
+True, the reclaimable area has varying degrees of success and the
+non-movable groups are almost unworkable and depend on how much of them
+depend on pagetables.
 
+> And one reason why buddy is so good at avoiding fragmentation is
+> because it will pick up _any_ pages that go past the allocator if
+> they have any free buddies. And it hands out ones that don't have
+> free buddies. So in that way it is naturally continually filtering
+> out pages which can be merged.
+> 
+> Wheras if you defer this until the point you need a higher order
+> page, the only thing you have to work with are the pages that are
+> free *right now*.
+> 
+
+Well, buddy always uses the smallest available page first. Even with
+deferred coalescing, it will merge up to order-5 at least. Lets say they
+could have merged up to order-10 in ordinary circumstances, they are
+still avoided for as long as possible. Granted, it might mean that an
+order-5 is split that could have been merged but it's hard to tell how
+much of a difference that makes.
+
+> It will almost definitely increase fragmentation of non movable zones,
+> and if you have a workload doing non-trivial, non movable higher order
+> allocations that are likely to cause fragmentation, it will result
+> in these allocations eating movable groups sooner I think.
+> 
+
+I think the effect will be same unless the non-movable high-order
+allocations are order-5 or higher in which case we are likely going to
+hit trouble anyway.
+
+> 
+> > When I last checked (about 10 days) ago, I hadn't damaged anti-fragmentation
+> > but that was a lot of revisions ago. I'm redoing the tests to make sure
+> > anti-fragmentation is still ok.
+> 
+> Your anti-frag tests probably don't stress this long term fragmentation
+> problem.
+> 
+
+Probably not, but we have little data on long-term fragmentation other than
+anecdotal evidence that it's ok these days.
+
+> Still, it's significant enough that I think it should be made
+> optional (and arguably default to on) even if it does harm higher
+> order allocations a bit.
+> 
+
+I could make PAGE_ORDER_MERGE_ORDER a proc tunable? If it's placed as a
+read-mostly variable beside the gfp_zone table, it might even fit in the
+same cache line.
 
 -- 
-Bazsi
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
