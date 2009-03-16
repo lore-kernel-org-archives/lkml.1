@@ -1,57 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760087AbZCPNH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbZCPNKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760087AbZCPNH0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 09:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbZCPNHM
+	id S1757461AbZCPNKS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 09:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbZCPNKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 09:07:12 -0400
-Received: from 195-23-16-24.net.novis.pt ([195.23.16.24]:35977 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbZCPNHL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 09:07:11 -0400
-Message-ID: <49BE4EF6.3030406@grupopie.com>
-Date: Mon, 16 Mar 2009 13:07:02 +0000
-From: Rui Santos <rsantos@grupopie.com>
-Organization: GrupoPIE, Portugal SA
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Francois Romieu <romieu@fr.zoreil.com>
-CC: =?UTF-8?B?TWljaGFlbCBCw7xrZXI=?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
-References: <200903041828.49972.m.bueker@berlin.de> <20090304224310.GA29043@electric-eye.fr.zoreil.com> <49B5066D.1030309@grupopie.com>
-In-Reply-To: <49B5066D.1030309@grupopie.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Mar 2009 09:10:03 -0400
+Received: from verein.lst.de ([213.95.11.210]:51380 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751340AbZCPNKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 09:10:01 -0400
+Date: Mon, 16 Mar 2009 14:09:16 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       Kyle McMartin <kyle@mcmartin.ca>, linux-m68k@vger.kernel.org,
+       rtc-linux@googlegroups.com, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Paul Mundt <lethal@linux-sh.org>, Dann Frazier <dannf@dannf.org>
+Subject: Re: [PATCH 4/7] parisc: rtc: Rename rtc-parisc to rtc-generic
+Message-ID: <20090316130916.GA3324@lst.de>
+References: <1236605183-22718-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1236605183-22718-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <1236605183-22718-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1236605183-22718-4-git-send-email-Geert.Uytterhoeven@sonycom.com> <1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1236605183-22718-5-git-send-email-Geert.Uytterhoeven@sonycom.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rui Santos wrote:
-> If I get any further I'll let you know.
->
-> Regards,
-> Rui Santos
->
->   
-I Finally ended up the big bisect operation. The commit responsible for
-this issue is commit
-b726e493e8dc13537d1d7f8cd66bcd28516606c3
-labeled
-'r8169: sync existing 8168 device hardware start sequences with vendor
-driver'
+On Mon, Mar 09, 2009 at 02:26:20PM +0100, Geert Uytterhoeven wrote:
+> The rtc-parisc driver is not PA-RISC specific at all, as it uses the existing
+> (but deprecated) generic RTC infrastructure ([gs]et_rtc_time()).
+> Rename the driver from rtc-parisc to rtc-generic.
 
-With that patch removed, I  was able to get a sustained 40MB/s+ on a
-20GB ftp transfer. I wasn't able to do it with the specified patch applied.
-Just as a side note, I was never able to reproduce it on a 100MBit
-connection, only on a full 1GBit one...
-
-However this patch will not reverse on the current kernel.
-
-What do you think the next step should be ?
-As usual, if you need any testing, please do let me know.
-
-Regards,
-Rui Santos
+Maybe it should be called rtc-legacy instead?
 
