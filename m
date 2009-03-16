@@ -1,148 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758860AbZCPIUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbZCPIVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758860AbZCPIUr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 04:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbZCPITz
+	id S1759152AbZCPIVF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 04:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbZCPIUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 04:19:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44671 "EHLO hera.kernel.org"
+	Mon, 16 Mar 2009 04:20:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44692 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755789AbZCPITv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 04:19:51 -0400
-Date: Mon, 16 Mar 2009 08:19:25 GMT
+	id S1758513AbZCPIUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 04:20:04 -0400
+Date: Mon, 16 Mar 2009 08:18:59 GMT
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+       fweisbec@gmail.com, akpm@linux-foundation.org, tglx@linutronix.de,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1237159961-7447-1-git-send-email-fweisbec@gmail.com>
-References: <1237159961-7447-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:tracing/syscalls] tracing/ftrace: fix double calls to tracing_start()
-Message-ID: <tip-ac1d52d0b85854958c7e78c8006e39aadb6ce4b8@git.kernel.org>
-Git-Commit-ID: ac1d52d0b85854958c7e78c8006e39aadb6ce4b8
+       fweisbec@gmail.com, akpm@linux-foundation.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1237151439-6755-3-git-send-email-fweisbec@gmail.com>
+References: <1237151439-6755-3-git-send-email-fweisbec@gmail.com>
+Subject: [tip:tracing/syscalls] tracing/syscalls: protect thread flag toggling from races
+Message-ID: <tip-5be71b61f17b0e3bc8ad0b1a1b7b53ab7d574ebb@git.kernel.org>
+Git-Commit-ID: 5be71b61f17b0e3bc8ad0b1a1b7b53ab7d574ebb
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 16 Mar 2009 08:19:27 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 16 Mar 2009 08:19:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ac1d52d0b85854958c7e78c8006e39aadb6ce4b8
-Gitweb:     http://git.kernel.org/tip/ac1d52d0b85854958c7e78c8006e39aadb6ce4b8
+Commit-ID:  5be71b61f17b0e3bc8ad0b1a1b7b53ab7d574ebb
+Gitweb:     http://git.kernel.org/tip/5be71b61f17b0e3bc8ad0b1a1b7b53ab7d574ebb
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Mon, 16 Mar 2009 00:32:41 +0100
+AuthorDate: Sun, 15 Mar 2009 22:10:37 +0100
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 16 Mar 2009 09:13:18 +0100
+CommitDate: Mon, 16 Mar 2009 09:13:16 +0100
 
-tracing/ftrace: fix double calls to tracing_start()
+tracing/syscalls: protect thread flag toggling from races
 
-Impact: fix a warning during preemptirqsoff selftests
+Impact: fix syscall tracer enable/disable race
 
-When the preemptirqsoff selftest fails, we see the following
-warning:
+The current thread flag toggling is racy as shown in the following
+scenario:
 
-[    6.050000] Testing tracer preemptirqsoff: .. no entries found ..
-------------[ cut here ]------------
-[    6.060000] WARNING: at kernel/trace/trace.c:688 tracing_start+0x67/0xd3()
-[    6.060000] Modules linked in:
-[    6.060000] Pid: 1, comm: swapper Tainted: G
-[    6.060000] Call Trace:
-[    6.060000]  [<ffffffff802460ff>] warn_slowpath+0xb1/0x100
-[    6.060000]  [<ffffffff802a8f5b>] ? trace_preempt_on+0x35/0x4b
-[    6.060000]  [<ffffffff802a37fb>] ? tracing_start+0x31/0xd3
-[    6.060000]  [<ffffffff802a37fb>] ? tracing_start+0x31/0xd3
-[    6.060000]  [<ffffffff80271e0b>] ? __lock_acquired+0xe6/0x1f2
-[    6.060000]  [<ffffffff802a37fb>] ? tracing_start+0x31/0xd3
-[    6.060000]  [<ffffffff802a3831>] tracing_start+0x67/0xd3
-[    6.060000]  [<ffffffff802a8ace>] ? irqsoff_tracer_reset+0x2d/0x57
-[    6.060000]  [<ffffffff802a4d1c>] trace_selftest_startup_preemptirqsoff+0x1c8/0x1f1
-[    6.060000]  [<ffffffff802a4798>] register_tracer+0x12f/0x241
-[    6.060000]  [<ffffffff810250d0>] ? init_irqsoff_tracer+0x0/0x53
-[    6.060000]  [<ffffffff8102510b>] init_irqsoff_tracer+0x3b/0x53
+- task A is the last user of syscall tracing, it releases the
+  TIF_SYSCALL_FTRACE on each tasks
 
-This is because in fail case, the preemptirqsoff tracer selftest calls twice
-the tracing_start() function:
+- at the same time task B start syscall tracing. refcount == 0 so
+  it sets up TIF_SYSCALL_FTRACE on each tasks.
 
-int
-trace_selftest_startup_preemptirqsoff(struct tracer *trace, struct trace_array *tr)
-{
-        if (!ret && !count) {
-                printk(KERN_CONT ".. no entries found ..");
-                ret = -1;
-                tracing_start(); <-----
-                goto out;
-        }
-        [...]
-out:
-        trace->reset(tr);
-        tracing_start(); <------
-        tracing_max_latency = save_max;
+The effect of the mixup is unpredictable.
+So this fix adds a mutex on {start,stop}_syscall_tracing().
 
-        return ret;
-}
-
-Since it is well handled in the out path, we don't need the conditional one.
-
+Reported-by: Andrew Morton <akpm@linux-foundation.org>
 Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1237159961-7447-1-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1237151439-6755-3-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/trace_selftest.c |   16 ++++++----------
- 1 files changed, 6 insertions(+), 10 deletions(-)
+ kernel/trace/trace_syscalls.c |   24 +++++++++++++++++++-----
+ 1 files changed, 19 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/trace/trace_selftest.c b/kernel/trace/trace_selftest.c
-index f907a2b..a2ca6f0 100644
---- a/kernel/trace/trace_selftest.c
-+++ b/kernel/trace/trace_selftest.c
-@@ -414,7 +414,7 @@ trace_selftest_startup_preemptirqsoff(struct tracer *trace, struct trace_array *
- 	ret = tracer_init(trace, tr);
- 	if (ret) {
- 		warn_failed_init_tracer(trace, ret);
--		goto out;
-+		goto out_no_start;
- 	}
+diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+index 26f9a86..a2a3af2 100644
+--- a/kernel/trace/trace_syscalls.c
++++ b/kernel/trace/trace_syscalls.c
+@@ -5,7 +5,11 @@
+ #include "trace_output.h"
+ #include "trace.h"
  
- 	/* reset the max latency */
-@@ -432,21 +432,16 @@ trace_selftest_startup_preemptirqsoff(struct tracer *trace, struct trace_array *
- 	tracing_stop();
- 	/* check both trace buffers */
- 	ret = trace_test_buffer(tr, NULL);
--	if (ret) {
--		tracing_start();
-+	if (ret)
- 		goto out;
--	}
+-static atomic_t refcount;
++/* Keep a counter of the syscall tracing users */
++static int refcount;
++
++/* Prevent from races on thread flags toggling */
++static DEFINE_MUTEX(syscall_trace_lock);
  
- 	ret = trace_test_buffer(&max_tr, &count);
--	if (ret) {
--		tracing_start();
-+	if (ret)
- 		goto out;
--	}
+ /* Option to display the parameters types */
+ enum {
+@@ -96,9 +100,11 @@ void start_ftrace_syscalls(void)
+ 	unsigned long flags;
+ 	struct task_struct *g, *t;
  
- 	if (!ret && !count) {
- 		printk(KERN_CONT ".. no entries found ..");
- 		ret = -1;
--		tracing_start();
- 		goto out;
- 	}
++	mutex_lock(&syscall_trace_lock);
++
+ 	/* Don't enable the flag on the tasks twice */
+-	if (atomic_inc_return(&refcount) != 1)
+-		return;
++	if (++refcount != 1)
++		goto unlock;
  
-@@ -475,9 +470,10 @@ trace_selftest_startup_preemptirqsoff(struct tracer *trace, struct trace_array *
- 		goto out;
- 	}
+ 	arch_init_ftrace_syscalls();
+ 	read_lock_irqsave(&tasklist_lock, flags);
+@@ -108,6 +114,9 @@ void start_ftrace_syscalls(void)
+ 	} while_each_thread(g, t);
  
-- out:
--	trace->reset(tr);
-+out:
- 	tracing_start();
-+out_no_start:
-+	trace->reset(tr);
- 	tracing_max_latency = save_max;
+ 	read_unlock_irqrestore(&tasklist_lock, flags);
++
++unlock:
++	mutex_unlock(&syscall_trace_lock);
+ }
  
- 	return ret;
+ void stop_ftrace_syscalls(void)
+@@ -115,9 +124,11 @@ void stop_ftrace_syscalls(void)
+ 	unsigned long flags;
+ 	struct task_struct *g, *t;
+ 
++	mutex_lock(&syscall_trace_lock);
++
+ 	/* There are perhaps still some users */
+-	if (atomic_dec_return(&refcount))
+-		return;
++	if (--refcount)
++		goto unlock;
+ 
+ 	read_lock_irqsave(&tasklist_lock, flags);
+ 
+@@ -126,6 +137,9 @@ void stop_ftrace_syscalls(void)
+ 	} while_each_thread(g, t);
+ 
+ 	read_unlock_irqrestore(&tasklist_lock, flags);
++
++unlock:
++	mutex_unlock(&syscall_trace_lock);
+ }
+ 
+ void ftrace_syscall_enter(struct pt_regs *regs)
