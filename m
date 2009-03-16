@@ -1,125 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760892AbZCPTCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759442AbZCPTEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760892AbZCPTCV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 15:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755811AbZCPTCD
+	id S1759442AbZCPTEV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 15:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZCPTEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 15:02:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59496 "EHLO mx2.redhat.com"
+	Mon, 16 Mar 2009 15:04:08 -0400
+Received: from thunk.org ([69.25.196.29]:57648 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753904AbZCPTCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 15:02:01 -0400
-Date: Mon, 16 Mar 2009 15:00:47 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: mingo@elte.hu, rostedt@goodmis.org
-Cc: linux-kernel@vger.kernel.org, acme@ghostprotocols.net, fweisbec@gmail.com,
-       fche@redhat.com, peterz@infradead.org, compudj@krystal.dyndns.org
-Subject: Re: [Patch 2/2] tracepoints for softirq entry/exit - tracepoints
-Message-ID: <20090316190047.GB3111@redhat.com>
-References: <20090312183603.GC3352@redhat.com>
+	id S1751918AbZCPTEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 15:04:06 -0400
+Date: Mon, 16 Mar 2009 15:03:08 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Rob Landley <rob@landley.net>, kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: ext2/3: document conditions when reliable operation is possible
+Message-ID: <20090316190308.GE6357@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
+	Rob Landley <rob@landley.net>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+	linux-ext4@vger.kernel.org
+References: <20090312092114.GC6949@elf.ucw.cz> <200903121413.04434.rob@landley.net> <20090316123051.GJ2405@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090312183603.GC3352@redhat.com>
+In-Reply-To: <20090316123051.GJ2405@elf.ucw.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+On Mon, Mar 16, 2009 at 01:30:51PM +0100, Pavel Machek wrote:
+> Updated version here.
+> 
+> On Thu 2009-03-12 14:13:03, Rob Landley wrote:
+> > On Thursday 12 March 2009 04:21:14 Pavel Machek wrote:
+> > > Not all block devices are suitable for all filesystems. In fact, some
+> > > block devices are so broken that reliable operation is pretty much
+> > > impossible. Document stuff ext2/ext3 needs for reliable operation.
 
-ok, below is a re-spun patch 2/2 which converts to the TRACE_EVENT
-format.
+Some of what is here are bugs, and some are legitimate long-term
+interfaces (for example, the question of losing I/O errors when two
+processes are writing to the same file, or to a directory entry, and
+errors aren't or in some cases, can't, be reflected back to userspace).
 
-thanks,
+I'm a little concerned that some of this reads a bit too much like a
+rant (and I know Pavel was very frustrated when he tried to use a
+flash card with a sucky flash card socket) and it will get used the
+wrong way by apoligists, because it mixes areas where "we suck, we
+should do better", which a re bug reports, and "Posix or the
+underlying block device layer makes it hard", and simply states them
+as fundamental design requirements, when that's probably not true.
 
--Jason
+There's a lot of work that we could do to make I/O errors get better
+reflected to userspace by fsync().  So state things as bald
+requirements I think goes a little too far IMHO.  We can surely do
+better.
 
 
-Signed-off-by: Jason Baron <jbaron@redhat.com>
+> diff --git a/Documentation/filesystems/expectations.txt b/Documentation/filesystems/expectations.txt
+> new file mode 100644
+> index 0000000..710d119
+> --- /dev/null
+> +++ b/Documentation/filesystems/expectations.txt
+> +
+> +Write errors not allowed (NO-WRITE-ERRORS)
+> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> +
+> +Writes to media never fail. Even if disk returns error condition
+> +during write, filesystems can't handle that correctly, because success
+> +on fsync was already returned when data hit the journal.
 
----
+The last half of this sentence "because success on fsync was already
+returned when data hit the journal", obviously doesn't apply to all
+filesystems, since some filesystems, like ext2, don't journal data.
+Even for ext3, it only applies in the case of data=journal mode.  
 
- include/trace/irq_event_types.h |   36 ++++++++++++++++++++++++++++++++++++
- kernel/softirq.c                |    7 ++++++-
- 2 files changed, 42 insertions(+), 1 deletions(-)
+There are other issues here, such as fsync() only reports an I/O
+problem to one caller, and in some cases I/O errors aren't propagated
+up the storage stack.  The latter is clearly just a bug that should be
+fixed; the former is more of an interface limitation.  But you don't
+talk about in this section, and I think it would be good to have a
+more extended discussion about I/O errors when writing data blocks,
+and I/O errors writing metadata blocks, etc.
 
 
-diff --git a/include/trace/irq_event_types.h b/include/trace/irq_event_types.h
-index 214bb92..de1f2a9 100644
---- a/include/trace/irq_event_types.h
-+++ b/include/trace/irq_event_types.h
-@@ -40,4 +40,40 @@ TRACE_EVENT(irq_handler_exit,
- 		  __entry->irq, __entry->ret ? "handled" : "unhandled")
- );
- 
-+TRACE_EVENT(softirq_action_entry,
-+
-+	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-+
-+	TP_ARGS(h, vec),
-+
-+	TP_STRUCT__entry(
-+		__array(	char,	softirq_name,	MAX_SOFTIRQ_NAME_LEN )
-+	),
-+
-+	TP_fast_assign(
-+		memcpy(__entry->softirq_name, softirq_to_name[h-vec],
-+			MAX_SOFTIRQ_NAME_LEN);
-+	),
-+
-+	TP_printk("softirq entry: %s", __entry->softirq_name)
-+);
-+
-+TRACE_EVENT(softirq_action_exit,
-+
-+	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-+
-+	TP_ARGS(h, vec),
-+
-+	TP_STRUCT__entry(
-+		__array(	char,	softirq_name,	MAX_SOFTIRQ_NAME_LEN )
-+	),
-+
-+	TP_fast_assign(
-+		memcpy(__entry->softirq_name, softirq_to_name[h-vec],
-+			MAX_SOFTIRQ_NAME_LEN);
-+	),
-+
-+	TP_printk("softirq exit: %s", __entry->softirq_name)
-+);
-+
- #undef TRACE_SYSTEM
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 8f3ae57..5e96c77 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -24,6 +24,7 @@
- #include <linux/ftrace.h>
- #include <linux/smp.h>
- #include <linux/tick.h>
-+#include <trace/irq.h>
- 
- #include <asm/irq.h>
- /*
-@@ -185,6 +186,9 @@ EXPORT_SYMBOL(local_bh_enable_ip);
-  */
- #define MAX_SOFTIRQ_RESTART 10
- 
-+DEFINE_TRACE(softirq_action_entry);
-+DEFINE_TRACE(softirq_action_exit);
-+
- asmlinkage void __do_softirq(void)
- {
- 	struct softirq_action *h;
-@@ -211,8 +215,9 @@ restart:
- 		if (pending & 1) {
- 			int prev_count = preempt_count();
- 
-+			trace_softirq_action_entry(h, softirq_vec);
- 			h->action(h);
--
-+			trace_softirq_action_exit(h, softirq_vec);
- 			if (unlikely(prev_count != preempt_count())) {
- 				printk(KERN_ERR "huh, entered softirq %td %s %p"
- 				       "with preempt_count %08x,"
+> +
+> +Sector writes are atomic (ATOMIC-SECTORS)
+> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> +
+> +Either whole sector is correctly written or nothing is written during
+> +powerfail.
+
+This requirement is not quite the same as what you discuss below.
+
+> +
+> +	Unfortunately, none of the cheap USB/SD flash cards I've seen
+> +	do behave like this, and are thus unsuitable for all Linux
+> +	filesystems I know.
+> +
+> +		An inherent problem with using flash as a normal block
+> +		device is that the flash erase size is bigger than
+> +		most filesystem sector sizes.  So when you request a
+> +		write, it may erase and rewrite some 64k, 128k, or
+> +		even a couple megabytes on the really _big_ ones.
+> +
+> +		If you lose power in the middle of that, filesystem
+> +		won't notice that data in the "sectors" _around_ the
+> +		one your were trying to write to got trashed.
+
+The characteristic you descrive here is not an issue about whether
+the whole sector is either written or nothing happens to the data ---
+but rather, or at least in addition to that, there is also the issue
+that when a there is a flash card failure --- particularly one caused
+by a sucky flash card reader design causing the SD card to disconnect
+from the laptop in the middle of a write --- there may be "collateral
+damange"; that is, in addition to corrupting sector being writen,
+adjacent sectors might also end up getting list as an unfortunate side
+effect.
+
+So there are actually two desirable properties for a storage system to
+have; one is "don't damage the old data on a failed write"; and the
+other is "don't cause collateral damage to adjacent sectors on a
+failed write".
+
+> +	Because RAM tends to fail faster than rest of system during 
+> +	powerfail, special hw killing DMA transfers may be necessary;
+> +	otherwise, disks may write garbage during powerfail.
+> +	Not sure how common that problem is on generic PC machines.
+
+This problem is still relatively common, from what I can tell.  And
+ext3 handles this surprisingly well at least in the catastrophic case
+of garbage getting written into the inode table, since the journal
+replay often will "repair" the garbage that was written into the
+filesystem metadata blocks.  It won't do a bit of good for the data
+blocks, of course (unless you are using data=journal mode).  But this
+means that in fact, ext3 is more resistant to suriving failures to the
+first problem (powerfail while writing can damage old data on a failed
+write) but fortunately, hard drives generally don't cause collateral
+damage on a failed write.  Of course, there are some spectaular
+exemption to this rule --- a physical shock which causes the head to
+slam into a surface moving at 7200rpm can throw a lot of debris into
+the hard drive enclosure, causing loss to adjacent sectors.
+
+    	       		  	       	  - Ted
