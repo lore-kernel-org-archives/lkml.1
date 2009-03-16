@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbZCPQEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbZCPQEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758058AbZCPQEU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 12:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbZCPQEI
+	id S1758134AbZCPQEe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 12:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbZCPQEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 12:04:08 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:47594 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754857AbZCPQEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 12:04:07 -0400
-Date: Mon, 16 Mar 2009 17:03:57 +0100
-From: Jan Kasprzak <kas@fi.muni.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH] drivers/char/mxser.c: Fix reference counting
-Message-ID: <20090316160357.GZ7301@fi.muni.cz>
-References: <20090316154817.GX7301@fi.muni.cz> <49BE77E7.5030107@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49BE77E7.5030107@gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-Muni-Spam-TestIP: 147.251.48.3
-X-Muni-Envelope-From: kas@fi.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 16 Mar 2009 17:03:59 +0100 (CET)
+	Mon, 16 Mar 2009 12:04:15 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53721 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756939AbZCPQEO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 12:04:14 -0400
+Date: Mon, 16 Mar 2009 12:04:10 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: akataria@vmware.com, the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: VMI broken on tip/master...
+In-Reply-To: <1237072800.8939.813.camel@laptop>
+Message-ID: <alpine.DEB.2.00.0903161200320.26431@gandalf.stny.rr.com>
+References: <1236966968.14680.15.camel@alok-dev1> <1237072800.8939.813.camel@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-: On 16.3.2009 16:48, Jan Kasprzak wrote:
-: >In drivers/char/mxser.c:mxser_check_modem_status() there is a call
-: >to tty_port_tty_get without a corresponding tty_put() call. This causes
-: >the device to return -EIO on the second open(2) call.
-: 
-: I was faster :P:
-: http://lkml.org/lkml/2009/3/16/159
 
-	OK, sorry for not checking out lkml first :-)
+On Sun, 15 Mar 2009, Peter Zijlstra wrote:
+> 
+> Looking at arch/x86/include/asm/paravirt.h (god I wish paravirt would go
+> away, not only does it screw over ctags, it also hurts my brain), it
+> appears its playing icky games with primitives like
+> raw_local_irq_disable():
+> 
+> static inline void raw_local_irq_disable(void)
+> {
+>         asm volatile(paravirt_alt(PARAVIRT_CALL)
+>                      :
+>                      : paravirt_type(pv_irq_ops.irq_disable),
+>                        paravirt_clobber(CLBR_EAX)
+>                      : "memory", "eax", "cc");
+> }
+> 
+> So what was supposed to be a simple op, now gets expanded into god knows
+> what, and might lead to tracer recursion or something.
 
--Yenya
+It should only blow up if a guest is using tracing, and the code to call
+the hypervisor is also being traced.
 
--- 
-| Jan "Yenya" Kasprzak  <kas at {fi.muni.cz - work | yenya.net - private}> |
-| GPG: ID 1024/D3498839      Fingerprint 0D99A7FB206605D7 8B35FCDE05B18A5E |
-| http://www.fi.muni.cz/~kas/    Journal: http://www.fi.muni.cz/~kas/blog/ |
->>  If you find yourself arguing with Alan Cox, you’re _probably_ wrong.  <<
->>     --James Morris in "How and Why You Should Become a Kernel Hacker"  <<
+> 
+> Maybe a simple notrace annotation somewhere in that paravirt code is all
+> it takes, who knows.
+> 
+> Steve, you've been known to work on virt stuff too, happen to have a
+> bright idea? :-)
+
+I have noticed that some paravirt ops calls (like this 
+raw_local_irq_disable) does not get inlined. It sometimes gets made into a 
+function.  This would cause raw_local_irq_disable to actually be traced!
+
+One answer is to use "always_inline" or I can dig out a patch that makes 
+inline also include "notrace".
+
+-- Steve
+
