@@ -1,55 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760762AbZCPV2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761661AbZCPVb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760762AbZCPV2D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 17:28:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756693AbZCPV1x
+	id S1761661AbZCPVb5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 17:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757964AbZCPVbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 17:27:53 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52549 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbZCPV1w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 17:27:52 -0400
-Date: Mon, 16 Mar 2009 22:30:36 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Mack <daniel@caiaq.de>, vbotka@suse.cz, mmarek@suse.cz
-Cc: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] lis3: solve dependency between core and ACPI
-Message-ID: <20090316213036.GB12308@elf.ucw.cz>
-References: <49ABB22F.7040508@tremplin-utc.net> <1236004310-29196-1-git-send-email-daniel@caiaq.de> <1236004310-29196-2-git-send-email-daniel@caiaq.de> <1236004310-29196-3-git-send-email-daniel@caiaq.de> <1236004310-29196-4-git-send-email-daniel@caiaq.de> <49AD8B0A.90901@tremplin-utc.net> <20090304014350.GC5165@buzzloop.caiaq.de> <20090316190954.GK16052@buzzloop.caiaq.de>
+	Mon, 16 Mar 2009 17:31:48 -0400
+Received: from gw.goop.org ([64.81.55.164]:33598 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753374AbZCPVbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 17:31:46 -0400
+Message-ID: <49BEC53F.20200@goop.org>
+Date: Mon, 16 Mar 2009 14:31:43 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090316190954.GK16052@buzzloop.caiaq.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org> <49BEB5FE.7050601@zytor.com> <49BEBD98.3090905@goop.org> <49BEC143.6030104@zytor.com>
+In-Reply-To: <49BEC143.6030104@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+H. Peter Anvin wrote:
+> Or simplified:
+>
+> PAGE_TABLE_SIZE(((1 << 32)-PAGE_OFFSET) >> PAGE_SHIFT) << PAGE_SHIFT
 
-> > > > This solves the dependency between lis3lv02d.[ch] and ACPI specific
-> > > > methods. It introduces a ->bus_priv pointer to the device struct which
-> > > > is casted to 'struct acpi_device' in the ACIP layer. Changed hp_accel.c
-> > > > accordingly.
-> > > > 
-> > > > This also moves the read_8() and read_16() routines from hp_accel.c to
-> > > > lis3lv02d.c as they are not specific to ACPI.
-> > > Hello,
-> > > I've tried the patch series on my laptop. This particular patch burst
-> > > the driver... need some work :-) The values are not read correctly and
-> > > the IRQ is not detected. See down in the code...
-> > 
-> > Ok, obvious fixes. I'll post a new set of the three topmost patches -
-> > could you test them again, please?
-> 
-> Could anyone test that on hardware which has a lis3 chip? I'd like to
-> avoid missing the next merge window for this :)
+Was worried about 1<<32 overflowing.  Never really sure what gas's type 
+system is.
 
-I no longer have the hardware, Vlado has some. As does HP :-).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+    J
