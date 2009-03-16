@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbZCPRvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759183AbZCPRv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbZCPRvl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 13:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbZCPRvZ
+	id S1759183AbZCPRv4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 13:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755871AbZCPRv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:51:25 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:51137 "EHLO gir.skynet.ie"
+	Mon, 16 Mar 2009 13:51:26 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51124 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754096AbZCPRvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755218AbZCPRvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Mar 2009 13:51:25 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
@@ -20,87 +20,59 @@ Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
        Lin Ming <ming.m.lin@intel.com>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 01/27] Replace __alloc_pages_internal() with __alloc_pages_nodemask()
-Date: Mon, 16 Mar 2009 17:53:15 +0000
-Message-Id: <1237226020-14057-2-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 00/26] Cleanup and optimise the page allocator V4
+Date: Mon, 16 Mar 2009 17:53:14 +0000
+Message-Id: <1237226020-14057-1-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1237226020-14057-1-git-send-email-mel@csn.ul.ie>
-References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__alloc_pages_internal is the core page allocator function but
-essentially it is an alias of __alloc_pages_nodemask. Naming a publicly
-available and exported function "internal" is also a big ugly. This
-patch renames __alloc_pages_internal() to __alloc_pages_nodemask() and
-deletes the old nodemask function.
+Here is V4 of the cleanup and optimisation of the page allocator and it
+should be ready for general testing. The main difference from V3 is that the
+controversial patches have been dropped and I'll revisit them later. Tests
+are currently running to I have exact figures of how things stand on the
+test machines I used but I think this can be considered a merge candidate,
+possibly for 2.6.30 depending on how reviews and wider testing goes.
 
-Warning - This patch renames an exported symbol. No kernel driver is
-affected by external drivers calling __alloc_pages_internal() should
-change the call to __alloc_pages_nodemask() without any alteration of
-parameters.
+Changes since V3
+  o Drop the more controversial patches for now and focus on the "obvious win"
+    material
+  o Add reviewed-by notes
+  o Fix changelog entry to say __rmqueue_fallback instead __rmqueue
+  o Add unlikely() for the clearMlocked check
+  o Change where PGFREE is accounted in free_hot_cold_page() to have symmetry
+    with __free_pages_ok()
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
----
- include/linux/gfp.h |   12 ++----------
- mm/page_alloc.c     |    4 ++--
- 2 files changed, 4 insertions(+), 12 deletions(-)
+Changes since V2
+  o Remove brances by treating watermark flags as array indices
+  o Remove branch by assuming __GFP_HIGH == ALLOC_HIGH
+  o Do not check for compound on every page free
+  o Remove branch by always ensuring the migratetype is known on free
+  o Simplify buffered_rmqueue further
+  o Reintroduce improved version of batched bulk free of pcp pages
+  o Use allocation flags as an index to zone watermarks
+  o Work out __GFP_COLD only once
+  o Reduce the number of times zone stats are updated
+  o Do not dump reserve pages back into the allocator. Instead treat them
+    as MOVABLE so that MIGRATE_RESERVE gets used on the max-order-overlapped
+    boundaries without causing trouble
+  o Allow pages up to PAGE_ALLOC_COSTLY_ORDER to use the per-cpu allocator.
+    order-1 allocations are frequently enough in particular to justify this
+  o Rearrange inlining such that the hot-path is inlined but not in a way
+    that increases the text size of the page allocator
+  o Make the check for needing additional zonelist filtering due to NUMA
+    or cpusets as light as possible
+  o Do not destroy compound pages going to the PCP lists
+  o Delay the merging of buddies until a high-order allocation needs them
+    or anti-fragmentation is being forced to fallback
 
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index dd20cd7..dcf0ab8 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -168,24 +168,16 @@ static inline void arch_alloc_page(struct page *page, int order) { }
- #endif
- 
- struct page *
--__alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
-+__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
- 		       struct zonelist *zonelist, nodemask_t *nodemask);
- 
- static inline struct page *
- __alloc_pages(gfp_t gfp_mask, unsigned int order,
- 		struct zonelist *zonelist)
- {
--	return __alloc_pages_internal(gfp_mask, order, zonelist, NULL);
-+	return __alloc_pages_nodemask(gfp_mask, order, zonelist, NULL);
- }
- 
--static inline struct page *
--__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
--		struct zonelist *zonelist, nodemask_t *nodemask)
--{
--	return __alloc_pages_internal(gfp_mask, order, zonelist, nodemask);
--}
--
--
- static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
- 						unsigned int order)
- {
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 5c44ed4..0671b3f 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1464,7 +1464,7 @@ try_next_zone:
-  * This is the 'heart' of the zoned buddy allocator.
-  */
- struct page *
--__alloc_pages_internal(gfp_t gfp_mask, unsigned int order,
-+__alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
- 			struct zonelist *zonelist, nodemask_t *nodemask)
- {
- 	const gfp_t wait = gfp_mask & __GFP_WAIT;
-@@ -1670,7 +1670,7 @@ nopage:
- got_pg:
- 	return page;
- }
--EXPORT_SYMBOL(__alloc_pages_internal);
-+EXPORT_SYMBOL(__alloc_pages_nodemask);
- 
- /*
-  * Common helper functions.
--- 
-1.5.6.5
-
+Changes since V1
+  o Remove the ifdef CONFIG_CPUSETS from inside get_page_from_freelist()
+  o Use non-lock bit operations for clearing the mlock flag
+  o Factor out alloc_flags calculation so it is only done once (Peter)
+  o Make gfp.h a bit prettier and clear-cut (Peter)
+  o Instead of deleting a debugging check, replace page_count() in the
+    free path with a version that does not check for compound pages (Nick)
+  o Drop the alteration for hot/cold page freeing until we know if it
+    helps or not
