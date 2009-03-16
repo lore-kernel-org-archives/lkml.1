@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758727AbZCPRgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbZCPRh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758727AbZCPRgV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 13:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755818AbZCPRgN
+	id S1758624AbZCPRh2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 13:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbZCPRhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:36:13 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:59027 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753945AbZCPRgM (ORCPT
+	Mon, 16 Mar 2009 13:37:13 -0400
+Received: from mail-qy0-f122.google.com ([209.85.221.122]:44332 "EHLO
+	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753397AbZCPRhL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 13:36:12 -0400
-Date: Mon, 16 Mar 2009 17:36:09 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Alexey Fisher <bug-track@fisher-privat.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: smart cache. ist is possible?
-Message-ID: <20090316173609.GB10814@silver.sucs.org>
-References: <49BD1EB7.6080109@fisher-privat.net> <20090315181315.GA4369@silver.sucs.org> <49BD7BEA.50307@fisher-privat.net> <20090315232614.GA27452@silver.sucs.org> <49BE011D.5080807@fisher-privat.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49BE011D.5080807@fisher-privat.net>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 16 Mar 2009 13:37:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=cOkfVdX7ZsVhrP/KlSPbQkGYTxH2K025sbZPIG3+UVJlLU404NKNmMr9XP8lhyEevB
+         6tRL6LTWEpT2wxHc0aj1UcnBRs7u9xccHDV3h7uSiwGb/lXmlYH/wRrpEs4msqgD1pG8
+         Sdbcnq4xstbyQPYL1/1Er4ar9scgjake8qpjs=
+MIME-Version: 1.0
+In-Reply-To: <49BE7DEF.1060005@zytor.com>
+References: <1235600698-6446-1-git-send-email-matthew@wil.cx>
+	 <yq1hc2iumg9.fsf@sermon.lab.mkp.net> <20090226025043.GJ1363@mit.edu>
+	 <20090226030735.GA16891@parisc-linux.org>
+	 <yq1eixlg4mn.fsf@sermon.lab.mkp.net> <49A6B604.1060702@zytor.com>
+	 <yq1iqmxey1o.fsf@sermon.lab.mkp.net> <49A70379.3050306@zytor.com>
+	 <87f94c370903160751t6de5ed2t40163a6590ba633@mail.gmail.com>
+	 <49BE7DEF.1060005@zytor.com>
+Date: Mon, 16 Mar 2009 13:37:07 -0400
+Message-ID: <87f94c370903161037q52ff5e1nb7512726e58e652c@mail.gmail.com>
+Subject: Re: ATA support for 4k sector size
+From: Greg Freemyer <greg.freemyer@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Matthew Wilcox <matthew@wil.cx>, Theodore Tso <tytso@mit.edu>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sandeen@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 08:34:53AM +0100, Alexey Fisher wrote:
-> 
-> If i read same somefile second time, normally will happen the same. It
-> tries to read block 1 and  this is not it cache, so it will be cached
-> and move block 6 out. ( |1|7|8|9|10| ) So it will complete replace
-> entire cache.
+On Mon, Mar 16, 2009 at 12:27 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Greg Freemyer wrote:
+>> If the reported geometry of these drives was changed to have sectors /
+>> track be a multiple of 8, wouldn't that fix most of the issues.
+>>
+>> ie. If the drive were to report 56 sectors per track, then a
+>> traditional partitioning tool would start the first partition as
+>> sector 56 and a Vista like partitioning tool would place the first
+>> partition at sector 2048.  Both would have the same 4K sector
+>> alignment.
+>>
+>> If my logic is sound, anyway to get this recommendation upstream to
+>> hardware manufacturers.  It seems like an almost trivial change for
+>> them.
+>>
+>> FYI: It sounds to me like partitioning tools should totally drop
+>> efforts to align with cylinders, instead they should start asking what
+>> the unit of atomic read/writes is at the physical layer and if any
+>> offsets are needed to align the partition with the atomic write areas.
+>>
+>> That would fit better for both SSD technology and for this 4K sectors
+>> issue than trying to continue to support cylinders at all.
+>
+> As long as BIOSes played along with it (which some of them may not do --
+> remember the geometry that matters is the one reported by the BIOS)
+> However, it definitely would be a major step in the right direction, as
+> it would let *most* systems Do The Right Thing instead of weirdly
+> misaligning the partitions and trying to cope with that.
+>
+>        -hpa
 
-Yup, that's my understanding (I'm no pro on this stuff though).
-Different cache replacement algorithms will have different behviour
-though (I believe Linux uses some variation on LRU -
-http://linux-mm.org/AdvancedPageReplacement ).
+I'm not intimate with the details, but I would hope most boot loaders
+by now use LBA values to find the boot code, not CHS.
 
-> Or i can say, read somefile and only blocks 6-10 so i can use
-> performance from cache.
+If so the issue becomes the partitioning tools (fdisk etc.) putting
+the partitions at the right place.  Can't those tools bypass the bios
+somehow and ask the drive itself what it's geometry is?
 
-Yup, you could do this but your code would have to have exactly this in
-mind (e.g. skip the first 7 Mbytes THEN read 10 mbytes). There's nothing
-automatic happening in this scenario from the cache's perspective -
-you're just reading less so it (hopefully) doesn't become full and evict
-what you want it to keep.
+>From what I understand Vista has already made the jump and is now
+ignoring CHS and instead just putting the first partition at 1 MiB
+into the drive.  (sector 2048 with 512 byte sectors.)
 
-> Or OS need to get a list of blocks from somefile and list of cached
-> blocks. And check if there is some of them cached. If they are, it
-> should lock the cache, read 1-5 without caching it and read 6-10 from
-> cache. After this unlock the cache. But this is not possible because
-> this operation is to expensive.
-> Is this what you mean?
+Sounds like fdisk and friends should be updated to do the same.
 
-Kinda. More like when you use memory mapped I/O (mmap) you can "lock"
-pieces of the file into ram (and thus have those pieces always in
-cache). See mlock -
-http://opengroup.org/onlinepubs/007908799/xsh/mlock.html . There are
-usually restrictions on just how much memory you can lock etc.
+A bigger issue in my mind is lots of clones, images, etc. are probably
+LBA based today and simply start the first partition at sector 63.
+Thus the hardware vendors will need to have drives that perform well
+with partitions that start at sector 63.  The existing scheme
+described may be as good as it gets for that need.
 
+Also, how are SDD manufacturers handling this.  Their erase blocks
+don't align with partitions that start at sector 63 either I assume?
+
+Greg
 -- 
-Sitsofe | http://sucs.org/~sits/
+Greg Freemyer
+Head of EDD Tape Extraction and Processing team
+Litigation Triage Solutions Specialist
+http://www.linkedin.com/in/gregfreemyer
+First 99 Days Litigation White Paper -
+http://www.norcrossgroup.com/forms/whitepapers/99%20Days%20whitepaper.pdf
+
+The Norcross Group
+The Intersection of Evidence & Technology
+http://www.norcrossgroup.com
