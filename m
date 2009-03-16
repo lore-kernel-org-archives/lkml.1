@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZCPCa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755740AbZCPCar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbZCPCa1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 22:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbZCPC3Q
+	id S1755740AbZCPCar (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 22:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbZCPC3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 15 Mar 2009 22:29:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44275 "EHLO hera.kernel.org"
+Received: from hera.kernel.org ([140.211.167.34]:44271 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752027AbZCPC3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 22:29:14 -0400
+	id S1751901AbZCPC3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 22:29:13 -0400
 From: Tejun Heo <tj@kernel.org>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 04/17] block: merge blk_invoke_request_fn() into __blk_run_queue()
-Date: Mon, 16 Mar 2009 11:28:47 +0900
-Message-Id: <1237170540-19130-5-git-send-email-tj@kernel.org>
+Subject: [PATCH 03/17] ide: use blk_update_request() instead of blk_end_request_callback()
+Date: Mon, 16 Mar 2009 11:28:46 +0900
+Message-Id: <1237170540-19130-4-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1237170540-19130-1-git-send-email-tj@kernel.org>
 References: <1237170540-19130-1-git-send-email-tj@kernel.org>
@@ -23,87 +23,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: merge two subtly different internal functions
-
-__blk_run_queue wraps blk_invoke_request_fn() such that it
-additionally removes plug and bails out early if the queue is empty.
-Both extra operations have their own pending mechanisms and don't
-cause any harm correctness-wise when they are done superflously.
-
-The only user of blk_invoke_request_fn() being blk_start_queue(),
-there isn't much reason to keep both functions around.  Merge
-blk_invoke_request_fn() into __blk_run_queue() and make
-blk_start_queue() use __blk_run_queue() instead.
+blk_end_request_callback() is being phased out in favor of
+blk_update_request().  Switch.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- block/blk-core.c |   35 ++++++++++++++---------------------
- 1 files changed, 14 insertions(+), 21 deletions(-)
+ drivers/ide/ide-cd.c |   16 ++--------------
+ 1 files changed, 2 insertions(+), 14 deletions(-)
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 7b63c9b..95dc76f 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -333,24 +333,6 @@ void blk_unplug(struct request_queue *q)
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index ddfbea4..f825d50 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -748,16 +748,6 @@ int ide_cd_queue_pc(ide_drive_t *drive, const unsigned char *cmd,
+ 	return (flags & REQ_FAILED) ? -EIO : 0;
  }
- EXPORT_SYMBOL(blk_unplug);
  
--static void blk_invoke_request_fn(struct request_queue *q)
+-/*
+- * Called from blk_end_request_callback() after the data of the request is
+- * completed and before the request itself is completed. By returning value '1',
+- * blk_end_request_callback() returns immediately without completing it.
+- */
+-static int cdrom_newpc_intr_dummy_cb(struct request *rq)
 -{
--	if (unlikely(blk_queue_stopped(q)))
--		return;
--
--	/*
--	 * one level of recursion is ok and is much faster than kicking
--	 * the unplug handling
--	 */
--	if (!queue_flag_test_and_set(QUEUE_FLAG_REENTER, q)) {
--		q->request_fn(q);
--		queue_flag_clear(QUEUE_FLAG_REENTER, q);
--	} else {
--		queue_flag_set(QUEUE_FLAG_PLUGGED, q);
--		kblockd_schedule_work(q, &q->unplug_work);
--	}
+-	return 1;
 -}
 -
- /**
-  * blk_start_queue - restart a previously stopped queue
-  * @q:    The &struct request_queue in question
-@@ -365,7 +347,7 @@ void blk_start_queue(struct request_queue *q)
- 	WARN_ON(!irqs_disabled());
- 
- 	queue_flag_clear(QUEUE_FLAG_STOPPED, q);
--	blk_invoke_request_fn(q);
-+	__blk_run_queue(q);
- }
- EXPORT_SYMBOL(blk_start_queue);
- 
-@@ -425,12 +407,23 @@ void __blk_run_queue(struct request_queue *q)
+ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
  {
- 	blk_remove_plug(q);
- 
-+	if (unlikely(blk_queue_stopped(q)))
-+		return;
-+
-+	if (elv_queue_empty(q))
-+		return;
-+
- 	/*
- 	 * Only recurse once to avoid overrunning the stack, let the unplug
- 	 * handling reinvoke the handler shortly if we already got there.
- 	 */
--	if (!elv_queue_empty(q))
--		blk_invoke_request_fn(q);
-+	if (!queue_flag_test_and_set(QUEUE_FLAG_REENTER, q)) {
-+		q->request_fn(q);
-+		queue_flag_clear(QUEUE_FLAG_REENTER, q);
-+	} else {
-+		queue_flag_set(QUEUE_FLAG_PLUGGED, q);
-+		kblockd_schedule_work(q, &q->unplug_work);
-+	}
- }
- EXPORT_SYMBOL(__blk_run_queue);
- 
+ 	ide_hwif_t *hwif = drive->hwif;
+@@ -932,12 +922,10 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+ 			/*
+ 			 * The request can't be completed until DRQ is cleared.
+ 			 * So complete the data, but don't complete the request
+-			 * using the dummy function for the callback feature
+-			 * of blk_end_request_callback().
++			 * using blk_update_request().
+ 			 */
+ 			if (rq->bio)
+-				blk_end_request_callback(rq, 0, blen,
+-						 cdrom_newpc_intr_dummy_cb);
++				blk_update_request(rq, 0, blen);
+ 			else
+ 				rq->data += blen;
+ 		}
 -- 
 1.6.0.2
 
