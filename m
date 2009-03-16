@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761066AbZCPWq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbZCPWuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761066AbZCPWq6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 18:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbZCPWqt
+	id S1756693AbZCPWuc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 18:50:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZCPWuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 18:46:49 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:31063 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753747AbZCPWqs convert rfc822-to-8bit (ORCPT
+	Mon, 16 Mar 2009 18:50:23 -0400
+Received: from mail.fieldses.org ([141.211.133.115]:34516 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753425AbZCPWuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 18:46:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=vn2HLzusfz57pxMeTupAo7B0bPrwI3eXuUniJ2ABT7ZBYdoPCph7XnI2O1KA55ti7s
-         U6djXiCoxBJ9xm1CWgPDjKdoCF+emrRxrdI2QP+7qHgWlxMTFv3RrJclGpwWHoJRJ5Sy
-         fGsn5FNIJTVHg22W011KWvzsJM4ifFqBbeHRE=
+	Mon, 16 Mar 2009 18:50:22 -0400
+Date: Mon, 16 Mar 2009 18:48:48 -0400
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, Igor Zhbanov <izh1979@gmail.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
+       David Howells <dhowells@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       SELinux <selinux@tycho.nsa.gov>
+Subject: Re: =?utf-8?B?0J7RgtCy0LXRgjogVkZTLCBORlMg?=
+	=?utf-8?Q?security_bug=3F_Shoul?=
+	=?utf-8?Q?d?= CAP_MKNOD and CAP_LINUX_IMMUTABLE be added to
+	CAP_FS_MASK?
+Message-ID: <20090316224848.GC17738@fieldses.org>
+References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com> <20090311232356.GP13540@fieldses.org> <20090312161047.GA15209@us.ibm.com> <517f3f820903121321sf6d2014q8165b925d5d44db7@mail.gmail.com> <20090313175848.GB27891@fieldses.org> <f44001920903131137j158c5f76y6a71b58ee964df77@mail.gmail.com> <20090313190002.GA16025@us.ibm.com> <1237227705.1035.93.camel@localhost.localdomain> <20090316184926.GA6729@us.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <49B8AF67.8080309@renesas.com>
-References: <49B8AF67.8080309@renesas.com>
-Date: Mon, 16 Mar 2009 15:46:45 -0700
-X-Google-Sender-Auth: c5d7a78ae0b70ffc
-Message-ID: <e9c3a7c20903161546i5de80305r1b0df1605c7718d8@mail.gmail.com>
-Subject: Re: [PATCH] dmaengine: sh: Add support DMA-Engine driver for DMA of 
-	SuperH
-From: Dan Williams <dan.j.williams@intel.com>
-To: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-Cc: Linux-sh <linux-sh@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       maciej.sosnowski@intel.com, Paul Mundt <lethal@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090316184926.GA6729@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 11, 2009 at 11:44 PM, Nobuhiro Iwamatsu
-<iwamatsu.nobuhiro@renesas.com> wrote:
-> This supports DMA-Engine driver for DMA of SuperH.
-> This supported all DMA channels, and it was tested in SH7722/SH7780.
-> This can not use with SH DMA API and can control this in Kconfig.
->
-> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
-> Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>
-> Cc: Dan Williams <dan.j.williams@intel.com>
-> ---
->  arch/sh/drivers/dma/Kconfig  |   12 +-
->  arch/sh/drivers/dma/Makefile |    3 +-
->  arch/sh/include/asm/dma-sh.h |   11 +
->  drivers/dma/Kconfig          |    9 +
->  drivers/dma/Makefile         |    2 +
->  drivers/dma/shdma.c          |  743 ++++++++++++++++++++++++++++++++++++++++++
->  drivers/dma/shdma.h          |   65 ++++
->  7 files changed, 840 insertions(+), 5 deletions(-)
->  create mode 100644 drivers/dma/shdma.c
->  create mode 100644 drivers/dma/shdma.h
+Seems this isn't entirely obvious in the general case.  In the specific
+case of nfsd, however, this is pretty obvious.  So I'm inclined to
+submit the following now (and leave it to be reverted by a later patch
+if CAP_FS_MASK ends up including CAP_MKNOD, as seems likely).
 
-Hi,
+--b.
 
-I have not finished a full review but one problem jumps out, the use
-of spin_lock_irqsave to protect against channel/descriptor
-manipulations.  The highest level of protection that net_dma and
-async_tx assume is spin_lock_bh.  It seems like the pieces of
-sh_dmae_interrupt() that touch the descriptor can be moved to the
-tasklet, then the locks can be downgraded.
+commit 2ec8f8f0c0005ffe3cf93bbf3d9976de76cf4652
+Author: J. Bruce Fields <bfields@citi.umich.edu>
+Date:   Mon Mar 16 18:34:20 2009 -0400
 
-Your other patch, to set the alignment in dmatest, makes me wonder if
-this engine can handle unaligned accesses?  If it can not then set the
-DMA_PRIVATE capability bit at device registration time to prevent
-net_dma and other "public" clients from using these channels.  Public
-clients assume that there are no alignment constraints.
+    nfsd: nfsd should drop CAP_MKNOD for non-root
+    
+    Since creating a device node is normally an operation requiring special
+    privilege, Igor Zhbanov points out that it is surprising (to say the
+    least) that a client can, for example, create a device node on a
+    filesystem exported with root_squash.
+    
+    So, make sure CAP_MKNOD is among the capabilities dropped when an nfsd
+    thread handles a request from a non-root user.
+    
+    Reported-by: Igor Zhbanov <izh1979@gmail.com>
+    Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 
-Thanks,
-Dan
+diff --git a/include/linux/capability.h b/include/linux/capability.h
+index 02bdb76..7824483 100644
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -393,8 +393,10 @@ struct cpu_vfs_cap_data {
+ # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
+ # define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
+ # define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
+-# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
+-					CAP_FS_MASK_B1 } })
++# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
++					    | CAP_TO_MASK(CAP_SYS_RESOURCE) \
++					    | CAP_TO_MASK(CAP_MKNOD), \
++					    CAP_FS_MASK_B1 } })
+ 
+ #endif /* _KERNEL_CAPABILITY_U32S != 2 */
+ 
