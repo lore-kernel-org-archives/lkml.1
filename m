@@ -1,38 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760345AbZCPS77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761376AbZCPTAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760345AbZCPS77 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbZCPS7u
+	id S1761376AbZCPTAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 15:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbZCPTAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:59:50 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:38045 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790AbZCPS7t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:59:49 -0400
-Date: Mon, 16 Mar 2009 14:57:48 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 18/27] Do not disable interrupts in free_page_mlock()
-In-Reply-To: <1237226020-14057-19-git-send-email-mel@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0903161457290.20024@qirst.com>
-References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie> <1237226020-14057-19-git-send-email-mel@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 16 Mar 2009 15:00:10 -0400
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:60702 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752014AbZCPTAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 15:00:09 -0400
+Message-ID: <49BEA1AD.1090901@krogh.cc>
+Date: Mon, 16 Mar 2009 19:59:57 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: Linux 2.6.29-rc6
+References: <alpine.LFD.2.00.0902222023520.3111@localhost.localdomain>  <49A6FEE2.90700@krogh.cc>  <1f1b08da0902261319k7a60d80xaafc1101facfd2d9@mail.gmail.com>  <49A70B24.6090706@krogh.cc>  <1235685269.6811.11.camel@localhost.localdomain>  <alpine.LFD.2.00.0902262255190.9135@localhost.localdomain>  <1235687483.6811.26.camel@localhost.localdomain>  <49A78C79.304@krogh.cc>  <1235766936.7402.5.camel@localhost.localdomain> <49AD90E2.7050209@krogh.cc>  <1236118969.6068.87.camel@localhost> <49AE9EA4.2080500@krogh.cc>  <49AECA3B.5030503@krogh.cc>  <1236193075.3793.63.camel@jstultz-laptop>  <1236220759.6863.7.camel@localhost.localdomain> <1236221530.6863.9.camel@localhost.localdomain> <49B57F3D.5030008@krogh.cc> <alpine.LFD.2.00.0903141814180.7421@localhost.localdomain> <49BD225C.4070305@krogh.cc> <alpine.LFD.2.00.0903151050070.3131@localhost.localdomain> <49BD4B2D.7000501@krogh.cc> <alpine.LFD.2.00.0903151146550.3131@localhost.localdomain> <49BD5C7C.2060605@krogh.cc>
+In-Reply-To: <49BD5C7C.2060605@krogh.cc>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jesper Krogh wrote:
+> Linus Torvalds wrote:
+>> End result of all this: I'd really like you to try the modified PIT 
+>> frequency code for longer. Also, remember that getting one (or a 
+>> couple) "time reset" messages from ntpd while it's trying to sync up 
+>> is not a problem per se - it can validly take a while to synchronize. 
+>> The problem is literally only if it doesn't synchonize over time at all.
+> 
+> Ok. I'll get it on and report back in 24 hours or so..
 
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+you were right. It works. No resets so far.
 
+-- 
+Jesper
