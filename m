@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760931AbZCPHbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbZCPHcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760931AbZCPHbv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 03:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756722AbZCPHYL
+	id S1760922AbZCPHcO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 03:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758126AbZCPHYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 03:24:11 -0400
-Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35687 "EHLO
+	Mon, 16 Mar 2009 03:24:16 -0400
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35646 "EHLO
 	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757309AbZCPHXE (ORCPT
+	with ESMTP id S1756934AbZCPHWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 03:23:04 -0400
+	Mon, 16 Mar 2009 03:22:55 -0400
 From: "J. R. Okajima" <hooanon05@yahoo.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, "J. R. Okajima" <hooanon05@yahoo.co.jp>
-Subject: [RFC Aufs2 #2 25/28] aufs debug
-Date: Mon, 16 Mar 2009 16:20:37 +0900
-Message-Id: <1237188040-11404-26-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [RFC Aufs2 #2 15/28] aufs policies to select one among multiple writable branches
+Date: Mon, 16 Mar 2009 16:20:27 +0900
+Message-Id: <1237188040-11404-16-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.6.1.284.g5dc13
 In-Reply-To: <1237188040-11404-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1237188040-11404-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -24,24 +24,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 initial commit
-debug print
+when creating/removing an entry and there are multiple writable branches
+specified in aufs, aufs has to decide which branch is the target.
+aufs has several policies for that such as, round-robin, most-free-space
+and so on.
 
 Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/debug.c |  406 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/aufs/debug.h |  245 +++++++++++++++++++++++++++++++++
- fs/aufs/sysrq.c |  106 +++++++++++++++
- 3 files changed, 757 insertions(+), 0 deletions(-)
- create mode 100644 fs/aufs/debug.c
- create mode 100644 fs/aufs/debug.h
- create mode 100644 fs/aufs/sysrq.c
+ fs/aufs/wbr_policy.c |  628 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 628 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/wbr_policy.c
 
-diff --git a/fs/aufs/debug.c b/fs/aufs/debug.c
+diff --git a/fs/aufs/wbr_policy.c b/fs/aufs/wbr_policy.c
 new file mode 100644
-index 0000000..e8bc59c
+index 0000000..436ebfc
 --- /dev/null
-+++ b/fs/aufs/debug.c
-@@ -0,0 +1,406 @@
++++ b/fs/aufs/wbr_policy.c
+@@ -0,0 +1,628 @@
 +/*
 + * Copyright (C) 2005-2009 Junjiro R. Okajima
 + *
@@ -52,765 +51,624 @@ index 0000000..e8bc59c
 + */
 +
 +/*
-+ * debug print functions
++ * policies for selecting one among multiple writable branches
 + */
 +
++#include <linux/statfs.h>
 +#include "aufs.h"
 +
-+atomic_t au_cond = ATOMIC_INIT(0);
-+
-+char *au_plevel = KERN_DEBUG;
-+#define dpri(fmt, arg...) do { \
-+	if (au_debug_test()) \
-+		printk("%s" fmt, au_plevel, ##arg); \
-+} while (0)
-+
-+/* ---------------------------------------------------------------------- */
-+
-+void au_dpri_whlist(struct au_nhash *whlist)
++/* subset of cpup_attr() */
++static noinline_for_stack
++int au_cpdown_attr(struct path *h_path, struct dentry *h_src)
 +{
-+	int i;
-+	struct hlist_head *head;
-+	struct au_vdir_wh *tpos;
-+	struct hlist_node *pos;
++	int err, sbits;
++	struct iattr ia;
++	struct inode *h_isrc;
 +
-+	for (i = 0; i < AuSize_NHASH; i++) {
-+		head = whlist->heads + i;
-+		hlist_for_each_entry(tpos, pos, head, wh_hash)
-+			dpri("b%d, %.*s, %d\n",
-+			     tpos->wh_bindex,
-+			     tpos->wh_str.len, tpos->wh_str.name,
-+			     tpos->wh_str.len);
-+	}
-+}
++	h_isrc = h_src->d_inode;
++	ia.ia_valid = ATTR_FORCE | ATTR_MODE | ATTR_UID | ATTR_GID;
++	ia.ia_mode = h_isrc->i_mode;
++	ia.ia_uid = h_isrc->i_uid;
++	ia.ia_gid = h_isrc->i_gid;
++	sbits = !!(ia.ia_mode & (S_ISUID | S_ISGID));
++	au_cpup_attr_flags(h_path->dentry->d_inode, h_isrc);
++	err = vfsub_sio_notify_change(h_path, &ia);
 +
-+void au_dpri_vdir(struct au_vdir *vdir)
-+{
-+	int i;
-+	union au_vdir_deblk_p p;
-+	unsigned char *o;
-+
-+	if (!vdir || IS_ERR(vdir)) {
-+		dpri("err %ld\n", PTR_ERR(vdir));
-+		return;
++	/* is this nfs only? */
++	if (!err && sbits && au_test_nfs(h_path->dentry->d_sb)) {
++		ia.ia_valid = ATTR_FORCE | ATTR_MODE;
++		ia.ia_mode = h_isrc->i_mode;
++		err = vfsub_sio_notify_change(h_path, &ia);
 +	}
 +
-+	dpri("nblk %d, deblk %p, last{%d, %p}, ver %lu\n",
-+	     vdir->vd_nblk, vdir->vd_deblk,
-+	     vdir->vd_last.i, vdir->vd_last.p.p, vdir->vd_version);
-+	for (i = 0; i < vdir->vd_nblk; i++) {
-+		p.deblk = vdir->vd_deblk[i];
-+		o = p.p;
-+		dpri("[%d]: %p\n", i, o);
-+	}
-+}
-+
-+static int do_pri_inode(aufs_bindex_t bindex, struct inode *inode,
-+			struct dentry *wh)
-+{
-+	char *n = NULL;
-+	int l = 0;
-+
-+	if (!inode || IS_ERR(inode)) {
-+		dpri("i%d: err %ld\n", bindex, PTR_ERR(inode));
-+		return -1;
-+	}
-+
-+	/* the type of i_blocks depends upon CONFIG_LSF */
-+	BUILD_BUG_ON(sizeof(inode->i_blocks) != sizeof(unsigned long)
-+		     && sizeof(inode->i_blocks) != sizeof(u64));
-+	if (wh) {
-+		n = (void *)wh->d_name.name;
-+		l = wh->d_name.len;
-+	}
-+
-+	dpri("i%d: i%lu, %s, cnt %d, nl %u, 0%o, sz %llu, blk %llu,"
-+	     " ct %lld, np %lu, st 0x%lx, f 0x%x, g %x%s%.*s\n",
-+	     bindex,
-+	     inode->i_ino, inode->i_sb ? au_sbtype(inode->i_sb) : "??",
-+	     atomic_read(&inode->i_count), inode->i_nlink, inode->i_mode,
-+	     i_size_read(inode), (unsigned long long)inode->i_blocks,
-+	     (long long)timespec_to_ns(&inode->i_ctime) & 0x0ffff,
-+	     inode->i_mapping ? inode->i_mapping->nrpages : 0,
-+	     inode->i_state, inode->i_flags, inode->i_generation,
-+	     l ? ", wh " : "", l, n);
-+	return 0;
-+}
-+
-+void au_dpri_inode(struct inode *inode)
-+{
-+	struct au_iinfo *iinfo;
-+	aufs_bindex_t bindex;
-+	int err;
-+
-+	err = do_pri_inode(-1, inode, NULL);
-+	if (err || !au_test_aufs(inode->i_sb))
-+		return;
-+
-+	iinfo = au_ii(inode);
-+	if (!iinfo)
-+		return;
-+	dpri("i-1: bstart %d, bend %d, gen %d\n",
-+	     iinfo->ii_bstart, iinfo->ii_bend, au_iigen(inode));
-+	if (iinfo->ii_bstart < 0)
-+		return;
-+	for (bindex = iinfo->ii_bstart; bindex <= iinfo->ii_bend; bindex++)
-+		do_pri_inode(bindex, iinfo->ii_hinode[0 + bindex].hi_inode,
-+			     iinfo->ii_hinode[0 + bindex].hi_whdentry);
-+}
-+
-+static int do_pri_dentry(aufs_bindex_t bindex, struct dentry *dentry)
-+{
-+	struct dentry *wh = NULL;
-+
-+	if (!dentry || IS_ERR(dentry)) {
-+		dpri("d%d: err %ld\n", bindex, PTR_ERR(dentry));
-+		return -1;
-+	}
-+	/* do not call dget_parent() here */
-+	dpri("d%d: %.*s?/%.*s, %s, cnt %d, flags 0x%x\n",
-+	     bindex,
-+	     AuDLNPair(dentry->d_parent), AuDLNPair(dentry),
-+	     dentry->d_sb ? au_sbtype(dentry->d_sb) : "??",
-+	     atomic_read(&dentry->d_count), dentry->d_flags);
-+	if (bindex >= 0 && dentry->d_inode && au_test_aufs(dentry->d_sb)) {
-+		struct au_iinfo *iinfo = au_ii(dentry->d_inode);
-+		if (iinfo)
-+			wh = iinfo->ii_hinode[0 + bindex].hi_whdentry;
-+	}
-+	do_pri_inode(bindex, dentry->d_inode, wh);
-+	return 0;
-+}
-+
-+void au_dpri_dentry(struct dentry *dentry)
-+{
-+	struct au_dinfo *dinfo;
-+	aufs_bindex_t bindex;
-+	int err;
-+
-+	err = do_pri_dentry(-1, dentry);
-+	if (err || !au_test_aufs(dentry->d_sb))
-+		return;
-+
-+	dinfo = au_di(dentry);
-+	if (!dinfo)
-+		return;
-+	dpri("d-1: bstart %d, bend %d, bwh %d, bdiropq %d, gen %d\n",
-+	     dinfo->di_bstart, dinfo->di_bend,
-+	     dinfo->di_bwh, dinfo->di_bdiropq, au_digen(dentry));
-+	if (dinfo->di_bstart < 0)
-+		return;
-+	for (bindex = dinfo->di_bstart; bindex <= dinfo->di_bend; bindex++)
-+		do_pri_dentry(bindex, dinfo->di_hdentry[0 + bindex].hd_dentry);
-+}
-+
-+static int do_pri_file(aufs_bindex_t bindex, struct file *file)
-+{
-+	char a[32];
-+
-+	if (!file || IS_ERR(file)) {
-+		dpri("f%d: err %ld\n", bindex, PTR_ERR(file));
-+		return -1;
-+	}
-+	a[0] = 0;
-+	if (bindex < 0
-+	    && file->f_dentry
-+	    && au_test_aufs(file->f_dentry->d_sb)
-+	    && au_fi(file))
-+		snprintf(a, sizeof(a), ", mmapped %d", au_test_mmapped(file));
-+	dpri("f%d: mode 0x%x, flags 0%o, cnt %ld, pos %llu%s\n",
-+	     bindex, file->f_mode, file->f_flags, (long)file_count(file),
-+	     file->f_pos, a);
-+	if (file->f_dentry)
-+		do_pri_dentry(bindex, file->f_dentry);
-+	return 0;
-+}
-+
-+void au_dpri_file(struct file *file)
-+{
-+	struct au_finfo *finfo;
-+	aufs_bindex_t bindex;
-+	int err;
-+
-+	err = do_pri_file(-1, file);
-+	if (err || !file->f_dentry || !au_test_aufs(file->f_dentry->d_sb))
-+		return;
-+
-+	finfo = au_fi(file);
-+	if (!finfo)
-+		return;
-+	if (finfo->fi_bstart < 0)
-+		return;
-+	for (bindex = finfo->fi_bstart; bindex <= finfo->fi_bend; bindex++) {
-+		struct au_hfile *hf;
-+
-+		hf = finfo->fi_hfile + bindex;
-+		do_pri_file(bindex, hf ? hf->hf_file : NULL);
-+	}
-+}
-+
-+static int do_pri_br(aufs_bindex_t bindex, struct au_branch *br)
-+{
-+	struct vfsmount *mnt;
-+	struct super_block *sb;
-+
-+	if (!br || IS_ERR(br)
-+	    || !(mnt = br->br_mnt) || IS_ERR(mnt)
-+	    || !(sb = mnt->mnt_sb) || IS_ERR(sb)) {
-+		dpri("s%d: err %ld\n", bindex, PTR_ERR(br));
-+		return -1;
-+	}
-+
-+	dpri("s%d: {perm 0x%x, cnt %d, wbr %p}, "
-+	     "%s, dev 0x%02x%02x, flags 0x%lx, cnt(BIAS) %d, active %d, "
-+	     "xino %d\n",
-+	     bindex, br->br_perm, atomic_read(&br->br_count), br->br_wbr,
-+	     au_sbtype(sb), MAJOR(sb->s_dev), MINOR(sb->s_dev),
-+	     sb->s_flags, sb->s_count - S_BIAS,
-+	     atomic_read(&sb->s_active), !!br->br_xino.xi_file);
-+	return 0;
-+}
-+
-+void au_dpri_sb(struct super_block *sb)
-+{
-+	struct au_sbinfo *sbinfo;
-+	aufs_bindex_t bindex;
-+	int err;
-+	/* to reuduce stack size */
-+	struct {
-+		struct vfsmount mnt;
-+		struct au_branch fake;
-+	} *a;
-+
-+	/* this function can be called from magic sysrq */
-+	a = kzalloc(sizeof(*a), GFP_ATOMIC);
-+	if (unlikely(!a)) {
-+		dpri("no memory\n");
-+		return;
-+	}
-+
-+	a->mnt.mnt_sb = sb;
-+	a->fake.br_perm = 0;
-+	a->fake.br_mnt = &a->mnt;
-+	a->fake.br_xino.xi_file = NULL;
-+	atomic_set(&a->fake.br_count, 0);
-+	smp_mb(); /* atomic_set */
-+	err = do_pri_br(-1, &a->fake);
-+	kfree(a);
-+	dpri("dev 0x%x\n", sb->s_dev);
-+	if (err || !au_test_aufs(sb))
-+		return;
-+
-+	sbinfo = au_sbi(sb);
-+	if (!sbinfo)
-+		return;
-+	dpri("nw %d, gen %u, kobj %d\n",
-+	     atomic_read(&sbinfo->si_nowait.nw_len), sbinfo->si_generation,
-+	     atomic_read(&sbinfo->si_kobj.kref.refcount));
-+	for (bindex = 0; bindex <= sbinfo->si_bend; bindex++)
-+		do_pri_br(bindex, sbinfo->si_branch[0 + bindex]);
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+void au_dbg_sleep_jiffy(int jiffy)
-+{
-+	while (jiffy)
-+		jiffy = schedule_timeout_uninterruptible(jiffy);
-+}
-+
-+void au_dbg_iattr(struct iattr *ia)
-+{
-+#define AuBit(name)	if (ia->ia_valid & ATTR_ ## name) \
-+				dpri(#name "\n")
-+	AuBit(MODE);
-+	AuBit(UID);
-+	AuBit(GID);
-+	AuBit(SIZE);
-+	AuBit(ATIME);
-+	AuBit(MTIME);
-+	AuBit(CTIME);
-+	AuBit(ATIME_SET);
-+	AuBit(MTIME_SET);
-+	AuBit(FORCE);
-+	AuBit(ATTR_FLAG);
-+	AuBit(KILL_SUID);
-+	AuBit(KILL_SGID);
-+	AuBit(FILE);
-+	AuBit(KILL_PRIV);
-+	AuBit(OPEN);
-+	AuBit(TIMES_SET);
-+#undef	AuBit
-+	dpri("ia_file %p\n", ia->ia_file);
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+void au_dbg_verify_dir_parent(struct dentry *dentry, unsigned int sigen)
-+{
-+	struct dentry *parent;
-+
-+	parent = dget_parent(dentry);
-+	AuDebugOn(!S_ISDIR(dentry->d_inode->i_mode)
-+		  || IS_ROOT(dentry)
-+		  || au_digen(parent) != sigen);
-+	dput(parent);
-+}
-+
-+void au_dbg_verify_nondir_parent(struct dentry *dentry, unsigned int sigen)
-+{
-+	struct dentry *parent;
-+
-+	parent = dget_parent(dentry);
-+	AuDebugOn(S_ISDIR(dentry->d_inode->i_mode)
-+		  || au_digen(parent) != sigen);
-+	dput(parent);
-+}
-+
-+void au_dbg_verify_gen(struct dentry *parent, unsigned int sigen)
-+{
-+	int err, i, j;
-+	struct au_dcsub_pages dpages;
-+	struct au_dpage *dpage;
-+	struct dentry **dentries;
-+
-+	err = au_dpages_init(&dpages, GFP_NOFS);
-+	AuDebugOn(err);
-+	err = au_dcsub_pages_rev(&dpages, parent, /*do_include*/1, NULL, NULL);
-+	AuDebugOn(err);
-+	for (i = dpages.ndpage - 1; !err && i >= 0; i--) {
-+		dpage = dpages.dpages + i;
-+		dentries = dpage->dentries;
-+		for (j = dpage->ndentry - 1; !err && j >= 0; j--)
-+			AuDebugOn(au_digen(dentries[j]) != sigen);
-+	}
-+	au_dpages_free(&dpages);
-+}
-+
-+void au_dbg_verify_hf(struct au_finfo *finfo)
-+{
-+	struct au_hfile *hf;
-+	aufs_bindex_t bend, bindex;
-+
-+	if (finfo->fi_bstart >= 0) {
-+		bend = finfo->fi_bend;
-+		for (bindex = finfo->fi_bstart; bindex <= bend; bindex++) {
-+			hf = finfo->fi_hfile + bindex;
-+			AuDebugOn(hf->hf_file || hf->hf_br);
-+		}
-+	}
-+}
-+
-+void au_dbg_verify_kthread(void)
-+{
-+	if (au_test_wkq(current)) {
-+		au_dbg_blocked();
-+		BUG();
-+	}
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+void au_debug_sbinfo_init(struct au_sbinfo *sbinfo __maybe_unused)
-+{
-+#ifdef AuForceNoPlink
-+	au_opt_clr(sbinfo->si_mntflags, PLINK);
-+#endif
-+#ifdef AuForceNoXino
-+	au_opt_clr(sbinfo->si_mntflags, XINO);
-+#endif
-+#ifdef AuForceNoRefrof
-+	au_opt_clr(sbinfo->si_mntflags, REFROF);
-+#endif
-+#ifdef AuForceHinotify
-+	au_opt_set_udba(sbinfo->si_mntflags, UDBA_HINOTIFY);
-+#endif
-+}
-+
-+int __init au_debug_init(void)
-+{
-+	aufs_bindex_t bindex;
-+	struct au_vdir_destr destr;
-+
-+	bindex = -1;
-+	AuDebugOn(bindex >= 0);
-+
-+	destr.len = -1;
-+	AuDebugOn(destr.len < NAME_MAX);
-+
-+#ifdef CONFIG_4KSTACKS
-+	AuWarn("CONFIG_4KSTACKS is defined.\n");
-+#endif
-+
-+#ifdef AuForceNoBrs
-+	sysaufs_brs = 0;
-+#endif
-+
-+	return 0;
-+}
-diff --git a/fs/aufs/debug.h b/fs/aufs/debug.h
-new file mode 100644
-index 0000000..0b377a8
---- /dev/null
-+++ b/fs/aufs/debug.h
-@@ -0,0 +1,245 @@
-+/*
-+ * Copyright (C) 2005-2009 Junjiro R. Okajima
-+ *
-+ * This program, aufs is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+/*
-+ * debug print functions
-+ */
-+
-+#ifndef __AUFS_DEBUG_H__
-+#define __AUFS_DEBUG_H__
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/delay.h>
-+#include <linux/fs.h>
-+#include <linux/kd.h>
-+#include <linux/vt_kern.h>
-+#include <linux/sysrq.h>
-+#include <linux/aufs_type.h>
-+
-+#ifdef CONFIG_AUFS_DEBUG
-+#define AuDebugOn(a)		BUG_ON(a)
-+extern atomic_t au_cond;
-+static inline void au_debug(int n)
-+{
-+	atomic_set(&au_cond, n);
-+	smp_mb();
-+}
-+
-+static inline int au_debug_test(void)
-+{
-+	int ret;
-+
-+	ret = atomic_read(&au_cond);
-+	smp_mb();
-+	return ret;
-+}
-+#else
-+#define AuDebugOn(a)		do {} while (0)
-+#define au_debug()		do {} while (0)
-+static inline int au_debug_test(void)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_AUFS_DEBUG */
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* debug print */
-+
-+#define AuDpri(lvl, fmt, arg...) \
-+	printk(lvl AUFS_NAME " %s:%d:%s[%d]: " fmt, \
-+	       __func__, __LINE__, current->comm, current->pid, ##arg)
-+#define AuDbg(fmt, arg...) do { \
-+	if (au_debug_test()) \
-+		AuDpri(KERN_DEBUG, fmt, ##arg); \
-+} while (0)
-+#define AuLabel(l) 		AuDbg(#l "\n")
-+#define AuInfo(fmt, arg...)	AuDpri(KERN_INFO, fmt, ##arg)
-+#define AuWarn(fmt, arg...)	AuDpri(KERN_WARNING, fmt, ##arg)
-+#define AuErr(fmt, arg...)	AuDpri(KERN_ERR, fmt, ##arg)
-+#define AuIOErr(fmt, arg...)	AuErr("I/O Error, " fmt, ##arg)
-+#define AuWarn1(fmt, arg...) do { \
-+	static unsigned char _c; \
-+	if (!_c++) \
-+		AuWarn(fmt, ##arg); \
-+} while (0)
-+
-+#define AuErr1(fmt, arg...) do { \
-+	static unsigned char _c; \
-+	if (!_c++) \
-+		AuErr(fmt, ##arg); \
-+} while (0)
-+
-+#define AuIOErr1(fmt, arg...) do { \
-+	static unsigned char _c; \
-+	if (!_c++) \
-+		AuIOErr(fmt, ##arg); \
-+} while (0)
-+
-+#define AuUnsupportMsg	"This operation is not supported." \
-+			" Please report this application to aufs-users ML."
-+#define AuUnsupport(fmt, args...) do { \
-+	AuErr(AuUnsupportMsg "\n" fmt, ##args); \
-+	dump_stack(); \
-+} while (0)
-+
-+#define AuTraceErr(e) do { \
-+	if (unlikely((e) < 0)) \
-+		AuDbg("err %d\n", (int)(e)); \
-+} while (0)
-+
-+#define AuTraceErrPtr(p) do { \
-+	if (IS_ERR(p)) \
-+		AuDbg("err %ld\n", PTR_ERR(p)); \
-+} while (0)
-+
-+/* dirty macros for debug print, use with "%.*s" and caution */
-+#define AuLNPair(qstr)		(qstr)->len, (qstr)->name
-+#define AuDLNPair(d)		AuLNPair(&(d)->d_name)
-+
-+/* ---------------------------------------------------------------------- */
-+
-+struct au_sbinfo;
-+struct au_finfo;
-+#ifdef CONFIG_AUFS_DEBUG
-+extern char *au_plevel;
-+struct au_nhash;
-+void au_dpri_whlist(struct au_nhash *whlist);
-+struct au_vdir;
-+void au_dpri_vdir(struct au_vdir *vdir);
-+void au_dpri_inode(struct inode *inode);
-+void au_dpri_dentry(struct dentry *dentry);
-+void au_dpri_file(struct file *filp);
-+void au_dpri_sb(struct super_block *sb);
-+
-+void au_dbg_sleep_jiffy(int jiffy);
-+void au_dbg_iattr(struct iattr *ia);
-+
-+void au_dbg_verify_dir_parent(struct dentry *dentry, unsigned int sigen);
-+void au_dbg_verify_nondir_parent(struct dentry *dentry, unsigned int sigen);
-+void au_dbg_verify_gen(struct dentry *parent, unsigned int sigen);
-+void au_dbg_verify_hf(struct au_finfo *finfo);
-+void au_dbg_verify_kthread(void);
-+
-+int __init au_debug_init(void);
-+void au_debug_sbinfo_init(struct au_sbinfo *sbinfo);
-+#define AuDbgWhlist(w) do { \
-+	AuDbg(#w "\n"); \
-+	au_dpri_whlist(w); \
-+} while (0)
-+
-+#define AuDbgVdir(v) do { \
-+	AuDbg(#v "\n"); \
-+	au_dpri_vdir(v); \
-+} while (0)
-+
-+#define AuDbgInode(i) do { \
-+	AuDbg(#i "\n"); \
-+	au_dpri_inode(i); \
-+} while (0)
-+
-+#define AuDbgDentry(d) do { \
-+	AuDbg(#d "\n"); \
-+	au_dpri_dentry(d); \
-+} while (0)
-+
-+#define AuDbgFile(f) do { \
-+	AuDbg(#f "\n"); \
-+	au_dpri_file(f); \
-+} while (0)
-+
-+#define AuDbgSb(sb) do { \
-+	AuDbg(#sb "\n"); \
-+	au_dpri_sb(sb); \
-+} while (0)
-+
-+#define AuDbgSleep(sec) do { \
-+	AuDbg("sleep %d sec\n", sec); \
-+	ssleep(sec); \
-+} while (0)
-+
-+#define AuDbgSleepJiffy(jiffy) do { \
-+	AuDbg("sleep %d jiffies\n", jiffy); \
-+	au_dbg_sleep_jiffy(jiffy); \
-+} while (0)
-+
-+#define AuDbgIAttr(ia) do { \
-+	AuDbg("ia_valid 0x%x\n", (ia)->ia_valid); \
-+	au_dbg_iattr(ia); \
-+} while (0)
-+#else
-+static inline void au_dbg_verify_dir_parent(struct dentry *dentry,
-+					    unsigned int sigen)
-+{
-+	/* empty */
-+}
-+static inline void au_dbg_verify_nondir_parent(struct dentry *dentry,
-+					   unsigned int sigen)
-+{
-+	/* empty */
-+}
-+static inline void au_dbg_verify_gen(struct dentry *parent, unsigned int sigen)
-+{
-+	/* empty */
-+}
-+static inline void au_dbg_verify_hf(struct au_finfo *finfo)
-+{
-+	/* empty */
-+}
-+static inline void au_dbg_verify_kthread(void)
-+{
-+	/* empty */
-+}
-+
-+static inline int au_debug_init(void)
-+{
-+	return 0;
-+}
-+static inline void au_debug_sbinfo_init(struct au_sbinfo *sbinfo)
-+{
-+	/* empty */
-+}
-+#define AuDbgWhlist(w)		do {} while (0)
-+#define AuDbgVdir(v)		do {} while (0)
-+#define AuDbgInode(i)		do {} while (0)
-+#define AuDbgDentry(d)		do {} while (0)
-+#define AuDbgFile(f)		do {} while (0)
-+#define AuDbgSb(sb)		do {} while (0)
-+#define AuDbgSleep(sec)		do {} while (0)
-+#define AuDbgSleepJiffy(jiffy)	do {} while (0)
-+#define AuDbgIAttr(ia)		do {} while (0)
-+#endif /* CONFIG_AUFS_DEBUG */
-+
-+/* ---------------------------------------------------------------------- */
-+
-+#ifdef CONFIG_AUFS_MAGIC_SYSRQ
-+int __init au_sysrq_init(void);
-+void au_sysrq_fin(void);
-+
-+#ifdef CONFIG_HW_CONSOLE
-+#define au_dbg_blocked() do { \
-+	WARN_ON(1); \
-+	handle_sysrq('w', vc_cons[fg_console].d->vc_tty); \
-+} while (0)
-+#else
-+#define au_dbg_blocked()	do {} while (0)
-+#endif
-+
-+#else
-+static inline int au_sysrq_init(void)
-+{
-+	return 0;
-+}
-+#define au_sysrq_fin()		do {} while (0)
-+#define au_dbg_blocked()	do {} while (0)
-+#endif /* CONFIG_AUFS_MAGIC_SYSRQ */
-+
-+#endif /* __KERNEL__ */
-+#endif /* __AUFS_DEBUG_H__ */
-diff --git a/fs/aufs/sysrq.c b/fs/aufs/sysrq.c
-new file mode 100644
-index 0000000..419ff2c
---- /dev/null
-+++ b/fs/aufs/sysrq.c
-@@ -0,0 +1,106 @@
-+/*
-+ * Copyright (C) 2005-2009 Junjiro R. Okajima
-+ *
-+ * This program, aufs is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+/*
-+ * magic sysrq hanlder
-+ */
-+
-+#include <linux/fs.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+/* #include <linux/sysrq.h> */
-+#include "aufs.h"
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static void sysrq_sb(struct super_block *sb)
-+{
-+	char *plevel;
-+	struct au_sbinfo *sbinfo;
-+	struct file *file;
-+
-+	plevel = au_plevel;
-+	au_plevel = KERN_WARNING;
-+	au_debug(1);
-+
-+	sbinfo = au_sbi(sb);
-+	pr_warning("si=%lx\n", sysaufs_si_id(sbinfo));
-+	pr_warning(AUFS_NAME ": superblock\n");
-+	au_dpri_sb(sb);
-+	pr_warning(AUFS_NAME ": root dentry\n");
-+	au_dpri_dentry(sb->s_root);
-+	pr_warning(AUFS_NAME ": root inode\n");
-+	au_dpri_inode(sb->s_root->d_inode);
-+#if 0
-+	struct inode *i;
-+	pr_warning(AUFS_NAME ": isolated inode\n");
-+	list_for_each_entry(i, &sb->s_inodes, i_sb_list)
-+		if (list_empty(&i->i_dentry))
-+			au_dpri_inode(i);
-+#endif
-+	pr_warning(AUFS_NAME ": files\n");
-+	list_for_each_entry(file, &sb->s_files, f_u.fu_list)
-+		if (!special_file(file->f_dentry->d_inode->i_mode))
-+			au_dpri_file(file);
-+
-+	au_plevel = plevel;
-+	au_debug(0);
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* module parameter */
-+static char *aufs_sysrq_key = "a";
-+module_param_named(sysrq, aufs_sysrq_key, charp, S_IRUGO);
-+MODULE_PARM_DESC(sysrq, "MagicSysRq key for " AUFS_NAME);
-+
-+static void au_sysrq(int key __maybe_unused,
-+		     struct tty_struct *tty __maybe_unused)
-+{
-+	struct kobject *kobj;
-+	struct au_sbinfo *sbinfo;
-+
-+	/* spin_lock(&sysaufs_ket->list_lock); */
-+	list_for_each_entry(kobj, &sysaufs_ket->list, entry) {
-+		sbinfo = container_of(kobj, struct au_sbinfo, si_kobj);
-+		sysrq_sb(sbinfo->si_sb);
-+	}
-+	/* spin_unlock(&sysaufs_ket->list_lock); */
-+}
-+
-+static struct sysrq_key_op au_sysrq_op = {
-+	.handler	= au_sysrq,
-+	.help_msg	= "Aufs",
-+	.action_msg	= "Aufs",
-+	.enable_mask	= SYSRQ_ENABLE_DUMP
-+};
-+
-+/* ---------------------------------------------------------------------- */
-+
-+int __init au_sysrq_init(void)
-+{
-+	int err;
-+	char key;
-+
-+	err = -1;
-+	key = *aufs_sysrq_key;
-+	if ('a' <= key && key <= 'z')
-+		err = register_sysrq_key(key, &au_sysrq_op);
-+	if (unlikely(err))
-+		AuErr("err %d, sysrq=%c\n", err, key);
 +	return err;
 +}
 +
-+void au_sysrq_fin(void)
++#define AuCpdown_PARENT_OPQ	1
++#define AuCpdown_WHED		(1 << 1)
++#define AuCpdown_MADE_DIR	(1 << 2)
++#define AuCpdown_DIROPQ		(1 << 3)
++#define au_ftest_cpdown(flags, name)	((flags) & AuCpdown_##name)
++#define au_fset_cpdown(flags, name)	{ (flags) |= AuCpdown_##name; }
++#define au_fclr_cpdown(flags, name)	{ (flags) &= ~AuCpdown_##name; }
++
++struct au_cpdown_dir_args {
++	struct dentry *parent;
++	unsigned int flags;
++};
++
++static int au_cpdown_dir_opq(struct dentry *dentry, aufs_bindex_t bdst,
++			     struct au_cpdown_dir_args *a)
 +{
 +	int err;
-+	err = unregister_sysrq_key(*aufs_sysrq_key, &au_sysrq_op);
-+	if (unlikely(err))
-+		AuErr("err %d (ignored)\n", err);
++	struct dentry *opq_dentry;
++
++	opq_dentry = au_diropq_create(dentry, bdst);
++	err = PTR_ERR(opq_dentry);
++	if (IS_ERR(opq_dentry))
++		goto out;
++	dput(opq_dentry);
++	au_fset_cpdown(a->flags, DIROPQ);
++
++ out:
++	return err;
 +}
++
++static int au_cpdown_dir_wh(struct dentry *dentry, struct dentry *h_parent,
++			    struct inode *dir, aufs_bindex_t bdst)
++{
++	int err;
++	struct path h_path;
++	struct au_branch *br;
++
++	br = au_sbr(dentry->d_sb, bdst);
++	h_path.dentry = au_wh_lkup(h_parent, &dentry->d_name, br);
++	err = PTR_ERR(h_path.dentry);
++	if (IS_ERR(h_path.dentry))
++		goto out;
++
++	err = 0;
++	if (h_path.dentry->d_inode) {
++		h_path.mnt = br->br_mnt;
++		err = au_wh_unlink_dentry(au_h_iptr(dir, bdst), &h_path,
++					  dentry);
++	}
++	dput(h_path.dentry);
++
++ out:
++	return err;
++}
++
++static int au_cpdown_dir(struct dentry *dentry, aufs_bindex_t bdst,
++			 struct dentry *h_parent, void *arg)
++{
++	int err, rerr;
++	aufs_bindex_t bend, bopq, bstart;
++	unsigned char parent_opq;
++	struct path h_path;
++	struct dentry *parent;
++	struct inode *h_dir, *h_inode, *inode, *dir;
++	struct au_cpdown_dir_args *args = arg;
++
++	bstart = au_dbstart(dentry);
++	/* dentry is di-locked */
++	parent = dget_parent(dentry);
++	dir = parent->d_inode;
++	h_dir = h_parent->d_inode;
++	AuDebugOn(h_dir != au_h_iptr(dir, bdst));
++	IMustLock(h_dir);
++
++	err = au_lkup_neg(dentry, bdst);
++	if (unlikely(err < 0))
++		goto out;
++	h_path.dentry = au_h_dptr(dentry, bdst);
++	h_path.mnt = au_sbr_mnt(dentry->d_sb, bdst);
++	err = vfsub_sio_mkdir(au_h_iptr(dir, bdst), &h_path,
++			      S_IRWXU | S_IRUGO | S_IXUGO);
++	if (unlikely(err))
++		goto out_put;
++	au_fset_cpdown(args->flags, MADE_DIR);
++
++	bend = au_dbend(dentry);
++	bopq = au_dbdiropq(dentry);
++	au_fclr_cpdown(args->flags, WHED);
++	au_fclr_cpdown(args->flags, DIROPQ);
++	if (au_dbwh(dentry) == bdst)
++		au_fset_cpdown(args->flags, WHED);
++	if (!au_ftest_cpdown(args->flags, PARENT_OPQ) && bopq <= bdst)
++		au_fset_cpdown(args->flags, PARENT_OPQ);
++	parent_opq = (au_ftest_cpdown(args->flags, PARENT_OPQ)
++		      && args->parent == dentry);
++	h_inode = h_path.dentry->d_inode;
++	mutex_lock_nested(&h_inode->i_mutex, AuLsc_I_CHILD);
++	if (au_ftest_cpdown(args->flags, WHED)) {
++		err = au_cpdown_dir_opq(dentry, bdst, args);
++		if (unlikely(err)) {
++			mutex_unlock(&h_inode->i_mutex);
++			goto out_dir;
++		}
++	}
++
++	err = au_cpdown_attr(&h_path, au_h_dptr(dentry, bstart));
++	mutex_unlock(&h_inode->i_mutex);
++	if (unlikely(err))
++		goto out_opq;
++
++	if (au_ftest_cpdown(args->flags, WHED)) {
++		err = au_cpdown_dir_wh(dentry, h_parent, dir, bdst);
++		if (unlikely(err))
++			goto out_opq;
++	}
++
++	inode = dentry->d_inode;
++	if (au_ibend(inode) < bdst)
++		au_set_ibend(inode, bdst);
++	au_set_h_iptr(inode, bdst, au_igrab(h_inode),
++		      au_hi_flags(inode, /*isdir*/1));
++	goto out; /* success */
++
++	/* revert */
++ out_opq:
++	if (au_ftest_cpdown(args->flags, DIROPQ)) {
++		mutex_lock_nested(&h_inode->i_mutex, AuLsc_I_CHILD);
++		rerr = au_diropq_remove(dentry, bdst);
++		mutex_unlock(&h_inode->i_mutex);
++		if (unlikely(rerr)) {
++			AuIOErr("failed removing diropq for %.*s b%d (%d)\n",
++				AuDLNPair(dentry), bdst, rerr);
++			err = -EIO;
++			goto out;
++		}
++	}
++ out_dir:
++	if (au_ftest_cpdown(args->flags, MADE_DIR)) {
++		rerr = vfsub_sio_rmdir(au_h_iptr(dir, bdst), &h_path);
++		if (unlikely(rerr)) {
++			AuIOErr("failed removing %.*s b%d (%d)\n",
++				AuDLNPair(dentry), bdst, rerr);
++			err = -EIO;
++		}
++	}
++ out_put:
++	au_set_h_dptr(dentry, bdst, NULL);
++	if (au_dbend(dentry) == bdst)
++		au_update_dbend(dentry);
++ out:
++	dput(parent);
++	return err;
++}
++
++int au_cpdown_dirs(struct dentry *dentry, aufs_bindex_t bdst)
++{
++	int err;
++	struct au_cpdown_dir_args args = {
++		.parent	= dget_parent(dentry),
++		.flags	= 0
++	};
++
++	err = au_cp_dirs(dentry, bdst, au_cpdown_dir, &args);
++	dput(args.parent);
++
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* policies for create */
++
++static int au_wbr_bu(struct super_block *sb, aufs_bindex_t bindex)
++{
++	for (; bindex >= 0; bindex--)
++		if (!au_br_rdonly(au_sbr(sb, bindex)))
++			return bindex;
++	return -EROFS;
++}
++
++/* top down parent */
++static int au_wbr_create_tdp(struct dentry *dentry, int isdir __maybe_unused)
++{
++	int err;
++	aufs_bindex_t bstart, bindex;
++	struct super_block *sb;
++	struct dentry *parent, *h_parent;
++
++	sb = dentry->d_sb;
++	bstart = au_dbstart(dentry);
++	err = bstart;
++	if (!au_br_rdonly(au_sbr(sb, bstart)))
++		goto out;
++
++	err = -EROFS;
++	parent = dget_parent(dentry);
++	for (bindex = au_dbstart(parent); bindex < bstart; bindex++) {
++		h_parent = au_h_dptr(parent, bindex);
++		if (!h_parent || !h_parent->d_inode)
++			continue;
++
++		if (!au_br_rdonly(au_sbr(sb, bindex))) {
++			err = bindex;
++			break;
++		}
++	}
++	dput(parent);
++
++	/* bottom up here */
++	if (unlikely(err < 0))
++		err = au_wbr_bu(sb, bstart - 1);
++
++ out:
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* an exception for the policy other than tdp */
++static int au_wbr_create_exp(struct dentry *dentry)
++{
++	int err;
++	aufs_bindex_t bwh, bdiropq;
++	struct dentry *parent;
++
++	err = -1;
++	bwh = au_dbwh(dentry);
++	parent = dget_parent(dentry);
++	bdiropq = au_dbdiropq(parent);
++	if (bwh >= 0) {
++		if (bdiropq >= 0)
++			err = min(bdiropq, bwh);
++		else
++			err = bwh;
++		AuDbg("%d\n", err);
++	} else if (bdiropq >= 0) {
++		err = bdiropq;
++		AuDbg("%d\n", err);
++	}
++	dput(parent);
++
++	if (err >= 0 && au_br_rdonly(au_sbr(dentry->d_sb, err)))
++		err = -1;
++
++	AuDbg("%d\n", err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* round robin */
++static int au_wbr_create_init_rr(struct super_block *sb)
++{
++	int err;
++
++	err = au_wbr_bu(sb, au_sbend(sb));
++	atomic_set(&au_sbi(sb)->si_wbr_rr_next, -err); /* less important */
++
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++static int au_wbr_create_rr(struct dentry *dentry, int isdir)
++{
++	int err, nbr;
++	unsigned int u;
++	aufs_bindex_t bindex, bend;
++	struct super_block *sb;
++	atomic_t *next;
++
++	err = au_wbr_create_exp(dentry);
++	if (err >= 0)
++		goto out;
++
++	sb = dentry->d_sb;
++	next = &au_sbi(sb)->si_wbr_rr_next;
++	bend = au_sbend(sb);
++	nbr = bend + 1;
++	for (bindex = 0; bindex <= bend; bindex++) {
++		if (!isdir) {
++			err = atomic_dec_return(next) + 1;
++			/* modulo for 0 is meaningless */
++			if (unlikely(!err))
++				err = atomic_dec_return(next) + 1;
++		} else
++			err = atomic_read(next);
++		AuDbg("%d\n", err);
++		u = err;
++		err = u % nbr;
++		AuDbg("%d\n", err);
++		if (!au_br_rdonly(au_sbr(sb, err)))
++			break;
++		err = -EROFS;
++	}
++
++ out:
++	AuDbg("%d\n", err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* most free space */
++static void au_mfs(struct dentry *dentry)
++{
++	struct super_block *sb;
++	struct au_branch *br;
++	struct au_wbr_mfs *mfs;
++	aufs_bindex_t bindex, bend;
++	int err;
++	unsigned long long b, bavail;
++	/* reduce the stack usage */
++	struct kstatfs *st;
++
++	st = kmalloc(sizeof(*st), GFP_NOFS);
++	if (unlikely(!st)) {
++		AuWarn1("failed updating mfs(%d), ignored\n", -ENOMEM);
++		return;
++	}
++
++	bavail = 0;
++	sb = dentry->d_sb;
++	mfs = &au_sbi(sb)->si_wbr_mfs;
++	mfs->mfs_bindex = -EROFS;
++	mfs->mfsrr_bytes = 0;
++	bend = au_sbend(sb);
++	for (bindex = 0; bindex <= bend; bindex++) {
++		br = au_sbr(sb, bindex);
++		if (au_br_rdonly(br))
++			continue;
++
++		/* sb->s_root for NFS is unreliable */
++		err = vfs_statfs(br->br_mnt->mnt_root, st);
++		if (unlikely(err)) {
++			AuWarn1("failed statfs, b%d, %d\n", bindex, err);
++			continue;
++		}
++
++		/* when the available size is equal, select the lower one */
++		BUILD_BUG_ON(sizeof(b) < sizeof(st->f_bavail)
++			     || sizeof(b) < sizeof(st->f_bsize));
++		b = st->f_bavail * st->f_bsize;
++		br->br_wbr->wbr_bytes = b;
++		if (b >= bavail) {
++			bavail = b;
++			mfs->mfs_bindex = bindex;
++			mfs->mfs_jiffy = jiffies;
++		}
++	}
++
++	mfs->mfsrr_bytes = bavail;
++	AuDbg("b%d\n", mfs->mfs_bindex);
++	kfree(st);
++}
++
++static int au_wbr_create_mfs(struct dentry *dentry, int isdir __maybe_unused)
++{
++	int err;
++	struct super_block *sb;
++	struct au_wbr_mfs *mfs;
++
++	err = au_wbr_create_exp(dentry);
++	if (err >= 0)
++		goto out;
++
++	sb = dentry->d_sb;
++	mfs = &au_sbi(sb)->si_wbr_mfs;
++	mutex_lock(&mfs->mfs_lock);
++	if (time_after(jiffies, mfs->mfs_jiffy + mfs->mfs_expire)
++	    || mfs->mfs_bindex < 0
++	    || au_br_rdonly(au_sbr(sb, mfs->mfs_bindex)))
++		au_mfs(dentry);
++	mutex_unlock(&mfs->mfs_lock);
++	err = mfs->mfs_bindex;
++
++ out:
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++static int au_wbr_create_init_mfs(struct super_block *sb)
++{
++	struct au_wbr_mfs *mfs;
++
++	mfs = &au_sbi(sb)->si_wbr_mfs;
++	mutex_init(&mfs->mfs_lock);
++	mfs->mfs_jiffy = 0;
++	mfs->mfs_bindex = -EROFS;
++
++	return 0;
++}
++
++static int au_wbr_create_fin_mfs(struct super_block *sb __maybe_unused)
++{
++	mutex_destroy(&au_sbi(sb)->si_wbr_mfs.mfs_lock);
++	return 0;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* most free space and then round robin */
++static int au_wbr_create_mfsrr(struct dentry *dentry, int isdir)
++{
++	int err;
++	struct au_wbr_mfs *mfs;
++
++	err = au_wbr_create_mfs(dentry, isdir);
++	if (err >= 0) {
++		mfs = &au_sbi(dentry->d_sb)->si_wbr_mfs;
++		if (mfs->mfsrr_bytes < mfs->mfsrr_watermark)
++			err = au_wbr_create_rr(dentry, isdir);
++	}
++
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++static int au_wbr_create_init_mfsrr(struct super_block *sb)
++{
++	int err;
++
++	au_wbr_create_init_mfs(sb); /* ignore */
++	err = au_wbr_create_init_rr(sb);
++
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* top down parent and most free space */
++static int au_wbr_create_pmfs(struct dentry *dentry, int isdir)
++{
++	int err, e2;
++	unsigned long long b;
++	aufs_bindex_t bindex, bstart, bend;
++	struct super_block *sb;
++	struct dentry *parent, *h_parent;
++	struct au_branch *br;
++
++	err = au_wbr_create_tdp(dentry, isdir);
++	if (unlikely(err < 0))
++		goto out;
++	parent = dget_parent(dentry);
++	bstart = au_dbstart(parent);
++	bend = au_dbtaildir(parent);
++	if (bstart == bend)
++		goto out_parent; /* success */
++
++	e2 = au_wbr_create_mfs(dentry, isdir);
++	if (e2 < 0)
++		goto out_parent; /* success */
++
++	/* when the available size is equal, select upper one */
++	sb = dentry->d_sb;
++	br = au_sbr(sb, err);
++	b = br->br_wbr->wbr_bytes;
++	AuDbg("b%d, %llu\n", err, b);
++
++	for (bindex = bstart; bindex <= bend; bindex++) {
++		h_parent = au_h_dptr(parent, bindex);
++		if (!h_parent || !h_parent->d_inode)
++			continue;
++
++		br = au_sbr(sb, bindex);
++		if (!au_br_rdonly(br) && br->br_wbr->wbr_bytes > b) {
++			b = br->br_wbr->wbr_bytes;
++			err = bindex;
++			AuDbg("b%d, %llu\n", err, b);
++		}
++	}
++
++ out_parent:
++	dput(parent);
++ out:
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* policies for copyup */
++
++/* top down parent */
++static int au_wbr_copyup_tdp(struct dentry *dentry)
++{
++	return au_wbr_create_tdp(dentry, /*isdir, anything is ok*/0);
++}
++
++/* bottom up parent */
++static int au_wbr_copyup_bup(struct dentry *dentry)
++{
++	int err;
++	aufs_bindex_t bindex, bstart;
++	struct dentry *parent, *h_parent;
++	struct super_block *sb;
++
++	err = -EROFS;
++	sb = dentry->d_sb;
++	parent = dget_parent(dentry);
++	bstart = au_dbstart(parent);
++	for (bindex = au_dbstart(dentry); bindex >= bstart; bindex--) {
++		h_parent = au_h_dptr(parent, bindex);
++		if (!h_parent || !h_parent->d_inode)
++			continue;
++
++		if (!au_br_rdonly(au_sbr(sb, bindex))) {
++			err = bindex;
++			break;
++		}
++	}
++	dput(parent);
++
++	/* bottom up here */
++	if (unlikely(err < 0))
++		err = au_wbr_bu(sb, bstart - 1);
++
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++/* bottom up */
++static int au_wbr_copyup_bu(struct dentry *dentry)
++{
++	int err;
++
++	err = au_wbr_bu(dentry->d_sb, au_dbstart(dentry));
++
++	AuDbg("b%d\n", err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++struct au_wbr_copyup_operations au_wbr_copyup_ops[] = {
++	[AuWbrCopyup_TDP] = {
++		.copyup	= au_wbr_copyup_tdp
++	},
++	[AuWbrCopyup_BUP] = {
++		.copyup	= au_wbr_copyup_bup
++	},
++	[AuWbrCopyup_BU] = {
++		.copyup	= au_wbr_copyup_bu
++	}
++};
++
++struct au_wbr_create_operations au_wbr_create_ops[] = {
++	[AuWbrCreate_TDP] = {
++		.create	= au_wbr_create_tdp
++	},
++	[AuWbrCreate_RR] = {
++		.create	= au_wbr_create_rr,
++		.init	= au_wbr_create_init_rr
++	},
++	[AuWbrCreate_MFS] = {
++		.create	= au_wbr_create_mfs,
++		.init	= au_wbr_create_init_mfs,
++		.fin	= au_wbr_create_fin_mfs
++	},
++	[AuWbrCreate_MFSV] = {
++		.create	= au_wbr_create_mfs,
++		.init	= au_wbr_create_init_mfs,
++		.fin	= au_wbr_create_fin_mfs
++	},
++	[AuWbrCreate_MFSRR] = {
++		.create	= au_wbr_create_mfsrr,
++		.init	= au_wbr_create_init_mfsrr,
++		.fin	= au_wbr_create_fin_mfs
++	},
++	[AuWbrCreate_MFSRRV] = {
++		.create	= au_wbr_create_mfsrr,
++		.init	= au_wbr_create_init_mfsrr,
++		.fin	= au_wbr_create_fin_mfs
++	},
++	[AuWbrCreate_PMFS] = {
++		.create	= au_wbr_create_pmfs,
++		.init	= au_wbr_create_init_mfs,
++		.fin	= au_wbr_create_fin_mfs
++	},
++	[AuWbrCreate_PMFSV] = {
++		.create	= au_wbr_create_pmfs,
++		.init	= au_wbr_create_init_mfs,
++		.fin	= au_wbr_create_fin_mfs
++	}
++};
 -- 
 1.6.1.284.g5dc13
 
