@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761309AbZCPUB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbZCPUGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761309AbZCPUB3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 16:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbZCPUBN
+	id S1760740AbZCPUGe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 16:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbZCPUGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 16:01:13 -0400
-Received: from relay1.ptmail.sapo.pt ([212.55.154.21]:56188 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1758689AbZCPUBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 16:01:10 -0400
-X-AntiVirus: PTMail-AV 0.3-0.92.0
-Date: Mon, 16 Mar 2009 19:59:02 +0000
-From: Luis Henriques <henrix@sapo.pt>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2 -tip] sched: small optimisation on can_migrate_task
-Message-ID: <20090316195902.GA6197@hades.domain.com>
+	Mon, 16 Mar 2009 16:06:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49288 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754174AbZCPUGV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 16:06:21 -0400
+Date: Mon, 16 Mar 2009 12:57:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
+In-Reply-To: <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0903161250080.3082@localhost.localdomain>
+References: <MiincthRUSI.A.eKC.F4BvJB@chimera>  <b6a2187b0903141958u9dae0fdk1f44b387108b99e4@mail.gmail.com>  <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com>  <1237140665.24621.2.camel@johannes.local>  <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
+  <1237143683.24621.7.camel@johannes.local>  <20090315202603.GA9077@elte.hu> <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There were 3 invocation to task_hot() in function can_migrate_task().  These 3
-invocations have been replaced by only one invocation, cached in a local
-variable.
 
-Signed-off-by: Luis Henriques <henrix@sapo.pt>
----
- kernel/sched.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 0a5d929..4000304 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3072,6 +3072,7 @@ int can_migrate_task(struct task_struct *p, struct rq *rq, int this_cpu,
- 		     struct sched_domain *sd, enum cpu_idle_type idle,
- 		     int *all_pinned)
- {
-+	int tsk_cache_hot = 0;
- 	/*
- 	 * We do not migrate tasks that are:
- 	 * 1) running (obviously), or
-@@ -3095,10 +3096,11 @@ int can_migrate_task(struct task_struct *p, struct rq *rq, int this_cpu,
- 	 * 2) too many balance attempts have failed.
- 	 */
- 
--	if (!task_hot(p, rq->clock, sd) ||
--			sd->nr_balance_failed > sd->cache_nice_tries) {
-+	tsk_cache_hot = task_hot(p, rq->clock, sd);
-+	if (!tsk_cache_hot ||
-+		sd->nr_balance_failed > sd->cache_nice_tries) {
- #ifdef CONFIG_SCHEDSTATS
--		if (task_hot(p, rq->clock, sd)) {
-+		if (tsk_cache_hot) {
- 			schedstat_inc(sd, lb_hot_gained[idle]);
- 			schedstat_inc(p, se.nr_forced_migrations);
- 		}
-@@ -3106,7 +3108,7 @@ int can_migrate_task(struct task_struct *p, struct rq *rq, int this_cpu,
- 		return 1;
- 	}
- 
--	if (task_hot(p, rq->clock, sd)) {
-+	if (tsk_cache_hot) {
- 		schedstat_inc(p, se.nr_failed_migrations_hot);
- 		return 0;
- 	}
--- 
-1.6.2
+On Mon, 16 Mar 2009, Jeff Chua wrote:
+> 
+> Take the attached bisect log and replay it
 
+Taking a bisect log is repeatable, but pointless.
+
+If you made any mistakes in bisecting (marking a kernel that was good as 
+being bad, or the other way around), the log will always replay to the 
+same thing, but it will still be wrong.
+
+In other words, "git bisect" is only as reliable as the data you feed it, 
+and if the behavior isn't 100% repeatable and unambiguous (or if you 
+simply made a mistake), you need to double-check things.
+
+So after bisecting a commit, if there is any question what-so-ever whether 
+the commit makes sense as a result, you need to double-check it. The best 
+way to double-check it is to go back to a known-bad state (preferably the 
+tip of the branch) and revert the presumed-bad commit, and verify that it 
+really fixes the behavior.
+
+But if that is impossible (for example, because the commit no longer 
+reverts cleanly), at least make 100% sure that the state at the commit is 
+bad, and then go to (all) parents of that commit and make 100% sure that 
+the state at those points is _good_. 
+
+IOW, if you've pinpointed 71c11fb57b924c160297ccd9e1761db598d00ac2 as 
+being bad, then you should go back and double-check that its parent 
+(in this case 4607816f608b42a5379aca97ceed08378804c99f) is good.
+
+Because if it's parent is also bad, then that just means that you made 
+some mistake in "git bisect".
+
+The thing about bisecting is that it is _extremely_ efficient. It takes 
+essentially the minimal number of answers to get to the end result. But 
+that very efficiency also means that getting even just _one_ of those 
+answers wrong will take you _way_ off base. There's no room for error, 
+because bisect will take each bit and use it to maximally split the error 
+space.
+
+In this case, it really sounds like maybe you marked the parent good, even 
+though you should have marked it bad.
+
+			Linus
