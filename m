@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbZCPJ55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761320AbZCPJ5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761608AbZCPJ55 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 05:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760725AbZCPJwc
+	id S1761320AbZCPJ5k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 05:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760110AbZCPJul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 05:52:32 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:58387 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760716AbZCPJwb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 05:52:31 -0400
-X-Sasl-enc: Y8PvajL4ExoKaSCi6Od8e5ZvzqTd+s0t0x9VFRifhrhj 1237197148
-Message-ID: <49BE215F.7040307@ladisch.de>
-Date: Mon, 16 Mar 2009 10:52:31 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Mon, 16 Mar 2009 05:50:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38615 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760179AbZCPJuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 05:50:40 -0400
+Message-ID: <49BE20B2.9070804@redhat.com>
+Date: Mon, 16 Mar 2009 11:49:38 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-CC: Paul Gortmaker <paul.gortmaker@windriver.com>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>, robert.picco@hp.com,
-       venkatesh.pallipadi@intel.com, vojtech@suse.cz, mingo@redhat.com
-Subject: Re: [Patch] Fix the possibility of insane return value of hpet_calibrate()
- against SMI.
-References: <20090313134846.24B6.E1E9C6FF@jp.fujitsu.com> <7d1d9c250903151256l36586764wfbd5e2578a45663c@mail.gmail.com> <20090316111300.7CE5.E1E9C6FF@jp.fujitsu.com>
-In-Reply-To: <20090316111300.7CE5.E1E9C6FF@jp.fujitsu.com>
-Content-Type: text/plain; charset=us-ascii
+To: Kevin Shanahan <kmshanah@ucwb.org.au>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
+References: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera>	 <qm8_cedJGaP.A.-NH.CPCvJB@chimera> <1237107837.27699.27.camel@kulgan.wumi.org.au>
+In-Reply-To: <1237107837.27699.27.camel@kulgan.wumi.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yasunori Goto wrote:
-> > I've no sense of feel for how long each calibration run would take.
-> > Would doing it 5 times show up as a significant increase in the boot
-> > time for those that care about boot time being as quick as possible?
-> 
-> Hmm. The loop times is trade off against reliable value....
-> Though SMI is rare interruption, I don't know how frequent
-> hypervisor's switch is.
+Kevin Shanahan wrote:
+> On Sat, 2009-03-14 at 20:20 +0100, Rafael J. Wysocki wrote:
+>   
+>> This message has been generated automatically as a part of a report
+>> of regressions introduced between 2.6.27 and 2.6.28.
+>>
+>> The following bug entry is on the current list of known regressions
+>> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+>> be listed and let me know (either way).
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12465
+>> Subject		: KVM guests stalling on 2.6.28 (bisected)
+>> Submitter	: Kevin Shanahan <kmshanah@ucwb.org.au>
+>> Date		: 2009-01-17 03:37 (57 days old)
+>> Handled-By	: Avi Kivity <avi@redhat.com>
+>>     
+>
+> No further updates since the last reminder.
+> The bug should still be listed.
+>
+>   
 
-Could you, just for testing, run the calibration five thousand times or
-so instead of five times, and count how often you get insane values?
-(And how much delay does such an SMI add?)
-
-> Each calibration of this has 1 milli second.
-> Do you think 5 msec is too long?
-
-This shouldn't matter when booting.  Anyway, I think it's possible to
-increase TICK_CALIBRATE without losing too much accuracy.
+Does the bug reproduce if you use the acpi_pm clocksource in the guests?
 
 
-Best regards,
-Clemens
+-- 
+error compiling committee.c: too many arguments to function
+
