@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760126AbZCPSnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbZCPSpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760126AbZCPSnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZCPSnI
+	id S1757842AbZCPSpb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZCPSpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:43:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53887 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754174AbZCPSnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:43:06 -0400
-Date: Mon, 16 Mar 2009 18:42:27 GMT
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, linuxppc-dev@ozlabs.org, tglx@linutronix.de,
-       sfr@canb.auug.org.au, mingo@elte.hu
-In-Reply-To: <20090316185256.4a160374.sfr@canb.auug.org.au>
-References: <20090316185256.4a160374.sfr@canb.auug.org.au>
-Subject: [tip:irq/sparseirq] sparseirq, powerpc/cell: fix unused variable warning in interrupt.c
-Message-ID: <tip-a6bc3262c561780d2a6587aa3d5715b1e7d8fa13@git.kernel.org>
-Git-Commit-ID: a6bc3262c561780d2a6587aa3d5715b1e7d8fa13
-X-Mailer: tip-git-log-daemon
+	Mon, 16 Mar 2009 14:45:19 -0400
+Received: from wa4ehsobe003.messaging.microsoft.com ([216.32.181.13]:34664
+	"EHLO WA4EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751476AbZCPSpR convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 14:45:17 -0400
+X-BigFish: VPS-17(z1857rz1432R98dR1805M936fKzz1202hzzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KGM42P-04-8ID-01
+Date: Mon, 16 Mar 2009 19:44:54 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Marcelo Tosatti <mtosatti@redhat.com>
+CC: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kvm/x86: check KVM_REQ_TLB_FLUSH with irqs disabled
+Message-ID: <20090316184454.GN6159@amd.com>
+References: <1237208625-2657-1-git-send-email-joerg.roedel@amd.com> <49BE5054.6040707@redhat.com> <20090316183000.GC3783@amt.cnet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 16 Mar 2009 18:42:29 +0000 (UTC)
+In-Reply-To: <20090316183000.GC3783@amt.cnet>
+User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 16 Mar 2009 18:44:54.0825 (UTC) FILETIME=[4C45B990:01C9A667]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a6bc3262c561780d2a6587aa3d5715b1e7d8fa13
-Gitweb:     http://git.kernel.org/tip/a6bc3262c561780d2a6587aa3d5715b1e7d8fa13
-Author:     Stephen Rothwell <sfr@canb.auug.org.au>
-AuthorDate: Mon, 16 Mar 2009 18:52:56 +1100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 16 Mar 2009 09:21:57 +0100
+On Mon, Mar 16, 2009 at 03:30:00PM -0300, Marcelo Tosatti wrote:
+> On Mon, Mar 16, 2009 at 03:12:52PM +0200, Avi Kivity wrote:
+> > Joerg Roedel wrote:
+> >> For KVM remote TLB flushes we need to check the KVM_REQ_TLB_FLUSH
+> >> request flag when the irqs are already disabled. Otherwise there is a
+> >> small window of time for a race condition where we may enter a guest
+> >> without doing a requested TLB flush.
+> >>
+> >> @@ -3108,8 +3108,6 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+> >>  			kvm_write_guest_time(vcpu);
+> >>  		if (test_and_clear_bit(KVM_REQ_MMU_SYNC, &vcpu->requests))
+> >>  			kvm_mmu_sync_roots(vcpu);
+> >> -		if (test_and_clear_bit(KVM_REQ_TLB_FLUSH, &vcpu->requests))
+> >> -			kvm_x86_ops->tlb_flush(vcpu);
+> >>  		if (test_and_clear_bit(KVM_REQ_REPORT_TPR_ACCESS,
+> >>  				       &vcpu->requests)) {
+> >>  			kvm_run->exit_reason = KVM_EXIT_TPR_ACCESS;
+> >> @@ -3133,6 +3131,9 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+> >>   	local_irq_disable();
+> >>  +	if (test_and_clear_bit(KVM_REQ_TLB_FLUSH, &vcpu->requests))
+> >> +		kvm_x86_ops->tlb_flush(vcpu);
+> >> +
+> >>  	if (vcpu->requests || need_resched() || signal_pending(current)) {
+> >>  		local_irq_enable();
+> >>  		preempt_enable();
+> >>   
+> >
+> > If we lost the race and someone sets a bit after the test, then the test  
+> > immediately above will pick this up retry the bit tests.
+> 
+> BTW, I've wondered if the local_irq_enable in svm_vcpu_run is safe:
+> 
+>         clgi();
+> 
+>         local_irq_enable();
 
-sparseirq, powerpc/cell: fix unused variable warning in interrupt.c
+The reason behind this is that we have to allow the host to accept
+interrupts. Interrupts are still blocked by clgi (together with
+NMI, INIT, debug traps and SMI) until the global interrupt flag is
+reenabled as a final step of VMRUN. If we don't enable interrupts here
+they would be blocked and an external interrupt would not cause an
+#VMEXIT.
 
-This new compiler warning:
+Joerg
 
-   arch/powerpc/platforms/cell/interrupt.c: In function 'handle_iic_irq':
-   arch/powerpc/platforms/cell/interrupt.c:240: warning: unused variable 'cpu'
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
-Triggers because the local variable 'cpu' became unused due to commit:
-
-   dee4102: sparseirq: use kstat_irqs_cpu instead
-
-Remove the variable.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
-LKML-Reference: <20090316185256.4a160374.sfr@canb.auug.org.au>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/powerpc/platforms/cell/interrupt.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index 1f0d774..882e470 100644
---- a/arch/powerpc/platforms/cell/interrupt.c
-+++ b/arch/powerpc/platforms/cell/interrupt.c
-@@ -237,8 +237,6 @@ extern int noirqdebug;
- 
- static void handle_iic_irq(unsigned int irq, struct irq_desc *desc)
- {
--	const unsigned int cpu = smp_processor_id();
--
- 	spin_lock(&desc->lock);
- 
- 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
