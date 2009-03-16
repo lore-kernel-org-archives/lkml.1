@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759299AbZCPKQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbZCPKRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759299AbZCPKQJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 06:16:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZCPKPx
+	id S1759784AbZCPKRh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 06:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbZCPKR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 06:15:53 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:34871 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753093AbZCPKPv (ORCPT
+	Mon, 16 Mar 2009 06:17:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41803 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752280AbZCPKR0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 06:15:51 -0400
-Date: Mon, 16 Mar 2009 11:15:42 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: Greg KH <gregkh@suse.de>, Tejun Heo <tj@kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysfs: only allow one scheduled removal callback per
- kobj
-Message-ID: <20090316111542.2be181c1@gondolin>
-In-Reply-To: <20090313180736.GB5335@ldl.fc.hp.com>
-References: <20090313180736.GB5335@ldl.fc.hp.com>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Mar 2009 06:17:26 -0400
+Date: Mon, 16 Mar 2009 06:17:20 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Dave Chinner <david@fromorbit.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com, npiggin@suse.de
+Subject: Re: [PATCH 2/7] writeback: switch to per-bdi threads for flushing
+	data
+Message-ID: <20090316101720.GC21118@infradead.org>
+References: <1236868428-20408-1-git-send-email-jens.axboe@oracle.com> <1236868428-20408-3-git-send-email-jens.axboe@oracle.com> <20090312223321.ccfe51b2.akpm@linux-foundation.org> <20090313105446.GO27476@kernel.dk> <20090315225215.GA26138@disturbed> <20090316073321.GJ27476@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090316073321.GJ27476@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Mar 2009 12:07:36 -0600,
-Alex Chiang <achiang@hp.com> wrote:
+On Mon, Mar 16, 2009 at 08:33:21AM +0100, Jens Axboe wrote:
+> This is very useful feedback, thanks Dave. So on the filesystem vs bdi
+> side, XFS could register a bdi per allocation group. Then set the proper
+> inode->mapping->backing_dev_info from sb->s_op->alloc_inode and
+> __mark_inode_dirty() should get the placement right. For private
+> traverse and flush, provide some address_space op to override
+> generic_sync_bdi_inodes().
+> 
+> It sounds like I should move the bdi flushing bits separate from the bdi
+> itself. Embed one in the bdi, but allow outside registration of others.
+> Will fit better with the need for more than one flusher per backing
+> device.
 
-> The only way for a sysfs attribute to remove itself (without
-> deadlock) is to use the sysfs_schedule_callback() interface.
-> 
-> Vegard Nossum discovered that a poorly written sysfs ->store
-> callback can repeatedly schedule remove callbacks on the same
-> device over and over, e.g.
-> 
-> 	$ while true ; do echo 1 > /sys/devices/.../remove ; done
-> 
-> If the 'remove' attribute uses the sysfs_schedule_callback API
-> and also does not protect itself from concurrent accesses, its
-> callback handler will be called multiple times, and will
-> eventually attempt to perform operations on a freed kobject,
-> leading to many problems.
-> 
-> Instead of requiring all callers of sysfs_schedule_callback to
-> implement their own synchronization, provide the protection in
-> the infrastructure.
-> 
-> Now, sysfs_schedule_callback will only allow one scheduled
-> callback per kobject. On subsequent calls with the same kobject,
-> return -EAGAIN.
-> 
-> This is a short term fix. The long term fix is to allow sysfs
-> attributes to remove themselves directly, without any of this
-> callback hokey pokey.
-> 
-> [cornelia.huck@de.ibm.com: s390 ccwgroup bits]
-> Cc: cornelia.huck@de.ibm.com
-> Reported-by: vegard.nossum@gmail.com
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
->  drivers/s390/cio/ccwgroup.c |    5 +++--
->  fs/sysfs/file.c             |   26 +++++++++++++++++++++++---
->  2 files changed, 26 insertions(+), 5 deletions(-)
+Yes, having a separate flushing container is a good idea.  Either way
+I'm not sure how much use all this is for XFS.  We're working on using
+our own flushing code as we want to iterate the inodes using the
+knowledge about their placement on disk.  Due to that we don't use
+the dirty inode list anymore (already in mainline since 2.6.29-rc) but
+the per-ag radix-tree.  The finer granularity pdflush management might
+come in handy, but we'll hand off to some XFS-specific code at a pretty
+high level in there.
 
-Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
