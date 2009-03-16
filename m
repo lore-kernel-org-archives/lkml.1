@@ -1,116 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762169AbZCPVq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760814AbZCPVu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762169AbZCPVq1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 17:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762053AbZCPVqA
+	id S1760814AbZCPVu5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 17:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZCPVus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 17:46:00 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:38106 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761963AbZCPVp7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 17:45:59 -0400
-Date: Mon, 16 Mar 2009 21:44:11 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Gene Heskett <gene.heskett@gmail.com>,
-       David Newall <davidn@davidnewall.com>,
+	Mon, 16 Mar 2009 17:50:48 -0400
+Received: from mga11.intel.com ([192.55.52.93]:14655 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752135AbZCPVus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 17:50:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,375,1233561600"; 
+   d="scan'208";a="439402677"
+Subject: Re: [PATCH 1/2] dmaengine: TXx9 Soc DMA Controller driver
+From: Dan Williams <dan.j.williams@intel.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+       "ralf@linux-mips.org" <ralf@linux-mips.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: BUG?: PAGE_FLAGS_CHECK_AT_PREP seems to be cleared too early
- (Was Re: I just got got another Oops
-In-Reply-To: <20090316170359.858e7a4e.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0903162101110.13164@blonde.anvils>
-References: <200903120133.11583.gene.heskett@gmail.com> <49B8C98D.3020309@davidnewall.com>
- <200903121431.49437.gene.heskett@gmail.com> <20090316115509.40ea13da.kamezawa.hiroyu@jp.fujitsu.com>
- <20090316170359.858e7a4e.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       "haavard.skinnemoen@atmel.com" <haavard.skinnemoen@atmel.com>
+In-Reply-To: <20090313.231659.41197617.anemo@mba.ocn.ne.jp>
+References: <e9c3a7c20902251745t314c1e0cs114d2199ccc8cf36@mail.gmail.com>
+	 <20090227.002436.106263719.anemo@mba.ocn.ne.jp>
+	 <20090313.011950.61509382.anemo@mba.ocn.ne.jp>
+	 <20090313.231659.41197617.anemo@mba.ocn.ne.jp>
+Content-Type: text/plain
+Date: Mon, 16 Mar 2009 14:50:46 -0700
+Message-Id: <1237240246.27945.6.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Mar 2009, KAMEZAWA Hiroyuki wrote:
-> Hi,
-> I'm sorry if I miss something..
-
-I think it's me who missed something, and needs to say sorry.
-
-> 
-> >From this patch
-> ==
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=79f4b7bf393e67bbffec807cc68caaefc72b82ee
-> ==
-> #define PAGE_FLAGS_CHECK_AT_PREP       ((1 << NR_PAGEFLAGS) - 1)
+On Fri, 2009-03-13 at 07:16 -0700, Atsushi Nemoto wrote:
+> On Fri, 13 Mar 2009 01:19:50 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> > Subject: dmaengine: Use chan_id provided by DMA device driver
+> > From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> > 
+> > If chan_id was already given by the DMA device driver, use it.
+> > Otherwise assign an incremental number for each channels.
+> > 
+> > This allows the DMA device driver to reserve some channel ID numbers.
 > ...
-> @@ -468,16 +467,16 @@ static inline int free_pages_check(struct page *page)
->                 (page_count(page) != 0)  |
->                 (page->flags & PAGE_FLAGS_CHECK_AT_FREE)))
-> ....
-> +       if (PageReserved(page))
-> +               return 1;
-> +       if (page->flags & PAGE_FLAGS_CHECK_AT_PREP)
-> +               page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
-> +       return 0;
->  }
-> ==
+> > @@ -663,7 +664,9 @@ int dma_async_device_register(struct dma_device *device)
+> >  			continue;
+> >  		}
+> >  
+> > -		chan->chan_id = chancnt++;
+> > +		if (!chan->chan_id)
+> > +			chan->chan_id = chan_id++;
+> > +		chancnt++;
+> >  		chan->dev->device.class = &dma_devclass;
+> >  		chan->dev->device.parent = device->dev;
+> >  		chan->dev->chan = chan;
 > 
-> PAGE_FLAGS_CHECK_AT_PREP is cleared by free_pages_check().
+> This patch will fix another potential problem.  Some driver, for
+> example ipu, assumes chan_id is an index of its internal array.  But
+> dmaengine core does not guarantee it.
 > 
-> This means PG_head/PG_tail(PG_compound) flags are cleared here
+> 	/* represent channels in sysfs. Probably want devs too */
+> 	list_for_each_entry(chan, &device->channels, device_node) {
+> 		chan->local = alloc_percpu(typeof(*chan->local));
+> 		if (chan->local == NULL)
+> 			continue;
+> 		chan->dev = kzalloc(sizeof(*chan->dev), GFP_KERNEL);
+> 		if (chan->dev == NULL) {
+> 			free_percpu(chan->local);
+> 			continue;
+> 		}
+> 
+> 		chan->chan_id = chancnt++;
+> 		...
+> 	}
+> 	device->chancnt = chancnt;
+> 
+> If alloc_percpu or kzalloc failed, chan_id does not match with its
+> position in device->channels list.
+> 
+> 
+> And above "continue" looks buggy anyway.  Keeping incomplete channels
+> in device->channels list looks very dangerous...
 
-Yes, well spotted.  How embarrassing.  I must have got confused
-about when the checking occurred when freeing a compound page.
+Yes it does.  Here is the proposed fix:
+----->
+dmaengine: fail device registration if channel registration fails
 
-> and Compound page will never be freed in sane way.
+From: Dan Williams <dan.j.williams@intel.com>
 
-But is that so?  I'll admit I've not tried this out yet, but my
-understanding is that the Compound page actually gets freed fine:
-free_compound_page() should have passed the right order down, and this
-PAGE_FLAGS_CHECK_AT_PREP clearing should remove the Head/Tail/Compound
-flags - doesn't it all work out sanely, without any leaking?
+Atsushi points out:
+"If alloc_percpu or kzalloc failed, chan_id does not match with its
+position in device->channels list.
 
-What goes missing is all the destroy_compound_page() checks:
-that's at present just dead code.
+And above "continue" looks buggy anyway.  Keeping incomplete channels
+in device->channels list looks very dangerous..."
 
-There's several things we could do about this.
+Reported-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+ drivers/dma/dmaengine.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-1.  We could regard destroy_compound_page() as legacy debugging code
-from when compound pages were first introduced, and sanctify my error
-by removing it.  Obviously that's appealing to me, makes me look like
-a prophet rather than idiot!  That's not necessarily the right thing to
-do, but might appeal also to those cutting overhead from page_alloc.c.
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index a589930..fa14e8b 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -652,13 +652,15 @@ int dma_async_device_register(struct dma_device *device)
+ 
+ 	/* represent channels in sysfs. Probably want devs too */
+ 	list_for_each_entry(chan, &device->channels, device_node) {
++		rc = -ENOMEM;
+ 		chan->local = alloc_percpu(typeof(*chan->local));
+ 		if (chan->local == NULL)
+-			continue;
++			goto err_out;
+ 		chan->dev = kzalloc(sizeof(*chan->dev), GFP_KERNEL);
+ 		if (chan->dev == NULL) {
+ 			free_percpu(chan->local);
+-			continue;
++			chan->local = NULL;
++			goto err_out;
+ 		}
+ 
+ 		chan->chan_id = chancnt++;
+@@ -675,6 +677,8 @@ int dma_async_device_register(struct dma_device *device)
+ 		if (rc) {
+ 			free_percpu(chan->local);
+ 			chan->local = NULL;
++			kfree(chan->dev);
++			atomic_dec(idr_ref);
+ 			goto err_out;
+ 		}
+ 		chan->client_count = 0;
 
-2.  We could do the destroy_compound_page() stuff in free_compound_page()
-before calling __free_pages_ok(), and add the Head/Tail/Compound flags
-into PAGE_FLAGS_CHECK_AT_FREE.  That seems a more natural ordering to
-me, and would remove the PageCompound check from a hotter path; but
-I've a suspicion there's a good reason why it was not done that way,
-that I'm overlooking at this moment.
 
-3.  We can define a PAGE_FLAGS_CLEAR_AT_FREE which omits the Head/Tail/
-Compound flags, and lets destroy_compound_page() be called as before
-where it's currently intended.
-
-What do you think?  I suspect I'm going to have to spend tomorrow
-worrying about something else entirely, and won't return here until
-Wednesday.
-
-But as regards the original "I just got got another Oops": my bug
-that you point out here doesn't account for that, does it?  It's
-still a mystery, isn't it, how the PageTail bit came to be set at
-that point?
-
-But that Oops does demonstrate that it's a very bad idea to be using
-the deceptive page_count() in those bad_page() checks: we need to be
-checking page->_count directly.
-
-And in looking at this, I notice something else to worry about:
-that CONFIG_HUGETLBFS prep_compound_gigantic_page(), which seems
-to exist for a more general case than "p = page + i" - what happens
-when such a gigantic page is freed, and arrives at the various
-"p = page + i" assumptions on the freeing path?
-
-Hugh
