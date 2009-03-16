@@ -1,165 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759722AbZCPT0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760734AbZCPT0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759722AbZCPT0K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 15:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756347AbZCPTZz
+	id S1760734AbZCPT0l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 15:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756084AbZCPT0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 15:25:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:39596 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756162AbZCPTZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 15:25:54 -0400
-Message-ID: <49BEA7BE.6050400@goop.org>
-Date: Mon, 16 Mar 2009 12:25:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 16 Mar 2009 15:26:30 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45541
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752919AbZCPT02 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 15:26:28 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: ext2/3: document conditions when reliable operation is possible
+Date: Mon, 16 Mar 2009 14:26:23 -0500
+User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       mtk.manpages@gmail.com, tytso@mit.edu, rdunlap@xenotime.net,
+       linux-doc@vger.kernel.org, linux-ext4@vger.kernel.org
+References: <20090312092114.GC6949@elf.ucw.cz> <200903121413.04434.rob@landley.net> <20090316122847.GI2405@elf.ucw.cz>
+In-Reply-To: <20090316122847.GI2405@elf.ucw.cz>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com>
-In-Reply-To: <49BE97D5.4010002@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903161426.24904.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeremy Fitzhardinge wrote:
->> Yinghai Lu wrote:
->>> could be max_pfn_mapped change in head_32.S that reduce mapping 
->>> range to _end only.
->>>   
->>
->> Yes, I would say you're right.  Trimming the mapping to _end only 
->> leaves the space under the kernel avaliable for allocating pagetable 
->> from e820 space.  In this case we've got DEBUG_PAGEALLOC enabled, 
->> which inhibits the use of PSE, and BIOS corruption checking on, which 
->> eats a chunk of low memory.  In combination, there's only 0x8f000 
->> bytes free below the kernel, and it needs 0xe1000 to allocate for 
->> pagetables.
->>
->> Reverting 2bd2753ff46346543ab92e80df9d96366e21baa5 fixes the problem 
->> for me, though it does result in a kernel with a 73MB BSS...
->>
+On Monday 16 March 2009 07:28:47 Pavel Machek wrote:
+> Hi!
+> > > +	Fortunately writes failing are very uncommon on traditional
+> > > +	spinning disks, as they have spare sectors they use when write
+> > > +	fails.
+> >
+> > I vaguely recall that the behavior of when a write error _does_ occur is
+> > to remount the filesystem read only?  (Is this VFS or per-fs?)
 >
-> Waitaminute... there is no way we could end up with 73 MB page tables 
-> unless something is seriously screwy.  Even with PAE and !PSE, we only 
-> get 2 MB worth of page tables for each 1 GB mapped -- even with a 4:4 
-> scheme this is only 8 MB.
+> Per-fs.
 
-Yes, something odd happened there.
+Might be nice to note that in the doc.
 
-Anyway, this patch fixes it.  I also removed ALLOCATOR_SLOP, because it 
-is left over from when we used the bootmem allocator for the linear 
-mapping pagetable, before using e820 allocation.
+> > Is there any kind of hotplug event associated with this?
+>
+> I don't think so.
 
-Did you also want to pull the changes to put the brk in .brk and rename 
-the reservation symbols?
+There probably should be, but that's a separate issue.
 
-    J
+> > I'm aware write errors shouldn't happen, and by the time they do it's too
+> > late to gracefully handle them, and all we can do is fail.  So how do we
+> > fail?
+>
+> Well, even remount-ro may be too late, IIRC.
 
-The following changes since commit 2bd2753ff46346543ab92e80df9d96366e21baa5:
-  Yinghai Lu (1):
-        x86: put initial_pg_tables into .bss
+Care to elaborate?  (When a filesystem is mounted RO, I'm not sure what 
+happens to the pages that have already been dirtied...)
 
-are available in the git repository at:
+> > (Writes aren't always cleanly at the start of an erase block, so critical
+> > data _before_ what you touch is endangered too.)
+>
+> Well, flashes do remap, so it is actually "random blocks".
 
-  ssh://master.kernel.org/~jeremy/git/xen.git tip/x86/setup-memory
+Fun.
 
-Jeremy Fitzhardinge (2):
-      x86-32: make sure we map enough to fit linear map pagetables
-      x86-32: remove ALLOCATOR_SLOP from head_32.S
+When "please do not turn of your playstation until game save completes" 
+honestly seems like the best solution for making the technology reliable, 
+something is wrong with the technology.
 
- arch/x86/kernel/head_32.S |   32 ++++++++++++++++++++------------
- 1 files changed, 20 insertions(+), 12 deletions(-)
+I think I'll stick with rotating disks for now, thanks.
 
->From 378c46828de3f34d94d83f08b2d6d81a0fc8f108 Mon Sep 17 00:00:00 2001
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Date: Mon, 16 Mar 2009 12:07:54 -0700
-Subject: [PATCH] x86-32: make sure we map enough to fit linear map pagetables
+> > > +	otherwise, disks may write garbage during powerfail.
+> > > +	Not sure how common that problem is on generic PC machines.
+> > > +
+> > > +	Note that atomic write is very hard to guarantee for RAID-4/5/6,
+> > > +	because it needs to write both changed data, and parity, to
+> > > +	different disks.
+> >
+> > These days instead of "atomic" it's better to think in terms of
+> > "barriers".
+>
+> This is not about barriers (that should be different topic). Atomic
+> write means that either whole sector is written, or nothing at all is
+> written. Because raid5 needs to update both master data and parity at
+> the same time, I don't think it can guarantee this during powerfail.
 
-head_32.S needs to map the kernel itself, and enough space so
-that mm/init.c can allocate space from the e820 allocator
-for the linear map of low memory.
+Good point, but I thought that's what journaling was for?
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+I'm aware that any flash filesystem _must_ be journaled in order to work 
+sanely, and must be able to view the underlying erase granularity down to the 
+bare metal, through any remapping the hardware's doing.  Possibly what's 
+really needed is a "flash is weird" section, since flash filesystems can't be 
+mounted on arbitrary block devices.
 
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index c79741c..e929619 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -38,8 +38,8 @@
- #define X86_VENDOR_ID	new_cpu_data+CPUINFO_x86_vendor_id
- 
- /*
-- * This is how much memory *in addition to the memory covered up to
-- * and including _end* we need mapped initially.
-+ * This is how much memory in addition to the memory covered up to
-+ * and including _end we need mapped initially.
-  * We need:
-  *     (KERNEL_IMAGE_SIZE/4096) / 1024 pages (worst case, non PAE)
-  *     (KERNEL_IMAGE_SIZE/4096) / 512 + 4 pages (worst case for PAE)
-@@ -52,19 +52,28 @@
-  * KERNEL_IMAGE_SIZE should be greater than pa(_end)
-  * and small than max_low_pfn, otherwise will waste some page table entries
-  */
--LOW_PAGES = (KERNEL_IMAGE_SIZE + PAGE_SIZE_asm - 1)>>PAGE_SHIFT
- 
- #if PTRS_PER_PMD > 1
--PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PMD) + PTRS_PER_PGD
-+#define PAGE_TABLE_SIZE(pages) (((pages) / PTRS_PER_PMD) + PTRS_PER_PGD)
- #else
--PAGE_TABLE_SIZE = (LOW_PAGES / PTRS_PER_PGD)
-+#define PAGE_TABLE_SIZE(pages) ((pages) / PTRS_PER_PGD)
- #endif
- ALLOCATOR_SLOP = 4
- 
--INIT_MAP_SIZE = (PAGE_TABLE_SIZE + ALLOCATOR_SLOP) * PAGE_SIZE_asm
--RESERVE_BRK(pagetables, INIT_MAP_SIZE)
-+/* Enough space to fit pagetables for the low memory linear map */
-+MAPPING_BEYOND_END = (PAGE_TABLE_SIZE(1 << (32 - PAGE_SHIFT)) * PAGE_SIZE)
- 
- /*
-+ * Worst-case size of the kernel mapping we need to make:
-+ * the worst-case size of the kernel itself, plus the extra we need
-+ * to map for the linear map.
-+ */
-+KERNEL_PAGES = (KERNEL_IMAGE_SIZE + MAPPING_BEYOND_END)>>PAGE_SHIFT
-+
-+INIT_MAP_SIZE = (PAGE_TABLE_SIZE(KERNEL_PAGES) + ALLOCATOR_SLOP) * PAGE_SIZE_asm
-+RESERVE_BRK(pagetables, INIT_MAP_SIZE)
-+	
-+/*
-  * 32-bit kernel entrypoint; only used by the boot CPU.  On entry,
-  * %esi points to the real-mode code as a 32-bit pointer.
-  * CS and DS must be 4 GB flat segments, but we don't depend on
-@@ -197,9 +206,9 @@ default_entry:
- 	loop 11b
- 
- 	/*
--	 * End condition: we must map up to the end.
-+	 * End condition: we must map up to the end + MAPPING_BEYOND_END.
- 	 */
--	movl $pa(_end) + PTE_IDENT_ATTR, %ebp
-+	movl $pa(_end) + MAPPING_BEYOND_END + PTE_IDENT_ATTR, %ebp
- 	cmpl %ebp,%eax
- 	jb 10b
- 1:
-@@ -229,9 +238,9 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
- 	addl $0x1000,%eax
- 	loop 11b
- 	/*
--	 * End condition: we must map up to end
-+	 * End condition: we must map up to the end + MAPPING_BEYOND_END.
- 	 */
--	movl $pa(_end) + PTE_IDENT_ATTR, %ebp
-+	movl $pa(_end) + MAPPING_BEYOND_END + PTE_IDENT_ATTR, %ebp
- 	cmpl %ebp,%eax
- 	jb 10b
- 	addl $__PAGE_OFFSET, %edi
+Although an "-O erase_size=128" option so they _could_ would be nice.  There's 
+"mtdram" which seems to be the only remaining use for ram disks, but why there 
+isn't an "mtdwrap" that works with arbitrary underlying block devices, I have 
+no idea.  (Layering it on top of a loopback device would be most useful.)
 
+> > > +Requirements
+> > > +* write errors not allowed
+> > > +
+> > > +* sector writes are atomic
+> > > +
+> > > +(see expectations.txt; note that most/all linux block-based
+> > > +filesystems have similar expectations)
+> > > +
+> > > +* write caching is disabled. ext2 does not know how to issue barriers
+> > > +  as of 2.6.28. hdparm -W0 disables it on SATA disks.
+> >
+> > And here we're talking about ext2.  Does neither one know about write
+> > barriers, or does this just apply to ext2?  (What about ext4?)
+>
+> This document is about ext2. Ext3 can support barriers in
+> 2.6.28. Someone else needs to write ext4 docs :-).
+>
+> > Also I remember a historical problem that not all disks honor write
+> > barriers, because actual data integrity makes for horrible benchmark
+> > numbers.  Dunno how current that is with SATA, Alan Cox would probably
+> > know.
+>
+> Sounds like broken disk, then. We should blacklist those.
 
+It wasn't just one brand of disk cheating like that, and you'd have to ask him 
+(or maybe Jens Axboe or somebody) whether the problem is still current.  I've 
+been off in embedded-land for a few years now...
+
+Rob
