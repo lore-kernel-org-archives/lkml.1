@@ -1,138 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752582AbZCPERc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbZCPEYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752582AbZCPERc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 00:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbZCPEOx
+	id S1753050AbZCPEYe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 00:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908AbZCPEYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 00:14:53 -0400
-Received: from ozlabs.org ([203.10.76.45]:57346 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752459AbZCPEOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 00:14:51 -0400
-Subject: [PULL] cpumask updates for um
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, travis@sgi.com
-CC: linux-kernel@vger.kernel.org
-CC: mingo@redhat.com
-CC: travis@sgi.com
-Date: Mon, 16 Mar 2009 14:44:44 +1030
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903161444.44432.rusty@rustcorp.com.au>
+	Mon, 16 Mar 2009 00:24:24 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:53175 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbZCPEYX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 00:24:23 -0400
+Date: Mon, 16 Mar 2009 00:24:18 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Pavel Machek <pavel@suse.cz>
+Cc: Matthew Garrett <mjg@redhat.com>,
+       Cristiano Prisciandaro <cristiano.p@solnet.ch>,
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] cpufreq: eeepc 900 frequency scaling driver
+In-reply-to: <20081202201442.GA1504@ucw.cz>
+Message-id: <alpine.LFD.2.00.0903160020250.30317@localhost.localdomain>
+References: <1227454026.7262.59.camel@localhost> <20081123180409.GB7731@ucw.cz>
+ <20081202161520.GA18252@srcf.ucam.org> <20081202201442.GA1504@ucw.cz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 5bee17f18b595937e6beafeee5197868a3f74a06:
-  Kyle McMartin (1):
-        parisc: sba_iommu: fix build bug when CONFIG_PARISC_AGP=y
 
-are available in the git repository at:
+On Tue, 2 Dec 2008, Pavel Machek wrote:
 
-  ssh://master.kernel.org/home/ftp/pub/scm/linux/kernel/git/rusty/linux-2.6-cpumask-for-um.git master
+> On Tue 2008-12-02 16:15:21, Matthew Garrett wrote:
+> > On Sun, Nov 23, 2008 at 07:04:09PM +0100, Pavel Machek wrote:
+> > 
+> > > Is this really needed? Could we simply talk to the cpu directly,
+> > > without help of ACPI?
+> > 
+> > No. The ACPI write ends up talking to the embedded controller and some 
+> > io ports.
+> 
+> Oops... I always knew that eee-s are broken by design (reporting
+> battery percent as mWh, etc...) but I did not realize how bad it
+> is. (ACPI has perfectly standard cpu frequency scaling interface, even
+> if it is not used too often these days....)
 
-Rusty Russell (3):
-      cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: um
-      cpumask: Use accessors code.: um
-      cpumask: use mm_cpumask() wrapper: um
+Huh?
 
- arch/um/include/asm/mmu_context.h |    4 ++--
- arch/um/kernel/smp.c              |    2 +-
- arch/um/kernel/um_arch.c          |    2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+What cpufreq driver is deployed more broadly than acpi-cpufreq?
+AFAIK, Linux uses it on nearly every ACPI compliant Intel-based
+system that has frequency scaling.
 
-commit 9ca79a68564459385c0a8db903ec6ffe6b00c50c
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Mon Mar 16 14:27:41 2009 +1030
-
-    cpumask: use mm_cpumask() wrapper: um
-    
-    Makes code futureproof against the impending change to mm->cpu_vm_mask.
-    
-    It's also a chance to use the new cpumask_ ops which take a pointer
-    (the older ones are deprecated, but there's no hurry for arch code).
-    
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff --git a/arch/um/include/asm/mmu_context.h b/arch/um/include/asm/mmu_context.h
-index 54f42e8..edd719e 100644
---- a/arch/um/include/asm/mmu_context.h
-+++ b/arch/um/include/asm/mmu_context.h
-@@ -35,8 +35,8 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
- 	unsigned cpu = smp_processor_id();
- 
- 	if(prev != next){
--		cpu_clear(cpu, prev->cpu_vm_mask);
--		cpu_set(cpu, next->cpu_vm_mask);
-+		cpumask_clear(cpu, mm_cpumask(prev));
-+		cpumask_set_cpu(cpu, mm_cpumask(next));
- 		if(next != &init_mm)
- 			__switch_mm(&next->context.id);
- 	}
-
-commit 577e3b46d67a0dc236a9eb89c06861a8b4580a02
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Mon Mar 16 14:27:41 2009 +1030
-
-    cpumask: Use accessors code.: um
-    
-    Impact: use new API
-    
-    Use the accessors rather than frobbing bits directly.  Most of this is
-    in arch code I haven't even compiled, but is straightforward.
-    
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-    Signed-off-by: Mike Travis <travis@sgi.com>
-
-diff --git a/arch/um/kernel/smp.c b/arch/um/kernel/smp.c
-index 98351c7..106bf27 100644
---- a/arch/um/kernel/smp.c
-+++ b/arch/um/kernel/smp.c
-@@ -111,7 +111,7 @@ void smp_prepare_cpus(unsigned int maxcpus)
- 	int i;
- 
- 	for (i = 0; i < ncpus; ++i)
--		cpu_set(i, cpu_possible_map);
-+		set_cpu_possible(i, true);
- 
- 	cpu_clear(me, cpu_online_map);
- 	cpu_set(me, cpu_online_map);
-
-commit 816a1c29fc3d9bb95dde5806c29629d16947bfe7
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Mon Mar 16 14:27:40 2009 +1030
-
-    cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: um
-    
-    Impact: cleanup, futureproof
-    
-    In fact, all cpumask ops will only be valid (in general) for bit
-    numbers < nr_cpu_ids.  So use that instead of NR_CPUS in various
-    places.
-    
-    This is always safe: no cpu number can be >= nr_cpu_ids, and
-    nr_cpu_ids is initialized to NR_CPUS at boot.
-    
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-    Signed-off-by: Mike Travis <travis@sgi.com>
-    Acked-by: Ingo Molnar <mingo@elte.hu>
-
-diff --git a/arch/um/kernel/um_arch.c b/arch/um/kernel/um_arch.c
-index 8d84250..bbf96ab 100644
---- a/arch/um/kernel/um_arch.c
-+++ b/arch/um/kernel/um_arch.c
-@@ -80,7 +80,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 
- static void *c_start(struct seq_file *m, loff_t *pos)
- {
--	return *pos < NR_CPUS ? cpu_data + *pos : NULL;
-+	return *pos < nr_cpu_ids ? cpu_data + *pos : NULL;
- }
- 
- static void *c_next(struct seq_file *m, void *v, loff_t *pos)
+-Len
 
