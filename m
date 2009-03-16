@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbZCPSc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757764AbZCPShQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758869AbZCPSc7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbZCPScb
+	id S1757764AbZCPShQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZCPShB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:32:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47039 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754494AbZCPSca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:32:30 -0400
-Message-ID: <49BE9B0D.8080807@kernel.org>
-Date: Mon, 16 Mar 2009 11:31:41 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 16 Mar 2009 14:37:01 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:55694 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752949AbZCPShA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 14:37:00 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 16 Mar 2009 11:36:39 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Jamie Lokier <jamie@shareable.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Benjamin LaHaise <bcrl@kvack.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, linux-aio <linux-aio@kvack.org>,
+       zach.brown@oracle.com
+Subject: Re: [patch] eventfd - remove fput() call from possible IRQ context
+ (2nd rev)
+In-Reply-To: <20090316172517.GC2453@shareable.org>
+Message-ID: <alpine.DEB.1.10.0903161131321.2716@makko.or.mcafeemobile.com>
+References: <49B8A75E.6040409@cosmosbay.com> <20090311233903.f036027a.akpm@linux-foundation.org> <alpine.DEB.1.10.0903120625340.6040@makko.or.mcafeemobile.com> <1236986902.7265.73.camel@heimdal.trondhjem.org> <alpine.DEB.1.10.0903131732300.13254@makko.or.mcafeemobile.com>
+ <1237003328.7265.98.camel@heimdal.trondhjem.org> <alpine.DEB.1.10.0903140729060.26556@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0903141826120.3888@makko.or.mcafeemobile.com> <20090315174445.GD18305@kvack.org> <alpine.DEB.1.10.0903151303490.16762@makko.or.mcafeemobile.com>
+ <20090316172517.GC2453@shareable.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97B0.8000004@kernel.org> <49BE98FB.9050406@zytor.com>
-In-Reply-To: <49BE98FB.9050406@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Yinghai Lu wrote:
->>
->> need more extra check for INIT_MAP_SIZE calculating...
->>
-> 
-> The original calculation was designed to map enough memory that we could
-> map all of lowmem.  That is, two page table levels removed from actual
-> lowmem, which put the overhead in the order of kilobytes (16 K in the
-> wost case.)  Something similar is definitely needed.
-> 
-or find_early_table_space()  has some problem? that estimating could be oversized ...
+On Mon, 16 Mar 2009, Jamie Lokier wrote:
 
-YH 
+> Davide Libenzi wrote:
+> > +	if (unlikely(req->ki_eventfd != NULL)) {
+> 
+> Is this really unlikely?  Having an eventfd seems to be the modern,
+> cool, recommended way to do AIO.
+
+I don't have statistics at hand, but I guess that nowadays AIO+eventfd is 
+still not very popular. It doesn't make much of a difference either ways I 
+guess, so we could drop the unlikely().
+
+
+
+- Davide
+
+
