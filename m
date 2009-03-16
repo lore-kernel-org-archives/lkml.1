@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbZCPRU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZCPRYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759312AbZCPRU7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 13:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755056AbZCPRUu
+	id S1756277AbZCPRYt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 13:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZCPRYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:20:50 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47945 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755351AbZCPRUt (ORCPT
+	Mon, 16 Mar 2009 13:24:40 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:59493 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751689AbZCPRYk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 13:20:49 -0400
-Date: Mon, 16 Mar 2009 13:20:41 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Helge Deller <deller@gmx.de>, Kyle McMartin <kyle@mcmartin.ca>,
-       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, travis@sgi.com
-Subject: Re: [PULL] cpumask updates for parisc
-Message-ID: <20090316172041.GC4282@bombadil.infradead.org>
-References: <200903161444.36219.rusty@rustcorp.com.au>
+	Mon, 16 Mar 2009 13:24:40 -0400
+Date: Mon, 16 Mar 2009 12:09:20 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 21/35] Do not check for compound pages during the page
+ allocator sanity checks
+In-Reply-To: <1237196790-7268-22-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0903161209060.32577@qirst.com>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <1237196790-7268-22-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903161444.36219.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 02:44:35PM +1030, Rusty Russell wrote:
-> The following changes since commit 5bee17f18b595937e6beafeee5197868a3f74a06:
->   Kyle McMartin (1):
->         parisc: sba_iommu: fix build bug when CONFIG_PARISC_AGP=y
-> 
-> are available in the git repository at:
-> 
->   ssh://master.kernel.org/home/ftp/pub/scm/linux/kernel/git/rusty/linux-2.6-cpumask-for-parisc.git master
-> 
-> Rusty Russell (3):
->       cpumask: arch_send_call_function_ipi_mask: parisc
->       cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: parisc
->       cpumask: Use accessors code.: parisc
-> 
->  arch/parisc/include/asm/smp.h  |    3 ++-
->  arch/parisc/kernel/irq.c       |    4 ++--
->  arch/parisc/kernel/processor.c |    6 +++---
->  arch/parisc/kernel/smp.c       |   18 +++++++++---------
->  4 files changed, 16 insertions(+), 15 deletions(-)
-> 
 
-I've pulled these into a test branch, and will let you know if my
-autobuilder shakes out any issues with them.
 
-cheers, Kyle
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+
