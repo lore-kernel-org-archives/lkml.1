@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760855AbZCPHbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760728AbZCPHaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760855AbZCPHbf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 03:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbZCPHYI
+	id S1760728AbZCPHaz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 03:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758045AbZCPHYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 03:24:08 -0400
-Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35684 "EHLO
+	Mon, 16 Mar 2009 03:24:00 -0400
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:35663 "EHLO
 	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757100AbZCPHXB (ORCPT
+	with ESMTP id S1757141AbZCPHW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 03:23:01 -0400
+	Mon, 16 Mar 2009 03:22:57 -0400
 From: "J. R. Okajima" <hooanon05@yahoo.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, "J. R. Okajima" <hooanon05@yahoo.co.jp>
-Subject: [RFC Aufs2 #2 23/28] aufs internal inotify
-Date: Mon, 16 Mar 2009 16:20:35 +0900
-Message-Id: <1237188040-11404-24-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [RFC Aufs2 #2 03/28] aufs module global
+Date: Mon, 16 Mar 2009 16:20:15 +0900
+Message-Id: <1237188040-11404-4-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.6.1.284.g5dc13
 In-Reply-To: <1237188040-11404-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1237188040-11404-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -24,20 +24,142 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 initial commit
-detect bypassing aufs by inotify-watch
+common header file
+module initialization and module global vars
 
 Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/hinotify.c |  746 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 746 insertions(+), 0 deletions(-)
- create mode 100644 fs/aufs/hinotify.c
+ fs/aufs/Kconfig  |   78 ++++++++++++++++++++++++++
+ fs/aufs/Makefile |   19 ++++++
+ fs/aufs/aufs.h   |   43 ++++++++++++++
+ fs/aufs/module.c |  164 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/aufs/module.h |   66 ++++++++++++++++++++++
+ fs/aufs/rwsem.h  |   52 +++++++++++++++++
+ fs/aufs/spl.h    |   47 +++++++++++++++
+ 7 files changed, 469 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/Kconfig
+ create mode 100644 fs/aufs/Makefile
+ create mode 100644 fs/aufs/aufs.h
+ create mode 100644 fs/aufs/module.c
+ create mode 100644 fs/aufs/module.h
+ create mode 100644 fs/aufs/rwsem.h
+ create mode 100644 fs/aufs/spl.h
 
-diff --git a/fs/aufs/hinotify.c b/fs/aufs/hinotify.c
+diff --git a/fs/aufs/Kconfig b/fs/aufs/Kconfig
 new file mode 100644
-index 0000000..af8ebdb
+index 0000000..ebf766b
 --- /dev/null
-+++ b/fs/aufs/hinotify.c
-@@ -0,0 +1,746 @@
++++ b/fs/aufs/Kconfig
+@@ -0,0 +1,78 @@
++config AUFS_FS
++	bool "Aufs (Advanced multi layered unification filesystem) support"
++	depends on EXPERIMENTAL
++	help
++	Aufs is a stackable unification filesystem such as Unionfs,
++	which unifies several directories and provides a merged single
++	directory.
++	In the early days, aufs was entirely re-designed and
++	re-implemented Unionfs Version 1.x series. Introducing many
++	original ideas, approaches and improvements, it becomes totally
++	different from Unionfs while keeping the basic features.
++
++if AUFS_FS
++choice
++	prompt "Maximum number of branches"
++	default AUFS_BRANCH_MAX_127
++	help
++	Specifies the maximum number of branches (or member directories)
++	in a single aufs. The larger value consumes more system
++	resources and has a minor impact to performance.
++config AUFS_BRANCH_MAX_127
++	bool "127"
++	help
++	Specifies the maximum number of branches (or member directories)
++	in a single aufs. The larger value consumes more system
++	resources and has a minor impact to performance.
++config AUFS_BRANCH_MAX_511
++	bool "511"
++	help
++	Specifies the maximum number of branches (or member directories)
++	in a single aufs. The larger value consumes more system
++	resources and has a minor impact to performance.
++config AUFS_BRANCH_MAX_1023
++	bool "1023"
++	help
++	Specifies the maximum number of branches (or member directories)
++	in a single aufs. The larger value consumes more system
++	resources and has a minor impact to performance.
++config AUFS_BRANCH_MAX_32767
++	bool "32767"
++	help
++	Specifies the maximum number of branches (or member directories)
++	in a single aufs. The larger value consumes more system
++	resources and has a minor impact to performance.
++endchoice
++
++config AUFS_HINOTIFY
++	bool "Use inotify to detect actions on a branch"
++	depends on INOTIFY
++	help
++	If you want to modify files on branches directly, eg. bypassing aufs,
++	and want aufs to detect the changes of them fully, then enable this
++	option and use 'udba=inotify' mount option.
++	It will have a negative impact to the performance.
++	See detail in aufs.5.
++
++config AUFS_DEBUG
++	bool "Debug aufs"
++	help
++	Enable this to compile aufs internal debug code.
++	It will have a negative impact to the performance.
++
++config AUFS_MAGIC_SYSRQ
++	bool
++	depends on AUFS_DEBUG && MAGIC_SYSRQ
++	default y
++	help
++	Automatic configuration for internal use.
++	When aufs supports Magic SysRq, enabled automatically.
++
++config AUFS_BDEV_LOOP
++	bool
++	depends on BLK_DEV_LOOP
++	default y
++	help
++	Automatic configuration for internal use.
++	Convert =[ym] into =y.
++endif
+diff --git a/fs/aufs/Makefile b/fs/aufs/Makefile
+new file mode 100644
+index 0000000..7f9e9a3
+--- /dev/null
++++ b/fs/aufs/Makefile
+@@ -0,0 +1,19 @@
++
++include ${srctree}/${src}/magic.mk
++
++obj-$(CONFIG_AUFS_FS) += aufs.o
++aufs-y := module.o sbinfo.o super.o branch.o xino.o sysaufs.o opts.o \
++	wkq.o vfsub.o dcsub.o \
++	cpup.o whout.o plink.o wbr_policy.o \
++	dinfo.o dentry.o \
++	finfo.o file.o f_op.o \
++	dir.o vdir.o \
++	iinfo.o inode.o i_op.o i_op_add.o i_op_del.o i_op_ren.o \
++	ioctl.o
++
++# all are boolean
++aufs-$(CONFIG_SYSFS) += sysfs.o
++aufs-$(CONFIG_AUFS_BDEV_LOOP) += loop.o
++aufs-$(CONFIG_AUFS_HINOTIFY) += hinotify.o
++aufs-$(CONFIG_AUFS_DEBUG) += debug.o
++aufs-$(CONFIG_AUFS_MAGIC_SYSRQ) += sysrq.o
+diff --git a/fs/aufs/aufs.h b/fs/aufs/aufs.h
+new file mode 100644
+index 0000000..a599aee
+--- /dev/null
++++ b/fs/aufs/aufs.h
+@@ -0,0 +1,43 @@
 +/*
 + * Copyright (C) 2005-2009 Junjiro R. Okajima
 + *
@@ -48,742 +170,392 @@ index 0000000..af8ebdb
 + */
 +
 +/*
-+ * inotify for the lower directories
++ * all header files
 + */
 +
-+#include "aufs.h"
++#ifndef __AUFS_H__
++#define __AUFS_H__
 +
-+static const __u32 AuHinMask = (IN_MOVE | IN_DELETE | IN_CREATE);
-+static struct inotify_handle *au_hin_handle;
++#ifdef __KERNEL__
 +
-+AuCacheFuncs(hinotify, HINOTIFY);
++#include <linux/bug.h>
 +
-+int au_hin_alloc(struct au_hinode *hinode, struct inode *inode,
-+		 struct inode *h_inode)
-+{
-+	int err;
-+	struct au_hinotify *hin;
-+	s32 wd;
++#include "debug.h"
 +
-+	err = -ENOMEM;
-+	hin = au_cache_alloc_hinotify();
-+	if (hin) {
-+		AuDebugOn(hinode->hi_notify);
-+		hinode->hi_notify = hin;
-+		hin->hin_aufs_inode = inode;
++#include "branch.h"
++#include "cpup.h"
++#include "dcsub.h"
++#include "dentry.h"
++#include "dir.h"
++#include "file.h"
++#include "fstype.h"
++#include "inode.h"
++#include "loop.h"
++#include "module.h"
++#include "opts.h"
++#include "rwsem.h"
++#include "spl.h"
++#include "super.h"
++#include "sysaufs.h"
++#include "vfsub.h"
++#include "whout.h"
++#include "wkq.h"
 +
-+		inotify_init_watch(&hin->hin_watch);
-+		wd = inotify_add_watch(au_hin_handle, &hin->hin_watch, h_inode,
-+				       AuHinMask);
-+		if (wd >= 0)
-+			return 0; /* success */
-+
-+		err = wd;
-+		put_inotify_watch(&hin->hin_watch);
-+		au_cache_free_hinotify(hin);
-+		hinode->hi_notify = NULL;
-+	}
-+
-+	return err;
-+}
-+
-+void au_hin_free(struct au_hinode *hinode)
-+{
-+	int err;
-+	struct au_hinotify *hin;
-+
-+	hin = hinode->hi_notify;
-+	if (hin) {
-+		err = 0;
-+		if (atomic_read(&hin->hin_watch.count))
-+			err = inotify_rm_watch(au_hin_handle, &hin->hin_watch);
-+		if (unlikely(err))
-+			/* it means the watch is already removed */
-+			AuWarn("failed inotify_rm_watch() %d\n", err);
-+		au_cache_free_hinotify(hin);
-+		hinode->hi_notify = NULL;
-+	}
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+void au_hin_ctl(struct au_hinode *hinode, int do_set)
-+{
-+	struct inode *h_inode;
-+	struct inotify_watch *watch;
-+
-+	if (!hinode->hi_notify)
-+		return;
-+
-+	h_inode = hinode->hi_inode;
-+	IMustLock(h_inode);
-+
-+	/* todo: try inotify_find_update_watch()? */
-+	watch = &hinode->hi_notify->hin_watch;
-+	mutex_lock(&h_inode->inotify_mutex);
-+	/* mutex_lock(&watch->ih->mutex); */
-+	if (do_set) {
-+		AuDebugOn(watch->mask & AuHinMask);
-+		watch->mask |= AuHinMask;
-+	} else {
-+		AuDebugOn(!(watch->mask & AuHinMask));
-+		watch->mask &= ~AuHinMask;
-+	}
-+	/* mutex_unlock(&watch->ih->mutex); */
-+	mutex_unlock(&h_inode->inotify_mutex);
-+}
-+
-+void au_reset_hinotify(struct inode *inode, unsigned int flags)
-+{
-+	aufs_bindex_t bindex, bend;
-+	struct inode *hi;
-+	struct dentry *iwhdentry;
-+
-+	bend = au_ibend(inode);
-+	for (bindex = au_ibstart(inode); bindex <= bend; bindex++) {
-+		hi = au_h_iptr(inode, bindex);
-+		if (!hi)
-+			continue;
-+
-+		/* mutex_lock_nested(&hi->i_mutex, AuLsc_I_CHILD); */
-+		iwhdentry = au_hi_wh(inode, bindex);
-+		if (iwhdentry)
-+			dget(iwhdentry);
-+		au_igrab(hi);
-+		au_set_h_iptr(inode, bindex, NULL, 0);
-+		au_set_h_iptr(inode, bindex, au_igrab(hi),
-+			      flags & ~AuHi_XINO);
-+		iput(hi);
-+		dput(iwhdentry);
-+		/* mutex_unlock(&hi->i_mutex); */
-+	}
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static int hin_xino(struct inode *inode, struct inode *h_inode)
-+{
-+	int err;
-+	aufs_bindex_t bindex, bend, bfound, bstart;
-+	struct inode *h_i;
-+
-+	err = 0;
-+	if (unlikely(inode->i_ino == AUFS_ROOT_INO)) {
-+		AuWarn("branch root dir was changed\n");
-+		goto out;
-+	}
-+
-+	bfound = -1;
-+	bend = au_ibend(inode);
-+	bstart = au_ibstart(inode);
-+#if 0 /* reserved for future use */
-+	if (bindex == bend) {
-+		/* keep this ino in rename case */
-+		goto out;
-+	}
-+#endif
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		if (au_h_iptr(inode, bindex) == h_inode) {
-+			bfound = bindex;
-+			break;
-+		}
-+	}
-+	if (bfound < 0)
-+		goto out;
-+
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		h_i = au_h_iptr(inode, bindex);
-+		if (!h_i)
-+			continue;
-+
-+		err = au_xino_write0(inode->i_sb, bindex, h_i->i_ino, 0);
-+		/* ignore this error */
-+		/* bad action? */
-+	}
-+
-+	/* children inode number will be broken */
-+
-+ out:
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+static int hin_gen_tree(struct dentry *dentry)
-+{
-+	int err, i, j, ndentry;
-+	struct au_dcsub_pages dpages;
-+	struct au_dpage *dpage;
-+	struct dentry **dentries;
-+
-+	err = au_dpages_init(&dpages, GFP_NOFS);
-+	if (unlikely(err))
-+		goto out;
-+	err = au_dcsub_pages(&dpages, dentry, NULL, NULL);
-+	if (unlikely(err))
-+		goto out_dpages;
-+
-+	for (i = 0; i < dpages.ndpage; i++) {
-+		dpage = dpages.dpages + i;
-+		dentries = dpage->dentries;
-+		ndentry = dpage->ndentry;
-+		for (j = 0; j < ndentry; j++) {
-+			struct dentry *d;
-+
-+			d = dentries[j];
-+			if (IS_ROOT(d))
-+				continue;
-+
-+			d_drop(d);
-+			au_digen_dec(d);
-+			if (d->d_inode)
-+				/* todo: reset children xino?
-+				   cached children only? */
-+				au_iigen_dec(d->d_inode);
-+		}
-+	}
-+
-+ out_dpages:
-+	au_dpages_free(&dpages);
-+
-+	/* discard children */
-+	dentry_unhash(dentry);
-+	dput(dentry);
-+ out:
-+	return err;
-+}
++#endif /* __KERNEL__ */
++#endif /* __AUFS_H__ */
+diff --git a/fs/aufs/module.c b/fs/aufs/module.c
+new file mode 100644
+index 0000000..c2219d3
+--- /dev/null
++++ b/fs/aufs/module.c
+@@ -0,0 +1,164 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
 +
 +/*
-+ * return 0 if processed.
++ * module global variables and operations
 + */
-+static int hin_gen_by_inode(char *name, unsigned int nlen, struct inode *inode,
-+			    const unsigned int isdir)
++
++#include <linux/module.h>
++#include <linux/seq_file.h>
++#include "aufs.h"
++
++void *au_kzrealloc(void *p, unsigned int nused, unsigned int new_sz, gfp_t gfp)
 +{
-+	int err;
-+	struct dentry *d;
-+	struct qstr *dname;
++	if (new_sz <= nused)
++		return p;
 +
-+	err = 1;
-+	if (unlikely(inode->i_ino == AUFS_ROOT_INO)) {
-+		AuWarn("branch root dir was changed\n");
-+		err = 0;
-+		goto out;
-+	}
-+
-+	if (!isdir) {
-+		AuDebugOn(!name);
-+		au_iigen_dec(inode);
-+		spin_lock(&dcache_lock);
-+		list_for_each_entry(d, &inode->i_dentry, d_alias) {
-+			dname = &d->d_name;
-+			if (dname->len != nlen
-+			    && memcmp(dname->name, name, nlen))
-+				continue;
-+			err = 0;
-+			spin_lock(&d->d_lock);
-+			__d_drop(d);
-+			au_digen_dec(d);
-+			spin_unlock(&d->d_lock);
-+			break;
-+		}
-+		spin_unlock(&dcache_lock);
-+	} else {
-+		au_fset_si(au_sbi(inode->i_sb), FAILED_REFRESH_DIRS);
-+		d = d_find_alias(inode);
-+		if (!d) {
-+			au_iigen_dec(inode);
-+			goto out;
-+		}
-+
-+		dname = &d->d_name;
-+		if (dname->len == nlen && !memcmp(dname->name, name, nlen))
-+			err = hin_gen_tree(d);
-+		dput(d);
-+	}
-+
-+ out:
-+	AuTraceErr(err);
-+	return err;
++	p = krealloc(p, new_sz, gfp);
++	if (p)
++		memset(p + nused, 0, new_sz - nused);
++	return p;
 +}
 +
-+static int hin_gen_by_name(struct dentry *dentry, const unsigned int isdir)
-+{
-+	int err;
-+	struct inode *inode;
++/* ---------------------------------------------------------------------- */
 +
-+	inode = dentry->d_inode;
-+	if (IS_ROOT(dentry)
-+	    /* || (inode && inode->i_ino == AUFS_ROOT_INO) */
-+		) {
-+		AuWarn("branch root dir was changed\n");
++/*
++ * aufs caches
++ */
++struct kmem_cache *au_cachep[AuCache_Last];
++static int __init au_cache_init(void)
++{
++	au_cachep[AuCache_DINFO] = AuCache(au_dinfo);
++	if (au_cachep[AuCache_DINFO])
++		au_cachep[AuCache_ICNTNR] = AuCache(au_icntnr);
++	if (au_cachep[AuCache_ICNTNR])
++		au_cachep[AuCache_FINFO] = AuCache(au_finfo);
++	if (au_cachep[AuCache_FINFO])
++		au_cachep[AuCache_VDIR] = AuCache(au_vdir);
++	if (au_cachep[AuCache_VDIR])
++		au_cachep[AuCache_DEHSTR] = AuCache(au_vdir_dehstr);
++	if (au_cachep[AuCache_DEHSTR])
 +		return 0;
-+	}
 +
-+	err = 0;
-+	if (!isdir) {
-+		d_drop(dentry);
-+		au_digen_dec(dentry);
-+		if (inode)
-+			au_iigen_dec(inode);
-+	} else {
-+		au_fset_si(au_sbi(dentry->d_sb), FAILED_REFRESH_DIRS);
-+		if (inode)
-+			err = hin_gen_tree(dentry);
-+	}
-+
-+	AuTraceErr(err);
-+	return err;
++	return -ENOMEM;
 +}
 +
-+/* ---------------------------------------------------------------------- */
-+
-+/* hinotify job flags */
-+#define AuHinJob_XINO0		1
-+#define AuHinJob_GEN		(1 << 1)
-+#define AuHinJob_DIRENT		(1 << 2)
-+#define AuHinJob_ISDIR		(1 << 3)
-+#define AuHinJob_TRYXINO0	(1 << 4)
-+#define AuHinJob_MNTPNT		(1 << 5)
-+#define au_ftest_hinjob(flags, name)	((flags) & AuHinJob_##name)
-+#define au_fset_hinjob(flags, name)	{ (flags) |= AuHinJob_##name; }
-+#define au_fclr_hinjob(flags, name)	{ (flags) &= ~AuHinJob_##name; }
-+
-+struct hin_job_args {
-+	unsigned int flags;
-+	struct inode *inode, *h_inode, *dir, *h_dir;
-+	struct dentry *dentry;
-+	char *h_name;
-+	int h_nlen;
-+};
-+
-+static int hin_job(struct hin_job_args *a)
++static void au_cache_fin(void)
 +{
-+	const unsigned int isdir = au_ftest_hinjob(a->flags, ISDIR);
-+
-+	/* reset xino */
-+	if (au_ftest_hinjob(a->flags, XINO0) && a->inode)
-+		hin_xino(a->inode, a->h_inode); /* ignore this error */
-+
-+	if (au_ftest_hinjob(a->flags, TRYXINO0)
-+	    && a->inode
-+	    && a->h_inode) {
-+		mutex_lock_nested(&a->h_inode->i_mutex, AuLsc_I_CHILD);
-+		if (!a->h_inode->i_nlink)
-+			hin_xino(a->inode, a->h_inode); /* ignore this error */
-+		mutex_unlock(&a->h_inode->i_mutex);
-+	}
-+
-+	/* make the generation obsolete */
-+	if (au_ftest_hinjob(a->flags, GEN)) {
-+		int err = -1;
-+		if (a->inode)
-+			err = hin_gen_by_inode(a->h_name, a->h_nlen, a->inode,
-+					       isdir);
-+		if (err && a->dentry)
-+			hin_gen_by_name(a->dentry, isdir);
-+		/* ignore this error */
-+	}
-+
-+	/* make dir entries obsolete */
-+	if (au_ftest_hinjob(a->flags, DIRENT) && a->inode) {
-+		struct au_vdir *vdir;
-+
-+		vdir = au_ivdir(a->inode);
-+		if (vdir)
-+			vdir->vd_jiffy = 0;
-+		/* IMustLock(a->inode); */
-+		/* a->inode->i_version++; */
-+	}
-+
-+	/* can do nothing but warn */
-+	if (au_ftest_hinjob(a->flags, MNTPNT)
-+	    && a->dentry
-+	    && d_mountpoint(a->dentry))
-+		AuWarn("mount-point %.*s is removed or renamed\n",
-+		       AuDLNPair(a->dentry));
-+
-+	return 0;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static char *in_name(u32 mask)
-+{
-+#ifdef CONFIG_AUFS_DEBUG
-+#define test_ret(flag)	if (mask & flag) \
-+				return #flag;
-+	test_ret(IN_ACCESS);
-+	test_ret(IN_MODIFY);
-+	test_ret(IN_ATTRIB);
-+	test_ret(IN_CLOSE_WRITE);
-+	test_ret(IN_CLOSE_NOWRITE);
-+	test_ret(IN_OPEN);
-+	test_ret(IN_MOVED_FROM);
-+	test_ret(IN_MOVED_TO);
-+	test_ret(IN_CREATE);
-+	test_ret(IN_DELETE);
-+	test_ret(IN_DELETE_SELF);
-+	test_ret(IN_MOVE_SELF);
-+	test_ret(IN_UNMOUNT);
-+	test_ret(IN_Q_OVERFLOW);
-+	test_ret(IN_IGNORED);
-+	return "";
-+#undef test_ret
-+#else
-+	return "??";
-+#endif
-+}
-+
-+static struct dentry *lookup_wlock_by_name(char *name, unsigned int nlen,
-+					   struct inode *dir)
-+{
-+	struct dentry *dentry, *d, *parent;
-+	struct qstr *dname;
-+
-+	parent = d_find_alias(dir);
-+	if (!parent)
-+		return NULL;
-+
-+	dentry = NULL;
-+	spin_lock(&dcache_lock);
-+	list_for_each_entry(d, &parent->d_subdirs, d_u.d_child) {
-+		/* AuDbg("%.*s\n", AuDLNPair(d)); */
-+		dname = &d->d_name;
-+		if (dname->len != nlen || memcmp(dname->name, name, nlen))
-+			continue;
-+		if (!atomic_read(&d->d_count) || !d->d_fsdata) {
-+			spin_lock(&d->d_lock);
-+			__d_drop(d);
-+			spin_unlock(&d->d_lock);
-+			continue;
++	int i;
++	for (i = 0; i < AuCache_Last; i++)
++		if (au_cachep[i]) {
++			kmem_cache_destroy(au_cachep[i]);
++			au_cachep[i] = NULL;
 +		}
-+
-+		dentry = dget(d);
-+		break;
-+	}
-+	spin_unlock(&dcache_lock);
-+	dput(parent);
-+
-+	if (dentry)
-+		di_write_lock_child(dentry);
-+
-+	return dentry;
-+}
-+
-+static struct inode *lookup_wlock_by_ino(struct super_block *sb,
-+					 aufs_bindex_t bindex, ino_t h_ino)
-+{
-+	struct inode *inode;
-+	ino_t ino;
-+	int err;
-+
-+	inode = NULL;
-+	err = au_xino_read(sb, bindex, h_ino, &ino);
-+	if (!err && ino)
-+		inode = ilookup(sb, ino);
-+	if (!inode)
-+		goto out;
-+
-+	if (unlikely(inode->i_ino == AUFS_ROOT_INO)) {
-+		AuWarn("wrong root branch\n");
-+		iput(inode);
-+		inode = NULL;
-+		goto out;
-+	}
-+
-+	ii_write_lock_child(inode);
-+
-+ out:
-+	return inode;
-+}
-+
-+enum { CHILD, PARENT };
-+struct postproc_args {
-+	struct inode *h_dir, *dir, *h_child_inode;
-+	u32 mask;
-+	unsigned int flags[2];
-+	unsigned int h_child_nlen;
-+	char h_child_name[];
-+};
-+
-+static void postproc(void *_args)
-+{
-+	struct postproc_args *a = _args;
-+	struct super_block *sb;
-+	aufs_bindex_t bindex, bend, bfound;
-+	unsigned char xino, try_iput;
-+	int err;
-+	struct inode *inode;
-+	ino_t h_ino;
-+	struct hin_job_args args;
-+	struct dentry *dentry;
-+	struct au_sbinfo *sbinfo;
-+
-+	AuDebugOn(!_args);
-+	AuDebugOn(!a->h_dir);
-+	AuDebugOn(!a->dir);
-+	AuDebugOn(!a->mask);
-+	AuDbg("mask 0x%x %s, i%lu, hi%lu, hci%lu\n",
-+	      a->mask, in_name(a->mask), a->dir->i_ino, a->h_dir->i_ino,
-+	      a->h_child_inode ? a->h_child_inode->i_ino : 0);
-+
-+	inode = NULL;
-+	dentry = NULL;
-+	/*
-+	 * do not lock a->dir->i_mutex here
-+	 * because of d_revalidate() may cause a deadlock.
-+	 */
-+	sb = a->dir->i_sb;
-+	AuDebugOn(!sb);
-+	sbinfo = au_sbi(sb);
-+	AuDebugOn(!sbinfo);
-+	/* big aufs lock */
-+	si_noflush_write_lock(sb);
-+
-+	ii_read_lock_parent(a->dir);
-+	bfound = -1;
-+	bend = au_ibend(a->dir);
-+	for (bindex = au_ibstart(a->dir); bindex <= bend; bindex++)
-+		if (au_h_iptr(a->dir, bindex) == a->h_dir) {
-+			bfound = bindex;
-+			break;
-+		}
-+	ii_read_unlock(a->dir);
-+	if (unlikely(bfound < 0))
-+		goto out;
-+
-+	xino = !!au_opt_test(au_mntflags(sb), XINO);
-+	h_ino = 0;
-+	if (a->h_child_inode)
-+		h_ino = a->h_child_inode->i_ino;
-+
-+	if (a->h_child_nlen
-+	    && (au_ftest_hinjob(a->flags[CHILD], GEN)
-+		|| au_ftest_hinjob(a->flags[CHILD], MNTPNT)))
-+		dentry = lookup_wlock_by_name(a->h_child_name, a->h_child_nlen,
-+					      a->dir);
-+	try_iput = 0;
-+	if (dentry)
-+		inode = dentry->d_inode;
-+	if (xino && !inode && h_ino
-+	    && (au_ftest_hinjob(a->flags[CHILD], XINO0)
-+		|| au_ftest_hinjob(a->flags[CHILD], TRYXINO0)
-+		|| au_ftest_hinjob(a->flags[CHILD], GEN))) {
-+		inode = lookup_wlock_by_ino(sb, bfound, h_ino);
-+		try_iput = 1;
-+	    }
-+
-+	args.flags = a->flags[CHILD];
-+	args.dentry = dentry;
-+	args.inode = inode;
-+	args.h_inode = a->h_child_inode;
-+	args.dir = a->dir;
-+	args.h_dir = a->h_dir;
-+	args.h_name = a->h_child_name;
-+	args.h_nlen = a->h_child_nlen;
-+	err = hin_job(&args);
-+	if (dentry) {
-+		if (dentry->d_fsdata)
-+			di_write_unlock(dentry);
-+		dput(dentry);
-+	}
-+	if (inode && try_iput) {
-+		ii_write_unlock(inode);
-+		iput(inode);
-+	}
-+
-+	ii_write_lock_parent(a->dir);
-+	args.flags = a->flags[PARENT];
-+	args.dentry = NULL;
-+	args.inode = a->dir;
-+	args.h_inode = a->h_dir;
-+	args.dir = NULL;
-+	args.h_dir = NULL;
-+	args.h_name = NULL;
-+	args.h_nlen = 0;
-+	err = hin_job(&args);
-+	ii_write_unlock(a->dir);
-+
-+ out:
-+	au_nwt_done(&sbinfo->si_nowait);
-+	si_write_unlock(sb);
-+
-+	iput(a->h_child_inode);
-+	iput(a->h_dir);
-+	iput(a->dir);
-+	kfree(a);
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+static void aufs_inotify(struct inotify_watch *watch, u32 wd __maybe_unused,
-+			 u32 mask, u32 cookie __maybe_unused,
-+			 const char *h_child_name, struct inode *h_child_inode)
++int au_dir_roflags;
++
++/*
++ * functions for module interface.
++ */
++MODULE_LICENSE("GPL");
++/* MODULE_LICENSE("GPL v2"); */
++MODULE_AUTHOR("Junjiro R. Okajima");
++MODULE_DESCRIPTION(AUFS_NAME
++	" -- Advanced multi layered unification filesystem");
++MODULE_VERSION(AUFS_VERSION);
++
++/* it should be 'byte', but param_set_byte() prints it by "%c" */
++short aufs_nwkq = AUFS_NWKQ_DEF;
++MODULE_PARM_DESC(nwkq, "the number of workqueue thread, " AUFS_WKQ_NAME);
++module_param_named(nwkq, aufs_nwkq, short, S_IRUGO);
++
++/* this module parameter has no meaning when SYSFS is disabled */
++int sysaufs_brs = 1;
++MODULE_PARM_DESC(brs, "use <sysfs>/fs/aufs/si_*/brN");
++module_param_named(brs, sysaufs_brs, int, S_IRUGO);
++
++/* ---------------------------------------------------------------------- */
++
++static char au_esc_chars[0x20 + 3]; /* 0x01-0x20, backslash, del, and NULL */
++
++int au_seq_path(struct seq_file *seq, struct path *path)
 +{
-+	struct au_hinotify *hinotify;
-+	struct postproc_args *args;
-+	int len, wkq_err;
-+	unsigned char isdir, isroot, wh;
++	return seq_path(seq, path, au_esc_chars);
++}
++
++/* ---------------------------------------------------------------------- */
++
++static int __init aufs_init(void)
++{
++	int err, i;
 +	char *p;
-+	struct inode *dir;
-+	unsigned int flags[2];
 +
-+	/* if IN_UNMOUNT happens, there must be another bug */
-+	AuDebugOn(mask & IN_UNMOUNT);
-+	if (mask & (IN_IGNORED | IN_UNMOUNT)) {
-+		put_inotify_watch(watch);
-+		return;
-+	}
-+#ifdef AuDbgHinotify
-+	au_debug(1);
-+	if (1 || !h_child_name || strcmp(h_child_name, AUFS_XINO_FNAME)) {
-+		AuDbg("i%lu, wd %d, mask 0x%x %s, cookie 0x%x, hcname %s,"
-+		      " hi%lu\n",
-+		      watch->inode->i_ino, wd, mask, in_name(mask), cookie,
-+		      h_child_name ? h_child_name : "",
-+		      h_child_inode ? h_child_inode->i_ino : 0);
-+		WARN_ON(1);
-+	}
-+	au_debug(0);
-+#endif
++	p = au_esc_chars;
++	for (i = 1; i <= ' '; i++)
++		*p++ = i;
++	*p++ = '\\';
++	*p++ = '\x7f';
++	*p = 0;
 +
-+	hinotify = container_of(watch, struct au_hinotify, hin_watch);
-+	AuDebugOn(!hinotify || !hinotify->hin_aufs_inode);
-+	dir = igrab(hinotify->hin_aufs_inode);
-+	if (!dir)
-+		return;
++	au_dir_roflags = au_file_roflags(O_DIRECTORY | O_LARGEFILE);
 +
-+	isroot = (dir->i_ino == AUFS_ROOT_INO);
-+	len = 0;
-+	wh = 0;
-+	if (h_child_name) {
-+		len = strlen(h_child_name);
-+		if (!memcmp(h_child_name, AUFS_WH_PFX, AUFS_WH_PFX_LEN)) {
-+			h_child_name += AUFS_WH_PFX_LEN;
-+			len -= AUFS_WH_PFX_LEN;
-+			wh = 1;
-+		}
-+	}
++	sysaufs_brs_init();
++	au_debug_init();
 +
-+	isdir = 0;
-+	if (h_child_inode)
-+		isdir = !!S_ISDIR(h_child_inode->i_mode);
-+	flags[PARENT] = AuHinJob_ISDIR;
-+	flags[CHILD] = 0;
-+	if (isdir)
-+		flags[CHILD] = AuHinJob_ISDIR;
-+	switch (mask & IN_ALL_EVENTS) {
-+	case IN_MOVED_FROM:
-+	case IN_MOVED_TO:
-+		AuDebugOn(!h_child_name || !h_child_inode);
-+		au_fset_hinjob(flags[CHILD], GEN);
-+		au_fset_hinjob(flags[CHILD], XINO0);
-+		au_fset_hinjob(flags[CHILD], MNTPNT);
-+		au_fset_hinjob(flags[PARENT], DIRENT);
-+		break;
++	err = -EINVAL;
++	if (unlikely(aufs_nwkq <= 0))
++		goto out;
 +
-+	case IN_CREATE:
-+		AuDebugOn(!h_child_name || !h_child_inode);
-+		au_fset_hinjob(flags[PARENT], DIRENT);
-+		au_fset_hinjob(flags[CHILD], GEN);
-+		break;
++	err = sysaufs_init();
++	if (unlikely(err))
++		goto out;
++	err = au_wkq_init();
++	if (unlikely(err))
++		goto out_sysaufs;
++	err = au_hinotify_init();
++	if (unlikely(err))
++		goto out_wkq;
++	err = au_sysrq_init();
++	if (unlikely(err))
++		goto out_hin;
++	err = au_cache_init();
++	if (unlikely(err))
++		goto out_sysrq;
++	err = register_filesystem(&aufs_fs_type);
++	if (unlikely(err))
++		goto out_cache;
++	pr_info(AUFS_NAME " " AUFS_VERSION "\n");
++	goto out; /* success */
 +
-+	case IN_DELETE:
-+		/*
-+		 * aufs never be able to get this child inode.
-+		 * revalidation should be in d_revalidate()
-+		 * by checking i_nlink, i_generation or d_unhashed().
-+		 */
-+		AuDebugOn(!h_child_name);
-+		au_fset_hinjob(flags[PARENT], DIRENT);
-+		au_fset_hinjob(flags[CHILD], GEN);
-+		au_fset_hinjob(flags[CHILD], TRYXINO0);
-+		au_fset_hinjob(flags[CHILD], MNTPNT);
-+		break;
-+
-+	default:
-+		AuDebugOn(1);
-+	}
-+
-+	if (wh)
-+		h_child_inode = NULL;
-+
-+	/* iput() and kfree() will be called in postproc() */
-+	/*
-+	 * inotify_mutex is already acquired and kmalloc/prune_icache may lock
-+	 * iprune_mutex. strange.
-+	 */
-+	lockdep_off();
-+	args = kmalloc(sizeof(*args) + len + 1, GFP_NOFS);
-+	lockdep_on();
-+	if (unlikely(!args)) {
-+		AuErr1("no memory\n");
-+		iput(dir);
-+		return;
-+	}
-+	args->flags[PARENT] = flags[PARENT];
-+	args->flags[CHILD] = flags[CHILD];
-+	args->mask = mask;
-+	args->dir = dir;
-+	args->h_dir = igrab(watch->inode);
-+	if (h_child_inode)
-+		h_child_inode = igrab(h_child_inode); /* can be NULL */
-+	args->h_child_inode = h_child_inode;
-+	args->h_child_nlen = len;
-+	if (len) {
-+		p = (void *)args;
-+		p += sizeof(*args);
-+		memcpy(p, h_child_name, len + 1);
-+	}
-+
-+	lockdep_off();
-+	wkq_err = au_wkq_nowait(postproc, args, dir->i_sb);
-+	lockdep_on();
-+	if (unlikely(wkq_err))
-+		AuErr("wkq %d\n", wkq_err);
-+}
-+
-+static void aufs_inotify_destroy(struct inotify_watch *watch __maybe_unused)
-+{
-+	return;
-+}
-+
-+static struct inotify_operations aufs_inotify_ops = {
-+	.handle_event	= aufs_inotify,
-+	.destroy_watch	= aufs_inotify_destroy
-+};
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static void au_hin_destroy_cache(void)
-+{
-+	kmem_cache_destroy(au_cachep[AuCache_HINOTIFY]);
-+	au_cachep[AuCache_HINOTIFY] = NULL;
-+}
-+
-+int __init au_hinotify_init(void)
-+{
-+	int err;
-+
-+	err = -ENOMEM;
-+	au_cachep[AuCache_HINOTIFY] = AuCache(au_hinotify);
-+	if (au_cachep[AuCache_HINOTIFY]) {
-+		err = 0;
-+		au_hin_handle = inotify_init(&aufs_inotify_ops);
-+		if (IS_ERR(au_hin_handle)) {
-+			err = PTR_ERR(au_hin_handle);
-+			au_hin_destroy_cache();
-+		}
-+	}
-+	AuTraceErr(err);
++ out_cache:
++	au_cache_fin();
++ out_sysrq:
++	au_sysrq_fin();
++ out_hin:
++	au_hinotify_fin();
++ out_wkq:
++	au_wkq_fin();
++ out_sysaufs:
++	sysaufs_fin();
++ out:
 +	return err;
 +}
 +
-+void au_hinotify_fin(void)
++static void __exit aufs_exit(void)
 +{
-+	inotify_destroy(au_hin_handle);
-+	if (au_cachep[AuCache_HINOTIFY])
-+		au_hin_destroy_cache();
++	unregister_filesystem(&aufs_fs_type);
++	au_cache_fin();
++	au_sysrq_fin();
++	au_hinotify_fin();
++	au_wkq_fin();
++	sysaufs_fin();
 +}
++
++module_init(aufs_init);
++module_exit(aufs_exit);
+diff --git a/fs/aufs/module.h b/fs/aufs/module.h
+new file mode 100644
+index 0000000..85e397a
+--- /dev/null
++++ b/fs/aufs/module.h
+@@ -0,0 +1,66 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/*
++ * module initialization and module-global
++ */
++
++#ifndef __AUFS_MODULE_H__
++#define __AUFS_MODULE_H__
++
++#ifdef __KERNEL__
++
++#include <linux/slab.h>
++
++/* module parameters */
++extern short aufs_nwkq;
++extern int sysaufs_brs;
++
++/* ---------------------------------------------------------------------- */
++
++extern int au_dir_roflags;
++
++void *au_kzrealloc(void *p, unsigned int nused, unsigned int new_sz, gfp_t gfp);
++int au_seq_path(struct seq_file *seq, struct path *path);
++
++/* ---------------------------------------------------------------------- */
++
++/* kmem cache */
++enum {
++	AuCache_DINFO,
++	AuCache_ICNTNR,
++	AuCache_FINFO,
++	AuCache_VDIR,
++	AuCache_DEHSTR,
++#ifdef CONFIG_AUFS_HINOTIFY
++	AuCache_HINOTIFY,
++#endif
++	AuCache_Last
++};
++
++#define AuCache(type)	KMEM_CACHE(type, SLAB_RECLAIM_ACCOUNT)
++
++extern struct kmem_cache *au_cachep[];
++
++#define AuCacheFuncs(name, index) \
++static inline void *au_cache_alloc_##name(void) \
++{ return kmem_cache_alloc(au_cachep[AuCache_##index], GFP_NOFS); } \
++static inline void au_cache_free_##name(void *p) \
++{ kmem_cache_free(au_cachep[AuCache_##index], p); }
++
++AuCacheFuncs(dinfo, DINFO);
++AuCacheFuncs(icntnr, ICNTNR);
++AuCacheFuncs(finfo, FINFO);
++AuCacheFuncs(vdir, VDIR);
++AuCacheFuncs(dehstr, DEHSTR);
++
++/*  ---------------------------------------------------------------------- */
++
++#endif /* __KERNEL__ */
++#endif /* __AUFS_MODULE_H__ */
+diff --git a/fs/aufs/rwsem.h b/fs/aufs/rwsem.h
+new file mode 100644
+index 0000000..d569243
+--- /dev/null
++++ b/fs/aufs/rwsem.h
+@@ -0,0 +1,52 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/*
++ * simple read-write semaphore wrappers
++ */
++
++#ifndef __AUFS_RWSEM_H__
++#define __AUFS_RWSEM_H__
++
++#ifdef __KERNEL__
++
++#include <linux/fs.h>
++
++#define au_rwsem_destroy(rw)	AuDebugOn(rwsem_is_locked(rw))
++#define AuRwMustNoWaiters(rw)	AuDebugOn(!list_empty(&(rw)->wait_list))
++
++#define AuSimpleLockRwsemFuncs(prefix, param, rwsem) \
++static inline void prefix##_read_lock(param) \
++{ down_read(rwsem); } \
++static inline void prefix##_write_lock(param) \
++{ down_write(rwsem); } \
++static inline int prefix##_read_trylock(param) \
++{ return down_read_trylock(rwsem); } \
++static inline int prefix##_write_trylock(param) \
++{ return down_write_trylock(rwsem); }
++/* why is not _nested version defined */
++/* static inline void prefix##_read_trylock_nested(param, lsc)
++{ down_write_trylock_nested(rwsem, lsc)); }
++static inline void prefix##_write_trylock_nestd(param, lsc)
++{ down_write_trylock_nested(rwsem, lsc); } */
++
++#define AuSimpleUnlockRwsemFuncs(prefix, param, rwsem) \
++static inline void prefix##_read_unlock(param) \
++{ up_read(rwsem); } \
++static inline void prefix##_write_unlock(param) \
++{ up_write(rwsem); } \
++static inline void prefix##_downgrade_lock(param) \
++{ downgrade_write(rwsem); }
++
++#define AuSimpleRwsemFuncs(prefix, param, rwsem) \
++	AuSimpleLockRwsemFuncs(prefix, param, rwsem) \
++	AuSimpleUnlockRwsemFuncs(prefix, param, rwsem)
++
++#endif /* __KERNEL__ */
++#endif /* __AUFS_RWSEM_H__ */
+diff --git a/fs/aufs/spl.h b/fs/aufs/spl.h
+new file mode 100644
+index 0000000..89ea7a2
+--- /dev/null
++++ b/fs/aufs/spl.h
+@@ -0,0 +1,47 @@
++/*
++ * Copyright (C) 2005-2009 Junjiro R. Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++/*
++ * simple list protected by a spinlock
++ */
++
++#ifndef __AUFS_SPL_H__
++#define __AUFS_SPL_H__
++
++#ifdef __KERNEL__
++
++#include <linux/fs.h>
++
++struct au_splhead {
++	spinlock_t		spin;
++	struct list_head	head;
++};
++
++static inline void au_spl_init(struct au_splhead *spl)
++{
++	spin_lock_init(&spl->spin);
++	INIT_LIST_HEAD(&spl->head);
++}
++
++static inline void au_spl_add(struct list_head *list, struct au_splhead *spl)
++{
++	spin_lock(&spl->spin);
++	list_add(list, &spl->head);
++	spin_unlock(&spl->spin);
++}
++
++static inline void au_spl_del(struct list_head *list, struct au_splhead *spl)
++{
++	spin_lock(&spl->spin);
++	list_del(list);
++	spin_unlock(&spl->spin);
++}
++
++#endif /* __KERNEL__ */
++#endif /* __AUFS_SPL_H__ */
 -- 
 1.6.1.284.g5dc13
 
