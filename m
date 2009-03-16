@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760481AbZCPRQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbZCPRU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760481AbZCPRQY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 13:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbZCPRQP
+	id S1756054AbZCPRU1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 13:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbZCPRUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:16:15 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:57977 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755107AbZCPRQO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 13:16:14 -0400
-Date: Mon, 16 Mar 2009 17:16:10 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Frank Seidel <fseidel@suse.de>
-Cc: Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       LKML <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: 2.6.29-rc breaks STD using Intel 945
-Message-ID: <20090316171610.GA10814@silver.sucs.org>
-References: <200903042020.57671.eike-kernel@sf-tec.de> <20090305125529.GB16693@silver.sucs.org> <200903081902.23998.eike-kernel@sf-tec.de> <20090314133704.GA21948@silver.sucs.org> <49BE4E00.9000505@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49BE4E00.9000505@suse.de>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 16 Mar 2009 13:20:17 -0400
+Received: from gw.goop.org ([64.81.55.164]:45344 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753150AbZCPRUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 13:20:16 -0400
+Message-ID: <49BE8A4D.7040204@goop.org>
+Date: Mon, 16 Mar 2009 10:20:13 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org>
+In-Reply-To: <49BE84D6.3010006@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 02:02:56PM +0100, Frank Seidel wrote:
-> Sitsofe Wheeler wrote:
-> > Hmm. Does switching to and then back from a virtual terminal also break?
-> 
-> I think i have the same problem and yes, switching to and back from vt
-> also breaks X.
-> I opened a bug here: https://bugzilla.novell.com/show_bug.cgi?id=485537
-> 
-> For me it currently helps to disable dri which makes my system stable
-> again.
+Yinghai Lu wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>> Ingo Molnar wrote:
+>>     
+>>>> And the resulting kernel booted fine under qemu with 1Gbyte of
+>>>> memory.  I'll try on real hardware a bit later, but it doesn't seem
+>>>> like something that should be affected by qemu vs native, unless it
+>>>> has something to do with the specific e820 map.
+>>>>     
+>>>>         
+>>> Note that the crash was reproducible and it very clearly went away
+>>> when i excluded those commits from tip:master.
+>>>   
+>>>       
+>> Yep, and it looks like the kind of problem those changes might cause. 
+>> But I can't reproduce it, and its not obvious to me what's actually
+>> going wrong.  Any chance you could bisect the failure down to a specific
+>> changeset, and print "start", "max_pfn_mapped" and "tables" where it fails?
+>>
+>>     
+>
+> could be max_pfn_mapped change in head_32.S that reduce mapping range to _end only.
+>   
 
-The reason I asked is because I am seeing a problem/regression
-with VT switching but only when AIGLX is on:
-http://marc.info/?l=linux-kernel&m=123523074304955&w=4 ,
-http://marc.info/?l=dri-devel&m=123666881014615&w=4 and
-http://bugzilla.kernel.org/show_bug.cgi?id=12765 .
+Oh, you mean rather than including all low memory?  Possible.  I can 
+reproduce it now, so I should be able to sort it out now.
 
-The above may or may not be what Rolf is seeing (but if it is it would
-be good to know so they can all be collected together)...
-
--- 
-Sitsofe | http://sucs.org/~sits/
+    J
