@@ -1,88 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761814AbZCPXD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbZCPXJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761814AbZCPXD4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 19:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbZCPXDr
+	id S1759362AbZCPXJo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 19:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbZCPXJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 19:03:47 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:51194 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754488AbZCPXDq (ORCPT
+	Mon, 16 Mar 2009 19:09:32 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:39721 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753156AbZCPXJa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 19:03:46 -0400
-Date: Mon, 16 Mar 2009 18:03:42 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, Igor Zhbanov <izh1979@gmail.com>,
-       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
-       David Howells <dhowells@redhat.com>, Andrew Morgan <morgan@kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       SELinux <selinux@tycho.nsa.gov>
-Subject: Re: =?utf-8?B?0J7RgtCy0LXRgjogVkZTLCBORlMg?=
-	=?utf-8?Q?security_bug=3F_Shoul?=
-	=?utf-8?Q?d?= CAP_MKNOD and CAP_LINUX_IMMUTABLE be added to
-	CAP_FS_MASK?
-Message-ID: <20090316230342.GB15522@us.ibm.com>
-References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com> <20090311232356.GP13540@fieldses.org> <20090312161047.GA15209@us.ibm.com> <517f3f820903121321sf6d2014q8165b925d5d44db7@mail.gmail.com> <20090313175848.GB27891@fieldses.org> <f44001920903131137j158c5f76y6a71b58ee964df77@mail.gmail.com> <20090313190002.GA16025@us.ibm.com> <1237227705.1035.93.camel@localhost.localdomain> <20090316184926.GA6729@us.ibm.com> <20090316224848.GC17738@fieldses.org>
+	Mon, 16 Mar 2009 19:09:30 -0400
+Message-ID: <49BEDC24.6000607@snapgear.com>
+Date: Tue, 17 Mar 2009 09:09:24 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090316224848.GC17738@fieldses.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Rob Landley <rob@landley.net>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       linux-next@vger.kernel.org, linux-m68k@vger.kernel.org
+Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
+References: <200903120437.03837.rob@landley.net>	 <10f740e80903130514k194fbdackd373d2951a9f76ba@mail.gmail.com>	 <49BE48B3.6060108@snapgear.com> <200903161521.00036.rob@landley.net> <10f740e80903161508r3c5f2017sbdb45779662fc854@mail.gmail.com>
+In-Reply-To: <10f740e80903161508r3c5f2017sbdb45779662fc854@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting J. Bruce Fields (bfields@fieldses.org):
-> Seems this isn't entirely obvious in the general case.  In the specific
 
-I think the MKNOD part is (based on historical behavior as you
-suggested) obvious:  both masks should include CAP_MKNOD and
-CAP_LINUX_IMMUTABLE.
+Hi Geert,
 
-(references: http://lxr.linux.no/linux-old+v2.0.21/fs/ext2/ioctl.c#L60
-for immutable and http://lxr.linux.no/linux-old+v2.0.21/fs/namei.c#L503
-for mknod)
+Geert Uytterhoeven wrote:
+> On Mon, Mar 16, 2009 at 21:20, Rob Landley <rob@landley.net> wrote:
+>> On Monday 16 March 2009 07:40:19 Greg Ungerer wrote:
+>>> Geert Uytterhoeven wrote:
+>>>> On Fri, Mar 13, 2009 at 11:52, Greg Ungerer <gerg@snapgear.com> wrote:
+>>>>> Sam Ravnborg wrote:
+>>>>>> On Fri, Mar 13, 2009 at 09:33:18AM +0100, Geert Uytterhoeven wrote:
+>>>>>>> On Fri, Mar 13, 2009 at 09:25, Sam Ravnborg <sam@ravnborg.org> wrote:
+>>>>>>>> On Fri, Mar 13, 2009 at 05:04:57PM +1000, Greg Ungerer wrote:
+>>>>>>>>> I pretty quick time I can fix up the last couple on the above list.
+>>>>>>>>> But do we want to put all that change into 2.6.29-rc at this point?
+>>>>>>>> In general we do not want to have headers_check broken in mainline,
+>>>>>>> headers_check is not broken, headers_install is.
+>>>>>>>
+>>>>>>> Hmm, in some sense headers_check _is_ broken, as it doesn't notice
+>>>>>>> headers_install
+>>>>>>> installs headers that refer to other headers that are not installed...
+>>>>>> This is what scripts/headers_check are supposed to do - strange.
+>>>>>>
+>>>>>>> Greg, I had a quick look at your signcontext.h and signal.h merge, and
+>>>>>>> the MMU
+>>>>>>> part seems to be OK.
+>>>>>>>
+>>>>>>> However, some of the installed headers still have checks for
+>>>>>>> CONFIG_MMU:
+>>>>>>>
+>>>>>>> param.h:#ifdef CONFIG_MMU
+>>>>>>> sigcontext.h:#ifndef CONFIG_MMU
+>>>>>>> sigcontext.h:#ifdef CONFIG_MMU
+>>>>>>> siginfo.h:#ifdef CONFIG_MMU
+>>>>>>> siginfo.h:#ifdef CONFIG_MMU
+>>>>>>> siginfo.h:#endif /* CONFIG_MMU */
+>>>>>>> swab.h:#elif defined(CONFIG_MMU)
+>>>>>>>
+>>>>>>> so these have to be added to the generic unifdef-y list (is that
+>>>>>>> include/asm-generic/Kbuild.asm?).
+>>>>> Hmmm, yes your right.
+>>>>>
+>>>>>> include/asm-generic/Kbuild.asm impacts all architectures so be carefull
+>>>>>> there.
+>>>>>> It looks like some updates to arch/m68k/include/asm/Kbuild is needed,
+>>>>>> and not the generic list of files to export.
+>>>>>>
+>>>>>> Also use og CONFIG_MMU suprises me.
+>>>>>> We used #ifdef __uClinux__ in the non-merged headers to avoid use
+>>>>>> of a CONFIG_* symbol that is not valid outside the kernel namespace.
+>>>>>> So if param.h in m68k uses CONFIG_MMU it is broken.
+>>>>> I have been trying to use CONFIG_MMU wherever possible (so for non-
+>>>>> exported headers), since that matches what is actually in the code
+>>>>> proper. I am concerned at the longer term use of __uClinux__ for
+>>>>> distinguishing MMU and non-MMU. I plan on switching to use a normal
+>>>>> m68k toolchain soon. And it won't define __uClinux__ on its own.
+>>>>> (I already do this on ARM for example - same toolchain on both
+>>>>> MMU an non-MMU).
+>>>>>
+>>>>> What I have done so far is or the most part a very simple merge
+>>>>> of the files. I know there is room for some improvements in quite a
+>>>>> few of these files.
+>>>>>
+>>>>> The use of CONFIG_MMU in swab.h (is this actually exported to user
+>>>>> space?) is not actually for code that is MMU or non-MMU. It is
+>>>>> actually architecture specific. Most ColdFire parts don't have the
+>>>>> "rolw" instruction. The condition test can be better. Geert, any
+>>>>> ideas on what is more appropriate here?
+>>>> The `rolw' variant is already protected by `#if defined
+>>>> (__mcfisaaplus__) || defined (__mcfisac__)',
+>>>> so I think you can replace the `#elif defined(CONFIG_MMU)' by a plain
+>>>> `#else'. Or are there cases where you don't want to have __arch_swab32 at
+>>>> all?
+>>> Not all ColdFire fit into '(__mcfisaaplus__) || defined (__mcfisac__)'
+>>> so #else won't be good enough. Though I suspect it is true that the
+>>> older m68k varients (68328, etc) can do "rolw" - or I am I mistaken on
+>>> that?
+>>>
+>>>>> I can switch back to using __uClinux__ on siginfo.h and sigcontext.h.
+>>>>> If I am not mistaken we can't change these structures without breaking
+>>>>> backwards compatibility?  The sigcontext change is particularly ugly :-(
+>>>> Copying the signal experts on linux-m68k...
+>>>>
+>>>>> Similarly for param.h, it looks like a switch back to using
+>>>>> __uClinux__ for now is the only option.
+>>>>>
+>>>>> Now after these fixups should I create a git branch with these header
+>>>>> merges in for inclusion into 2.6.29-rc?  To fix the regression we
+>>>>> only need to do the handful of files that Rob listed, right?
+>>>> Yes.
+>>> Ok, I have created a git branch for this as:
+>>>
+>>> The following changes since commit
+>>> 5bee17f18b595937e6beafeee5197868a3f74a06: Kyle McMartin (1):
+>>>          parisc: sba_iommu: fix build bug when CONFIG_PARISC_AGP=y
+>>>
+>>> are available in the git repository at:
+>>>
+>>>    git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git
+>>> fix-includes
+>>>
+>>> Greg Ungerer (8):
+>>>        m68k: merge the non-MMU and MMU versions of param.h
+>>>        m68k: merge the non-MMU and MMU versions of swab.h
+>>>        m68k: merge the non-MMU and MMU versions of sigcontext.h
+>>>        m68k: merge the non-MMU and MMU versions of siginfo.h
+>>>        m68k: use MMU version of setup.h for both MMU and non-MMU
+>>>        m68k: merge the non-MMU and MMU versions of ptrace.h
+>>>        m68k: merge the non-MMU and MMU versions of signal.h
+>>>        m68k: use the MMU version of unistd.h for all m68k platforms
+>>>
+>>>   arch/m68k/include/asm/param.h         |   25 ++-
+>>>   arch/m68k/include/asm/param_mm.h      |   22 --
+>>>   arch/m68k/include/asm/param_no.h      |   22 --
+>>>   arch/m68k/include/asm/ptrace.h        |   88 ++++++++-
+>>>   arch/m68k/include/asm/ptrace_mm.h     |   80 -------
+>>>   arch/m68k/include/asm/ptrace_no.h     |   87 --------
+>>>   arch/m68k/include/asm/setup.h         |  377
+>>> ++++++++++++++++++++++++++++++++-
+>>>   arch/m68k/include/asm/setup_mm.h      |  376
+>>> --------------------------------
+>>>   arch/m68k/include/asm/setup_no.h      |   10 -
+>>>   arch/m68k/include/asm/sigcontext.h    |   25 ++-
+>>>   arch/m68k/include/asm/sigcontext_mm.h |   19 --
+>>>   arch/m68k/include/asm/sigcontext_no.h |   17 --
+>>>   arch/m68k/include/asm/siginfo.h       |   95 ++++++++-
+>>>   arch/m68k/include/asm/siginfo_mm.h    |   92 --------
+>>>   arch/m68k/include/asm/siginfo_no.h    |    6 -
+>>>   arch/m68k/include/asm/signal.h        |  216 ++++++++++++++++++-
+>>>   arch/m68k/include/asm/signal_mm.h     |  206 ------------------
+>>>   arch/m68k/include/asm/signal_no.h     |  159 --------------
+>>>   arch/m68k/include/asm/swab.h          |   30 +++-
+>>>   arch/m68k/include/asm/swab_mm.h       |   16 --
+>>>   arch/m68k/include/asm/swab_no.h       |   24 --
+>>>   arch/m68k/include/asm/unistd.h        |  377
+>>> ++++++++++++++++++++++++++++++++-
+>>>   arch/m68k/include/asm/unistd_mm.h     |  372
+>>> --------------------------------
+>>>   arch/m68k/include/asm/unistd_no.h     |  372
+>>> --------------------------------
+>>>   24 files changed, 1206 insertions(+), 1907 deletions(-)
+>>>   delete mode 100644 arch/m68k/include/asm/param_mm.h
+>>>   delete mode 100644 arch/m68k/include/asm/param_no.h
+>>>   delete mode 100644 arch/m68k/include/asm/ptrace_mm.h
+>>>   delete mode 100644 arch/m68k/include/asm/ptrace_no.h
+>>>   delete mode 100644 arch/m68k/include/asm/setup_mm.h
+>>>   delete mode 100644 arch/m68k/include/asm/setup_no.h
+>>>   delete mode 100644 arch/m68k/include/asm/sigcontext_mm.h
+>>>   delete mode 100644 arch/m68k/include/asm/sigcontext_no.h
+>>>   delete mode 100644 arch/m68k/include/asm/siginfo_mm.h
+>>>   delete mode 100644 arch/m68k/include/asm/siginfo_no.h
+>>>   delete mode 100644 arch/m68k/include/asm/signal_mm.h
+>>>   delete mode 100644 arch/m68k/include/asm/signal_no.h
+>>>   delete mode 100644 arch/m68k/include/asm/swab_mm.h
+>>>   delete mode 100644 arch/m68k/include/asm/swab_no.h
+>>>   delete mode 100644 arch/m68k/include/asm/unistd_mm.h
+>>>   delete mode 100644 arch/m68k/include/asm/unistd_no.h
+>>>
+>>>
+>>> I have only patched those files that I saw mentioned in the previous
+>>> emails in this thread.
+>>>
+>>> Geert, can you check an m68k build?
+> 
+> You introduced a build regression by moving the #include <asm-generic/siginfo.h>
+> to the bottom of arch/m68k/include/asm/siginfo.h.
 
--serge
+Ah, yes, I was worried that might be the case with that change.
 
-> case of nfsd, however, this is pretty obvious.  So I'm inclined to
-> submit the following now (and leave it to be reverted by a later patch
-> if CAP_FS_MASK ends up including CAP_MKNOD, as seems likely).
+I refactored it back to the way it was originally (like your patch).
+Updated the git tree with that.
+
+Thanks
+Greg
+
+
+
+> After fixing that (patch below, did gmail webmail preserve the tabs?),
+> atari_defconfig builds
+> and runs on ARAnyM. I'm now building a sun3_defconfig...
 > 
-> --b.
+> diff --git a/arch/m68k/include/asm/siginfo.h b/arch/m68k/include/asm/siginfo.h
+> index 9999e7d..f88b4a7 100644
+> --- a/arch/m68k/include/asm/siginfo.h
+> +++ b/arch/m68k/include/asm/siginfo.h
+> @@ -4,7 +4,11 @@
+>  #ifndef __uClinux__
+>  #define HAVE_ARCH_SIGINFO_T
+>  #define HAVE_ARCH_COPY_SIGINFO
+> +#endif
+> +
+> +#include <asm-generic/siginfo.h>
 > 
-> commit 2ec8f8f0c0005ffe3cf93bbf3d9976de76cf4652
-> Author: J. Bruce Fields <bfields@citi.umich.edu>
-> Date:   Mon Mar 16 18:34:20 2009 -0400
+> +#ifndef __uClinux__
+>  typedef struct siginfo {
+>  	int si_signo;
+>  	int si_errno;
+> @@ -89,6 +93,4 @@ static inline void copy_siginfo(struct siginfo *to,
+> struct siginfo *from)
+>  #endif /* __KERNEL__ */
+>  #endif /* __uClinux__ */
 > 
->     nfsd: nfsd should drop CAP_MKNOD for non-root
->     
->     Since creating a device node is normally an operation requiring special
->     privilege, Igor Zhbanov points out that it is surprising (to say the
->     least) that a client can, for example, create a device node on a
->     filesystem exported with root_squash.
->     
->     So, make sure CAP_MKNOD is among the capabilities dropped when an nfsd
->     thread handles a request from a non-root user.
->     
->     Reported-by: Igor Zhbanov <izh1979@gmail.com>
->     Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+> -#include <asm-generic/siginfo.h>
+> -
+>  #endif
 > 
-> diff --git a/include/linux/capability.h b/include/linux/capability.h
-> index 02bdb76..7824483 100644
-> --- a/include/linux/capability.h
-> +++ b/include/linux/capability.h
-> @@ -393,8 +393,10 @@ struct cpu_vfs_cap_data {
->  # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
->  # define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
->  # define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
-> -# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
-> -					CAP_FS_MASK_B1 } })
-> +# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
-> +					    | CAP_TO_MASK(CAP_SYS_RESOURCE) \
-> +					    | CAP_TO_MASK(CAP_MKNOD), \
-> +					    CAP_FS_MASK_B1 } })
+>>> Rob, can you check that you can build what you used to be able to?
+>> Nope.  Pulled the repository, tarred it up, stuck it in my build system, and
+>> the uClibc build still dies attempting to generate syscalls:
+>>
+>>  GEN include/bits/sysnum.h
+>> In file included from <stdin>:1:
+>> /home/landley/firmware/firmware/build/cross-compiler-
+>> m68k/include/asm/unistd.h:4:23: error: unistd_mm.h: No such file or directory
+>> In file included from <stdin>:1:
+>> /home/landley/firmware/firmware/build/cross-compiler-
+>> m68k/include/asm/unistd.h:4:23: error: unistd_mm.h: No such file or directory
+>> ERROR: Could not generate syscalls.
 > 
->  #endif /* _KERNEL_CAPABILITY_U32S != 2 */
+> I guess you forgot to check out branch fix-includes? There's no unistd_mm.h in
+> that branch.
+> 
+
+
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
