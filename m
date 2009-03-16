@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbZCPSvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbZCPSzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757842AbZCPSvY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbZCPSvP
+	id S1758833AbZCPSzB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:55:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZCPSyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:51:15 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:39796 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753507AbZCPSvO (ORCPT
+	Mon, 16 Mar 2009 14:54:49 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:52246 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750827AbZCPSys (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:51:14 -0400
-Date: Mon, 16 Mar 2009 14:51:12 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-cc: Jason Baron <jbaron@redhat.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, acme@ghostprotocols.net,
-       fweisbec@gmail.com, fche@redhat.com, peterz@infradead.org
-Subject: Re: [Patch 2/2] tracepoints for softirq entry/exit - tracepoints
-In-Reply-To: <alpine.DEB.2.00.0903161441210.27978@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0903161446510.27978@gandalf.stny.rr.com>
-References: <20090312183603.GC3352@redhat.com> <20090314025701.GC22526@Krystal> <alpine.DEB.2.00.0903160934010.26431@gandalf.stny.rr.com> <20090316183739.GA10292@Krystal> <alpine.DEB.2.00.0903161441210.27978@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 16 Mar 2009 14:54:48 -0400
+Date: Mon, 16 Mar 2009 12:26:07 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 26/35] Use the per-cpu allocator for orders up to
+ PAGE_ALLOC_COSTLY_ORDER
+In-Reply-To: <1237196790-7268-27-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0903161222070.32577@qirst.com>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <1237196790-7268-27-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 16 Mar 2009, Mel Gorman wrote:
 
-On Mon, 16 Mar 2009, Steven Rostedt wrote:
+> -static void free_hot_cold_page(struct page *page, int cold)
+> +static void free_hot_cold_page(struct page *page, int order, int cold)
+>  {
+>  	struct zone *zone = page_zone(page);
+>  	struct per_cpu_pages *pcp;
+>  	unsigned long flags;
+>  	int clearMlocked = PageMlocked(page);
+>
+> +	/* SLUB can return lowish-order compound pages that need handling */
+> +	if (order > 0 && unlikely(PageCompound(page)))
+> +		if (unlikely(destroy_compound_page(page, order)))
+> +			return;
+> +
 
-> 
-> On Mon, 16 Mar 2009, Mathieu Desnoyers wrote:
-> > > > 
-> > > > The softirq tracepoints are a good idea indeed (I have similar ones in
-> > > > the LTTng tree). My main concern is about the fact that you output the
-> > > > softirq name in plain text to the trace buffers. I would rather prefer
-> > > > to save only the softirq (h-vec) into the trace and dump the mapping
-> > > > (h-vec) to name only once, so we can save precious trace bytes.
-> > > 
-> > > The TP_FMT is only used by those tracers that want to use it. Any tracer 
-> > > can still hook directly to the trace point and do what every they want.
-> > > 
-> > > -- Steve
-> > > 
-> > 
-> > By doing so, you are removing the ability to use the TP_FMT information
-> > to perform high-speed system-wide tracing. I thought the goal was to
-> > create a unified buffering, but sadly I don't see the high-speed
-> > requirements being part of that plan.
-> 
-> TP_FMT has nothing to do with the unified buffering. The unified buffer 
-> does not even know about it. But if you want high-speed event tracing, 
-> that is what the TRACE_EVENT was created for.
+Isnt that also true for stacks and generic network objects ==- 8k?
 
-Here's an example:
+>  again:
+>  	cpu  = get_cpu();
+> -	if (likely(order == 0)) {
+> +	if (likely(order <= PAGE_ALLOC_COSTLY_ORDER)) {
+>  		struct per_cpu_pages *pcp;
+> +		int batch;
+> +		int delta;
+>
+>  		pcp = &zone_pcp(zone, cpu)->pcp;
+> +		batch = max(1, pcp->batch >> order);
+>  		local_irq_save(flags);
+>  		if (!pcp->count) {
+> -			pcp->count = rmqueue_bulk(zone, 0,
+> -					pcp->batch, &pcp->list, migratetype);
+> +			delta = rmqueue_bulk(zone, order, batch,
+> +					&pcp->list, migratetype);
+> +			bulk_add_pcp_page(pcp, order, delta);
+>  			if (unlikely(!pcp->count))
+>  				goto failed;
 
-The "event tracing" uses the format field to show those events for the 
-hook in the sched switching, and wake ups.
-
-The wake up tracer on the other hand, does not care about the format, it 
-only cares about having a hook where a a task is woken up, and where it 
-gets scheduled in, and perhaps events in between. But it uses its own 
-formatting to do the output.
-
--- Steve
+The pcp adds a series of order N pages if an order N alloc occurs and the
+queue is empty?
 
