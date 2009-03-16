@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZCPAks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZCPAp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759385AbZCPAks (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 20:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZCPAkj
+	id S1753811AbZCPAp0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 15 Mar 2009 20:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZCPApK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 20:40:39 -0400
-Received: from kroah.org ([198.145.64.141]:37618 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752143AbZCPAki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 20:40:38 -0400
-Date: Sun, 15 Mar 2009 17:39:32 -0700
-From: Greg KH <greg@kroah.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Matthew Wilcox <matthew@wil.cx>, linux-pci <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: more than 50 percent of dmesg belongs only to PCI and USB
-Message-ID: <20090316003932.GB15098@kroah.com>
-References: <1237016485.2935.12.camel@ht.satnam> <1237159729.8619.7.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237159729.8619.7.camel@localhost>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Sun, 15 Mar 2009 20:45:10 -0400
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:32813 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753515AbZCPApJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 15 Mar 2009 20:45:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=ZErKzFBeSgHXTG4FeCNjYKKwqTTYOk30VAFwLC+/cMzwOByiHwgON4c3+56ZqbqxTt
+         kuXWoywCja/E/lJenMpOjxJEs6dRmsPgl+92LfFhKwP3j9EJxXl8nGPWJ79DnDninMQY
+         aKkqW/EEnJIrVmntZtql2bNftbY9hKB/2Wyyk=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH] tracing/core: fix early free of cpumasks
+Date: Mon, 16 Mar 2009 01:45:03 +0100
+Message-Id: <1237164303-11476-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 10:28:49AM +1100, Michael Ellerman wrote:
-> On Sat, 2009-03-14 at 13:11 +0530, Jaswinder Singh Rajput wrote:
-> > Can we make dmesg little bit better and remove some noise and put these
-> > debug messages on /sys/kernel/debug/ :
-> 
-> I think they should just be KERN_DEBUG, that way they won't be displayed
-> to most users, except people who want to see them.
-> 
-> The problem is it's easier to write:
-> 
->   dev_info(&dev->dev, "transparent bridge\n");
-> 
-> than:
-> 
->   dev_printk(KERN_DEBUG, &dev->dev, "transparent bridge\n");
-> 
-> and, dev_dbg() does not do what you want in this case.
+Impact: fix weird bugs with tracing cpumasks
 
-Why not?  It prints it out if you enable the config option at run-time,
-which is what you want.
+While ring-buffer allocation, the cpumasks are allocated too, including
+the tracing cpumask and the per-cpu file mask handler.
+But these cpumasks are freed accidentally just after.
+Fix it.
 
-thanks,
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/trace/trace.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-greg k-h
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index c0cf946..ae32d3b 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -4125,7 +4125,8 @@ __init static int tracer_alloc_buffers(void)
+ 				       &trace_panic_notifier);
+ 
+ 	register_die_notifier(&trace_die_notifier);
+-	ret = 0;
++
++	return 0;
+ 
+ out_free_cpumask:
+ 	free_cpumask_var(tracing_reader_cpumask);
+-- 
+1.6.1
+
