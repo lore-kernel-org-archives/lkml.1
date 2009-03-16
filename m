@@ -1,119 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761600AbZCPVJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760486AbZCPVNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761600AbZCPVJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 17:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756972AbZCPVJS
+	id S1760486AbZCPVNY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 17:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbZCPVNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 17:09:18 -0400
-Received: from zombie2.ncsc.mil ([144.51.88.133]:32871 "EHLO zombie2.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754977AbZCPVJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 17:09:17 -0400
-Subject: Re: =?UTF-8?Q?=D0=9E=D1=82=D0=B2=D0=B5=D1=82=3A?= VFS, NFS
- security bug? Should CAP_MKNOD and CAP_LINUX_IMMUTABLE be added to
- CAP_FS_MASK?
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Igor Zhbanov <izh1979@gmail.com>, "J. Bruce Fields" <bfields@fieldses.org>,
-       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
-       David Howells <dhowells@redhat.com>, Andrew Morgan <morgan@kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       SELinux <selinux@tycho.nsa.gov>
-In-Reply-To: <20090316184926.GA6729@us.ibm.com>
-References: <f44001920903110553t52ce0ba7l4ba97213e1c51873@mail.gmail.com>
-	 <20090311232356.GP13540@fieldses.org> <20090312161047.GA15209@us.ibm.com>
-	 <517f3f820903121321sf6d2014q8165b925d5d44db7@mail.gmail.com>
-	 <20090313175848.GB27891@fieldses.org>
-	 <f44001920903131137j158c5f76y6a71b58ee964df77@mail.gmail.com>
-	 <20090313190002.GA16025@us.ibm.com>
-	 <1237227705.1035.93.camel@localhost.localdomain>
-	 <20090316184926.GA6729@us.ibm.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Mon, 16 Mar 2009 17:00:16 -0400
-Message-Id: <1237237216.1035.195.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 16 Mar 2009 17:13:10 -0400
+Received: from [213.79.90.228] ([213.79.90.228]:1983 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753811AbZCPVNJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 17:13:09 -0400
+Date: Tue, 17 Mar 2009 00:13:06 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
+Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH v3 0/11] FSL eSDHC support
+Message-ID: <20090316211306.GA1736@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-16 at 13:49 -0500, Serge E. Hallyn wrote:
-> Quoting Stephen Smalley (sds@tycho.nsa.gov):
-> > On Fri, 2009-03-13 at 14:00 -0500, Serge E. Hallyn wrote:
-> > > Quoting Igor Zhbanov (izh1979@gmail.com):
-> > > > But ordinary users can't create devices. It seems to me that in time
-> > > > of implementation of capabilities in kernel 2.4, capabilities related
-> > > > to filesystem was added first. And mark for them contains all above in
-> > > > header file. And when CAP_MKNOD was added later, author just forget to
-> > > > update mask.
-> > > > 
-> > > > If mask was designed to drop all filesystem related capabilities, then
-> > > > it must be expanded, because ordinary users cannot create devices etc.
-> > > 
-> > > I think you thought Bruce was saying we shouldn't change the set of
-> > > capabilities, but he was just asking exactly what changes Michael was
-> > > interested in.
-> > > 
-> > > Igor, thanks for finding this.  I never got your original message.  Do
-> > > you have a patdch to add the two capabilities?  Do you think the
-> > > other two I mentioned (CAP_SYS_ADMIN and CAP_SETFCAP) need to be
-> > > added too?
-> > > 
-> > > I've added Andrew Morgan, LSM and SELinux mailing lists to get another
-> > > opinion about adding those two.  In particular, we'd be adding them
-> > > to the fs_masks becuase CAP_SYS_ADMIN lets you change the selinux
-> > > label, and CAP_SETFCAP lets you change the file capabilities.
-> > 
-> > I'd be inclined against adding CAP_SYS_ADMIN to the mask; note that it
-> > is only checked for setting SELinux security contexts (or more broadly
-> > any attributes in the security namespace) when SELinux is disabled.  In
-> > the SELinux-enabled case, we are checking SELinux-specific permissions
-> > when setting the SELinux attributes, whether on the client or the
-> > server.
-> 
-> But that's exactly why it seemed like it ought to be in there.  If
-> SELinux is enabled, then SELinux will continue to perform it's own
-> checks based on security context and ignoring privileged root.  But
-> outside of that, since we are in a root-is-privileged mode, should it
-> not be the case that having fsuid=0 means that you can set extended
-> attributes in the security namespace?
-> 
-> Conversely, if setting fsuid to non-zero, shouldn't all of the
-> privileged ways of setting file attributes be lost?  Or, will we run
-> into a problem where software wanted to set its fsuid to non-0 but
-> still be able to call sethostname(2), for instance?  In which case
-> we simply cannot put CAP_SYS_ADMIN in CAP_FS_MASK.
-> 
-> I guess it comes back down to whether those xattrs are considered a
-> security attribute or a simple file property.
+Hi all,
 
-Well, they are a security attribute, but CAP_SYS_ADMIN was never
-supposed to cover them.  In fact, none of the upstream security modules
-uses CAP_SYS_ADMIN to control setting of its own attributes:
-- SELinux applies a DAC check and its own set of MAC file permission
-checks,
-- Smack applies CAP_MAC_ADMIN,
-- Capabilities applies CAP_SETFCAP.
+Here comes another version, let's hope that one is final. ;-)
 
-Checking CAP_SYS_ADMIN was really just a fallback to prevent unchecked
-setting of attributes in the no-LSM case.  It might make more sense to
-return EOPNOTSUPP for any attributes unknown to the enabled security
-module and require you to enable the desired module before setting the
-attributes these days.
-http://marc.info/?t=107428809400002&r=1&w=2
+Changes since v2:
+- Introduced MMC_SDHCI_IO_ACCESSORS Kconfig symbol. If not selected,
+  SDHCI will just use PCI memory accessors unconditionally.
+- Added MAINTAINERS entry.
 
-I don't think this will make any difference for labeled NFS at present,
-as the current labeled NFS patches only export the MAC label attribute
-if the server has the MAC model enabled.  So CAP_SYS_ADMIN won't get
-checked regardless.
+Changes since v1:
+- "Add support for bus-specific IO memory accessors" patch no longer
+  touches sdhci-pci. The changes were no longer needed since I dropped
+  "Add type checking ..." patch back in RFCv2;
+- Patch "Add support for hosts with strict 32 bit addressing" dropped.
+  Now we handle the 32 bit magic in eSDHC's writew() accessor;
+- Patch "Add quirk for controllers with max. block size up to 4096 bytes"
+  replaced by "Add quirk for forcing maximum block size to 2048 bytes";
+- SDHCI_INT_ALL_MASK changed to (unsigned int)-1;
+- Addressed Pierre's comments in "Add support for card-detection polling"
+  patch.
 
-Trusted namespace is another case where CAP_SYS_ADMIN check is applied
-on file operations.
+Changes since the third RFC:
+- Use uninitialized_var() (suggested by Laurent Pinchart);
+- Fixed a bug in eSDHC SDCLK prescaler calculations because of which
+  we were over-clocking the SDCLK, and that caused CRC errors using some
+  SD cards;
+- Not a change, but some status: SDHS (50 MHz) cards were tested to
+  NOT work (at least on MPC837x boards) -- this is to be investigated
+  further. SDHC (> 4 GB) cards were not tested, yet.
+
+Changes since the second RFC:
+- Addressed all comments that were raised by Pierre Ossman.
+  There were too many to mention them all, so here is the link:
+  http://lkml.org/lkml/2009/2/6/320
+
+Changes since the first RFC:
+- Use of_iomap() in sdhci-of.c (suggested by Arnd Bergmann). Also added
+  Arnd's Acked-by: line for the sdhci-of patch.
+- Kconfig help text improved (thanks to Matt Sealey and M. Warner Losh).
+- In "sdhci: Add quirk to suppress PIO interrupts during DMA transfers"
+  patch: sdhci_init() now clears SDHCI_PIO_DISABLED flag, otherwise we
+  won't disable PIO interrupts after suspend.
+- New patch: "sdhci: Add type checking for IO memory accessors"
 
 -- 
-Stephen Smalley
-National Security Agency
-
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
