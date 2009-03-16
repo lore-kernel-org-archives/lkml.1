@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbZCPIsj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbZCPIyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758181AbZCPIsj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 04:48:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZCPIsa
+	id S1757213AbZCPIyi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 04:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbZCPIy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 04:48:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36571 "EHLO mx2.mail.elte.hu"
+	Mon, 16 Mar 2009 04:54:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38911 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752049AbZCPIsa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 04:48:30 -0400
-Date: Mon, 16 Mar 2009 09:48:02 +0100
+	id S1753032AbZCPIy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 04:54:28 -0400
+Date: Mon, 16 Mar 2009 09:54:02 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mike Travis <travis@sgi.com>
-Subject: Re: [PULL] x86 cpumask work
-Message-ID: <20090316084802.GB1062@elte.hu>
-References: <200903121453.45163.rusty@rustcorp.com.au> <200903151326.34114.rusty@rustcorp.com.au> <20090315060044.GE20949@elte.hu> <200903161333.16632.rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] Re: Latest brk patchset
+Message-ID: <20090316085402.GC1062@elte.hu>
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200903161333.16632.rusty@rustcorp.com.au>
+In-Reply-To: <49BD8F15.4020301@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,32 +35,88 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> On Sunday 15 March 2009 16:30:44 Ingo Molnar wrote:
-> > 
-> > >  	} else if (check_c1e_idle(c)) {
-> > >  		printk(KERN_INFO "using C1E aware idle routine\n");
-> > > -		alloc_cpumask_var(&c1e_mask, GFP_KERNEL);
-> > > -		cpumask_clear(c1e_mask);
-> > > +		/* c1e_mask can only be NULL during boot of first cpu. */
-> > > +		if (c1e_mask == NULL) {
-> > > +			alloc_cpumask_var(&c1e_mask, GFP_KERNEL);
-> > 
-> > Sigh, there are two bugs here:
-> > 
-> >    1) what if the GFP_KERNEL allocation fails?
-> 
-> As the comments says, it can only be NULL during boot of the first CPU.
-> 
-> start_kernel -> check_bugs -> identify_boot_cpu -> identify_cpu
->   -> select_idle_routine.
-> 
-> Did you want me to panic if it fails?
+> Ingo Molnar wrote:
+>> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>>
+>>   
+>>> Ingo Molnar wrote:
+>>>     
+>>>> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>>>>
+>>>>         
+>>>>> H. Peter Anvin wrote:
+>>>>>             
+>>>>>> Well, the semantics are different; the .bss section is zeroed while the
+>>>>>> brk isn't, and the brk symbols don't necessarily point to the data
+>>>>>> associated with those particular symbols, unlike (of course) the bss.
+>>>>>>
+>>>>>> It's not a big issue, obviously, it just seems cleaner to me that way.
+>>>>>>                   
+>>>>> OK, I just added a couple of changes to:
+>>>>>
+>>>>>    * make the brk reservation symbols have the form ".brk.NAME" to make
+>>>>>      them inaccessible from C, and to make them look obviously
+>>>>>      different from normal symbols (more like sections, since it is
+>>>>>      their size that's more important than their address)
+>>>>>    * Put all the brk stuff in a .brk section
+>>>>>    * Mention alignment in the comment for the slop space
+>>>>>
+>>>>>    J
+>>>>>
+>>>>> The following changes since commit 1e08816af0bc345995c3f26ce4eaba1171ffb531:
+>>>>>  Ingo Molnar (1):
+>>>>>        Merge branch 'linus'
+>>>>>
+>>>>> are available in the git repository at:
+>>>>>
+>>>>>  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push/x86/brk
+>>>>>             
+>>>> the previous kit in tip:x86/setup-memory is causing crashes. One of 
+>>>> them is:
+>>>>
+>>>> init_memory_mapping: 0000000000000000-00000000377fe000              
+>>>>                  0000000000 - 00377fe000 page 4k                    
+>>>>                                 Kernel panic - not syncing: Cannot 
+>>>> find space for the kernel page tables            Pid: 0, comm: 
+>>>> swapper Not tainted 2.6.29-rc8-tip-02516-g83219b0-dirty #35476      
+>>>>   Call Trace:                                                       
+>>>>                    [<c0128b7b>] panic+0x4b/0x100                    
+>>>>                                    [<c074a989>] 
+>>>> init_memory_mapping+0x429/0x430                                     
+>>>>    [<c0cde790>] setup_arch+0x430/0x890                              
+>>>>                    [<c0148f4e>] ? lockdep_init_map+0x2e/0x150       
+>>>>                                    [<c036f392>] ? 
+>>>> __spin_lock_init+0x32/0x60                                          
+>>>>  [<c01298d0>] ? printk+0x20/0x30                                    
+>>>>                  [<c0cdc966>] start_kernel+0xc6/0x330               
+>>>>                                  [<c0cdc321>]  
+>>>> i386_start_kernel+0x41/0x50               
+>>>>
+>>>> full crashlog below, config attached.
+>>>>         
+>>> What branch is this?  I'm trying to build with your config with 
+>>> current tip/master w/ tip/x86/setup-memory merged into it, but "make 
+>>> ARCH=i386 oldconfig" is asking me about CONFIG_SMP, which makes me 
+>>> think the config file is incomplete.
+>>>     
+>>
+>> just accept the defaults in 'make oldconfig' and you'll get the right 
+>> config.
+>>   
+>
+> Got some build failures due to warnings treated as errors.  
 
-Ah, ok. But i think it's very unobvious to embedd a "once per 
-bootup" dynamic allocation like that. Please put it into a 
-separate init routine instead. That way select_idle() [which 
-runs during every CPU hotplug event] wont have this allocation.
+Sorry - you need CONFIG_ALLOW_WARNINGS=y. Indeed my tests can 
+emit !CONFIG_ALLOW_WARNINGS configs.
+
+> And the resulting kernel booted fine under qemu with 1Gbyte of 
+> memory.  I'll try on real hardware a bit later, but it doesn't 
+> seem like something that should be affected by qemu vs native, 
+> unless it has something to do with the specific e820 map.
+
+Note that the crash was reproducible and it very clearly went 
+away when i excluded those commits from tip:master.
 
 	Ingo
