@@ -1,104 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZCPSGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbZCPSHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbZCPSGv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZCPSGl
+	id S1759554AbZCPSHh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZCPSH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:06:41 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:39115 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753614AbZCPSGk (ORCPT
+	Mon, 16 Mar 2009 14:07:27 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:59510 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752191AbZCPSH0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:06:40 -0400
-Date: Mon, 16 Mar 2009 19:06:38 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Andreas Mohr <andi@lisas.de>, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [alsa-devel] Bugs on aspire one A150
-Message-ID: <20090316180638.GB25647@rhlx01.hs-esslingen.de>
-References: <s5hab7lr0k1.wl%tiwai@suse.de> <20090316145036.GA26358@rhlx01.hs-esslingen.de> <s5h4oxtqy6q.wl%tiwai@suse.de> <20090316160208.GB4458@rhlx01.hs-esslingen.de> <s5hwsappi44.wl%tiwai@suse.de> <s5hprghphid.wl%tiwai@suse.de> <20090316170015.GA9776@rhlx01.hs-esslingen.de> <s5hljr5pex0.wl%tiwai@suse.de> <20090316173000.GA25647@rhlx01.hs-esslingen.de> <s5hiqm9pe1g.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5hiqm9pe1g.wl%tiwai@suse.de>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 16 Mar 2009 14:07:26 -0400
+Date: Mon, 16 Mar 2009 19:01:32 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+Message-ID: <20090316190132.7965a49a@skybase>
+In-Reply-To: <1236671631-9305-1-git-send-email-tj@kernel.org>
+References: <1236671631-9305-1-git-send-email-tj@kernel.org>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 06:34:35PM +0100, Takashi Iwai wrote:
-> At Mon, 16 Mar 2009 18:30:00 +0100,
-> Andreas Mohr wrote:
-> > 
-> > Hi,
-> > 
-> > On Mon, Mar 16, 2009 at 06:15:39PM +0100, Takashi Iwai wrote:
-> > > At Mon, 16 Mar 2009 18:00:15 +0100,
-> > > Andreas Mohr wrote:
-> > > > > > And, is the behavior consistent regardless of the value high, i.e.
-> > > > > > the key is only whether the values for both channels are identical?
-> > > > > 
-> > > > > BTW, what if you record with the following definition?
-> > > > > Put the below to ~/.asoundrc
-> > > > > 
-> > > > > pcm.imix {
-> > > > > 	type plug
-> > > > > 	slave.pcm "hw"
-> > > > > 	ttable.0.0 0.5
-> > > > > 	ttable.0.1 -0.5
-> > > > > }
-> > > > > 
-> > > > > and record like
-> > > > > 
-> > > > > 	% aplay -Dimix -c1 foo.wav
-> > > > 
-> > > > Does NOT exhibit the "equal sliders == no sound" bug (apart from this sliders
-> > > > are acting normally, i.e. slider low == no sound), despite being a
-> > > > "plug" type definition (this is what you wanted to discern, right? ;).
-> > > 
-> > > Interesting.  This implies that one channel is inverted indeed.
-> > 
-> > Oh, you mean "inverted" as in "_hardware_ channel which provides opposite
-> > sample values as compared to the other channel"?
+Hi Tejun,
+
+On Tue, 10 Mar 2009 16:53:46 +0900
+Tejun Heo <tj@kernel.org> wrote:
+
+> The only differences are 1. there can be more space between percpu
+> areas for each cpu to accomodate minimum allocation size and first
+> chunk dynamic reserve and 2. dynamic percpu variables use the same
+> address translation mechanism as static ones.
 > 
-> Right.  My guess is that the hardware provides left (or right) channel
-> is multiplied by -1  (yep "inverted" is no correct word choice).
-> 
-> > > As default the alsa-lib plugin downmixes a stereo stream to a mono
-> > > stream simply  by left/2 + right/2.  The above changes the routing
-> > > policy as left/2 - right/2.
-> > 
-> > That exactly matches my current stream of thought (while reading
-> > "one channel is inverted" above).
-> > 
-> > > So we need to pass some information to change this kind of thing...
-> > 
-> > That's something specific to ALC268 codec setup, right?
-> > ("ALC268 digital mic == left plus right channel, but inverted setup"?)
-> 
-> No.  It's specific to the digital-mic side.
+> #1 shouldn't cause any trouble and #2 shouldn't too because the
+> offsets for dynamic percpu variables are carried in full pointer-width
+> variables, so as long as the calculations don't make wrong assumptions
+> (should be masked by RELOC_HIDE), it should be okay, but if your arch
+> has addressing limitations (alpha, s390), please take a second look.
 
-I just tried connecting a headset and switching to E-Mic.
-What I can say is:
-- opposite levels does NOT happen there (E-Mic is "analog micro"-based, right?)
-- leaving E-Mic unplugged will actually record from i-Mic (due to properly
-  working EAPD mechanism, right?)
+We do have a problem with #2, the dynamic percpu patches currently
+breaks s390. But the nice thing is that we can now get rid of the GOTENT
+relocation for the percpu symbols. If the code is changed to use
+RELOC_HIDE for the SHIFT_PERCPU_PTR define, everything works just fine.
+Patch attached. Nice works guys.
 
+-- 
+blue skies,
+   Martin.
 
-BTW, the output (of arecord -Dplughw:0 -c2 -traw -fdat foo.wav) _does_ have
-inverted channels:
+"Reality continues to ruin my life." - Calvin.
 
-00000130   2A 02 D2 FD  65 02 A5 FD  10 00 E7 FF  99 FF 72 00 *...e.........r.
-00000140   53 FE A7 01  ED FF 12 00  4F FF A6 00  86 00 81 FF S.......O.......
-... and so on in the entire file ...
+---
+Subject: [PATCH] s390: percpu access.
 
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-One question still: is this a hardware defect (i.e. could this possibly
-be swapped cables of the microphone connector in this model or so?
-Not plausible but...), or is this an existing property
-of the HDA's dig-mic base? You indicated it's the latter I think...
+With the dynamic percpu allocator there is no need anymore to play
+tricks with the GOTENT relocation for the access to the percpu
+symbols. A simple RELOC_HIDE gets the job done.
 
-Andreas
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ arch/s390/include/asm/percpu.h |   26 +-------------------------
+ 1 file changed, 1 insertion(+), 25 deletions(-)
+
+diff -urpN linux-next/arch/s390/include/asm/percpu.h linux-patched/arch/s390/include/asm/percpu.h
+--- linux-next/arch/s390/include/asm/percpu.h	2009-03-16 18:53:47.000000000 +0100
++++ linux-patched/arch/s390/include/asm/percpu.h	2009-03-16 18:53:35.000000000 +0100
+@@ -4,31 +4,7 @@
+ #include <linux/compiler.h>
+ #include <asm/lowcore.h>
+ 
+-/*
+- * s390 uses its own implementation for per cpu data, the offset of
+- * the cpu local data area is cached in the cpu's lowcore memory.
+- * For 64 bit module code s390 forces the use of a GOT slot for the
+- * address of the per cpu variable. This is needed because the module
+- * may be more than 4G above the per cpu area.
+- */
+-#if defined(__s390x__) && defined(MODULE)
+-
+-#define SHIFT_PERCPU_PTR(ptr,offset) (({			\
+-	extern int simple_identifier_##var(void);	\
+-	unsigned long *__ptr;				\
+-	asm ( "larl %0, %1@GOTENT"		\
+-	    : "=a" (__ptr) : "X" (ptr) );		\
+-	(typeof(ptr))((*__ptr) + (offset));	}))
+-
+-#else
+-
+-#define SHIFT_PERCPU_PTR(ptr, offset) (({				\
+-	extern int simple_identifier_##var(void);		\
+-	unsigned long __ptr;					\
+-	asm ( "" : "=a" (__ptr) : "0" (ptr) );			\
+-	(typeof(ptr)) (__ptr + (offset)); }))
+-
+-#endif
++#define SHIFT_PERCPU_PTR(var, offset) RELOC_HIDE(&per_cpu_var(var), (offset))
+ 
+ #define __my_cpu_offset S390_lowcore.percpu_offset
+ 
