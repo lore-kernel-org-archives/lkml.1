@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbZCPKml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757743AbZCPKuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757879AbZCPKml (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 06:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbZCPKmc
+	id S1757743AbZCPKuw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 06:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbZCPKun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 06:42:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52431 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754757AbZCPKmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 06:42:31 -0400
-Date: Mon, 16 Mar 2009 11:40:54 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 00/35] Cleanup and optimise the page allocator V3
-Message-ID: <20090316104054.GA23046@wotan.suse.de>
-References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie>
+	Mon, 16 Mar 2009 06:50:43 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51756 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753363AbZCPKum (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 06:50:42 -0400
+Date: Mon, 16 Mar 2009 10:50:26 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH 1/2] Char: isicom, prolong tty reference holding
+Message-ID: <20090316105026.610a0b9a@lxorguk.ukuu.org.uk>
+In-Reply-To: <1237199665-10675-1-git-send-email-jirislaby@gmail.com>
+References: <1237199665-10675-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237196790-7268-1-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 09:45:55AM +0000, Mel Gorman wrote:
-> Here is V3 of an attempt to cleanup and optimise the page allocator and should
-> be ready for general testing. The page allocator is now faster (16%
-> reduced time overall for kernbench on one machine) and it has a smaller cache
-> footprint (16.5% less L1 cache misses and 19.5% less L2 cache misses for
-> kernbench on one machine). The text footprint has unfortunately increased,
-> largely due to the introduction of a form of lazy buddy merging mechanism
-> that avoids cache misses by postponing buddy merging until a high-order
-> allocation needs it.
+On Mon, 16 Mar 2009 11:34:24 +0100
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-You!? You want to do lazy buddy? ;) That's wonderful, but it would
-significantly increase the fragmentation problem, wouldn't it?
-(although pcp lists are conceptually a form of lazy buddy already)
+> Hold the tty reference a bit longer in isicom_shutdown_port, because
+> we use it later in the function, so that it won't disappear in the
+> meantime.
 
-No objections from me of course, if it is making significant
-speedups. I assume you mean overall time on kernbench is overall sys
-time?
+NAK - we do have a bug there but I don't think that is it.
 
+The tty_kref_get takes an additional reference so the tty_port_tty_set is
+fine, but we don't then drop the kref we took temporarily. I think we
+need this:
+
+isicom: isicom kref leak fix
+
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+
+The isicom driver leaks a kref on the shutdown path. Drop the additional
+kref we took
+
+Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+---
+
+ drivers/char/isicom.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
+index 24aa6e8..a59eac5 100644
+--- a/drivers/char/isicom.c
++++ b/drivers/char/isicom.c
+@@ -925,6 +925,7 @@ static void isicom_shutdown_port(struct isi_port *port)
+ 		if (!card->count)
+ 			isicom_shutdown_board(card);
+ 	}
++	tty_kref_put(tty);
+ }
+ 
+ static void isicom_flush_buffer(struct tty_struct *tty)
