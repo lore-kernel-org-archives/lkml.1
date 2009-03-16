@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760977AbZCPVWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762613AbZCPVW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760977AbZCPVWk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 17:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbZCPVWb
+	id S1762613AbZCPVW4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 17:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbZCPVWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 17:22:31 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:39469 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753712AbZCPVWa (ORCPT
+	Mon, 16 Mar 2009 17:22:45 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:15414 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757130AbZCPVWp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 17:22:30 -0400
-Date: Mon, 16 Mar 2009 22:22:27 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Andreas Mohr <andi@lisas.de>, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [alsa-devel] Bugs on aspire one A150
-Message-ID: <20090316212227.GA29471@rhlx01.hs-esslingen.de>
-References: <s5h4oxtqy6q.wl%tiwai@suse.de> <20090316160208.GB4458@rhlx01.hs-esslingen.de> <s5hwsappi44.wl%tiwai@suse.de> <s5hprghphid.wl%tiwai@suse.de> <20090316170015.GA9776@rhlx01.hs-esslingen.de> <s5hljr5pex0.wl%tiwai@suse.de> <20090316173000.GA25647@rhlx01.hs-esslingen.de> <s5hiqm9pe1g.wl%tiwai@suse.de> <20090316180638.GB25647@rhlx01.hs-esslingen.de> <s5htz5tyzyg.wl%tiwai@suse.de>
+	Mon, 16 Mar 2009 17:22:45 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5htz5tyzyg.wl%tiwai@suse.de>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090311170057.GA24113@suse.de>
+References: <20090306160818.404.92700.stgit@localhost.localdomain>
+	 <20090311162623.GE21831@suse.de>
+	 <fa686aa40903110935g155fbf7m83f4aead71d72488@mail.gmail.com>
+	 <20090311170057.GA24113@suse.de>
+Date: Mon, 16 Mar 2009 15:22:42 -0600
+Message-ID: <fa686aa40903161422n77b425d0i92993cf0e473548d@mail.gmail.com>
+Subject: Re: [RFC] drivers/base: Add bus_register_notifier_alldev() variant
+From: Grant Likely <grant.likely@secretlab.ca>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Mar 11, 2009 at 11:00 AM, Greg KH <gregkh@suse.de> wrote:
+> On Wed, Mar 11, 2009 at 10:35:29AM -0600, Grant Likely wrote:
+>> On Wed, Mar 11, 2009 at 10:26 AM, Greg KH <gregkh@suse.de> wrote:
+>> > On Fri, Mar 06, 2009 at 09:10:19AM -0700, Grant Likely wrote:
+>> >> From: Grant Likely <grant.likely@secretlab.ca>
+>> >>
+>> >> bus_register_notifier_alldev() is a variation on bus_register_notifier()
+>> >> which also triggers the notifier callback for devices already on the bus
+>> >> and already bound to drivers.
+>> >>
+>> >> This function is useful for the case where a driver needs to get a
+>> >> reference to a struct device other than the one it is bound to and
+>> >> it is not known if the device will be bound before or after this
+>> >> function is called.  For example, an Ethernet device connected to
+>> >> a PHY that is probed separately.
+>> >
+>> > Can't you just walk the list of all devices already on the bus to get
+>> > "notified" of them, and then register your notifier handler as well (or
+>> > register it first, and then walk the list, which is pretty much what
+>> > your patch does)?
+>>
+>> Yes, and I originally did, but it looks to me like a useful common
+>> pattern that is less error prone than open coding it.
+>
+> How about we wait, and if someone else does the same thing, we then add
+> it to the core like this?
 
-On Mon, Mar 16, 2009 at 09:28:39PM +0100, Takashi Iwai wrote:
-> At Mon, 16 Mar 2009 19:06:38 +0100,
-> Andreas Mohr wrote:
-> > I just tried connecting a headset and switching to E-Mic.
-> > What I can say is:
-> > - opposite levels does NOT happen there (E-Mic is "analog micro"-based, right?)
-> > - leaving E-Mic unplugged will actually record from i-Mic (due to properly
-> >   working EAPD mechanism, right?)
-> 
-> The record from mic-jack is via analog path.  The phase-inversion
-> appears only for digital-mic, AFAIK.
+I'm okay with that.  Actually, I had two drivers that were using this,
+but that need has gone away because I've learned that I can defer
+locating the other device to open() time.  I still think that it may
+be useful, but I agree that simply theoretical usage is not a good
+reason to add the API.
 
-Thought so.
+> Actually, wouldn't it make more sense to just change the default
+> "bus_register_notifier" to do this?  Is there some reason that the
+> caller would not want this kind of thing to happen?
 
-> > One question still: is this a hardware defect (i.e. could this possibly
-> > be swapped cables of the microphone connector in this model or so?
-> > Not plausible but...), or is this an existing property
-> > of the HDA's dig-mic base? You indicated it's the latter I think...
-> 
-> My guess is that it's a hardware implementation.
-> Maybe for the noise suppression via mic array.
+It doesn't look like there are many users of this facility, and from
+looking at them it appears that adding the reporting of already
+registered & bound devices would make sense.  However, to do this my
+patch would need to be fixed to eliminate the race condition where an
+add or bind event could get reported more than once on a single
+device.  It looks like the existing users expect never to be called
+more than once for each device.  Unfortunately, I don't know how to
+fix the race.  I need to research more.
 
-Not sure what this means.
+g.
 
-> The question is whether the left / right channels recorded from
-> digital mic are really raw data, or they are for modified data
-> (for differential, etc)...  It's hard to guess without the actual
-> data.
-
-I don't quite follow you here. Is there anything I could do about this?
-
-Thanks,
-
-Andreas
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
