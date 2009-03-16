@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbZCPSzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761309AbZCPS4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760645AbZCPSzt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 14:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756293AbZCPSyv
+	id S1761309AbZCPS4I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 14:56:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbZCPSy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 14:54:51 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:46683 "EHLO
+	Mon, 16 Mar 2009 14:54:58 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:33283 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755035AbZCPSyu (ORCPT
+	with ESMTP id S1756162AbZCPSy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 14:54:50 -0400
-Date: Mon, 16 Mar 2009 12:19:06 -0400 (EDT)
+	Mon, 16 Mar 2009 14:54:56 -0400
+Date: Mon, 16 Mar 2009 12:17:15 -0400 (EDT)
 From: Christoph Lameter <cl@linux-foundation.org>
 X-X-Sender: cl@qirst.com
 To: Mel Gorman <mel@csn.ul.ie>
@@ -22,11 +22,10 @@ cc: Linux Memory Management List <linux-mm@kvack.org>,
        Lin Ming <ming.m.lin@intel.com>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>,
        Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 24/35] Convert gfp_zone() to use a table of precalculated
- values
-In-Reply-To: <1237196790-7268-25-git-send-email-mel@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0903161218170.32577@qirst.com>
-References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <1237196790-7268-25-git-send-email-mel@csn.ul.ie>
+Subject: Re: [PATCH 23/35] Update NR_FREE_PAGES only as necessary
+In-Reply-To: <1237196790-7268-24-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0903161214080.32577@qirst.com>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <1237196790-7268-24-git-send-email-mel@csn.ul.ie>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -36,77 +35,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Mon, 16 Mar 2009, Mel Gorman wrote:
 
-> diff --git a/init/main.c b/init/main.c
-> index 8442094..08a5663 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -573,6 +573,7 @@ asmlinkage void __init start_kernel(void)
->  	 * fragile until we cpu_idle() for the first time.
->  	 */
->  	preempt_disable();
-> +	init_gfp_zone_table();
->  	build_all_zonelists();
->  	page_alloc_init();
->  	printk(KERN_NOTICE "Kernel command line: %s\n", boot_command_line);
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index bc491fa..d76f57d 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -70,6 +70,7 @@ EXPORT_SYMBOL(node_states);
->  unsigned long totalram_pages __read_mostly;
->  unsigned long totalreserve_pages __read_mostly;
->  unsigned long highest_memmap_pfn __read_mostly;
-> +int gfp_zone_table[GFP_ZONEMASK] __read_mostly;
->  int static_num_online_nodes __read_mostly;
->  int percpu_pagelist_fraction;
->
-> @@ -4569,7 +4570,7 @@ static void setup_per_zone_inactive_ratio(void)
->   * 8192MB:	11584k
->   * 16384MB:	16384k
->   */
-> -static int __init init_per_zone_pages_min(void)
-> +static int init_per_zone_pages_min(void)
->  {
->  	unsigned long lowmem_kbytes;
->
-> @@ -4587,6 +4588,39 @@ static int __init init_per_zone_pages_min(void)
->  }
->  module_init(init_per_zone_pages_min)
->
-> +static inline int __init gfp_flags_to_zone(gfp_t flags)
-> +{
-> +#ifdef CONFIG_ZONE_DMA
-> +	if (flags & __GFP_DMA)
-> +		return ZONE_DMA;
-> +#endif
-> +#ifdef CONFIG_ZONE_DMA32
-> +	if (flags & __GFP_DMA32)
-> +		return ZONE_DMA32;
-> +#endif
-> +	if ((flags & (__GFP_HIGHMEM | __GFP_MOVABLE)) ==
-> +			(__GFP_HIGHMEM | __GFP_MOVABLE))
-> +		return ZONE_MOVABLE;
-> +#ifdef CONFIG_HIGHMEM
-> +	if (flags & __GFP_HIGHMEM)
-> +		return ZONE_HIGHMEM;
-> +#endif
-> +	return ZONE_NORMAL;
-> +}
-> +
-> +/*
-> + * For each possible combination of zone modifier flags, we calculate
-> + * what zone it should be using. This consumes a cache line in most
-> + * cases but avoids a number of branches in the allocator fast path
-> + */
-> +void __init init_gfp_zone_table(void)
-> +{
-> +	gfp_t gfp_flags;
-> +
-> +	for (gfp_flags = 0; gfp_flags < GFP_ZONEMASK; gfp_flags++)
-> +		gfp_zone_table[gfp_flags] = gfp_flags_to_zone(gfp_flags);
-> +}
-> +
+> When pages are being freed to the buddy allocator, the zone
+> NR_FREE_PAGES counter must be updated. In the case of bulk per-cpu page
+> freeing, it's updated once per page. This retouches cache lines more
+> than necessary. Update the counters one per per-cpu bulk free.
 
-This is all known at compile time. The table can be calculated at compile
-time with some ifdefs and then we do not need the init_gfp_zone_table().
+Not sure about the reasoning here since the individual updates are batched
+and you are touching the same cacheline as the pcp you are operating on
+and have to touch anyways.
+
+But if its frequent that __rmqueue_smallest() and free_pages_bulk() are
+called with multiple pages then its always a win.
+
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+
+> +	__mod_zone_page_state(zone, NR_FREE_PAGES, -(1UL << order) * i);
+
+A multiplication? Okay with contemporary cpus I guess.
 
