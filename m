@@ -1,113 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761630AbZCPJ6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760326AbZCPKAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761630AbZCPJ6X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 05:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761487AbZCPJ5A
+	id S1760326AbZCPKAv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 06:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbZCPKAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 05:57:00 -0400
-Received: from viefep13-int.chello.at ([62.179.121.33]:6042 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761479AbZCPJ47 (ORCPT
+	Mon, 16 Mar 2009 06:00:41 -0400
+Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:45489 "HELO
+	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751963AbZCPKAk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 05:56:59 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH] perfcounters: Make s/w counters in a group only count
- when group is on
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <18874.57621.950179.972863@cargo.ozlabs.ibm.com>
-References: <18873.48668.562126.113618@cargo.ozlabs.ibm.com>
-	 <1236939816.22914.3714.camel@twins>
-	 <18874.20538.785519.824803@cargo.ozlabs.ibm.com>
-	 <1236948283.22447.36.camel@twins>
-	 <18874.57621.950179.972863@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Mon, 16 Mar 2009 10:56:43 +0100
-Message-Id: <1237197403.7818.30.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Mon, 16 Mar 2009 06:00:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=LAvJQLi3Mj3hvbUVecZu1XxIPNhbB7i3PZEGH0Ew6P6utlNURhpmDbJej5yxVbx0Q1+n5SL9I0n1aU1J8kPlOqiCVRMugQweN+UsszEREOe7NICRGgvBOg2FBQG6NgJS+IVB6PA+D4QgBf6CecXpTFi/RzrrDzJ52OchTO5XEiA=  ;
+X-YMail-OSG: DFmLNmsVM1mgZ6_ptpCQ0Cit0WW9JYqpQwT5TrU3nUKoMqK9Vsb.KJ8ffYhyzLOl23dgcX9tJwEqQJpxbM7QKaRzPfiMPjSbk5I1qTy2oKLhC9wjc7SfSKmMoJbSto2HItAQS4w3.q3l333NP2Ii227Zwk2m3w0eEvH6zWzqh.zidKBW9unld69q3q0taKtBSJkKI.DdR_u.bb5W1wNMNDS1meyPpg--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: SLOB lockup (was: Re: [tip:core/locking] lockdep: annotate reclaim context (__GFP_NOFS), fix SLOB)
+Date: Mon, 16 Mar 2009 21:00:28 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, linux-tip-commits@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de
+References: <20090128135457.350751756@chello.nl> <200903152006.21160.nickpiggin@yahoo.com.au> <1237128960.3213.133.camel@calx>
+In-Reply-To: <1237128960.3213.133.camel@calx>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903162100.30029.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-14 at 09:41 +1100, Paul Mackerras wrote:
-> Peter Zijlstra writes:
-> 
-> > The issue I have with your approach is two-fold:
-> >  - it breaks the symmetry between software and hardware counters by
-> >    treating them differently.
-> 
-> So... I was about to restore that symmetry by implementing lazy PMU
-> context switching.  In the case where we have inherited counters, and
-> we are switching from one task to another that both have the same set
-> of inherited counters, we don't really need to do anything, because it
-> doesn't matter which set of counters the events get added into,
-> because they all get added together at the end anyway.
+On Monday 16 March 2009 01:56:00 Matt Mackall wrote:
+> On Sun, 2009-03-15 at 20:06 +1100, Nick Piggin wrote:
+> > On Sunday 15 March 2009 17:48:18 Ingo Molnar wrote:
+> > > > Cc: Nick Piggin <npiggin@suse.de>
+> > > > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > > LKML-Reference: <20090128135457.350751756@chello.nl>
+> > > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > >
+> > > and with this fixed, and with SLOB now being tested in -tip, the
+> > > new lockdep assert attached below (followed by a real lockup)
+> > > pops up.
+> > >
+> > > Seems like a genuine SLOB bug, probably present upstream as
+> > > well.
+> >
+> > Hmmf. debugobjects calls back into the slab allocator from the page
+> > allocator. The following patch would improve SLOB, but I think it
+> > would be a good idea to avoid a dependency in that direction. Can
+> > debugobjects defer this freeing?
+>
+> Yeah. I don't think any of the allocators are designed with recursion in
+> mind. That the others aren't (visibly) failing here is blind luck.
+>
+> Nick, not really sure what your patch is accomplishing. It narrows the
+> lock window, but it doesn't eliminate it. But I think we can take the
+> page allocator case out from under the lock entirely, no?
 
-That is only true for actual counting counters, not the sampling kind.
+Oh, it was trying to accomplish exactly this, but wasn't tested (just
+for illustration).
 
-> That is another situation where you can have counters that are active
-> when their associated task is not scheduled in, this time for hardware
-> counters as well as software counters.  So this is not just some weird
-> special case for software counters, but is actually going to be more
-> generally useful.
-> 
-> >  - it doesn't make much conceptual sense to me
-> 
-> It seems quite reasonable to me that things could happen that are
-> attributable to a task, but which happen when the task isn't running.
-> Not just context switches and migrations - there's a whole class of
-> things that the system does on behalf of a process that can happen
-> asynchronously.  I wouldn't want to say that those kind of things can
-> never be counted with software counters.
-
-I've been thinking too much about sampling I think. It makes absolutely
-no sense in that light to have events that occur when the task isn't
-running, quite simply because its impossible to relate it to whatever
-the task is doing at that moment.
-
-However for simple counting events it might make sense to have something
-like that.
-
-Still HW counters can simply never do anything like that, and the lazy
-PMU thing you propose, while cool for simple stuff like perfstat, is
-something all-together different -- it doesn't keep counters enabled
-while their task is gone from the cpu, it avoids a counter update
-between related tasks.
-
-> > For the context switch counter, we could count the event right before we
-> > schedule out, which would make it behave like expected.
-> > 
-> > The same for task migration, most migrations happen when they are in
-> > fact running, so there too we can account the migration either before we
-> > rip it off the src cpu, or after we place it on the dst cpu.
-> > 
-> > There are a few places where this isn't quite so, like affine wakeups,
-> > but there we can account after the placement.
-> 
-> Right - but how do you know whether to do that accounting or not?  At
-> the moment there simply isn't enough state information in the counter
-> to tell you whether or not you should be adding in those things that
-> happened while the task wasn't running.  At the moment you can't tell
-> whether a counter is inactive merely because its task is scheduled
-> out, or because it's in a group that won't currently fit on the PMU.
-
-Well, for things like the migration count its easy, we already always
-count those, so fudging the perf counter interface isn't too hard. Other
-things, yeah, that'll be a tad tricky.
-
-> By the way, I notice that x86 will do the wrong thing if you have a
-> group where the leader is an interrupting hardware counter with
-> record_type == PERF_RECORD_GROUP and there is a software counter in
-> the group, because perf_handle_group calls x86_perf_counter_update on
-> each group member unconditionally, and x86_perf_counter_update assumes
-> its argument is a hardware counter.
-
-Ah, right, I fixed that for the generic swcounter stuff but then didn't
-do the x86 part.. d'oh.
+I think Thomas's deferred freeing work should be a good way to fix this
+problem, but of course reducing locking in SLOB doesn't hurt in the
+slightest either ;)
 
 
+> diff -r 8e0f1cee0a71 mm/slob.c
+> --- a/mm/slob.c	Sat Jan 24 15:41:13 2009 -0600
+> +++ b/mm/slob.c	Sun Mar 15 09:50:42 2009 -0500
+> @@ -387,8 +387,6 @@
+>  	sp = (struct slob_page *)virt_to_page(block);
+>  	units = SLOB_UNITS(size);
+>
+> -	spin_lock_irqsave(&slob_lock, flags);
+> -
+>  	if (sp->units + units == SLOB_UNITS(PAGE_SIZE)) {
+>  		/* Go directly to page allocator. Do not pass slob allocator */
+>  		if (slob_page_free(sp))
+
+This doesn't work because you have to hold the lock over the test
+otherwise another thread can concurrently meddle with sp->units.
+
+For that matter my previous patch was buggy, aside from the obvious
+that Ingo pointed out, because I unlocked before removing the page
+from the freelist too.
+
+This should be pretty close to correct ;)
+--
+
+Don't hold SLOB lock when freeing the page. Reduces lock hold width.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+ mm/slob.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/mm/slob.c
+===================================================================
+--- linux-2.6.orig/mm/slob.c
++++ linux-2.6/mm/slob.c
+@@ -393,10 +393,11 @@ static void slob_free(void *block, int s
+ 		/* Go directly to page allocator. Do not pass slob allocator */
+ 		if (slob_page_free(sp))
+ 			clear_slob_page_free(sp);
++		spin_unlock_irqrestore(&slob_lock, flags);
+ 		clear_slob_page(sp);
+ 		free_slob_page(sp);
+ 		free_page((unsigned long)b);
+-		goto out;
++		return;
+ 	}
+ 
+ 	if (!slob_page_free(sp)) {
 
