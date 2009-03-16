@@ -1,72 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762038AbZCPVqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762169AbZCPVq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762038AbZCPVqF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 17:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760577AbZCPVpn
+	id S1762169AbZCPVq1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 17:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762053AbZCPVqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 17:45:43 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35585 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760126AbZCPVpl (ORCPT
+	Mon, 16 Mar 2009 17:46:00 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:38106 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761963AbZCPVp7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 17:45:41 -0400
-Date: Mon, 16 Mar 2009 22:48:25 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Greg Freemyer <greg.freemyer@gmail.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       mtk.manpages@gmail.com, tytso@mit.edu, rdunlap@xenotime.net,
-       linux-doc@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: ext2/3: document conditions when reliable operation is possible
-Message-ID: <20090316214825.GC12308@elf.ucw.cz>
-References: <20090312092114.GC6949@elf.ucw.cz> <87f94c370903161245u727090a7m93735d1b57971d9f@mail.gmail.com>
+	Mon, 16 Mar 2009 17:45:59 -0400
+Date: Mon, 16 Mar 2009 21:44:11 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Gene Heskett <gene.heskett@gmail.com>,
+       David Newall <davidn@davidnewall.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: BUG?: PAGE_FLAGS_CHECK_AT_PREP seems to be cleared too early
+ (Was Re: I just got got another Oops
+In-Reply-To: <20090316170359.858e7a4e.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0903162101110.13164@blonde.anvils>
+References: <200903120133.11583.gene.heskett@gmail.com> <49B8C98D.3020309@davidnewall.com>
+ <200903121431.49437.gene.heskett@gmail.com> <20090316115509.40ea13da.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090316170359.858e7a4e.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87f94c370903161245u727090a7m93735d1b57971d9f@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-03-16 15:45:36, Greg Freemyer wrote:
-> On Thu, Mar 12, 2009 at 5:21 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> <snip>
-> > +Sector writes are atomic (ATOMIC-SECTORS)
-> > +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> > +
-> > +Either whole sector is correctly written or nothing is written during
-> > +powerfail.
-> > +
-> > +       Unfortuantely, none of the cheap USB/SD flash cards I seen do
-> > +       behave like this, and are unsuitable for all linux filesystems
-> > +       I know.
-> > +
-> > +               An inherent problem with using flash as a normal block
-> > +               device is that the flash erase size is bigger than
-> > +               most filesystem sector sizes.  So when you request a
-> > +               write, it may erase and rewrite the next 64k, 128k, or
-> > +               even a couple megabytes on the really _big_ ones.
-> > +
-> > +               If you lose power in the middle of that, filesystem
-> > +               won't notice that data in the "sectors" _around_ the
-> > +               one your were trying to write to got trashed.
-> 
-> I had *assumed* that SSDs worked like:
-> 
-> 1) write request comes in
-> 2) new unused erase block area marked to hold the new data
-> 3) updated data written to the previously unused erase block
-> 4) mapping updated to replace the old erase block with the new one
-> 
-> If it were done that way, a failure in the middle would just leave the
-> SSD with the old data in it.
+On Mon, 16 Mar 2009, KAMEZAWA Hiroyuki wrote:
+> Hi,
+> I'm sorry if I miss something..
 
-The really expensive ones (Intel SSD) apparently work like that, but I
-never seen one of those. USB sticks and SD cards I tried behave like I
-described above.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I think it's me who missed something, and needs to say sorry.
+
+> 
+> >From this patch
+> ==
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=79f4b7bf393e67bbffec807cc68caaefc72b82ee
+> ==
+> #define PAGE_FLAGS_CHECK_AT_PREP       ((1 << NR_PAGEFLAGS) - 1)
+> ...
+> @@ -468,16 +467,16 @@ static inline int free_pages_check(struct page *page)
+>                 (page_count(page) != 0)  |
+>                 (page->flags & PAGE_FLAGS_CHECK_AT_FREE)))
+> ....
+> +       if (PageReserved(page))
+> +               return 1;
+> +       if (page->flags & PAGE_FLAGS_CHECK_AT_PREP)
+> +               page->flags &= ~PAGE_FLAGS_CHECK_AT_PREP;
+> +       return 0;
+>  }
+> ==
+> 
+> PAGE_FLAGS_CHECK_AT_PREP is cleared by free_pages_check().
+> 
+> This means PG_head/PG_tail(PG_compound) flags are cleared here
+
+Yes, well spotted.  How embarrassing.  I must have got confused
+about when the checking occurred when freeing a compound page.
+
+> and Compound page will never be freed in sane way.
+
+But is that so?  I'll admit I've not tried this out yet, but my
+understanding is that the Compound page actually gets freed fine:
+free_compound_page() should have passed the right order down, and this
+PAGE_FLAGS_CHECK_AT_PREP clearing should remove the Head/Tail/Compound
+flags - doesn't it all work out sanely, without any leaking?
+
+What goes missing is all the destroy_compound_page() checks:
+that's at present just dead code.
+
+There's several things we could do about this.
+
+1.  We could regard destroy_compound_page() as legacy debugging code
+from when compound pages were first introduced, and sanctify my error
+by removing it.  Obviously that's appealing to me, makes me look like
+a prophet rather than idiot!  That's not necessarily the right thing to
+do, but might appeal also to those cutting overhead from page_alloc.c.
+
+2.  We could do the destroy_compound_page() stuff in free_compound_page()
+before calling __free_pages_ok(), and add the Head/Tail/Compound flags
+into PAGE_FLAGS_CHECK_AT_FREE.  That seems a more natural ordering to
+me, and would remove the PageCompound check from a hotter path; but
+I've a suspicion there's a good reason why it was not done that way,
+that I'm overlooking at this moment.
+
+3.  We can define a PAGE_FLAGS_CLEAR_AT_FREE which omits the Head/Tail/
+Compound flags, and lets destroy_compound_page() be called as before
+where it's currently intended.
+
+What do you think?  I suspect I'm going to have to spend tomorrow
+worrying about something else entirely, and won't return here until
+Wednesday.
+
+But as regards the original "I just got got another Oops": my bug
+that you point out here doesn't account for that, does it?  It's
+still a mystery, isn't it, how the PageTail bit came to be set at
+that point?
+
+But that Oops does demonstrate that it's a very bad idea to be using
+the deceptive page_count() in those bad_page() checks: we need to be
+checking page->_count directly.
+
+And in looking at this, I notice something else to worry about:
+that CONFIG_HUGETLBFS prep_compound_gigantic_page(), which seems
+to exist for a more general case than "p = page + i" - what happens
+when such a gigantic page is freed, and arrives at the various
+"p = page + i" assumptions on the freeing path?
+
+Hugh
