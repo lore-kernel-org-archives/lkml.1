@@ -1,108 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758624AbZCPRh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbZCPRn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758624AbZCPRh2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 13:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbZCPRhN
+	id S1757053AbZCPRn0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 13:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbZCPRnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 13:37:13 -0400
-Received: from mail-qy0-f122.google.com ([209.85.221.122]:44332 "EHLO
-	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753397AbZCPRhL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 13:37:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=cOkfVdX7ZsVhrP/KlSPbQkGYTxH2K025sbZPIG3+UVJlLU404NKNmMr9XP8lhyEevB
-         6tRL6LTWEpT2wxHc0aj1UcnBRs7u9xccHDV3h7uSiwGb/lXmlYH/wRrpEs4msqgD1pG8
-         Sdbcnq4xstbyQPYL1/1Er4ar9scgjake8qpjs=
-MIME-Version: 1.0
-In-Reply-To: <49BE7DEF.1060005@zytor.com>
-References: <1235600698-6446-1-git-send-email-matthew@wil.cx>
-	 <yq1hc2iumg9.fsf@sermon.lab.mkp.net> <20090226025043.GJ1363@mit.edu>
-	 <20090226030735.GA16891@parisc-linux.org>
-	 <yq1eixlg4mn.fsf@sermon.lab.mkp.net> <49A6B604.1060702@zytor.com>
-	 <yq1iqmxey1o.fsf@sermon.lab.mkp.net> <49A70379.3050306@zytor.com>
-	 <87f94c370903160751t6de5ed2t40163a6590ba633@mail.gmail.com>
-	 <49BE7DEF.1060005@zytor.com>
-Date: Mon, 16 Mar 2009 13:37:07 -0400
-Message-ID: <87f94c370903161037q52ff5e1nb7512726e58e652c@mail.gmail.com>
-Subject: Re: ATA support for 4k sector size
-From: Greg Freemyer <greg.freemyer@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Matthew Wilcox <matthew@wil.cx>, Theodore Tso <tytso@mit.edu>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sandeen@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 16 Mar 2009 13:43:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45408 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756017AbZCPRnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 13:43:17 -0400
+Subject: Re: [PATCH] ftrace: protect executing nmi
+From: Steven Rostedt <srostedt@redhat.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <49BE4BF7.6050407@cn.fujitsu.com>
+References: <49BE4BF7.6050407@cn.fujitsu.com>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Mon, 16 Mar 2009 13:42:52 -0400
+Message-Id: <1237225372.3624.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 12:27 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Greg Freemyer wrote:
->> If the reported geometry of these drives was changed to have sectors /
->> track be a multiple of 8, wouldn't that fix most of the issues.
->>
->> ie. If the drive were to report 56 sectors per track, then a
->> traditional partitioning tool would start the first partition as
->> sector 56 and a Vista like partitioning tool would place the first
->> partition at sector 2048.  Both would have the same 4K sector
->> alignment.
->>
->> If my logic is sound, anyway to get this recommendation upstream to
->> hardware manufacturers.  It seems like an almost trivial change for
->> them.
->>
->> FYI: It sounds to me like partitioning tools should totally drop
->> efforts to align with cylinders, instead they should start asking what
->> the unit of atomic read/writes is at the physical layer and if any
->> offsets are needed to align the partition with the atomic write areas.
->>
->> That would fit better for both SSD technology and for this 4K sectors
->> issue than trying to continue to support cylinders at all.
->
-> As long as BIOSes played along with it (which some of them may not do --
-> remember the geometry that matters is the one reported by the BIOS)
-> However, it definitely would be a major step in the right direction, as
-> it would let *most* systems Do The Right Thing instead of weirdly
-> misaligning the partitions and trying to cope with that.
->
->        -hpa
 
-I'm not intimate with the details, but I would hope most boot loaders
-by now use LBA values to find the boot code, not CHS.
+On Mon, 2009-03-16 at 20:54 +0800, Lai Jiangshan wrote:
+> When I review the sensitive code ftrace_nmi_enter(), I found
+> the atomic variable nmi_running does protect NMI VS do_ftrace_mod_code(),
+> but it can not protects NMI(entered nmi) VS NMI(ftrace_nmi_enter()).
+> 
+> cpu#1                   | cpu#2                 | cpu#3
+> ftrace_nmi_enter()      | do_ftrace_mod_code()  |
+>   not modify            |                       |
+> ------------------------|-----------------------|--
+> executing               | set mod_code_write = 1|
+> executing             --|-----------------------|--------------------
+> executing               |                       | ftrace_nmi_enter()
+> executing               |                       |    do modify
+> ------------------------|-----------------------|-----------------
+> ftrace_nmi_exit()       |                       |
 
-If so the issue becomes the partitioning tools (fdisk etc.) putting
-the partitions at the right place.  Can't those tools bypass the bios
-somehow and ask the drive itself what it's geometry is?
+Very good review!
 
->From what I understand Vista has already made the jump and is now
-ignoring CHS and instead just putting the first partition at 1 MiB
-into the drive.  (sector 2048 with 512 byte sectors.)
+This race is possible, although very unlikely, but must be fixed
+regardless.
 
-Sounds like fdisk and friends should be updated to do the same.
+> 
+> cpu#3 may be being modified the code which is still being executed on cpu#1,
+> it will have undefined results and possibly take a GPF, this patch
+> prevents it occurred.
 
-A bigger issue in my mind is lots of clones, images, etc. are probably
-LBA based today and simply start the first partition at sector 63.
-Thus the hardware vendors will need to have drives that perform well
-with partitions that start at sector 63.  The existing scheme
-described may be as good as it gets for that need.
+Unfortunately your patch does not solve the problem. It only makes the
+race window smaller.
 
-Also, how are SDD manufacturers handling this.  Their erase blocks
-don't align with partitions that start at sector 63 either I assume?
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> index 1d0d7f4..e016f5e 100644
+> --- a/arch/x86/kernel/ftrace.c
+> +++ b/arch/x86/kernel/ftrace.c
+> @@ -87,7 +87,8 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+>   *
+>   * If an NMI is executed, the first thing it does is to call
+>   * "ftrace_nmi_enter". This will check if the flag is set to write
+> - * and if it is, it will write what is in the IP and "code" buffers.
+> + * and if it is, and there is no executing nmi, it will write
+> + * what is in the IP and "code" buffers.
+>   *
+>   * The trick is, it does not matter if everyone is writing the same
+>   * content to the code location. Also, if a CPU is executing code
+> @@ -96,6 +97,7 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+>   */
+>  
+>  static atomic_t nmi_running = ATOMIC_INIT(0);
+> +static atomic_t nmi_executing = ATOMIC_INIT(0);
+>  static int mod_code_status;		/* holds return value of text write */
+>  static int mod_code_write;		/* set when NMI should do the write */
+>  static void *mod_code_ip;		/* holds the IP to write to */
+> @@ -135,14 +137,18 @@ void ftrace_nmi_enter(void)
+>  	atomic_inc(&nmi_running);
+>  	/* Must have nmi_running seen before reading write flag */
+>  	smp_mb();
+> -	if (mod_code_write) {
+> +	if (!atomic_read(&nmi_executing) && mod_code_write) {
+>  		ftrace_mod_code();
+>  		atomic_inc(&nmi_update_count);
+>  	}
 
-Greg
--- 
-Greg Freemyer
-Head of EDD Tape Extraction and Processing team
-Litigation Triage Solutions Specialist
-http://www.linkedin.com/in/gregfreemyer
-First 99 Days Litigation White Paper -
-http://www.norcrossgroup.com/forms/whitepapers/99%20Days%20whitepaper.pdf
+Here we have another race window. If cpu#1 has that NMI and right here
+we get a SMI (something to make the race window bigger). cpu#2 could
+have set the mod_code_write and cpu#3 could have another NMI that sees
+it but does not see the nmi_executing flag. Now we are in the same
+scenario as you nicely described up above.
 
-The Norcross Group
-The Intersection of Evidence & Technology
-http://www.norcrossgroup.com
+> +	atomic_inc(&nmi_executing);
+> +	smp_mb();
+>  }
+>  
+>  void ftrace_nmi_exit(void)
+>  {
+> +	smp_mb();
+> +	atomic_dec(&nmi_executing);
+>  	/* Finish all executions before clearing nmi_running */
+>  	smp_wmb();
+>  	atomic_dec(&nmi_running);
+> 
+
+
+The solution is to connect the mod_code_write with the nmi_enter and
+nmi_exit. Make mod_code_write an atomic.
+
+void ftrace_nmi_enter(void)
+{	
+	if (atomic_inc_return(&mod_code_write) > 10000) {
+		ftrace_mod_code();
+		atomic_inc(&nmi_update_count);
+	}
+	smp_mb();
+}
+
+void ftrace_nmi_exit(void)
+{
+	smp_mb();
+	atomic_dec(&mod_code_write);
+}
+
+Then in do_ftrace_mod_code ...
+
+
+	while (atomic_cmpxchg(&mod_code_write, 0, 10001) != 0)
+		;
+
+	[...]
+
+
+	while (atomic_cmpxchg(&mode_code_write, 10001, 0) != 10001)
+		;
+
+
+Does this look like it would solve the issue?
+
+-- Steve
+
+
