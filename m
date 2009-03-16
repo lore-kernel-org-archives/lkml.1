@@ -1,146 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbZCPD47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955AbZCPEOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbZCPD47 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 15 Mar 2009 23:56:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZCPD4q
+	id S1751955AbZCPEOU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 00:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbZCPEOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 15 Mar 2009 23:56:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34338
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751690AbZCPD4p convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 15 Mar 2009 23:56:45 -0400
-Date: Sun, 15 Mar 2009 20:56:31 -0700 (PDT)
-Message-Id: <20090315.205631.219535931.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 16 Mar 2009 00:14:07 -0400
+Received: from ozlabs.org ([203.10.76.45]:57300 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750818AbZCPEOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 00:14:06 -0400
+Subject: [PULL] cpumask updates for alpha
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com, travis@sgi.com
+CC: linux-kernel@vger.kernel.org
+CC: mingo@redhat.com
+CC: travis@sgi.com
+Date: Mon, 16 Mar 2009 14:43:56 +1030
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903161443.57265.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Almost all driver stuff, as usually is the case at this point.
-
-1) Two new drivers, for Dave DNET and be2net ethernet controllers.
-
-2) Missing second part of ASPM L0 IGB fix, from Alexander Duyck.
-   The first part went in via the PCI tree already.
-
-3) BUG fix when ipv6 module is unloaded, missing check on disabled
-   module option.  From John Dykstra.
-
-4) r8169 fixes from françois romieu.
-
-5) IBM EMAC bug fix from Benjamin Herrenschmidt.
-
-6) Fix regression in IPSEC xfrm_state lookups wrt. wildcard source
-   addresses.
-
-7) QLGE bug fixes from Ron Mercer.
-
-8) unicast filtering fixes in IXGBE and MV643XX_ETH.
-
-Please pull, thanks a lot.
-
-The following changes since commit 326d8519fc97be186c55ac605c3a7c957c758ae1:
-  Linus Torvalds (1):
-        Merge branch 'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
+The following changes since commit 5bee17f18b595937e6beafeee5197868a3f74a06:
+  Kyle McMartin (1):
+        parisc: sba_iommu: fix build bug when CONFIG_PARISC_AGP=y
 
 are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+  ssh://master.kernel.org/home/ftp/pub/scm/linux/kernel/git/rusty/linux-2.6-cpumask-for-alpha.git master
 
-Alexander Duyck (1):
-      igb: remove ASPM L0s workaround
+Rusty Russell (3):
+      cpumask: remove the now-obsoleted pcibus_to_cpumask(): alpha
+      cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: alpha
+      cpumask: arch_send_call_function_ipi_mask: alpha
 
-Benjamin Herrenschmidt (1):
-      emac: Fix clock control for 405EX and 405EXr chips
+ arch/alpha/include/asm/smp.h      |    3 ++-
+ arch/alpha/include/asm/topology.h |    1 -
+ arch/alpha/kernel/irq.c           |    2 +-
+ arch/alpha/kernel/smp.c           |   31 +++++++++++++++----------------
+ 4 files changed, 18 insertions(+), 19 deletions(-)
 
-Chris Leech (1):
-      ixgbe: fix multiple unicast address support
+commit 16b8b2042882f1270754cf6ba30d5bc1441c541d
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Mon Mar 16 14:10:43 2009 +1030
 
-Dave Jones (1):
-      via-velocity: Fix DMA mapping length errors on transmit.
+    cpumask: arch_send_call_function_ipi_mask: alpha
+    
+    We're weaning the core code off handing cpumask's around on-stack.
+    This introduces arch_send_call_function_ipi_mask().
+    
+    We also take the chance to wean the send_ipi_message off the
+    obsolescent for_each_cpu_mask(): making it take a pointer seemed the
+    most natural way to do this.
+    
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-David S. Miller (2):
-      dnet: Fix warnings on 64-bit.
-      xfrm: Fix xfrm_state_find() wrt. wildcard source address.
+diff --git a/arch/alpha/include/asm/smp.h b/arch/alpha/include/asm/smp.h
+index 547e909..8818a1b 100644
+--- a/arch/alpha/include/asm/smp.h
++++ b/arch/alpha/include/asm/smp.h
+@@ -47,7 +47,8 @@ extern struct cpuinfo_alpha cpu_data[NR_CPUS];
+ extern int smp_num_cpus;
+ 
+ extern void arch_send_call_function_single_ipi(int cpu);
+-extern void arch_send_call_function_ipi(cpumask_t mask);
++extern void arch_send_call_function_ipi_mask(const struct cpumask *mask);
++#define arch_send_call_function_ipi_mask arch_send_call_function_ipi_mask
+ 
+ #else /* CONFIG_SMP */
+ 
+diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
+index 286597e..aa77864 100644
+--- a/arch/alpha/kernel/smp.c
++++ b/arch/alpha/kernel/smp.c
+@@ -547,16 +547,16 @@ setup_profiling_timer(unsigned int multiplier)
+ 
+ 
+ static void
+-send_ipi_message(cpumask_t to_whom, enum ipi_message_type operation)
++send_ipi_message(const struct cpumask *to_whom, enum ipi_message_type operation)
+ {
+ 	int i;
+ 
+ 	mb();
+-	for_each_cpu_mask(i, to_whom)
++	for_each_cpu(i, to_whom)
+ 		set_bit(operation, &ipi_data[i].bits);
+ 
+ 	mb();
+-	for_each_cpu_mask(i, to_whom)
++	for_each_cpu(i, to_whom)
+ 		wripir(i);
+ }
+ 
+@@ -623,7 +623,7 @@ smp_send_reschedule(int cpu)
+ 		printk(KERN_WARNING
+ 		       "smp_send_reschedule: Sending IPI to self.\n");
+ #endif
+-	send_ipi_message(cpumask_of_cpu(cpu), IPI_RESCHEDULE);
++	send_ipi_message(cpumask_of(cpu), IPI_RESCHEDULE);
+ }
+ 
+ void
+@@ -635,17 +635,17 @@ smp_send_stop(void)
+ 	if (hard_smp_processor_id() != boot_cpu_id)
+ 		printk(KERN_WARNING "smp_send_stop: Not on boot cpu.\n");
+ #endif
+-	send_ipi_message(to_whom, IPI_CPU_STOP);
++	send_ipi_message(&to_whom, IPI_CPU_STOP);
+ }
+ 
+-void arch_send_call_function_ipi(cpumask_t mask)
++void arch_send_call_function_ipi_mask(const struct cpumask *mask)
+ {
+ 	send_ipi_message(mask, IPI_CALL_FUNC);
+ }
+ 
+ void arch_send_call_function_single_ipi(int cpu)
+ {
+-	send_ipi_message(cpumask_of_cpu(cpu), IPI_CALL_FUNC_SINGLE);
++	send_ipi_message(cpumask_of(cpu), IPI_CALL_FUNC_SINGLE);
+ }
+ 
+ static void
 
-Dhananjay Phadke (1):
-      netxen: remove old flash check.
+commit 8dfa51d38b49cb5e724d0a30aac113744a0eb971
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Mon Mar 16 14:10:42 2009 +1030
 
-Eilon Greenstein (3):
-      bnx2x: Adding restriction on sge_buf_size
-      bnx2x: Casting page alignment
-      bnx2x: Using DMAE to initialize the chip
+    cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: alpha
+    
+    Impact: cleanup, futureproof
+    
+    In fact, all cpumask ops will only be valid (in general) for bit
+    numbers < nr_cpu_ids.  So use that instead of NR_CPUS in various
+    places.
+    
+    This is always safe: no cpu number can be >= nr_cpu_ids, and
+    nr_cpu_ids is initialized to NR_CPUS at boot.
+    
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+    Signed-off-by: Mike Travis <travis@sgi.com>
+    Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Ilya Yanok (2):
-      dnet: Dave DNET ethernet controller driver (updated)
-      dnet: replace obsolete *netif_rx_* functions with *napi_*
+diff --git a/arch/alpha/kernel/irq.c b/arch/alpha/kernel/irq.c
+index 703731a..b6e2b86 100644
+--- a/arch/alpha/kernel/irq.c
++++ b/arch/alpha/kernel/irq.c
+@@ -52,7 +52,7 @@ int irq_select_affinity(unsigned int irq)
+ 
+ 	while (!cpu_possible(cpu) ||
+ 	       !cpumask_test_cpu(cpu, irq_default_affinity))
+-		cpu = (cpu < (NR_CPUS-1) ? cpu + 1 : 0);
++		cpu = (cpu < (nr_cpu_ids-1) ? cpu + 1 : 0);
+ 	last_cpu = cpu;
+ 
+ 	irq_desc[irq].affinity = cpumask_of_cpu(cpu);
+diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
+index b1fe567..286597e 100644
+--- a/arch/alpha/kernel/smp.c
++++ b/arch/alpha/kernel/smp.c
+@@ -500,9 +500,8 @@ smp_cpus_done(unsigned int max_cpus)
+ 	int cpu;
+ 	unsigned long bogosum = 0;
+ 
+-	for(cpu = 0; cpu < NR_CPUS; cpu++) 
+-		if (cpu_online(cpu))
+-			bogosum += cpu_data[cpu].loops_per_jiffy;
++	for_each_online_cpu(cpu)
++		bogosum += cpu_data[cpu].loops_per_jiffy;
+ 	
+ 	printk(KERN_INFO "SMP: Total of %d processors activated "
+ 	       "(%lu.%02lu BogoMIPS).\n",
+@@ -701,8 +700,8 @@ flush_tlb_mm(struct mm_struct *mm)
+ 		flush_tlb_current(mm);
+ 		if (atomic_read(&mm->mm_users) <= 1) {
+ 			int cpu, this_cpu = smp_processor_id();
+-			for (cpu = 0; cpu < NR_CPUS; cpu++) {
+-				if (!cpu_online(cpu) || cpu == this_cpu)
++			for_each_online_cpu(cpu) {
++				if (cpu == this_cpu)
+ 					continue;
+ 				if (mm->context[cpu])
+ 					mm->context[cpu] = 0;
+@@ -750,8 +749,8 @@ flush_tlb_page(struct vm_area_struct *vma, unsigned long addr)
+ 		flush_tlb_current_page(mm, vma, addr);
+ 		if (atomic_read(&mm->mm_users) <= 1) {
+ 			int cpu, this_cpu = smp_processor_id();
+-			for (cpu = 0; cpu < NR_CPUS; cpu++) {
+-				if (!cpu_online(cpu) || cpu == this_cpu)
++			for_each_online_cpu(cpu) {
++				if (cpu == this_cpu)
+ 					continue;
+ 				if (mm->context[cpu])
+ 					mm->context[cpu] = 0;
+@@ -806,8 +805,8 @@ flush_icache_user_range(struct vm_area_struct *vma, struct page *page,
+ 		__load_new_mm_context(mm);
+ 		if (atomic_read(&mm->mm_users) <= 1) {
+ 			int cpu, this_cpu = smp_processor_id();
+-			for (cpu = 0; cpu < NR_CPUS; cpu++) {
+-				if (!cpu_online(cpu) || cpu == this_cpu)
++			for_each_online_cpu(cpu) {
++				if (cpu == this_cpu)
+ 					continue;
+ 				if (mm->context[cpu])
+ 					mm->context[cpu] = 0;
 
-John Dykstra (1):
-      ipv6:  Fix BUG when disabled ipv6 module is unloaded
+commit 61ed3414a45c445426216a7c9ebbcf027d806499
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Mon Mar 16 14:10:42 2009 +1030
 
-Lennert Buytenhek (1):
-      mv643xx_eth: fix unicast address filter corruption on mtu change
+    cpumask: remove the now-obsoleted pcibus_to_cpumask(): alpha
+    
+    Impact: reduce stack usage for large NR_CPUS
+    
+    cpumask_of_pcibus() is the new version.
+    
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Ron Mercer (4):
-      qlge: bugfix: Increase filter on inbound csum.
-      qlge: bugfix: Tell hw to strip vlan header.
-      qlge: bugfix: Move netif_napi_del() to common call point.
-      qlge: bugfix: Pad outbound frames smaller than 60 bytes.
+diff --git a/arch/alpha/include/asm/topology.h b/arch/alpha/include/asm/topology.h
+index b4f284c..f5bd6cd 100644
+--- a/arch/alpha/include/asm/topology.h
++++ b/arch/alpha/include/asm/topology.h
+@@ -55,7 +55,6 @@ static const struct cpumask *cpumask_of_node(int node)
+ 	return &node_to_cpumask_map[node];
+ }
+ 
+-#define pcibus_to_cpumask(bus)	(cpu_online_map)
+ #define cpumask_of_pcibus(bus)	(cpu_online_mask)
+ 
+ #endif /* !CONFIG_NUMA */
 
-Sathya Perla (1):
-      net: Add be2net driver.
-
-françois romieu (2):
-      r8169: use hardware auto-padding.
-      r8169: revert "r8169: read MAC address from EEPROM on init (2nd attempt)"
-
- MAINTAINERS                          |    9 +
- drivers/net/Kconfig                  |   13 +
- drivers/net/Makefile                 |    2 +
- drivers/net/benet/Kconfig            |    7 +
- drivers/net/benet/Makefile           |    7 +
- drivers/net/benet/be.h               |  327 ++++++
- drivers/net/benet/be_cmds.c          |  861 +++++++++++++++
- drivers/net/benet/be_cmds.h          |  688 ++++++++++++
- drivers/net/benet/be_ethtool.c       |  362 +++++++
- drivers/net/benet/be_hw.h            |  211 ++++
- drivers/net/benet/be_main.c          | 1903 ++++++++++++++++++++++++++++++++++
- drivers/net/bnx2x.h                  |    2 +-
- drivers/net/bnx2x_init.h             |    4 -
- drivers/net/bnx2x_main.c             |   21 +-
- drivers/net/dnet.c                   |  994 ++++++++++++++++++
- drivers/net/dnet.h                   |  225 ++++
- drivers/net/ibm_newemac/core.c       |    3 +
- drivers/net/igb/igb_main.c           |   26 +-
- drivers/net/ixgbe/ixgbe_main.c       |    1 +
- drivers/net/mv643xx_eth.c            |   10 +-
- drivers/net/netxen/netxen_nic.h      |    1 -
- drivers/net/netxen/netxen_nic_hw.c   |   22 -
- drivers/net/netxen/netxen_nic_main.c |    3 -
- drivers/net/qlge/qlge.h              |    1 +
- drivers/net/qlge/qlge_main.c         |   57 +-
- drivers/net/r8169.c                  |  122 +---
- drivers/net/via-velocity.c           |   15 +-
- net/ipv6/af_inet6.c                  |    3 +
- net/xfrm/xfrm_state.c                |   90 +-
- 29 files changed, 5741 insertions(+), 249 deletions(-)
- create mode 100644 drivers/net/benet/Kconfig
- create mode 100644 drivers/net/benet/Makefile
- create mode 100644 drivers/net/benet/be.h
- create mode 100644 drivers/net/benet/be_cmds.c
- create mode 100644 drivers/net/benet/be_cmds.h
- create mode 100644 drivers/net/benet/be_ethtool.c
- create mode 100644 drivers/net/benet/be_hw.h
- create mode 100644 drivers/net/benet/be_main.c
- create mode 100644 drivers/net/dnet.c
- create mode 100644 drivers/net/dnet.h
