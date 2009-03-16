@@ -1,145 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761445AbZCPWoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761066AbZCPWq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761445AbZCPWoo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 18:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbZCPWof
+	id S1761066AbZCPWq6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 18:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbZCPWqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 18:44:35 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:42279 "EHLO pardus.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754589AbZCPWoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 18:44:34 -0400
-Message-ID: <49BED5D5.2000801@pardus.org.tr>
-Date: Tue, 17 Mar 2009 00:42:29 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Mon, 16 Mar 2009 18:46:49 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:31063 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753747AbZCPWqs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 18:46:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=vn2HLzusfz57pxMeTupAo7B0bPrwI3eXuUniJ2ABT7ZBYdoPCph7XnI2O1KA55ti7s
+         U6djXiCoxBJ9xm1CWgPDjKdoCF+emrRxrdI2QP+7qHgWlxMTFv3RrJclGpwWHoJRJ5Sy
+         fGsn5FNIJTVHg22W011KWvzsJM4ifFqBbeHRE=
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG 2.6.29_rc8] BIOS Bug: CPU MTRRs don't cover all of memory,
- 	losing 0MB of RAM.
-References: <49BE58BA.1000907@pardus.org.tr> <86802c440903161121s3ba18abaiaa3ccf6847e0eafe@mail.gmail.com> <49BEB3C9.8070705@pardus.org.tr> <49BECBF4.1000508@kernel.org>
-In-Reply-To: <49BECBF4.1000508@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <49B8AF67.8080309@renesas.com>
+References: <49B8AF67.8080309@renesas.com>
+Date: Mon, 16 Mar 2009 15:46:45 -0700
+X-Google-Sender-Auth: c5d7a78ae0b70ffc
+Message-ID: <e9c3a7c20903161546i5de80305r1b0df1605c7718d8@mail.gmail.com>
+Subject: Re: [PATCH] dmaengine: sh: Add support DMA-Engine driver for DMA of 
+	SuperH
+From: Dan Williams <dan.j.williams@intel.com>
+To: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Cc: Linux-sh <linux-sh@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       maciej.sosnowski@intel.com, Paul Mundt <lethal@linux-sh.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
+On Wed, Mar 11, 2009 at 11:44 PM, Nobuhiro Iwamatsu
+<iwamatsu.nobuhiro@renesas.com> wrote:
+> This supports DMA-Engine driver for DMA of SuperH.
+> This supported all DMA channels, and it was tested in SH7722/SH7780.
+> This can not use with SH DMA API and can control this in Kconfig.
+>
+> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> ---
+>  arch/sh/drivers/dma/Kconfig  |   12 +-
+>  arch/sh/drivers/dma/Makefile |    3 +-
+>  arch/sh/include/asm/dma-sh.h |   11 +
+>  drivers/dma/Kconfig          |    9 +
+>  drivers/dma/Makefile         |    2 +
+>  drivers/dma/shdma.c          |  743 ++++++++++++++++++++++++++++++++++++++++++
+>  drivers/dma/shdma.h          |   65 ++++
+>  7 files changed, 840 insertions(+), 5 deletions(-)
+>  create mode 100644 drivers/dma/shdma.c
+>  create mode 100644 drivers/dma/shdma.h
 
-> please check
-> 
-> [PATCH] x86: workaround system with strange var MTRR
-> 
+Hi,
 
-Thanks for your interest.
+I have not finished a full review but one problem jumps out, the use
+of spin_lock_irqsave to protect against channel/descriptor
+manipulations.  The highest level of protection that net_dma and
+async_tx assume is spin_lock_bh.  It seems like the pieces of
+sh_dmae_interrupt() that touch the descriptor can be moved to the
+tasklet, then the locks can be downgraded.
 
-Oops is now replaced with a warning after applying the patch on top of tip/master.
+Your other patch, to set the alignment in dmatest, makes me wonder if
+this engine can handle unaligned accesses?  If it can not then set the
+DMA_PRIVATE capability bit at device registration time to prevent
+net_dma and other "public" clients from using these channels.  Public
+clients assume that there are no alignment constraints.
 
-BTW, do that kind of BIOS bugs have a negative impact on the performance of the system?
-
-
-I'm sending the head of dmesg. And also I just noticed that there were MTRR related
-stuff at the tail of the log buffer(with/without the patch). I'm posting them also:
-
---
-
-MTRR default type: uncachable
-MTRR fixed ranges enabled:
-  00000-9FFFF write-back
-  A0000-BFFFF uncachable
-  C0000-FFFFF write-protect
-MTRR variable ranges enabled:
-  0 base 0000000000 mask 0000000000 write-back
-  1 base 00CFF00000 mask FFFFF00000 uncachable
-  2 base 00D0000000 mask FFF0000000 uncachable
-  3 base 00E0000000 mask FFE0000000 uncachable
-  4 base 0000004000 mask FFFFFFF000 uncachable
-  5 base 0000005000 mask FFFFFFF000 uncachable
-  6 base 0000006000 mask FFFFFFF000 uncachable
-  7 base 0000007000 mask FFFFFFF000 uncachable
-x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-  get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
-  get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
-  get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
-  get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
-  get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
-  get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
-  get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
-  get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
-WARNING: BIOS bug: VAR MTRR contains strange UC entry under 1M, check with your system vendor!
-WARNING: BIOS bug: VAR MTRR contains strange UC entry under 1M, check with your system vendor!
-WARNING: BIOS bug: VAR MTRR contains strange UC entry under 1M, check with your system vendor!
-WARNING: BIOS bug: VAR MTRR contains strange UC entry under 1M, check with your system vendor!
-e820 update range: 00000000cff00000 - 0000000100000000 (usable) ==> (reserved)
-init_memory_mapping: 0000000000000000-00000000379fe000
- 0000000000 - 0000200000 page 4k
- 0000200000 - 0037800000 page 2M
- 0037800000 - 00379fe000 page 4k
-...
-...
-...
-...
-NET: Registered protocol family 10
-lo: Disabled Privacy Extensions
-ADDRCONF(NETDEV_UP): eth1: link is not ready
-  get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
-  get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
-  get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
-  get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
-  get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
-  get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
-  get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
-  get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
-  get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
-  get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
-  get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
-  get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
-  get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
-  get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
-  get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
-  get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
-bnx2: eth1 NIC Copper Link is Up, 1000 Mbps full duplex, receive & transmit flow control ON
-ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
-  get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
-  get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
-  get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
-  get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
-  get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
-  get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
-  get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
-  get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
-  get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
-  get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
-  get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
-  get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
-  get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
-  get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
-  get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
-  get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
-  get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
-  get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
-  get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
-  get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
-  get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
-  get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
-  get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
-  get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
-  get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
-mtrr: type mismatch for d8000000,4000000 old: write-back new: write-combining
-  get_mtrr: cpu0 reg00 base=0000000000 size=0010000000 write-back
-  get_mtrr: cpu0 reg01 base=00000cff00 size=0000000100 uncachable
-  get_mtrr: cpu0 reg02 base=00000d0000 size=0000010000 uncachable
-  get_mtrr: cpu0 reg03 base=00000e0000 size=0000020000 uncachable
-  get_mtrr: cpu0 reg04 base=0000000004 size=0000000001 uncachable
-  get_mtrr: cpu0 reg05 base=0000000005 size=0000000001 uncachable
-  get_mtrr: cpu0 reg06 base=0000000006 size=0000000001 uncachable
-  get_mtrr: cpu0 reg07 base=0000000007 size=0000000001 uncachable
-
--- 
-
-Ozan Ã‡aÄŸlayan
-<ozan_at_pardus.org.tr>
+Thanks,
+Dan
