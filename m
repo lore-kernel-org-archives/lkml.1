@@ -1,137 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbZCQOwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751695AbZCQOwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752438AbZCQOwi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 10:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZCQOw2
+	id S1751695AbZCQOwx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 10:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbZCQOwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 10:52:28 -0400
-Received: from mga09.intel.com ([134.134.136.24]:51937 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752049AbZCQOw1 convert rfc822-to-8bit (ORCPT
+	Tue, 17 Mar 2009 10:52:30 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52668 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752055AbZCQOw2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 10:52:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,379,1233561600"; 
-   d="scan'208";a="498461171"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Date: Tue, 17 Mar 2009 14:51:20 +0000
-Subject: RE: [patch 1/5] x86, bts: detect size of DS fields
-Thread-Topic: [patch 1/5] x86, bts: detect size of DS fields
-Thread-Index: Acmm/NOiijrhTk/gSoehVHQcmoTHDAAAEWlwAARtJQA=
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E4A6643E0@irsmsx504.ger.corp.intel.com>
-References: <20090313104218.A30096@sedona.ch.intel.com>
- <20090313110357.GC31094@elte.hu>
- <928CFBE8E7CB0040959E56B4EA41A77E4A663C47@irsmsx504.ger.corp.intel.com>
- <20090317105558.GK6477@elte.hu>
- <928CFBE8E7CB0040959E56B4EA41A77E4A664285@irsmsx504.ger.corp.intel.com>
- <20090317123442.GB22759@elte.hu>
- <928CFBE8E7CB0040959E56B4EA41A77E4A6642C7@irsmsx504.ger.corp.intel.com>
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E4A6642C7@irsmsx504.ger.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+	Tue, 17 Mar 2009 10:52:28 -0400
+Subject: Re: [Bug #12612] hard lockup when interrupting cdda2wav
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       hias@horus.com
+In-Reply-To: <20090317095254P.fujita.tomonori@lab.ntt.co.jp>
+References: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera>
+	 <qm8_cedJGaP.A.3-G.5OCvJB@chimera>
+	 <20090317095254P.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Date: Tue, 17 Mar 2009 14:52:21 +0000
+Message-Id: <1237301541.3253.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Metzger, Markus T
->Sent: Tuesday, March 17, 2009 1:58 PM
->To: Ingo Molnar
+On Tue, 2009-03-17 at 09:53 +0900, FUJITA Tomonori wrote:
+> On Sat, 14 Mar 2009 20:20:17 +0100 (CET)
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.27 and 2.6.28.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> > be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12612
+> > Subject		: hard lockup when interrupting cdda2wav
+> > Submitter	: Matthias Reichl <hias@horus.com>
+> > Date		: 2009-01-28 16:41 (46 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123316111415677&w=4
+> > Handled-By	: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > Patch		: http://marc.info/?l=linux-scsi&m=123371501613019&w=2
+> 
+> This still should be listed. I think that the fix (in James'
+> scsi-misc) will be merged to 2.6.30-rc1 then be backported.
 
+It hasn't shown any problems at all under test in -next ... hopefully
+under a reasonable test pool.  I think we can move it across for current
+bug fixes (crosses fingers).
 
->>> I think I found the problem:
->>>   ds_request_bts() needs to allocate a small amount of memory.
->>>   It uses GFP_KERNEL.
->>>
->>> Hw-branch-tracer essentially does on_each_cpu(ds_request_bts()).
->>>
->>> Since ds_request_bts() is meant to be called on the cpu that
->>> should be traced, it should use GFP_ATOMIC to allow calls from
->>> smp_call_function() and friends.
->>>
->>> Would that be acceptable?
->>
->>That's not really a good solution - GFP_ATOMIC is not a reliable
->>form of allocation.
+James
 
-That problem also is in the .29-rc version.
-It affects the hw-branch-tracer.
-The ptrace interface should not be affected.
-
-The changes I sketched below will be too intrusive.
-Do you want a small patch that turns GFP_KERNEL into GFP_ATOMIC
-for .29?
-
-regards,
-markus.
-
-
->In that case, I would need to double the interface. So far, I used
->task == NULL to indicate tracing on the current cpu. I could turn
->this into:
->  ds_request_bts_task(struct task_struct *task, ....) and
->  ds_request_bts_cpu(int cpu, ....)
->
->This way, I could do the allocation using GFP_KERNEL and then
->do the wrmsrl() to enable tracing using smp_call_function().
->
->Does that sound better?
->
->
->>the other callsites are buggy too:
->>
->>                smp_call_function_single(cpu, bts_trace_start_cpu, NULL, 1);
->>
->>done under the bts_tracer_lock in addition to an atomic IPI
->>context.
->
->That lock synchronizes the on_each_cpu initialization calls with the
->hotplug handler.
->The for_each_online_cpu iteration in smp_call_function_many() may
->race with the smp_call_function_single() when a new cpu arrives or
->departs.
->
->
->
->>for_each_online_cpu() done under the mutex would be better i
->>guess, plus you can allocate any memory before you do the SMP
->>cross-call, and pass it to the IPI handler via the data
->>parameter. (NULL in the sequence above)
->
->The memory is allocated by ds_request_bts(). It holds the tracer
->struct returned to the caller. The struct is private to ds.c.
->
->
->regards,
->markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
 
