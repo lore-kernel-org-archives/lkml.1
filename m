@@ -1,39 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbZCQV2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbZCQVd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758499AbZCQV2l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 17:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758019AbZCQV2Z
+	id S1757926AbZCQVd2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 17:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZCQVdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 17:28:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:41602 "EHLO mail.goop.org"
+	Tue, 17 Mar 2009 17:33:18 -0400
+Received: from mx1.suse.de ([195.135.220.2]:53913 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758030AbZCQV2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 17:28:24 -0400
-Message-ID: <49C015F5.60309@goop.org>
-Date: Tue, 17 Mar 2009 14:28:21 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org> <49BEB5FE.7050601@zytor.com> <49BEBD98.3090905@goop.org> <49BEC143.6030104@zytor.com> <49BEC53F.20200@goop.org> <49BED431.5070201@zytor.com> <49BF0A51.5000909@kernel.org> <49BF2054.9020009@zytor.com> <49BF301C.6010708@goop.org> <49BFCA05.7000508@zytor.com> <49BFFD3C.3020908@goop.org> <49BFFDE4.1070601@zytor.com> <49C0012A.6060903@goop.org> <49C013E2.3090704@kernel.org>
-In-Reply-To: <49C013E2.3090704@kernel.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1755442AbZCQVdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 17:33:17 -0400
+From: Mark Fasheh <mfasheh@suse.com>
+To: linux-kernel@vger.kernel.org
+Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       Sunil Mushran <sunil.mushran@oracle.com>,
+       Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 20/32] ocfs2/dlm: Create and destroy the dlm->master_hash
+Date: Tue, 17 Mar 2009 13:01:10 -0700
+Message-Id: <1237320082-12921-21-git-send-email-mfasheh@suse.com>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> can you check __brk_limit in extend_brk() ?
->   
+From: Sunil Mushran <sunil.mushran@oracle.com>
 
-It does:
+This patch adds code to create and destroy the dlm->master_hash.
 
-	_brk_end = (_brk_end + mask) & ~mask;
-	BUG_ON((char *)(_brk_end + size) > __brk_limit);
+Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/ocfs2/dlm/dlmcommon.h |    8 ++++++++
+ fs/ocfs2/dlm/dlmdomain.c |   18 ++++++++++++++++++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
 
-    J
+diff --git a/fs/ocfs2/dlm/dlmcommon.h b/fs/ocfs2/dlm/dlmcommon.h
+index b232aa0..425653f 100644
+--- a/fs/ocfs2/dlm/dlmcommon.h
++++ b/fs/ocfs2/dlm/dlmcommon.h
+@@ -151,6 +151,7 @@ struct dlm_ctxt
+ 	unsigned long recovery_map[BITS_TO_LONGS(O2NM_MAX_NODES)];
+ 	struct dlm_recovery_ctxt reco;
+ 	spinlock_t master_lock;
++	struct hlist_head **master_hash;
+ 	struct list_head master_list;
+ 	struct list_head mle_hb_events;
+ 
+@@ -195,6 +196,13 @@ static inline struct hlist_head *dlm_lockres_hash(struct dlm_ctxt *dlm, unsigned
+ 	return dlm->lockres_hash[(i / DLM_BUCKETS_PER_PAGE) % DLM_HASH_PAGES] + (i % DLM_BUCKETS_PER_PAGE);
+ }
+ 
++static inline struct hlist_head *dlm_master_hash(struct dlm_ctxt *dlm,
++						 unsigned i)
++{
++	return dlm->master_hash[(i / DLM_BUCKETS_PER_PAGE) % DLM_HASH_PAGES] +
++			(i % DLM_BUCKETS_PER_PAGE);
++}
++
+ /* these keventd work queue items are for less-frequently
+  * called functions that cannot be directly called from the
+  * net message handlers for some reason, usually because
+diff --git a/fs/ocfs2/dlm/dlmdomain.c b/fs/ocfs2/dlm/dlmdomain.c
+index d8d578f..4531504 100644
+--- a/fs/ocfs2/dlm/dlmdomain.c
++++ b/fs/ocfs2/dlm/dlmdomain.c
+@@ -304,6 +304,9 @@ static void dlm_free_ctxt_mem(struct dlm_ctxt *dlm)
+ 	if (dlm->lockres_hash)
+ 		dlm_free_pagevec((void **)dlm->lockres_hash, DLM_HASH_PAGES);
+ 
++	if (dlm->master_hash)
++		dlm_free_pagevec((void **)dlm->master_hash, DLM_HASH_PAGES);
++
+ 	if (dlm->name)
+ 		kfree(dlm->name);
+ 
+@@ -1534,12 +1537,27 @@ static struct dlm_ctxt *dlm_alloc_ctxt(const char *domain,
+ 	for (i = 0; i < DLM_HASH_BUCKETS; i++)
+ 		INIT_HLIST_HEAD(dlm_lockres_hash(dlm, i));
+ 
++	dlm->master_hash = (struct hlist_head **)
++				dlm_alloc_pagevec(DLM_HASH_PAGES);
++	if (!dlm->master_hash) {
++		mlog_errno(-ENOMEM);
++		dlm_free_pagevec((void **)dlm->lockres_hash, DLM_HASH_PAGES);
++		kfree(dlm->name);
++		kfree(dlm);
++		dlm = NULL;
++		goto leave;
++	}
++
++	for (i = 0; i < DLM_HASH_BUCKETS; i++)
++		INIT_HLIST_HEAD(dlm_master_hash(dlm, i));
++
+ 	strcpy(dlm->name, domain);
+ 	dlm->key = key;
+ 	dlm->node_num = o2nm_this_node();
+ 
+ 	ret = dlm_create_debugfs_subroot(dlm);
+ 	if (ret < 0) {
++		dlm_free_pagevec((void **)dlm->master_hash, DLM_HASH_PAGES);
+ 		dlm_free_pagevec((void **)dlm->lockres_hash, DLM_HASH_PAGES);
+ 		kfree(dlm->name);
+ 		kfree(dlm);
+-- 
+1.5.6
+
