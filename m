@@ -1,67 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbZCQWaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbZCQWkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756045AbZCQWaT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 18:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbZCQWaF
+	id S1756772AbZCQWkL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 18:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbZCQWj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 18:30:05 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:26209 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754672AbZCQWaB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 18:30:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=aR8uKEy9vl2vXAN7cwJSgTw8i8Sr1VGsZxmmlu3lPUIreg/bxMUT5O6KlVfxfNtKXY
-         +taTkeHfLZtID/Fv7/p/AF6MP13RnM1xrdM6HXIOn7oem08+IETAEOhdHmoUJdbc7HTa
-         /3wKgl/b3RexcVBunywOFDh9anVCfKaQCo4Hw=
-MIME-Version: 1.0
-In-Reply-To: <1237327752.5189.1119.camel@laptop>
-References: <72dbd3150903171319u567fc267m36857506c024315d@mail.gmail.com>
-	 <1237327752.5189.1119.camel@laptop>
-Date: Tue, 17 Mar 2009 15:29:58 -0700
-Message-ID: <72dbd3150903171529pa054082q5aeb2848d18fb87@mail.gmail.com>
-Subject: Re: Large write = large latency for small writes
-From: David Rees <drees76@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 17 Mar 2009 18:39:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34521 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754234AbZCQWj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 18:39:57 -0400
+From: Mark Fasheh <mfasheh@suse.com>
+To: linux-kernel@vger.kernel.org
+Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       Tao Ma <tao.ma@oracle.com>, Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 15/32] ocfs2: Allocate inode groups from global_bitmap.
+Date: Tue, 17 Mar 2009 13:01:05 -0700
+Message-Id: <1237320082-12921-16-git-send-email-mfasheh@suse.com>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 3:09 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Tue, 2009-03-17 at 13:19 -0700, David Rees wrote:
->> I have a simple test case which demonstrates the huge increase in
->> write latency that occurs for small writes when a large disk
->> saturating write is also in progress [3]:
->>
->> dd if=/dev/zero of=/tmp/bigfile bs=1M count=10000 conv=fdatasync &
->> sleep 10
->> time dd if=/dev/zero of=/tmp/smallfile bs=4k count=1 conv=fdatasync
->>
->> On a handful of systems I have access to, it took anywhere from 6-45
->> seconds for the small write to complete.  Others in the bug have
->> reproduced this across a number of filesystems (ext3, reiserfs, ext4).
->> xfs in particular seems to handle this test case better than the
->> others.  As do systems which can sustain high write speeds.
->
-> How does it fare without the fdatasync?
->
-> That is, is it the sync that's taking ages, or the ditry?
+From: Tao Ma <tao.ma@oracle.com>
 
-It's the fdatasync that takes ages.  Without fdatasync the small write
-finishes in an instant.  In the test I just ran, it took 65 seconds
-for the small write to complete with the fdatasync and 0.0001 seconds
-without it.  I think this is also why ext4 and xfs seem to handle the
-problem a bit better than ext3/reiserfs.
+Inode groups used to be allocated from local alloc file,
+but since we want all inodes to be contiguous enough, we
+will try to allocate them directly from global_bitmap.
 
-Which is why I initially thought it was a NFS issue as I didn't see
-too many bad delays when working directly on the server during
-sustained server write load, only when working over NFS which mounts
-sync by default.
+Signed-off-by: Tao Ma <tao.ma@oracle.com>
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/ocfs2/suballoc.c |   29 +++++++++++++++++++----------
+ 1 files changed, 19 insertions(+), 10 deletions(-)
 
--Dave
+diff --git a/fs/ocfs2/suballoc.c b/fs/ocfs2/suballoc.c
+index 487f00c..b7a065e 100644
+--- a/fs/ocfs2/suballoc.c
++++ b/fs/ocfs2/suballoc.c
+@@ -48,7 +48,8 @@
+ #include "buffer_head_io.h"
+ 
+ #define NOT_ALLOC_NEW_GROUP		0
+-#define ALLOC_NEW_GROUP			1
++#define ALLOC_NEW_GROUP			0x1
++#define ALLOC_GROUPS_FROM_GLOBAL	0x2
+ 
+ #define OCFS2_MAX_INODES_TO_STEAL	1024
+ 
+@@ -64,7 +65,8 @@ static int ocfs2_block_group_fill(handle_t *handle,
+ static int ocfs2_block_group_alloc(struct ocfs2_super *osb,
+ 				   struct inode *alloc_inode,
+ 				   struct buffer_head *bh,
+-				   u64 max_block);
++				   u64 max_block,
++				   int flags);
+ 
+ static int ocfs2_cluster_group_search(struct inode *inode,
+ 				      struct buffer_head *group_bh,
+@@ -116,6 +118,7 @@ static inline void ocfs2_block_to_cluster_group(struct inode *inode,
+ 						u16 *bg_bit_off);
+ static int ocfs2_reserve_clusters_with_limit(struct ocfs2_super *osb,
+ 					     u32 bits_wanted, u64 max_block,
++					     int flags,
+ 					     struct ocfs2_alloc_context **ac);
+ 
+ void ocfs2_free_ac_resource(struct ocfs2_alloc_context *ac)
+@@ -403,7 +406,8 @@ static inline u16 ocfs2_find_smallest_chain(struct ocfs2_chain_list *cl)
+ static int ocfs2_block_group_alloc(struct ocfs2_super *osb,
+ 				   struct inode *alloc_inode,
+ 				   struct buffer_head *bh,
+-				   u64 max_block)
++				   u64 max_block,
++				   int flags)
+ {
+ 	int status, credits;
+ 	struct ocfs2_dinode *fe = (struct ocfs2_dinode *) bh->b_data;
+@@ -423,7 +427,7 @@ static int ocfs2_block_group_alloc(struct ocfs2_super *osb,
+ 	cl = &fe->id2.i_chain;
+ 	status = ocfs2_reserve_clusters_with_limit(osb,
+ 						   le16_to_cpu(cl->cl_cpg),
+-						   max_block, &ac);
++						   max_block, flags, &ac);
+ 	if (status < 0) {
+ 		if (status != -ENOSPC)
+ 			mlog_errno(status);
+@@ -531,7 +535,7 @@ static int ocfs2_reserve_suballoc_bits(struct ocfs2_super *osb,
+ 				       struct ocfs2_alloc_context *ac,
+ 				       int type,
+ 				       u32 slot,
+-				       int alloc_new_group)
++				       int flags)
+ {
+ 	int status;
+ 	u32 bits_wanted = ac->ac_bits_wanted;
+@@ -587,7 +591,7 @@ static int ocfs2_reserve_suballoc_bits(struct ocfs2_super *osb,
+ 			goto bail;
+ 		}
+ 
+-		if (alloc_new_group != ALLOC_NEW_GROUP) {
++		if (!(flags & ALLOC_NEW_GROUP)) {
+ 			mlog(0, "Alloc File %u Full: wanted=%u, free_bits=%u, "
+ 			     "and we don't alloc a new group for it.\n",
+ 			     slot, bits_wanted, free_bits);
+@@ -596,7 +600,7 @@ static int ocfs2_reserve_suballoc_bits(struct ocfs2_super *osb,
+ 		}
+ 
+ 		status = ocfs2_block_group_alloc(osb, alloc_inode, bh,
+-						 ac->ac_max_block);
++						 ac->ac_max_block, flags);
+ 		if (status < 0) {
+ 			if (status != -ENOSPC)
+ 				mlog_errno(status);
+@@ -740,7 +744,9 @@ int ocfs2_reserve_new_inode(struct ocfs2_super *osb,
+ 	atomic_set(&osb->s_num_inodes_stolen, 0);
+ 	status = ocfs2_reserve_suballoc_bits(osb, *ac,
+ 					     INODE_ALLOC_SYSTEM_INODE,
+-					     osb->slot_num, ALLOC_NEW_GROUP);
++					     osb->slot_num,
++					     ALLOC_NEW_GROUP |
++					     ALLOC_GROUPS_FROM_GLOBAL);
+ 	if (status >= 0) {
+ 		status = 0;
+ 
+@@ -806,6 +812,7 @@ bail:
+  * things a bit. */
+ static int ocfs2_reserve_clusters_with_limit(struct ocfs2_super *osb,
+ 					     u32 bits_wanted, u64 max_block,
++					     int flags,
+ 					     struct ocfs2_alloc_context **ac)
+ {
+ 	int status;
+@@ -823,7 +830,8 @@ static int ocfs2_reserve_clusters_with_limit(struct ocfs2_super *osb,
+ 	(*ac)->ac_max_block = max_block;
+ 
+ 	status = -ENOSPC;
+-	if (ocfs2_alloc_should_use_local(osb, bits_wanted)) {
++	if (!(flags & ALLOC_GROUPS_FROM_GLOBAL) &&
++	    ocfs2_alloc_should_use_local(osb, bits_wanted)) {
+ 		status = ocfs2_reserve_local_alloc_bits(osb,
+ 							bits_wanted,
+ 							*ac);
+@@ -861,7 +869,8 @@ int ocfs2_reserve_clusters(struct ocfs2_super *osb,
+ 			   u32 bits_wanted,
+ 			   struct ocfs2_alloc_context **ac)
+ {
+-	return ocfs2_reserve_clusters_with_limit(osb, bits_wanted, 0, ac);
++	return ocfs2_reserve_clusters_with_limit(osb, bits_wanted, 0,
++						 ALLOC_NEW_GROUP, ac);
+ }
+ 
+ /*
+-- 
+1.5.6
+
