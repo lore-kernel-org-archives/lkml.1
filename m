@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760092AbZCQMky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756751AbZCQMoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760092AbZCQMky (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 08:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZCQMkp
+	id S1756751AbZCQMoN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 08:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbZCQMn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 08:40:45 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:50170 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753119AbZCQMko (ORCPT
+	Tue, 17 Mar 2009 08:43:57 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:54830 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753119AbZCQMn5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 08:40:44 -0400
-Date: Tue, 17 Mar 2009 18:10:31 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
-	cpuacct_charge() safe when rcupreempt is used.
-Message-ID: <20090317124031.GT16897@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090317061754.GD3314@in.ibm.com> <49BF42FB.4030103@cn.fujitsu.com>
+	Tue, 17 Mar 2009 08:43:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pt43maGWbWx/Kwg0uuY0JyW/ebcozFGk9zg30krXSGVLMgK3ZtDCNJfyLGPuYM7HHE
+         87+m/rYAFsZrQAcXZ9pXjWz0ZoLMHOrGPjIGVGn6i8wyH3xROkgWx2BlI4KfWs8rYIaJ
+         IopytM8SWHaY85WiBQ5GEflFiU/nPwNLqK/Lk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <49BF42FB.4030103@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090317090322.GA24133@elf.ucw.cz>
+References: <e9e614960903162141g2f272f82jee434fc6fc748544@mail.gmail.com>
+	 <84144f020903162307x3d164432m4132b0dd1487bae@mail.gmail.com>
+	 <20090317090322.GA24133@elf.ucw.cz>
+Date: Tue, 17 Mar 2009 20:43:53 +0800
+Message-ID: <e9e614960903170543p6117ce22qd0773d5a7cdd9977@mail.gmail.com>
+Subject: Re: w35und driver unusable
+From: luoyi <luoyi.ly@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Li Zefan <lizf@cn.fujitsu.com> [2009-03-17 14:28:11]:
+Wow,  thanks for your advice. and I can get it work now after I set my
+wireless AP's channel to 1 and mode to "b/g auto".
 
-> Bharata B Rao wrote:
-> > cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
-> > 	rcupreempt is used.
-> > 
-> > cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
-> > This can race with the task's movement between cgroups. This race
-> > can cause an access to freed ca pointer in cpuacct_charge(). This will not
-> 
-> Actually it can also end up access invalid tsk->cgroups. ;)
-> 
-> get tsk->cgroups (cg)
->                          (move tsk to another cgroup) or (tsk exiting)
->                          -> kfree(tsk->cgroups)
-> get cg->subsys[..]
+3 problems:
+
+1. it can only work with 802.11b mode
+
+2. rmmod w35und
+   modprobe w35und
+   Kernel Panic
+
+3. after it get IP address with dhcpcd, if I execute iwlist scan, then
+it will lose the connection and never restore again, the only way make
+it work again is to restart my computer.
+
+
+
+
+
+
+2009/3/17 Pavel Machek <pavel@ucw.cz>:
+
 >
-
-That problem should only occur if we dereference tsk->cgroups
-separately and then use that to dereference cg->subsys. Since we use
-task_subsys_state() and that is RCU safe, we should be OK.
-
--- 
-	Balbir
+> Winbond driver only supports channel 1, for now.
+>                                                                        Pavel
