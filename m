@@ -1,424 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbZCQFBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbZCQFHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758702AbZCQFBu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 01:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZCQFBk
+	id S1754908AbZCQFHx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 01:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZCQFHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 01:01:40 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:53094 "EHLO e9.ny.us.ibm.com"
+	Tue, 17 Mar 2009 01:07:43 -0400
+Received: from gw.goop.org ([64.81.55.164]:50855 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751312AbZCQFBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 01:01:39 -0400
-Date: Mon, 16 Mar 2009 22:01:35 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
-Subject: Re: cli/sti vs local_cmpxchg and local_add_return
-Message-ID: <20090317050135.GB6859@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090317013220.GA22474@Krystal>
+	id S1751134AbZCQFHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 01:07:43 -0400
+Message-ID: <49BF301C.6010708@goop.org>
+Date: Mon, 16 Mar 2009 22:07:40 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090317013220.GA22474@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org> <49BEB5FE.7050601@zytor.com> <49BEBD98.3090905@goop.org> <49BEC143.6030104@zytor.com> <49BEC53F.20200@goop.org> <49BED431.5070201@zytor.com> <49BF0A51.5000909@kernel.org> <49BF2054.9020009@zytor.com>
+In-Reply-To: <49BF2054.9020009@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 09:32:20PM -0400, Mathieu Desnoyers wrote:
-> Hi,
-> 
-> I am trying to get access to some non-x86 hardware to run some atomic
-> primitive benchmarks for a paper on LTTng I am preparing. That should be
-> useful to argue about performance benefit of per-cpu atomic operations
-> vs interrupt disabling. I would like to run the following benchmark
-> module on CONFIG_SMP :
-> 
-> - PowerPC
-> - MIPS
-> - ia64
-> - alpha
-> 
-> usage :
-> make
-> insmod test-cmpxchg-nolock.ko
-> insmod: error inserting 'test-cmpxchg-nolock.ko': -1 Resource temporarily unavailable
-> dmesg (see dmesg output)
+H. Peter Anvin wrote:
+> Yinghai Lu wrote:
+>   
+>>> You could also write:
+>>>
+>>> PAGE_TABLE_SIZE((-PAGE_OFFSET & 0xffffffff) >> PAGE_SHIFT) << PAGE_SHIFT
+>>>
+>>> (the & 0xffffffff is necessary, or you'll get a signed shift.)
+>>>       
+>> max kernel address space range?
+>>
+>>     
+>
+> Yes, either ((1 << 32)-PAGE_OFFSET) or (-PAGE_OFFSET & 0xffffffff)
+> should work for that.
+>   
 
-Here you are on a 4.2GHz Power box:
+The former seems more obvious.
 
-test init
-test results: time for baseline
-number of loops: 20000
-total time: 12490
--> baseline takes 0 cycles
-test end
-test results: time for locked cmpxchg
-number of loops: 20000
-total time: 345748
--> locked cmpxchg takes 17 cycles
-test end
-test results: time for non locked cmpxchg
-number of loops: 20000
-total time: 198304
--> non locked cmpxchg takes 9 cycles
-test end
-test results: time for locked add return
-number of loops: 20000
-total time: 253977
--> locked add return takes 12 cycles
-test end
-test results: time for non locked add return
-number of loops: 20000
-total time: 189837
--> non locked add return takes 9 cycles
-test end
-test results: time for enabling interrupts (STI)
-number of loops: 20000
-total time: 298390
--> enabling interrupts (STI) takes 14 cycles
-test end
-test results: time for disabling interrupts (CLI)
-number of loops: 20000
-total time: 43977
--> disabling interrupts (CLI) takes 2 cycles
-test end
-test results: time for disabling/enabling interrupts (STI/CLI)
-number of loops: 20000
-total time: 298773
--> enabling/disabling interrupts (STI/CLI) takes 14 cycles
-test end
-
-						Thanx, Paul
-
-
-> If some of you would be kind enough to run my test module provided below
-> and provide the results of these tests on a recent kernel (2.6.26~2.6.29
-> should be good) along with their cpuinfo, I would greatly appreciate.
-> 
-> Here are the CAS results for various Intel-based architectures :
-> 
-> Architecture         | Speedup                      |      CAS     |         Interrupts         |
->                      | (cli + sti) / local cmpxchg  | local | sync | Enable (sti) | Disable (cli)
-> -------------------------------------------------------------------------------------------------
-> Intel Pentium 4      | 5.24                         |  25   | 81   | 70           | 61          |
-> AMD Athlon(tm)64 X2  | 4.57                         |  7    | 17   | 17           | 15          |
-> Intel Core2          | 6.33                         |  6    | 30   | 20           | 18          |
-> Intel Xeon E5405     | 5.25                         |  8    | 24   | 20           | 22          |
-> 
-> The benefit expected on PowerPC, ia64 and alpha should principally come
-> from removed memory barriers in the local primitives.
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> P.S. please forgive the coding style and hackish interface. :)
-> 
-> 
-> /* test-cmpxchg-nolock.c
->  *
->  * Compare local cmpxchg with irq disable / enable.
->  */
-> 
-> 
-> #include <linux/jiffies.h>
-> #include <linux/compiler.h>
-> #include <linux/init.h>
-> #include <linux/module.h>
-> #include <linux/math64.h>
-> #include <asm/timex.h>
-> #include <asm/system.h>
-> 
-> #define NR_LOOPS 20000
-> 
-> int test_val;
-> 
-> static void do_testbaseline(void)
-> {
-> 	unsigned long flags;
-> 	unsigned int i;
-> 	cycles_t time1, time2, time;
-> 	u32 rem;
-> 
-> 	local_irq_save(flags);
-> 	preempt_disable();
-> 	time1 = get_cycles();
-> 	for (i = 0; i < NR_LOOPS; i++) {
-> 		asm volatile ("");
-> 	}
-> 	time2 = get_cycles();
-> 	local_irq_restore(flags);
-> 	preempt_enable();
-> 	time = time2 - time1;
-> 
-> 	printk(KERN_ALERT "test results: time for baseline\n");
-> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
-> 	printk(KERN_ALERT "total time: %llu\n", time);
-> 	time = div_u64_rem(time, NR_LOOPS, &rem);
-> 	printk(KERN_ALERT "-> baseline takes %llu cycles\n", time);
-> 	printk(KERN_ALERT "test end\n");
-> }
-> 
-> static void do_test_sync_cmpxchg(void)
-> {
-> 	int ret;
-> 	unsigned long flags;
-> 	unsigned int i;
-> 	cycles_t time1, time2, time;
-> 	u32 rem;
-> 
-> 	local_irq_save(flags);
-> 	preempt_disable();
-> 	time1 = get_cycles();
-> 	for (i = 0; i < NR_LOOPS; i++) {
-> #ifdef CONFIG_X86_32
-> 		ret = sync_cmpxchg(&test_val, 0, 0);
-> #else
-> 		ret = cmpxchg(&test_val, 0, 0);
-> #endif
-> 	}
-> 	time2 = get_cycles();
-> 	local_irq_restore(flags);
-> 	preempt_enable();
-> 	time = time2 - time1;
-> 
-> 	printk(KERN_ALERT "test results: time for locked cmpxchg\n");
-> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
-> 	printk(KERN_ALERT "total time: %llu\n", time);
-> 	time = div_u64_rem(time, NR_LOOPS, &rem);
-> 	printk(KERN_ALERT "-> locked cmpxchg takes %llu cycles\n", time);
-> 	printk(KERN_ALERT "test end\n");
-> }
-> 
-> static void do_test_cmpxchg(void)
-> {
-> 	int ret;
-> 	unsigned long flags;
-> 	unsigned int i;
-> 	cycles_t time1, time2, time;
-> 	u32 rem;
-> 
-> 	local_irq_save(flags);
-> 	preempt_disable();
-> 	time1 = get_cycles();
-> 	for (i = 0; i < NR_LOOPS; i++) {
-> 		ret = cmpxchg_local(&test_val, 0, 0);
-> 	}
-> 	time2 = get_cycles();
-> 	local_irq_restore(flags);
-> 	preempt_enable();
-> 	time = time2 - time1;
-> 
-> 	printk(KERN_ALERT "test results: time for non locked cmpxchg\n");
-> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
-> 	printk(KERN_ALERT "total time: %llu\n", time);
-> 	time = div_u64_rem(time, NR_LOOPS, &rem);
-> 	printk(KERN_ALERT "-> non locked cmpxchg takes %llu cycles\n", time);
-> 	printk(KERN_ALERT "test end\n");
-> }
-> static void do_test_sync_inc(void)
-> {
-> 	int ret;
-> 	unsigned long flags;
-> 	unsigned int i;
-> 	cycles_t time1, time2, time;
-> 	u32 rem;
-> 	atomic_t val;
-> 
-> 	local_irq_save(flags);
-> 	preempt_disable();
-> 	time1 = get_cycles();
-> 	for (i = 0; i < NR_LOOPS; i++) {
-> 		ret = atomic_add_return(10, &val);
-> 	}
-> 	time2 = get_cycles();
-> 	local_irq_restore(flags);
-> 	preempt_enable();
-> 	time = time2 - time1;
-> 
-> 	printk(KERN_ALERT "test results: time for locked add return\n");
-> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
-> 	printk(KERN_ALERT "total time: %llu\n", time);
-> 	time = div_u64_rem(time, NR_LOOPS, &rem);
-> 	printk(KERN_ALERT "-> locked add return takes %llu cycles\n", time);
-> 	printk(KERN_ALERT "test end\n");
-> }
-> 
-> 
-> static void do_test_inc(void)
-> {
-> 	int ret;
-> 	unsigned long flags;
-> 	unsigned int i;
-> 	cycles_t time1, time2, time;
-> 	u32 rem;
-> 	local_t loc_val;
-> 
-> 	local_irq_save(flags);
-> 	preempt_disable();
-> 	time1 = get_cycles();
-> 	for (i = 0; i < NR_LOOPS; i++) {
-> 		ret = local_add_return(10, &loc_val);
-> 	}
-> 	time2 = get_cycles();
-> 	local_irq_restore(flags);
-> 	preempt_enable();
-> 	time = time2 - time1;
-> 
-> 	printk(KERN_ALERT "test results: time for non locked add return\n");
-> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
-> 	printk(KERN_ALERT "total time: %llu\n", time);
-> 	time = div_u64_rem(time, NR_LOOPS, &rem);
-> 	printk(KERN_ALERT "-> non locked add return takes %llu cycles\n", time);
-> 	printk(KERN_ALERT "test end\n");
-> }
-> 
-> 
-> 
-> /*
->  * This test will have a higher standard deviation due to incoming interrupts.
->  */
-> static void do_test_enable_int(void)
-> {
-> 	unsigned long flags;
-> 	unsigned int i;
-> 	cycles_t time1, time2, time;
-> 	u32 rem;
-> 
-> 	local_irq_save(flags);
-> 	preempt_disable();
-> 	time1 = get_cycles();
-> 	for (i = 0; i < NR_LOOPS; i++) {
-> 		local_irq_restore(flags);
-> 	}
-> 	time2 = get_cycles();
-> 	local_irq_restore(flags);
-> 	preempt_enable();
-> 	time = time2 - time1;
-> 
-> 	printk(KERN_ALERT "test results: time for enabling interrupts (STI)\n");
-> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
-> 	printk(KERN_ALERT "total time: %llu\n", time);
-> 	time = div_u64_rem(time, NR_LOOPS, &rem);
-> 	printk(KERN_ALERT "-> enabling interrupts (STI) takes %llu cycles\n",
-> 					time);
-> 	printk(KERN_ALERT "test end\n");
-> }
-> 
-> static void do_test_disable_int(void)
-> {
-> 	unsigned long flags, flags2;
-> 	unsigned int i;
-> 	cycles_t time1, time2, time;
-> 	u32 rem;
-> 
-> 	local_irq_save(flags);
-> 	preempt_disable();
-> 	time1 = get_cycles();
-> 	for ( i = 0; i < NR_LOOPS; i++) {
-> 		local_irq_save(flags2);
-> 	}
-> 	time2 = get_cycles();
-> 	local_irq_restore(flags);
-> 	preempt_enable();
-> 	time = time2 - time1;
-> 
-> 	printk(KERN_ALERT "test results: time for disabling interrupts (CLI)\n");
-> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
-> 	printk(KERN_ALERT "total time: %llu\n", time);
-> 	time = div_u64_rem(time, NR_LOOPS, &rem);
-> 	printk(KERN_ALERT "-> disabling interrupts (CLI) takes %llu cycles\n",
-> 				time);
-> 	printk(KERN_ALERT "test end\n");
-> }
-> 
-> static void do_test_int(void)
-> {
-> 	unsigned long flags;
-> 	unsigned int i;
-> 	cycles_t time1, time2, time;
-> 	u32 rem;
-> 
-> 	local_irq_save(flags);
-> 	preempt_disable();
-> 	time1 = get_cycles();
-> 	for (i = 0; i < NR_LOOPS; i++) {
-> 		local_irq_restore(flags);
-> 		local_irq_save(flags);
-> 	}
-> 	time2 = get_cycles();
-> 	local_irq_restore(flags);
-> 	preempt_enable();
-> 	time = time2 - time1;
-> 
-> 	printk(KERN_ALERT "test results: time for disabling/enabling interrupts (STI/CLI)\n");
-> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
-> 	printk(KERN_ALERT "total time: %llu\n", time);
-> 	time = div_u64_rem(time, NR_LOOPS, &rem);
-> 	printk(KERN_ALERT "-> enabling/disabling interrupts (STI/CLI) takes %llu cycles\n",
-> 					time);
-> 	printk(KERN_ALERT "test end\n");
-> }
-> 
-> 
-> 
-> static int ltt_test_init(void)
-> {
-> 	printk(KERN_ALERT "test init\n");
-> 	
-> 	do_testbaseline();
-> 	do_test_sync_cmpxchg();
-> 	do_test_cmpxchg();
-> 	do_test_sync_inc();
-> 	do_test_inc();
-> 	do_test_enable_int();
-> 	do_test_disable_int();
-> 	do_test_int();
-> 	return -EAGAIN; /* Fail will directly unload the module */
-> }
-> 
-> static void ltt_test_exit(void)
-> {
-> 	printk(KERN_ALERT "test exit\n");
-> }
-> 
-> module_init(ltt_test_init)
-> module_exit(ltt_test_exit)
-> 
-> MODULE_LICENSE("GPL");
-> MODULE_AUTHOR("Mathieu Desnoyers");
-> MODULE_DESCRIPTION("Cmpxchg vs int Test");
-> 
-> 
-> 
-> * Makefile
-> 
-> ifneq ($(KERNELRELEASE),)
-> 	obj-m += test-cmpxchg-nolock.o
-> else
-> 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
-> 	PWD := $(shell pwd)
-> 	KERNELRELEASE = $(shell cat $(KERNELDIR)/$(KBUILD_OUTPUT)/include/linux/version.h | sed -n 's/.*UTS_RELEASE.*\"\(.*\)\".*/\1/p')
-> ifneq ($(INSTALL_MOD_PATH),)
-> 	DEPMOD_OPT := -b $(INSTALL_MOD_PATH)
-> endif
-> 
-> default:
-> 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
-> 
-> modules_install:
-> 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
-> 	if [ -f $(KERNELDIR)/$(KBUILD_OUTPUT)/System.map ] ; then /sbin/depmod -ae -F $(KERNELDIR)/$(KBUILD_OUTPUT)/System.map $(DEPMOD_OPT) $(KERNELRELEASE) ; fi
-> 
-> 
-> clean:
-> 	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
-> endif
-> 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+    J
