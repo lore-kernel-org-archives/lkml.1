@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757787AbZCQV7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbZCQWAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757787AbZCQV7f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 17:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbZCQV7Z
+	id S1758735AbZCQWAA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 18:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbZCQV7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 17:59:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:38309 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752366AbZCQV7Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 17:59:24 -0400
-Date: Tue, 17 Mar 2009 17:59:22 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/ftrace: stop {irqs,preempt}soff tracers when
- tracing is stopped
-In-Reply-To: <20090317214926.GA5137@nowhere>
-Message-ID: <alpine.DEB.2.00.0903171757320.9036@gandalf.stny.rr.com>
-References: <1237325938-5240-1-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903171745440.9036@gandalf.stny.rr.com> <20090317214926.GA5137@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 17 Mar 2009 17:59:50 -0400
+Received: from ns.suse.de ([195.135.220.2]:57644 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754430AbZCQV7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 17:59:49 -0400
+From: Mark Fasheh <mfasheh@suse.com>
+To: linux-kernel@vger.kernel.org
+Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 12/32] ocfs2: re-order ocfs2_empty_dir checks
+Date: Tue, 17 Mar 2009 13:01:02 -0700
+Message-Id: <1237320082-12921-13-git-send-email-mfasheh@suse.com>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ocfs2_empty_dir() is far more expensive than checking link count. Since both
+need to be checked at the same time, we can improve performance by checking
+link count first.
 
-On Tue, 17 Mar 2009, Frederic Weisbecker wrote:
-> > > +	/*
-> > > +	 * Stop the tracer to avoid a warning subsequent
-> > > +	 * to buffer flipping failure because tracing_stop()
-> > > +	 * disables the tr and max buffers, making flipping impossible
-> > > +	 * in case of parallels max preempt off latencies.
-> > > +	 */
-> > > +	trace->stop(tr);
-> > >  	/* stop the tracing. */
-> > >  	tracing_stop();
-> > 
-> > I'm actually thinking that tracing_stop() should call the current tracer
-> > "stop" function.
-> > 
-> > -- Steve
-> 
-> 
-> Indeed, it could be better.
-> But I think of a combination of stop() callback call plus
-> ring buffer disabled because I'm not sure all tracers implement
-> the stop callback.
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/ocfs2/namei.c |    9 +++------
+ 1 files changed, 3 insertions(+), 6 deletions(-)
 
-Yes, that's what I meant. The tracing_stop should do a few things, and one
-of them is to call the stop function if it exists.
+diff --git a/fs/ocfs2/namei.c b/fs/ocfs2/namei.c
+index 67113cf..58c318d 100644
+--- a/fs/ocfs2/namei.c
++++ b/fs/ocfs2/namei.c
+@@ -834,10 +834,7 @@ static int ocfs2_unlink(struct inode *dir,
+ 	child_locked = 1;
+ 
+ 	if (S_ISDIR(inode->i_mode)) {
+-	       	if (!ocfs2_empty_dir(inode)) {
+-			status = -ENOTEMPTY;
+-			goto leave;
+-		} else if (inode->i_nlink != 2) {
++		if (inode->i_nlink != 2 || !ocfs2_empty_dir(inode)) {
+ 			status = -ENOTEMPTY;
+ 			goto leave;
+ 		}
+@@ -1280,8 +1277,8 @@ static int ocfs2_rename(struct inode *old_dir,
+ 
+ 	if (target_exists) {
+ 		if (S_ISDIR(new_inode->i_mode)) {
+-			if (!ocfs2_empty_dir(new_inode) ||
+-			    new_inode->i_nlink != 2) {
++			if (new_inode->i_nlink != 2 ||
++			    !ocfs2_empty_dir(new_inode)) {
+ 				status = -ENOTEMPTY;
+ 				goto bail;
+ 			}
+-- 
+1.5.6
 
-> 
-> Should I send a v2 based on the above?
-
-Sure.
-
--- Steve
