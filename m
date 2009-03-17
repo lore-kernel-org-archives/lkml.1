@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbZCQVkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758957AbZCQVl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757856AbZCQVkW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 17:40:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbZCQVkE
+	id S1758957AbZCQVl1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 17:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbZCQVlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 17:40:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34070
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754589AbZCQVkD (ORCPT
+	Tue, 17 Mar 2009 17:41:17 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:42406 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755448AbZCQVlQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 17:40:03 -0400
-Date: Tue, 17 Mar 2009 14:39:49 -0700 (PDT)
-Message-Id: <20090317.143949.250643299.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
-Subject: Re: pull request: wireless-2.6 2009-03-16
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090316231423.GA3633@tuxdriver.com>
-References: <20090316231423.GA3633@tuxdriver.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 17 Mar 2009 17:41:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=uM4ZTFxvRkGqiPwziGD/dogX0yjKQFQoZIFPcYzgGFroB5JRz2H027Dlzyg5c5TQL5
+         bnOVlLoAJrZabhvxdUwlj3VHHQZD7LpPjeYxpCjQaLR4VxUJdHnVLknT3d0nbGNxZlEt
+         BIdn5vN+3OtGc4+CDIiPE5PTN8A6keAJImezg=
+Subject: Re: [PATCH] radio-mr800.c: Missing mutex include
+From: Alexey Klimov <klimov.linux@gmail.com>
+To: Alessio Igor Bogani <abogani@texware.it>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-media@vger.kernel.org, video4linux-list@redhat.com
+In-Reply-To: <1237323618-6464-1-git-send-email-abogani@texware.it>
+References: <1237323618-6464-1-git-send-email-abogani@texware.it>
+Content-Type: text/plain
+Date: Wed, 18 Mar 2009 00:42:08 +0300
+Message-Id: <1237326128.2141.17.camel@tux.localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.4 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Mon, 16 Mar 2009 19:14:24 -0400
+On Tue, 2009-03-17 at 22:00 +0100, Alessio Igor Bogani wrote:
+> radio-mr800.c uses struct mutex, so while <linux/mutex.h> seems to be
+> pulled in indirectly by one of the headers it already includes, the
+> right thing is to include it directly.
 
-> Here is a group of patches intended for 2.6.29.  The one from me is
-> minor, but it cuts-down on log SPAM for ipw2100, ipw2200, and hostap
-> users.  The two from Jouni fix some panics he observed himself.
-> 
-> The first one from Luis fixes bug 12110 at bugzilla.kernel.org.  I know
-> he has worked on it for a long time and I've had several desperate users
-> asking for it, so it must be good. :-)  Unfortunately, it causes some
-> nasty merge errors with what is in net-next-2.6 and wireless-next-2.6.
-> I created a merge-test branch in wireless-next-2.6, and the merge commit
-> log goes into more detail about resolving the issue.  In short, you
-> probably want to diff drivers/net/ath9k against the merge-test branch...
-> 
-> Please let me know if there are problems!
 
-Pulled, thanks John.
+Hello, Alessio
 
-Wish me luck with the net-next-2.6 merge :-)
+Patch looks okay for my eyes.
+If it useful it should be applied.
+
+Thank you!
+
+Mauro, if patch is okay please apply it.
+If you need my ack - here it is:
+Acked-by: Alexey Klimov <klimov.linux@gmail.com>
+
+-- 
+Best regards, Klimov Alexey
+
