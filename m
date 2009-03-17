@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756534AbZCQWG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759931AbZCQWHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756534AbZCQWG4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 18:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZCQWGQ
+	id S1759931AbZCQWHo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 18:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbZCQWGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 18:06:16 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50348 "EHLO
+	Tue, 17 Mar 2009 18:06:17 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50351 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754246AbZCQWGN (ORCPT
+	with ESMTP id S1754811AbZCQWGO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 18:06:13 -0400
-Message-Id: <20090317220420.179694035@chello.nl>
+	Tue, 17 Mar 2009 18:06:14 -0400
+Message-Id: <20090317220419.599556888@chello.nl>
 References: <20090317215606.037073805@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Mar 2009 22:56:11 +0100
+Date: Tue, 17 Mar 2009 22:56:09 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: mingo@elte.hu, paulus@samba.org, rostedt@goodmis.org
 Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC][PATCH 05/11] ftrace: ensure every event gets an id
-Content-Disposition: inline; filename=ftrace_event_fmt_id.patch
+Subject: [RFC][PATCH 03/11] ftrace: fix memory leak
+Content-Disposition: inline; filename=ftrace_event-fix.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Previously only TRACE_EVENT events got ids, because only they generated
-raw output which needs to be demuxed from the trace.
-
-In order to provide a unique ID for each event, register everybody, regardless.
+Don't return after an allocation without freeing -- fix it by moving the check
+up a few lines.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/trace/trace_events_stage_3.h |   15 ++++++++++++++-
- kernel/trace/trace_output.c         |    5 +++++
- 2 files changed, 19 insertions(+), 1 deletion(-)
+ kernel/trace/trace_events.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/kernel/trace/trace_events_stage_3.h
+Index: linux-2.6/kernel/trace/trace_events.c
 ===================================================================
---- linux-2.6.orig/kernel/trace/trace_events_stage_3.h
-+++ linux-2.6/kernel/trace/trace_events_stage_3.h
-@@ -130,7 +130,19 @@ static void ftrace_unreg_event_##call(vo
- {									\
- 	unregister_trace_##call(ftrace_event_##call);			\
- }									\
--
-+									\
-+static struct ftrace_event_call event_##call;				\
-+									\
-+static int ftrace_init_event_##call(void)				\
-+{									\
-+	int id;								\
-+									\
-+	id = register_ftrace_event(NULL);				\
-+	if (!id)							\
-+		return -ENODEV;						\
-+	event_##call.id = id;						\
-+	return 0;							\
-+}
+--- linux-2.6.orig/kernel/trace/trace_events.c
++++ linux-2.6/kernel/trace/trace_events.c
+@@ -380,15 +380,15 @@ event_format_read(struct file *filp, cha
+ 	char *buf;
+ 	int r;
  
- #undef TRACE_FORMAT
- #define TRACE_FORMAT(call, proto, args, fmt)				\
-@@ -140,6 +152,7 @@ __attribute__((__aligned__(4)))						\
- __attribute__((section("_ftrace_events"))) event_##call = {		\
- 	.name			= #call,				\
- 	.system			= __stringify(TRACE_SYSTEM),		\
-+	.raw_init		= ftrace_init_event_##call,		\
- 	.regfunc		= ftrace_reg_event_##call,		\
- 	.unregfunc		= ftrace_unreg_event_##call,		\
- }
-Index: linux-2.6/kernel/trace/trace_output.c
-===================================================================
---- linux-2.6.orig/kernel/trace/trace_output.c
-+++ linux-2.6/kernel/trace/trace_output.c
-@@ -444,6 +444,11 @@ int register_ftrace_event(struct trace_e
- 
- 	mutex_lock(&trace_event_mutex);
- 
-+	if (!event) {
-+		ret = next_event_type++;
-+		goto out;
-+	}
++	if (*ppos)
++		return 0;
 +
- 	if (!event->type)
- 		event->type = next_event_type++;
- 	else if (event->type > __TRACE_LAST_TYPE) {
+ 	s = kmalloc(sizeof(*s), GFP_KERNEL);
+ 	if (!s)
+ 		return -ENOMEM;
+ 
+ 	trace_seq_init(s);
+ 
+-	if (*ppos)
+-		return 0;
+-
+ 	/* If any of the first writes fail, so will the show_format. */
+ 
+ 	trace_seq_printf(s, "name: %s\n", call->name);
 
 -- 
 
