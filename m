@@ -1,42 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbZCQV1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbZCQV2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757572AbZCQV1q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 17:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbZCQV1Y
+	id S1758499AbZCQV2l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 17:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758019AbZCQV2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 17:27:24 -0400
-Received: from ozlabs.org ([203.10.76.45]:47273 "EHLO ozlabs.org"
+	Tue, 17 Mar 2009 17:28:25 -0400
+Received: from gw.goop.org ([64.81.55.164]:41602 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756996AbZCQV1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 17:27:24 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PULL] x86 cpumask work
-Date: Wed, 18 Mar 2009 07:57:19 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mike Travis <travis@sgi.com>
-References: <200903121453.45163.rusty@rustcorp.com.au> <200903171450.34549.rusty@rustcorp.com.au> <20090317105121.GJ6477@elte.hu>
-In-Reply-To: <20090317105121.GJ6477@elte.hu>
+	id S1758030AbZCQV2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 17:28:24 -0400
+Message-ID: <49C015F5.60309@goop.org>
+Date: Tue, 17 Mar 2009 14:28:21 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Yinghai Lu <yinghai@kernel.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org> <49BEB5FE.7050601@zytor.com> <49BEBD98.3090905@goop.org> <49BEC143.6030104@zytor.com> <49BEC53F.20200@goop.org> <49BED431.5070201@zytor.com> <49BF0A51.5000909@kernel.org> <49BF2054.9020009@zytor.com> <49BF301C.6010708@goop.org> <49BFCA05.7000508@zytor.com> <49BFFD3C.3020908@goop.org> <49BFFDE4.1070601@zytor.com> <49C0012A.6060903@goop.org> <49C013E2.3090704@kernel.org>
+In-Reply-To: <49C013E2.3090704@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903180757.19964.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 March 2009 21:21:21 Ingo Molnar wrote:
-> looks perfect. Should i apply or do you want to send a pull 
-> request?
+Yinghai Lu wrote:
+> can you check __brk_limit in extend_brk() ?
+>   
 
-Just apply, if that's OK.
+It does:
 
-BTW, I'm about to post the cpufreq and acpi cpumask-games-removal patches
-again.  If DaveJ and Len don't NAK them, do you want to apply them, or prefer
-a pull against cpus4096 (they're really only tangentially related to that
-effort tho).
+	_brk_end = (_brk_end + mask) & ~mask;
+	BUG_ON((char *)(_brk_end + size) > __brk_limit);
 
-Thanks,
-Rusty.
+    J
