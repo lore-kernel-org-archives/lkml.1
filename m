@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762486AbZCQDjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762630AbZCQDkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762486AbZCQDjZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 23:39:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZCQDjO
+	id S1762630AbZCQDkK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 23:40:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757077AbZCQDj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 23:39:14 -0400
-Received: from kroah.org ([198.145.64.141]:34995 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751214AbZCQDjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 23:39:13 -0400
-Date: Mon, 16 Mar 2009 20:37:47 -0700
-From: Greg KH <greg@kroah.com>
-To: hooanon05@yahoo.co.jp
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC Aufs2 #2 21/28] aufs sysfs entries
-Message-ID: <20090317033747.GA17037@kroah.com>
-References: <1237188040-11404-1-git-send-email-hooanon05@yahoo.co.jp> <1237188040-11404-22-git-send-email-hooanon05@yahoo.co.jp> <20090316180538.GA7069@kroah.com> <7200.1237260402@jrobl>
+	Mon, 16 Mar 2009 23:39:57 -0400
+Received: from smtp.flash.net.br ([201.46.240.48]:36115 "EHLO
+	smtp.gru.flash.tv.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753183AbZCQDj4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 23:39:56 -0400
+Date: Tue, 17 Mar 2009 00:39:49 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: linux-kernel@vger.kernel.org, galak@kernel.crashing.org
+Subject: [PATCH] powerpc: mention that standard Kuroboxes are actively
+	tested
+Message-ID: <20090317033948.GA31544@ime.usp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <7200.1237260402@jrobl>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 12:26:42PM +0900, hooanon05@yahoo.co.jp wrote:
-> 
-> Thank you very much for reviewing.
-> 
-> Greg KH:
-> > > +/* todo: file size may exceed PAGE_SIZE */
-> > > +ssize_t sysaufs_si_show(struct kobject *kobj, struct attribute *attr,
-> > > +			 char *buf)
-> > 
-> > NO IT CAN NOT!!!!
-> > 
-> > You are using sysfs wrong if you even think you are getting close to
-> > PAGE_SIZE.
-> 
-> The main reason I left a comment about PAGE_SIZE is that some of aufs
-> entry under sysfs contain the file path.
 
-Which should be MAX_PATH, right?  Is that ever bigger than PAGE_SIZE?
+Update the documentation regarding the Kurobox'es to mention
+that they are also tested on the Standard Kurobox (not only on
+the Kurobox HG).
 
-> And I don't think it is a good idea to create a symlink since the path
-> may be changed as a result of users operation.
-> I left it as "todo" because such long path is rare.
-> 
-> If you have an idea to show users any file path which may be changed
-> dynamically, please let me know. At the beginning I have tried procfs,
-> but I was told that newer module should use sysfs instead of procfs. If
-> sysfs doesn't suit a path, what should I use? Debugfs?
 
-What specifically are you trying to show here?
+Signed-off By: Rogério Brito <rbrito@ime.usp.br>
 
-> > Please, use debugfs for this.  sysfs is a "one value per file" type
-> > filesystem.  You should never be using the seqfile interface for a sysfs
-> > file, that's a sure sign something is wrong in your design.
-> > 
-> > I think I'll stop reading now :(
-> 
-> I will change some entries which doesn't contain a file path (or make
-> them not to have have) and post again. So please don't stop reading.
+---
 
-Please document your sysfs entries, and I'll be glad to review it again.
-
-thanks,
-
-greg k-h
+--- linux/arch/powerpc/platforms/embedded6xx/Kconfig~	2008-12-29 15:25:41.000000000 -0200
++++ linux/arch/powerpc/platforms/embedded6xx/Kconfig	2009-03-17 00:11:31.000000000 -0300
+@@ -3,7 +3,7 @@ config EMBEDDED6xx
+ 	depends on PPC32 && BROKEN_ON_SMP && PPC_MULTIPLATFORM
+ 
+ config LINKSTATION
+-	bool "Linkstation / Kurobox(HG) from Buffalo"
++	bool "Linkstation / Kurobox (HD/HG) from Buffalo"
+ 	depends on EMBEDDED6xx
+ 	select MPIC
+ 	select FSL_SOC
+@@ -14,9 +14,10 @@ config LINKSTATION
+ 	help
+ 	  Select LINKSTATION if configuring for one of PPC- (MPC8241)
+ 	  based NAS systems from Buffalo Technology. So far only
+-	  KuroboxHG has been tested. In the future classical Kurobox,
+-	  Linkstation-I HD-HLAN and HD-HGLAN versions, and PPC-based
+-	  Terastation systems should be supported too.
++	  the standard Kurobox (Kurobox HD) and the Kurobox HG has
++	  been tested. In the future, Linkstation-I HD-HLAN and
++	  HD-HGLAN versions, and PPC-based Terastation systems should
++	  be supported too.
+ 
+ config STORCENTER
+ 	bool "IOMEGA StorCenter"
