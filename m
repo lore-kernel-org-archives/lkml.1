@@ -1,103 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbZCQWys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZCQWzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757949AbZCQWys (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 18:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755293AbZCQWyj
+	id S1758626AbZCQWzV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 18:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbZCQWzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 18:54:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47557 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756768AbZCQWyi (ORCPT
+	Tue, 17 Mar 2009 18:55:03 -0400
+Received: from mail-ew0-f168.google.com ([209.85.219.168]:46528 "EHLO
+	mail-ew0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755293AbZCQWzB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 18:54:38 -0400
-Date: Tue, 17 Mar 2009 18:54:36 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: mingo@elte.hu, paulus@samba.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 05/11] ftrace: ensure every event gets an id
-In-Reply-To: <20090317220420.179694035@chello.nl>
-Message-ID: <alpine.DEB.2.00.0903171853540.10610@gandalf.stny.rr.com>
-References: <20090317215606.037073805@chello.nl> <20090317220420.179694035@chello.nl>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 17 Mar 2009 18:55:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MwqJTtjk2zxFsLlayj1aS+YXznynrwm+MO+o2WWoXAdkSOdrJ1G9Fk0M64g/mxDqC4
+         huOgCbwU1tuFu3ZEbx2NkzjpXAh7zMkW3g+m9UgANrBBGhba4O7caf31o8cDlVhjVKaj
+         d4qqrib5wm/52Y8/IJTX4oERJaao4PfzinDAg=
+Date: Tue, 17 Mar 2009 23:54:55 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/ftrace: stop {irqs,preempt}soff tracers when
+	tracing is stopped
+Message-ID: <20090317225454.GA5143@nowhere>
+References: <1237325938-5240-1-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903171745440.9036@gandalf.stny.rr.com> <20090317214926.GA5137@nowhere> <alpine.DEB.2.00.0903171757320.9036@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0903171757320.9036@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 17 Mar 2009, Peter Zijlstra wrote:
-
-> Previously only TRACE_EVENT events got ids, because only they generated
-> raw output which needs to be demuxed from the trace.
+On Tue, Mar 17, 2009 at 05:59:22PM -0400, Steven Rostedt wrote:
 > 
-> In order to provide a unique ID for each event, register everybody, regardless.
+> On Tue, 17 Mar 2009, Frederic Weisbecker wrote:
+> > > > +	/*
+> > > > +	 * Stop the tracer to avoid a warning subsequent
+> > > > +	 * to buffer flipping failure because tracing_stop()
+> > > > +	 * disables the tr and max buffers, making flipping impossible
+> > > > +	 * in case of parallels max preempt off latencies.
+> > > > +	 */
+> > > > +	trace->stop(tr);
+> > > >  	/* stop the tracing. */
+> > > >  	tracing_stop();
+> > > 
+> > > I'm actually thinking that tracing_stop() should call the current tracer
+> > > "stop" function.
+> > > 
+> > > -- Steve
+> > 
+> > 
+> > Indeed, it could be better.
+> > But I think of a combination of stop() callback call plus
+> > ring buffer disabled because I'm not sure all tracers implement
+> > the stop callback.
+> 
+> Yes, that's what I meant. The tracing_stop should do a few things, and one
+> of them is to call the stop function if it exists.
+> 
+> > 
+> > Should I send a v2 based on the above?
+> 
+> Sure.
+> 
+> -- Steve
 
-If this is about the TRACE_FORMAT, they use the TRACE_PRINT format, which
-is exported.
 
-Again, I need to look at the rest of the patches ;-)
+Ingo,
 
--- Steve
+I tested the call to the start/stop callbacks from tracing_start() and tracing_stop()
+but it's not possible for now: the sched_switch tracer register/unregister his
+tracepoints from these callbacks, thus allocate some memory. But tracing_start/stop
+can be called from atomic.
 
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  kernel/trace/trace_events_stage_3.h |   15 ++++++++++++++-
->  kernel/trace/trace_output.c         |    5 +++++
->  2 files changed, 19 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/kernel/trace/trace_events_stage_3.h
-> ===================================================================
-> --- linux-2.6.orig/kernel/trace/trace_events_stage_3.h
-> +++ linux-2.6/kernel/trace/trace_events_stage_3.h
-> @@ -130,7 +130,19 @@ static void ftrace_unreg_event_##call(vo
->  {									\
->  	unregister_trace_##call(ftrace_event_##call);			\
->  }									\
-> -
-> +									\
-> +static struct ftrace_event_call event_##call;				\
-> +									\
-> +static int ftrace_init_event_##call(void)				\
-> +{									\
-> +	int id;								\
-> +									\
-> +	id = register_ftrace_event(NULL);				\
-> +	if (!id)							\
-> +		return -ENODEV;						\
-> +	event_##call.id = id;						\
-> +	return 0;							\
-> +}
->  
->  #undef TRACE_FORMAT
->  #define TRACE_FORMAT(call, proto, args, fmt)				\
-> @@ -140,6 +152,7 @@ __attribute__((__aligned__(4)))						\
->  __attribute__((section("_ftrace_events"))) event_##call = {		\
->  	.name			= #call,				\
->  	.system			= __stringify(TRACE_SYSTEM),		\
-> +	.raw_init		= ftrace_init_event_##call,		\
->  	.regfunc		= ftrace_reg_event_##call,		\
->  	.unregfunc		= ftrace_unreg_event_##call,		\
->  }
-> Index: linux-2.6/kernel/trace/trace_output.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/trace/trace_output.c
-> +++ linux-2.6/kernel/trace/trace_output.c
-> @@ -444,6 +444,11 @@ int register_ftrace_event(struct trace_e
->  
->  	mutex_lock(&trace_event_mutex);
->  
-> +	if (!event) {
-> +		ret = next_event_type++;
-> +		goto out;
-> +	}
-> +
->  	if (!event->type)
->  		event->type = next_event_type++;
->  	else if (event->type > __TRACE_LAST_TYPE) {
-> 
-> -- 
-> 
-> 
+I discussed about that with Steven on irc, and for now the v1 should be applied
+as a temporary solution. We plan to simplify later the start/stop callbacks from
+each tracers that need it.
+
+Thanks.
+
