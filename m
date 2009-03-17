@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760591AbZCQDt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762677AbZCQDuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760591AbZCQDt5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 23:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756034AbZCQDtc
+	id S1762677AbZCQDuV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 23:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758956AbZCQDtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 23:49:32 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:41212 "EHLO
+	Mon, 16 Mar 2009 23:49:33 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:39233 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753279AbZCQDtb (ORCPT
+	with ESMTP id S1752318AbZCQDtb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 16 Mar 2009 23:49:31 -0400
-Message-Id: <20090317034928.628506731@goodmis.org>
+Message-Id: <20090317034929.016125439@goodmis.org>
 References: <20090317034820.400357912@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 16 Mar 2009 23:48:21 -0400
+Date: Mon, 16 Mar 2009 23:48:23 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,45 +21,43 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/3] tracing/ftrace: fix the check on nopped sites
-Content-Disposition: inline; filename=0001-tracing-ftrace-fix-the-check-on-nopped-sites.patch
+Subject: [PATCH 3/3] tracing: stop comm recording on tracing off
+Content-Disposition: inline; filename=0003-tracing-stop-comm-recording-on-tracing-off.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frederic Weisbecker <fweisbec@gmail.com>
+From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: fix a dynamic tracing failure
+Impact: fix for losing comms in trace
 
-Recently, the function and function graph tracers failed to use dynamic
-tracing after the following commit:
+The command lines of tasks are cached at sched switch to not need
+to record them at every trace point.  Disabling the tracing on stops
+the recording of traces, but does not stop the caching of command lines.
+When the tracing is off the cache may overflow and cause the tracing
+to show incorrect tasks matching the PIDs.
 
-fa9d13cf135efbd454453a53b6299976bea245a9
-(ftrace: don't try to __ftrace_replace_code on !FTRACE_FL_CONVERTED rec)
+This patch disables prevents updates to the comm cache when the ring buffer
+is off.
 
-The patch is right except a mistake on the check for the FTRACE_FL_CONVERTED
-flag. The code patching is aborted in case of successfully nopped sites.
-What we want is the opposite: ignore the callsites that haven't been nopped.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ftrace.c |    2 +-
+ kernel/trace/trace.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 90d5729..7847806 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -537,7 +537,7 @@ static void ftrace_replace_code(int enable)
- 		 */
- 		if (rec->flags & FTRACE_FL_FREE ||
- 		    rec->flags & FTRACE_FL_FAILED ||
--		    rec->flags & FTRACE_FL_CONVERTED)
-+		    !(rec->flags & FTRACE_FL_CONVERTED))
- 			continue;
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 2796bd2..8f89690 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -797,7 +797,7 @@ void trace_find_cmdline(int pid, char comm[])
  
- 		/* ignore updates to this record's mcount site */
+ void tracing_record_cmdline(struct task_struct *tsk)
+ {
+-	if (atomic_read(&trace_record_cmdline_disabled))
++	if (atomic_read(&trace_record_cmdline_disabled) || !tracing_is_on())
+ 		return;
+ 
+ 	trace_save_cmdline(tsk);
 -- 
 1.6.2
 
