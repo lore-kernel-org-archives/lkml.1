@@ -1,110 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbZCQESZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZCQEUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754559AbZCQESZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 00:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbZCQESP
+	id S1754840AbZCQEUr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 00:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZCQEUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 00:18:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45814 "EHLO mx1.redhat.com"
+	Tue, 17 Mar 2009 00:20:39 -0400
+Received: from ozlabs.org ([203.10.76.45]:48491 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbZCQESO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 00:18:14 -0400
-Date: Tue, 17 Mar 2009 05:13:37 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>,
-       =?iso-8859-1?Q?G=E1bor?= Melis <mega@retes.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Q: SEGSEGV && uc_mcontext->ip (Was: Signal delivery order)
-Message-ID: <20090317041337.GA29740@redhat.com>
-References: <200903141750.37238.mega@retes.hu> <200903152306.53031.mega@retes.hu> <20090316002833.GA17615@redhat.com> <200903160934.03700.mega@retes.hu> <20090316211316.GA6270@redhat.com> <49BED93B.1090700@nortel.com>
+	id S1751329AbZCQEUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 00:20:38 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PULL] x86 cpumask work
+Date: Tue, 17 Mar 2009 14:50:34 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mike Travis <travis@sgi.com>
+References: <200903121453.45163.rusty@rustcorp.com.au> <200903161333.16632.rusty@rustcorp.com.au> <20090316084802.GB1062@elte.hu>
+In-Reply-To: <20090316084802.GB1062@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49BED93B.1090700@nortel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200903171450.34549.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(see http://marc.info/?t=123704955800002)
+On Monday 16 March 2009 19:18:02 Ingo Molnar wrote:
+> 
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > As the comments says, it can only be NULL during boot of the first CPU.
+> > 
+> > start_kernel -> check_bugs -> identify_boot_cpu -> identify_cpu
+> >   -> select_idle_routine.
+> > 
+> > Did you want me to panic if it fails?
+> 
+> Ah, ok. But i think it's very unobvious to embedd a "once per 
+> bootup" dynamic allocation like that. Please put it into a 
+> separate init routine instead. That way select_idle() [which 
+> runs during every CPU hotplug event] wont have this allocation.
 
-First of all, perhaps I missed somethings and this is solvable without
-kernel changes, but I can't see how.
+There wasn't an obvious place to put the init; I've created one.
 
-To simplify, suppose that the application wants to log the faulting
-instruction before exit, so it installs the handler for SIGSEGV
+How's this?
+===
 
-	void sigsegv_handler(int sig, siginfo_t *info, struct ucontext *context)
-	{
-		fprintf(stderr, "bug at %p\n", context->uc_mcontext->ip);
-		exit(1);
-	}
+Subject: cpumask: fix CONFIG_CPUMASK_OFFSTACK=y cpu hotunplug crash
 
-But this doesn't work. It is possible that, before the task dequeues SIGSEGV,
-another private signal, say, SIGHUP (note that SIGHUP < SIGSEGV) is sent to
-this app.
+Impact: Fix cpu offline when CONFIG_MAXSMP=y
 
-In this case the task dequeues both signals, SIGHUP and then SIGSEGV before
-return to user-space. This is correct, but now uc_mcontext->ip points to
-sighup_handler, not to the faulted instruction.
+Changeset bc9b83dd1f66402b870301c3c7117b9c1484abb4 "cpumask: convert c1e_mask
+in arch/x86/kernel/process.c to cpumask_var_t" contained a bug: c1e_mask is
+manipulated even if C1E isn't detected (and hence not allocated).  This is
+simply fixed by checking for NULL (which gcc optimizes out anyway of
+CONFIG_CPUMASK_OFFSTACK=n, since it knows ce1_mask can never be NULL).
 
+In addition, fix a leak where select_idle_routine re-allocates (and re-clears)
+c1e_mask on every cpu init.
 
-Can/should we change force_sig_info_fault() to help?
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-We can add siginfo_t->_sigfault.ip to solve this problem. This shouldn't
-enlarge the size of siginfo_t. With this change sigsegv_handler() always
-knows the address of the instruction which caused the fault.
-
-
-But this doesn't allow to change uc_mcontext->ip to, say, skip the offending
-instruction or call another function which does a fixup. Actually, ->si_ip
-helps, we can do
-
-	void sigsegv_handler(int sig, siginfo_t *info, struct ucontext *context)
-	{
-		if (info->si_ip != context->uc_mcontext->ip)
-			/*
-			 * The offending instruction will be repeated, and
-			 * we will have the "same" SIGSEGV again.
-			 */
-			return;
-
-		context->uc_mcontext->ip = fixup;
-		...
-	}
-
-But this doesn't look very nice. So, perhaps we can do another change?
-
-	--- arch/x86/mm/fault.c
-	+++ arch/x86/mm/fault.c
-	@@ -177,6 +177,13 @@ static void force_sig_info_fault(int si_
-	 {
-		siginfo_t info;
-	 
-	+	current->saved_sigmask = current->blocked;
-	+	spin_lock_irq(&current->sighand->siglock);
-	+	siginitsetinv(&current->blocked, sigmask(si_signo) |
-	+			sigmask(SIGKILL) | sigmask(SIGSTOP));
-	+	spin_unlock_irq(&current->sighand->siglock);
-	+	set_restore_sigmask();
-	+
-		info.si_signo = si_signo;
-		info.si_errno = 0;
-		info.si_code = si_code;
-
-But this is a user-visible change, all signals will be blocked until
-sigsegv_handler() returns. But with this change sigsegv_handler()
-always has the "correct" rt_sigframe.
-
-
-Comments?
-
-And once again, I have a nasty feeling I missed something and we don't
-need to change the kernel.
-
-Oleg.
-
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index d794d94..9874dd9 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -733,6 +733,7 @@ static inline void __sti_mwait(unsigned long eax, unsigned long ecx)
+ extern void mwait_idle_with_hints(unsigned long eax, unsigned long ecx);
+ 
+ extern void select_idle_routine(const struct cpuinfo_x86 *c);
++extern void init_c1e_mask(void);
+ 
+ extern unsigned long		boot_option_idle_override;
+ extern unsigned long		idle_halt;
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 82f6cc0..d7dd3c2 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -812,6 +812,7 @@ static void vgetcpu_set_mode(void)
+ void __init identify_boot_cpu(void)
+ {
+ 	identify_cpu(&boot_cpu_data);
++	init_c1e_mask();
+ #ifdef CONFIG_X86_32
+ 	sysenter_setup();
+ 	enable_sep_cpu();
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 6638294..78533a5 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -479,7 +479,8 @@ static int c1e_detected;
+ 
+ void c1e_remove_cpu(int cpu)
+ {
+-	cpumask_clear_cpu(cpu, c1e_mask);
++	if (c1e_mask != NULL)
++		cpumask_clear_cpu(cpu, c1e_mask);
+ }
+ 
+ /*
+@@ -556,13 +557,20 @@ void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+ 		pm_idle = mwait_idle;
+ 	} else if (check_c1e_idle(c)) {
+ 		printk(KERN_INFO "using C1E aware idle routine\n");
+-		alloc_cpumask_var(&c1e_mask, GFP_KERNEL);
+-		cpumask_clear(c1e_mask);
+ 		pm_idle = c1e_idle;
+ 	} else
+ 		pm_idle = default_idle;
+ }
+ 
++void __init init_c1e_mask(void)
++{
++	/* If we're using c1e_idle, we need to allocate c1e_mask. */
++	if (pm_idle == c1e_idle) {
++		alloc_cpumask_var(&c1e_mask, GFP_KERNEL);
++		cpumask_clear(c1e_mask);
++	}
++}
++
+ static int __init idle_setup(char *str)
+ {
+ 	if (!str)
