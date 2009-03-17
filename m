@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbZCQKMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762487AbZCQKOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758895AbZCQKMg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 06:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbZCQKM0
+	id S1762487AbZCQKOj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 06:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbZCQKOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 06:12:26 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38854 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753799AbZCQKMZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 06:12:25 -0400
-Date: Tue, 17 Mar 2009 19:12:16 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Clemens Ladisch <clemens@ladisch.de>
-Subject: Re: [Patch] Fix the possibility of insane return value of hpet_calibrate() against SMI.
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>, robert.picco@hp.com,
-       venkatesh.pallipadi@intel.com, vojtech@suse.cz, mingo@redhat.com
-In-Reply-To: <49BE215F.7040307@ladisch.de>
-References: <20090316111300.7CE5.E1E9C6FF@jp.fujitsu.com> <49BE215F.7040307@ladisch.de>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20090317185152.47CD.E1E9C6FF@jp.fujitsu.com>
+	Tue, 17 Mar 2009 06:14:30 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58742 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753714AbZCQKO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 06:14:29 -0400
+Date: Tue, 17 Mar 2009 11:13:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, a.p.zijlstra@chello.nl,
+       ego@in.ibm.com, tglx@linutronix.de, andi@firstfloor.org,
+       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com,
+       arjan@infradead.org, svaidy@linux.vnet.ibm.com
+Subject: Re: [v3 PATCH 3/4] timers: /proc/sys sysctl hook to enable timer
+	migration
+Message-ID: <20090317101356.GF6477@elte.hu>
+References: <20090316111045.GA4686@linux.vnet.ibm.com> <20090316111444.GD4686@linux.vnet.ibm.com> <20090316152956.GA2344@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.01 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090316152956.GA2344@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Sorry for late response.
+* Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-> Yasunori Goto wrote:
-> > > I've no sense of feel for how long each calibration run would take.
-> > > Would doing it 5 times show up as a significant increase in the boot
-> > > time for those that care about boot time being as quick as possible?
-> > 
-> > Hmm. The loop times is trade off against reliable value....
-> > Though SMI is rare interruption, I don't know how frequent
-> > hypervisor's switch is.
+> On Mon, Mar 16, 2009 at 04:44:44PM +0530, Arun R Bharadwaj wrote:
+> > echo 0 > /proc/sys/kernel/timer_migration
 > 
-> Could you, just for testing, run the calibration five thousand times or
-> so instead of five times, and count how often you get insane values?
-> (And how much delay does such an SMI add?)
-
-I tried 50000 times. But insane value was nothing.
-I think SMI is very rare.
-
-> > Each calibration of this has 1 milli second.
-> > Do you think 5 msec is too long?
+> There should be no sysctl for this.
 > 
-> This shouldn't matter when booting.  Anyway, I think it's possible to
-> increase TICK_CALIBRATE without losing too much accuracy.
+> Timer migration should be good enough to be always enabled.
 
-Hmm. If the person who is trying to reduce boot time for fastboot dislikes this impact,
-then I'll try Vojtech-san's way.
+It's in the CONFIG_SCHED_DEBUG section - i.e. only available 
+under scheduler debugging. (and it's a fair flag for that case)
 
-
-Thanks.
--- 
-Yasunori Goto 
-
-
+	Ingo
