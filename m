@@ -1,150 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZCQU4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbZCQU4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZCQU4U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 16:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbZCQU4K
+	id S1756293AbZCQU4s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 16:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbZCQU4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 16:56:10 -0400
-Received: from ns2.suse.de ([195.135.220.15]:54206 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751280AbZCQU4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 16:56:09 -0400
-From: Mark Fasheh <mfasheh@suse.com>
-To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Sunil Mushran <sunil.mushran@oracle.com>,
-       Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 17/32] ocfs2/dlm: Encapsulate adding and removing of mle from dlm->master_list
-Date: Tue, 17 Mar 2009 13:01:07 -0700
-Message-Id: <1237320082-12921-18-git-send-email-mfasheh@suse.com>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
-References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+	Tue, 17 Mar 2009 16:56:37 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:38343 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723AbZCQU4g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 16:56:36 -0400
+Date: Tue, 17 Mar 2009 22:02:51 +0100
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Risto Suominen <risto.suominen@gmail.com>, geert@linux-m68k.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] fb: hide hardware cursor in graphics mode (Mach64)
+Message-Id: <20090317220251.d6fb00ff.krzysztof.h1@poczta.fm>
+In-Reply-To: <20090211142409.b88c577e.akpm@linux-foundation.org>
+References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
+	<Pine.LNX.4.64.0901240951110.13803@anakin>
+	<46e1c7760901240109m5a0f3a85p788aa3ce35b49fa9@mail.gmail.com>
+	<Pine.LNX.4.64.0901241425310.13803@anakin>
+	<46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
+	<46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
+	<46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
+	<20090211142409.b88c577e.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-EMID: e2b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sunil Mushran <sunil.mushran@oracle.com>
+From: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-This patch encapsulates adding and removing of the mle from the
-dlm->master_list. This patch is part of the series of patches that
-converts the mle list to a mle hash.
+A hardware cursor is left enabled in
+the fb_set_par() which is called when
+a new console is created. This is
+inconsistent with software cursor's
+behaviour.
 
-Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+Also, this makes a hardware cursor
+always visible in the Xfbdev
+(Xorg kdrive) server.
+
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+CC: Risto Suominen 
 ---
- fs/ocfs2/dlm/dlmcommon.h |    3 +++
- fs/ocfs2/dlm/dlmmaster.c |   34 +++++++++++++++++++++++-----------
- 2 files changed, 26 insertions(+), 11 deletions(-)
+Finally, I acquired a Mach64GZ card and was able to 
+solve this puzzle.
 
-diff --git a/fs/ocfs2/dlm/dlmcommon.h b/fs/ocfs2/dlm/dlmcommon.h
-index bb53714..261e265 100644
---- a/fs/ocfs2/dlm/dlmcommon.h
-+++ b/fs/ocfs2/dlm/dlmcommon.h
-@@ -1008,6 +1008,9 @@ static inline void __dlm_wait_on_lockres(struct dlm_lock_resource *res)
- 					  DLM_LOCK_RES_MIGRATING));
- }
- 
-+void __dlm_unlink_mle(struct dlm_ctxt *dlm, struct dlm_master_list_entry *mle);
-+void __dlm_insert_mle(struct dlm_ctxt *dlm, struct dlm_master_list_entry *mle);
-+
- /* create/destroy slab caches */
- int dlm_init_master_caches(void);
- void dlm_destroy_master_caches(void);
-diff --git a/fs/ocfs2/dlm/dlmmaster.c b/fs/ocfs2/dlm/dlmmaster.c
-index 0a28139..0aa4b04 100644
---- a/fs/ocfs2/dlm/dlmmaster.c
-+++ b/fs/ocfs2/dlm/dlmmaster.c
-@@ -318,6 +318,21 @@ static void dlm_init_mle(struct dlm_master_list_entry *mle,
- 	__dlm_mle_attach_hb_events(dlm, mle);
- }
- 
-+void __dlm_unlink_mle(struct dlm_ctxt *dlm, struct dlm_master_list_entry *mle)
-+{
-+	assert_spin_locked(&dlm->spinlock);
-+	assert_spin_locked(&dlm->master_lock);
-+
-+	if (!list_empty(&mle->list))
-+		list_del_init(&mle->list);
-+}
-+
-+void __dlm_insert_mle(struct dlm_ctxt *dlm, struct dlm_master_list_entry *mle)
-+{
-+	assert_spin_locked(&dlm->master_lock);
-+
-+	list_add(&mle->list, &dlm->master_list);
-+}
- 
- /* returns 1 if found, 0 if not */
- static int dlm_find_mle(struct dlm_ctxt *dlm,
-@@ -420,8 +435,7 @@ static void dlm_mle_release(struct kref *kref)
- 	assert_spin_locked(&dlm->master_lock);
- 
- 	/* remove from list if not already */
--	if (!list_empty(&mle->list))
--		list_del_init(&mle->list);
-+	__dlm_unlink_mle(dlm, mle);
- 
- 	/* detach the mle from the domain node up/down events */
- 	__dlm_mle_detach_hb_events(dlm, mle);
-@@ -843,7 +857,7 @@ lookup:
- 		alloc_mle = NULL;
- 		dlm_init_mle(mle, DLM_MLE_MASTER, dlm, res, NULL, 0);
- 		set_bit(dlm->node_num, mle->maybe_map);
--		list_add(&mle->list, &dlm->master_list);
-+		__dlm_insert_mle(dlm, mle);
- 
- 		/* still holding the dlm spinlock, check the recovery map
- 		 * to see if there are any nodes that still need to be 
-@@ -1575,7 +1589,7 @@ way_up_top:
- 		// "add the block.\n");
- 		dlm_init_mle(mle, DLM_MLE_BLOCK, dlm, NULL, name, namelen);
- 		set_bit(request->node_idx, mle->maybe_map);
--		list_add(&mle->list, &dlm->master_list);
-+		__dlm_insert_mle(dlm, mle);
- 		response = DLM_MASTER_RESP_NO;
- 	} else {
- 		// mlog(0, "mle was found\n");
-@@ -1967,7 +1981,7 @@ ok:
- 			     assert->node_idx, rr, extra_ref, mle->inuse);
- 			dlm_print_one_mle(mle);
- 		}
--		list_del_init(&mle->list);
-+		__dlm_unlink_mle(dlm, mle);
- 		__dlm_mle_detach_hb_events(dlm, mle);
- 		__dlm_put_mle(mle);
- 		if (extra_ref) {
-@@ -3159,10 +3173,8 @@ static int dlm_add_migration_mle(struct dlm_ctxt *dlm,
- 			tmp->master = master;
- 			atomic_set(&tmp->woken, 1);
- 			wake_up(&tmp->wq);
--			/* remove it from the list so that only one
--			 * mle will be found */
--			list_del_init(&tmp->list);
--			/* this was obviously WRONG.  mle is uninited here.  should be tmp. */
-+			/* remove it so that only one mle will be found */
-+			__dlm_unlink_mle(dlm, tmp);
- 			__dlm_mle_detach_hb_events(dlm, tmp);
- 			ret = DLM_MIGRATE_RESPONSE_MASTERY_REF;
- 			mlog(0, "%s:%.*s: master=%u, newmaster=%u, "
-@@ -3181,7 +3193,7 @@ static int dlm_add_migration_mle(struct dlm_ctxt *dlm,
- 	mle->master = master;
- 	/* do this for consistency with other mle types */
- 	set_bit(new_master, mle->maybe_map);
--	list_add(&mle->list, &dlm->master_list);
-+	__dlm_insert_mle(dlm, mle);
- 
- 	return ret;
- }
-@@ -3264,7 +3276,7 @@ top:
- 		 * list_head while in list_for_each_safe */
- 		__dlm_mle_detach_hb_events(dlm, mle);
- 		spin_lock(&mle->spinlock);
--		list_del_init(&mle->list);
-+		__dlm_unlink_mle(dlm, mle);
- 		atomic_set(&mle->woken, 1);
- 		spin_unlock(&mle->spinlock);
- 		wake_up(&mle->wq);
+Risto, please test the patch. 
+
+ drivers/video/aty/mach64_accel.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/aty/mach64_accel.c b/drivers/video/aty/mach64_accel.c
+index a8f60c3..0cc9724 100644
+--- a/drivers/video/aty/mach64_accel.c
++++ b/drivers/video/aty/mach64_accel.c
+@@ -39,7 +39,8 @@ void aty_reset_engine(const struct atyfb_par *par)
+ {
+ 	/* reset engine */
+ 	aty_st_le32(GEN_TEST_CNTL,
+-		aty_ld_le32(GEN_TEST_CNTL, par) & ~GUI_ENGINE_ENABLE, par);
++		aty_ld_le32(GEN_TEST_CNTL, par) &
++		~(GUI_ENGINE_ENABLE | HWCURSOR_ENABLE), par);
+ 	/* enable engine */
+ 	aty_st_le32(GEN_TEST_CNTL,
+ 		aty_ld_le32(GEN_TEST_CNTL, par) | GUI_ENGINE_ENABLE, par);
 -- 
-1.5.6
+1.5.2.2
+
+
+----------------------------------------------------------------------
+Szukasz pieniedzy? Wez podwójny limit zad³u¿enia w koncie direct.
+>> http://link.interia.pl/f20a3
 
