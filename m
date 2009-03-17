@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZCQPuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbZCQPvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756189AbZCQPuj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 11:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbZCQPua
+	id S1754617AbZCQPvz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 11:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753982AbZCQPvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 11:50:30 -0400
-Received: from ns2.suse.de ([195.135.220.15]:56499 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753800AbZCQPu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 11:50:29 -0400
-Date: Tue, 17 Mar 2009 14:20:11 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Hannes Eder <hannes@hanneseder.net>, trivial@kernel.org,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 05/15] NULL noise:
- drivers/media/dvb/frontends/drx397xD_fw.h
-In-Reply-To: <20090309075832.67483c8e@caramujo.chehab.org>
-Message-ID: <alpine.LNX.2.00.0903171419490.11733@jikos.suse.cz>
-References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net> <20090305191435.30062.72139.stgit@f10box.hanneseder.net> <20090309075832.67483c8e@caramujo.chehab.org>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Tue, 17 Mar 2009 11:51:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60336 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753851AbZCQPvq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 11:51:46 -0400
+Message-ID: <49BFC6CB.9070603@zytor.com>
+Date: Tue, 17 Mar 2009 08:50:35 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, akataria@vmware.com
+Subject: Re: [PATCH -tip] x86: move vmware to hypervisor
+References: <1237281581.7907.2.camel@ht.satnam>	 <20090317093919.GD6477@elte.hu> <1237283318.7907.9.camel@ht.satnam>
+In-Reply-To: <1237283318.7907.9.camel@ht.satnam>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 9 Mar 2009, Mauro Carvalho Chehab wrote:
+Jaswinder Singh Rajput wrote:
+>> I dont really like this one. KVM is a hypervisor too, and so is 
+>> Xen and lguest. VMware is one of the many types of a 
+>> hypervisors.
+> 
+> Can we use common hypervisor for Xen, lguest, vmware, etc.
+> And Xen, lguest, vmware will be the sub-options.
 
-> > Fix this sparse warnings:
-> >   drivers/media/dvb/frontends/drx397xD_fw.h:21:2: warning: Using plain integer as NULL pointer
-> >   drivers/media/dvb/frontends/drx397xD_fw.h:22:2: warning: Using plain integer as NULL pointer
-> > 
-> > Signed-off-by: Hannes Eder <hannes@hanneseder.net>
-> Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-
-Doesn't seem to be present in current -next/-mmotim, applied to trivial 
-tree.
+Obviously.  We spent a lot of time breaking up the cpu stuff into common
+and vendor-specific portions, we shouldn't go backwards w.r.t. hypervisors.
+	
+	-hpa
 
 -- 
-Jiri Kosina
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
