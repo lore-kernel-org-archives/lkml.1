@@ -1,84 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZCQWzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbZCQW7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758626AbZCQWzV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 18:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbZCQWzD
+	id S1752342AbZCQW7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 18:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZCQW7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 18:55:03 -0400
-Received: from mail-ew0-f168.google.com ([209.85.219.168]:46528 "EHLO
-	mail-ew0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755293AbZCQWzB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 18:55:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=MwqJTtjk2zxFsLlayj1aS+YXznynrwm+MO+o2WWoXAdkSOdrJ1G9Fk0M64g/mxDqC4
-         huOgCbwU1tuFu3ZEbx2NkzjpXAh7zMkW3g+m9UgANrBBGhba4O7caf31o8cDlVhjVKaj
-         d4qqrib5wm/52Y8/IJTX4oERJaao4PfzinDAg=
-Date: Tue, 17 Mar 2009 23:54:55 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/ftrace: stop {irqs,preempt}soff tracers when
-	tracing is stopped
-Message-ID: <20090317225454.GA5143@nowhere>
-References: <1237325938-5240-1-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903171745440.9036@gandalf.stny.rr.com> <20090317214926.GA5137@nowhere> <alpine.DEB.2.00.0903171757320.9036@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903171757320.9036@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 17 Mar 2009 18:59:11 -0400
+Received: from ns2.suse.de ([195.135.220.15]:36185 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751970AbZCQW7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 18:59:09 -0400
+From: Mark Fasheh <mfasheh@suse.com>
+To: linux-kernel@vger.kernel.org
+Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       Sunil Mushran <sunil.mushran@oracle.com>,
+       Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 23/32] ocfs2/dlm: Track number of mles
+Date: Tue, 17 Mar 2009 13:01:13 -0700
+Message-Id: <1237320082-12921-24-git-send-email-mfasheh@suse.com>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 05:59:22PM -0400, Steven Rostedt wrote:
-> 
-> On Tue, 17 Mar 2009, Frederic Weisbecker wrote:
-> > > > +	/*
-> > > > +	 * Stop the tracer to avoid a warning subsequent
-> > > > +	 * to buffer flipping failure because tracing_stop()
-> > > > +	 * disables the tr and max buffers, making flipping impossible
-> > > > +	 * in case of parallels max preempt off latencies.
-> > > > +	 */
-> > > > +	trace->stop(tr);
-> > > >  	/* stop the tracing. */
-> > > >  	tracing_stop();
-> > > 
-> > > I'm actually thinking that tracing_stop() should call the current tracer
-> > > "stop" function.
-> > > 
-> > > -- Steve
-> > 
-> > 
-> > Indeed, it could be better.
-> > But I think of a combination of stop() callback call plus
-> > ring buffer disabled because I'm not sure all tracers implement
-> > the stop callback.
-> 
-> Yes, that's what I meant. The tracing_stop should do a few things, and one
-> of them is to call the stop function if it exists.
-> 
-> > 
-> > Should I send a v2 based on the above?
-> 
-> Sure.
-> 
-> -- Steve
+From: Sunil Mushran <sunil.mushran@oracle.com>
 
+The lifetime of a mle is limited to the duration of the lockres mastery
+process. While typically this lifetime is fairly short, we have noticed
+the number of mles explode under certain circumstances. This patch tracks
+the number of each different types of mles and should help us determine
+how best to speed up the mastery process.
 
-Ingo,
+Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/ocfs2/dlm/dlmcommon.h |    5 ++++-
+ fs/ocfs2/dlm/dlmdomain.c |    5 +++++
+ fs/ocfs2/dlm/dlmmaster.c |    5 +++++
+ 3 files changed, 14 insertions(+), 1 deletions(-)
 
-I tested the call to the start/stop callbacks from tracing_start() and tracing_stop()
-but it's not possible for now: the sched_switch tracer register/unregister his
-tracepoints from these callbacks, thus allocate some memory. But tracing_start/stop
-can be called from atomic.
-
-I discussed about that with Steven on irc, and for now the v1 should be applied
-as a temporary solution. We plan to simplify later the start/stop callbacks from
-each tracers that need it.
-
-Thanks.
+diff --git a/fs/ocfs2/dlm/dlmcommon.h b/fs/ocfs2/dlm/dlmcommon.h
+index aa55271..67b3447 100644
+--- a/fs/ocfs2/dlm/dlmcommon.h
++++ b/fs/ocfs2/dlm/dlmcommon.h
+@@ -52,7 +52,8 @@
+ enum dlm_mle_type {
+ 	DLM_MLE_BLOCK,
+ 	DLM_MLE_MASTER,
+-	DLM_MLE_MIGRATION
++	DLM_MLE_MIGRATION,
++	DLM_MLE_NUM_TYPES
+ };
+ 
+ struct dlm_lock_name {
+@@ -156,6 +157,8 @@ struct dlm_ctxt
+ 	struct list_head mle_hb_events;
+ 
+ 	/* these give a really vague idea of the system load */
++	atomic_t mle_tot_count[DLM_MLE_NUM_TYPES];
++	atomic_t mle_cur_count[DLM_MLE_NUM_TYPES];
+ 	atomic_t local_resources;
+ 	atomic_t remote_resources;
+ 	atomic_t unknown_resources;
+diff --git a/fs/ocfs2/dlm/dlmdomain.c b/fs/ocfs2/dlm/dlmdomain.c
+index 869648c..0479bdf 100644
+--- a/fs/ocfs2/dlm/dlmdomain.c
++++ b/fs/ocfs2/dlm/dlmdomain.c
+@@ -1608,6 +1608,11 @@ static struct dlm_ctxt *dlm_alloc_ctxt(const char *domain,
+ 	atomic_set(&dlm->remote_resources, 0);
+ 	atomic_set(&dlm->unknown_resources, 0);
+ 
++	for (i = 0; i < DLM_MLE_NUM_TYPES; ++i) {
++		atomic_set(&dlm->mle_tot_count[i], 0);
++		atomic_set(&dlm->mle_cur_count[i], 0);
++	}
++
+ 	spin_lock_init(&dlm->work_lock);
+ 	INIT_LIST_HEAD(&dlm->work_list);
+ 	INIT_WORK(&dlm->dispatched_work, dlm_dispatch_work);
+diff --git a/fs/ocfs2/dlm/dlmmaster.c b/fs/ocfs2/dlm/dlmmaster.c
+index 604552e..acfc928 100644
+--- a/fs/ocfs2/dlm/dlmmaster.c
++++ b/fs/ocfs2/dlm/dlmmaster.c
+@@ -325,6 +325,9 @@ static void dlm_init_mle(struct dlm_master_list_entry *mle,
+ 		mle->u.mlename.hash = dlm_lockid_hash(name, namelen);
+ 	}
+ 
++	atomic_inc(&dlm->mle_tot_count[mle->type]);
++	atomic_inc(&dlm->mle_cur_count[mle->type]);
++
+ 	/* copy off the node_map and register hb callbacks on our copy */
+ 	memcpy(mle->node_map, dlm->domain_map, sizeof(mle->node_map));
+ 	memcpy(mle->vote_map, dlm->domain_map, sizeof(mle->vote_map));
+@@ -467,6 +470,8 @@ static void dlm_mle_release(struct kref *kref)
+ 	/* detach the mle from the domain node up/down events */
+ 	__dlm_mle_detach_hb_events(dlm, mle);
+ 
++	atomic_dec(&dlm->mle_cur_count[mle->type]);
++
+ 	/* NOTE: kfree under spinlock here.
+ 	 * if this is bad, we can move this to a freelist. */
+ 	kmem_cache_free(dlm_mle_cache, mle);
+-- 
+1.5.6
 
