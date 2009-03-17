@@ -1,91 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762900AbZCQIbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762928AbZCQIeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762900AbZCQIbK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 04:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762979AbZCQIax
+	id S1762928AbZCQIeV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 04:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbZCQIeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 04:30:53 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:31615 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763030AbZCQIaw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 04:30:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=wla5Z1jLnCosAFRq6sYUPEPPKPok7/bD7pyqNHCeGc5JEePDo2Ik1Xc6tbqJ4FSXXE
-         vjS5BC1BxHbjx642T7RA+gbDT7PyHLNFnUnkbyKlsmKJKnYrHpZMLD3l0FJzENojwoLW
-         KgM1knMVuFTD8lDZQwEG4Fy7F5bDyBwiB9GKE=
+	Tue, 17 Mar 2009 04:34:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53181 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752854AbZCQIeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 04:34:10 -0400
+Date: Tue, 17 Mar 2009 08:33:27 GMT
+From: Tom Zanussi <tzanussi@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, tzanussi@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tzanussi@gmail.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1237270859.8033.141.camel@charm-linux>
+References: <1237270859.8033.141.camel@charm-linux>
+Subject: [tip:tracing/ftrace] tracing: fix leak in event_format_read()
+Message-ID: <tip-c269fc8c537d761f36cb98e637ae934d9331a9d5@git.kernel.org>
+Git-Commit-ID: c269fc8c537d761f36cb98e637ae934d9331a9d5
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <20090316082952.GA1963@elf.ucw.cz>
-References: <1227454026.7262.59.camel@localhost> <20081123180409.GB7731@ucw.cz>
-	 <20081202161520.GA18252@srcf.ucam.org> <20081202201442.GA1504@ucw.cz>
-	 <alpine.LFD.2.00.0903160020250.30317@localhost.localdomain>
-	 <20090316082952.GA1963@elf.ucw.cz>
-Date: Tue, 17 Mar 2009 09:30:48 +0100
-Message-ID: <b637ec0b0903170130n68754d9eu504ad6b6f4330d89@mail.gmail.com>
-Subject: Re: [PATCH 1/1] cpufreq: eeepc 900 frequency scaling driver
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <lenb@kernel.org>, Matthew Garrett <mjg@redhat.com>,
-       Cristiano Prisciandaro <cristiano.p@solnet.ch>,
-       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tom@compton.nu
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 17 Mar 2009 08:33:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, I see that this thread has resumed after three months of being idle.
-Is there a chance that either Cristiano's or Tom's version can be included?
+Commit-ID:  c269fc8c537d761f36cb98e637ae934d9331a9d5
+Gitweb:     http://git.kernel.org/tip/c269fc8c537d761f36cb98e637ae934d9331a9d5
+Author:     Tom Zanussi <tzanussi@gmail.com>
+AuthorDate: Tue, 17 Mar 2009 01:20:59 -0500
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 17 Mar 2009 08:38:23 +0100
 
-By the way, I currently run my eeepc 900 with cpufreq disabled.
-Looking at the patch, with Tom's mods to eeepc_laptop I could do the
-same, am I right? I see only an include for cpufreq.h and nothing
-else.
+tracing: fix leak in event_format_read()
 
-Thanks,
-Fabio
+Impact: fix memory leak
+
+If event_format_read() exits early due to nonzero ppos, the
+previous kmalloc doesn't get freed - might as well do the
+check before the kmalloc and avoid the problem.
+
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <1237270859.8033.141.camel@charm-linux>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ kernel/trace/trace_events.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-On Mon, Mar 16, 2009 at 9:29 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Mon 2009-03-16 00:24:18, Len Brown wrote:
->>
->> On Tue, 2 Dec 2008, Pavel Machek wrote:
->>
->> > On Tue 2008-12-02 16:15:21, Matthew Garrett wrote:
->> > > On Sun, Nov 23, 2008 at 07:04:09PM +0100, Pavel Machek wrote:
->> > >
->> > > > Is this really needed? Could we simply talk to the cpu directly,
->> > > > without help of ACPI?
->> > >
->> > > No. The ACPI write ends up talking to the embedded controller and some
->> > > io ports.
->> >
->> > Oops... I always knew that eee-s are broken by design (reporting
->> > battery percent as mWh, etc...) but I did not realize how bad it
->> > is. (ACPI has perfectly standard cpu frequency scaling interface, even
->> > if it is not used too often these days....)
->>
->> Huh?
->>
->> What cpufreq driver is deployed more broadly than acpi-cpufreq?
->> AFAIK, Linux uses it on nearly every ACPI compliant Intel-based
->> system that has frequency scaling.
->
-> Problem seems to be that eee uses custom ACPI methods
-> (switch_to_fast_clock(0/1)-like), not anything acpi-cpufreq could
-> drive... Broken by design :-(.
->                                                                        Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 238ea95..c88227b 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -378,15 +378,15 @@ event_format_read(struct file *filp, char __user *ubuf, size_t cnt,
+ 	char *buf;
+ 	int r;
+ 
++	if (*ppos)
++		return 0;
++
+ 	s = kmalloc(sizeof(*s), GFP_KERNEL);
+ 	if (!s)
+ 		return -ENOMEM;
+ 
+ 	trace_seq_init(s);
+ 
+-	if (*ppos)
+-		return 0;
+-
+ 	/* If any of the first writes fail, so will the show_format. */
+ 
+ 	trace_seq_printf(s, "name: %s\n", call->name);
