@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763153AbZCQK04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763182AbZCQKar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763153AbZCQK04 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 06:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZCQK0r
+	id S1763182AbZCQKar (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 06:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbZCQKai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 06:26:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38963 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753696AbZCQK0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 06:26:46 -0400
-Date: Tue, 17 Mar 2009 11:26:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] x86: cleanup 20090317
-Message-ID: <20090317102629.GH6477@elte.hu>
-References: <1237229111.2827.2.camel@ht.satnam> <alpine.LFD.2.00.0903162128010.29264@localhost.localdomain> <1237267595.2480.9.camel@ht.satnam> <alpine.LFD.2.00.0903170930311.29264@localhost.localdomain> <1237279833.3464.4.camel@ht.satnam>
+	Tue, 17 Mar 2009 06:30:38 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:10782 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754231AbZCQKah (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 06:30:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FTsmGqfFAcn+uOED+xbXqh+Q//eyf6B/l4HlBOkyz2fSk4Ku9L/nGlvRXkxkFCktIz
+         6aipxKLnikF6tYV9fEYn84TzZ8/hXc5o6gtp/H5tTQgPNVj2n+3YCIik68FYtUEH0X8k
+         YRP/aOFSZ4D4gaEgrFZJQZNwumcfok8OBGDhE=
+Date: Tue, 17 Mar 2009 13:37:44 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Zhang Le <r0bertz@gentoo.org>, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org, alan@redhat.com
+Subject: Re: [PATCH] filp->f_pos not correctly updated in proc_task_readdir
+Message-ID: <20090317103744.GA2399@x200.localdomain>
+References: <1237185871-3343-1-git-send-email-r0bertz@gentoo.org> <20090316083457.GV28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1237279833.3464.4.camel@ht.satnam>
+In-Reply-To: <20090316083457.GV28946@ZenIV.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-
-> On Tue, 2009-03-17 at 09:38 +0100, Thomas Gleixner wrote:
-> > On Tue, 17 Mar 2009, Jaswinder Singh Rajput wrote:
-> > > On Mon, 2009-03-16 at 23:33 +0100, Thomas Gleixner wrote:
-> > > > On Tue, 17 Mar 2009, Jaswinder Singh Rajput wrote:
-> > > > 
-> > > > > -static struct clock_event_device pit_clockevent = {
-> > > > > +static struct clock_event_device pit_dev = {
-> > > > 
-> > > >   Why do we need to change the name of the variable ? Just for fun or
-> > > >   is pit_dev more self explaining than pit_clockevent ?
-> > > 
-> > > pit already means it is a clock event, but with this change:
-> > > 
-> > > 1. we save 8 characters per declaration
-> > > 2. It solves various 80 characters problem
-> > 
-> > There is not a single 80 character problem in that file.
+On Mon, Mar 16, 2009 at 08:34:57AM +0000, Al Viro wrote:
+> On Mon, Mar 16, 2009 at 02:44:31PM +0800, Zhang Le wrote:
+> > filp->f_pos only get updated at the end of the function. Thus d_off of those
+> > dirents who are in the middle will be 0, and this will cause a problem in
+> > glibc's readdir implementation, specifically endless loop. Because when overflow
+> > occurs, f_pos will be set to next dirent to read, however it will be 0, unless
+> > the next one is the last one. So it will start over again and again.
 > 
-> Here are 80 character problems:
+> Eh...  Here's what's really going on:
 > 
-> 1.        pit_clockevent.mult = div_sc(CLOCK_TICK_RATE, NSEC_PER_SEC,
->                                      pit_clockevent.shift);
-> 2.        pit_clockevent.max_delta_ns =
->                 clockevent_delta2ns(0x7FFF, &pit_clockevent);
-> 3.        pit_clockevent.min_delta_ns =
->                 clockevent_delta2ns(0xF, &pit_clockevent);
+> proc_..._fill_cache() API is rather kludgy and far too convoluted.  In
+> particular, it calls filldir() and passes file->f_pos to it, expecting
+> the caller to update file->f_pos between the calls.  proc_task_readdir()
+> uses that sucker, but doesn't update ->f_pos until the very end.  As
+> the result, d_off of direntries produced by it gets screwed.
+> Broken-by: commit 61a28784028e6d55755e4d0f39bee8d9bf2ee8d9
+> Author: Eric W. Biederman <ebiederm@xmission.com>
+> Date:   Mon Oct 2 02:18:49 2006 -0700
 > 
-> 4.        clocksource_pit.mult = clocksource_hz2mult(CLOCK_TICK_RATE,
->                                                    clocksource_pit.shift);
+>     [PATCH] proc: Remove the hard coded inode numbers
+> 
+> Patch is fine, but I'd rather rip the layers of ..._fill_cache() abstractions
+> out and see what falls out.  Anyway, for -rc your variant is definitely the
+> way to go.
 
-We could rename "pit_clockevent" to "pit_ce" perhaps - if Thomas 
-agrees. pit_dev sounds weird.
+Except this bit:
 
-pure (non-code-changing) cleanups should be kept separate from 
-code changing cleanups.
-
-
-	Ingo
+fs/built-in.o: In function `proc_task_readdir':
+compr_zlib.c:(.text+0x434b8): undefined reference to `__cmpdi2'
+compr_zlib.c:(.text+0x434d4): undefined reference to `__cmpdi2'
