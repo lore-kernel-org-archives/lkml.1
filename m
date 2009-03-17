@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZCQEaw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZCQElT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbZCQEaw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 00:30:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbZCQEan
+	id S1754791AbZCQElT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 00:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZCQElE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 00:30:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43846 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750829AbZCQEan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 00:30:43 -0400
-Date: Tue, 17 Mar 2009 05:25:34 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>,
-       =?iso-8859-1?Q?G=E1bor?= Melis <mega@retes.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: SEGSEGV && uc_mcontext->ip (Was: Signal delivery order)
-Message-ID: <20090317042534.GA30513@redhat.com>
-References: <200903141750.37238.mega@retes.hu> <200903152306.53031.mega@retes.hu> <20090316002833.GA17615@redhat.com> <200903160934.03700.mega@retes.hu> <20090316211316.GA6270@redhat.com> <49BED93B.1090700@nortel.com> <20090317041337.GA29740@redhat.com>
+	Tue, 17 Mar 2009 00:41:04 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:12786 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751403AbZCQElC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 00:41:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=ocBsOc3oAop8a7QiUdCqy92g3BQ0kl3OMUqDhD158nOp8jlJ65jqGDp4zbpTRu2vcO
+         NTjsS4zHIABQDr5ogycq4IE5lz/CPyrw2NtyvLvfagRCORsVaYKa83l3TXxRxO2gN+0A
+         l4D0WcwDTrY8Ww7CrCHK1GK636/gpVFSVFS+I=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090317041337.GA29740@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Tue, 17 Mar 2009 12:41:00 +0800
+Message-ID: <e9e614960903162141g2f272f82jee434fc6fc748544@mail.gmail.com>
+Subject: w35und driver unusable
+From: luoyi <luoyi.ly@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for noise, forgot to mention,
+hello, I'm trying to run Slackware-current on my AMTEK T700 UMPC box. and from:
 
-On 03/17, Oleg Nesterov wrote:
->
-> 	--- arch/x86/mm/fault.c
-> 	+++ arch/x86/mm/fault.c
-> 	@@ -177,6 +177,13 @@ static void force_sig_info_fault(int si_
-> 	 {
-> 		siginfo_t info;
-> 	 
-> 	+	current->saved_sigmask = current->blocked;
-> 	+	spin_lock_irq(&current->sighand->siglock);
-> 	+	siginitsetinv(&current->blocked, sigmask(si_signo) |
-> 	+			sigmask(SIGKILL) | sigmask(SIGSTOP));
-> 	+	spin_unlock_irq(&current->sighand->siglock);
-> 	+	set_restore_sigmask();
-> 	+
+http://ubuntuforums.org/showthread.php?t=664458
 
-Of course, this change is wrong, it is just for illustration.
-We shouldn't unblock si_signo if it was blocked, force_sig_info()
-sets SIG_DFL in this case.
+I know that the my box's wifi is WinBound's products.
 
-Oleg.
+I'm currently running kernel 2.6.28.7 now and have modprobed w35und.
+and I also have a linksys usb wireless card on the USB port.
 
+Now, the situation is Linksys's card can just work well. and the
+Winbound card can't .
+
+wlan1 is the WinBound card:
+
+root@t700:~# dmesg |grep wlan1
+udev: renamed network interface wlan0 to wlan1
+ADDRCONF(NETDEV_UP): wlan1: link is not ready
+
+root@t700:~# iwlist wlan1 scan
+wlan1     No scan results
+
+root@t700:~# iwlist wlan0 scan
+wlan0     Scan completed :
+         Cell 01 - Address: 00:1B:FC:7E:57:51
+                   ESSID:"default"
+                   Mode:Master
+                   Channel:5
+                   Frequency:2.432 GHz (Channel 5)
+                   Quality=56/100  Signal level:-22 dBm
+                   Encryption key:off
+                   IE: Unknown: 000764656661756C74
+                   IE: Unknown: 010882848B968C929824
+                   IE: Unknown: 030105
+                   IE: Unknown: 0406000200000000
+                   IE: Unknown: 2A0100
+                   IE: Unknown: 3204B048606C
+                   Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 6 Mb/s
+                             9 Mb/s; 12 Mb/s; 18 Mb/s; 24 Mb/s; 36 Mb/s
+                             48 Mb/s; 54 Mb/s
+                   Extra:tsf=00000035772ec17e
+                   Extra: Last beacon: 52ms ago
+
+does this mean that the winbound drivers in the kernel tree is not
+ready for use ? or do we have any idea for make it work ?
