@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZCQQx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbZCQQ44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbZCQQx2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 12:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZCQQxT
+	id S1756362AbZCQQ44 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 12:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbZCQQ4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 12:53:19 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:50953 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753624AbZCQQxS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 12:53:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=IYqh2iIDTE1uOZMO04nOQselEEdw0gjN8Cy1wgsiCVETNugr+9llyN6Rg1USQnplOX
-         wzZ4HW5PSF3y/bs/y5yWCY7JdMYgCWgDvKoqSU4VjGCvyXxAJlz5dfZ6xKGLSHAh08VM
-         3ADAkzgQUsfCvcABALLCH8+faYBCIWXlF/MSQ=
-Date: Tue, 17 Mar 2009 20:00:23 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, r0bertz@gentoo.org, viro@ZenIV.linux.org.uk
-Subject: Re: [GIT] /proc/*/task getdents fixlet
-Message-ID: <20090317170023.GA2479@x200.localdomain>
-References: <20090317160638.GA2246@x200.localdomain> <alpine.LFD.2.00.0903170913250.3082@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903170913250.3082@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 17 Mar 2009 12:56:47 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:55934 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754815AbZCQQ4q (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 12:56:46 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Oliver Neukum <oliver@neukum.org>
+Cc: jkosina@suse.cz, gregkh@suse.de, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 29-rc-mmotm - HID/USB wedge w/ WARNING: at kernel/workqueue.c:371
+In-Reply-To: Your message of "Tue, 17 Mar 2009 16:07:20 BST."
+             <200903171607.20942.oliver@neukum.org>
+From: Valdis.Kletnieks@vt.edu
+References: <6648.1237271589@turing-police.cc.vt.edu>
+            <200903171607.20942.oliver@neukum.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1237308917_3640P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 17 Mar 2009 12:55:17 -0400
+Message-ID: <23407.1237308917@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 09:15:46AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 17 Mar 2009, Alexey Dobriyan wrote:
-> > 
-> > Linus, please from
-> > 
-> > 	git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/proc.git proc-linus
-> > 
-> > to get the following patch:
-> > 
-> > Zhang Le (1):
-> >       proc: update ->f_pos correctly in proc_task_readdir()
-> 
-> Grr. I already took the previous patch.
-> 
-> I assume the only difference is to avoid using a "switch()" on a 64-bit 
-> variable, and just cast it to "unsigned long". No?
+--==_Exmh_1237308917_3640P
+Content-Type: text/plain; charset=us-ascii
 
-Yes,
+On Tue, 17 Mar 2009 16:07:20 BST, Oliver Neukum said:
+> Am Dienstag 17 M=C3=A4rz 2009 07:33:09 schrieb Valdis.Kletnieks@vt.edu:
+> > Yes, there's an NVidia driver loaded - but this looks like an HID/USB
+> > bug, where it's shooting itself in the foot by flushing the workqueue while
+> > not realizing it's in a worker thread already, thus deadlocking.
 
-	+	switch ((unsigned long)filp->f_pos) {
+> I am looking into it. Do you know why you get a reset?
+
+This is a good question indeed - and I suspect the answer is "flaky hardware".
+
+During the evening at home, I usually have 2 things plugged into USB ports. One
+is a Microsoft mouse, and the other is a Targa USB-powered cooling pad
+(basically just 2 USB-powered fans). The pad in question:
+
+http://www.amazon.com/Targus-PA248U-Notebook-Chill-Pad/dp/B0000AKA8Y
+
+There's zero actual smarts inside the cooling pad as far as I can tell - it
+just draws its milliamps to drive the fans.
+
+I noticed that most of the wedges happened right after I moved the laptop,
+and there's apparently an intermittent short in the USB power cable for the
+Targa - at one point the fans stopped until I moved the cable a little.
+
+So I'm suspecting that the Targa glitched and did something the USB hub
+noticed, the USB system concluded there was a confused device and tried to
+reset it back to sanity - but did it from a thread it shouldn't have done it
+from (guessing here, not having looked at the code).
+
+--==_Exmh_1237308917_3640P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJv9X1cC3lWbTT17ARAgEsAJ98pYeAFPAjlGkD6ctxfMhhQfCFjACfUgTo
+eV9XhbcJaRSJGGcPC4NkkKU=
+=kQoy
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1237308917_3640P--
