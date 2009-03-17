@@ -1,31 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZCQVUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbZCQVWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbZCQVUf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 17:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZCQVU0
+	id S1756261AbZCQVWS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 17:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbZCQVWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 17:20:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49239 "EHLO hera.kernel.org"
+	Tue, 17 Mar 2009 17:22:03 -0400
+Received: from ozlabs.org ([203.10.76.45]:39467 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752367AbZCQVU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 17:20:26 -0400
-Message-ID: <49C013E2.3090704@kernel.org>
-Date: Tue, 17 Mar 2009 14:19:30 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1754855AbZCQVWB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 17:22:01 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [PATCH] module: fix refptr allocation and release order
+Date: Wed, 18 Mar 2009 07:51:55 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "systemtap-ml" <systemtap@sources.redhat.com>
+References: <200903171250.16585.rusty@rustcorp.com.au> <49BF17F4.7040908@cosmosbay.com>
+In-Reply-To: <49BF17F4.7040908@cosmosbay.com>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org> <49BEB5FE.7050601@zytor.com> <49BEBD98.3090905@goop.org> <49BEC143.6030104@zytor.com> <49BEC53F.20200@goop.org> <49BED431.5070201@zytor.com> <49BF0A51.5000909@kernel.org> <49BF2054.9020009@zytor.com> <49BF301C.6010708@goop.org> <49BFCA05.7000508@zytor.com> <49BFFD3C.3020908@goop.org> <49BFFDE4.1070601@zytor.com> <49C0012A.6060903@goop.org>
-In-Reply-To: <49C0012A.6060903@goop.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200903180751.55665.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-can you check __brk_limit in extend_brk() ?
+On Tuesday 17 March 2009 13:54:36 Eric Dumazet wrote:
+> Rusty Russell a écrit :
+> > From: Masami Hiramatsu <mhiramat@redhat.com>
+> > 
+> > Impact: fix ref-after-free crash on failed module load
+> > 
+> > Fix refptr bug: Change refptr allocation and release order not to access a module
+> > data structure pointed by 'mod' after freeing mod->module_core.
+> > This bug will cause kernel panic(e.g. failed to find undefined symbols).
+> > 
+> > This bug was reported on systemtap bugzilla.
+> > http://sources.redhat.com/bugzilla/show_bug.cgi?id=9927
+> > 
+> > Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> > Cc: Eric Dumazet <dada1@cosmosbay.com>
+> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> 
+> 
+> My original patch did not have this problem, because I used a local variable
+> to hold refptr.
+> 
+> http://www.archivum.info/linux-kernel@vger.kernel.org/2008-05/msg07400.html
+> 
+> A simpler patch could just use a local variable again, since we are very
+> late in rc phase ?
 
-YH
+Right, it was my mistake.  But the extra #ifdef is still ugly: moving the code
+is a larger patch, but it's not complicated.
+
+Thanks,
+Rusty.
