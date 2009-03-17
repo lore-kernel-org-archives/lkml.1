@@ -1,107 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762715AbZCQHvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762819AbZCQHwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762715AbZCQHvo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 03:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbZCQHvc
+	id S1762819AbZCQHwt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 03:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbZCQHwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 03:51:32 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:44408 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754121AbZCQHvb (ORCPT
+	Tue, 17 Mar 2009 03:52:40 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:23950 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755126AbZCQHwj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 03:51:31 -0400
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <b6a2187b0903161655q15437156qc926c8db37d8ba4b@mail.gmail.com> (sfid-20090317_005551_652269_7D5AC813)
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-	 <b6a2187b0903141958u9dae0fdk1f44b387108b99e4@mail.gmail.com>
-	 <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com>
-	 <1237140665.24621.2.camel@johannes.local>
-	 <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
-	 <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu>
-	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
-	 <alpine.LFD.2.00.0903161250080.3082@localhost.localdomain>
-	 <b6a2187b0903161655q15437156qc926c8db37d8ba4b@mail.gmail.com>
-	 (sfid-20090317_005551_652269_7D5AC813)
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-lkT8FdbDuHdh8xzkiIpe"
-Date: Tue, 17 Mar 2009 08:50:12 +0100
-Message-Id: <1237276212.18086.11.camel@johannes.local>
+	Tue, 17 Mar 2009 03:52:39 -0400
+Message-Id: <49BF6505.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 17 Mar 2009 07:53:25 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Cc: "Jeremy Fitzhardinge" <jeremy.fitzhardinge@citrix.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       "Xen-devel" <xen-devel@lists.xensource.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [Xen-devel] [PATCH 10/24] xen: mask XSAVE from cpuid
+References: <1236931920-6861-1-git-send-email-jeremy@goop.org>
+ <1236931920-6861-11-git-send-email-jeremy@goop.org>
+ <49BA3A84.76E4.0078.0@novell.com> <49BA7810.6090807@goop.org>
+ <49BD4CE1.6040100@zytor.com> <49BD6D0E.1010107@goop.org>
+ <20090315154718.00353625@infradead.org> <49BD97C6.2070401@goop.org>
+ <20090315170945.08344b86@infradead.org>
+ <49BE6D50.76E4.0078.0@novell.com><49BE6D50.76E4.0078.0@novell.com> (Jan
+ Beulich's message of "Mon, 16 Mar 2009 14:16:32 +0000")
+ <87fxhd2f53.fsf@basil.nowhere.org>
+In-Reply-To: <87fxhd2f53.fsf@basil.nowhere.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> Andi Kleen <andi@firstfloor.org> 17.03.09 00:59 >>>
+>"Jan Beulich" <jbeulich@novell.com> writes:
+>
+>>>>> Arjan van de Ven <arjan@infradead.org> 16.03.09 01:09 >>>
+>>>Well.. pretty much all new instructions need Xen modifications due to
+>>>the need to be emulate to deal with traps/vmexits/etc right? 
+>>>So I don't quite see many cpuid bits that would NOT involve some Xen
+>>>modification or another ;)
+>>
+>> No, new (user-mode accessible) instructions represent precisely the kind
+>> of extension that do not require hypervisor (or OS) awareness (see SSE2
+>> etc, AES, FMA). New registers otoh are examples of where awareness is
+>> needed (SSE, AVX), as would be new privileged instructions.
+>
+>Whey would another hypothetical FP register extension need Xen support
+>once it gets proper XSAVE support? I can't think of a reason why
+>(assuming XSAVE support) it would need to know of a new kind of
+>FP register or similar. They very likely won't appear in any 
+>instructions that need mmio. Or are you worried about the real
+>mode emulator?
 
---=-lkT8FdbDuHdh8xzkiIpe
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+No, properly coded xsave support will (hopefully) make user-visible context
+extensions transparent to hypervisor and OS. But I was giving a general
+example here, and the change from xmm to ymm registers is one that does
+need hypervisor (and OS) changes.
 
-On Tue, 2009-03-17 at 07:55 +0800, Jeff Chua wrote:
-
-> > IOW, if you've pinpointed 71c11fb57b924c160297ccd9e1761db598d00ac2 as
-> > being bad, then you should go back and double-check that its parent
-> > (in this case 4607816f608b42a5379aca97ceed08378804c99f) is good.
-> > Because if it's parent is also bad, then that just means that you made
-> > some mistake in "git bisect".
-> > In this case, it really sounds like maybe you marked the parent good, e=
-ven
-> > though you should have marked it bad.
->=20
-> I should have been more careful, just got thrown off during the last
-> few steps of the bisect. But with the bad association to the AP after
-> a57a59f247b651e8ed6d3eeb7e2f9d83b83134c9 (iwlwifi: remove implicit
-> direct scan), can someone suggest where to go from here?
-
-That actually makes some sense, though I'm convinced the code I removed
-there is actually wrong that doesn't mean it couldn't have had positive
-side effects too. I'll take a look at it, in the meantime your time
-would be better spent trying to capture what's going on on the air
-instead of bisecting again.
-
-If you don't have a second device to monitor, you can also create a
-monitor interface as such:
-	iw dev wlan0 interface add moni0 type monitor flags none
-
-and run tcpdump on the resulting 'moni0' interface while you try to
-associate etc. Write the packets to files and send them to me.
-
-Due to this implicit scan modification in the driver that I removed,
-however, I won't see scans in that file, so it won't be all that useful,
-a capture made on a second device would be much better.
-
-johannes
-
---=-lkT8FdbDuHdh8xzkiIpe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJv1YyAAoJEKVg1VMiehFYxv4P/3qk3ba1W7WeZDxeSWe5lzXw
-7d4LuKDgw8TEpfZBZgcf4eZuZsmuXBZGa29LPEheLHMbICrGIxLbOlPFJ0xzv49+
-FThedraa26mmAGU1Y1m/9Kpo8SKFNmfsVxi5rgjWUixA8HPk+038tABwQDdKkbS6
-/cx1F3Au5RKsSXMMIebI6/7EF9z8Znv3TD7ymVdp5q5kXPgDRVJJisDg6eXaoVHg
-gJaJrkFnwXKVV/oAdAPbmjNpbtOrxA68VTxxtmAkGs+LuW9B1p4R9YFb3cnfBiCj
-IXwOLPG6DzMqU/txXIWo0Z79Y0F4LKysIX5+NtnAKh2KXv9QntAHtcCAYju8uc0S
-KZTbwSkWGWnfFRtdIoe0dbZ831OPSToCeEz1a1AdLkI2wksrvc0U12ZyfJ7orRnz
-JvcorvGT/zKclXMegdL0aX9UAq+K47WjeX/oJ4wvbRuEkdai+lJ66VYDzzu1RsTj
-wBWeJLcn14adDWa0mWqfOdmgkJ4CtmnpMPq30GN47E8lV2/mhRXOOHjnQbwaQPmc
-1Q9GhSjRLQI08gmJctO+qAizmt4CDgxYTHxiN2DQMRriHVlzJ2fGsKp58kXYWa4k
-Nh0BphA2dKPci7ZLcumBN9oP9X3FCE5SYXiI/sDkQ1Klz6tngXj7JeobjfqxW61P
-YAE5sRPTNvhTqV6e+Cfi
-=iPZ1
------END PGP SIGNATURE-----
-
---=-lkT8FdbDuHdh8xzkiIpe--
+Jan
 
