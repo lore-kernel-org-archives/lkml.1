@@ -1,76 +1,424 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbZCQEzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758702AbZCQFBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbZCQEzZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 00:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZCQEzI
+	id S1758702AbZCQFBu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 01:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZCQFBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 00:55:08 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:38006 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751090AbZCQEzG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 00:55:06 -0400
+	Tue, 17 Mar 2009 01:01:40 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:53094 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751312AbZCQFBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 01:01:39 -0400
+Date: Mon, 16 Mar 2009 22:01:35 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
+Subject: Re: cli/sti vs local_cmpxchg and local_add_return
+Message-ID: <20090317050135.GB6859@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090317013220.GA22474@Krystal>
 MIME-Version: 1.0
-In-Reply-To: <200903161643.15887.rob@landley.net>
-References: <20090312092114.GC6949@elf.ucw.cz>
-	 <20090316123051.GJ2405@elf.ucw.cz>
-	 <20090316194057.GA27897@silver.sucs.org>
-	 <200903161643.15887.rob@landley.net>
-Date: Tue, 17 Mar 2009 00:55:04 -0400
-Message-ID: <f73f7ab80903162155p2f9de16aj122978d7fc220f40@mail.gmail.com>
-Subject: Re: ext2/3: document conditions when reliable operation is possible
-From: Kyle Moffett <kyle@moffetthome.net>
-To: Rob Landley <rob@landley.net>
-Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com, tytso@mit.edu,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090317013220.GA22474@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 5:43 PM, Rob Landley <rob@landley.net> wrote:
-> Flash gets into trouble when it presents the _interface_ of rotational media
-> (a USB block device with normal 512 byte read/write sectors, which never wear
-> out) which doesn't match what the hardware's actually doing (erase block sizes
-> of up to several megabytes at a time, hidden behind a block remapping layer
-> for wear leveling).
->
-> For devices that have built in flash that DON'T pretend to be a conventional
-> block device, but instead expose their flash erase granularity and let the OS
-> do the wear levelling itself, we have special flash filesystems that can be
-> reasonably reliable.  It's just that ext3 isn't one of them, jffs2 and ubifs
-> and logfs are.  The problem with these flash filesystems is they ONLY work on
-> flash, if you want to mount them on something other than flash you need
-> something like a loopback interface to make a normal block device pretend to
-> be flash.  (We've got a ramdisk driver called "mtdram" that does this, but
-> nobody's bothered to write a generic wrapper for a normal block device you can
-> wrap over the loopback driver.)
+On Mon, Mar 16, 2009 at 09:32:20PM -0400, Mathieu Desnoyers wrote:
+> Hi,
+> 
+> I am trying to get access to some non-x86 hardware to run some atomic
+> primitive benchmarks for a paper on LTTng I am preparing. That should be
+> useful to argue about performance benefit of per-cpu atomic operations
+> vs interrupt disabling. I would like to run the following benchmark
+> module on CONFIG_SMP :
+> 
+> - PowerPC
+> - MIPS
+> - ia64
+> - alpha
+> 
+> usage :
+> make
+> insmod test-cmpxchg-nolock.ko
+> insmod: error inserting 'test-cmpxchg-nolock.ko': -1 Resource temporarily unavailable
+> dmesg (see dmesg output)
 
-The really nice SSDs actually reserve ~15-30% of their internal
-block-level storage and actually run their own log-structured virtual
-disk in hardware.  From what I understand the Intel SSDs are that way.
- Real-time garbage collection is tricky, but if you require (for
-example) a max of ~80% utilization then you can provide good latency
-and bandwidth guarantees.  There's usually something like a
-log-structured virtual-to-physical sector map as well.  If designed
-properly with automatic hardware checksumming, such a system can
-actually provide atomic writes and barriers with virtually no impact
-on performance.
+Here you are on a 4.2GHz Power box:
 
-With firmware-level hardware knowledge and the ability to perform
-extremely efficient parallel reads of flash blocks, such a
-log-structured virtual block device can be many times more efficient
-than a general purpose OS running a log-structured filesystem.  The
-result is that for an ordinary ext3-esque filesystem with 4k blocks
-you can treat the SSD as though it is an atomic-write seek-less block
-device.
+test init
+test results: time for baseline
+number of loops: 20000
+total time: 12490
+-> baseline takes 0 cycles
+test end
+test results: time for locked cmpxchg
+number of loops: 20000
+total time: 345748
+-> locked cmpxchg takes 17 cycles
+test end
+test results: time for non locked cmpxchg
+number of loops: 20000
+total time: 198304
+-> non locked cmpxchg takes 9 cycles
+test end
+test results: time for locked add return
+number of loops: 20000
+total time: 253977
+-> locked add return takes 12 cycles
+test end
+test results: time for non locked add return
+number of loops: 20000
+total time: 189837
+-> non locked add return takes 9 cycles
+test end
+test results: time for enabling interrupts (STI)
+number of loops: 20000
+total time: 298390
+-> enabling interrupts (STI) takes 14 cycles
+test end
+test results: time for disabling interrupts (CLI)
+number of loops: 20000
+total time: 43977
+-> disabling interrupts (CLI) takes 2 cycles
+test end
+test results: time for disabling/enabling interrupts (STI/CLI)
+number of loops: 20000
+total time: 298773
+-> enabling/disabling interrupts (STI/CLI) takes 14 cycles
+test end
 
-Now if only I had the spare cash to go out and buy one of the shiny
-Intel ones for my laptop... :-)
+						Thanx, Paul
 
-Cheers,
-Kyle Moffett
+
+> If some of you would be kind enough to run my test module provided below
+> and provide the results of these tests on a recent kernel (2.6.26~2.6.29
+> should be good) along with their cpuinfo, I would greatly appreciate.
+> 
+> Here are the CAS results for various Intel-based architectures :
+> 
+> Architecture         | Speedup                      |      CAS     |         Interrupts         |
+>                      | (cli + sti) / local cmpxchg  | local | sync | Enable (sti) | Disable (cli)
+> -------------------------------------------------------------------------------------------------
+> Intel Pentium 4      | 5.24                         |  25   | 81   | 70           | 61          |
+> AMD Athlon(tm)64 X2  | 4.57                         |  7    | 17   | 17           | 15          |
+> Intel Core2          | 6.33                         |  6    | 30   | 20           | 18          |
+> Intel Xeon E5405     | 5.25                         |  8    | 24   | 20           | 22          |
+> 
+> The benefit expected on PowerPC, ia64 and alpha should principally come
+> from removed memory barriers in the local primitives.
+> 
+> Thanks,
+> 
+> Mathieu
+> 
+> P.S. please forgive the coding style and hackish interface. :)
+> 
+> 
+> /* test-cmpxchg-nolock.c
+>  *
+>  * Compare local cmpxchg with irq disable / enable.
+>  */
+> 
+> 
+> #include <linux/jiffies.h>
+> #include <linux/compiler.h>
+> #include <linux/init.h>
+> #include <linux/module.h>
+> #include <linux/math64.h>
+> #include <asm/timex.h>
+> #include <asm/system.h>
+> 
+> #define NR_LOOPS 20000
+> 
+> int test_val;
+> 
+> static void do_testbaseline(void)
+> {
+> 	unsigned long flags;
+> 	unsigned int i;
+> 	cycles_t time1, time2, time;
+> 	u32 rem;
+> 
+> 	local_irq_save(flags);
+> 	preempt_disable();
+> 	time1 = get_cycles();
+> 	for (i = 0; i < NR_LOOPS; i++) {
+> 		asm volatile ("");
+> 	}
+> 	time2 = get_cycles();
+> 	local_irq_restore(flags);
+> 	preempt_enable();
+> 	time = time2 - time1;
+> 
+> 	printk(KERN_ALERT "test results: time for baseline\n");
+> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
+> 	printk(KERN_ALERT "total time: %llu\n", time);
+> 	time = div_u64_rem(time, NR_LOOPS, &rem);
+> 	printk(KERN_ALERT "-> baseline takes %llu cycles\n", time);
+> 	printk(KERN_ALERT "test end\n");
+> }
+> 
+> static void do_test_sync_cmpxchg(void)
+> {
+> 	int ret;
+> 	unsigned long flags;
+> 	unsigned int i;
+> 	cycles_t time1, time2, time;
+> 	u32 rem;
+> 
+> 	local_irq_save(flags);
+> 	preempt_disable();
+> 	time1 = get_cycles();
+> 	for (i = 0; i < NR_LOOPS; i++) {
+> #ifdef CONFIG_X86_32
+> 		ret = sync_cmpxchg(&test_val, 0, 0);
+> #else
+> 		ret = cmpxchg(&test_val, 0, 0);
+> #endif
+> 	}
+> 	time2 = get_cycles();
+> 	local_irq_restore(flags);
+> 	preempt_enable();
+> 	time = time2 - time1;
+> 
+> 	printk(KERN_ALERT "test results: time for locked cmpxchg\n");
+> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
+> 	printk(KERN_ALERT "total time: %llu\n", time);
+> 	time = div_u64_rem(time, NR_LOOPS, &rem);
+> 	printk(KERN_ALERT "-> locked cmpxchg takes %llu cycles\n", time);
+> 	printk(KERN_ALERT "test end\n");
+> }
+> 
+> static void do_test_cmpxchg(void)
+> {
+> 	int ret;
+> 	unsigned long flags;
+> 	unsigned int i;
+> 	cycles_t time1, time2, time;
+> 	u32 rem;
+> 
+> 	local_irq_save(flags);
+> 	preempt_disable();
+> 	time1 = get_cycles();
+> 	for (i = 0; i < NR_LOOPS; i++) {
+> 		ret = cmpxchg_local(&test_val, 0, 0);
+> 	}
+> 	time2 = get_cycles();
+> 	local_irq_restore(flags);
+> 	preempt_enable();
+> 	time = time2 - time1;
+> 
+> 	printk(KERN_ALERT "test results: time for non locked cmpxchg\n");
+> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
+> 	printk(KERN_ALERT "total time: %llu\n", time);
+> 	time = div_u64_rem(time, NR_LOOPS, &rem);
+> 	printk(KERN_ALERT "-> non locked cmpxchg takes %llu cycles\n", time);
+> 	printk(KERN_ALERT "test end\n");
+> }
+> static void do_test_sync_inc(void)
+> {
+> 	int ret;
+> 	unsigned long flags;
+> 	unsigned int i;
+> 	cycles_t time1, time2, time;
+> 	u32 rem;
+> 	atomic_t val;
+> 
+> 	local_irq_save(flags);
+> 	preempt_disable();
+> 	time1 = get_cycles();
+> 	for (i = 0; i < NR_LOOPS; i++) {
+> 		ret = atomic_add_return(10, &val);
+> 	}
+> 	time2 = get_cycles();
+> 	local_irq_restore(flags);
+> 	preempt_enable();
+> 	time = time2 - time1;
+> 
+> 	printk(KERN_ALERT "test results: time for locked add return\n");
+> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
+> 	printk(KERN_ALERT "total time: %llu\n", time);
+> 	time = div_u64_rem(time, NR_LOOPS, &rem);
+> 	printk(KERN_ALERT "-> locked add return takes %llu cycles\n", time);
+> 	printk(KERN_ALERT "test end\n");
+> }
+> 
+> 
+> static void do_test_inc(void)
+> {
+> 	int ret;
+> 	unsigned long flags;
+> 	unsigned int i;
+> 	cycles_t time1, time2, time;
+> 	u32 rem;
+> 	local_t loc_val;
+> 
+> 	local_irq_save(flags);
+> 	preempt_disable();
+> 	time1 = get_cycles();
+> 	for (i = 0; i < NR_LOOPS; i++) {
+> 		ret = local_add_return(10, &loc_val);
+> 	}
+> 	time2 = get_cycles();
+> 	local_irq_restore(flags);
+> 	preempt_enable();
+> 	time = time2 - time1;
+> 
+> 	printk(KERN_ALERT "test results: time for non locked add return\n");
+> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
+> 	printk(KERN_ALERT "total time: %llu\n", time);
+> 	time = div_u64_rem(time, NR_LOOPS, &rem);
+> 	printk(KERN_ALERT "-> non locked add return takes %llu cycles\n", time);
+> 	printk(KERN_ALERT "test end\n");
+> }
+> 
+> 
+> 
+> /*
+>  * This test will have a higher standard deviation due to incoming interrupts.
+>  */
+> static void do_test_enable_int(void)
+> {
+> 	unsigned long flags;
+> 	unsigned int i;
+> 	cycles_t time1, time2, time;
+> 	u32 rem;
+> 
+> 	local_irq_save(flags);
+> 	preempt_disable();
+> 	time1 = get_cycles();
+> 	for (i = 0; i < NR_LOOPS; i++) {
+> 		local_irq_restore(flags);
+> 	}
+> 	time2 = get_cycles();
+> 	local_irq_restore(flags);
+> 	preempt_enable();
+> 	time = time2 - time1;
+> 
+> 	printk(KERN_ALERT "test results: time for enabling interrupts (STI)\n");
+> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
+> 	printk(KERN_ALERT "total time: %llu\n", time);
+> 	time = div_u64_rem(time, NR_LOOPS, &rem);
+> 	printk(KERN_ALERT "-> enabling interrupts (STI) takes %llu cycles\n",
+> 					time);
+> 	printk(KERN_ALERT "test end\n");
+> }
+> 
+> static void do_test_disable_int(void)
+> {
+> 	unsigned long flags, flags2;
+> 	unsigned int i;
+> 	cycles_t time1, time2, time;
+> 	u32 rem;
+> 
+> 	local_irq_save(flags);
+> 	preempt_disable();
+> 	time1 = get_cycles();
+> 	for ( i = 0; i < NR_LOOPS; i++) {
+> 		local_irq_save(flags2);
+> 	}
+> 	time2 = get_cycles();
+> 	local_irq_restore(flags);
+> 	preempt_enable();
+> 	time = time2 - time1;
+> 
+> 	printk(KERN_ALERT "test results: time for disabling interrupts (CLI)\n");
+> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
+> 	printk(KERN_ALERT "total time: %llu\n", time);
+> 	time = div_u64_rem(time, NR_LOOPS, &rem);
+> 	printk(KERN_ALERT "-> disabling interrupts (CLI) takes %llu cycles\n",
+> 				time);
+> 	printk(KERN_ALERT "test end\n");
+> }
+> 
+> static void do_test_int(void)
+> {
+> 	unsigned long flags;
+> 	unsigned int i;
+> 	cycles_t time1, time2, time;
+> 	u32 rem;
+> 
+> 	local_irq_save(flags);
+> 	preempt_disable();
+> 	time1 = get_cycles();
+> 	for (i = 0; i < NR_LOOPS; i++) {
+> 		local_irq_restore(flags);
+> 		local_irq_save(flags);
+> 	}
+> 	time2 = get_cycles();
+> 	local_irq_restore(flags);
+> 	preempt_enable();
+> 	time = time2 - time1;
+> 
+> 	printk(KERN_ALERT "test results: time for disabling/enabling interrupts (STI/CLI)\n");
+> 	printk(KERN_ALERT "number of loops: %d\n", NR_LOOPS);
+> 	printk(KERN_ALERT "total time: %llu\n", time);
+> 	time = div_u64_rem(time, NR_LOOPS, &rem);
+> 	printk(KERN_ALERT "-> enabling/disabling interrupts (STI/CLI) takes %llu cycles\n",
+> 					time);
+> 	printk(KERN_ALERT "test end\n");
+> }
+> 
+> 
+> 
+> static int ltt_test_init(void)
+> {
+> 	printk(KERN_ALERT "test init\n");
+> 	
+> 	do_testbaseline();
+> 	do_test_sync_cmpxchg();
+> 	do_test_cmpxchg();
+> 	do_test_sync_inc();
+> 	do_test_inc();
+> 	do_test_enable_int();
+> 	do_test_disable_int();
+> 	do_test_int();
+> 	return -EAGAIN; /* Fail will directly unload the module */
+> }
+> 
+> static void ltt_test_exit(void)
+> {
+> 	printk(KERN_ALERT "test exit\n");
+> }
+> 
+> module_init(ltt_test_init)
+> module_exit(ltt_test_exit)
+> 
+> MODULE_LICENSE("GPL");
+> MODULE_AUTHOR("Mathieu Desnoyers");
+> MODULE_DESCRIPTION("Cmpxchg vs int Test");
+> 
+> 
+> 
+> * Makefile
+> 
+> ifneq ($(KERNELRELEASE),)
+> 	obj-m += test-cmpxchg-nolock.o
+> else
+> 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+> 	PWD := $(shell pwd)
+> 	KERNELRELEASE = $(shell cat $(KERNELDIR)/$(KBUILD_OUTPUT)/include/linux/version.h | sed -n 's/.*UTS_RELEASE.*\"\(.*\)\".*/\1/p')
+> ifneq ($(INSTALL_MOD_PATH),)
+> 	DEPMOD_OPT := -b $(INSTALL_MOD_PATH)
+> endif
+> 
+> default:
+> 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
+> 
+> modules_install:
+> 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
+> 	if [ -f $(KERNELDIR)/$(KBUILD_OUTPUT)/System.map ] ; then /sbin/depmod -ae -F $(KERNELDIR)/$(KBUILD_OUTPUT)/System.map $(DEPMOD_OPT) $(KERNELRELEASE) ; fi
+> 
+> 
+> clean:
+> 	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
+> endif
+> 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
