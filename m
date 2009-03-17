@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761689AbZCQA7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760113AbZCQBNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761689AbZCQA7q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 20:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZCQA7g
+	id S1760113AbZCQBNt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 21:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbZCQBNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 20:59:36 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:44998 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751339AbZCQA7g (ORCPT
+	Mon, 16 Mar 2009 21:13:37 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:38137 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753276AbZCQBNg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 20:59:36 -0400
-Subject: Re: [PATCH] x86-paravirt: prevent gcc from generating the wrong
-	addressing mode
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <49BEEDC2.2070809@goop.org>
-References: <49BEEDC2.2070809@goop.org>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Mon, 16 Mar 2009 17:59:34 -0700
-Message-Id: <1237251574.5906.24.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+	Mon, 16 Mar 2009 21:13:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mHOaivsuxe2V/2JiMbspp5EFt4J12bm+3UVpLcp6UL9D9QvLfYSNqoSc2bHF2zN2Fh
+         DSefuaZN8uL0XIlOssVMmA2yTUUiY5FeZAX000qswSAnMtXgMqvRpSPix/GMoQS/FMUO
+         nxQihuKEGPW2pcdDlq4zsjLZTEfArfC7e8aNk=
+MIME-Version: 1.0
+In-Reply-To: <20090317093445G.fujita.tomonori@lab.ntt.co.jp>
+References: <43e72e890903161215u343cbb19v6d6cbf36794e252a@mail.gmail.com>
+	 <20090317093445G.fujita.tomonori@lab.ntt.co.jp>
+Date: Mon, 16 Mar 2009 18:13:34 -0700
+Message-ID: <43e72e890903161813q1e069891jb7c669a539e3ff7f@mail.gmail.com>
+Subject: Re: AMD Quad core - PCI-DMA: Out of IOMMU space on > 4 GB RAM
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-wireless@vger.kernel.org, joerg.roedel@amd.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Jeremy.
+On Mon, Mar 16, 2009 at 5:35 PM, FUJITA Tomonori
+<fujita.tomonori@lab.ntt.co.jp> wrote:
+> On Mon, 16 Mar 2009 12:15:37 -0700
+> "Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
+>
+>> I've run into "PCI-DMA: Out of IOMMU space" messages after loading and
+>> unloading a module 30 times. The interesting thing is this only
+>> happens if I have > 4 GB of memory. The box this occurs has AMD Phenom
+>> quad core CPU so I take it a harware IOMMU is being used. Below are
+>> example relevant messages with > 4 GB and then < 4 GB of memory. The
+>> driver I tested this with was ath9k. It could be an issue perhaps with
+>> ath9k but I am unable to find an issue in our probe/removal.
+>>
+>> Could this be an issue with the AMD IOMMU used? Or is it more likely a
+>> driver issue?
+>
+> ath9k wants DMA_32BIT_MASK, right? If so, GART IOMMU does nothing on a
+> system with < 4GB memory since ath9k can access to all the memory
+> addresses directly. With >4GB memory, GART needs to remap an address
+> higher than 4GB because ath9k wants DMA_32BIT_MASK.
+>
+> From a quick look, ath9k doesn't call pci_unmap_single for rx
+> buffers. Though I might be wrong because I don't know anything about
+> the driver.
 
-Acked-by: Alok N Kataria <akataria@vmware.com>
+You seem to be right actually, we were calling pci_unmap_single() for
+rx buffers on the RX tasklet but never for the simple case of removing
+the module. Will test it out in a bit.
 
-On Mon, 2009-03-16 at 17:24 -0700, Jeremy Fitzhardinge wrote:
-> When we generate a call sequence for calling a paravirtualized
-> function, we presume that the generated code is "call *0xXXXXX",
-> which is a 6 byte opcode; this is larger than a normal
-> direct call, and so we can patch a direct call over it.
-> 
-> At the moment, however we give gcc enough rope to hang us by
-> putting the address in a register and generating a two byte
-> indirect-via-register call.  Prevent this by explicitly
-> dereferencing the function pointer and passing it into the
-> asm as a constant.
-> 
-> This prevents crashes in VMI, as it cannot handle unpatchable
-> callsites.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> Cc: Alok Kataria <akataria@vmware.com>
-> 
-> diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-> index d4fec1f..6922d16 100644
-> --- a/arch/x86/include/asm/paravirt.h
-> +++ b/arch/x86/include/asm/paravirt.h
-> @@ -395,7 +395,7 @@ extern struct pv_lock_ops pv_lock_ops;
->  
->  #define paravirt_type(op)				\
->  	[paravirt_typenum] "i" (PARAVIRT_PATCH(op)),	\
-> -	[paravirt_opptr] "m" (op)
-> +	[paravirt_opptr] "i" (&(op))
->  #define paravirt_clobber(clobber)		\
->  	[paravirt_clobber] "i" (clobber)
->  
-> @@ -449,7 +449,7 @@ int paravirt_disable_iospace(void);
->   * offset into the paravirt_patch_template structure, and can therefore be
->   * freely converted back into a structure offset.
->   */
-> -#define PARAVIRT_CALL	"call *%[paravirt_opptr];"
-> +#define PARAVIRT_CALL	"call *%c[paravirt_opptr];"
->  
->  /*
->   * These macros are intended to wrap calls through one of the paravirt
-> 
-> 
-
+ Luis
