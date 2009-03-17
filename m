@@ -1,89 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZCQMfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760092AbZCQMky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbZCQMfZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 08:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbZCQMfK
+	id S1760092AbZCQMky (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 08:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZCQMkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 08:35:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54564 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750963AbZCQMfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 08:35:08 -0400
-Date: Tue, 17 Mar 2009 13:34:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Subject: Re: [patch 1/5] x86, bts: detect size of DS fields
-Message-ID: <20090317123442.GB22759@elte.hu>
-References: <20090313104218.A30096@sedona.ch.intel.com> <20090313110357.GC31094@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77E4A663C47@irsmsx504.ger.corp.intel.com> <20090317105558.GK6477@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77E4A664285@irsmsx504.ger.corp.intel.com>
+	Tue, 17 Mar 2009 08:40:45 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:50170 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753119AbZCQMko (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 08:40:44 -0400
+Date: Tue, 17 Mar 2009 18:10:31 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
+	cpuacct_charge() safe when rcupreempt is used.
+Message-ID: <20090317124031.GT16897@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090317061754.GD3314@in.ibm.com> <49BF42FB.4030103@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E4A664285@irsmsx504.ger.corp.intel.com>
+In-Reply-To: <49BF42FB.4030103@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Li Zefan <lizf@cn.fujitsu.com> [2009-03-17 14:28:11]:
 
-* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
-
-> >-----Original Message-----
-> >From: Ingo Molnar [mailto:mingo@elte.hu]
-> >Sent: Tuesday, March 17, 2009 11:56 AM
-> >To: Metzger, Markus T
+> Bharata B Rao wrote:
+> > cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
+> > 	rcupreempt is used.
+> > 
+> > cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
+> > This can race with the task's movement between cgroups. This race
+> > can cause an access to freed ca pointer in cpuacct_charge(). This will not
 > 
+> Actually it can also end up access invalid tsk->cgroups. ;)
 > 
-> >the bigger problem is the runtime failure (boot warning) that i
-> >reported. Hence i cannot apply any new patches yet until that is
-> >resolved.
-> 
-> I found your email at lkml.org.
+> get tsk->cgroups (cg)
+>                          (move tsk to another cgroup) or (tsk exiting)
+>                          -> kfree(tsk->cgroups)
+> get cg->subsys[..]
+>
 
-(i sent it to your intel.com address - perhaps it got dropped 
-there somehow?)
+That problem should only occur if we dereference tsk->cgroups
+separately and then use that to dereference cg->subsys. Since we use
+task_subsys_state() and that is RCU safe, we should be OK.
 
-> I think I found the problem:
->   ds_request_bts() needs to allocate a small amount of memory.
->   It uses GFP_KERNEL.
-> 
-> Hw-branch-tracer essentially does on_each_cpu(ds_request_bts()).
-> 
-> Since ds_request_bts() is meant to be called on the cpu that 
-> should be traced, it should use GFP_ATOMIC to allow calls from 
-> smp_call_function() and friends.
-> 
-> Would that be acceptable?
-
-That's not really a good solution - GFP_ATOMIC is not a reliable 
-form of allocation.
-
-the other callsites are buggy too:
-
-                smp_call_function_single(cpu, bts_trace_start_cpu, NULL, 1);
-
-done under the bts_tracer_lock in addition to an atomic IPI 
-context.
-
-for_each_online_cpu() done under the mutex would be better i 
-guess, plus you can allocate any memory before you do the SMP 
-cross-call, and pass it to the IPI handler via the data 
-parameter. (NULL in the sequence above)
-
-	Ingo
+-- 
+	Balbir
