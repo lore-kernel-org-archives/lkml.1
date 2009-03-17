@@ -1,91 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756313AbZCQCNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760444AbZCQCUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756313AbZCQCNX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 22:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbZCQCNM
+	id S1760444AbZCQCUc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 22:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZCQCUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 22:13:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56121 "EHLO hera.kernel.org"
+	Mon, 16 Mar 2009 22:20:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:39878 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752576AbZCQCNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 22:13:10 -0400
-Date: Tue, 17 Mar 2009 02:12:34 GMT
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, jeremy@goop.org, hpa@zytor.com,
-       mingo@redhat.com, akataria@vmware.com, tglx@linutronix.de,
-       jeremy.fitzhardinge@citrix.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, akataria@vmware.com,
-       jeremy.fitzhardinge@citrix.com
-In-Reply-To: <49BEEDC2.2070809@goop.org>
-References: <49BEEDC2.2070809@goop.org>
-Subject: [tip:x86/urgent] x86, paravirt: prevent gcc from generating the wrong addressing mode
-Message-ID: <tip-42854dc0a6320ff36722749acafa0697522d9556@git.kernel.org>
-Git-Commit-ID: 42854dc0a6320ff36722749acafa0697522d9556
-X-Mailer: tip-git-log-daemon
+	id S1752657AbZCQCUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 22:20:22 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] module: fix refptr allocation and release order
+Date: Tue, 17 Mar 2009 12:50:15 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "systemtap-ml" <systemtap@sources.redhat.com>,
+       Eric Dumazet <dada1@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 17 Mar 2009 02:12:37 +0000 (UTC)
+Message-Id: <200903171250.16585.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  42854dc0a6320ff36722749acafa0697522d9556
-Gitweb:     http://git.kernel.org/tip/42854dc0a6320ff36722749acafa0697522d9556
-Author:     Jeremy Fitzhardinge <jeremy@goop.org>
-AuthorDate: Mon, 16 Mar 2009 17:24:34 -0700
-Commit:     H. Peter Anvin <hpa@zytor.com>
-CommitDate: Mon, 16 Mar 2009 18:36:31 -0700
+From: Masami Hiramatsu <mhiramat@redhat.com>
 
-x86, paravirt: prevent gcc from generating the wrong addressing mode
+Impact: fix ref-after-free crash on failed module load
 
-Impact: fix crash on VMI (VMware)
+Fix refptr bug: Change refptr allocation and release order not to access a module
+data structure pointed by 'mod' after freeing mod->module_core.
+This bug will cause kernel panic(e.g. failed to find undefined symbols).
 
-When we generate a call sequence for calling a paravirtualized
-function, we presume that the generated code is "call *0xXXXXX",
-which is a 6 byte opcode; this is larger than a normal
-direct call, and so we can patch a direct call over it.
+This bug was reported on systemtap bugzilla.
+http://sources.redhat.com/bugzilla/show_bug.cgi?id=9927
 
-At the moment, however we give gcc enough rope to hang us by
-putting the address in a register and generating a two byte
-indirect-via-register call.  Prevent this by explicitly
-dereferencing the function pointer and passing it into the
-asm as a constant.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-This prevents crashes in VMI, as it cannot handle unpatchable
-callsites.
+diff --git a/kernel/module.c b/kernel/module.c
+index ba22484..1196f5d 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2015,14 +2015,6 @@ static noinline struct module *load_module(void __user *umod,
+ 	if (err < 0)
+ 		goto free_mod;
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Alok Kataria <akataria@vmware.com>
-LKML-Reference: <49BEEDC2.2070809@goop.org>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+-#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
+-	mod->refptr = percpu_modalloc(sizeof(local_t), __alignof__(local_t),
+-				      mod->name);
+-	if (!mod->refptr) {
+-		err = -ENOMEM;
+-		goto free_mod;
+-	}
+-#endif
+ 	if (pcpuindex) {
+ 		/* We have a special allocation for this section. */
+ 		percpu = percpu_modalloc(sechdrs[pcpuindex].sh_size,
+@@ -2030,7 +2022,7 @@ static noinline struct module *load_module(void __user *umod,
+ 					 mod->name);
+ 		if (!percpu) {
+ 			err = -ENOMEM;
+-			goto free_percpu;
++			goto free_mod;
+ 		}
+ 		sechdrs[pcpuindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
+ 		mod->percpu = percpu;
+@@ -2082,6 +2074,14 @@ static noinline struct module *load_module(void __user *umod,
+ 	/* Module has been moved. */
+ 	mod = (void *)sechdrs[modindex].sh_addr;
 
++#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
++	mod->refptr = percpu_modalloc(sizeof(local_t), __alignof__(local_t),
++				      mod->name);
++	if (!mod->refptr) {
++		err = -ENOMEM;
++		goto free_init;
++	}
++#endif
+ 	/* Now we've moved module, initialize linked lists, etc. */
+ 	module_unload_init(mod);
 
----
- arch/x86/include/asm/paravirt.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index e299287..0c212d5 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -360,7 +360,7 @@ extern struct pv_lock_ops pv_lock_ops;
- 
- #define paravirt_type(op)				\
- 	[paravirt_typenum] "i" (PARAVIRT_PATCH(op)),	\
--	[paravirt_opptr] "m" (op)
-+	[paravirt_opptr] "i" (&(op))
- #define paravirt_clobber(clobber)		\
- 	[paravirt_clobber] "i" (clobber)
- 
-@@ -412,7 +412,7 @@ int paravirt_disable_iospace(void);
-  * offset into the paravirt_patch_template structure, and can therefore be
-  * freely converted back into a structure offset.
-  */
--#define PARAVIRT_CALL	"call *%[paravirt_opptr];"
-+#define PARAVIRT_CALL	"call *%c[paravirt_opptr];"
- 
- /*
-  * These macros are intended to wrap calls through one of the paravirt
+@@ -2288,15 +2288,17 @@ static noinline struct module *load_module(void __user *umod,
+ 	ftrace_release(mod->module_core, mod->core_size);
+  free_unload:
+ 	module_unload_free(mod);
++ free_init:
++#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
++	percpu_modfree(mod->refptr);
++#endif
+ 	module_free(mod, mod->module_init);
+  free_core:
+ 	module_free(mod, mod->module_core);
++	/* mod will be freed with core. Don't access it beyond this line! */
+  free_percpu:
+ 	if (percpu)
+ 		percpu_modfree(percpu);
+-#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
+-	percpu_modfree(mod->refptr);
+-#endif
+  free_mod:
+ 	kfree(args);
+  free_hdr:
