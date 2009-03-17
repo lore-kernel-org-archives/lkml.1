@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbZCQSuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760144AbZCQSyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759605AbZCQSuY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 14:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757435AbZCQSuJ
+	id S1760144AbZCQSyZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 14:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbZCQSyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 14:50:09 -0400
-Received: from mx1.suse.de ([195.135.220.2]:34710 "EHLO mx1.suse.de"
+	Tue, 17 Mar 2009 14:54:17 -0400
+Received: from www.tglx.de ([62.245.132.106]:41484 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757025AbZCQSuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 14:50:08 -0400
-From: Jan Kara <jack@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>
-Subject: [PATCH 1/4] ext3: Fix false EIO errors
-Date: Tue, 17 Mar 2009 18:33:52 +0100
-Message-Id: <1237311235-13623-2-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1237311235-13623-1-git-send-email-jack@suse.cz>
-References: <n>
- <1237311235-13623-1-git-send-email-jack@suse.cz>
+	id S1754173AbZCQSyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 14:54:16 -0400
+Date: Tue, 17 Mar 2009 19:53:00 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: mpparse cleanup
+In-Reply-To: <1237314836.3212.10.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0903171952400.29264@localhost.localdomain>
+References: <1237314836.3212.10.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When machine is under heavy memory pressure, it can happen that the page
-we want to copy data from is paged out from memory before we copy data
-from it and thus we are called with copied == 0. Generally, we should
-not file buffers into journal lists if the don't really contain uptodate
-data. So fix the range of buffers we file to journal list to contain
-only buffers with copied data.
+On Wed, 18 Mar 2009, Jaswinder Singh Rajput wrote:
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/ext3/inode.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> The following changes since commit 0ca0f16fd17c5d880dd0abbe03595b0c7c5b3c95:
+>   Ingo Molnar (1):
+>         Merge branches 'x86/apic', 'x86/asm', 'x86/cleanups', 'x86/debug', 'x86/kconfig', 'x86/mm', 'x86/ptrace', 'x86/setup' and 'x86/urgent'; commit 'v2.6.29-rc8' into x86/core
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git x86/core
+> 
+> Jaswinder Singh Rajput (1):
+>       x86: mpparse cleanup
+> 
+>  arch/x86/kernel/mpparse.c |  311 +++++++++++++++++++++------------------------
+>  1 files changed, 146 insertions(+), 165 deletions(-)
 
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index 5fa453b..62005c0 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -1261,7 +1261,7 @@ static int ext3_ordered_write_end(struct file *file,
- 	int ret = 0, ret2;
+   -ENOPATCH
  
- 	from = pos & (PAGE_CACHE_SIZE - 1);
--	to = from + len;
-+	to = from + copied;
- 
- 	ret = walk_page_buffers(handle, page_buffers(page),
- 		from, to, NULL, ext3_journal_dirty_data);
--- 
-1.6.0.2
-
