@@ -1,98 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbZCQSNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbZCQSP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755706AbZCQSNK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 14:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbZCQSM4
+	id S1758056AbZCQSP0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 14:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbZCQSPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 14:12:56 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:43101 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbZCQSMz (ORCPT
+	Tue, 17 Mar 2009 14:15:11 -0400
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:24497 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753539AbZCQSPJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 14:12:55 -0400
-To: Zhang Le <r0bertz@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, alan@redhat.com,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH] filp->f_pos not correctly updated in proc_task_readdir
-References: <1237185871-3343-1-git-send-email-r0bertz@gentoo.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 17 Mar 2009 11:12:48 -0700
-In-Reply-To: <1237185871-3343-1-git-send-email-r0bertz@gentoo.org> (Zhang Le's message of "Mon\, 16 Mar 2009 14\:44\:31 +0800")
-Message-ID: <m17i2okogv.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 17 Mar 2009 14:15:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=GnhJYoGsLXoBGmD85KjY7Ezf62v4bry3wWRMF2irxsZ8w1GQSVCb+kG+hUkTk86NesHxxiz0Bd+kB1JnWQFrFt4upR43LqnLqNa9ACS4KGE+oRPfeXJLy2yBEQQyE0L4FRju3EAqPkNxT994U6mmbxlIL+4hQ0wBWCq/6gIV8NI=  ;
+X-YMail-OSG: zQuBNpYVM1l6LvjTHihVpKJCT4Ta1xhthpYS725d1uyzmD5xVwCXFM_VOcr8TdcXuLSBxf3BpFeevoFwaCoP77hpspY9yBPmqVhLsad_7GiZkCV72N97BOiNQ2bUtqub9anKiUQe3oVcdz0dMny80yACmAuuBtCYo8fd2EfcePK6mSJr0DvNrErdR3GJ
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch 2.6.29-rc8 regulator-next] regulator: init fixes (v4)
+Date: Tue, 17 Mar 2009 11:15:06 -0700
+User-Agent: KMail/1.9.10
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+References: <200903111743.34708.david-b@pacbell.net> <200903142105.29382.david-b@pacbell.net> <20090316215422.GA6433@sirena.org.uk>
+In-Reply-To: <20090316215422.GA6433@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903171115.06685.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zhang Le <r0bertz@gentoo.org> writes:
+On Monday 16 March 2009, Mark Brown wrote:
+> On Sat, Mar 14, 2009 at 09:05:29PM -0700, David Brownell wrote:
+> 
+> > was called.  It's not exactly hard to check if it was enabled, then
+> > act accordingly, in the typical "single consumer of the regulator"
+> > case.
+> 
+> How typical that is depends very much on the devices you're looking at.
 
-> filp->f_pos only get updated at the end of the function. Thus d_off of those
-> dirents who are in the middle will be 0, and this will cause a problem in
-> glibc's readdir implementation, specifically endless loop. Because when overflow
-> occurs, f_pos will be set to next dirent to read, however it will be 0, unless
-> the next one is the last one. So it will start over again and again.
->
-> There is a sample program in man 2 gendents. This is the output of the program
-> running on a multithread program's task dir before this patch is applied:
->
-> $ ./a.out /proc/3807/task
-> --------------- nread=128 ---------------
-> i-node#  file type  d_reclen  d_off   d_name
->   506442  directory    16          1  .
->   506441  directory    16          0  ..
->   506443  directory    16          0  3807
->   506444  directory    16          0  3809
->   506445  directory    16          0  3812
->   506446  directory    16          0  3861
->   506447  directory    16          0  3862
->   506448  directory    16          8  3863
->
-> This is the output after this patch is applied
->
-> $ ./a.out /proc/3807/task
-> --------------- nread=128 ---------------
-> i-node#  file type  d_reclen  d_off   d_name
->   506442  directory    16          1  .
->   506441  directory    16          2  ..
->   506443  directory    16          3  3807
->   506444  directory    16          4  3809
->   506445  directory    16          5  3812
->   506446  directory    16          6  3861
->   506447  directory    16          7  3862
->   506448  directory    16          8  3863
+I'd have said "systems you're looking at" ... but so long
+as the boot_on flag exists, then this issue can appear with
+absolutely any regulator, used for anything.
 
-I'm trying to understand what the problem that glibc
-runs into.  Is this the glibc seekdir madness?
+The basic issue addressed by $SUBJECT patch just restores
+internal consistency to the framework, in the face of such
+flags (or equivalent actions by the boot loader).
 
-Under which conditions have you seen this problem?
 
-The reason I ask is if this is triggered by seekdir and people really
-care then the current proc_task_readdir for the /proc/<pid>/task/
-directories is not quite sufficient.  As threads come and go the d_off
-associated with a specific thread will change.
+> Devices that need to do things like set voltages are fairly likely to
+> own the regulator but with devices that just need to ensure that they
+> have their supplies enabled it's much more likely that the supplies will
+> be shared.
 
-Which means we probably should be returning:
+Right.  Do you have a model how such shared supplies would
+coexist with the "enabled at boot time" model, and still
+support being disabled?
 
-$ ./a.out /proc/3807/task
---------------- nread=128 ---------------
-i-node#  file type  d_reclen  d_off   d_name
-  506442  directory    16          1  .
-  506441  directory    16          2  ..
-  506443  directory    16          3809  3807
-  506444  directory    16          3811  3809
-  506445  directory    16          3814  3812
-  506446  directory    16          3863  3861
-  506447  directory    16          3864  3862
-  506448  directory    16          3865  3863
+My first thought is that the system designer should avoid
+such boot_on modes.  But that's not always going to work.
 
-Which is slightly better unfortunately it doesn't give us the
-guarantee that the d_off will be continually increasing.
+- Dave
 
-Eric
