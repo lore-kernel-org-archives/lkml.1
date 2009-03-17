@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763443AbZCQMyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762388AbZCQM4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763443AbZCQMyj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 08:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbZCQMyI
+	id S1762388AbZCQM4k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 08:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZCQM4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 08:54:08 -0400
-Received: from crux.i-cable.com ([203.83.115.104]:32837 "HELO crux.i-cable.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753527AbZCQMyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 08:54:05 -0400
-Date: Tue, 17 Mar 2009 20:53:47 +0800
-From: Zhang Le <r0bertz@gentoo.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org, alan@redhat.com
-Subject: Re: [PATCH] filp->f_pos not correctly updated in proc_task_readdir
-Message-ID: <20090317125346.GA22268@adriano.hkcable.com.hk>
-References: <1237185871-3343-1-git-send-email-r0bertz@gentoo.org> <20090316083457.GV28946@ZenIV.linux.org.uk> <20090317103744.GA2399@x200.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090317103744.GA2399@x200.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 17 Mar 2009 08:56:30 -0400
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:63891 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751282AbZCQM42 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 08:56:28 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [RFC Aufs2 #2 21/28] aufs sysfs entries 
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20090317103923.GA4630@ioremap.net>
+References: <1237188040-11404-1-git-send-email-hooanon05@yahoo.co.jp> <1237188040-11404-22-git-send-email-hooanon05@yahoo.co.jp> <20090316180538.GA7069@kroah.com> <7200.1237260402@jrobl> <20090317033747.GA17037@kroah.com> <7974.1237262747@jrobl> <20090317103923.GA4630@ioremap.net>
+Date: Tue, 17 Mar 2009 21:56:11 +0900
+Message-ID: <13217.1237294571@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13:37 Tue 17 Mar     , Alexey Dobriyan wrote:
-> On Mon, Mar 16, 2009 at 08:34:57AM +0000, Al Viro wrote:
-> > On Mon, Mar 16, 2009 at 02:44:31PM +0800, Zhang Le wrote:
-> > > filp->f_pos only get updated at the end of the function. Thus d_off of those
-> > > dirents who are in the middle will be 0, and this will cause a problem in
-> > > glibc's readdir implementation, specifically endless loop. Because when overflow
-> > > occurs, f_pos will be set to next dirent to read, however it will be 0, unless
-> > > the next one is the last one. So it will start over again and again.
-> > 
-> > Eh...  Here's what's really going on:
-> > 
-> > proc_..._fill_cache() API is rather kludgy and far too convoluted.  In
-> > particular, it calls filldir() and passes file->f_pos to it, expecting
-> > the caller to update file->f_pos between the calls.  proc_task_readdir()
-> > uses that sucker, but doesn't update ->f_pos until the very end.  As
-> > the result, d_off of direntries produced by it gets screwed.
-> > Broken-by: commit 61a28784028e6d55755e4d0f39bee8d9bf2ee8d9
-> > Author: Eric W. Biederman <ebiederm@xmission.com>
-> > Date:   Mon Oct 2 02:18:49 2006 -0700
-> > 
-> >     [PATCH] proc: Remove the hard coded inode numbers
-> > 
-> > Patch is fine, but I'd rather rip the layers of ..._fill_cache() abstractions
-> > out and see what falls out.  Anyway, for -rc your variant is definitely the
-> > way to go.
-> 
-> Except this bit:
-> 
-> fs/built-in.o: In function `proc_task_readdir':
-> compr_zlib.c:(.text+0x434b8): undefined reference to `__cmpdi2'
-> compr_zlib.c:(.text+0x434d4): undefined reference to `__cmpdi2'
 
-Hi, I am sorry but I can't reproduce this.
-Are you sure this only happens after applying my patch?
-Would you please provide your fs/jffs2/compr_zlib.o and fs/proc/base.o?
-And what is your gcc version? I am using gcc 4.4 snapshot rev. 144705
-Thanks!
+Evgeniy Polyakov:
+> On Tue, Mar 17, 2009 at 01:05:47PM +0900, hooanon05@yahoo.co.jp (hooanon05@yahoo.co.jp) wrote:
+> > Is the limit of PATH_MAX applied to the absolute path too?
+> 
+> No, only path used in the given operation (related or absolute) is
+> limited. If related path is converted into the absolute just for the
+> purpose of dump and not to be used in some syscall, it can have any
+> length, so you may need to rethink which pathes are presented in sysfs
+> and what should be moved outside.
 
-Zhang, Le
-http://zhangle.is-a-geek.org
+As a result, current code is implemented.
+- aufs entries under sysfs print the absolute path.
+- sets limit (PAGE_SIZE) to its length.
+- and I think it is enough.
+
+Theoretically, every entries under procfs (or sysfs?) which contains the
+absolute path have this problem.
+
+
+J. R. Okajima
