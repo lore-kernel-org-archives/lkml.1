@@ -1,149 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbZCQAfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761902AbZCQAgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758565AbZCQAfN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 20:35:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZCQAe6
+	id S1761902AbZCQAgt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 20:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZCQAgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 20:34:58 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:56732 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbZCQAe5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 20:34:57 -0400
-Date: Mon, 16 Mar 2009 20:34:26 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       ltt-dev@lists.casi.polymtl.ca, danymadden@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kernel/irq/handle.c fix kstat_irqs_cpu and irq_to_desc
-	symbols v2
-Message-ID: <20090317003426.GC3873@zod.rchland.ibm.com>
-References: <20090316182227.GA2444@yoda.jdub.homelinux.org> <20090316194459.GD11878@Krystal> <20090316200115.GA22538@yoda.jdub.homelinux.org> <20090316202500.GA13872@Krystal> <20090316205829.GB22538@yoda.jdub.homelinux.org> <20090316215337.GB15119@Krystal> <20090316220518.GD22538@yoda.jdub.homelinux.org> <20090316231122.GA18113@Krystal> <alpine.LFD.2.00.0903170048120.29264@localhost.localdomain> <20090317000859.GB19848@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090317000859.GB19848@Krystal>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 16 Mar 2009 20:36:38 -0400
+Received: from sh.osrg.net ([192.16.179.4]:60762 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753129AbZCQAgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 20:36:37 -0400
+Date: Tue, 17 Mar 2009 09:35:45 +0900
+To: mcgrof@gmail.com
+Cc: linux-wireless@vger.kernel.org, joerg.roedel@amd.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: Re: AMD Quad core - PCI-DMA: Out of IOMMU space on > 4 GB RAM
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <43e72e890903161215u343cbb19v6d6cbf36794e252a@mail.gmail.com>
+References: <43e72e890903161215u343cbb19v6d6cbf36794e252a@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090317093445G.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 17 Mar 2009 09:35:46 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 08:08:59PM -0400, Mathieu Desnoyers wrote:
->* Thomas Gleixner (tglx@linutronix.de) wrote:
->> Is this a contribution to the "most useless patch of the week"
->> contest ?
->> 
->> You have my vote.
->> 
->
->Count mine too ! :) Actually, this was not what it should look like.
->Here is my version. I am not totally convinced that the struct irq_desc
->is absolutely required, but in some include orders, it might matter.
->However, the #endif around the EXPORT_SYMBOL is definitely needed.
->
->Best regards,
->
->Mathieu
->
->kernel/irq/handle.c fix kstat_irqs_cpu and irq_to_desc symbols v2
->
->On Mon, Mar 16, 2009 at 05:53:37PM -0400, Mathieu Desnoyers wrote:
->>* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
->>> On Mon, Mar 16, 2009 at 04:25:00PM -0400, Mathieu Desnoyers wrote:
->>> >* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
->>> >> On Mon, Mar 16, 2009 at 03:44:59PM -0400, Mathieu Desnoyers wrote:
->>> >> >* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
->>> >> >> Hi All,
->>> >> >> 
->>> >> >> I was attempting to build a simple ppc64_defconfig using
->>> >> >> the latest LTTng tag from git.  When doing a:
->>> >> >> 
->>> >> >> 	make ppc64_defconfig
->>> >> >> 	make
->>> >> >> 
->>> >> >> I get the error below.
->>> >> >> 
->>> >> >
->>> >> >Hi Josh,
->>> >> >
->>> >> >Yes, LTTng has been tested with slub, but not for the powerpc64
->>> >> >cross-build. Thanks for the report, this is actually a header circular
->>> >> >dependency I caused. It should be fixed in LTTng 0.111.
->>> >> 
->>> >> Bah. Yes, I should have clarified on ppc/ppc64.  Sorry for the confusion
->>> >> there.
->>> >> 
->>> >> >I'll have to update my powerpc64 cross compiler to test it, because I am
->>> >> >stucked with a broken gcc 4.1. Please tell me if 0.111 fixes the problem
->>> >> >for you or if you encounter other problems.
->>> >> 
->>> >> Yep, the extern on tb_ticks_per_sec is what I had come up with locally.
->>> >> It should work fine, and does indeed get past the error I was seeing.  The
->>> >> build now dies with:
->>> >> 
->>> >> kernel/irq/handle.c:259: error: __ksymtab_irq_to_desc causes a section type conflict
->>> >> kernel/irq/handle.c:259: error: __ksymtab_irq_to_desc causes a section type conflict
->>> >> make[2]: *** [kernel/irq/handle.o] Error 1
->>> >> make[1]: *** [kernel/irq] Error 2
->>> >> make: *** [kernel] Error 2
->>> >> make: *** Waiting for unfinished jobs....
->>> >> 
->>> >
->>> >Can I get your full .config ?
->>> 
->>> Sure, attached.  Note, this is just:
->>> 
->>> make ppc64_defconfig
->>> make vmlinux
->>> 
->>> josh
->>
->>Can you try moving this code around ?
->
->Yep, allows vmlinux and modules to build just fine.  Here's a patch for you ;)
->
->Based on a patch from Josh Boyer <jwboyer@linux.vnet.ibm.com>, updated by
->Mathieu Desnoyers.
+On Mon, 16 Mar 2009 12:15:37 -0700
+"Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
 
-You don't need to credit me here.  All I did was take your "Can you try moving
-this code around" sequence and actually turn it into patch format.
+> I've run into "PCI-DMA: Out of IOMMU space" messages after loading and
+> unloading a module 30 times. The interesting thing is this only
+> happens if I have > 4 GB of memory. The box this occurs has AMD Phenom
+> quad core CPU so I take it a harware IOMMU is being used. Below are
+> example relevant messages with > 4 GB and then < 4 GB of memory. The
+> driver I tested this with was ath9k. It could be an issue perhaps with
+> ath9k but I am unable to find an issue in our probe/removal.
+> 
+> Could this be an issue with the AMD IOMMU used? Or is it more likely a
+> driver issue?
 
-I do agree the #endif move is needed in the builds I was trying though.
+ath9k wants DMA_32BIT_MASK, right? If so, GART IOMMU does nothing on a
+system with < 4GB memory since ath9k can access to all the memory
+addresses directly. With >4GB memory, GART needs to remap an address
+higher than 4GB because ath9k wants DMA_32BIT_MASK.
 
-josh
+>From a quick look, ath9k doesn't call pci_unmap_single for rx
+buffers. Though I might be wrong because I don't know anything about
+the driver.
 
->Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->---
-> include/linux/irqnr.h |    1 +
-> kernel/irq/handle.c   |    2 +-
-> 2 files changed, 2 insertions(+), 1 deletion(-)
->
->Index: linux-2.6-lttng/include/linux/irqnr.h
->===================================================================
->--- linux-2.6-lttng.orig/include/linux/irqnr.h	2009-03-16 18:45:40.000000000 -0400
->+++ linux-2.6-lttng/include/linux/irqnr.h	2009-03-16 19:45:26.000000000 -0400
->@@ -23,6 +23,7 @@
-> #else /* CONFIG_GENERIC_HARDIRQS */
->
-> extern int nr_irqs;
->+struct irq_desc;
-> extern struct irq_desc *irq_to_desc(unsigned int irq);
->
-> # define for_each_irq_desc(irq, desc)					\
->Index: linux-2.6-lttng/kernel/irq/handle.c
->===================================================================
->--- linux-2.6-lttng.orig/kernel/irq/handle.c	2009-03-16 18:45:40.000000000 -0400
->+++ linux-2.6-lttng/kernel/irq/handle.c	2009-03-16 19:44:05.000000000 -0400
->@@ -473,6 +473,6 @@ unsigned int kstat_irqs_cpu(unsigned int
-> 	struct irq_desc *desc = irq_to_desc(irq);
-> 	return desc ? desc->kstat_irqs[cpu] : 0;
-> }
->-#endif
-> EXPORT_SYMBOL(kstat_irqs_cpu);
->+#endif
->
->
->-- 
->Mathieu Desnoyers
->OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] ath9k: fix dma mapping leak of rx buffer
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ drivers/net/wireless/ath9k/recv.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/wireless/ath9k/recv.c b/drivers/net/wireless/ath9k/recv.c
+index 462e08c..cd2a1f6 100644
+--- a/drivers/net/wireless/ath9k/recv.c
++++ b/drivers/net/wireless/ath9k/recv.c
+@@ -322,8 +322,11 @@ void ath_rx_cleanup(struct ath_softc *sc)
+ 
+ 	list_for_each_entry(bf, &sc->rx.rxbuf, list) {
+ 		skb = bf->bf_mpdu;
+-		if (skb)
++		if (skb) {
++			pci_unmap_single(sc->pdev, bf->bf_buf_addr,
++					 sc->rx.bufsize, PCI_DMA_FROMDEVICE);
+ 			dev_kfree_skb(skb);
++		}
+ 	}
+ 
+ 	if (sc->rx.rxdma.dd_desc_len != 0)
+-- 
+1.6.0.6
+
+
