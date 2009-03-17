@@ -1,39 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762925AbZCQI2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762946AbZCQIaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762925AbZCQI2U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 04:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762529AbZCQI1z
+	id S1762946AbZCQIaR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 04:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZCQIaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 04:27:55 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:13269 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761232AbZCQI1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 04:27:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=jW4HGvxrdyX1j7lxs9aK3YEXxwe9E0cHA8+5Www/2q8w1+1FuesAHK9B8zpOon/4Yk
-         vlb91kSDlvkmXxT5xWVq9av3HANGc7aJfN7WhkTGaChnb2Zxnzen3EONTO/+8rOf5ZIT
-         +59cR0oKhu0Zk2RLy9ART3O+yDkhJ2oDKHogg=
+	Tue, 17 Mar 2009 04:30:01 -0400
+Received: from www.tglx.de ([62.245.132.106]:34154 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754064AbZCQIaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 04:30:00 -0400
+Date: Tue, 17 Mar 2009 09:29:35 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Ingo Molnar <mingo@elte.hu>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       ltt-dev@lists.casi.polymtl.ca, danymadden@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kernel/irq/handle.c fix kstat_irqs_cpu and irq_to_desc
+ symbols v2
+In-Reply-To: <20090317000859.GB19848@Krystal>
+Message-ID: <alpine.LFD.2.00.0903170919310.29264@localhost.localdomain>
+References: <20090316182227.GA2444@yoda.jdub.homelinux.org> <20090316194459.GD11878@Krystal> <20090316200115.GA22538@yoda.jdub.homelinux.org> <20090316202500.GA13872@Krystal> <20090316205829.GB22538@yoda.jdub.homelinux.org> <20090316215337.GB15119@Krystal>
+ <20090316220518.GD22538@yoda.jdub.homelinux.org> <20090316231122.GA18113@Krystal> <alpine.LFD.2.00.0903170048120.29264@localhost.localdomain> <20090317000859.GB19848@Krystal>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090317082549.GA5127@orion>
-References: <20090317082549.GA5127@orion>
-Date: Tue, 17 Mar 2009 11:27:49 +0300
-Message-ID: <a4423d670903170127gb874569x544115958be1e7db@mail.gmail.com>
-Subject: Re: [PATCH next] slob: fix build problem
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Nick Piggin <npiggin@suse.de>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/3/17 Alexander Beregalov <a.beregalov@gmail.com>:
-> mm/slob.c: In function '__kmalloc_node':
-> mm/slob.c:480: error: 'flags' undeclared (first use in this function)
+On Mon, 16 Mar 2009, Mathieu Desnoyers wrote:
 
-Oh, I see yesterday discussion, sorry.
+> * Thomas Gleixner (tglx@linutronix.de) wrote:
+> > Is this a contribution to the "most useless patch of the week"
+> > contest ?
+> > 
+> > You have my vote.
+> > 
+> 
+> Count mine too ! :) Actually, this was not what it should look like.
+> Here is my version. I am not totally convinced that the struct irq_desc
+> is absolutely required, but in some include orders, it might matter.
+
+I have not seen a compile failure report yet.
+
+> However, the #endif around the EXPORT_SYMBOL is definitely needed.
+
+Right.
+
+>  	struct irq_desc *desc = irq_to_desc(irq);
+>  	return desc ? desc->kstat_irqs[cpu] : 0;
+>  }
+> -#endif
+>  EXPORT_SYMBOL(kstat_irqs_cpu);
+> +#endif
+
+Thanks,
+
+	tglx
