@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbZCQUTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbZCQU15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756744AbZCQUTd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 16:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbZCQUTW
+	id S1754672AbZCQU15 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 16:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbZCQU1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 16:19:22 -0400
-Received: from mail-qy0-f122.google.com ([209.85.221.122]:47034 "EHLO
-	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754155AbZCQUTV (ORCPT
+	Tue, 17 Mar 2009 16:27:48 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:28786 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752863AbZCQU1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 16:19:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=WDoXfozm4QHTS6JA6+WdghhzODmX7bg+bi0L49kab0Gwp3ANy565fK3TBvgyx5boxj
-         H5d2pP7ddrd44kiPS57bS5eOcBAEvE7InksNMI9cfaZDBq7a1MP0JcroWjztnO4NxelK
-         UXrOKZhkaiaERLdhUhn23g85H5YcHu0ybByDg=
+	Tue, 17 Mar 2009 16:27:47 -0400
+Message-ID: <49C00787.6060401@oracle.com>
+Date: Tue, 17 Mar 2009 13:26:47 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Date: Tue, 17 Mar 2009 13:19:18 -0700
-Message-ID: <72dbd3150903171319u567fc267m36857506c024315d@mail.gmail.com>
-Subject: Large write = large latency for small writes
-From: David Rees <drees76@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org, mfasheh@suse.com
+Subject: Re: Linux 2.6.28.8 (ocfs2 build failure)
+References: <20090317012028.GA32410@kroah.com>
+In-Reply-To: <20090317012028.GA32410@kroah.com>
+Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.49C00707.0213:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a fairly active bug 12309 "Large I/O operations result in
-slow performance and high iowait times" [1] which has gotten rather
-large an unwieldy due to the number of participants and confusion due
-to what appears to be multiple bugs in either the schedule or IO
-request merging layers.
+Enable all possible OCFS2 kconfig options:
 
-I encountered this bug when seeing some horrible latency on a NFS
-client while the server was performing heavy IO [2] and initially
-thought it was a NFS bug, but later found that NFS only makes it worse
-because writes over NFS are synchronous by default.
 
-I have a simple test case which demonstrates the huge increase in
-write latency that occurs for small writes when a large disk
-saturating write is also in progress [3]:
 
-dd if=/dev/zero of=/tmp/bigfile bs=1M count=10000 conv=fdatasync &
-sleep 10
-time dd if=/dev/zero of=/tmp/smallfile bs=4k count=1 conv=fdatasync
+In file included from fs/ocfs2/alloc.c:42:
+fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
+fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
+fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
+fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
+  CC [M]  fs/ocfs2/buffer_head_io.o
+In file included from fs/ocfs2/aops.c:42:
+fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
+fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
+fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
+fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
+make[2]: *** [fs/ocfs2/aops.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
+In file included from fs/ocfs2/buffer_head_io.c:37:
+fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
+fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
+fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
+fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
+make[2]: *** [fs/ocfs2/buffer_head_io.o] Error 1
+make[2]: *** [fs/ocfs2/alloc.o] Error 1
 
-On a handful of systems I have access to, it took anywhere from 6-45
-seconds for the small write to complete.  Others in the bug have
-reproduced this across a number of filesystems (ext3, reiserfs, ext4).
-xfs in particular seems to handle this test case better than the
-others.  As do systems which can sustain high write speeds.
 
-The only way I've been able to reduce the latency to acceptable levels
-is to drop vm.dirty_background_ratio and vm.dirty_ratio to 1 and 2
-respectively - but even then on some systems the small write still
-takes 5-7 seconds.
 
-The systems I've been testing on are all Fedora 9 or 10 systems with
-the latest kernels (basically 2.6.27.19), ext3 filesystems and various
-amounts of CPU, memory and disk subsystems (but nothing too new or
-fast).
-
-Any ideas?  How much latency is acceptable with the test case?
-
--Dave
-
-[1] http://bugzilla.kernel.org/show_bug.cgi?id=12309
-[2] http://marc.info/?l=linux-nfs&m=123697692631683&w=2
-[3] http://bugzilla.kernel.org/show_bug.cgi?id=12309#c249
+-- 
+~Randy
