@@ -1,77 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbZCQSlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760235AbZCQSmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758382AbZCQSlw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 14:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756953AbZCQSli
+	id S1760235AbZCQSmi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 14:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759270AbZCQSmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 14:41:38 -0400
-Received: from mail.suse.de ([195.135.220.2]:33797 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756047AbZCQSlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 14:41:37 -0400
-From: Jan Kara <jack@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       Nick Piggin <npiggin@suse.de>
-Subject: [PATCH 3/4] fs: Avoid data corruption with blocksize < pagesize
-Date: Tue, 17 Mar 2009 18:33:54 +0100
-Message-Id: <1237311235-13623-4-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1237311235-13623-3-git-send-email-jack@suse.cz>
-References: <n>
- <1237311235-13623-1-git-send-email-jack@suse.cz>
- <1237311235-13623-2-git-send-email-jack@suse.cz>
- <1237311235-13623-3-git-send-email-jack@suse.cz>
+	Tue, 17 Mar 2009 14:42:18 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:4707 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758815AbZCQSmR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 14:42:17 -0400
+Message-ID: <49BFEF01.1060703@hp.com>
+Date: Tue, 17 Mar 2009 14:42:09 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
+Subject: Re: cli/sti vs local_cmpxchg and local_add_return
+References: <20090317013220.GA22474@Krystal>
+In-Reply-To: <20090317013220.GA22474@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Assume the following situation:
-Filesystem with blocksize < pagesize - suppose blocksize = 1024,
-pagesize = 4096. File 'f' has first four blocks already allocated.
-(line with "state:" contains the state of buffers in the page - m = mapped,
-u = uptodate, d = dirty)
+Here are the results for:
 
-  process 1:                       process 2:
+processor  : 31
+vendor     : GenuineIntel
+arch       : IA-64
+family     : 32
+model      : 0
+model name : Dual-Core Intel(R) Itanium(R) 2 Processor 9050
+revision   : 7
+archrev    : 0
+features   : branchlong, 16-byte atomic ops
+cpu number : 0
+cpu regs   : 4
+cpu MHz    : 1598.002
+itc MHz    : 400.000000
+BogoMIPS   : 3186.68
+siblings   : 2
+physical id: 196865
+core id    : 1
+thread id  : 0
 
-write to 'f' bytes 0 - 1024
-  state: |mud,-,-,-|, page dirty
-                                   write to 'f' bytes 1024 - 4096:
-                                     __block_prepare_write() maps blocks
-                                       state: |mud,m,m,m|, page dirty
-                                     we fail to copy data -> copied = 0
-                                     block_write_end() does nothing
-                                     page gets unlocked
-writepage() is called on the page
-  block_write_full_page() writes buffers with garbage
-
-This patch fixes the problem by skipping !uptodate buffers in
-block_write_full_page().
-
-CC: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/buffer.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 9f69741..22c0144 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1774,7 +1774,12 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
- 	} while (bh != head);
- 
- 	do {
--		if (!buffer_mapped(bh))
-+		/*
-+		 * Parallel write could have already mapped the buffers but
-+		 * it then had to restart before copying in new data. We
-+		 * must avoid writing garbage so just skip the buffer.
-+		 */
-+		if (!buffer_mapped(bh) || !buffer_uptodate(bh))
- 			continue;
- 		/*
- 		 * If it's a fully non-blocking write attempt and we cannot
--- 
-1.6.0.2
+test init
+test results: time for baseline
+number of loops: 20000
+total time: 5002
+-> baseline takes 0 cycles
+test end
+test results: time for locked cmpxchg
+number of loops: 20000
+total time: 60083
+-> locked cmpxchg takes 3 cycles
+test end
+test results: time for non locked cmpxchg
+number of loops: 20000
+total time: 60002
+-> non locked cmpxchg takes 3 cycles
+test end
+test results: time for locked add return
+number of loops: 20000
+total time: 155007
+-> locked add return takes 7 cycles
+test end
+test results: time for non locked add return
+number of loops: 20000
+total time: 155004
+-> non locked add return takes 7 cycles
+test end
+test results: time for enabling interrupts (STI)
+number of loops: 20000
+total time: 45003
+-> enabling interrupts (STI) takes 2 cycles
+test end
+test results: time for disabling interrupts (CLI)
+number of loops: 20000
+total time: 59998
+-> disabling interrupts (CLI) takes 2 cycles
+test end
+test results: time for disabling/enabling interrupts (STI/CLI)
+number of loops: 20000
+total time: 107274
+-> enabling/disabling interrupts (STI/CLI) takes 5 cycles
+test end
 
