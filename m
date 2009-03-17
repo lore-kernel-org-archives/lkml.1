@@ -1,103 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbZCQPUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754938AbZCQP2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755387AbZCQPUS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 11:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbZCQPTu
+	id S1754938AbZCQP2T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 11:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbZCQP2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 11:19:50 -0400
-Received: from web.proformatique.com ([91.194.179.68]:37691 "EHLO
-	proformatique.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755362AbZCQPTt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 11:19:49 -0400
-Date: Tue, 17 Mar 2009 16:18:42 +0100
-From: Guillaume Knispel <gknispel@proformatique.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] correct the behavior of printk_timed_ratelimit()
-Message-ID: <20090317161842.0059096b@xilun.lan.proformatique.com>
-Organization: Proformatique
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Mar 2009 11:28:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50907 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751915AbZCQP2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 11:28:02 -0400
+Date: Tue, 17 Mar 2009 16:27:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Miklos Szeredi <miklos@szeredi.hu>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Subject: Re: wrong timestamps in ftrace?
+Message-ID: <20090317152753.GD13895@elte.hu>
+References: <E1Ljb4V-0005Tz-44@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Ljb4V-0005Tz-44@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-The behavior provided by printk_timed_ratelimit() is, in some
-situations, probably not what a caller would reasonably expect:
+* Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-bool printk_timed_ratelimit(unsigned long *caller_jiffies,
-			unsigned int interval_msecs)
-{
-	if (*caller_jiffies == 0 || time_after(jiffies, *caller_jiffies)) {
-		*caller_jiffies = jiffies + msecs_to_jiffies(interval_msecs);
-		return true;
-	}
-	return false;
-}
+> I've started playing with ftrace and timestamps seem to be
+> misbehaving.
+> 
+> # echo 0 > /sys/kernel/debug/tracing/tracing_enabled
+> # echo nop > /sys/kernel/debug/tracing/current_tracer
+> # echo 131072 > /sys/kernel/debug/tracing/buffer_size_kb
+> # echo sched_switch > /sys/kernel/debug/tracing/current_tracer
+> # echo 1 > /sys/kernel/debug/tracing/tracing_enabled
+> # sleep 10
+> # echo 0 > /sys/kernel/debug/tracing/tracing_enabled
+> # cat /sys/kernel/debug/tracing/trace > /tmp/trace.txt
+> # ls -lh /tmp/trace.txt
+> -rw-r--r-- 1 root root 96K Mar 17 16:11 /tmp/trace.txt
+> # head -5 /tmp/trace.txt | tail -1
+>             bash-4908  [001]   212.139730:   4908:120:S   + [001]  4845:120:S
+> # tail -1 /tmp/trace.txt
+>      kondemand/1-1020  [001]   212.261054:   1020:115:S ==> [001]     0:140:R
+> 
+> So according to the timestamps the time difference between the first
+> and last event was just 0.12s, which is rubbish.
+> 
+> This is latest git on a CoreDuo T60 notebook.  Attaching .config and
+> dmesg.
 
-On a 32 bit computer, if printk_timed_ratelimit() is initially called at
-time jiffies == Ja, *caller_jiffies is set to
-Ja + msecs_to_jiffies(interval_msecs): let's say Ja + 42 for this
-example.  If this caller then don't call printk_timed_ratelimit() until
-jiffies == Ja + (1 << 31) + 42 (which can happen as soon as ~ 25 days
-later on a 1000 HZ system), printk_timed_ratelimit() will then always
-return false to this caller until jiffies loops completely (1 << 31 more
-ticks).
+There's been changes to timestamping in the tracing tree. Could you 
+check whether latest -tip:
 
-The proposed patch makes it only return false if jiffies is in the small
-time window starting at the previous call when true was returned and
-ending interval_msecs later.  Note that if jiffies loops completely
-between two calls to printk_timed_ratelimit(), it will obviously still
-wrongly return false, but this is something with a low probability.  If
-something completely reliable is needed I guess jiffies_64 must be used
-(which the proposed patch does not do).
+   http://people.redhat.com/mingo/tip.git/README
 
-Cheers,
-Guillaume Knispel
+works better for you?
 
-
-
-
-Avoid potential situations where printk_timed_ratelimit() can return
-false for no good reason during up to (1 << 31) / HZ seconds on 32 bits
-computers.  It still can wrongly return false for a duration of up to
-interval_msecs if jiffies has been incremented (k * (1 << 32) + e) times
--- with e < msecs_to_jiffies(interval_msecs) -- since the last call
-which returned true.
-
-Note that *caller_jiffies now stores jiffies just before the function
-returns true, instead of jiffies + msecs_to_jiffies(interval_msecs)
-previously.  Also note, if interval_msecs is not constant for a given
-caller, that the interval_msecs used is now the one passed for the
-current call instead of previously the one used for the last call which
-returned true.
-
-Signed-off-by: Guillaume Knispel <gknispel@proformatique.com>
-
----
-diff --git a/kernel/printk.c b/kernel/printk.c
-index e3602d0..2be7199 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -1292,8 +1292,11 @@ EXPORT_SYMBOL(printk_ratelimit);
- bool printk_timed_ratelimit(unsigned long *caller_jiffies,
- 			unsigned int interval_msecs)
- {
--	if (*caller_jiffies == 0 || time_after(jiffies, *caller_jiffies)) {
--		*caller_jiffies = jiffies + msecs_to_jiffies(interval_msecs);
-+	if (*caller_jiffies == 0
-+			|| !time_in_range(jiffies, *caller_jiffies,
-+					*caller_jiffies
-+					+ msecs_to_jiffies(interval_msecs))) {
-+		*caller_jiffies = jiffies;
- 		return true;
- 	}
- 	return false;
+	Ingo
