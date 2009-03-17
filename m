@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762856AbZCQJ3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763118AbZCQJbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762856AbZCQJ3j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 05:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbZCQJ33
+	id S1763118AbZCQJbT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 05:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbZCQJbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 05:29:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43924 "EHLO mx3.mail.elte.hu"
+	Tue, 17 Mar 2009 05:31:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46965 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752873AbZCQJ32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 05:29:28 -0400
-Date: Tue, 17 Mar 2009 10:29:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: linux-next: Tree for March 16 (slob)
-Message-ID: <20090317092902.GA6477@elte.hu>
-References: <20090316220609.6f4a884c.sfr@canb.auug.org.au> <49BE9B20.70808@oracle.com> <20090317111129.5bf04ae6.sfr@canb.auug.org.au>
+	id S1752965AbZCQJbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 05:31:04 -0400
+Date: Tue, 17 Mar 2009 10:25:46 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: =?iso-8859-1?Q?G=E1bor?= Melis <mega@retes.hu>
+Cc: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
+Subject: Re: Q: SEGSEGV && uc_mcontext->ip (Was: Signal delivery order)
+Message-ID: <20090317092546.GA9356@redhat.com>
+References: <200903141750.37238.mega@retes.hu> <49BED93B.1090700@nortel.com> <20090317041337.GA29740@redhat.com> <200903170923.56430.mega@retes.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090317111129.5bf04ae6.sfr@canb.auug.org.au>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200903170923.56430.mega@retes.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> On Mon, 16 Mar 2009 11:32:00 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On 03/17, Gábor Melis wrote:
+>
+> On Martes 17 Marzo 2009, Oleg Nesterov wrote:
 > >
-> > mm/slob.c:480: error: 'flags' undeclared (first use in this function)
-> > 
-> > pseudo-patch:
-> > 
-> > s/flags/gfp/
-> 
-> Caused by commit cf40bd16fdad42c053040bcd3988f5fdedbb6c57 ("lockdep:
-> annotate reclaim context (__GFP_NOFS)") from the tracing tree.
-> 
-> Now fixed in the tip tree.
+> > But this doesn't look very nice. So, perhaps we can do another
+> > change?
+> >
+> > 	--- arch/x86/mm/fault.c
+> > 	+++ arch/x86/mm/fault.c
+> > 	@@ -177,6 +177,13 @@ static void force_sig_info_fault(int si_
+> > 	 {
+> > 		siginfo_t info;
+> >
+> > 	+	current->saved_sigmask = current->blocked;
+> > 	+	spin_lock_irq(&current->sighand->siglock);
+> > 	+	siginitsetinv(&current->blocked, sigmask(si_signo) |
+> > 	+			sigmask(SIGKILL) | sigmask(SIGSTOP));
+> > 	+	spin_unlock_irq(&current->sighand->siglock);
+> > 	+	set_restore_sigmask();
+> > 	+
+> > 		info.si_signo = si_signo;
+> > 		info.si_errno = 0;
+> > 		info.si_code = si_code;
+> >
+> > But this is a user-visible change, all signals will be blocked until
+> > sigsegv_handler() returns. But with this change sigsegv_handler()
+> > always has the "correct" rt_sigframe.
+>
+> As an application developer what I'd like to have is this: synchronously
+> generated signals are delivered before asynchronously generated ones.
+> That is, if a number of signals are generated but not yet delivered
+> then the synchronously generated ones are delivered first. I guess, in
+> the kernel this would mean that the private/non-private distinction is
+> not enough.
 
-Note this has been broken for a relatively long time and only 
-got fixed when i noticed that randconfig was not as random as it 
-was supposed to be. That's how it started triggering in 
-linux-next too i suspect.
+With the change like above, no other signal (except SIGKILL) can be
+delivered until the signal handler returns.
 
-	Ingo
+Probably it is better to just change force_sig_info(), in this case
+SIGFPE/etc will have the same behaviour.
+
+> The only thing that
+> worries me is this remark from Oleg
+> (http://marc.info/?l=linux-kernel&m=123711058421913&w=2):
+>
+> "But please note that it is still possible to hit is_signal_blocked()
+> even with test_with_kill(), but the probability is very low."
+
+Sorry for confusion. Initially I misread test_with_kill() case, and then
+forgot to remove this part. I think this is not possible.
+
+Oleg.
+
