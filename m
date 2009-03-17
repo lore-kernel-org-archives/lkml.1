@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZCQElT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436AbZCQEpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754791AbZCQElT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 00:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZCQElE
+	id S1752436AbZCQEpU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 00:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZCQEpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 00:41:04 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:12786 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751403AbZCQElC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 00:41:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=ocBsOc3oAop8a7QiUdCqy92g3BQ0kl3OMUqDhD158nOp8jlJ65jqGDp4zbpTRu2vcO
-         NTjsS4zHIABQDr5ogycq4IE5lz/CPyrw2NtyvLvfagRCORsVaYKa83l3TXxRxO2gN+0A
-         l4D0WcwDTrY8Ww7CrCHK1GK636/gpVFSVFS+I=
+	Tue, 17 Mar 2009 00:45:05 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:38993 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751403AbZCQEpD convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 00:45:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApQFAJnFvklMQW1W/2dsb2JhbACBTtMlg38G
+Date: Tue, 17 Mar 2009 00:44:54 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: David Miller <davem@davemloft.net>
+Cc: paulmck@linux.vnet.ibm.com, mingo@elte.hu, jwboyer@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
+Subject: Re: cli/sti vs local_cmpxchg and local_add_return
+Message-ID: <20090317044454.GA28245@Krystal>
+References: <20090317013220.GA22474@Krystal> <20090316.203705.218202510.davem@davemloft.net> <20090317041016.GA26748@Krystal> <20090316.212717.233062381.davem@davemloft.net>
 MIME-Version: 1.0
-Date: Tue, 17 Mar 2009 12:41:00 +0800
-Message-ID: <e9e614960903162141g2f272f82jee434fc6fc748544@mail.gmail.com>
-Subject: w35und driver unusable
-From: luoyi <luoyi.ly@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090316.212717.233062381.davem@davemloft.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 00:33:16 up 17 days, 59 min,  1 user,  load average: 0.58, 0.50,
+	0.47
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello, I'm trying to run Slackware-current on my AMTEK T700 UMPC box. and from:
+* David Miller (davem@davemloft.net) wrote:
+> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Date: Tue, 17 Mar 2009 00:10:16 -0400
+> 
+> > Thanks for running those tests. Actually, I did not expect good results
+> > for sparc64 because the local_t primitives map to atomic_t. Looking at
+> > sparc atomic_64.h, I notice that all atomic operations except cmpxchg
+> > are done through function calls even when those functions only contain
+> > few instructions.  Is there any particular reason for that ? These
+> > function calls can be quite costly. We could easily inline those.
+> 
+> With all the memory barriers, cpu bug workarounds, et al.
+> it's way too much to expand inline.
+> 
+> > And to "unleash" the full power of local_t, we should see if there are
+> > variants of the atomic operations which are safe only on UP and if there
+> > are some memory barriers currently embedded in the atomic_t ops we could
+> > remove in a local_t version. Actually, all the
+> > BACKOFF_SETUP/BACKOFF_SPIN is specific to SMP, and therefore the local_t
+> > version probably does not need that because it touches specifically
+> > per-cpu data. That could give very interesting results.
+> > 
+> > The reason why the results shows 0 cycles per loop is just because there
+> > is less that a bus clock cycle per loop. But the total time (in bus
+> > cycles) for the whole 20000 cycles gives us equivalent information.
+> 
+> I don't think it's worth it.  Rusty made similar tests not too long
+> ago.
+> 
+> IRQ disabling/enabling on sparc64 is 9 cycles (each) and the atomic
+> operation on the other hand is at least 35 cycles.
 
-http://ubuntuforums.org/showthread.php?t=664458
+OK, so sparc64 should probably implement local_t with interrupt
+disabling on the local CPU and two atomic aligned operations (1 read, 1
+write) of 64-bits variables from/to memory, so we make sure that if a
+remote CPU tries to simply read the information, it is never seen as
+corrupted.
 
-I know that the my box's wifi is WinBound's products.
+Note that any code doing "remote reads" and "write expected to be read
+from a remote cpu" on local_t variables must provide its own memory
+barriers.
 
-I'm currently running kernel 2.6.28.7 now and have modprobed w35und.
-and I also have a linksys usb wireless card on the USB port.
+Mathieu
 
-Now, the situation is Linksys's card can just work well. and the
-Winbound card can't .
-
-wlan1 is the WinBound card:
-
-root@t700:~# dmesg |grep wlan1
-udev: renamed network interface wlan0 to wlan1
-ADDRCONF(NETDEV_UP): wlan1: link is not ready
-
-root@t700:~# iwlist wlan1 scan
-wlan1     No scan results
-
-root@t700:~# iwlist wlan0 scan
-wlan0     Scan completed :
-         Cell 01 - Address: 00:1B:FC:7E:57:51
-                   ESSID:"default"
-                   Mode:Master
-                   Channel:5
-                   Frequency:2.432 GHz (Channel 5)
-                   Quality=56/100  Signal level:-22 dBm
-                   Encryption key:off
-                   IE: Unknown: 000764656661756C74
-                   IE: Unknown: 010882848B968C929824
-                   IE: Unknown: 030105
-                   IE: Unknown: 0406000200000000
-                   IE: Unknown: 2A0100
-                   IE: Unknown: 3204B048606C
-                   Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 6 Mb/s
-                             9 Mb/s; 12 Mb/s; 18 Mb/s; 24 Mb/s; 36 Mb/s
-                             48 Mb/s; 54 Mb/s
-                   Extra:tsf=00000035772ec17e
-                   Extra: Last beacon: 52ms ago
-
-does this mean that the winbound drivers in the kernel tree is not
-ready for use ? or do we have any idea for make it work ?
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
