@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762695AbZCQIvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755726AbZCQI4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762695AbZCQIvP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 04:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbZCQIu6
+	id S1755726AbZCQI4a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 04:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZCQI4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 04:50:58 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33888 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752304AbZCQIu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 04:50:58 -0400
-Subject: Re: [git-pull -tip] x86: cleanup 20090317
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0903170930311.29264@localhost.localdomain>
-References: <1237229111.2827.2.camel@ht.satnam>
-	 <alpine.LFD.2.00.0903162128010.29264@localhost.localdomain>
-	 <1237267595.2480.9.camel@ht.satnam>
-	 <alpine.LFD.2.00.0903170930311.29264@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 17 Mar 2009 14:20:33 +0530
-Message-Id: <1237279833.3464.4.camel@ht.satnam>
+	Tue, 17 Mar 2009 04:56:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47819 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751911AbZCQI4V convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 04:56:21 -0400
+Date: Tue, 17 Mar 2009 08:57:14 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rocker Dude <life.does.rock@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Serial Flow Control
+Message-ID: <20090317085714.54bcd51c@lxorguk.ukuu.org.uk>
+In-Reply-To: <bc9165390903162234maedd4d0l7026d8f53a1859cc@mail.gmail.com>
+References: <bc9165390903160912u79693a1dve975f559bfab103e@mail.gmail.com>
+	<bc9165390903162233o48e02d94v6bb216e5d68d9e77@mail.gmail.com>
+	<bc9165390903162234maedd4d0l7026d8f53a1859cc@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-17 at 09:38 +0100, Thomas Gleixner wrote:
-> On Tue, 17 Mar 2009, Jaswinder Singh Rajput wrote:
-> > On Mon, 2009-03-16 at 23:33 +0100, Thomas Gleixner wrote:
-> > > On Tue, 17 Mar 2009, Jaswinder Singh Rajput wrote:
-> > > 
-> > > > -static struct clock_event_device pit_clockevent = {
-> > > > +static struct clock_event_device pit_dev = {
-> > > 
-> > >   Why do we need to change the name of the variable ? Just for fun or
-> > >   is pit_dev more self explaining than pit_clockevent ?
-> > 
-> > pit already means it is a clock event, but with this change:
-> > 
-> > 1. we save 8 characters per declaration
-> > 2. It solves various 80 characters problem
+On Tue, 17 Mar 2009 11:04:36 +0530
+Rocker Dude <life.does.rock@gmail.com> wrote:
+
+> Hi All,
 > 
-> There is not a single 80 character problem in that file.
+> I am using a powerpc8548e custom hardware and testing flow control on
+> it. I have cross-wired the RTS/CTS of the board with my host terminal.
+> I find that when I am reading from the powerpc, it does not change the
+> CTS signal when it is running out of buffers and hence it is dropping
+> bytes.
+> 
+> I referred to something similar at http://lkml.org/lkml/2007/7/26/46.
+> 
+> Can anyone please tell me if this flow control needs to be done by the SW?
 
-Here are 80 character problems:
+Flow control needs to be enabled by the user space software (if not
+enabled already), managed by the line discipline and implemented by the
+device driver (or automatically in hardware in some cases)
 
-1.        pit_clockevent.mult = div_sc(CLOCK_TICK_RATE, NSEC_PER_SEC,
-                                     pit_clockevent.shift);
-2.        pit_clockevent.max_delta_ns =
-                clockevent_delta2ns(0x7FFF, &pit_clockevent);
-3.        pit_clockevent.min_delta_ns =
-                clockevent_delta2ns(0xF, &pit_clockevent);
-
-4.        clocksource_pit.mult = clocksource_hz2mult(CLOCK_TICK_RATE,
-                                                   clocksource_pit.shift);
-
-
---
-JSR
-
+Basically; App "set CRTSCTS"
+Ldisc: buffers full/not full logic for throttling
+Driver: throttling events -> flow control, honour flow on write
