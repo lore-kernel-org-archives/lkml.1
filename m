@@ -1,101 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbZCQAJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZCQAJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758291AbZCQAJP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 20:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZCQAI6
+	id S1759385AbZCQAJd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 20:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757275AbZCQAJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 20:08:58 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34027 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751088AbZCQAI5 (ORCPT
+	Mon, 16 Mar 2009 20:09:04 -0400
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:57558 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757721AbZCQAJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 20:08:57 -0400
-Date: Tue, 17 Mar 2009 09:07:32 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       jan sonnek <ha2nny@gmail.com>, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: Regression - locking (all from 2.6.28)
-Message-Id: <20090317090732.bbb97825.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200903162304.28944.rjw@sisk.pl>
-References: <20090302121127.e46dc4be.akpm@linux-foundation.org>
-	<1236367186.10626.84.camel@nimitz>
-	<20090306192812.GA26767@elf.ucw.cz>
-	<200903162304.28944.rjw@sisk.pl>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 16 Mar 2009 20:09:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApQFACyEvklMQW1W/2dsb2JhbACBTtMxg38GYQ
+Date: Mon, 16 Mar 2009 20:08:59 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+       ltt-dev@lists.casi.polymtl.ca, danymadden@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kernel/irq/handle.c fix kstat_irqs_cpu and irq_to_desc
+	symbols v2
+Message-ID: <20090317000859.GB19848@Krystal>
+References: <20090316182227.GA2444@yoda.jdub.homelinux.org> <20090316194459.GD11878@Krystal> <20090316200115.GA22538@yoda.jdub.homelinux.org> <20090316202500.GA13872@Krystal> <20090316205829.GB22538@yoda.jdub.homelinux.org> <20090316215337.GB15119@Krystal> <20090316220518.GD22538@yoda.jdub.homelinux.org> <20090316231122.GA18113@Krystal> <alpine.LFD.2.00.0903170048120.29264@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0903170048120.29264@localhost.localdomain>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 20:03:51 up 16 days, 20:30,  1 user,  load average: 0.45, 0.41,
+	0.41
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Mar 2009 23:04:27 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> On Friday 06 March 2009, Pavel Machek wrote:
-> > Hi!
-> > 
-> > On Fri 2009-03-06 11:19:46, Dave Hansen wrote:
-> > > On Fri, 2009-03-06 at 18:00 +0000, Catalin Marinas wrote:
-> > > > > I think you should be more worried about consistency rather than missing
-> > > > > entries.  Take these two lines of code:
-> > > > > 
-> > > > >       start_pfn = node->node_start_pfn;
-> > > > >       /* hotplug occurs here */
-> > > > >       end_pfn = start_pfn + node->node_spanned_pages;
-> > > > > 
-> > > > > What if someone comes in and adds memory to the node, at the beginning
-> > > > > of the node, after you have calculated start_pfn?  Try to think of what
-> > > > > value you'll get for end_pfn and whether it is consistent and was *ever*
-> > > > > valid at all.  Would that oops the kernel?
-> > > > 
-> > > > I assume pfn_valid() should handle this and kmemleak wouldn't scan the
-> > > > page, unless we need locks around pfn_valid as well but I haven't seen
-> > > > any used in the kernel.
-> > > 
-> > > You assume incorrectly. :(
-> > > 
-> > > Take my above example, and assume that you have two nodes which are
-> > > right next to each other.  You might run over the end of one node and
-> > > into the next one.  Your pages will be pfn_valid() but you will be on
-> > > the wrong node.
-> > > 
-> > > Please take a look at those locks that I mentioned.  Notice that they
-> > > are lock the pgdat *span*, not the validity of pages inside the pgdat.
-> > > Your code deals with what pages the pgdats *span* and thus needs that
-> > > lock.  Notice that my example also had to do with those two lines of
-> > > code incorrectly guessing the pgdat's *span*.
-> > > 
-> > > We recently went to some pain to make sure that the software suspend
-> > > code (which walks pgdat ranges as well) worked with memory hotplug.
-> > > There really isn't that much code around that actually cares at runtime
-> > > about which physical areas a particular node or zone spans.  Yours is a
-> > > rarity and will require some caution.
-> > > 
-> > > You could probably also use the memory hotplug mutex found here:
-> > > 
-> > > https://lists.linux-foundation.org/pipermail/linux-pm/2008-November/018884.html
-> > > 
-> > > But I'm not sure where those patches have gone.  Hmmm.  Pavel?
-> > 
-> > I don't think they were applied. They probably should... Rafael was
-> > about to look into that, but he lost the patch pointer.
+* Thomas Gleixner (tglx@linutronix.de) wrote:
+> Is this a contribution to the "most useless patch of the week"
+> contest ?
 > 
-> Yes.  In fact, sending the patch again to me would be appreciated.
+> You have my vote.
 > 
 
-Ah...but as I wrote, for me, testing this is difficult.
-Could some expert of hibernation update and post this again ? For memoyr hotplug.
-it seems enough that sending the patch witch CC: to linux-mm and including
-"Memory Hotplug" in the subject.
+Count mine too ! :) Actually, this was not what it should look like.
+Here is my version. I am not totally convinced that the struct irq_desc
+is absolutely required, but in some include orders, it might matter.
+However, the #endif around the EXPORT_SYMBOL is definitely needed.
 
-Thanks,
--Kame
+Best regards,
 
+Mathieu
 
+kernel/irq/handle.c fix kstat_irqs_cpu and irq_to_desc symbols v2
+
+On Mon, Mar 16, 2009 at 05:53:37PM -0400, Mathieu Desnoyers wrote:
+>* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
+>> On Mon, Mar 16, 2009 at 04:25:00PM -0400, Mathieu Desnoyers wrote:
+>> >* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
+>> >> On Mon, Mar 16, 2009 at 03:44:59PM -0400, Mathieu Desnoyers wrote:
+>> >> >* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
+>> >> >> Hi All,
+>> >> >> 
+>> >> >> I was attempting to build a simple ppc64_defconfig using
+>> >> >> the latest LTTng tag from git.  When doing a:
+>> >> >> 
+>> >> >> 	make ppc64_defconfig
+>> >> >> 	make
+>> >> >> 
+>> >> >> I get the error below.
+>> >> >> 
+>> >> >
+>> >> >Hi Josh,
+>> >> >
+>> >> >Yes, LTTng has been tested with slub, but not for the powerpc64
+>> >> >cross-build. Thanks for the report, this is actually a header circular
+>> >> >dependency I caused. It should be fixed in LTTng 0.111.
+>> >> 
+>> >> Bah. Yes, I should have clarified on ppc/ppc64.  Sorry for the confusion
+>> >> there.
+>> >> 
+>> >> >I'll have to update my powerpc64 cross compiler to test it, because I am
+>> >> >stucked with a broken gcc 4.1. Please tell me if 0.111 fixes the problem
+>> >> >for you or if you encounter other problems.
+>> >> 
+>> >> Yep, the extern on tb_ticks_per_sec is what I had come up with locally.
+>> >> It should work fine, and does indeed get past the error I was seeing.  The
+>> >> build now dies with:
+>> >> 
+>> >> kernel/irq/handle.c:259: error: __ksymtab_irq_to_desc causes a section type conflict
+>> >> kernel/irq/handle.c:259: error: __ksymtab_irq_to_desc causes a section type conflict
+>> >> make[2]: *** [kernel/irq/handle.o] Error 1
+>> >> make[1]: *** [kernel/irq] Error 2
+>> >> make: *** [kernel] Error 2
+>> >> make: *** Waiting for unfinished jobs....
+>> >> 
+>> >
+>> >Can I get your full .config ?
+>> 
+>> Sure, attached.  Note, this is just:
+>> 
+>> make ppc64_defconfig
+>> make vmlinux
+>> 
+>> josh
+>
+>Can you try moving this code around ?
+
+Yep, allows vmlinux and modules to build just fine.  Here's a patch for you ;)
+
+Based on a patch from Josh Boyer <jwboyer@linux.vnet.ibm.com>, updated by
+Mathieu Desnoyers.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ include/linux/irqnr.h |    1 +
+ kernel/irq/handle.c   |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-lttng/include/linux/irqnr.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/irqnr.h	2009-03-16 18:45:40.000000000 -0400
++++ linux-2.6-lttng/include/linux/irqnr.h	2009-03-16 19:45:26.000000000 -0400
+@@ -23,6 +23,7 @@
+ #else /* CONFIG_GENERIC_HARDIRQS */
+ 
+ extern int nr_irqs;
++struct irq_desc;
+ extern struct irq_desc *irq_to_desc(unsigned int irq);
+ 
+ # define for_each_irq_desc(irq, desc)					\
+Index: linux-2.6-lttng/kernel/irq/handle.c
+===================================================================
+--- linux-2.6-lttng.orig/kernel/irq/handle.c	2009-03-16 18:45:40.000000000 -0400
++++ linux-2.6-lttng/kernel/irq/handle.c	2009-03-16 19:44:05.000000000 -0400
+@@ -473,6 +473,6 @@ unsigned int kstat_irqs_cpu(unsigned int
+ 	struct irq_desc *desc = irq_to_desc(irq);
+ 	return desc ? desc->kstat_irqs[cpu] : 0;
+ }
+-#endif
+ EXPORT_SYMBOL(kstat_irqs_cpu);
++#endif
+ 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
