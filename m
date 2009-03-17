@@ -1,83 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762928AbZCQIeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762817AbZCQIiF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762928AbZCQIeV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 04:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbZCQIeM
+	id S1762817AbZCQIiF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 04:38:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbZCQIhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 04:34:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53181 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752854AbZCQIeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 04:34:10 -0400
-Date: Tue, 17 Mar 2009 08:33:27 GMT
-From: Tom Zanussi <tzanussi@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, tzanussi@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tzanussi@gmail.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1237270859.8033.141.camel@charm-linux>
-References: <1237270859.8033.141.camel@charm-linux>
-Subject: [tip:tracing/ftrace] tracing: fix leak in event_format_read()
-Message-ID: <tip-c269fc8c537d761f36cb98e637ae934d9331a9d5@git.kernel.org>
-Git-Commit-ID: c269fc8c537d761f36cb98e637ae934d9331a9d5
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 17 Mar 2009 08:33:29 +0000 (UTC)
+	Tue, 17 Mar 2009 04:37:53 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46319 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754404AbZCQIhw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 04:37:52 -0400
+Subject: Re: [PATCH/RFC 1/2] perfcounters: provide a way to read the
+ current value of interrupting counters
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <18879.21884.162961.690031@cargo.ozlabs.ibm.com>
+References: <18879.14425.221429.861838@drongo.ozlabs.ibm.com>
+	 <1237275169.5189.58.camel@laptop>
+	 <18879.21884.162961.690031@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Tue, 17 Mar 2009 09:37:40 +0100
+Message-Id: <1237279060.5189.141.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c269fc8c537d761f36cb98e637ae934d9331a9d5
-Gitweb:     http://git.kernel.org/tip/c269fc8c537d761f36cb98e637ae934d9331a9d5
-Author:     Tom Zanussi <tzanussi@gmail.com>
-AuthorDate: Tue, 17 Mar 2009 01:20:59 -0500
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 17 Mar 2009 08:38:23 +0100
+On Tue, 2009-03-17 at 18:47 +1100, Paul Mackerras wrote:
+> Peter Zijlstra writes:
+> 
+> > I'm not sure I understand why. It seems to me you're either interested
+> > in sample data, that is {tid,ip,counter} like things, or you want raw
+> > count values.
+> 
+> It was specifically requested by people porting PAPI to PCL, and it
+> seems like a reasonable request.
 
-tracing: fix leak in event_format_read()
+OK, then why didn't the changelog say so :-)
 
-Impact: fix memory leak
+Could you ask them why though, if they need it I won't object too much,
+but I'd like to know the use case.
 
-If event_format_read() exits early due to nonzero ppos, the
-previous kmalloc doesn't get freed - might as well do the
-check before the kmalloc and avoid the problem.
+As to the method proposed, I think Ingo and I talked about 'abusing'
+non-blocking reads for this purpose, would that work? Then if you need
+two fds you could dup() and flip one to non-blocking.
 
-Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1237270859.8033.141.camel@charm-linux>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+The non-blocking read would either output whatever is already pending,
+but in case there is no data, it would generate some on the spot.
+
+> I think we should make record_type a bitset rather than a single
+> value, and define bits for recording the callchain as well as various
+> other interesting things.
+
+Sounds sensible at first though, I'll see if I can poke a hole in that.
+
+The only two things I've got on my todo list is that challchain and mmap
+info, and those can indeed be done as a bitmask, tid information too.
+
+> > Currently the group record type writes things like {hw_event->type,
+> > counter} which is ambiguous since we really have a 65bit id space. So I
+> > was thinking of making that {fd, counter} to at least have a unique
+> > identifier in there.
+> 
+> The fd is already not a unique identifier - think about dup().
+
+You're quite right indeed - risks of mailing before waking up I
+suppose :-)
+
+> The hw_event->type values are not really necessary, in fact, since the
+> group members will always be read out in the order that they were
+> added to the group.  The only time there might be any possibility of
+> confusion is if a new member is added after some samples have already
+> been taken (or a member is removed) - then we'll get new records being
+> added to the event queue being a different size from those already in
+> the queue.  But that's a somewhat different problem which isn't really
+> solved by having the type values in there.
+
+Ah, ok, so we can leave that out entirely. I was already planning to add
+a sibling_count field, with that we could do something like:
+
+{ record_type, sibling_count, n*{counter} }
 
 
----
- kernel/trace/trace_events.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 238ea95..c88227b 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -378,15 +378,15 @@ event_format_read(struct file *filp, char __user *ubuf, size_t cnt,
- 	char *buf;
- 	int r;
- 
-+	if (*ppos)
-+		return 0;
-+
- 	s = kmalloc(sizeof(*s), GFP_KERNEL);
- 	if (!s)
- 		return -ENOMEM;
- 
- 	trace_seq_init(s);
- 
--	if (*ppos)
--		return 0;
--
- 	/* If any of the first writes fail, so will the show_format. */
- 
- 	trace_seq_printf(s, "name: %s\n", call->name);
