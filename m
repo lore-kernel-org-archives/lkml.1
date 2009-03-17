@@ -1,74 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbZCQVoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbZCQVq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753032AbZCQVoy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 17:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbZCQVoq
+	id S1758530AbZCQVq2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 17:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZCQVqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 17:44:46 -0400
-Received: from mx1.suse.de ([195.135.220.2]:55217 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752748AbZCQVop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 17:44:45 -0400
-From: Mark Fasheh <mfasheh@suse.com>
-To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Sunil Mushran <sunil.mushran@oracle.com>,
-       Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 28/32] ocfs2/dlm: Do not purge lockres that is being migrated dlm_purge_lockres()
-Date: Tue, 17 Mar 2009 13:01:18 -0700
-Message-Id: <1237320082-12921-29-git-send-email-mfasheh@suse.com>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
-References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+	Tue, 17 Mar 2009 17:46:19 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:62100 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751116AbZCQVqS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 17:46:18 -0400
+Date: Tue, 17 Mar 2009 17:46:14 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/ftrace: stop {irqs,preempt}soff tracers when
+ tracing is stopped
+In-Reply-To: <1237325938-5240-1-git-send-email-fweisbec@gmail.com>
+Message-ID: <alpine.DEB.2.00.0903171745440.9036@gandalf.stny.rr.com>
+References: <1237325938-5240-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sunil Mushran <sunil.mushran@oracle.com>
 
-This patch attempts to fix a fine race between purging and migration.
 
-Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
----
- fs/ocfs2/dlm/dlmthread.c |   20 ++++++++++++++++++--
- 1 files changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/fs/ocfs2/dlm/dlmthread.c b/fs/ocfs2/dlm/dlmthread.c
-index 4060bb3..d490b66 100644
---- a/fs/ocfs2/dlm/dlmthread.c
-+++ b/fs/ocfs2/dlm/dlmthread.c
-@@ -162,12 +162,28 @@ static int dlm_purge_lockres(struct dlm_ctxt *dlm,
- 
- 	spin_lock(&res->spinlock);
- 	if (!__dlm_lockres_unused(res)) {
--		spin_unlock(&res->spinlock);
- 		mlog(0, "%s:%.*s: tried to purge but not unused\n",
- 		     dlm->name, res->lockname.len, res->lockname.name);
--		return -ENOTEMPTY;
-+		__dlm_print_one_lock_resource(res);
-+		spin_unlock(&res->spinlock);
-+		BUG();
- 	}
-+
-+	if (res->state & DLM_LOCK_RES_MIGRATING) {
-+		mlog(0, "%s:%.*s: Delay dropref as this lockres is "
-+		     "being remastered\n", dlm->name, res->lockname.len,
-+		     res->lockname.name);
-+		/* Re-add the lockres to the end of the purge list */
-+		if (!list_empty(&res->purge)) {
-+			list_del_init(&res->purge);
-+			list_add_tail(&res->purge, &dlm->purge_list);
-+		}
-+		spin_unlock(&res->spinlock);
-+		return 0;
-+	}
-+
- 	master = (res->owner == dlm->node_num);
-+
- 	if (!master)
- 		res->state |= DLM_LOCK_RES_DROPPING_REF;
- 	spin_unlock(&res->spinlock);
--- 
-1.5.6
+On Tue, 17 Mar 2009, Frederic Weisbecker wrote:
 
+> Impact: fix a selftest warning
+> 
+> In some cases, it's possible to see the following warning on irqsoff
+> tracer selftest:
+> 
+> [    4.640003] Testing tracer irqsoff: <4>------------[ cut here ]------------
+> [    4.653562] WARNING: at kernel/trace/trace.c:458 update_max_tr_single+0x9a/0xc4()
+> [    4.660000] Hardware name: System Product Name
+> [    4.660000] Modules linked in:
+> [    4.660000] Pid: 301, comm: kstop/1 Not tainted 2.6.29-rc8-tip #35837
+> [    4.660000] Call Trace:
+> [    4.660000]  [<4014b588>] warn_slowpath+0x79/0x8f
+> [    4.660000]  [<402d6949>] ? put_dec+0x64/0x6b
+> [    4.660000]  [<40162b56>] ? getnstimeofday+0x58/0xdd
+> [    4.660000]  [<40162210>] ? clocksource_read+0x3/0xf
+> [    4.660000]  [<4015eb44>] ? ktime_set+0x8/0x34
+> [    4.660000]  [<4014101a>] ? balance_runtime+0x8/0x56
+> [    4.660000]  [<405f6f11>] ? _spin_lock+0x3/0x10
+> [    4.660000]  [<4011f643>] ? ftrace_call+0x5/0x8
+> [    4.660000]  [<4015d0f1>] ? task_cputime_zero+0x3/0x27
+> [    4.660000]  [<40190ee7>] ? cpupri_set+0x90/0xcb
+> [    4.660000]  [<405f7208>] ? _spin_lock_irqsave+0x22/0x34
+> [    4.660000]  [<40190f12>] ? cpupri_set+0xbb/0xcb
+> [    4.660000]  [<405f7151>] ? _spin_unlock_irqrestore+0x23/0x35
+> [    4.660000]  [<4018493f>] ? ring_buffer_reset_cpu+0x27/0x51
+> [    4.660000]  [<405f7208>] ? _spin_lock_irqsave+0x22/0x34
+> [    4.660000]  [<40184962>] ? ring_buffer_reset_cpu+0x4a/0x51
+> [    4.660000]  [<405f7151>] ? _spin_unlock_irqrestore+0x23/0x35
+> [    4.660000]  [<4018cc29>] ? trace_hardirqs_off+0x1a/0x1c
+> [    4.660000]  [<405f7151>] ? _spin_unlock_irqrestore+0x23/0x35
+> [    4.660000]  [<40184962>] ? ring_buffer_reset_cpu+0x4a/0x51
+> [    4.660000]  [<401850f3>] ? cpumask_next+0x15/0x18
+> [    4.660000]  [<4018a41f>] update_max_tr_single+0x9a/0xc4
+> [    4.660000]  [<4014e5fe>] ? exit_notify+0x16/0xf2
+> [    4.660000]  [<4018cd13>] check_critical_timing+0xcc/0x11e
+> [    4.660000]  [<4014e5fe>] ? exit_notify+0x16/0xf2
+> [    4.660000]  [<4014e5fe>] ? exit_notify+0x16/0xf2
+> [    4.660000]  [<4018cdf1>] stop_critical_timing+0x8c/0x9f
+> [    4.660000]  [<4014e5c4>] ? forget_original_parent+0xac/0xd0
+> [    4.660000]  [<4018ce3a>] trace_hardirqs_on+0x1a/0x1c
+> [    4.660000]  [<4014e5c4>] forget_original_parent+0xac/0xd0
+> [    4.660000]  [<4014e5fe>] exit_notify+0x16/0xf2
+> [    4.660000]  [<4014e8a5>] do_exit+0x1cb/0x225
+> [    4.660000]  [<4015c72b>] ? kthread+0x0/0x69
+> [    4.660000]  [<4011f61d>] kernel_thread_helper+0xd/0x10
+> [    4.660000] ---[ end trace a7919e7f17c0a725 ]---
+> [    4.660164] .. no entries found ..FAILED!
+> 
+> During the selftest of irqsoff tracer, we do that:
+> 
+> 	/* disable interrupts for a bit */
+> 	local_irq_disable();
+> 	udelay(100);
+> 	local_irq_enable();
+> 	/* stop the tracing. */
+> 	tracing_stop();
+> 	/* check both trace buffers */
+> 	ret = trace_test_buffer(tr, NULL);
+> 
+> If a callsite performs a new max delay with irqs off just after
+> tracing_stop, update_max_tr_single() -> ring_buffer_swap_cpu()
+> will be called with the buffers disabled by tracing_stop(), hence
+> the warning, then ring_buffer_swap_cpu() return -EAGAIN and
+> update_max_tr_single() complains.
+> 
+> Fix it by also stopping the tracer before stopping the tracing globally.
+> A similar situation can happen with preemptoff and preemptirqsoff tracers
+> where we apply the same fix.
+> 
+> Reported-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+>  kernel/trace/trace_selftest.c |   26 ++++++++++++++++++++++++++
+>  1 files changed, 26 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_selftest.c b/kernel/trace/trace_selftest.c
+> index a2ca6f0..38856ba 100644
+> --- a/kernel/trace/trace_selftest.c
+> +++ b/kernel/trace/trace_selftest.c
+> @@ -315,6 +315,14 @@ trace_selftest_startup_irqsoff(struct tracer *trace, struct trace_array *tr)
+>  	local_irq_disable();
+>  	udelay(100);
+>  	local_irq_enable();
+> +
+> +	/*
+> +	 * Stop the tracer to avoid a warning subsequent
+> +	 * to buffer flipping failure because tracing_stop()
+> +	 * disables the tr and max buffers, making flipping impossible
+> +	 * in case of parallels max irqs off latencies.
+> +	 */
+> +	trace->stop(tr);
+>  	/* stop the tracing. */
+>  	tracing_stop();
+>  	/* check both trace buffers */
+> @@ -369,6 +377,14 @@ trace_selftest_startup_preemptoff(struct tracer *trace, struct trace_array *tr)
+>  	preempt_disable();
+>  	udelay(100);
+>  	preempt_enable();
+> +
+> +	/*
+> +	 * Stop the tracer to avoid a warning subsequent
+> +	 * to buffer flipping failure because tracing_stop()
+> +	 * disables the tr and max buffers, making flipping impossible
+> +	 * in case of parallels max preempt off latencies.
+> +	 */
+> +	trace->stop(tr);
+>  	/* stop the tracing. */
+>  	tracing_stop();
+
+I'm actually thinking that tracing_stop() should call the current tracer
+"stop" function.
+
+-- Steve
+
+>  	/* check both trace buffers */
+> @@ -428,6 +444,13 @@ trace_selftest_startup_preemptirqsoff(struct tracer *trace, struct trace_array *
+>  	/* reverse the order of preempt vs irqs */
+>  	local_irq_enable();
+>  
+> +	/*
+> +	 * Stop the tracer to avoid a warning subsequent
+> +	 * to buffer flipping failure because tracing_stop()
+> +	 * disables the tr and max buffers, making flipping impossible
+> +	 * in case of parallels max irqs/preempt off latencies.
+> +	 */
+> +	trace->stop(tr);
+>  	/* stop the tracing. */
+>  	tracing_stop();
+>  	/* check both trace buffers */
+> @@ -448,6 +471,8 @@ trace_selftest_startup_preemptirqsoff(struct tracer *trace, struct trace_array *
+>  	/* do the test by disabling interrupts first this time */
+>  	tracing_max_latency = 0;
+>  	tracing_start();
+> +	trace->start(tr);
+> +
+>  	preempt_disable();
+>  	local_irq_disable();
+>  	udelay(100);
+> @@ -455,6 +480,7 @@ trace_selftest_startup_preemptirqsoff(struct tracer *trace, struct trace_array *
+>  	/* reverse the order of preempt vs irqs */
+>  	local_irq_enable();
+>  
+> +	trace->stop(tr);
+>  	/* stop the tracing. */
+>  	tracing_stop();
+>  	/* check both trace buffers */
+> -- 
+> 1.6.1
+> 
+> 
