@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760061AbZCQQRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760430AbZCQQSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760061AbZCQQRd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 12:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757189AbZCQQRM
+	id S1760430AbZCQQSm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 12:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578AbZCQQSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 12:17:12 -0400
-Received: from kroah.org ([198.145.64.141]:50261 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756703AbZCQQRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 12:17:10 -0400
-Date: Tue, 17 Mar 2009 09:13:41 -0700
-From: Greg KH <greg@kroah.com>
-To: Rory Filer <rfiler@SierraWireless.com>
-Cc: Ralf Nyren <ralf@nyren.net>, Stephen Clark <sclark46@earthlink.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Kevin Lloyd <klloyd@SierraWireless.com>
-Subject: Re: Sierra Wireless (MC8780) HSDPA speed issue
-Message-ID: <20090317161341.GA27956@kroah.com>
-References: <alpine.DEB.1.10.0903142021580.5797@fujje.iml.umu.se> <20090314203256.GA7487@kroah.com> <49BC5A90.7070004@earthlink.net> <alpine.DEB.1.10.0903152040030.5825@fujje.iml.umu.se> <8F90F944E50427428C60E12A34A309D21C401BAA8D@carmd-exchmb01.sierrawireless.local> <20090316043359.GA24632@kroah.com> <alpine.DEB.1.10.0903161324440.32709@fujje.iml.umu.se> <8F90F944E50427428C60E12A34A309D21C401BAB03@carmd-exchmb01.sierrawireless.local> <alpine.DEB.1.10.0903171642030.10762@fujje.iml.umu.se> <8F90F944E50427428C60E12A34A309D21C40221D59@carmd-exchmb01.sierrawireless.local>
+	Tue, 17 Mar 2009 12:18:32 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:49379 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753989AbZCQQSb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 12:18:31 -0400
+Date: Tue, 17 Mar 2009 17:18:28 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andreas Mohr <andi@lisas.de>, Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [alsa-devel] Bugs on aspire one A150
+Message-ID: <20090317161828.GA32756@rhlx01.hs-esslingen.de>
+References: <20090316173000.GA25647@rhlx01.hs-esslingen.de> <s5hiqm9pe1g.wl%tiwai@suse.de> <20090316180638.GB25647@rhlx01.hs-esslingen.de> <s5htz5tyzyg.wl%tiwai@suse.de> <20090316212227.GA29471@rhlx01.hs-esslingen.de> <s5hfxhczinh.wl%tiwai@suse.de> <20090317100500.GA16029@rhlx01.hs-esslingen.de> <20090317103845.GA26007@rhlx01.hs-esslingen.de> <20090317104755.GA1446@rhlx01.hs-esslingen.de> <s5h3adcpf1i.wl%tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8F90F944E50427428C60E12A34A309D21C40221D59@carmd-exchmb01.sierrawireless.local>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <s5h3adcpf1i.wl%tiwai@suse.de>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 09:04:22AM -0700, Rory Filer wrote:
-> Hi Ralf, 
-> 
-> I wonder whether you could do a little experiment for me. Issue the following AT command to both ports you've identified:
-> 
-> ATI
-> 
-> And note which of the AT ports provides the most information. They will both respond, but one will be more verbose than the others. 
-> 
-> Another thing of interest is to record how many files appear in response to the following command:
-> 
-> ls /dev/ttyU*
-> 
-> when the modem is running, of course. 
-> 
-> Question - at what point should we stop including linux-kernel in this thread, if at all?
+Hi,
 
-If it's related to the driver like this, you should not stop including
-linux-kernel.
+On Tue, Mar 17, 2009 at 12:25:13PM +0100, Takashi Iwai wrote:
+> At Tue, 17 Mar 2009 11:47:55 +0100,
+> Andreas Mohr wrote:
+> > > Fortemedia device names include FM2018-380, not sure yet which one is in
+> > > Aspire One.
+> > > 
+> > > http://www.fortemedia.com/products/index.htm
+> > > ( especially http://www.fortemedia.com/products/fm1182.htm )
+> > 
+> > http://www.wpgholdings.com/event/S/SACg_04_ForteMedia_SAM.pdf
+> > mentions "FM201x" and www.sacg.com.tw (this one could be useful!).
+> > Searching Google "FM201[0-9] Fortemedia" comes up with FM2010 and
+> > FM2018 and thus
+> > http://www.hengdasheng.com.cn/uploadfile/391/cfile/2008102414057847.pdf
+> > which is a relatively informative datasheet.
+> 
+> I'm not sure whether FM2018 is on a netbook.  Rather my guess is it's
+> a digital-mic component by FortMedia together with their software
+> library for SAM handling.
 
-By copying the list, it provides a well archived history of the problem
-so that anyone who runs across it in the future can easily find it by
-searching the web.
+I had the same thoughts later. Since they use an extensive SAM handling
+library, there probably isn't such a chip, otherwise they probably
+wouldn't need it ;)
+Could you thus implement a nice beam-forming sound evaluation SAM
+library for ALSA pretty pretty please? ;)
+...or, is that SAM library available to us given that it exists in the
+factory install? If so, then one should probably make good use of it...
 
-thanks,
+> BTW, a simple "fix" for the mono capture problem, you can patch
+> the config file for HD-audio in alsa-lib like below.  Then the first
+> channel will be used for mono capture instead of averages.
+> Give it a try.
+> 
+> (But, this won't fix programs that prefer "hw" access such as
+>  pulseaudio, of course.)
 
-greg k-h
+I'm not *quite* sure whether this is really what you meant,
+but I patched /usr/share/alsa/cards/HDA-Intel.conf (libasound2
+1.0.18-1ubuntu7) in exactly this way and then did
+arecord -Dplughw:0 -fdat -c1 test.wav; aplay test.wav
+but well, with equal slider positions there was no audio again.
+
+Andreas
