@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760875AbZCQMIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761769AbZCQMK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760875AbZCQMIW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 08:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbZCQMIM
+	id S1761769AbZCQMK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 08:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbZCQMKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 08:08:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49802 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753268AbZCQMIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 08:08:12 -0400
-Date: Tue, 17 Mar 2009 08:08:08 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: David Miller <davem@davemloft.net>
-cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crash with /proc/iomem on sparc64
-In-Reply-To: <Pine.LNX.4.64.0903170758060.24107@hs20-bc2-1.build.redhat.com>
-Message-ID: <Pine.LNX.4.64.0903170807440.25109@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0903170758060.24107@hs20-bc2-1.build.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 17 Mar 2009 08:10:16 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:47805 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753527AbZCQMKO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 08:10:14 -0400
+Date: Tue, 17 Mar 2009 13:04:10 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Matt Mackall <mpm@selenic.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>, akpm@linux-foundation.org
+Subject: Re: [PATCH] acquire mmap semaphore in pagemap_read.
+Message-ID: <20090317130410.7dd8daa5@skybase>
+In-Reply-To: <20090312165451.1a7ef22f@skybase>
+References: <20090312113308.6fe18a93@skybase>
+	<20090312114533.GA2407@x200.localdomain>
+	<20090312125410.25400d18@skybase>
+	<1236871414.3213.50.camel@calx>
+	<20090312165451.1a7ef22f@skybase>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 12 Mar 2009 16:54:51 +0100
+Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
 
+> On Thu, 12 Mar 2009 10:23:34 -0500
+> Matt Mackall <mpm@selenic.com> wrote:
+> 
+> > Well it means we may have to reintroduce the very annoying double
+> > buffering from various earlier implementations. But let's leave this
+> > discussion until after we've figured out what to do about the walker
+> > code.
+> 
+> About the walker code. I've realized that there is another way to fix
+> this. The TASK_SIZE definition is currently used for two things: 1) as
+> a maximum mappable address, 2) the size of the address space for a
+> process. And there lies a problem: while a process is using a reduced
+> page table 1) and 2) differ. If I make TASK_SIZE give you the current
+> size of the address space then it is not possible to mmap an object
+> beyond 4TB and the page table upgrade never happens. If I make
+> TASK_SIZE return the maximum mappable address the page table walker
+> breaks. The solution could be to introduce MAX_TASK_SIZE and use that
+> in the mmap code to find out what can be mapped.
+ 
+I got around the TASK_SIZE checks with arch code only. In total I'll
+need two fixes, one that makes TASK_SIZE to reflect the size of the
+current address space and another one to get the page table upgrades
+working again. I'll push these patches via git390 as no common code
+changes are required.
 
-On Tue, 17 Mar 2009, Mikulas Patocka wrote:
+Which leaves the mmap_sem issue as the only problem left.
 
-> Hi
-> 
-> When you compile kernel on Sparc64 with heap memory checking and type
-> "cat /proc/iomem", you get a crash, because pointers in struct resource 
-> are uninitialized.
-> 
-> Most code fills struct resource with zeros, so I assume that it is 
-> responsibility of the caller of request_resource to initialized it, not 
-> the responsibility of request_resource functuion.
-> 
-> After 2.6.29 is out, there could be a check for uninitialized fields added 
-> to request_resource to avoid crashes like this.
-> 
-> Mikulas
+-- 
+blue skies,
+   Martin.
 
-I forgot to add:
+"Reality continues to ruin my life." - Calvin.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-
-> ---
->  arch/sparc/kernel/pci_common.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.29-rc8-devel/arch/sparc/kernel/pci_common.c
-> ===================================================================
-> --- linux-2.6.29-rc8-devel.orig/arch/sparc/kernel/pci_common.c	2009-03-17 12:49:51.000000000 +0100
-> +++ linux-2.6.29-rc8-devel/arch/sparc/kernel/pci_common.c	2009-03-17 12:50:16.000000000 +0100
-> @@ -368,7 +368,7 @@ static void pci_register_iommu_region(st
->  	const u32 *vdma = of_get_property(pbm->op->node, "virtual-dma", NULL);
->  
->  	if (vdma) {
-> -		struct resource *rp = kmalloc(sizeof(*rp), GFP_KERNEL);
-> +		struct resource *rp = kzalloc(sizeof(*rp), GFP_KERNEL);
->  
->  		if (!rp) {
->  			prom_printf("Cannot allocate IOMMU resource.\n");
-> 
