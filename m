@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbZCQXxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbZCQX4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753781AbZCQXxb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 19:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbZCQXxW
+	id S1753344AbZCQX4B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 19:56:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbZCQXzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 19:53:22 -0400
-Received: from ns2.suse.de ([195.135.220.15]:42456 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882AbZCQXxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 19:53:22 -0400
-From: Mark Fasheh <mfasheh@suse.com>
-To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Sunil Mushran <sunil.mushran@oracle.com>,
-       Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 29/32] ocfs2/dlm: Tweak mle_state output
-Date: Tue, 17 Mar 2009 13:01:19 -0700
-Message-Id: <1237320082-12921-30-git-send-email-mfasheh@suse.com>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
-References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+	Tue, 17 Mar 2009 19:55:51 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34922 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbZCQXzu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 19:55:50 -0400
+Subject: Re: Test program for counters in groups
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <18880.12797.758764.128252@cargo.ozlabs.ibm.com>
+References: <18880.12797.758764.128252@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Wed, 18 Mar 2009 00:55:38 +0100
+Message-Id: <1237334138.5189.1226.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.25.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sunil Mushran <sunil.mushran@oracle.com>
+On Wed, 2009-03-18 at 10:27 +1100, Paul Mackerras wrote:
+> Here's a little test program that checks whether software counters
+> (specifically, the task clock counter) work correctly when they're in
+> a group with hardware counters.
+> 
+> What it does is to create several groups, each with one hardware
+> counter, counting instructions, plus a task clock counter.  It needs
+> to know an upper bound N on the number of hardware counters you have
+> (N defaults to 8), and it creates N+4 groups to force them to be
+> multiplexed.  It also creates an overall task clock counter.
+> 
+> Then it spins for a while, and then stops all the counters and reads
+> them.  It takes the total of the task clock counters in the groups and
+> computes the ratio of that total to the overall execution time from
+> the overall task clock counter.
+> 
+> That ratio should be equal to the number of actual hardware counters
+> that can count instructions.  If the task clock counters in the groups
+> don't stop when their group gets taken off the PMU, the ratio will
+> instead be close to N+4.  The program will declare that the test fails
+> if the ratio is greater than N (actually, N + 0.0001 to allow for FP
+> rounding errors).
+> 
+> Could someone run this on x86 on the latest PCL tree and let me know
+> what happens?  I don't have an x86 crash box easily to hand.  On
+> powerpc, it passes, but I think that is because I am missing setting
+> counter->prev_count in arch/powerpc/kernel/perf_counter.c, and I think
+> that means that enabling/disabling a group with a task clock counter
+> in it won't work correctly (I'll do a test program for that next).
+> 
+> Usage is: swsched-test [-c num-hw-counters] [-v]
+> 
+> Use -c N if you have more than 8 hardware counters.  The -v flag makes
+> it print out the values of each counter.
 
-The debugfs file, mle_state, now prints the number of largest number of mles
-in one hash link.
-
-Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
----
- fs/ocfs2/dlm/dlmdebug.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/fs/ocfs2/dlm/dlmdebug.c b/fs/ocfs2/dlm/dlmdebug.c
-index bdf1c78..df52f70 100644
---- a/fs/ocfs2/dlm/dlmdebug.c
-+++ b/fs/ocfs2/dlm/dlmdebug.c
-@@ -494,7 +494,7 @@ static int debug_mle_print(struct dlm_ctxt *dlm, struct debug_buffer *db)
- 	struct hlist_head *bucket;
- 	struct hlist_node *list;
- 	int i, out = 0;
--	unsigned long total = 0;
-+	unsigned long total = 0, longest = 0, bktcnt;
- 
- 	out += snprintf(db->buf + out, db->len - out,
- 			"Dumping MLEs for Domain: %s\n", dlm->name);
-@@ -506,15 +506,18 @@ static int debug_mle_print(struct dlm_ctxt *dlm, struct debug_buffer *db)
- 			mle = hlist_entry(list, struct dlm_master_list_entry,
- 					  master_hash_node);
- 			++total;
-+			++bktcnt;
- 			if (db->len - out < 200)
- 				continue;
- 			out += dump_mle(mle, db->buf + out, db->len - out);
- 		}
-+		longest = max(longest, bktcnt);
-+		bktcnt = 0;
- 	}
- 	spin_unlock(&dlm->master_lock);
- 
- 	out += snprintf(db->buf + out, db->len - out,
--			"Total on list: %ld\n", total);
-+			"Total: %ld, Longest: %ld\n", total, longest);
- 	return out;
- }
- 
--- 
-1.5.6
+I'll give it a run when I'm awake again, with the patches I send out --
+esp the last one, x86 might stand a chance of actually working.
 
