@@ -1,81 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761902AbZCQAgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761077AbZCQAwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761902AbZCQAgt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 20:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZCQAgi
+	id S1761077AbZCQAwh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 20:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZCQAw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 20:36:38 -0400
-Received: from sh.osrg.net ([192.16.179.4]:60762 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753129AbZCQAgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 20:36:37 -0400
-Date: Tue, 17 Mar 2009 09:35:45 +0900
-To: mcgrof@gmail.com
-Cc: linux-wireless@vger.kernel.org, joerg.roedel@amd.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: AMD Quad core - PCI-DMA: Out of IOMMU space on > 4 GB RAM
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <43e72e890903161215u343cbb19v6d6cbf36794e252a@mail.gmail.com>
-References: <43e72e890903161215u343cbb19v6d6cbf36794e252a@mail.gmail.com>
+	Mon, 16 Mar 2009 20:52:27 -0400
+Received: from mail-fx0-f176.google.com ([209.85.220.176]:48012 "EHLO
+	mail-fx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753454AbZCQAw0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 20:52:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=t/6FpgYFZVZQjsoBs7T4kjo3Lyn6cR2PiuykEqbbAMIMHeM+ZVOkUCaE/weGFsGbo0
+         +FiAovh2Yyb0PqAVB04t8IaisEtKmORc61C1ibBBbEE5yzUPl1y74i8yYL3qG7fGv4zw
+         gYUjwze/EEhLpkoMFM5Wk0k2rLf4FXuFzqu3I=
+Subject: Re: [alsa-devel] Bugs on aspire one A150
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org,
+       alsa-devel@alsa-project.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <20090316212227.GA29471@rhlx01.hs-esslingen.de>
+References: <s5h4oxtqy6q.wl%tiwai@suse.de>
+	 <20090316160208.GB4458@rhlx01.hs-esslingen.de>
+	 <s5hwsappi44.wl%tiwai@suse.de> <s5hprghphid.wl%tiwai@suse.de>
+	 <20090316170015.GA9776@rhlx01.hs-esslingen.de>
+	 <s5hljr5pex0.wl%tiwai@suse.de>
+	 <20090316173000.GA25647@rhlx01.hs-esslingen.de>
+	 <s5hiqm9pe1g.wl%tiwai@suse.de>
+	 <20090316180638.GB25647@rhlx01.hs-esslingen.de>
+	 <s5htz5tyzyg.wl%tiwai@suse.de>
+	 <20090316212227.GA29471@rhlx01.hs-esslingen.de>
+Content-Type: text/plain
+Date: Tue, 17 Mar 2009 02:52:19 +0200
+Message-Id: <1237251139.7952.1.camel@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090317093445G.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 17 Mar 2009 09:35:46 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Mar 2009 12:15:37 -0700
-"Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
-
-> I've run into "PCI-DMA: Out of IOMMU space" messages after loading and
-> unloading a module 30 times. The interesting thing is this only
-> happens if I have > 4 GB of memory. The box this occurs has AMD Phenom
-> quad core CPU so I take it a harware IOMMU is being used. Below are
-> example relevant messages with > 4 GB and then < 4 GB of memory. The
-> driver I tested this with was ath9k. It could be an issue perhaps with
-> ath9k but I am unable to find an issue in our probe/removal.
+On Mon, 2009-03-16 at 22:22 +0100, Andreas Mohr wrote:
+> Hi,
 > 
-> Could this be an issue with the AMD IOMMU used? Or is it more likely a
-> driver issue?
+> On Mon, Mar 16, 2009 at 09:28:39PM +0100, Takashi Iwai wrote:
+> > At Mon, 16 Mar 2009 19:06:38 +0100,
+> > Andreas Mohr wrote:
+> > > I just tried connecting a headset and switching to E-Mic.
+> > > What I can say is:
+> > > - opposite levels does NOT happen there (E-Mic is "analog micro"-based, right?)
+> > > - leaving E-Mic unplugged will actually record from i-Mic (due to properly
+> > >   working EAPD mechanism, right?)
+> > 
+> > The record from mic-jack is via analog path.  The phase-inversion
+> > appears only for digital-mic, AFAIK.
+> 
+> Thought so.
+> 
+> > > One question still: is this a hardware defect (i.e. could this possibly
+> > > be swapped cables of the microphone connector in this model or so?
+> > > Not plausible but...), or is this an existing property
+> > > of the HDA's dig-mic base? You indicated it's the latter I think...
+> > 
+> > My guess is that it's a hardware implementation.
+> > Maybe for the noise suppression via mic array.
+> 
+> Not sure what this means.
+> 
+> > The question is whether the left / right channels recorded from
+> > digital mic are really raw data, or they are for modified data
+> > (for differential, etc)...  It's hard to guess without the actual
+> > data.
+> 
+> I don't quite follow you here. Is there anything I could do about this?
+> 
+> Thanks,
+> 
+> Andreas
 
-ath9k wants DMA_32BIT_MASK, right? If so, GART IOMMU does nothing on a
-system with < 4GB memory since ath9k can access to all the memory
-addresses directly. With >4GB memory, GART needs to remap an address
-higher than 4GB because ath9k wants DMA_32BIT_MASK.
 
->From a quick look, ath9k doesn't call pci_unmap_single for rx
-buffers. Though I might be wrong because I don't know anything about
-the driver.
+What about exposing the i-mic as a mono only device to userspace?
+It is mono after all?
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] ath9k: fix dma mapping leak of rx buffer
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- drivers/net/wireless/ath9k/recv.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/wireless/ath9k/recv.c b/drivers/net/wireless/ath9k/recv.c
-index 462e08c..cd2a1f6 100644
---- a/drivers/net/wireless/ath9k/recv.c
-+++ b/drivers/net/wireless/ath9k/recv.c
-@@ -322,8 +322,11 @@ void ath_rx_cleanup(struct ath_softc *sc)
- 
- 	list_for_each_entry(bf, &sc->rx.rxbuf, list) {
- 		skb = bf->bf_mpdu;
--		if (skb)
-+		if (skb) {
-+			pci_unmap_single(sc->pdev, bf->bf_buf_addr,
-+					 sc->rx.bufsize, PCI_DMA_FROMDEVICE);
- 			dev_kfree_skb(skb);
-+		}
- 	}
- 
- 	if (sc->rx.rxdma.dd_desc_len != 0)
--- 
-1.6.0.6
-
+Best regards,
+	Maxim Levitsky
 
