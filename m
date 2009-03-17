@@ -1,53 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbZCQQDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbZCQQFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755748AbZCQQDq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 12:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbZCQQDh
+	id S1754920AbZCQQFA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 12:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZCQQEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 12:03:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40548 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754087AbZCQQDg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 12:03:36 -0400
-Date: Tue, 17 Mar 2009 08:56:34 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: =?ISO-8859-15?Q?G=E1bor_Melis?= <mega@retes.hu>
-cc: Oleg Nesterov <oleg@redhat.com>, Davide Libenzi <davidel@xmailserver.org>,
-       Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
-Subject: Re: Q: SEGSEGV && uc_mcontext->ip (Was: Signal delivery order)
-In-Reply-To: <200903170923.56430.mega@retes.hu>
-Message-ID: <alpine.LFD.2.00.0903170848490.3082@localhost.localdomain>
-References: <200903141750.37238.mega@retes.hu> <49BED93B.1090700@nortel.com> <20090317041337.GA29740@redhat.com> <200903170923.56430.mega@retes.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+	Tue, 17 Mar 2009 12:04:51 -0400
+Received: from carmd-sa01.sierrawireless.com ([208.81.121.45]:59522 "EHLO
+	carmd-sa01.sierrawireless.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752639AbZCQQEu convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 12:04:50 -0400
+X-ASG-Debug-ID: 1237305886-7fff01b30000-xx1T2L
+X-Barracuda-URL: http://carmd-sa01.sierrawireless.com:80/cgi-bin/mark.cgi
+From: Rory Filer <rfiler@SierraWireless.com>
+To: Ralf Nyren <ralf@nyren.net>
+CC: Greg KH <greg@kroah.com>, Stephen Clark <sclark46@earthlink.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Kevin Lloyd <klloyd@SierraWireless.com>
+Date: Tue, 17 Mar 2009 09:04:22 -0700
+X-ASG-Orig-Subj: RE: Sierra Wireless (MC8780) HSDPA speed issue
+Subject: RE: Sierra Wireless (MC8780) HSDPA speed issue
+Thread-Topic: Sierra Wireless (MC8780) HSDPA speed issue
+Thread-Index: AcmnGJl4z4NSpPwMR8aD6+UlJR0vywAAO9AQ
+Message-ID: <8F90F944E50427428C60E12A34A309D21C40221D59@carmd-exchmb01.sierrawireless.local>
+References: <alpine.DEB.1.10.0903131551310.5791@fujje.iml.umu.se>
+ <20090314040322.GB3417@kroah.com>
+ <alpine.DEB.1.10.0903142021580.5797@fujje.iml.umu.se>
+ <20090314203256.GA7487@kroah.com> <49BC5A90.7070004@earthlink.net>
+ <alpine.DEB.1.10.0903152040030.5825@fujje.iml.umu.se>
+ <8F90F944E50427428C60E12A34A309D21C401BAA8D@carmd-exchmb01.sierrawireless.local>
+ <20090316043359.GA24632@kroah.com>
+ <alpine.DEB.1.10.0903161324440.32709@fujje.iml.umu.se>
+ <8F90F944E50427428C60E12A34A309D21C401BAB03@carmd-exchmb01.sierrawireless.local>
+ <alpine.DEB.1.10.0903171642030.10762@fujje.iml.umu.se>
+In-Reply-To: <alpine.DEB.1.10.0903171642030.10762@fujje.iml.umu.se>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
+X-Barracuda-Connect: UNKNOWN[10.0.6.5]
+X-Barracuda-Start-Time: 1237305887
+X-Barracuda-Encrypted: RC4-MD5
+X-Barracuda-Virus-Scanned: by CARMD-SA01 at sierrawireless.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ralf, 
+
+I wonder whether you could do a little experiment for me. Issue the following AT command to both ports you've identified:
+
+ATI
+
+And note which of the AT ports provides the most information. They will both respond, but one will be more verbose than the others. 
+
+Another thing of interest is to record how many files appear in response to the following command:
+
+ls /dev/ttyU*
+
+when the modem is running, of course. 
+
+Question - at what point should we stop including linux-kernel in this thread, if at all?
+
+Regards
+
+Rory
+
+-----Original Message-----
+From: Ralf Nyren [mailto:ralf@nyren.net] 
+Sent: Tuesday, March 17, 2009 8:54 AM
+To: Rory Filer
+Cc: Greg KH; Stephen Clark; linux-kernel@vger.kernel.org; Kevin Lloyd
+Subject: RE: Sierra Wireless (MC8780) HSDPA speed issue
+
+Hi again,
+
+Problem solved this time, well sort of anyway.
+
+This is a bit embarrassing, was quite sure I had tested this before but oh well...
+
+According to the FAQ at sierrawireless.com you should make the data connection
+on /dev/ttyUSB2 when using a MC8780 modem, /dev/ttyUSB0 is used for AT commands
+queries. This works nicely except for the speed problem. Now _changing_ so the
+data connection is established on /dev/ttyUSB0 instead solves the speed
+problem. I have successfully reached average download speeds above 400KB/s.
+
+Just to make sure I tried this fix using both 1.3.2 and 1.6.0 driver. I also
+tried the modified ppp_async.c with OBUFSIZE=4096. The cell appeared to be
+rather busy during the tests but as far as I can see both drivers and OBUFSIZE
+gave about the same speed, i.e. 300-400KB/s at my current location. No issue
+with the kernel that is.
+
+My only remaining problem is that I can't issue commands like AT+CSQ, AT+COPS?
+to determine signal strength and ISP while the connection is up and running.
+Any AT command sent to /dev/ttyUSB2 while pppd runs on /dev/ttyUSB0 causes an
+immediate modem hangup. Not a big issue but it would be nice if it worked.
+
+The card is a builtin card in the laptop and all tests reported so far have
+been performed with the same machine. Have a dual boot setup with Debian Lenny
+and Windows XP. Firmware on the MC8780 card is reported as follows:
+
+AT+GMR
+F1_0_0_10AP C:/WS/FW/F1_0_0_10AP/MSM7200R3/SRC/AMSS 2007/11/08 10:51:15
+OK
+
+If you think this problem could affect others as well an update to the table on
+the FAQ page would be nice:
+  http://www.sierrawireless.com/faq/ShowFAQ.aspx?ID=607
+
+Thanks for all valuable help and support. Just let me know if you need someone
+to test future firmware/driver updates.
+
+Best regards, Ralf
 
 
-On Tue, 17 Mar 2009, Gábor Melis wrote:
-> 
-> As an application developer what I'd like to have is this: synchronously 
-> generated signals are delivered before asynchronously generated ones. 
+On Mon, 16 Mar 2009, Rory Filer wrote:
 
-I agree that it would be nice, but quite frankly, it's simply not how 
-signals work. It would be a reasonably invasive change, and you wouldn't 
-really be able to rely on it anyway since most kernels don't work that 
-way.
+> Hi Ralf,
+>
+> Actually the Windows and Linux models are the same from the modem's point of view, but the PPP client is inside the NDIS driver.
+>
+> I've pasted in the response from our UMTS engineer below, but I'm not sure how much help it will be; here it is:
+>
+> -----Begin Included...
+> There is no specific AT command that would limit the data rate on the device - except for AT!HSDCAT but I do not think that he would be using this. Other commands such as AT+CGEQREQ probably would not help, so they should clear them.
+>
+> From the email below it seems that he used the same device on Windows so the device configuration should be OK. The location could be an issue but I would assume that he tried using the device with Windows at the same location.
+>
+> One problem that I have seen with USB is that the USB modem throughput will be low if there are other devices on the same USB hub of the laptop
+> ----End Included
+>
+> There it is. If you could get your hands on another machine and put Linux on it - or maybe temporarily make your windows machine into Dual Boot with Ubuntu (using wubi) and see how that compares that might help, but I am out of useful ideas at this point.
+>
+> Regards
+>
+> Rory
+>
+>
+>
+> -----Original Message-----
+> From: Ralf Nyren [mailto:ralf@nyren.net]
+> Sent: Monday, March 16, 2009 5:48 AM
+> To: Greg KH
+> Cc: Rory Filer; Stephen Clark; linux-kernel@vger.kernel.org; Kevin Lloyd
+> Subject: Re: Sierra Wireless (MC8780) HSDPA speed issue
+>
+> Thanks Rory,
+>
+> I have tried changing OBUFSIZE in ppp_async.c (still kernel 2.6.28.7), first
+> 512 and then 4096. However the speed "limit" of about 100KB/s remains the same.
+> So perhaps there's some setup/firmware issue with the hardware. If I understand
+> things correctly the Windows driver uses a proprietary protocol to init the card
+> while in Linux you use the AT command interface. Could be something there which
+> makes a difference I guess.
+>
+> Best regards, Ralf
+>
+> On Sun, 15 Mar 2009, Greg KH wrote:
+>
+>> On Sun, Mar 15, 2009 at 03:30:54PM -0700, Rory Filer wrote:
+>>> Hi Ralf
+>>>
+>>> Using the driver we sent you on a call-box (i.e. with a "perfect"
+>>> simulated network connection) on Ubuntu 8.04 we were seeing ~4 Mbps on
+>>> the downlink. So I would rule out any problem with the driver and
+>>> conclude it must be something in either PPP/Linux or in the modem. In
+>>> order to rule out the modem, I've got a question into one of our UMTS
+>>> engineers and will send you a reply when we get the answer.
+>>>
+>>> We did play around a little with 2.4 kernels of Linux and discovered
+>>> there is a buffer in PPP_ASYNC.C which, when its size is increased,
+>>> doubled the throughput. If you are savvy enough with Linux, you might
+>>> want to try playing with that. We stopped short of any thorough
+>>> testing of changing this array size, but were pleased with the result.
+>>> If I recall properly, the size of this array is (was, in 2.4) 256
+>>> bytes. Doubling it gave an immediate improvement. We were guessing
+>>> that the small size of this buffer was fine in the "old days" when
+>>> modems peaked at ~56 kbps. Even 8 years ago that was the fastest you
+>>> could go with a GPRS product, now our new HSPA+ products yields 21
+>>> Mbps on Telstra's network! Quite a difference.
+>>
+>> Ah, the OBUFSIZE #define in drivers/net/ppp_async.c?
+>>
+>> Anyone care to bump this size up and see if that helps out?
+>>
+>> thanks,
+>>
+>> greg k-h
+>>
+>
+>
 
-What you might be able to do instead is to walk signal frames backwards by 
-hand. IOW, accept the fact that sometimes signals end up being nested, but 
-then you could try to find the right frame by just looking at them.
-
-And your trick of comparing 'info->si_ip' with 'context->uc_mcontext->ip' 
-is pretty good, and lets the code itself walk the signal frames by just 
-depending on the fault happening again.
-
-			Linus
