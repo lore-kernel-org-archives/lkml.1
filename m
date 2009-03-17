@@ -1,69 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbZCQSP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbZCQSRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758056AbZCQSP0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 14:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbZCQSPL
+	id S1757541AbZCQSRh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 14:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZCQSR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 14:15:11 -0400
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:24497 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753539AbZCQSPJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 14:15:09 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=GnhJYoGsLXoBGmD85KjY7Ezf62v4bry3wWRMF2irxsZ8w1GQSVCb+kG+hUkTk86NesHxxiz0Bd+kB1JnWQFrFt4upR43LqnLqNa9ACS4KGE+oRPfeXJLy2yBEQQyE0L4FRju3EAqPkNxT994U6mmbxlIL+4hQ0wBWCq/6gIV8NI=  ;
-X-YMail-OSG: zQuBNpYVM1l6LvjTHihVpKJCT4Ta1xhthpYS725d1uyzmD5xVwCXFM_VOcr8TdcXuLSBxf3BpFeevoFwaCoP77hpspY9yBPmqVhLsad_7GiZkCV72N97BOiNQ2bUtqub9anKiUQe3oVcdz0dMny80yACmAuuBtCYo8fd2EfcePK6mSJr0DvNrErdR3GJ
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch 2.6.29-rc8 regulator-next] regulator: init fixes (v4)
-Date: Tue, 17 Mar 2009 11:15:06 -0700
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-References: <200903111743.34708.david-b@pacbell.net> <200903142105.29382.david-b@pacbell.net> <20090316215422.GA6433@sirena.org.uk>
-In-Reply-To: <20090316215422.GA6433@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 17 Mar 2009 14:17:27 -0400
+Received: from mga03.intel.com ([143.182.124.21]:51515 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753887AbZCQSRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 14:17:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,380,1233561600"; 
+   d="scan'208";a="121223074"
+Subject: Re: smp.c && barriers (Was: [PATCH 1/4] generic-smp: remove single
+ ipi fallback for smp_call_function_many())
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: Nick Piggin <npiggin@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Oleg Nesterov <oleg@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       "steiner@sgi.com" <steiner@sgi.com>
+In-Reply-To: <20090225033230.GA4611@wotan.suse.de>
+References: <20090217112657.GE26402@wotan.suse.de>
+	 <1234923702.29823.7.camel@vayu> <20090218135945.GC23125@wotan.suse.de>
+	 <1234982620.29823.22.camel@vayu> <20090218191757.GD8889@elte.hu>
+	 <1235001314.14523.2.camel@vayu> <20090219122031.GC1703@elte.hu>
+	 <1235080824.14523.19.camel@vayu> <20090220105640.GE28581@elte.hu>
+	 <1235156214.14523.54.camel@vayu>  <20090225033230.GA4611@wotan.suse.de>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Tue, 17 Mar 2009 10:16:54 -0800
+Message-Id: <1237313814.27006.203.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903171115.06685.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 16 March 2009, Mark Brown wrote:
-> On Sat, Mar 14, 2009 at 09:05:29PM -0700, David Brownell wrote:
-> 
-> > was called.  It's not exactly hard to check if it was enabled, then
-> > act accordingly, in the typical "single consumer of the regulator"
-> > case.
-> 
-> How typical that is depends very much on the devices you're looking at.
+On Tue, 2009-02-24 at 19:32 -0800, Nick Piggin wrote:
+> Just if I may add something -- I would probably slightly prefer if
+> you explicitly used an sfence or other serializing instruction rather
+> than smp_mb(). Maybe call it wrmsr_fence() or something.
 
-I'd have said "systems you're looking at" ... but so long
-as the boot_on flag exists, then this issue can appear with
-absolutely any regulator, used for anything.
+I was planning to send a cleanup patch doing this, but looks like Ingo
+never took the original patch. Here it is appended. Ingo, please
+consider.
 
-The basic issue addressed by $SUBJECT patch just restores
-internal consistency to the framework, in the face of such
-flags (or equivalent actions by the boot loader).
+thanks,
+suresh
+---
 
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: x86: Add x2apic_wrmsr_fence() to x2apic flush tlb paths
 
-> Devices that need to do things like set voltages are fairly likely to
-> own the regulator but with devices that just need to ensure that they
-> have their supplies enabled it's much more likely that the supplies will
-> be shared.
+uncached MMIO accesses for xapic are inherently serializing and hence
+we don't need explicit barriers for xapic IPI paths.
 
-Right.  Do you have a model how such shared supplies would
-coexist with the "enabled at boot time" model, and still
-support being disabled?
+x2apic MSR writes/reads don't have serializing semantics and hence need
+a serializing instruction or mfence, to make all the previous memory
+stores globally visisble before the x2apic msr write for IPI.
 
-My first thought is that the system designer should avoid
-such boot_on modes.  But that's not always going to work.
+Add x2apic_wrmsr_fence() in flush tlb path to x2apic specific paths.
 
-- Dave
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index 394d177..cfc0871 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -108,6 +108,16 @@ extern void native_apic_icr_write(u32 low, u32 id);
+ extern u64 native_apic_icr_read(void);
+ 
+ #ifdef CONFIG_X86_X2APIC
++/*
++ * Make previous memory operations globally visible before
++ * sending the IPI through x2apic wrmsr. We need a serializing instruction or
++ * mfence for this.
++ */
++static inline void x2apic_wrmsr_fence(void)
++{
++	asm volatile("mfence":::"memory");
++}
++
+ static inline void native_apic_msr_write(u32 reg, u32 v)
+ {
+ 	if (reg == APIC_DFR || reg == APIC_ID || reg == APIC_LDR ||
+diff --git a/arch/x86/kernel/apic/x2apic_cluster.c b/arch/x86/kernel/apic/x2apic_cluster.c
+index 8fb87b6..4a903e2 100644
+--- a/arch/x86/kernel/apic/x2apic_cluster.c
++++ b/arch/x86/kernel/apic/x2apic_cluster.c
+@@ -57,6 +57,8 @@ static void x2apic_send_IPI_mask(const struct cpumask *mask, int vector)
+ 	unsigned long query_cpu;
+ 	unsigned long flags;
+ 
++	x2apic_wrmsr_fence();
++
+ 	local_irq_save(flags);
+ 	for_each_cpu(query_cpu, mask) {
+ 		__x2apic_send_IPI_dest(
+@@ -73,6 +75,8 @@ static void
+ 	unsigned long query_cpu;
+ 	unsigned long flags;
+ 
++	x2apic_wrmsr_fence();
++
+ 	local_irq_save(flags);
+ 	for_each_cpu(query_cpu, mask) {
+ 		if (query_cpu == this_cpu)
+@@ -90,6 +94,8 @@ static void x2apic_send_IPI_allbutself(int vector)
+ 	unsigned long query_cpu;
+ 	unsigned long flags;
+ 
++	x2apic_wrmsr_fence();
++
+ 	local_irq_save(flags);
+ 	for_each_online_cpu(query_cpu) {
+ 		if (query_cpu == this_cpu)
+diff --git a/arch/x86/kernel/apic/x2apic_phys.c b/arch/x86/kernel/apic/x2apic_phys.c
+index 23625b9..a284359 100644
+--- a/arch/x86/kernel/apic/x2apic_phys.c
++++ b/arch/x86/kernel/apic/x2apic_phys.c
+@@ -58,6 +58,8 @@ static void x2apic_send_IPI_mask(const struct cpumask *mask, int vector)
+ 	unsigned long query_cpu;
+ 	unsigned long flags;
+ 
++	x2apic_wrmsr_fence();
++
+ 	local_irq_save(flags);
+ 	for_each_cpu(query_cpu, mask) {
+ 		__x2apic_send_IPI_dest(per_cpu(x86_cpu_to_apicid, query_cpu),
+@@ -73,6 +75,8 @@ static void
+ 	unsigned long query_cpu;
+ 	unsigned long flags;
+ 
++	x2apic_wrmsr_fence();
++
+ 	local_irq_save(flags);
+ 	for_each_cpu(query_cpu, mask) {
+ 		if (query_cpu != this_cpu)
+@@ -89,6 +93,8 @@ static void x2apic_send_IPI_allbutself(int vector)
+ 	unsigned long query_cpu;
+ 	unsigned long flags;
+ 
++	x2apic_wrmsr_fence();
++
+ 	local_irq_save(flags);
+ 	for_each_online_cpu(query_cpu) {
+ 		if (query_cpu == this_cpu)
+diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
+index a654d59..821e970 100644
+--- a/arch/x86/mm/tlb.c
++++ b/arch/x86/mm/tlb.c
+@@ -187,11 +187,6 @@ static void flush_tlb_others_ipi(const struct cpumask *cpumask,
+ 		       cpumask, cpumask_of(smp_processor_id()));
+ 
+ 	/*
+-	 * Make the above memory operations globally visible before
+-	 * sending the IPI.
+-	 */
+-	smp_mb();
+-	/*
+ 	 * We have to send the IPI only to
+ 	 * CPUs affected.
+ 	 */
+
 
