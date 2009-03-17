@@ -1,110 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762721AbZCQMBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762627AbZCQMDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762721AbZCQMBp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 08:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbZCQMBg
+	id S1762627AbZCQMDi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 08:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbZCQMD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 08:01:36 -0400
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:11349
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754777AbZCQMBf convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 08:01:35 -0400
-X-BigFish: VPS-27(zz1432R98dR1805M936fKzz1202hzzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KGNG20-03-8WD-01
-Date: Tue, 17 Mar 2009 13:01:12 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@redhat.com>
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] dma-debug: add additional checks
-Message-ID: <20090317120112.GP6159@amd.com>
-References: <1237223130-26519-1-git-send-email-joerg.roedel@amd.com>
+	Tue, 17 Mar 2009 08:03:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51733 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754777AbZCQMD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 08:03:26 -0400
+Date: Tue, 17 Mar 2009 08:03:24 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: David Miller <davem@davemloft.net>
+cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] crash with /proc/iomem on sparc64
+Message-ID: <Pine.LNX.4.64.0903170758060.24107@hs20-bc2-1.build.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-In-Reply-To: <1237223130-26519-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 17 Mar 2009 12:01:12.0988 (UTC) FILETIME=[115875C0:01C9A6F8]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 16, 2009 at 06:05:27PM +0100, Joerg Roedel wrote:
-> Hi,
-> 
-> this small series of patches adds three additional checks to the dma-api
-> debugging code. The first one checks if dma mappings are requested for
-> kernel text or rodata segments.
-> The second check added makes noise if a device is unbound from its
-> driver and there are still pending dma allocations we are aware of.
-> 
-> Joerg
-> 
-> diffstat:
-> 
->  arch/x86/kernel/pci-dma.c |    4 ++
->  include/linux/dma-debug.h |    7 ++++
->  lib/dma-debug.c           |   81 ++++++++++++++++++++++++++++++++++++++++++++-
->  3 files changed, 91 insertions(+), 1 deletions(-)
+Hi
 
-Ingo,
+When you compile kernel on Sparc64 with heap memory checking and type
+"cat /proc/iomem", you get a crash, because pointers in struct resource 
+are uninitialized.
 
-you can also pull these patches from my dma-api/debug branch at
+Most code fills struct resource with zeros, so I assume that it is 
+responsibility of the caller of request_resource to initialized it, not 
+the responsibility of request_resource functuion.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git dma-api/debug
+After 2.6.29 is out, there could be a check for uninitialized fields added 
+to request_resource to avoid crashes like this.
 
-including the other dma-debug patches relative to your tip/core/iommu
-branch.
+Mikulas
 
-The complete diffstat and shortlog against tip/core/iommu is here:
+---
+ arch/sparc/kernel/pci_common.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- Documentation/DMA-API.txt           |  106 ++++
- Documentation/kernel-parameters.txt |   10 +
- arch/Kconfig                        |    2 +
- arch/x86/Kconfig                    |    1 +
- arch/x86/include/asm/dma-mapping.h  |   45 ++-
- arch/x86/kernel/pci-dma.c           |   10 +
- include/linux/dma-debug.h           |  174 +++++++
- lib/Kconfig.debug                   |   11 +
- lib/Makefile                        |    2 +
- lib/dma-debug.c                     |  949 +++++++++++++++++++++++++++++++++++
- 10 files changed, 1304 insertions(+), 6 deletions(-)
-
-David Woodhouse (2):
-      dma-debug: add function to dump dma mappings
-      dma-debug: print stacktrace of mapping path on unmap error
-
-Joerg Roedel (19):
-      dma-debug: add Kconfig entry
-      dma-debug: add header file and core data structures
-      dma-debug: add hash functions for dma_debug_entries
-      dma-debug: add allocator code
-      dma-debug: add initialization code
-      dma-debug: add kernel command line parameters
-      dma-debug: add debugfs interface
-      dma-debug: add core checking functions
-      dma-debug: add checking for map/unmap_page/single
-      dma-debug: add add checking for map/unmap_sg
-      dma-debug: add checking for [alloc|free]_coherent
-      dma-debug: add checks for sync_single_*
-      dma-debug: add checks for sync_single_range_*
-      dma-debug: add checks for sync_single_sg_*
-      dma-debug: x86 architecture bindings
-      dma-debug: Documentation update
-      dma-debug: add checks for kernel text and rodata
-      dma-debug: add a check dma memory leaks
-      dma-debug/x86: register pci bus for dma-debug leak detection
-
-Joerg
-
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
-
+Index: linux-2.6.29-rc8-devel/arch/sparc/kernel/pci_common.c
+===================================================================
+--- linux-2.6.29-rc8-devel.orig/arch/sparc/kernel/pci_common.c	2009-03-17 12:49:51.000000000 +0100
++++ linux-2.6.29-rc8-devel/arch/sparc/kernel/pci_common.c	2009-03-17 12:50:16.000000000 +0100
+@@ -368,7 +368,7 @@ static void pci_register_iommu_region(st
+ 	const u32 *vdma = of_get_property(pbm->op->node, "virtual-dma", NULL);
+ 
+ 	if (vdma) {
+-		struct resource *rp = kmalloc(sizeof(*rp), GFP_KERNEL);
++		struct resource *rp = kzalloc(sizeof(*rp), GFP_KERNEL);
+ 
+ 		if (!rp) {
+ 			prom_printf("Cannot allocate IOMMU resource.\n");
