@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbZCQQYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759855AbZCQQYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757481AbZCQQYG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 12:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbZCQQXy
+	id S1759855AbZCQQYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 12:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZCQQYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 12:23:54 -0400
-Received: from waste.org ([66.93.16.53]:50219 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752570AbZCQQXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 12:23:54 -0400
-Subject: Re: [PATCH] acquire mmap semaphore in pagemap_read.
-From: Matt Mackall <mpm@selenic.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       akpm@linux-foundation.org
-In-Reply-To: <20090317130410.7dd8daa5@skybase>
-References: <20090312113308.6fe18a93@skybase>
-	 <20090312114533.GA2407@x200.localdomain> <20090312125410.25400d18@skybase>
-	 <1236871414.3213.50.camel@calx> <20090312165451.1a7ef22f@skybase>
-	 <20090317130410.7dd8daa5@skybase>
-Content-Type: text/plain
-Date: Tue, 17 Mar 2009 11:21:41 -0500
-Message-Id: <1237306901.3213.251.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Mar 2009 12:24:38 -0400
+Received: from mail-qy0-f122.google.com ([209.85.221.122]:60476 "EHLO
+	mail-qy0-f122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753754AbZCQQYh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 12:24:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=hIY3MttHl5Lq+OHnU5/YA0XQXaPteIP28C3MLhS8Tf7YSmeBK0m8EtePZtp1lCL3/u
+         ZlbnemfWq1rz0AILLfq/wZAc7+Xm/4lXwqK51pYVdJSjrNABhl8ozXk9CKoUHNlK+CXQ
+         OanP/PXkY+/BxO+JZNI5qKq4nseamtvJ3+vAg=
+MIME-Version: 1.0
+In-Reply-To: <20090317160527.GB6737@tuxdriver.com>
+References: <1237140665.24621.2.camel@johannes.local>
+	 <1237143683.24621.7.camel@johannes.local>
+	 <20090315202603.GA9077@elte.hu>
+	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
+	 <alpine.LFD.2.00.0903161250080.3082@localhost.localdomain>
+	 <b6a2187b0903161655q15437156qc926c8db37d8ba4b@mail.gmail.com>
+	 <20090317144802.GF3549@tuxdriver.com>
+	 <20090317152801.GA6737@tuxdriver.com> <20090317153924.GA21061@elte.hu>
+	 <20090317160527.GB6737@tuxdriver.com>
+Date: Wed, 18 Mar 2009 00:24:33 +0800
+Message-ID: <b6a2187b0903170924u72723220x4c0a717e3cfebf8d@mail.gmail.com>
+Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-17 at 13:04 +0100, Martin Schwidefsky wrote:
-> On Thu, 12 Mar 2009 16:54:51 +0100
-> Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-> 
-> > On Thu, 12 Mar 2009 10:23:34 -0500
-> > Matt Mackall <mpm@selenic.com> wrote:
-> > 
-> > > Well it means we may have to reintroduce the very annoying double
-> > > buffering from various earlier implementations. But let's leave this
-> > > discussion until after we've figured out what to do about the walker
-> > > code.
-> > 
-> > About the walker code. I've realized that there is another way to fix
-> > this. The TASK_SIZE definition is currently used for two things: 1) as
-> > a maximum mappable address, 2) the size of the address space for a
-> > process. And there lies a problem: while a process is using a reduced
-> > page table 1) and 2) differ. If I make TASK_SIZE give you the current
-> > size of the address space then it is not possible to mmap an object
-> > beyond 4TB and the page table upgrade never happens. If I make
-> > TASK_SIZE return the maximum mappable address the page table walker
-> > breaks. The solution could be to introduce MAX_TASK_SIZE and use that
-> > in the mmap code to find out what can be mapped.
->  
-> I got around the TASK_SIZE checks with arch code only. In total I'll
-> need two fixes, one that makes TASK_SIZE to reflect the size of the
-> current address space and another one to get the page table upgrades
-> working again. I'll push these patches via git390 as no common code
-> changes are required.
+On Wed, Mar 18, 2009 at 12:05 AM, John W. Linville <linville@tuxdriver.com>
+> the reverts.  But if you think it is helpful:
+>        http://bugzilla.kernel.org/attachment.cgi?id=20567&action=view
 
-Thanks, Martin.
-
-> Which leaves the mmap_sem issue as the only problem left.
-
-Yeah, this one needs more thought. I'd really rather not go back to
-double-buffering here as it was much more complicated, not to mention
-slow.
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
+I tried applying the above patch against the latest linux git
+(18439c39e826191c0ef08c3a3271ce7ece46a860), but got a lot of rejects.
+Is this supposed to be?
 
 
+patch -p1 </tar/v2.6/revert-remove-ssid-knowledge-from-driver-series.patch
+1 out of 1 hunk FAILED -- saving rejects to file
+drivers/net/wireless/adm8211.h.rej
+1 out of 2 hunks FAILED -- saving rejects to file
+drivers/net/wireless/b43/main.c.rej
+1 out of 2 hunks FAILED -- saving rejects to file
+drivers/net/wireless/b43legacy/main.c.rej
+1 out of 1 hunk FAILED -- saving rejects to file
+drivers/net/wireless/iwlwifi/iwl-3945.h.rej
+3 out of 4 hunks FAILED -- saving rejects to file
+drivers/net/wireless/iwlwifi/iwl-agn.c.rej
+1 out of 1 hunk FAILED -- saving rejects to file
+drivers/net/wireless/iwlwifi/iwl-dev.h.rej
+3 out of 5 hunks FAILED -- saving rejects to file
+drivers/net/wireless/iwlwifi/iwl3945-base.c.rej
+1 out of 3 hunks FAILED -- saving rejects to file include/net/mac80211.h.rej
+
+Thanks,
+Jeff.
