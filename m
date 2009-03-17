@@ -1,60 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762794AbZCQHyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762852AbZCQHyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762794AbZCQHyc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 03:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbZCQHyX
+	id S1762852AbZCQHyq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 03:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762829AbZCQHya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 03:54:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60254 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751396AbZCQHyW (ORCPT
+	Tue, 17 Mar 2009 03:54:30 -0400
+Received: from mx3.schottelius.org ([77.109.138.221]:38916 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762801AbZCQHy3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 03:54:22 -0400
-Date: Tue, 17 Mar 2009 03:54:17 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Sven-Thorsten Dietrich <sdietrich@novell.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
+	Tue, 17 Mar 2009 03:54:29 -0400
+Date: Tue, 17 Mar 2009 08:54:24 +0100
+From: Nico -telmich- Schottelius 
+	<nico-linux-ipw3945-devel@schottelius.org>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Nico Schottelius <nico-linux-20090313@schottelius.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jon Masters <jonathan@jonmasters.org>
-Subject: Re: [patch 3/4] genirq: add a quick check handler
-Message-ID: <20090317075417.GD3331@infradead.org>
-References: <20090226131336.423054348@linutronix.de> <20090226131719.640887792@linutronix.de> <20090228222408.GB7797@infradead.org> <1236283149.20484.31.camel@sven.thebigcorporation.com>
+       ipw3945-devel@lists.sourceforge.net
+Subject: Re: Strange reboots on 2.6.29-rc6-wl
+Message-ID: <20090317075424.GD8777@denkbrett.schottelius.org>
+Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-ipw3945-devel@schottelius.org>,
+	"John W. Linville" <linville@tuxdriver.com>,
+	Nico Schottelius <nico-linux-20090313@schottelius.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	ipw3945-devel@lists.sourceforge.net
+References: <20090313200657.GA4907@denkbrett.schottelius.org> <20090313204100.GA3554@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ieNMXl1Fr3cevapt"
 Content-Disposition: inline
-In-Reply-To: <1236283149.20484.31.camel@sven.thebigcorporation.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20090313204100.GA3554@tuxdriver.com>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.29-rc7-next-20090306-ikn x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 05, 2009 at 11:59:09AM -0800, Sven-Thorsten Dietrich wrote:
-> Most of the IRQ handler, whether run in a thread or IRQ context, will be
-> the same code - so what you are proposing would have to eliminate code
-> duplication as well as heavy runtime branching overhead.
-> 
-> Ultimately, no matter how its done, the concept of disabling IRQ assert
-> at the device level, rather than the apic level, is the optimal
-> "correct" implementation.
-> 
-> Formulating that into the code, as Thomas proposed with the quickcheck,
-> supplies structural demarcation for semi as well as software design.
 
+--ieNMXl1Fr3cevapt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Umm, the code will be look more or less the same either way.  I just
-think overloading the current handler to mean two different things is
-a bad idea.  For a driver using a quick disable handler and a long slow
-threaded one the only difference is naming the two functions
-differently.
+John W. Linville [Fri, Mar 13, 2009 at 04:41:01PM -0400]:
+> On Fri, Mar 13, 2009 at 09:06:57PM +0100, Nico Schottelius wrote:
+> > Hello!
+> >=20
+> > I've two Lenovo X200 here, same config and same kernel version
+> > (2.6.29-rc7-wl-ikn, from wireless-testing, v2.6.29-rc7-17155-g2f7ab92).
+> >=20
+> > One reboots after half a second after displaying a message Probing for =
+edd
+> > (or similar). I tried with and without edd=3Doff, no changes.
+> >=20
+> > The same happens with v2.6.29-rc7-32930-g5434dd7 (iwlwifi-2.6).
+> >=20
+> > Anyone an idea, what maybe the reason for that behaviour?
+>=20
+> No clue.  But since you clearly are comfortable with git and building
+> your own kernels, perhaps you can use git bisect to suggest which
+> commit is broken? :-)
 
-I wonder if you're still thinking in the way of a -RT like setup where
-threaded interrupts can be enabled and disabled globally?  I don't think
-we should ever do that for mainline.
+It seems there's something different broken, all newly built
+kernels are instantly rebooting. All are displaying the
+"edd=3Doff" warning message.
 
+The gcc version is slightly different (4.1.3 vs. 4.3.3, both Debian),
+but I'm already running next-20090306 compiled with this compiler.
+
+Has anyone a clue on howto debug the build environment or
+debugging the kernel before it's getting booted?
+
+Nico
+
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--ieNMXl1Fr3cevapt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkm/VzAACgkQuL75KpiFGIzdiACgtbFHcK3tNW5Fxmu73j6U5AUR
+yCAAn1lu95OHvSj7E/RFePyv2GWZAsHB
+=3eij
+-----END PGP SIGNATURE-----
+
+--ieNMXl1Fr3cevapt--
