@@ -1,86 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbZCQViX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856AbZCQVkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756954AbZCQViX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 17:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756103AbZCQViN
+	id S1757856AbZCQVkW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 17:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbZCQVkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 17:38:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33295 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754317AbZCQViM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 17:38:12 -0400
-Message-ID: <49C017D0.6030502@kernel.org>
-Date: Tue, 17 Mar 2009 14:36:16 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>, Jan Beulich <jbeulich@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: [PATCH] acpi: remove the wrong warning about xpm1a_event_block.bit_width
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 17 Mar 2009 17:40:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34070
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754589AbZCQVkD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 17:40:03 -0400
+Date: Tue, 17 Mar 2009 14:39:49 -0700 (PDT)
+Message-Id: <20090317.143949.250643299.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
+Subject: Re: pull request: wireless-2.6 2009-03-16
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090316231423.GA3633@tuxdriver.com>
+References: <20090316231423.GA3633@tuxdriver.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Mon, 16 Mar 2009 19:14:24 -0400
 
-Impact: fix warning
+> Here is a group of patches intended for 2.6.29.  The one from me is
+> minor, but it cuts-down on log SPAM for ipw2100, ipw2200, and hostap
+> users.  The two from Jouni fix some panics he observed himself.
+> 
+> The first one from Luis fixes bug 12110 at bugzilla.kernel.org.  I know
+> he has worked on it for a long time and I've had several desperate users
+> asking for it, so it must be good. :-)  Unfortunately, it causes some
+> nasty merge errors with what is in net-next-2.6 and wireless-next-2.6.
+> I created a merge-test branch in wireless-next-2.6, and the merge commit
+> log goes into more detail about resolving the issue.  In short, you
+> probably want to diff drivers/net/ath9k against the merge-test branch...
+> 
+> Please let me know if there are problems!
 
-it seems there are some merging problems.
+Pulled, thanks John.
 
-that bit_width is already divided by 2. so I got warning from all servers.
-
-also in that case do try to the fallback like comments saying.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- drivers/acpi/acpica/tbfadt.c |   18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
-
-Index: linux-2.6/drivers/acpi/acpica/tbfadt.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/acpica/tbfadt.c
-+++ linux-2.6/drivers/acpi/acpica/tbfadt.c
-@@ -447,13 +447,16 @@ static void acpi_tb_convert_fadt(void)
- 	 * cannot be relied upon, though. Hence resort to using the v1 length
- 	 * here (and warn about the inconsistency).
- 	 */
--	if (acpi_gbl_FADT.xpm1a_event_block.bit_width
--	    != acpi_gbl_FADT.pm1_event_length * 8)
-+	if (acpi_gbl_FADT.xpm1a_event_block.bit_width * 2
-+	    != acpi_gbl_FADT.pm1_event_length * 8) {
- 		printk(KERN_WARNING "FADT: "
- 		       "X_PM1a_EVT_BLK.bit_width (%u) does not match"
- 		       " PM1_EVT_LEN (%u)\n",
--		       acpi_gbl_FADT.xpm1a_event_block.bit_width,
-+		       acpi_gbl_FADT.xpm1a_event_block.bit_width * 2,
- 		       acpi_gbl_FADT.pm1_event_length);
-+		pm1_register_byte_width = (u8) ACPI_DIV_2(acpi_gbl_FADT.pm1_event_length);
-+		acpi_gbl_FADT.xpm1a_event_block.bit_width = pm1_register_byte_width * 8;
-+	}
- 
- 	/* The PM1A register block is required */
- 
-@@ -469,13 +472,16 @@ static void acpi_tb_convert_fadt(void)
- 	/* The PM1B register block is optional, ignore if not present */
- 
- 	if (acpi_gbl_FADT.xpm1b_event_block.address) {
--		if (acpi_gbl_FADT.xpm1b_event_block.bit_width
--		    != acpi_gbl_FADT.pm1_event_length * 8)
-+		if (acpi_gbl_FADT.xpm1b_event_block.bit_width * 2
-+		    != acpi_gbl_FADT.pm1_event_length * 8) {
- 			printk(KERN_WARNING "FADT: "
- 			       "X_PM1b_EVT_BLK.bit_width (%u) does not match"
- 			       " PM1_EVT_LEN (%u)\n",
--			       acpi_gbl_FADT.xpm1b_event_block.bit_width,
-+			       acpi_gbl_FADT.xpm1b_event_block.bit_width * 2,
- 			       acpi_gbl_FADT.pm1_event_length);
-+			pm1_register_byte_width = (u8) ACPI_DIV_2(acpi_gbl_FADT.pm1_event_length);
-+			acpi_gbl_FADT.xpm1b_event_block.bit_width = pm1_register_byte_width * 8;
-+		}
- 		acpi_tb_init_generic_address(&acpi_gbl_xpm1b_enable,
- 					     acpi_gbl_FADT.xpm1b_event_block.space_id,
- 					     pm1_register_byte_width,
+Wish me luck with the net-next-2.6 merge :-)
