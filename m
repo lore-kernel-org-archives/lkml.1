@@ -1,49 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbZCQFHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759240AbZCQFJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754908AbZCQFHx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 01:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZCQFHn
+	id S1759240AbZCQFJb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 01:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZCQFJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 01:07:43 -0400
-Received: from gw.goop.org ([64.81.55.164]:50855 "EHLO mail.goop.org"
+	Tue, 17 Mar 2009 01:09:22 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:42098 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751134AbZCQFHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 01:07:43 -0400
-Message-ID: <49BF301C.6010708@goop.org>
-Date: Mon, 16 Mar 2009 22:07:40 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	id S1751312AbZCQFJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 01:09:21 -0400
+Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator -
+ hang traced
+From: john stultz <johnstul@us.ibm.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org> <49BEB5FE.7050601@zytor.com> <49BEBD98.3090905@goop.org> <49BEC143.6030104@zytor.com> <49BEC53F.20200@goop.org> <49BED431.5070201@zytor.com> <49BF0A51.5000909@kernel.org> <49BF2054.9020009@zytor.com>
-In-Reply-To: <49BF2054.9020009@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+In-Reply-To: <200903131248.03622.elendil@planet.nl>
+References: <200903080230.10099.elendil@planet.nl>
+	 <1236818863.7680.156.camel@localhost.localdomain>
+	 <200903121805.48041.elendil@planet.nl>
+	 <200903131248.03622.elendil@planet.nl>
+Content-Type: text/plain
+Date: Mon, 16 Mar 2009 22:09:16 -0700
+Message-Id: <1237266556.7306.80.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Yinghai Lu wrote:
->   
->>> You could also write:
->>>
->>> PAGE_TABLE_SIZE((-PAGE_OFFSET & 0xffffffff) >> PAGE_SHIFT) << PAGE_SHIFT
->>>
->>> (the & 0xffffffff is necessary, or you'll get a signed shift.)
->>>       
->> max kernel address space range?
->>
->>     
->
-> Yes, either ((1 << 32)-PAGE_OFFSET) or (-PAGE_OFFSET & 0xffffffff)
-> should work for that.
->   
+On Fri, 2009-03-13 at 12:48 +0100, Frans Pop wrote:
+> One more.
+> 
+> On Thursday 12 March 2009, Frans Pop wrote:
+> > I have now been able to trace the hang (full log attached). Where I
+> > added tracing printks should be fairly obvious, and see attachment.
+> > No idea what to make of the result.
+> 
+> I added printks that show changes in clock data. I print info for
+> 3 consecutive calls of update_wall_time every 1000 times the function
+> is called and also after a change of clock source.
 
-The former seems more obvious.
+[snip]
 
-    J
+> The values are: "from the very beginning of the function" -> "just after
+> the calculations". Values are from nsecs fields.
+> The xtime.tv_nsec which enters the function increases nicely and follows
+> the timestamps from Hercules, but look rather bogus after the calculations.
+> 
+> With Roman's patch and the later patch this changes to:
+> 
+>      0.004593! timekeeping: clock source changed from none to jiffies (shift: 8)
+>      0.005051! timekeeping (jiffies, 8): xtime.tv: 594977000 -> 594977001
+>      0.005097!    clock->xtime: 0 -> -256, error: 0 -> -4294867296
+>      0.009608! timekeeping (jiffies, 8): xtime.tv: 594977001 -> 594960618
+>      0.009712!    clock->xtime: -256 -> -256, error: -4294867296 -> -4292501984672096
+>      0.014463! Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
+> [... Clock has gone back? ...]
+
+
+xtime going backwards is actually allowable, as xtime does not store the
+entire state of time.
+
+Time is represented by the equation:
+	xtime + (offset * mult) >> shift
+
+Since we steer the clock by changing the mult value, imagine if we were
+slowing down time, we'd decrese mult by one. However, since  offset may
+be non-zero, we have to keep the equation balanced, or time might
+actually go backwards.
+
+Given:
+	mult2 == mult1 - 1
+
+	xtime1 + (offset * mult1) >> shift == xtime2 + (offset * mult2) >> shift
+	xtime1 + (offset * mult1) >> shift == xtime2 + (offset * (mult1 - 1)) >> shift
+	xtime1 + (offset * mult1) >> shift - (offset * (mult1 - 1)) >> shift == xtime2
+	xtime1 + (offset * mult1 - offset * (mult1 - 1)) >> shift == xtime2
+	xtime1 + (offset * mult1 - (offset * mult1 - offset*1)) >> shift == xtime2
+	xtime1 + offset>> shift == xtime2
+
+Now, if we are increasing mult, xtime will be decreased in the same
+fashion. So the xtime value going backwards isn't wrong by itself, as
+the corresponding offset * newmult will compensate.
+
+xtime_cache actually stores a snapshot of the full state each call to
+update_wall_time(), so you might want to use that in your printing
+instead.
+
+
+>From what I've seen so far debugging today it seems something goes off
+in clocksource_bigadjust(), and the error continues to grow instead of
+being corrected, and we end up constantly increasing mult.
+
+I'm still not quite sure how this links to the hang, but I'm still digging.
+
+thanks
+-john
+
