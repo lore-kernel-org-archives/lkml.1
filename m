@@ -1,127 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZCQV20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbZCQV1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbZCQV20 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 17:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbZCQV1f
+	id S1757572AbZCQV1q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 17:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbZCQV1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 17:27:35 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:52230 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756933AbZCQV1d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 17:27:33 -0400
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com> (sfid-20090316_142417_625321_EAE390ED)
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-	 <b6a2187b0903141958u9dae0fdk1f44b387108b99e4@mail.gmail.com>
-	 <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com>
-	 <1237140665.24621.2.camel@johannes.local>
-	 <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
-	 <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu>
-	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
-	 (sfid-20090316_142417_625321_EAE390ED)
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-APmAsfgopLNAwlSHx71g"
-Date: Tue, 17 Mar 2009 20:22:22 +0100
-Message-Id: <1237317742.31814.28.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Tue, 17 Mar 2009 17:27:24 -0400
+Received: from ozlabs.org ([203.10.76.45]:47273 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756996AbZCQV1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 17:27:24 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PULL] x86 cpumask work
+Date: Wed, 18 Mar 2009 07:57:19 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, Mike Travis <travis@sgi.com>
+References: <200903121453.45163.rusty@rustcorp.com.au> <200903171450.34549.rusty@rustcorp.com.au> <20090317105121.GJ6477@elte.hu>
+In-Reply-To: <20090317105121.GJ6477@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903180757.19964.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 17 March 2009 21:21:21 Ingo Molnar wrote:
+> looks perfect. Should i apply or do you want to send a pull 
+> request?
 
---=-APmAsfgopLNAwlSHx71g
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Just apply, if that's OK.
 
-On Mon, 2009-03-16 at 21:24 +0800, Jeff Chua wrote:
+BTW, I'm about to post the cpufreq and acpi cpumask-games-removal patches
+again.  If DaveJ and Len don't NAK them, do you want to apply them, or prefer
+a pull against cpus4096 (they're really only tangentially related to that
+effort tho).
 
-> Here's what I did, and it's repeatable.
->=20
-> Take the attached bisect log and replay it, and the last offending
-> commit is this ...
-> # git log
-> commit 71c11fb57b924c160297ccd9e1761db598d00ac2
-> Author: Johannes Berg <johannes@sipsolutions.net>
-> Date:   Tue Oct 28 18:29:48 2008 +0100
->=20
->     b43/legacy: remove SSID code
->=20
-> Yes, this is not the real problem, but it's the last commit that cause
-> the problem, and I couldn't bisect further, typing the next "git
-> bisect bad" and the commit is
-
-I'm on 0191b62 now and cannot reproduce the problem with iwlwifi
-hardware and a linksys (broadcom-based) AP with hidden SSID.
-
-> Anything I can help to debug further, just let me know.
-
-Compile iwlwifi with debugging please, and instead of plain modprobe
-iwlagn, do this:
-	modprobe iwlagn debug=3D0x800 debug50=3D0x800
-
-Then send me the relevant dmesg output from a working and a failed
-attempt. You should see something like this
-
-[  318.420537] ieee80211 phy4: U iwl_bg_request_scan Start direct scan for =
-'myssid'
-
-in the log. I can't see any reason why it would be missing. For me, the
-association is instantaneous after saying "ap any". This is expected
-too, because
-	iwconfig wlan0 essid "myessid"
-will have triggered a directed scan for the AP.
-
-There are two possible failure scenarios that I can imagine:
-
-1) You see no line like the one above in your log, but rather
-
-[  736.047879] ieee80211 phy5: U iwl_bg_request_scan Start indirect scan.
-
-This would indicate a bug in the driver.
-
-
-2) You do see the line with the SSID, but you don't get any reply. In
-this case, please try doing it manually:
-	iwlist wlan0 scan essid 'myssid'
-Wait about 15 seconds between each attempt of doing so, and report
-whether your AP is listed in the results or not. If it isn't most of the
-time, then your AP is broken.
-
-johannes
-
---=-APmAsfgopLNAwlSHx71g
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJv/hrAAoJEKVg1VMiehFYEnQP/0L8NEZmyYZMIzDTl7A1/YIk
-GnLVkUEsIQd4WtRQXyiYnw9OHUaG78oqfdCUJqA2AiPiL5jXrp1IMqNyZAI8IRm4
-OzfWVdXYeYc0RoJzksrZOTS2UYG38Hv/XltM77cWOCLfi6aAAZ7lkyPNnjDJtSqd
-3mDzjpbzVRnJYT17aSJhEAJvxygzpT0p8B0lJOKWepyivQhSz28ie50cHsfAxvjr
-tM8eVsH6jW6ZN8+AIiluScRws20YIwOwJEFv43Uapnl4QwvB6Vp2RIVfSx4jNLq1
-uzQ3NHjur6EbpKtUS3HYk7hYSurXb3XDgtolY1WxzePSY/i+RHiColMFfFoN0EZA
-6kam7Pfjml8Xtoz2l+vNL4G+hHvIpVC/rCz7upxsayvt+q0i/jPkC+ThIdKp1gKZ
-iT7D0qxEKac+Z1SDUYVY999H67jM66nrwpro+RSJdb4oQCWEEj5Hxa/UHtYElLxh
-bdmM2N1GUo+cKuX/GtOfXo5WnzIxduhozMRDudtVFAjc0IRfMl4kVHxzL3WPQ691
-qHRg8kNgrLqStJZQ49x9sjoE2TgFW5r7K6EUhrM1upRJqtgn2c4BAU2UgHMugUU9
-whAwhCnwSlWV+LnQYqpXzXmUAZSANqeB0d5tS2mLZ3w1UXM1T7+IhpRWQoBSQoAE
-K3tbYQQV1Xd7fUI648I/
-=95ZB
------END PGP SIGNATURE-----
-
---=-APmAsfgopLNAwlSHx71g--
-
+Thanks,
+Rusty.
