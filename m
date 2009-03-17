@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758957AbZCQVl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753032AbZCQVoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758957AbZCQVl1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 17:41:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbZCQVlR
+	id S1753032AbZCQVoy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 17:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbZCQVoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 17:41:17 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:42406 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755448AbZCQVlQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 17:41:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=uM4ZTFxvRkGqiPwziGD/dogX0yjKQFQoZIFPcYzgGFroB5JRz2H027Dlzyg5c5TQL5
-         bnOVlLoAJrZabhvxdUwlj3VHHQZD7LpPjeYxpCjQaLR4VxUJdHnVLknT3d0nbGNxZlEt
-         BIdn5vN+3OtGc4+CDIiPE5PTN8A6keAJImezg=
-Subject: Re: [PATCH] radio-mr800.c: Missing mutex include
-From: Alexey Klimov <klimov.linux@gmail.com>
-To: Alessio Igor Bogani <abogani@texware.it>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-media@vger.kernel.org, video4linux-list@redhat.com
-In-Reply-To: <1237323618-6464-1-git-send-email-abogani@texware.it>
-References: <1237323618-6464-1-git-send-email-abogani@texware.it>
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 00:42:08 +0300
-Message-Id: <1237326128.2141.17.camel@tux.localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Mar 2009 17:44:46 -0400
+Received: from mx1.suse.de ([195.135.220.2]:55217 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752748AbZCQVop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 17:44:45 -0400
+From: Mark Fasheh <mfasheh@suse.com>
+To: linux-kernel@vger.kernel.org
+Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       Sunil Mushran <sunil.mushran@oracle.com>,
+       Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 28/32] ocfs2/dlm: Do not purge lockres that is being migrated dlm_purge_lockres()
+Date: Tue, 17 Mar 2009 13:01:18 -0700
+Message-Id: <1237320082-12921-29-git-send-email-mfasheh@suse.com>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-17 at 22:00 +0100, Alessio Igor Bogani wrote:
-> radio-mr800.c uses struct mutex, so while <linux/mutex.h> seems to be
-> pulled in indirectly by one of the headers it already includes, the
-> right thing is to include it directly.
+From: Sunil Mushran <sunil.mushran@oracle.com>
 
+This patch attempts to fix a fine race between purging and migration.
 
-Hello, Alessio
+Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/ocfs2/dlm/dlmthread.c |   20 ++++++++++++++++++--
+ 1 files changed, 18 insertions(+), 2 deletions(-)
 
-Patch looks okay for my eyes.
-If it useful it should be applied.
-
-Thank you!
-
-Mauro, if patch is okay please apply it.
-If you need my ack - here it is:
-Acked-by: Alexey Klimov <klimov.linux@gmail.com>
-
+diff --git a/fs/ocfs2/dlm/dlmthread.c b/fs/ocfs2/dlm/dlmthread.c
+index 4060bb3..d490b66 100644
+--- a/fs/ocfs2/dlm/dlmthread.c
++++ b/fs/ocfs2/dlm/dlmthread.c
+@@ -162,12 +162,28 @@ static int dlm_purge_lockres(struct dlm_ctxt *dlm,
+ 
+ 	spin_lock(&res->spinlock);
+ 	if (!__dlm_lockres_unused(res)) {
+-		spin_unlock(&res->spinlock);
+ 		mlog(0, "%s:%.*s: tried to purge but not unused\n",
+ 		     dlm->name, res->lockname.len, res->lockname.name);
+-		return -ENOTEMPTY;
++		__dlm_print_one_lock_resource(res);
++		spin_unlock(&res->spinlock);
++		BUG();
+ 	}
++
++	if (res->state & DLM_LOCK_RES_MIGRATING) {
++		mlog(0, "%s:%.*s: Delay dropref as this lockres is "
++		     "being remastered\n", dlm->name, res->lockname.len,
++		     res->lockname.name);
++		/* Re-add the lockres to the end of the purge list */
++		if (!list_empty(&res->purge)) {
++			list_del_init(&res->purge);
++			list_add_tail(&res->purge, &dlm->purge_list);
++		}
++		spin_unlock(&res->spinlock);
++		return 0;
++	}
++
+ 	master = (res->owner == dlm->node_num);
++
+ 	if (!master)
+ 		res->state |= DLM_LOCK_RES_DROPPING_REF;
+ 	spin_unlock(&res->spinlock);
 -- 
-Best regards, Klimov Alexey
+1.5.6
 
