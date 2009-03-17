@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763388AbZCQLnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763304AbZCQLpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763388AbZCQLnZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 07:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbZCQLnP
+	id S1763304AbZCQLpX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 07:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZCQLpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 07:43:15 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:51324 "EHLO slimlogic.co.uk"
+	Tue, 17 Mar 2009 07:45:10 -0400
+Received: from main.gmane.org ([80.91.229.2]:59867 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753181AbZCQLnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 07:43:15 -0400
-Subject: Re: [PATCH] regulator: twl4030 VAUX3 supports 3.0V
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: David Brownell <david-b@pacbell.net>, Mark Brown <broonie@sirena.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-omap Mailing List <linux-omap@vger.kernel.org>
-In-Reply-To: <49BF52F9.2030708@nokia.com>
-References: <49B11EB0.30809@nokia.com>
-	 <200903061116.21544.david-b@pacbell.net>
-	 <20090306221842.GB15728@sirena.org.uk>
-	 <200903061448.43749.david-b@pacbell.net>
-	 <1236599245.6781.86.camel@vega.slimlogic.co.uk>
-	 <49BF52F9.2030708@nokia.com>
-Content-Type: text/plain
-Date: Tue, 17 Mar 2009 11:43:09 +0000
-Message-Id: <1237290190.6781.313.camel@vega.slimlogic.co.uk>
+	id S1752941AbZCQLpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 07:45:08 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Halesh <halesh.s@gmail.com>
+Subject: Require more info on Huge pages
+Date: Tue, 17 Mar 2009 11:39:33 +0000 (UTC)
+Message-ID: <loom.20090317T110726-453@post.gmane.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 121.241.138.250 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-17 at 09:36 +0200, Adrian Hunter wrote:
-> Liam Girdwood wrote:
-> > On Fri, 2009-03-06 at 14:48 -0800, David Brownell wrote:
-> >> On Friday 06 March 2009, Mark Brown wrote:
-> >>> Would it make sense to make this platform data so that if a given board
-> >>> requires running the chip like this it can be enabled for those boards
-> >>> but it's not something people might turn on because it seems useful?
-> >> Let's hear if it's actually needed, first.  :)
-> >>
-> >> I coded those tables so that it would be easy to kick in the
-> >> support for out-of-spec operation if it's really needed.  But
-> >> so far we don't know that it's needed, and I'd rather it not
-> >> be too easy to run like that.
-> >>
-> > 
-> > I've now reverted this patch. 
-> 
-> TI say we can use VAUX3 at 3V and expect no problems:
-> 
-> http://community.ti.com/forums/p/3777/14574.aspx
-> 
-> So how do we do it?
 
-I'd prefer seeing the reply from Ghandar to David's last question before
-accepting this patch again. It's still not 100% clear from TI, things
-seem a little bit muddled as to whether 3V will be guaranteed to work on
-*all* shipped devices.
+Hi everyone,
 
-Thanks
+While going through Huge pages in Linux, I ran test which is available in
+http://lxr.linux.no/linux/Documentation/vm/hugetlbpage.txt. I properly
+configured the nr_hugepages and mount points. 
 
-Liam
+If I interrupt the test while running (ctrl+c) and try to restart the test than
+mmap will fail saying No memory to map. This means I am not able to mmap Large
+pages further.
+
+This happens only when I interrupt the running test and try to rerun it.
+
+I checked with the /proc/meminfo o/p
+
+MemTotal:      3919196 kB
+MemFree:        373460 kB
+<snip>
+HugePages_Total:  1521
+HugePages_Free:   1309
+HugePages_Rsvd:   1308                                  **
+Hugepagesize:     2048 kB
+<snip>
+
+and top command o/p gives like this
+
+<snip>
+Mem:   3919196k total,  3546216k used,   372980k free,    14180k buffers
+Swap:   610460k total,        0k used,   610460k free,   287656k cached
+<snip>
+
+Even process already exited, why does the memory not getting freed??
+will large pages are still locked in the memory ? or needs some time or any
+method to get broken to small pages and get freed??
+
+There are no other memory eating process running in my system.
+
+Until next reboot the memory is not getting freed.
+
+Please let me know more about this problem.
+
+Thanks,
+Halesh
 
