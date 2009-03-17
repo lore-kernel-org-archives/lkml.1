@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754402AbZCQToO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbZCQTpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754402AbZCQToO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 15:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZCQTn5
+	id S1755326AbZCQTpQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 15:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbZCQTpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 15:43:57 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47321 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752190AbZCQTn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 15:43:56 -0400
-From: Jan Kara <jack@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>
-Subject: [PATCH 2/4] ext3: Avoid false EIO errors
-Date: Tue, 17 Mar 2009 18:33:53 +0100
-Message-Id: <1237311235-13623-3-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1237311235-13623-2-git-send-email-jack@suse.cz>
-References: <n>
- <1237311235-13623-1-git-send-email-jack@suse.cz>
- <1237311235-13623-2-git-send-email-jack@suse.cz>
+	Tue, 17 Mar 2009 15:45:03 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:53681 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753848AbZCQTpA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 15:45:00 -0400
+Date: Tue, 17 Mar 2009 15:41:53 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: David Rientjes <rientjes@google.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm v2] cpusets: add memory_slab_hardwall fla
+In-Reply-To: <alpine.DEB.2.00.0903161512120.26565@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.10.0903171532140.1831@qirst.com>
+References: <alpine.DEB.2.00.0903091920100.7539@chino.kir.corp.google.com> <alpine.DEB.1.10.0903101651480.20363@qirst.com> <alpine.DEB.2.00.0903101416160.4495@chino.kir.corp.google.com> <alpine.DEB.1.10.0903121145510.27660@qirst.com>
+ <alpine.DEB.2.00.0903121137320.1514@chino.kir.corp.google.com> <alpine.DEB.1.10.0903121510380.21607@qirst.com> <alpine.DEB.2.00.0903121224430.5306@chino.kir.corp.google.com> <alpine.DEB.1.10.0903131630530.1741@qirst.com> <alpine.DEB.2.00.0903131620200.1881@chino.kir.corp.google.com>
+ <alpine.DEB.1.10.0903161239450.17730@qirst.com> <alpine.DEB.2.00.0903161512120.26565@chino.kir.corp.google.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sometimes block_write_begin() can map buffers in a page but later we
-fail to copy data into those buffers (because the source page has
-been paged out in the mean time). We then end up with !uptodate mapped
-buffers. We must not file such buffers into a transaction - firstly they
-contain garbage and secondly it confuses the journaling code (it thinks
-write has failed and complains about IO errors).
+On Mon, 16 Mar 2009, David Rientjes wrote:
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/ext3/inode.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+> Here is my example (for the third time) if, for example, mems are grouped
+> by the cpus for which they have affinity:
 
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index 62005c0..d351eab 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -1430,7 +1430,11 @@ static int bput_one(handle_t *handle, struct buffer_head *bh)
- 
- static int journal_dirty_data_fn(handle_t *handle, struct buffer_head *bh)
- {
--	if (buffer_mapped(bh))
-+	/*
-+	 * Parallel write could have mapped the buffer but it didn't copy
-+	 * the data in yet. So avoid filing such buffer into a transaction.
-+	 */
-+	if (buffer_mapped(bh) && buffer_uptodate(bh))
- 		return ext3_journal_dirty_data(handle, bh);
- 	return 0;
- }
--- 
-1.6.0.2
+Well I wish I had been send the messages the first two times.
+
+> /dev/cpuset
+> 	--> cpuset_A (cpus 0-1, mems 0-3)
+> 	--> cpuset_B (cpus 2-3, mems 4-7)
+> 	--> cpuset_C (cpus 4-5, mems 8-11)
+> 	--> ...
+
+A cpu can only be assigned to a single numa node. cpuset_A/B/C have 2
+cpus but 4 nodes. What is the mapping of nodes to cpus?
+
+> Within that, we isolate mems for specific jobs:
+>
+> /dev/cpuset
+> 	--> cpuset_A (cpus 0-1, mems 0-3)
+> 		--> job_1 (mem 0)
+> 		--> job_2 (mem 1-2)
+> 		--> job_3 (mem 3)
+> 	--> ...
+
+Nobody would do that since usually multiple cpus are associated with a
+single node. Memory and processors are assigned together in order to
+reduce latencies. Randomly assigning processors to nodes will cause
+latencies and significant traffic on the interconnect. This does not look
+sane and would not be optimized in any way.
+
+Are these memoryless nodes? What are you trying to accomplish?
 
