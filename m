@@ -1,67 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbZCQTpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755648AbZCQTrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755326AbZCQTpQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 15:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbZCQTpD
+	id S1755648AbZCQTrZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 15:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbZCQTrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 15:45:03 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:53681 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753848AbZCQTpA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 15:45:00 -0400
-Date: Tue, 17 Mar 2009 15:41:53 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: David Rientjes <rientjes@google.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Paul Menage <menage@google.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch -mm v2] cpusets: add memory_slab_hardwall fla
-In-Reply-To: <alpine.DEB.2.00.0903161512120.26565@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0903171532140.1831@qirst.com>
-References: <alpine.DEB.2.00.0903091920100.7539@chino.kir.corp.google.com> <alpine.DEB.1.10.0903101651480.20363@qirst.com> <alpine.DEB.2.00.0903101416160.4495@chino.kir.corp.google.com> <alpine.DEB.1.10.0903121145510.27660@qirst.com>
- <alpine.DEB.2.00.0903121137320.1514@chino.kir.corp.google.com> <alpine.DEB.1.10.0903121510380.21607@qirst.com> <alpine.DEB.2.00.0903121224430.5306@chino.kir.corp.google.com> <alpine.DEB.1.10.0903131630530.1741@qirst.com> <alpine.DEB.2.00.0903131620200.1881@chino.kir.corp.google.com>
- <alpine.DEB.1.10.0903161239450.17730@qirst.com> <alpine.DEB.2.00.0903161512120.26565@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 17 Mar 2009 15:47:17 -0400
+Received: from gw.goop.org ([64.81.55.164]:58807 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752364AbZCQTrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 15:47:16 -0400
+Message-ID: <49BFFE41.7090605@goop.org>
+Date: Tue, 17 Mar 2009 12:47:13 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org> <49BEB5FE.7050601@zytor.com> <49BEBD98.3090905@goop.org> <49BEC143.6030104@zytor.com> <49BEC53F.20200@goop.org> <49BED431.5070201@zytor.com> <49BF0A51.5000909@kernel.org> <49BF2054.9020009@zytor.com> <49BF301C.6010708@goop.org> <49BFCA05.7000508@zytor.com>
+In-Reply-To: <49BFCA05.7000508@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Mar 2009, David Rientjes wrote:
+H. Peter Anvin wrote:
+> Are you refreshing the patchset?
+>   
 
-> Here is my example (for the third time) if, for example, mems are grouped
-> by the cpus for which they have affinity:
+OK, you got it first.  Looks fine.
 
-Well I wish I had been send the messages the first two times.
-
-> /dev/cpuset
-> 	--> cpuset_A (cpus 0-1, mems 0-3)
-> 	--> cpuset_B (cpus 2-3, mems 4-7)
-> 	--> cpuset_C (cpus 4-5, mems 8-11)
-> 	--> ...
-
-A cpu can only be assigned to a single numa node. cpuset_A/B/C have 2
-cpus but 4 nodes. What is the mapping of nodes to cpus?
-
-> Within that, we isolate mems for specific jobs:
->
-> /dev/cpuset
-> 	--> cpuset_A (cpus 0-1, mems 0-3)
-> 		--> job_1 (mem 0)
-> 		--> job_2 (mem 1-2)
-> 		--> job_3 (mem 3)
-> 	--> ...
-
-Nobody would do that since usually multiple cpus are associated with a
-single node. Memory and processors are assigned together in order to
-reduce latencies. Randomly assigning processors to nodes will cause
-latencies and significant traffic on the interconnect. This does not look
-sane and would not be optimized in any way.
-
-Are these memoryless nodes? What are you trying to accomplish?
-
+    J
