@@ -1,272 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbZCQFnO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbZCQFnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757685AbZCQFnO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 01:43:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbZCQFm5
+	id S1755311AbZCQFnm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 01:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbZCQFnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 01:42:57 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:43965 "EHLO bilbo.ozlabs.org"
+	Tue, 17 Mar 2009 01:43:32 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:43977 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750829AbZCQFm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 01:42:57 -0400
+	id S1752557AbZCQFnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 01:43:31 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <18879.14425.221429.861838@drongo.ozlabs.ibm.com>
-Date: Tue, 17 Mar 2009 16:42:49 +1100
+Message-ID: <18879.14431.733358.248755@drongo.ozlabs.ibm.com>
+Date: Tue, 17 Mar 2009 16:42:55 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH/RFC 1/2] perfcounters: provide a way to read the current value of interrupting counters
+Subject: [PATCH/RFC 2/2] perfcounters: add an mmap method to allow userspace to read hardware counters
 X-Mailer: VM 8.0.12 under 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: new feature
+Impact: new feature giving performance improvement
 
-At present, if the user specifies hw_event->record_type ==
-PERF_RECORD_IRQ or PERF_RECORD_GROUP when creating a counter, reads from
-the counter will return records from the interrupt event queue for the
-counter.  This means that there is no way to find out the current value
-of the counter.  Also, using the record_type is slightly problematic in
-that what actually determines whether the counter generates interrupts
-is whether hw_event->irq_period is non-zero or not.
+This adds the ability for userspace to do an mmap on a hardware counter
+fd and get access to a read-only page that contains the information
+needed to translate a hardware counter value to the full 64-bit
+counter value that would be returned by a read on the fd.  This is
+useful on architectures that allow user programs to read the hardware
+counters, such as PowerPC.
 
-This provides a way for users to get a second fd for an interrupting
-counter, which has a different set of file operations, set up so that
-reads on the second (or "clone") fd return the counter value rather than
-reading the interrupt event queue.  The way to get the clone fd is like
-this:
+The mmap will only succeed if the counter is a hardware counter
+monitoring the current process.
 
-	clone_fd = sys_perf_counter_open(NULL, 0, 0, counter_fd, 0);
-
-That is, the hw_event parameter is NULL and the original counter fd is
-supplied in the group_fd parameter.
-
-This also simplifies the counter read path a bit by setting up two
-file_operations structs, one for interrupting counters and one for
-simple (non-interrupting) counters, and uses irq_period rather than
-record_type to determine which type of counter is being requested.
-This will enable us to use a wider range of values in record_type in
-future, allowing the user to specify what information they want recorded
-on an interrupt.
-
-Internally, we now potentially have multiple struct files pointing to
-the one struct counter, which could lead to lifetime issues.  We avoid
-any such issues by having the clone files keep a reference to the
-original file.  The reference is dropped when the clone file is closed.
-Thus the original file can never be released while there is any clone
-file still open.
+On my quad 2.5GHz PowerPC 970MP machine, userspace can read a counter
+and translate it to the full 64-bit value in about 30ns using the
+mmapped page, compared to about 830ns for the read syscall on the
+counter, so this does give a significant performance improvement.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
-This and the following patch are in the rfc branch of my
-perfcounters.git repository at:
+ arch/powerpc/kernel/perf_counter.c |    6 +++
+ include/linux/perf_counter.h       |   15 +++++++
+ kernel/perf_counter.c              |   78 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 99 insertions(+), 0 deletions(-)
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git rfc
-
-(Note that the rfc branch includes the master branch, which has the
-"perfcounters: abstract wakeup flag setting in core to fix powerpc
-build" commit in it.)
-
- kernel/perf_counter.c |  114 +++++++++++++++++++++++++++++++++++++------------
- 1 files changed, 87 insertions(+), 27 deletions(-)
-
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index b39456a..7c62b93 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -1172,11 +1172,24 @@ static int perf_release(struct inode *inode, struct file *file)
- }
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index 5008762..44271b6 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -417,6 +417,8 @@ void hw_perf_restore(u64 disable)
+ 		atomic64_set(&counter->hw.prev_count, val);
+ 		counter->hw.idx = hwc_index[i] + 1;
+ 		write_pmc(counter->hw.idx, val);
++		if (counter->user_page)
++			perf_counter_update_userpage(counter);
+ 	}
+ 	mb();
+ 	cpuhw->mmcr[0] |= MMCR0_PMXE | MMCR0_FCECE;
+@@ -572,6 +574,8 @@ static void power_perf_disable(struct perf_counter *counter)
+ 			ppmu->disable_pmc(counter->hw.idx - 1, cpuhw->mmcr);
+ 			write_pmc(counter->hw.idx, 0);
+ 			counter->hw.idx = 0;
++			if (counter->user_page)
++				perf_counter_update_userpage(counter);
+ 			break;
+ 		}
+ 	}
+@@ -732,6 +736,8 @@ static void record_and_restart(struct perf_counter *counter, long val,
+ 	write_pmc(counter->hw.idx, val);
+ 	atomic64_set(&counter->hw.prev_count, val);
+ 	atomic64_set(&counter->hw.period_left, left);
++	if (counter->user_page)
++		perf_counter_update_userpage(counter);
+ 
+ 	/*
+ 	 * Finally record data if requested.
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 08c11a6..3f9309f 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -100,6 +100,17 @@ struct perf_counter_hw_event {
+ #define PERF_COUNTER_IOC_ENABLE		_IO('$', 0)
+ #define PERF_COUNTER_IOC_DISABLE	_IO('$', 1)
+ 
++/*
++ * Structure of the page that can be mapped via mmap
++ */
++struct perf_counter_mmap_page {
++	__u32	version;		/* version number of this structure */
++	__u32	compat_version;		/* lowest version this is compat with */
++	__u32	lock;			/* seqlock for synchronization */
++	__u32	index;			/* hardware counter identifier */
++	__s64	offset;			/* add to hardware counter value */
++};
++
+ #ifdef __KERNEL__
+ /*
+  * Kernel-internal data types and definitions:
+@@ -214,6 +225,9 @@ struct perf_counter {
+ 	int				oncpu;
+ 	int				cpu;
+ 
++	/* pointer to page shared with userspace via mmap */
++	unsigned long			user_page;
++
+ 	/* read() / irq related data */
+ 	wait_queue_head_t		waitq;
+ 	/* optional: for NMIs */
+@@ -289,6 +303,7 @@ extern int perf_counter_task_enable(void);
+ extern int hw_perf_group_sched_in(struct perf_counter *group_leader,
+ 	       struct perf_cpu_context *cpuctx,
+ 	       struct perf_counter_context *ctx, int cpu);
++extern void perf_counter_update_userpage(struct perf_counter *counter);
  
  /*
-+ * Called when the last reference to a clone file is gone.
-+ */
-+static int perf_clone_release(struct inode *inode, struct file *file)
-+{
-+	struct perf_counter *counter = file->private_data;
-+
-+	file->private_data = NULL;
-+	fput(counter->filp);
-+	return 0;
-+}
-+
-+/*
-  * Read the performance counter - simple non blocking version for now
-  */
- static ssize_t
--perf_read_hw(struct perf_counter *counter, char __user *buf, size_t count)
-+perf_read_value(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- {
-+	struct perf_counter *counter = file->private_data;
- 	u64 cntval;
+  * Return 1 for a software counter, 0 for a hardware counter
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 7c62b93..a440b9e 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1165,6 +1165,7 @@ static int perf_release(struct inode *inode, struct file *file)
+ 	mutex_unlock(&counter->mutex);
+ 	mutex_unlock(&ctx->mutex);
  
- 	if (count != sizeof(cntval))
-@@ -1218,11 +1231,12 @@ perf_copy_usrdata(struct perf_data *usrdata, char __user *buf, size_t count)
- }
++	free_page(counter->user_page);
+ 	call_rcu(&counter->rcu_head, free_counter_rcu);
+ 	put_context(ctx);
  
- static ssize_t
--perf_read_irq_data(struct perf_counter	*counter,
--		   char __user		*buf,
--		   size_t		count,
--		   int			nonblocking)
-+perf_read_irq_data(struct file	*file,
-+		   char __user	*buf,
-+		   size_t	count,
-+		   loff_t	*ppos)
- {
-+	struct perf_counter *counter = file->private_data;
- 	struct perf_data *irqdata, *usrdata;
- 	DECLARE_WAITQUEUE(wait, current);
- 	ssize_t res, res2;
-@@ -1233,7 +1247,7 @@ perf_read_irq_data(struct perf_counter	*counter,
- 	if (usrdata->len + irqdata->len >= count)
- 		goto read_pending;
- 
--	if (nonblocking)
-+	if (file->f_flags & O_NONBLOCK)
- 		return -EAGAIN;
- 
- 	spin_lock_irq(&counter->waitq.lock);
-@@ -1283,23 +1297,6 @@ out:
- 	return res;
- }
- 
--static ssize_t
--perf_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
--{
--	struct perf_counter *counter = file->private_data;
--
--	switch (counter->hw_event.record_type) {
--	case PERF_RECORD_SIMPLE:
--		return perf_read_hw(counter, buf, count);
--
--	case PERF_RECORD_IRQ:
--	case PERF_RECORD_GROUP:
--		return perf_read_irq_data(counter, buf, count,
--					  file->f_flags & O_NONBLOCK);
--	}
--	return -EINVAL;
--}
--
- static unsigned int perf_poll(struct file *file, poll_table *wait)
- {
- 	struct perf_counter *counter = file->private_data;
-@@ -1334,9 +1331,25 @@ static long perf_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+@@ -1331,12 +1332,87 @@ static long perf_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
  	return err;
  }
  
--static const struct file_operations perf_fops = {
-+static const struct file_operations perf_intr_fops = {
++void perf_counter_update_userpage(struct perf_counter *counter)
++{
++	struct perf_counter_mmap_page *userpg;
++
++	if (!counter->user_page)
++		return;
++	userpg = (struct perf_counter_mmap_page *) counter->user_page;
++
++	++userpg->lock;
++	smp_wmb();
++	userpg->index = counter->hw.idx;
++	userpg->offset = atomic64_read(&counter->count);
++	if (counter->state == PERF_COUNTER_STATE_ACTIVE)
++		userpg->offset -= atomic64_read(&counter->hw.prev_count);
++	smp_wmb();
++	++userpg->lock;
++}
++
++static int perf_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
++{
++	struct perf_counter *counter = vma->vm_file->private_data;
++
++	if (!counter->user_page)
++		return VM_FAULT_SIGBUS;
++
++	vmf->page = virt_to_page(counter->user_page);
++	get_page(vmf->page);
++	return 0;
++}
++
++static struct vm_operations_struct perf_mmap_vmops = {
++	.fault = perf_mmap_fault,
++};
++
++static int perf_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	struct perf_counter *counter = file->private_data;
++	unsigned long userpg;
++
++	if (!(vma->vm_flags & VM_SHARED) || (vma->vm_flags & VM_WRITE))
++		return -EINVAL;
++	if (vma->vm_end - vma->vm_start != PAGE_SIZE)
++		return -EINVAL;
++
++	/*
++	 * For now, restrict to the case of a hardware counter
++	 * on the current task.
++	 */
++	if (is_software_counter(counter) || counter->task != current)
++		return -EINVAL;
++
++	userpg = counter->user_page;
++	if (!userpg) {
++		userpg = get_zeroed_page(GFP_KERNEL);
++		mutex_lock(&counter->mutex);
++		if (counter->user_page) {
++			free_page(userpg);
++			userpg = counter->user_page;
++		} else {
++			counter->user_page = userpg;
++		}
++		mutex_unlock(&counter->mutex);
++		if (!userpg)
++			return -ENOMEM;
++	}
++
++	perf_counter_update_userpage(counter);
++
++	vma->vm_flags &= ~VM_MAYWRITE;
++	vma->vm_flags |= VM_RESERVED;
++	vma->vm_ops = &perf_mmap_vmops;
++	return 0;
++}
++
+ static const struct file_operations perf_intr_fops = {
  	.release		= perf_release,
--	.read			= perf_read,
-+	.read			= perf_read_irq_data,
-+	.poll			= perf_poll,
-+	.unlocked_ioctl		= perf_ioctl,
-+	.compat_ioctl		= perf_ioctl,
-+};
-+
-+static const struct file_operations perf_value_fops = {
-+	.release		= perf_release,
-+	.read			= perf_read_value,
-+	.poll			= perf_poll,
-+	.unlocked_ioctl		= perf_ioctl,
-+	.compat_ioctl		= perf_ioctl,
-+};
-+
-+static const struct file_operations perf_clone_fops = {
-+	.release		= perf_clone_release,
-+	.read			= perf_read_value,
+ 	.read			= perf_read_irq_data,
  	.poll			= perf_poll,
  	.unlocked_ioctl		= perf_ioctl,
  	.compat_ioctl		= perf_ioctl,
-@@ -1888,6 +1901,38 @@ perf_counter_alloc(struct perf_counter_hw_event *hw_event,
- 	return counter;
- }
++	.mmap			= perf_mmap,
+ };
  
-+static long perf_counter_clone(int orig_fd)
-+{
-+	struct perf_counter *counter;
-+	struct file *counter_file;
-+	int ret;
-+
-+	/*
-+	 * The cloned file holds a reference to the original
-+	 * file; the corresponding fput to this fget is in
-+	 * perf_clone_release().
-+	 */
-+	counter_file = fget(orig_fd);
-+	if (!counter_file)
-+		return -EBADF;
-+
-+	ret = -EINVAL;
-+	if (counter_file->f_op != &perf_intr_fops &&
-+	    counter_file->f_op != &perf_value_fops)
-+		goto out_fput;
-+
-+	counter = counter_file->private_data;
-+
-+	ret = anon_inode_getfd("[perf_counter]", &perf_clone_fops, counter, 0);
-+	if (ret < 0)
-+		goto out_fput;
-+	return ret;
-+
-+ out_fput:
-+	fput(counter_file);
-+	return ret;
-+}
-+
- /**
-  * sys_perf_counter_open - open a performance counter, associate it to a task/cpu
-  *
-@@ -1905,6 +1950,7 @@ SYSCALL_DEFINE5(perf_counter_open,
- 	struct perf_counter_context *ctx;
- 	struct file *counter_file = NULL;
- 	struct file *group_file = NULL;
-+	const struct file_operations *fops;
- 	int fput_needed = 0;
- 	int fput_needed2 = 0;
- 	int ret;
-@@ -1913,6 +1959,15 @@ SYSCALL_DEFINE5(perf_counter_open,
- 	if (flags)
- 		return -EINVAL;
+ static const struct file_operations perf_value_fops = {
+@@ -1345,6 +1421,7 @@ static const struct file_operations perf_value_fops = {
+ 	.poll			= perf_poll,
+ 	.unlocked_ioctl		= perf_ioctl,
+ 	.compat_ioctl		= perf_ioctl,
++	.mmap			= perf_mmap,
+ };
  
-+	/*
-+	 * See if the user wants to clone an existing counter,
-+	 * to get another fd referring to the same counter but with
-+	 * file operations set to read the counter value rather than
-+	 * irq events.
-+	 */
-+	if (hw_event_uptr == NULL)
-+		return perf_counter_clone(group_fd);
-+
- 	if (copy_from_user(&hw_event, hw_event_uptr, sizeof(hw_event)) != 0)
- 		return -EFAULT;
+ static const struct file_operations perf_clone_fops = {
+@@ -1353,6 +1430,7 @@ static const struct file_operations perf_clone_fops = {
+ 	.poll			= perf_poll,
+ 	.unlocked_ioctl		= perf_ioctl,
+ 	.compat_ioctl		= perf_ioctl,
++	.mmap			= perf_mmap,
+ };
  
-@@ -1932,7 +1987,8 @@ SYSCALL_DEFINE5(perf_counter_open,
- 		group_file = fget_light(group_fd, &fput_needed);
- 		if (!group_file)
- 			goto err_put_context;
--		if (group_file->f_op != &perf_fops)
-+		if (group_file->f_op != &perf_intr_fops &&
-+		    group_file->f_op != &perf_value_fops)
- 			goto err_put_context;
- 
- 		group_leader = group_file->private_data;
-@@ -1961,7 +2017,11 @@ SYSCALL_DEFINE5(perf_counter_open,
- 	if (!counter)
- 		goto err_put_context;
- 
--	ret = anon_inode_getfd("[perf_counter]", &perf_fops, counter, 0);
-+	if (counter->hw_event.irq_period)
-+		fops = &perf_intr_fops;
-+	else
-+		fops = &perf_value_fops;
-+	ret = anon_inode_getfd("[perf_counter]", fops, counter, 0);
- 	if (ret < 0)
- 		goto err_free_put_context;
- 
+ /*
 -- 
 1.5.5.rc3.7.gba13
 
