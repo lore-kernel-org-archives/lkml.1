@@ -1,113 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762926AbZCQI53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762935AbZCQI7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762926AbZCQI53 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 04:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbZCQI5U
+	id S1762935AbZCQI7b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 04:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZCQI7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 04:57:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48431 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751911AbZCQI5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 04:57:19 -0400
-Date: Tue, 17 Mar 2009 09:57:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Subject: Re: [RFC][PATCH 0/4] tracing: event filtering
-Message-ID: <20090317085713.GA16952@elte.hu>
-References: <1237271002.8033.148.camel@charm-linux>
+	Tue, 17 Mar 2009 04:59:21 -0400
+Received: from mail-ew0-f177.google.com ([209.85.219.177]:39790 "EHLO
+	mail-ew0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751911AbZCQI7U convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 04:59:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ix8NZKbXYZsulPT/8HOUVtUUX/w+OBgYDRuvnv9UVkCipwUrgGsSYKQP88yBRZlid8
+         tf5Cy2HZ/1ixlG2WrkEsmwgQXBIVMBi5ZOyxtf9B97gHzj6ltRtWeArZuk7i6FGmXrvY
+         1y1BO19MmD4SqKNQRt+AyKJrlymWa8+heHjQk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237271002.8033.148.camel@charm-linux>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <b637ec0b0903170130n68754d9eu504ad6b6f4330d89@mail.gmail.com>
+References: <1227454026.7262.59.camel@localhost> <20081123180409.GB7731@ucw.cz>
+	 <20081202161520.GA18252@srcf.ucam.org> <20081202201442.GA1504@ucw.cz>
+	 <alpine.LFD.2.00.0903160020250.30317@localhost.localdomain>
+	 <20090316082952.GA1963@elf.ucw.cz>
+	 <b637ec0b0903170130n68754d9eu504ad6b6f4330d89@mail.gmail.com>
+Date: Tue, 17 Mar 2009 09:59:17 +0100
+Message-ID: <b637ec0b0903170159u761b626ifda927925a723e0e@mail.gmail.com>
+Subject: Re: [PATCH 1/1] cpufreq: eeepc 900 frequency scaling driver
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>, Matthew Garrett <mjg@redhat.com>,
+       Cristiano Prisciandaro <cristiano.p@solnet.ch>,
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
+       linux-kernel@vger.kernel.org, tom@compton.nu
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Well, replying to myself: it doesn't even compile with CONFIG_CPU_FREQ=n
 
-* Tom Zanussi <tzanussi@gmail.com> wrote:
-
-> Hi,
-> 
-> This patchset is a first attempt at adding filtering to the 
-> event-tracing infrastructure.
-
-Really cool!
-
-> The filtering itself seems to work ok, as far as I've been 
-> able to test it, but I'm still battling with getting the 
-> ring-buffer to do what I want (discarding events, see patch 2) 
-> so am hoping someone more familiar with the ring buffer can 
-> point me in the right direction before I do any more work on 
-> it.
-
-Seems to be a weakness in our current event abstraction itself - 
-by the time we get to filtering we already have the record in 
-the ring buffer - and have to work hard to pull it out of there. 
-It would be better to allow tracing filters to operate on a 
-private copy of the data, before it's inserted into the 
-ringbuffer.
-
-As an intermediate solution (until the rb details get sorted 
-out), i think your hack could be used - it essentially marks the 
-entry as discarded, so that the output stage ignores it, right?
-
-If the patch is brought into a more palatable state (no crashes, 
-no C99 comments) i'd argue we apply this almost as-is, so that 
-the filtering details can advance independently of the 
-ring-buffer management details. Steve, do you agree?
-
-> Another specific thing it would be good to get comments on 
-> would be how to allow the user to unambiguously specify a 
-> field name in a filter when there are duplicate field names 
-> for an event, as mentioned in patch 1.
-
-A short-term fix would be to name the common fields common_pid 
-or so, to reduce the chance of collision. (and show that in the 
-format output too)
-
-Plus we should add a debug check as well when an event is 
-registered: all fields in a format should be uniquely 
-accessible.
-
-> Of course, any comments about the rest of the interface and 
-> code are also welcome...
-
-You wanted to keep the filter expression parser simple, and i 
-agree with that in general.
-
-I'd expect the filter to be popular with kernel developers who 
-do ad-hoc tracing - so making it as compatible with typical 
-syntax variations as possible would still be nice. The parser 
-will be larger but that's OK.
-
- - it would be nice to extend the range of operators to all the
-   typical C syntax comparison expressions: <= < >= > != ==. Some 
-   of these are supported but not all.
-
- - there should be '||' and '&&' aliases for the 'or' / 'and' 
-   tokens.
-
- - parantheses could be supported too perhaps instead of the 
-   current 'echo separately to build up complex expressions', up
-   to the expression-length limit.
-
- - bitwise operators might be useful too: 'mask & 0xff'.
-
-We really want this to be a popular built-in facility that can 
-be used intuitively by anyone who knows C expressions, and 
-limitations in the expression parser are counter-productive to 
-that aim.
-
-	Ingo
+On Tue, Mar 17, 2009 at 9:30 AM, Fabio Comolli <fabio.comolli@gmail.com> wrote:
+> Well, I see that this thread has resumed after three months of being idle.
+> Is there a chance that either Cristiano's or Tom's version can be included?
+>
+> By the way, I currently run my eeepc 900 with cpufreq disabled.
+> Looking at the patch, with Tom's mods to eeepc_laptop I could do the
+> same, am I right? I see only an include for cpufreq.h and nothing
+> else.
+>
+> Thanks,
+> Fabio
+>
+>
+>
+> On Mon, Mar 16, 2009 at 9:29 AM, Pavel Machek <pavel@ucw.cz> wrote:
+>> On Mon 2009-03-16 00:24:18, Len Brown wrote:
+>>>
+>>> On Tue, 2 Dec 2008, Pavel Machek wrote:
+>>>
+>>> > On Tue 2008-12-02 16:15:21, Matthew Garrett wrote:
+>>> > > On Sun, Nov 23, 2008 at 07:04:09PM +0100, Pavel Machek wrote:
+>>> > >
+>>> > > > Is this really needed? Could we simply talk to the cpu directly,
+>>> > > > without help of ACPI?
+>>> > >
+>>> > > No. The ACPI write ends up talking to the embedded controller and some
+>>> > > io ports.
+>>> >
+>>> > Oops... I always knew that eee-s are broken by design (reporting
+>>> > battery percent as mWh, etc...) but I did not realize how bad it
+>>> > is. (ACPI has perfectly standard cpu frequency scaling interface, even
+>>> > if it is not used too often these days....)
+>>>
+>>> Huh?
+>>>
+>>> What cpufreq driver is deployed more broadly than acpi-cpufreq?
+>>> AFAIK, Linux uses it on nearly every ACPI compliant Intel-based
+>>> system that has frequency scaling.
+>>
+>> Problem seems to be that eee uses custom ACPI methods
+>> (switch_to_fast_clock(0/1)-like), not anything acpi-cpufreq could
+>> drive... Broken by design :-(.
+>>                                                                        Pavel
+>> --
+>> (english) http://www.livejournal.com/~pavelmachek
+>> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
