@@ -1,63 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759624AbZCQAC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbZCQAJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759624AbZCQAC0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 20:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932103AbZCQACK
+	id S1758291AbZCQAJP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 20:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbZCQAI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 20:02:10 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37168 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932100AbZCQACH (ORCPT
+	Mon, 16 Mar 2009 20:08:58 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34027 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751088AbZCQAI5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 20:02:07 -0400
-To: "Jan Beulich" <jbeulich@novell.com>
-Cc: "Arjan van de Ven" <arjan@infradead.org>,
-       "Jeremy Fitzhardinge" <jeremy.fitzhardinge@citrix.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "the arch/x86 maintainers" <x86@kernel.org>,
-       "Xen-devel" <xen-devel@lists.xensource.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [Xen-devel] [PATCH 10/24] xen: mask XSAVE from cpuid
-From: Andi Kleen <andi@firstfloor.org>
-References: <1236931920-6861-1-git-send-email-jeremy@goop.org>
-	<1236931920-6861-11-git-send-email-jeremy@goop.org>
-	<49BA3A84.76E4.0078.0@novell.com> <49BA7810.6090807@goop.org>
-	<49BD4CE1.6040100@zytor.com> <49BD6D0E.1010107@goop.org>
-	<20090315154718.00353625@infradead.org> <49BD97C6.2070401@goop.org>
-	<20090315170945.08344b86@infradead.org>
-	<49BE6D50.76E4.0078.0@novell.com>
-Date: Tue, 17 Mar 2009 00:59:20 +0100
-In-Reply-To: <49BE6D50.76E4.0078.0@novell.com> (Jan Beulich's message of "Mon, 16 Mar 2009 14:16:32 +0000")
-Message-ID: <87fxhd2f53.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 16 Mar 2009 20:08:57 -0400
+Date: Tue, 17 Mar 2009 09:07:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       jan sonnek <ha2nny@gmail.com>, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: Regression - locking (all from 2.6.28)
+Message-Id: <20090317090732.bbb97825.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <200903162304.28944.rjw@sisk.pl>
+References: <20090302121127.e46dc4be.akpm@linux-foundation.org>
+	<1236367186.10626.84.camel@nimitz>
+	<20090306192812.GA26767@elf.ucw.cz>
+	<200903162304.28944.rjw@sisk.pl>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jan Beulich" <jbeulich@novell.com> writes:
+On Mon, 16 Mar 2009 23:04:27 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
->>>> Arjan van de Ven <arjan@infradead.org> 16.03.09 01:09 >>>
->>Well.. pretty much all new instructions need Xen modifications due to
->>the need to be emulate to deal with traps/vmexits/etc right? 
->>So I don't quite see many cpuid bits that would NOT involve some Xen
->>modification or another ;)
->
-> No, new (user-mode accessible) instructions represent precisely the kind
-> of extension that do not require hypervisor (or OS) awareness (see SSE2
-> etc, AES, FMA). New registers otoh are examples of where awareness is
-> needed (SSE, AVX), as would be new privileged instructions.
+> On Friday 06 March 2009, Pavel Machek wrote:
+> > Hi!
+> > 
+> > On Fri 2009-03-06 11:19:46, Dave Hansen wrote:
+> > > On Fri, 2009-03-06 at 18:00 +0000, Catalin Marinas wrote:
+> > > > > I think you should be more worried about consistency rather than missing
+> > > > > entries.  Take these two lines of code:
+> > > > > 
+> > > > >       start_pfn = node->node_start_pfn;
+> > > > >       /* hotplug occurs here */
+> > > > >       end_pfn = start_pfn + node->node_spanned_pages;
+> > > > > 
+> > > > > What if someone comes in and adds memory to the node, at the beginning
+> > > > > of the node, after you have calculated start_pfn?  Try to think of what
+> > > > > value you'll get for end_pfn and whether it is consistent and was *ever*
+> > > > > valid at all.  Would that oops the kernel?
+> > > > 
+> > > > I assume pfn_valid() should handle this and kmemleak wouldn't scan the
+> > > > page, unless we need locks around pfn_valid as well but I haven't seen
+> > > > any used in the kernel.
+> > > 
+> > > You assume incorrectly. :(
+> > > 
+> > > Take my above example, and assume that you have two nodes which are
+> > > right next to each other.  You might run over the end of one node and
+> > > into the next one.  Your pages will be pfn_valid() but you will be on
+> > > the wrong node.
+> > > 
+> > > Please take a look at those locks that I mentioned.  Notice that they
+> > > are lock the pgdat *span*, not the validity of pages inside the pgdat.
+> > > Your code deals with what pages the pgdats *span* and thus needs that
+> > > lock.  Notice that my example also had to do with those two lines of
+> > > code incorrectly guessing the pgdat's *span*.
+> > > 
+> > > We recently went to some pain to make sure that the software suspend
+> > > code (which walks pgdat ranges as well) worked with memory hotplug.
+> > > There really isn't that much code around that actually cares at runtime
+> > > about which physical areas a particular node or zone spans.  Yours is a
+> > > rarity and will require some caution.
+> > > 
+> > > You could probably also use the memory hotplug mutex found here:
+> > > 
+> > > https://lists.linux-foundation.org/pipermail/linux-pm/2008-November/018884.html
+> > > 
+> > > But I'm not sure where those patches have gone.  Hmmm.  Pavel?
+> > 
+> > I don't think they were applied. They probably should... Rafael was
+> > about to look into that, but he lost the patch pointer.
+> 
+> Yes.  In fact, sending the patch again to me would be appreciated.
+> 
 
-Whey would another hypothetical FP register extension need Xen support
-once it gets proper XSAVE support? I can't think of a reason why
-(assuming XSAVE support) it would need to know of a new kind of
-FP register or similar. They very likely won't appear in any 
-instructions that need mmio. Or are you worried about the real
-mode emulator?
+Ah...but as I wrote, for me, testing this is difficult.
+Could some expert of hibernation update and post this again ? For memoyr hotplug.
+it seems enough that sending the patch witch CC: to linux-mm and including
+"Memory Hotplug" in the subject.
 
--Andi
+Thanks,
+-Kame
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+
