@@ -1,47 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbZCQRjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571AbZCQRjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756988AbZCQRjR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 13:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbZCQRjF
+	id S1757571AbZCQRjk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 13:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbZCQRj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 13:39:05 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:59516 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755654AbZCQRjD (ORCPT
+	Tue, 17 Mar 2009 13:39:27 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:38912 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756334AbZCQRj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 13:39:03 -0400
-Date: Tue, 17 Mar 2009 11:38:45 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: linux-pci@vger.kernel.org, Dexuan Cui <dexuan.cui@intel.com>,
-       stable@kernel.org, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] pci: Fix the definition of PCI_PM_CTRL_NO_SOFT_RESET
-Message-ID: <20090317173845.GR14127@parisc-linux.org>
-References: <49BFDB3C.76E4.0078.0@novell.com>
+	Tue, 17 Mar 2009 13:39:26 -0400
+Date: Tue, 17 Mar 2009 12:39:03 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Igor Zhbanov <izh1979@gmail.com>, "J. Bruce Fields" <bfields@fieldses.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
+       David Howells <dhowells@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       SELinux <selinux@tycho.nsa.gov>
+Subject: Re: =?utf-8?B?0J7RgtCy0LXRgjogVkZTLCBORlMg?=
+	=?utf-8?Q?security_bug=3F_Shoul?=
+	=?utf-8?Q?d?= CAP_MKNOD and CAP_LINUX_IMMUTABLE be added to
+	CAP_FS_MASK?
+Message-ID: <20090317173903.GA31566@us.ibm.com>
+References: <20090312161047.GA15209@us.ibm.com> <517f3f820903121321sf6d2014q8165b925d5d44db7@mail.gmail.com> <20090313175848.GB27891@fieldses.org> <f44001920903131137j158c5f76y6a71b58ee964df77@mail.gmail.com> <20090313190002.GA16025@us.ibm.com> <1237227705.1035.93.camel@localhost.localdomain> <20090316184926.GA6729@us.ibm.com> <1237237216.1035.195.camel@localhost.localdomain> <20090316231340.GC15522@us.ibm.com> <1237299633.6582.107.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49BFDB3C.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1237299633.6582.107.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 04:17:48PM +0000, Jan Beulich wrote:
-> From: Dexuan Cui <dexuan.cui@intel.com>
+Quoting Stephen Smalley (sds@tycho.nsa.gov):
+> > So do you think it makes sense to have CAP_MAC_ADMIN and CAP_FOWNER
+> > in CAP_FS_MASK?  In other words are you objecting to CAP_SYS_ADMIN
+> > because of all of its other implications, or because you disagree
+> > that labels for security modules should be treated as mere fs data
+> > here?
 > 
-> As per PCI Bus Power Management Interface Specification Revision 1.2
-> this is bit 3, not bit 2, of the Power Management Control/Status
-> register.
+> For CAP_FOWNER, yes (and it is already there).  CAP_MAC_ADMIN is less
 
-The same patch was already posted by Yu Zhao on February 25th and I
-reviewed it for Jesse.  I don't see it in any of the trees yet though ...
-(arguably, I should have picked it up for the fixes tree that I did
-while Jesse was away).
+Sorry, I meant CAP_SETFCAP.  Should it be added?
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> ideal as it isn't clearly tied to filesystem accesses, and likewise for
+> CAP_MAC_OVERRIDE (but that one is included in CAP_FS_MASK already).
+
+So it is.  I didn't realize that.
+
+> Ideally the capability space would be partitioned into capabilities that
+> affect filesystem accesses and the rest so that setfsuid() would yield
+> the expected behavior of only affecting filesystem access.
+> CAP_SYS_ADMIN is even less suitable due to its pervasive use outside of
+> the filesystem.  So that's the first concern.
+> 
+> The second one is that we don't want CAP_SYS_ADMIN (or CAP_MAC_ADMIN) to
+> be required when setting SELinux labels.  Only the SELinux permission
+> checks should govern setting those labels (aside from the usual DAC
+> ownership || CAP_FOWNER check).
+
+So if a non-selinux kernel is booted, then you think only the usual
+DAC checks should be required to set selinux labels?
+
+Or is this assuming EOPNOTSUPP were returned for setting
+security.selinux xattrs in such a kernel?
+
+> > > uses CAP_SYS_ADMIN to control setting of its own attributes:
+> > > - SELinux applies a DAC check and its own set of MAC file permission
+> > > checks,
+> > > - Smack applies CAP_MAC_ADMIN,
+> > > - Capabilities applies CAP_SETFCAP.
+> > > 
+> > > Checking CAP_SYS_ADMIN was really just a fallback to prevent unchecked
+> > > setting of attributes in the no-LSM case.  It might make more sense to
+> > > return EOPNOTSUPP for any attributes unknown to the enabled security
+> > 
+> > I suspect that would create a LOT of bug reports.  Would requiring
+> > CAP_MAC_ADMIN seem reasonable?
+> 
+> It would narrow the scope a bit more, but it still isn't ideal.
+> 
+> > > module and require you to enable the desired module before setting the
+> > > attributes these days.
+> > > http://marc.info/?t=107428809400002&r=1&w=2
+> > > 
+> > > I don't think this will make any difference for labeled NFS at present,
+> > > as the current labeled NFS patches only export the MAC label attribute
+> > > if the server has the MAC model enabled.  So CAP_SYS_ADMIN won't get
+> > > checked regardless.
+> > > 
+> > > Trusted namespace is another case where CAP_SYS_ADMIN check is applied
+> > > on file operations.
+> > 
+> > Which seems like all the more reason why CAP_SYS_ADMIN would need to
+> > be added to the CAP_FS_MASK.  Or do you mean that check should also be
+> > changed for something else?  (CAP_MAC_ADMIN, or some new CAP_FS_XATTR?)
+> 
+> I'd favor changing it to a new capability.  We have CAP_SETFCAP for
+> setting file capabilities; why not have CAP_SETTRUSTED for setting
+> attributes in the trusted namespace?  Then adding it to CAP_FS_MASK has
+> no further side effects beyond controlling filesystem accesses.
+
+Does anyone know what the trusted xattrs are used for?
+
+-serge
