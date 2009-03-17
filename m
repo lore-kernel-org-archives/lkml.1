@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762534AbZCQC1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbZCQC1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762534AbZCQC1O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 22:27:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762512AbZCQC0y
+	id S1759320AbZCQC1c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 22:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762510AbZCQC1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 22:26:54 -0400
-Received: from kroah.org ([198.145.64.141]:50574 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762377AbZCQC0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 22:26:52 -0400
-Date: Mon, 16 Mar 2009 19:25:31 -0700
-From: Greg KH <greg@kroah.com>
-To: Peta Blaha <blahapeta@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input/joystick: add driver fortius 1942
-Message-ID: <20090317022531.GA504@kroah.com>
-References: <739e73230903161921u426f2c65gddbc089d25ba5d50@mail.gmail.com>
+	Mon, 16 Mar 2009 22:27:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53943 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762361AbZCQC1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 22:27:20 -0400
+Message-ID: <49BF0A51.5000909@kernel.org>
+Date: Mon, 16 Mar 2009 19:26:25 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <739e73230903161921u426f2c65gddbc089d25ba5d50@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] Re: Latest brk patchset
+References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org> <49BEB5FE.7050601@zytor.com> <49BEBD98.3090905@goop.org> <49BEC143.6030104@zytor.com> <49BEC53F.20200@goop.org> <49BED431.5070201@zytor.com>
+In-Reply-To: <49BED431.5070201@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 03:21:18AM +0100, Peta Blaha wrote:
-> Driver for Fortius 1942 device.
+H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+>> H. Peter Anvin wrote:
+>>> Or simplified:
+>>>
+>>> PAGE_TABLE_SIZE(((1 << 32)-PAGE_OFFSET) >> PAGE_SHIFT) << PAGE_SHIFT
+>>
+>> Was worried about 1<<32 overflowing.  Never really sure what gas's
+>> type system is.
+>>
 > 
-> Signed-off-by: Petr Blaha <blahapeta@gmail.com>
-> ---
+> It's bignum-based.
 > 
-> --- a/drivers/input/joystick/fortius_1942.c.orig 1970-01-01
-> 01:00:00.000000000 +0100
+> You could also write:
+> 
+> PAGE_TABLE_SIZE((-PAGE_OFFSET & 0xffffffff) >> PAGE_SHIFT) << PAGE_SHIFT
+> 
+> (the & 0xffffffff is necessary, or you'll get a signed shift.)
 
-Your patch is linewrapped :(
+max kernel address space range?
 
-> +++ b/drivers/input/joystick/fortius_1942.c 2009-03-17 03:17:01.000000000 +0100
-> @@ -0,0 +1,394 @@
-> +/*
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-
-Are you sure about "any later version"?
-> + unsigned long difference = 0;
-> + /*time measure*/
-> + struct timeval time, time_before;
-> + /*guessed fastest speed a man can possibly ride-incitating full
-> + throttle*/
-> + unsigned int fastest_wheel_rotate = 1000;
-> + /*actual state of path reached in one cycle*/
-> + unsigned int ride = 0, old_ride = 0;
-
-These should all be static.
-
-Have you run your code through scripts/checkpatch.pl?
-
-> +struct usb_tfor {
-> + char name[128];
-
-Tabs are eaten by your email client :(
-
-Care to try again?
-
-thanks,
-
-greg k-h
+YH
