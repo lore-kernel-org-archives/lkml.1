@@ -1,63 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZCQU5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbZCQVBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbZCQU5y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 16:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbZCQU5p
+	id S1756454AbZCQVBw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 17:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZCQVBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 16:57:45 -0400
-Received: from kroah.org ([198.145.64.141]:35692 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754324AbZCQU5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 16:57:44 -0400
-Date: Tue, 17 Mar 2009 13:55:18 -0700
-From: Greg KH <greg@kroah.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>, tytso@mit.edu
-Cc: Greg KH <gregkh@suse.de>, mfasheh@suse.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] Linux 2.6.28.8 (ocfs2 build failure)
-Message-ID: <20090317205518.GA4442@kroah.com>
-References: <20090317012028.GA32410@kroah.com> <49C00787.6060401@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49C00787.6060401@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 17 Mar 2009 17:01:43 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:56083 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751770AbZCQVBn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 17:01:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        b=Bt+Zxbz2q+l0SV07ICYeh94j3TvP5EPe6wLOoep1JrRLKAv2fTn+l475IYbIALnY8B
+         IQ4/yJ5i+p9Pzkuz5UFQ3gWSEbFQKix7OHEUyvrHmxZr6JISJtrswz1wxNnp/fpyANl+
+         043cMurNc72lSIchXtezwaWMefVniiyRlm3bo=
+From: Alessio Igor Bogani <abogani@texware.it>
+To: Antonino Daplas <adaplas@gmail.com>
+Cc: Linux FBDev <linux-fbdev-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alessio Igor Bogani <abogani@texware.it>
+Subject: [PATCH] nvidiafb: remove open_lock mutex
+Date: Tue, 17 Mar 2009 21:55:25 +0100
+Message-Id: <1237323325-6104-1-git-send-email-abogani@texware.it>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 01:26:47PM -0700, Randy Dunlap wrote:
-> Enable all possible OCFS2 kconfig options:
-> 
-> 
-> 
-> In file included from fs/ocfs2/alloc.c:42:
-> fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
-> fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
-> fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
-> fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
->   CC [M]  fs/ocfs2/buffer_head_io.o
-> In file included from fs/ocfs2/aops.c:42:
-> fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
-> fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
-> fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
-> fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
-> make[2]: *** [fs/ocfs2/aops.o] Error 1
-> make[2]: *** Waiting for unfinished jobs....
-> In file included from fs/ocfs2/buffer_head_io.c:37:
-> fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
-> fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
-> fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
-> fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
-> make[2]: *** [fs/ocfs2/buffer_head_io.o] Error 1
-> make[2]: *** [fs/ocfs2/alloc.o] Error 1
+Remove mutex from the nvidiafb_open/nvidiafb_release functions as these
+operations are mutexed at fb layer.
 
-Did this show up in 2.6.28.7?
+Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
+---
+ drivers/video/nvidia/nv_type.h |    2 --
+ drivers/video/nvidia/nvidia.c  |    7 -------
+ 2 files changed, 0 insertions(+), 9 deletions(-)
 
-Odds are it's one of the jbd2 patches from Ted.  Ted, any ideas?
+diff --git a/drivers/video/nvidia/nv_type.h b/drivers/video/nvidia/nv_type.h
+index f132aab..c03f7f5 100644
+--- a/drivers/video/nvidia/nv_type.h
++++ b/drivers/video/nvidia/nv_type.h
+@@ -5,7 +5,6 @@
+ #include <linux/types.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c-algo-bit.h>
+-#include <linux/mutex.h>
+ #include <video/vga.h>
+ 
+ #define NV_ARCH_04  0x04
+@@ -99,7 +98,6 @@ struct nvidia_par {
+ 	RIVA_HW_STATE initial_state;
+ 	RIVA_HW_STATE *CurrentState;
+ 	struct vgastate vgastate;
+-	struct mutex open_lock;
+ 	u32 pseudo_palette[16];
+ 	struct pci_dev *pci_dev;
+ 	u32 Architecture;
+diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
+index 9dbb5a5..efe10ff 100644
+--- a/drivers/video/nvidia/nvidia.c
++++ b/drivers/video/nvidia/nvidia.c
+@@ -1004,15 +1004,12 @@ static int nvidiafb_open(struct fb_info *info, int user)
+ {
+ 	struct nvidia_par *par = info->par;
+ 
+-	mutex_lock(&par->open_lock);
+-
+ 	if (!par->open_count) {
+ 		save_vga_x86(par);
+ 		nvidia_save_vga(par, &par->initial_state);
+ 	}
+ 
+ 	par->open_count++;
+-	mutex_unlock(&par->open_lock);
+ 	return 0;
+ }
+ 
+@@ -1021,8 +1018,6 @@ static int nvidiafb_release(struct fb_info *info, int user)
+ 	struct nvidia_par *par = info->par;
+ 	int err = 0;
+ 
+-	mutex_lock(&par->open_lock);
+-
+ 	if (!par->open_count) {
+ 		err = -EINVAL;
+ 		goto done;
+@@ -1035,7 +1030,6 @@ static int nvidiafb_release(struct fb_info *info, int user)
+ 
+ 	par->open_count--;
+ done:
+-	mutex_unlock(&par->open_lock);
+ 	return err;
+ }
+ 
+@@ -1300,7 +1294,6 @@ static int __devinit nvidiafb_probe(struct pci_dev *pd,
+ 
+ 	par = info->par;
+ 	par->pci_dev = pd;
+-	mutex_init(&par->open_lock);
+ 	info->pixmap.addr = kzalloc(8 * 1024, GFP_KERNEL);
+ 
+ 	if (info->pixmap.addr == NULL)
+-- 
+1.6.0.4
 
-thanks,
-
-greg k-h
