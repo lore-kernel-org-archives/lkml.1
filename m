@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbZCQPPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755646AbZCQPQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbZCQPPa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 11:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbZCQPPN
+	id S1755646AbZCQPQA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 11:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbZCQPPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 11:15:13 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:25912 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752955AbZCQPPM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 11:15:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fmHV4cWvdqF2fyHaPRIO8WQUen2tscGJYSmMpz9fAyHKU8PB1igW/eOM0bMPtvnTwq
-         Y2Uln6Esb6LoJY2qq7tbTT/WB0x2HEiy5Wdd8ey/pyGVfzIqo25jYrAHJZIK1QsokEDz
-         7lCkwrSanuGQenovC0zQpCZ6FWU+KTBkmudJs=
+	Tue, 17 Mar 2009 11:15:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34142 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753132AbZCQPPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 11:15:49 -0400
+Date: Tue, 17 Mar 2009 16:15:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
+Subject: Re: [patch 1/5] x86, bts: detect size of DS fields
+Message-ID: <20090317151536.GA13895@elte.hu>
+References: <20090313104218.A30096@sedona.ch.intel.com> <20090313110357.GC31094@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77E4A663C47@irsmsx504.ger.corp.intel.com> <20090317105558.GK6477@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77E4A664285@irsmsx504.ger.corp.intel.com> <20090317123442.GB22759@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77E4A6642C7@irsmsx504.ger.corp.intel.com> <928CFBE8E7CB0040959E56B4EA41A77E4A6643E0@irsmsx504.ger.corp.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20090314161341.GB1496@ucw.cz>
-References: <20090311200411.WPUP4619.eastrmmtao102.cox.net@eastrmimpo02.cox.net>
-	 <20090314161341.GB1496@ucw.cz>
-Date: Tue, 17 Mar 2009 11:15:09 -0400
-Message-ID: <3aaafc130903170815x7704d9f0gdb6012bbf63e2a5b@mail.gmail.com>
-Subject: Re: [PATCH] /dev/time for Linux, inspired by Plan 9
-From: "J.R. Mauro" <jrm8005@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Christopher Brannon <cmbrannon@cox.net>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E4A6643E0@irsmsx504.ger.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 14, 2009 at 12:13 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Wed 2009-03-11 10:10:23, Christopher Brannon wrote:
->> Under Plan 9 from Bell Labs, one queries or sets the system clock by
->> reading or writing text strings to a special file named /dev/time.
->> I implemented such a facility for Linux.  A read of /dev/time produces
->> four decimal numbers: epoch seconds, nanoseconds since start of epoch,
->> nanoseconds since boot, and nanoseconds per second.  Writing a
->> decimal number
->
-> nanoseconds per second?! Just use 123.456 notation.
 
-The point is to be close to Plan 9's interface, in which column 3 is
-"something since boot" and column 4 is "somethings per second" to keep
-programs portable.
+* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
 
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> >-----Original Message-----
+> >From: Metzger, Markus T
+> >Sent: Tuesday, March 17, 2009 1:58 PM
+> >To: Ingo Molnar
+> 
+> 
+> >>> I think I found the problem:
+> >>>   ds_request_bts() needs to allocate a small amount of memory.
+> >>>   It uses GFP_KERNEL.
+> >>>
+> >>> Hw-branch-tracer essentially does on_each_cpu(ds_request_bts()).
+> >>>
+> >>> Since ds_request_bts() is meant to be called on the cpu that
+> >>> should be traced, it should use GFP_ATOMIC to allow calls from
+> >>> smp_call_function() and friends.
+> >>>
+> >>> Would that be acceptable?
+> >>
+> >>That's not really a good solution - GFP_ATOMIC is not a reliable
+> >>form of allocation.
+> 
+> That problem also is in the .29-rc version.
+> It affects the hw-branch-tracer.
+> The ptrace interface should not be affected.
+> 
+> The changes I sketched below will be too intrusive.
+> Do you want a small patch that turns GFP_KERNEL into GFP_ATOMIC
+> for .29?
+
+Yeah - but it will be for .29.1 - the hw-branch-tracer is off by 
+default.
+
+	Ingo
