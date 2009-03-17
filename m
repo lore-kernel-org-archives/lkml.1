@@ -1,130 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757700AbZCQSAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbZCQSBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757700AbZCQSAV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 14:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbZCQSAG
+	id S1758637AbZCQSBb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 14:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbZCQSBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 14:00:06 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:50124 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752073AbZCQSAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 14:00:05 -0400
-Subject: Re: =?UTF-8?Q?=D0=9E=D1=82=D0=B2=D0=B5=D1=82=3A?= VFS, NFS
- security bug? Should CAP_MKNOD and CAP_LINUX_IMMUTABLE be added to
- CAP_FS_MASK?
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Igor Zhbanov <izh1979@gmail.com>, "J. Bruce Fields" <bfields@fieldses.org>,
-       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
-       David Howells <dhowells@redhat.com>, Andrew Morgan <morgan@kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       SELinux <selinux@tycho.nsa.gov>
-In-Reply-To: <20090317173903.GA31566@us.ibm.com>
-References: <20090312161047.GA15209@us.ibm.com>
-	 <517f3f820903121321sf6d2014q8165b925d5d44db7@mail.gmail.com>
-	 <20090313175848.GB27891@fieldses.org>
-	 <f44001920903131137j158c5f76y6a71b58ee964df77@mail.gmail.com>
-	 <20090313190002.GA16025@us.ibm.com>
-	 <1237227705.1035.93.camel@localhost.localdomain>
-	 <20090316184926.GA6729@us.ibm.com>
-	 <1237237216.1035.195.camel@localhost.localdomain>
-	 <20090316231340.GC15522@us.ibm.com>
-	 <1237299633.6582.107.camel@localhost.localdomain>
-	 <20090317173903.GA31566@us.ibm.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 17 Mar 2009 13:52:25 -0400
-Message-Id: <1237312345.6582.140.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Mar 2009 14:01:22 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:40956 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754141AbZCQSBV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 14:01:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=thjqXJ66P+nuxFjEDz6GUPIt8E2jPTXNKb1hs5vX0vTrLh3x1tnYeGxIYFDekkww5N
+         /Pr2hjNXe3Sv7Z/9kkr00Phe3k/xCBuVmqDuXoRSaDAfYqXoAAKS3Ir/J7svtjF6fLIQ
+         yIdtGp2vMTH1GTpJVimmbdH1fvL9PW8lCAHlg=
+MIME-Version: 1.0
+In-Reply-To: <20090317085714.54bcd51c@lxorguk.ukuu.org.uk>
+References: <bc9165390903160912u79693a1dve975f559bfab103e@mail.gmail.com>
+	 <bc9165390903162233o48e02d94v6bb216e5d68d9e77@mail.gmail.com>
+	 <bc9165390903162234maedd4d0l7026d8f53a1859cc@mail.gmail.com>
+	 <20090317085714.54bcd51c@lxorguk.ukuu.org.uk>
+Date: Tue, 17 Mar 2009 23:31:20 +0530
+Message-ID: <bc9165390903171101s454838bci158ee1c32134af74@mail.gmail.com>
+Subject: Re: Serial Flow Control
+From: Rocker Dude <life.does.rock@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-17 at 12:39 -0500, Serge E. Hallyn wrote:
-> Quoting Stephen Smalley (sds@tycho.nsa.gov):
-> > > So do you think it makes sense to have CAP_MAC_ADMIN and CAP_FOWNER
-> > > in CAP_FS_MASK?  In other words are you objecting to CAP_SYS_ADMIN
-> > > because of all of its other implications, or because you disagree
-> > > that labels for security modules should be treated as mere fs data
-> > > here?
-> > 
-> > For CAP_FOWNER, yes (and it is already there).  CAP_MAC_ADMIN is less
-> 
-> Sorry, I meant CAP_SETFCAP.  Should it be added?
+Hi Alan,
 
-Sure - it is only used for filesystem operations.
+Thank you very much for the prompt reply!
 
-> > ideal as it isn't clearly tied to filesystem accesses, and likewise for
-> > CAP_MAC_OVERRIDE (but that one is included in CAP_FS_MASK already).
-> 
-> So it is.  I didn't realize that.
-> 
-> > Ideally the capability space would be partitioned into capabilities that
-> > affect filesystem accesses and the rest so that setfsuid() would yield
-> > the expected behavior of only affecting filesystem access.
-> > CAP_SYS_ADMIN is even less suitable due to its pervasive use outside of
-> > the filesystem.  So that's the first concern.
-> > 
-> > The second one is that we don't want CAP_SYS_ADMIN (or CAP_MAC_ADMIN) to
-> > be required when setting SELinux labels.  Only the SELinux permission
-> > checks should govern setting those labels (aside from the usual DAC
-> > ownership || CAP_FOWNER check).
-> 
-> So if a non-selinux kernel is booted, then you think only the usual
-> DAC checks should be required to set selinux labels?
+I debugged out the problem though. I will describe it, even if it
+seems childish!
 
-I'm talking about the dumb NFS server case (non-SELinux NFS server
-providing label and data storage to SELinux clients, MAC enforcement
-handled client-side).  But we aren't there yet, so I don't think we have
-to worry about it right now.
+I was using the flow control on the console serial. As a result, any
+data being sent to the powerpc from the x86 was also being read by the
+console driver, and being responded to. As a result, many of times, my
+actual serial read application would lose bytes and sit idle. I
+changed the console port and observed data validity perfectly.
 
-> Or is this assuming EOPNOTSUPP were returned for setting
-> security.selinux xattrs in such a kernel?
+However, I have some few queires.
+
+1. To prove flow control, I sleep for 5 seconds after every read.
+Although my logic says that both the xmitter and the reciever in this
+case should complete the process within a few time difference, I find
+that my xmitter exits out after sending the chunk; while my receiver
+keeps on receiving it for a few more time. And this time is almost a
+minute or something. I did find out the xmitter 4K page buffers, but
+it was too misleading for me to believe this!
+
+Alan, I will once again go through the discipline drivers more before
+I shoot may doubts!
+
+Thanx a lot for the help and replies,
+
+Thanx!
+Sundar
+
+On Tue, Mar 17, 2009 at 2:27 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> On Tue, 17 Mar 2009 11:04:36 +0530
+> Rocker Dude <life.does.rock@gmail.com> wrote:
 >
-> > > > uses CAP_SYS_ADMIN to control setting of its own attributes:
-> > > > - SELinux applies a DAC check and its own set of MAC file permission
-> > > > checks,
-> > > > - Smack applies CAP_MAC_ADMIN,
-> > > > - Capabilities applies CAP_SETFCAP.
-> > > > 
-> > > > Checking CAP_SYS_ADMIN was really just a fallback to prevent unchecked
-> > > > setting of attributes in the no-LSM case.  It might make more sense to
-> > > > return EOPNOTSUPP for any attributes unknown to the enabled security
-> > > 
-> > > I suspect that would create a LOT of bug reports.  Would requiring
-> > > CAP_MAC_ADMIN seem reasonable?
-> > 
-> > It would narrow the scope a bit more, but it still isn't ideal.
-> > 
-> > > > module and require you to enable the desired module before setting the
-> > > > attributes these days.
-> > > > http://marc.info/?t=107428809400002&r=1&w=2
-> > > > 
-> > > > I don't think this will make any difference for labeled NFS at present,
-> > > > as the current labeled NFS patches only export the MAC label attribute
-> > > > if the server has the MAC model enabled.  So CAP_SYS_ADMIN won't get
-> > > > checked regardless.
-> > > > 
-> > > > Trusted namespace is another case where CAP_SYS_ADMIN check is applied
-> > > > on file operations.
-> > > 
-> > > Which seems like all the more reason why CAP_SYS_ADMIN would need to
-> > > be added to the CAP_FS_MASK.  Or do you mean that check should also be
-> > > changed for something else?  (CAP_MAC_ADMIN, or some new CAP_FS_XATTR?)
-> > 
-> > I'd favor changing it to a new capability.  We have CAP_SETFCAP for
-> > setting file capabilities; why not have CAP_SETTRUSTED for setting
-> > attributes in the trusted namespace?  Then adding it to CAP_FS_MASK has
-> > no further side effects beyond controlling filesystem accesses.
-> 
-> Does anyone know what the trusted xattrs are used for?
-
-Not beyond what attr(5) says about them.
-
--- 
-Stephen Smalley
-National Security Agency
-
+>> Hi All,
+>>
+>> I am using a powerpc8548e custom hardware and testing flow control on
+>> it. I have cross-wired the RTS/CTS of the board with my host terminal.
+>> I find that when I am reading from the powerpc, it does not change the
+>> CTS signal when it is running out of buffers and hence it is dropping
+>> bytes.
+>>
+>> I referred to something similar at http://lkml.org/lkml/2007/7/26/46.
+>>
+>> Can anyone please tell me if this flow control needs to be done by the SW?
+>
+> Flow control needs to be enabled by the user space software (if not
+> enabled already), managed by the line discipline and implemented by the
+> device driver (or automatically in hardware in some cases)
+>
+> Basically; App "set CRTSCTS"
+> Ldisc: buffers full/not full logic for throttling
+> Driver: throttling events -> flow control, honour flow on write
+>
