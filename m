@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbZCQEEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752041AbZCQEGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904AbZCQEEt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 00:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750805AbZCQEEk
+	id S1752041AbZCQEGE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 00:06:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbZCQEFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 00:04:40 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42695 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbZCQEEk (ORCPT
+	Tue, 17 Mar 2009 00:05:52 -0400
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:49363 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbZCQEFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 00:04:40 -0400
-Message-ID: <49BF2054.9020009@zytor.com>
-Date: Mon, 16 Mar 2009 21:00:20 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [crash] Re: Latest brk patchset
-References: <49BC413B.5020104@zytor.com> <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <49BE7A84.2030503@goop.org> <49BE84D6.3010006@kernel.org> <49BE9248.6050707@goop.org> <49BE97D5.4010002@zytor.com> <49BEA7BE.6050400@goop.org> <49BEAD27.3050801@kernel.org> <49BEAFEC.7020400@goop.org> <49BEB5FE.7050601@zytor.com> <49BEBD98.3090905@goop.org> <49BEC143.6030104@zytor.com> <49BEC53F.20200@goop.org> <49BED431.5070201@zytor.com> <49BF0A51.5000909@kernel.org>
-In-Reply-To: <49BF0A51.5000909@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Mar 2009 00:05:51 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [RFC Aufs2 #2 21/28] aufs sysfs entries 
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <20090317033747.GA17037@kroah.com>
+References: <1237188040-11404-1-git-send-email-hooanon05@yahoo.co.jp> <1237188040-11404-22-git-send-email-hooanon05@yahoo.co.jp> <20090316180538.GA7069@kroah.com> <7200.1237260402@jrobl> <20090317033747.GA17037@kroah.com>
+Date: Tue, 17 Mar 2009 13:05:47 +0900
+Message-ID: <7974.1237262747@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
->>
->> You could also write:
->>
->> PAGE_TABLE_SIZE((-PAGE_OFFSET & 0xffffffff) >> PAGE_SHIFT) << PAGE_SHIFT
->>
->> (the & 0xffffffff is necessary, or you'll get a signed shift.)
-> 
-> max kernel address space range?
-> 
 
-Yes, either ((1 << 32)-PAGE_OFFSET) or (-PAGE_OFFSET & 0xffffffff)
-should work for that.
+Greg KH:
+> Which should be MAX_PATH, right?  Is that ever bigger than PAGE_SIZE?
 
-	-hpa
+Is the limit of PATH_MAX applied to the absolute path too?
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
 
+> What specifically are you trying to show here?
+
+- the abs path of a directory which is a member of a union.
+- the abs path of a xino file which is a regular file maintained by
+  aufs.
+
+
+> Please document your sysfs entries, and I'll be glad to review it again.
+
+Thank you.
+I will create Documentation/ABI/testing/sysfs-aufs and describe them in
+it. I didn't know about it.
+
+
+J. R. Okajima
