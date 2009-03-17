@@ -1,21 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbZCQM0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZCQMfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756430AbZCQM0z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 08:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbZCQM0o
+	id S1756996AbZCQMfZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 08:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbZCQMfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 08:26:44 -0400
-Received: from mga11.intel.com ([192.55.52.93]:41198 "EHLO mga11.intel.com"
+	Tue, 17 Mar 2009 08:35:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54564 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750963AbZCQM0n convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 08:26:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,378,1233561600"; 
-   d="scan'208";a="673581279"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	id S1750963AbZCQMfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 08:35:08 -0400
+Date: Tue, 17 Mar 2009 13:34:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "tglx@linutronix.de" <tglx@linutronix.de>,
        "hpa@zytor.com" <hpa@zytor.com>,
        "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
@@ -24,68 +21,69 @@ CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "oleg@redhat.com" <oleg@redhat.com>,
        "Villacis, Juan" <juan.villacis@intel.com>,
        "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Date: Tue, 17 Mar 2009 12:26:21 +0000
-Subject: RE: [patch 1/5] x86, bts: detect size of DS fields
-Thread-Topic: [patch 1/5] x86, bts: detect size of DS fields
-Thread-Index: Acmm7wRbn8xBA9EbQjezeg12DGOnvQABhJ/A
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E4A664285@irsmsx504.ger.corp.intel.com>
-References: <20090313104218.A30096@sedona.ch.intel.com>
- <20090313110357.GC31094@elte.hu>
- <928CFBE8E7CB0040959E56B4EA41A77E4A663C47@irsmsx504.ger.corp.intel.com>
- <20090317105558.GK6477@elte.hu>
-In-Reply-To: <20090317105558.GK6477@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+Subject: Re: [patch 1/5] x86, bts: detect size of DS fields
+Message-ID: <20090317123442.GB22759@elte.hu>
+References: <20090313104218.A30096@sedona.ch.intel.com> <20090313110357.GC31094@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77E4A663C47@irsmsx504.ger.corp.intel.com> <20090317105558.GK6477@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77E4A664285@irsmsx504.ger.corp.intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E4A664285@irsmsx504.ger.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Ingo Molnar [mailto:mingo@elte.hu]
->Sent: Tuesday, March 17, 2009 11:56 AM
->To: Metzger, Markus T
 
+* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
 
->the bigger problem is the runtime failure (boot warning) that i
->reported. Hence i cannot apply any new patches yet until that is
->resolved.
+> >-----Original Message-----
+> >From: Ingo Molnar [mailto:mingo@elte.hu]
+> >Sent: Tuesday, March 17, 2009 11:56 AM
+> >To: Metzger, Markus T
+> 
+> 
+> >the bigger problem is the runtime failure (boot warning) that i
+> >reported. Hence i cannot apply any new patches yet until that is
+> >resolved.
+> 
+> I found your email at lkml.org.
 
-I found your email at lkml.org.
+(i sent it to your intel.com address - perhaps it got dropped 
+there somehow?)
 
-I think I found the problem:
-  ds_request_bts() needs to allocate a small amount of memory.
-  It uses GFP_KERNEL.
+> I think I found the problem:
+>   ds_request_bts() needs to allocate a small amount of memory.
+>   It uses GFP_KERNEL.
+> 
+> Hw-branch-tracer essentially does on_each_cpu(ds_request_bts()).
+> 
+> Since ds_request_bts() is meant to be called on the cpu that 
+> should be traced, it should use GFP_ATOMIC to allow calls from 
+> smp_call_function() and friends.
+> 
+> Would that be acceptable?
 
-Hw-branch-tracer essentially does on_each_cpu(ds_request_bts()).
+That's not really a good solution - GFP_ATOMIC is not a reliable 
+form of allocation.
 
+the other callsites are buggy too:
 
-Since ds_request_bts() is meant to be called on the cpu that should
-be traced, it should use GFP_ATOMIC to allow calls from smp_call_function()
-and friends.
+                smp_call_function_single(cpu, bts_trace_start_cpu, NULL, 1);
 
-Would that be acceptable?
+done under the bts_tracer_lock in addition to an atomic IPI 
+context.
 
-thanks and regards,
-markus.
+for_each_online_cpu() done under the mutex would be better i 
+guess, plus you can allocate any memory before you do the SMP 
+cross-call, and pass it to the IPI handler via the data 
+parameter. (NULL in the sequence above)
 
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+	Ingo
