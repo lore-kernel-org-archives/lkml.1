@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757781AbZCQQPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759914AbZCQQRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757781AbZCQQPw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 12:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZCQQPk
+	id S1759914AbZCQQRS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 12:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbZCQQRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 12:15:40 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:41663 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754098AbZCQQPj (ORCPT
+	Tue, 17 Mar 2009 12:17:05 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:46294 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754608AbZCQQRE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 12:15:39 -0400
-Date: Tue, 17 Mar 2009 12:05:27 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-Message-ID: <20090317160527.GB6737@tuxdriver.com>
-References: <1237140665.24621.2.camel@johannes.local> <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain> <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu> <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com> <alpine.LFD.2.00.0903161250080.3082@localhost.localdomain> <b6a2187b0903161655q15437156qc926c8db37d8ba4b@mail.gmail.com> <20090317144802.GF3549@tuxdriver.com> <20090317152801.GA6737@tuxdriver.com> <20090317153924.GA21061@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 17 Mar 2009 12:17:04 -0400
+Message-Id: <49BFDB3C.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 17 Mar 2009 16:17:48 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <linux-pci@vger.kernel.org>
+Cc: "Dexuan Cui" <dexuan.cui@intel.com>, <stable@kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: [PATCH] pci: Fix the definition of PCI_PM_CTRL_NO_SOFT_RESET
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090317153924.GA21061@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 04:39:24PM +0100, Ingo Molnar wrote:
-> 
-> * John W. Linville <linville@tuxdriver.com> wrote:
-> 
-> > On Tue, Mar 17, 2009 at 10:48:02AM -0400, John W. Linville wrote:
-> > > On Tue, Mar 17, 2009 at 07:55:49AM +0800, Jeff Chua wrote:
-> > > > On Tue, Mar 17, 2009 at 3:57 AM, Linus Torvalds
-> > > > <torvalds@linux-foundation.org> wrote:
-> > > > 
-> > > > > IOW, if you've pinpointed 71c11fb57b924c160297ccd9e1761db598d00ac2 as
-> > > > > being bad, then you should go back and double-check that its parent
-> > > > > (in this case 4607816f608b42a5379aca97ceed08378804c99f) is good.
-> > > > > Because if it's parent is also bad, then that just means that you made
-> > > > > some mistake in "git bisect".
-> > > > > In this case, it really sounds like maybe you marked the parent good, even
-> > > > > though you should have marked it bad.
-> > > > 
-> > > > I should have been more careful, just got thrown off during the last
-> > > > few steps of the bisect. But with the bad association to the AP after
-> > > > a57a59f247b651e8ed6d3eeb7e2f9d83b83134c9 (iwlwifi: remove implicit
-> > > > direct scan), can someone suggest where to go from here?
-> > > 
-> > > The obvious question for me is did you try this?
-> > > 
-> > > 	git revert a57a59f247b651e8ed6d3eeb7e2f9d83b83134c9
-> > 
-> > Hmmm...more like this:
-> > 
-> > git revert 41bb73eeac5ff5fb217257ba33b654747b3abf11
-> > git revert b23f99bcfa12c7b452f7ad201ea5921534d4e9ff
-> > git revert 71c11fb57b924c160297ccd9e1761db598d00ac2
-> > git revert 4607816f608b42a5379aca97ceed08378804c99f
-> > git revert a57a59f247b651e8ed6d3eeb7e2f9d83b83134c9
-> >  
-> > This first one has a conflict -- just take the hunk.
-> 
-> Since you apparently have done this sequence and have
-> resolved the conflict (which is hard to do for testers
-> even in trivial cases) - would you mind to post the
-> resulting combo patch for Jeff to test?
+From: Dexuan Cui <dexuan.cui@intel.com>
 
-Since Jeff has been using git for bisect, I presumed he could handle
-the reverts.  But if you think it is helpful:
+As per PCI Bus Power Management Interface Specification Revision 1.2
+this is bit 3, not bit 2, of the Power Management Control/Status
+register.
 
-	http://bugzilla.kernel.org/attachment.cgi?id=20567&action=view
+Signed-off-by: Dexuan Cui <dexuan.cui@intel.com>
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Cc: stable <stable@kernel.org>
 
-Hth!
+---
+ include/linux/pci_regs.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+--- linux-2.6.29-rc8/include/linux/pci_regs.h	2009-03-17 17:14:16.000000000 +0100
++++ 2.6.29-rc8-pci-pm-ctrl-no-soft-reset/include/linux/pci_regs.h	2009-03-04 11:25:28.000000000 +0100
+@@ -235,7 +235,7 @@
+ #define  PCI_PM_CAP_PME_SHIFT	11	/* Start of the PME Mask in PMC */
+ #define PCI_PM_CTRL		4	/* PM control and status register */
+ #define  PCI_PM_CTRL_STATE_MASK	0x0003	/* Current power state (D0 to D3) */
+-#define  PCI_PM_CTRL_NO_SOFT_RESET	0x0004	/* No reset for D3hot->D0 */
++#define  PCI_PM_CTRL_NO_SOFT_RESET	0x0008	/* No reset for D3hot->D0 */
+ #define  PCI_PM_CTRL_PME_ENABLE	0x0100	/* PME pin enable */
+ #define  PCI_PM_CTRL_DATA_SEL_MASK	0x1e00	/* Data select (??) */
+ #define  PCI_PM_CTRL_DATA_SCALE_MASK	0x6000	/* Data scale (??) */
+
+
+
