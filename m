@@ -1,5225 +1,5873 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZCQXYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752384AbZCQXYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755814AbZCQXYQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 19:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbZCQXVi
+	id S1752384AbZCQXYg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 19:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZCQXWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 19:21:38 -0400
-Received: from kroah.org ([198.145.64.141]:37595 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753416AbZCQXV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 19:21:29 -0400
-Subject: patch staging-otus-ioctl.c-fix-coding-style.patch added to gregkh-2.6 tree
-To: dragoslav.zaric.kd@gmail.com, gregkh@suse.de, linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Tue, 17 Mar 2009 16:18:44 -0700
-In-Reply-To: <alpine.DEB.2.00.0903162312560.15828@Sentinel>
-Message-ID: <12373319242818@kroah.org>
+	Tue, 17 Mar 2009 19:22:32 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4398 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754080AbZCQXWB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 19:22:01 -0400
+From: Joe Perches <joe@perches.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH 2/8] MAINTAINERS - Add file patterns
+Date: Tue, 17 Mar 2009 16:19:23 -0700
+Message-Id: <1237331969-28565-3-git-send-email-joe@perches.com>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1237331969-28565-1-git-send-email-joe@perches.com>
+References: <1237331969-28565-1-git-send-email-joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Better description of file pattern tag "F:"
+Add file exclusion tag "X:"
+Add patterns to sections
 
-This is a note to let you know that I've just added the patch titled
+Signed-off-by: Joe Perches <joe@perches.com>
 
-    Subject: Staging: otus: ioctl.c: Fix Coding Style
-
-to my gregkh-2.6 tree.  Its filename is
-
-    staging-otus-ioctl.c-fix-coding-style.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From dragoslav.zaric.kd@gmail.com  Tue Mar 17 15:57:54 2009
-From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-Date: Mon, 16 Mar 2009 23:17:47 +0100 (CET)
-Subject: Staging: otus: ioctl.c: Fix Coding Style
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Message-ID: <alpine.DEB.2.00.0903162312560.15828@Sentinel>
-
-
-I run make on ioctl.c file and I got two warnings:
-drivers/staging/otus/ioctl.c: In function ¡usbdrv_wpa_ioctl¢:
-drivers/staging/otus/ioctl.c:2269: warning: ISO C90 forbids mixed declarations and code
-drivers/staging/otus/ioctl.c: In function ¡usbdrv_ioctl¢:
-drivers/staging/otus/ioctl.c:2448: warning: ISO C90 forbids mixed declarations and code
-
-From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/staging/otus/ioctl.c | 4749 ++++++++++++++++++++-----------------------
- 1 file changed, 2305 insertions(+), 2444 deletions(-)
-
---- a/drivers/staging/otus/ioctl.c
-+++ b/drivers/staging/otus/ioctl.c
-@@ -25,7 +25,7 @@
- /************************************************************************/
- #include <linux/module.h>
- #include <linux/if_arp.h>
--#include <asm/uaccess.h>
-+#include <linux/uaccess.h>
- 
- #include "usbdrv.h"
- 
-@@ -34,7 +34,7 @@
- #define ZD_IOCTL_GETWPAIE		    (SIOCDEVPRIVATE + 3)
- #ifdef ZM_ENABLE_CENC
- #define ZM_IOCTL_CENC               (SIOCDEVPRIVATE + 4)
--#endif //ZM_ENABLE_CENC
-+#endif  /* ZM_ENABLE_CENC */
- #define ZD_PARAM_ROAMING		    0x0001
- #define ZD_PARAM_PRIVACY		    0x0002
- #define ZD_PARAM_WPA			    0x0003
-@@ -45,7 +45,7 @@
- 
- #ifdef ZM_ENABLE_CENC
- #define P80211_PACKET_CENCFLAG		0x0001
--#endif //ZM_ENABLE_CENC
-+#endif  /* ZM_ENABLE_CENC */
- #define P80211_PACKET_SETKEY     	0x0003
- 
- #define ZD_CMD_SET_ENCRYPT_KEY		0x0001
-@@ -62,204 +62,190 @@
- #include <net/iw_handler.h>
- #endif
- 
--extern u16_t zfLnxGetVapId(zdev_t* dev);
-+extern u16_t zfLnxGetVapId(zdev_t *dev);
- 
- static const u32_t channel_frequency_11A[] =
- {
--//Even element for Channel Number, Odd for Frequency
--    36,5180,
--    40,5200,
--    44,5220,
--    48,5240,
--    52,5260,
--    56,5280,
--    60,5300,
--    64,5320,
--    100,5500,
--    104,5520,
--    108,5540,
--    112,5560,
--    116,5580,
--    120,5600,
--    124,5620,
--    128,5640,
--    132,5660,
--    136,5680,
--    140,5700,
--//
--    184,4920,
--    188,4940,
--    192,4960,
--    196,4980,
--    8,5040,
--    12,5060,
--    16,5080,
--    34,5170,
--    38,5190,
--    42,5210,
--    46,5230,
--//
--    149,5745,
--    153,5765,
--    157,5785,
--    161,5805,
--    165,5825
--//
-+	/* Even element for Channel Number, Odd for Frequency */
-+	36, 5180,
-+	40, 5200,
-+	44, 5220,
-+	48, 5240,
-+	52, 5260,
-+	56, 5280,
-+	60, 5300,
-+	64, 5320,
-+	100, 5500,
-+	104, 5520,
-+	108, 5540,
-+	112, 5560,
-+	116, 5580,
-+	120, 5600,
-+	124, 5620,
-+	128, 5640,
-+	132, 5660,
-+	136, 5680,
-+	140, 5700,
-+	/**/
-+	184, 4920,
-+	188, 4940,
-+	192, 4960,
-+	196, 4980,
-+	8, 5040,
-+	12, 5060,
-+	16, 5080,
-+	34, 5170,
-+	38, 5190,
-+	42, 5210,
-+	46, 5230,
-+	/**/
-+	149, 5745,
-+	153, 5765,
-+	157, 5785,
-+	161, 5805,
-+	165, 5825
-+	/**/
- };
- 
- int usbdrv_freq2chan(u32_t freq)
- {
--    /* 2.4G Hz */
--    if (freq > 2400 && freq < 3000)
--    {
--        return ((freq-2412)/5) + 1;
--    }
--    else
--    {
--        u16_t ii;
--        u16_t num_chan = sizeof(channel_frequency_11A)/sizeof(u32_t);
--
--        for(ii = 1; ii < num_chan; ii += 2)
--        {
--            if (channel_frequency_11A[ii] == freq)
--                return channel_frequency_11A[ii-1];
--        }
--    }
-+	/* 2.4G Hz */
-+	if (freq > 2400 && freq < 3000) {
-+		return ((freq-2412)/5) + 1;
-+	} else {
-+		u16_t ii;
-+		u16_t num_chan = sizeof(channel_frequency_11A)/sizeof(u32_t);
-+
-+		for (ii = 1; ii < num_chan; ii += 2) {
-+			if (channel_frequency_11A[ii] == freq)
-+				return channel_frequency_11A[ii-1];
-+		}
-+	}
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrv_chan2freq(int chan)
- {
--    int freq;
-+	int freq;
-+
-+	/* If channel number is out of range */
-+	if (chan > 165 || chan <= 0)
-+		return -1;
-+
-+	/* 2.4G band */
-+	if (chan >= 1 && chan <= 13) {
-+		freq = (2412 + (chan - 1) * 5);
-+			return freq;
-+	} else if (chan >= 36 && chan <= 165) {
-+		u16_t ii;
-+		u16_t num_chan = sizeof(channel_frequency_11A)/sizeof(u32_t);
-+
-+		for (ii = 0; ii < num_chan; ii += 2) {
-+			if (channel_frequency_11A[ii] == chan)
-+				return channel_frequency_11A[ii+1];
-+		}
- 
--    /* If channel number is out of range */
--    if (chan > 165 || chan <= 0)
--        return -1;
--
--    /* 2.4G band */
--    if (chan >= 1 && chan <= 13)
--    {
--        freq = (2412 + (chan - 1) * 5);
--        return freq;
--    }
--    else if (chan >= 36 && chan <= 165)
--    {
--        u16_t ii;
--        u16_t num_chan = sizeof(channel_frequency_11A)/sizeof(u32_t);
--
--        for(ii = 0; ii < num_chan; ii += 2)
--        {
--            if (channel_frequency_11A[ii] == chan)
--                return channel_frequency_11A[ii+1];
--        }
--
--        /* Can't find desired frequency */
--        if (ii == num_chan)
--           return -1;
--    }
-+	/* Can't find desired frequency */
-+	if (ii == num_chan)
-+		return -1;
-+	}
- 
--    /* Can't find deisred frequency */
--    return -1;
-+	/* Can't find deisred frequency */
-+	return -1;
- }
- 
- int usbdrv_ioctl_setessid(struct net_device *dev, struct iw_point *erq)
- {
--#ifdef ZM_HOSTAPD_SUPPORT
--    //struct usbdrv_private *macp = dev->ml_priv;
--    char essidbuf[IW_ESSID_MAX_SIZE+1];
--    int i;
-+	#ifdef ZM_HOSTAPD_SUPPORT
-+	/* struct usbdrv_private *macp = dev->ml_priv; */
-+	char essidbuf[IW_ESSID_MAX_SIZE+1];
-+	int i;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    memset(essidbuf, 0, sizeof(essidbuf));
-+	memset(essidbuf, 0, sizeof(essidbuf));
- 
--    printk(KERN_ERR "usbdrv_ioctl_setessid\n");
-+	printk(KERN_ERR "usbdrv_ioctl_setessid\n");
- 
--    //printk("ssidlen=%d\n", erq->length); //for any, it is 1.
--    if (erq->flags) {
--        if (erq->length > (IW_ESSID_MAX_SIZE+1))
--            return -E2BIG;
-+	/* printk("ssidlen=%d\n", erq->length); //for any, it is 1. */
-+	if (erq->flags) {
-+		if (erq->length > (IW_ESSID_MAX_SIZE+1))
-+			return -E2BIG;
- 
--        if (copy_from_user(essidbuf, erq->pointer, erq->length))
--            return -EFAULT;
--    }
-+		if (copy_from_user(essidbuf, erq->pointer, erq->length))
-+			return -EFAULT;
-+	}
- 
--    //zd_DisasocAll(2);
--    //wait_ms(100);
-+	/* zd_DisasocAll(2); */
-+	/* wait_ms(100); */
- 
--    printk(KERN_ERR "essidbuf: ");
-+	printk(KERN_ERR "essidbuf: ");
- 
--    for(i = 0; i < erq->length; i++)
--    {
--        printk(KERN_ERR "%02x ", essidbuf[i]);
--    }
-+	for (i = 0; i < erq->length; i++)
-+		printk(KERN_ERR "%02x ", essidbuf[i]);
- 
--    printk(KERN_ERR "\n");
-+	printk(KERN_ERR "\n");
- 
--    essidbuf[erq->length] = '\0';
--    //memcpy(macp->wd.ws.ssid, essidbuf, erq->length);
--    //macp->wd.ws.ssidLen = strlen(essidbuf)+2;
--    //macp->wd.ws.ssid[1] = strlen(essidbuf); // Update ssid length
-+	essidbuf[erq->length] = '\0';
-+	/* memcpy(macp->wd.ws.ssid, essidbuf, erq->length); */
-+	/* macp->wd.ws.ssidLen = strlen(essidbuf)+2; */
-+	/* macp->wd.ws.ssid[1] = strlen(essidbuf); Update ssid length */
- 
--    zfiWlanSetSSID(dev, essidbuf, erq->length);
--#if 0
--    printk(KERN_ERR "macp->wd.ws.ssid: ");
-+	zfiWlanSetSSID(dev, essidbuf, erq->length);
-+	#if 0
-+		printk(KERN_ERR "macp->wd.ws.ssid: ");
- 
--    for(i = 0; i < macp->wd.ws.ssidLen; i++)
--    {
--        printk(KERN_ERR "%02x ", macp->wd.ws.ssid[i]);
--    }
-+		for (i = 0; i < macp->wd.ws.ssidLen; i++)
-+			printk(KERN_ERR "%02x ", macp->wd.ws.ssid[i]);
- 
--    printk(KERN_ERR "\n");
--#endif
--    zfiWlanDisable(dev, 0);
--    zfiWlanEnable(dev);
-+		printk(KERN_ERR "\n");
-+	#endif
- 
--#endif
-+	zfiWlanDisable(dev, 0);
-+	zfiWlanEnable(dev);
-+
-+	#endif
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrv_ioctl_getessid(struct net_device *dev, struct iw_point *erq)
- {
--     //struct usbdrv_private *macp = dev->ml_priv;
--     u8_t essidbuf[IW_ESSID_MAX_SIZE+1];
--     u8_t len;
--     u8_t i;
-+	/* struct usbdrv_private *macp = dev->ml_priv; */
-+	u8_t essidbuf[IW_ESSID_MAX_SIZE+1];
-+	u8_t len;
-+	u8_t i;
- 
- 
--     //len = macp->wd.ws.ssidLen;
--     //memcpy(essidbuf, macp->wd.ws.ssid, macp->wd.ws.ssidLen);
--     zfiWlanQuerySSID(dev, essidbuf, &len);
-+	/* len = macp->wd.ws.ssidLen; */
-+	/* memcpy(essidbuf, macp->wd.ws.ssid, macp->wd.ws.ssidLen); */
-+	zfiWlanQuerySSID(dev, essidbuf, &len);
- 
--     essidbuf[len] = 0;
-+	essidbuf[len] = 0;
- 
--     printk(KERN_ERR "ESSID: ");
-+	printk(KERN_ERR "ESSID: ");
- 
--     for(i = 0; i < len; i++)
--     {
--         printk(KERN_ERR "%c", essidbuf[i]);
--     }
-+	for (i = 0; i < len; i++)
-+		printk(KERN_ERR "%c", essidbuf[i]);
- 
--     printk(KERN_ERR "\n");
-+	printk(KERN_ERR "\n");
- 
--     erq->flags= 1;
--     erq->length = strlen(essidbuf) + 1;
-+	erq->flags = 1;
-+	erq->length = strlen(essidbuf) + 1;
- 
--     if (erq->pointer)
--         if (copy_to_user(erq->pointer, essidbuf, erq->length))
--             return -EFAULT;
-+	if (erq->pointer) {
-+		if (copy_to_user(erq->pointer, essidbuf, erq->length))
-+			return -EFAULT;
-+	}
- 
--     return 0;
-+	return 0;
- }
- 
--
- int usbdrv_ioctl_setrts(struct net_device *dev, struct iw_param *rrq)
- {
--
--    return 0;
-+	return 0;
- }
- 
- #if WIRELESS_EXT > 14
-@@ -267,462 +253,418 @@ int usbdrv_ioctl_setrts(struct net_devic
-  * Encode a WPA or RSN information element as a custom
-  * element using the hostap format.
-  */
--u32 encode_ie(void *buf, u32 bufsize, const u8 *ie, u32 ielen, const u8 *leader, u32 leader_len)
-+u32 encode_ie(void *buf, u32 bufsize, const u8 *ie, u32 ielen,
-+		const u8 *leader, u32 leader_len)
- {
--    u8 *p;
--    u32 i;
-+	u8 *p;
-+	u32 i;
- 
--    if (bufsize < leader_len)
--        return 0;
--    p = buf;
--    memcpy(p, leader, leader_len);
--    bufsize -= leader_len;
--    p += leader_len;
--    for (i = 0; i < ielen && bufsize > 2; i++)
--        p += sprintf(p, "%02x", ie[i]);
--    return (i == ielen ? p - (u8 *)buf : 0);
-+	if (bufsize < leader_len)
-+		return 0;
-+	p = buf;
-+	memcpy(p, leader, leader_len);
-+	bufsize -= leader_len;
-+	p += leader_len;
-+	for (i = 0; i < ielen && bufsize > 2; i++)
-+		p += sprintf(p, "%02x", ie[i]);
-+	return (i == ielen ? p - (u8 *)buf:0);
- }
--#endif                                            /* WIRELESS_EXT > 14 */
-+#endif  /* WIRELESS_EXT > 14 */
- 
--/*------------------------------------------------------------------*/
- /*
-  * Translate scan data returned from the card to a card independent
-  * format that the Wireless Tools will understand
-  */
- char *usbdrv_translate_scan(struct net_device *dev,
- 	struct iw_request_info *info, char *current_ev,
--        char *end_buf, struct zsBssInfo *list)
-+	char *end_buf, struct zsBssInfo *list)
- {
--    struct iw_event iwe;                          /* Temporary buffer */
--    u16_t capabilities;
--    char *current_val;                            /* For rates */
--    char *last_ev;
--    int i;
--#if WIRELESS_EXT > 14
--    char    buf[64*2 + 30];
--#endif
-+	struct iw_event iwe;   /* Temporary buffer */
-+	u16_t capabilities;
-+	char *current_val;     /* For rates */
-+	char *last_ev;
-+	int i;
-+	#if WIRELESS_EXT > 14
-+		char    buf[64*2 + 30];
-+	#endif
-+
-+	last_ev = current_ev;
-+
-+	/* First entry *MUST* be the AP MAC address */
-+	iwe.cmd = SIOCGIWAP;
-+	iwe.u.ap_addr.sa_family = ARPHRD_ETHER;
-+	memcpy(iwe.u.ap_addr.sa_data, list->bssid, ETH_ALEN);
-+	current_ev = iwe_stream_add_event(info,	current_ev,
-+					end_buf, &iwe, IW_EV_ADDR_LEN);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Other entries will be displayed in the order we give them */
-+
-+	/* Add the ESSID */
-+	iwe.u.data.length = list->ssid[1];
-+	if (iwe.u.data.length > 32)
-+		iwe.u.data.length = 32;
-+	iwe.cmd = SIOCGIWESSID;
-+	iwe.u.data.flags = 1;
-+	current_ev = iwe_stream_add_point(info,	current_ev,
-+					end_buf, &iwe, &list->ssid[2]);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Add mode */
-+	iwe.cmd = SIOCGIWMODE;
-+	capabilities = (list->capability[1] << 8) + list->capability[0];
-+	if (capabilities & (0x01 | 0x02)) {
-+		if (capabilities & 0x01)
-+			iwe.u.mode = IW_MODE_MASTER;
-+		else
-+			iwe.u.mode = IW_MODE_ADHOC;
-+			current_ev = iwe_stream_add_event(info,	current_ev,
-+						end_buf, &iwe, IW_EV_UINT_LEN);
-+	}
- 
--    last_ev = current_ev;
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Add frequency */
-+	iwe.cmd = SIOCGIWFREQ;
-+	iwe.u.freq.m = list->channel;
-+	/* Channel frequency in KHz */
-+	if (iwe.u.freq.m > 14) {
-+		if ((184 <= iwe.u.freq.m) && (iwe.u.freq.m <= 196))
-+			iwe.u.freq.m = 4000 + iwe.u.freq.m * 5;
-+		else
-+			iwe.u.freq.m = 5000 + iwe.u.freq.m * 5;
-+	} else {
-+		if (iwe.u.freq.m == 14)
-+			iwe.u.freq.m = 2484;
-+		else
-+			iwe.u.freq.m = 2412 + (iwe.u.freq.m - 1) * 5;
-+	}
-+	iwe.u.freq.e = 6;
-+	current_ev = iwe_stream_add_event(info, current_ev,
-+					end_buf, &iwe, IW_EV_FREQ_LEN);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Add quality statistics */
-+	iwe.cmd = IWEVQUAL;
-+	#if WIRELESS_EXT > 18
-+	iwe.u.qual.updated = IW_QUAL_QUAL_UPDATED | IW_QUAL_LEVEL_UPDATED
-+				| IW_QUAL_NOISE_UPDATED;
-+	#endif
-+	iwe.u.qual.level = list->signalStrength;
-+	iwe.u.qual.noise = 0;
-+	iwe.u.qual.qual = list->signalQuality;
-+	current_ev = iwe_stream_add_event(info,	current_ev,
-+					end_buf, &iwe, IW_EV_QUAL_LEN);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Add encryption capability */
-+
-+	iwe.cmd = SIOCGIWENCODE;
-+	if (capabilities & 0x10)
-+		iwe.u.data.flags = IW_ENCODE_ENABLED | IW_ENCODE_NOKEY;
-+	else
-+		iwe.u.data.flags = IW_ENCODE_DISABLED;
-+
-+	iwe.u.data.length = 0;
-+	current_ev = iwe_stream_add_point(info,	current_ev,
-+					end_buf, &iwe, list->ssid);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	/* Rate : stuffing multiple values in a single event require a bit
-+	* more of magic
-+	*/
-+	current_val = current_ev + IW_EV_LCP_LEN;
-+
-+	iwe.cmd = SIOCGIWRATE;
-+	/* Those two flags are ignored... */
-+	iwe.u.bitrate.fixed = iwe.u.bitrate.disabled = 0;
-+
-+	for (i = 0 ; i < list->supportedRates[1] ; i++) {
-+		/* Bit rate given in 500 kb/s units (+ 0x80) */
-+		iwe.u.bitrate.value = ((list->supportedRates[i+2] & 0x7f)
-+					* 500000);
-+		/* Add new value to event */
-+		current_val = iwe_stream_add_value(info, current_ev,
-+				current_val, end_buf, &iwe, IW_EV_PARAM_LEN);
-+
-+		/* Ran out of buffer */
-+		if (last_ev == current_val)
-+			return end_buf;
- 
--/* First entry *MUST* be the AP MAC address */
--    iwe.cmd = SIOCGIWAP;
--    iwe.u.ap_addr.sa_family = ARPHRD_ETHER;
--    memcpy(iwe.u.ap_addr.sa_data, list->bssid, ETH_ALEN);
--    current_ev = iwe_stream_add_event(
--	info,
--	current_ev,
--	end_buf, &iwe, IW_EV_ADDR_LEN);
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Other entries will be displayed in the order we give them */
--
--/* Add the ESSID */
--    iwe.u.data.length = list->ssid[1];
--    if(iwe.u.data.length > 32)
--        iwe.u.data.length = 32;
--    iwe.cmd = SIOCGIWESSID;
--    iwe.u.data.flags = 1;
--    current_ev = iwe_stream_add_point(
--	info,
--	current_ev, end_buf, &iwe, &list->ssid[2]);
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Add mode */
--    iwe.cmd = SIOCGIWMODE;
--    capabilities = (list->capability[1] << 8) + list->capability[0];
--    if(capabilities & (0x01 | 0x02))
--    {
--        if(capabilities & 0x01)
--            iwe.u.mode = IW_MODE_MASTER;
--        else
--            iwe.u.mode = IW_MODE_ADHOC;
--        current_ev = iwe_stream_add_event(
--		info,
--		current_ev, end_buf, &iwe, IW_EV_UINT_LEN);
--    }
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Add frequency */
--    iwe.cmd = SIOCGIWFREQ;
--    iwe.u.freq.m = list->channel;
--/* Channel frequency in KHz */
--    if (iwe.u.freq.m > 14)
--    {
--        if ((184 <= iwe.u.freq.m) && (iwe.u.freq.m<=196))
--              iwe.u.freq.m = 4000 + iwe.u.freq.m * 5;
--        else
--              iwe.u.freq.m = 5000 + iwe.u.freq.m * 5;
--    }
--    else
--    {
--        if (iwe.u.freq.m == 14)
--              iwe.u.freq.m = 2484;
--        else
--              iwe.u.freq.m = 2412 + (iwe.u.freq.m - 1) * 5;
--    }
--    iwe.u.freq.e = 6;
--    current_ev = iwe_stream_add_event(
--	info,
--    	current_ev, end_buf, &iwe, IW_EV_FREQ_LEN);
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Add quality statistics */
--    iwe.cmd = IWEVQUAL;
--#if WIRELESS_EXT > 18
--    iwe.u.qual.updated = IW_QUAL_QUAL_UPDATED | IW_QUAL_LEVEL_UPDATED
--                        |IW_QUAL_NOISE_UPDATED;
--#endif
--    iwe.u.qual.level = list->signalStrength;
--    iwe.u.qual.noise = 0;
--    iwe.u.qual.qual = list->signalQuality;
--    current_ev = iwe_stream_add_event(
--	info,
--	current_ev, end_buf, &iwe, IW_EV_QUAL_LEN);
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Add encryption capability */
--
--    iwe.cmd = SIOCGIWENCODE;
--    if(capabilities & 0x10)
--        iwe.u.data.flags = IW_ENCODE_ENABLED | IW_ENCODE_NOKEY;
--    else
--        iwe.u.data.flags = IW_ENCODE_DISABLED;
--
--    iwe.u.data.length = 0;
--    current_ev = iwe_stream_add_point(
--	info,
--	current_ev, end_buf, &iwe, list->ssid);
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--/* Rate : stuffing multiple values in a single event require a bit
-- * more of magic */
--    current_val = current_ev + IW_EV_LCP_LEN;
--
--    iwe.cmd = SIOCGIWRATE;
--/* Those two flags are ignored... */
--    iwe.u.bitrate.fixed = iwe.u.bitrate.disabled = 0;
--
--    for(i = 0 ; i < list->supportedRates[1] ; i++)
--    {
--/* Bit rate given in 500 kb/s units (+ 0x80) */
--        iwe.u.bitrate.value = ((list->supportedRates[i+2] & 0x7f) * 500000);
--/* Add new value to event */
--        current_val = iwe_stream_add_value(
--		info,
--		current_ev, current_val, end_buf, &iwe, IW_EV_PARAM_LEN);
--
--        /* Ran out of buffer */
--        if (last_ev == current_val)
--        {
--            return end_buf;
--        }
--
--        last_ev = current_val;
--    }
--
--    for (i = 0 ; i < list->extSupportedRates[1] ; i++)
--    {
--/* Bit rate given in 500 kb/s units (+ 0x80) */
--        iwe.u.bitrate.value = ((list->extSupportedRates[i+2] & 0x7f) * 500000);
--/* Add new value to event */
--        current_val = iwe_stream_add_value(
--		info,
--		current_ev, current_val, end_buf, &iwe, IW_EV_PARAM_LEN);
--
--        /* Ran out of buffer */
--        if (last_ev == current_val)
--        {
--            return end_buf;
--        }
--
--        last_ev = current_ev;
--    }
--
--/* Check if we added any event */
--    if((current_val - current_ev) > IW_EV_LCP_LEN)
--        current_ev = current_val;
--#if WIRELESS_EXT > 14
--#define IEEE80211_ELEMID_RSN 0x30
--    memset(&iwe, 0, sizeof(iwe));
--    iwe.cmd = IWEVCUSTOM;
--    snprintf(buf, sizeof(buf), "bcn_int=%d", (list->beaconInterval[1] << 8) + list->beaconInterval[0]);
--    iwe.u.data.length = strlen(buf);
--    current_ev = iwe_stream_add_point(
--		info,
--		current_ev, end_buf, &iwe, buf);
--
--    /* Ran out of buffer */
--    if (last_ev == current_ev)
--    {
--        return end_buf;
--    }
--
--    last_ev = current_ev;
--
--    if (list->wpaIe[1] != 0)
--    {
--        static const char rsn_leader[] = "rsn_ie=";
--        static const char wpa_leader[] = "wpa_ie=";
--
--        memset(&iwe, 0, sizeof(iwe));
--        iwe.cmd = IWEVCUSTOM;
--        if (list->wpaIe[0] == IEEE80211_ELEMID_RSN)
--            iwe.u.data.length = encode_ie(buf, sizeof(buf),
--                list->wpaIe, list->wpaIe[1]+2,
--                rsn_leader, sizeof(rsn_leader)-1);
--        else
--            iwe.u.data.length = encode_ie(buf, sizeof(buf),
--                list->wpaIe, list->wpaIe[1]+2,
--                wpa_leader, sizeof(wpa_leader)-1);
--
--        if (iwe.u.data.length != 0)
--            current_ev = iwe_stream_add_point(
--		info,
--		current_ev, end_buf, &iwe, buf);
--
--        /* Ran out of buffer */
--        if (last_ev == current_ev)
--        {
--            return end_buf;
--        }
--
--        last_ev = current_ev;
--    }
--    if (list->rsnIe[1] != 0)
--    {
--        static const char rsn_leader[] = "rsn_ie=";
--        memset(&iwe, 0, sizeof(iwe));
--        iwe.cmd = IWEVCUSTOM;
--
--        if (list->rsnIe[0] == IEEE80211_ELEMID_RSN)
--        {
--            iwe.u.data.length = encode_ie(buf, sizeof(buf),
--                list->rsnIe, list->rsnIe[1]+2,
--                rsn_leader, sizeof(rsn_leader)-1);
--            if (iwe.u.data.length != 0)
--                current_ev = iwe_stream_add_point(
--			info,
--			current_ev, end_buf,  &iwe, buf);
--
--            /* Ran out of buffer */
--            if (last_ev == current_ev)
--            {
--                return end_buf;
--            }
--
--            last_ev = current_ev;
--        }
--    }
--#endif
--/* The other data in the scan result are not really
-- * interesting, so for now drop it */
--    return current_ev;
-+		last_ev = current_val;
-+	}
-+
-+	for (i = 0 ; i < list->extSupportedRates[1] ; i++) {
-+		/* Bit rate given in 500 kb/s units (+ 0x80) */
-+		iwe.u.bitrate.value = ((list->extSupportedRates[i+2] & 0x7f)
-+					* 500000);
-+		/* Add new value to event */
-+		current_val = iwe_stream_add_value(info, current_ev,
-+				current_val, end_buf, &iwe, IW_EV_PARAM_LEN);
-+
-+		/* Ran out of buffer */
-+		if (last_ev == current_val)
-+			return end_buf;
-+
-+		last_ev = current_ev;
-+	}
-+
-+	/* Check if we added any event */
-+	if ((current_val - current_ev) > IW_EV_LCP_LEN)
-+		current_ev = current_val;
-+	#if WIRELESS_EXT > 14
-+		#define IEEE80211_ELEMID_RSN 0x30
-+	memset(&iwe, 0, sizeof(iwe));
-+	iwe.cmd = IWEVCUSTOM;
-+	snprintf(buf, sizeof(buf), "bcn_int=%d", (list->beaconInterval[1] << 8)
-+						+ list->beaconInterval[0]);
-+	iwe.u.data.length = strlen(buf);
-+	current_ev = iwe_stream_add_point(info, current_ev,
-+						end_buf, &iwe, buf);
-+
-+	/* Ran out of buffer */
-+	if (last_ev == current_ev)
-+		return end_buf;
-+
-+	last_ev = current_ev;
-+
-+	if (list->wpaIe[1] != 0) {
-+		static const char rsn_leader[] = "rsn_ie=";
-+		static const char wpa_leader[] = "wpa_ie=";
-+
-+		memset(&iwe, 0, sizeof(iwe));
-+		iwe.cmd = IWEVCUSTOM;
-+		if (list->wpaIe[0] == IEEE80211_ELEMID_RSN)
-+			iwe.u.data.length = encode_ie(buf, sizeof(buf),
-+					list->wpaIe, list->wpaIe[1]+2,
-+					rsn_leader, sizeof(rsn_leader)-1);
-+		else
-+			iwe.u.data.length = encode_ie(buf, sizeof(buf),
-+					list->wpaIe, list->wpaIe[1]+2,
-+					wpa_leader, sizeof(wpa_leader)-1);
-+
-+		if (iwe.u.data.length != 0)
-+			current_ev = iwe_stream_add_point(info, current_ev,
-+							end_buf, &iwe, buf);
-+
-+		/* Ran out of buffer */
-+		if (last_ev == current_ev)
-+			return end_buf;
-+
-+		last_ev = current_ev;
-+	}
-+
-+	if (list->rsnIe[1] != 0) {
-+		static const char rsn_leader[] = "rsn_ie=";
-+		memset(&iwe, 0, sizeof(iwe));
-+		iwe.cmd = IWEVCUSTOM;
-+
-+		if (list->rsnIe[0] == IEEE80211_ELEMID_RSN) {
-+			iwe.u.data.length = encode_ie(buf, sizeof(buf),
-+			list->rsnIe, list->rsnIe[1]+2,
-+			rsn_leader, sizeof(rsn_leader)-1);
-+			if (iwe.u.data.length != 0)
-+				current_ev = iwe_stream_add_point(info,
-+					current_ev, end_buf,  &iwe, buf);
-+
-+			/* Ran out of buffer */
-+			if (last_ev == current_ev)
-+				return end_buf;
-+
-+			last_ev = current_ev;
-+		}
-+	}
-+	#endif
-+	/* The other data in the scan result are not really
-+	* interesting, so for now drop it
-+	*/
-+	return current_ev;
- }
- 
- int usbdrvwext_giwname(struct net_device *dev,
--            struct iw_request_info *info,
--            union iwreq_data *wrq, char *extra)
-+		struct iw_request_info *info,
-+		union iwreq_data *wrq, char *extra)
- {
--    //struct usbdrv_private *macp = dev->ml_priv;
-+	/* struct usbdrv_private *macp = dev->ml_priv; */
- 
--    strcpy(wrq->name, "IEEE 802.11-MIMO");
-+	strcpy(wrq->name, "IEEE 802.11-MIMO");
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwfreq(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_freq *freq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_freq *freq, char *extra)
- {
--    u32_t FreqKHz;
--    struct usbdrv_private *macp = dev->ml_priv;
-+	u32_t FreqKHz;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if (freq->e > 1)
--        return -EINVAL;
--
--    if (freq->e == 1)
--    {
--        FreqKHz = (freq->m / 100000);
--
--        if (FreqKHz > 4000000)
--        {
--            if (FreqKHz > 5825000)
--                FreqKHz = 5825000;
--            else if (FreqKHz < 4920000)
--                FreqKHz = 4920000;
--            else if (FreqKHz < 5000000)
--                FreqKHz = (((FreqKHz - 4000000) / 5000) * 5000) + 4000000;
--            else
--                FreqKHz = (((FreqKHz - 5000000) / 5000) * 5000) + 5000000;
--        }
--        else
--        {
--            if (FreqKHz > 2484000)
--                FreqKHz = 2484000;
--            else if (FreqKHz < 2412000)
--                FreqKHz = 2412000;
--            else
--                FreqKHz = (((FreqKHz - 2412000) / 5000) * 5000) + 2412000;
--        }
--
--    }
--    else
--    {
--        FreqKHz = usbdrv_chan2freq(freq->m);
--
--        if (FreqKHz != -1)
--            FreqKHz *= 1000;
--        else
--            FreqKHz = 2412000;
--    }
--
--    //printk("freq->m: %d, freq->e: %d\n", freq->m, freq->e);
--    //printk("FreqKHz: %d\n", FreqKHz);
--
--    if (macp->DeviceOpened == 1)
--    {
--        zfiWlanSetFrequency(dev, FreqKHz, 0); // Immediate
--        //u8_t wpaieLen,wpaie[50];
--        //zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen);
--        zfiWlanDisable(dev, 0);
--        zfiWlanEnable(dev);
--        //if (wpaieLen > 2)
--        //    zfiWlanSetWpaIe(dev, wpaie, wpaieLen);
--    }
-+	if (freq->e > 1)
-+		return -EINVAL;
- 
--    return 0;
-+	if (freq->e == 1) {
-+		FreqKHz = (freq->m / 100000);
-+
-+		if (FreqKHz > 4000000) {
-+			if (FreqKHz > 5825000)
-+				FreqKHz = 5825000;
-+			else if (FreqKHz < 4920000)
-+				FreqKHz = 4920000;
-+			else if (FreqKHz < 5000000)
-+				FreqKHz = (((FreqKHz - 4000000) / 5000) * 5000)
-+						+ 4000000;
-+			else
-+				FreqKHz = (((FreqKHz - 5000000) / 5000) * 5000)
-+						+ 5000000;
-+		} else {
-+			if (FreqKHz > 2484000)
-+				FreqKHz = 2484000;
-+			else if (FreqKHz < 2412000)
-+				FreqKHz = 2412000;
-+			else
-+				FreqKHz = (((FreqKHz - 2412000) / 5000) * 5000)
-+						+ 2412000;
-+		}
-+	} else {
-+		FreqKHz = usbdrv_chan2freq(freq->m);
-+
-+		if (FreqKHz != -1)
-+			FreqKHz *= 1000;
-+		else
-+			FreqKHz = 2412000;
-+	}
-+
-+	/* printk("freq->m: %d, freq->e: %d\n", freq->m, freq->e); */
-+	/* printk("FreqKHz: %d\n", FreqKHz); */
-+
-+	if (macp->DeviceOpened == 1) {
-+		zfiWlanSetFrequency(dev, FreqKHz, 0); /* Immediate */
-+		/* u8_t wpaieLen,wpaie[50]; */
-+		/* zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen); */
-+		zfiWlanDisable(dev, 0);
-+		zfiWlanEnable(dev);
-+		/* if (wpaieLen > 2) */
-+		/* zfiWlanSetWpaIe(dev, wpaie, wpaieLen); */
-+	}
-+
-+	return 0;
- }
- 
- int usbdrvwext_giwfreq(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_freq *freq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_freq *freq, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    freq->m = zfiWlanQueryFrequency(dev);
--    freq->e = 3;
-+	freq->m = zfiWlanQueryFrequency(dev);
-+	freq->e = 3;
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwmode(struct net_device *dev,
--            struct iw_request_info *info,
--            union iwreq_data *wrq, char *extra)
-+		struct iw_request_info *info,
-+		union iwreq_data *wrq, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u8_t WlanMode;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u8_t WlanMode;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
--
--    switch(wrq->mode)
--    {
--        case IW_MODE_MASTER:
--            WlanMode = ZM_MODE_AP;
--            break;
--        case IW_MODE_INFRA:
--            WlanMode = ZM_MODE_INFRASTRUCTURE;
--            break;
--        case IW_MODE_ADHOC:
--            WlanMode = ZM_MODE_IBSS;
--            break;
--        default:
--            WlanMode = ZM_MODE_IBSS;
--            break;
--    }
--
--    zfiWlanSetWlanMode(dev,WlanMode);
--    zfiWlanDisable(dev, 1);
--    zfiWlanEnable(dev);
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    return 0;
-+	switch (wrq->mode) {
-+	case IW_MODE_MASTER:
-+		WlanMode = ZM_MODE_AP;
-+		break;
-+	case IW_MODE_INFRA:
-+		WlanMode = ZM_MODE_INFRASTRUCTURE;
-+		break;
-+	case IW_MODE_ADHOC:
-+		WlanMode = ZM_MODE_IBSS;
-+		break;
-+	default:
-+		WlanMode = ZM_MODE_IBSS;
-+		break;
-+	}
-+
-+	zfiWlanSetWlanMode(dev, WlanMode);
-+	zfiWlanDisable(dev, 1);
-+	zfiWlanEnable(dev);
-+
-+	return 0;
- }
- 
- int usbdrvwext_giwmode(struct net_device *dev,
--            struct iw_request_info *info,
--            __u32 *mode, char *extra)
-+	struct iw_request_info *info,
-+	__u32 *mode, char *extra)
- {
--    unsigned long irqFlag;
--    struct usbdrv_private *macp = dev->ml_priv;
-+	unsigned long irqFlag;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
--
--    spin_lock_irqsave(&macp->cs_lock, irqFlag);
--
--    switch(zfiWlanQueryWlanMode(dev))
--    {
--        case ZM_MODE_AP:
--            *mode = IW_MODE_MASTER;
--            break;
--        case ZM_MODE_INFRASTRUCTURE:
--            *mode = IW_MODE_INFRA;
--            break;
--        case ZM_MODE_IBSS:
--            *mode = IW_MODE_ADHOC;
--            break;
--        default:
--            *mode = IW_MODE_ADHOC;
--            break;
--    }
-+	spin_lock_irqsave(&macp->cs_lock, irqFlag);
- 
--    spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
-+	switch (zfiWlanQueryWlanMode(dev)) {
-+	case ZM_MODE_AP:
-+		*mode = IW_MODE_MASTER;
-+		break;
-+	case ZM_MODE_INFRASTRUCTURE:
-+		*mode = IW_MODE_INFRA;
-+		break;
-+	case ZM_MODE_IBSS:
-+		*mode = IW_MODE_ADHOC;
-+		break;
-+	default:
-+		*mode = IW_MODE_ADHOC;
-+		break;
-+	}
- 
--    return 0;
-+	spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
-+
-+	return 0;
- }
- 
- int usbdrvwext_siwsens(struct net_device *dev,
-@@ -743,338 +685,341 @@ int usbdrvwext_giwsens(struct net_device
- }
- 
- int usbdrvwext_giwrange(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *data, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_point *data, char *extra)
- {
--    struct iw_range *range = (struct iw_range *) extra;
--    int i, val;
--    //int num_band_a;
--    u16_t channels[60];
--    u16_t channel_num;
--
--    if(!netif_running(dev))
--        return -EINVAL;
--
--#if WIRELESS_EXT > 9
--    range->txpower_capa = IW_TXPOW_DBM;
--// XXX what about min/max_pmp, min/max_pmt, etc.
--#endif
-+	struct iw_range *range = (struct iw_range *) extra;
-+	int i, val;
-+	/* int num_band_a; */
-+	u16_t channels[60];
-+	u16_t channel_num;
-+
-+	if (!netif_running(dev))
-+		return -EINVAL;
-+
-+	#if WIRELESS_EXT > 9
-+	range->txpower_capa = IW_TXPOW_DBM;
-+	/* XXX what about min/max_pmp, min/max_pmt, etc. */
-+	#endif
-+
-+	#if WIRELESS_EXT > 10
-+	range->we_version_compiled = WIRELESS_EXT;
-+	range->we_version_source = 13;
-+
-+	range->retry_capa = IW_RETRY_LIMIT;
-+	range->retry_flags = IW_RETRY_LIMIT;
-+	range->min_retry = 0;
-+	range->max_retry = 255;
-+	#endif  /* WIRELESS_EXT > 10 */
-+
-+	channel_num = zfiWlanQueryAllowChannels(dev, channels);
-+
-+	/* Gurantee reported channel numbers is less
-+	* or equal to IW_MAX_FREQUENCIES
-+	*/
-+	if (channel_num > IW_MAX_FREQUENCIES)
-+		channel_num = IW_MAX_FREQUENCIES;
-+
-+	val = 0;
-+
-+	for (i = 0; i < channel_num; i++) {
-+		range->freq[val].i = usbdrv_freq2chan(channels[i]);
-+		range->freq[val].m = channels[i];
-+		range->freq[val].e = 6;
-+		val++;
-+	}
- 
--#if WIRELESS_EXT > 10
--    range->we_version_compiled = WIRELESS_EXT;
--    range->we_version_source = 13;
--
--    range->retry_capa = IW_RETRY_LIMIT;
--    range->retry_flags = IW_RETRY_LIMIT;
--    range->min_retry = 0;
--    range->max_retry = 255;
--#endif                                        /* WIRELESS_EXT > 10 */
--
--    channel_num = zfiWlanQueryAllowChannels(dev, channels);
--
--    /* Gurantee reported channel numbers is less or equal to IW_MAX_FREQUENCIES */
--    if (channel_num > IW_MAX_FREQUENCIES)
--        channel_num = IW_MAX_FREQUENCIES;
--
--    val = 0;
--
--    for (i = 0; i < channel_num; i++)
--    {
--        range->freq[val].i = usbdrv_freq2chan(channels[i]);
--        range->freq[val].m = channels[i];
--        range->freq[val].e = 6;
--        val++;
--    }
--
--    range->num_channels = channel_num;
--    range->num_frequency = channel_num;
--
--#if 0
--    range->num_channels = 14; // Only 2.4G
--
--/* XXX need to filter against the regulatory domain &| active set */
--    val = 0;
--    for (i = 1; i <= 14; i++) // B,G Bands
--    {
--        range->freq[val].i = i;
--        if (i == 14)
--              range->freq[val].m = 2484000;
--        else
--              range->freq[val].m = (2412+(i-1)*5)*1000;
--        range->freq[val].e = 3;
--        val++;
--    }
--
--    num_band_a = (IW_MAX_FREQUENCIES - val);
--
--    for (i = 0; i < num_band_a; i++) // A Bands
--    {
--        range->freq[val].i = channel_frequency_11A[2 * i];
--        range->freq[val].m = channel_frequency_11A[2 * i + 1] * 1000;
--        range->freq[val].e = 3;
--        val++;
--    }
--    // MIMO Rate Not Defined Now
--    //For 802.11a, there are too more frequency. We can't return them all
--    range->num_frequency = val;
--#endif
-+	range->num_channels = channel_num;
-+	range->num_frequency = channel_num;
- 
--/* Max of /proc/net/wireless */
--    range->max_qual.qual = 100; //??                  //92;
--    range->max_qual.level = 154; //??
--    range->max_qual.noise = 154; //??
--    range->sensitivity = 3; //??
--
--// XXX these need to be nsd-specific!
--    range->min_rts = 0;
--    range->max_rts = 2347;
--    range->min_frag = 256;
--    range->max_frag = 2346;
--    range->max_encoding_tokens = 4/*NUM_WEPKEYS*/; //??
--    range->num_encoding_sizes = 2; //??
--
--    range->encoding_size[0] = 5; //??               //WEP Key Encoding Size
--    range->encoding_size[1] = 13;//??
--
--// XXX what about num_bitrates/throughput?
--    range->num_bitrates = 0; //??
-+	#if 0
-+	range->num_channels = 14; /* Only 2.4G */
- 
--/* estimated max throughput */
--// XXX need to cap it if we're running at ~2Mbps..
-+	/* XXX need to filter against the regulatory domain &| active set */
-+	val = 0;
-+	/* B,G Bands */
-+	for (i = 1; i <= 14; i++) {
-+		range->freq[val].i = i;
-+		if (i == 14)
-+			range->freq[val].m = 2484000;
-+		else
-+			range->freq[val].m = (2412+(i-1)*5)*1000;
-+		range->freq[val].e = 3;
-+		val++;
-+	}
-+
-+	num_band_a = (IW_MAX_FREQUENCIES - val);
-+	/* A Bands */
-+	for (i = 0; i < num_band_a; i++) {
-+		range->freq[val].i = channel_frequency_11A[2 * i];
-+		range->freq[val].m = channel_frequency_11A[2 * i + 1] * 1000;
-+		range->freq[val].e = 3;
-+		val++;
-+	}
-+	/* MIMO Rate Not Defined Now
-+	* For 802.11a, there are too more frequency.
-+	* We can't return them all.
-+	*/
-+	range->num_frequency = val;
-+	#endif
-+
-+	/* Max of /proc/net/wireless */
-+	range->max_qual.qual = 100;  /* ??  92; */
-+	range->max_qual.level = 154; /* ?? */
-+	range->max_qual.noise = 154; /* ?? */
-+	range->sensitivity = 3;      /* ?? */
-+
-+	/* XXX these need to be nsd-specific! */
-+	range->min_rts = 0;
-+	range->max_rts = 2347;
-+	range->min_frag = 256;
-+	range->max_frag = 2346;
-+	range->max_encoding_tokens = 4 /* NUM_WEPKEYS ?? */;
-+	range->num_encoding_sizes = 2; /* ?? */
-+
-+	range->encoding_size[0] = 5; /* ?? WEP Key Encoding Size */
-+	range->encoding_size[1] = 13; /* ?? */
-+
-+	/* XXX what about num_bitrates/throughput? */
-+	range->num_bitrates = 0; /* ?? */
-+
-+	/* estimated max throughput
-+	* XXX need to cap it if we're running at ~2Mbps..
-+	*/
- 
--    range->throughput = 300000000;
-+	range->throughput = 300000000;
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwap(struct net_device *dev, struct iw_request_info *info,
--        struct sockaddr *MacAddr, char *extra)
-+		struct sockaddr *MacAddr, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) // AP Mode
--        zfiWlanSetMacAddress(dev,(u16_t *)&MacAddr->sa_data[0]);
--    else                                 //STA Mode
--        zfiWlanSetBssid(dev,&MacAddr->sa_data[0]);
--
--    if (macp->DeviceOpened == 1)
--    {
--        //u8_t wpaieLen,wpaie[80];
--        //zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen);
--        zfiWlanDisable(dev, 0);
--        zfiWlanEnable(dev);
--        //if (wpaieLen > 2)
--        //    zfiWlanSetWpaIe(dev, wpaie, wpaieLen);
--    }
-+	if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) {
-+		/* AP Mode */
-+		zfiWlanSetMacAddress(dev, (u16_t *)&MacAddr->sa_data[0]);
-+	} else {
-+		/* STA Mode */
-+		zfiWlanSetBssid(dev, &MacAddr->sa_data[0]);
-+	}
-+
-+	if (macp->DeviceOpened == 1) {
-+		/* u8_t wpaieLen,wpaie[80]; */
-+		/* zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen); */
-+		zfiWlanDisable(dev, 0);
-+		zfiWlanEnable(dev);
-+		/* if (wpaieLen > 2) */
-+		/* zfiWlanSetWpaIe(dev, wpaie, wpaieLen); */
-+	}
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwap(struct net_device *dev,
--            struct iw_request_info *info,
--            struct sockaddr *MacAddr, char *extra)
-+		struct iw_request_info *info,
-+		struct sockaddr *MacAddr, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) // AP Mode
--        zfiWlanQueryMacAddress(dev, &MacAddr->sa_data[0]);
--    else                                 //STA Mode
--    {
--        if (macp->adapterState == ZM_STATUS_MEDIA_CONNECT)
--        {
--            zfiWlanQueryBssid(dev, &MacAddr->sa_data[0]);
--        }
--        else
--        {
--            u8_t zero_addr[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
--            memcpy(&MacAddr->sa_data[0], zero_addr, sizeof(zero_addr));
--        }
--    }
-+	if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) {
-+		/* AP Mode */
-+		zfiWlanQueryMacAddress(dev, &MacAddr->sa_data[0]);
-+	} else {
-+		/* STA Mode */
-+		if (macp->adapterState == ZM_STATUS_MEDIA_CONNECT) {
-+			zfiWlanQueryBssid(dev, &MacAddr->sa_data[0]);
-+		} else {
-+			u8_t zero_addr[6] = { 0x00, 0x00, 0x00, 0x00,
-+								0x00, 0x00 };
-+			memcpy(&MacAddr->sa_data[0], zero_addr,
-+							sizeof(zero_addr));
-+		}
-+	}
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_iwaplist(struct net_device *dev,
- 			struct iw_request_info *info,
- 			struct iw_point *data, char *extra)
- {
--    //Don't know how to do yet--CWYang(+)
--    return 0;
-+	/* Don't know how to do yet--CWYang(+) */
-+	return 0;
- 
- }
- 
- int usbdrvwext_siwscan(struct net_device *dev, struct iw_request_info *info,
--        struct iw_point *data, char *extra)
-+	struct iw_point *data, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    printk("CWY - usbdrvwext_siwscan\n");
-+	printk(KERN_WARNING "CWY - usbdrvwext_siwscan\n");
- 
--    zfiWlanScan(dev);
-+	zfiWlanScan(dev);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwscan(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *data, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_point *data, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    //struct zsWlanDev* wd = (struct zsWlanDev*) zmw_wlan_dev(dev);
--    char *current_ev = extra;
--    char *end_buf;
--    int i;
--    //struct zsBssList BssList;
--    struct zsBssListV1 *pBssList = kmalloc(sizeof(struct zsBssListV1), GFP_KERNEL);
--    //BssList = wd->sta.pBssList;
--    //zmw_get_wlan_dev(dev);
--
--    if (macp->DeviceOpened != 1)
--        return 0;
--
--    if (data->length == 0)
--    {
--       end_buf = extra + IW_SCAN_MAX_DATA;
--    }
--    else
--    {
--        end_buf = extra + data->length;
--    }
--
--    printk("giwscan - Report Scan Results\n");
--    //printk("giwscan - BssList Sreucture Len : %d\n", sizeof(BssList));
--    //printk("giwscan - BssList Count : %d\n", wd->sta.pBssList->bssCount);
--    //printk("giwscan - UpdateBssList Count : %d\n", wd->sta.pUpdateBssList->bssCount);
--    zfiWlanQueryBssListV1(dev, pBssList);
--    //zfiWlanQueryBssList(dev, &BssList);
--
--/* Read and parse all entries */
--    printk("giwscan - pBssList->bssCount : %d\n", pBssList->bssCount);
--    //printk("giwscan - BssList.bssCount : %d\n", BssList.bssCount);
--
--    for (i = 0; i < pBssList->bssCount; i++)
--    {
--/* Translate to WE format this entry */
--        //current_ev = usbdrv_translate_scan(dev, info, current_ev,
--        //    extra + IW_SCAN_MAX_DATA, &pBssList->bssInfo[i]);
--        current_ev = usbdrv_translate_scan(dev, info, current_ev,
--            end_buf, &pBssList->bssInfo[i]);
--
--#if WIRELESS_EXT > 16
--        if (current_ev == end_buf)
--        {
--            kfree(pBssList);
--            data->length = current_ev - extra;
--            return -E2BIG;
--        }
--#endif
--    }
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	/* struct zsWlanDev* wd = (struct zsWlanDev*) zmw_wlan_dev(dev); */
-+	char *current_ev = extra;
-+	char *end_buf;
-+	int i;
-+	/* struct zsBssList BssList; */
-+	struct zsBssListV1 *pBssList = kmalloc(sizeof(struct zsBssListV1),
-+								GFP_KERNEL);
-+	/* BssList = wd->sta.pBssList; */
-+	/* zmw_get_wlan_dev(dev); */
-+
-+	if (macp->DeviceOpened != 1)
-+		return 0;
-+
-+	if (data->length == 0)
-+		end_buf = extra + IW_SCAN_MAX_DATA;
-+	else
-+		end_buf = extra + data->length;
-+
-+	printk(KERN_WARNING "giwscan - Report Scan Results\n");
-+	/* printk("giwscan - BssList Sreucture Len : %d\n", sizeof(BssList));
-+	* printk("giwscan - BssList Count : %d\n",
-+	* wd->sta.pBssList->bssCount);
-+	* printk("giwscan - UpdateBssList Count : %d\n",
-+	* wd->sta.pUpdateBssList->bssCount);
-+	*/
-+	zfiWlanQueryBssListV1(dev, pBssList);
-+	/* zfiWlanQueryBssList(dev, &BssList); */
-+
-+	/* Read and parse all entries */
-+	printk(KERN_WARNING "giwscan - pBssList->bssCount : %d\n",
-+						pBssList->bssCount);
-+	/* printk("giwscan - BssList.bssCount : %d\n", BssList.bssCount); */
-+
-+	for (i = 0; i < pBssList->bssCount; i++) {
-+		/* Translate to WE format this entry
-+		* current_ev = usbdrv_translate_scan(dev, info, current_ev,
-+		* extra + IW_SCAN_MAX_DATA, &pBssList->bssInfo[i]);
-+		*/
-+		current_ev = usbdrv_translate_scan(dev, info, current_ev,
-+					end_buf, &pBssList->bssInfo[i]);
-+
-+		#if WIRELESS_EXT > 16
-+		if (current_ev == end_buf) {
-+			kfree(pBssList);
-+			data->length = current_ev - extra;
-+			return -E2BIG;
-+		}
-+		#endif
-+	}
- 
--/* Length of data */
--    data->length = (current_ev - extra);
--    data->flags = 0;                              /* todo */
-+	/* Length of data */
-+	data->length = (current_ev - extra);
-+	data->flags = 0;   /* todo */
- 
--    kfree(pBssList);
-+	kfree(pBssList);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwessid(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *essid, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_point *essid, char *extra)
- {
--    char EssidBuf[IW_ESSID_MAX_SIZE+1];
--    struct usbdrv_private *macp = dev->ml_priv;
-+	char EssidBuf[IW_ESSID_MAX_SIZE + 1];
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if (essid->flags == 1)
--    {
--        if (essid->length > (IW_ESSID_MAX_SIZE+1))
--            return -E2BIG;
--
--        if (copy_from_user(&EssidBuf, essid->pointer, essid->length))
--            return -EFAULT;
--
--        EssidBuf[essid->length] = '\0';
--        //printk("siwessid - Set Essid : %s\n",EssidBuf);
--        //printk("siwessid - Essid Len : %d\n",essid->length);
--        //printk("siwessid - Essid Flag : %x\n",essid->flags);
--        if (macp->DeviceOpened == 1)
--        {
--            zfiWlanSetSSID(dev, EssidBuf, strlen(EssidBuf));
--            zfiWlanSetFrequency(dev, zfiWlanQueryFrequency(dev), FALSE);
--            zfiWlanSetEncryMode(dev, zfiWlanQueryEncryMode(dev));
--            //u8_t wpaieLen,wpaie[50];
--            //zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen);
--            zfiWlanDisable(dev, 0);
--            zfiWlanEnable(dev);
--            //if (wpaieLen > 2)
--            //    zfiWlanSetWpaIe(dev, wpaie, wpaieLen);
--        }
--    }
-+	if (essid->flags == 1) {
-+		if (essid->length > (IW_ESSID_MAX_SIZE + 1))
-+			return -E2BIG;
-+
-+		if (copy_from_user(&EssidBuf, essid->pointer, essid->length))
-+			return -EFAULT;
-+
-+		EssidBuf[essid->length] = '\0';
-+		/* printk("siwessid - Set Essid : %s\n",EssidBuf); */
-+		/* printk("siwessid - Essid Len : %d\n",essid->length); */
-+		/* printk("siwessid - Essid Flag : %x\n",essid->flags); */
-+		if (macp->DeviceOpened == 1) {
-+			zfiWlanSetSSID(dev, EssidBuf, strlen(EssidBuf));
-+			zfiWlanSetFrequency(dev, zfiWlanQueryFrequency(dev),
-+						FALSE);
-+			zfiWlanSetEncryMode(dev, zfiWlanQueryEncryMode(dev));
-+			/* u8_t wpaieLen,wpaie[50]; */
-+			/* zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen); */
-+			zfiWlanDisable(dev, 0);
-+			zfiWlanEnable(dev);
-+			/* if (wpaieLen > 2) */
-+			/* zfiWlanSetWpaIe(dev, wpaie, wpaieLen); */
-+		}
-+	}
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwessid(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *essid, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_point *essid, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u8_t EssidLen;
--    char EssidBuf[IW_ESSID_MAX_SIZE+1];
--    int ssid_len;
--
--    if(!netif_running(dev))
--        return -EINVAL;
--
--    if (macp->DeviceOpened != 1)
--        return 0;
--
--    zfiWlanQuerySSID(dev, &EssidBuf[0], &EssidLen);
--
--    /* Convert type from unsigned char to char */
--    ssid_len = (int)EssidLen;
--
--    /* Make sure the essid length is not greater than IW_ESSID_MAX_SIZE */
--    if (ssid_len > IW_ESSID_MAX_SIZE)
--        ssid_len = IW_ESSID_MAX_SIZE;
--
--    EssidBuf[ssid_len] = '\0';
--
--    essid->flags = 1;
--    essid->length = strlen(EssidBuf);
--
--    memcpy(extra, EssidBuf, essid->length);
--    // wireless.c in Kernel would handle copy_to_user -- line 679
--    /*if (essid->pointer)
--    {
--        if ( copy_to_user(essid->pointer, EssidBuf, essid->length) )
--        {
--            printk("giwessid - copy_to_user Fail\n");
--            return -EFAULT;
--        }
--    }*/
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u8_t EssidLen;
-+	char EssidBuf[IW_ESSID_MAX_SIZE + 1];
-+	int ssid_len;
-+
-+	if (!netif_running(dev))
-+		return -EINVAL;
-+
-+	if (macp->DeviceOpened != 1)
-+		return 0;
-+
-+	zfiWlanQuerySSID(dev, &EssidBuf[0], &EssidLen);
-+
-+	/* Convert type from unsigned char to char */
-+	ssid_len = (int)EssidLen;
-+
-+	/* Make sure the essid length is not greater than IW_ESSID_MAX_SIZE */
-+	if (ssid_len > IW_ESSID_MAX_SIZE)
-+		ssid_len = IW_ESSID_MAX_SIZE;
-+
-+	EssidBuf[ssid_len] = '\0';
-+
-+	essid->flags = 1;
-+	essid->length = strlen(EssidBuf);
-+
-+	memcpy(extra, EssidBuf, essid->length);
-+	/* wireless.c in Kernel would handle copy_to_user -- line 679 */
-+	/* if (essid->pointer) {
-+	* if (copy_to_user(essid->pointer, EssidBuf, essid->length)) {
-+	* printk("giwessid - copy_to_user Fail\n");
-+	* return -EFAULT;
-+	* }
-+	* }
-+	*/
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwnickn(struct net_device *dev,
- 			struct iw_request_info *info,
- 			struct iw_point *data, char *nickname)
- {
--    //Exist but junk--CWYang(+)
-+	/* Exist but junk--CWYang(+) */
- 	return 0;
- }
- 
-@@ -1082,182 +1027,180 @@ int usbdrvwext_giwnickn(struct net_devic
- 			struct iw_request_info *info,
- 			struct iw_point *data, char *nickname)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u8_t EssidLen;
--    char EssidBuf[IW_ESSID_MAX_SIZE+1];
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u8_t EssidLen;
-+	char EssidBuf[IW_ESSID_MAX_SIZE + 1];
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    zfiWlanQuerySSID(dev, &EssidBuf[0], &EssidLen);
--    EssidBuf[EssidLen] = 0;
-+	zfiWlanQuerySSID(dev, &EssidBuf[0], &EssidLen);
-+	EssidBuf[EssidLen] = 0;
- 
--    data->flags = 1;
--    data->length = strlen(EssidBuf);
-+	data->flags = 1;
-+	data->length = strlen(EssidBuf);
- 
--    memcpy(nickname, EssidBuf, data->length);
-+	memcpy(nickname, EssidBuf, data->length);
- 
- 	return 0;
- }
- 
- int usbdrvwext_siwrate(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frq, char *extra)
- {
- 	struct usbdrv_private *macp = dev->ml_priv;
--    //Array to Define Rate Number that Send to Driver
--    u16_t zcIndextoRateBG[16] = {1000, 2000, 5500, 11000, 0, 0, 0, 0, 48000,
--                               24000, 12000, 6000, 54000, 36000, 18000, 9000};
--    u16_t zcRateToMCS[] = {0xff, 0, 1, 2, 3, 0xb, 0xf, 0xa, 0xe, 0x9, 0xd,
--                           0x8, 0xc};
--    u8_t i,RateIndex = 4;
--    u16_t RateKbps;
--
--    //printk("frq->disabled : 0x%x\n",frq->disabled);
--    //printk("frq->value : 0x%x\n",frq->value);
--
--    RateKbps = frq->value / 1000;
--    //printk("RateKbps : %d\n", RateKbps);
--    for (i = 0; i < 16; i++)
--    {
--        if (RateKbps == zcIndextoRateBG[i])
--            RateIndex = i;
--    }
--    if (zcIndextoRateBG[RateIndex] == 0)
--        RateIndex = 0xff;
--    //printk("RateIndex : %x\n", RateIndex);
--    for (i = 0; i < 13; i++)
--        if (RateIndex == zcRateToMCS[i])
--            break;
--    //printk("Index : %x\n", i);
--    if (RateKbps == 65000)
--    {
--        RateIndex = 20;
--        printk("RateIndex : %d\n", RateIndex);
--    }
--    if (macp->DeviceOpened == 1)
--    {
--        zfiWlanSetTxRate(dev, i);
--        //zfiWlanDisable(dev);
--        //zfiWlanEnable(dev);
--    }
-+	/* Array to Define Rate Number that Send to Driver */
-+	u16_t zcIndextoRateBG[16] = {1000, 2000, 5500, 11000, 0, 0, 0, 0,
-+			48000, 24000, 12000, 6000, 54000, 36000, 18000, 9000};
-+	u16_t zcRateToMCS[] = {0xff, 0, 1, 2, 3, 0xb, 0xf, 0xa, 0xe, 0x9, 0xd,
-+				0x8, 0xc};
-+	u8_t i, RateIndex = 4;
-+	u16_t RateKbps;
-+
-+	/* printk("frq->disabled : 0x%x\n",frq->disabled); */
-+	/* printk("frq->value : 0x%x\n",frq->value); */
-+
-+	RateKbps = frq->value / 1000;
-+	/* printk("RateKbps : %d\n", RateKbps); */
-+	for (i = 0; i < 16; i++) {
-+		if (RateKbps == zcIndextoRateBG[i])
-+			RateIndex = i;
-+	}
-+
-+	if (zcIndextoRateBG[RateIndex] == 0)
-+		RateIndex = 0xff;
-+	/* printk("RateIndex : %x\n", RateIndex); */
-+	for (i = 0; i < 13; i++)
-+		if (RateIndex == zcRateToMCS[i])
-+			break;
-+	/* printk("Index : %x\n", i); */
-+	if (RateKbps == 65000) {
-+		RateIndex = 20;
-+		printk(KERN_WARNING "RateIndex : %d\n", RateIndex);
-+	}
-+
-+	if (macp->DeviceOpened == 1) {
-+		zfiWlanSetTxRate(dev, i);
-+		/* zfiWlanDisable(dev); */
-+		/* zfiWlanEnable(dev); */
-+	}
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwrate(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frq, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    frq->fixed = 0;
--    frq->disabled = 0;
--    frq->value = zfiWlanQueryRxRate(dev) * 1000;
-+	frq->fixed = 0;
-+	frq->disabled = 0;
-+	frq->value = zfiWlanQueryRxRate(dev) * 1000;
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwrts(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *rts, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *rts, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    int val = rts->value;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	int val = rts->value;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    if (rts->disabled)
--        val = 2347;
-+	if (rts->disabled)
-+		val = 2347;
- 
--    if ((val < 0) || (val > 2347))
--        return -EINVAL;
-+	if ((val < 0) || (val > 2347))
-+		return -EINVAL;
- 
--    zfiWlanSetRtsThreshold(dev,val);
-+	zfiWlanSetRtsThreshold(dev, val);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwrts(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *rts, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *rts, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--
--    if(!netif_running(dev))
--        return -EINVAL;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    rts->value = zfiWlanQueryRtsThreshold(dev);
--    rts->disabled = (rts->value >= 2347);
--    rts->fixed = 1;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    return 0;
-+	rts->value = zfiWlanQueryRtsThreshold(dev);
-+	rts->disabled = (rts->value >= 2347);
-+	rts->fixed = 1;
- 
-+	return 0;
- }
- 
- int usbdrvwext_siwfrag(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frag, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frag, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u16_t fragThreshold;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u16_t fragThreshold;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    if (frag->disabled)
--        fragThreshold = 0;
--    else
--        fragThreshold = frag->value;
-+	if (frag->disabled)
-+		fragThreshold = 0;
-+	else
-+		fragThreshold = frag->value;
- 
--    zfiWlanSetFragThreshold(dev,fragThreshold);
-+	zfiWlanSetFragThreshold(dev, fragThreshold);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwfrag(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frag, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frag, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u16 val;
--    unsigned long irqFlag;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u16 val;
-+	unsigned long irqFlag;
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    spin_lock_irqsave(&macp->cs_lock, irqFlag);
-+	spin_lock_irqsave(&macp->cs_lock, irqFlag);
- 
--    val = zfiWlanQueryFragThreshold(dev);
-+	val = zfiWlanQueryFragThreshold(dev);
- 
--    frag->value = val;
-+	frag->value = val;
- 
--    frag->disabled = (val >= 2346);
--    frag->fixed = 1;
-+	frag->disabled = (val >= 2346);
-+	frag->fixed = 1;
- 
--    spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
-+	spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_siwtxpow(struct net_device *dev,
- 			struct iw_request_info *info,
- 			struct iw_param *rrq, char *extra)
- {
--    //Not support yet--CWYng(+)
-+	/* Not support yet--CWYng(+) */
- 	return 0;
- }
- 
-@@ -1265,7 +1208,7 @@ int usbdrvwext_giwtxpow(struct net_devic
- 			struct iw_request_info *info,
- 			struct iw_param *rrq, char *extra)
- {
--    //Not support yet--CWYng(+)
-+	/* Not support yet--CWYng(+) */
- 	return 0;
- }
- 
-@@ -1273,7 +1216,7 @@ int usbdrvwext_siwretry(struct net_devic
- 			struct iw_request_info *info,
- 			struct iw_param *rrq, char *extra)
- {
--    //Do nothing--CWYang(+)
-+	/* Do nothing--CWYang(+) */
- 	return 0;
- }
- 
-@@ -1281,665 +1224,662 @@ int usbdrvwext_giwretry(struct net_devic
- 			struct iw_request_info *info,
- 			struct iw_param *rrq, char *extra)
- {
--    //Do nothing--CWYang(+)
-+	/* Do nothing--CWYang(+) */
- 	return 0;
- }
- 
- int usbdrvwext_siwencode(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *erq, char *key)
-+		struct iw_request_info *info,
-+		struct iw_point *erq, char *key)
- {
--    struct zsKeyInfo keyInfo;
--    int i, WepState = ZM_ENCRYPTION_WEP_DISABLED;
--    struct usbdrv_private *macp = dev->ml_priv;
--
--    if(!netif_running(dev))
--        return -EINVAL;
--
--    if ((erq->flags & IW_ENCODE_DISABLED) == 0)
--    {
--        keyInfo.key = key;
--        keyInfo.keyLength = erq->length;
--        keyInfo.keyIndex = (erq->flags & IW_ENCODE_INDEX) - 1;
--        if (keyInfo.keyIndex >= 4)
--            keyInfo.keyIndex = 0;
--        keyInfo.flag = ZM_KEY_FLAG_DEFAULT_KEY;
--
--        zfiWlanSetKey(dev, keyInfo);
--        WepState = ZM_ENCRYPTION_WEP_ENABLED;
--    }
--    else
--    {
--        for (i = 1; i < 4; i++)
--            zfiWlanRemoveKey(dev, 0, i);
--        WepState = ZM_ENCRYPTION_WEP_DISABLED;
--        //zfiWlanSetEncryMode(dev, ZM_NO_WEP);
--    }
--
--    if (macp->DeviceOpened == 1)
--    {
--        zfiWlanSetWepStatus(dev, WepState);
--        zfiWlanSetFrequency(dev, zfiWlanQueryFrequency(dev), FALSE);
--        //zfiWlanSetEncryMode(dev, zfiWlanQueryEncryMode(dev));
--        //u8_t wpaieLen,wpaie[50];
--        //zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen);
--        zfiWlanDisable(dev, 0);
--        zfiWlanEnable(dev);
--        //if (wpaieLen > 2)
--        //    zfiWlanSetWpaIe(dev, wpaie, wpaieLen);
--    }
-+	struct zsKeyInfo keyInfo;
-+	int i;
-+	int WepState = ZM_ENCRYPTION_WEP_DISABLED;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+
-+	if (!netif_running(dev))
-+		return -EINVAL;
-+
-+	if ((erq->flags & IW_ENCODE_DISABLED) == 0) {
-+		keyInfo.key = key;
-+		keyInfo.keyLength = erq->length;
-+		keyInfo.keyIndex = (erq->flags & IW_ENCODE_INDEX) - 1;
-+		if (keyInfo.keyIndex >= 4)
-+			keyInfo.keyIndex = 0;
-+		keyInfo.flag = ZM_KEY_FLAG_DEFAULT_KEY;
-+
-+		zfiWlanSetKey(dev, keyInfo);
-+		WepState = ZM_ENCRYPTION_WEP_ENABLED;
-+	} else {
-+		for (i = 1; i < 4; i++)
-+			zfiWlanRemoveKey(dev, 0, i);
-+		WepState = ZM_ENCRYPTION_WEP_DISABLED;
-+		/* zfiWlanSetEncryMode(dev, ZM_NO_WEP); */
-+	}
-+
-+	if (macp->DeviceOpened == 1) {
-+		zfiWlanSetWepStatus(dev, WepState);
-+		zfiWlanSetFrequency(dev, zfiWlanQueryFrequency(dev), FALSE);
-+		/* zfiWlanSetEncryMode(dev, zfiWlanQueryEncryMode(dev)); */
-+		/* u8_t wpaieLen,wpaie[50]; */
-+		/* zfiWlanQueryWpaIe(dev, wpaie, &wpaieLen); */
-+		zfiWlanDisable(dev, 0);
-+		zfiWlanEnable(dev);
-+		/* if (wpaieLen > 2) */
-+		/* zfiWlanSetWpaIe(dev, wpaie, wpaieLen); */
-+	}
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwencode(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_point *erq, char *key)
-+		struct iw_request_info *info,
-+		struct iw_point *erq, char *key)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u8_t EncryptionMode;
--    u8_t keyLen = 0;
--
--    if (macp->DeviceOpened != 1)
--        return 0;
--
--    EncryptionMode = zfiWlanQueryEncryMode(dev);
--
--    if (EncryptionMode)
--    {
--        erq->flags = IW_ENCODE_ENABLED;
--    }
--    else
--    {
--        erq->flags = IW_ENCODE_DISABLED;
--    }
--
--/* We can't return the key, so set the proper flag and return zero */
--    erq->flags |= IW_ENCODE_NOKEY;
--    memset(key, 0, 16);
--
--/* Copy the key to the user buffer */
--    switch(EncryptionMode)
--    {
--        case ZM_WEP64:
--            keyLen = 5;
--            break;
--        case ZM_WEP128:
--            keyLen = 13;
--            break;
--        case ZM_WEP256:
--            keyLen = 29;
--            break;
--        case ZM_AES:
--            keyLen = 16;
--            break;
--        case ZM_TKIP:
--            keyLen = 32;
--            break;
--#ifdef ZM_ENABLE_CENC
--        case ZM_CENC:
--            keyLen = 32;
--            break;
--#endif //ZM_ENABLE_CENC
--        case ZM_NO_WEP:
--            keyLen = 0;
--            break;
--        default :
--            keyLen = 0;
--            printk("Unknown EncryMode\n");
--            break;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u8_t EncryptionMode;
-+	u8_t keyLen = 0;
-+
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    }
--    erq->length = keyLen;
-+	EncryptionMode = zfiWlanQueryEncryMode(dev);
- 
--    return 0;
-+	if (EncryptionMode)
-+		erq->flags = IW_ENCODE_ENABLED;
-+	else
-+		erq->flags = IW_ENCODE_DISABLED;
-+
-+	/* We can't return the key, so set the proper flag and return zero */
-+	erq->flags |= IW_ENCODE_NOKEY;
-+	memset(key, 0, 16);
-+
-+	/* Copy the key to the user buffer */
-+	switch (EncryptionMode) {
-+	case ZM_WEP64:
-+		keyLen = 5;
-+		break;
-+	case ZM_WEP128:
-+		keyLen = 13;
-+		break;
-+	case ZM_WEP256:
-+		keyLen = 29;
-+		break;
-+	case ZM_AES:
-+		keyLen = 16;
-+		break;
-+	case ZM_TKIP:
-+		keyLen = 32;
-+		break;
-+	#ifdef ZM_ENABLE_CENC
-+	case ZM_CENC:
-+		/* ZM_ENABLE_CENC */
-+		keyLen = 32;
-+		break;
-+	#endif
-+	case ZM_NO_WEP:
-+		keyLen = 0;
-+		break;
-+	default:
-+		keyLen = 0;
-+		printk(KERN_ERR "Unknown EncryMode\n");
-+		break;
-+	}
-+	erq->length = keyLen;
-+
-+	return 0;
- }
- 
- int usbdrvwext_siwpower(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frq, char *extra)
- {
--    struct usbdrv_private *macp = dev->ml_priv;
--    u8_t PSMode;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u8_t PSMode;
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (macp->DeviceOpened != 1)
-+		return 0;
- 
--    if (frq->disabled)
--        PSMode = ZM_STA_PS_NONE;
--    else
--        PSMode = ZM_STA_PS_MAX;
-+	if (frq->disabled)
-+		PSMode = ZM_STA_PS_NONE;
-+	else
-+		PSMode = ZM_STA_PS_MAX;
- 
--    zfiWlanSetPowerSaveMode(dev,PSMode);
-+	zfiWlanSetPowerSaveMode(dev, PSMode);
- 
--    return 0;
-+	return 0;
- }
- 
- int usbdrvwext_giwpower(struct net_device *dev,
--            struct iw_request_info *info,
--            struct iw_param *frq, char *extra)
-+		struct iw_request_info *info,
-+		struct iw_param *frq, char *extra)
- {
--    unsigned long irqFlag;
--    struct usbdrv_private *macp = dev->ml_priv;
-+	unsigned long irqFlag;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+
-+	if (macp->DeviceOpened != 1)
-+		return 0;
-+
-+	spin_lock_irqsave(&macp->cs_lock, irqFlag);
- 
--    if (macp->DeviceOpened != 1)
--        return 0;
-+	if (zfiWlanQueryPowerSaveMode(dev) == ZM_STA_PS_NONE)
-+		frq->disabled = 1;
-+	else
-+		frq->disabled = 0;
- 
--    spin_lock_irqsave(&macp->cs_lock, irqFlag);
--
--    if (zfiWlanQueryPowerSaveMode(dev) == ZM_STA_PS_NONE)
--        frq->disabled = 1;
--    else
--        frq->disabled = 0;
--
--    spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
--
--    return 0;
--}
--
--//int usbdrvwext_setparam(struct net_device *dev, struct iw_request_info *info,
--//		   	 void *w, char *extra)
--//{
--//	struct ieee80211vap *vap = dev->ml_priv;
--//	struct ieee80211com *ic = vap->iv_ic;
--//	struct ieee80211_rsnparms *rsn = &vap->iv_bss->ni_rsn;
--//	int *i = (int *) extra;
--//	int param = i[0];		/* parameter id is 1st */
--//	int value = i[1];		/* NB: most values are TYPE_INT */
--//	int retv = 0;
--//	int j, caps;
--//	const struct ieee80211_authenticator *auth;
--//	const struct ieee80211_aclator *acl;
--//
--//	switch (param) {
--//	case IEEE80211_PARAM_AUTHMODE:
--//		switch (value) {
--//		case IEEE80211_AUTH_WPA:	/* WPA */
--//		case IEEE80211_AUTH_8021X:	/* 802.1x */
--//		case IEEE80211_AUTH_OPEN:	/* open */
--//		case IEEE80211_AUTH_SHARED:	/* shared-key */
--//		case IEEE80211_AUTH_AUTO:	/* auto */
--//			auth = ieee80211_authenticator_get(value);
--//			if (auth == NULL)
--//				return -EINVAL;
--//			break;
--//		default:
--//			return -EINVAL;
--//		}
--//		switch (value) {
--//		case IEEE80211_AUTH_WPA:	/* WPA w/ 802.1x */
--//			vap->iv_flags |= IEEE80211_F_PRIVACY;
--//			value = IEEE80211_AUTH_8021X;
--//			break;
--//		case IEEE80211_AUTH_OPEN:	/* open */
--//			vap->iv_flags &= ~(IEEE80211_F_WPA|IEEE80211_F_PRIVACY);
--//			break;
--//		case IEEE80211_AUTH_SHARED:	/* shared-key */
--//		case IEEE80211_AUTH_AUTO:	/* auto */
--//		case IEEE80211_AUTH_8021X:	/* 802.1x */
--//			vap->iv_flags &= ~IEEE80211_F_WPA;
--//			/* both require a key so mark the PRIVACY capability */
--//			vap->iv_flags |= IEEE80211_F_PRIVACY;
--//			break;
--//		}
--//		/* NB: authenticator attach/detach happens on state change */
--//		vap->iv_bss->ni_authmode = value;
--//		/* XXX mixed/mode/usage? */
--//		vap->iv_auth = auth;
--//		retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_PROTMODE:
--//		if (value > IEEE80211_PROT_RTSCTS)
--//			return -EINVAL;
--//		ic->ic_protmode = value;
--//		/* NB: if not operating in 11g this can wait */
--//		if (ic->ic_bsschan != IEEE80211_CHAN_ANYC &&
--//		    IEEE80211_IS_CHAN_ANYG(ic->ic_bsschan))
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_MCASTCIPHER:
--//		if ((vap->iv_caps & cipher2cap(value)) == 0 &&
--//		    !ieee80211_crypto_available(value))
--//			return -EINVAL;
--//		rsn->rsn_mcastcipher = value;
--//		if (vap->iv_flags & IEEE80211_F_WPA)
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_MCASTKEYLEN:
--//		if (!(0 < value && value < IEEE80211_KEYBUF_SIZE))
--//			return -EINVAL;
--//		/* XXX no way to verify driver capability */
--//		rsn->rsn_mcastkeylen = value;
--//		if (vap->iv_flags & IEEE80211_F_WPA)
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_UCASTCIPHERS:
--//		/*
--//		 * Convert cipher set to equivalent capabilities.
--//		 * NB: this logic intentionally ignores unknown and
--//		 * unsupported ciphers so folks can specify 0xff or
--//		 * similar and get all available ciphers.
--//		 */
--//		caps = 0;
--//		for (j = 1; j < 32; j++)	/* NB: skip WEP */
--//			if ((value & (1<<j)) &&
--//			    ((vap->iv_caps & cipher2cap(j)) ||
--//			     ieee80211_crypto_available(j)))
--//				caps |= 1<<j;
--//		if (caps == 0)			/* nothing available */
--//			return -EINVAL;
--//		/* XXX verify ciphers ok for unicast use? */
--//		/* XXX disallow if running as it'll have no effect */
--//		rsn->rsn_ucastcipherset = caps;
--//		if (vap->iv_flags & IEEE80211_F_WPA)
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_UCASTCIPHER:
--//		if ((rsn->rsn_ucastcipherset & cipher2cap(value)) == 0)
--//			return -EINVAL;
--//		rsn->rsn_ucastcipher = value;
--//		break;
--//	case IEEE80211_PARAM_UCASTKEYLEN:
--//		if (!(0 < value && value < IEEE80211_KEYBUF_SIZE))
--//			return -EINVAL;
--//		/* XXX no way to verify driver capability */
--//		rsn->rsn_ucastkeylen = value;
--//		break;
--//	case IEEE80211_PARAM_KEYMGTALGS:
--//		/* XXX check */
--//		rsn->rsn_keymgmtset = value;
--//		if (vap->iv_flags & IEEE80211_F_WPA)
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_RSNCAPS:
--//		/* XXX check */
--//		rsn->rsn_caps = value;
--//		if (vap->iv_flags & IEEE80211_F_WPA)
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_WPA:
--//		if (value > 3)
--//			return -EINVAL;
--//		/* XXX verify ciphers available */
--//		vap->iv_flags &= ~IEEE80211_F_WPA;
--//		switch (value) {
--//		case 1:
--//			vap->iv_flags |= IEEE80211_F_WPA1;
--//			break;
--//		case 2:
--//			vap->iv_flags |= IEEE80211_F_WPA2;
--//			break;
--//		case 3:
--//			vap->iv_flags |= IEEE80211_F_WPA1 | IEEE80211_F_WPA2;
--//			break;
--//		}
--//		retv = ENETRESET;		/* XXX? */
--//		break;
--//	case IEEE80211_PARAM_ROAMING:
--//		if (!(IEEE80211_ROAMING_DEVICE <= value &&
--//		    value <= IEEE80211_ROAMING_MANUAL))
--//			return -EINVAL;
--//		ic->ic_roaming = value;
--//		break;
--//	case IEEE80211_PARAM_PRIVACY:
--//		if (value) {
--//			/* XXX check for key state? */
--//			vap->iv_flags |= IEEE80211_F_PRIVACY;
--//		} else
--//			vap->iv_flags &= ~IEEE80211_F_PRIVACY;
--//		break;
--//	case IEEE80211_PARAM_DROPUNENCRYPTED:
--//		if (value)
--//			vap->iv_flags |= IEEE80211_F_DROPUNENC;
--//		else
--//			vap->iv_flags &= ~IEEE80211_F_DROPUNENC;
--//		break;
--//	case IEEE80211_PARAM_COUNTERMEASURES:
--//		if (value) {
--//			if ((vap->iv_flags & IEEE80211_F_WPA) == 0)
--//				return -EINVAL;
--//			vap->iv_flags |= IEEE80211_F_COUNTERM;
--//		} else
--//			vap->iv_flags &= ~IEEE80211_F_COUNTERM;
--//		break;
--//	case IEEE80211_PARAM_DRIVER_CAPS:
--//		vap->iv_caps = value;		/* NB: for testing */
--//		break;
--//	case IEEE80211_PARAM_MACCMD:
--//		acl = vap->iv_acl;
--//		switch (value) {
--//		case IEEE80211_MACCMD_POLICY_OPEN:
--//		case IEEE80211_MACCMD_POLICY_ALLOW:
--//		case IEEE80211_MACCMD_POLICY_DENY:
--//			if (acl == NULL) {
--//				acl = ieee80211_aclator_get("mac");
--//				if (acl == NULL || !acl->iac_attach(vap))
--//					return -EINVAL;
--//				vap->iv_acl = acl;
--//			}
--//			acl->iac_setpolicy(vap, value);
--//			break;
--//		case IEEE80211_MACCMD_FLUSH:
--//			if (acl != NULL)
--//				acl->iac_flush(vap);
--//			/* NB: silently ignore when not in use */
--//			break;
--//		case IEEE80211_MACCMD_DETACH:
--//			if (acl != NULL) {
--//				vap->iv_acl = NULL;
--//				acl->iac_detach(vap);
--//			}
--//			break;
--//		}
--//		break;
--//	case IEEE80211_PARAM_WMM:
--//		if (ic->ic_caps & IEEE80211_C_WME){
--//			if (value) {
--//				vap->iv_flags |= IEEE80211_F_WME;
--//				vap->iv_ic->ic_flags |= IEEE80211_F_WME; /* XXX needed by ic_reset */
--//			}
--//			else {
--//				vap->iv_flags &= ~IEEE80211_F_WME;
--//				vap->iv_ic->ic_flags &= ~IEEE80211_F_WME; /* XXX needed by ic_reset */
--//			}
--//			retv = ENETRESET;	/* Renegotiate for capabilities */
--//		}
--//		break;
--//	case IEEE80211_PARAM_HIDESSID:
--//		if (value)
--//			vap->iv_flags |= IEEE80211_F_HIDESSID;
--//		else
--//			vap->iv_flags &= ~IEEE80211_F_HIDESSID;
--//		retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_APBRIDGE:
--//		if (value == 0)
--//			vap->iv_flags |= IEEE80211_F_NOBRIDGE;
--//		else
--//			vap->iv_flags &= ~IEEE80211_F_NOBRIDGE;
--//		break;
--//	case IEEE80211_PARAM_INACT:
--//		vap->iv_inact_run = value / IEEE80211_INACT_WAIT;
--//		break;
--//	case IEEE80211_PARAM_INACT_AUTH:
--//		vap->iv_inact_auth = value / IEEE80211_INACT_WAIT;
--//		break;
--//	case IEEE80211_PARAM_INACT_INIT:
--//		vap->iv_inact_init = value / IEEE80211_INACT_WAIT;
--//		break;
--//	case IEEE80211_PARAM_ABOLT:
--//		caps = 0;
--//		/*
--//		 * Map abolt settings to capability bits;
--//		 * this also strips unknown/unwanted bits.
--//		 */
--//		if (value & IEEE80211_ABOLT_TURBO_PRIME)
--//			caps |= IEEE80211_ATHC_TURBOP;
--//		if (value & IEEE80211_ABOLT_COMPRESSION)
--//			caps |= IEEE80211_ATHC_COMP;
--//		if (value & IEEE80211_ABOLT_FAST_FRAME)
--//			caps |= IEEE80211_ATHC_FF;
--//		if (value & IEEE80211_ABOLT_XR)
--//			caps |= IEEE80211_ATHC_XR;
--//		if (value & IEEE80211_ABOLT_AR)
--//			caps |= IEEE80211_ATHC_AR;
--//		if (value & IEEE80211_ABOLT_BURST)
--//			caps |= IEEE80211_ATHC_BURST;
--//        if (value & IEEE80211_ABOLT_WME_ELE)
--//            caps |= IEEE80211_ATHC_WME;
--//		/* verify requested capabilities are supported */
--//		if ((caps & ic->ic_ath_cap) != caps)
--//			return -EINVAL;
--//		if (vap->iv_ath_cap != caps) {
--//			if ((vap->iv_ath_cap ^ caps) & IEEE80211_ATHC_TURBOP) {
--//				if (ieee80211_set_turbo(dev,  caps & IEEE80211_ATHC_TURBOP))
--//					return -EINVAL;
--//				ieee80211_scan_flush(ic);
--//			}
--//			vap->iv_ath_cap = caps;
--//			ic->ic_athcapsetup(vap->iv_ic, vap->iv_ath_cap);
--//			retv = ENETRESET;
--//		}
--//		break;
--//	case IEEE80211_PARAM_DTIM_PERIOD:
--//		if (vap->iv_opmode != IEEE80211_M_HOSTAP &&
--//		    vap->iv_opmode != IEEE80211_M_IBSS)
--//			return -EINVAL;
--//		if (IEEE80211_DTIM_MIN <= value &&
--//		    value <= IEEE80211_DTIM_MAX) {
--//			vap->iv_dtim_period = value;
--//			retv = ENETRESET;		/* requires restart */
--//		} else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_BEACON_INTERVAL:
--//		if (vap->iv_opmode != IEEE80211_M_HOSTAP &&
--//		    vap->iv_opmode != IEEE80211_M_IBSS)
--//			return -EINVAL;
--//		if (IEEE80211_BINTVAL_MIN <= value &&
--//		    value <= IEEE80211_BINTVAL_MAX) {
--//			ic->ic_lintval = value;		/* XXX multi-bss */
--//			retv = ENETRESET;		/* requires restart */
--//		} else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_DOTH:
--//		if (value) {
--//			ic->ic_flags |= IEEE80211_F_DOTH;
--//		}
--//		else
--//			ic->ic_flags &= ~IEEE80211_F_DOTH;
--//		retv = ENETRESET;	/* XXX: need something this drastic? */
--//		break;
--//	case IEEE80211_PARAM_PWRTARGET:
--//		ic->ic_curchanmaxpwr = value;
--//		break;
--//	case IEEE80211_PARAM_GENREASSOC:
--//		IEEE80211_SEND_MGMT(vap->iv_bss, IEEE80211_FC0_SUBTYPE_REASSOC_REQ, 0);
--//		break;
--//	case IEEE80211_PARAM_COMPRESSION:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_COMP, value);
--//		break;
--//    case IEEE80211_PARAM_WMM_AGGRMODE:
--//        retv = ieee80211_setathcap(vap, IEEE80211_ATHC_WME, value);
--//        break;
--//	case IEEE80211_PARAM_FF:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_FF, value);
--//		break;
--//	case IEEE80211_PARAM_TURBO:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_TURBOP, value);
--//		if (retv == ENETRESET) {
--//			if(ieee80211_set_turbo(dev,value))
--//					return -EINVAL;
--//			ieee80211_scan_flush(ic);
--//		}
--//		break;
--//	case IEEE80211_PARAM_XR:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_XR, value);
--//		break;
--//	case IEEE80211_PARAM_BURST:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_BURST, value);
--//		break;
--//	case IEEE80211_PARAM_AR:
--//		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_AR, value);
--//		break;
--//	case IEEE80211_PARAM_PUREG:
--//		if (value)
--//			vap->iv_flags |= IEEE80211_F_PUREG;
--//		else
--//			vap->iv_flags &= ~IEEE80211_F_PUREG;
--//		/* NB: reset only if we're operating on an 11g channel */
--//		if (ic->ic_bsschan != IEEE80211_CHAN_ANYC &&
--//		    IEEE80211_IS_CHAN_ANYG(ic->ic_bsschan))
--//			retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_WDS:
--//		if (value)
--//			vap->iv_flags_ext |= IEEE80211_FEXT_WDS;
--//		else
--//			vap->iv_flags_ext &= ~IEEE80211_FEXT_WDS;
--//		break;
--//	case IEEE80211_PARAM_BGSCAN:
--//		if (value) {
--//			if ((vap->iv_caps & IEEE80211_C_BGSCAN) == 0)
--//				return -EINVAL;
--//			vap->iv_flags |= IEEE80211_F_BGSCAN;
--//		} else {
--//			/* XXX racey? */
--//			vap->iv_flags &= ~IEEE80211_F_BGSCAN;
--//			ieee80211_cancel_scan(vap);	/* anything current */
--//		}
--//		break;
--//	case IEEE80211_PARAM_BGSCAN_IDLE:
--//		if (value >= IEEE80211_BGSCAN_IDLE_MIN)
--//			vap->iv_bgscanidle = value*HZ/1000;
--//		else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_BGSCAN_INTERVAL:
--//		if (value >= IEEE80211_BGSCAN_INTVAL_MIN)
--//			vap->iv_bgscanintvl = value*HZ;
--//		else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_MCAST_RATE:
--//		/* units are in KILObits per second */
--//		if (value >= 256 && value <= 54000)
--//			vap->iv_mcast_rate = value;
--//		else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_COVERAGE_CLASS:
--//		if (value >= 0 && value <= IEEE80211_COVERAGE_CLASS_MAX) {
--//			ic->ic_coverageclass = value;
--//			if (IS_UP_AUTO(vap))
--//				ieee80211_new_state(vap, IEEE80211_S_SCAN, 0);
--//			retv = 0;
--//		}
--//		else
--//			retv = EINVAL;
--//		break;
--//	case IEEE80211_PARAM_COUNTRY_IE:
--//		if (value)
--//			ic->ic_flags_ext |= IEEE80211_FEXT_COUNTRYIE;
--//		else
--//			ic->ic_flags_ext &= ~IEEE80211_FEXT_COUNTRYIE;
--//		retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_REGCLASS:
--//		if (value)
--//			ic->ic_flags_ext |= IEEE80211_FEXT_REGCLASS;
--//		else
--//			ic->ic_flags_ext &= ~IEEE80211_FEXT_REGCLASS;
--//		retv = ENETRESET;
--//		break;
--//	case IEEE80211_PARAM_SCANVALID:
--//		vap->iv_scanvalid = value*HZ;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RSSI_11A:
--//		vap->iv_roam.rssi11a = value;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RSSI_11B:
--//		vap->iv_roam.rssi11bOnly = value;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RSSI_11G:
--//		vap->iv_roam.rssi11b = value;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RATE_11A:
--//		vap->iv_roam.rate11a = value;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RATE_11B:
--//		vap->iv_roam.rate11bOnly = value;
--//		break;
--//	case IEEE80211_PARAM_ROAM_RATE_11G:
--//		vap->iv_roam.rate11b = value;
--//		break;
--//	case IEEE80211_PARAM_UAPSDINFO:
--//		if (vap->iv_opmode == IEEE80211_M_HOSTAP) {
--//			if (ic->ic_caps & IEEE80211_C_UAPSD) {
--//				if (value)
--//					IEEE80211_VAP_UAPSD_ENABLE(vap);
--//				else
--//					IEEE80211_VAP_UAPSD_DISABLE(vap);
--//				retv = ENETRESET;
--//			}
--//		}
--//		else if (vap->iv_opmode == IEEE80211_M_STA) {
--//			vap->iv_uapsdinfo = value;
--//			IEEE80211_VAP_UAPSD_ENABLE(vap);
--//			retv = ENETRESET;
--//		}
--//		break;
--//	case IEEE80211_PARAM_SLEEP:
--//		/* XXX: Forced sleep for testing. Does not actually place the
--//		 *      HW in sleep mode yet. this only makes sense for STAs.
--//		 */
--//		if (value) {
--//			/* goto sleep */
--//			IEEE80211_VAP_GOTOSLEEP(vap);
--//		}
--//		else {
--//			/* wakeup */
--//			IEEE80211_VAP_WAKEUP(vap);
--//		}
--//		ieee80211_send_nulldata(ieee80211_ref_node(vap->iv_bss));
--//		break;
--//	case IEEE80211_PARAM_QOSNULL:
--//		/* Force a QoS Null for testing. */
--//		ieee80211_send_qosnulldata(vap->iv_bss, value);
--//		break;
--//	case IEEE80211_PARAM_PSPOLL:
--//		/* Force a PS-POLL for testing. */
--//		ieee80211_send_pspoll(vap->iv_bss);
--//		break;
--//	case IEEE80211_PARAM_EOSPDROP:
--//		if (vap->iv_opmode == IEEE80211_M_HOSTAP) {
--//			if (value) IEEE80211_VAP_EOSPDROP_ENABLE(vap);
--//			else IEEE80211_VAP_EOSPDROP_DISABLE(vap);
--//		}
--//		break;
--//	case IEEE80211_PARAM_MARKDFS:
--//		if (value)
--//			ic->ic_flags_ext |= IEEE80211_FEXT_MARKDFS;
--//		else
--//			ic->ic_flags_ext &= ~IEEE80211_FEXT_MARKDFS;
--//		break;
--//	case IEEE80211_PARAM_CHANBW:
--//		switch (value) {
--//			case 0:
--//				ic->ic_chanbwflag = 0;
--//				break;
--//			case 1:
--//				ic->ic_chanbwflag = IEEE80211_CHAN_HALF;
--//				break;
--//			case 2:
--//				ic->ic_chanbwflag = IEEE80211_CHAN_QUARTER;
--//				break;
--//			default:
--//				retv = EINVAL;
--//				break;
--//		}
--//		break;
--//	case IEEE80211_PARAM_SHORTPREAMBLE:
--//		if (value) {
--//			ic->ic_caps |= IEEE80211_C_SHPREAMBLE;
--//		} else {
--//			ic->ic_caps &= ~IEEE80211_C_SHPREAMBLE;
--//		}
--//		retv = ENETRESET;
--//		break;
--//	default:
--//		retv = EOPNOTSUPP;
--//		break;
--//	}
--//	/* XXX should any of these cause a rescan? */
--//	if (retv == ENETRESET)
--//		retv = IS_UP_AUTO(vap) ? ieee80211_open(vap->iv_dev) : 0;
--//	return -retv;
--//}
-+	spin_unlock_irqrestore(&macp->cs_lock, irqFlag);
-+
-+	return 0;
-+}
-+
-+/*int usbdrvwext_setparam(struct net_device *dev, struct iw_request_info *info,
-+*		   	 void *w, char *extra)
-+*{
-+*	struct ieee80211vap *vap = dev->ml_priv;
-+*	struct ieee80211com *ic = vap->iv_ic;
-+*	struct ieee80211_rsnparms *rsn = &vap->iv_bss->ni_rsn;
-+*	int *i = (int *) extra;
-+*	int param = i[0];		// parameter id is 1st
-+*	int value = i[1];		// NB: most values are TYPE_INT
-+*	int retv = 0;
-+*	int j, caps;
-+*	const struct ieee80211_authenticator *auth;
-+*	const struct ieee80211_aclator *acl;
-+*
-+*	switch (param) {
-+*	case IEEE80211_PARAM_AUTHMODE:
-+*		switch (value) {
-+*		case IEEE80211_AUTH_WPA:	// WPA
-+*		case IEEE80211_AUTH_8021X:	// 802.1x
-+*		case IEEE80211_AUTH_OPEN:	// open
-+*		case IEEE80211_AUTH_SHARED:	// shared-key
-+*		case IEEE80211_AUTH_AUTO:	// auto
-+*			auth = ieee80211_authenticator_get(value);
-+*			if (auth == NULL)
-+*				return -EINVAL;
-+*			break;
-+*		default:
-+*			return -EINVAL;
-+*		}
-+*		switch (value) {
-+*		case IEEE80211_AUTH_WPA:	// WPA w/ 802.1x
-+*			vap->iv_flags |= IEEE80211_F_PRIVACY;
-+*			value = IEEE80211_AUTH_8021X;
-+*			break;
-+*		case IEEE80211_AUTH_OPEN:	// open
-+*		vap->iv_flags &= ~(IEEE80211_F_WPA | IEEE80211_F_PRIVACY);
-+*			break;
-+*		case IEEE80211_AUTH_SHARED:	// shared-key
-+*		case IEEE80211_AUTH_AUTO:	// auto
-+*		case IEEE80211_AUTH_8021X:	// 802.1x
-+*			vap->iv_flags &= ~IEEE80211_F_WPA;
-+*			// both require a key so mark the PRIVACY capability
-+*			vap->iv_flags |= IEEE80211_F_PRIVACY;
-+*			break;
-+*		}
-+*		// NB: authenticator attach/detach happens on state change
-+*		vap->iv_bss->ni_authmode = value;
-+*		// XXX mixed/mode/usage?
-+*		vap->iv_auth = auth;
-+*		retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_PROTMODE:
-+*		if (value > IEEE80211_PROT_RTSCTS)
-+*			return -EINVAL;
-+*		ic->ic_protmode = value;
-+*		// NB: if not operating in 11g this can wait
-+*		if (ic->ic_bsschan != IEEE80211_CHAN_ANYC &&
-+*		    IEEE80211_IS_CHAN_ANYG(ic->ic_bsschan))
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_MCASTCIPHER:
-+*		if ((vap->iv_caps & cipher2cap(value)) == 0 &&
-+*		    !ieee80211_crypto_available(value))
-+*			return -EINVAL;
-+*		rsn->rsn_mcastcipher = value;
-+*		if (vap->iv_flags & IEEE80211_F_WPA)
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_MCASTKEYLEN:
-+*		if (!(0 < value && value < IEEE80211_KEYBUF_SIZE))
-+*			return -EINVAL;
-+*		// XXX no way to verify driver capability
-+*		rsn->rsn_mcastkeylen = value;
-+*		if (vap->iv_flags & IEEE80211_F_WPA)
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_UCASTCIPHERS:
-+*
-+*		 // Convert cipher set to equivalent capabilities.
-+*		 // NB: this logic intentionally ignores unknown and
-+*		 // unsupported ciphers so folks can specify 0xff or
-+*		 // similar and get all available ciphers.
-+*
-+*		caps = 0;
-+*		for (j = 1; j < 32; j++)	// NB: skip WEP
-+*			if ((value & (1<<j)) &&
-+*			    ((vap->iv_caps & cipher2cap(j)) ||
-+*			     ieee80211_crypto_available(j)))
-+*				caps |= 1<<j;
-+*		if (caps == 0)			// nothing available
-+*			return -EINVAL;
-+*		// XXX verify ciphers ok for unicast use?
-+*		// XXX disallow if running as it'll have no effect
-+*		rsn->rsn_ucastcipherset = caps;
-+*		if (vap->iv_flags & IEEE80211_F_WPA)
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_UCASTCIPHER:
-+*		if ((rsn->rsn_ucastcipherset & cipher2cap(value)) == 0)
-+*			return -EINVAL;
-+*		rsn->rsn_ucastcipher = value;
-+*		break;
-+*	case IEEE80211_PARAM_UCASTKEYLEN:
-+*		if (!(0 < value && value < IEEE80211_KEYBUF_SIZE))
-+*			return -EINVAL;
-+*		// XXX no way to verify driver capability
-+*		rsn->rsn_ucastkeylen = value;
-+*		break;
-+*	case IEEE80211_PARAM_KEYMGTALGS:
-+*		// XXX check
-+*		rsn->rsn_keymgmtset = value;
-+*		if (vap->iv_flags & IEEE80211_F_WPA)
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_RSNCAPS:
-+*		// XXX check
-+*		rsn->rsn_caps = value;
-+*		if (vap->iv_flags & IEEE80211_F_WPA)
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_WPA:
-+*		if (value > 3)
-+*			return -EINVAL;
-+*		// XXX verify ciphers available
-+*		vap->iv_flags &= ~IEEE80211_F_WPA;
-+*		switch (value) {
-+*		case 1:
-+*			vap->iv_flags |= IEEE80211_F_WPA1;
-+*			break;
-+*		case 2:
-+*			vap->iv_flags |= IEEE80211_F_WPA2;
-+*			break;
-+*		case 3:
-+*			vap->iv_flags |= IEEE80211_F_WPA1 | IEEE80211_F_WPA2;
-+*			break;
-+*		}
-+*		retv = ENETRESET;		// XXX?
-+*		break;
-+*	case IEEE80211_PARAM_ROAMING:
-+*		if (!(IEEE80211_ROAMING_DEVICE <= value &&
-+*		    value <= IEEE80211_ROAMING_MANUAL))
-+*			return -EINVAL;
-+*		ic->ic_roaming = value;
-+*		break;
-+*	case IEEE80211_PARAM_PRIVACY:
-+*		if (value) {
-+*			// XXX check for key state?
-+*			vap->iv_flags |= IEEE80211_F_PRIVACY;
-+*		} else
-+*			vap->iv_flags &= ~IEEE80211_F_PRIVACY;
-+*		break;
-+*	case IEEE80211_PARAM_DROPUNENCRYPTED:
-+*		if (value)
-+*			vap->iv_flags |= IEEE80211_F_DROPUNENC;
-+*		else
-+*			vap->iv_flags &= ~IEEE80211_F_DROPUNENC;
-+*		break;
-+*	case IEEE80211_PARAM_COUNTERMEASURES:
-+*		if (value) {
-+*			if ((vap->iv_flags & IEEE80211_F_WPA) == 0)
-+*				return -EINVAL;
-+*			vap->iv_flags |= IEEE80211_F_COUNTERM;
-+*		} else
-+*			vap->iv_flags &= ~IEEE80211_F_COUNTERM;
-+*		break;
-+*	case IEEE80211_PARAM_DRIVER_CAPS:
-+*		vap->iv_caps = value;		// NB: for testing
-+*		break;
-+*	case IEEE80211_PARAM_MACCMD:
-+*		acl = vap->iv_acl;
-+*		switch (value) {
-+*		case IEEE80211_MACCMD_POLICY_OPEN:
-+*		case IEEE80211_MACCMD_POLICY_ALLOW:
-+*		case IEEE80211_MACCMD_POLICY_DENY:
-+*			if (acl == NULL) {
-+*				acl = ieee80211_aclator_get("mac");
-+*				if (acl == NULL || !acl->iac_attach(vap))
-+*					return -EINVAL;
-+*				vap->iv_acl = acl;
-+*			}
-+*			acl->iac_setpolicy(vap, value);
-+*			break;
-+*		case IEEE80211_MACCMD_FLUSH:
-+*			if (acl != NULL)
-+*				acl->iac_flush(vap);
-+*			// NB: silently ignore when not in use
-+*			break;
-+*		case IEEE80211_MACCMD_DETACH:
-+*			if (acl != NULL) {
-+*				vap->iv_acl = NULL;
-+*				acl->iac_detach(vap);
-+*			}
-+*			break;
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_WMM:
-+*		if (ic->ic_caps & IEEE80211_C_WME){
-+*			if (value) {
-+*				vap->iv_flags |= IEEE80211_F_WME;
-+*				 *//* XXX needed by ic_reset *//*
-+*				vap->iv_ic->ic_flags |= IEEE80211_F_WME;
-+*			}
-+*			else {
-+*				*//* XXX needed by ic_reset *//*
-+*				vap->iv_flags &= ~IEEE80211_F_WME;
-+*				vap->iv_ic->ic_flags &= ~IEEE80211_F_WME;
-+*			}
-+*			retv = ENETRESET;	// Renegotiate for capabilities
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_HIDESSID:
-+*		if (value)
-+*			vap->iv_flags |= IEEE80211_F_HIDESSID;
-+*		else
-+*			vap->iv_flags &= ~IEEE80211_F_HIDESSID;
-+*		retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_APBRIDGE:
-+*		if (value == 0)
-+*			vap->iv_flags |= IEEE80211_F_NOBRIDGE;
-+*		else
-+*			vap->iv_flags &= ~IEEE80211_F_NOBRIDGE;
-+*		break;
-+*	case IEEE80211_PARAM_INACT:
-+*		vap->iv_inact_run = value / IEEE80211_INACT_WAIT;
-+*		break;
-+*	case IEEE80211_PARAM_INACT_AUTH:
-+*		vap->iv_inact_auth = value / IEEE80211_INACT_WAIT;
-+*		break;
-+*	case IEEE80211_PARAM_INACT_INIT:
-+*		vap->iv_inact_init = value / IEEE80211_INACT_WAIT;
-+*		break;
-+*	case IEEE80211_PARAM_ABOLT:
-+*		caps = 0;
-+*
-+*		 // Map abolt settings to capability bits;
-+*		 // this also strips unknown/unwanted bits.
-+*
-+*		if (value & IEEE80211_ABOLT_TURBO_PRIME)
-+*			caps |= IEEE80211_ATHC_TURBOP;
-+*		if (value & IEEE80211_ABOLT_COMPRESSION)
-+*			caps |= IEEE80211_ATHC_COMP;
-+*		if (value & IEEE80211_ABOLT_FAST_FRAME)
-+*			caps |= IEEE80211_ATHC_FF;
-+*		if (value & IEEE80211_ABOLT_XR)
-+*			caps |= IEEE80211_ATHC_XR;
-+*		if (value & IEEE80211_ABOLT_AR)
-+*			caps |= IEEE80211_ATHC_AR;
-+*		if (value & IEEE80211_ABOLT_BURST)
-+*			caps |= IEEE80211_ATHC_BURST;
-+*        if (value & IEEE80211_ABOLT_WME_ELE)
-+*            caps |= IEEE80211_ATHC_WME;
-+*		// verify requested capabilities are supported
-+*		if ((caps & ic->ic_ath_cap) != caps)
-+*			return -EINVAL;
-+*		if (vap->iv_ath_cap != caps) {
-+*			if ((vap->iv_ath_cap ^ caps) & IEEE80211_ATHC_TURBOP) {
-+*				if (ieee80211_set_turbo(dev,
-+*						caps & IEEE80211_ATHC_TURBOP))
-+*					return -EINVAL;
-+*				ieee80211_scan_flush(ic);
-+*			}
-+*			vap->iv_ath_cap = caps;
-+*			ic->ic_athcapsetup(vap->iv_ic, vap->iv_ath_cap);
-+*			retv = ENETRESET;
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_DTIM_PERIOD:
-+*		if (vap->iv_opmode != IEEE80211_M_HOSTAP &&
-+*		    vap->iv_opmode != IEEE80211_M_IBSS)
-+*			return -EINVAL;
-+*		if (IEEE80211_DTIM_MIN <= value &&
-+*		    value <= IEEE80211_DTIM_MAX) {
-+*			vap->iv_dtim_period = value;
-+*			retv = ENETRESET;		// requires restart
-+*		} else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_BEACON_INTERVAL:
-+*		if (vap->iv_opmode != IEEE80211_M_HOSTAP &&
-+*		    vap->iv_opmode != IEEE80211_M_IBSS)
-+*			return -EINVAL;
-+*		if (IEEE80211_BINTVAL_MIN <= value &&
-+*		    value <= IEEE80211_BINTVAL_MAX) {
-+*			ic->ic_lintval = value;		// XXX multi-bss
-+*			retv = ENETRESET;		// requires restart
-+*		} else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_DOTH:
-+*		if (value) {
-+*			ic->ic_flags |= IEEE80211_F_DOTH;
-+*		}
-+*		else
-+*			ic->ic_flags &= ~IEEE80211_F_DOTH;
-+*		retv = ENETRESET;	// XXX: need something this drastic?
-+*		break;
-+*	case IEEE80211_PARAM_PWRTARGET:
-+*		ic->ic_curchanmaxpwr = value;
-+*		break;
-+*	case IEEE80211_PARAM_GENREASSOC:
-+*		IEEE80211_SEND_MGMT(vap->iv_bss,
-+*					IEEE80211_FC0_SUBTYPE_REASSOC_REQ, 0);
-+*		break;
-+*	case IEEE80211_PARAM_COMPRESSION:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_COMP, value);
-+*		break;
-+*    case IEEE80211_PARAM_WMM_AGGRMODE:
-+*        retv = ieee80211_setathcap(vap, IEEE80211_ATHC_WME, value);
-+*        break;
-+*	case IEEE80211_PARAM_FF:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_FF, value);
-+*		break;
-+*	case IEEE80211_PARAM_TURBO:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_TURBOP, value);
-+*		if (retv == ENETRESET) {
-+*			if(ieee80211_set_turbo(dev,value))
-+*					return -EINVAL;
-+*			ieee80211_scan_flush(ic);
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_XR:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_XR, value);
-+*		break;
-+*	case IEEE80211_PARAM_BURST:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_BURST, value);
-+*		break;
-+*	case IEEE80211_PARAM_AR:
-+*		retv = ieee80211_setathcap(vap, IEEE80211_ATHC_AR, value);
-+*		break;
-+*	case IEEE80211_PARAM_PUREG:
-+*		if (value)
-+*			vap->iv_flags |= IEEE80211_F_PUREG;
-+*		else
-+*			vap->iv_flags &= ~IEEE80211_F_PUREG;
-+*		// NB: reset only if we're operating on an 11g channel
-+*		if (ic->ic_bsschan != IEEE80211_CHAN_ANYC &&
-+*		    IEEE80211_IS_CHAN_ANYG(ic->ic_bsschan))
-+*			retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_WDS:
-+*		if (value)
-+*			vap->iv_flags_ext |= IEEE80211_FEXT_WDS;
-+*		else
-+*			vap->iv_flags_ext &= ~IEEE80211_FEXT_WDS;
-+*		break;
-+*	case IEEE80211_PARAM_BGSCAN:
-+*		if (value) {
-+*			if ((vap->iv_caps & IEEE80211_C_BGSCAN) == 0)
-+*				return -EINVAL;
-+*			vap->iv_flags |= IEEE80211_F_BGSCAN;
-+*		} else {
-+*			// XXX racey?
-+*			vap->iv_flags &= ~IEEE80211_F_BGSCAN;
-+*			ieee80211_cancel_scan(vap);	// anything current
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_BGSCAN_IDLE:
-+*		if (value >= IEEE80211_BGSCAN_IDLE_MIN)
-+*			vap->iv_bgscanidle = value*HZ/1000;
-+*		else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_BGSCAN_INTERVAL:
-+*		if (value >= IEEE80211_BGSCAN_INTVAL_MIN)
-+*			vap->iv_bgscanintvl = value*HZ;
-+*		else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_MCAST_RATE:
-+*		// units are in KILObits per second
-+*		if (value >= 256 && value <= 54000)
-+*			vap->iv_mcast_rate = value;
-+*		else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_COVERAGE_CLASS:
-+*		if (value >= 0 && value <= IEEE80211_COVERAGE_CLASS_MAX) {
-+*			ic->ic_coverageclass = value;
-+*			if (IS_UP_AUTO(vap))
-+*				ieee80211_new_state(vap, IEEE80211_S_SCAN, 0);
-+*			retv = 0;
-+*		}
-+*		else
-+*			retv = EINVAL;
-+*		break;
-+*	case IEEE80211_PARAM_COUNTRY_IE:
-+*		if (value)
-+*			ic->ic_flags_ext |= IEEE80211_FEXT_COUNTRYIE;
-+*		else
-+*			ic->ic_flags_ext &= ~IEEE80211_FEXT_COUNTRYIE;
-+*		retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_REGCLASS:
-+*		if (value)
-+*			ic->ic_flags_ext |= IEEE80211_FEXT_REGCLASS;
-+*		else
-+*			ic->ic_flags_ext &= ~IEEE80211_FEXT_REGCLASS;
-+*		retv = ENETRESET;
-+*		break;
-+*	case IEEE80211_PARAM_SCANVALID:
-+*		vap->iv_scanvalid = value*HZ;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RSSI_11A:
-+*		vap->iv_roam.rssi11a = value;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RSSI_11B:
-+*		vap->iv_roam.rssi11bOnly = value;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RSSI_11G:
-+*		vap->iv_roam.rssi11b = value;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RATE_11A:
-+*		vap->iv_roam.rate11a = value;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RATE_11B:
-+*		vap->iv_roam.rate11bOnly = value;
-+*		break;
-+*	case IEEE80211_PARAM_ROAM_RATE_11G:
-+*		vap->iv_roam.rate11b = value;
-+*		break;
-+*	case IEEE80211_PARAM_UAPSDINFO:
-+*		if (vap->iv_opmode == IEEE80211_M_HOSTAP) {
-+*			if (ic->ic_caps & IEEE80211_C_UAPSD) {
-+*				if (value)
-+*					IEEE80211_VAP_UAPSD_ENABLE(vap);
-+*				else
-+*					IEEE80211_VAP_UAPSD_DISABLE(vap);
-+*				retv = ENETRESET;
-+*			}
-+*		}
-+*		else if (vap->iv_opmode == IEEE80211_M_STA) {
-+*			vap->iv_uapsdinfo = value;
-+*			IEEE80211_VAP_UAPSD_ENABLE(vap);
-+*			retv = ENETRESET;
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_SLEEP:
-+*		// XXX: Forced sleep for testing. Does not actually place the
-+*		//      HW in sleep mode yet. this only makes sense for STAs.
-+*
-+*		if (value) {
-+*			// goto sleep
-+*			IEEE80211_VAP_GOTOSLEEP(vap);
-+*		}
-+*		else {
-+*			// wakeup
-+*			IEEE80211_VAP_WAKEUP(vap);
-+*		}
-+*		ieee80211_send_nulldata(ieee80211_ref_node(vap->iv_bss));
-+*		break;
-+*	case IEEE80211_PARAM_QOSNULL:
-+*		// Force a QoS Null for testing.
-+*		ieee80211_send_qosnulldata(vap->iv_bss, value);
-+*		break;
-+*	case IEEE80211_PARAM_PSPOLL:
-+*		// Force a PS-POLL for testing.
-+*		ieee80211_send_pspoll(vap->iv_bss);
-+*		break;
-+*	case IEEE80211_PARAM_EOSPDROP:
-+*		if (vap->iv_opmode == IEEE80211_M_HOSTAP) {
-+*			if (value) IEEE80211_VAP_EOSPDROP_ENABLE(vap);
-+*			else IEEE80211_VAP_EOSPDROP_DISABLE(vap);
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_MARKDFS:
-+*		if (value)
-+*			ic->ic_flags_ext |= IEEE80211_FEXT_MARKDFS;
-+*		else
-+*			ic->ic_flags_ext &= ~IEEE80211_FEXT_MARKDFS;
-+*		break;
-+*	case IEEE80211_PARAM_CHANBW:
-+*		switch (value) {
-+*			case 0:
-+*				ic->ic_chanbwflag = 0;
-+*				break;
-+*			case 1:
-+*				ic->ic_chanbwflag = IEEE80211_CHAN_HALF;
-+*				break;
-+*			case 2:
-+*				ic->ic_chanbwflag = IEEE80211_CHAN_QUARTER;
-+*				break;
-+*			default:
-+*				retv = EINVAL;
-+*				break;
-+*		}
-+*		break;
-+*	case IEEE80211_PARAM_SHORTPREAMBLE:
-+*		if (value) {
-+*			ic->ic_caps |= IEEE80211_C_SHPREAMBLE;
-+*		} else {
-+*			ic->ic_caps &= ~IEEE80211_C_SHPREAMBLE;
-+*		}
-+*		retv = ENETRESET;
-+*		break;
-+*	default:
-+*		retv = EOPNOTSUPP;
-+*		break;
-+*	}
-+*	// XXX should any of these cause a rescan?
-+*	if (retv == ENETRESET)
-+*		retv = IS_UP_AUTO(vap) ? ieee80211_open(vap->iv_dev) : 0;
-+*	return -retv;
-+*}
-+*/
- 
- int usbdrvwext_setmode(struct net_device *dev, struct iw_request_info *info,
--		   	 void *w, char *extra)
-+			void *w, char *extra)
- {
- 	return 0;
- }
-@@ -1947,158 +1887,138 @@ int usbdrvwext_setmode(struct net_device
- int usbdrvwext_getmode(struct net_device *dev, struct iw_request_info *info,
- 			void *w, char *extra)
- {
--	//struct usbdrv_private *macp = dev->ml_priv;
-+	/* struct usbdrv_private *macp = dev->ml_priv; */
- 	struct iw_point *wri = (struct iw_point *)extra;
- 	char mode[8];
- 
--    strcpy(mode,"11g");
--	return (copy_to_user(wri->pointer, mode, 6) ? -EFAULT : 0);
-+	strcpy(mode, "11g");
-+	return copy_to_user(wri->pointer, mode, 6) ? -EFAULT : 0;
- }
- 
- int zfLnxPrivateIoctl(struct net_device *dev, struct zdap_ioctl* zdreq)
- {
--	//void* regp = macp->regp;
-+	/* void* regp = macp->regp; */
- 	u16_t cmd;
--	//u32_t temp;
--	u32_t* p;
-+	/* u32_t temp; */
-+	u32_t *p;
- 	u32_t i;
- 
- 	cmd = zdreq->cmd;
--	switch(cmd)
--	{
-+	switch (cmd) {
- 	case ZM_IOCTL_REG_READ:
- 		zfiDbgReadReg(dev, zdreq->addr);
- 		break;
--
- 	case ZM_IOCTL_REG_WRITE:
- 		zfiDbgWriteReg(dev, zdreq->addr, zdreq->value);
- 		break;
--
- 	case ZM_IOCTL_MEM_READ:
- 		p = (u32_t *) bus_to_virt(zdreq->addr);
--		printk(KERN_DEBUG "usbdrv: read memory addr: 0x%08x value: 0x%08x\n", zdreq->addr, *p);
-+		printk(KERN_WARNING
-+				"usbdrv: read memory addr: 0x%08x value:"
-+				" 0x%08x\n", zdreq->addr, *p);
- 		break;
--
- 	case ZM_IOCTL_MEM_WRITE:
- 		p = (u32_t *) bus_to_virt(zdreq->addr);
- 		*p = zdreq->value;
--		printk(KERN_DEBUG "usbdrv: write value: 0x%08x to memory addr: 0x%08x\n", zdreq->value, zdreq->addr);
-+		printk(KERN_WARNING
-+			"usbdrv : write value : 0x%08x to memory addr :"
-+			" 0x%08x\n", zdreq->value, zdreq->addr);
- 		break;
--
--	case ZM_IOCTL_TALLY :
-+	case ZM_IOCTL_TALLY:
- 		zfiWlanShowTally(dev);
- 		if (zdreq->addr)
- 			zfiWlanResetTally(dev);
- 		break;
-+	case ZM_IOCTL_TEST:
-+		printk(KERN_WARNING
-+				"ZM_IOCTL_TEST:len=%d\n", zdreq->addr);
-+		/* zfiWlanReadReg(dev, 0x10f400); */
-+		/* zfiWlanReadReg(dev, 0x10f404); */
-+		printk(KERN_WARNING "IOCTL TEST\n");
-+		#if 1
-+		/* print packet */
-+		for (i = 0; i < zdreq->addr; i++) {
-+			if ((i&0x7) == 0)
-+				printk(KERN_WARNING "\n");
-+			printk(KERN_WARNING "%02X ",
-+					(unsigned char)zdreq->data[i]);
-+		}
-+		printk(KERN_WARNING "\n");
-+		#endif
- 
--	case ZM_IOCTL_TEST :
--            printk(KERN_DEBUG "ZM_IOCTL_TEST:len=%d\n", zdreq->addr);
--            //zfiWlanReadReg(dev, 0x10f400);
--            //zfiWlanReadReg(dev, 0x10f404);
--            printk("IOCTL TEST\n");
--            #if 1
--            //print packet
--            for (i=0; i<zdreq->addr; i++)
--            {
--                if ((i&0x7) == 0)
--                {
--                    printk("\n");
--                }
--                printk("%02X ", (unsigned char)zdreq->data[i]);
--            }
--            printk("\n");
--            #endif
--
--
--            #if 0 //For Test?? 1 to 0 by CWYang(-)
--            {
--            struct sk_buff* s;
--
--            /* Allocate a skb */
--            s = alloc_skb(2000, GFP_ATOMIC);
--
--            /* Copy data to skb */
--            for (i=0; i<zdreq->addr; i++)
--            {
--                s->data[i] = zdreq->data[i];
--            }
--            s->len = zdreq->addr;
--
--            /* Call zfIdlRecv() */
--            zfiRecv80211(dev, s, NULL);
--            }
--            #endif
--
--            break;
--
--
--/****************************** ZDCONFIG ******************************/
--        case ZM_IOCTL_FRAG :
--            zfiWlanSetFragThreshold(dev, zdreq->addr);
--            break;
--
--        case ZM_IOCTL_RTS :
--            zfiWlanSetRtsThreshold(dev, zdreq->addr);
--            break;
--
--        case ZM_IOCTL_SCAN :
--            zfiWlanScan(dev);
--            break;
--
--        case ZM_IOCTL_KEY :
--            {
--                u8_t key[29];
--                struct zsKeyInfo keyInfo;
--                u32_t i;
--
--                for (i=0; i<29; i++)
--                {
--                    key[i] = 0;
--                }
--
--                for (i=0; i<zdreq->addr; i++)
--                {
--                    key[i] = zdreq->data[i];
--                }
--
--                printk("key len=%d, key=%02x%02x%02x%02x%02x...\n",
--                        zdreq->addr, key[0], key[1], key[2], key[3], key[4]);
--
--                keyInfo.keyLength = zdreq->addr;
--                keyInfo.keyIndex = 0;
--                keyInfo.flag = 0;
--                keyInfo.key = key;
--                zfiWlanSetKey(dev, keyInfo);
--            }
--            break;
--
--        case ZM_IOCTL_RATE :
--            zfiWlanSetTxRate(dev, zdreq->addr);
--            break;
--
--        case ZM_IOCTL_ENCRYPTION_MODE :
--            zfiWlanSetEncryMode(dev, zdreq->addr);
--
--            zfiWlanDisable(dev, 0);
--            zfiWlanEnable(dev);
--            break;
--        //CWYang(+)
--        case ZM_IOCTL_SIGNAL_STRENGTH :
--            {
--                u8_t buffer[2];
--                zfiWlanQuerySignalInfo(dev, &buffer[0]);
--                printk("Current Signal Strength : %02d\n", buffer[0]);
--            }
--            break;
--        //CWYang(+)
--        case ZM_IOCTL_SIGNAL_QUALITY :
--            {
--                u8_t buffer[2];
--                zfiWlanQuerySignalInfo(dev, &buffer[0]);
--                printk("Current Signal Quality : %02d\n", buffer[1]);
--            }
--            break;
-+		/* For Test?? 1 to 0 by CWYang(-) */
-+		#if 0
-+			struct sk_buff *s;
-+
-+			/* Allocate a skb */
-+			s = alloc_skb(2000, GFP_ATOMIC);
-+
-+			/* Copy data to skb */
-+			for (i = 0; i < zdreq->addr; i++)
-+				s->data[i] = zdreq->data[i];
-+			s->len = zdreq->addr;
-+
-+			/* Call zfIdlRecv() */
-+			zfiRecv80211(dev, s, NULL);
-+		#endif
-+		break;
-+	/************************* ZDCONFIG ***************************/
-+	case ZM_IOCTL_FRAG:
-+		zfiWlanSetFragThreshold(dev, zdreq->addr);
-+		break;
-+	case ZM_IOCTL_RTS:
-+		zfiWlanSetRtsThreshold(dev, zdreq->addr);
-+		break;
-+	case ZM_IOCTL_SCAN:
-+		zfiWlanScan(dev);
-+		break;
-+	case ZM_IOCTL_KEY: {
-+		u8_t key[29];
-+		struct zsKeyInfo keyInfo;
-+		u32_t i;
-+
-+		for (i = 0; i < 29; i++)
-+			key[i] = 0;
-+
-+		for (i = 0; i < zdreq->addr; i++)
-+			key[i] = zdreq->data[i];
-+
-+		printk(KERN_WARNING
-+			"key len=%d, key=%02x%02x%02x%02x%02x...\n",
-+			zdreq->addr, key[0], key[1], key[2], key[3], key[4]);
-+
-+		keyInfo.keyLength = zdreq->addr;
-+		keyInfo.keyIndex = 0;
-+		keyInfo.flag = 0;
-+		keyInfo.key = key;
-+		zfiWlanSetKey(dev, keyInfo);
-+	}
-+		break;
-+	case ZM_IOCTL_RATE:
-+		zfiWlanSetTxRate(dev, zdreq->addr);
-+		break;
-+	case ZM_IOCTL_ENCRYPTION_MODE:
-+		zfiWlanSetEncryMode(dev, zdreq->addr);
- 
-+		zfiWlanDisable(dev, 0);
-+		zfiWlanEnable(dev);
-+		break;
-+		/* CWYang(+) */
-+	case ZM_IOCTL_SIGNAL_STRENGTH: {
-+		u8_t buffer[2];
-+		zfiWlanQuerySignalInfo(dev, &buffer[0]);
-+		printk(KERN_WARNING
-+			"Current Signal Strength : %02d\n", buffer[0]);
-+	}
-+		break;
-+		/* CWYang(+) */
-+	case ZM_IOCTL_SIGNAL_QUALITY: {
-+		u8_t buffer[2];
-+		zfiWlanQuerySignalInfo(dev, &buffer[0]);
-+		printk(KERN_WARNING
-+			"Current Signal Quality : %02d\n", buffer[1]);
-+	}
-+		break;
- 	case ZM_IOCTL_SET_PIBSS_MODE:
- 		if (zdreq->addr == 1)
- 			zfiWlanSetWlanMode(dev, ZM_MODE_PSEUDO);
-@@ -2107,11 +2027,9 @@ int zfLnxPrivateIoctl(struct net_device 
- 
- 		zfiWlanDisable(dev, 0);
- 		zfiWlanEnable(dev);
--
- 		break;
--/****************************** ZDCONFIG ******************************/
--
--	default :
-+	/********************* ZDCONFIG ***********************/
-+	default:
- 		printk(KERN_ERR "usbdrv: error command = %x\n", cmd);
- 		break;
- 	}
-@@ -2121,793 +2039,736 @@ int zfLnxPrivateIoctl(struct net_device 
- 
- int usbdrv_wpa_ioctl(struct net_device *dev, struct athr_wlan_param *zdparm)
- {
--    int ret = 0;
--    u8_t bc_addr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
--    u8_t mac_addr[80];
--    struct zsKeyInfo keyInfo;
--    struct usbdrv_private *macp = dev->ml_priv;
--    u16_t vapId = 0;
--
--    //zmw_get_wlan_dev(dev);
--
--    switch(zdparm->cmd)
--    {
--        case ZD_CMD_SET_ENCRYPT_KEY:
--
--            /* Set up key information */
--            keyInfo.keyLength = zdparm->u.crypt.key_len;
--            keyInfo.keyIndex = zdparm->u.crypt.idx;
--            if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) // AP Mode
--                keyInfo.flag = ZM_KEY_FLAG_AUTHENTICATOR;
--            else
--                keyInfo.flag = 0;
--            keyInfo.key = zdparm->u.crypt.key;
--            keyInfo.initIv = zdparm->u.crypt.seq;
--            keyInfo.macAddr = (u16_t *)zdparm->sta_addr;
--
--            /* Identify the MAC address information */
--            if (memcmp(zdparm->sta_addr, bc_addr, sizeof(bc_addr)) == 0)
--            {
--                keyInfo.flag |= ZM_KEY_FLAG_GK;
--            }
--            else
--            {
--                keyInfo.flag |= ZM_KEY_FLAG_PK;
--            }
--
--            if (!strcmp(zdparm->u.crypt.alg, "NONE"))
--            {
--                //u8_t zero_mac[]={0,0,0,0,0,0};
--
--                /* Set key length to zero */
--                keyInfo.keyLength = 0;
--
--                if (zdparm->sta_addr[0] & 1)//del group key
--                {
--                    //if (macp->cardSetting.WPAIeLen==0)
--                    //{//802.1x dynamic WEP
--                    //    mDynKeyMode = 0;
--                    //    mKeyFormat[0] = 0;
--                    //    mPrivacyInvoked[0]=FALSE;
--                    //    mCap[0] &= ~CAP_PRIVACY;
--                    //    macp->cardSetting.EncryOnOff[0]=0;
--                    //}
--                    //mWpaBcKeyLen = mGkInstalled = 0;
--                }
--                else
--                {
--                    //if (memcmp(zero_mac,zdparm->sta_addr, 6)==0)
--                    //{
--                    //    mDynKeyMode=0;
--                    //    mKeyFormat[0]=0;
--                    //    pSetting->DynKeyMode=0;
--                    //    pSetting->EncryMode[0]=0;
--                    //    mDynKeyMode=0;
--                    //}
--                }
--
--                printk(KERN_ERR "Set Encryption Type NONE\n");
--                return ret;
--            }
--            else if (!strcmp(zdparm->u.crypt.alg, "TKIP"))
--            {
--                zfiWlanSetEncryMode(dev, ZM_TKIP);
--                //Linux Supplicant will inverse Tx/Rx key
--                //So we inverse it back //CWYang(+)
--                //zfMemoryCopy(&temp[0], &keyInfo.key[16], 8);
--                //zfMemoryCopy(&keyInfo.key[16], keyInfo.key[24], 8);
--                //zfMemoryCopy(&keyInfo.key[24], &temp[0], 8);
--                //u8_t temp;
--                //int k;
--                //for (k = 0; k < 8; k++)
--                //{
--                //    temp = keyInfo.key[16 + k];
--                //    keyInfo.key[16 + k] = keyInfo.key[24 + k];
--                //    keyInfo.key[24 + k] = temp;
--                //}
--                //CamEncryType = ZM_TKIP;
--                ////if (idx == 0)
--                //{// Pairwise key
--                //    mKeyFormat[0] = CamEncryType;
--                //    mDynKeyMode = pSetting->DynKeyMode = DYN_KEY_TKIP;
--                //}
--            }
--            else if (!strcmp(zdparm->u.crypt.alg, "CCMP"))
--            {
--                zfiWlanSetEncryMode(dev, ZM_AES);
--                //CamEncryType = ZM_AES;
--                ////if (idx == 0)
--                //{// Pairwise key
--                //    mKeyFormat[0] = CamEncryType;
--                //    mDynKeyMode = pSetting->DynKeyMode = DYN_KEY_AES;
--                //}
--            }
--            else if (!strcmp(zdparm->u.crypt.alg, "WEP"))
--            {
--                if (keyInfo.keyLength == 5)
--                { // WEP 64
--                    zfiWlanSetEncryMode(dev, ZM_WEP64);
--                //    CamEncryType = ZM_WEP64;
--                //    tmpDynKeyMode=DYN_KEY_WEP64;
--                }
--                else if (keyInfo.keyLength == 13)
--                {//keylen=13, WEP 128
--                    zfiWlanSetEncryMode(dev, ZM_WEP128);
--                //    CamEncryType = ZM_WEP128;
--                //    tmpDynKeyMode=DYN_KEY_WEP128;
--                }
--                else
--                {
--                    zfiWlanSetEncryMode(dev, ZM_WEP256);
--                }
--
--                // For Dynamic WEP key (Non-WPA Radius), the key ID range: 0-3
--                // In WPA/RSN mode, the key ID range: 1-3, usually, a broadcast key.
--                // For WEP key setting: we set mDynKeyMode and mKeyFormat in following case:
--                //   1. For 802.1x dynamically generated WEP key method.
--                //   2. For WPA/RSN mode, but key id == 0. (But this is an impossible case)
--                // So, only check case 1.
--                //if (macp->cardSetting.WPAIeLen==0)
--                //{
--                //    mKeyFormat[0] = CamEncryType;
--                //    mDynKeyMode = pSetting->DynKeyMode = tmpDynKeyMode;
--                //    mPrivacyInvoked[0]=TRUE;
--                //    mCap[0] |= CAP_PRIVACY;
--                //    macp->cardSetting.EncryOnOff[0]=1;
--                //}
--            }
--
--            /* DUMP key context */
--//#ifdef WPA_DEBUG
--            if (keyInfo.keyLength > 0)
--            {
--                int ii;
--                printk("Otus: Key Context:\n");
--                for(ii = 0; ii < keyInfo.keyLength;)
--                {
--                    printk("0x%02x ", keyInfo.key[ii]);
--                    if((++ii % 16) == 0)
--                        printk("\n");
--                }
--                printk("\n");
--            }
--//#endif
--
--            /* Set encrypt mode */
--            //zfiWlanSetEncryMode(dev, CamEncryType);
--            vapId = zfLnxGetVapId(dev);
--            if (vapId == 0xffff)
--                keyInfo.vapId = 0;
--            else
--                keyInfo.vapId = vapId + 1;
--            keyInfo.vapAddr[0] = keyInfo.macAddr[0];
--            keyInfo.vapAddr[1] = keyInfo.macAddr[1];
--            keyInfo.vapAddr[2] = keyInfo.macAddr[2];
--
--            zfiWlanSetKey(dev, keyInfo);
--
--            //zfiWlanDisable(dev);
--            //zfiWlanEnable(dev);
--            break;
--
--        case ZD_CMD_SET_MLME:
--            printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_SET_MLME\n");
--
--            /* Translate STA's address */
--            sprintf(mac_addr, "%02x:%02x:%02x:%02x:%02x:%02x", zdparm->sta_addr[0], zdparm->sta_addr[1],
--                zdparm->sta_addr[2], zdparm->sta_addr[3], zdparm->sta_addr[4], zdparm->sta_addr[5]);
--
--            switch(zdparm->u.mlme.cmd)
--            {
--                case MLME_STA_DEAUTH:
--                    printk(" -------Call zfiWlanDeauth, reason:%d\n",zdparm->u.mlme.reason_code);
--                    if(zfiWlanDeauth(dev, (u16_t*) zdparm->sta_addr, zdparm->u.mlme.reason_code) != 0)
--                        printk(KERN_ERR "Can't deauthencate STA: %s\n", mac_addr);
--                    else
--                        printk(KERN_ERR "Deauthenticate STA: %s with reason code: %d\n", mac_addr, zdparm->u.mlme.reason_code);
--                    break;
--
--                case MLME_STA_DISASSOC:
--                    printk(" -------Call zfiWlanDeauth, reason:%d\n",zdparm->u.mlme.reason_code);
--                    if(zfiWlanDeauth(dev, (u16_t*) zdparm->sta_addr, zdparm->u.mlme.reason_code) != 0)
--                        printk(KERN_ERR "Can't disassociate STA: %s\n", mac_addr);
--                    else
--                        printk(KERN_ERR "Disassociate STA: %s with reason code: %d\n", mac_addr, zdparm->u.mlme.reason_code);
--                    break;
--
--                default:
--                    printk(KERN_ERR "MLME command: 0x%04x not support\n", zdparm->u.mlme.cmd);
--                    break;
--            }
--
--            break;
--
--        case ZD_CMD_SCAN_REQ:
--            printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_SCAN_REQ\n");
--            break;
--
--        case ZD_CMD_SET_GENERIC_ELEMENT:
--            printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_SET_GENERIC_ELEMENT\n");
--
--            /* Copy the WPA IE */
--            //zm_msg1_mm(ZM_LV_0, "CWY - wpaie Length : ", zdparm->u.generic_elem.len);
--            printk(KERN_ERR "wpaie Length : %d\n", zdparm->u.generic_elem.len);
--            if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) // AP Mode
--            {
--                zfiWlanSetWpaIe(dev, zdparm->u.generic_elem.data, zdparm->u.generic_elem.len);
--            }
--            else
--            {
--                macp->supLen = zdparm->u.generic_elem.len;
--                memcpy(macp->supIe, zdparm->u.generic_elem.data, zdparm->u.generic_elem.len);
--            }
--            zfiWlanSetWpaSupport(dev, 1);
--            //zfiWlanSetWpaIe(dev, zdparm->u.generic_elem.data, zdparm->u.generic_elem.len);
--            {
--                int ii;
--                u8_t len = zdparm->u.generic_elem.len;
--                u8_t *wpaie = (u8_t *)zdparm->u.generic_elem.data;
--
--                printk(KERN_ERR "wd->ap.wpaLen: %d\n", len);
--
--                /* DUMP WPA IE */
--                for(ii = 0; ii < len;)
--                {
--                    printk(KERN_ERR "0x%02x ", wpaie[ii]);
--
--                    if((++ii % 16) == 0)
--                        printk(KERN_ERR "\n");
--                }
--                printk(KERN_ERR "\n");
--            }
--
--//            #ifdef ZM_HOSTAPD_SUPPORT
--            //if (wd->wlanMode == ZM_MODE_AP)
--            //{// Update Beacon FIFO in the next TBTT.
--            //    memcpy(&mWPAIe, pSetting->WPAIe, pSetting->WPAIeLen);
--            //    printk(KERN_ERR "Copy WPA IE into mWPAIe\n");
--            //}
--//            #endif
--            break;
--
--//        #ifdef ZM_HOSTAPD_SUPPORT
--        case ZD_CMD_GET_TSC:
--            printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_GET_TSC\n");
--            break;
--//        #endif
--
--        default:
--            printk(KERN_ERR "usbdrv_wpa_ioctl default: 0x%04x\n", zdparm->cmd);
--            ret = -EINVAL;
--            break;
--    }
-+	int ret = 0;
-+	u8_t bc_addr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-+	u8_t mac_addr[80];
-+	struct zsKeyInfo keyInfo;
-+	struct usbdrv_private *macp = dev->ml_priv;
-+	u16_t vapId = 0;
-+
-+	/* zmw_get_wlan_dev(dev); */
-+
-+	switch (zdparm->cmd) {
-+	case ZD_CMD_SET_ENCRYPT_KEY:
-+		/* Set up key information */
-+		keyInfo.keyLength = zdparm->u.crypt.key_len;
-+		keyInfo.keyIndex = zdparm->u.crypt.idx;
-+		if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) {
-+			/* AP Mode */
-+			keyInfo.flag = ZM_KEY_FLAG_AUTHENTICATOR;
-+		} else
-+			keyInfo.flag = 0;
-+		keyInfo.key = zdparm->u.crypt.key;
-+		keyInfo.initIv = zdparm->u.crypt.seq;
-+		keyInfo.macAddr = (u16_t *)zdparm->sta_addr;
-+
-+		/* Identify the MAC address information */
-+		if (memcmp(zdparm->sta_addr, bc_addr, sizeof(bc_addr)) == 0)
-+			keyInfo.flag |= ZM_KEY_FLAG_GK;
-+		else
-+			keyInfo.flag |= ZM_KEY_FLAG_PK;
-+
-+		if (!strcmp(zdparm->u.crypt.alg, "NONE")) {
-+			/* u8_t zero_mac[]={0,0,0,0,0,0}; */
-+
-+			/* Set key length to zero */
-+			keyInfo.keyLength = 0;
-+
-+			/* del group key */
-+			if (zdparm->sta_addr[0] & 1) {
-+				/* if (macp->cardSetting.WPAIeLen==0)
-+				* { 802.1x dynamic WEP
-+				*    mDynKeyMode = 0;
-+				*    mKeyFormat[0] = 0;
-+				*    mPrivacyInvoked[0]=FALSE;
-+				*    mCap[0] &= ~CAP_PRIVACY;
-+				*    macp->cardSetting.EncryOnOff[0]=0;
-+				* }
-+				* mWpaBcKeyLen = mGkInstalled = 0;
-+				*/
-+			} else {
-+				/* if (memcmp(zero_mac,zdparm->sta_addr, 6)==0)
-+				* {
-+				*     mDynKeyMode=0;
-+				*    mKeyFormat[0]=0;
-+				*    pSetting->DynKeyMode=0;
-+				*    pSetting->EncryMode[0]=0;
-+				*    mDynKeyMode=0;
-+				* }
-+				*/
-+			}
-+
-+			printk(KERN_ERR "Set Encryption Type NONE\n");
-+			return ret;
-+		} else if (!strcmp(zdparm->u.crypt.alg, "TKIP")) {
-+			zfiWlanSetEncryMode(dev, ZM_TKIP);
-+			/* //Linux Supplicant will inverse Tx/Rx key
-+			* //So we inverse it back, CWYang(+)
-+			* zfMemoryCopy(&temp[0], &keyInfo.key[16], 8);
-+			* zfMemoryCopy(&keyInfo.key[16], keyInfo.key[24], 8);
-+			* zfMemoryCopy(&keyInfo.key[24], &temp[0], 8);
-+			* u8_t temp;
-+			* int k;
-+			* for (k = 0; k < 8; k++)
-+			* {
-+			*     temp = keyInfo.key[16 + k];
-+			*     keyInfo.key[16 + k] = keyInfo.key[24 + k];
-+			*     keyInfo.key[24 + k] = temp;
-+			* }
-+			* CamEncryType = ZM_TKIP;
-+			* if (idx == 0)
-+			* {   // Pairwise key
-+			*     mKeyFormat[0] = CamEncryType;
-+			*     mDynKeyMode = pSetting->DynKeyMode = DYN_KEY_TKIP;
-+			* }
-+			*/
-+		} else if (!strcmp(zdparm->u.crypt.alg, "CCMP")) {
-+			zfiWlanSetEncryMode(dev, ZM_AES);
-+			/* CamEncryType = ZM_AES;
-+			* if (idx == 0)
-+			* {  // Pairwise key
-+			*    mKeyFormat[0] = CamEncryType;
-+			*    mDynKeyMode = pSetting->DynKeyMode = DYN_KEY_AES;
-+			* }
-+			*/
-+		} else if (!strcmp(zdparm->u.crypt.alg, "WEP")) {
-+			if (keyInfo.keyLength == 5) {
-+				/* WEP 64 */
-+				zfiWlanSetEncryMode(dev, ZM_WEP64);
-+				/* CamEncryType = ZM_WEP64; */
-+				/* tmpDynKeyMode=DYN_KEY_WEP64; */
-+			} else if (keyInfo.keyLength == 13) {
-+				/* keylen=13, WEP 128 */
-+				zfiWlanSetEncryMode(dev, ZM_WEP128);
-+				/* CamEncryType = ZM_WEP128; */
-+				/* tmpDynKeyMode=DYN_KEY_WEP128; */
-+			} else {
-+				zfiWlanSetEncryMode(dev, ZM_WEP256);
-+			}
-+
-+	/* For Dynamic WEP key (Non-WPA Radius), the key ID range: 0-3
-+	* In WPA/RSN mode, the key ID range: 1-3, usually, a broadcast key.
-+	* For WEP key setting: we set mDynKeyMode and mKeyFormat in following
-+	* case:
-+	*   1. For 802.1x dynamically generated WEP key method.
-+	*   2. For WPA/RSN mode, but key id == 0.
-+	*	(But this is an impossible case)
-+	* So, only check case 1.
-+	* if (macp->cardSetting.WPAIeLen==0)
-+	* {
-+	*    mKeyFormat[0] = CamEncryType;
-+	*    mDynKeyMode = pSetting->DynKeyMode = tmpDynKeyMode;
-+	*    mPrivacyInvoked[0]=TRUE;
-+	*    mCap[0] |= CAP_PRIVACY;
-+	*    macp->cardSetting.EncryOnOff[0]=1;
-+	* }
-+	*/
-+		}
-+
-+		/* DUMP key context */
-+		/* #ifdef WPA_DEBUG */
-+		if (keyInfo.keyLength > 0) {
-+			int ii;
-+			printk(KERN_WARNING
-+						"Otus: Key Context:\n");
-+			for (ii = 0; ii < keyInfo.keyLength; ) {
-+				printk(KERN_WARNING
-+						"0x%02x ", keyInfo.key[ii]);
-+				if ((++ii % 16) == 0)
-+					printk(KERN_WARNING "\n");
-+			}
-+			printk(KERN_WARNING "\n");
-+		}
-+		/* #endif */
-+
-+		/* Set encrypt mode */
-+		/* zfiWlanSetEncryMode(dev, CamEncryType); */
-+		vapId = zfLnxGetVapId(dev);
-+		if (vapId == 0xffff)
-+			keyInfo.vapId = 0;
-+		else
-+			keyInfo.vapId = vapId + 1;
-+		keyInfo.vapAddr[0] = keyInfo.macAddr[0];
-+		keyInfo.vapAddr[1] = keyInfo.macAddr[1];
-+		keyInfo.vapAddr[2] = keyInfo.macAddr[2];
-+
-+		zfiWlanSetKey(dev, keyInfo);
-+
-+		/* zfiWlanDisable(dev); */
-+		/* zfiWlanEnable(dev); */
-+		break;
-+	case ZD_CMD_SET_MLME:
-+		printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_SET_MLME\n");
- 
--    return ret;
-+		/* Translate STA's address */
-+		sprintf(mac_addr, "%02x:%02x:%02x:%02x:%02x:%02x",
-+			zdparm->sta_addr[0], zdparm->sta_addr[1],
-+			zdparm->sta_addr[2], zdparm->sta_addr[3],
-+			zdparm->sta_addr[4], zdparm->sta_addr[5]);
-+
-+		switch (zdparm->u.mlme.cmd) {
-+		case MLME_STA_DEAUTH:
-+			printk(KERN_WARNING
-+				" -------Call zfiWlanDeauth, reason:%d\n",
-+				zdparm->u.mlme.reason_code);
-+			if (zfiWlanDeauth(dev, (u16_t *) zdparm->sta_addr,
-+				zdparm->u.mlme.reason_code) != 0)
-+				printk(KERN_ERR "Can't deauthencate STA: %s\n",
-+					mac_addr);
-+			else
-+				printk(KERN_ERR "Deauthenticate STA: %s"
-+					"with reason code: %d\n",
-+					mac_addr, zdparm->u.mlme.reason_code);
-+			break;
-+		case MLME_STA_DISASSOC:
-+			printk(KERN_WARNING
-+				" -------Call zfiWlanDeauth, reason:%d\n",
-+				zdparm->u.mlme.reason_code);
-+			if (zfiWlanDeauth(dev, (u16_t *) zdparm->sta_addr,
-+				zdparm->u.mlme.reason_code) != 0)
-+				printk(KERN_ERR "Can't disassociate STA: %s\n",
-+					mac_addr);
-+			else
-+				printk(KERN_ERR "Disassociate STA: %s"
-+					"with reason code: %d\n",
-+					mac_addr, zdparm->u.mlme.reason_code);
-+			break;
-+		default:
-+			printk(KERN_ERR "MLME command: 0x%04x not support\n",
-+				zdparm->u.mlme.cmd);
-+			break;
-+		}
-+
-+		break;
-+	case ZD_CMD_SCAN_REQ:
-+		printk(KERN_ERR "usbdrv_wpa_ioctl: ZD_CMD_SCAN_REQ\n");
-+		break;
-+	case ZD_CMD_SET_GENERIC_ELEMENT:
-+		printk(KERN_ERR "usbdrv_wpa_ioctl:"
-+					" ZD_CMD_SET_GENERIC_ELEMENT\n");
-+
-+		/* Copy the WPA IE
-+		* zm_msg1_mm(ZM_LV_0, "CWY - wpaie Length : ",
-+		* zdparm->u.generic_elem.len);
-+		*/
-+		printk(KERN_ERR "wpaie Length : % d\n",
-+						zdparm->u.generic_elem.len);
-+		if (zfiWlanQueryWlanMode(dev) == ZM_MODE_AP) {
-+			/* AP Mode */
-+			zfiWlanSetWpaIe(dev, zdparm->u.generic_elem.data,
-+					zdparm->u.generic_elem.len);
-+		} else {
-+			macp->supLen = zdparm->u.generic_elem.len;
-+			memcpy(macp->supIe, zdparm->u.generic_elem.data,
-+				zdparm->u.generic_elem.len);
-+		}
-+		zfiWlanSetWpaSupport(dev, 1);
-+		/* zfiWlanSetWpaIe(dev, zdparm->u.generic_elem.data,
-+		* zdparm->u.generic_elem.len);
-+		*/
-+		int ii;
-+		u8_t len = zdparm->u.generic_elem.len;
-+		u8_t *wpaie = (u8_t *)zdparm->u.generic_elem.data;
-+
-+		printk(KERN_ERR "wd->ap.wpaLen : % d\n", len);
-+
-+		/* DUMP WPA IE */
-+		for(ii = 0; ii < len;) {
-+			printk(KERN_ERR "0x%02x ", wpaie[ii]);
-+
-+			if((++ii % 16) == 0)
-+				printk(KERN_ERR "\n");
-+		}
-+		printk(KERN_ERR "\n");
-+
-+		/* #ifdef ZM_HOSTAPD_SUPPORT
-+		* if (wd->wlanMode == ZM_MODE_AP)
-+		* {// Update Beacon FIFO in the next TBTT.
-+		*     memcpy(&mWPAIe, pSetting->WPAIe, pSetting->WPAIeLen);
-+		*     printk(KERN_ERR "Copy WPA IE into mWPAIe\n");
-+		* }
-+		* #endif
-+		*/
-+		break;
-+
-+	/* #ifdef ZM_HOSTAPD_SUPPORT */
-+	case ZD_CMD_GET_TSC:
-+		printk(KERN_ERR "usbdrv_wpa_ioctl : ZD_CMD_GET_TSC\n");
-+		break;
-+	/* #endif */
-+
-+	default:
-+		printk(KERN_ERR "usbdrv_wpa_ioctl default : 0x%04x\n",
-+			zdparm->cmd);
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	return ret;
- }
- 
- #ifdef ZM_ENABLE_CENC
- int usbdrv_cenc_ioctl(struct net_device *dev, struct zydas_cenc_param *zdparm)
- {
--    //struct usbdrv_private *macp = dev->ml_priv;
--    struct zsKeyInfo keyInfo;
--    u16_t apId;
--    u8_t bc_addr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
--    int ret = 0;
--    int ii;
--
--    /* Get the AP Id */
--    apId = zfLnxGetVapId(dev);
--
--    if (apId == 0xffff)
--    {
--        apId = 0;
--    }
--    else
--    {
--        apId = apId+1;
--    }
--
--    switch (zdparm->cmd)
--    {
--        case ZM_CMD_CENC_SETCENC:
--            printk(KERN_ERR "ZM_CMD_CENC_SETCENC\n");
--            printk(KERN_ERR "length: %d\n", zdparm->len);
--            printk(KERN_ERR "policy: %d\n", zdparm->u.info.cenc_policy);
--            break;
--        case ZM_CMD_CENC_SETKEY:
--            //ret = wai_ioctl_setkey(vap, ioctl_msg);
--            printk(KERN_ERR "ZM_CMD_CENC_SETKEY\n");
--
--            printk(KERN_ERR "MAC address= ");
--            for(ii = 0; ii < 6; ii++)
--            {
--                printk(KERN_ERR "0x%02x ", zdparm->u.crypt.sta_addr[ii]);
--            }
--            printk(KERN_ERR "\n");
--
--            printk(KERN_ERR "Key Index: %d\n", zdparm->u.crypt.keyid);
--            printk(KERN_ERR "Encryption key= ");
--            for(ii = 0; ii < 16; ii++)
--            {
--                printk(KERN_ERR "0x%02x ", zdparm->u.crypt.key[ii]);
--            }
--            printk(KERN_ERR "\n");
--
--            printk(KERN_ERR "MIC key= ");
--            for(ii = 16; ii < ZM_CENC_KEY_SIZE; ii++)
--            {
--                printk(KERN_ERR "0x%02x ", zdparm->u.crypt.key[ii]);
--            }
--            printk(KERN_ERR "\n");
--
--            /* Set up key information */
--            keyInfo.keyLength = ZM_CENC_KEY_SIZE;
--            keyInfo.keyIndex = zdparm->u.crypt.keyid;
--            keyInfo.flag = ZM_KEY_FLAG_AUTHENTICATOR | ZM_KEY_FLAG_CENC;
--            keyInfo.key = zdparm->u.crypt.key;
--            keyInfo.macAddr = (u16_t *)zdparm->u.crypt.sta_addr;
--
--            /* Identify the MAC address information */
--            if (memcmp(zdparm->u.crypt.sta_addr, bc_addr, sizeof(bc_addr)) == 0)
--            {
--                keyInfo.flag |= ZM_KEY_FLAG_GK;
--                keyInfo.vapId = apId;
--                memcpy(keyInfo.vapAddr, dev->dev_addr, ETH_ALEN);
--            }
--            else
--            {
--                keyInfo.flag |= ZM_KEY_FLAG_PK;
--            }
--
--            zfiWlanSetKey(dev, keyInfo);
--
--            break;
--        case ZM_CMD_CENC_REKEY:
--            //ret = wai_ioctl_rekey(vap, ioctl_msg);
--            printk(KERN_ERR "ZM_CMD_CENC_REKEY\n");
--            break;
--        default:
--            ret = -EOPNOTSUPP;
--            break;
--
--    }
--
--    //if (retv == ENETRESET)
--    //    retv = IS_UP_AUTO(vap) ? ieee80211_open(vap->iv_dev) : 0;
-+	/* struct usbdrv_private *macp = dev->ml_priv; */
-+	struct zsKeyInfo keyInfo;
-+	u16_t apId;
-+	u8_t bc_addr[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
-+	int ret = 0;
-+	int ii;
-+
-+	/* Get the AP Id */
-+	apId = zfLnxGetVapId(dev);
-+
-+	if (apId == 0xffff) {
-+		apId = 0;
-+	} else {
-+		apId = apId + 1;
-+	}
- 
--    return ret;
--}
--#endif //ZM_ENABLE_CENC
--/////////////////////////////////////////
--int usbdrv_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
--{
--//    struct usbdrv_private *macp;
--//    void *regp;
--    struct zdap_ioctl zdreq;
--    struct iwreq *wrq = (struct iwreq *)ifr;
--    struct athr_wlan_param zdparm;
--    struct usbdrv_private *macp = dev->ml_priv;
-+	switch (zdparm->cmd) {
-+	case ZM_CMD_CENC_SETCENC:
-+		printk(KERN_ERR "ZM_CMD_CENC_SETCENC\n");
-+		printk(KERN_ERR "length : % d\n", zdparm->len);
-+		printk(KERN_ERR "policy : % d\n", zdparm->u.info.cenc_policy);
-+		break;
-+	case ZM_CMD_CENC_SETKEY:
-+		/* ret = wai_ioctl_setkey(vap, ioctl_msg); */
-+		printk(KERN_ERR "ZM_CMD_CENC_SETKEY\n");
-+
-+		printk(KERN_ERR "MAC address = ");
-+		for (ii = 0; ii < 6; ii++) {
-+			printk(KERN_ERR "0x%02x ",
-+				zdparm->u.crypt.sta_addr[ii]);
-+		}
-+		printk(KERN_ERR "\n");
- 
--    int err = 0;
--    int changed = 0;
-+		printk(KERN_ERR "Key Index : % d\n", zdparm->u.crypt.keyid);
-+		printk(KERN_ERR "Encryption key = ");
-+		for (ii = 0; ii < 16; ii++) {
-+			printk(KERN_ERR "0x%02x ", zdparm->u.crypt.key[ii]);
-+		}
-+		printk(KERN_ERR "\n");
- 
--//    regp = macp->regp;
-+		printk(KERN_ERR "MIC key = ");
-+		for(ii = 16; ii < ZM_CENC_KEY_SIZE; ii++) {
-+			printk(KERN_ERR "0x%02x ", zdparm->u.crypt.key[ii]);
-+		}
-+		printk(KERN_ERR "\n");
- 
--    if(!netif_running(dev))
--        return -EINVAL;
-+		/* Set up key information */
-+		keyInfo.keyLength = ZM_CENC_KEY_SIZE;
-+		keyInfo.keyIndex = zdparm->u.crypt.keyid;
-+		keyInfo.flag = ZM_KEY_FLAG_AUTHENTICATOR | ZM_KEY_FLAG_CENC;
-+		keyInfo.key = zdparm->u.crypt.key;
-+		keyInfo.macAddr = (u16_t *)zdparm->u.crypt.sta_addr;
-+
-+		/* Identify the MAC address information */
-+		if (memcmp(zdparm->u.crypt.sta_addr, bc_addr,
-+				sizeof(bc_addr)) == 0) {
-+			keyInfo.flag |= ZM_KEY_FLAG_GK;
-+			keyInfo.vapId = apId;
-+			memcpy(keyInfo.vapAddr, dev->dev_addr, ETH_ALEN);
-+		} else {
-+			keyInfo.flag |= ZM_KEY_FLAG_PK;
-+		}
- 
--    switch (cmd)
--    {
--            case SIOCGIWNAME:
--            strcpy(wrq->u.name, "IEEE 802.11-DS");
--            break;
-+		zfiWlanSetKey(dev, keyInfo);
- 
--        case SIOCGIWAP:
--            err = usbdrvwext_giwap(dev, NULL, &wrq->u.ap_addr, NULL);
--            break;
-+		break;
-+	case ZM_CMD_CENC_REKEY:
-+		/* ret = wai_ioctl_rekey(vap, ioctl_msg); */
-+		printk(KERN_ERR "ZM_CMD_CENC_REKEY\n");
-+		break;
-+	default:
-+		ret = -EOPNOTSUPP;
-+		break;
-+	}
- 
-+	/* if (retv == ENETRESET) */
-+	/* retv = IS_UP_AUTO(vap) ? ieee80211_open(vap->iv_dev) : 0; */
- 
--        case SIOCSIWAP:
--            err = usbdrvwext_siwap(dev, NULL, &wrq->u.ap_addr, NULL);
--            break;
-+	return ret;
-+}
-+#endif /* ZM_ENABLE_CENC */
- 
-+int usbdrv_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
-+{
-+	/* struct usbdrv_private *macp; */
-+	/* void *regp; */
-+	struct zdap_ioctl zdreq;
-+	struct iwreq *wrq = (struct iwreq *)ifr;
-+	struct athr_wlan_param zdparm;
-+	struct usbdrv_private *macp = dev->ml_priv;
- 
--        case SIOCGIWMODE:
--            err = usbdrvwext_giwmode(dev, NULL, &wrq->u.mode, NULL);
--            break;
-+	int err = 0;
-+	int changed = 0;
- 
-+	/* regp = macp->regp; */
- 
--        case SIOCSIWESSID:
--            printk(KERN_ERR "CWY - usbdrvwext_siwessid\n");
--            //err = usbdrv_ioctl_setessid(dev, &wrq->u.essid);
--            err = usbdrvwext_siwessid(dev, NULL, &wrq->u.essid, NULL);
-+	if (!netif_running(dev))
-+		return -EINVAL;
- 
--            if (! err)
--                changed = 1;
--            break;
-+	switch (cmd) {
-+	case SIOCGIWNAME:
-+		strcpy(wrq->u.name, "IEEE 802.11-DS");
-+		break;
-+	case SIOCGIWAP:
-+		err = usbdrvwext_giwap(dev, NULL, &wrq->u.ap_addr, NULL);
-+		break;
-+	case SIOCSIWAP:
-+		err = usbdrvwext_siwap(dev, NULL, &wrq->u.ap_addr, NULL);
-+		break;
-+	case SIOCGIWMODE:
-+		err = usbdrvwext_giwmode(dev, NULL, &wrq->u.mode, NULL);
-+		break;
-+	case SIOCSIWESSID:
-+		printk(KERN_ERR "CWY - usbdrvwext_siwessid\n");
-+		/* err = usbdrv_ioctl_setessid(dev, &wrq->u.essid); */
-+		err = usbdrvwext_siwessid(dev, NULL, &wrq->u.essid, NULL);
- 
-+		if (!err)
-+			changed = 1;
-+		break;
-+	case SIOCGIWESSID:
-+		err = usbdrvwext_giwessid(dev, NULL, &wrq->u.essid, NULL);
-+		break;
-+	case SIOCSIWRTS:
-+		err = usbdrv_ioctl_setrts(dev, &wrq->u.rts);
-+		if (! err)
-+			changed = 1;
-+		break;
-+	/* set_auth */
-+	case SIOCIWFIRSTPRIV + 0x2: {
-+		/* printk("CWY - SIOCIWFIRSTPRIV + 0x2(set_auth)\n"); */
-+		if (!capable(CAP_NET_ADMIN)) {
-+			err = -EPERM;
-+			break;
-+		}
-+		int val = *((int *) wrq->u.name);
-+		if ((val < 0) || (val > 2)) {
-+			err = -EINVAL;
-+			break;
-+		} else {
-+			zfiWlanSetAuthenticationMode(dev, val);
- 
--        case SIOCGIWESSID:
--            err = usbdrvwext_giwessid(dev, NULL, &wrq->u.essid, NULL);
--            break;
-+			if (macp->DeviceOpened == 1) {
-+				zfiWlanDisable(dev, 0);
-+				zfiWlanEnable(dev);
-+			}
- 
-+			err = 0;
-+			changed = 1;
-+		}
-+	}
-+		break;
-+	/* get_auth */
-+	case SIOCIWFIRSTPRIV + 0x3: {
-+		int AuthMode = ZM_AUTH_MODE_OPEN;
- 
--        case SIOCSIWRTS:
-+		/* printk("CWY - SIOCIWFIRSTPRIV + 0x3(get_auth)\n"); */
- 
--            err = usbdrv_ioctl_setrts(dev, &wrq->u.rts);
--            if (! err)
--                changed = 1;
--            break;
-+		if (wrq->u.data.pointer) {
-+			wrq->u.data.flags = 1;
- 
-+			AuthMode = zfiWlanQueryAuthenticationMode(dev, 0);
-+			if (AuthMode == ZM_AUTH_MODE_OPEN) {
-+				wrq->u.data.length = 12;
- 
--		case SIOCIWFIRSTPRIV + 0x2: /* set_auth */
--		{
--			//printk("CWY - SIOCIWFIRSTPRIV + 0x2 (set_auth)\n");
--			if (! capable(CAP_NET_ADMIN))
--			{
--				err = -EPERM;
--				break;
--			}
--			{
--				int val = *( (int *) wrq->u.name );
--				if ((val < 0) || (val > 2))
--				{
--					err = -EINVAL;
--					break;
-+				if (copy_to_user(wrq->u.data.pointer,
-+					"open system", 12)) {
-+						return -EFAULT;
- 				}
--				else
--				{
--					zfiWlanSetAuthenticationMode(dev, val);
-+			} else if (AuthMode == ZM_AUTH_MODE_SHARED_KEY)	{
-+				wrq->u.data.length = 11;
- 
--                    if (macp->DeviceOpened == 1)
--                    {
--                        zfiWlanDisable(dev, 0);
--                        zfiWlanEnable(dev);
--                    }
-+				if (copy_to_user(wrq->u.data.pointer,
-+					"shared key", 11)) {
-+							return -EFAULT;
-+				}
-+			} else if (AuthMode == ZM_AUTH_MODE_AUTO) {
-+				wrq->u.data.length = 10;
- 
--					err = 0;
--					changed = 1;
-+				if (copy_to_user(wrq->u.data.pointer,
-+					"auto mode", 10)) {
-+							return -EFAULT;
- 				}
-+			} else {
-+				return -EFAULT;
- 			}
- 		}
--			break;
-+	}
-+		break;
-+	/* debug command */
-+	case ZDAPIOCTL:
-+		if (copy_from_user(&zdreq, ifr->ifr_data, sizeof(zdreq))) {
-+			printk(KERN_ERR "usbdrv : copy_from_user error\n");
-+			return -EFAULT;
-+		}
- 
--		case SIOCIWFIRSTPRIV + 0x3: /* get_auth */
--		{
--		    int AuthMode = ZM_AUTH_MODE_OPEN;
--
--			//printk("CWY - SIOCIWFIRSTPRIV + 0x3 (get_auth)\n");
--
--			if (wrq->u.data.pointer)
--			{
--				wrq->u.data.flags = 1;
-+		/* printk(KERN_WARNING
-+		* "usbdrv : cmd = % 2x, reg = 0x%04lx,
-+		*value = 0x%08lx\n",
-+		* zdreq.cmd, zdreq.addr, zdreq.value);
-+		*/
-+		zfLnxPrivateIoctl(dev, &zdreq);
- 
--				AuthMode = zfiWlanQueryAuthenticationMode(dev, 0);
--				if (AuthMode == ZM_AUTH_MODE_OPEN)
--				{
--					wrq->u.data.length = 12;
-+		err = 0;
-+		break;
-+	case ZD_IOCTL_WPA:
-+		if (copy_from_user(&zdparm, ifr->ifr_data,
-+			sizeof(struct athr_wlan_param))) {
-+			printk(KERN_ERR "usbdrv : copy_from_user error\n");
-+			return -EFAULT;
-+		}
- 
--					if (copy_to_user(wrq->u.data.pointer, "open system", 12))
--					{
--						return -EFAULT;
--					}
--				}
--				else if (AuthMode == ZM_AUTH_MODE_SHARED_KEY)
--				{
--					wrq->u.data.length = 11;
-+		usbdrv_wpa_ioctl(dev, &zdparm);
-+		err = 0;
-+		break;
-+	case ZD_IOCTL_PARAM: {
-+		int *p;
-+		int op;
-+		int arg;
-+
-+		/* Point to the name field and retrieve the
-+		* op and arg elements.
-+		*/
-+		p = (int *)wrq->u.name;
-+		op = *p++;
-+		arg = *p;
-+
-+		if (op == ZD_PARAM_ROAMING) {
-+			printk(KERN_ERR
-+			"*************ZD_PARAM_ROAMING : % d\n", arg);
-+			/* macp->cardSetting.ap_scan=(U8)arg; */
-+		}
-+		if (op == ZD_PARAM_PRIVACY) {
-+			printk(KERN_ERR "ZD_IOCTL_PRIVACY : ");
- 
--					if (copy_to_user(wrq->u.data.pointer, "shared key", 11))
--					{
--						return -EFAULT;
--					}
--				}
--				else if (AuthMode == ZM_AUTH_MODE_AUTO)
--				{
--					wrq->u.data.length = 10;
-+			/* Turn on the privacy invoke flag */
-+			if (arg) {
-+				/* mCap[0] |= CAP_PRIVACY; */
-+				/* macp->cardSetting.EncryOnOff[0] = 1; */
-+				printk(KERN_ERR "enable\n");
-+
-+			} else {
-+				/* mCap[0] &= ~CAP_PRIVACY; */
-+				/* macp->cardSetting.EncryOnOff[0] = 0; */
-+				printk(KERN_ERR "disable\n");
-+			}
-+			/* changed=1; */
-+		}
-+		if (op == ZD_PARAM_WPA) {
-+
-+		printk(KERN_ERR "ZD_PARAM_WPA : ");
- 
--					if (copy_to_user(wrq->u.data.pointer, "auto mode", 10))
-+		if (arg) {
-+			printk(KERN_ERR "enable\n");
-+
-+			if (zfiWlanQueryWlanMode(dev) != ZM_MODE_AP) {
-+				printk(KERN_ERR "Station Mode\n");
-+				/* zfiWlanQueryWpaIe(dev, (u8_t *)
-+					&wpaIe, &wpalen); */
-+				/* printk("wpaIe : % 2x, % 2x, % 2x\n",
-+					wpaIe[21], wpaIe[22], wpaIe[23]); */
-+				/* printk("rsnIe : % 2x, % 2x, % 2x\n",
-+					wpaIe[17], wpaIe[18], wpaIe[19]); */
-+				if ((macp->supIe[21] == 0x50) &&
-+					(macp->supIe[22] == 0xf2) &&
-+					(macp->supIe[23] == 0x2)) {
-+					printk(KERN_ERR
-+				"wd->sta.authMode = ZM_AUTH_MODE_WPAPSK\n");
-+				/* wd->sta.authMode = ZM_AUTH_MODE_WPAPSK; */
-+				/* wd->ws.authMode = ZM_AUTH_MODE_WPAPSK; */
-+				zfiWlanSetAuthenticationMode(dev,
-+							ZM_AUTH_MODE_WPAPSK);
-+				} else if ((macp->supIe[21] == 0x50) &&
-+					(macp->supIe[22] == 0xf2) &&
-+					(macp->supIe[23] == 0x1)) {
-+					printk(KERN_ERR
-+				"wd->sta.authMode = ZM_AUTH_MODE_WPA\n");
-+				/* wd->sta.authMode = ZM_AUTH_MODE_WPA; */
-+				/* wd->ws.authMode = ZM_AUTH_MODE_WPA; */
-+				zfiWlanSetAuthenticationMode(dev,
-+							ZM_AUTH_MODE_WPA);
-+					} else if ((macp->supIe[17] == 0xf) &&
-+						(macp->supIe[18] == 0xac) &&
-+						(macp->supIe[19] == 0x2))
- 					{
--						return -EFAULT;
--					}
--				}
--				else
-+						printk(KERN_ERR
-+				"wd->sta.authMode = ZM_AUTH_MODE_WPA2PSK\n");
-+				/* wd->sta.authMode = ZM_AUTH_MODE_WPA2PSK; */
-+				/* wd->ws.authMode = ZM_AUTH_MODE_WPA2PSK; */
-+				zfiWlanSetAuthenticationMode(dev,
-+				ZM_AUTH_MODE_WPA2PSK);
-+			} else if ((macp->supIe[17] == 0xf) &&
-+				(macp->supIe[18] == 0xac) &&
-+				(macp->supIe[19] == 0x1))
- 				{
--					return -EFAULT;
-+					printk(KERN_ERR
-+				"wd->sta.authMode = ZM_AUTH_MODE_WPA2\n");
-+				/* wd->sta.authMode = ZM_AUTH_MODE_WPA2; */
-+				/* wd->ws.authMode = ZM_AUTH_MODE_WPA2; */
-+				zfiWlanSetAuthenticationMode(dev,
-+							ZM_AUTH_MODE_WPA2);
-+			}
-+			/* WPA or WPAPSK */
-+			if ((macp->supIe[21] == 0x50) ||
-+				(macp->supIe[22] == 0xf2)) {
-+				if (macp->supIe[11] == 0x2) {
-+					printk(KERN_ERR
-+				"wd->sta.wepStatus = ZM_ENCRYPTION_TKIP\n");
-+				/* wd->sta.wepStatus = ZM_ENCRYPTION_TKIP; */
-+				/* wd->ws.wepStatus = ZM_ENCRYPTION_TKIP; */
-+				zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_TKIP);
-+			} else {
-+				printk(KERN_ERR
-+				"wd->sta.wepStatus = ZM_ENCRYPTION_AES\n");
-+				/* wd->sta.wepStatus = ZM_ENCRYPTION_AES; */
-+				/* wd->ws.wepStatus = ZM_ENCRYPTION_AES; */
-+				zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_AES);
- 				}
- 			}
-+			//WPA2 or WPA2PSK
-+			if ((macp->supIe[17] == 0xf) ||
-+				(macp->supIe[18] == 0xac)) {
-+				if (macp->supIe[13] == 0x2) {
-+					printk(KERN_ERR
-+				"wd->sta.wepStatus = ZM_ENCRYPTION_TKIP\n");
-+				/* wd->sta.wepStatus = ZM_ENCRYPTION_TKIP; */
-+				/* wd->ws.wepStatus = ZM_ENCRYPTION_TKIP; */
-+				zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_TKIP);
-+				} else {
-+					printk(KERN_ERR
-+				"wd->sta.wepStatus = ZM_ENCRYPTION_AES\n");
-+				/* wd->sta.wepStatus = ZM_ENCRYPTION_AES; */
-+				/* wd->ws.wepStatus = ZM_ENCRYPTION_AES; */
-+				zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_AES);
-+					}
-+				}
-+			}
-+			zfiWlanSetWpaSupport(dev, 1);
-+		} else {
-+			/* Reset the WPA related variables */
-+			printk(KERN_ERR "disable\n");
-+
-+			zfiWlanSetWpaSupport(dev, 0);
-+			zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_OPEN);
-+			zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_WEP_DISABLED);
-+
-+			/* Now we only set the length in the WPA IE
-+			* field to zero.
-+			*macp->cardSetting.WPAIe[1] = 0;
-+			*/
-+			}
-+		}
-+
-+		if (op == ZD_PARAM_COUNTERMEASURES) {
-+			printk(KERN_ERR
-+				"****************ZD_PARAM_COUNTERMEASURES : ");
-+
-+			if(arg) {
-+				/*    mCounterMeasureState=1; */
-+				printk(KERN_ERR "enable\n");
-+			} else {
-+				/*    mCounterMeasureState=0; */
-+				printk(KERN_ERR "disable\n");
-+			}
-+		}
-+		if (op == ZD_PARAM_DROPUNENCRYPTED) {
-+			printk(KERN_ERR "ZD_PARAM_DROPUNENCRYPTED : ");
-+
-+			if(arg) {
-+				printk(KERN_ERR "enable\n");
-+			} else {
-+				printk(KERN_ERR "disable\n");
-+			}
- 		}
-+		if (op == ZD_PARAM_AUTH_ALGS) {
-+			printk(KERN_ERR "ZD_PARAM_AUTH_ALGS : ");
-+
-+			if (arg == 0) {
-+				printk(KERN_ERR "OPEN_SYSTEM\n");
-+			} else {
-+				printk(KERN_ERR "SHARED_KEY\n");
-+			}
-+		}
-+		if (op == ZD_PARAM_WPS_FILTER) {
-+			printk(KERN_ERR "ZD_PARAM_WPS_FILTER : ");
-+
-+			if (arg) {
-+				/*    mCounterMeasureState=1; */
-+				macp->forwardMgmt = 1;
-+				printk(KERN_ERR "enable\n");
-+			} else {
-+				/*    mCounterMeasureState=0; */
-+				macp->forwardMgmt = 0;
-+				printk(KERN_ERR "disable\n");
-+			}
-+		}
-+	}
-+		err = 0;
-+		break;
-+	case ZD_IOCTL_GETWPAIE: {
-+		struct ieee80211req_wpaie req_wpaie;
-+		u16_t apId, i, j;
-+
-+		/* Get the AP Id */
-+		apId = zfLnxGetVapId(dev);
-+
-+		if (apId == 0xffff) {
-+			apId = 0;
-+		} else {
-+			apId = apId + 1;
-+		}
-+
-+		if (copy_from_user(&req_wpaie, ifr->ifr_data,
-+					sizeof(struct ieee80211req_wpaie))) {
-+			printk(KERN_ERR "usbdrv : copy_from_user error\n");
-+			return -EFAULT;
-+		}
-+
-+		for (i = 0; i < ZM_OAL_MAX_STA_SUPPORT; i++) {
-+			for (j = 0; j < IEEE80211_ADDR_LEN; j++) {
-+				if (macp->stawpaie[i].wpa_macaddr[j] !=
-+						req_wpaie.wpa_macaddr[j])
-+				break;
-+			}
-+			if (j == 6)
- 			break;
-+		}
- 
-+		if (i < ZM_OAL_MAX_STA_SUPPORT) {
-+		/* printk("ZD_IOCTL_GETWPAIE - sta index = % d\n", i); */
-+		memcpy(req_wpaie.wpa_ie, macp->stawpaie[i].wpa_ie,
-+							IEEE80211_MAX_IE_SIZE);
-+		}
- 
--        case ZDAPIOCTL:    //debug command
--            if (copy_from_user(&zdreq, ifr->ifr_data, sizeof (zdreq)))
--            {
--                printk(KERN_ERR "usbdrv: copy_from_user error\n");
--                return -EFAULT;
--            }
--
--            //printk(KERN_DEBUG "usbdrv: cmd=%2x, reg=0x%04lx, value=0x%08lx\n",
--            //        zdreq.cmd, zdreq.addr, zdreq.value);
--
--			zfLnxPrivateIoctl(dev, &zdreq);
--
--            err = 0;
--            break;
--
--        case ZD_IOCTL_WPA:
--            if (copy_from_user(&zdparm, ifr->ifr_data, sizeof(struct athr_wlan_param)))
--            {
--                printk(KERN_ERR "usbdrv: copy_from_user error\n");
--                return -EFAULT;
--            }
--
--            usbdrv_wpa_ioctl(dev, &zdparm);
--            err = 0;
--            break;
--
--        case ZD_IOCTL_PARAM:
--        {
--            int *p;
--            int op;
--            int arg;
--
--            /* Point to the name field and retrieve the
--             * op and arg elements.          */
--            p = (int *)wrq->u.name;
--            op = *p++;
--            arg = *p;
--
--            if(op == ZD_PARAM_ROAMING)
--            {
--                printk(KERN_ERR "************* ZD_PARAM_ROAMING: %d\n", arg);
--                //macp->cardSetting.ap_scan=(U8)arg;
--            }
--            if(op == ZD_PARAM_PRIVACY)
--            {
--                printk(KERN_ERR "ZD_IOCTL_PRIVACY: ");
--
--                /* Turn on the privacy invoke flag */
--                if(arg)
--                {
--                //    mCap[0] |= CAP_PRIVACY;
--                //    macp->cardSetting.EncryOnOff[0] = 1;
--                    printk(KERN_ERR "enable\n");
--
--                }
--                else
--                {
--                //    mCap[0] &= ~CAP_PRIVACY;
--                //    macp->cardSetting.EncryOnOff[0] = 0;
--                    printk(KERN_ERR "disable\n");
--                }
--                                //changed=1;
--            }
--            if(op == ZD_PARAM_WPA)
--            {
--                printk(KERN_ERR "ZD_PARAM_WPA: ");
--
--                if(arg)
--                {
--                    printk(KERN_ERR "enable\n");
--
--                    if (zfiWlanQueryWlanMode(dev) != ZM_MODE_AP)
--                    {
--                        printk(KERN_ERR "Station Mode\n");
--                        //zfiWlanQueryWpaIe(dev, (u8_t *)&wpaIe, &wpalen);
--                        //printk("wpaIe : %2x,%2x,%2x\n", wpaIe[21], wpaIe[22], wpaIe[23]);
--                        //printk("rsnIe : %2x,%2x,%2x\n", wpaIe[17], wpaIe[18], wpaIe[19]);
--                        if ((macp->supIe[21] == 0x50) &&
--                            (macp->supIe[22] == 0xf2) &&
--                            (macp->supIe[23] == 0x2))
--                        {
--                            printk(KERN_ERR "wd->sta.authMode = ZM_AUTH_MODE_WPAPSK\n");
--                            //wd->sta.authMode = ZM_AUTH_MODE_WPAPSK;
--                            //wd->ws.authMode = ZM_AUTH_MODE_WPAPSK;
--                            zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_WPAPSK);
--                        }
--                        else if ((macp->supIe[21] == 0x50) &&
--                                 (macp->supIe[22] == 0xf2) &&
--                                 (macp->supIe[23] == 0x1))
--                        {
--                            printk(KERN_ERR "wd->sta.authMode = ZM_AUTH_MODE_WPA\n");
--                            //wd->sta.authMode = ZM_AUTH_MODE_WPA;
--                            //wd->ws.authMode = ZM_AUTH_MODE_WPA;
--                            zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_WPA);
--                        }
--                        else if ((macp->supIe[17] == 0xf) &&
--                                 (macp->supIe[18] == 0xac) &&
--                                 (macp->supIe[19] == 0x2))
--                        {
--                            printk(KERN_ERR "wd->sta.authMode = ZM_AUTH_MODE_WPA2PSK\n");
--                            //wd->sta.authMode = ZM_AUTH_MODE_WPA2PSK;
--                            //wd->ws.authMode = ZM_AUTH_MODE_WPA2PSK;
--                            zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_WPA2PSK);
--                        }
--                        else if ((macp->supIe[17] == 0xf) &&
--                                 (macp->supIe[18] == 0xac) &&
--                                 (macp->supIe[19] == 0x1))
--                        {
--                            printk(KERN_ERR "wd->sta.authMode = ZM_AUTH_MODE_WPA2\n");
--                            //wd->sta.authMode = ZM_AUTH_MODE_WPA2;
--                            //wd->ws.authMode = ZM_AUTH_MODE_WPA2;
--                            zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_WPA2);
--                        }
--                        if ((macp->supIe[21] == 0x50) || (macp->supIe[22] == 0xf2))//WPA or WPAPSK
--                        {
--                            if (macp->supIe[11] == 0x2)
--                            {
--                                printk(KERN_ERR "wd->sta.wepStatus = ZM_ENCRYPTION_TKIP\n");
--                                //wd->sta.wepStatus = ZM_ENCRYPTION_TKIP;
--                                //wd->ws.wepStatus = ZM_ENCRYPTION_TKIP;
--                                zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_TKIP);
--                            }
--                            else
--                            {
--                                printk(KERN_ERR "wd->sta.wepStatus = ZM_ENCRYPTION_AES\n");
--                                //wd->sta.wepStatus = ZM_ENCRYPTION_AES;
--                                //wd->ws.wepStatus = ZM_ENCRYPTION_AES;
--                                zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_AES);
--                            }
--                        }
--                        if ((macp->supIe[17] == 0xf) || (macp->supIe[18] == 0xac)) //WPA2 or WPA2PSK
--                        {
--                            if (macp->supIe[13] == 0x2)
--                            {
--                                printk(KERN_ERR "wd->sta.wepStatus = ZM_ENCRYPTION_TKIP\n");
--                                //wd->sta.wepStatus = ZM_ENCRYPTION_TKIP;
--                                //wd->ws.wepStatus = ZM_ENCRYPTION_TKIP;
--                                zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_TKIP);
--                            }
--                            else
--                            {
--                                printk(KERN_ERR "wd->sta.wepStatus = ZM_ENCRYPTION_AES\n");
--                                //wd->sta.wepStatus = ZM_ENCRYPTION_AES;
--                                //wd->ws.wepStatus = ZM_ENCRYPTION_AES;
--                                zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_AES);
--                            }
--                        }
--                    }
--                    zfiWlanSetWpaSupport(dev, 1);
--                }
--                else
--                {
--                    /* Reset the WPA related variables */
--                    printk(KERN_ERR "disable\n");
--
--                    zfiWlanSetWpaSupport(dev, 0);
--                    zfiWlanSetAuthenticationMode(dev, ZM_AUTH_MODE_OPEN);
--                    zfiWlanSetWepStatus(dev, ZM_ENCRYPTION_WEP_DISABLED);
--
--                    /* Now we only set the length in the WPA IE
--                     * field to zero.                         */
--                    //macp->cardSetting.WPAIe[1] = 0;
--                }
--            }
--            if(op == ZD_PARAM_COUNTERMEASURES)
--            {
--                printk(KERN_ERR "================ZD_PARAM_COUNTERMEASURES: ");
--
--                if(arg)
--                {
--                //    mCounterMeasureState=1;
--                    printk(KERN_ERR "enable\n");
--                }
--                else
--                {
--                //    mCounterMeasureState=0;
--                    printk(KERN_ERR "disable\n");
--                }
--            }
--            if(op == ZD_PARAM_DROPUNENCRYPTED)
--            {
--                printk(KERN_ERR "ZD_PARAM_DROPUNENCRYPTED: ");
--
--                if(arg)
--                {
--                    printk(KERN_ERR "enable\n");
--                }
--                else
--                {
--                    printk(KERN_ERR "disable\n");
--                }
--            }
--            if(op == ZD_PARAM_AUTH_ALGS)
--            {
--                printk(KERN_ERR "ZD_PARAM_AUTH_ALGS: ");
--
--                if(arg == 0)
--                {
--                    printk(KERN_ERR "OPEN_SYSTEM\n");
--                }
--                else
--                {
--                    printk(KERN_ERR "SHARED_KEY\n");
--                }
--            }
--            if(op == ZD_PARAM_WPS_FILTER)
--            {
--                printk(KERN_ERR "ZD_PARAM_WPS_FILTER: ");
--
--                if(arg)
--                {
--                //    mCounterMeasureState=1;
--                    macp->forwardMgmt = 1;
--                    printk(KERN_ERR "enable\n");
--                }
--                else
--                {
--                //    mCounterMeasureState=0;
--                    macp->forwardMgmt = 0;
--                    printk(KERN_ERR "disable\n");
--                }
--            }
--        }
--            err = 0;
--            break;
--
--        case ZD_IOCTL_GETWPAIE:
--        {
--            struct ieee80211req_wpaie req_wpaie;
--            u16_t apId, i, j;
--
--            /* Get the AP Id */
--            apId = zfLnxGetVapId(dev);
--
--            if (apId == 0xffff)
--            {
--                apId = 0;
--            }
--            else
--            {
--                apId = apId+1;
--            }
--
--            if (copy_from_user(&req_wpaie, ifr->ifr_data, sizeof(struct ieee80211req_wpaie))){
--                printk(KERN_ERR "usbdrv: copy_from_user error\n");
--                return -EFAULT;
--            }
--
--            for(i = 0; i < ZM_OAL_MAX_STA_SUPPORT; i++)
--            {
--                for(j = 0; j < IEEE80211_ADDR_LEN; j++)
--                {
--                    if (macp->stawpaie[i].wpa_macaddr[j] != req_wpaie.wpa_macaddr[j])
--                        break;
--                }
--                if (j == 6)
--                    break;
--            }
--            if (i < ZM_OAL_MAX_STA_SUPPORT)
--            {
--                //printk("ZD_IOCTL_GETWPAIE - sta index = %d\n", i);
--                memcpy(req_wpaie.wpa_ie, macp->stawpaie[i].wpa_ie, IEEE80211_MAX_IE_SIZE);
--            }
--
--            if (copy_to_user(wrq->u.data.pointer, &req_wpaie, sizeof(struct ieee80211req_wpaie)))
--            {
--                    return -EFAULT;
--            }
--        }
-+		if (copy_to_user(wrq->u.data.pointer, &req_wpaie,
-+				sizeof(struct ieee80211req_wpaie))) {
-+			return -EFAULT;
-+		}
-+	}
- 
--            err = 0;
--            break;
--#ifdef ZM_ENABLE_CENC
--        case ZM_IOCTL_CENC:
--            if (copy_from_user(&macp->zd_wpa_req, ifr->ifr_data, sizeof(struct athr_wlan_param)))
--            {
--                printk(KERN_ERR "usbdrv: copy_from_user error\n");
--                return -EFAULT;
--            }
--
--            usbdrv_cenc_ioctl(dev, (struct zydas_cenc_param *)&macp->zd_wpa_req);
--            err = 0;
--            break;
--#endif //ZM_ENABLE_CENC
--        default:
--            err = -EOPNOTSUPP;
--            break;
--    }
-+		err = 0;
-+		break;
-+	#ifdef ZM_ENABLE_CENC
-+	case ZM_IOCTL_CENC:
-+		if (copy_from_user(&macp->zd_wpa_req, ifr->ifr_data,
-+			sizeof(struct athr_wlan_param))) {
-+			printk(KERN_ERR "usbdrv : copy_from_user error\n");
-+			return -EFAULT;
-+		}
- 
-+		usbdrv_cenc_ioctl(dev,
-+				(struct zydas_cenc_param *)&macp->zd_wpa_req);
-+		err = 0;
-+		break;
-+	#endif /* ZM_ENABLE_CENC */
-+	default:
-+		err = -EOPNOTSUPP;
-+		break;
-+	}
- 
--    return err;
-+	return err;
- }
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 5d460c9..673d66f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -55,421 +55,519 @@ trivial patch so apply some common sense.
+ 
+ 7.	When sending security related changes or reports to a maintainer
+ 	please Cc: security@kernel.org, especially if the maintainer
+ 	does not respond.
+ 
+ 8.	Happy hacking.
+ 
+ 		-----------------------------------
+ 
+ Maintainers List (try to look for most precise areas first)
+ 
+ Note: For the hard of thinking, this list is meant to remain in alphabetical
+ order. If you could add yourselves to it in alphabetical order that would be
+ so much easier [Ed]
+ 
+ P: Person
+ M: Mail patches to
+ L: Mailing list that is relevant to this area
+ W: Web-page with status/info
+ T: SCM tree type and location.  Type is one of: git, hg, quilt.
+-F: Applicable files and/or directories
+ S: Status, one of the following:
+ 
+ 	Supported:	Someone is actually paid to look after this.
+ 	Maintained:	Someone actually looks after it.
+ 	Odd Fixes:	It has a maintainer but they don't have time to do
+ 			much other than throw the odd patch in. See below..
+ 	Orphan:		No current maintainer [but maybe you could take the
+ 			role as you write your new code].
+ 	Obsolete:	Old code. Something tagged obsolete generally means
+ 			it has been replaced by a better system and you
+ 			should be using that.
+ 
++F: Files and directories with wildcard patterns.
++   A trailing slash includes all files and subdirectory files.
++	F:	drivers/net/	all files in and below drivers/net
++	F:	drivers/net/*	all files in drivers/net, but not below
++	F:	*/net/*		all files in "any top level directory"/net
++   One pattern per line.  Multiple F: lines acceptable.
++X: Files and directories that are NOT maintained, same rules as F:
++   Files exclusions are tested before file matches.
++   Can be useful for excluding a specific subdirectory, for instance:
++	F:	net/
++	X:	net/ipv6/
++   matches all files in and below net excluding net/ipv6/
++
+ 3C505 NETWORK DRIVER
+ P:	Philip Blundell
+ M:	philb@gnu.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/3c505*
+ 
+ 3C59X NETWORK DRIVER
+ P:	Steffen Klassert
+ M:	klassert@mathematik.tu-chemnitz.de
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	Documentation/networking/vortex.txt
++F:	drivers/net/3c59x.c
+ 
+ 3CR990 NETWORK DRIVER
+ P:	David Dillow
+ M:	dave@thedillows.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/typhoon*
+ 
+ 3W-9XXX SATA-RAID CONTROLLER DRIVER
+ P:	Adam Radford
+ M:	linuxraid@amcc.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.amcc.com
+ S:	Supported
++F:	drivers/scsi/3w-9xxx*
+ 
+ 3W-XXXX ATA-RAID CONTROLLER DRIVER
+ P:	Adam Radford
+ M:	linuxraid@amcc.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.amcc.com
+ S:	Supported
++F:	drivers/scsi/3w-xxxx*
+ 
+ 53C700 AND 53C700-66 SCSI DRIVER
+ P:	James E.J. Bottomley
+ M:	James.Bottomley@HansenPartnership.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/53c700*
+ 
+ 6PACK NETWORK DRIVER FOR AX.25
+ P:	Andreas Koensgen
+ M:	ajk@iehk.rwth-aachen.de
+ L:	linux-hams@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/hamradio/6pack.c
+ 
+ 8169 10/100/1000 GIGABIT ETHERNET DRIVER
+ P:	Francois Romieu
+ M:	romieu@fr.zoreil.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/r8169.c
+ 
+ 8250/16?50 (AND CLONE UARTS) SERIAL DRIVER
+ L:	linux-serial@vger.kernel.org
+ W:	http://serial.sourceforge.net
+ S:	Orphan
++F:	drivers/serial/8250*
++F:	include/linux/serial_8250.h
+ 
+ 8390 NETWORK DRIVERS [WD80x3/SMC-ELITE, SMC-ULTRA, NE2000, 3C503, etc.]
+ P:	Paul Gortmaker
+ M:	p_gortmaker@yahoo.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/*8390*
++F:	drivers/net/ax88796.c
+ 
+ 9P FILE SYSTEM
+ P:	Eric Van Hensbergen
+ M:	ericvh@gmail.com
+ P:	Ron Minnich
+ M:	rminnich@sandia.gov
+ P:	Latchesar Ionkov
+ M:	lucho@ionkov.net
+ L:	v9fs-developer@lists.sourceforge.net
+ W:	http://swik.net/v9fs
+ T:	git kernel.org:/pub/scm/linux/kernel/ericvh/v9fs.git
+ S:	Maintained
++F:	fs/9p/
+ 
+ A2232 SERIAL BOARD DRIVER
+ P:	Enver Haase
+ M:	A2232@gmx.net
+ L:	linux-m68k@lists.linux-m68k.org
+ S:	Maintained
++F:	drivers/char/ser_a2232*
+ 
+ AACRAID SCSI RAID DRIVER
+ P:	Adaptec OEM Raid Solutions
+ M:	aacraid@adaptec.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.adaptec.com/
+ S:	Supported
++F:	Documentation/scsi/aacraid.txt
++F:	drivers/scsi/aacraid/
+ 
+ ABIT UGURU 1,2 HARDWARE MONITOR DRIVER
+ P:	Hans de Goede
+ M:	j.w.r.degoede@hhs.nl
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	drivers/hwmon/abituguru.c
+ 
+ ABIT UGURU 3 HARDWARE MONITOR DRIVER
+ P:	Alistair John Strachan
+ M:	alistair@devzero.co.uk
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	drivers/hwmon/abituguru3.c
+ 
+ ACENIC DRIVER
+ P:	Jes Sorensen
+ M:	jes@trained-monkey.org
+ L:	linux-acenic@sunsite.dk
+ S:	Maintained
++F:	drivers/net/acenic*
+ 
+ ACER WMI LAPTOP EXTRAS
+ P:	Carlos Corbacho
+ M:	carlos@strangeworlds.co.uk
+ L:	aceracpi@googlegroups.com (subscribers-only)
+ W:	http://code.google.com/p/aceracpi
+ S:	Maintained
++F:	drivers/platform/x86/acer-wmi.c
+ 
+ ACPI
+ P:	Len Brown
+ M:	lenb@kernel.org
+ L:	linux-acpi@vger.kernel.org
+ W:	http://www.lesswatts.org/projects/acpi/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
+ S:	Supported
++F:	drivers/acpi/
++F:	drivers/pnp/pnpacpi/
++F:	include/linux/acpi.h
+ 
+ ACPI BATTERY DRIVERS
+ P:	Alexey Starikovskiy
+ M:	astarikovskiy@suse.de
+ L:	linux-acpi@vger.kernel.org
+ W:	http://www.lesswatts.org/projects/acpi/
+ S:	Supported
++F:	drivers/acpi/battery.c
++F:	drivers/acpi/*sbs*
+ 
+ ACPI EC DRIVER
+ P:	Alexey Starikovskiy
+ M:	astarikovskiy@suse.de
+ L:	linux-acpi@vger.kernel.org
+ W:	http://www.lesswatts.org/projects/acpi/
+ S:	Supported
++F:	drivers/acpi/ec.c
+ 
+ ACPI FAN DRIVER
+ P:	Zhang Rui
+ M:	rui.zhang@intel.com
+ L:	linux-acpi@vger.kernel.org
+ W:	http://www.lesswatts.org/projects/acpi/
+ S:	Supported
++F:	drivers/acpi/fan.c
+ 
+ ACPI PCI HOTPLUG DRIVER
+ P:	Kristen Carlson Accardi
+ M:	kristen.c.accardi@intel.com
+ L:	linux-pci@vger.kernel.org
+ S:	Supported
++F:	drivers/pci/hotplug/acpi*
+ 
+ ACPI THERMAL DRIVER
+ P:	Zhang Rui
+ M:	rui.zhang@intel.com
+ L:	linux-acpi@vger.kernel.org
+ W:	http://www.lesswatts.org/projects/acpi/
+ S:	Supported
++F:	drivers/acpi/*thermal*
+ 
+ ACPI VIDEO DRIVER
+ P:	Zhang Rui
+ M:	rui.zhang@intel.com
+ L:	linux-acpi@vger.kernel.org
+ W:	http://www.lesswatts.org/projects/acpi/
+ S:	Supported
++F:	drivers/acpi/video.c
+ 
+ ACPI WMI DRIVER
+ P:	Carlos Corbacho
+ M:	carlos@strangeworlds.co.uk
+ L:	linux-acpi@vger.kernel.org
+ W:	http://www.lesswatts.org/projects/acpi/
+ S:	Maintained
++F:	drivers/platform/x86/wmi.c
+ 
+ AD1889 ALSA SOUND DRIVER
+ P:	Kyle McMartin
+ M:	kyle@mcmartin.ca
+ P:	Thibaut Varene
+ M:	T-Bone@parisc-linux.org
+ W:	http://wiki.parisc-linux.org/AD1889
+ L:	linux-parisc@vger.kernel.org
+ S:	Maintained
++F:	sound/pci/ad1889.*
+ 
+ ADM1025 HARDWARE MONITOR DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/adm1025
++F:	drivers/hwmon/adm1025.c
+ 
+ ADM1029 HARDWARE MONITOR DRIVER
+ P:	Corentin Labbe
+ M:	corentin.labbe@geomatys.fr
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	drivers/hwmon/adm1029.c
+ 
+ ADM8211 WIRELESS DRIVER
+ P:	Michael Wu
+ M:	flamingice@sourmilk.net
+ L:	linux-wireless@vger.kernel.org
+ W:	http://linuxwireless.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mwu/mac80211-drivers.git
+ S:	Maintained
++F:	drivers/net/wireless/adm8211.*
+ 
+ ADT746X FAN DRIVER
+ P:	Colin Leroy
+ M:	colin@colino.net
+ S:	Maintained
++F:	drivers/macintosh/therm_adt746x.c
+ 
+ ADVANSYS SCSI DRIVER
+ P:	Matthew Wilcox
+ M:	matthew@wil.cx
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	Documentation/scsi/advansys.txt
++F:	drivers/scsi/advansys.c
+ 
+ AEDSP16 DRIVER
+ P:	Riccardo Facchetti
+ M:	fizban@tin.it
+ S:	Maintained
++F:	sound/oss/aedsp16.c
+ 
+ AFFS FILE SYSTEM
+ P:	Roman Zippel
+ M:	zippel@linux-m68k.org
+ S:	Maintained
++F:	fs/affs/
+ 
+ AFS FILESYSTEM & AF_RXRPC SOCKET DOMAIN
+ P:	David Howells
+ M:	dhowells@redhat.com
+ L:	linux-afs@lists.infradead.org
+ S:	Supported
++F:	fs/afs/
++F:	include/net/af_rxrpc.h
++F:	net/rxrpc/af_rxrpc.c
+ 
+ AGPGART DRIVER
+ P:	David Airlie
+ M:	airlied@linux.ie
+ T:	git kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+ S:	Maintained
++F:	drivers/char/agp/
++F:	include/linux/agp*
+ 
+ AHA152X SCSI DRIVER
+ P:	Juergen E. Fischer
+ M:	Juergen Fischer <fischer@norbit.de>
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/aha152x*
++F:	drivers/scsi/pcmcia/aha152x*
+ 
+ AIC7XXX / AIC79XX SCSI DRIVER
+ P:	Hannes Reinecke
+ M:	hare@suse.de
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/aic7xxx/
++F:	drivers/scsi/aic7xxx_old/
+ 
+ AIO
+ P:	Benjamin LaHaise
+ M:	bcrl@kvack.org
+ L:	linux-aio@kvack.org
+ S:	Supported
++F:	fs/aio.c
++F:	include/linux/*aio*.h
+ 
+ ALCATEL SPEEDTOUCH USB DRIVER
+ P:	Duncan Sands
+ M:	duncan.sands@free.fr
+ L:	linux-usb@vger.kernel.org
+ W:	http://www.linux-usb.org/SpeedTouch/
+ S:	Maintained
++F:	drivers/usb/atm/speedtch.c
++F:	drivers/usb/atm/usbatm.c
+ 
+ ALCHEMY AU1XX0 MMC DRIVER
+ P:	Manuel Lauss
+ M:	manuel.lauss@gmail.com
+ S:	Maintained
++F:	drivers/mmc/host/au1xmmc.c
+ 
+ ALI1563 I2C DRIVER
+ P:	Rudolf Marek
+ M:	r.marek@assembler.cz
+ L:	linux-i2c@vger.kernel.org
+ S:	Maintained
++F:	Documentation/i2c/busses/i2c-ali1563
++F:	drivers/i2c/busses/i2c-ali1563.c
+ 
+ ALPHA PORT
+ P:	Richard Henderson
+ M:	rth@twiddle.net
+ S:	Odd Fixes for 2.4; Maintained for 2.6.
+ P:	Ivan Kokshaysky
+ M:	ink@jurassic.park.msu.ru
+ S:	Maintained for 2.4; PCI support for 2.6.
++F:	arch/alpha/
+ 
+ AMD GEODE CS5536 USB DEVICE CONTROLLER DRIVER
+ P:	Thomas Dahlmann
+ M:	thomas.dahlmann@amd.com
+ L:	linux-geode@lists.infradead.org (moderated for non-subscribers)
+ S:	Supported
++F:	drivers/usb/gadget/amd5536udc.*
+ 
+ AMD GEODE PROCESSOR/CHIPSET SUPPORT
+ P:	Jordan Crouse
+ L:	linux-geode@lists.infradead.org (moderated for non-subscribers)
+ W:	http://www.amd.com/us-en/ConnectivitySolutions/TechnicalResources/0,,50_2334_2452_11363,00.html
+ S:	Supported
++F:	arch/x86/kernel/geode_32.c
++F:	drivers/char/hw_random/geode-rng.c
++F:	drivers/crypto/geode*
++F:	drivers/video/geode/
++F:	arch/x86/include/asm/geode.h
+ 
+ AMD IOMMU (AMD-VI)
+ P:	Joerg Roedel
+ M:	joerg.roedel@amd.com
+ L:	iommu@lists.linux-foundation.org
+ T:	git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git
+ S:	Supported
++F:	arch/x86/kernel/amd_iommu*.c
++F:	arch/x86/include/asm/amd_iommu*.h
+ 
+ AMD MICROCODE UPDATE SUPPORT
+ P:      Andreas Herrmann
+ M:      andeas.herrmann3@amd.com
+ L:      amd64-microcode@amd64.org
+ S:      Supported
++F:	arch/x86/kernel/microcode_amd.c
+ 
+ AMS (Apple Motion Sensor) DRIVER
+ P:	Stelian Pop
+ M:	stelian@popies.net
+ P:	Michael Hanselmann
+ M:	linux-kernel@hansmi.ch
+ S:	Supported
++F:	drivers/hwmon/ams/
+ 
+ AMSO1100 RNIC DRIVER
+ P:	Tom Tucker
+ M:	tom@opengridcomputing.com
+ P:	Steve Wise
+ M:	swise@opengridcomputing.com
+ L:	general@lists.openfabrics.org
+ S:	Maintained
++F:	drivers/infiniband/hw/amso1100/
+ 
+ AOA (Apple Onboard Audio) ALSA DRIVER
+ P:	Johannes Berg
+ M:	johannes@sipsolutions.net
+ L:	linuxppc-dev@ozlabs.org
+ L:	alsa-devel@alsa-project.org (subscribers-only)
+ S:	Maintained
++F:	sound/aoa/
+ 
+ APM DRIVER
+ P:	Stephen Rothwell
+ M:	sfr@canb.auug.org.au
+ L:	linux-laptop@vger.kernel.org
+ W:	http://www.canb.auug.org.au/~sfr/
+ S:	Supported
++F:	arch/x86/kernel/apm_32.c
++F:	include/linux/apm_bios.h
+ 
+ APPLE BCM5974 MULTITOUCH DRIVER
+ P:	Henrik Rydberg
+ M:	rydberg@euromail.se
+ L:	linux-input@vger.kernel.org
+ S:	Maintained
++F:	drivers/input/mouse/bcm5974.c
+ 
+ APPLE SMC DRIVER
+ P:	Nicolas Boichat
+ M:	nicolas@boichat.ch
+ L:	mactel-linux-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/hwmon/applesmc.c
+ 
+ APPLETALK NETWORK LAYER
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ S:	Maintained
++F:	drivers/net/appletalk/
++F:	net/appletalk/
+ 
+ APPLETOUCH TOUCHPAD DRIVER
+ P:	Johannes Berg
+ M:	johannes@sipsolutions.net
+ L:	linux-input@vger.kernel.org
+ S:	Maintained
++F:	Documentation/input/appletouch.txt
++F:	drivers/input/mouse/appletouch.c
+ 
+ ARC FRAMEBUFFER DRIVER
+ P:	Jaya Kumar
+ M:	jayalk@intworks.biz
+ S:	Maintained
++F:	drivers/video/arcfb.c
++F:	drivers/video/fb_defio.c
+ 
+ ARM MFM AND FLOPPY DRIVERS
+ P:	Ian Molton
+ M:	spyro@f2s.com
+ S:	Maintained
++F:	arch/arm/lib/floppydma.S
++F:	arch/arm/include/asm/floppy.h
+ 
+ ARM PRIMECELL MMCI PL180/1 DRIVER
+ S:	Orphan
++F:	drivers/mmc/host/mmci.*
+ 
+ ARM/ADI ROADRUNNER MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-ixp23xx/
++F:	arch/arm/mach-ixp23xx/include/mach/
+ 
+ ARM/ADS SPHERE MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
+ 
+ ARM/AFEB9260 MACHINE SUPPORT
+ P:	Sergey Lapin
+ M:	slapin@ossfans.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
+ 
+ ARM/AJECO 1ARM MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
+ 
+ ARM/ATMEL AT91RM9200 ARM ARCHITECTURE
+@@ -686,2018 +784,2539 @@ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
+ 
+ ARM/THECUS N2100 MACHINE SUPPORT
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
+ 
+ ARM/NUVOTON W90X900 ARM ARCHITECTURE
+ P:      Wan ZongShun
+ M:      mcuos.com@gmail.com
+ L:      linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ W:      http://www.mcuos.com
+ S:      Maintained
+ 
+ ARPD SUPPORT
+ P:	Jonathan Layes
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	net/ipv4/arp.c
+ 
+ ASUS ACPI EXTRAS DRIVER
+ P:	Corentin Chary
+ M:	corentincj@iksaif.net
+ P:	Karol Kozimor
+ M:	sziwan@users.sourceforge.net
+ L:	acpi4asus-user@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/acpi4asus
+ W:	http://xf.iksaif.net/acpi4asus
+ S:	Maintained
++F:	arch/x86/kernel/acpi/boot.c
++F:	drivers/platform/x86/asus_acpi.c
+ 
+ ASUS ASB100 HARDWARE MONITOR DRIVER
+ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	drivers/hwmon/asb100.c
+ 
+ ASUS LAPTOP EXTRAS DRIVER
+ P:	Corentin Chary
+ M:	corentincj@iksaif.net
+ L:	acpi4asus-user@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/acpi4asus
+ W:	http://xf.iksaif.net/acpi4asus
+ S:	Maintained
++F:	drivers/platform/x86/asus-laptop.c
+ 
+ ASYNCHRONOUS TRANSFERS/TRANSFORMS (IOAT) API
+ P:	Dan Williams
+ M:	dan.j.williams@intel.com
+ P:	Maciej Sosnowski
+ M:	maciej.sosnowski@intel.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://sourceforge.net/projects/xscaleiop
+ S:	Supported
++F:	Documentation/crypto/async-tx-api.txt
++F:	crypto/async_tx/
++F:	drivers/dma/
++F:	include/linux/dmaengine.h
++F:	include/linux/async_tx.h
+ 
+ ATA OVER ETHERNET (AOE) DRIVER
+ P:	Ed L. Cashin
+ M:	ecashin@coraid.com
+ W:	http://www.coraid.com/support/linux
+ S:	Supported
++F:	Documentation/aoe/
++F:	drivers/block/aoe/
+ 
+ ATHEROS ATH5K WIRELESS DRIVER
+ P:	Jiri Slaby
+ M:	jirislaby@gmail.com
+ P:	Nick Kossifidis
+ M:	mickflemm@gmail.com
+ P:	Luis R. Rodriguez
+ M:	lrodriguez@atheros.com
+ P:	Bob Copeland
+ M:	me@bobcopeland.com
+ L:	linux-wireless@vger.kernel.org
+ L:	ath5k-devel@lists.ath5k.org
+ S:	Maintained
++F:	drivers/net/wireless/ath5k/
+ 
+ ATHEROS ATH9K WIRELESS DRIVER
+ P:	Luis R. Rodriguez
+ M:	lrodriguez@atheros.com
+ P:	Jouni Malinen
+ M:	jmalinen@atheros.com
+ L:	linux-wireless@vger.kernel.org
+ L:	ath9k-devel@lists.ath9k.org
+ S:	Supported
++F:	drivers/net/wireless/ath9k/
+ 
+ ATI_REMOTE2 DRIVER
+ P:	Ville Syrjala
+ M:	syrjala@sci.fi
+ S:	Maintained
++F:	drivers/input/misc/ati_remote2.c
+ 
+ ATLX ETHERNET DRIVERS
+ P:	Jay Cliburn
+ M:	jcliburn@gmail.com
+ P:	Chris Snook
+ M:	csnook@redhat.com
+ P:	Jie Yang
+ M:	jie.yang@atheros.com
+ L:	atl1-devel@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/atl1
+ W:	http://atl1.sourceforge.net
+ S:	Maintained
++F:	drivers/net/atlx/
+ 
+ ATM
+ P:	Chas Williams
+ M:	chas@cmf.nrl.navy.mil
+ L:	linux-atm-general@lists.sourceforge.net (subscribers-only)
+ L:	netdev@vger.kernel.org
+ W:	http://linux-atm.sourceforge.net
+ S:	Maintained
++F:	drivers/atm/
++F:	include/linux/atm*
+ 
+ ATMEL AT91 MCI DRIVER
+ P:	Nicolas Ferre
+ M:	nicolas.ferre@atmel.com
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ W:	http://www.atmel.com/products/AT91/
+ W:	http://www.at91.com/
+ S:	Maintained
++F:	drivers/mmc/host/at91_mci.c
+ 
+ ATMEL AT91 / AT32 SERIAL DRIVER
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	drivers/serial/atmel_serial.c
+ 
+ ATMEL LCDFB DRIVER
+ P:	Nicolas Ferre
+ M:	nicolas.ferre@atmel.com
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
++F:	drivers/video/atmel_lcdfb.c
++F:	include/video/atmel_lcdc.h
+ 
+ ATMEL MACB ETHERNET DRIVER
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ S:	Supported
++F:	drivers/net/macb.*
+ 
+ ATMEL SPI DRIVER
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ S:	Supported
++F:	drivers/spi/atmel_spi.*
+ 
+ ATMEL USBA UDC DRIVER
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ L:	kernel@avr32linux.org
+ W:	http://avr32linux.org/twiki/bin/view/Main/AtmelUsbDeviceDriver
+ S:	Supported
++F:	drivers/usb/gadget/atmel_usba_udc.*
+ 
+ ATMEL WIRELESS DRIVER
+ P:	Simon Kelley
+ M:	simon@thekelleys.org.uk
+ L:	linux-wireless@vger.kernel.org
+ W:	http://www.thekelleys.org.uk/atmel
+ W:	http://atmelwlandriver.sourceforge.net/
+ S:	Maintained
++F:	drivers/net/wireless/atmel*
+ 
+ AUDIT SUBSYSTEM
+ P:	Al Viro
+ M:	viro@zeniv.linux.org.uk
+ P:	Eric Paris
+ M:	eparis@redhat.com
+ L:	linux-audit@redhat.com (subscribers-only)
+ W:	http://people.redhat.com/sgrubb/audit/
+ T:	git git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current.git
+ S:	Maintained
++F:	include/linux/audit.h
++F:	kernel/audit*
+ 
+ AUXILIARY DISPLAY DRIVERS
+ P:	Miguel Ojeda Sandonis
+ M:	miguel.ojeda.sandonis@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://miguelojeda.es/auxdisplay.htm
+ W:	http://jair.lab.fi.uva.es/~migojed/auxdisplay.htm
+ S:	Maintained
++F:	drivers/auxdisplay/
++F:	include/linux/cfag12864b.h
+ 
+ AVR32 ARCHITECTURE
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ W:	http://www.atmel.com/products/AVR32/
+ W:	http://avr32linux.org/
+ W:	http://avrfreaks.net/
+ S:	Supported
++F:	arch/avr32/
+ 
+ AVR32/AT32AP MACHINE SUPPORT
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ S:	Supported
++F:	arch/avr32/mach-at32ap/
+ 
+ AX.25 NETWORK LAYER
+ P:	Ralf Baechle
+ M:	ralf@linux-mips.org
+ L:	linux-hams@vger.kernel.org
+ W:	http://www.linux-ax25.org/
+ S:	Maintained
++F:	include/linux/ax25.h
++F:	include/net/ax25.h
++F:	net/ax25/
+ 
+ B43 WIRELESS DRIVER
+ P:	Michael Buesch
+ M:	mb@bu3sch.de
+ P:	Stefano Brivio
+ M:	stefano.brivio@polimi.it
+ L:	linux-wireless@vger.kernel.org
+ W:	http://linuxwireless.org/en/users/Drivers/b43
+ S:	Maintained
++F:	drivers/net/wireless/b43/
+ 
+ B43LEGACY WIRELESS DRIVER
+ P:	Larry Finger
+ M:	Larry.Finger@lwfinger.net
+ P:	Stefano Brivio
+ M:	stefano.brivio@polimi.it
+ L:	linux-wireless@vger.kernel.org
+ W:	http://linuxwireless.org/en/users/Drivers/b43
+ S:	Maintained
++F:	drivers/net/wireless/b43legacy/
+ 
+ BACKLIGHT CLASS/SUBSYSTEM
+ P:	Richard Purdie
+ M:	rpurdie@rpsys.net
+ S:	Maintained
++F:	drivers/video/backlight/
++F:	include/linux/backlight.h
+ 
+ BAYCOM/HDLCDRV DRIVERS FOR AX.25
+ P:	Thomas Sailer
+ M:	t.sailer@alumni.ethz.ch
+ L:	linux-hams@vger.kernel.org
+ W:	http://www.baycom.org/~tom/ham/ham.html
+ S:	Maintained
++F:	drivers/net/hamradio/baycom*
+ 
+ BEFS FILE SYSTEM
+ P:	Sergey S. Kostyliov
+ M:	rathamahata@php4.ru
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	fs/befs/
+ 
+ BFS FILE SYSTEM
+ P:	Tigran A. Aivazian
+ M:	tigran@aivazian.fsnet.co.uk
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	fs/bfs/
+ 
+ BLACKFIN ARCHITECTURE
+ P:	Bryan Wu
+ M:	cooloney@kernel.org
+ L:	uclinux-dist-devel@blackfin.uclinux.org
+ W:	http://blackfin.uclinux.org
+ S:	Supported
++F:	arch/blackfin/
+ 
+ BLACKFIN EMAC DRIVER
+ P:	Bryan Wu
+ M:	cooloney@kernel.org
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org
+ S:	Supported
++F:	drivers/net/bfin_mac.*
+ 
+ BLACKFIN RTC DRIVER
+ P:	Mike Frysinger
+ M:	vapier.adi@gmail.com
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org
+ S:	Supported
++F:	drivers/rtc/rtc-bfin.c
+ 
+ BLACKFIN SERIAL DRIVER
+ P:	Sonic Zhang
+ M:	sonic.zhang@analog.com
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org
+ S:	Supported
++F:	drivers/serial/bfin_5xx.c
+ 
+ BLACKFIN WATCHDOG DRIVER
+ P:	Mike Frysinger
+ M:	vapier.adi@gmail.com
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org
+ S:	Supported
++F:	drivers/watchdog/bfin_wdt.c
+ 
+ BLACKFIN I2C TWI DRIVER
+ P:	Sonic Zhang
+ M:	sonic.zhang@analog.com
+ L:	uclinux-dist-devel@blackfin.uclinux.org (subscribers-only)
+ W:	http://blackfin.uclinux.org/
+ S:	Supported
++F:	drivers/i2c/busses/i2c-bfin-twi.c
+ 
+ BLOCK LAYER
+ P:	Jens Axboe
+ M:	axboe@kernel.dk
+ L:	linux-kernel@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/axboe/linux-2.6-block.git
+ S:	Maintained
++F:	block/
+ 
+ BLOCK2MTD DRIVER
+ P:	Joern Engel
+ M:	joern@lazybastard.org
+ L:	linux-mtd@lists.infradead.org
+ S:	Maintained
++F:	drivers/mtd/devices/block2mtd.c
+ 
+ BLUETOOTH DRIVERS
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ L:	linux-bluetooth@vger.kernel.org
+ W:	http://www.bluez.org/
+ S:	Maintained
++F:	drivers/bluetooth/
+ 
+ BLUETOOTH SUBSYSTEM
+ P:	Marcel Holtmann
+ M:	marcel@holtmann.org
+ L:	linux-bluetooth@vger.kernel.org
+ W:	http://www.bluez.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/holtmann/bluetooth-2.6.git
+ S:	Maintained
++F:	net/bluetooth/
++F:	include/net/bluetooth/
+ 
+ BONDING DRIVER
+ P:	Jay Vosburgh
+ M:	fubar@us.ibm.com
+ L:	bonding-devel@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/bonding/
+ S:	Supported
++F:	drivers/net/bonding/
++F:	include/linux/if_bonding.h
+ 
+ BROADCOM B44 10/100 ETHERNET DRIVER
+ P:	Gary Zambrano
+ M:	zambrano@broadcom.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/b44.*
+ 
+ BROADCOM BNX2 GIGABIT ETHERNET DRIVER
+ P:	Michael Chan
+ M:	mchan@broadcom.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/bnx2.*
++F:	drivers/net/bnx2_*
+ 
+ BROADCOM BNX2X 10 GIGABIT ETHERNET DRIVER
+ P:	Eilon Greenstein
+ M:	eilong@broadcom.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/bnx2x*
+ 
+ BROADCOM TG3 GIGABIT ETHERNET DRIVER
+ P:	Michael Chan
+ M:	mchan@broadcom.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/tg3.*
+ 
+ BSG (block layer generic sg v4 driver)
+ P:	FUJITA Tomonori
+ M:	fujita.tomonori@lab.ntt.co.jp
+ L:	linux-scsi@vger.kernel.org
+ S:	Supported
++F:	block/bsg.c
++F:	include/linux/bsg.h
+ 
+ BT8XXGPIO DRIVER
+ P:	Michael Buesch
+ M:	mb@bu3sch.de
+ W:	http://bu3sch.de/btgpio.php
+ S:	Maintained
++F:	drivers/gpio/bt8xxgpio.c
+ 
+ BTRFS FILE SYSTEM
+ P:	Chris Mason
+ M:	chris.mason@oracle.com
+ L:	linux-btrfs@vger.kernel.org
+ W:	http://btrfs.wiki.kernel.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
+ S:	Maintained
++F:	fs/btrfs/
+ 
+ BTTV VIDEO4LINUX DRIVER
+ P:	Mauro Carvalho Chehab
+ M:	mchehab@infradead.org
+ L:	linux-media@vger.kernel.org
+ L:	video4linux-list@redhat.com
+ W:	http://linuxtv.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	Documentation/video4linux/bttv/
++F:	drivers/media/video/bt8xx/bttv*
+ 
+ CAFE CMOS INTEGRATED CAMERA CONTROLLER DRIVER
+ P:	Jonathan Corbet
+ M:	corbet@lwn.net
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	Documentation/video4linux/cafe_ccic
++F:	drivers/media/video/cafe_ccic*
+ 
+ CALGARY x86-64 IOMMU
+ P:	Muli Ben-Yehuda
+ M:	muli@il.ibm.com
+ P:	Jon D. Mason
+ M:	jdmason@kudzu.us
+ L:	linux-kernel@vger.kernel.org
+ L:	discuss@x86-64.org
+ S:	Maintained
++F:	arch/x86/kernel/pci-calgary_64.c
++F:	arch/x86/kernel/tce_64.c
++F:	arch/x86/include/asm/calgary.h
++F:	arch/x86/include/asm/tce.h
+ 
+ CAN NETWORK LAYER
+ P:	Urs Thuermann
+ M:	urs.thuermann@volkswagen.de
+ P:	Oliver Hartkopp
+ M:	oliver.hartkopp@volkswagen.de
+ L:	socketcan-core@lists.berlios.de (subscribers-only)
+ W:	http://developer.berlios.de/projects/socketcan/
+ S:	Maintained
++F:	drivers/net/can/
++F:	include/linux/can/
++F:	include/linux/can.h
+ 
+ CELL BROADBAND ENGINE ARCHITECTURE
+ P:	Arnd Bergmann
+ M:	arnd@arndb.de
+ L:	linuxppc-dev@ozlabs.org
+ L:	cbe-oss-dev@ozlabs.org
+ W:	http://www.ibm.com/developerworks/power/cell/
+ S:	Supported
++F:	arch/powerpc/include/asm/cell*.h
++F:	arch/powerpc/include/asm/lv1call.h
++F:	arch/powerpc/include/asm/ps3*.h
++F:	arch/powerpc/include/asm/spu*.h
++F:	arch/powerpc/oprofile/*cell*
++F:	arch/powerpc/platforms/cell/
++F:	arch/powerpc/platforms/ps3/
+ 
+ CERTIFIED WIRELESS USB (WUSB) SUBSYSTEM:
+ P:	David Vrabel
+ M:	david.vrabel@csr.com
+ L:	linux-usb@vger.kernel.org
+ S:	Supported
++F:	Documentation/usb/WUSB-Design-overview.txt
++F:	Documentation/usb/wusb-cbaf
++F:	drivers/usb/wusbcore/
++F:	include/linux/usb/wusb*
+ 
+ CFAG12864B LCD DRIVER
+ P:	Miguel Ojeda Sandonis
+ M:	miguel.ojeda.sandonis@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://miguelojeda.es/auxdisplay.htm
+ W:	http://jair.lab.fi.uva.es/~migojed/auxdisplay.htm
+ S:	Maintained
++F:	drivers/auxdisplay/cfag12864b.c
++F:	include/linux/cfag12864b.h
+ 
+ CFAG12864BFB LCD FRAMEBUFFER DRIVER
+ P:	Miguel Ojeda Sandonis
+ M:	miguel.ojeda.sandonis@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://miguelojeda.es/auxdisplay.htm
+ W:	http://jair.lab.fi.uva.es/~migojed/auxdisplay.htm
+ S:	Maintained
++F:	drivers/auxdisplay/cfag12864bfb.c
++F:	include/linux/cfag12864b.h
+ 
+ CFG80211 and NL80211
+ P:	Johannes Berg
+ M:	johannes@sipsolutions.net
+ L:	linux-wireless@vger.kernel.org
+ S:	Maintained
++F:	include/linux/nl80211.h
++F:	include/net/cfg80211.h
++F:	net/wireless/*
++X:	net/wireless/wext*
+ 
+ CHECKPATCH
+ P:	Andy Whitcroft
+ M:	apw@canonical.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	scripts/checkpatch.pl
+ 
+ CISCO 10G ETHERNET DRIVER
+ P:	Scott Feldman
+ M:	scofeldm@cisco.com
+ P:	Joe Eykholt
+ M:	jeykholt@cisco.com
+ S:	Supported
++F:	drivers/net/enic/
+ 
+ CIRRUS LOGIC EP93XX ETHERNET DRIVER
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/arm/ep93xx_eth.c
+ 
+ CIRRUS LOGIC EP93XX OHCI USB HOST DRIVER
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
++F:	drivers/usb/host/ohci-ep93xx.c
+ 
+ CIRRUS LOGIC CS4270 SOUND DRIVER
+ P:	Timur Tabi
+ M:	timur@freescale.com
+ L:	alsa-devel@alsa-project.org
+ S:	Supported
++F:	sound/soc/codecs/cs4270*
++F:	sound/soc/fsl/mpc8610_hpcd.c
+ 
+ CIRRUS LOGIC CS4280/CS461x SOUNDDRIVER
+ P:	Cirrus Logic Corporation (kernel 2.2 driver)
+ M:	Cirrus Logic Corporation, Thomas Woller <twoller@crystal.cirrus.com>
+ P:	Nils Faerber (port to kernel 2.4)
+ M:	Nils Faerber <nils@kernelconcepts.de>
+ S:	Maintained
++F:	Documentation/input/cs461x.txt
++F:	sound/pci/cs46xx/
+ 
+ CODA FILE SYSTEM
+ P:	Jan Harkes
+ M:	jaharkes@cs.cmu.edu
+ M:	coda@cs.cmu.edu
+ L:	codalist@coda.cs.cmu.edu
+ W:	http://www.coda.cs.cmu.edu/
+ S:	Maintained
++F:	fs/coda/
++F:	include/linux/coda*.h
+ 
+ COMMON INTERNET FILE SYSTEM (CIFS)
+ P:	Steve French
+ M:	sfrench@samba.org
+ L:	linux-cifs-client@lists.samba.org
+ L:	samba-technical@lists.samba.org
+ W:	http://linux-cifs.samba.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/sfrench/cifs-2.6.git
+ S:	Supported
++F:	fs/cifs/
+ 
+ COMPACTPCI HOTPLUG CORE
+ P:	Scott Murray
+ M:	scottm@somanetworks.com
+ M:	scott@spiteful.org
+ L:	linux-pci@vger.kernel.org
+ S:	Supported
++F:	drivers/pci/hotplug/cpci_hotplug*
+ 
+ COMPACTPCI HOTPLUG ZIATECH ZT5550 DRIVER
+ P:	Scott Murray
+ M:	scottm@somanetworks.com
+ M:	scott@spiteful.org
+ L:	linux-pci@vger.kernel.org
+ S:	Supported
++F:	drivers/pci/hotplug/cpcihp_zt5550.*
+ 
+ COMPACTPCI HOTPLUG GENERIC DRIVER
+ P:	Scott Murray
+ M:	scottm@somanetworks.com
+ M:	scott@spiteful.org
+ L:	linux-pci@vger.kernel.org
+ S:	Supported
++F:	drivers/pci/hotplug/cpcihp_generic.c
+ 
+ COMPAL LAPTOP SUPPORT
+ P:	Cezary Jackiewicz
+ M:	cezary.jackiewicz@gmail.com
+ S:	Maintained
++F:	drivers/platform/x86/compal-laptop.c
+ 
+ COMPUTONE INTELLIPORT MULTIPORT CARD
+ P:	Michael H. Warfield
+ M:	mhw@wittsend.com
+ W:	http://www.wittsend.com/computone.html
+ S:	Maintained
++F:	Documentation/serial/computone.txt
++F:	drivers/char/ip2/
+ 
+ CONEXANT ACCESSRUNNER USB DRIVER
+ P:	Simon Arlott
+ M:	cxacru@fire.lp0.eu
+ L:	accessrunner-general@lists.sourceforge.net
+ W:	http://accessrunner.sourceforge.net/
+ S:	Maintained
++F:	drivers/usb/atm/cxacru.c
+ 
+ CONFIGFS
+ P:	Joel Becker
+ M:	joel.becker@oracle.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	fs/configfs/
++F:	include/linux/configfs.h
+ 
+ CONTROL GROUPS (CGROUPS)
+ P:	Paul Menage
+ M:	menage@google.com
+ P:	Li Zefan
+ M:	lizf@cn.fujitsu.com
+ L:	containers@lists.linux-foundation.org
+ S:	Maintained
++F:	include/linux/cgroup*
++F:	kernel/cgroup*
+ 
+ CORETEMP HARDWARE MONITORING DRIVER
+ P:	Rudolf Marek
+ M:	r.marek@assembler.cz
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/coretemp
++F:	drivers/hwmon/coretemp.c
+ 
+ COSA/SRP SYNC SERIAL DRIVER
+ P:	Jan "Yenya" Kasprzak
+ M:	kas@fi.muni.cz
+ W:	http://www.fi.muni.cz/~kas/cosa/
+ S:	Maintained
++F:	drivers/net/wan/cosa*
+ 
+ CPU FREQUENCY DRIVERS
+ P:	Dave Jones
+ M:	davej@redhat.com
+ L:	cpufreq@vger.kernel.org
+ W:	http://www.codemonkey.org.uk/projects/cpufreq/
+ T:	git kernel.org/pub/scm/linux/kernel/git/davej/cpufreq.git
+ S:	Maintained
++F:	arch/x86/kernel/cpu/cpufreq/
++F:	drivers/cpufreq/
++F:	include/linux/cpufreq.h
+ 
+ CPUID/MSR DRIVER
+ P:	H. Peter Anvin
+ M:	hpa@zytor.com
+ S:	Maintained
++F:	arch/x86/kernel/cpuid.c
++F:	arch/x86/kernel/msr.c
+ 
+ CPUSETS
+ P:	Paul Menage
+ M:	menage@google.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.bullopensource.org/cpuset/
+ W:	http://oss.sgi.com/projects/cpusets/
+ S:	Supported
++F:	Documentation/cgroups/cpusets.txt
++F:	include/linux/cpuset.h
++F:	kernel/cpuset.c
+ 
+ CRAMFS FILESYSTEM
+ W:	http://sourceforge.net/projects/cramfs/
+ S:	Orphan
++F:	Documentation/filesystems/cramfs.txt
++F:	fs/cramfs/
+ 
+ CRIS PORT
+ P:	Mikael Starvik
+ M:	starvik@axis.com
+ P:	Jesper Nilsson
+ M:	jesper.nilsson@axis.com
+ L:	dev-etrax@axis.com
+ W:	http://developer.axis.com
+ S:	Maintained
++F:	arch/cris/
+ 
+ CRYPTO API
+ P:	Herbert Xu
+ M:	herbert@gondor.apana.org.au
+ P:	David S. Miller
+ M:	davem@davemloft.net
+ L:	linux-crypto@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+ S:	Maintained
++F:	crypto/
+ 
+ CS5535 Audio ALSA driver
+ P:	Jaya Kumar
+ M:	jayakumar.alsa@gmail.com
+ S:	Maintained
++F:	sound/pci/cs5535audio/
+ 
+ CX18 VIDEO4LINUX DRIVER
+ P:	Hans Verkuil, Andy Walls
+ M:	hverkuil@xs4all.nl, awalls@radix.net
+ L:	ivtv-devel@ivtvdriver.org
+ L:	ivtv-users@ivtvdriver.org
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ W:	http://linuxtv.org
+ S:	Maintained
++F:	Documentation/video4linux/cx18.txt
++F:	drivers/media/video/cx18/
+ 
+ CXGB3 ETHERNET DRIVER (CXGB3)
+ P:	Divy Le Ray
+ M:	divy@chelsio.com
+ L:	netdev@vger.kernel.org
+ W:	http://www.chelsio.com
+ S:	Supported
++F:	drivers/net/cxgb3/
+ 
+ CXGB3 IWARP RNIC DRIVER (IW_CXGB3)
+ P:	Steve Wise
+ M:	swise@chelsio.com
+ L:	general@lists.openfabrics.org
+ W:	http://www.openfabrics.org
+ S:	Supported
++F:	drivers/infiniband/hw/cxgb3/
+ 
+ CYBERPRO FB DRIVER
+ P:	Russell King
+ M:	rmk@arm.linux.org.uk
+ W:	http://www.arm.linux.org.uk/
+ S:	Maintained
++F:	drivers/video/cyber2000fb.*
+ 
+ CYBLAFB FRAMEBUFFER DRIVER
+ P:	Knut Petersen
+ M:	Knut_Petersen@t-online.de
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
++F:	drivers/video/cyblafb.c
+ 
+ CYCLADES 2X SYNC CARD DRIVER
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ W:	http://oops.ghostprotocols.net:81/blog
+ S:	Maintained
++F:	drivers/net/wan/cycx*
+ 
+ CYCLADES ASYNC MUX DRIVER
+ W:	http://www.cyclades.com/
+ S:	Orphan
++F:	drivers/char/cyclades.c
++F:	include/linux/cyclades.h
+ 
+ CYCLADES PC300 DRIVER
+ W:	http://www.cyclades.com/
+ S:	Orphan
++F:	drivers/net/wan/pc300*
+ 
+ DAMA SLAVE for AX.25
+ P:	Joerg Reuter
+ M:	jreuter@yaina.de
+ W:	http://yaina.de/jreuter/
+ W:	http://www.qsl.net/dl1bke/
+ L:	linux-hams@vger.kernel.org
+ S:	Maintained
++F:	net/ax25/af_ax25.c
++F:	net/ax25/ax25_dev.c
++F:	net/ax25/ax25_ds_*
++F:	net/ax25/ax25_in.c
++F:	net/ax25/ax25_out.c
++F:	net/ax25/ax25_timer.c
++F:	net/ax25/sysctl_net_ax25.c
+ 
+ DAVICOM FAST ETHERNET (DMFE) NETWORK DRIVER
+ P:	Tobias Ringstrom
+ M:	tori@unhappy.mine.nu
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	Documentation/networking/dmfe.txt
++F:	drivers/net/tulip/dmfe.c
+ 
+ DC390/AM53C974 SCSI driver
+ P:	Kurt Garloff
+ M:	garloff@suse.de
+ W:	http://www.garloff.de/kurt/linux/dc390/
+ P:	Guennadi Liakhovetski
+ M:	g.liakhovetski@gmx.de
+ S:	Maintained
++F:	drivers/scsi/tmscsim.*
+ 
+ DC395x SCSI driver
+ P:	Oliver Neukum
+ M:	oliver@neukum.name
+ P:	Ali Akcaagac
+ M:	aliakc@web.de
+ P:	Jamie Lenehan
+ M:	lenehan@twibble.org
+ W:	http://twibble.org/dist/dc395x/
+ L:	dc395x@twibble.org
+ L:	http://lists.twibble.org/mailman/listinfo/dc395x/
+ S:	Maintained
++F:	Documentation/scsi/dc395x.txt
++F:	drivers/scsi/dc395x.*
+ 
+ DCCP PROTOCOL
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ L:	dccp@vger.kernel.org
+ W:	http://linux-net.osdl.org/index.php/DCCP
+ S:	Maintained
++F:	include/linux/dccp.h
++F:	include/linux/tfrc.h
++F:	net/dccp/
+ 
+ DECnet NETWORK LAYER
+ P:	Christine Caulfield
+ M:	christine.caulfield@googlemail.com
+ W:	http://linux-decnet.sourceforge.net
+ L:	linux-decnet-user@lists.sourceforge.net
+ S:	Maintained
++F:	Documentation/networking/decnet.txt
++F:	net/decnet/
+ 
+ DEFXX FDDI NETWORK DRIVER
+ P:	Maciej W. Rozycki
+ M:	macro@linux-mips.org
+ S:	Maintained
++F:	drivers/net/defxx.*
+ 
+ DELL LAPTOP DRIVER
+ P:	Matthew Garrett
+ M:	mjg59@srcf.ucam.org
+ S:	Maintained
++F:	drivers/platform/x86/dell-laptop.c
+ 
+ DELL LAPTOP SMM DRIVER
+ P:	Massimo Dal Zotto
+ M:	dz@debian.org
+ W:	http://www.debian.org/~dz/i8k/
+ S:	Maintained
++F:	drivers/char/i8k.c
++F:	include/linux/i8k.h
+ 
+ DELL SYSTEMS MANAGEMENT BASE DRIVER (dcdbas)
+ P:	Doug Warzecha
+ M:	Douglas_Warzecha@dell.com
+ S:	Maintained
++F:	Documentation/dcdbas.txt
++F:	drivers/firmware/dcdbas.*
+ 
+ DEVICE NUMBER REGISTRY
+ P:	Torben Mathiasen
+ M:	device@lanana.org
+ W:	http://lanana.org/docs/device-list/index.html
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
+ 
+ DEVICE-MAPPER  (LVM)
+ P:	Alasdair Kergon
+ L:	dm-devel@redhat.com
+ W:	http://sources.redhat.com/dm
+ S:	Maintained
++F:	Documentation/device-mapper/
++F:	drivers/md/dm*
++F:	include/linux/device-mapper.h
++F:	include/linux/dm-*.h
+ 
+ DIGI INTL. EPCA DRIVER
+ P:	Digi International, Inc
+ M:	Eng.Linux@digi.com
+ L:	Eng.Linux@digi.com
+ W:	http://www.digi.com
+ S:	Orphan
++F:	Documentation/serial/digiepca.txt
++F:	drivers/char/epca*
++F:	drivers/char/digi*
+ 
+ DIRECTORY NOTIFICATION (DNOTIFY)
+ P:	Stephen Rothwell
+ M:	sfr@canb.auug.org.au
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	Documentation/filesystems/dnotify.txt
++F:	fs/notify/dnotify/
++F:	include/linux/dnotify.h
+ 
+ DISK GEOMETRY AND PARTITION HANDLING
+ P:	Andries Brouwer
+ M:	aeb@cwi.nl
+ W:	http://www.win.tue.nl/~aeb/linux/Large-Disk.html
+ W:	http://www.win.tue.nl/~aeb/linux/zip/zip-1.html
+ W:	http://www.win.tue.nl/~aeb/partitions/partition_types-1.html
+ S:	Maintained
+ 
+ DISKQUOTA
+ P:	Jan Kara
+ M:	jack@suse.cz
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/filesystems/quota.txt
++F:	fs/quota*
++F:	include/linux/quota*.h
+ 
+ DISTRIBUTED LOCK MANAGER (DLM)
+ P:	Christine Caulfield
+ M:	ccaulfie@redhat.com
+ P:	David Teigland
+ M:	teigland@redhat.com
+ L:	cluster-devel@redhat.com
+ W:	http://sources.redhat.com/cluster/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/teigland/dlm.git
+ S:	Supported
++F:	fs/dlm/
+ 
+ DMA GENERIC OFFLOAD ENGINE SUBSYSTEM
+ P:	Maciej Sosnowski
+ M:	maciej.sosnowski@intel.com
+ P:	Dan Williams
+ M:	dan.j.williams@intel.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	drivers/dma/
++F:	include/linux/dma*
+ 
+ DME1737 HARDWARE MONITOR DRIVER
+ P:	Juerg Haefliger
+ M:	juergh@gmail.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/dme1737
++F:	drivers/hwmon/dme1737.c
+ 
+ DOCBOOK FOR DOCUMENTATION
+ P:	Randy Dunlap
+ M:	rdunlap@xenotime.net
+ S:	Maintained
+ 
+ DOCKING STATION DRIVER
+ P:	Shaohua Li
+ M:	shaohua.li@intel.com
+ L:	linux-acpi@vger.kernel.org
+ S:	Supported
++F:	drivers/acpi/dock.c
+ 
+ DOCUMENTATION (/Documentation directory)
+ P:	Randy Dunlap
+ M:	rdunlap@xenotime.net
+ L:	linux-doc@vger.kernel.org
+ S:	Maintained
++F:	Documentation/
+ 
+ DOUBLETALK DRIVER
+ P:	James R. Van Zandt
+ M:	jrv@vanzandt.mv.com
+ L:	blinux-list@redhat.com
+ S:	Maintained
++F:	drivers/char/dtlk.c
++F:	include/linux/dtlk.h
+ 
+ DPT_I2O SCSI RAID DRIVER
+ P:	Adaptec OEM Raid Solutions
+ M:	aacraid@adaptec.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.adaptec.com/
+ S:	Maintained
++F:	drivers/scsi/dpt*
++F:	drivers/scsi/dpt/
+ 
+ DRIVER CORE, KOBJECTS, AND SYSFS
+ P:	Greg Kroah-Hartman
+ M:	gregkh@suse.de
+ L:	linux-kernel@vger.kernel.org
+ T:	quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+ S:	Supported
++F:	Documentation/kobject.txt
++F:	drivers/base/core.c
++F:	fs/sysfs/
++F:	include/linux/kobj*
++F:	lib/kobj*
+ 
+ DRM DRIVERS
+ P:	David Airlie
+ M:	airlied@linux.ie
+ L:	dri-devel@lists.sourceforge.net
+ T:	git kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+ S:	Maintained
++F:	drivers/gpu/drm/
+ 
+ DSCC4 DRIVER
+ P:	Francois Romieu
+ M:	romieu@fr.zoreil.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/wan/dscc4.c
+ 
+ DVB SUBSYSTEM AND DRIVERS
+ P:	LinuxTV.org Project
+ M:	linux-media@vger.kernel.org
+ L:	linux-dvb@linuxtv.org (subscription required)
+ W:	http://linuxtv.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	Documentation/dvb/
++F:	drivers/media/dvb/
++F:	drivers/media/common/saa7146*.c
++F:	include/linux/dvb/
+ 
+ DZ DECSTATION DZ11 SERIAL DRIVER
+ P:	Maciej W. Rozycki
+ M:	macro@linux-mips.org
+ S:	Maintained
++F:	drivers/serial/dz.*
+ 
+ EATA-DMA SCSI DRIVER
+ P:	Michael Neuffer
+ L:	linux-eata@i-connect.net, linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/eata*
+ 
+ EATA ISA/EISA/PCI SCSI DRIVER
+ P:	Dario Ballabio
+ M:	ballabio_dario@emc.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/eata.c
+ 
+ EATA-PIO SCSI DRIVER
+ P:	Michael Neuffer
+ M:	mike@i-Connect.Net
+ L:	linux-eata@i-connect.net, linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/eata_pio.*
+ 
+ EBTABLES
+ P:	Bart De Schuymer
+ M:	bart.de.schuymer@pandora.be
+ L:	ebtables-user@lists.sourceforge.net
+ L:	ebtables-devel@lists.sourceforge.net
+ W:	http://ebtables.sourceforge.net/
+ S:	Maintained
++F:	include/linux/netfilter_bridge/ebt_*.h
++F:	net/bridge/netfilter/ebt*.c
+ 
+ ECRYPT FILE SYSTEM
+ P:	Tyler Hicks, Dustin Kirkland
+ M:	tyhicks@linux.vnet.ibm.com, kirkland@canonical.com
+ L:	ecryptfs-devel@lists.launchpad.net
+ W:	https://launchpad.net/ecryptfs
+ S:	Supported
++F:	fs/ecryptfs/
+ 
+ EDAC-CORE
+ P:	Doug Thompson
+ M:	dougthompson@xmission.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Supported
++F:	Documentation/edac.txt
++F:	drivers/edac/edac_*
++F:	include/linux/edac.h
+ 
+ EDAC-E752X
+ P:	Mark Gross
+ P:	Doug Thompson
+ M:	mark.gross@intel.com
+ M:	dougthompson@xmission.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/e752x_edac.c
+ 
+ EDAC-E7XXX
+ P:	Doug Thompson
+ M:	dougthompson@xmission.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/e7xxx_edac.c
+ 
+ EDAC-I82443BXGX
+ P:	Tim Small
+ M:	tim@buttersideup.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/i82443bxgx_edac.c
+ 
+ EDAC-I3000
+ P:	Jason Uhlenkott
+ M:	juhlenko@akamai.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/i3000_edac.c
+ 
+ EDAC-I5000
+ P:	Doug Thompson
+ M:	dougthompson@xmission.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/i5000_edac.c
+ 
+ EDAC-I5400
+ P:	Mauro Carvalho Chehab
+ M:	mchehab@redhat.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/i5400_edac.c
+ 
+ EDAC-I82975X
+ P:	Ranganathan Desikan
+ P:	Arvind R.
+ M:	rdesikan@jetzbroadband.com
+ M:	arvind@acarlab.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/i82975x_edac.c
+ 
+ EDAC-PASEMI
+ P:	Egor Martovetsky
+ M:	egor@pasemi.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/pasemi_edac.c
+ 
+ EDAC-R82600
+ P:	Tim Small
+ M:	tim@buttersideup.com
+ L:	bluesmoke-devel@lists.sourceforge.net
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
++F:	drivers/edac/r82600_edac.c
+ 
+ EEEPC LAPTOP EXTRAS DRIVER
+ P:	Corentin Chary
+ M:	corentincj@iksaif.net
+ L:	acpi4asus-user@lists.sourceforge.net
+ W:	http://sourceforge.net/projects/acpi4asus
+ S:	Maintained
++F:	drivers/platform/x86/eeepc-laptop.c
+ 
+ EFS FILESYSTEM
+ W:	http://aeschi.ch.eu.org/efs/
+ S:	Orphan
++F:	fs/efs/
+ 
+ EHCA (IBM GX bus InfiniBand adapter) DRIVER
+ P:	Hoang-Nam Nguyen
+ M:	hnguyen@de.ibm.com
+ P:	Christoph Raisch
+ M:	raisch@de.ibm.com
+ L:	general@lists.openfabrics.org
+ S:	Supported
++F:	drivers/infiniband/hw/ehca/
+ 
+ EMBEDDED LINUX
+ P:	Paul Gortmaker
+ M:	paul.gortmaker@windriver.com
+ P:	David Woodhouse
+ M:	dwmw2@infradead.org
+ L:	linux-embedded@vger.kernel.org
+ S:	Maintained
+ 
+ EMULEX LPFC FC SCSI DRIVER
+ P:	James Smart
+ M:	james.smart@emulex.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://sourceforge.net/projects/lpfcxxxx
+ S:	Supported
++F:	drivers/scsi/lpfc/
+ 
+ EPSON 1355 FRAMEBUFFER DRIVER
+ P:	Christopher Hoover
+ M:	ch@murgatroid.com, ch@hpl.hp.com
+ S:	Maintained
++F:	drivers/video/epson1355fb.c
+ 
+ EPSON S1D13XXX FRAMEBUFFER DRIVER
+ P:	Kristoffer Ericson
+ M:	kristoffer.ericson@gmail.com
+ S:	Maintained
++F:	drivers/video/s1d13xxxfb.c
++F:	include/video/s1d13xxxfb.h
+ 
+ ETHEREXPRESS-16 NETWORK DRIVER
+ P:	Philip Blundell
+ M:	philb@gnu.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/eexpress.*
+ 
+ ETHERNET BRIDGE
+ P:	Stephen Hemminger
+ M:	shemminger@linux-foundation.org
+ L:	bridge@lists.linux-foundation.org
+ W:	http://www.linux-foundation.org/en/Net:Bridge
+ S:	Maintained
++F:	include/linux/netfilter_bridge/
++F:	net/bridge/
+ 
+ ETHERTEAM 16I DRIVER
+ P:	Mika Kuoppala
+ M:	miku@iki.fi
+ S:	Maintained
++F:	drivers/net/eth16i.c
+ 
+ EXT2 FILE SYSTEM
+ L:	linux-ext4@vger.kernel.org
+ S:	Maintained
++F:	fs/ext2/
++F:	include/linux/ext2*
+ 
+ EXT3 FILE SYSTEM
+ P:	Stephen Tweedie, Andrew Morton
+ M:	sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com
+ L:	linux-ext4@vger.kernel.org
+ S:	Maintained
++F:	fs/ext3/
++F:	include/linux/ext3*
+ 
+ EXT4 FILE SYSTEM
+ P:	Theodore Ts'o
+ M:	tytso@mit.edu, adilger@sun.com
+ L:	linux-ext4@vger.kernel.org
+ W:	http://ext4.wiki.kernel.org
+ S:	Maintained
++F:	fs/ext4/
+ 
+ F71805F HARDWARE MONITORING DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/f71805f
++F:	drivers/hwmon/f71805f.c
+ 
+ FARSYNC SYNCHRONOUS DRIVER
+ P:	Kevin Curtis
+ M:	kevin.curtis@farsite.co.uk
+ W:	http://www.farsite.co.uk/
+ S:	Supported
++F:	drivers/net/wan/farsync.*
+ 
+ FAULT INJECTION SUPPORT
+ P:	Akinobu Mita
+ M:	akinobu.mita@gmail.com
+ S:	Supported
++F:	Documentation/fault-injection/
++F:	lib/fault-inject.c
+ 
+ FILE LOCKING (flock() and fcntl()/lockf())
+ P:	Matthew Wilcox
+ M:	matthew@wil.cx
+ L:	linux-fsdevel@vger.kernel.org
+ S:	Maintained
++F:	include/linux/fcntl.h
++F:	include/linux/fs.h
++F:	fs/fcntl.c
++F:	fs/locks.c
+ 
+ FILESYSTEMS (VFS and infrastructure)
+ P:	Alexander Viro
+ M:	viro@zeniv.linux.org.uk
+ L:	linux-fsdevel@vger.kernel.org
+ S:	Maintained
++F:	fs/*
+ 
+ FIREWIRE SUBSYSTEM (drivers/firewire, <linux/firewire*.h>)
+ P:	Kristian Hoegsberg, Stefan Richter
+ M:	krh@redhat.com, stefanr@s5r6.in-berlin.de
+ L:	linux1394-devel@lists.sourceforge.net
+ W:	http://www.linux1394.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
+ S:	Maintained
++F:	drivers/firewire/
++F:	include/linux/firewire*.h
+ 
+ FIRMWARE LOADER (request_firmware)
+ L:	linux-kernel@vger.kernel.org
+ S:	Orphan
++F:	Documentation/firmware_class/
++F:	drivers/base/firmware*.c
++F:	include/linux/firmware.h
+ 
+ FPU EMULATOR
+ P:	Bill Metzenthen
+ M:	billm@suburbia.net
+ W:	http://suburbia.net/~billm/floating-point/emulator/
+ S:	Maintained
++F:	arch/x86/math-emu/
+ 
+ FRAME RELAY DLCI/FRAD (Sangoma drivers too)
+ P:	Mike McLagan
+ M:	mike.mclagan@linux.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/wan/dlci.c
++F:	drivers/net/wan/sdla.c
+ 
+ FRAMEBUFFER LAYER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ W:	http://linux-fbdev.sourceforge.net/
+ S:	Maintained
++F:	Documentation/fb/
++F:	drivers/video/fb*
++F:	include/linux/fb.h
+ 
+ FREESCALE DMA DRIVER
+ P:	Li Yang
+ M:	leoli@freescale.com
+ P:	Zhang Wei
+ M:	zw@zh-kernel.org
+ L:	linuxppc-embedded@ozlabs.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/dma/fsldma.*
+ 
+ FREESCALE I2C CPM DRIVER
+ P:	Jochen Friedrich
+ M:	jochen@scram.de
+ L:	linuxppc-dev@ozlabs.org
+ L:	linux-i2c@vger.kernel.org
+ S:	Maintained
++F:	drivers/i2c/busses/i2c-cpm.c
+ 
+ FREESCALE IMX / MXC FRAMEBUFFER DRIVER
+ P:	Sascha Hauer
+ M:	kernel@pengutronix.de
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-imx/include/mach/imxfb.h
++F:	drivers/video/imxfb.c
+ 
+ FREESCALE SOC FS_ENET DRIVER
+ P:	Pantelis Antoniou
+ M:	pantelis.antoniou@gmail.com
+ P:	Vitaly Bordug
+ M:	vbordug@ru.mvista.com
+ L:	linuxppc-dev@ozlabs.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/fs_enet/
++F:	include/linux/fs_enet_pd.h
+ 
+ FREESCALE QUICC ENGINE LIBRARY
+ P:	Timur Tabi
+ M:	timur@freescale.com
+ L:	linuxppc-dev@ozlabs.org
+ S:	Supported
++F:	arch/powerpc/sysdev/qe_lib/
++F:	arch/powerpc/include/asm/*qe.h
+ 
+ FREESCALE HIGHSPEED USB DEVICE DRIVER
+ P:	Li Yang
+ M:	leoli@freescale.com
+ L:	linux-usb@vger.kernel.org
+ L:	linuxppc-dev@ozlabs.org
+ S:	Maintained
++F:	drivers/usb/gadget/fsl_usb2_udc.c
+ 
+ FREESCALE QUICC ENGINE UCC ETHERNET DRIVER
+ P:	Li Yang
+ M:	leoli@freescale.com
+ L:	netdev@vger.kernel.org
+ L:	linuxppc-dev@ozlabs.org
+ S:	Maintained
++F:	drivers/net/ucc_geth*
+ 
+ FREESCALE QUICC ENGINE UCC UART DRIVER
+ P:	Timur Tabi
+ M:	timur@freescale.com
+ L:	linuxppc-dev@ozlabs.org
+ S:	Supported
++F:	drivers/serial/ucc_uart.c
+ 
+ FREESCALE SOC SOUND DRIVERS
+ P:	Timur Tabi
+ M:	timur@freescale.com
+ L:	alsa-devel@alsa-project.org
+ L:	linuxppc-dev@ozlabs.org
+ S:	Supported
++F:	sound/soc/fsl/
+ 
+ FREEVXFS FILESYSTEM
+ P:	Christoph Hellwig
+ M:	hch@infradead.org
+ W:	ftp://ftp.openlinux.org/pub/people/hch/vxfs
+ S:	Maintained
++F:	fs/freevxfs/
+ 
+ FREEZER
+ P:	Pavel Machek
+ M:	pavel@suse.cz
+ P:	Rafael J. Wysocki
+ M:	rjw@sisk.pl
+ L:	linux-pm@lists.linux-foundation.org
+ S:	Supported
++F:	Documentation/power/freezing-of-tasks.txt
++F:	include/linux/freezer.h
++F:	kernel/freezer.c
+ 
+ FTRACE
+ P:	Steven Rostedt
+ M:	rostedt@goodmis.org
+ S:	Maintained
++F:	Documentation/ftrace.txt
++F:	arch/*/*/*/ftrace.h
++F:	arch/*/kernel/ftrace.c
++F:	include/*/ftrace.h
++F:	kernel/trace/
+ 
+ FUJITSU FR-V (FRV) PORT
+ P:	David Howells
+ M:	dhowells@redhat.com
+ S:	Maintained
++F:	arch/frv/
++F:	include/asm-frv/
+ 
+ FUJITSU LAPTOP EXTRAS
+ P:	Jonathan Woithe
+ M:	jwoithe@physics.adelaide.edu.au
+ L:	linux-acpi@vger.kernel.org
+ S:	Maintained
++F:	drivers/platform/x86/fujitsu-laptop.c
+ 
+ FUSE: FILESYSTEM IN USERSPACE
+ P:	Miklos Szeredi
+ M:	miklos@szeredi.hu
+ L:	fuse-devel@lists.sourceforge.net
+ W:	http://fuse.sourceforge.net/
+ S:	Maintained
++F:	fs/fuse/
++F:	include/linux/fuse.h
+ 
+ FUTURE DOMAIN TMC-16x0 SCSI DRIVER (16-bit)
+ P:	Rik Faith
+ M:	faith@cs.unc.edu
+ L:	linux-scsi@vger.kernel.org
+ S:	Odd Fixes (e.g., new signatures)
++F:	drivers/scsi/fdomain.*
+ 
+ GDT SCSI DISK ARRAY CONTROLLER DRIVER
+ P:	Achim Leubner
+ M:	achim_leubner@adaptec.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.icp-vortex.com/
+ S:	Supported
++F:	drivers/scsi/gdt*
+ 
+ GENERIC GPIO I2C DRIVER
+ P:	Haavard Skinnemoen
+ M:	hskinnemoen@atmel.com
+ S:	Supported
++F:	drivers/i2c/busses/i2c-gpio.c
++F:	include/linux/i2c-gpio.h
+ 
+ GENERIC HDLC (WAN) DRIVERS
+ P:	Krzysztof Halasa
+ M:	khc@pm.waw.pl
+ W:	http://www.kernel.org/pub/linux/utils/net/hdlc/
+ S:	Maintained
++F:	drivers/net/wan/c101.c
++F:	drivers/net/wan/hd6457*
++F:	drivers/net/wan/hdlc*
++F:	drivers/net/wan/n2.c
++F:	drivers/net/wan/pc300too.c
++F:	drivers/net/wan/pci200syn.c
++F:	drivers/net/wan/wanxl*
+ 
+ GFS2 FILE SYSTEM
+ P:	Steven Whitehouse
+ M:	swhiteho@redhat.com
+ L:	cluster-devel@redhat.com
+ W:	http://sources.redhat.com/cluster/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git
+ T:	git kernel.org:/pub/scm/linux/kernel/git/steve/gfs2-2.6-nmw.git
+ S:	Supported
++F:	Documentation/filesystems/gfs2.txt
++F:	fs/gfs2/
++F:	include/linux/gfs2_ondisk.h
++F:	include/linux/lm_interface.h
+ 
+ GIGASET ISDN DRIVERS
+ P:	Hansjoerg Lipp
+ M:	hjlipp@web.de
+ P:	Tilman Schmidt
+ M:	tilman@imap.cc
+ L:	gigaset307x-common@lists.sourceforge.net
+ W:	http://gigaset307x.sourceforge.net/
+ S:	Maintained
++F:	Documentation/isdn/README.gigaset
++F:	drivers/isdn/gigaset/
++F:	include/linux/gigaset_dev.h
+ 
+ HARD DRIVE ACTIVE PROTECTION SYSTEM (HDAPS) DRIVER
+ P:	Frank Seidel
+ M:	frank@f-seidel.de
+ L:	lm-sensors@lm-sensors.org
+ W:	http://www.kernel.org/pub/linux/kernel/people/fseidel/hdaps/
+ S:	Maintained
++F:	drivers/hwmon/hdaps.c
+ 
+ GSPCA FINEPIX SUBDRIVER
+ P:	Frank Zago
+ M:	frank@zago.net
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	drivers/media/video/gspca/finepix.c
+ 
+ GSPCA M5602 SUBDRIVER
+ P:	Erik Andren
+ M:	erik.andren@gmail.com
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	drivers/media/video/gspca/m5602/
+ 
+ GSPCA PAC207 SONIXB SUBDRIVER
+ P:	Hans de Goede
+ M:	hdegoede@redhat.com
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	drivers/media/video/gspca/pac207.c
+ 
+ GSPCA T613 SUBDRIVER
+ P:	Leandro Costantino
+ M:	lcostantino@gmail.com
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	drivers/media/video/gspca/t613.c
+ 
+ GSPCA USB WEBCAM DRIVER
+ P:	Jean-Francois Moine
+ M:	moinejf@free.fr
+ W:	http://moinejf.free.fr
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	drivers/media/video/gspca/
+ 
+ HARDWARE MONITORING
+ L:	lm-sensors@lm-sensors.org
+ W:	http://www.lm-sensors.org/
+ S:	Orphan
++F:	drivers/hwmon/
+ 
+ HARDWARE RANDOM NUMBER GENERATOR CORE
+ S:	Orphan
++F:	Documentation/hw_random.txt
++F:	drivers/char/hw_random/
++F:	include/linux/hw_random.h
+ 
+ HARMONY SOUND DRIVER
+ P:	Kyle McMartin
+ M:	kyle@mcmartin.ca
+ L:	linux-parisc@vger.kernel.org
+ S:	Maintained
++F:	sound/parisc/harmony.*
+ 
+ HAYES ESP SERIAL DRIVER
+ P:	Andrew J. Robinson
+ M:	arobinso@nyx.net
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.nyx.net/~arobinso
+ S:	Maintained
++F:	Documentation/serial/hayes-esp.txt
++F:	drivers/char/esp.c
+ 
+ HEWLETT-PACKARD FIBRE CHANNEL 64-bit/66MHz PCI non-intelligent HBA
+ P:	Chirag Kantharia
+ M:	chirag.kantharia@hp.com
+ L:	iss_storagedev@hp.com
+ S:	Maintained
+ 
+ HEWLETT-PACKARD SMART2 RAID DRIVER
+ P:	Chirag Kantharia
+ M:	chirag.kantharia@hp.com
+ L:	iss_storagedev@hp.com
+ S:	Maintained
++F:	Documentation/blockdev/cpqarray.txt
++F:	drivers/block/cpqarray.*
+ 
+ HEWLETT-PACKARD SMART CISS RAID DRIVER (cciss)
+ P:	Mike Miller
+ M:	mike.miller@hp.com
+ L:	iss_storagedev@hp.com
+ S:	Supported
++F:	Documentation/blockdev/cciss.txt
++F:	drivers/block/cciss*
++F:	include/linux/cciss_ioctl.h
+ 
+ HFS FILESYSTEM
+ P:	Roman Zippel
+ M:	zippel@linux-m68k.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/filesystems/hfs.txt
++F:	fs/hfs/
+ 
+ HGA FRAMEBUFFER DRIVER
+ P:	Ferenc Bakonyi
+ M:	fero@drama.obuda.kando.hu
+ L:	linux-nvidia@lists.surfsouth.com
+ W:	http://drama.obuda.kando.hu/~fero/cgi-bin/hgafb.shtml
+ S:	Maintained
++F:	drivers/video/hgafb.c
+ 
+ HIBERNATION (aka Software Suspend, aka swsusp)
+ P:	Pavel Machek
+ M:	pavel@ucw.cz
+ P:	Rafael J. Wysocki
+ M:	rjw@sisk.pl
+ L:	linux-pm@lists.linux-foundation.org
+ S:	Supported
++F:	arch/x86/power/
++F:	drivers/base/power/
++F:	kernel/power/
++F:	include/linux/suspend.h
++F:	include/linux/freezer.h
++F:	include/linux/pm.h
++F:	include/asm-*/suspend*.h
++F:	arch/*/include/asm/suspend*.h
+ 
+ HID CORE LAYER
+ P:	Jiri Kosina
+ M:	jkosina@suse.cz
+ L:	linux-input@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git
+ S:	Maintained
++F:	drivers/hid/
++F:	include/linux/hid*
+ 
+ HIGH-RESOLUTION TIMERS, CLOCKEVENTS, DYNTICKS
+ P:	Thomas Gleixner
+ M:	tglx@linutronix.de
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/timers/
++F:	kernel/hrtimer.c
++F:	include/linux/hrtimer.h
+ 
+ HIGH-SPEED SCC DRIVER FOR AX.25
+ P:	Klaus Kudielka
+ M:	klaus.kudielka@ieee.org
+ L:	linux-hams@vger.kernel.org
+ W:	http://www.nt.tuwien.ac.at/~kkudielk/Linux/
+ S:	Maintained
++F:	drivers/net/hamradio/dmascc.c
++F:	drivers/net/hamradio/scc.c
+ 
+ HIGHPOINT ROCKETRAID 3xxx RAID DRIVER
+ P:	HighPoint Linux Team
+ M:	linux@highpoint-tech.com
+ W:	http://www.highpoint-tech.com
+ S:	Supported
++F:	Documentation/scsi/hptiop.txt
++F:	drivers/scsi/hptiop.c
+ 
+ HIPPI
+ P:	Jes Sorensen
+ M:	jes@trained-monkey.org
+ L:	linux-hippi@sunsite.dk
+ S:	Maintained
++F:	include/linux/hippidevice.h
++F:	include/linux/if_hippi.h
++F:	net/802/hippi.c
+ 
+ HOST AP DRIVER
+ P:	Jouni Malinen
+ M:	j@w1.fi
+ L:	hostap@shmoo.com (subscribers-only)
+ L:	linux-wireless@vger.kernel.org
+ W:	http://hostap.epitest.fi/
+ S:	Maintained
++F:	drivers/net/wireless/hostap/
+ 
+ HP COMPAQ TC1100 TABLET WMI EXTRAS DRIVER
+ P:	Carlos Corbacho
+ M:	carlos@strangeworlds.co.uk
+ S:	Odd Fixes
++F:	drivers/platform/x86/tc1100-wmi.c
+ 
+ HP100:	Driver for HP 10/100 Mbit/s Voice Grade Network Adapter Series
+ P:	Jaroslav Kysela
+ M:	perex@perex.cz
+ S:	Maintained
++F:	drivers/net/hp100.*
+ 
+ HPET:	High Precision Event Timers driver (drivers/char/hpet.c)
+ P:	Clemens Ladisch
+ M:	clemens@ladisch.de
+ S:	Maintained
++F:	Documentation/timers/hpet.txt
++F:	drivers/char/hpet.c
++F:	include/linux/hpet.h
+ 
+ HPET:	i386
+ P:	Venkatesh Pallipadi (Venki)
+ M:	venkatesh.pallipadi@intel.com
+ S:	Maintained
++F:	arch/x86/kernel/hpet.c
++F:	arch/x86/include/asm/hpet.h
+ 
+ HPET:	x86_64
+ P:	Vojtech Pavlik
+ M:	vojtech@suse.cz
+ S:	Maintained
+ 
+ HPET:	ACPI hpet.c
+ P:	Bob Picco
+ M:	bob.picco@hp.com
+ S:	Maintained
++F:	drivers/char/hpet.c
+ 
+ HPFS FILESYSTEM
+ P:	Mikulas Patocka
+ M:	mikulas@artax.karlin.mff.cuni.cz
+ W:	http://artax.karlin.mff.cuni.cz/~mikulas/vyplody/hpfs/index-e.cgi
+ S:	Maintained
++F:	fs/hpfs/
+ 
+ HSO	3G Modem Driver (hso.c)
+ P:	Denis Joseph Barrow
+ M:	d.barow@option.com
+ W:	http://www.pharscape.org
+ S:	Maintained
++F:	drivers/net/usb/hso.c
+ 
+ HTCPEN TOUCHSCREEN DRIVER
+ P:	Pau Oliva Fora
+ M:	pof@eslack.org
+ L:	linux-input@vger.kernel.org
+ S:	Maintained
++F:	drivers/input/touchscreen/htcpen.c
+ 
+ HUGETLB FILESYSTEM
+ P:	William Irwin
+ M:	wli@holomorphy.com
+ S:	Maintained
++F:	fs/hugetlbfs/
+ 
+ I2C/SMBUS STUB DRIVER
+ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+ L:	linux-i2c@vger.kernel.org
+ S:	Maintained
++F:	drivers/i2c/busses/i2c-stub.c
+ 
+ I2C SUBSYSTEM
+ P:	Jean Delvare (PC drivers, core)
+ M:	khali@linux-fr.org
+ P:	Ben Dooks (embedded platforms)
+ M:	ben-linux@fluff.org
+ L:	linux-i2c@vger.kernel.org
+ W:	http://i2c.wiki.kernel.org/
+ T:	quilt kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/
+ S:	Maintained
++F:	Documentation/i2c/
++F:	drivers/i2c/
++F:	include/linux/i2c.h
++F:	include/linux/i2c-dev.h
++F:	include/linux/i2c-id.h
+ 
+ I2C-TINY-USB DRIVER
+ P:	Till Harbaum
+ M:	till@harbaum.org
+ L:	linux-i2c@vger.kernel.org
+ T:	http://www.harbaum.org/till/i2c_tiny_usb
+ S:	Maintained
++F:	drivers/i2c/busses/i2c-tiny-usb.c
+ 
+ i386 BOOT CODE
+ P:	H. Peter Anvin
+ M:	hpa@zytor.com
+ L:	Linux-Kernel@vger.kernel.org
+ S:	Maintained
++F:	arch/x86/boot/
+ 
+ i386 SETUP CODE / CPU ERRATA WORKAROUNDS
+ P:	H. Peter Anvin
+ M:	hpa@zytor.com
+ T:	git.kernel.org:/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git
+ S:	Maintained
+ 
+ IA64 (Itanium) PLATFORM
+ P:	Tony Luck
+ M:	tony.luck@intel.com
+ L:	linux-ia64@vger.kernel.org
+ W:	http://www.ia64-linux.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+ S:	Maintained
++F:	arch/ia64/
+ 
+ IBM MCA SCSI SUBSYSTEM DRIVER
+ P:	Michael Lang
+ M:	langa2@kph.uni-mainz.de
+ W:	http://www.uni-mainz.de/~langm000/linux.html
+ S:	Maintained
++F:	drivers/scsi/ibmmca.c
+ 
+ IBM Power Linux RAID adapter
+ P:	Brian King
+ M:	brking@us.ibm.com
+ S:	Supported
++F:	drivers/scsi/ipr.*
+ 
+ IBM ServeRAID RAID DRIVER
+ P:	Jack Hammer
+ P:	Dave Jeffery
+ M:	ipslinux@adaptec.com
+ W:	http://www.developer.ibm.com/welcome/netfinity/serveraid.html
+ S:	Supported
++F:	drivers/scsi/ips.*
+ 
+ IDE SUBSYSTEM
+ P:	Bartlomiej Zolnierkiewicz
+ M:	bzolnier@gmail.com
+ L:	linux-ide@vger.kernel.org
+ T:	quilt kernel.org/pub/linux/kernel/people/bart/pata-2.6/
+ S:	Maintained
++F:	Documentation/ide/
++F:	drivers/ide/
++F:	include/linux/ide.h
+ 
+ IDE/ATAPI CDROM DRIVER
+ P:	Borislav Petkov
+ M:	petkovbb@gmail.com
+ L:	linux-ide@vger.kernel.org
+ S:	Maintained
++F:	Documentation/cdrom/ide-cd
++F:	drivers/ide/ide-cd*
+ 
+ IDE/ATAPI FLOPPY DRIVERS
+ P:	Paul Bristow
+ M:	Paul Bristow <paul@paulbristow.net>
+ W:	http://paulbristow.net/linux/idefloppy.html
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/ide/ide-floppy*
+ 
+ IDE/ATAPI TAPE DRIVERS
+ P:	Gadi Oxman
+ M:	Gadi Oxman <gadio@netvision.net.il>
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/ide/ide-tape.c
+ 
+ IDLE-I7300
+ P:	Andy Henroid
+ M:	andrew.d.henroid@intel.com
+ L:	linux-pm@lists.linux-foundation.org
+ S:	Supported
++F:	drivers/idle/i7300_idle.c
+ 
+ IEEE 1394 SUBSYSTEM (drivers/ieee1394)
+ P:	Ben Collins
+ M:	ben.collins@ubuntu.com
+ P:	Stefan Richter
+ M:	stefanr@s5r6.in-berlin.de
+ L:	linux1394-devel@lists.sourceforge.net
+ W:	http://www.linux1394.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git
+ S:	Maintained
++F:	drivers/ieee1394/
+ 
+ IEEE 1394 RAW I/O DRIVER (raw1394)
+ P:	Dan Dennedy
+ M:	dan@dennedy.org
+ P:	Stefan Richter
+ M:	stefanr@s5r6.in-berlin.de
+ L:	linux1394-devel@lists.sourceforge.net
+ S:	Maintained
++F:	drivers/ieee1394/raw1394*
+ 
+ IMS TWINTURBO FRAMEBUFFER DRIVER
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Orphan
++F:	drivers/video/imsttfb.c
+ 
+ INFINIBAND SUBSYSTEM
+ P:	Roland Dreier
+ M:	rolandd@cisco.com
+ P:	Sean Hefty
+ M:	sean.hefty@intel.com
+ P:	Hal Rosenstock
+ M:	hal.rosenstock@gmail.com
+ L:	general@lists.openfabrics.org (moderated for non-subscribers)
+ W:	http://www.openib.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git
+ S:	Supported
++F:	Documentation/infiniband/
++F:	drivers/infiniband/
++F:	include/linux/if_infiniband.h
+ 
+ INOTIFY
+ P:	John McCutchan
+ M:	john@johnmccutchan.com
+ P:	Robert Love
+ M:	rlove@rlove.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/filesystems/inotify.txt
++F:	fs/notify/inotify/
++F:	include/linux/inotify.h
+ 
+ INPUT (KEYBOARD, MOUSE, JOYSTICK, TOUCHSCREEN) DRIVERS
+ P:	Dmitry Torokhov
+ M:	dmitry.torokhov@gmail.com
+ M:	dtor@mail.ru
+ L:	linux-input@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/dtor/input.git
+ S:	Maintained
++F:	drivers/input/
+ 
+ INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)
+ P:	Sylvain Meyer
+ M:	sylvain.meyer@worldonline.fr
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
++F:	Documentation/fb/intelfb.txt
++F:	drivers/video/intelfb/
+ 
+ INTEL 810/815 FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
++F:	drivers/video/i810/
+ 
+ INTEL MENLOW THERMAL DRIVER
+ P:	Sujith Thomas
+ M:	sujith.thomas@intel.com
+ L:	linux-acpi@vger.kernel.org
+ W:	http://www.lesswatts.org/projects/acpi/
+ S:	Supported
++F:	drivers/platform/x86/intel_menlow.c
+ 
+ INTEL IA32 MICROCODE UPDATE SUPPORT
+ P:	Tigran Aivazian
+ M:	tigran@aivazian.fsnet.co.uk
+ S:	Maintained
++F:	arch/x86/kernel/microcode_core.c
++F:	arch/x86/kernel/microcode_intel.c
+ 
+ INTEL I/OAT DMA DRIVER
+ P:	Maciej Sosnowski
+ M:	maciej.sosnowski@intel.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	drivers/dma/ioat*
+ 
+ INTEL IOMMU (VT-d)
+ P:	David Woodhouse
+ M:	dwmw2@infradead.org
+ L:	iommu@lists.linux-foundation.org
+ T:	git://git.infradead.org/iommu-2.6.git
+ S:	Supported
++F:	drivers/pci/intel-iommu.c
++F:	include/linux/intel-iommu.h
+ 
+ INTEL IOP-ADMA DMA DRIVER
+ P:	Dan Williams
+ M:	dan.j.williams@intel.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	drivers/dma/iop-adma.c
+ 
+ INTEL IXP4XX QMGR, NPE, ETHERNET and HSS SUPPORT
+ P:	Krzysztof Halasa
+ M:	khc@pm.waw.pl
+ S:	Maintained
++F:	arch/arm/mach-ixp4xx/include/mach/qmgr.h
++F:	arch/arm/mach-ixp4xx/include/mach/npe.h
++F:	arch/arm/mach-ixp4xx/ixp4xx_qmgr.c
++F:	arch/arm/mach-ixp4xx/ixp4xx_npe.c
++F:	drivers/net/arm/ixp4xx_eth.c
++F:	drivers/net/wan/ixp4xx_hss.c
+ 
+ INTEL IXP4XX RANDOM NUMBER GENERATOR SUPPORT
+ P:	Deepak Saxena
+ M:	dsaxena@plexity.net
+ S:	Maintained
++F:	drivers/char/hw_random/ixp4xx-rng.c
+ 
+ INTEL IXP2000 ETHERNET DRIVER
+ P:	Lennert Buytenhek
+ M:	kernel@wantstofly.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/ixp2000/
+ 
+ INTEL ETHERNET DRIVERS (e100/e1000/e1000e/igb/ixgb/ixgbe)
+ P:	Jeff Kirsher
+ M:	jeffrey.t.kirsher@intel.com
+ P:	Jesse Brandeburg
+ M:	jesse.brandeburg@intel.com
+ P:	Bruce Allan
+ M:	bruce.w.allan@intel.com
+ P:	PJ Waskiewicz
+ M:	peter.p.waskiewicz.jr@intel.com
+ P:	John Ronciak
+ M:	john.ronciak@intel.com
+ L:	e1000-devel@lists.sourceforge.net
+ W:	http://e1000.sourceforge.net/
+ S:	Supported
++F:	drivers/net/e100.c
++F:	drivers/net/e1000/
++F:	drivers/net/e1000e/
++F:	drivers/net/igb/
++F:	drivers/net/ixgb/
++F:	drivers/net/ixgbe/
+ 
+ INTEL PRO/WIRELESS 2100 NETWORK CONNECTION SUPPORT
+ P:	Zhu Yi
+ M:	yi.zhu@intel.com
+ P:	James Ketrenos
+ M:	jketreno@linux.intel.com
+ P:	Reinette Chatre
+ M:	reinette.chatre@intel.com
+ L:	linux-wireless@vger.kernel.org
+ L:	ipw2100-devel@lists.sourceforge.net
+ W:	http://lists.sourceforge.net/mailman/listinfo/ipw2100-devel
+ W:	http://ipw2100.sourceforge.net
+ S:	Supported
++F:	Documentation/networking/README.ipw2100
++F:	drivers/net/wireless/ipw2x00/ipw2100.*
+ 
+ INTEL PRO/WIRELESS 2915ABG NETWORK CONNECTION SUPPORT
+ P:	Zhu Yi
+ M:	yi.zhu@intel.com
+ P:	James Ketrenos
+ M:	jketreno@linux.intel.com
+ P:	Reinette Chatre
+ M:	reinette.chatre@intel.com
+ L:	linux-wireless@vger.kernel.org
+ L:	ipw2100-devel@lists.sourceforge.net
+ W:	http://lists.sourceforge.net/mailman/listinfo/ipw2100-devel
+ W:	http://ipw2200.sourceforge.net
+ S:	Supported
++F:	Documentation/networking/README.ipw2200
++F:	drivers/net/wireless/ipw2x00/ipw2200.*
+ 
+ INTEL WIRELESS WIMAX CONNECTION 2400
+ P:	Inaky Perez-Gonzalez
+ M:	inaky.perez-gonzalez@intel.com
+ M:	linux-wimax@intel.com
+ L:	wimax@linuxwimax.org
+ S:	Supported
+ W:	http://linuxwimax.org
++F:	Documentation/wimax/README.i2400m
++F:	drivers/net/wimax/i2400m/
++F:	include/linux/wimax/i2400m.h
+ 
+ INTEL WIRELESS WIFI LINK (iwlwifi)
+ P:	Zhu Yi
+ M:	yi.zhu@intel.com
+ P:	Reinette Chatre
+ M:	reinette.chatre@intel.com
+ L:	linux-wireless@vger.kernel.org
+ L:	ipw3945-devel@lists.sourceforge.net
+ W:	http://intellinuxwireless.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/iwlwifi/iwlwifi-2.6.git
+ S:	Supported
++F:	drivers/net/wireless/iwlwifi/
+ 
+ IOC3 ETHERNET DRIVER
+ P:	Ralf Baechle
+ M:	ralf@linux-mips.org
+ L:	linux-mips@linux-mips.org
+ S:	Maintained
++F:	drivers/net/ioc3-eth.c
+ 
+ IOC3 SERIAL DRIVER
+ P:	Pat Gefre
+ M:	pfg@sgi.com
+ L:	linux-mips@linux-mips.org
+ S:	Maintained
++F:	drivers/serial/ioc3_serial.c
+ 
+ IP MASQUERADING
+ P:	Juanjo Ciarlante
+ M:	jjciarla@raiz.uncu.edu.ar
+ S:	Maintained
++F:	net/ipv4/netfilter/ipt_MASQUERADE.c
+ 
+ IP1000A 10/100/1000 GIGABIT ETHERNET DRIVER
+ P:	Francois Romieu
+ M:	romieu@fr.zoreil.com
+ P:	Sorbica Shieh
+ M:	sorbica@icplus.com.tw
+ P:	Jesse Huang
+ M:	jesse@icplus.com.tw
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/ipg.c
+ 
+ IPATH DRIVER
+ P:	Ralph Campbell
+ M:	infinipath@qlogic.com
+ L:	general@lists.openfabrics.org
+ T:	git git://git.qlogic.com/ipath-linux-2.6
+ S:	Supported
++F:	drivers/infiniband/hw/ipath/
+ 
+ IPMI SUBSYSTEM
+ P:	Corey Minyard
+ M:	minyard@acm.org
+ L:	openipmi-developer@lists.sourceforge.net
+ W:	http://openipmi.sourceforge.net/
+ S:	Supported
++F:	Documentation/IPMI.txt
++F:	drivers/char/ipmi/
++F:	include/linux/ipmi*
+ 
+ IPS SCSI RAID DRIVER
+ P:	Adaptec OEM Raid Solutions
+ M:	aacraid@adaptec.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.adaptec.com/
+ S:	Maintained
++F:	drivers/scsi/ips*
+ 
+ IPVS
+ P:	Wensong Zhang
+ M:	wensong@linux-vs.org
+ P:	Simon Horman
+ M:	horms@verge.net.au
+ P:	Julian Anastasov
+ M:	ja@ssi.bg
+ L:	netdev@vger.kernel.org
+ L:	lvs-devel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/networking/ipvs-sysctl.txt
++F:	net/netfilter/ipvs/
+ 
+ IPWIRELESS DRIVER
+ P:	Jiri Kosina
+ M:	jkosina@suse.cz
+ P:	David Sterba
+ M:	dsterba@suse.cz
+ S:	Maintained
+ T:	git://git.kernel.org/pub/scm/linux/kernel/git/jikos/ipwireless_cs.git
++F:	drivers/char/pcmcia/ipwireless/
+ 
+ IPX NETWORK LAYER
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	include/linux/ipx.h
++F:	include/net/ipx.h
++F:	net/ipx/
+ 
+ IRDA SUBSYSTEM
+ P:	Samuel Ortiz
+ M:	samuel@sortiz.org
+ L:	irda-users@lists.sourceforge.net (subscribers-only)
+ W:	http://irda.sourceforge.net/
+ S:	Maintained
++F:	Documentation/networking/irda.txt
++F:	drivers/net/irda/
++F:	include/net/irda/
++F:	net/irda/
+ 
+ ISAPNP
+ P:	Jaroslav Kysela
+ M:	perex@perex.cz
+ S:	Maintained
++F:	Documentation/isapnp.txt
++F:	drivers/pnp/isapnp/
++F:	include/linux/isapnp.h
+ 
+ ISCSI
+ P:	Mike Christie
+ M:	michaelc@cs.wisc.edu
+ L:	open-iscsi@googlegroups.com
+ W:	www.open-iscsi.org
+ T:	git kernel.org:/pub/scm/linux/kernel/mnc/linux-2.6-iscsi.git
+ S:	Maintained
++F:	drivers/scsi/*iscsi*
++F:	include/scsi/*iscsi*
+ 
+ ISDN SUBSYSTEM
+ P:	Karsten Keil
+ M:	isdn@linux-pingi.de
+ L:	isdn4linux@listserv.isdn4linux.de (subscribers-only)
+ W:	http://www.isdn4linux.de
+ T:	git kernel.org:/pub/scm/linux/kernel/kkeil/isdn-2.6.git
+ S:	Maintained
++F:	Documentation/isdn/
++F:	drivers/isdn/
++F:	include/linux/isdn.h
++F:	include/linux/isdn/
+ 
+ ISDN SUBSYSTEM (Eicon active card driver)
+ P:	Armin Schindler
+ M:	mac@melware.de
+ L:	isdn4linux@listserv.isdn4linux.de (subscribers-only)
+ W:	http://www.melware.de
+ S:	Maintained
++F:	drivers/isdn/hardware/eicon/
+ 
+ IVTV VIDEO4LINUX DRIVER
+ P:	Hans Verkuil
+ M:	hverkuil@xs4all.nl
+ L:	ivtv-devel@ivtvdriver.org
+ L:	ivtv-users@ivtvdriver.org
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ W:	http://www.ivtvdriver.org
+ S:	Maintained
++F:	Documentation/video4linux/*.ivtv
++F:	drivers/media/video/ivtv/
++F:	include/linux/ivtv*
+ 
+ JFS FILESYSTEM
+ P:	Dave Kleikamp
+ M:	shaggy@austin.ibm.com
+ L:	jfs-discussion@lists.sourceforge.net
+ W:	http://jfs.sourceforge.net/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git
+ S:	Supported
++F:	Documentation/filesystems/jfs.txt
++F:	fs/jfs/
+ 
+ JME NETWORK DRIVER
+ P:	Guo-Fu Tseng
+ M:	cooldavid@cooldavid.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/jme.*
+ 
+ JOURNALLING FLASH FILE SYSTEM V2 (JFFS2)
+ P:	David Woodhouse
+ M:	dwmw2@infradead.org
+ L:	linux-mtd@lists.infradead.org
+ W:	http://www.linux-mtd.infradead.org/doc/jffs2.html
+ S:	Maintained
++F:	fs/jffs2/
++F:	include/linux/jffs2.h
++F:	include/mtd/jffs2-user.h
+ 
+ JOURNALLING LAYER FOR BLOCK DEVICES (JBD)
+ P:	Stephen Tweedie, Andrew Morton
+ M:	sct@redhat.com, akpm@linux-foundation.org
+ L:	linux-ext4@vger.kernel.org
+ S:	Maintained
++F:	fs/jbd*/
++F:	include/linux/ext*jbd*.h
++F:	include/linux/jbd*.h
+ 
+ K8TEMP HARDWARE MONITORING DRIVER
+ P:	Rudolf Marek
+ M:	r.marek@assembler.cz
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/k8temp
++F:	drivers/hwmon/k8temp.c
+ 
+ KCONFIG
+ P:	Roman Zippel
+ M:	zippel@linux-m68k.org
+ L:	linux-kbuild@vger.kernel.org
+ S:	Maintained
++F:	Documentation/kbuild/kconfig-language.txt
++F:	scripts/kconfig/
+ 
+ KDUMP
+ P:	Vivek Goyal
+ M:	vgoyal@redhat.com
+ P:	Haren Myneni
+ M:	hbabu@us.ibm.com
+ L:	kexec@lists.infradead.org
+ L:	linux-kernel@vger.kernel.org
+ W:	http://lse.sourceforge.net/kdump/
+ S:	Maintained
++F:	Documentation/kdump
+ 
+ KERNEL AUTOMOUNTER (AUTOFS)
+ P:	H. Peter Anvin
+ M:	hpa@zytor.com
+ L:	autofs@linux.kernel.org
+ S:	Odd Fixes
++F:	fs/autofs/
+ 
+ KERNEL AUTOMOUNTER v4 (AUTOFS4)
+ P:	Ian Kent
+ M:	raven@themaw.net
+ L:	autofs@linux.kernel.org
+ S:	Maintained
++F:	fs/autofs4/
+ 
+ KERNEL BUILD (kbuild: Makefile, scripts/Makefile.*)
+ P:	Sam Ravnborg
+ M:	sam@ravnborg.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/sam/kbuild-next.git
+ T:	git kernel.org:/pub/scm/linux/kernel/git/sam/kbuild-fixes.git
+ L:	linux-kbuild@vger.kernel.org
+ S:	Maintained
++F:	Documentation/kbuild/
++F:	Makefile
++F:	scripts/Makefile.*
+ 
+ KERNEL JANITORS
+ P:	Several
+ L:	kernel-janitors@vger.kernel.org
+ W:	http://www.kerneljanitors.org/
+ S:	Maintained
+ 
+ KERNEL NFSD, SUNRPC, AND LOCKD SERVERS
+ P:	J. Bruce Fields
+ M:	bfields@fieldses.org
+ P:	Neil Brown
+ M:	neilb@suse.de
+ L:	linux-nfs@vger.kernel.org
+ W:	http://nfs.sourceforge.net/
+ S:	Supported
++F:	fs/nfsd/
++F:	include/linux/nfsd/
++F:	fs/lockd/
++F:	fs/nfs_common/
++F:	net/sunrpc/
++F:	include/linux/lockd/
++F:	include/linux/sunrpc/
+ 
+ KERNEL VIRTUAL MACHINE (KVM)
+ P:	Avi Kivity
+ M:	avi@redhat.com
+ L:	kvm@vger.kernel.org
+ W:	http://kvm.qumranet.com
+ S:	Supported
++F:	Documentation/*/kvm.txt
++F:	arch/*/kvm/
++F:	arch/*/include/asm/kvm*
++F:	include/linux/kvm*
++F:	virt/kvm/
+ 
+ KERNEL VIRTUAL MACHINE (KVM) FOR AMD-V
+ P:	Joerg Roedel
+ M:	joerg.roedel@amd.com
+ L:	kvm@vger.kernel.org
+ W:	http://kvm.qumranet.com
+ S:	Supported
++F:	arch/x86/include/asm/svm.h
++F:	arch/x86/kvm/kvm_svm.h
++F:	arch/x86/kvm/svm.c
+ 
+ KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC
+ P:	Hollis Blanchard
+ M:	hollisb@us.ibm.com
+ L:	kvm-ppc@vger.kernel.org
+ W:	http://kvm.qumranet.com
+ S:	Supported
++F:	arch/powerpc/include/asm/kvm*
++F:	arch/powerpc/kvm/
+ 
+ KERNEL VIRTUAL MACHINE For Itanium (KVM/IA64)
+ P:	Xiantao Zhang
+ M:	xiantao.zhang@intel.com
+ L:	kvm-ia64@vger.kernel.org
+ W:	http://kvm.qumranet.com
+ S:	Supported
++F:	Documentation/ia64/kvm.txt
++F:	arch/ia64/include/asm/kvm*
++F:	arch/ia64/kvm/
+ 
+ KERNEL VIRTUAL MACHINE for s390 (KVM/s390)
+ P:	Carsten Otte
+ M:	cotte@de.ibm.com
+ P:	Christian Borntraeger
+ M:	borntraeger@de.ibm.com
+ M:	linux390@de.ibm.com
+ L:	linux-s390@vger.kernel.org
+ W:	http://www.ibm.com/developerworks/linux/linux390/
+ S:	Supported
++F:	Documentation/s390/kvm.txt
++F:	arch/s390/include/asm/kvm*
++F:	arch/s390/kvm
+ 
+ KEXEC
+ P:	Eric Biederman
+ M:	ebiederm@xmission.com
+ W:	http://ftp.kernel.org/pub/linux/kernel/people/horms/kexec-tools/
+ L:	linux-kernel@vger.kernel.org
+ L:	kexec@lists.infradead.org
+ S:	Maintained
++F:	include/linux/kexec.h
++F:	kernel/kexec.c
+ 
+ KGDB
+ P:	Jason Wessel
+ M:	jason.wessel@windriver.com
+ L:	kgdb-bugreport@lists.sourceforge.net
+ S:	Maintained
++F:	Documentation/DocBook/kgdb.tmpl
++F:	drivers/misc/kgdbts.c
++F:	drivers/serial/kgdboc.c
++F:	include/linux/kgdb.h
++F:	kernel/kgdb.c
+ 
+ KPROBES
+ P:	Ananth N Mavinakayanahalli
+ M:	ananth@in.ibm.com
+ P:	Anil S Keshavamurthy
+ M:	anil.s.keshavamurthy@intel.com
+ P:	David S. Miller
+ M:	davem@davemloft.net
+ P:	Masami Hiramatsu
+ M:	mhiramat@redhat.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/kprobes.txt
++F:	include/linux/kprobes.h
++F:	kernel/kprobes.c
+ 
+ KS0108 LCD CONTROLLER DRIVER
+ P:	Miguel Ojeda Sandonis
+ M:	miguel.ojeda.sandonis@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://miguelojeda.es/auxdisplay.htm
+ W:	http://jair.lab.fi.uva.es/~migojed/auxdisplay.htm
+ S:	Maintained
++F:	Documentation/auxdisplay/ks0108
++F:	drivers/auxdisplay/ks0108.c
++F:	include/linux/ks0108.h
+ 
+ LAPB module
+ L:	linux-x25@vger.kernel.org
+ S:	Orphan
++F:	Documentation/networking/lapb-module.txt
++F:	include/*/lapb.h
++F:	net/lapb/
+ 
+ LASI 53c700 driver for PARISC
+ P:	James E.J. Bottomley
+ M:	James.Bottomley@HansenPartnership.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	Documentation/scsi/53c700.txt
++F:	drivers/scsi/53c700*
+ 
+ LED SUBSYSTEM
+ P:	Richard Purdie
+ M:	rpurdie@rpsys.net
+ S:	Maintained
++F:	drivers/leds/
++F:	include/linux/leds.h
+ 
+ LEGO USB Tower driver
+ P:	Juergen Stuber
+ M:	starblue@users.sourceforge.net
+ L:	legousb-devel@lists.sourceforge.net
+ W:	http://legousb.sourceforge.net/
+ S:	Maintained
++F:	drivers/usb/misc/legousbtower.c
+ 
+ LGUEST
+ P:	Rusty Russell
+ M:	rusty@rustcorp.com.au
+ L:	lguest@ozlabs.org
+ W:	http://lguest.ozlabs.org/
+ S:	Maintained
++F:	Documentation/lguest/
++F:	arch/x86/lguest/
++F:	drivers/lguest/
++F:	include/linux/lguest*.h
++F:	arch/x86/include/asm/lguest*.h
+ 
+ LINUX FOR IBM pSERIES (RS/6000)
+ P:	Paul Mackerras
+ M:	paulus@au.ibm.com
+ W:	http://www.ibm.com/linux/ltc/projects/ppc
+ S:	Supported
+ 
+ LINUX FOR NCR VOYAGER
+ P:	James Bottomley
+ M:	James.Bottomley@HansenPartnership.com
+ W:	http://www.hansenpartnership.com/voyager
+ S:	Maintained
++F:	Documentation/voyager.txt
++F:	arch/x86/boot/voyager.c
++F:	arch/x86/mach-voyager/
++F:	arch/x86/include/asm/mach-voyager/
++F:	arch/x86/include/asm/voyager.h
+ 
+ LINUX FOR POWERPC (32-BIT AND 64-BIT)
+ P:	Benjamin Herrenschmidt
+ M:	benh@kernel.crashing.org
+ P:	Paul Mackerras
+ M:	paulus@samba.org
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-dev@ozlabs.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/benh/powerpc.git
+ S:	Supported
+ 
+ LINUX FOR POWER MACINTOSH
+ P:	Benjamin Herrenschmidt
+ M:	benh@kernel.crashing.org
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-dev@ozlabs.org
+ S:	Maintained
+ 
+ LINUX FOR POWERPC EMBEDDED MPC5XXX
+ P:	Sylvain Munaut
+@@ -2741,2212 +3360,2772 @@ L:	linuxppc-dev@ozlabs.org
+ S:	Maintained
+ 
+ LINUX FOR POWERPC PA SEMI PWRFICIENT
+ P:	Olof Johansson
+ M:	olof@lixom.net
+ W:	http://www.pasemi.com/
+ L:	linuxppc-dev@ozlabs.org
+ S:	Supported
+ 
+ LINUX SECURITY MODULE (LSM) FRAMEWORK
+ P:	Chris Wright
+ M:	chrisw@sous-sol.org
+ L:	linux-security-module@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/chrisw/lsm-2.6.git
+ S:	Supported
+ 
+ LLC (802.2)
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ S:	Maintained
++F:	include/linux/llc.h
++F:	include/net/llc*
++F:	net/llc/
+ 
+ LIS3LV02D ACCELEROMETER DRIVER
+ P:	Eric Piel
+ M:	eric.piel@tremplin-utc.net
+ S:	Maintained
++F:	Documentation/hwmon/lis3lv02d
++F:	drivers/hwmon/lis3lv02d.*
+ 
+ LM83 HARDWARE MONITOR DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/lm83
++F:	drivers/hwmon/lm83.c
+ 
+ LM90 HARDWARE MONITOR DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/lm90
++F:	drivers/hwmon/lm90.c
+ 
+ LOCKDEP AND LOCKSTAT
+ P:	Peter Zijlstra
+ M:	peterz@infradead.org
+ P:	Ingo Molnar
+ M:	mingo@redhat.com
+ L:	linux-kernel@vger.kernel.org
+ T:	git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-lockdep.git
+ S:	Maintained
++F:	Documentation/lockdep*.txt
++F:	Documentation/lockstat.txt
++F:	include/linux/lockdep.h
++F:	kernel/lockdep*
+ 
+ LOGICAL DISK MANAGER SUPPORT (LDM, Windows 2000/XP/Vista Dynamic Disks)
+ P:	Richard Russon (FlatCap)
+ M:	ldm@flatcap.org
+ L:	linux-ntfs-dev@lists.sourceforge.net
+ W:	http://www.linux-ntfs.org/content/view/19/37/
+ S:	Maintained
++F:	Documentation/ldm.txt
++F:	fs/partitions/ldm.*
+ 
+ LSILOGIC MPT FUSION DRIVERS (FC/SAS/SPI)
+ P:	Eric Moore
+ M:	Eric.Moore@lsi.com
+ M:	support@lsi.com
+ L:	DL-MPTFusionLinux@lsi.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.lsilogic.com/support
+ S:	Supported
++F:	drivers/message/fusion/
+ 
+ LSILOGIC/SYMBIOS/NCR 53C8XX and 53C1010 PCI-SCSI drivers
+ P:	Matthew Wilcox
+ M:	matthew@wil.cx
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/sym53c8xx_2/
+ 
+ LTP (Linux Test Project)
+ P:	Subrata Modak
+ M:	subrata@linux.vnet.ibm.com
+ P:	Mike Frysinger
+ M:	vapier@gentoo.org
+ L:	ltp-list@lists.sourceforge.net (subscribers-only)
+ W:	http://ltp.sourceforge.net/
+ T:	git kernel.org/pub/scm/linux/kernel/git/galak/ltp.git
+ S:	Maintained
+ 
+ M32R ARCHITECTURE
+ P:	Hirokazu Takata
+ M:	takata@linux-m32r.org
+ L:	linux-m32r@ml.linux-m32r.org
+ L:	linux-m32r-ja@ml.linux-m32r.org (in Japanese)
+ W:	http://www.linux-m32r.org/
+ S:	Maintained
++F:	arch/m32r/
++F:	include/asm-m32r/
+ 
+ M68K ARCHITECTURE
+ P:	Geert Uytterhoeven
+ M:	geert@linux-m68k.org
+ P:	Roman Zippel
+ M:	zippel@linux-m68k.org
+ L:	linux-m68k@lists.linux-m68k.org
+ W:	http://www.linux-m68k.org/
+ W:	http://linux-m68k-cvs.ubb.ca/
+ S:	Maintained
++F:	arch/m68k/
+ 
+ M68K ON APPLE MACINTOSH
+ P:	Joshua Thompson
+ M:	funaho@jurai.org
+ W:	http://www.mac.linux-m68k.org/
+ L:	linux-m68k@lists.linux-m68k.org
+ S:	Maintained
+ 
+ M68K ON HP9000/300
+ P:	Philip Blundell
+ M:	philb@gnu.org
+ W:	http://www.tazenda.demon.co.uk/phil/linux-hp
+ S:	Maintained
++F:	arch/m68k/hp300/
+ 
+ MAC80211
+ P:	Johannes Berg
+ M:	johannes@sipsolutions.net
+ L:	linux-wireless@vger.kernel.org
+ W:	http://linuxwireless.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/linville/wireless-2.6.git
+ S:	Maintained
++F:	Documentation/networking/mac80211-injection.txt
++F:	include/net/mac80211.h
++F:	net/mac80211/
+ 
+ MAC80211 PID RATE CONTROL
+ P:	Stefano Brivio
+ M:	stefano.brivio@polimi.it
+ P:	Mattias Nissler
+ M:	mattias.nissler@gmx.de
+ L:	linux-wireless@vger.kernel.org
+ W:	http://linuxwireless.org/en/developers/Documentation/mac80211/RateControl/PID
+ T:	git kernel.org:/pub/scm/linux/kernel/git/linville/wireless-2.6.git
+ S:	Maintained
++F:	net/mac80211/rc80211_pid*
+ 
+ MACVLAN DRIVER
+ P:	Patrick McHardy
+ M:	kaber@trash.net
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/macvlan.c
++F:	include/linux/if_macvlan.h
+ 
+ MAN-PAGES: MANUAL PAGES FOR LINUX -- Sections 2, 3, 4, 5, and 7
+ P:	Michael Kerrisk
+ M:	mtk.manpages@gmail.com
+ W:	http://www.kernel.org/doc/man-pages
+ L:	linux-man@vger.kernel.org
+ S:	Maintained
+ 
+ MARVELL LIBERTAS WIRELESS DRIVER
+ P:	Dan Williams
+ M:	dcbw@redhat.com
+ L:	libertas-dev@lists.infradead.org
+ S:	Maintained
++F:	drivers/net/wireless/libertas/
+ 
+ MARVELL MV643XX ETHERNET DRIVER
+ P:	Lennert Buytenhek
+ M:	buytenh@marvell.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/mv643xx_eth.*
++F:	include/linux/mv643xx.h
+ 
+ MARVELL YUKON / SYSKONNECT DRIVER
+ P:	Mirko Lindner
+ M:	mlindner@syskonnect.de
+ P:	Ralph Roesler
+ M:	rroesler@syskonnect.de
+ W:	http://www.syskonnect.com
+ S:	Supported
+ 
+ MATROX FRAMEBUFFER DRIVER
+ P:	Petr Vandrovec
+ M:	vandrove@vc.cvut.cz
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
++F:	drivers/video/matrox/matroxfb_*
++F:	include/linux/matroxfb.h
+ 
+ MAX6650 HARDWARE MONITOR AND FAN CONTROLLER DRIVER
+ P:	Hans J. Koch
+ M:	hjk@linutronix.de
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/max6650
++F:	drivers/hwmon/max6650.c
+ 
+ MEGARAID SCSI DRIVERS
+ P:	Neela Syam Kolli
+ M:	megaraidlinux@lsi.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://megaraid.lsilogic.com
+ S:	Maintained
++F:	Documentation/scsi/megaraid.txt
++F:	drivers/scsi/megaraid.*
++F:	drivers/scsi/megaraid/
+ 
+ MEMORY MANAGEMENT
+ L:	linux-mm@kvack.org
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.linux-mm.org
+ S:	Maintained
++F:	include/linux/mm.h
++F:	mm/
+ 
+ MEMORY RESOURCE CONTROLLER
+ P:	Balbir Singh
+ M:	balbir@linux.vnet.ibm.com
+ P:	Pavel Emelyanov
+ M:	xemul@openvz.org
+ P:	KAMEZAWA Hiroyuki
+ M:	kamezawa.hiroyu@jp.fujitsu.com
+ L:	linux-mm@kvack.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	mm/memcontrol.c
+ 
+ MEMORY TECHNOLOGY DEVICES (MTD)
+ P:	David Woodhouse
+ M:	dwmw2@infradead.org
+ W:	http://www.linux-mtd.infradead.org/
+ L:	linux-mtd@lists.infradead.org
+ T:	git git://git.infradead.org/mtd-2.6.git
+ S:	Maintained
++F:	drivers/mtd/
++F:	include/linux/mtd/
++F:	include/mtd/
+ 
+ MICROTEK X6 SCANNER
+ P:	Oliver Neukum
+ M:	oliver@neukum.name
+ S:	Maintained
++F:	drivers/usb/image/microtek.*
+ 
+ MIPS
+ P:	Ralf Baechle
+ M:	ralf@linux-mips.org
+ W:	http://www.linux-mips.org/
+ L:	linux-mips@linux-mips.org
+ T:	git www.linux-mips.org:/pub/scm/linux.git
+ S:	Supported
++F:	Documentation/mips/
++F:	arch/mips/
+ 
+ MISCELLANEOUS MCA-SUPPORT
+ P:	James Bottomley
+ M:	James.Bottomley@HansenPartnership.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/ia64/mca.txt
++F:	Documentation/mca.txt
++F:	drivers/mca/
++F:	include/linux/mca*
+ 
+ MODULE SUPPORT
+ P:	Rusty Russell
+ M:	rusty@rustcorp.com.au
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	include/linux/module.h
++F:	kernel/module.c
+ 
+ MOTION EYE VAIO PICTUREBOOK CAMERA DRIVER
+ P:	Stelian Pop
+ M:	stelian@popies.net
+ W:	http://popies.net/meye/
+ S:	Maintained
++F:	Documentation/video4linux/meye.txt
++F:	drivers/media/video/meye.*
++F:	include/linux/meye.h
+ 
+ MOTOROLA IMX MMC/SD HOST CONTROLLER INTERFACE DRIVER
+ P:	Pavel Pisa
+ M:	ppisa@pikron.com
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ S:	Maintained
++F:	drivers/mmc/host/imxmmc.*
+ 
+ MOUSE AND MISC DEVICES [GENERAL]
+ P:	Alessandro Rubini
+ M:	rubini@ipvvis.unipv.it
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/input/mouse/
++F:	include/linux/gpio_mouse.h
+ 
+ MOXA SMARTIO/INDUSTIO/INTELLIO SERIAL CARD
+ P:	Jiri Slaby
+ M:	jirislaby@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/serial/moxa-smartio
++F:	drivers/char/mxser.*
+ 
+ MSI LAPTOP SUPPORT
+ P:	Lennart Poettering
+ M:	mzxreary@0pointer.de
+ W:	https://tango.0pointer.de/mailman/listinfo/s270-linux
+ W:	http://0pointer.de/lennart/tchibo.html
+ S:	Maintained
++F:	drivers/platform/x86/msi-laptop.c
+ 
+ MULTIFUNCTION DEVICES (MFD)
+ P:	Samuel Ortiz
+ M:	sameo@openedhand.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	drivers/mfd/
+ 
+ MULTIMEDIA CARD (MMC), SECURE DIGITAL (SD) AND SDIO SUBSYSTEM
+ P:	Pierre Ossman
+ M:	drzeus-mmc@drzeus.cx
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/mmc/
++F:	include/linux/mmc/
+ 
+ MULTIMEDIA CARD (MMC) ETC. OVER SPI
+ P:	David Brownell
+ M:	dbrownell@users.sourceforge.net
+ L:	linux-kernel@vger.kernel.org
+ S:	Odd Fixes
++F:	drivers/mmc/host/mmc_spi.c
++F:	include/linux/spi/mmc_spi.h
+ 
+ MULTISOUND SOUND DRIVER
+ P:	Andrew Veliath
+ M:	andrewtv@usa.net
+ S:	Maintained
++F:	Documentation/sound/oss/MultiSound
++F:	sound/oss/msnd*
+ 
+ MULTITECH MULTIPORT CARD (ISICOM)
+ P:	Jiri Slaby
+ M:	jirislaby@gmail.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/char/isicom.c
++F:	include/linux/isicom.h
+ 
+ MUSB MULTIPOINT HIGH SPEED DUAL-ROLE CONTROLLER
+ P:	Felipe Balbi
+ M:	felipe.balbi@nokia.com
+ L:	linux-usb@vger.kernel.org
+ T:	git gitorious.org:/musb/mainline.git
+ S:	Maintained
++F:	drivers/usb/musb/
+ 
+ MYRICOM MYRI-10G 10GbE DRIVER (MYRI10GE)
+ P:	Andrew Gallatin
+ M:	gallatin@myri.com
+ P:	Brice Goglin
+ M:	brice@myri.com
+ L:	netdev@vger.kernel.org
+ W:	http://www.myri.com/scs/download-Myri10GE.html
+ S:	Supported
++F:	drivers/net/myri10ge/
+ 
+ NATSEMI ETHERNET DRIVER (DP8381x)
+ P:	Tim Hockin
+ M:	thockin@hockin.org
+ S:	Maintained
++F:	drivers/net/natsemi.c
+ 
+ NCP FILESYSTEM
+ P:	Petr Vandrovec
+ M:	vandrove@vc.cvut.cz
+ L:	linware@sh.cvut.cz
+ S:	Maintained
++F:	fs/ncpfs/
+ 
+ NCR DUAL 700 SCSI DRIVER (MICROCHANNEL)
+ P:	James E.J. Bottomley
+ M:	James.Bottomley@HansenPartnership.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/NCR_D700.*
+ 
+ NETEFFECT IWARP RNIC DRIVER (IW_NES)
+ P:	Faisal Latif
+ M:	faisal.latif@intel.com
+ P:	Chien Tung
+ M:	chien.tin.tung@intel.com
+ L:	general@lists.openfabrics.org
+ W:	http://www.neteffect.com
+ S:	Supported
+ F:	drivers/infiniband/hw/nes/
+ 
+ NETEM NETWORK EMULATOR
+ P:	Stephen Hemminger
+ M:	shemminger@linux-foundation.org
+ L:	netem@lists.linux-foundation.org
+ S:	Maintained
++F:	net/sched/sch_netem.c
+ 
+ NETERION (S2IO) Xframe 10GbE DRIVER
+ P:	Ramkrishna Vepa
+ M:	ram.vepa@neterion.com
+ P:	Rastapur Santosh
+ M:	santosh.rastapur@neterion.com
+ P:	Sivakumar Subramani
+ M:	sivakumar.subramani@neterion.com
+ P:	Sreenivasa Honnur
+ M:	sreenivasa.honnur@neterion.com
+ L:	netdev@vger.kernel.org
+ W:	http://trac.neterion.com/cgi-bin/trac.cgi/wiki/TitleIndex?anonymous
+ S:	Supported
++F:	Documentation/networking/s2io.txt
++F:	drivers/net/s2io*
+ 
+ NETFILTER/IPTABLES/IPCHAINS
+ P:	Rusty Russell
+ P:	Marc Boucher
+ P:	James Morris
+ P:	Harald Welte
+ P:	Jozsef Kadlecsik
+ P:	Patrick McHardy
+ M:	kaber@trash.net
+ L:	netfilter-devel@vger.kernel.org
+ L:	netfilter@vger.kernel.org
+ L:	coreteam@netfilter.org
+ W:	http://www.netfilter.org/
+ W:	http://www.iptables.org/
+ S:	Supported
++F:	include/linux/netfilter*
++F:	include/linux/netfilter/
++F:	include/net/netfilter/
++F:	net/*/netfilter.c
++F:	net/*/netfilter/
++F:	net/netfilter/
+ 
+ NETLABEL
+ P:	Paul Moore
+ M:	paul.moore@hp.com
+ W:	http://netlabel.sf.net
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	Documentation/netlabel
++F:	include/net/netlabel.h
++F:	net/netlabel/
+ 
+ NETROM NETWORK LAYER
+ P:	Ralf Baechle
+ M:	ralf@linux-mips.org
+ L:	linux-hams@vger.kernel.org
+ W:	http://www.linux-ax25.org/
+ S:	Maintained
++F:	include/linux/netrom.h
++F:	include/net/netrom.h
++F:	net/netrom/
+ 
+ NETWORK BLOCK DEVICE (NBD)
+ P:	Paul Clements
+ M:	Paul.Clements@steeleye.com
+ S:	Maintained
++F:	Documentation/blockdev/nbd.txt
++F:	drivers/block/nbd.c
++F:	include/linux/nbd.h
+ 
+ NETWORK DEVICE DRIVERS
+ P:	Jeff Garzik
+ M:	jgarzik@pobox.com
+ L:	netdev@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
+ S:	Maintained
++F:	drivers/net/
+ 
+ NETWORKING [GENERAL]
+ P:	Networking Team
+ M:	netdev@vger.kernel.org
+ L:	netdev@vger.kernel.org
+ W:	http://linux-net.osdl.org/
+ S:	Maintained
++F:	net/
++F:	include/net/
+ 
+ NETWORKING [IPv4/IPv6]
+ P:	David S. Miller
+ M:	davem@davemloft.net
+ P:	Alexey Kuznetsov
+ M:	kuznet@ms2.inr.ac.ru
+ P:	Pekka Savola (ipv6)
+ M:	pekkas@netcore.fi
+ P:	James Morris
+ M:	jmorris@namei.org
+ P:	Hideaki YOSHIFUJI
+ M:	yoshfuji@linux-ipv6.org
+ P:	Patrick McHardy
+ M:	kaber@trash.net
+ L:	netdev@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git
+ S:	Maintained
++F:	net/ipv4/
++F:	net/ipv6/
++F:	include/net/ip*
+ 
+ NETWORKING [LABELED] (NetLabel, CIPSO, Labeled IPsec, SECMARK)
+ P:	Paul Moore
+ M:	paul.moore@hp.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
+ 
+ NETWORKING [WIRELESS]
+ P:	John W. Linville
+ M:	linville@tuxdriver.com
+ L:	linux-wireless@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/linville/wireless-2.6.git
+ S:	Maintained
++F:	net/wireless/
++F:	include/net/ieee80211*
++F:	include/net/wireless.h
+ 
+ NETXEN (1/10) GbE SUPPORT
+ P:	Dhananjay Phadke
+ M:	dhananjay@netxen.com
+ L:	netdev@vger.kernel.org
+ W:	http://www.netxen.com
+ S:	Supported
++F:	drivers/net/netxen/
+ 
+ NFS, SUNRPC, AND LOCKD CLIENTS
+ P:	Trond Myklebust
+ M:	Trond.Myklebust@netapp.com
+ L:	linux-nfs@vger.kernel.org
+ W:	http://client.linux-nfs.org
+ T:	git git://git.linux-nfs.org/pub/linux/nfs-2.6.git
+ S:	Maintained
++F:	fs/lockd/
++F:	fs/nfs/
++F:	fs/nfs_common/
++F:	net/sunrpc/
++F:	include/linux/lockd/
++F:	include/linux/nfs*
++F:	include/linux/sunrpc/
+ 
+ NI5010 NETWORK DRIVER
+ P:	Jan-Pascal van Best
+ M:	janpascal@vanbest.org
+ P:	Andreas Mohr
+ M:	andi@lisas.de
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/ni5010.*
+ 
+ NINJA SCSI-3 / NINJA SCSI-32Bi (16bit/CardBus) PCMCIA SCSI HOST ADAPTER DRIVER
+ P:	YOKOTA Hiroshi
+ M:	yokota@netlab.is.tsukuba.ac.jp
+ W:	http://www.netlab.is.tsukuba.ac.jp/~yokota/izumi/ninja/
+ S:	Maintained
++F:	Documentation/scsi/NinjaSCSI.txt
++F:	drivers/scsi/pcmcia/nsp_*
+ 
+ NINJA SCSI-32Bi/UDE PCI/CARDBUS SCSI HOST ADAPTER DRIVER
+ P:	GOTO Masanori
+ M:	gotom@debian.or.jp
+ P:	YOKOTA Hiroshi
+ M:	yokota@netlab.is.tsukuba.ac.jp
+ W:	http://www.netlab.is.tsukuba.ac.jp/~yokota/izumi/ninja/
+ S:	Maintained
++F:	Documentation/scsi/NinjaSCSI.txt
++F:	drivers/scsi/nsp32*
+ 
+ NTFS FILESYSTEM
+ P:	Anton Altaparmakov
+ M:	aia21@cantab.net
+ L:	linux-ntfs-dev@lists.sourceforge.net
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.linux-ntfs.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/aia21/ntfs-2.6.git
+ S:	Maintained
++F:	Documentation/filesystems/ntfs.txt
++F:	fs/ntfs/
+ 
+ NVIDIA (rivafb and nvidiafb) FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
++F:	drivers/video/riva/
++F:	drivers/video/nvidia/
+ 
+ OMFS FILESYSTEM
+ P:	Bob Copeland
+ M:	me@bobcopeland.com
+ L:	linux-karma-devel@lists.sourceforge.net
+ S:	Maintained
++F:	Documentation/filesystems/omfs.txt
++F:	fs/omfs/
+ 
+ OMNIKEY CARDMAN 4000 DRIVER
+ P:	Harald Welte
+ M:	laforge@gnumonks.org
+ S:	Maintained
++F:	drivers/char/pcmcia/cm4000_cs.c
++F:	include/linux/cm4000_cs.h
+ 
+ OMNIKEY CARDMAN 4040 DRIVER
+ P:	Harald Welte
+ M:	laforge@gnumonks.org
+ S:	Maintained
++F:	drivers/char/pcmcia/cm4040_cs.*
+ 
+ OMNIVISION OV7670 SENSOR DRIVER
+ P:	Jonathan Corbet
+ M:	corbet@lwn.net
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	drivers/media/video/ov7670.c
+ 
+ ONENAND FLASH DRIVER
+ P:	Kyungmin Park
+ M:	kyungmin.park@samsung.com
+ L:	linux-mtd@lists.infradead.org
+ S:	Maintained
++F:	drivers/mtd/onenand/
++F:	include/linux/mtd/onenand*.h
+ 
+ ONSTREAM SCSI TAPE DRIVER
+ P:	Willem Riede
+ M:	osst@riede.org
+ L:	osst-users@lists.sourceforge.net
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/osst*
++F:	drivers/scsi/st*
+ 
+ OPENCORES I2C BUS DRIVER
+ P:	Peter Korsgaard
+ M:	jacmet@sunsite.dk
+ L:	linux-i2c@vger.kernel.org
+ S:	Maintained
++F:	Documentation/i2c/busses/i2c-ocores
++F:	drivers/i2c/busses/i2c-ocores.c
+ 
+ OPROFILE
+ P:	Robert Richter
+ M:	robert.richter@amd.com
+ L:	oprofile-list@lists.sf.net
+ S:	Maintained
++F:	arch/*/oprofile/
++F:	drivers/oprofile/
++F:	include/linux/oprofile.h
+ 
+ ORACLE CLUSTER FILESYSTEM 2 (OCFS2)
+ P:	Mark Fasheh
+ M:	mfasheh@suse.com
+ P:	Joel Becker
+ M:	joel.becker@oracle.com
+ L:	ocfs2-devel@oss.oracle.com (moderated for non-subscribers)
+ W:	http://oss.oracle.com/projects/ocfs2/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git
+ S:	Supported
++F:	Documentation/filesystems/ocfs2.txt
++F:	Documentation/filesystems/dlmfs.txt
++F:	fs/ocfs2/
+ 
+ ORINOCO DRIVER
+ P:	Pavel Roskin
+ M:	proski@gnu.org
+ P:	David Gibson
+ M:	hermes@gibson.dropbear.id.au
+ L:	linux-wireless@vger.kernel.org
+ L:	orinoco-users@lists.sourceforge.net
+ L:	orinoco-devel@lists.sourceforge.net
+ W:	http://www.nongnu.org/orinoco/
+ S:	Maintained
++F:	drivers/net/wireless/orinoco/
+ 
+ P54 WIRELESS DRIVER
+ P:	Michael Wu
+ M:	flamingice@sourmilk.net
+ L:	linux-wireless@vger.kernel.org
+ W:	http://prism54.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mwu/mac80211-drivers.git
+ S:	Maintained
++F:	drivers/net/wireless/p54/
+ 
+ PA SEMI ETHERNET DRIVER
+ P:	Olof Johansson
+ M:	olof@lixom.net
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/pasemi_mac.*
+ 
+ PA SEMI SMBUS DRIVER
+ P:	Olof Johansson
+ M:	olof@lixom.net
+ L:	linux-i2c@vger.kernel.org
+ S:	Maintained
++F:	drivers/i2c/busses/i2c-pasemi.c
+ 
+ PANASONIC LAPTOP ACPI EXTRAS DRIVER
+ P:	Harald Welte
+ M:	laforge@gnumonks.org
+ S:	Maintained
++F:	drivers/platform/x86/panasonic-laptop.c
+ 
+ PANASONIC MN10300/AM33 PORT
+ P:	David Howells
+ M:	dhowells@redhat.com
+ P:	Koichi Yasutake
+ M:	yasutake.koichi@jp.panasonic.com
+ L:	linux-am33-list@redhat.com (moderated for non-subscribers)
+ W:	ftp://ftp.redhat.com/pub/redhat/gnupro/AM33/
+ S:	Maintained
++F:	Documentation/mn10300/
++F:	arch/mn10300/
++F:	include/asm-mn10300/
+ 
+ PARALLEL PORT SUPPORT
+ L:	linux-parport@lists.infradead.org (subscribers-only)
+ S:	Orphan
++F:	drivers/parport/
++F:	include/linux/parport*.h
++F:	drivers/char/ppdev.c
++F:	include/linux/ppdev.h
+ 
+ PARAVIRT_OPS INTERFACE
+ P:	Jeremy Fitzhardinge
+ M:	jeremy@xensource.com
+ P:	Chris Wright
+ M:	chrisw@sous-sol.org
+ P:	Alok Kataria
+ M:	akataria@vmware.com
+ P:	Rusty Russell
+ M:	rusty@rustcorp.com.au
+ L:	virtualization@lists.osdl.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	Documentation/ia64/paravirt_ops.txt
++F:	arch/*/kernel/paravirt*
++F:	arch/*/include/asm/paravirt.h
+ 
+ PARIDE DRIVERS FOR PARALLEL PORT IDE DEVICES
+ P:	Tim Waugh
+ M:	tim@cyberelk.net
+ L:	linux-parport@lists.infradead.org (subscribers-only)
+ W:	http://www.torque.net/linux-pp.html
+ S:	Maintained
++F:	Documentation/blockdev/paride.txt
++F:	drivers/block/paride/
+ 
+ PARISC ARCHITECTURE
+ P:	Kyle McMartin
+ M:	kyle@mcmartin.ca
+ P:	Helge Deller
+ M:	deller@gmx.de
+ L:	linux-parisc@vger.kernel.org
+ W:	http://www.parisc-linux.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/kyle/parisc-2.6.git
+ S:	Maintained
++F:	arch/parisc/
++F:	drivers/parisc/
+ 
+ PC87360 HARDWARE MONITORING DRIVER
+ P:	Jim Cromie
+ M:	jim.cromie@gmail.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/pc87360
++F:	drivers/hwmon/pc87360.c
+ 
+ PC8736x GPIO DRIVER
+ P:	Jim Cromie
+ M:	jim.cromie@gmail.com
+ S:	Maintained
++F:	drivers/char/pc8736x_gpio.c
+ 
+ PCI ERROR RECOVERY
+ P:	Linas Vepstas
+ M:	linas@austin.ibm.com
+ L:	linux-kernel@vger.kernel.org
+ L:	linux-pci@vger.kernel.org
+ S:	Supported
++F:	Documentation/PCI/pci-error-recovery.txt
++F:	Documentation/powerpc/eeh-pci-error-recovery.txt
+ 
+ PCI SUBSYSTEM
+ P:	Jesse Barnes
+ M:	jbarnes@virtuousgeek.org
+ L:	linux-kernel@vger.kernel.org
+ L:	linux-pci@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git
+ S:	Supported
++F:	Documentation/PCI/
++F:	drivers/pci/
++F:	include/linux/pci*
+ 
+ PCIE HOTPLUG DRIVER
+ P:	Kristen Carlson Accardi
+ M:	kristen.c.accardi@intel.com
+ L:	linux-pci@vger.kernel.org
+ S:	Supported
++F:	drivers/pci/pcie/
+ 
+ PCMCIA SUBSYSTEM
+ P:	Linux PCMCIA Team
+ L:	linux-pcmcia@lists.infradead.org
+ W:	http://lists.infradead.org/mailman/listinfo/linux-pcmcia
+ T:	git kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
+ S:	Maintained
++F:	Documentation/pcmcia/
++F:	drivers/pcmcia/
++F:	include/pcmcia/
+ 
+ PCNET32 NETWORK DRIVER
+ P:	Don Fry
+ M:	pcnet32@verizon.net
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/pcnet32.c
+ 
+ PER-TASK DELAY ACCOUNTING
+ P:	Balbir Singh
+ M:	balbir@linux.vnet.ibm.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	include/linux/delayacct.h
++F:	kernel/delayacct.c
+ 
+ PERSONALITY HANDLING
+ P:	Christoph Hellwig
+ M:	hch@infradead.org
+ L:	linux-abi-devel@lists.sourceforge.net
+ S:	Maintained
++F:	include/linux/personality.h
+ 
+ PHRAM MTD DRIVER
+ P:	Joern Engel
+ M:	joern@lazybastard.org
+ L:	linux-mtd@lists.infradead.org
+ S:	Maintained
++F:	drivers/mtd/devices/phram.c
+ 
+ PKTCDVD DRIVER
+ P:	Peter Osterlund
+ M:	petero2@telia.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/block/pktcdvd.c
++F:	include/linux/pktcdvd.h
+ 
+ POSIX CLOCKS and TIMERS
+ P:	Thomas Gleixner
+ M:	tglx@linutronix.de
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	fs/timerfd.c
++F:	include/linux/timer*
++F:	kernel/*timer*
+ 
+ POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS
+ P:	Anton Vorontsov
+ M:	cbou@mail.ru
+ P:	David Woodhouse
+ M:	dwmw2@infradead.org
+ L:	linux-kernel@vger.kernel.org
+ T:	git git.infradead.org/battery-2.6.git
+ S:	Maintained
++F:	include/linux/power_supply.h
++F:	drivers/power/power_supply*
+ 
+ PNP SUPPORT
+ P:	Adam Belay
+ M:	abelay@mit.edu
+ P:	Bjorn Helgaas
+ M:	bjorn.helgaas@hp.com
+ S:	Maintained
++F:	drivers/pnp/
+ 
+ PNXxxxx I2C DRIVER
+ P:	Vitaly Wool
+ M:	vitalywool@gmail.com
+ L:	linux-i2c@vger.kernel.org
+ S:	Maintained
++F:	drivers/i2c/busses/i2c-pnx.c
+ 
+ PPP PROTOCOL DRIVERS AND COMPRESSORS
+ P:	Paul Mackerras
+ M:	paulus@samba.org
+ L:	linux-ppp@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/ppp_*
+ 
+ PPP OVER ATM (RFC 2364)
+ P:	Mitchell Blank Jr
+ M:	mitch@sfgoth.com
+ S:	Maintained
++F:	net/atm/pppoatm.c
++F:	include/linux/atmppp.h
+ 
+ PPP OVER ETHERNET
+ P:	Michal Ostrowski
+ M:	mostrows@earthlink.net
+ S:	Maintained
++F:	drivers/net/pppoe.c
++F:	drivers/net/pppox.c
+ 
+ PPP OVER L2TP
+ P:	James Chapman
+ M:	jchapman@katalix.com
+ S:	Maintained
++F:	drivers/net/pppol2tp.c
++F:	include/linux/if_pppol2tp.h
+ 
+ PREEMPTIBLE KERNEL
+ P:	Robert Love
+ M:	rml@tech9.net
+ L:	linux-kernel@vger.kernel.org
+ L:	kpreempt-tech@lists.sourceforge.net
+ W:	ftp://ftp.kernel.org/pub/linux/kernel/people/rml/preempt-kernel
+ S:	Supported
++F:	Documentation/preempt-locking.txt
++F:	include/linux/preempt.h
+ 
+ PRISM54 WIRELESS DRIVER
+ P:	Luis R. Rodriguez
+ M:	mcgrof@gmail.com
+ L:	linux-wireless@vger.kernel.org
+ W:	http://prism54.org
+ S:	Maintained
++F:	drivers/net/wireless/prism54/
+ 
+ PROMISE DC4030 CACHING DISK CONTROLLER DRIVER
+ P:	Peter Denison
+ M:	promise@pnd-pc.demon.co.uk
+ W:	http://www.pnd-pc.demon.co.uk/promise/
+ S:	Maintained
+ 
+ PROMISE SATA TX2/TX4 CONTROLLER LIBATA DRIVER
+ P:	Mikael Pettersson
+ M:	mikpe@it.uu.se
+ L:	linux-ide@vger.kernel.org
+ S:	Maintained
++F:	drivers/ata/sata_promise.*
+ 
+ PS3 NETWORK SUPPORT
+ P:	Masakazu Mokuno
+ M:	mokuno@sm.sony.co.jp
+ L:	netdev@vger.kernel.org
+ L:	cbe-oss-dev@ozlabs.org
+ S:	Supported
++F:	drivers/net/ps3_gelic_net.*
+ 
+ PS3 PLATFORM SUPPORT
+ P:	Geoff Levand
+ M:	geoffrey.levand@am.sony.com
+ L:	linuxppc-dev@ozlabs.org
+ L:	cbe-oss-dev@ozlabs.org
+ S:	Supported
++F:	arch/powerpc/boot/ps3*
++F:	arch/powerpc/include/asm/lv1call.h
++F:	arch/powerpc/include/asm/ps3*.h
++F:	arch/powerpc/platforms/ps3/
++F:	drivers/*/ps3*
++F:	drivers/ps3/
++F:	drivers/usb/host/*ps3.c
+ 
+ PS3VRAM DRIVER
+ P:	Jim Paris
+ M:	jim@jtan.com
+ L:	cbe-oss-dev@ozlabs.org
+ S:	Maintained
+ 
+ PVRUSB2 VIDEO4LINUX DRIVER
+ P:	Mike Isely
+ M:	isely@pobox.com
+ L:	pvrusb2@isely.net	(subscribers-only)
+ L:	linux-media@vger.kernel.org
+ W:	http://www.isely.net/pvrusb2/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	Documentation/video4linux/README.pvrusb2
++F:	drivers/media/video/pvrusb2/
+ 
+ PXA2xx/PXA3xx SUPPORT
+ P:	Eric Miao
+ M:	eric.miao@marvell.com
+ P:	Russell King
+ M:	linux@arm.linux.org.uk
+ L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+ S:	Maintained
++F:	arch/arm/mach-pxa/
++F:	drivers/pcmcia/pxa2xx*
++F:	drivers/spi/pxa2xx*
++F:	drivers/usb/gadget/pxa2*
++F:	include/sound/pxa2xx-lib.h
++F:	sound/soc/pxa/pxa2xx*
+ 
+ PXA MMCI DRIVER
+ S:	Orphan
+ 
+ PXA RTC DRIVER
+ P:	Robert Jarzmik
+ M:	robert.jarzmik@free.fr
+ L:	rtc-linux@googlegroups.com
+ S:	Maintained
+ 
+ QLOGIC QLA2XXX FC-SCSI DRIVER
+ P:	Andrew Vasquez
+ M:	linux-driver@qlogic.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Supported
++F:	Documentation/scsi/LICENSE.qla2xxx
++F:	drivers/scsi/qla2xxx/
+ 
+ QLOGIC QLA3XXX NETWORK DRIVER
+ P:	Ron Mercer
+ M:	linux-driver@qlogic.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	Documentation/networking/LICENSE.qla3xxx
++F:	drivers/net/qla3xxx.*
+ 
+ QLOGIC QLGE 10Gb ETHERNET DRIVER
+ P:	Ron Mercer
+ M:	linux-driver@qlogic.com
+ M:	ron.mercer@qlogic.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/qlge/
+ 
+ QNX4 FILESYSTEM
+ P:	Anders Larsen
+ M:	al@alarsen.net
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.alarsen.net/linux/qnx4fs/
+ S:	Maintained
++F:	fs/qnx4
++F:	include/linux/qnx4_fs.h
++F:	include/linux/qnxtypes.h
+ 
+ RADEON FRAMEBUFFER DISPLAY DRIVER
+ P:	Benjamin Herrenschmidt
+ M:	benh@kernel.crashing.org
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
++F:	drivers/video/aty/radeon*
++F:	include/linux/radeonfb.h
+ 
+ RAGE128 FRAMEBUFFER DISPLAY DRIVER
+ P:	Paul Mackerras
+ M:	paulus@samba.org
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
++F:	drivers/video/aty/aty128fb.c
+ 
+ RALINK RT2X00 WIRELESS LAN DRIVER
+ P:	rt2x00 project
+ L:	linux-wireless@vger.kernel.org
+ L:	rt2400-devel@lists.sourceforge.net
+ W:	http://rt2x00.serialmonkey.com/
+ S:	Maintained
+ T:	git kernel.org:/pub/scm/linux/kernel/git/ivd/rt2x00.git
+ F:	drivers/net/wireless/rt2x00/
+ 
+ RAMDISK RAM BLOCK DEVICE DRIVER
+ P:	Nick Piggin
+ M:	npiggin@suse.de
+ S:	Maintained
++F:	Documentation/blockdev/ramdisk.txt
++F:	drivers/block/brd.c
+ 
+ RANDOM NUMBER DRIVER
+ P:	Matt Mackall
+ M:	mpm@selenic.com
+ S:	Maintained
++F:	drivers/char/random.c
+ 
+ RAPIDIO SUBSYSTEM
+ P:	Matt Porter
+ M:	mporter@kernel.crashing.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/rapidio/
+ 
+ RAYLINK/WEBGEAR 802.11 WIRELESS LAN DRIVER
+ P:	Corey Thomas
+ M:	coreythomas@charter.net
+ L:	linux-wireless@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/wireless/ray*
+ 
+ RCUTORTURE MODULE
+ P:	Josh Triplett
+ M:	josh@freedesktop.org
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/RCU/torture.txt
++F:	kernel/rcutorture.c
+ 
+ RDC R-321X SoC
+ P:	Florian Fainelli
+ M:	florian.fainelli@telecomint.eu
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	arch/x86/mach-rdc321x/
++F:	arch/x86/include/asm/mach-rdc321x/
+ 
+ RDC R6040 FAST ETHERNET DRIVER
+ P:	Florian Fainelli
+ M:	florian.fainelli@telecomint.eu
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/r6040.c
+ 
+ READ-COPY UPDATE (RCU)
+ P:	Dipankar Sarma
+ M:	dipankar@in.ibm.com
+ W:	http://www.rdrop.com/users/paulmck/rclock/
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	Documentation/RCU/rcu.txt
++F:	Documentation/RCU/rcuref.txt
++F:	include/linux/rcupdate.h
++F:	include/linux/srcu.h
++F:	kernel/rcupdate.c
+ 
+ REAL TIME CLOCK DRIVER
+ P:	Paul Gortmaker
+ M:	p_gortmaker@yahoo.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/rtc.txt
++F:	drivers/rtc/
++F:	include/linux/rtc.h
+ 
+ REAL TIME CLOCK (RTC) SUBSYSTEM
+ P:	Alessandro Zummo
+ M:	a.zummo@towertech.it
+ L:	rtc-linux@googlegroups.com
+ S:	Maintained
++F:	Documentation/rtc.txt
++F:	drivers/rtc/
++F:	include/linux/rtc.h
+ 
+ REISERFS FILE SYSTEM
+ L:	reiserfs-devel@vger.kernel.org
+ S:	Supported
++F:	fs/reiserfs/
+ 
+ RFKILL
+ P:	Ivo van Doorn
+ M:	IvDoorn@gmail.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
+ F:	net/rfkill
+ 
+ RISCOM8 DRIVER
+ S:	Orphan
++F:	Documentation/serial/riscom8.txt
++F:	drivers/char/riscom8*
+ 
+ ROCKETPORT DRIVER
+ P:	Comtrol Corp.
+ W:	http://www.comtrol.com
+ S:	Maintained
++F:	Documentation/serial/rocket.txt
++F:	drivers/char/rocket*
+ 
+ ROSE NETWORK LAYER
+ P:	Ralf Baechle
+ M:	ralf@linux-mips.org
+ L:	linux-hams@vger.kernel.org
+ W:	http://www.linux-ax25.org/
+ S:	Maintained
++F:	include/linux/rose.h
++F:	include/net/rose.h
++F:	net/rose/
+ 
+ RTL8180 WIRELESS DRIVER
+ P:	John W. Linville
+ M:	linville@tuxdriver.com
+ L:	linux-wireless@vger.kernel.org
+ W:	http://linuxwireless.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/linville/wireless-testing.git
+ S:	Maintained
++F:	drivers/net/wireless/rtl818*
+ 
+ RTL8187 WIRELESS DRIVER
+ P:	 Herton Ronaldo Krzesinski
+ M:      herton@mandriva.com.br
+ P:      Hin-Tak Leung
+ M       htl10@users.sourceforge.net
+ P:      Larry Finger
+ M:      Larry.Finger@lwfinger.net
+ L:      linux-wireless@vger.kernel.org
+ W:      http://linuxwireless.org/
+ T:      git kernel.org:/pub/scm/linux/kernel/git/linville/wireless-testing.git
+ S:      Maintained
++F:	drivers/net/wireless/rtl818x/rtl8187*
+ 
+ S3 SAVAGE FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
++F:	drivers/video/savage/
+ 
+ S390
+ P:	Martin Schwidefsky
+ M:	schwidefsky@de.ibm.com
+ P:	Heiko Carstens
+ M:	heiko.carstens@de.ibm.com
+ M:	linux390@de.ibm.com
+ L:	linux-s390@vger.kernel.org
+ W:	http://www.ibm.com/developerworks/linux/linux390/
+ S:	Supported
++F:	arch/s390/
+ 
+ S390 NETWORK DRIVERS
+ P:	Ursula Braun
+ M:	ursula.braun@de.ibm.com
+ P:	Frank Blaschka
+ M:	blaschka@linux.vnet.ibm.com
+ M:	linux390@de.ibm.com
+ L:	linux-s390@vger.kernel.org
+ W:	http://www.ibm.com/developerworks/linux/linux390/
+ S:	Supported
++F:	drivers/s390/net/
+ 
+ S390 ZFCP DRIVER
+ P:	Christof Schmitt
+ M:	christof.schmitt@de.ibm.com
+ P:	Martin Peschke
+ M:	mp3@de.ibm.com
+ M:	linux390@de.ibm.com
+ L:	linux-s390@vger.kernel.org
+ W:	http://www.ibm.com/developerworks/linux/linux390/
+ S:	Supported
++F:	Documentation/s390/zfcpdump.txt
++F:	drivers/s390/scsi/zfcp_*
+ 
+ S390 IUCV NETWORK LAYER
+ P:	Ursula Braun
+ M:	ursula.braun@de.ibm.com
+ M:	linux390@de.ibm.com
+ L:	linux-s390@vger.kernel.org
+ W:	http://www.ibm.com/developerworks/linux/linux390/
+ S:	Supported
++F:	drivers/s390/net/*iucv*
++F:	include/net/iucv/
++F:	net/iucv/
+ 
+ S3C24XX SD/MMC Driver
+ P:	Ben Dooks
+ M:	ben-linux@fluff.org
+ L:	linux-arm-kernel@lists.arm.linux.org.uk (subscribers-only)
+ L:	linux-kernel@vger.kernel.org
+ S:	Supported
++F:	drivers/mmc/host/s3cmci.*
+ 
+ SAA7146 VIDEO4LINUX-2 DRIVER
+ P:	Michael Hunold
+ M:	michael@mihu.de
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ W:	http://www.mihu.de/linux/saa7146
+ S:	Maintained
++F:	drivers/media/common/saa7146*
++F:	drivers/media/video/*7146*
++F:	include/media/*7146*
+ 
+ SC1200 WDT DRIVER
+ P:	Zwane Mwaikambo
+ M:	zwane@arm.linux.org.uk
+ S:	Maintained
++F:	drivers/watchdog/sc1200wdt.c
+ 
+ SCHEDULER
+ P:	Ingo Molnar
+ M:	mingo@elte.hu
+ P:	Robert Love    [the preemptible kernel bits]
+ M:	rml@tech9.net
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	kernel/sched*
++F:	include/linux/sched.h
+ 
+ SCSI CDROM DRIVER
+ P:	Jens Axboe
+ M:	axboe@kernel.dk
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.kernel.dk
+ S:	Maintained
++F:	drivers/scsi/sr*
+ 
+ SCSI SG DRIVER
+ P:	Doug Gilbert
+ M:	dgilbert@interlog.com
+ L:	linux-scsi@vger.kernel.org
+ W:	http://www.torque.net/sg
+ S:	Maintained
++F:	drivers/scsi/sg.c
++F:	include/scsi/sg.h
+ 
+ SCSI SUBSYSTEM
+ P:	James E.J. Bottomley
+ M:	James.Bottomley@HansenPartnership.com
+ L:	linux-scsi@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-pending-2.6.git
+ S:	Maintained
++F:	drivers/scsi/
++F:	include/scsi/
+ 
+ SCSI TAPE DRIVER
+ P:	Kai MÃ¤kisara
+ M:	Kai.Makisara@kolumbus.fi
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	Documentation/scsi/st.txt
++F:	drivers/scsi/st*
+ 
+ SCTP PROTOCOL
+ P:	Vlad Yasevich
+ M:	vladislav.yasevich@hp.com
+ P:	Sridhar Samudrala
+ M:	sri@us.ibm.com
+ L:	linux-sctp@vger.kernel.org
+ W:	http://lksctp.sourceforge.net
+ S:	Supported
++F:	Documentation/networking/sctp.txt
++F:	include/linux/sctp.h
++F:	include/net/sctp/
++F:	net/sctp/
+ 
+ SCx200 CPU SUPPORT
+ P:	Jim Cromie
+ M:	jim.cromie@gmail.com
+ S:	Odd Fixes
++F:	Documentation/i2c/busses/scx200_acb
++F:	arch/x86/kernel/scx200_32.c
++F:	drivers/watchdog/scx200_wdt.c
++F:	drivers/i2c/busses/scx200*
++F:	drivers/mtd/maps/scx200_docflash.c
++F:	include/linux/scx200.h
+ 
+ SCx200 GPIO DRIVER
+ P:	Jim Cromie
+ M:	jim.cromie@gmail.com
+ S:	Maintained
++F:	drivers/char/scx200_gpio.c
++F:	include/linux/scx200_gpio.h
+ 
+ SCx200 HRT CLOCKSOURCE DRIVER
+ P:	Jim Cromie
+ M:	jim.cromie@gmail.com
+ S:	Maintained
++F:	drivers/clocksource/scx200_hrt.c
+ 
+ SDRICOH_CS MMC/SD HOST CONTROLLER INTERFACE DRIVER
+ P:	Sascha Sommer
+ M:	saschasommer@freenet.de
+ L:	sdricohcs-devel@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	drivers/mmc/host/sdricoh_cs.c
+ 
+ SECURE DIGITAL HOST CONTROLLER INTERFACE (SDHCI) DRIVER
+ P:	Pierre Ossman
+ M:	drzeus-sdhci@drzeus.cx
+ L:	sdhci-devel@list.drzeus.cx
+ S:	Maintained
++F:	drivers/mmc/host/sdhci.*
+ 
+ SECURITY SUBSYSTEM
+ F:	security/
+ P:	James Morris
+ M:	jmorris@namei.org
+ L:	linux-kernel@vger.kernel.org
+ L:	linux-security-module@vger.kernel.org (suggested Cc:)
+ T:	git kernel.org:pub/scm/linux/kernel/git/jmorris/security-testing-2.6.git
+ S:	Supported
+ 
+ SECURITY CONTACT
+ P:	Security Officers
+ M:	security@kernel.org
+ S:	Supported
+ 
+ SELINUX SECURITY MODULE
+ P:	Stephen Smalley
+ M:	sds@tycho.nsa.gov
+ P:	James Morris
+ M:	jmorris@namei.org
+ P:	Eric Paris
+ M:	eparis@parisplace.org
+ L:	linux-kernel@vger.kernel.org (kernel issues)
+ L: 	selinux@tycho.nsa.gov (subscribers-only, general discussion)
+ W:	http://selinuxproject.org
+ T:	git kernel.org:pub/scm/linux/kernel/git/jmorris/security-testing-2.6.git
+ S:	Supported
++F:	include/linux/selinux*
++F:	security/selinux/
+ 
+ SENSABLE PHANTOM
+ P:	Jiri Slaby
+ M:	jirislaby@gmail.com
+ S:	Maintained
++F:	drivers/misc/phantom.c
++F:	include/linux/phantom.h
+ 
+ SERIAL ATA (SATA) SUBSYSTEM
+ P:	Jeff Garzik
+ M:	jgarzik@pobox.com
+ L:	linux-ide@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+ S:	Supported
+ 
+ SERVER ENGINES 10Gbps NIC - BladeEngine 2 DRIVER
+ P:	Sathya Perla
+ M:	sathyap@serverengines.com
+ P:      Subbu Seetharaman
+ M:      subbus@serverengines.com
+ L:      netdev@vger.kernel.org
+ W:      http://www.serverengines.com
+ S:      Supported
++F:	drivers/net/benet/
+ 
+ SFC NETWORK DRIVER
+ P:	Steve Hodgson
+ P:	Ben Hutchings
+ P:	Robert Stonehouse
+ M:	linux-net-drivers@solarflare.com
+ S:	Supported
++F:	drivers/net/sfc/
+ 
+ SGI GRU DRIVER
+ P:	Jack Steiner
+ M:	steiner@sgi.com
+ S:	Maintained
++F:	drivers/misc/sgi-gru/
+ 
+ SGI SN-IA64 (Altix) SERIAL CONSOLE DRIVER
+ P:	Pat Gefre
+ M:	pfg@sgi.com
+ L:	linux-ia64@vger.kernel.org
+ S:	Supported
++F:	Documentation/ia64/serial.txt
++F:	drivers/serial/ioc?_serial.c
++F:	include/linux/ioc?.h
+ 
+ SGI VISUAL WORKSTATION 320 AND 540
+ P:	Andrey Panin
+ M:	pazke@donpac.ru
+ L:	linux-visws-devel@lists.sf.net
+ W:	http://linux-visws.sf.net
+ S:	Maintained for 2.6.
++F:	Documentation/sgi-visws.txt
+ 
+ SGI XP/XPC/XPNET DRIVER
+ P:	Dean Nelson
+ M:	dcn@sgi.com
+ S:	Maintained
++F:	drivers/misc/sgi-xp/
+ 
+ SHARP LH SUPPORT (LH7952X & LH7A40X)
+ P:	Marc Singer
+ M:	elf@buici.com
+ W:	http://projects.buici.com/arm
+ L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
+ S:	Maintained
++F:	Documentation/arm/Sharp-LH/ADC-LH7-Touchscreen
++F:	arch/arm/mach-lh7a40x/
++F:	drivers/serial/serial_lh7a40x.c
++F:	drivers/usb/gadget/lh7a40*
++F:	drivers/usb/host/ohci-lh7a40*
+ 
+ SHPC HOTPLUG DRIVER
+ P:	Kristen Carlson Accardi
+ M:	kristen.c.accardi@intel.com
+ L:	linux-pci@vger.kernel.org
+ S:	Supported
++F:	drivers/pci/hotplug/shpchp*
+ 
+ SIMTEC EB110ATX (Chalice CATS)
+ P:	Ben Dooks
+ P:	Vincent Sanders
+ M:	support@simtec.co.uk
+ W:	http://www.simtec.co.uk/products/EB110ATX/
+ S:	Supported
++F:	arch/arm/mach-ebsa110/
+ 
+ SIMTEC EB2410ITX (BAST)
+ P:	Ben Dooks
+ P:	Vincent Sanders
+ M:	support@simtec.co.uk
+ W:	http://www.simtec.co.uk/products/EB2410ITX/
+ S:	Supported
++F:	arch/arm/mach-s3c2410/
++F:	drivers/*/*s3c2410*
++F:	drivers/*/*/*s3c2410*
+ 
+ SIS 190 ETHERNET DRIVER
+ P:	Francois Romieu
+ M:	romieu@fr.zoreil.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/sis190.c
+ 
+ SIS 900/7016 FAST ETHERNET DRIVER
+ P:	Daniele Venzano
+ M:	venza@brownhat.org
+ W:	http://www.brownhat.org/sis900.html
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/sis900.*
+ 
+ SIS 96X I2C/SMBUS DRIVER
+ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+ L:	linux-i2c@vger.kernel.org
+ S:	Maintained
++F:	Documentation/i2c/busses/i2c-sis96x
++F:	drivers/i2c/busses/i2c-sis96x.c
+ 
+ SIS FRAMEBUFFER DRIVER
+ P:	Thomas Winischhofer
+ M:	thomas@winischhofer.net
+ W:	http://www.winischhofer.net/linuxsisvga.shtml
+ S:	Maintained
++F:	Documentation/fb/sisfb.txt
++F:	drivers/video/sis/
++F:	include/video/sisfb.h
+ 
+ SIS USB2VGA DRIVER
+ P:	Thomas Winischhofer
+ M:	thomas@winischhofer.net
+ W:	http://www.winischhofer.at/linuxsisusbvga.shtml
+ S:	Maintained
++F:	drivers/usb/misc/sisusbvga/
+ 
+ SKGE, SKY2 10/100/1000 GIGABIT ETHERNET DRIVERS
+ P:	Stephen Hemminger
+ M:	shemminger@linux-foundation.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/skge.*
++F:	drivers/net/sky2.*
+ 
+ SLAB ALLOCATOR
+ P:	Christoph Lameter
+ M:	cl@linux-foundation.org
+ P:	Pekka Enberg
+ M:	penberg@cs.helsinki.fi
+ P:	Matt Mackall
+ M:	mpm@selenic.com
+ L:	linux-mm@kvack.org
+ S:	Maintained
++F:	include/linux/sl?b*.h
++F:	mm/sl?b.c
+ 
+ SMC91x ETHERNET DRIVER
+ P:	Nicolas Pitre
+ M:	nico@cam.org
+ S:	Maintained
++F:	drivers/net/smc91x.*
+ 
+ SMSC47B397 HARDWARE MONITOR DRIVER
+ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/smsc47b397
++F:	drivers/hwmon/smsc47b397.c
+ 
+ SMSC911x ETHERNET DRIVER
+ P:	Steve Glendinning
+ M:	steve.glendinning@smsc.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	include/linux/smsc911x.h
++F:	drivers/net/smsc911x.*
+ 
+ SMSC9420 PCI ETHERNET DRIVER
+ P:	Steve Glendinning
+ M:	steve.glendinning@smsc.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/smsc9420.*
+ 
+ SMX UIO Interface
+ P:	Ben Nizette
+ M:	bn@niasdigital.com
+ S:	Maintained
++F:	drivers/uio/uio_smx.c
+ 
+ SN-IA64 (Itanium) SUB-PLATFORM
+ P:	Jes Sorensen
+ M:	jes@sgi.com
+ L:	linux-altix@sgi.com
+ L:	linux-ia64@vger.kernel.org
+ W:	http://www.sgi.com/altix
+ S:	Maintained
++F:	arch/ia64/sn/
+ 
+ SOC-CAMERA V4L2 SUBSYSTEM
+ P:	Guennadi Liakhovetski
+ M:	g.liakhovetski@gmx.de
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	include/media/v4l2*
++F:	drivers/media/video/v4l2*
+ 
+ SOEKRIS NET48XX LED SUPPORT
+ P:	Chris Boot
+ M:	bootc@bootc.net
+ S:	Maintained
++F:	drivers/leds/leds-net48xx.c
+ 
+ SOFTWARE RAID (Multiple Disks) SUPPORT
+ P:	Neil Brown
+ M:	neilb@suse.de
+ L:	linux-raid@vger.kernel.org
+ S:	Supported
++F:	drivers/md/
++F:	include/linux/raid/
+ 
+ SONIC NETWORK DRIVER
+ P:	Thomas Bogendoerfer
+ M:	tsbogend@alpha.franken.de
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/sonic.*
+ 
+ SONICS SILICON BACKPLANE DRIVER (SSB)
+ P:	Michael Buesch
+ M:	mb@bu3sch.de
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/ssb/
++F:	include/linux/ssb/
+ 
+ SONY VAIO CONTROL DEVICE DRIVER
+ P:	Mattia Dongili
+ M:	malattia@linux.it
+ L:	linux-acpi@vger.kernel.org
+ W:	http://www.linux.it/~malattia/wiki/index.php/Sony_drivers
+ S:	Maintained
++F:	Documentation/laptops/sony-laptop.txt
++F:	drivers/char/sonypi.c
++F:	drivers/platform/x86/sony-laptop.c
++F:	include/linux/sony-laptop.h
+ 
+ SONY MEMORYSTICK CARD SUPPORT
+ P:	Alex Dubov
+ M:	oakad@yahoo.com
+ L:	linux-kernel@vger.kernel.org
+ W:	http://tifmxx.berlios.de/
+ S:	Maintained
++F:	drivers/memstick/host/tifm_ms.c
+ 
+ SOUND
+ P:	Jaroslav Kysela
+ M:	perex@perex.cz
+ P:	Takashi Iwai
+ M:	tiwai@suse.de
+ L:	alsa-devel@alsa-project.org (subscribers-only)
+ S:	Maintained
++F:	sound/
+ 
+ SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEMENT (ASoC)
+ P:	Liam Girdwood
+ M:	lrg@slimlogic.co.uk
+ P:	Mark Brown
+ M:	broonie@opensource.wolfsonmicro.com
+ T:	git opensource.wolfsonmicro.com/linux-2.6-asoc
+ L:	alsa-devel@alsa-project.org (subscribers-only)
+ W:	http://alsa-project.org/main/index.php/ASoC
+ S:	Supported
++F:	sound/soc/
+ 
+ SPARC + UltraSPARC (sparc/sparc64)
+ P:	David S. Miller
+ M:	davem@davemloft.net
+ L:	sparclinux@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git
+ T:	git kernel.org:/pub/scm/linux/kernel/git/davem/sparc-next-2.6.git
+ S:	Maintained
++F:	arch/sparc/
+ 
+ SPECIALIX IO8+ MULTIPORT SERIAL CARD DRIVER
+ P:	Roger Wolff
+ M:	R.E.Wolff@BitWizard.nl
+ L:	linux-kernel@vger.kernel.org ?
+ S:	Supported
++F:	Documentation/serial/specialix.txt
++F:	drivers/char/specialix*
+ 
+ SPI SUBSYSTEM
+ P:	David Brownell
+ M:	dbrownell@users.sourceforge.net
+ L:	spi-devel-general@lists.sourceforge.net
+ S:	Maintained
++F:	Documentation/spi/
++F:	drivers/spi/
++F:	include/linux/spi/
+ 
+ SPIDERNET NETWORK DRIVER for CELL
+ P:	Ishizaki Kou
+ M:	kou.ishizaki@toshiba.co.jp
+ P:	Jens Osterkamp
+ M:	jens@de.ibm.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	Documentation/networking/spider_net.txt
++F:	drivers/net/spider_net*
+ 
+ SPU FILE SYSTEM
+ P:	Jeremy Kerr
+ M:	jk@ozlabs.org
+ L:	linuxppc-dev@ozlabs.org
+ L:	cbe-oss-dev@ozlabs.org
+ W:	http://www.ibm.com/developerworks/power/cell/
+ S:	Supported
++F:	Documentation/filesystems/spufs.txt
++F:	arch/powerpc/platforms/cell/spufs/
+ 
+ SQUASHFS FILE SYSTEM
+ P:	Phillip Lougher
+ M:	phillip@lougher.demon.co.uk
+ L:	squashfs-devel@lists.sourceforge.net (subscribers-only)
+ W:	http://squashfs.org.uk
+ S:	Maintained
++F:	Documentation/filesystems/squashfs.txt
++F:	fs/squashfs/
+ 
+ SRM (Alpha) environment access
+ P:	Jan-Benedict Glaw
+ M:	jbglaw@lug-owl.de
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	arch/alpha/kernel/srm_env.c
+ 
+ STABLE BRANCH
+ P:	Greg Kroah-Hartman
+ M:	greg@kroah.com
+ P:	Chris Wright
+ M:	chrisw@sous-sol.org
+ L:	stable@kernel.org
+ S:	Maintained
+ 
+ STAGING SUBSYSTEM
+ P:	Greg Kroah-Hartman
+ M:	gregkh@suse.de
+ L:	linux-kernel@vger.kernel.org
+ T:	quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+ S:	Maintained
++F:	drivers/staging/
+ 
+ STARFIRE/DURALAN NETWORK DRIVER
+ P:	Ion Badulescu
+ M:	ionut@cs.columbia.edu
+ S:	Maintained
++F:	drivers/net/starfire*
+ 
+ STARMODE RADIO IP (STRIP) PROTOCOL DRIVER
+ W:	http://mosquitonet.Stanford.EDU/strip.html
+ S:	Orphan
++F:	drivers/net/wireless/strip.c
++F:	include/linux/if_strip.h
+ 
+ STRADIS MPEG-2 DECODER DRIVER
+ P:	Nathan Laredo
+ M:	laredo@gnu.org
+ W:	http://www.stradis.com/
+ S:	Maintained
++F:	drivers/media/video/stradis.c
+ 
+ SUN3/3X
+ P:	Sam Creasey
+ M:	sammy@sammy.net
+ W:	http://sammy.net/sun3/
+ S:	Maintained
++F:	arch/m68k/kernel/*sun3*
++F:	arch/m68k/sun3*/
++F:	arch/m68k/include/asm/sun3*
+ 
+ SUPERH
+ P:	Paul Mundt
+ M:	lethal@linux-sh.org
+ L:	linux-sh@vger.kernel.org
+ W:	http://www.linux-sh.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
+ S:	Supported
++F:	arch/sh/
+ 
+ SUSPEND TO RAM
+ P:	Len Brown
+ M:	len.brown@intel.com
+ P:	Pavel Machek
+ M:	pavel@ucw.cz
+ P:	Rafael J. Wysocki
+ M:	rjw@sisk.pl
+ L:	linux-pm@lists.linux-foundation.org
+ S:	Supported
++F:	Documentation/power/
++F:	arch/x86/kernel/acpi/
++F:	drivers/base/power/
++F:	kernel/power/
++F:	include/linux/suspend.h
++F:	include/linux/freezer.h
++F:	include/linux/pm.h
++F:	include/asm-*/suspend.h
+ 
+ SVGA HANDLING
+ P:	Martin Mares
+ M:	mj@ucw.cz
+ L:	linux-video@atrey.karlin.mff.cuni.cz
+ S:	Maintained
++F:	Documentation/svga.txt
++F:	arch/x86/boot/video*
+ 
+ SYSV FILESYSTEM
+ P:	Christoph Hellwig
+ M:	hch@infradead.org
+ S:	Maintained
++F:	Documentation/filesystems/sysv-fs.txt
++F:	fs/sysv/
++F:	include/linux/sysv_fs.h
+ 
+ TASKSTATS STATISTICS INTERFACE
+ P:	Balbir Singh
+ M:	balbir@linux.vnet.ibm.com
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/accounting/taskstats*
++F:	include/linux/taskstats*
++F:	kernel/taskstats.c
+ 
+ TC CLASSIFIER
+ P:	Jamal Hadi Salim
+ M:	hadi@cyberus.ca
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	include/linux/pkt_cls.h
++F:	include/net/pkt_cls.h
++F:	net/sched/
+ 
+ TCP LOW PRIORITY MODULE
+ P:	Wong Hoi Sing, Edison
+ M:	hswong3i@gmail.com
+ P:	Hung Hing Lun, Mike
+ M:	hlhung3i@gmail.com
+ W:	http://tcp-lp-mod.sourceforge.net/
+ S:	Maintained
++F:	net/ipv4/tcp_lp.c
+ 
+ TEHUTI ETHERNET DRIVER
+ P:	Alexander Indenbaum
+ M:	baum@tehutinetworks.net
+ P:	Andy Gospodarek
+ M:	andy@greyhouse.net
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/tehuti*
+ 
+ Telecom Clock Driver for MCPL0010
+ P:	Mark Gross
+ M:	mark.gross@intel.com
+ S:	Supported
++F:	drivers/char/tlclk.c
+ 
+ TENSILICA XTENSA PORT (xtensa)
+ P:	Chris Zankel
+ M:	chris@zankel.net
+ S:	Maintained
++F:	arch/xtensa/
+ 
+ THINKPAD ACPI EXTRAS DRIVER
+ P:	Henrique de Moraes Holschuh
+ M:	ibm-acpi@hmh.eng.br
+ L:	ibm-acpi-devel@lists.sourceforge.net
+ W:	http://ibm-acpi.sourceforge.net
+ W:	http://thinkwiki.org/wiki/Ibm-acpi
+ T:	git repo.or.cz/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6.git
+ S:	Maintained
++F:	drivers/platform/x86/thinkpad_acpi.c
+ 
+ TI FLASH MEDIA INTERFACE DRIVER
+ P:	Alex Dubov
+ M:	oakad@yahoo.com
+ S:	Maintained
++F:	drivers/misc/tifm*
++F:	drivers/mmc/host/tifm_sd.c
++F:	include/linux/tifm.h
+ 
+ TI OMAP MMC INTERFACE DRIVER
+ P:	Carlos Aguiar, Anderson Briglia and Syed Khasim
+ M:	linux-omap@vger.kernel.org
+ W:	http://linux.omap.com
+ W:	http://www.muru.com/linux/omap/
+ S:	Maintained
++F:	drivers/mmc/host/omap.c
+ 
+ TI OMAP RANDOM NUMBER GENERATOR SUPPORT
+ P:	Deepak Saxena
+ M:	dsaxena@plexity.net
+ S:	Maintained
++F:	drivers/char/hw_random/omap-rng.c
+ 
+ TIPC NETWORK LAYER
+ P:	Per Liden
+ M:	per.liden@ericsson.com
+ P:	Jon Maloy
+ M:	jon.maloy@ericsson.com
+ P:	Allan Stephens
+ M:	allan.stephens@windriver.com
+ L:	tipc-discussion@lists.sourceforge.net
+ W:	http://tipc.sourceforge.net/
+ W:	http://tipc.cslab.ericsson.net/
+ T:	git tipc.cslab.ericsson.net:/pub/git/tipc.git
+ S:	Maintained
++F:	include/linux/tipc*.h
++F:	include/net/tipc/
++F:	net/tipc/
+ 
+ TLAN NETWORK DRIVER
+ P:	Samuel Chessman
+ M:	chessman@tux.org
+ L:	tlan-devel@lists.sourceforge.net (subscribers-only)
+ W:	http://sourceforge.net/projects/tlan/
+ S:	Maintained
++F:	Documentation/networking/tlan.txt
++F:	drivers/net/tlan.*
+ 
+ TOSHIBA ACPI EXTRAS DRIVER
+ P:	John Belmonte
+ M:	toshiba_acpi@memebeam.org
+ W:	http://memebeam.org/toys/ToshibaAcpiDriver
+ S:	Maintained
++F:	drivers/platform/x86/toshiba_acpi.c
+ 
+ TOSHIBA SMM DRIVER
+ P:	Jonathan Buzzard
+ M:	jonathan@buzzard.org.uk
+ L:	tlinux-users@tce.toshiba-dme.co.jp
+ W:	http://www.buzzard.org.uk/toshiba/
+ S:	Maintained
++F:	drivers/char/toshiba.c
++F:	include/linux/toshiba.h
+ 
+ TPM DEVICE DRIVER
+ P:	Debora Velarde
+ M:	debora@linux.vnet.ibm.com
+ P:	Rajiv Andrade
+ M:	srajiv@linux.vnet.ibm.com
+ W:	http://tpmdd.sourceforge.net
+ P:	Marcel Selhorst
+ M:	m.selhorst@sirrix.com
+ W:	http://www.sirrix.com
+ L:	tpmdd-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
++F:	drivers/char/tpm/
+ 
+ TRIVIAL PATCHES
+ P:	Jiri Kosina
+ M:	trivial@kernel.org
+ L:	linux-kernel@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jikos/trivial.git
+ S:	Maintained
+ 
+ TTY LAYER
+ P:	Alan Cox
+ M:	alan@lxorguk.ukuu.org.uk
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
+ 
+ TULIP NETWORK DRIVERS
+ P:	Grant Grundler
+ M:	grundler@parisc-linux.org
+ P:	Kyle McMartin
+ M:	kyle@mcmartin.ca
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/tulip/
+ 
+ TUN/TAP driver
+ P:	Maxim Krasnyansky
+ M:	maxk@qualcomm.com
+ L:	vtun@office.satix.net
+ W:	http://vtun.sourceforge.net/tun
+ S:	Maintained
++F:	Documentation/networking/tuntap.txt
++F:	arch/um/os-Linux/drivers/
+ 
+ TURBOCHANNEL SUBSYSTEM
+ P:	Maciej W. Rozycki
+ M:	macro@linux-mips.org
+ S:	Maintained
++F:	drivers/tc/
++F:	include/linux/tc.h
+ 
+ U14-34F SCSI DRIVER
+ P:	Dario Ballabio
+ M:	ballabio_dario@emc.com
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/u14-34f.c
+ 
+ UBI FILE SYSTEM (UBIFS)
+ P:	Artem Bityutskiy
+ M:	dedekind@infradead.org
+ P:	Adrian Hunter
+ M:	ext-adrian.hunter@nokia.com
+ L:	linux-mtd@lists.infradead.org
+ T:	git git://git.infradead.org/ubifs-2.6.git
+ W:	http://www.linux-mtd.infradead.org/doc/ubifs.html
+ S:	Maintained
++F:	Documentation/filesystems/ubifs.txt
++F:	fs/ubifs/
+ 
+ UCLINUX (AND M68KNOMMU)
+ P:	Greg Ungerer
+ M:	gerg@uclinux.org
+ W:	http://www.uclinux.org/
+ L:	uclinux-dev@uclinux.org  (subscribers-only)
+ S:	Maintained
++F:	arch/m68knommu/
+ 
+ UCLINUX FOR RENESAS H8/300
+ P:	Yoshinori Sato
+ M:	ysato@users.sourceforge.jp
+ W:	http://uclinux-h8.sourceforge.jp/
+ S:	Supported
+ 
+ UDF FILESYSTEM
+ P:	Jan Kara
+ M:	jack@suse.cz
+ W:	http://linux-udf.sourceforge.net
+ S:	Maintained
++F:	Documentation/filesystems/udf.txt
++F:	fs/udf/
+ 
+ UFS FILESYSTEM
+ P:	Evgeniy Dushistov
+ M:	dushistov@mail.ru
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/filesystems/ufs.txt
++F:	fs/ufs/
+ 
+ ULTRA-WIDEBAND (UWB) SUBSYSTEM:
+ P:	David Vrabel
+ M:	david.vrabel@csr.com
+ L:	linux-usb@vger.kernel.org
+ S:	Supported
++F:	drivers/uwb/*
++F:	include/linux/uwb.h
++F:	include/linux/uwb/
+ 
+ UNIFORM CDROM DRIVER
+ P:	Jens Axboe
+ M:	axboe@kernel.dk
+ L:	linux-kernel@vger.kernel.org
+ W:	http://www.kernel.dk
+ S:	Maintained
++F:	Documentation/cdrom/
++F:	drivers/cdrom/cdrom.c
++F:	include/linux/cdrom.h
+ 
+ UNSORTED BLOCK IMAGES (UBI)
+ P:	Artem Bityutskiy
+ M:	dedekind@infradead.org
+ W:	http://www.linux-mtd.infradead.org/
+ L:	linux-mtd@lists.infradead.org
+ T:	git git://git.infradead.org/ubi-2.6.git
+ S:	Maintained
++F:	drivers/mtd/ubi
++F:	include/linux/mtd/ubi.h
++F:	include/mtd/ubi-user.h
+ 
+ USB ACM DRIVER
+ P:	Oliver Neukum
+ M:	oliver@neukum.name
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
++F:	Documentation/usb/acm.txt
++F:	drivers/usb/class/cdc-acm.*
+ 
+ USB BLOCK DRIVER (UB ub)
+ P:	Pete Zaitcev
+ M:	zaitcev@redhat.com
+ L:	linux-kernel@vger.kernel.org
+ L:	linux-usb@vger.kernel.org
+ S:	Supported
++F:	drivers/block/ub.c
+ 
+ USB CDC ETHERNET DRIVER
+ P:	Greg Kroah-Hartman
+ M:	greg@kroah.com
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
+ W:	http://www.kroah.com/linux-usb/
++F:	drivers/net/usb/cdc_*.c
++F:	include/linux/usb/cdc.h
+ 
+ USB CYPRESS C67X00 DRIVER
+ P:	Peter Korsgaard
+ M:	jacmet@sunsite.dk
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
++F:	drivers/usb/c67x00/
+ 
+ USB DAVICOM DM9601 DRIVER
+ P:	Peter Korsgaard
+ M:	jacmet@sunsite.dk
+ L:	netdev@vger.kernel.org
+ W:	http://www.linux-usb.org/usbnet
+ S:	Maintained
++F:	drivers/net/usb/dm9601.c
+ 
+ USB DIAMOND RIO500 DRIVER
+ P:	Cesar Miquel
+ M:	miquel@df.uba.ar
+ L:	rio500-users@lists.sourceforge.net
+ W:	http://rio500.sourceforge.net
+ S:	Maintained
++F:	drivers/usb/misc/rio500*
+ 
+ USB EHCI DRIVER
+ P:	David Brownell
+ M:	dbrownell@users.sourceforge.net
+ L:	linux-usb@vger.kernel.org
+ S:	Odd Fixes
++F:	Documentation/usb/ehci.txt
++F:	drivers/usb/host/ehci*
+ 
+ USB ET61X[12]51 DRIVER
+ P:	Luca Risolia
+ M:	luca.risolia@studio.unibo.it
+ L:	linux-usb@vger.kernel.org
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ W:	http://www.linux-projects.org
+ S:	Maintained
++F:	drivers/media/video/et61x251/
+ 
+ USB GADGET/PERIPHERAL SUBSYSTEM
+ P:	David Brownell
+ M:	dbrownell@users.sourceforge.net
+ L:	linux-usb@vger.kernel.org
+ W:	http://www.linux-usb.org/gadget
+ S:	Maintained
++F:	drivers/usb/gadget/
++F:	include/linux/usb/gadget*
+ 
+ USB HID/HIDBP DRIVERS (USB KEYBOARDS, MICE, REMOTE CONTROLS, ...)
+ P:	Jiri Kosina
+ M:	jkosina@suse.cz
+ L:	linux-usb@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git
+ S:	Maintained
++F:	Documentation/usb/hiddev.txt
++F:	drivers/hid/usbhid/
+ 
+ USB ISP116X DRIVER
+ P:	Olav Kongas
+ M:	ok@artecdesign.ee
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
++F:	drivers/usb/host/isp116x*
++F:	include/linux/usb/isp116x.h
+ 
+ USB KAWASAKI LSI DRIVER
+ P:	Oliver Neukum
+ M:	oliver@neukum.name
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
++F:	drivers/usb/serial/kl5kusb105.*
+ 
+ USB MASS STORAGE DRIVER
+ P:	Matthew Dharm
+ M:	mdharm-usb@one-eyed-alien.net
+ L:	linux-usb@vger.kernel.org
+ L:	usb-storage@lists.one-eyed-alien.net
+ S:	Maintained
+ W:	http://www.one-eyed-alien.net/~mdharm/linux-usb/
++F:	drivers/usb/storage/
+ 
+ USB OHCI DRIVER
+ P:	David Brownell
+ M:	dbrownell@users.sourceforge.net
+ L:	linux-usb@vger.kernel.org
+ S:	Odd Fixes
++F:	Documentation/usb/ohci.txt
++F:	drivers/usb/host/ohci*
+ 
+ USB OPTION-CARD DRIVER
+ P:	Matthias Urlichs
+ M:	smurf@smurf.noris.de
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
++F:	drivers/usb/serial/option.c
+ 
+ USB OV511 DRIVER
+ P:	Mark McClelland
+ M:	mmcclell@bigfoot.com
+ L:	linux-usb@vger.kernel.org
+ W:	http://alpha.dyndns.org/ov511/
+ S:	Maintained
++F:	drivers/media/video/ov511.*
+ 
+ USB PEGASUS DRIVER
+ P:	Petko Manolov
+ M:	petkan@users.sourceforge.net
+ L:	linux-usb@vger.kernel.org
+ L:	netdev@vger.kernel.org
+ W:	http://pegasus2.sourceforge.net/
+ S:	Maintained
++F:	drivers/net/usb/pegasus.*
+ 
+ USB PRINTER DRIVER (usblp)
+ P:	Pete Zaitcev
+ M:	zaitcev@redhat.com
+ L:	linux-usb@vger.kernel.org
+ S:	Supported
++F:	drivers/usb/class/usblp.c
+ 
+ USB RTL8150 DRIVER
+ P:	Petko Manolov
+ M:	petkan@users.sourceforge.net
+ L:	linux-usb@vger.kernel.org
+ L:	netdev@vger.kernel.org
+ W:	http://pegasus2.sourceforge.net/
+ S:	Maintained
++F:	drivers/net/usb/rtl8150.c
+ 
+ USB SE401 DRIVER
+ P:	Jeroen Vreeken
+ M:	pe1rxq@amsat.org
+ L:	linux-usb@vger.kernel.org
+ W:	http://www.chello.nl/~j.vreeken/se401/
+ S:	Maintained
++F:	Documentation/video4linux/se401.txt
++F:	drivers/media/video/se401.*
+ 
+ USB SERIAL BELKIN F5U103 DRIVER
+ P:	William Greathouse
+ M:	wgreathouse@smva.com
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
++F:	drivers/usb/serial/belkin_sa.*
+ 
+ USB SERIAL CYPRESS M8 DRIVER
+ P:	Lonnie Mendez
+ M:	dignome@gmail.com
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
+ W:	http://geocities.com/i0xox0i
+ W:	http://firstlight.net/cvs
++F:	drivers/usb/serial/cypress_m8.*
+ 
+ USB SERIAL CYBERJACK DRIVER
+ P:	Matthias Bruestle and Harald Welte
+ M:	support@reiner-sct.com
+ W:	http://www.reiner-sct.de/support/treiber_cyberjack.php
+ S:	Maintained
++F:	drivers/usb/serial/cyberjack.c
+ 
+ USB SERIAL DIGI ACCELEPORT DRIVER
+ P:	Peter Berger and Al Borchers
+ M:	pberger@brimson.com
+ M:	alborchers@steinerpoint.com
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
++F:	drivers/usb/serial/digi_acceleport.c
+ 
+ USB SERIAL DRIVER
+ P:	Greg Kroah-Hartman
+ M:	gregkh@suse.de
+ L:	linux-usb@vger.kernel.org
+ S:	Supported
++F:	Documentation/usb/usb-serial.txt
++F:	drivers/usb/serial/generic.c
++F:	drivers/usb/serial/usb-serial.c
++F:	include/linux/usb/serial.h
+ 
+ USB SERIAL EMPEG EMPEG-CAR MARK I/II DRIVER
+ P:	Gary Brubaker
+ M:	xavyer@ix.netcom.com
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
++F:	drivers/usb/serial/empeg.c
+ 
+ USB SERIAL KEYSPAN DRIVER
+ P:	Greg Kroah-Hartman
+ M:	greg@kroah.com
+ L:	linux-usb@vger.kernel.org
+ W:	http://www.kroah.com/linux/
+ S:	Maintained
++F:	drivers/usb/serial/*keyspan*
+ 
+ USB SERIAL WHITEHEAT DRIVER
+ P:	Support Department
+ M:	support@connecttech.com
+ L:	linux-usb@vger.kernel.org
+ W:	http://www.connecttech.com
+ S:	Supported
++F:	drivers/usb/serial/whiteheat*
+ 
+ USB SMSC95XX ETHERNET DRIVER
+ P:	Steve Glendinning
+ M:	steve.glendinning@smsc.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
++F:	drivers/net/usb/smsc95xx.*
+ 
+ USB SN9C1xx DRIVER
+ P:	Luca Risolia
+ M:	luca.risolia@studio.unibo.it
+ L:	linux-usb@vger.kernel.org
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ W:	http://www.linux-projects.org
+ S:	Maintained
++F:	Documentation/video4linux/sn9c102.txt
++F:	drivers/media/video/sn9c102/
+ 
+ USB SUBSYSTEM
+ P:	Greg Kroah-Hartman
+ M:	gregkh@suse.de
+ L:	linux-usb@vger.kernel.org
+ W:	http://www.linux-usb.org
+ T:	quilt kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+ S:	Supported
++F:	Documentation/usb/
++F:	drivers/net/usb/
++F:	drivers/usb/
++F:	include/linux/usb.h
++F:	include/linux/usb/
+ 
+ USB UHCI DRIVER
+ P:	Alan Stern
+ M:	stern@rowland.harvard.edu
+ L:	linux-usb@vger.kernel.org
+ S:	Maintained
++F:	drivers/usb/host/uhci*
+ 
+ USB "USBNET" DRIVER FRAMEWORK
+ P:	David Brownell
+ M:	dbrownell@users.sourceforge.net
+ L:	netdev@vger.kernel.org
+ W:	http://www.linux-usb.org/usbnet
+ S:	Maintained
++F:	drivers/net/usb/usbnet.c
++F:	include/linux/usb/usbnet.h
+ 
+ USB VIDEO CLASS
+ P:	Laurent Pinchart
+ M:	laurent.pinchart@skynet.be
+ L:	linux-uvc-devel@lists.berlios.de (subscribers-only)
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ W:	http://linux-uvc.berlios.de
+ S:	Maintained
++F:	drivers/media/video/uvc/
+ 
+ USB W996[87]CF DRIVER
+ P:	Luca Risolia
+ M:	luca.risolia@studio.unibo.it
+ L:	linux-usb@vger.kernel.org
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ W:	http://www.linux-projects.org
+ S:	Maintained
++F:	Documentation/video4linux/w9968cf.txt
++F:	drivers/media/video/w996*
+ 
+ USB WIRELESS RNDIS DRIVER (rndis_wlan)
+ P:	Jussi Kivilinna
+ M:	jussi.kivilinna@mbnet.fi
+ L:	linux-wireless@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/wireless/rndis_wlan.c
+ 
+ USB ZC0301 DRIVER
+ P:	Luca Risolia
+ M:	luca.risolia@studio.unibo.it
+ L:	linux-usb@vger.kernel.org
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ W:	http://www.linux-projects.org
+ S:	Maintained
++F:	Documentation/video4linux/zc0301.txt
++F:	drivers/media/video/zc0301/
+ 
+ USB ZD1201 DRIVER
+ P:	Jeroen Vreeken
+ M:	pe1rxq@amsat.org
+ L:	linux-usb@vger.kernel.org
+ W:	http://linux-lc100020.sourceforge.net
+ S:	Maintained
++F:	drivers/net/wireless/zd1201.*
+ 
+ USB ZR364XX DRIVER
+ P:	Antoine Jacquet
+ M:	royale@zerezo.com
+ L:	linux-usb@vger.kernel.org
+ L:	linux-media@vger.kernel.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ W:	http://royale.zerezo.com/zr364xx/
+ S:	Maintained
++F:	Documentation/video4linux/zr364xx.txt
++F:	drivers/media/video/zr364xx.c
+ 
+ USER-MODE LINUX (UML)
+ P:	Jeff Dike
+ M:	jdike@addtoit.com
+ L:	user-mode-linux-devel@lists.sourceforge.net
+ L:	user-mode-linux-user@lists.sourceforge.net
+ W:	http://user-mode-linux.sourceforge.net
+ S:	Maintained
++F:	Documentation/uml/
++F:	arch/um/
++F:	fs/hostfs/
++F:	fs/hppfs/
+ 
+ USERSPACE I/O (UIO)
+ P:	Hans J. Koch
+ M:	hjk@linutronix.de
+ P:	Greg Kroah-Hartman
+ M:	gregkh@suse.de
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/DocBook/uio-howto.tmpl
++F:	drivers/uio/
++F:	include/linux/uio*.h
+ 
+ UTIL-LINUX-NG PACKAGE
+ P:	Karel Zak
+ M:	kzak@redhat.com
+ L:	util-linux-ng@vger.kernel.org
+ W:	http://kernel.org/~kzak/util-linux-ng/
+ T:	git://git.kernel.org/pub/scm/utils/util-linux-ng/util-linux-ng.git
+ S:	Maintained
+ 
+ UVESAFB DRIVER
+ P:	Michal Januszewski
+ M:	spock@gentoo.org
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ W:	http://dev.gentoo.org/~spock/projects/uvesafb/
+ S:	Maintained
++F:	Documentation/fb/uvesafb.txt
++F:	drivers/video/uvesafb.*
+ 
+ VFAT/FAT/MSDOS FILESYSTEM
+ P:	OGAWA Hirofumi
+ M:	hirofumi@mail.parknet.co.jp
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	Documentation/filesystems/vfat.txt
++F:	fs/fat/
+ 
+ VIA RHINE NETWORK DRIVER
+ P:	Roger Luethi
+ M:	rl@hellgate.ch
+ S:	Maintained
++F:	drivers/net/via-rhine.c
+ 
+ VIAPRO SMBUS DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+ L:	linux-i2c@vger.kernel.org
+ S:	Maintained
++F:	Documentation/i2c/busses/i2c-viapro
++F:	drivers/i2c/busses/i2c-viapro.c
+ 
+ VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER
+ P:	Joseph Chan
+ M:	JosephChan@via.com.tw
+ P:	Scott Fang
+ M:	ScottFang@viatech.com.cn
+ L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
++F:	drivers/video/via/
+ 
+ VIA VELOCITY NETWORK DRIVER
+ P:	Francois Romieu
+ M:	romieu@fr.zoreil.com
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/via-velocity.*
+ 
+ VIDEO FOR LINUX (V4L)
+ P:	Mauro Carvalho Chehab
+ M:	mchehab@infradead.org
+ L:	linux-media@vger.kernel.org
+ L:	video4linux-list@redhat.com
+ W:	http://linuxtv.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
+ S:	Maintained
++F:	Documentation/video4linux/
++F:	drivers/media/video/
++F:	drivers/media/radio/
++F:	include/linux/video_decoder.h
++F:	include/linux/videodev.h
++F:	include/linux/videodev2.h
++F:	include/media/
+ 
+ VLAN (802.1Q)
+ P:	Patrick McHardy
+ M:	kaber@trash.net
+ L:	netdev@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/macvlan.c
++F:	include/linux/if_*vlan.h
++F:	net/8021q/
+ 
+ VOLTAGE AND CURRENT REGULATOR FRAMEWORK
+ P:	Liam Girdwood
+ M:	lrg@slimlogic.co.uk
+ P:	Mark Brown
+ M:	broonie@opensource.wolfsonmicro.com
+ W:	http://opensource.wolfsonmicro.com/node/15
+ W:	http://www.slimlogic.co.uk/?page_id=5
+ T:	git kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git
+ S:	Supported
++F:	drivers/regulator/
++F:	include/linux/regulator/
+ 
+ VT1211 HARDWARE MONITOR DRIVER
+ P:	Juerg Haefliger
+ M:	juergh@gmail.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/vt1211
++F:	drivers/hwmon/vt1211.c
+ 
+ VT8231 HARDWARE MONITOR DRIVER
+ P:	Roger Lucas
+ M:	vt8231@hiddenengine.co.uk
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	drivers/hwmon/vt8231.c
+ 
+ W1 DALLAS'S 1-WIRE BUS
+ P:	Evgeniy Polyakov
+ M:	johnpol@2ka.mipt.ru
+ S:	Maintained
++F:	Documentation/w1/
++F:	drivers/w1/
+ 
+ W83791D HARDWARE MONITORING DRIVER
+ P:	Marc Hulsman
+ M:	m.hulsman@tudelft.nl
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/w83791d
++F:	drivers/hwmon/w83791d.c
+ 
+ W83793 HARDWARE MONITORING DRIVER
+ P:	Rudolf Marek
+ M:	r.marek@assembler.cz
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
++F:	Documentation/hwmon/w83793
++F:	drivers/hwmon/w83793.c
+ 
+ W83L51xD SD/MMC CARD INTERFACE DRIVER
+ P:	Pierre Ossman
+ M:	drzeus-wbsd@drzeus.cx
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/mmc/host/wbsd.*
+ 
+ WATCHDOG DEVICE DRIVERS
+ P:	Wim Van Sebroeck
+ M:	wim@iguana.be
+ T:	git kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+ S:	Maintained
++F:	Documentation/watchdog/
++F:	drivers/watchdog/
++F:	include/linux/watchdog.h
+ 
+ WAVELAN NETWORK DRIVER & WIRELESS EXTENSIONS
+ P:	Jean Tourrilhes
+ M:	jt@hpl.hp.com
+ L:	linux-wireless@vger.kernel.org
+ W:	http://www.hpl.hp.com/personal/Jean_Tourrilhes/Linux/
+ S:	Maintained
++F:	Documentation/networking/wavelan.txt
++F:	drivers/net/wireless/wavelan*
+ 
+ WD7000 SCSI DRIVER
+ P:	Miroslav Zagorac
+ M:	zaga@fly.cc.fer.hr
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
++F:	drivers/scsi/wd7000.c
+ 
+ WIMAX STACK
+ P:	Inaky Perez-Gonzalez
+ M:	inaky.perez-gonzalez@intel.com
+ M:	linux-wimax@intel.com
+ L:	wimax@linuxwimax.org
+ S:	Supported
+ W:	http://linuxwimax.org
+ 
+ WIMEDIA LLC PROTOCOL (WLP) SUBSYSTEM
+ P:	David Vrabel
+ M:	david.vrabel@csr.com
+ S:	Maintained
++F:	include/linux/wlp.h
++F:	drivers/uwb/wlp/
+ 
+ WISTRON LAPTOP BUTTON DRIVER
+ P:	Miloslav Trmac
+ M:	mitr@volny.cz
+ S:	Maintained
++F:	drivers/input/misc/wistron_btns.c
+ 
+ WL3501 WIRELESS PCMCIA CARD DRIVER
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
+ L:	linux-wireless@vger.kernel.org
+ W:	http://oops.ghostprotocols.net:81/blog
+ S:	Maintained
++F:	drivers/net/wireless/wl3501*
+ 
+ WM97XX TOUCHSCREEN DRIVERS
+ P:	Mark Brown
+ M:	broonie@opensource.wolfsonmicro.com
+ P:	Liam Girdwood
+ M:	lrg@slimlogic.co.uk
+ L:	linux-input@vger.kernel.org
+ T:	git git://opensource.wolfsonmicro.com/linux-2.6-touch
+ W:	http://opensource.wolfsonmicro.com/node/7
+ S:	Supported
++F:	drivers/input/touchscreen/*wm97*
++F:	include/linux/wm97xx.h
+ 
+ X.25 NETWORK LAYER
+ P:	Henner Eisen
+ M:	eis@baty.hanse.de
+ L:	linux-x25@vger.kernel.org
+ S:	Maintained
++F:	Documentation/networking/x25*
++F:	include/net/x25*
++F:	net/x25/
+ 
+ X86 ARCHITECTURE (32-BIT AND 64-BIT)
+ P:	Thomas Gleixner
+ M:	tglx@linutronix.de
+ P:	Ingo Molnar
+ M:	mingo@redhat.com
+ P:	H. Peter Anvin
+ M:	hpa@zytor.com
+ M:	x86@kernel.org
+ L:	linux-kernel@vger.kernel.org
+ T:	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+ S:	Maintained
++F:	Documentation/x86/
++F:	arch/x86/
+ 
+ XEN HYPERVISOR INTERFACE
+ P:	Jeremy Fitzhardinge
+ M:	jeremy@xensource.com
+ P:	Chris Wright
+ M:	chrisw@sous-sol.org
+ L:	virtualization@lists.osdl.org
+ L:	xen-devel@lists.xensource.com
+ S:	Supported
++F:	arch/x86/xen/
++F:	drivers/*/xen-*front.c
++F:	drivers/xen/
++F:	arch/x86/include/asm/xen/
++F:	include/xen/
+ 
+ XFS FILESYSTEM
+ P:	Silicon Graphics Inc
+ P:	Bill O'Donnell
+ M:	xfs-masters@oss.sgi.com
+ L:	xfs@oss.sgi.com
+ W:	http://oss.sgi.com/projects/xfs
+ T:	git://oss.sgi.com/xfs/xfs.git
+ S:	Supported
++F:	Documentation/filesystems/xfs.txt
++F:	fs/xfs/
+ 
+ XILINX SYSTEMACE DRIVER
+ P:	Grant Likely
+ M:	grant.likely@secretlab.ca
+ W:	http://www.secretlab.ca/
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
++F:	drivers/block/xsysace.c
+ 
+ XILINX UARTLITE SERIAL DRIVER
+ P:	Peter Korsgaard
+ M:	jacmet@sunsite.dk
+ L:	linux-serial@vger.kernel.org
+ S:	Maintained
++F:	drivers/serial/uartlite.c
+ 
+ YAM DRIVER FOR AX.25
+ P:	Jean-Paul Roubelat
+ M:	jpr@f6fbb.org
+ L:	linux-hams@vger.kernel.org
+ S:	Maintained
++F:	drivers/net/hamradio/yam*
++F:	include/linux/yam.h
+ 
+ YEALINK PHONE DRIVER
+ P:	Henk Vergonet
+ M:	Henk.Vergonet@gmail.com
+ L:	usbb2k-api-dev@nongnu.org
+ S:	Maintained
++F:	Documentation/input/yealink.txt
++F:	drivers/input/misc/yealink.*
+ 
+ Z8530 DRIVER FOR AX.25
+ P:	Joerg Reuter
+ M:	jreuter@yaina.de
+ W:	http://yaina.de/jreuter/
+ W:	http://www.qsl.net/dl1bke/
+ L:	linux-hams@vger.kernel.org
+ S:	Maintained
++F:	Documentation/networking/z8530drv.txt
++F:	drivers/net/hamradio/*scc.c
++F:	drivers/net/hamradio/z8530.h
+ 
+ ZD1211RW WIRELESS DRIVER
+ P:	Daniel Drake
+ M:	dsd@gentoo.org
+ P:	Ulrich Kunitz
+ M:	kune@deine-taler.de
+ W:	http://zd1211.ath.cx/wiki/DriverRewrite
+ L:	linux-wireless@vger.kernel.org
+ L:	zd1211-devs@lists.sourceforge.net (subscribers-only)
+ S:	Maintained
++F:	drivers/net/wireless/zd1211rw/
+ 
+ ZR36067 VIDEO FOR LINUX DRIVER
+ L:	mjpeg-users@lists.sourceforge.net
+ L:	linux-media@vger.kernel.org
+ W:	http://mjpeg.sourceforge.net/driver-zoran/
+ T:	Mercurial http://linuxtv.org/hg/v4l-dvb
+ S:	Odd Fixes
++F:	drivers/media/video/zoran/
+ 
+ ZS DECSTATION Z85C30 SERIAL DRIVER
+ P:	Maciej W. Rozycki
+ M:	macro@linux-mips.org
+ S:	Maintained
++F:	drivers/serial/zs.*
+ 
+ THE REST
+ P:	Linus Torvalds
+ S:	Buried alive in reporters
+-- 
+1.6.0.2
 
