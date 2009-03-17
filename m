@@ -1,95 +1,777 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763478AbZCQLqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763462AbZCQLrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763478AbZCQLqV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 07:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbZCQLqL
+	id S1763462AbZCQLrs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 07:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbZCQLri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 07:46:11 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:54540 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753299AbZCQLqK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 07:46:10 -0400
-Date: Tue, 17 Mar 2009 17:15:58 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, mingo@elte.hu,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
-       svaidy@linux.vnet.ibm.com
-Subject: Re: [v3 PATCH 4/4] timers: logic to move non pinned timers
-Message-ID: <20090317114557.GA32233@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090316111045.GA4686@linux.vnet.ibm.com> <20090316111548.GE4686@linux.vnet.ibm.com> <alpine.LFD.2.00.0903171017590.29264@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903171017590.29264@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 17 Mar 2009 07:47:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40356 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752941AbZCQLrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 07:47:36 -0400
+Subject: [git-pull -tip] x86: cleanup non-code changing
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 17 Mar 2009 17:16:57 +0530
+Message-Id: <1237290417.10142.4.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Thomas Gleixner <tglx@linutronix.de> [2009-03-17 11:22:24]:
+The following changes since commit 1f31834fbbb8de367914f044d3268c6afbfdd783:
+  Ingo Molnar (1):
+        Merge branch 'x86/mce2'
 
-> On Mon, 16 Mar 2009, Arun R Bharadwaj wrote:
-> > @@ -627,6 +628,16 @@ __mod_timer(struct timer_list *timer, un
-> >  
-> >  	new_base = __get_cpu_var(tvec_bases);
-> >  
-> > +	current_cpu = smp_processor_id();
-> > +	preferred_cpu = get_nohz_load_balancer();
-> > +	if (get_sysctl_timer_migration() && idle_cpu(current_cpu) &&
-> > +			!pinned && preferred_cpu != -1) {
-> > +		new_base = per_cpu(tvec_bases, preferred_cpu);
-> > +		timer_set_base(timer, new_base);
-> > +		timer->expires = expires;
-> > +		internal_add_timer(new_base, timer);
-> > +		goto out_unlock;
-> > +	}
-> 
->   Err. This change breaks the timer->base logic. Why can't it just
->   select the base and use the existing code ?
->
+are available in the git repository at:
 
-Sure, I'll take care of this.
+  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git master
 
-> > @@ -198,8 +200,16 @@ switch_hrtimer_base(struct hrtimer *time
-> >  {
-> >  	struct hrtimer_clock_base *new_base;
-> >  	struct hrtimer_cpu_base *new_cpu_base;
-> > +	int current_cpu, preferred_cpu;
-> > +
-> > +	current_cpu = smp_processor_id();
-> > +	preferred_cpu = get_nohz_load_balancer();
-> > +	if (get_sysctl_timer_migration() && !pinned && preferred_cpu != -1
-> > +			&& idle_cpu(current_cpu))
-> > +		new_cpu_base = &per_cpu(hrtimer_bases, preferred_cpu);
-> > +	else
-> > +		new_cpu_base = &__get_cpu_var(hrtimer_bases);
-> >  
-> > -	new_cpu_base = &__get_cpu_var(hrtimer_bases);
-> >  	new_base = &new_cpu_base->clock_base[base->index];
-> 
->   Hmm. This can lead to high latencies when you enqueue the timer on
->   the other CPU simply because we can not reprogram the timer hardware
->   on the other CPU in the CONFIG_HIGH_RES=y case.
-> 
->   Let's assume we are on CPU0 and try to enqueue the timer on CPU1,
->   where the next timer expiry is 5ms away. The timer which we enqueue
->   is due in 500us. So you introduce 4.5ms latency.
->
+Jaswinder Singh Rajput (8):
+      x86: i8237.c cleanup
+      x86: topology.c cleanup
+      x86: kdebugfs.c cleanup
+      x86: i8253 cleanup
+      x86: pci-nommu.c cleanup
+      x86: io_delay.c cleanup
+      x86: rtc.c cleanup
+      x86: tls.c cleanup
 
-We are moving timers to the ilb which wakes up every jiffy.
-So we can move the timer to the ilb only if it's expiry
-time is greater than 1 jiffy. Else we can fire on the same CPU.
-This would prevent any latency from being added, right?
+ arch/x86/kernel/i8237.c     |    5 ++-
+ arch/x86/kernel/i8253.c     |   68 ++++++++++++++++++--------------------
+ arch/x86/kernel/io_delay.c  |    6 ++--
+ arch/x86/kernel/kdebugfs.c  |   76 ++++++++++++++++++++----------------------
+ arch/x86/kernel/pci-nommu.c |   29 +++++++++++------
+ arch/x86/kernel/rtc.c       |   24 +++++++------
+ arch/x86/kernel/tls.c       |   20 ++++++++---
+ arch/x86/kernel/topology.c  |   14 ++++---
+ 8 files changed, 129 insertions(+), 113 deletions(-)
 
---arun
+Complete diff:
+diff --git a/arch/x86/kernel/i8237.c b/arch/x86/kernel/i8237.c
+index b42ca69..044ca09 100644
+--- a/arch/x86/kernel/i8237.c
++++ b/arch/x86/kernel/i8237.c
+@@ -9,9 +9,8 @@
+  * your option) any later version.
+  */
+ 
+-#include <linux/init.h>
+ #include <linux/sysdev.h>
+-
++#include <linux/init.h>
+ #include <asm/dma.h>
+ 
+ /*
+@@ -64,8 +63,10 @@ static struct sys_device device_i8237A = {
+ static int __init i8237A_init_sysfs(void)
+ {
+ 	int error = sysdev_class_register(&i8237_sysdev_class);
++
+ 	if (!error)
+ 		error = sysdev_register(&device_i8237A);
++
+ 	return error;
+ }
+ device_initcall(i8237A_init_sysfs);
+diff --git a/arch/x86/kernel/i8253.c b/arch/x86/kernel/i8253.c
+index 10f92fb..3475440 100644
+--- a/arch/x86/kernel/i8253.c
++++ b/arch/x86/kernel/i8253.c
+@@ -3,17 +3,17 @@
+  *
+  */
+ #include <linux/clockchips.h>
+-#include <linux/init.h>
+ #include <linux/interrupt.h>
++#include <linux/spinlock.h>
+ #include <linux/jiffies.h>
+ #include <linux/module.h>
+-#include <linux/spinlock.h>
++#include <linux/delay.h>
++#include <linux/init.h>
++#include <linux/io.h>
+ 
+-#include <asm/smp.h>
+-#include <asm/delay.h>
+ #include <asm/i8253.h>
+-#include <asm/io.h>
+ #include <asm/hpet.h>
++#include <asm/smp.h>
+ 
+ DEFINE_SPINLOCK(i8253_lock);
+ EXPORT_SYMBOL(i8253_lock);
+@@ -40,7 +40,7 @@ static void init_pit_timer(enum clock_event_mode mode,
+ {
+ 	spin_lock(&i8253_lock);
+ 
+-	switch(mode) {
++	switch (mode) {
+ 	case CLOCK_EVT_MODE_PERIODIC:
+ 		/* binary, mode 2, LSB/MSB, ch 0 */
+ 		outb_pit(0x34, PIT_MODE);
+@@ -95,7 +95,7 @@ static int pit_next_event(unsigned long delta, struct clock_event_device *evt)
+  * registered. This mechanism replaces the previous #ifdef LOCAL_APIC -
+  * !using_apic_timer decisions in do_timer_interrupt_hook()
+  */
+-static struct clock_event_device pit_clockevent = {
++static struct clock_event_device pit_ce = {
+ 	.name		= "pit",
+ 	.features	= CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT,
+ 	.set_mode	= init_pit_timer,
+@@ -114,15 +114,13 @@ void __init setup_pit_timer(void)
+ 	 * Start pit with the boot cpu mask and make it global after the
+ 	 * IO_APIC has been initialized.
+ 	 */
+-	pit_clockevent.cpumask = cpumask_of(smp_processor_id());
+-	pit_clockevent.mult = div_sc(CLOCK_TICK_RATE, NSEC_PER_SEC,
+-				     pit_clockevent.shift);
+-	pit_clockevent.max_delta_ns =
+-		clockevent_delta2ns(0x7FFF, &pit_clockevent);
+-	pit_clockevent.min_delta_ns =
+-		clockevent_delta2ns(0xF, &pit_clockevent);
+-	clockevents_register_device(&pit_clockevent);
+-	global_clock_event = &pit_clockevent;
++	pit_ce.cpumask = cpumask_of(smp_processor_id());
++	pit_ce.mult = div_sc(CLOCK_TICK_RATE, NSEC_PER_SEC, pit_ce.shift);
++	pit_ce.max_delta_ns = clockevent_delta2ns(0x7FFF, &pit_ce);
++	pit_ce.min_delta_ns = clockevent_delta2ns(0xF, &pit_ce);
++
++	clockevents_register_device(&pit_ce);
++	global_clock_event = &pit_ce;
+ }
+ 
+ #ifndef CONFIG_X86_64
+@@ -133,11 +131,11 @@ void __init setup_pit_timer(void)
+  */
+ static cycle_t pit_read(void)
+ {
++	static int old_count;
++	static u32 old_jifs;
+ 	unsigned long flags;
+ 	int count;
+ 	u32 jifs;
+-	static int old_count;
+-	static u32 old_jifs;
+ 
+ 	spin_lock_irqsave(&i8253_lock, flags);
+ 	/*
+@@ -179,9 +177,9 @@ static cycle_t pit_read(void)
+ 	 * Previous attempts to handle these cases intelligently were
+ 	 * buggy, so we just do the simple thing now.
+ 	 */
+-	if (count > old_count && jifs == old_jifs) {
++	if (count > old_count && jifs == old_jifs)
+ 		count = old_count;
+-	}
++
+ 	old_count = count;
+ 	old_jifs = jifs;
+ 
+@@ -192,13 +190,13 @@ static cycle_t pit_read(void)
+ 	return (cycle_t)(jifs * LATCH) + count;
+ }
+ 
+-static struct clocksource clocksource_pit = {
+-	.name	= "pit",
+-	.rating = 110,
+-	.read	= pit_read,
+-	.mask	= CLOCKSOURCE_MASK(32),
+-	.mult	= 0,
+-	.shift	= 20,
++static struct clocksource pit_cs = {
++	.name		= "pit",
++	.rating		= 110,
++	.read		= pit_read,
++	.mask		= CLOCKSOURCE_MASK(32),
++	.mult		= 0,
++	.shift		= 20,
+ };
+ 
+ static void pit_disable_clocksource(void)
+@@ -206,9 +204,9 @@ static void pit_disable_clocksource(void)
+ 	/*
+ 	 * Use mult to check whether it is registered or not
+ 	 */
+-	if (clocksource_pit.mult) {
+-		clocksource_unregister(&clocksource_pit);
+-		clocksource_pit.mult = 0;
++	if (pit_cs.mult) {
++		clocksource_unregister(&pit_cs);
++		pit_cs.mult = 0;
+ 	}
+ }
+ 
+@@ -222,13 +220,13 @@ static int __init init_pit_clocksource(void)
+ 	  * - when local APIC timer is active (PIT is switched off)
+ 	  */
+ 	if (num_possible_cpus() > 1 || is_hpet_enabled() ||
+-	    pit_clockevent.mode != CLOCK_EVT_MODE_PERIODIC)
++	    pit_ce.mode != CLOCK_EVT_MODE_PERIODIC)
+ 		return 0;
+ 
+-	clocksource_pit.mult = clocksource_hz2mult(CLOCK_TICK_RATE,
+-						   clocksource_pit.shift);
+-	return clocksource_register(&clocksource_pit);
++	pit_cs.mult = clocksource_hz2mult(CLOCK_TICK_RATE, pit_cs.shift);
++
++	return clocksource_register(&pit_cs);
+ }
+ arch_initcall(init_pit_clocksource);
+ 
+-#endif
++#endif /* !CONFIG_X86_64 */
+diff --git a/arch/x86/kernel/io_delay.c b/arch/x86/kernel/io_delay.c
+index 720d260..f222215 100644
+--- a/arch/x86/kernel/io_delay.c
++++ b/arch/x86/kernel/io_delay.c
+@@ -7,10 +7,10 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+-#include <linux/init.h>
+ #include <linux/delay.h>
++#include <linux/init.h>
+ #include <linux/dmi.h>
+-#include <asm/io.h>
++#include <linux/io.h>
+ 
+ int io_delay_type __read_mostly = CONFIG_DEFAULT_IO_DELAY_TYPE;
+ 
+@@ -126,7 +126,7 @@ static int __init io_delay_param(char *s)
+ 		return -EINVAL;
+ 
+ 	io_delay_override = 1;
++
+ 	return 0;
+ }
+-
+ early_param("io_delay", io_delay_param);
+diff --git a/arch/x86/kernel/kdebugfs.c b/arch/x86/kernel/kdebugfs.c
+index ff7d3b0..0e05c30 100644
+--- a/arch/x86/kernel/kdebugfs.c
++++ b/arch/x86/kernel/kdebugfs.c
+@@ -8,11 +8,11 @@
+  */
+ #include <linux/debugfs.h>
+ #include <linux/uaccess.h>
+-#include <linux/stat.h>
++#include <linux/module.h>
+ #include <linux/init.h>
++#include <linux/stat.h>
+ #include <linux/io.h>
+ #include <linux/mm.h>
+-#include <linux/module.h>
+ 
+ #include <asm/setup.h>
+ 
+@@ -26,9 +26,8 @@ struct setup_data_node {
+ 	u32 len;
+ };
+ 
+-static ssize_t
+-setup_data_read(struct file *file, char __user *user_buf, size_t count,
+-		loff_t *ppos)
++static ssize_t setup_data_read(struct file *file, char __user *user_buf,
++			       size_t count, loff_t *ppos)
+ {
+ 	struct setup_data_node *node = file->private_data;
+ 	unsigned long remain;
+@@ -39,20 +38,21 @@ setup_data_read(struct file *file, char __user *user_buf, size_t count,
+ 
+ 	if (pos < 0)
+ 		return -EINVAL;
++
+ 	if (pos >= node->len)
+ 		return 0;
+ 
+ 	if (count > node->len - pos)
+ 		count = node->len - pos;
++
+ 	pa = node->paddr + sizeof(struct setup_data) + pos;
+ 	pg = pfn_to_page((pa + count - 1) >> PAGE_SHIFT);
+ 	if (PageHighMem(pg)) {
+ 		p = ioremap_cache(pa, count);
+ 		if (!p)
+ 			return -ENXIO;
+-	} else {
++	} else
+ 		p = __va(pa);
+-	}
+ 
+ 	remain = copy_to_user(user_buf, p, count);
+ 
+@@ -70,12 +70,13 @@ setup_data_read(struct file *file, char __user *user_buf, size_t count,
+ static int setup_data_open(struct inode *inode, struct file *file)
+ {
+ 	file->private_data = inode->i_private;
++
+ 	return 0;
+ }
+ 
+ static const struct file_operations fops_setup_data = {
+-	.read =		setup_data_read,
+-	.open =		setup_data_open,
++	.read		= setup_data_read,
++	.open		= setup_data_open,
+ };
+ 
+ static int __init
+@@ -84,24 +85,20 @@ create_setup_data_node(struct dentry *parent, int no,
+ {
+ 	struct dentry *d, *type, *data;
+ 	char buf[16];
+-	int error;
+ 
+ 	sprintf(buf, "%d", no);
+ 	d = debugfs_create_dir(buf, parent);
+-	if (!d) {
+-		error = -ENOMEM;
++	if (!d)
+ 		goto err_return;
+-	}
++
+ 	type = debugfs_create_x32("type", S_IRUGO, d, &node->type);
+-	if (!type) {
+-		error = -ENOMEM;
++	if (!type)
+ 		goto err_dir;
+-	}
++
+ 	data = debugfs_create_file("data", S_IRUGO, d, node, &fops_setup_data);
+-	if (!data) {
+-		error = -ENOMEM;
++	if (!data)
+ 		goto err_type;
+-	}
++
+ 	return 0;
+ 
+ err_type:
+@@ -109,32 +106,29 @@ err_type:
+ err_dir:
+ 	debugfs_remove(d);
+ err_return:
+-	return error;
++	return -ENOMEM;
+ }
+ 
+ static int __init create_setup_data_nodes(struct dentry *parent)
+ {
+ 	struct setup_data_node *node;
+ 	struct setup_data *data;
+-	int error, no = 0;
++	int error = 0, no = 0;
+ 	struct dentry *d;
+ 	struct page *pg;
+ 	u64 pa_data;
+ 
+ 	d = debugfs_create_dir("setup_data", parent);
+-	if (!d) {
+-		error = -ENOMEM;
++	if (!d)
+ 		goto err_return;
+-	}
+ 
+ 	pa_data = boot_params.hdr.setup_data;
+ 
+ 	while (pa_data) {
+ 		node = kmalloc(sizeof(*node), GFP_KERNEL);
+-		if (!node) {
+-			error = -ENOMEM;
++		if (!node)
+ 			goto err_dir;
+-		}
++
+ 		pg = pfn_to_page((pa_data+sizeof(*data)-1) >> PAGE_SHIFT);
+ 		if (PageHighMem(pg)) {
+ 			data = ioremap_cache(pa_data, sizeof(*data));
+@@ -143,9 +137,8 @@ static int __init create_setup_data_nodes(struct dentry *parent)
+ 				error = -ENXIO;
+ 				goto err_dir;
+ 			}
+-		} else {
++		} else
+ 			data = __va(pa_data);
+-		}
+ 
+ 		node->paddr = pa_data;
+ 		node->type = data->type;
+@@ -159,11 +152,14 @@ static int __init create_setup_data_nodes(struct dentry *parent)
+ 			goto err_dir;
+ 		no++;
+ 	}
++
+ 	return 0;
+ 
+ err_dir:
+ 	debugfs_remove(d);
+ err_return:
++	if (!error)
++		error = -ENOMEM;
+ 	return error;
+ }
+ 
+@@ -175,28 +171,26 @@ static struct debugfs_blob_wrapper boot_params_blob = {
+ static int __init boot_params_kdebugfs_init(void)
+ {
+ 	struct dentry *dbp, *version, *data;
+-	int error;
++	int error = 0;
+ 
+ 	dbp = debugfs_create_dir("boot_params", NULL);
+-	if (!dbp) {
+-		error = -ENOMEM;
++	if (!dbp)
+ 		goto err_return;
+-	}
++
+ 	version = debugfs_create_x16("version", S_IRUGO, dbp,
+ 				     &boot_params.hdr.version);
+-	if (!version) {
+-		error = -ENOMEM;
++	if (!version)
+ 		goto err_dir;
+-	}
++
+ 	data = debugfs_create_blob("data", S_IRUGO, dbp,
+ 				   &boot_params_blob);
+-	if (!data) {
+-		error = -ENOMEM;
++	if (!data)
+ 		goto err_version;
+-	}
++
+ 	error = create_setup_data_nodes(dbp);
+ 	if (error)
+ 		goto err_data;
++
+ 	return 0;
+ 
+ err_data:
+@@ -206,9 +200,11 @@ err_version:
+ err_dir:
+ 	debugfs_remove(dbp);
+ err_return:
++	if (!error)
++		error = -ENOMEM;
+ 	return error;
+ }
+-#endif
++#endif /* CONFIG_DEBUG_BOOT_PARAMS */
+ 
+ static int __init arch_kdebugfs_init(void)
+ {
+diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
+index fe50214..b240d1b 100644
+--- a/arch/x86/kernel/pci-nommu.c
++++ b/arch/x86/kernel/pci-nommu.c
+@@ -1,14 +1,14 @@
+ /* Fallback functions when the main IOMMU code is not compiled in. This
+    code is roughly equivalent to i386. */
+-#include <linux/mm.h>
+-#include <linux/init.h>
+-#include <linux/pci.h>
+-#include <linux/string.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/scatterlist.h>
++#include <linux/string.h>
++#include <linux/init.h>
++#include <linux/pci.h>
++#include <linux/mm.h>
+ 
+-#include <asm/iommu.h>
+ #include <asm/processor.h>
++#include <asm/iommu.h>
+ #include <asm/dma.h>
+ 
+ static int
+@@ -20,8 +20,10 @@ check_addr(char *name, struct device *hwdev, dma_addr_t bus, size_t size)
+ 			    "nommu_%s: overflow %Lx+%zu of device mask %Lx\n",
+ 				name, (long long)bus, size,
+ 				(long long)*hwdev->dma_mask);
++
+ 		return 0;
+ 	}
++
+ 	return 1;
+ }
+ 
+@@ -31,10 +33,14 @@ static dma_addr_t nommu_map_page(struct device *dev, struct page *page,
+ 				 struct dma_attrs *attrs)
+ {
+ 	dma_addr_t bus = page_to_phys(page) + offset;
++
+ 	WARN_ON(size == 0);
++
+ 	if (!check_addr("map_single", dev, bus, size))
+ 		return bad_dma_address;
++
+ 	flush_write_buffers();
++
+ 	return bus;
+ }
+ 
+@@ -65,11 +71,14 @@ static int nommu_map_sg(struct device *hwdev, struct scatterlist *sg,
+ 	for_each_sg(sg, s, nents, i) {
+ 		BUG_ON(!sg_page(s));
+ 		s->dma_address = sg_phys(s);
++
+ 		if (!check_addr("map_sg", hwdev, s->dma_address, s->length))
+ 			return 0;
++
+ 		s->dma_length = s->length;
+ 	}
+ 	flush_write_buffers();
++
+ 	return nents;
+ }
+ 
+@@ -80,11 +89,11 @@ static void nommu_free_coherent(struct device *dev, size_t size, void *vaddr,
+ }
+ 
+ struct dma_map_ops nommu_dma_ops = {
+-	.alloc_coherent = dma_generic_alloc_coherent,
+-	.free_coherent = nommu_free_coherent,
+-	.map_sg = nommu_map_sg,
+-	.map_page = nommu_map_page,
+-	.is_phys = 1,
++	.alloc_coherent	= dma_generic_alloc_coherent,
++	.free_coherent	= nommu_free_coherent,
++	.map_sg		= nommu_map_sg,
++	.map_page	= nommu_map_page,
++	.is_phys	= 1,
+ };
+ 
+ void __init no_iommu_init(void)
+diff --git a/arch/x86/kernel/rtc.c b/arch/x86/kernel/rtc.c
+index dd6f2b7..8f369d7 100644
+--- a/arch/x86/kernel/rtc.c
++++ b/arch/x86/kernel/rtc.c
+@@ -1,14 +1,14 @@
+ /*
+  * RTC related functions
+  */
++#include <linux/platform_device.h>
++#include <linux/mc146818rtc.h>
+ #include <linux/acpi.h>
+ #include <linux/bcd.h>
+-#include <linux/mc146818rtc.h>
+-#include <linux/platform_device.h>
+ #include <linux/pnp.h>
+ 
+-#include <asm/time.h>
+ #include <asm/vsyscall.h>
++#include <asm/time.h>
+ 
+ #ifdef CONFIG_X86_32
+ /*
+@@ -16,9 +16,9 @@
+  * register we are working with.  It is required for NMI access to the
+  * CMOS/RTC registers.  See include/asm-i386/mc146818rtc.h for details.
+  */
+-volatile unsigned long cmos_lock = 0;
++volatile unsigned long cmos_lock;
+ EXPORT_SYMBOL(cmos_lock);
+-#endif
++#endif /* CONFIG_X86_32 */
+ 
+ /* For two digit years assume time is always after that */
+ #define CMOS_YEARS_OFFS 2000
+@@ -38,9 +38,9 @@ EXPORT_SYMBOL(rtc_lock);
+  */
+ int mach_set_rtc_mmss(unsigned long nowtime)
+ {
+-	int retval = 0;
+ 	int real_seconds, real_minutes, cmos_minutes;
+ 	unsigned char save_control, save_freq_select;
++	int retval = 0;
+ 
+ 	 /* tell the clock it's being set */
+ 	save_control = CMOS_READ(RTC_CONTROL);
+@@ -72,8 +72,8 @@ int mach_set_rtc_mmss(unsigned long nowtime)
+ 			real_seconds = bin2bcd(real_seconds);
+ 			real_minutes = bin2bcd(real_minutes);
+ 		}
+-		CMOS_WRITE(real_seconds,RTC_SECONDS);
+-		CMOS_WRITE(real_minutes,RTC_MINUTES);
++		CMOS_WRITE(real_seconds, RTC_SECONDS);
++		CMOS_WRITE(real_minutes, RTC_MINUTES);
+ 	} else {
+ 		printk(KERN_WARNING
+ 		       "set_rtc_mmss: can't update from %d to %d\n",
+@@ -118,7 +118,7 @@ unsigned long mach_get_cmos_time(void)
+ 	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
+ 	    acpi_gbl_FADT.century)
+ 		century = CMOS_READ(acpi_gbl_FADT.century);
+-#endif
++#endif /* CONFIG_ACPI */
+ 
+ 	status = CMOS_READ(RTC_CONTROL);
+ 	WARN_ON_ONCE(RTC_ALWAYS_BCD && (status & RTC_DM_BINARY));
+@@ -151,6 +151,7 @@ unsigned char rtc_cmos_read(unsigned char addr)
+ 	outb(addr, RTC_PORT(0));
+ 	val = inb(RTC_PORT(1));
+ 	lock_cmos_suffix(addr);
++
+ 	return val;
+ }
+ EXPORT_SYMBOL(rtc_cmos_read);
+@@ -166,8 +167,8 @@ EXPORT_SYMBOL(rtc_cmos_write);
+ 
+ static int set_rtc_mmss(unsigned long nowtime)
+ {
+-	int retval;
+ 	unsigned long flags;
++	int retval;
+ 
+ 	spin_lock_irqsave(&rtc_lock, flags);
+ 	retval = set_wallclock(nowtime);
+@@ -237,11 +238,12 @@ static __init int add_rtc_cmos(void)
+ 			}
+ 		}
+ 	}
+-#endif
++#endif /* CONFIG_PNP */
+ 
+ 	platform_device_register(&rtc_device);
+ 	dev_info(&rtc_device.dev,
+ 		 "registered platform RTC device (no PNP device found)\n");
++
+ 	return 0;
+ }
+ device_initcall(add_rtc_cmos);
+diff --git a/arch/x86/kernel/tls.c b/arch/x86/kernel/tls.c
+index 6bb7b85..2990598 100644
+--- a/arch/x86/kernel/tls.c
++++ b/arch/x86/kernel/tls.c
+@@ -1,16 +1,16 @@
++#include <linux/uaccess.h>
+ #include <linux/kernel.h>
++#include <linux/regset.h>
+ #include <linux/errno.h>
+ #include <linux/sched.h>
+ #include <linux/user.h>
+-#include <linux/regset.h>
+ 
+-#include <asm/uaccess.h>
+-#include <asm/desc.h>
+-#include <asm/system.h>
+-#include <asm/ldt.h>
+ #include <asm/processor.h>
+-#include <asm/proto.h>
+ #include <asm/syscalls.h>
++#include <asm/system.h>
++#include <asm/proto.h>
++#include <asm/desc.h>
++#include <asm/ldt.h>
+ 
+ #include "tls.h"
+ 
+@@ -25,6 +25,7 @@ static int get_free_idx(void)
+ 	for (idx = 0; idx < GDT_ENTRY_TLS_ENTRIES; idx++)
+ 		if (desc_empty(&t->tls_array[idx]))
+ 			return idx + GDT_ENTRY_TLS_MIN;
++
+ 	return -ESRCH;
+ }
+ 
+@@ -93,7 +94,9 @@ int do_set_thread_area(struct task_struct *p, int idx,
+ asmlinkage int sys_set_thread_area(struct user_desc __user *u_info)
+ {
+ 	int ret = do_set_thread_area(current, -1, u_info, 1);
++
+ 	asmlinkage_protect(1, ret, u_info);
++
+ 	return ret;
+ }
+ 
+@@ -137,13 +140,16 @@ int do_get_thread_area(struct task_struct *p, int idx,
+ 
+ 	if (copy_to_user(u_info, &info, sizeof(info)))
+ 		return -EFAULT;
++
+ 	return 0;
+ }
+ 
+ asmlinkage int sys_get_thread_area(struct user_desc __user *u_info)
+ {
+ 	int ret = do_get_thread_area(current, -1, u_info);
++
+ 	asmlinkage_protect(1, ret, u_info);
++
+ 	return ret;
+ }
+ 
+@@ -152,8 +158,10 @@ int regset_tls_active(struct task_struct *target,
+ {
+ 	struct thread_struct *t = &target->thread;
+ 	int n = GDT_ENTRY_TLS_ENTRIES;
++
+ 	while (n > 0 && desc_empty(&t->tls_array[n - 1]))
+ 		--n;
++
+ 	return n;
+ }
+ 
+diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
+index 0fcc95a..7e45159 100644
+--- a/arch/x86/kernel/topology.c
++++ b/arch/x86/kernel/topology.c
+@@ -25,10 +25,10 @@
+  *
+  * Send feedback to <colpatch@us.ibm.com>
+  */
+-#include <linux/init.h>
+-#include <linux/smp.h>
+ #include <linux/nodemask.h>
+ #include <linux/mmzone.h>
++#include <linux/init.h>
++#include <linux/smp.h>
+ #include <asm/cpu.h>
+ 
+ static DEFINE_PER_CPU(struct x86_cpu, cpu_devices);
+@@ -47,6 +47,7 @@ int __ref arch_register_cpu(int num)
+ 	 */
+ 	if (num)
+ 		per_cpu(cpu_devices, num).cpu.hotpluggable = 1;
++
+ 	return register_cpu(&per_cpu(cpu_devices, num).cpu, num);
+ }
+ EXPORT_SYMBOL(arch_register_cpu);
+@@ -56,12 +57,13 @@ void arch_unregister_cpu(int num)
+ 	unregister_cpu(&per_cpu(cpu_devices, num).cpu);
+ }
+ EXPORT_SYMBOL(arch_unregister_cpu);
+-#else
++#else /* CONFIG_HOTPLUG_CPU */
++
+ static int __init arch_register_cpu(int num)
+ {
+ 	return register_cpu(&per_cpu(cpu_devices, num).cpu, num);
+ }
+-#endif /*CONFIG_HOTPLUG_CPU*/
++#endif /* CONFIG_HOTPLUG_CPU */
+ 
+ static int __init topology_init(void)
+ {
+@@ -70,11 +72,11 @@ static int __init topology_init(void)
+ #ifdef CONFIG_NUMA
+ 	for_each_online_node(i)
+ 		register_one_node(i);
+-#endif /* CONFIG_NUMA */
++#endif
+ 
+ 	for_each_present_cpu(i)
+ 		arch_register_cpu(i);
++
+ 	return 0;
+ }
+-
+ subsys_initcall(topology_init);
 
-> Thanks,
-> 
-> 	tglx
-> 
-> 
+
