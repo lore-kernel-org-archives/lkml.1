@@ -1,38 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbZCQHpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762529AbZCQHrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756927AbZCQHpW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 03:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbZCQHpH
+	id S1762529AbZCQHrZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 03:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbZCQHrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 03:45:07 -0400
-Received: from 8bytes.org ([88.198.83.132]:51648 "EHLO 8bytes.org"
+	Tue, 17 Mar 2009 03:47:15 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:38319 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754121AbZCQHpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 03:45:06 -0400
-Date: Tue, 17 Mar 2009 08:45:02 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: mcgrof@gmail.com, iommu@lists.linux-foundation.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: AMD Quad core - PCI-DMA: Out of IOMMU space on > 4 GB RAM
-Message-ID: <20090317074501.GQ2125@8bytes.org>
-References: <43e72e890903161215u343cbb19v6d6cbf36794e252a@mail.gmail.com> <20090317093445G.fujita.tomonori@lab.ntt.co.jp>
+	id S1755311AbZCQHrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 03:47:15 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090317093445G.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18879.21884.162961.690031@cargo.ozlabs.ibm.com>
+Date: Tue, 17 Mar 2009 18:47:08 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH/RFC 1/2] perfcounters: provide a way to read the
+ current value of interrupting counters
+In-Reply-To: <1237275169.5189.58.camel@laptop>
+References: <18879.14425.221429.861838@drongo.ozlabs.ibm.com>
+	<1237275169.5189.58.camel@laptop>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 09:35:45AM +0900, FUJITA Tomonori wrote:
-> From a quick look, ath9k doesn't call pci_unmap_single for rx
-> buffers. Though I might be wrong because I don't know anything about
-> the driver.
+Peter Zijlstra writes:
 
-In any case. This error description sounds very much like a dma memory
-leak on module unload. So its very likely a driver issue.
+> I'm not sure I understand why. It seems to me you're either interested
+> in sample data, that is {tid,ip,counter} like things, or you want raw
+> count values.
 
-Joerg
+It was specifically requested by people porting PAPI to PCL, and it
+seems like a reasonable request.
 
+> This seems unrelated, what will stop us now from adding record_type
+> values? PERF_RECORD_CALLCHAIN is one in particular I'd like to add soon.
+
+I think we should make record_type a bitset rather than a single
+value, and define bits for recording the callchain as well as various
+other interesting things.
+
+> This is a bit bothersome, as we then have no unique identifier anymore.
+> 
+> Currently the group record type writes things like {hw_event->type,
+> counter} which is ambiguous since we really have a 65bit id space. So I
+> was thinking of making that {fd, counter} to at least have a unique
+> identifier in there.
+
+The fd is already not a unique identifier - think about dup().
+
+The hw_event->type values are not really necessary, in fact, since the
+group members will always be read out in the order that they were
+added to the group.  The only time there might be any possibility of
+confusion is if a new member is added after some samples have already
+been taken (or a member is removed) - then we'll get new records being
+added to the event queue being a different size from those already in
+the queue.  But that's a somewhat different problem which isn't really
+solved by having the type values in there.
+
+Paul.
