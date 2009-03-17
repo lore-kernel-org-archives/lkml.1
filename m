@@ -1,64 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763190AbZCQKi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763274AbZCQKjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763190AbZCQKi5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 06:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbZCQKis
+	id S1763274AbZCQKjm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 06:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760931AbZCQKjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 06:38:48 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:57670 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755963AbZCQKir (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 06:38:47 -0400
-Date: Tue, 17 Mar 2009 11:38:45 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Takashi Iwai <tiwai@suse.de>, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [alsa-devel] Bugs on aspire one A150
-Message-ID: <20090317103845.GA26007@rhlx01.hs-esslingen.de>
-References: <s5hprghphid.wl%tiwai@suse.de> <20090316170015.GA9776@rhlx01.hs-esslingen.de> <s5hljr5pex0.wl%tiwai@suse.de> <20090316173000.GA25647@rhlx01.hs-esslingen.de> <s5hiqm9pe1g.wl%tiwai@suse.de> <20090316180638.GB25647@rhlx01.hs-esslingen.de> <s5htz5tyzyg.wl%tiwai@suse.de> <20090316212227.GA29471@rhlx01.hs-esslingen.de> <s5hfxhczinh.wl%tiwai@suse.de> <20090317100500.GA16029@rhlx01.hs-esslingen.de>
+	Tue, 17 Mar 2009 06:39:31 -0400
+Received: from tservice.net.ru ([195.178.208.66]:43634 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756903AbZCQKja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 06:39:30 -0400
+Date: Tue, 17 Mar 2009 13:39:24 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: hooanon05@yahoo.co.jp
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC Aufs2 #2 21/28] aufs sysfs entries
+Message-ID: <20090317103923.GA4630@ioremap.net>
+References: <1237188040-11404-1-git-send-email-hooanon05@yahoo.co.jp> <1237188040-11404-22-git-send-email-hooanon05@yahoo.co.jp> <20090316180538.GA7069@kroah.com> <7200.1237260402@jrobl> <20090317033747.GA17037@kroah.com> <7974.1237262747@jrobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090317100500.GA16029@rhlx01.hs-esslingen.de>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <7974.1237262747@jrobl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 11:05:00AM +0100, Andreas Mohr wrote:
-> "Dreamcom 10 Laptop" [7]: " integrated Realtek HD audio processor, two
-> built-in Akustica digital microphones and two built-in stereo speakers"
-> 
-> This was the only reference up and down that I could find to _any_
-> notebook's microphone manufacturer listing. I suspect that
-> Aspire One has an Akustica microphone array as well since Akustica
-> seems to be the leading brand (hmm, any ideas about where the
-> second microphone is located if at all existing, but it must exist!!?
-> - probably at the front bottom?). 
+On Tue, Mar 17, 2009 at 01:05:47PM +0900, hooanon05@yahoo.co.jp (hooanon05@yahoo.co.jp) wrote:
+> Is the limit of PATH_MAX applied to the absolute path too?
 
-NOPE. Aspire One most definitely has a Fortemedia SAM (small array
-microphone) due to this output:
-http://sites.google.com/site/kengell/acer-aspire-one---dmesg
+No, only path used in the given operation (related or absolute) is
+limited. If related path is converted into the absolute just for the
+purpose of dump and not to be used in some syscall, it can have any
+length, so you may need to rethink which pathes are presented in sysfs
+and what should be moved outside.
 
-"
-...
-ForteMedia SAM-Soft Library Loaded!
-
-ALC INIT
-...
-"
-
-I had already wanted to add the mention of Fortemedia as microphone
-manufacturer (forgot this last time), then I researched more and found it.
-
-Fortemedia device names include FM2018-380, not sure yet which one is in
-Aspire One.
-
-http://www.fortemedia.com/products/index.htm
-( especially http://www.fortemedia.com/products/fm1182.htm )
-
-Andreas
+-- 
+	Evgeniy Polyakov
