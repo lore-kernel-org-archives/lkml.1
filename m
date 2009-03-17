@@ -1,159 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbZCQGN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbZCQGRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753992AbZCQGN1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 02:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbZCQGNS
+	id S1754657AbZCQGRl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 02:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbZCQGRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 02:13:18 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55958 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752450AbZCQGNR (ORCPT
+	Tue, 17 Mar 2009 02:17:32 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:49618 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752450AbZCQGRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 02:13:17 -0400
-Message-ID: <49BF3F73.5090007@jp.fujitsu.com>
-Date: Tue, 17 Mar 2009 15:13:07 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
+	Tue, 17 Mar 2009 02:17:32 -0400
+Date: Tue, 17 Mar 2009 11:47:54 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-CC: stable@kernel.org
-Subject: [PATCH] posixtimers: Fix posix clock monotonicity
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
+	cpuacct_charge() safe when rcupreempt is used.
+Message-ID: <20090317061754.GD3314@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch rehires task_sched_runtime() and thread_group_sched_runtime()
-which were removed at the time of 2.6.28-rc1.
+cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
+	rcupreempt is used.
 
-These functions protect the sampling of clock with rq lock.
-This rq lock is required not to update rq->clock during the sampling.
-i.e. You may get ((banked runtime before update)+(delta after update)).
+cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
+This can race with the task's movement between cgroups. This race
+can cause an access to freed ca pointer in cpuacct_charge(). This will not
+happen with rcu or tree rcu as cpuacct_charge() is called with preemption
+disabled. However if rcupreempt is used, the race still exists. Thanks to
+Li Zefan for explaining this.
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: stable@kernel.org	[2.6.28.x]
+Fix this race by explicitly protecting ca and the hierarchy walk with
+rcu_read_lock().
 
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
 ---
- kernel/posix-cpu-timers.c |    7 +++--
- kernel/sched.c            |   58 +++++++++++++++++++++++++++++++++++++++-----
- 2 files changed, 55 insertions(+), 10 deletions(-)
+ kernel/sched.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index 4e5288a..a65641a 100644
---- a/kernel/posix-cpu-timers.c
-+++ b/kernel/posix-cpu-timers.c
-@@ -294,7 +294,7 @@ static int cpu_clock_sample(const clockid_t which_clock, struct task_struct *p,
- 		cpu->cpu = virt_ticks(p);
- 		break;
- 	case CPUCLOCK_SCHED:
--		cpu->sched = p->se.sum_exec_runtime + task_delta_exec(p);
-+		cpu->sched = task_sched_runtime(p);
- 		break;
- 	}
- 	return 0;
-@@ -310,18 +310,19 @@ static int cpu_clock_sample_group(const clockid_t which_clock,
- {
- 	struct task_cputime cputime;
- 
--	thread_group_cputime(p, &cputime);
- 	switch (CPUCLOCK_WHICH(which_clock)) {
- 	default:
- 		return -EINVAL;
- 	case CPUCLOCK_PROF:
-+		thread_group_cputime(p, &cputime);
- 		cpu->cpu = cputime_add(cputime.utime, cputime.stime);
- 		break;
- 	case CPUCLOCK_VIRT:
-+		thread_group_cputime(p, &cputime);
- 		cpu->cpu = cputime.utime;
- 		break;
- 	case CPUCLOCK_SCHED:
--		cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
-+		cpu->sched = thread_group_sched_runtime(p);
- 		break;
- 	}
- 	return 0;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index db66874..617d1b8 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -4066,7 +4066,23 @@ EXPORT_PER_CPU_SYMBOL(kstat);
- /*
-  * Return any ns on the sched_clock that have not yet been banked in
-  * @p in case that task is currently running.
-+ *
-+ * Called with task_rq_lock() held on @rq.
-  */
-+static u64 __task_delta_exec(struct task_struct *p, struct rq *rq)
-+{
-+	u64 ns = 0;
-+
-+	if (task_current(rq, p)) {
-+		update_rq_clock(rq);
-+		ns = rq->clock - p->se.exec_start;
-+		if ((s64)ns < 0)
-+			ns = 0;
-+	}
-+
-+	return ns;
-+}
-+
- unsigned long long task_delta_exec(struct task_struct *p)
- {
- 	unsigned long flags;
-@@ -4074,16 +4090,44 @@ unsigned long long task_delta_exec(struct task_struct *p)
- 	u64 ns = 0;
+@@ -9891,6 +9891,13 @@ static void cpuacct_charge(struct task_s
+ 		return;
  
- 	rq = task_rq_lock(p, &flags);
-+	ns = __task_delta_exec(p, rq);
-+	task_rq_unlock(rq, &flags);
- 
--	if (task_current(rq, p)) {
--		u64 delta_exec;
-+	return ns;
-+}
- 
--		update_rq_clock(rq);
--		delta_exec = rq->clock - p->se.exec_start;
--		if ((s64)delta_exec > 0)
--			ns = delta_exec;
--	}
-+/*
-+ * Return p->sum_exec_runtime plus any more ns on the sched_clock
-+ * that have not yet been banked in case the task is currently running.
-+ */
-+unsigned long long task_sched_runtime(struct task_struct *p)
-+{
-+	unsigned long flags;
-+	struct rq *rq;
-+	u64 ns = 0;
+ 	cpu = task_cpu(tsk);
 +
-+	rq = task_rq_lock(p, &flags);
-+	ns = p->se.sum_exec_runtime + __task_delta_exec(p, rq);
-+	task_rq_unlock(rq, &flags);
-+
-+	return ns;
-+}
++	/*
++	 * preemption is already disabled here, but to be safe with
++	 * rcupreempt, take rcu_read_lock(). This protects ca and
++	 * hence the hierarchy walk.
++	 */
++	rcu_read_lock();
+ 	ca = task_ca(tsk);
  
-+/*
-+ * Return sum_exec_runtime for the thread group plus any more ns on the
-+ * sched_clock that have not yet been banked in case the task is currently
-+ * running.
-+ */
-+unsigned long long thread_group_sched_runtime(struct task_struct *p)
-+{
-+	struct task_cputime totals;
-+	unsigned long flags;
-+	struct rq *rq;
-+	u64 ns;
-+
-+	rq = task_rq_lock(p, &flags);
-+	thread_group_cputime(p, &totals);
-+	ns = totals.sum_exec_runtime + __task_delta_exec(p, rq);
- 	task_rq_unlock(rq, &flags);
+ 	do {
+@@ -9898,6 +9905,7 @@ static void cpuacct_charge(struct task_s
+ 		*cpuusage += cputime;
+ 		ca = ca->parent;
+ 	} while (ca);
++	rcu_read_unlock();
+ }
  
- 	return ns;
--- 
-1.6.2.1
-
+ struct cgroup_subsys cpuacct_subsys = {
