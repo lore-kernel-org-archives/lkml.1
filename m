@@ -1,133 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759514AbZCQQN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757781AbZCQQPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759514AbZCQQN5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 12:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbZCQQNr
+	id S1757781AbZCQQPw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 12:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZCQQPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 12:13:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51885 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754808AbZCQQNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 12:13:46 -0400
-Date: Tue, 17 Mar 2009 17:13:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Jesper Krogh <jesper@krogh.cc>,
-       john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Tue, 17 Mar 2009 12:15:40 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:41663 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754098AbZCQQPj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 12:15:39 -0400
+Date: Tue, 17 Mar 2009 12:05:27 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>
-Subject: Re: Linux 2.6.29-rc6
-Message-ID: <20090317161322.GA25904@elte.hu>
-References: <alpine.LFD.2.00.0903141814180.7421@localhost.localdomain> <49BD225C.4070305@krogh.cc> <alpine.LFD.2.00.0903151050070.3131@localhost.localdomain> <49BD4B2D.7000501@krogh.cc> <alpine.LFD.2.00.0903151146550.3131@localhost.localdomain> <49BD5C7C.2060605@krogh.cc> <49BEA1AD.1090901@krogh.cc> <alpine.LFD.2.00.0903161225210.3675@localhost.localdomain> <20090317081412.GA24115@elte.hu> <alpine.LFD.2.00.0903170831020.3082@localhost.localdomain>
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>
+Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
+Message-ID: <20090317160527.GB6737@tuxdriver.com>
+References: <1237140665.24621.2.camel@johannes.local> <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain> <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu> <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com> <alpine.LFD.2.00.0903161250080.3082@localhost.localdomain> <b6a2187b0903161655q15437156qc926c8db37d8ba4b@mail.gmail.com> <20090317144802.GF3549@tuxdriver.com> <20090317152801.GA6737@tuxdriver.com> <20090317153924.GA21061@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903170831020.3082@localhost.localdomain>
+In-Reply-To: <20090317153924.GA21061@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Tue, 17 Mar 2009, Ingo Molnar wrote:
+On Tue, Mar 17, 2009 at 04:39:24PM +0100, Ingo Molnar wrote:
+> 
+> * John W. Linville <linville@tuxdriver.com> wrote:
+> 
+> > On Tue, Mar 17, 2009 at 10:48:02AM -0400, John W. Linville wrote:
+> > > On Tue, Mar 17, 2009 at 07:55:49AM +0800, Jeff Chua wrote:
+> > > > On Tue, Mar 17, 2009 at 3:57 AM, Linus Torvalds
+> > > > <torvalds@linux-foundation.org> wrote:
+> > > > 
+> > > > > IOW, if you've pinpointed 71c11fb57b924c160297ccd9e1761db598d00ac2 as
+> > > > > being bad, then you should go back and double-check that its parent
+> > > > > (in this case 4607816f608b42a5379aca97ceed08378804c99f) is good.
+> > > > > Because if it's parent is also bad, then that just means that you made
+> > > > > some mistake in "git bisect".
+> > > > > In this case, it really sounds like maybe you marked the parent good, even
+> > > > > though you should have marked it bad.
+> > > > 
+> > > > I should have been more careful, just got thrown off during the last
+> > > > few steps of the bisect. But with the bad association to the AP after
+> > > > a57a59f247b651e8ed6d3eeb7e2f9d83b83134c9 (iwlwifi: remove implicit
+> > > > direct scan), can someone suggest where to go from here?
+> > > 
+> > > The obvious question for me is did you try this?
+> > > 
+> > > 	git revert a57a59f247b651e8ed6d3eeb7e2f9d83b83134c9
 > > 
-> > Cool. Will you apply it yourself (in the merge window) or should 
-> > we pick it up?
-> 
-> I'll commit it.  I already split it into two commits - one for the 
-> trivial startup problem that John had, one for the "estimate error 
-> and exit when smaller than 500ppm" part.
-
-ok.
-
-> > Incidentally, yesterday i wrote a PIT auto-calibration routine 
-> > (see WIP patch below).
+> > Hmmm...more like this:
 > > 
-> > The core idea is to use _all_ thousands of measurement points 
-> > (not just two) to calculate the frequency ratio, with a built-in 
-> > noise detector which drops out of the loop if the observed noise 
-> > goes below ~10 ppm.
+> > git revert 41bb73eeac5ff5fb217257ba33b654747b3abf11
+> > git revert b23f99bcfa12c7b452f7ad201ea5921534d4e9ff
+> > git revert 71c11fb57b924c160297ccd9e1761db598d00ac2
+> > git revert 4607816f608b42a5379aca97ceed08378804c99f
+> > git revert a57a59f247b651e8ed6d3eeb7e2f9d83b83134c9
+> >  
+> > This first one has a conflict -- just take the hunk.
 > 
-> I suspect that reaching 10 ppm is going to take too long in 
-> general. Considering that I found a machine where reaching 500ppm 
-> took 16ms, getting to 10ppm would take almost a second. That's a 
-> long time at bootup, considering that people want the whole boot 
-> to take about that time ;)
-> 
-> I also do think it's a bit unnecessarily complicated. We really 
-> only care about the end points - obviously we can end up being 
-> unlucky and get a very noisy end-point due to something like SMI 
-> or virtualization, but if that happens, we're really just better 
-> off failing quickly instead, and we'll go on to the slower 
-> calibration routines.
+> Since you apparently have done this sequence and have
+> resolved the conflict (which is hard to do for testers
+> even in trivial cases) - would you mind to post the
+> resulting combo patch for Jeff to test?
 
-That's the idea of my patch: to use not two endpoints but thousands 
-of measurement points. That way we dont have to worry about the 
-precision of the endpoints - any 'bad' measurement will be 
-counter-acted by thousands of 'good' measurements.
+Since Jeff has been using git for bisect, I presumed he could handle
+the reverts.  But if you think it is helpful:
 
-That's the theory at least - practice got in my way ;-)
+	http://bugzilla.kernel.org/attachment.cgi?id=20567&action=view
 
-By measuring more we can get a more precise result, and we also do 
-not assume anything about how much time passes between two 
-measurement points. A single measurement is:
+Hth!
 
-+	/*
-+        * We use the PIO accesses as natural TSC serialization barriers:
-+        */
-+       pit_lsb                 = inb(0x42);
-+       tsc                     = get_cycles();
-+       pit_msb                 = inb(0x42);
-
-Just like we can prove that there's an exoplanet around a star, just 
-by doing a _ton_ of measurements of a very noisy data source. As 
-long as there's an underlying physical value to be measured (and we 
-are not measuring pure noise) that value is recoverable, with enough 
-measurements.
-
-> On real hardware without SMI or virtualization overhead, the 
-> delays _should_ be very stable. On my main machine, for example, 
-> the PIT read really seems very stable at about 2.5us (which 
-> matches the expectation that one 'inb' should take roughly one 
-> microsecond pretty closely). So that should be the default case, 
-> and the case that the fast calibration is designed for.
-> 
-> For the other cases, we really can just exit and do something 
-> else.
-> 
-> > It's WIP because it's not working yet (or at all?): i couldnt 
-> > get the statistical model right - it's too noisy at 1000-2000 
-> > ppm and the frequency result is off by 5000 ppm.
-> 
-> I suspect your measurement overhead is getting noticeable. You do 
-> all those divides, but even more so, you do all those traces. 
-> Also, it looks like you do purely local pairwise analysis at 
-> subsequent PIT modelling points, which can't work - you need to 
-> average over a long time to stabilize it.
-
-Actually, it's key to my trick that what happens _between_ the 
-measurement points does not matter _at all_.
-
-My 'delta' algorithm does not assume anything about how much time 
-passes between two measurement points - it calculates the slope and 
-keeps a rolling average of that slope.
-
-That's why i could put the delta analysis there. We are capturing 
-thousands of measurement points, and what matters is the precision 
-of the 'pair' of (PIT,TSC) timestamp measurements.
-
-I got roughly the same end result noise and the same anomalies with 
-tracing enabled and disabled. (and the number of data points was cut 
-in half with tracing enabled)
-
-	Ingo
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
