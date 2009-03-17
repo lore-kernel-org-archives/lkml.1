@@ -1,79 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbZCQVwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbZCQV6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758408AbZCQVwp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 17:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZCQVwg
+	id S1756788AbZCQV6P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 17:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZCQV56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 17:52:36 -0400
-Received: from ozlabs.org ([203.10.76.45]:57285 "EHLO ozlabs.org"
+	Tue, 17 Mar 2009 17:57:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58707 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753168AbZCQVwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 17:52:35 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Cliff Wickman <cpw@sgi.com>
-Subject: Re: [PULL] x86 cpumask work
-Date: Wed, 18 Mar 2009 08:22:30 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, travis@sgi.com,
-       steiner@sgi.com
-References: <E1LjeSk-0004BW-3x@eag09.americas.sgi.com>
-In-Reply-To: <E1LjeSk-0004BW-3x@eag09.americas.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903180822.31196.rusty@rustcorp.com.au>
+	id S1751770AbZCQV56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 17:57:58 -0400
+From: Mark Fasheh <mfasheh@suse.com>
+To: linux-kernel@vger.kernel.org
+Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
+       Sunil Mushran <sunil.mushran@oracle.com>,
+       Mark Fasheh <mfasheh@suse.com>
+Subject: [PATCH 24/32] ocfs2/dlm: Improve lockres counts
+Date: Tue, 17 Mar 2009 13:01:14 -0700
+Message-Id: <1237320082-12921-25-git-send-email-mfasheh@suse.com>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 March 2009 05:26:30 Cliff Wickman wrote:
-> 
-> From: Cliff Wickman <cpw@sgi.com>
-> 
-> A patch on Mar13 2009 introduced a bug. I hope the below 1-line fix can
-> make the 'urgent' list, and get fixed before that patch moves on.
-> 
-> The Mar13 patch is saved at
-> http://marc.info/?l=linux-kernel&m=123683186504948&w=2
-> 
-> The allocation of per-cpu uv_flush_tlb_mask's in arch/x86/kernel/tlb_uv.c
-> changed a variable that should been reset to 0.
+From: Sunil Mushran <sunil.mushran@oracle.com>
 
-Hi Cliff,
+This patch replaces the lockres counts that tracked the number number of
+locally and remotely mastered lockres' with a current and total count. The
+total count is the number of lockres' that have been created since the dlm
+domain was created.
 
-   Thanks for tracking this.  May I suggest this slightly enhanced version?
+The number of locally and remotely mastered counts can be computed using
+the locking_state output.
 
-Subject: cpumask: fix tlb_uv initialization
+Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
+Signed-off-by: Mark Fasheh <mfasheh@suse.com>
+---
+ fs/ocfs2/dlm/dlmcommon.h |    5 ++---
+ fs/ocfs2/dlm/dlmdebug.c  |   12 ------------
+ fs/ocfs2/dlm/dlmdomain.c |    5 ++---
+ fs/ocfs2/dlm/dlmmaster.c |   27 +++++++--------------------
+ 4 files changed, 11 insertions(+), 38 deletions(-)
 
-Impact: fix boot on UV systems
-
-Commit 76ba0ecda0de9accea9a91cb6dbde46782110e1c "cpumask: use cpumask_var_t
-in uv_flush_tlb_others" used cur_cpu as an iterator; it was supposed to be
-zero for the code below it.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff --git a/arch/x86/kernel/tlb_uv.c b/arch/x86/kernel/tlb_uv.c
-index 8afb691..deb5ebb 100644
---- a/arch/x86/kernel/tlb_uv.c
-+++ b/arch/x86/kernel/tlb_uv.c
-@@ -751,7 +751,7 @@ static int __init uv_bau_init(void)
- 	int node;
- 	int nblades;
- 	int last_blade;
--	int cur_cpu = 0;
-+	int cur_cpu;
+diff --git a/fs/ocfs2/dlm/dlmcommon.h b/fs/ocfs2/dlm/dlmcommon.h
+index 67b3447..e5026ce 100644
+--- a/fs/ocfs2/dlm/dlmcommon.h
++++ b/fs/ocfs2/dlm/dlmcommon.h
+@@ -159,9 +159,8 @@ struct dlm_ctxt
+ 	/* these give a really vague idea of the system load */
+ 	atomic_t mle_tot_count[DLM_MLE_NUM_TYPES];
+ 	atomic_t mle_cur_count[DLM_MLE_NUM_TYPES];
+-	atomic_t local_resources;
+-	atomic_t remote_resources;
+-	atomic_t unknown_resources;
++	atomic_t res_tot_count;
++	atomic_t res_cur_count;
  
- 	if (!is_uv_system())
- 		return 0;
-@@ -765,6 +765,7 @@ static int __init uv_bau_init(void)
- 	uv_mmask = (1UL << uv_hub_info->n_val) - 1;
- 	nblades = 0;
- 	last_blade = -1;
-+	cur_cpu = 0;
- 	for_each_online_node(node) {
- 		blade = uv_node_to_blade_id(node);
- 		if (blade == last_blade)
+ 	struct dlm_debug_ctxt *dlm_debug_ctxt;
+ 	struct dentry *dlm_debugfs_subroot;
+diff --git a/fs/ocfs2/dlm/dlmdebug.c b/fs/ocfs2/dlm/dlmdebug.c
+index 336a98e..d7decaa 100644
+--- a/fs/ocfs2/dlm/dlmdebug.c
++++ b/fs/ocfs2/dlm/dlmdebug.c
+@@ -763,12 +763,6 @@ static int debug_state_print(struct dlm_ctxt *dlm, struct debug_buffer *db)
+ 	int out = 0;
+ 	struct dlm_reco_node_data *node;
+ 	char *state;
+-	int lres, rres, ures, tres;
+-
+-	lres = atomic_read(&dlm->local_resources);
+-	rres = atomic_read(&dlm->remote_resources);
+-	ures = atomic_read(&dlm->unknown_resources);
+-	tres = lres + rres + ures;
+ 
+ 	spin_lock(&dlm->spinlock);
+ 
+@@ -811,12 +805,6 @@ static int debug_state_print(struct dlm_ctxt *dlm, struct debug_buffer *db)
+ 				 db->buf + out, db->len - out);
+ 	out += snprintf(db->buf + out, db->len - out, "\n");
+ 
+-	/* Mastered Resources Total: xxx  Locally: xxx  Remotely: ... */
+-	out += snprintf(db->buf + out, db->len - out,
+-			"Mastered Resources Total: %d  Locally: %d  "
+-			"Remotely: %d  Unknown: %d\n",
+-			tres, lres, rres, ures);
+-
+ 	/* Lists: Dirty=Empty  Purge=InUse  PendingASTs=Empty  ... */
+ 	out += snprintf(db->buf + out, db->len - out,
+ 			"Lists: Dirty=%s  Purge=%s  PendingASTs=%s  "
+diff --git a/fs/ocfs2/dlm/dlmdomain.c b/fs/ocfs2/dlm/dlmdomain.c
+index 0479bdf..4d9e6b2 100644
+--- a/fs/ocfs2/dlm/dlmdomain.c
++++ b/fs/ocfs2/dlm/dlmdomain.c
+@@ -1604,10 +1604,9 @@ static struct dlm_ctxt *dlm_alloc_ctxt(const char *domain,
+ 
+ 	dlm->reco.new_master = O2NM_INVALID_NODE_NUM;
+ 	dlm->reco.dead_node = O2NM_INVALID_NODE_NUM;
+-	atomic_set(&dlm->local_resources, 0);
+-	atomic_set(&dlm->remote_resources, 0);
+-	atomic_set(&dlm->unknown_resources, 0);
+ 
++	atomic_set(&dlm->res_tot_count, 0);
++	atomic_set(&dlm->res_cur_count, 0);
+ 	for (i = 0; i < DLM_MLE_NUM_TYPES; ++i) {
+ 		atomic_set(&dlm->mle_tot_count[i], 0);
+ 		atomic_set(&dlm->mle_cur_count[i], 0);
+diff --git a/fs/ocfs2/dlm/dlmmaster.c b/fs/ocfs2/dlm/dlmmaster.c
+index acfc928..d70cdd5 100644
+--- a/fs/ocfs2/dlm/dlmmaster.c
++++ b/fs/ocfs2/dlm/dlmmaster.c
+@@ -517,15 +517,6 @@ static void dlm_set_lockres_owner(struct dlm_ctxt *dlm,
+ {
+ 	assert_spin_locked(&res->spinlock);
+ 
+-	mlog_entry("%.*s, %u\n", res->lockname.len, res->lockname.name, owner);
+-
+-	if (owner == dlm->node_num)
+-		atomic_inc(&dlm->local_resources);
+-	else if (owner == DLM_LOCK_RES_OWNER_UNKNOWN)
+-		atomic_inc(&dlm->unknown_resources);
+-	else
+-		atomic_inc(&dlm->remote_resources);
+-
+ 	res->owner = owner;
+ }
+ 
+@@ -534,17 +525,8 @@ void dlm_change_lockres_owner(struct dlm_ctxt *dlm,
+ {
+ 	assert_spin_locked(&res->spinlock);
+ 
+-	if (owner == res->owner)
+-		return;
+-
+-	if (res->owner == dlm->node_num)
+-		atomic_dec(&dlm->local_resources);
+-	else if (res->owner == DLM_LOCK_RES_OWNER_UNKNOWN)
+-		atomic_dec(&dlm->unknown_resources);
+-	else
+-		atomic_dec(&dlm->remote_resources);
+-
+-	dlm_set_lockres_owner(dlm, res, owner);
++	if (owner != res->owner)
++		dlm_set_lockres_owner(dlm, res, owner);
+ }
+ 
+ 
+@@ -573,6 +555,8 @@ static void dlm_lockres_release(struct kref *kref)
+ 	}
+ 	spin_unlock(&dlm->track_lock);
+ 
++	atomic_dec(&dlm->res_cur_count);
++
+ 	dlm_put(dlm);
+ 
+ 	if (!hlist_unhashed(&res->hash_node) ||
+@@ -653,6 +637,9 @@ static void dlm_init_lockres(struct dlm_ctxt *dlm,
+ 
+ 	kref_init(&res->refs);
+ 
++	atomic_inc(&dlm->res_tot_count);
++	atomic_inc(&dlm->res_cur_count);
++
+ 	/* just for consistency */
+ 	spin_lock(&res->spinlock);
+ 	dlm_set_lockres_owner(dlm, res, DLM_LOCK_RES_OWNER_UNKNOWN);
+-- 
+1.5.6
 
