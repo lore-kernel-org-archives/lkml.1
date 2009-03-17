@@ -1,103 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763171AbZCQJhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762980AbZCQJje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763171AbZCQJhr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 05:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbZCQJhd
+	id S1762980AbZCQJje (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 05:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZCQJjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 05:37:33 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47066 "EHLO kernel.dk"
+	Tue, 17 Mar 2009 05:39:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57864 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762685AbZCQJhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 05:37:31 -0400
-Date: Tue, 17 Mar 2009 10:37:29 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Dave Chinner <david@fromorbit.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com, npiggin@suse.de
-Subject: Re: [PATCH 2/7] writeback: switch to per-bdi threads for flushing
-	data
-Message-ID: <20090317093728.GB27476@kernel.dk>
-References: <1236868428-20408-1-git-send-email-jens.axboe@oracle.com> <1236868428-20408-3-git-send-email-jens.axboe@oracle.com> <20090312223321.ccfe51b2.akpm@linux-foundation.org> <20090313105446.GO27476@kernel.dk> <20090315225215.GA26138@disturbed> <20090316073321.GJ27476@kernel.dk> <20090316233835.GM26138@disturbed>
+	id S1752491AbZCQJjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 05:39:25 -0400
+Date: Tue, 17 Mar 2009 10:39:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       akataria@vmware.com
+Subject: Re: [PATCH -tip] x86: move vmware to hypervisor
+Message-ID: <20090317093919.GD6477@elte.hu>
+References: <1237281581.7907.2.camel@ht.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090316233835.GM26138@disturbed>
+In-Reply-To: <1237281581.7907.2.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17 2009, Dave Chinner wrote:
-> On Mon, Mar 16, 2009 at 08:33:21AM +0100, Jens Axboe wrote:
-> > On Mon, Mar 16 2009, Dave Chinner wrote:
-> > > On Fri, Mar 13, 2009 at 11:54:46AM +0100, Jens Axboe wrote:
-> > > > On Thu, Mar 12 2009, Andrew Morton wrote:
-> > > > > On Thu, 12 Mar 2009 15:33:43 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > > > Bear in mind that the XFS guys found that one thread per fs had
-> > > > > insufficient CPU power to keep up with fast devices.
-> > > > 
-> > > > Yes, I definitely want to experiment with > 1 thread per device in the
-> > > > near future.
-> > > 
-> > > The question here is how to do this efficiently. Even if XFS is
-> > > operating on a single device, it is not optimal just to throw
-> > > multiple threads at the bdi. Ideally we want a thread per region
-> > > (allocation group) of the filesystem as each allocation group has
-> > > it's own inode cache (radix tree) to traverse. These traversals can
-> > > be done completely in parallel and won't contend either at the
-> > > traversal level or in the IO hardware....
-> > > 
-> > > i.e. what I'd like to see is the ability so any new flushing
-> > > mechanism to be able to offload responsibility of tracking,
-> > > traversing and flushing of dirty inodes to the filesystem.
-> > > Filesystems that don't do such things could use a generic
-> > > bdi-based implementation.
-> > > 
-> > > FWIW, we also want to avoid the current pattern of flushing
-> > > data, then the inode, then data, then the inode, ....
-> > > By offloading into the filesystem, this writeback ordering can
-> > > be done as efficiently as possible for each given filesystem.
-> > > XFs already has all the hooks to be able to do this
-> > > effectively....
-> > > 
-> > > I know that Christoph was doing some work towards this end;
-> > > perhaps he can throw his 2c worth in here...
-> > 
-> > This is very useful feedback, thanks Dave. So on the filesystem vs bdi
-> > side, XFS could register a bdi per allocation group.
+
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+> Subject: [PATCH] x86: move vmware to hypervisor
 > 
-> How do multiple bdis on a single block device interact?
-
-I think this should be revised. So the structure I have now has a list
-of flusher containers hanging off the bdi. backing device registration
-will fork the single flusher, then the intention is that users like XFS
-could add more flusher threads to the bdi. Basically what I wrote
-further down :-)
-
-> > Then set the proper
-> > inode->mapping->backing_dev_info from sb->s_op->alloc_inode and
-> > __mark_inode_dirty() should get the placement right. For private
-> > traverse and flush, provide some address_space op to override
-> > generic_sync_bdi_inodes().
+> Impact: cleanup
 > 
-> Yes, that seems like it would support the sort of internal XFS
-> structure I've been thinking of.
-
-Goodie!
-
-> > It sounds like I should move the bdi flushing bits separate from the bdi
-> > itself. Embed one in the bdi, but allow outside registration of others.
-> > Will fit better with the need for more than one flusher per backing
-> > device.
+> vmware is only required by hypervisor and having only two functions
+> by moving these two functions to hypervisor we get rid of 2 vmware files
 > 
-> *nod*
+> Added support for CONFIG_X86_HYPERVISOR
 > 
-> Cheers,
-> 
-> Dave.
-> -- 
-> Dave Chinner
-> david@fromorbit.com
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  arch/x86/Kconfig                  |   12 ++++
+>  arch/x86/include/asm/hypervisor.h |   34 ++++++++++-
+>  arch/x86/include/asm/vmware.h     |   27 ---------
+>  arch/x86/kernel/cpu/Makefile      |    2 +-
+>  arch/x86/kernel/cpu/hypervisor.c  |   80 ++++++++++++++++++++-------
+>  arch/x86/kernel/cpu/vmware.c      |  112 -------------------------------------
+>  6 files changed, 104 insertions(+), 163 deletions(-)
+>  delete mode 100644 arch/x86/include/asm/vmware.h
+>  delete mode 100644 arch/x86/kernel/cpu/vmware.c
 
--- 
-Jens Axboe
+I dont really like this one. KVM is a hypervisor too, and so is 
+Xen and lguest. VMware is one of the many types of a 
+hypervisors.
 
+	Ingo
