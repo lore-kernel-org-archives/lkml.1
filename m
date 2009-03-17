@@ -1,69 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752353AbZCQXIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbZCQXOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752353AbZCQXIB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 19:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZCQXHr
+	id S1752131AbZCQXOa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 19:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZCQXOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 19:07:47 -0400
-Received: from silene.metacarta.com ([208.80.142.18]:33759 "EHLO
-	silene.metacarta.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751623AbZCQXHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 19:07:46 -0400
-Date: Tue, 17 Mar 2009 19:07:42 -0400 (EDT)
-From: Joe Malicki <jmalicki@metacarta.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: chrisw@sous-sol.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       David Howells <dhowells@redhat.com>
-Message-ID: <9353728.11137281237331262320.JavaMail.root@ouachita>
-In-Reply-To: <14026175.11106541237315189656.JavaMail.root@ouachita>
-Subject: Re: [PATCH] CRED: Fix check_unsafe_exec()
+	Tue, 17 Mar 2009 19:14:21 -0400
+Received: from tundra.namei.org ([65.99.196.166]:1028 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751422AbZCQXOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 19:14:19 -0400
+Date: Wed, 18 Mar 2009 10:14:16 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: linux-security-module@vger.kernel.org
+cc: linux-kernel@vger.kernel.org
+Subject: What's coming in the security subsystem
+Message-ID: <alpine.LRH.2.00.0903181010030.6028@tundra.namei.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [208.80.142.151]
-X-Mailer: Zimbra 5.0.9_GA_2533.UBUNTU6 (ZimbraWebClient - [unknown] (Linux)/5.0.9_GA_2533.UBUNTU6)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here's what to expect in 2.6.30, currently carried in linux-next via the 
+security-testing tree[1].  
 
------ "Joe Malicki" <jmalicki@metacarta.com> wrote:
+Notable new features include IMA and TOMOYO, while SELinux gets some 
+cleanup love.
 
-> ----- "Hugh Dickins" <hugh@veritas.com> wrote:
-> 
-> > On Thu, 12 Mar 2009, David Howells wrote:
-> > > Hugh Dickins <hugh@veritas.com> wrote:
-> > >
-> > > > We do.  See the original thread.  It's here at
-> > > > http://lkml.org/lkml/2009/2/26/233
-> > > > and appended below for convenience.  We do know that patch did
-> > not
-> > > > fix Joe's problem, and we don't yet know whether addressing the
-> > > > files->count issue will actually fix it, but I'm hopeful.
-> > >
-> > > Looks reasonable.
-> >
-> > Thanks for taking a look.
-> >
-> > Yes, I'm inclined to go with that, and removing the files->count
-> > check from exec.c.  Joe, did you manage to try your testing with
-> > my original patch plus that files->count check removed from 2.6.28's
-> > unsafe_exec()?
-> 
-> Sorry for not responding earlier.
-> 
-> I still got one failure with this new patch.  I added some printks
-> to illuminate exactly why it's failing when it fails to setuid, but
-> of course, since adding the printks I haven't reproduced yet.
->
 
-My tests were accidentally run without removing the files->count check.
+David P. Quigley (3):
+      SELinux: Condense super block security structure flags and cleanup necessary code.
+      SELinux: Add new security mount option to indicate security label support.
+      SELinux: Unify context mount and genfs behavior
 
-The printks confirmed the failure case was the files->count check,
-and removing the files->check has worked thus far (though I can't be
-sure until after a day or two has gone by given how infrequent it is).
+Eric Paris (12):
+      SELinux: call capabilities code directory
+      SELinux: better printk when file with invalid label found
+      SELinux: NULL terminate al contexts from disk
+      SELinux: check seqno when updating an avc_node
+      SELinux: remove the unused ae.used
+      SELinux: more careful use of avd in avc_has_perm_noaudit
+      SELinux: remove unused av.decided field
+      SELinux: code readability with avc_cache
+      SELinux: convert the avc cache hash list to an hlist
+      SELinux: open perm for sock files
+      SELinux: new permission between tty audit and audit socket
+      SELinux: inode_doinit_with_dentry drop no dentry printk
 
-Thanks!
-Joe
+James Morris (23):
+      maintainers: add security subsystem wiki
+      selinux: remove unused bprm_check_security hook
+      selinux: remove secondary ops call to bprm_committing_creds
+      selinux: remove secondary ops call to bprm_committed_creds
+      selinux: remove secondary ops call to sb_mount
+      selinux: remove secondary ops call to sb_umount
+      selinux: remove secondary ops call to inode_link
+      selinux: remove secondary ops call to inode_unlink
+      selinux: remove secondary ops call to inode_mknod
+      selinux: remove secondary ops call to inode_follow_link
+      selinux: remove secondary ops call to inode_permission
+      selinux: remove secondary ops call to inode_setattr
+      selinux: remove secondary ops call to file_mprotect
+      selinux: remove secondary ops call to task_create
+      selinux: remove unused cred_commit hook
+      selinux: remove secondary ops call to task_setrlimit
+      selinux: remove secondary ops call to task_kill
+      selinux: remove secondary ops call to unix_stream_connect
+      selinux: remove secondary ops call to shm_shmat
+      selinux: remove hooks which simply defer to capabilities
+      IMA: fix ima_delete_rules() definition
+      Merge branch 'master' into next
+      security: change link order of LSMs so security=tomoyo works
+
+Kentaro Takeda (8):
+      Add in_execve flag into task_struct.
+      Memory and pathname management functions.
+      Common functions for TOMOYO Linux.
+      File operation restriction part.
+      Domain transition handler.
+      LSM adapter functions.
+      Kconfig and Makefile
+      MAINTAINERS info
+
+Mimi Zohar (11):
+      integrity: IMA hooks
+      integrity: IMA as an integrity service provider
+      integrity: IMA display
+      integrity: IMA policy
+      integrity: IMA policy open
+      Integrity: IMA file free imbalance
+      Integrity: IMA update maintainers
+      integrity: shmem zero fix
+      integrity: audit update
+      integrity: ima scatterlist bug fix
+      integrity: ima iint radix_tree_lookup locking fix
+
+Rajiv Andrade (3):
+      TPM: sysfs functions consolidation
+      TPM: integrity interface
+      TPM: integrity fix
+
+Randy Dunlap (2):
+      ima: fix build error
+      smack: fix lots of kernel-doc notation
+
+Serge E. Hallyn (5):
+      securityfs: fix long-broken securityfs_create_file comment
+      keys: distinguish per-uid keys in different namespaces
+      keys: consider user namespace in key_permission
+      keys: skip keys from another user namespace
+      keys: make procfiles per-user-namespace
+
+Tetsuo Handa (4):
+      tomoyo: fix sparse warning
+      TOMOYO: Fix exception policy read failure.
+      TOMOYO: Don't create securityfs entries unless registered.
+      TOMOYO: Do not call tomoyo_realpath_init unless registered.
+
+etienne (1):
+      smack: fixes for unlabeled host support
+
+
+
+[1] git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6
+
+-- 
+James Morris
+<jmorris@namei.org>
