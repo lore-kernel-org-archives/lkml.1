@@ -1,84 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbZCQGFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762334AbZCQGHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbZCQGFx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 02:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZCQGFo
+	id S1762334AbZCQGHi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 02:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbZCQGH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 02:05:44 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:36005 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752762AbZCQGFn (ORCPT
+	Tue, 17 Mar 2009 02:07:29 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:30767 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751461AbZCQGH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 02:05:43 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=LHrW3spm1MOm368GZjbUtAPYKnphKo+FKinIcHGoJXMe3l9485to3/UiASe6hdeTsIwhYEiwkFL4svOdxjuCuLugx0x5Fv87bHiuHPikMA0Nz31GHrSGEqkBlzircwQAJ6vb/R8RMmxU0/85mXI836I5Ug8PZesNZ9hgA7g/uDY=  ;
-X-YMail-OSG: 8AzkpmcVM1n5ANkGcrawHmeL1kac90I1hVNVn9VX4pQHwEzDFJwV8vByqGwDAgnHBZIrJwVkI0Sn0fVQFfaHHnrl5hvVcSp2iG9qouYqiozE0MGUPMGKoK5tP3unL71MIr3Dc29v4KmmcVaa1itD17B8s9DSUhqpFEqwL6_B8TTd5lRKb29ZiKnTo2WfwA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: cli/sti vs local_cmpxchg and local_add_return
-Date: Tue, 17 Mar 2009 17:05:35 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
-References: <20090317013220.GA22474@Krystal>
-In-Reply-To: <20090317013220.GA22474@Krystal>
+	Tue, 17 Mar 2009 02:07:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=mDjrWuhDIZ82iH1sBia7qJ694Pq35SNiZCptyazkdQVXoo/OhaXEqxpkSQYTdp3pZT
+         zj7G7qb3sJdWON39XQZQc1HrGI+infkjmmbj3LGDZT1KRLFAfnA6mGTbdqlK83CXyAMC
+         8T81sBw+yr6NMntJa4kmWXuVXZphuS60EYEgo=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <e9e614960903162141g2f272f82jee434fc6fc748544@mail.gmail.com>
+References: <e9e614960903162141g2f272f82jee434fc6fc748544@mail.gmail.com>
+Date: Mon, 16 Mar 2009 23:07:25 -0700
+X-Google-Sender-Auth: f51d376e7231dc52
+Message-ID: <84144f020903162307x3d164432m4132b0dd1487bae@mail.gmail.com>
+Subject: Re: w35und driver unusable
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: luoyi <luoyi.ly@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903171705.35599.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 17 March 2009 12:32:20 Mathieu Desnoyers wrote:
-> Hi,
+On Mon, Mar 16, 2009 at 9:41 PM, luoyi <luoyi.ly@gmail.com> wrote:
+> hello, I'm trying to run Slackware-current on my AMTEK T700 UMPC box. and from:
 >
-> I am trying to get access to some non-x86 hardware to run some atomic
-> primitive benchmarks for a paper on LTTng I am preparing. That should be
-> useful to argue about performance benefit of per-cpu atomic operations
-> vs interrupt disabling. I would like to run the following benchmark
-> module on CONFIG_SMP :
+> http://ubuntuforums.org/showthread.php?t=664458
 >
-> - PowerPC
-> - MIPS
-> - ia64
-> - alpha
+> I know that the my box's wifi is WinBound's products.
 >
-> usage :
-> make
-> insmod test-cmpxchg-nolock.ko
-> insmod: error inserting 'test-cmpxchg-nolock.ko': -1 Resource temporarily
-> unavailable dmesg (see dmesg output)
+> I'm currently running kernel 2.6.28.7 now and have modprobed w35und.
+> and I also have a linksys usb wireless card on the USB port.
 >
-> If some of you would be kind enough to run my test module provided below
-> and provide the results of these tests on a recent kernel (2.6.26~2.6.29
-> should be good) along with their cpuinfo, I would greatly appreciate.
+> Now, the situation is Linksys's card can just work well. and the
+> Winbound card can't .
 >
-> Here are the CAS results for various Intel-based architectures :
+> wlan1 is the WinBound card:
 >
-> Architecture         | Speedup                      |      CAS     |       
->  Interrupts         |
+> root@t700:~# dmesg |grep wlan1
+> udev: renamed network interface wlan0 to wlan1
+> ADDRCONF(NETDEV_UP): wlan1: link is not ready
 >
->                      | (cli + sti) / local cmpxchg  | local | sync | Enable
->                      | (sti) | Disable (cli)
+> root@t700:~# iwlist wlan1 scan
+> wlan1     No scan results
 >
-> ---------------------------------------------------------------------------
->---------------------- Intel Pentium 4      | 5.24                         |
->  25   | 81   | 70           | 61          | AMD Athlon(tm)64 X2  | 4.57    
->                     |  7    | 17   | 17           | 15          | Intel
-> Core2          | 6.33                         |  6    | 30   | 20          
-> | 18          | Intel Xeon E5405     | 5.25                         |  8   
-> | 24   | 20           | 22          |
+> root@t700:~# iwlist wlan0 scan
+> wlan0     Scan completed :
+>         Cell 01 - Address: 00:1B:FC:7E:57:51
+>                   ESSID:"default"
+>                   Mode:Master
+>                   Channel:5
+>                   Frequency:2.432 GHz (Channel 5)
+>                   Quality=56/100  Signal level:-22 dBm
+>                   Encryption key:off
+>                   IE: Unknown: 000764656661756C74
+>                   IE: Unknown: 010882848B968C929824
+>                   IE: Unknown: 030105
+>                   IE: Unknown: 0406000200000000
+>                   IE: Unknown: 2A0100
+>                   IE: Unknown: 3204B048606C
+>                   Bit Rates:1 Mb/s; 2 Mb/s; 5.5 Mb/s; 11 Mb/s; 6 Mb/s
+>                             9 Mb/s; 12 Mb/s; 18 Mb/s; 24 Mb/s; 36 Mb/s
+>                             48 Mb/s; 54 Mb/s
+>                   Extra:tsf=00000035772ec17e
+>                   Extra: Last beacon: 52ms ago
 >
-> The benefit expected on PowerPC, ia64 and alpha should principally come
-> from removed memory barriers in the local primitives.
+> does this mean that the winbound drivers in the kernel tree is not
+> ready for use ? or do we have any idea for make it work ?
 
-Benefit versus what? I think all of those architectures can do SMP
-atomic compare exchange sequences without barriers, can't they?
-
+The driver is known to be broken in 2.6.28. You might want to try out
+2.6.29-rc8 which carries fixes for the driver. Note that the driver is
+in the staging directory which means it is not of production quality.
