@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbZCQUJI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145AbZCQUJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbZCQUJI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 16:09:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZCQUIz
+	id S1756145AbZCQUJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 16:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZCQUJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 16:08:55 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2055 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbZCQUIy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 16:08:54 -0400
-Date: Tue, 17 Mar 2009 20:08:32 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-Message-ID: <20090317200828.GA7060@sirena.org.uk>
-References: <200903111743.34708.david-b@pacbell.net> <200903142105.29382.david-b@pacbell.net> <20090316215422.GA6433@sirena.org.uk> <200903171115.06685.david-b@pacbell.net>
+	Tue, 17 Mar 2009 16:09:44 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38864 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754410AbZCQUJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 16:09:43 -0400
+Message-ID: <49C00381.8050207@garzik.org>
+Date: Tue, 17 Mar 2009 16:09:37 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903171115.06685.david-b@pacbell.net>
-X-Cookie: Stay away from flying saucers today.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [patch 2.6.29-rc8 regulator-next] regulator: init fixes (v4)
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+To: Karsten Wiese <fzu@wemgehoertderstaat.de>
+CC: linux-kernel@vger.kernel.org, NetDev <netdev@vger.kernel.org>,
+       Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: [PATCH] r8169: Fix irq masking in rtl8169_interrupt()
+References: <200903171937.53401.fzu@wemgehoertderstaat.de>
+In-Reply-To: <200903171937.53401.fzu@wemgehoertderstaat.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 11:15:06AM -0700, David Brownell wrote:
-> On Monday 16 March 2009, Mark Brown wrote:
+Karsten Wiese wrote:
+> Only adjust the NAPI bits of the interruptmask, if netif_rx_schedule_prep()
+> returns true.
+> Without this, I see interrupt storms here using 2.6.29-rcx and 2.6.27.19 and
+> device needed rmmod r8169 + modprobe r8169 to start working.
+> 
+> Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
+> ---
+>  drivers/net/r8169.c |    9 ++++-----
+>  1 files changed, 4 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+> index b347340..0c943ba 100644
+> --- a/drivers/net/r8169.c
+> +++ b/drivers/net/r8169.c
+> @@ -3708,12 +3708,11 @@ static irqreturn_t rtl8169_interrupt(int irq, void *dev_instance)
+>  		rtl8169_check_link_status(dev, tp, ioaddr);
+>  
+>  	if (status & tp->napi_event) {
+> -		RTL_W16(IntrMask, tp->intr_event & ~tp->napi_event);
+> -		tp->intr_mask = ~tp->napi_event;
+> -
+> -		if (likely(netif_rx_schedule_prep(&tp->napi)))
+> +		if (likely(netif_rx_schedule_prep(&tp->napi))) {
+> +			RTL_W16(IntrMask, tp->intr_event & ~tp->napi_event);
+> +			tp->intr_mask = ~tp->napi_event;
+>  			__netif_rx_schedule(&tp->napi);
+> -		else if (netif_msg_intr(tp)) {
+> +		} else if (netif_msg_intr(tp)) {
+>  			printk(KERN_INFO "%s: interrupt %04x in poll\n",
 
-> > Devices that need to do things like set voltages are fairly likely to
-> > own the regulator but with devices that just need to ensure that they
-> > have their supplies enabled it's much more likely that the supplies will
-> > be shared.
 
-> Right.  Do you have a model how such shared supplies would
-> coexist with the "enabled at boot time" model, and still
-> support being disabled?
+FWIW, you should CC net driver patches to netdev@vger.kernel.org, so 
+that they get tracked in patchworks and handled by the right people.
 
-The drivers can essentially ignore the physical status of the regulator
-when they start, enabling when they need them and disabling when they're
-done.  So long as at least one device has the regulator enabled the
-regulator will remain on but when the reference count drops to zero then
-the regulator will be disabled.
+	Jeff
 
-This works well when the driver will be enabling the regulators at
-startup and then disabling them later on.  It will also work well with a
-late_initcall which disables any unreferenced regulators - that should
-become the default at some future point (2.6.31 might be a good candiate
-here, I posted a patch the other day providing an implementation which
-warns if there are affected regulators and which machines can activate
-if they want).
 
-> My first thought is that the system designer should avoid
-> such boot_on modes.  But that's not always going to work.
-
-Yes, that's not something that can realistically be achieved in the
-general case.  Machines should probably avoid it but often people want
-to do things like bring LCDs up in the bootloader and providing graceful
-handover to the actual driver helps the user experience.
