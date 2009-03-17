@@ -1,48 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763458AbZCQNJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763332AbZCQNNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763458AbZCQNJd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 09:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZCQNJY
+	id S1763332AbZCQNNk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 09:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbZCQNNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 09:09:24 -0400
-Received: from www.tglx.de ([62.245.132.106]:56145 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752683AbZCQNJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 09:09:23 -0400
-Date: Tue, 17 Mar 2009 14:07:44 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       a.p.zijlstra@chello.nl, ego@in.ibm.com, mingo@elte.hu,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com, arjan@infradead.org,
-       svaidy@linux.vnet.ibm.com
-Subject: Re: [v3 PATCH 2/4] timers: Identifying the existing pinned timers
-In-Reply-To: <20090316111337.GC4686@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.2.00.0903171401190.29264@localhost.localdomain>
-References: <20090316111045.GA4686@linux.vnet.ibm.com> <20090316111337.GC4686@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 17 Mar 2009 09:13:31 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:53986 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753997AbZCQNNa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 09:13:30 -0400
+Date: Tue, 17 Mar 2009 18:42:51 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
+	cpuacct_charge() safe when rcupreempt is used.
+Message-ID: <20090317131251.GU16897@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090317061754.GD3314@in.ibm.com> <49BF42FB.4030103@cn.fujitsu.com> <20090317073649.GH3314@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090317073649.GH3314@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 16 Mar 2009, Arun R Bharadwaj wrote:
-> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-03-16 16:40:45]:
+* Bharata B Rao <bharata@linux.vnet.ibm.com> [2009-03-17 13:06:49]:
+
+> On Tue, Mar 17, 2009 at 02:28:11PM +0800, Li Zefan wrote:
+> > Bharata B Rao wrote:
+> > > cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
+> > > 	rcupreempt is used.
+> > > 
+> > > cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
+> > > This can race with the task's movement between cgroups. This race
+> > > can cause an access to freed ca pointer in cpuacct_charge(). This will not
+> > 
+> > Actually it can also end up access invalid tsk->cgroups. ;)
+> > 
+> > get tsk->cgroups (cg)
+> >                          (move tsk to another cgroup) or (tsk exiting)
+> >                          -> kfree(tsk->cgroups)
+> > get cg->subsys[..]
 > 
-> The following pinned hrtimers have been identified and marked:
-> 1)sched_rt_period_timer
-> 2)tick_sched_timer
-> 3)stack_trace_timer_fn
+> Ok :) Here is the patch again with updated description.
+> 
+> cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
+> 	rcupreempt is used.
+> 
+> cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
+> This can race with the task's movement between cgroups. This race
+> can cause an access to freed ca pointer in cpuacct_charge() or access
+> to invalid cgroups pointer of the task. This will not happen with rcu or
+> tree rcu as cpuacct_charge() is called with preemption disabled. However if
+> rcupreempt is used, the race is seen. Thanks to Li Zefan for explaining this.
+> 
+> Fix this race by explicitly protecting ca and the hierarchy walk with
+> rcu_read_lock().
+>
 
-How did you verify that these are the only timers which need to be
-pinned ?
+Looks good and works very well (except for the batch issue that you
+pointed out, it takes up to batch values before updates are seen).
 
-Can we be sure that there is no code which relies on the current
-behaviour to keep functionality tied together ? Networking and block
-layer comes to mind.
+I'd like to get the patches in -tip and see the results, I would
+recommend using percpu_counter_sum() while reading the data as an
+enhancement to this patch. If user space does not overwhelm with a lot
+of reads, sum would work out better.
 
-Thanks,
+ 
+Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+ 
 
-	tglx
+-- 
+	Balbir
