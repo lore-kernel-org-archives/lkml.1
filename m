@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759148AbZCQAyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761689AbZCQA7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759148AbZCQAyB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 16 Mar 2009 20:54:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZCQAxw
+	id S1761689AbZCQA7q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 16 Mar 2009 20:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZCQA7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 16 Mar 2009 20:53:52 -0400
-Received: from sh.osrg.net ([192.16.179.4]:38284 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122AbZCQAxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 16 Mar 2009 20:53:51 -0400
-Date: Tue, 17 Mar 2009 09:53:03 +0900
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, hias@horus.com,
-       James.Bottomley@HansenPartnership.com
-Subject: Re: [Bug #12612] hard lockup when interrupting cdda2wav
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <qm8_cedJGaP.A.3-G.5OCvJB@chimera>
-References: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera>
-	<qm8_cedJGaP.A.3-G.5OCvJB@chimera>
+	Mon, 16 Mar 2009 20:59:36 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:44998 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751339AbZCQA7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 16 Mar 2009 20:59:36 -0400
+Subject: Re: [PATCH] x86-paravirt: prevent gcc from generating the wrong
+	addressing mode
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <49BEEDC2.2070809@goop.org>
+References: <49BEEDC2.2070809@goop.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Mon, 16 Mar 2009 17:59:34 -0700
+Message-Id: <1237251574.5906.24.camel@alok-dev1>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090317095254P.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 17 Mar 2009 09:53:05 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 14 Mar 2009 20:20:17 +0100 (CET)
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Thanks Jeremy.
 
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.27 and 2.6.28.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12612
-> Subject		: hard lockup when interrupting cdda2wav
-> Submitter	: Matthias Reichl <hias@horus.com>
-> Date		: 2009-01-28 16:41 (46 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123316111415677&w=4
-> Handled-By	: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Patch		: http://marc.info/?l=linux-scsi&m=123371501613019&w=2
+Acked-by: Alok N Kataria <akataria@vmware.com>
 
-This still should be listed. I think that the fix (in James'
-scsi-misc) will be merged to 2.6.30-rc1 then be backported.
+On Mon, 2009-03-16 at 17:24 -0700, Jeremy Fitzhardinge wrote:
+> When we generate a call sequence for calling a paravirtualized
+> function, we presume that the generated code is "call *0xXXXXX",
+> which is a 6 byte opcode; this is larger than a normal
+> direct call, and so we can patch a direct call over it.
+> 
+> At the moment, however we give gcc enough rope to hang us by
+> putting the address in a register and generating a two byte
+> indirect-via-register call.  Prevent this by explicitly
+> dereferencing the function pointer and passing it into the
+> asm as a constant.
+> 
+> This prevents crashes in VMI, as it cannot handle unpatchable
+> callsites.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Cc: Alok Kataria <akataria@vmware.com>
+> 
+> diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+> index d4fec1f..6922d16 100644
+> --- a/arch/x86/include/asm/paravirt.h
+> +++ b/arch/x86/include/asm/paravirt.h
+> @@ -395,7 +395,7 @@ extern struct pv_lock_ops pv_lock_ops;
+>  
+>  #define paravirt_type(op)				\
+>  	[paravirt_typenum] "i" (PARAVIRT_PATCH(op)),	\
+> -	[paravirt_opptr] "m" (op)
+> +	[paravirt_opptr] "i" (&(op))
+>  #define paravirt_clobber(clobber)		\
+>  	[paravirt_clobber] "i" (clobber)
+>  
+> @@ -449,7 +449,7 @@ int paravirt_disable_iospace(void);
+>   * offset into the paravirt_patch_template structure, and can therefore be
+>   * freely converted back into a structure offset.
+>   */
+> -#define PARAVIRT_CALL	"call *%[paravirt_opptr];"
+> +#define PARAVIRT_CALL	"call *%c[paravirt_opptr];"
+>  
+>  /*
+>   * These macros are intended to wrap calls through one of the paravirt
+> 
+> 
+
