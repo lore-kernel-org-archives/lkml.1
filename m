@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZCQE1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZCQEaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755276AbZCQE1l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 00:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbZCQE1b
+	id S1756214AbZCQEaw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 00:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbZCQEan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 00:27:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34166
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751312AbZCQE1b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 00:27:31 -0400
-Date: Mon, 16 Mar 2009 21:27:17 -0700 (PDT)
-Message-Id: <20090316.212717.233062381.davem@davemloft.net>
-To: mathieu.desnoyers@polymtl.ca
-Cc: paulmck@linux.vnet.ibm.com, mingo@elte.hu, jwboyer@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
-Subject: Re: cli/sti vs local_cmpxchg and local_add_return
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090317041016.GA26748@Krystal>
-References: <20090317013220.GA22474@Krystal>
-	<20090316.203705.218202510.davem@davemloft.net>
-	<20090317041016.GA26748@Krystal>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Mar 2009 00:30:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43846 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750829AbZCQEan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 00:30:43 -0400
+Date: Tue, 17 Mar 2009 05:25:34 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Chris Friesen <cfriesen@nortel.com>,
+       =?iso-8859-1?Q?G=E1bor?= Melis <mega@retes.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: SEGSEGV && uc_mcontext->ip (Was: Signal delivery order)
+Message-ID: <20090317042534.GA30513@redhat.com>
+References: <200903141750.37238.mega@retes.hu> <200903152306.53031.mega@retes.hu> <20090316002833.GA17615@redhat.com> <200903160934.03700.mega@retes.hu> <20090316211316.GA6270@redhat.com> <49BED93B.1090700@nortel.com> <20090317041337.GA29740@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090317041337.GA29740@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date: Tue, 17 Mar 2009 00:10:16 -0400
+Sorry for noise, forgot to mention,
 
-> Thanks for running those tests. Actually, I did not expect good results
-> for sparc64 because the local_t primitives map to atomic_t. Looking at
-> sparc atomic_64.h, I notice that all atomic operations except cmpxchg
-> are done through function calls even when those functions only contain
-> few instructions.  Is there any particular reason for that ? These
-> function calls can be quite costly. We could easily inline those.
+On 03/17, Oleg Nesterov wrote:
+>
+> 	--- arch/x86/mm/fault.c
+> 	+++ arch/x86/mm/fault.c
+> 	@@ -177,6 +177,13 @@ static void force_sig_info_fault(int si_
+> 	 {
+> 		siginfo_t info;
+> 	 
+> 	+	current->saved_sigmask = current->blocked;
+> 	+	spin_lock_irq(&current->sighand->siglock);
+> 	+	siginitsetinv(&current->blocked, sigmask(si_signo) |
+> 	+			sigmask(SIGKILL) | sigmask(SIGSTOP));
+> 	+	spin_unlock_irq(&current->sighand->siglock);
+> 	+	set_restore_sigmask();
+> 	+
 
-With all the memory barriers, cpu bug workarounds, et al.
-it's way too much to expand inline.
+Of course, this change is wrong, it is just for illustration.
+We shouldn't unblock si_signo if it was blocked, force_sig_info()
+sets SIG_DFL in this case.
 
-> And to "unleash" the full power of local_t, we should see if there are
-> variants of the atomic operations which are safe only on UP and if there
-> are some memory barriers currently embedded in the atomic_t ops we could
-> remove in a local_t version. Actually, all the
-> BACKOFF_SETUP/BACKOFF_SPIN is specific to SMP, and therefore the local_t
-> version probably does not need that because it touches specifically
-> per-cpu data. That could give very interesting results.
-> 
-> The reason why the results shows 0 cycles per loop is just because there
-> is less that a bus clock cycle per loop. But the total time (in bus
-> cycles) for the whole 20000 cycles gives us equivalent information.
+Oleg.
 
-I don't think it's worth it.  Rusty made similar tests not too long
-ago.
-
-IRQ disabling/enabling on sparc64 is 9 cycles (each) and the atomic
-operation on the other hand is at least 35 cycles.
