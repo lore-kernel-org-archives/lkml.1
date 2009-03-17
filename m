@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbZCQU4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZCQU5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756293AbZCQU4s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 16:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbZCQU4h
+	id S1756856AbZCQU5y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 16:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbZCQU5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 16:56:37 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:38343 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751723AbZCQU4g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 16:56:36 -0400
-Date: Tue, 17 Mar 2009 22:02:51 +0100
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Risto Suominen <risto.suominen@gmail.com>, geert@linux-m68k.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] fb: hide hardware cursor in graphics mode (Mach64)
-Message-Id: <20090317220251.d6fb00ff.krzysztof.h1@poczta.fm>
-In-Reply-To: <20090211142409.b88c577e.akpm@linux-foundation.org>
-References: <46e1c7760901230433i3045f273oa109ce97e790bca3@mail.gmail.com>
-	<Pine.LNX.4.64.0901240951110.13803@anakin>
-	<46e1c7760901240109m5a0f3a85p788aa3ce35b49fa9@mail.gmail.com>
-	<Pine.LNX.4.64.0901241425310.13803@anakin>
-	<46e1c7760901240649v1e45bbb1v8c9997f236a3ec4c@mail.gmail.com>
-	<46e1c7760902101337qe239336n9ef2652a47f89aed@mail.gmail.com>
-	<46e1c7760902101350r5a04d076j49cc611a843e6429@mail.gmail.com>
-	<20090211142409.b88c577e.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: e2b138
+	Tue, 17 Mar 2009 16:57:45 -0400
+Received: from kroah.org ([198.145.64.141]:35692 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754324AbZCQU5o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 16:57:44 -0400
+Date: Tue, 17 Mar 2009 13:55:18 -0700
+From: Greg KH <greg@kroah.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>, tytso@mit.edu
+Cc: Greg KH <gregkh@suse.de>, mfasheh@suse.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] Linux 2.6.28.8 (ocfs2 build failure)
+Message-ID: <20090317205518.GA4442@kroah.com>
+References: <20090317012028.GA32410@kroah.com> <49C00787.6060401@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C00787.6060401@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Tue, Mar 17, 2009 at 01:26:47PM -0700, Randy Dunlap wrote:
+> Enable all possible OCFS2 kconfig options:
+> 
+> 
+> 
+> In file included from fs/ocfs2/alloc.c:42:
+> fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
+> fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
+> fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
+> fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
+>   CC [M]  fs/ocfs2/buffer_head_io.o
+> In file included from fs/ocfs2/aops.c:42:
+> fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
+> fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
+> fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
+> fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
+> make[2]: *** [fs/ocfs2/aops.o] Error 1
+> make[2]: *** Waiting for unfinished jobs....
+> In file included from fs/ocfs2/buffer_head_io.c:37:
+> fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
+> fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
+> fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
+> fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
+> make[2]: *** [fs/ocfs2/buffer_head_io.o] Error 1
+> make[2]: *** [fs/ocfs2/alloc.o] Error 1
 
-A hardware cursor is left enabled in
-the fb_set_par() which is called when
-a new console is created. This is
-inconsistent with software cursor's
-behaviour.
+Did this show up in 2.6.28.7?
 
-Also, this makes a hardware cursor
-always visible in the Xfbdev
-(Xorg kdrive) server.
+Odds are it's one of the jbd2 patches from Ted.  Ted, any ideas?
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
-CC: Risto Suominen 
----
-Finally, I acquired a Mach64GZ card and was able to 
-solve this puzzle.
+thanks,
 
-Risto, please test the patch. 
-
- drivers/video/aty/mach64_accel.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/aty/mach64_accel.c b/drivers/video/aty/mach64_accel.c
-index a8f60c3..0cc9724 100644
---- a/drivers/video/aty/mach64_accel.c
-+++ b/drivers/video/aty/mach64_accel.c
-@@ -39,7 +39,8 @@ void aty_reset_engine(const struct atyfb_par *par)
- {
- 	/* reset engine */
- 	aty_st_le32(GEN_TEST_CNTL,
--		aty_ld_le32(GEN_TEST_CNTL, par) & ~GUI_ENGINE_ENABLE, par);
-+		aty_ld_le32(GEN_TEST_CNTL, par) &
-+		~(GUI_ENGINE_ENABLE | HWCURSOR_ENABLE), par);
- 	/* enable engine */
- 	aty_st_le32(GEN_TEST_CNTL,
- 		aty_ld_le32(GEN_TEST_CNTL, par) | GUI_ENGINE_ENABLE, par);
--- 
-1.5.2.2
-
-
-----------------------------------------------------------------------
-Szukasz pieniedzy? Wez podwójny limit zad³u¿enia w koncie direct.
->> http://link.interia.pl/f20a3
-
+greg k-h
