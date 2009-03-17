@@ -1,83 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763332AbZCQNNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbZCQNO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763332AbZCQNNk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 09:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbZCQNNb
+	id S1756703AbZCQNO7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 09:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbZCQNOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 09:13:31 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:53986 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753997AbZCQNNa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 09:13:30 -0400
-Date: Tue, 17 Mar 2009 18:42:51 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
-	cpuacct_charge() safe when rcupreempt is used.
-Message-ID: <20090317131251.GU16897@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090317061754.GD3314@in.ibm.com> <49BF42FB.4030103@cn.fujitsu.com> <20090317073649.GH3314@in.ibm.com>
+	Tue, 17 Mar 2009 09:14:50 -0400
+Received: from mail.windriver.com ([147.11.1.11]:47731 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753132AbZCQNOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 09:14:50 -0400
+Message-ID: <49BFA1D7.8020302@windriver.com>
+Date: Tue, 17 Mar 2009 09:12:55 -0400
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090317073649.GH3314@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+CC: Clemens Ladisch <clemens@ladisch.de>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>, robert.picco@hp.com,
+       venkatesh.pallipadi@intel.com, vojtech@suse.cz, mingo@redhat.com
+Subject: Re: [Patch] Fix the possibility of insane return value of hpet_calibrate()
+ against SMI.
+References: <20090316111300.7CE5.E1E9C6FF@jp.fujitsu.com> <49BE215F.7040307@ladisch.de> <20090317185152.47CD.E1E9C6FF@jp.fujitsu.com>
+In-Reply-To: <20090317185152.47CD.E1E9C6FF@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Mar 2009 13:13:50.0617 (UTC) FILETIME=[36B1E090:01C9A702]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bharata B Rao <bharata@linux.vnet.ibm.com> [2009-03-17 13:06:49]:
-
-> On Tue, Mar 17, 2009 at 02:28:11PM +0800, Li Zefan wrote:
-> > Bharata B Rao wrote:
-> > > cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
-> > > 	rcupreempt is used.
-> > > 
-> > > cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
-> > > This can race with the task's movement between cgroups. This race
-> > > can cause an access to freed ca pointer in cpuacct_charge(). This will not
-> > 
-> > Actually it can also end up access invalid tsk->cgroups. ;)
-> > 
-> > get tsk->cgroups (cg)
-> >                          (move tsk to another cgroup) or (tsk exiting)
-> >                          -> kfree(tsk->cgroups)
-> > get cg->subsys[..]
-> 
-> Ok :) Here is the patch again with updated description.
-> 
-> cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
-> 	rcupreempt is used.
-> 
-> cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
-> This can race with the task's movement between cgroups. This race
-> can cause an access to freed ca pointer in cpuacct_charge() or access
-> to invalid cgroups pointer of the task. This will not happen with rcu or
-> tree rcu as cpuacct_charge() is called with preemption disabled. However if
-> rcupreempt is used, the race is seen. Thanks to Li Zefan for explaining this.
-> 
-> Fix this race by explicitly protecting ca and the hierarchy walk with
-> rcu_read_lock().
+Yasunori Goto wrote:
+> Sorry for late response.
 >
+>   
+>> Yasunori Goto wrote:
+>>     
+>>>> I've no sense of feel for how long each calibration run would take.
+>>>> Would doing it 5 times show up as a significant increase in the boot
+>>>> time for those that care about boot time being as quick as possible?
+>>>>         
+>>> Hmm. The loop times is trade off against reliable value....
+>>> Though SMI is rare interruption, I don't know how frequent
+>>> hypervisor's switch is.
+>>>       
+>> Could you, just for testing, run the calibration five thousand times or
+>> so instead of five times, and count how often you get insane values?
+>> (And how much delay does such an SMI add?)
+>>     
+>
+> I tried 50000 times. But insane value was nothing.
+> I think SMI is very rare.
+>
+>   
+>>> Each calibration of this has 1 milli second.
+>>> Do you think 5 msec is too long?
+>>>       
+>> This shouldn't matter when booting.  Anyway, I think it's possible to
+>> increase TICK_CALIBRATE without losing too much accuracy.
+>>     
+>
+> Hmm. If the person who is trying to reduce boot time for fastboot dislikes this impact,
+> then I'll try Vojtech-san's way.
+>   
 
-Looks good and works very well (except for the batch issue that you
-pointed out, it takes up to batch values before updates are seen).
+That probably makes sense -- if it is extremely rare, and if you get two
+values that are the same (within some small delta) then you probably
+are 99.99% confident that you have the right data.
 
-I'd like to get the patches in -tip and see the results, I would
-recommend using percpu_counter_sum() while reading the data as an
-enhancement to this patch. If user space does not overwhelm with a lot
-of reads, sum would work out better.
+Paul.
 
- 
-Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
- 
+>
+> Thanks.
+>   
 
--- 
-	Balbir
