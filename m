@@ -1,221 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757692AbZCQV2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZCQV20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757692AbZCQV2F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 17:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbZCQV12
+	id S1758030AbZCQV20 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 17:28:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbZCQV1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 17:27:28 -0400
-Received: from ns1.suse.de ([195.135.220.2]:53419 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755427AbZCQV11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 17:27:27 -0400
-From: Mark Fasheh <mfasheh@suse.com>
-To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Sunil Mushran <sunil.mushran@oracle.com>,
-       Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 01/32] ocfs2/hb: Expose the list of heartbeating nodes via debugfs
-Date: Tue, 17 Mar 2009 13:00:51 -0700
-Message-Id: <1237320082-12921-2-git-send-email-mfasheh@suse.com>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
-References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+	Tue, 17 Mar 2009 17:27:35 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:52230 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756933AbZCQV1d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 17:27:33 -0400
+Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+In-Reply-To: <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com> (sfid-20090316_142417_625321_EAE390ED)
+References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
+	 <b6a2187b0903141958u9dae0fdk1f44b387108b99e4@mail.gmail.com>
+	 <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com>
+	 <1237140665.24621.2.camel@johannes.local>
+	 <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
+	 <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu>
+	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
+	 (sfid-20090316_142417_625321_EAE390ED)
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-APmAsfgopLNAwlSHx71g"
+Date: Tue, 17 Mar 2009 20:22:22 +0100
+Message-Id: <1237317742.31814.28.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sunil Mushran <sunil.mushran@oracle.com>
 
-This patch creates a debugfs file, o2hb/livesnodes, which exposes the
-aggregate list of heartbeating node across all heartbeat regions.
+--=-APmAsfgopLNAwlSHx71g
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
----
- fs/ocfs2/cluster/heartbeat.c   |   96 +++++++++++++++++++++++++++++++++++++++-
- fs/ocfs2/cluster/heartbeat.h   |    3 +-
- fs/ocfs2/cluster/nodemanager.c |    9 +++-
- 3 files changed, 104 insertions(+), 4 deletions(-)
+On Mon, 2009-03-16 at 21:24 +0800, Jeff Chua wrote:
 
-diff --git a/fs/ocfs2/cluster/heartbeat.c b/fs/ocfs2/cluster/heartbeat.c
-index 04697ba..4f85ece 100644
---- a/fs/ocfs2/cluster/heartbeat.c
-+++ b/fs/ocfs2/cluster/heartbeat.c
-@@ -33,6 +33,7 @@
- #include <linux/random.h>
- #include <linux/crc32.h>
- #include <linux/time.h>
-+#include <linux/debugfs.h>
- 
- #include "heartbeat.h"
- #include "tcp.h"
-@@ -60,6 +61,11 @@ static unsigned long o2hb_live_node_bitmap[BITS_TO_LONGS(O2NM_MAX_NODES)];
- static LIST_HEAD(o2hb_node_events);
- static DECLARE_WAIT_QUEUE_HEAD(o2hb_steady_queue);
- 
-+#define O2HB_DEBUG_DIR			"o2hb"
-+#define O2HB_DEBUG_LIVENODES		"livenodes"
-+static struct dentry *o2hb_debug_dir;
-+static struct dentry *o2hb_debug_livenodes;
-+
- static LIST_HEAD(o2hb_all_regions);
- 
- static struct o2hb_callback {
-@@ -905,7 +911,77 @@ static int o2hb_thread(void *data)
- 	return 0;
- }
- 
--void o2hb_init(void)
-+#ifdef CONFIG_DEBUG_FS
-+static int o2hb_debug_open(struct inode *inode, struct file *file)
-+{
-+	unsigned long map[BITS_TO_LONGS(O2NM_MAX_NODES)];
-+	char *buf = NULL;
-+	int i = -1;
-+	int out = 0;
-+
-+	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!buf)
-+		goto bail;
-+
-+	o2hb_fill_node_map(map, sizeof(map));
-+
-+	while ((i = find_next_bit(map, O2NM_MAX_NODES, i + 1)) < O2NM_MAX_NODES)
-+		out += snprintf(buf + out, PAGE_SIZE - out, "%d ", i);
-+	out += snprintf(buf + out, PAGE_SIZE - out, "\n");
-+
-+	i_size_write(inode, out);
-+
-+	file->private_data = buf;
-+
-+	return 0;
-+bail:
-+	return -ENOMEM;
-+}
-+
-+static int o2hb_debug_release(struct inode *inode, struct file *file)
-+{
-+	kfree(file->private_data);
-+	return 0;
-+}
-+
-+static ssize_t o2hb_debug_read(struct file *file, char __user *buf,
-+				 size_t nbytes, loff_t *ppos)
-+{
-+	return simple_read_from_buffer(buf, nbytes, ppos, file->private_data,
-+				       i_size_read(file->f_mapping->host));
-+}
-+#else
-+static int o2hb_debug_open(struct inode *inode, struct file *file)
-+{
-+	return 0;
-+}
-+static int o2hb_debug_release(struct inode *inode, struct file *file)
-+{
-+	return 0;
-+}
-+static ssize_t o2hb_debug_read(struct file *file, char __user *buf,
-+			       size_t nbytes, loff_t *ppos)
-+{
-+	return 0;
-+}
-+#endif  /* CONFIG_DEBUG_FS */
-+
-+static struct file_operations o2hb_debug_fops = {
-+	.open =		o2hb_debug_open,
-+	.release =	o2hb_debug_release,
-+	.read =		o2hb_debug_read,
-+	.llseek =	generic_file_llseek,
-+};
-+
-+void o2hb_exit(void)
-+{
-+	if (o2hb_debug_livenodes)
-+		debugfs_remove(o2hb_debug_livenodes);
-+	if (o2hb_debug_dir)
-+		debugfs_remove(o2hb_debug_dir);
-+}
-+
-+int o2hb_init(void)
- {
- 	int i;
- 
-@@ -918,6 +994,24 @@ void o2hb_init(void)
- 	INIT_LIST_HEAD(&o2hb_node_events);
- 
- 	memset(o2hb_live_node_bitmap, 0, sizeof(o2hb_live_node_bitmap));
-+
-+	o2hb_debug_dir = debugfs_create_dir(O2HB_DEBUG_DIR, NULL);
-+	if (!o2hb_debug_dir) {
-+		mlog_errno(-ENOMEM);
-+		return -ENOMEM;
-+	}
-+
-+	o2hb_debug_livenodes = debugfs_create_file(O2HB_DEBUG_LIVENODES,
-+						   S_IFREG|S_IRUSR,
-+						   o2hb_debug_dir, NULL,
-+						   &o2hb_debug_fops);
-+	if (!o2hb_debug_livenodes) {
-+		mlog_errno(-ENOMEM);
-+		debugfs_remove(o2hb_debug_dir);
-+		return -ENOMEM;
-+	}
-+
-+	return 0;
- }
- 
- /* if we're already in a callback then we're already serialized by the sem */
-diff --git a/fs/ocfs2/cluster/heartbeat.h b/fs/ocfs2/cluster/heartbeat.h
-index e511339..2f16492 100644
---- a/fs/ocfs2/cluster/heartbeat.h
-+++ b/fs/ocfs2/cluster/heartbeat.h
-@@ -75,7 +75,8 @@ void o2hb_unregister_callback(const char *region_uuid,
- 			      struct o2hb_callback_func *hc);
- void o2hb_fill_node_map(unsigned long *map,
- 			unsigned bytes);
--void o2hb_init(void);
-+void o2hb_exit(void);
-+int o2hb_init(void);
- int o2hb_check_node_heartbeating(u8 node_num);
- int o2hb_check_node_heartbeating_from_callback(u8 node_num);
- int o2hb_check_local_node_heartbeating(void);
-diff --git a/fs/ocfs2/cluster/nodemanager.c b/fs/ocfs2/cluster/nodemanager.c
-index 70e8fa9..7ee6188 100644
---- a/fs/ocfs2/cluster/nodemanager.c
-+++ b/fs/ocfs2/cluster/nodemanager.c
-@@ -881,6 +881,7 @@ static void __exit exit_o2nm(void)
- 	o2cb_sys_shutdown();
- 
- 	o2net_exit();
-+	o2hb_exit();
- }
- 
- static int __init init_o2nm(void)
-@@ -889,11 +890,13 @@ static int __init init_o2nm(void)
- 
- 	cluster_print_version();
- 
--	o2hb_init();
-+	ret = o2hb_init();
-+	if (ret)
-+		goto out;
- 
- 	ret = o2net_init();
- 	if (ret)
--		goto out;
-+		goto out_o2hb;
- 
- 	ret = o2net_register_hb_callbacks();
- 	if (ret)
-@@ -916,6 +919,8 @@ out_callbacks:
- 	o2net_unregister_hb_callbacks();
- out_o2net:
- 	o2net_exit();
-+out_o2hb:
-+	o2hb_exit();
- out:
- 	return ret;
- }
--- 
-1.5.6
+> Here's what I did, and it's repeatable.
+>=20
+> Take the attached bisect log and replay it, and the last offending
+> commit is this ...
+> # git log
+> commit 71c11fb57b924c160297ccd9e1761db598d00ac2
+> Author: Johannes Berg <johannes@sipsolutions.net>
+> Date:   Tue Oct 28 18:29:48 2008 +0100
+>=20
+>     b43/legacy: remove SSID code
+>=20
+> Yes, this is not the real problem, but it's the last commit that cause
+> the problem, and I couldn't bisect further, typing the next "git
+> bisect bad" and the commit is
+
+I'm on 0191b62 now and cannot reproduce the problem with iwlwifi
+hardware and a linksys (broadcom-based) AP with hidden SSID.
+
+> Anything I can help to debug further, just let me know.
+
+Compile iwlwifi with debugging please, and instead of plain modprobe
+iwlagn, do this:
+	modprobe iwlagn debug=3D0x800 debug50=3D0x800
+
+Then send me the relevant dmesg output from a working and a failed
+attempt. You should see something like this
+
+[  318.420537] ieee80211 phy4: U iwl_bg_request_scan Start direct scan for =
+'myssid'
+
+in the log. I can't see any reason why it would be missing. For me, the
+association is instantaneous after saying "ap any". This is expected
+too, because
+	iwconfig wlan0 essid "myessid"
+will have triggered a directed scan for the AP.
+
+There are two possible failure scenarios that I can imagine:
+
+1) You see no line like the one above in your log, but rather
+
+[  736.047879] ieee80211 phy5: U iwl_bg_request_scan Start indirect scan.
+
+This would indicate a bug in the driver.
+
+
+2) You do see the line with the SSID, but you don't get any reply. In
+this case, please try doing it manually:
+	iwlist wlan0 scan essid 'myssid'
+Wait about 15 seconds between each attempt of doing so, and report
+whether your AP is listed in the results or not. If it isn't most of the
+time, then your AP is broken.
+
+johannes
+
+--=-APmAsfgopLNAwlSHx71g
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJv/hrAAoJEKVg1VMiehFYEnQP/0L8NEZmyYZMIzDTl7A1/YIk
+GnLVkUEsIQd4WtRQXyiYnw9OHUaG78oqfdCUJqA2AiPiL5jXrp1IMqNyZAI8IRm4
+OzfWVdXYeYc0RoJzksrZOTS2UYG38Hv/XltM77cWOCLfi6aAAZ7lkyPNnjDJtSqd
+3mDzjpbzVRnJYT17aSJhEAJvxygzpT0p8B0lJOKWepyivQhSz28ie50cHsfAxvjr
+tM8eVsH6jW6ZN8+AIiluScRws20YIwOwJEFv43Uapnl4QwvB6Vp2RIVfSx4jNLq1
+uzQ3NHjur6EbpKtUS3HYk7hYSurXb3XDgtolY1WxzePSY/i+RHiColMFfFoN0EZA
+6kam7Pfjml8Xtoz2l+vNL4G+hHvIpVC/rCz7upxsayvt+q0i/jPkC+ThIdKp1gKZ
+iT7D0qxEKac+Z1SDUYVY999H67jM66nrwpro+RSJdb4oQCWEEj5Hxa/UHtYElLxh
+bdmM2N1GUo+cKuX/GtOfXo5WnzIxduhozMRDudtVFAjc0IRfMl4kVHxzL3WPQ691
+qHRg8kNgrLqStJZQ49x9sjoE2TgFW5r7K6EUhrM1upRJqtgn2c4BAU2UgHMugUU9
+whAwhCnwSlWV+LnQYqpXzXmUAZSANqeB0d5tS2mLZ3w1UXM1T7+IhpRWQoBSQoAE
+K3tbYQQV1Xd7fUI648I/
+=95ZB
+-----END PGP SIGNATURE-----
+
+--=-APmAsfgopLNAwlSHx71g--
 
