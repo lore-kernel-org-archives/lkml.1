@@ -1,81 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbZCQNfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbZCQNlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756079AbZCQNfh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 09:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZCQNf1
+	id S1755605AbZCQNlj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 09:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZCQNl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 09:35:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42419 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751898AbZCQNf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 09:35:27 -0400
-Date: Tue, 17 Mar 2009 09:35:23 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: David Miller <davem@davemloft.net>
-cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crash with /proc/iomem on sparc64
-In-Reply-To: <Pine.LNX.4.64.0903170807440.25109@hs20-bc2-1.build.redhat.com>
-Message-ID: <Pine.LNX.4.64.0903170934080.7433@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0903170758060.24107@hs20-bc2-1.build.redhat.com>
- <Pine.LNX.4.64.0903170807440.25109@hs20-bc2-1.build.redhat.com>
+	Tue, 17 Mar 2009 09:41:29 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:2173 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752114AbZCQNl3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 09:41:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qbef3vXmgW8ZZ19FT6agjzEjq1JYcYbhBqt7eJQvugqY0KWJrRRWl/0yTUiE2hKqsc
+         mEdpQ+5fhCiXE2SPqNkhHsNWMqujnwfj7QBPnvnpikPVxJm2HKsWCPjneWMZJXAyGPbG
+         AvbFx55Nzm5/jZocUBxBzeciVgNPW1N9XLciU=
+Date: Tue, 17 Mar 2009 16:48:37 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Zhang Le <r0bertz@gentoo.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org
+Subject: Re: [PATCH] filp->f_pos not correctly updated in proc_task_readdir
+Message-ID: <20090317134837.GB3907@x200.localdomain>
+References: <1237185871-3343-1-git-send-email-r0bertz@gentoo.org> <20090316083457.GV28946@ZenIV.linux.org.uk> <20090317103744.GA2399@x200.localdomain> <20090317125346.GA22268@adriano.hkcable.com.hk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090317125346.GA22268@adriano.hkcable.com.hk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 17 Mar 2009, Mikulas Patocka wrote:
-
+On Tue, Mar 17, 2009 at 08:53:47PM +0800, Zhang Le wrote:
+> > fs/built-in.o: In function `proc_task_readdir':
+> > compr_zlib.c:(.text+0x434b8): undefined reference to `__cmpdi2'
+> > compr_zlib.c:(.text+0x434d4): undefined reference to `__cmpdi2'
 > 
-> 
-> On Tue, 17 Mar 2009, Mikulas Patocka wrote:
-> 
-> > Hi
-> > 
-> > When you compile kernel on Sparc64 with heap memory checking and type
-> > "cat /proc/iomem", you get a crash, because pointers in struct resource 
-> > are uninitialized.
-> > 
-> > Most code fills struct resource with zeros, so I assume that it is 
-> > responsibility of the caller of request_resource to initialized it, not 
-> > the responsibility of request_resource functuion.
-> > 
-> > After 2.6.29 is out, there could be a check for uninitialized fields added 
-> > to request_resource to avoid crashes like this.
-> > 
-> > Mikulas
-> 
-> I forgot to add:
-> 
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+> Hi, I am sorry but I can't reproduce this.
 
-... and
-
-Cc: stable@kernel.org
-
-because it applies to old kernels as well, even 2.6.26 crashes.
-
-Mikulas
-
-> > ---
-> >  arch/sparc/kernel/pci_common.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6.29-rc8-devel/arch/sparc/kernel/pci_common.c
-> > ===================================================================
-> > --- linux-2.6.29-rc8-devel.orig/arch/sparc/kernel/pci_common.c	2009-03-17 12:49:51.000000000 +0100
-> > +++ linux-2.6.29-rc8-devel/arch/sparc/kernel/pci_common.c	2009-03-17 12:50:16.000000000 +0100
-> > @@ -368,7 +368,7 @@ static void pci_register_iommu_region(st
-> >  	const u32 *vdma = of_get_property(pbm->op->node, "virtual-dma", NULL);
-> >  
-> >  	if (vdma) {
-> > -		struct resource *rp = kmalloc(sizeof(*rp), GFP_KERNEL);
-> > +		struct resource *rp = kzalloc(sizeof(*rp), GFP_KERNEL);
-> >  
-> >  		if (!rp) {
-> >  			prom_printf("Cannot allocate IOMMU resource.\n");
-> > 
-> 
+It's on arm, I fixed it up already.
