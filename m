@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbZCRUhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbZCRUhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757958AbZCRUhA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 16:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbZCRUb7
+	id S1754572AbZCRUhc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 16:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZCRUcC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 16:31:59 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56235 "EHLO
+	Wed, 18 Mar 2009 16:32:02 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56239 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753565AbZCRUbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 16:31:45 -0400
+	id S1753593AbZCRUbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 16:31:46 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 14/57] microblaze_v7: defconfig file
-Date: Wed, 18 Mar 2009 21:30:41 +0100
-Message-Id: <20227d6f2615060d6560785090513e251cbe2654.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 15/57] microblaze_v7: assembler files head.S, entry-nommu.S, syscall_table.S
+Date: Wed, 18 Mar 2009 21:30:42 +0100
+Message-Id: <69ef4f976d86c870a97fbe4974c242c74acc477d.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <eaa0169a360a328883ab0eabd2a189c21bad4c30.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <20227d6f2615060d6560785090513e251cbe2654.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -31,6 +31,7 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <f7f2d17e21a3df9931c75976c37a003d11190cc9.1237407249.git.monstr@monstr.eu>
  <58cf06c85e07477170677b72ce3437af10476bec.1237407249.git.monstr@monstr.eu>
  <eaa0169a360a328883ab0eabd2a189c21bad4c30.1237407249.git.monstr@monstr.eu>
+ <20227d6f2615060d6560785090513e251cbe2654.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,818 +43,1046 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/configs/nommu_defconfig |  802 +++++++++++++++++++++++++++++++
- 1 files changed, 802 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/configs/nommu_defconfig
+ arch/microblaze/kernel/entry-nommu.S   |  594 ++++++++++++++++++++++++++++++++
+ arch/microblaze/kernel/head.S          |   55 +++
+ arch/microblaze/kernel/syscall_table.S |  365 ++++++++++++++++++++
+ 3 files changed, 1014 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/entry-nommu.S
+ create mode 100644 arch/microblaze/kernel/head.S
+ create mode 100644 arch/microblaze/kernel/syscall_table.S
 
-diff --git a/arch/microblaze/configs/nommu_defconfig b/arch/microblaze/configs/nommu_defconfig
+diff --git a/arch/microblaze/kernel/entry-nommu.S b/arch/microblaze/kernel/entry-nommu.S
 new file mode 100644
-index 0000000..c1ca9cc
+index 0000000..5678f17
 --- /dev/null
-+++ b/arch/microblaze/configs/nommu_defconfig
-@@ -0,0 +1,802 @@
-+#
-+# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.29-rc8
-+# Wed Mar 18 17:29:24 2009
-+#
-+CONFIG_MICROBLAZE=y
-+# CONFIG_SWAP is not set
-+CONFIG_RWSEM_GENERIC_SPINLOCK=y
-+# CONFIG_ARCH_HAS_ILOG2_U32 is not set
-+# CONFIG_ARCH_HAS_ILOG2_U64 is not set
-+CONFIG_GENERIC_FIND_NEXT_BIT=y
-+CONFIG_GENERIC_HWEIGHT=y
-+CONFIG_GENERIC_HARDIRQS=y
-+CONFIG_GENERIC_IRQ_PROBE=y
-+CONFIG_GENERIC_CALIBRATE_DELAY=y
-+CONFIG_GENERIC_TIME=y
-+# CONFIG_GENERIC_TIME_VSYSCALL is not set
-+CONFIG_GENERIC_CLOCKEVENTS=y
-+# CONFIG_PCI is not set
-+# CONFIG_NO_DMA is not set
-+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
++++ b/arch/microblaze/kernel/entry-nommu.S
+@@ -0,0 +1,594 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
 +
-+#
-+# General setup
-+#
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_BROKEN_ON_SMP=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
-+CONFIG_LOCALVERSION=""
-+CONFIG_LOCALVERSION_AUTO=y
-+CONFIG_SYSVIPC=y
-+CONFIG_SYSVIPC_SYSCTL=y
-+CONFIG_POSIX_MQUEUE=y
-+CONFIG_BSD_PROCESS_ACCT=y
-+CONFIG_BSD_PROCESS_ACCT_V3=y
-+# CONFIG_TASKSTATS is not set
-+# CONFIG_AUDIT is not set
++#include <linux/linkage.h>
++#include <asm/thread_info.h>
++#include <asm/errno.h>
++#include <asm/entry.h>
++#include <asm/asm-offsets.h>
++#include <asm/registers.h>
++#include <asm/unistd.h>
++#include <asm/percpu.h>
++#include <asm/signal.h>
 +
-+#
-+# RCU Subsystem
-+#
-+CONFIG_CLASSIC_RCU=y
-+# CONFIG_TREE_RCU is not set
-+# CONFIG_PREEMPT_RCU is not set
-+# CONFIG_TREE_RCU_TRACE is not set
-+# CONFIG_PREEMPT_RCU_TRACE is not set
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
-+CONFIG_LOG_BUF_SHIFT=17
-+# CONFIG_GROUP_SCHED is not set
-+# CONFIG_CGROUPS is not set
-+CONFIG_SYSFS_DEPRECATED=y
-+CONFIG_SYSFS_DEPRECATED_V2=y
-+# CONFIG_RELAY is not set
-+# CONFIG_NAMESPACES is not set
-+# CONFIG_BLK_DEV_INITRD is not set
-+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-+CONFIG_SYSCTL=y
-+CONFIG_ANON_INODES=y
-+CONFIG_EMBEDDED=y
-+CONFIG_SYSCTL_SYSCALL=y
-+CONFIG_KALLSYMS=y
-+CONFIG_KALLSYMS_ALL=y
-+CONFIG_KALLSYMS_EXTRA_PASS=y
-+# CONFIG_HOTPLUG is not set
-+CONFIG_PRINTK=y
-+CONFIG_BUG=y
-+CONFIG_ELF_CORE=y
-+# CONFIG_BASE_FULL is not set
-+CONFIG_FUTEX=y
-+CONFIG_EPOLL=y
-+CONFIG_SIGNALFD=y
-+CONFIG_TIMERFD=y
-+CONFIG_EVENTFD=y
-+CONFIG_AIO=y
-+CONFIG_VM_EVENT_COUNTERS=y
-+CONFIG_COMPAT_BRK=y
-+CONFIG_SLAB=y
-+# CONFIG_SLUB is not set
-+# CONFIG_SLOB is not set
-+# CONFIG_PROFILING is not set
-+# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
-+CONFIG_SLABINFO=y
-+CONFIG_RT_MUTEXES=y
-+CONFIG_BASE_SMALL=1
-+CONFIG_MODULES=y
-+# CONFIG_MODULE_FORCE_LOAD is not set
-+CONFIG_MODULE_UNLOAD=y
-+# CONFIG_MODULE_FORCE_UNLOAD is not set
-+# CONFIG_MODVERSIONS is not set
-+# CONFIG_MODULE_SRCVERSION_ALL is not set
-+CONFIG_BLOCK=y
-+# CONFIG_LBD is not set
-+# CONFIG_BLK_DEV_IO_TRACE is not set
-+# CONFIG_BLK_DEV_BSG is not set
-+# CONFIG_BLK_DEV_INTEGRITY is not set
++#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++	.macro	disable_irq
++	msrclr r0, MSR_IE
++	.endm
 +
-+#
-+# IO Schedulers
-+#
-+CONFIG_IOSCHED_NOOP=y
-+CONFIG_IOSCHED_AS=y
-+CONFIG_IOSCHED_DEADLINE=y
-+CONFIG_IOSCHED_CFQ=y
-+# CONFIG_DEFAULT_AS is not set
-+# CONFIG_DEFAULT_DEADLINE is not set
-+CONFIG_DEFAULT_CFQ=y
-+# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="cfq"
++	.macro	enable_irq
++	msrset r0, MSR_IE
++	.endm
 +
-+#
-+# Platform options
-+#
-+CONFIG_PLATFORM_GENERIC=y
-+# CONFIG_SELFMOD is not set
-+# CONFIG_OPT_LIB_FUNCTION is not set
-+# CONFIG_ALLOW_EDIT_AUTO is not set
-+CONFIG_KERNEL_BASE_ADDR=0x90000000
-+CONFIG_XILINX_MICROBLAZE0_FAMILY="virtex5"
-+CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR=1
-+CONFIG_XILINX_MICROBLAZE0_USE_PCMP_INSTR=1
-+CONFIG_XILINX_MICROBLAZE0_USE_BARREL=1
-+CONFIG_XILINX_MICROBLAZE0_USE_DIV=1
-+CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL=2
-+CONFIG_XILINX_MICROBLAZE0_USE_FPU=2
-+CONFIG_XILINX_MICROBLAZE0_HW_VER="7.10.d"
++	.macro	clear_bip
++	msrclr r0, MSR_BIP
++	.endm
++#else
++	.macro	disable_irq
++	mfs r11, rmsr
++	andi r11, r11, ~MSR_IE
++	mts rmsr, r11
++	.endm
 +
-+#
-+# Processor type and features
-+#
-+CONFIG_TICK_ONESHOT=y
-+# CONFIG_NO_HZ is not set
-+CONFIG_HIGH_RES_TIMERS=y
-+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-+CONFIG_PREEMPT_NONE=y
-+# CONFIG_PREEMPT_VOLUNTARY is not set
-+# CONFIG_PREEMPT is not set
-+CONFIG_HZ_100=y
-+# CONFIG_HZ_250 is not set
-+# CONFIG_HZ_300 is not set
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=100
-+CONFIG_SCHED_HRTICK=y
-+# CONFIG_MMU is not set
-+CONFIG_NO_MMU=y
++	.macro	enable_irq
++	mfs r11, rmsr
++	ori r11, r11, MSR_IE
++	mts rmsr, r11
++	.endm
 +
-+#
-+# Boot options
-+#
-+CONFIG_CMDLINE_BOOL=y
-+CONFIG_CMDLINE="console=ttyUL0,115200"
-+# CONFIG_CMDLINE_FORCE is not set
-+CONFIG_OF=y
-+CONFIG_OF_DEVICE=y
-+CONFIG_PROC_DEVICETREE=y
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+CONFIG_PAGEFLAGS_EXTENDED=y
-+CONFIG_SPLIT_PTLOCK_CPUS=4
-+# CONFIG_PHYS_ADDR_T_64BIT is not set
-+CONFIG_ZONE_DMA_FLAG=0
-+CONFIG_VIRT_TO_BUS=y
++	.macro	clear_bip
++	mfs r11, rmsr
++	andi r11, r11, ~MSR_BIP
++	mts rmsr, r11
++	.endm
++#endif
 +
-+#
-+# Exectuable file formats
-+#
-+CONFIG_BINFMT_FLAT=y
-+# CONFIG_BINFMT_ZFLAT is not set
-+# CONFIG_BINFMT_SHARED_FLAT is not set
-+# CONFIG_HAVE_AOUT is not set
-+# CONFIG_BINFMT_MISC is not set
-+CONFIG_NET=y
++ENTRY(_interrupt)
++	swi	r1, r0, PER_CPU(ENTRY_SP)	/* save the current sp */
++	swi	r11, r0, PER_CPU(R11_SAVE)	/* temporarily save r11 */
++	lwi	r11, r0, PER_CPU(KM)		/* load mode indicator */
++	beqid	r11, 1f
++	nop
++	brid	2f				/* jump over */
++	addik	r1, r1, (-PT_SIZE)	/* room for pt_regs (delay slot) */
++1:						/* switch to kernel stack */
++	lwi	r1, r0, PER_CPU(CURRENT_SAVE)	/* get the saved current */
++	lwi	r1, r1, TS_THREAD_INFO		/* get the thread info */
++	/* calculate kernel stack pointer */
++	addik	r1, r1, THREAD_SIZE - PT_SIZE
++2:
++	swi	r11, r1, PT_MODE		/* store the mode */
++	lwi	r11, r0, PER_CPU(R11_SAVE)	/* reload r11 */
++	swi	r2, r1, PT_R2
++	swi	r3, r1, PT_R3
++	swi	r4, r1, PT_R4
++	swi	r5, r1, PT_R5
++	swi	r6, r1, PT_R6
++	swi	r7, r1, PT_R7
++	swi	r8, r1, PT_R8
++	swi	r9, r1, PT_R9
++	swi	r10, r1, PT_R10
++	swi	r11, r1, PT_R11
++	swi	r12, r1, PT_R12
++	swi	r13, r1, PT_R13
++	swi	r14, r1, PT_R14
++	swi	r14, r1, PT_PC
++	swi	r15, r1, PT_R15
++	swi	r16, r1, PT_R16
++	swi	r17, r1, PT_R17
++	swi	r18, r1, PT_R18
++	swi	r19, r1, PT_R19
++	swi	r20, r1, PT_R20
++	swi	r21, r1, PT_R21
++	swi	r22, r1, PT_R22
++	swi	r23, r1, PT_R23
++	swi	r24, r1, PT_R24
++	swi	r25, r1, PT_R25
++	swi	r26, r1, PT_R26
++	swi	r27, r1, PT_R27
++	swi	r28, r1, PT_R28
++	swi	r29, r1, PT_R29
++	swi	r30, r1, PT_R30
++	swi	r31, r1, PT_R31
++	/* special purpose registers */
++	mfs	r11, rmsr
++	swi	r11, r1, PT_MSR
++	mfs	r11, rear
++	swi	r11, r1, PT_EAR
++	mfs	r11, resr
++	swi	r11, r1, PT_ESR
++	mfs	r11, rfsr
++	swi	r11, r1, PT_FSR
++	/* reload original stack pointer and save it */
++	lwi	r11, r0, PER_CPU(ENTRY_SP)
++	swi	r11, r1, PT_R1
++	/* update mode indicator we are in kernel mode */
++	addik	r11, r0, 1
++	swi	r11, r0, PER_CPU(KM)
++	/* restore r31 */
++	lwi	r31, r0, PER_CPU(CURRENT_SAVE)
++	/* prepare the link register, the argument and jump */
++	la	r15, r0, ret_from_intr - 8
++	addk	r6, r0, r15
++	braid	do_IRQ
++	add	r5, r0, r1
 +
-+#
-+# Networking options
-+#
-+CONFIG_COMPAT_NET_DEV_OPS=y
-+CONFIG_PACKET=y
-+# CONFIG_PACKET_MMAP is not set
-+CONFIG_UNIX=y
-+CONFIG_XFRM=y
-+# CONFIG_XFRM_USER is not set
-+# CONFIG_XFRM_SUB_POLICY is not set
-+# CONFIG_XFRM_MIGRATE is not set
-+# CONFIG_XFRM_STATISTICS is not set
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+# CONFIG_IP_MULTICAST is not set
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+# CONFIG_IP_PNP is not set
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_ARPD is not set
-+# CONFIG_SYN_COOKIES is not set
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_XFRM_TUNNEL is not set
-+# CONFIG_INET_TUNNEL is not set
-+CONFIG_INET_XFRM_MODE_TRANSPORT=y
-+CONFIG_INET_XFRM_MODE_TUNNEL=y
-+CONFIG_INET_XFRM_MODE_BEET=y
-+# CONFIG_INET_LRO is not set
-+CONFIG_INET_DIAG=y
-+CONFIG_INET_TCP_DIAG=y
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_CUBIC=y
-+CONFIG_DEFAULT_TCP_CONG="cubic"
-+# CONFIG_TCP_MD5SIG is not set
-+# CONFIG_IPV6 is not set
-+# CONFIG_NETWORK_SECMARK is not set
-+# CONFIG_NETFILTER is not set
-+# CONFIG_IP_DCCP is not set
-+# CONFIG_IP_SCTP is not set
-+# CONFIG_TIPC is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_NET_DSA is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
-+# CONFIG_NET_SCHED is not set
-+# CONFIG_DCB is not set
++ret_from_intr:
++	lwi	r11, r1, PT_MODE
++	bneid	r11, 3f
 +
-+#
-+# Network testing
-+#
-+# CONFIG_NET_PKTGEN is not set
-+# CONFIG_HAMRADIO is not set
-+# CONFIG_CAN is not set
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_AF_RXRPC is not set
-+# CONFIG_PHONET is not set
-+CONFIG_WIRELESS=y
-+# CONFIG_CFG80211 is not set
-+CONFIG_WIRELESS_OLD_REGULATORY=y
-+# CONFIG_WIRELESS_EXT is not set
-+# CONFIG_LIB80211 is not set
-+# CONFIG_MAC80211 is not set
-+# CONFIG_WIMAX is not set
-+# CONFIG_RFKILL is not set
-+# CONFIG_NET_9P is not set
++	lwi	r6, r31, TS_THREAD_INFO	/* get thread info */
++	lwi	r19, r6, TI_FLAGS	/* get flags in thread info */
++				/* do an extra work if any bits are set */
 +
-+#
-+# Device Drivers
-+#
++	andi	r11, r19, _TIF_NEED_RESCHED
++	beqi	r11, 1f
++	bralid	r15, schedule
++	nop
++1:	andi	r11, r19, _TIF_SIGPENDING
++	beqid	r11, no_intr_reshed
++	addk	r5, r1, r0
++	addk	r7, r0, r0
++	bralid	r15, do_signal
++	addk	r6, r0, r0
 +
-+#
-+# Generic Driver Options
-+#
-+CONFIG_STANDALONE=y
-+# CONFIG_PREVENT_FIRMWARE_BUILD is not set
-+# CONFIG_DEBUG_DRIVER is not set
-+# CONFIG_DEBUG_DEVRES is not set
-+# CONFIG_SYS_HYPERVISOR is not set
-+# CONFIG_CONNECTOR is not set
-+CONFIG_MTD=y
-+# CONFIG_MTD_DEBUG is not set
-+CONFIG_MTD_CONCAT=y
-+CONFIG_MTD_PARTITIONS=y
-+# CONFIG_MTD_TESTS is not set
-+# CONFIG_MTD_REDBOOT_PARTS is not set
-+CONFIG_MTD_CMDLINE_PARTS=y
-+# CONFIG_MTD_AR7_PARTS is not set
++no_intr_reshed:
++	/* save mode indicator */
++	lwi	r11, r1, PT_MODE
++3:
++	swi	r11, r0, PER_CPU(KM)
 +
-+#
-+# User Modules And Translation Layers
-+#
-+CONFIG_MTD_CHAR=y
-+CONFIG_MTD_BLKDEVS=y
-+CONFIG_MTD_BLOCK=y
-+# CONFIG_FTL is not set
-+# CONFIG_NFTL is not set
-+# CONFIG_INFTL is not set
-+# CONFIG_RFD_FTL is not set
-+# CONFIG_SSFDC is not set
-+# CONFIG_MTD_OOPS is not set
++	/* save r31 */
++	swi	r31, r0, PER_CPU(CURRENT_SAVE)
++restore_context:
++	/* special purpose registers */
++	lwi	r11, r1, PT_FSR
++	mts	rfsr, r11
++	lwi	r11, r1, PT_ESR
++	mts	resr, r11
++	lwi	r11, r1, PT_EAR
++	mts	rear, r11
++	lwi	r11, r1, PT_MSR
++	mts	rmsr, r11
 +
-+#
-+# RAM/ROM/Flash chip drivers
-+#
-+CONFIG_MTD_CFI=y
-+# CONFIG_MTD_JEDECPROBE is not set
-+CONFIG_MTD_GEN_PROBE=y
-+# CONFIG_MTD_CFI_ADV_OPTIONS is not set
-+CONFIG_MTD_MAP_BANK_WIDTH_1=y
-+CONFIG_MTD_MAP_BANK_WIDTH_2=y
-+CONFIG_MTD_MAP_BANK_WIDTH_4=y
-+# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
-+# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
-+# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
-+CONFIG_MTD_CFI_I1=y
-+CONFIG_MTD_CFI_I2=y
-+# CONFIG_MTD_CFI_I4 is not set
-+# CONFIG_MTD_CFI_I8 is not set
-+CONFIG_MTD_CFI_INTELEXT=y
-+CONFIG_MTD_CFI_AMDSTD=y
-+# CONFIG_MTD_CFI_STAA is not set
-+CONFIG_MTD_CFI_UTIL=y
-+CONFIG_MTD_RAM=y
-+# CONFIG_MTD_ROM is not set
-+# CONFIG_MTD_ABSENT is not set
++	lwi	r31, r1, PT_R31
++	lwi	r30, r1, PT_R30
++	lwi	r29, r1, PT_R29
++	lwi	r28, r1, PT_R28
++	lwi	r27, r1, PT_R27
++	lwi	r26, r1, PT_R26
++	lwi	r25, r1, PT_R25
++	lwi	r24, r1, PT_R24
++	lwi	r23, r1, PT_R23
++	lwi	r22, r1, PT_R22
++	lwi	r21, r1, PT_R21
++	lwi	r20, r1, PT_R20
++	lwi	r19, r1, PT_R19
++	lwi	r18, r1, PT_R18
++	lwi	r17, r1, PT_R17
++	lwi	r16, r1, PT_R16
++	lwi	r15, r1, PT_R15
++	lwi	r14, r1, PT_PC
++	lwi	r13, r1, PT_R13
++	lwi	r12, r1, PT_R12
++	lwi	r11, r1, PT_R11
++	lwi	r10, r1, PT_R10
++	lwi	r9, r1, PT_R9
++	lwi	r8, r1, PT_R8
++	lwi	r7, r1, PT_R7
++	lwi	r6, r1, PT_R6
++	lwi	r5, r1, PT_R5
++	lwi	r4, r1, PT_R4
++	lwi	r3, r1, PT_R3
++	lwi	r2, r1, PT_R2
++	lwi	r1, r1, PT_R1
++	rtid	r14, 0
++	nop
 +
-+#
-+# Mapping drivers for chip access
-+#
-+# CONFIG_MTD_COMPLEX_MAPPINGS is not set
-+# CONFIG_MTD_PHYSMAP is not set
-+CONFIG_MTD_UCLINUX=y
-+# CONFIG_MTD_PLATRAM is not set
++ENTRY(_reset)
++	brai	0;
 +
-+#
-+# Self-contained MTD device drivers
-+#
-+# CONFIG_MTD_SLRAM is not set
-+# CONFIG_MTD_PHRAM is not set
-+# CONFIG_MTD_MTDRAM is not set
-+# CONFIG_MTD_BLOCK2MTD is not set
++ENTRY(_user_exception)
++	swi	r1, r0, PER_CPU(ENTRY_SP)	/* save the current sp */
++	swi	r11, r0, PER_CPU(R11_SAVE)	/* temporarily save r11 */
++	lwi	r11, r0, PER_CPU(KM)		/* load mode indicator */
++	beqid	r11, 1f				/* Already in kernel mode? */
++	nop
++	brid	2f				/* jump over */
++	addik	r1, r1, (-PT_SIZE)	/* Room for pt_regs (delay slot) */
++1:						/* Switch to kernel stack */
++	lwi	r1, r0, PER_CPU(CURRENT_SAVE)	/* get the saved current */
++	lwi	r1, r1, TS_THREAD_INFO		/* get the thread info */
++	/* calculate kernel stack pointer */
++	addik	r1, r1, THREAD_SIZE - PT_SIZE
++	swi	r11, r0, PER_CPU(R11_SAVE)	/* temporarily save r11 */
++	lwi	r11, r0, PER_CPU(KM)		/* load mode indicator */
++2:
++	swi	r11, r1, PT_MODE		/* store the mode */
++	lwi	r11, r0, PER_CPU(R11_SAVE)	/* reload r11 */
++	/* save them on stack */
++	swi	r2, r1, PT_R2
++	swi	r3, r1, PT_R3 /* r3: _always_ in clobber list; see unistd.h */
++	swi	r4, r1, PT_R4 /* r4: _always_ in clobber list; see unistd.h */
++	swi	r5, r1, PT_R5
++	swi	r6, r1, PT_R6
++	swi	r7, r1, PT_R7
++	swi	r8, r1, PT_R8
++	swi	r9, r1, PT_R9
++	swi	r10, r1, PT_R10
++	swi	r11, r1, PT_R11
++	/* r12: _always_ in clobber list; see unistd.h */
++	swi	r12, r1, PT_R12
++	swi	r13, r1, PT_R13
++	/* r14: _always_ in clobber list; see unistd.h */
++	swi	r14, r1, PT_R14
++	/* but we want to return to the next inst. */
++	addik	r14, r14, 0x4
++	swi	r14, r1, PT_PC		/* increment by 4 and store in pc */
++	swi	r15, r1, PT_R15
++	swi	r16, r1, PT_R16
++	swi	r17, r1, PT_R17
++	swi	r18, r1, PT_R18
++	swi	r19, r1, PT_R19
++	swi	r20, r1, PT_R20
++	swi	r21, r1, PT_R21
++	swi	r22, r1, PT_R22
++	swi	r23, r1, PT_R23
++	swi	r24, r1, PT_R24
++	swi	r25, r1, PT_R25
++	swi	r26, r1, PT_R26
++	swi	r27, r1, PT_R27
++	swi	r28, r1, PT_R28
++	swi	r29, r1, PT_R29
++	swi	r30, r1, PT_R30
++	swi	r31, r1, PT_R31
 +
-+#
-+# Disk-On-Chip Device Drivers
-+#
-+# CONFIG_MTD_DOC2000 is not set
-+# CONFIG_MTD_DOC2001 is not set
-+# CONFIG_MTD_DOC2001PLUS is not set
-+# CONFIG_MTD_NAND is not set
-+# CONFIG_MTD_ONENAND is not set
++	disable_irq
++	nop		/* make sure IE bit is in effect */
++	clear_bip	/* once IE is in effect it is safe to clear BIP */
++	nop
 +
-+#
-+# LPDDR flash memory drivers
-+#
-+# CONFIG_MTD_LPDDR is not set
++	/* special purpose registers */
++	mfs	r11, rmsr
++	swi	r11, r1, PT_MSR
++	mfs	r11, rear
++	swi	r11, r1, PT_EAR
++	mfs	r11, resr
++	swi	r11, r1, PT_ESR
++	mfs	r11, rfsr
++	swi	r11, r1, PT_FSR
++	/* reload original stack pointer and save it */
++	lwi	r11, r0, PER_CPU(ENTRY_SP)
++	swi	r11, r1, PT_R1
++	/* update mode indicator we are in kernel mode */
++	addik	r11, r0, 1
++	swi	r11, r0, PER_CPU(KM)
++	/* restore r31 */
++	lwi	r31, r0, PER_CPU(CURRENT_SAVE)
++	/* re-enable interrupts now we are in kernel mode */
++	enable_irq
 +
-+#
-+# UBI - Unsorted block images
-+#
-+# CONFIG_MTD_UBI is not set
-+# CONFIG_PARPORT is not set
-+CONFIG_BLK_DEV=y
-+# CONFIG_BLK_DEV_COW_COMMON is not set
-+# CONFIG_BLK_DEV_LOOP is not set
-+CONFIG_BLK_DEV_NBD=y
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_COUNT=16
-+CONFIG_BLK_DEV_RAM_SIZE=4096
-+# CONFIG_BLK_DEV_XIP is not set
-+# CONFIG_CDROM_PKTCDVD is not set
-+# CONFIG_ATA_OVER_ETH is not set
-+CONFIG_MISC_DEVICES=y
-+# CONFIG_ENCLOSURE_SERVICES is not set
-+# CONFIG_C2PORT is not set
++	/* See if the system call number is valid. */
++	addi	r11, r12, -__NR_syscalls
++	bgei	r11, 1f			/* return to user if not valid */
++	/* Figure out which function to use for this system call. */
++	/* Note Microblaze barrel shift is optional, so don't rely on it */
++	add	r12, r12, r12			/* convert num -> ptr */
++	add	r12, r12, r12
++	lwi	r12, r12, sys_call_table	/* Get function pointer */
++	la	r15, r0, ret_to_user-8		/* set return address */
++	bra	r12				/* Make the system call. */
++	bri	0				/* won't reach here */
++1:
++	brid	ret_to_user			/* jump to syscall epilogue */
++	addi	r3, r0, -ENOSYS			/* set errno in delay slot */
 +
-+#
-+# EEPROM support
-+#
-+# CONFIG_EEPROM_93CX6 is not set
++/*
++ * Debug traps are like a system call, but entered via brki r14, 0x60
++ * All we need to do is send the SIGTRAP signal to current, ptrace and do_signal
++ * will handle the rest
++ */
++ENTRY(_debug_exception)
++	swi	r1, r0, PER_CPU(ENTRY_SP)	/* save the current sp */
++	lwi	r1, r0, PER_CPU(CURRENT_SAVE)	/* get the saved current */
++	lwi	r1, r1, TS_THREAD_INFO		/* get the thread info */
++	addik	r1, r1, THREAD_SIZE - PT_SIZE	/* get the kernel stack */
++	swi	r11, r0, PER_CPU(R11_SAVE)	/* temporarily save r11 */
++	lwi	r11, r0, PER_CPU(KM)		/* load mode indicator */
++//save_context:
++	swi	r11, r1, PT_MODE	/* store the mode */
++	lwi	r11, r0, PER_CPU(R11_SAVE)	/* reload r11 */
++	/* save them on stack */
++	swi	r2, r1, PT_R2
++	swi	r3, r1, PT_R3 /* r3: _always_ in clobber list; see unistd.h */
++	swi	r4, r1, PT_R4 /* r4: _always_ in clobber list; see unistd.h */
++	swi	r5, r1, PT_R5
++	swi	r6, r1, PT_R6
++	swi	r7, r1, PT_R7
++	swi	r8, r1, PT_R8
++	swi	r9, r1, PT_R9
++	swi	r10, r1, PT_R10
++	swi	r11, r1, PT_R11
++	/* r12: _always_ in clobber list; see unistd.h */
++	swi	r12, r1, PT_R12
++	swi	r13, r1, PT_R13
++	/* r14: _always_ in clobber list; see unistd.h */
++	swi	r14, r1, PT_R14
++	swi	r14, r1, PT_PC /* Will return to interrupted instruction */
++	swi	r15, r1, PT_R15
++	swi	r16, r1, PT_R16
++	swi	r17, r1, PT_R17
++	swi	r18, r1, PT_R18
++	swi	r19, r1, PT_R19
++	swi	r20, r1, PT_R20
++	swi	r21, r1, PT_R21
++	swi	r22, r1, PT_R22
++	swi	r23, r1, PT_R23
++	swi	r24, r1, PT_R24
++	swi	r25, r1, PT_R25
++	swi	r26, r1, PT_R26
++	swi	r27, r1, PT_R27
++	swi	r28, r1, PT_R28
++	swi	r29, r1, PT_R29
++	swi	r30, r1, PT_R30
++	swi	r31, r1, PT_R31
 +
-+#
-+# SCSI device support
-+#
-+# CONFIG_RAID_ATTRS is not set
-+# CONFIG_SCSI is not set
-+# CONFIG_SCSI_DMA is not set
-+# CONFIG_SCSI_NETLINK is not set
-+# CONFIG_ATA is not set
-+# CONFIG_MD is not set
-+CONFIG_NETDEVICES=y
-+# CONFIG_DUMMY is not set
-+# CONFIG_BONDING is not set
-+# CONFIG_MACVLAN is not set
-+# CONFIG_EQUALIZER is not set
-+# CONFIG_TUN is not set
-+# CONFIG_VETH is not set
-+# CONFIG_PHYLIB is not set
-+CONFIG_NET_ETHERNET=y
-+# CONFIG_MII is not set
-+# CONFIG_DNET is not set
-+# CONFIG_IBM_NEW_EMAC_ZMII is not set
-+# CONFIG_IBM_NEW_EMAC_RGMII is not set
-+# CONFIG_IBM_NEW_EMAC_TAH is not set
-+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
-+# CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL is not set
-+# CONFIG_IBM_NEW_EMAC_MAL_CLR_ICINTSTAT is not set
-+# CONFIG_IBM_NEW_EMAC_MAL_COMMON_ERR is not set
-+# CONFIG_B44 is not set
-+CONFIG_NETDEV_1000=y
-+CONFIG_NETDEV_10000=y
++	disable_irq
++	nop		/* make sure IE bit is in effect */
++	clear_bip	/* once IE is in effect it is safe to clear BIP */
++	nop
 +
-+#
-+# Wireless LAN
-+#
-+# CONFIG_WLAN_PRE80211 is not set
-+# CONFIG_WLAN_80211 is not set
-+# CONFIG_IWLWIFI_LEDS is not set
++	/* special purpose registers */
++	mfs	r11, rmsr
++	swi	r11, r1, PT_MSR
++	mfs	r11, rear
++	swi	r11, r1, PT_EAR
++	mfs	r11, resr
++	swi	r11, r1, PT_ESR
++	mfs	r11, rfsr
++	swi	r11, r1, PT_FSR
++	/* reload original stack pointer and save it */
++	lwi	r11, r0, PER_CPU(ENTRY_SP)
++	swi	r11, r1, PT_R1
++	/* update mode indicator we are in kernel mode */
++	addik	r11, r0, 1
++	swi	r11, r0, PER_CPU(KM)
++	/* restore r31 */
++	lwi	r31, r0, PER_CPU(CURRENT_SAVE)
++	/* re-enable interrupts now we are in kernel mode */
++	enable_irq
 +
-+#
-+# Enable WiMAX (Networking options) to see the WiMAX drivers
-+#
-+# CONFIG_WAN is not set
-+# CONFIG_PPP is not set
-+# CONFIG_SLIP is not set
-+# CONFIG_NETCONSOLE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
-+# CONFIG_ISDN is not set
-+# CONFIG_PHONE is not set
++	addi	r5, r0, SIGTRAP			/* sending the trap signal */
++	add	r6, r0, r31			/* to current */
++	bralid	r15, send_sig
++	add	r7, r0, r0			/* 3rd param zero */
 +
-+#
-+# Input device support
-+#
-+# CONFIG_INPUT is not set
++	/* Restore r3/r4 to work around how ret_to_user works */
++	lwi	r3, r1, PT_R3
++	lwi	r4, r1, PT_R4
++	bri	ret_to_user
 +
-+#
-+# Hardware I/O ports
-+#
-+# CONFIG_SERIO is not set
-+# CONFIG_GAMEPORT is not set
++ENTRY(_break)
++	bri	0
 +
-+#
-+# Character devices
-+#
-+# CONFIG_VT is not set
-+CONFIG_DEVKMEM=y
-+# CONFIG_SERIAL_NONSTANDARD is not set
++/* struct task_struct *_switch_to(struct thread_info *prev,
++					struct thread_info *next); */
++ENTRY(_switch_to)
++	/* prepare return value */
++	addk	r3, r0, r31
 +
-+#
-+# Serial drivers
-+#
-+# CONFIG_SERIAL_8250 is not set
++	/* save registers in cpu_context */
++	/* use r11 and r12, volatile registers, as temp register */
++	addik	r11, r5, TI_CPU_CONTEXT
++	swi	r1, r11, CC_R1
++	swi	r2, r11, CC_R2
++	/* skip volatile registers.
++	 * they are saved on stack when we jumped to _switch_to() */
++	/* dedicated registers */
++	swi	r13, r11, CC_R13
++	swi	r14, r11, CC_R14
++	swi	r15, r11, CC_R15
++	swi	r16, r11, CC_R16
++	swi	r17, r11, CC_R17
++	swi	r18, r11, CC_R18
++	/* save non-volatile registers */
++	swi	r19, r11, CC_R19
++	swi	r20, r11, CC_R20
++	swi	r21, r11, CC_R21
++	swi	r22, r11, CC_R22
++	swi	r23, r11, CC_R23
++	swi	r24, r11, CC_R24
++	swi	r25, r11, CC_R25
++	swi	r26, r11, CC_R26
++	swi	r27, r11, CC_R27
++	swi	r28, r11, CC_R28
++	swi	r29, r11, CC_R29
++	swi	r30, r11, CC_R30
++	/* special purpose registers */
++	mfs	r12, rmsr
++	swi	r12, r11, CC_MSR
++	mfs	r12, rear
++	swi	r12, r11, CC_EAR
++	mfs	r12, resr
++	swi	r12, r11, CC_ESR
++	mfs	r12, rfsr
++	swi	r12, r11, CC_FSR
 +
-+#
-+# Non-8250 serial port support
-+#
-+CONFIG_SERIAL_UARTLITE=y
-+CONFIG_SERIAL_UARTLITE_CONSOLE=y
-+CONFIG_SERIAL_CORE=y
-+CONFIG_SERIAL_CORE_CONSOLE=y
-+CONFIG_UNIX98_PTYS=y
-+# CONFIG_DEVPTS_MULTIPLE_INSTANCES is not set
-+CONFIG_LEGACY_PTYS=y
-+CONFIG_LEGACY_PTY_COUNT=256
-+# CONFIG_IPMI_HANDLER is not set
-+CONFIG_HW_RANDOM=y
-+# CONFIG_RTC is not set
-+# CONFIG_GEN_RTC is not set
-+# CONFIG_R3964 is not set
-+# CONFIG_RAW_DRIVER is not set
-+# CONFIG_TCG_TPM is not set
-+# CONFIG_I2C is not set
-+# CONFIG_SPI is not set
-+# CONFIG_W1 is not set
-+# CONFIG_POWER_SUPPLY is not set
-+# CONFIG_HWMON is not set
-+# CONFIG_THERMAL is not set
-+# CONFIG_THERMAL_HWMON is not set
-+# CONFIG_WATCHDOG is not set
-+CONFIG_SSB_POSSIBLE=y
++	/* update r31, the current */
++	lwi	r31, r6, TI_TASK
++	swi	r31, r0, PER_CPU(CURRENT_SAVE)
 +
-+#
-+# Sonics Silicon Backplane
-+#
-+# CONFIG_SSB is not set
++	/* get new process' cpu context and restore */
++	addik	r11, r6, TI_CPU_CONTEXT
 +
-+#
-+# Multifunction device drivers
-+#
-+# CONFIG_MFD_CORE is not set
-+# CONFIG_MFD_SM501 is not set
-+# CONFIG_HTC_PASIC3 is not set
-+# CONFIG_MFD_TMIO is not set
-+# CONFIG_REGULATOR is not set
++	/* special purpose registers */
++	lwi	r12, r11, CC_FSR
++	mts	rfsr, r12
++	lwi	r12, r11, CC_ESR
++	mts	resr, r12
++	lwi	r12, r11, CC_EAR
++	mts	rear, r12
++	lwi	r12, r11, CC_MSR
++	mts	rmsr, r12
++	/* non-volatile registers */
++	lwi	r30, r11, CC_R30
++	lwi	r29, r11, CC_R29
++	lwi	r28, r11, CC_R28
++	lwi	r27, r11, CC_R27
++	lwi	r26, r11, CC_R26
++	lwi	r25, r11, CC_R25
++	lwi	r24, r11, CC_R24
++	lwi	r23, r11, CC_R23
++	lwi	r22, r11, CC_R22
++	lwi	r21, r11, CC_R21
++	lwi	r20, r11, CC_R20
++	lwi	r19, r11, CC_R19
++	/* dedicated registers */
++	lwi	r18, r11, CC_R18
++	lwi	r17, r11, CC_R17
++	lwi	r16, r11, CC_R16
++	lwi	r15, r11, CC_R15
++	lwi	r14, r11, CC_R14
++	lwi	r13, r11, CC_R13
++	/* skip volatile registers */
++	lwi	r2, r11, CC_R2
++	lwi	r1, r11, CC_R1
 +
-+#
-+# Multimedia devices
-+#
++	rtsd	r15, 8
++	nop
 +
-+#
-+# Multimedia core support
-+#
-+# CONFIG_VIDEO_DEV is not set
-+# CONFIG_DVB_CORE is not set
-+# CONFIG_VIDEO_MEDIA is not set
++ENTRY(ret_from_fork)
++	addk	r5, r0, r3
++	addk	r6, r0, r1
++	brlid	r15, schedule_tail
++	nop
++	swi	r31, r1, PT_R31		/* save r31 in user context. */
++			/* will soon be restored to r31 in ret_to_user */
++	addk	r3, r0, r0
++	brid	ret_to_user
++	nop
 +
-+#
-+# Multimedia drivers
-+#
-+CONFIG_DAB=y
++work_pending:
++	andi	r11, r19, _TIF_NEED_RESCHED
++	beqi	r11, 1f
++	bralid	r15, schedule
++	nop
++1:	andi	r11, r19, _TIF_SIGPENDING
++	beqi	r11, no_work_pending
++	addk	r5, r1, r0
++	addik	r7, r0, 1
++	bralid	r15, do_signal
++	addk	r6, r0, r0
++	bri	no_work_pending
 +
-+#
-+# Graphics support
-+#
-+# CONFIG_VGASTATE is not set
-+CONFIG_VIDEO_OUTPUT_CONTROL=y
-+# CONFIG_FB is not set
-+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++ENTRY(ret_to_user)
++	disable_irq
 +
-+#
-+# Display device support
-+#
-+# CONFIG_DISPLAY_SUPPORT is not set
-+# CONFIG_SOUND is not set
-+CONFIG_USB_SUPPORT=y
-+# CONFIG_USB_ARCH_HAS_HCD is not set
-+# CONFIG_USB_ARCH_HAS_OHCI is not set
-+# CONFIG_USB_ARCH_HAS_EHCI is not set
-+# CONFIG_USB_OTG_WHITELIST is not set
-+# CONFIG_USB_OTG_BLACKLIST_HUB is not set
++	swi	r4, r1, PT_R4		/* return val */
++	swi	r3, r1, PT_R3		/* return val */
 +
-+#
-+# Enable Host or Gadget support to see Inventra options
-+#
++	lwi	r6, r31, TS_THREAD_INFO /* get thread info */
++	lwi	r19, r6, TI_FLAGS /* get flags in thread info */
++	bnei	r19, work_pending /* do an extra work if any bits are set */
++no_work_pending:
++	disable_irq
 +
-+#
-+# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may also be needed;
-+#
-+# CONFIG_USB_GADGET is not set
++	/* save r31 */
++	swi	r31, r0, PER_CPU(CURRENT_SAVE)
++	/* save mode indicator */
++	lwi	r18, r1, PT_MODE
++	swi	r18, r0, PER_CPU(KM)
++//restore_context:
++	/* special purpose registers */
++	lwi	r18, r1, PT_FSR
++	mts	rfsr, r18
++	lwi	r18, r1, PT_ESR
++	mts	resr, r18
++	lwi	r18, r1, PT_EAR
++	mts	rear, r18
++	lwi	r18, r1, PT_MSR
++	mts	rmsr, r18
 +
-+#
-+# OTG and related infrastructure
-+#
-+# CONFIG_MMC is not set
-+# CONFIG_MEMSTICK is not set
-+# CONFIG_NEW_LEDS is not set
-+# CONFIG_ACCESSIBILITY is not set
-+# CONFIG_RTC_CLASS is not set
-+# CONFIG_DMADEVICES is not set
-+# CONFIG_UIO is not set
-+# CONFIG_STAGING is not set
++	lwi	r31, r1, PT_R31
++	lwi	r30, r1, PT_R30
++	lwi	r29, r1, PT_R29
++	lwi	r28, r1, PT_R28
++	lwi	r27, r1, PT_R27
++	lwi	r26, r1, PT_R26
++	lwi	r25, r1, PT_R25
++	lwi	r24, r1, PT_R24
++	lwi	r23, r1, PT_R23
++	lwi	r22, r1, PT_R22
++	lwi	r21, r1, PT_R21
++	lwi	r20, r1, PT_R20
++	lwi	r19, r1, PT_R19
++	lwi	r18, r1, PT_R18
++	lwi	r17, r1, PT_R17
++	lwi	r16, r1, PT_R16
++	lwi	r15, r1, PT_R15
++	lwi	r14, r1, PT_PC
++	lwi	r13, r1, PT_R13
++	lwi	r12, r1, PT_R12
++	lwi	r11, r1, PT_R11
++	lwi	r10, r1, PT_R10
++	lwi	r9, r1, PT_R9
++	lwi	r8, r1, PT_R8
++	lwi	r7, r1, PT_R7
++	lwi	r6, r1, PT_R6
++	lwi	r5, r1, PT_R5
++	lwi	r4, r1, PT_R4		/* return val */
++	lwi	r3, r1, PT_R3		/* return val */
++	lwi	r2, r1, PT_R2
++	lwi	r1, r1, PT_R1
 +
-+#
-+# File systems
-+#
-+CONFIG_EXT2_FS=y
-+# CONFIG_EXT2_FS_XATTR is not set
-+# CONFIG_EXT3_FS is not set
-+# CONFIG_EXT4_FS is not set
-+# CONFIG_REISERFS_FS is not set
-+# CONFIG_JFS_FS is not set
-+CONFIG_FS_POSIX_ACL=y
-+CONFIG_FILE_LOCKING=y
-+# CONFIG_XFS_FS is not set
-+# CONFIG_OCFS2_FS is not set
-+# CONFIG_BTRFS_FS is not set
-+# CONFIG_DNOTIFY is not set
-+# CONFIG_INOTIFY is not set
-+# CONFIG_QUOTA is not set
-+# CONFIG_AUTOFS_FS is not set
-+# CONFIG_AUTOFS4_FS is not set
-+# CONFIG_FUSE_FS is not set
++	rtid	r14, 0
++	nop
 +
-+#
-+# CD-ROM/DVD Filesystems
-+#
-+# CONFIG_ISO9660_FS is not set
-+# CONFIG_UDF_FS is not set
++sys_vfork_wrapper:
++	brid	sys_vfork
++	addk	r5, r1, r0
 +
-+#
-+# DOS/FAT/NT Filesystems
-+#
-+# CONFIG_MSDOS_FS is not set
-+# CONFIG_VFAT_FS is not set
-+# CONFIG_NTFS_FS is not set
++sys_clone_wrapper:
++	brid	sys_clone
++	addk	r7, r1, r0
 +
-+#
-+# Pseudo filesystems
-+#
-+CONFIG_PROC_FS=y
-+CONFIG_PROC_SYSCTL=y
-+CONFIG_SYSFS=y
-+# CONFIG_TMPFS is not set
-+# CONFIG_HUGETLB_PAGE is not set
-+# CONFIG_CONFIGFS_FS is not set
-+CONFIG_MISC_FILESYSTEMS=y
-+# CONFIG_ADFS_FS is not set
-+# CONFIG_AFFS_FS is not set
-+# CONFIG_HFS_FS is not set
-+# CONFIG_HFSPLUS_FS is not set
-+# CONFIG_BEFS_FS is not set
-+# CONFIG_BFS_FS is not set
-+# CONFIG_EFS_FS is not set
-+# CONFIG_JFFS2_FS is not set
-+CONFIG_CRAMFS=y
-+# CONFIG_SQUASHFS is not set
-+# CONFIG_VXFS_FS is not set
-+# CONFIG_MINIX_FS is not set
-+# CONFIG_OMFS_FS is not set
-+# CONFIG_HPFS_FS is not set
-+# CONFIG_QNX4FS_FS is not set
-+CONFIG_ROMFS_FS=y
-+# CONFIG_SYSV_FS is not set
-+# CONFIG_UFS_FS is not set
-+CONFIG_NETWORK_FILESYSTEMS=y
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V3=y
-+CONFIG_NFS_V3_ACL=y
-+# CONFIG_NFS_V4 is not set
-+# CONFIG_NFSD is not set
-+CONFIG_LOCKD=y
-+CONFIG_LOCKD_V4=y
-+CONFIG_NFS_ACL_SUPPORT=y
-+CONFIG_NFS_COMMON=y
-+CONFIG_SUNRPC=y
-+# CONFIG_SUNRPC_REGISTER_V4 is not set
-+# CONFIG_RPCSEC_GSS_KRB5 is not set
-+# CONFIG_RPCSEC_GSS_SPKM3 is not set
-+# CONFIG_SMB_FS is not set
-+# CONFIG_CIFS is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
++sys_execve_wrapper:
++	brid	sys_execve
++	addk	r8, r1, r0
 +
-+#
-+# Partition Types
-+#
-+# CONFIG_PARTITION_ADVANCED is not set
-+CONFIG_MSDOS_PARTITION=y
-+# CONFIG_NLS is not set
-+# CONFIG_DLM is not set
++sys_sigreturn_wrapper:
++	brid	sys_sigreturn
++	addk	r5, r1, r0
 +
-+#
-+# Kernel hacking
-+#
-+# CONFIG_PRINTK_TIME is not set
-+CONFIG_ENABLE_WARN_DEPRECATED=y
-+CONFIG_ENABLE_MUST_CHECK=y
-+CONFIG_FRAME_WARN=1024
-+# CONFIG_MAGIC_SYSRQ is not set
-+CONFIG_UNUSED_SYMBOLS=y
-+CONFIG_DEBUG_FS=y
-+# CONFIG_HEADERS_CHECK is not set
-+CONFIG_DEBUG_KERNEL=y
-+CONFIG_DEBUG_SHIRQ=y
-+CONFIG_DETECT_SOFTLOCKUP=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=1
-+CONFIG_SCHED_DEBUG=y
-+CONFIG_SCHEDSTATS=y
-+CONFIG_TIMER_STATS=y
-+CONFIG_DEBUG_OBJECTS=y
-+CONFIG_DEBUG_OBJECTS_SELFTEST=y
-+CONFIG_DEBUG_OBJECTS_FREE=y
-+CONFIG_DEBUG_OBJECTS_TIMERS=y
-+CONFIG_DEBUG_OBJECTS_ENABLE_DEFAULT=1
-+# CONFIG_DEBUG_SLAB is not set
-+# CONFIG_DEBUG_RT_MUTEXES is not set
-+# CONFIG_RT_MUTEX_TESTER is not set
-+# CONFIG_DEBUG_SPINLOCK is not set
-+# CONFIG_DEBUG_MUTEXES is not set
-+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
-+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-+# CONFIG_DEBUG_KOBJECT is not set
-+CONFIG_DEBUG_INFO=y
-+# CONFIG_DEBUG_VM is not set
-+# CONFIG_DEBUG_NOMMU_REGIONS is not set
-+# CONFIG_DEBUG_WRITECOUNT is not set
-+# CONFIG_DEBUG_MEMORY_INIT is not set
-+CONFIG_DEBUG_LIST=y
-+CONFIG_DEBUG_SG=y
-+# CONFIG_DEBUG_NOTIFIERS is not set
-+# CONFIG_BOOT_PRINTK_DELAY is not set
-+# CONFIG_RCU_TORTURE_TEST is not set
-+# CONFIG_RCU_CPU_STALL_DETECTOR is not set
-+# CONFIG_BACKTRACE_SELF_TEST is not set
-+# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
-+# CONFIG_FAULT_INJECTION is not set
-+CONFIG_SYSCTL_SYSCALL_CHECK=y
++sys_rt_sigreturn_wrapper:
++	brid	sys_rt_sigreturn
++	addk	r5, r1, r0
 +
-+#
-+# Tracers
-+#
-+# CONFIG_SCHED_TRACER is not set
-+# CONFIG_CONTEXT_SWITCH_TRACER is not set
-+# CONFIG_BOOT_TRACER is not set
-+# CONFIG_TRACE_BRANCH_PROFILING is not set
-+# CONFIG_DYNAMIC_PRINTK_DEBUG is not set
-+# CONFIG_SAMPLES is not set
-+CONFIG_EARLY_PRINTK=y
-+CONFIG_HEART_BEAT=y
-+# CONFIG_DEBUG_BOOTMEM is not set
++sys_sigsuspend_wrapper:
++	brid	sys_rt_sigsuspend
++	addk	r6, r1, r0
 +
-+#
-+# Security options
-+#
-+# CONFIG_KEYS is not set
-+# CONFIG_SECURITY is not set
-+# CONFIG_SECURITYFS is not set
-+# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-+CONFIG_CRYPTO=y
++sys_rt_sigsuspend_wrapper:
++	brid	sys_rt_sigsuspend
++	addk	r7, r1, r0
 +
-+#
-+# Crypto core or helper
-+#
-+# CONFIG_CRYPTO_FIPS is not set
-+# CONFIG_CRYPTO_MANAGER is not set
-+# CONFIG_CRYPTO_MANAGER2 is not set
-+# CONFIG_CRYPTO_GF128MUL is not set
-+# CONFIG_CRYPTO_NULL is not set
-+# CONFIG_CRYPTO_CRYPTD is not set
-+# CONFIG_CRYPTO_AUTHENC is not set
-+# CONFIG_CRYPTO_TEST is not set
++	/* Interrupt vector table */
++	.section	.init.ivt, "ax"
++	.org 0x0
++	brai	_reset
++	brai	_user_exception
++	brai	_interrupt
++	brai	_break
++	brai	_hw_exception_handler
++	.org 0x60
++	brai	_debug_exception
 +
-+#
-+# Authenticated Encryption with Associated Data
-+#
-+# CONFIG_CRYPTO_CCM is not set
-+# CONFIG_CRYPTO_GCM is not set
-+# CONFIG_CRYPTO_SEQIV is not set
++.section .rodata,"a"
++#include "syscall_table.S"
 +
-+#
-+# Block modes
-+#
-+# CONFIG_CRYPTO_CBC is not set
-+# CONFIG_CRYPTO_CTR is not set
-+# CONFIG_CRYPTO_CTS is not set
-+# CONFIG_CRYPTO_ECB is not set
-+# CONFIG_CRYPTO_LRW is not set
-+# CONFIG_CRYPTO_PCBC is not set
-+# CONFIG_CRYPTO_XTS is not set
++syscall_table_size=(.-sys_call_table)
+diff --git a/arch/microblaze/kernel/head.S b/arch/microblaze/kernel/head.S
+new file mode 100644
+index 0000000..434b8cb
+--- /dev/null
++++ b/arch/microblaze/kernel/head.S
+@@ -0,0 +1,55 @@
++/*
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
 +
-+#
-+# Hash modes
-+#
-+# CONFIG_CRYPTO_HMAC is not set
-+# CONFIG_CRYPTO_XCBC is not set
++#include <linux/linkage.h>
++#include <asm/thread_info.h>
++#include <asm/page.h>
 +
-+#
-+# Digest
-+#
-+# CONFIG_CRYPTO_CRC32C is not set
-+# CONFIG_CRYPTO_MD4 is not set
-+# CONFIG_CRYPTO_MD5 is not set
-+# CONFIG_CRYPTO_MICHAEL_MIC is not set
-+# CONFIG_CRYPTO_RMD128 is not set
-+# CONFIG_CRYPTO_RMD160 is not set
-+# CONFIG_CRYPTO_RMD256 is not set
-+# CONFIG_CRYPTO_RMD320 is not set
-+# CONFIG_CRYPTO_SHA1 is not set
-+# CONFIG_CRYPTO_SHA256 is not set
-+# CONFIG_CRYPTO_SHA512 is not set
-+# CONFIG_CRYPTO_TGR192 is not set
-+# CONFIG_CRYPTO_WP512 is not set
++	.text
++ENTRY(_start)
++	mfs	r1, rmsr
++	andi	r1, r1, ~2
++	mts	rmsr, r1
 +
-+#
-+# Ciphers
-+#
-+# CONFIG_CRYPTO_AES is not set
-+# CONFIG_CRYPTO_ANUBIS is not set
-+# CONFIG_CRYPTO_ARC4 is not set
-+# CONFIG_CRYPTO_BLOWFISH is not set
-+# CONFIG_CRYPTO_CAMELLIA is not set
-+# CONFIG_CRYPTO_CAST5 is not set
-+# CONFIG_CRYPTO_CAST6 is not set
-+# CONFIG_CRYPTO_DES is not set
-+# CONFIG_CRYPTO_FCRYPT is not set
-+# CONFIG_CRYPTO_KHAZAD is not set
-+# CONFIG_CRYPTO_SALSA20 is not set
-+# CONFIG_CRYPTO_SEED is not set
-+# CONFIG_CRYPTO_SERPENT is not set
-+# CONFIG_CRYPTO_TEA is not set
-+# CONFIG_CRYPTO_TWOFISH is not set
++/* save fdt to kernel location */
++/* r7 stores pointer to fdt blob */
++	beqi	r7, no_fdt_arg
++	or	r11, r0, r0 /* incremment */
++	ori	r4, r0, TOPHYS(_fdt_start) /* save bram context */
++	ori	r3, r0, (0x4000 - 4)
++_copy_fdt:
++	lw	r12, r7, r11 /* r12 = r7 + r11 */
++	sw	r12, r4, r11 /* addr[r4 + r11] = r12 */
++	addik	r11, r11, 4 /* increment counting */
++	bgtid	r3, _copy_fdt /* loop for all entries */
++	addik	r3, r3, -4 /* descrement loop */
++no_fdt_arg:
 +
-+#
-+# Compression
-+#
-+# CONFIG_CRYPTO_DEFLATE is not set
-+# CONFIG_CRYPTO_LZO is not set
++	/* Initialize small data anchors */
++	la	r13, r0, _KERNEL_SDA_BASE_
++	la	r2, r0, _KERNEL_SDA2_BASE_
 +
-+#
-+# Random Number Generation
-+#
-+# CONFIG_CRYPTO_ANSI_CPRNG is not set
-+CONFIG_CRYPTO_HW=y
++	/* Initialize stack pointer */
++	la	r1, r0, init_thread_union + THREAD_SIZE - 4
 +
-+#
-+# Library routines
-+#
-+CONFIG_GENERIC_FIND_LAST_BIT=y
-+# CONFIG_CRC_CCITT is not set
-+# CONFIG_CRC16 is not set
-+# CONFIG_CRC_T10DIF is not set
-+# CONFIG_CRC_ITU_T is not set
-+# CONFIG_CRC32 is not set
-+# CONFIG_CRC7 is not set
-+# CONFIG_LIBCRC32C is not set
-+CONFIG_ZLIB_INFLATE=y
-+CONFIG_PLIST=y
-+CONFIG_HAS_IOMEM=y
-+CONFIG_HAS_IOPORT=y
-+CONFIG_HAS_DMA=y
-+CONFIG_HAVE_LMB=y
++	/* Initialize r31 with current task address */
++	la	r31, r0, init_task
++
++	/*
++	 * Call platform dependent initialize function.
++	 * Please see $(ARCH)/mach-$(SUBARCH)/setup.c for
++	 * the function.
++	 */
++	la	r8, r0, machine_early_init
++	brald	r15, r8
++	nop
++
++	la	r15, r0, machine_halt
++	braid	start_kernel
++	nop
+diff --git a/arch/microblaze/kernel/syscall_table.S b/arch/microblaze/kernel/syscall_table.S
+new file mode 100644
+index 0000000..695710b
+--- /dev/null
++++ b/arch/microblaze/kernel/syscall_table.S
+@@ -0,0 +1,365 @@
++ENTRY(sys_call_table)
++	.long sys_restart_syscall	/* 0 - old "setup()" system call,
++					 * used for restarting */
++	.long sys_exit
++	.long sys_ni_syscall		/* was fork */
++	.long sys_read
++	.long sys_write
++	.long sys_open			/* 5 */
++	.long sys_close
++	.long sys_waitpid
++	.long sys_creat
++	.long sys_link
++	.long sys_unlink		/* 10 */
++	.long sys_execve_wrapper
++	.long sys_chdir
++	.long sys_time
++	.long sys_mknod
++	.long sys_chmod			/* 15 */
++	.long sys_lchown
++	.long sys_ni_syscall		/* old break syscall holder */
++	.long sys_ni_syscall		/* old stat */
++	.long sys_lseek
++	.long sys_getpid		/* 20 */
++	.long sys_mount
++	.long sys_oldumount
++	.long sys_setuid
++	.long sys_getuid
++	.long sys_stime			/* 25 */
++	.long sys_ptrace
++	.long sys_alarm
++	.long sys_ni_syscall		/* oldfstat */
++	.long sys_pause
++	.long sys_utime			/* 30 */
++	.long sys_ni_syscall		/* old stty syscall holder */
++	.long sys_ni_syscall		/* old gtty syscall holder */
++	.long sys_access
++	.long sys_nice
++	.long sys_ni_syscall		/* 35 - old ftime syscall holder */
++	.long sys_sync
++	.long sys_kill
++	.long sys_rename
++	.long sys_mkdir
++	.long sys_rmdir			/* 40 */
++	.long sys_dup
++	.long sys_pipe
++	.long sys_times
++	.long sys_ni_syscall		/* old prof syscall holder */
++	.long sys_brk			/* 45 */
++	.long sys_setgid
++	.long sys_getgid
++	.long sys_signal
++	.long sys_geteuid
++	.long sys_getegid		/* 50 */
++	.long sys_acct
++	.long sys_umount		/* recycled never used phys() */
++	.long sys_ni_syscall		/* old lock syscall holder */
++	.long sys_ioctl
++	.long sys_fcntl			/* 55 */
++	.long sys_ni_syscall		/* old mpx syscall holder */
++	.long sys_setpgid
++	.long sys_ni_syscall		/* old ulimit syscall holder */
++	.long sys_ni_syscall		/* olduname */
++	.long sys_umask			/* 60 */
++	.long sys_chroot
++	.long sys_ustat
++	.long sys_dup2
++	.long sys_getppid
++	.long sys_getpgrp		/* 65 */
++	.long sys_setsid
++	.long sys_sigaction
++	.long sys_sgetmask
++	.long sys_ssetmask
++	.long sys_setreuid		/* 70 */
++	.long sys_setregid
++	.long sys_sigsuspend_wrapper
++	.long sys_sigpending
++	.long sys_sethostname
++	.long sys_setrlimit		/* 75 */
++	.long sys_ni_syscall		/* old_getrlimit */
++	.long sys_getrusage
++	.long sys_gettimeofday
++	.long sys_settimeofday
++	.long sys_getgroups		/* 80 */
++	.long sys_setgroups
++	.long sys_ni_syscall		/* old_select */
++	.long sys_symlink
++	.long sys_ni_syscall		/* oldlstat */
++	.long sys_readlink		/* 85 */
++	.long sys_uselib
++	.long sys_swapon
++	.long sys_reboot
++	.long sys_ni_syscall		/* old_readdir */
++	.long sys_mmap			/* 90 */ /* old_mmap */
++	.long sys_munmap
++	.long sys_truncate
++	.long sys_ftruncate
++	.long sys_fchmod
++	.long sys_fchown		/* 95 */
++	.long sys_getpriority
++	.long sys_setpriority
++	.long sys_ni_syscall		/* old profil syscall holder */
++	.long sys_statfs
++	.long sys_fstatfs		/* 100 */
++	.long sys_ni_syscall		/* ioperm */
++	.long sys_socketcall
++	.long sys_syslog		/* operation with system console */
++	.long sys_setitimer
++	.long sys_getitimer		/* 105 */
++	.long sys_newstat
++	.long sys_newlstat
++	.long sys_newfstat
++	.long sys_ni_syscall		/* uname */
++	.long sys_ni_syscall		/* 110 */ /* iopl */
++	.long sys_vhangup
++	.long sys_ni_syscall		/* old "idle" system call */
++	.long sys_ni_syscall		/* old sys_vm86old */
++	.long sys_wait4
++	.long sys_swapoff		/* 115 */
++	.long sys_sysinfo
++	.long sys_ipc
++	.long sys_fsync
++	.long sys_sigreturn_wrapper
++	.long sys_clone_wrapper		/* 120 */
++	.long sys_setdomainname
++	.long sys_newuname
++	.long sys_ni_syscall		/* modify_ldt */
++	.long sys_adjtimex
++	.long sys_mprotect		/* 125:	sys_mprotect */
++	.long sys_sigprocmask
++	.long sys_ni_syscall		/* old "create_module" */
++	.long sys_init_module
++	.long sys_delete_module
++	.long sys_ni_syscall		/* 130:	old "get_kernel_syms" */
++	.long sys_quotactl
++	.long sys_getpgid
++	.long sys_fchdir
++	.long sys_bdflush
++	.long sys_sysfs			/* 135 */
++	.long sys_personality
++	.long sys_ni_syscall		/* reserved for afs_syscall */
++	.long sys_setfsuid
++	.long sys_setfsgid
++	.long sys_llseek		/* 140 */
++	.long sys_getdents
++	.long sys_select
++	.long sys_flock
++	.long sys_msync
++	.long sys_readv			/* 145 */
++	.long sys_writev
++	.long sys_getsid
++	.long sys_fdatasync
++	.long sys_sysctl
++	.long sys_mlock		/* 150:	sys_mlock */
++	.long sys_munlock
++	.long sys_mlockall
++	.long sys_munlockall
++	.long sys_sched_setparam
++	.long sys_sched_getparam	/* 155 */
++	.long sys_sched_setscheduler
++	.long sys_sched_getscheduler
++	.long sys_sched_yield
++	.long sys_sched_get_priority_max
++	.long sys_sched_get_priority_min	/* 160 */
++	.long sys_sched_rr_get_interval
++	.long sys_nanosleep
++	.long sys_mremap
++	.long sys_setresuid
++	.long sys_getresuid		/* 165 */
++	.long sys_ni_syscall		/* sys_vm86 */
++	.long sys_ni_syscall		/* Old sys_query_module */
++	.long sys_poll
++	.long sys_nfsservctl
++	.long sys_setresgid		/* 170 */
++	.long sys_getresgid
++	.long sys_prctl
++	.long sys_rt_sigreturn_wrapper
++	.long sys_rt_sigaction
++	.long sys_rt_sigprocmask	/* 175 */
++	.long sys_rt_sigpending
++	.long sys_rt_sigtimedwait
++	.long sys_rt_sigqueueinfo
++	.long sys_rt_sigsuspend_wrapper
++	.long sys_pread64		/* 180 */
++	.long sys_pwrite64
++	.long sys_chown
++	.long sys_getcwd
++	.long sys_capget
++	.long sys_capset		/* 185 */
++	.long sys_ni_syscall		/* sigaltstack */
++	.long sys_sendfile
++	.long sys_ni_syscall		/* reserved for streams1 */
++	.long sys_ni_syscall		/* reserved for streams2 */
++	.long sys_vfork_wrapper		/* 190 */
++	.long sys_getrlimit
++	.long sys_mmap2			/* mmap2 */
++	.long sys_truncate64
++	.long sys_ftruncate64
++	.long sys_stat64		/* 195 */
++	.long sys_lstat64
++	.long sys_fstat64
++	.long sys_lchown
++	.long sys_getuid
++	.long sys_getgid		/* 200 */
++	.long sys_geteuid
++	.long sys_getegid
++	.long sys_setreuid
++	.long sys_setregid
++	.long sys_getgroups		/* 205 */
++	.long sys_setgroups
++	.long sys_fchown
++	.long sys_setresuid
++	.long sys_getresuid
++	.long sys_setresgid		/* 210 */
++	.long sys_getresgid
++	.long sys_chown
++	.long sys_setuid
++	.long sys_setgid
++	.long sys_setfsuid		/* 215 */
++	.long sys_setfsgid
++	.long sys_pivot_root
++	.long sys_mincore
++	.long sys_madvise
++	.long sys_getdents64		/* 220 */
++	.long sys_fcntl64
++	.long sys_ni_syscall		/* reserved for TUX */
++	.long sys_ni_syscall
++	.long sys_gettid
++	.long sys_readahead		/* 225 */
++	.long sys_setxattr
++	.long sys_lsetxattr
++	.long sys_fsetxattr
++	.long sys_getxattr
++	.long sys_lgetxattr		/* 230 */
++	.long sys_fgetxattr
++	.long sys_listxattr
++	.long sys_llistxattr
++	.long sys_flistxattr
++	.long sys_removexattr		/* 235 */
++	.long sys_lremovexattr
++	.long sys_fremovexattr
++	.long sys_tkill
++	.long sys_sendfile64
++	.long sys_futex			/* 240 */
++	.long sys_sched_setaffinity
++	.long sys_sched_getaffinity
++	.long sys_ni_syscall		/* set_thread_area */
++	.long sys_ni_syscall		/* get_thread_area */
++	.long sys_io_setup		/* 245 */
++	.long sys_io_destroy
++	.long sys_io_getevents
++	.long sys_io_submit
++	.long sys_io_cancel
++	.long sys_fadvise64		/* 250 */
++	.long sys_ni_syscall
++	.long sys_exit_group
++	.long sys_lookup_dcookie
++	.long sys_epoll_create
++	.long sys_epoll_ctl		/* 255 */
++	.long sys_epoll_wait
++	.long sys_remap_file_pages
++	.long sys_set_tid_address
++	.long sys_timer_create
++	.long sys_timer_settime		/* 260 */
++	.long sys_timer_gettime
++	.long sys_timer_getoverrun
++	.long sys_timer_delete
++	.long sys_clock_settime
++	.long sys_clock_gettime		/* 265 */
++	.long sys_clock_getres
++	.long sys_clock_nanosleep
++	.long sys_statfs64
++	.long sys_fstatfs64
++	.long sys_tgkill		/* 270 */
++	.long sys_utimes
++	.long sys_fadvise64_64
++	.long sys_ni_syscall		/* sys_vserver */
++	.long sys_mbind
++	.long sys_get_mempolicy
++	.long sys_set_mempolicy
++	.long sys_mq_open
++	.long sys_mq_unlink
++	.long sys_mq_timedsend
++	.long sys_mq_timedreceive	/* 280 */
++	.long sys_mq_notify
++	.long sys_mq_getsetattr
++	.long sys_kexec_load
++	.long sys_waitid
++	.long sys_ni_syscall		/* 285 */ /* available */
++	.long sys_add_key
++	.long sys_request_key
++	.long sys_keyctl
++	.long sys_ioprio_set
++	.long sys_ioprio_get		/* 290 */
++	.long sys_inotify_init
++	.long sys_inotify_add_watch
++	.long sys_inotify_rm_watch
++	.long sys_ni_syscall		/* sys_migrate_pages */
++	.long sys_openat	/* 295 */ 
++	.long sys_mkdirat
++	.long sys_mknodat
++	.long sys_fchownat
++	.long sys_ni_syscall
++	.long sys_fstatat64		/* 300 */
++	.long sys_unlinkat
++	.long sys_renameat
++	.long sys_linkat
++	.long sys_symlinkat
++	.long sys_readlinkat		/* 305 */
++	.long sys_fchmodat
++	.long sys_faccessat
++	.long sys_ni_syscall /* pselect6 */
++	.long sys_ni_syscall /* sys_ppoll */
++	.long sys_unshare		/* 310 */
++	.long sys_set_robust_list
++	.long sys_get_robust_list
++	.long sys_splice
++	.long sys_sync_file_range
++	.long sys_tee 			/* 315 */
++	.long sys_vmsplice
++	.long sys_move_pages
++	.long sys_getcpu
++	.long sys_epoll_pwait
++	.long sys_utimensat		/* 320 */
++	.long sys_signalfd
++	.long sys_timerfd_create
++	.long sys_eventfd
++	.long sys_fallocate
++	.long sys_semtimedop		/* 325 */
++	.long sys_timerfd_settime
++	.long sys_timerfd_gettime
++	.long sys_semctl
++	.long sys_semget
++	.long sys_semop			/* 330 */
++	.long sys_msgctl
++	.long sys_msgget
++	.long sys_msgrcv
++	.long sys_msgsnd
++	.long sys_shmat			/* 335 */
++	.long sys_shmctl
++	.long sys_shmdt
++	.long sys_shmget
++	.long sys_signalfd4	/* new syscall */
++	.long sys_eventfd2		/* 340 */
++	.long sys_epoll_create1
++	.long sys_dup3
++	.long sys_pipe2
++	.long sys_inotify_init1
++	.long sys_socket		/* 345 */
++	.long sys_socketpair
++	.long sys_bind
++	.long sys_listen
++	.long sys_accept
++	.long sys_connect		/* 350 */
++	.long sys_getsockname
++	.long sys_getpeername
++	.long sys_sendto
++	.long sys_send
++	.long sys_recvfrom		/* 355 */
++	.long sys_recv
++	.long sys_setsockopt
++	.long sys_getsockopt
++	.long sys_shutdown
++	.long sys_sendmsg		/* 360 */
++	.long sys_recvmsg
++	.long sys_ni_syscall
 -- 
 1.5.5.1
 
