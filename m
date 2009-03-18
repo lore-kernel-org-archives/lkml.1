@@ -1,147 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758951AbZCRSRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbZCRS0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758951AbZCRSRd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 14:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbZCRSRX
+	id S1757923AbZCRS0Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 14:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbZCRS0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 14:17:23 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:50646 "EHLO gir.skynet.ie"
+	Wed, 18 Mar 2009 14:26:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35583 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753115AbZCRSRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 14:17:22 -0400
-Date: Wed, 18 Mar 2009 18:17:17 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 24/27] Convert gfp_zone() to use a table of
-	precalculated values
-Message-ID: <20090318181717.GC24462@csn.ul.ie>
-References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie> <1237226020-14057-25-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903161500280.20024@qirst.com> <20090318135222.GA4629@csn.ul.ie> <alpine.DEB.1.10.0903181011210.7901@qirst.com> <20090318153508.GA24462@csn.ul.ie> <alpine.DEB.1.10.0903181300540.15570@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0903181300540.15570@qirst.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1751159AbZCRS0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 14:26:04 -0400
+Subject: [PATCH] make inotify event handles use GFP_NOFS
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Eric Paris <eparis@redhat.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>, aviro@redhat.com
+Content-Type: text/plain
+Date: Wed, 18 Mar 2009 14:27:32 -0400
+Message-Id: <1237400852.26799.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 18, 2009 at 01:21:30PM -0400, Christoph Lameter wrote:
-> 
-> 
-> > time.
-> >
-> > > > > const int gfp_zone_table[GFP_ZONEMASK] = {
-> > > > > 	ZONE_NORMAL,		/* 00 No flags set */
-> > > > > 	ZONE_DMA,		/* 01 Only GFP_DMA set */
-> > > > > 	ZONE_HIGHMEM,		/* 02 Only GFP_HIGHMEM set */
-> > > > > 	ZONE_DMA,		/* 03 GFP_HIGHMEM and GFP_DMA set */
-> > > > > 	ZONE_DMA32,		/* 04 Only GFP_DMA32 set */
-> > > > > 	ZONE_DMA,		/* 05 GFP_DMA and GFP_DMA32 set */
-> > > > > 	ZONE_DMA32,		/* 06 GFP_DMA32 and GFP_HIGHMEM set */
-> > > > > 	ZONE_DMA,		/* 07 GFP_DMA, GFP_DMA32 and GFP_DMA32 set */
-> > > > > 	ZONE_MOVABLE,		/* 08 Only ZONE_MOVABLE set */
-> > > > > 	ZONE_DMA,		/* 09 MOVABLE + DMA */
-> > > > > 	ZONE_MOVABLE,		/* 0A MOVABLE + HIGHMEM */
-> > > > > 	ZONE_DMA,		/* 0B MOVABLE + DMA + HIGHMEM */
-> > > > > 	ZONE_DMA32,		/* 0C MOVABLE + DMA32 */
-> > > > > 	ZONE_DMA,		/* 0D MOVABLE + DMA + DMA32 */
-> > > > > 	ZONE_DMA32,		/* 0E MOVABLE + DMA32 + HIGHMEM */
-> > > > > 	ZONE_DMA		/* 0F MOVABLE + DMA32 + HIGHMEM + DMA
-> > > > > };
-> > > > >
-> > > > > Hmmmm... Guess one would need to add some #ifdeffery here to setup
-> > > > > ZONE_NORMAL in cases there is no DMA, DMA32 and HIGHMEM.
-> > > > >
-> > > >
-> > > > Indeed, as I said, this is somewhat error prone which is why the patch
-> > > > calculates the table at run-time instead of compile-time trickery.
-> > >
-> > > One would need to define some macros to make it simpler I guess
-> > >
-> > > Write something like
-> > >
-> > > #ifdef CONFIG_ZONE_DMA
-> > > #define TZONE_DMA ZONE_DMA
-> > > #else
-> > > #define TZONE_DMA ZONE_NORMAL
-> > > #endif
-> > >
-> > > for each configurable item. Then just add the T to the above table.
-> > >
-> >
-> > If you don't mind, I'd like to postpone writing such a patch until a second
-> > or third pass at improving the allocator. I don't think I'll have the time
-> > in the short-term to put together a const-initialised-table patch that will
-> > definitily be correct.
-> >
-> > Alternatively, I can drop this patch entirely from the set.
-> >
-> >
-> 
-> Let me give it a shot:
-> 
-> Note that there is a slight buggyness in the current implementation of
-> gfp_zone. If you set both GFP_DMA32 and GFP_HIGHMEM and the arch does not
-> support GFP_DMA32 then gfp_zone returns GFP_HIGHMEM which may result in
-> memory being allocated that cannot be used for I/O.
-> 
-> This version here returns GFP_NORMAL which is more correct.
-> 
-> 
-> #ifdef CONFIG_ZONE_HIGHMEM
-> #define OPT_ZONE_HIGHMEM ZONE_HIGHMEM
-> #else
-> #define OPT_ZONE_HIGHMEM ZONE_NORMAL
-> #endif
-> 
-> #ifdef CONFIG_ZONE_DMA
-> #define OPT_ZONE_DMA ZONE_DMA
-> #else
-> #define OPT_ZONE_DMA ZONE_NORMAL
-> #endif
-> 
-> #ifdef CONFIG_ZONE_DMA32
-> #define OPT_ZONE_DMA32 ZONE_DMA32
-> #else
-> #define OPT_ZONE_DMA32 OPT_ZONE_DMA
-> #endif
-> 
-> 
-> const int gfp_zone_table[GFP_ZONEMASK] = {
-> 	ZONE_NORMAL,            /* 00 No flags set */
-> 	OPT_ZONE_DMA,           /* 01 GFP_DMA */
-> 	OPT_ZONE_HIGHMEM,       /* 02 GFP_HIGHMEM */
->         OPT_ZONE_DMA,           /* 03 GFP_HIGHMEM GFP_DMA */
->         OPT_ZONE_DMA32,         /* 04 GFP_DMA32 */
->         OPT_ZONE_DMA,           /* 05 GFP_DMA32 GFP_DMA */
->         OPT_ZONE_DMA32,         /* 06 GFP_DMA32 GFP_HIGHMEM */
->         OPT_ZONE_DMA,           /* 07 GFP_DMA32 GFP_HIGHMEM GFP_DMA */
->         ZONE_NORMAL,            /* 08 ZONE_MOVABLE */
->         OPT_ZONE_DMA,           /* 09 MOVABLE + DMA */
->         ZONE_MOVABLE,           /* 0A MOVABLE + HIGHMEM */
->         OPT_ZONE_DMA,           /* 0B MOVABLE + HIGHMEM + DMA */
->         OPT_ZONE_DMA32,         /* 0C MOVABLE + DMA32 */
->         OPT_ZONE_DMA,           /* 0D MOVABLE + DMA32 + DMA */
->         OPT_ZONE_DMA32,         /* 0E MOVABLE + DMA32 + HIGHMEM */
->         OPT_ZONE_DMA            /* 0F MOVABLE + DMA32 + HIGHMEM + DMA */
-> };
-> 
+I think this is a bandaide to shut up lockdep.  I could either figure
+out lockdep classes and figure out how to reclassify inotify locks since
+I believe Nick is correct when he says inotify watches pin the inode in
+core so memory pressure can't evict it.  I don't want to do that as I
+think the real fix is my next generation fsnotify which does zero
+allocations under locks and so everything can be GFP_KERNEL.  I'm
+posting this as it is clearly safe and should fix the issue.
 
-Thanks.At a quick glance, it looks ok but I haven't tested it. As the intention
-was to get one pass of patches that are not controversial and are "obvious",
-I have dropped my version of the gfp_zone patch and the subsequent flag
-cleanup and will revisit it after the first lot of patches has been dealt
-with. I'm testing again with the remaining patches.
+http://marc.info/?l=linux-kernel&m=123617147432377&w=2
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+includes a lockdep warning that shows while we are reclaiming FS memory
+and inode may get evicted which generates an IN_IGNORED message.  Half
+of that code path already used GFP_NOFS but a second allocation to store
+the filename was using GFP_KERNEL.  As a precaution I also moved the
+audit handle_event code path to use GFP_NOFS.
+
+This is much the same as the precaution in f04b30de3c82528 which did
+something similar.
+
+Signed-off-by: Eric Paris <eparis@redhat.com>
+
+---
+
+ fs/notify/inotify/inotify_user.c |    2 +-
+ kernel/auditfilter.c             |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index bed766e..1634319 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -220,7 +220,7 @@ static struct inotify_kernel_event * kernel_event(s32 wd, u32 mask, u32 cookie,
+ 				rem = 0;
+ 		}
+ 
+-		kevent->name = kmalloc(len + rem, GFP_KERNEL);
++		kevent->name = kmalloc(len + rem, GFP_NOFS);
+ 		if (unlikely(!kevent->name)) {
+ 			kmem_cache_free(event_cachep, kevent);
+ 			return NULL;
+diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
+index fbf24d1..a3fa2c0 100644
+--- a/kernel/auditfilter.c
++++ b/kernel/auditfilter.c
+@@ -1028,7 +1028,7 @@ static void audit_update_watch(struct audit_parent *parent,
+ 
+ 		if (audit_enabled) {
+ 			struct audit_buffer *ab;
+-			ab = audit_log_start(NULL, GFP_KERNEL,
++			ab = audit_log_start(NULL, GFP_NOFS,
+ 				AUDIT_CONFIG_CHANGE);
+ 			audit_log_format(ab, "auid=%u ses=%u",
+ 				audit_get_loginuid(current),
+@@ -1067,7 +1067,7 @@ static void audit_remove_parent_watches(struct audit_parent *parent)
+ 			e = container_of(r, struct audit_entry, rule);
+ 			if (audit_enabled) {
+ 				struct audit_buffer *ab;
+-				ab = audit_log_start(NULL, GFP_KERNEL,
++				ab = audit_log_start(NULL, GFP_NOFS,
+ 					AUDIT_CONFIG_CHANGE);
+ 				audit_log_format(ab, "auid=%u ses=%u",
+ 					audit_get_loginuid(current),
+
+
