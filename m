@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760199AbZCRVv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbZCRVuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760199AbZCRVv1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756904AbZCRVnU
+	id S1758120AbZCRVuj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757803AbZCRVnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:43:20 -0400
+	Wed, 18 Mar 2009 17:43:12 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756989AbZCRVnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:43:17 -0400
+	id S1757819AbZCRVnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:43:09 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 39/57] microblaze_v7: atomic.h bitops.h swab.h byteorder.h
-Date: Wed, 18 Mar 2009 21:31:06 +0100
-Message-Id: <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 24/57] microblaze_v7: process and init task function
+Date: Wed, 18 Mar 2009 21:30:51 +0100
+Message-Id: <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <513d4067a84be1ecb47577e1edf131d2b3572808.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -41,21 +41,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <6d19f608a4ba3e7718aa55794c2845f19b5ed5e2.1237407249.git.monstr@monstr.eu>
  <039bc2fea33d23a3e7d2d85ac6fb275b8d21b5ed.1237407249.git.monstr@monstr.eu>
  <513d4067a84be1ecb47577e1edf131d2b3572808.1237407249.git.monstr@monstr.eu>
- <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
- <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
- <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
- <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
- <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
- <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
- <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
- <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
- <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
- <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
- <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
- <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
- <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
- <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
- <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -67,150 +52,17 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/atomic.h    |  123 +++++++++++++++++++++++++++++++
- arch/microblaze/include/asm/bitops.h    |   27 +++++++
- arch/microblaze/include/asm/byteorder.h |    6 ++
- arch/microblaze/include/asm/swab.h      |    8 ++
- 4 files changed, 164 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/atomic.h
- create mode 100644 arch/microblaze/include/asm/bitops.h
- create mode 100644 arch/microblaze/include/asm/byteorder.h
- create mode 100644 arch/microblaze/include/asm/swab.h
+ arch/microblaze/kernel/init_task.c |   27 +++++
+ arch/microblaze/kernel/process.c   |  185 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 212 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/init_task.c
+ create mode 100644 arch/microblaze/kernel/process.c
 
-diff --git a/arch/microblaze/include/asm/atomic.h b/arch/microblaze/include/asm/atomic.h
+diff --git a/arch/microblaze/kernel/init_task.c b/arch/microblaze/kernel/init_task.c
 new file mode 100644
-index 0000000..a448d94
+index 0000000..1abdfdb
 --- /dev/null
-+++ b/arch/microblaze/include/asm/atomic.h
-@@ -0,0 +1,123 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_ATOMIC_H
-+#define _ASM_MICROBLAZE_ATOMIC_H
-+
-+#include <linux/types.h>
-+#include <linux/compiler.h> /* likely */
-+#include <asm/system.h> /* local_irq_XXX and friends */
-+
-+#define ATOMIC_INIT(i)		{ (i) }
-+#define atomic_read(v)		((v)->counter)
-+#define atomic_set(v, i)	(((v)->counter) = (i))
-+
-+#define atomic_inc(v)		(atomic_add_return(1, (v)))
-+#define atomic_dec(v)		(atomic_sub_return(1, (v)))
-+
-+#define atomic_add(i, v)	(atomic_add_return(i, (v)))
-+#define atomic_sub(i, v)	(atomic_sub_return(i, (v)))
-+
-+#define atomic_inc_return(v)	(atomic_add_return(1, (v)))
-+#define atomic_dec_return(v)	(atomic_sub_return(1, (v)))
-+
-+#define atomic_inc_and_test(v)	(atomic_add_return(1, (v)) == 0)
-+#define atomic_dec_and_test(v)	(atomic_sub_return(1, (v)) == 0)
-+
-+#define atomic_inc_not_zero(v)	(atomic_add_unless((v), 1, 0))
-+
-+#define atomic_sub_and_test(i, v) (atomic_sub_return((i), (v)) == 0)
-+
-+static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	int ret;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	ret = v->counter;
-+	if (likely(ret == old))
-+		v->counter = new;
-+	local_irq_restore(flags);
-+
-+	return ret;
-+}
-+
-+static inline int atomic_add_unless(atomic_t *v, int a, int u)
-+{
-+	int c, old;
-+
-+	c = atomic_read(v);
-+	while (c != u && (old = atomic_cmpxchg((v), c, c + a)) != c)
-+		c = old;
-+	return c != u;
-+}
-+
-+static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	*addr &= ~mask;
-+	local_irq_restore(flags);
-+}
-+
-+/**
-+ * atomic_add_return - add and return
-+ * @i: integer value to add
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically adds @i to @v and returns @i + @v
-+ */
-+static inline int atomic_add_return(int i, atomic_t *v)
-+{
-+	unsigned long flags;
-+	int val;
-+
-+	local_irq_save(flags);
-+	val = v->counter;
-+	v->counter = val += i;
-+	local_irq_restore(flags);
-+
-+	return val;
-+}
-+
-+static inline int atomic_sub_return(int i, atomic_t *v)
-+{
-+	return atomic_add_return(-i, v);
-+}
-+
-+/*
-+ * Atomically test *v and decrement if it is greater than 0.
-+ * The function returns the old value of *v minus 1.
-+ */
-+static inline int atomic_dec_if_positive(atomic_t *v)
-+{
-+	unsigned long flags;
-+	int res;
-+
-+	local_irq_save(flags);
-+	res = v->counter - 1;
-+	if (res >= 0)
-+		v->counter = res;
-+	local_irq_restore(flags);
-+
-+	return res;
-+}
-+
-+#define atomic_add_negative(a, v)	(atomic_add_return((a), (v)) < 0)
-+#define atomic_xchg(v, new) (xchg(&((v)->counter), new))
-+
-+/* Atomic operations are already serializing */
-+#define smp_mb__before_atomic_dec()	barrier()
-+#define smp_mb__after_atomic_dec()	barrier()
-+#define smp_mb__before_atomic_inc()	barrier()
-+#define smp_mb__after_atomic_inc()	barrier()
-+
-+#include <asm-generic/atomic.h>
-+
-+#endif /* _ASM_MICROBLAZE_ATOMIC_H */
-diff --git a/arch/microblaze/include/asm/bitops.h b/arch/microblaze/include/asm/bitops.h
-new file mode 100644
-index 0000000..d6df1fd
---- /dev/null
-+++ b/arch/microblaze/include/asm/bitops.h
++++ b/arch/microblaze/kernel/init_task.c
 @@ -0,0 +1,27 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
@@ -220,51 +72,216 @@ index 0000000..d6df1fd
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_BITOPS_H
-+#define _ASM_MICROBLAZE_BITOPS_H
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/init_task.h>
++#include <linux/fs.h>
++#include <linux/mqueue.h>
 +
++#include <asm/pgtable.h>
++
++static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
++static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
++struct mm_struct init_mm = INIT_MM(init_mm);
++EXPORT_SYMBOL(init_mm);
++
++union thread_union init_thread_union
++	__attribute__((__section__(".data.init_task"))) =
++{ INIT_THREAD_INFO(init_task) };
++
++struct task_struct init_task = INIT_TASK(init_task);
++EXPORT_SYMBOL(init_task);
+diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
+new file mode 100644
+index 0000000..157893e
+--- /dev/null
++++ b/arch/microblaze/kernel/process.c
+@@ -0,0 +1,185 @@
 +/*
-+ * Copyright 1992, Linus Torvalds.
++ * Copyright (C) 2008 Michal Simek
++ * Copyright (C) 2008 PetaLogix
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+#include <asm/byteorder.h> /* swab32 */
-+#include <asm/system.h> /* save_flags */
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/pm.h>
++#include <linux/tick.h>
++#include <linux/bitops.h>
++#include <asm/system.h>
++#include <asm/pgalloc.h>
++
++void show_regs(struct pt_regs *regs)
++{
++	printk(KERN_INFO " Registers dump: mode=%X\r\n", regs->kernel_mode);
++	printk(KERN_INFO " r1=%08lX, r2=%08lX, r3=%08lX, r4=%08lX\n",
++				regs->r1, regs->r2, regs->r3, regs->r4);
++	printk(KERN_INFO " r5=%08lX, r6=%08lX, r7=%08lX, r8=%08lX\n",
++				regs->r5, regs->r6, regs->r7, regs->r8);
++	printk(KERN_INFO " r9=%08lX, r10=%08lX, r11=%08lX, r12=%08lX\n",
++				regs->r9, regs->r10, regs->r11, regs->r12);
++	printk(KERN_INFO " r13=%08lX, r14=%08lX, r15=%08lX, r16=%08lX\n",
++				regs->r13, regs->r14, regs->r15, regs->r16);
++	printk(KERN_INFO " r17=%08lX, r18=%08lX, r19=%08lX, r20=%08lX\n",
++				regs->r17, regs->r18, regs->r19, regs->r20);
++	printk(KERN_INFO " r21=%08lX, r22=%08lX, r23=%08lX, r24=%08lX\n",
++				regs->r21, regs->r22, regs->r23, regs->r24);
++	printk(KERN_INFO " r25=%08lX, r26=%08lX, r27=%08lX, r28=%08lX\n",
++				regs->r25, regs->r26, regs->r27, regs->r28);
++	printk(KERN_INFO " r29=%08lX, r30=%08lX, r31=%08lX, rPC=%08lX\n",
++				regs->r29, regs->r30, regs->r31, regs->pc);
++	printk(KERN_INFO " msr=%08lX, ear=%08lX, esr=%08lX, fsr=%08lX\n",
++				regs->msr, regs->ear, regs->esr, regs->fsr);
++	while(1);
++}
++
++void (*pm_idle)(void);
++void (*pm_power_off)(void) = NULL;
++EXPORT_SYMBOL(pm_power_off);
++
++static int hlt_counter = 1;
++
++void disable_hlt(void)
++{
++	hlt_counter++;
++}
++EXPORT_SYMBOL(disable_hlt);
++
++void enable_hlt(void)
++{
++	hlt_counter--;
++}
++EXPORT_SYMBOL(enable_hlt);
++
++static int __init nohlt_setup(char *__unused)
++{
++	hlt_counter = 1;
++	return 1;
++}
++__setup("nohlt", nohlt_setup);
++
++static int __init hlt_setup(char *__unused)
++{
++	hlt_counter = 0;
++	return 1;
++}
++__setup("hlt", hlt_setup);
++
++void default_idle(void)
++{
++	if (!hlt_counter) {
++		clear_thread_flag(TIF_POLLING_NRFLAG);
++		smp_mb__after_clear_bit();
++		local_irq_disable();
++		while (!need_resched())
++			cpu_sleep();
++		local_irq_enable();
++		set_thread_flag(TIF_POLLING_NRFLAG);
++	} else
++		while (!need_resched())
++			cpu_relax();
++}
++
++void cpu_idle(void)
++{
++	set_thread_flag(TIF_POLLING_NRFLAG);
++
++	/* endless idle loop with no priority at all */
++	while (1) {
++		void (*idle)(void) = pm_idle;
++
++		if (!idle)
++			idle = default_idle;
++
++		tick_nohz_stop_sched_tick(1);
++		while (!need_resched())
++			idle();
++		tick_nohz_restart_sched_tick();
++
++		preempt_enable_no_resched();
++		schedule();
++		preempt_disable();
++		check_pgt_cache();
++	}
++}
++
++void flush_thread(void)
++{
++}
++
++int copy_thread(int nr, unsigned long clone_flags, unsigned long usp,
++		unsigned long unused,
++		struct task_struct *p, struct pt_regs *regs)
++{
++	struct pt_regs *childregs = task_pt_regs(p);
++	struct thread_info *ti = task_thread_info(p);
++
++	*childregs = *regs;
++	if (user_mode(regs))
++		childregs->r1 = usp;
++	else
++		childregs->r1 = ((unsigned long) ti) + THREAD_SIZE;
++
++	memset(&ti->cpu_context, 0, sizeof(struct cpu_context));
++	ti->cpu_context.r1 = (unsigned long)childregs;
++	ti->cpu_context.msr = (unsigned long)childregs->msr;
++	ti->cpu_context.r15 = (unsigned long)ret_from_fork - 8;
++
++	if (clone_flags & CLONE_SETTLS)
++		;
++
++	return 0;
++}
 +
 +/*
-+ * clear_bit() doesn't provide any barrier for the compiler.
++ * Return saved PC of a blocked thread.
 + */
-+#define smp_mb__before_clear_bit()	barrier()
-+#define smp_mb__after_clear_bit()	barrier()
-+#include <asm-generic/bitops.h>
-+#include <asm-generic/bitops/__fls.h>
++unsigned long thread_saved_pc(struct task_struct *tsk)
++{
++	struct cpu_context *ctx =
++		&(((struct thread_info *)(tsk->stack))->cpu_context);
 +
-+#endif /* _ASM_MICROBLAZE_BITOPS_H */
-diff --git a/arch/microblaze/include/asm/byteorder.h b/arch/microblaze/include/asm/byteorder.h
-new file mode 100644
-index 0000000..ce9c587
---- /dev/null
-+++ b/arch/microblaze/include/asm/byteorder.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_MICROBLAZE_BYTEORDER_H
-+#define _ASM_MICROBLAZE_BYTEORDER_H
++	/* Check whether the thread is blocked in resume() */
++	if (in_sched_functions(ctx->r15))
++		return (unsigned long)ctx->r15;
++	else
++		return ctx->r14;
++}
 +
-+#include <linux/byteorder/big_endian.h>
++static void kernel_thread_helper(int (*fn)(void *), void *arg)
++{
++	fn(arg);
++	do_exit(-1);
++}
 +
-+#endif /* _ASM_MICROBLAZE_BYTEORDER_H */
-diff --git a/arch/microblaze/include/asm/swab.h b/arch/microblaze/include/asm/swab.h
-new file mode 100644
-index 0000000..b375d7b
---- /dev/null
-+++ b/arch/microblaze/include/asm/swab.h
-@@ -0,0 +1,8 @@
-+#ifndef _ASM_MICROBLAZE_SWAB_H
-+#define _ASM_MICROBLAZE_SWAB_H
++int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
++{
++	struct pt_regs regs;
++	int ret;
 +
-+#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
-+#define __SWAB_64_THRU_32__
-+#endif
++	memset(&regs, 0, sizeof(regs));
++	/* store them in non-volatile registers */
++	regs.r5 = (unsigned long)fn;
++	regs.r6 = (unsigned long)arg;
++	local_save_flags(regs.msr);
++	regs.pc = (unsigned long)kernel_thread_helper;
++	regs.kernel_mode = 1;
 +
-+#endif /* _ASM_MICROBLAZE_SWAB_H */
++	ret = do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0,
++			&regs, 0, NULL, NULL);
++
++	return ret;
++}
++
++unsigned long get_wchan(struct task_struct *p)
++{
++/* TBD (used by procfs) */
++	return 0;
++}
 -- 
 1.5.5.1
 
