@@ -1,116 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759194AbZCRR2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759151AbZCRR32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759194AbZCRR2W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 13:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZCRR2L
+	id S1759151AbZCRR32 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 13:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZCRR3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 13:28:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46596 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752377AbZCRR2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 13:28:10 -0400
-Date: Wed, 18 Mar 2009 18:27:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: oops in tracepoint_update_probe_range() (was: Re: [oops -tip]
-	: x86 AMD 64)
-Message-ID: <20090318172750.GA13584@elte.hu>
-References: <1237393396.3322.6.camel@localhost.localdomain> <20090318163531.GE21331@elte.hu> <1237394936.3132.1.camel@localhost.localdomain> <20090318165611.GC5981@nowhere>
+	Wed, 18 Mar 2009 13:29:18 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:53941 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754385AbZCRR3R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 13:29:17 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090318165611.GC5981@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <alpine.DEB.1.10.0903181258110.15570@qirst.com>
+References: <49BF8ABC.6040805@vflare.org> <49BF8B8B.40408@vflare.org>
+	 <alpine.DEB.1.10.0903171237180.21582@qirst.com>
+	 <d760cf2d0903171028o600dc94cn7a5238520d104455@mail.gmail.com>
+	 <alpine.DEB.1.10.0903171355410.26058@qirst.com>
+	 <49C11088.7000205@vflare.org>
+	 <alpine.DEB.1.10.0903181258110.15570@qirst.com>
+Date: Wed, 18 Mar 2009 22:59:15 +0530
+Message-ID: <d760cf2d0903181029r43bf417u502b46e08348f6ae@mail.gmail.com>
+Subject: Re: [PATCH 2/3]: xvmalloc memory allocator
+From: Nitin Gupta <ngupta@vflare.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 18, 2009 at 10:28 PM, Christoph Lameter
+<cl@linux-foundation.org> wrote:
+> On Wed, 18 Mar 2009, Nitin Gupta wrote:
+>
+>> > Slab memory is not backed by vmalloc space.
+>> Oh, it uses "low memory". Still not good for compcache :)
+>
+> Only if you use 32 bit.
+>
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+Yes, this point is for 32-bit only - many users were unhappy with
+compcache size limit due to small vmalloc area on x86-32.
 
-> On Wed, Mar 18, 2009 at 10:18:56PM +0530, Jaswinder Singh Rajput wrote:
-> > On Wed, 2009-03-18 at 17:35 +0100, Ingo Molnar wrote:
-> > > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> > > 
-> > > > Good: f4c3c4cdb1de232
-> > > > Bad : 1e08816af0bc345
-> > > > 
-> > > > Config:
-> > > > http://userweb.kernel.org/~jaswinder/oops_20090318/config-hpdv5-tip-bad-20090318
-> > > > 
-> > > > oops:
-> > > > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page1.jpg
-> > > > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page2.jpg
-> > > > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page3.jpg
-> > > > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page4.jpg
-> > > > 
-> > > > <freeze>
-> > > 
-> > > Steve, Frederic - the crashes above are in:
-> > > 
-> > > 	tracepoint_update_probe_range()
-> > > 
-> > > in a modular kernel apparently.
-> > > 
-> > 
-> > This fixed the oops for me, Is this looks OK to you:
-> > 
-> > Subject: [PATCH] x86: tracepoint.c fix oops
-> > 
-> > BUG: unable to handle kernel NULL pointer dereference at (null)
-> > IP: [<ffffffff8107d4de>] tracepoint_update_probe_range+0x1f/0x9b
-> > PGD 13d5fb067 PUD 13d688067 PMD 0
-> > Oops: 0000 [#1] SMP
-> > 
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > ---
-> >  kernel/tracepoint.c |    3 +++
-> >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-> > index 7960274..80d1353 100644
-> > --- a/kernel/tracepoint.c
-> > +++ b/kernel/tracepoint.c
-> > @@ -280,6 +280,8 @@ void tracepoint_update_probe_range(struct tracepoint *begin,
-> >  
-> >  	mutex_lock(&tracepoints_mutex);
-> >  	for (iter = begin; iter < end; iter++) {
-> > +		if (!iter)
-> > +			goto out;
-> >  		mark_entry = get_tracepoint(iter->name);
-> >  		if (mark_entry) {
-> >  			set_tracepoint(&mark_entry, iter,
-> > @@ -288,6 +290,7 @@ void tracepoint_update_probe_range(struct tracepoint *begin,
-> >  			disable_tracepoint(iter);
-> >  		}
-> >  	}
-> > +out:
-> >  	mutex_unlock(&tracepoints_mutex);
-> >  }
-> 
-> 
-> Ok, it should fix the crash.
-> But I think the real problem remains: iter is not supposed to point to NULL,
-> this is a section range:
-> 
-> tracepoint_update_probe_range(__start___tracepoints,
-> 		__stop___tracepoints);
-> 
-> It seems to mean that the section is empty.
-
-OK - so checking for !iter on entry and emitting a WARN_ONCE in that 
-case ought to change the crash for a warning, right?
-
-	Ingo
+Nitin
