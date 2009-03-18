@@ -1,65 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbZCRAc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbZCRAfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523AbZCRAc2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 20:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZCRAcU
+	id S1754653AbZCRAfh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 20:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZCRAf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 20:32:20 -0400
-Received: from relay4.ptmail.sapo.pt ([212.55.154.24]:58937 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752676AbZCRAcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 20:32:19 -0400
-X-AntiVirus: PTMail-AV 0.3-0.92.0
-Date: Wed, 18 Mar 2009 00:23:27 +0000
-From: Luis Henriques <henrix@sapo.pt>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [PATCH 1/2 -tip] sched: Clean unused fields from struct rq
-Message-ID: <20090318002327.GA2382@hades.domain.com>
-References: <20090318000343.GA2189@hades.domain.com> <1237334969.5189.1242.camel@laptop>
+	Tue, 17 Mar 2009 20:35:28 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:56498 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752167AbZCRAf2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 20:35:28 -0400
+Date: Tue, 17 Mar 2009 19:35:24 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: struct user_namespace::creator
+Message-ID: <20090318003524.GA14054@us.ibm.com>
+References: <20090317233417.GA6195@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1237334969.5189.1242.camel@laptop>
+In-Reply-To: <20090317233417.GA6195@x200.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 18, 2009 at 01:09:29AM +0100, Peter Zijlstra wrote:
-> On Wed, 2009-03-18 at 00:03 +0000, Luis Henriques wrote:
-> > Since they are used on in statistics and are always set to zero, the following
-> > frields from struct rq have been removed: yld_exp_empty, yld_act_empty and
-> > yld_both_empty.
-> > 
-> > Signed-off-by: Luis Henriques <henrix@sapo.pt>
-> > ---
+Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> What is struct user_namespace::creator needed for?
+
+It will be needed so that we can restrict the user namespace
+to the privileges afforded its creators.  So if uid 500
+creates a new user namespace, uid 0 in that user namespace
+can be 'privileged' inside the user_namespace, but be
+restricted so it can never do anything which uid 500 in the
+parent namespace could not do.
+
+> The scheme when struct user pins struct user_namespace which frees
+> ->creator which is supposed to pind user_ns is really icky.
 > 
-> > +++ b/kernel/sched_stats.h
-> > @@ -26,9 +26,8 @@ static int show_schedstat(struct seq_file *seq, void *v)
-> >  
-> >  		/* runqueue-specific stats */
-> >  		seq_printf(seq,
-> > -		    "cpu%d %u %u %u %u %u %u %u %u %u %llu %llu %lu",
-> > -		    cpu, rq->yld_both_empty,
-> > -		    rq->yld_act_empty, rq->yld_exp_empty, rq->yld_count,
-> > +		    "cpu%d %u %u %u %u %u %u %llu %llu %lu",
-> > +		    cpu, rq->yld_count,
-> >  		    rq->sched_switch, rq->sched_count, rq->sched_goidle,
-> >  		    rq->ttwu_count, rq->ttwu_local,
-> >  		    rq->rq_cpu_time,
+> I tried this (inclomplete) patch and nothing bad happened so far
+> with CLONE_NEWUSER:
 > 
-> I think this bit is ABI, so you either have to bump the version number
-> or emit 0s, iirc gregory touched some of that last -- or at least wrote
-> userspace for it..
-
-Hmm... you're right.  I should have though about that.  Anyway, what is the
-the best approach here?
-
-I know that changes in ABI shall not break anything, but just increasing the
-version number will really solve the issue?  Will userspace care for this?
-On the other hand, just writting 0s does not sound interesting either...
-
--- 
-Luis Henriques
+> --- a/include/linux/user_namespace.h
+> +++ b/include/linux/user_namespace.h
+> @@ -12,7 +12,6 @@
+>  struct user_namespace {
+>  	struct kref		kref;
+>  	struct hlist_head	uidhash_table[UIDHASH_SZ];
+> -	struct user_struct	*creator;
+>  	struct work_struct	destroyer;
+>  };
+> 
+> diff --git a/kernel/user.c b/kernel/user.c
+> index fbb300e..1cecb8c 100644
+> --- a/kernel/user.c
+> +++ b/kernel/user.c
+> @@ -22,7 +22,6 @@ struct user_namespace init_user_ns = {
+>  	.kref = {
+>  		.refcount	= ATOMIC_INIT(1),
+>  	},
+> -	.creator = &root_user,
+>  };
+>  EXPORT_SYMBOL_GPL(init_user_ns);
+> 
+> @@ -48,9 +47,8 @@ static struct kmem_cache *uid_cachep;
+>   */
+>  static DEFINE_SPINLOCK(uidhash_lock);
+> 
+> -/* root_user.__count is 2, 1 for init task cred, 1 for init_user_ns->creator */
+>  struct user_struct root_user = {
+> -	.__count	= ATOMIC_INIT(2),
+> +	.__count	= ATOMIC_INIT(1),	/* init_cred */
+>  	.processes	= ATOMIC_INIT(1),
+>  	.files		= ATOMIC_INIT(0),
+>  	.sigpending	= ATOMIC_INIT(0),
+> --- a/kernel/user_namespace.c
+> +++ b/kernel/user_namespace.c
+> @@ -12,10 +12,6 @@
+>  #include <linux/cred.h>
+> 
+>  /*
+> - * Create a new user namespace, deriving the creator from the user in the
+> - * passed credentials, and replacing that user with the new root user for the
+> - * new namespace.
+> - *
+>   * This is called by copy_creds(), which will finish setting the target task's
+>   * credentials.
+>   */
+> @@ -42,7 +38,6 @@ int create_user_ns(struct cred *new)
+>  	}
+> 
+>  	/* set the new root user in the credentials under preparation */
+> -	ns->creator = new->user;
+>  	new->user = root_user;
+>  	new->uid = new->euid = new->suid = new->fsuid = 0;
+>  	new->gid = new->egid = new->sgid = new->fsgid = 0;
+> @@ -69,7 +64,6 @@ static void free_user_ns_work(struct work_struct *work)
+>  {
+>  	struct user_namespace *ns =
+>  		container_of(work, struct user_namespace, destroyer);
+> -	free_uid(ns->creator);
+>  	kfree(ns);
+>  }
