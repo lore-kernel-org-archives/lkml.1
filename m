@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758994AbZCRVpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759018AbZCRVpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758994AbZCRVpY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbZCRVmX
+	id S1759018AbZCRVpp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899AbZCRVm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:42:23 -0400
+	Wed, 18 Mar 2009 17:42:26 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756454AbZCRVmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:22 -0400
+	id S1756454AbZCRVmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:42:25 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 25/57] microblaze_v7: delay.h, timex.h
-Date: Wed, 18 Mar 2009 21:30:52 +0100
-Message-Id: <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 43/57] microblaze_v7: stats headers
+Date: Wed, 18 Mar 2009 21:31:10 +0100
+Message-Id: <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -42,6 +42,24 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <039bc2fea33d23a3e7d2d85ac6fb275b8d21b5ed.1237407249.git.monstr@monstr.eu>
  <513d4067a84be1ecb47577e1edf131d2b3572808.1237407249.git.monstr@monstr.eu>
  <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
+ <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
+ <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
+ <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
+ <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
+ <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
+ <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
+ <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
+ <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
+ <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
+ <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
+ <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
+ <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
+ <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
+ <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
+ <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
+ <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
+ <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
+ <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -53,114 +71,98 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/delay.h |   72 +++++++++++++++++++++++++++++++++++
- arch/microblaze/include/asm/timex.h |   18 +++++++++
- 2 files changed, 90 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/delay.h
- create mode 100644 arch/microblaze/include/asm/timex.h
+ arch/microblaze/include/asm/stat.h   |   73 ++++++++++++++++++++++++++++++++++
+ arch/microblaze/include/asm/statfs.h |    1 +
+ 2 files changed, 74 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/stat.h
+ create mode 100644 arch/microblaze/include/asm/statfs.h
 
-diff --git a/arch/microblaze/include/asm/delay.h b/arch/microblaze/include/asm/delay.h
+diff --git a/arch/microblaze/include/asm/stat.h b/arch/microblaze/include/asm/stat.h
 new file mode 100644
-index 0000000..05b7d39
+index 0000000..a4e148e
 --- /dev/null
-+++ b/arch/microblaze/include/asm/delay.h
-@@ -0,0 +1,72 @@
++++ b/arch/microblaze/include/asm/stat.h
+@@ -0,0 +1,73 @@
 +/*
-+ * include/asm-microblaze/delay.h
++ * Microblaze stat structure
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * Copyright (C) 2001,02,03 NEC Electronics Corporation
++ * Copyright (C) 2001,02,03 Miles Bader <miles@gnu.org>
 + *
-+ * Copyright (C) 2008 Michal Simek
-+ * Copyright (C) 2007 John Williams
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ *
++ * Written by Miles Bader <miles@gnu.org>
 + */
 +
-+#ifndef _ASM_MICROBLAZE_DELAY_H
-+#define _ASM_MICROBLAZE_DELAY_H
++#ifndef _ASM_MICROBLAZE_STAT_H
++#define _ASM_MICROBLAZE_STAT_H
 +
-+extern inline void __delay(unsigned long loops)
-+{
-+	asm volatile ("# __delay		\n\t"		\
-+			"1: addi	%0, %0, -1\t\n"		\
-+			"bneid	%0, 1b		\t\n"		\
-+			"nop			\t\n"
-+			: "=r" (loops)
-+			: "0" (loops));
-+}
++#include <linux/posix_types.h>
 +
-+/*
-+ * Note that 19 * 226 == 4294 ==~ 2^32 / 10^6, so
-+ * loops = (4294 * usecs * loops_per_jiffy * HZ) / 2^32.
-+ *
-+ * The mul instruction gives us loops = (a * b) / 2^32.
-+ * We choose a = usecs * 19 * HZ and b = loops_per_jiffy * 226
-+ * because this lets us support a wide range of HZ and
-+ * loops_per_jiffy values without either a or b overflowing 2^32.
-+ * Thus we need usecs * HZ <= (2^32 - 1) / 19 = 226050910 and
-+ * loops_per_jiffy <= (2^32 - 1) / 226 = 19004280
-+ * (which corresponds to ~3800 bogomips at HZ = 100).
-+ * -- paulus
-+ */
-+#define __MAX_UDELAY	(226050910UL/HZ)	/* maximum udelay argument */
-+#define __MAX_NDELAY	(4294967295UL/HZ)	/* maximum ndelay argument */
++struct stat {
++	unsigned int	st_dev;
++	unsigned long	st_ino;
++	unsigned int	st_mode;
++	unsigned int	st_nlink;
++	unsigned int	st_uid;
++	unsigned int	st_gid;
++	unsigned int	st_rdev;
++	unsigned long	st_size;
++	unsigned long	st_blksize;
++	unsigned long	st_blocks;
++	unsigned long	st_atime;
++	unsigned long	__unused1; /* unsigned long  st_atime_nsec */ 
++	unsigned long	st_mtime;
++	unsigned long	__unused2; /* unsigned long  st_mtime_nsec */
++	unsigned long	st_ctime;
++	unsigned long	__unused3; /* unsigned long  st_ctime_nsec */
++	unsigned long	__unused4;
++	unsigned long	__unused5;
++};
 +
-+extern unsigned long loops_per_jiffy;
++struct stat64 {
++	unsigned long long	st_dev;
++	unsigned long	__unused1;
 +
-+extern inline void __udelay(unsigned int x)
-+{
++	unsigned long long	st_ino;
 +
-+	unsigned long long tmp =
-+		(unsigned long long)x * (unsigned long long)loops_per_jiffy \
-+			* 226LL;
-+	unsigned loops = tmp >> 32;
++	unsigned int	st_mode;
++	unsigned int	st_nlink;
 +
-+/*
-+	__asm__("mulxuu %0,%1,%2" : "=r" (loops) :
-+		"r" (x), "r" (loops_per_jiffy * 226));
-+*/
-+	__delay(loops);
-+}
++	unsigned int	st_uid;
++	unsigned int	st_gid;
 +
-+extern void __bad_udelay(void);		/* deliberately undefined */
-+extern void __bad_ndelay(void);		/* deliberately undefined */
++	unsigned long long	st_rdev;
++	unsigned long	__unused3;
 +
-+#define udelay(n) (__builtin_constant_p(n) ? \
-+	((n) > __MAX_UDELAY ? __bad_udelay() : __udelay((n) * (19 * HZ))) : \
-+	__udelay((n) * (19 * HZ)))
++	long long	st_size;
++	unsigned long	st_blksize;
 +
-+#define ndelay(n) (__builtin_constant_p(n) ? \
-+	((n) > __MAX_NDELAY ? __bad_ndelay() : __udelay((n) * HZ)) : \
-+	__udelay((n) * HZ))
++	unsigned long	st_blocks; /* No. of 512-byte blocks allocated */
++	unsigned long	__unused4; /* future possible st_blocks high bits */
 +
-+#define muldiv(a, b, c)		(((a)*(b))/(c))
++	unsigned long	st_atime;
++	unsigned long	st_atime_nsec;
 +
-+#endif /* _ASM_MICROBLAZE_DELAY_H */
-diff --git a/arch/microblaze/include/asm/timex.h b/arch/microblaze/include/asm/timex.h
++	unsigned long	st_mtime;
++	unsigned long	st_mtime_nsec;
++
++	unsigned long	st_ctime;
++	unsigned long	st_ctime_nsec;
++
++	unsigned long	__unused8;
++};
++
++#endif /* _ASM_MICROBLAZE_STAT_H */
+diff --git a/arch/microblaze/include/asm/statfs.h b/arch/microblaze/include/asm/statfs.h
 new file mode 100644
-index 0000000..678525d
+index 0000000..0b91fe1
 --- /dev/null
-+++ b/arch/microblaze/include/asm/timex.h
-@@ -0,0 +1,18 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_TIMEX_H
-+#define _ASM_MICROBLAZE_TIMEX_H
-+
-+#define CLOCK_TICK_RATE 1000 /* Timer input freq. */
-+
-+typedef unsigned long cycles_t;
-+
-+#define get_cycles()	(0)
-+
-+#endif /* _ASM_TIMEX_H */
++++ b/arch/microblaze/include/asm/statfs.h
+@@ -0,0 +1 @@
++#include <asm-generic/statfs.h>
 -- 
 1.5.5.1
 
