@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbZCRNmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbZCRNoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbZCRNmV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 09:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbZCRNmG
+	id S1756328AbZCRNoQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 09:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbZCRNn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 09:42:06 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49218 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755337AbZCRNmF (ORCPT
+	Wed, 18 Mar 2009 09:43:59 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:55386 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752931AbZCRNn7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 09:42:05 -0400
-Date: Wed, 18 Mar 2009 14:42:02 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Denis Karpov <ext-denis.2.karpov@gmail.com>,
-       "ext Jorge Boncompte [DTI2]" <jorge@dti2.net>,
-       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-Subject: Re: Error testing ext3 on brd ramdisk
-Message-ID: <20090318134202.GB11965@atrey.karlin.mff.cuni.cz>
-References: <20090305094623.GA17815@wotan.suse.de> <49AFAFD9.9050805@dti2.net> <49AFC1A9.90501@dti2.net> <20090310161247.GA19352@wotan.suse.de> <20090310163002.GC19352@wotan.suse.de> <49B69A09.3080408@dti2.net> <20090311021920.GA16561@wotan.suse.de> <49BA927F.8020701@dti2.net> <20090317094019.GA10360@smart.research.nokia.com> <20090318121116.GC14622@wotan.suse.de>
+	Wed, 18 Mar 2009 09:43:59 -0400
+Date: Wed, 18 Mar 2009 08:43:41 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
+       Dan Smith <danms@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] c/r: Add CR_COPY() macro (v3)
+Message-ID: <20090318134341.GB22636@us.ibm.com>
+References: <1236095764-19325-1-git-send-email-danms@us.ibm.com> <1236095764-19325-3-git-send-email-danms@us.ibm.com> <1236097332.22399.8.camel@nimitz> <878wnmrtp9.fsf@caffeine.danplanet.com> <1236128437.22399.31.camel@nimitz> <20090304150519.GB10186@us.ibm.com> <49C0A80E.1040603@cs.columbia.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090318121116.GC14622@wotan.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <49C0A80E.1040603@cs.columbia.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Mar 17, 2009 at 11:40:19AM +0200, Denis Karpov wrote:
-> > Hello, 
+Quoting Oren Laadan (orenl@cs.columbia.edu):
+> 
+> 
+> Serge E. Hallyn wrote:
+> > Quoting Dave Hansen (dave@linux.vnet.ibm.com):
+> >> On Tue, 2009-03-03 at 16:57 -0800, Dan Smith wrote:
+> >>> DH> Did you convince Nathan that this ends up being a good idea?
+> >>>
+> >>> Technically he hasn't seen this version, but my hopes are not high
+> >>> that he will change his mind.  If the feedback is that they're not
+> >>> liked, I'll happily remove them.
+> >> I just figure if Nathan feels that strongly that we'll encounter more
+> >> people who feel even more so.  So, I was curious if he changed his mind
+> >> somehow.
 > > 
-> > first off, sorry if you getting this email twice.
-> 
-> No problem, I'm not exactly able to reproduce it myself, but Jan Kara
-> has just fixed some issues which could explain it: they happen under
-> memory pressure so I may not have triggered it if I didn't put it
-> under pressure.
-> 
-> Jan's fixes are here:
-> 
-> http://marc.info/?l=linux-ext4&m=123731584711382&w=2
-> 
-> It would be interesting to try them, and if they don't work maybe
-> he's also interested so I cc'ed him.
-> 
->  
-> > I also tried to do ext3/ext4 fs smoketesting and used Adraian's
-> > script.  I am consistently getting the same results - filesystem get's
-> > corrupted. 
-> > I tested on quad Xeon, with patches posted in this thread.
+> > I maintain however that two strong advantages of moving the checkpoint
+> > and restart of simple registers etc into a single function are:
 > > 
-> > 1. tests with brd:
-> > - ext3fs on brd
-> >     corruption (see attached ext3fs.brd.corruption.txt)
-> > - ext4fs on brd
-> >     corruption (see attached ext4fs.brd.corruption.txt)
+> > 	1. we won't forget to add (or accidentally lose) one or the
+> > 		other
+> > 	2. any actual special handling at checkpoint or restart, like
+> > 		the loading of access registers at restart on s390x,
+> > 		stand out
 > > 
-> > In both cases I saw some complains from JBD/JBD2:
-> >  JBD: Detected IO errors while flushing file data on
-  Yes, my patches fix exactly this problem. So please try running with
-them. I'm not sure about that HTREE corruption you see during fsck. That
-seems to be a separate issue.
+> 
+> I, too, think that this scheme is elegant, and at the same time I, too,
+> think that it obfuscates the code. Since I only touch arch-dependent code
+> only if I really really must, I don't have strong opinion about it ;)
+> 
+> However, a problem with this scheme is that checkpoint and restart
+> are not fully symmetric -- on restart we must sanitize the input data
+> before restoring the registers to that data. I'm not familiar with
+> s390, but it is likely that by not doing so we create a security issue.
+> 
+> Oren.
 
-> > 2. I enabled JBD debugging, re-run the tests. Console was 
-> > flooded with messages and in the end I got a soft lockup.
-> > I cannot consistently reproduce this (see attached 
-> > brd.ext3fs.softlock.txt).
-  Yes, this usually produces far too many messages. The soft lockup was
-probably caused by the machine being too busy logging all the messages
-(log files are synced which adds much more to the load of the
-filesystem). I'd probably leave that aside for now and concentrate on
-the corruption problem.
+But that's exactly why I think CR_COPY() helps - the sanitation is
+explicit next to some boring CR_COPY()s.  It becomes clearer that
+it is being done.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Anyway we've got plenty of other, bigger hurdles to clear, so while
+I do have a strong opinion, I'm not planning on pushing hard either
+way.
+
+thanks,
+-serge
