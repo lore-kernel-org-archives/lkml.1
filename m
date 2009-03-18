@@ -1,126 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbZCRU6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZCRU7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754185AbZCRU6O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 16:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbZCRU55
+	id S1755239AbZCRU7k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 16:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbZCRU71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 16:57:57 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:58073 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752052AbZCRU54 (ORCPT
+	Wed, 18 Mar 2009 16:59:27 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:64175 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752903AbZCRU7Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 16:57:56 -0400
-Message-ID: <49C160D6.6010409@novell.com>
-Date: Wed, 18 Mar 2009 17:00:06 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 18 Mar 2009 16:59:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
+         :message-id:content-type:content-transfer-encoding;
+        b=gFf7I3Mr1Gp37Atq57gUJQftc0WsLlm6pwCb1sPD9jfP/vm+6s1IvinktZ0WCDMGPr
+         5hRUo5dAEFXsmu1uo/ws1zBf60lLa5WoihVzXPApCJgXKi8gdJ/4EAidysfAkaZYd28W
+         rNGP113tcThzeLe9rUYC0oCr2KEf52Yl1yRIE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] MAINTAINERS: move old ide-{floppy,tape} entries to CREDITS
+Date: Wed, 18 Mar 2009 22:01:32 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc8-next-20090317; KDE/4.2.0; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Gadi Oxman <gadio@netvision.net.il>,
+       Paul Bristow <paul@paulbristow.net>,
+       Borislav Petkov <petkovbb@gmail.com>
 MIME-Version: 1.0
-To: Luis Henriques <henrix@sapo.pt>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] sched: Clean unused fields from struct rq
-References: <20090318202824.GA5025@hades.domain.com>
-In-Reply-To: <20090318202824.GA5025@hades.domain.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig93C0E431A0AB709B57B0C848"
+Content-Disposition: inline
+Message-Id: <200903182201.32668.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig93C0E431A0AB709B57B0C848
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] MAINTAINERS: move old ide-{floppy,tape} entries to CREDITS
 
-Hi Luis,
+Ben Hutchings noticed that MAINTAINERS somehow still contain old
+ide-{floppy,tape} entries.  Fix it by moving them to CREDITS (kudos
+to Gadi and Paul for all the early hard work on ide-{floppy,tape}).
 
-Luis Henriques wrote:
-> Since they are used on in statistics and are always set to zero, the fo=
-llowing
-> fields from struct rq have been removed: yld_exp_empty, yld_act_empty a=
-nd
-> yld_both_empty.
->
-> Sched Debug version has also been incremented.
->
-> Signed-off-by: Luis Henriques <henrix@sapo.pt>
-> ---
->  kernel/sched.c       |    3 ---
->  kernel/sched_debug.c |    5 +----
->  kernel/sched_stats.h |    5 ++---
->  3 files changed, 3 insertions(+), 10 deletions(-)
->
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 4000304..289eac2 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -646,9 +646,6 @@ struct rq {
->  	/* could above be rq->cfs_rq.exec_clock + rq->rt_rq.rt_runtime ? */
-> =20
->  	/* sys_sched_yield() stats */
-> -	unsigned int yld_exp_empty;
-> -	unsigned int yld_act_empty;
-> -	unsigned int yld_both_empty;
->  	unsigned int yld_count;
-> =20
->  	/* schedule() stats */
-> diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-> index 2b1260f..58cdc5c 100644
-> --- a/kernel/sched_debug.c
-> +++ b/kernel/sched_debug.c
-> @@ -287,9 +287,6 @@ static void print_cpu(struct seq_file *m, int cpu)
->  #ifdef CONFIG_SCHEDSTATS
->  #define P(n) SEQ_printf(m, "  .%-30s: %d\n", #n, rq->n);
-> =20
-> -	P(yld_exp_empty);
-> -	P(yld_act_empty);
-> -	P(yld_both_empty);
->  	P(yld_count);
-> =20
->  	P(sched_switch);
-> @@ -314,7 +311,7 @@ static int sched_debug_show(struct seq_file *m, voi=
-d *v)
->  	u64 now =3D ktime_to_ns(ktime_get());
->  	int cpu;
-> =20
-> -	SEQ_printf(m, "Sched Debug Version: v0.08, %s %.*s\n",
-> +	SEQ_printf(m, "Sched Debug Version: v0.09, %s %.*s\n",
->  =20
+Cc: Gadi Oxman <gadio@netvision.net.il>
+Cc: Paul Bristow <paul@paulbristow.net>
+Cc: Borislav Petkov <petkovbb@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+Borislav, maybe it would make sense to rename IDE/ATAPI CDROM DRIVER
+entry to IDE/ATAPI DRIVERS one nowadays (you're the one doing most of
+ATAPI work anyway :)?
 
-I actually key off the SCHEDSTAT_VERSION (currently 14) at the top of
-kernel/sched_stats.h.  Cursory inspection of the existing code and your
-patch says that this should actually be the value that needs updating
-(vs. vSched-Debug).  However, note that I am not sure if there are also
-users of sched-debug that need to see that version bump as well in order
-to remain compatible.
+ CREDITS     |    9 +++++++++
+ MAINTAINERS |   13 -------------
+ 2 files changed, 9 insertions(+), 13 deletions(-)
 
-If you are really motivated, you can test your patches against my
-schedtop tool to verify sane behavior (for bumping SCHEDSTAT_VERSION to
-15, I would expect it to gracefully report that it cannot handle this
-version and exit).  You can find both source and rpms here:
-
-http://rt.wiki.kernel.org/index.php/Schedtop_utility
-
-Thanks!
--Greg
-
-
-
---------------enig93C0E431A0AB709B57B0C848
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknBYNYACgkQlOSOBdgZUxndVgCfaS8bpZh79JqpvQ2W0CU19rAx
-RLIAn0aCZ+T1O/KKFjdKbM0W7oVtraw6
-=243E
------END PGP SIGNATURE-----
-
---------------enig93C0E431A0AB709B57B0C848--
+Index: b/CREDITS
+===================================================================
+--- a/CREDITS
++++ b/CREDITS
+@@ -495,6 +495,11 @@ S: Kopmansg 2
+ S: 411 13  Goteborg
+ S: Sweden
+ 
++N: Paul Bristow
++E: paul@paulbristow.net
++W: http://paulbristow.net/linux/idefloppy.html
++D: Maintainer of IDE/ATAPI floppy driver
++
+ N: Dominik Brodowski
+ E: linux@brodo.de
+ W: http://www.brodo.de/
+@@ -2642,6 +2647,10 @@ S: C/ Mieses 20, 9-B
+ S: Valladolid 47009
+ S: Spain
+ 
++N: Gadi Oxman
++E: gadio@netvision.net.il
++D: Original author and maintainer of IDE/ATAPI floppy/tape drivers
++
+ N: Greg Page
+ E: gpage@sovereign.org
+ D: IPX development and support
+Index: b/MAINTAINERS
+===================================================================
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2179,19 +2179,6 @@ M:	petkovbb@gmail.com
+ L:	linux-ide@vger.kernel.org
+ S:	Maintained
+ 
+-IDE/ATAPI FLOPPY DRIVERS
+-P:	Paul Bristow
+-M:	Paul Bristow <paul@paulbristow.net>
+-W:	http://paulbristow.net/linux/idefloppy.html
+-L:	linux-kernel@vger.kernel.org
+-S:	Maintained
+-
+-IDE/ATAPI TAPE DRIVERS
+-P:	Gadi Oxman
+-M:	Gadi Oxman <gadio@netvision.net.il>
+-L:	linux-kernel@vger.kernel.org
+-S:	Maintained
+-
+ IDLE-I7300
+ P:	Andy Henroid
+ M:	andrew.d.henroid@intel.com
