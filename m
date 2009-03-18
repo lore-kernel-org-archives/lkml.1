@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758795AbZCRRqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbZCRRqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758795AbZCRRqZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 13:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZCRRqN
+	id S1759284AbZCRRqm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 13:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757844AbZCRRqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 13:46:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39715 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752239AbZCRRqM (ORCPT
+	Wed, 18 Mar 2009 13:46:17 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:12245 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756376AbZCRRqP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 13:46:12 -0400
-Subject: Re: [PATCH] BTRFS: Transpose parent_objectid and parent_gen in
- struct btrfs_fid
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Chris Mason <chris.mason@oracle.com>, balajirrao@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <30514.1237397915@redhat.com>
-References: <1237396909.27829.102.camel@macbook.infradead.org>
-	 <1237395629.10384.2.camel@think.oraclecorp.com>
-	 <20090318161626.16521.91662.stgit@warthog.procyon.org.uk>
-	 <21667.1237395905@redhat.com>  <30514.1237397915@redhat.com>
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 17:46:00 +0000
-Message-Id: <1237398360.27829.105.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Wed, 18 Mar 2009 13:46:15 -0400
+Message-ID: <49C1331D.1080805@panasas.com>
+Date: Wed, 18 Mar 2009 19:45:01 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>, Evgeniy Polyakov <zbr@ioremap.net>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCHSET 0/8 version 4] exofs for kernel 2.6.30
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-OriginalArrivalTime: 18 Mar 2009 17:46:11.0822 (UTC) FILETIME=[6D39A0E0:01C9A7F1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-18 at 17:38 +0000, David Howells wrote:
-> If the CPU doing the load/store throws a misalignment exception or just
-> ignores the instruction because it's misaligned, it might make for interesting
-> debugging.
+What's new since last iteration:
 
-That would require a 64-bit CPU which doesn't naturally handle unaligned
-loads, and a compiler bug.
+* I completely re-wrote the [PATCH 4/8] exofs: address_space_operations
+  in which we actually write/read to/from osd-storage. The difference is
+  that now we try to accumulate as many contiguous pages as possible and
+  send them as one large request. As opposed to writing each page at a
+  time, in the previous patchset.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+* [PATCH 5/8] exofs: dir_inode and directory operations received lots
+  of love thanks to Evgeniy Polyakov's grate comments.
+
+exofs is a file system that uses an OSD device as it's back store.
+
+OSD is a new T10 command set that views storage devices not as a large/flat
+array of sectors but as a container of objects, each having a length, quota,
+time attributes and more. Each object is addressed by a 64bit ID, and is
+contained in a 64bit ID partition. Each object has associated attributes
+attached to it, which are integral part of the object and provide metadata about
+the object. The standard defines some common obligatory attributes, but user
+attributes can be added as needed.
+
+Here is the list of patches
+[PATCH 1/8] exofs: Kbuild, Headers and osd utils
+[PATCH 2/8] exofs: file and file_inode operations
+[PATCH 3/8] exofs: symlink_inode and fast_symlink_inode operations
+[PATCH 4/8] exofs: address_space_operations
+[PATCH 5/8] exofs: dir_inode and directory operations
+[PATCH 6/8] exofs: super_operations and file_system_type
+[PATCH 7/8] exofs: Documentation
+[PATCH 8/8] fs: Add exofs to Kernel build
+
+This patchset is also available on:
+  git-clone git://git.open-osd.org/linux-open-osd.git linux-next
+or on the web at:
+  http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=refs/heads/linux-next
+
+(Above tree is based on Linus v2.6.29-rc8-212-g8144737)
+
+If anyone wants to actually run this code and test it
+then please start reading at:
+    http://open-osd.org
+You will need to checkout the out-of-tree git (below) for the user-mode utilities.
+Also the exofs.txt file in patch 7/8 should help
+
+If you want to review the user-mode library and supporting plumbings,
+  git-clone git://git.open-osd.org/open-osd.git
+or on the web at:
+  http://git.open-osd.org/gitweb.cgi?p=open-osd.git;a=summary
+
+Boaz
 
