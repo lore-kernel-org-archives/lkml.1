@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbZCRVuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760186AbZCRVu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760147AbZCRVuK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755892AbZCRVnI
+	id S1760186AbZCRVu5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757824AbZCRVnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:43:08 -0400
+	Wed, 18 Mar 2009 17:43:17 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757767AbZCRVnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:43:06 -0400
+	id S1757793AbZCRVnO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:43:14 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 38/57] microblaze_v7: headers for irq
-Date: Wed, 18 Mar 2009 21:31:05 +0100
-Message-Id: <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 37/57] microblaze_v7: dma support
+Date: Wed, 18 Mar 2009 21:31:04 +0100
+Message-Id: <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -54,7 +54,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
  <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
  <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
- <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -66,189 +65,207 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/hardirq.h  |   29 ++++++++
- arch/microblaze/include/asm/irq_regs.h |    1 +
- arch/microblaze/include/asm/irqflags.h |  123 ++++++++++++++++++++++++++++++++
- 3 files changed, 153 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/hardirq.h
- create mode 100644 arch/microblaze/include/asm/hw_irq.h
- create mode 100644 arch/microblaze/include/asm/irq_regs.h
- create mode 100644 arch/microblaze/include/asm/irqflags.h
+ arch/microblaze/include/asm/dma-mapping.h |  131 +++++++++++++++++++++++++++++
+ arch/microblaze/include/asm/dma.h         |   16 ++++
+ arch/microblaze/include/asm/scatterlist.h |   28 ++++++
+ 3 files changed, 175 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/dma-mapping.h
+ create mode 100644 arch/microblaze/include/asm/dma.h
+ create mode 100644 arch/microblaze/include/asm/scatterlist.h
 
-diff --git a/arch/microblaze/include/asm/hardirq.h b/arch/microblaze/include/asm/hardirq.h
+diff --git a/arch/microblaze/include/asm/dma-mapping.h b/arch/microblaze/include/asm/dma-mapping.h
 new file mode 100644
-index 0000000..0f2d6b0
+index 0000000..e6f1246
 --- /dev/null
-+++ b/arch/microblaze/include/asm/hardirq.h
-@@ -0,0 +1,29 @@
++++ b/arch/microblaze/include/asm/dma-mapping.h
+@@ -0,0 +1,131 @@
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * include/asm-microblaze/dma-mapping.h
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_HARDIRQ_H
-+#define _ASM_MICROBLAZE_HARDIRQ_H
-+
-+#include <linux/cache.h>
-+#include <linux/irq.h>
-+#include <asm/irq.h>
-+#include <asm/current.h>
-+#include <linux/ptrace.h>
-+
-+/* should be defined in each interrupt controller driver */
-+extern unsigned int get_irq(struct pt_regs *regs);
-+
-+typedef struct {
-+	unsigned int __softirq_pending;
-+} ____cacheline_aligned irq_cpustat_t;
-+
-+void ack_bad_irq(unsigned int irq);
-+
-+#include <linux/irq_cpustat.h> /* Standard mappings for irq_cpustat_t above */
-+
-+#endif /* _ASM_MICROBLAZE_HARDIRQ_H */
-diff --git a/arch/microblaze/include/asm/hw_irq.h b/arch/microblaze/include/asm/hw_irq.h
-new file mode 100644
-index 0000000..e69de29
-diff --git a/arch/microblaze/include/asm/irq_regs.h b/arch/microblaze/include/asm/irq_regs.h
-new file mode 100644
-index 0000000..3dd9c0b
---- /dev/null
-+++ b/arch/microblaze/include/asm/irq_regs.h
-@@ -0,0 +1 @@
-+#include <asm-generic/irq_regs.h>
-diff --git a/arch/microblaze/include/asm/irqflags.h b/arch/microblaze/include/asm/irqflags.h
-new file mode 100644
-index 0000000..dea6564
---- /dev/null
-+++ b/arch/microblaze/include/asm/irqflags.h
-@@ -0,0 +1,123 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_IRQFLAGS_H
-+#define _ASM_MICROBLAZE_IRQFLAGS_H
++#ifndef _ASM_MICROBLAZE_DMA_MAPPING_H
++#define _ASM_MICROBLAZE_DMA_MAPPING_H
 +
-+#include <linux/irqflags.h>
++#include <asm/cacheflush.h>
++#include <linux/io.h>
++#include <linux/bug.h>
 +
-+# if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++struct scatterlist;
 +
-+# define local_irq_save(flags)				\
-+	do {						\
-+		asm volatile ("# local_irq_save	\n\t"	\
-+				"msrclr %0, %1	\n\t"	\
-+				"nop	\n\t"		\
-+				: "=r"(flags)		\
-+				: "i"(MSR_IE)		\
-+				: "memory");		\
-+	} while (0)
++#define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
++#define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
 +
-+# define local_irq_disable()					\
-+	do {							\
-+		asm volatile ("# local_irq_disable \n\t"	\
-+				"msrclr r0, %0 \n\t"		\
-+				"nop	\n\t"			\
-+				:				\
-+				: "i"(MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
-+
-+# define local_irq_enable()					\
-+	do {							\
-+		asm volatile ("# local_irq_enable \n\t"		\
-+				"msrset	r0, %0 \n\t"		\
-+				"nop	\n\t"			\
-+				:				\
-+				: "i"(MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
-+
-+# else /* CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR == 0 */
-+
-+# define local_irq_save(flags)					\
-+	do {							\
-+		register unsigned tmp;				\
-+		asm volatile ("# local_irq_save	\n\t"		\
-+				"mfs	%0, rmsr \n\t"		\
-+				"nop \n\t"			\
-+				"andi	%1, %0, %2 \n\t"	\
-+				"mts	rmsr, %1 \n\t"		\
-+				"nop \n\t"			\
-+				: "=r"(flags), "=r" (tmp)	\
-+				: "i"(~MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
-+
-+# define local_irq_disable()					\
-+	do {							\
-+		register unsigned tmp;				\
-+		asm volatile ("# local_irq_disable \n\t"	\
-+				"mfs	%0, rmsr \n\t"		\
-+				"nop \n\t"			\
-+				"andi	%0, %0, %1 \n\t"	\
-+				"mts	rmsr, %0 \n\t"		\
-+				"nop \n\t"			\
-+				: "=r"(tmp)			\
-+				: "i"(~MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
-+
-+# define local_irq_enable()					\
-+	do {							\
-+		register unsigned tmp;				\
-+		asm volatile ("# local_irq_enable \n\t"		\
-+				"mfs	%0, rmsr \n\t"		\
-+				"nop \n\t"			\
-+				"ori	%0, %0, %1 \n\t"	\
-+				"mts	rmsr, %0 \n\t"		\
-+				"nop \n\t"			\
-+				: "=r"(tmp)			\
-+				: "i"(MSR_IE)			\
-+				: "memory");			\
-+	} while (0)
-+
-+# endif /* CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR */
-+
-+#define local_save_flags(flags)					\
-+	do {							\
-+		asm volatile ("# local_save_flags \n\t"		\
-+				"mfs	%0, rmsr \n\t"		\
-+				"nop	\n\t"			\
-+				: "=r"(flags)			\
-+				:				\
-+				: "memory");			\
-+	} while (0)
-+
-+#define local_irq_restore(flags)			\
-+	do {						\
-+		asm volatile ("# local_irq_restore \n\t"\
-+				"mts	rmsr, %0 \n\t"	\
-+				"nop	\n\t"		\
-+				:			\
-+				: "r"(flags)		\
-+				: "memory");		\
-+	} while (0)
-+
-+static inline int irqs_disabled(void)
++/* FIXME */
++static inline int
++dma_supported(struct device *dev, u64 mask)
 +{
-+	unsigned long flags;
-+
-+	local_save_flags(flags);
-+	return ((flags & MSR_IE) == 0);
++	return 1;
 +}
 +
-+#define raw_irqs_disabled irqs_disabled
-+#define raw_irqs_disabled_flags(flags)	((flags) == 0)
++static inline dma_addr_t
++dma_map_page(struct device *dev, struct page *page,
++	unsigned long offset, size_t size,
++	enum dma_data_direction direction)
++{
++	BUG();
++	return 0;
++}
 +
-+#endif /* _ASM_MICROBLAZE_IRQFLAGS_H */
++static inline void
++dma_unmap_page(struct device *dev, dma_addr_t dma_address, size_t size,
++	enum dma_data_direction direction)
++{
++	BUG();
++}
++
++static inline int
++dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
++	enum dma_data_direction direction)
++{
++	BUG();
++	return 0;
++}
++
++static inline void
++dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
++	enum dma_data_direction direction)
++{
++	BUG();
++}
++
++static inline void
++dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
++			enum dma_data_direction direction)
++{
++	BUG();
++}
++
++static inline void
++dma_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
++		size_t size, enum dma_data_direction direction)
++{
++	BUG();
++}
++
++static inline void
++dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
++		enum dma_data_direction direction)
++{
++	BUG();
++}
++
++static inline void
++dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nelems,
++		enum dma_data_direction direction)
++{
++	BUG();
++}
++
++static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
++{
++	return 0;
++}
++
++static inline void *dma_alloc_coherent(struct device *dev, size_t size,
++				dma_addr_t *dma_handle, int flag)
++{
++	return NULL; /* consistent_alloc(flag, size, dma_handle); */
++}
++
++static inline void dma_free_coherent(struct device *dev, size_t size,
++			void *vaddr, dma_addr_t dma_handle)
++{
++	BUG();
++}
++
++static inline dma_addr_t
++dma_map_single(struct device *dev, void *ptr, size_t size,
++	enum dma_data_direction direction)
++{
++	BUG_ON(direction == DMA_NONE);
++
++	return virt_to_bus(ptr);
++}
++
++static inline void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
++				    size_t size,
++				    enum dma_data_direction direction)
++{
++	switch (direction) {
++	case DMA_FROM_DEVICE:
++		flush_dcache_range((unsigned)dma_addr,
++			(unsigned)dma_addr + size);
++			/* Fall through */
++	case DMA_TO_DEVICE:
++		break;
++	default:
++		BUG();
++	}
++}
++
++#endif /* _ASM_MICROBLAZE_DMA_MAPPING_H */
+diff --git a/arch/microblaze/include/asm/dma.h b/arch/microblaze/include/asm/dma.h
+new file mode 100644
+index 0000000..0967fa0
+--- /dev/null
++++ b/arch/microblaze/include/asm/dma.h
+@@ -0,0 +1,16 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_DMA_H
++#define _ASM_MICROBLAZE_DMA_H
++
++/* we don't have dma address limit. define it as zero to be
++ * unlimited. */
++#define MAX_DMA_ADDRESS		(0)
++
++#endif /* _ASM_MICROBLAZE_DMA_H */
+diff --git a/arch/microblaze/include/asm/scatterlist.h b/arch/microblaze/include/asm/scatterlist.h
+new file mode 100644
+index 0000000..08ff1d0
+--- /dev/null
++++ b/arch/microblaze/include/asm/scatterlist.h
+@@ -0,0 +1,28 @@
++/*
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_SCATTERLIST_H
++#define _ASM_MICROBLAZE_SCATTERLIST_H
++
++struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long	sg_magic;
++#endif
++	unsigned long	page_link;
++	dma_addr_t	dma_address;
++	unsigned int	offset;
++	unsigned int	length;
++};
++
++#define sg_dma_address(sg)      ((sg)->dma_address)
++#define sg_dma_len(sg)          ((sg)->length)
++
++#define ISA_DMA_THRESHOLD (~0UL)
++
++#endif /* _ASM_MICROBLAZE_SCATTERLIST_H */
 -- 
 1.5.5.1
 
