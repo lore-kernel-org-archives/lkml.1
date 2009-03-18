@@ -1,117 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbZCRMuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbZCRMvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757763AbZCRMuZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 08:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756839AbZCRMs5
+	id S1758079AbZCRMvA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 08:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757469AbZCRMtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 08:48:57 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:40337 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755712AbZCRMsx (ORCPT
+	Wed, 18 Mar 2009 08:49:17 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:36997 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757455AbZCRMtQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 08:48:53 -0400
-Message-Id: <20090318124846.081782218@de.ibm.com>
-References: <20090318124829.637003183@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 18 Mar 2009 13:48:34 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 5/6] make page table walking more robust
-Content-Disposition: inline; filename=005-page-walk.diff
+	Wed, 18 Mar 2009 08:49:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ybzzLghiZi9q5NOcHWygqGRKt8L5oESZSzv8LjFCIh2MLE2jo2AzvDaEhJvhCxzQohktVXQZaHcWuvplFdVNO/CMQuWGVlqNxRi5lcDUjIzAUVDviX4LEVRyPQ/wG8wA9nOgoO92uet0Rm2yIOVqhZFHX5G2tSEPYNkd9yOUISI=  ;
+X-YMail-OSG: NQL1ftIVM1k9oVWcrvAsMoJfX3USrM6uuVNeNdUBTwTDP1YL7fXYakn_jgz7uibmV_RjZun_iAEQFBUJ4QN603.UvHo87TlWPPIHvlVMh773buND6bVHf4nMafCOXEjq3Gw1bWLLeN87ZetbtoNnIRcuz1DZq.ctgeQ4vFpUkMo2xoTwcuJkke89ECG2cKiUalxArHoRpp_vIEL5GsopLweBlrxcuXR9O3_IqEU-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: ngupta@vflare.org
+Subject: Re: [PATCH 1/3]: compressed RAM block device
+Date: Wed, 18 Mar 2009 23:49:08 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <49BF8ABC.6040805@vflare.org> <200903182325.21106.nickpiggin@yahoo.com.au> <49C0EB46.5050309@vflare.org>
+In-Reply-To: <49C0EB46.5050309@vflare.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903182349.09091.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+On Wednesday 18 March 2009 23:38:30 Nitin Gupta wrote:
+> Nick Piggin wrote:
+> > On Tuesday 17 March 2009 22:36:46 Nitin Gupta wrote:
+> >>   drivers/block/Kconfig     |   22 +
+> >>   drivers/block/Makefile    |    1 +
+> >>   drivers/block/compcache.c |  995
+> >> +++++++++++++++++++++++++++++++++++++++++++++ drivers/block/compcache.h
+> >> | 160 ++++++++
+> >>   4 files changed, 1178 insertions(+), 0 deletions(-)
+> >>
+> >> Creates RAM based block device (ramzswap0) which can be used as swap
+> >> device. Pages swapped to this are compressed and stored in memory
+> >> itself.
+> >>
+> >> The module is called compcache.ko. It depends on:
+> >>   - xvmalloc.ko: memory allocator
+> >>   - lzo_compress.ko
+> >>   - lzo_decompress.ko
+> >>
+> >> See Documentation/blockdev/compcache.txt for usage details.
+> >>
+> >> Project home: http://code.google.com/p/compcache/
+> >
+> > I wonder how hard it would be to make the compression code
+> > use an arbitrary file or device for the storage backend rather
+> > than make a new block device? Then you could make a new ram
+> > block device that can swap its pages out (or even extend brd.c
+> > with that functionality, or use loop on tmpfs etc).
+>
+> Its already done as mentioned in Documentation/blockdev/compcache.txt
+> (patch 3/3) but I should have added it here also: compcache accepts
+> "backing_dev" parameter for backing swap partition - this allows us to
 
-Make page table walking on s390 more robust. The current code requires
-that the pgd/pud/pmd/pte loop is only done for address ranges that are
-below the end address of the last vma of the address space. But this
-is not always true, e.g. the generic page table walker does not guarantee
-this. Change TASK_SIZE/TASK_SIZE_OF to reflect the current size of the
-address space. This makes the generic page table walker happy but it
-breaks the upgrade of a 3 level page table to a 4 level page table.
-To make the upgrade work again another fix is required.
+I meant more like compressing the data then passing it down to
+another device. I guess you still need to make a block device to
+operate on the requests, however, so it would get more complicated
+because you'd need to pass your own down.... yeah it would probably
+end up being just as complex and less efficient. Ignore me then :)
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
 
- arch/s390/include/asm/processor.h |    5 ++---
- arch/s390/mm/mmap.c               |    4 ++--
- arch/s390/mm/pgtable.c            |    2 ++
- 3 files changed, 6 insertions(+), 5 deletions(-)
+> forward any R/W request to backing swap device. Currently only poorly
+> compressible pages (compress length > PAGE_SIZE/2) are forwarded to
+> backing_dev.
 
-Index: quilt-2.6/arch/s390/include/asm/processor.h
-===================================================================
---- quilt-2.6.orig/arch/s390/include/asm/processor.h
-+++ quilt-2.6/arch/s390/include/asm/processor.h
-@@ -61,7 +61,7 @@ extern void print_cpu_info(struct cpuinf
- extern int get_cpu_capability(unsigned int *);
- 
- /*
-- * User space process size: 2GB for 31 bit, 4TB for 64 bit.
-+ * User space process size: 2GB for 31 bit, 4TB or 8PT for 64 bit.
-  */
- #ifndef __s390x__
- 
-@@ -70,8 +70,7 @@ extern int get_cpu_capability(unsigned i
- 
- #else /* __s390x__ */
- 
--#define TASK_SIZE_OF(tsk)	(test_tsk_thread_flag(tsk,TIF_31BIT) ? \
--					(1UL << 31) : (1UL << 53))
-+#define TASK_SIZE_OF(tsk)	((tsk)->mm->context.asce_limit)
- #define TASK_UNMAPPED_BASE	(test_thread_flag(TIF_31BIT) ? \
- 					(1UL << 30) : (1UL << 41))
- #define TASK_SIZE		TASK_SIZE_OF(current)
-Index: quilt-2.6/arch/s390/mm/mmap.c
-===================================================================
---- quilt-2.6.orig/arch/s390/mm/mmap.c
-+++ quilt-2.6/arch/s390/mm/mmap.c
-@@ -35,7 +35,7 @@
-  * Leave an at least ~128 MB hole.
-  */
- #define MIN_GAP (128*1024*1024)
--#define MAX_GAP (TASK_SIZE/6*5)
-+#define MAX_GAP (STACK_TOP/6*5)
- 
- static inline unsigned long mmap_base(void)
- {
-@@ -46,7 +46,7 @@ static inline unsigned long mmap_base(vo
- 	else if (gap > MAX_GAP)
- 		gap = MAX_GAP;
- 
--	return TASK_SIZE - (gap & PAGE_MASK);
-+	return STACK_TOP - (gap & PAGE_MASK);
- }
- 
- static inline int mmap_is_legacy(void)
-Index: quilt-2.6/arch/s390/mm/pgtable.c
-===================================================================
---- quilt-2.6.orig/arch/s390/mm/pgtable.c
-+++ quilt-2.6/arch/s390/mm/pgtable.c
-@@ -117,6 +117,7 @@ repeat:
- 		crst_table_init(table, entry);
- 		pgd_populate(mm, (pgd_t *) table, (pud_t *) pgd);
- 		mm->pgd = (pgd_t *) table;
-+		mm->task_size = mm->context.asce_limit;
- 		table = NULL;
- 	}
- 	spin_unlock(&mm->page_table_lock);
-@@ -154,6 +155,7 @@ void crst_table_downgrade(struct mm_stru
- 			BUG();
- 		}
- 		mm->pgd = (pgd_t *) (pgd_val(*pgd) & _REGION_ENTRY_ORIGIN);
-+		mm->task_size = mm->context.asce_limit;
- 		crst_table_free(mm, (unsigned long *) pgd);
- 	}
- 	update_mm(mm, current);
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
 
