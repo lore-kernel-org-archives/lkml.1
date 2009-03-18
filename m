@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbZCRXyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbZCRXyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898AbZCRXyE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 19:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZCRXxs
+	id S1757876AbZCRXyu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 19:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbZCRXyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 19:53:48 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:40209 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752128AbZCRXxr (ORCPT
+	Wed, 18 Mar 2009 19:54:40 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:22322 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752945AbZCRXyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 19:53:47 -0400
-Message-ID: <49C18987.5000009@snapgear.com>
-Date: Thu, 19 Mar 2009 09:53:43 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 18 Mar 2009 19:54:39 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=PJ/Em11c05VCmLn+Zto9GKeOWj6CKwmxG4I60NTlFLHSsfgfqlvXw+TXQgrSnaSao
+	m0mpCz4MpFeLDrGAN+BYw==
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       linux-next@vger.kernel.org, linux-m68k@vger.kernel.org
-Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
-References: <200903120437.03837.rob@landley.net> <200903172304.00157.rob@landley.net> <49C087F3.3080507@snapgear.com> <200903181312.02047.rob@landley.net>
-In-Reply-To: <200903181312.02047.rob@landley.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+In-Reply-To: <alpine.LFD.2.00.0903181634500.17240@localhost.localdomain>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com>
+	 <20090318151157.85109100.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.0903181522570.3082@localhost.localdomain>
+	 <604427e00903181618t66020557kda533d37f51d7e7d@mail.gmail.com>
+	 <alpine.LFD.2.00.0903181634500.17240@localhost.localdomain>
+Date: Wed, 18 Mar 2009 16:54:33 -0700
+Message-ID: <604427e00903181654y308d57d8w2cb32eab831cf45a@mail.gmail.com>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+From: Ying Han <yinghan@google.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rob,
-
-Rob Landley wrote:
-> On Wednesday 18 March 2009 00:34:43 Greg Ungerer wrote:
->> Hi Rob,
+On Wed, Mar 18, 2009 at 4:36 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Wed, 18 Mar 2009, Ying Han wrote:
+>> >
+>> > Can you say what filesystem, and what mount-flags you use? Iirc, last time
+>> > we had MAP_SHARED lost writes it was at least partly triggered by the
+>> > filesystem doing its own flushing independently of the VM (ie ext3 with
+>> > "data=journal", I think), so that kind of thing does tend to matter.
 >>
->> Rob Landley wrote:
->>> On Monday 16 March 2009 18:10:45 Greg Ungerer wrote:
->>>>>>    git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git
->>>>>> fix-includes
-> ...
->>> What _should_ I have done?
->> The git clone you have done will just get the master branch,
->> and put it in a directory named fix-includes.
+>> /etc/fstab
+>> "/dev/hda1 / ext2 defaults 1 0"
+>
+> Sadly, /etc/fstab is not necessarily accurate for the root filesystem. At
+> least Fedora will ignore the flags in it.
+>
+> What does /proc/mounts say? That should be a more reliable indication of
+> what the kernel actually does.
+
+"/dev/root / ext2 rw,errors=continue 0 0"
+
+>
+> That said, I assume the ext2 part is accurate. Maybe that's why people
+> haven't seen it - I guess most testing was done on ext3. It certainly was
+> for me.
+>
+>> > Ying Han - since you're all set up for testing this and have reproduced it
+>> > on multiple kernels, can you try it on a few more kernel versions? It
+>> > would be interesting to both go further back in time (say 2.6.15-ish),
+>> > _and_ check something like 2.6.21 which had the exact dirty accounting
+>> > fix. Maybe it's not really an old bug - maybe we re-introduced a bug that
+>> > was fixed for a while.
 >>
->> Which is ok, but you still won't have the "fix-includes" branch.
->> Do this after the clone:
->>
->>    git pull
->> git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git
->> fix-includes
-> 
-> Ah, that did something interesting...  And the resulting headers built in 
-> uClibc.  (Works for me!)
-> 
-> confirmed-uClibc-builds-with-it-by: Rob Landley <rob@landley.net>
-
-Thats great, thanks.
-I'll push to Linus then.
-
-Regards
-Greg
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+>> I will give a try.
+>
+> Thanks,
+>
+>                Linus
+>
