@@ -1,103 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761504AbZCRWDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759539AbZCRWD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761504AbZCRWDl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 18:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757639AbZCRWDW
+	id S1759539AbZCRWD0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 18:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbZCRWDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 18:03:22 -0400
-Received: from wa4ehsobe004.messaging.microsoft.com ([216.32.181.14]:26461
-	"EHLO WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754892AbZCRWDV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 18:03:21 -0400
-X-BigFish: VPS-34(zz542N1432R1805M936fK9371P103dKzz1202hzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KGQ2KZ-02-G2Z-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [tip:x86/cpu] x86, cpu: intel_cacheinfo.c: use cpumask_first(to_cpumask())
-Date: Wed, 18 Mar 2009 17:03:12 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273C5AF23@sausexmb4.amd.com>
-In-Reply-To: <tip-d42c33ef0a236c6874c748438500c78edfaa1187@git.kernel.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [tip:x86/cpu] x86, cpu: intel_cacheinfo.c: use cpumask_first(to_cpumask())
-Thread-Index: AcmoEpxfaiRhqATLQqWP7RKwkyfgeQAArXNg
-References: <tip-d42c33ef0a236c6874c748438500c78edfaa1187@git.kernel.org>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: <linux-kernel@vger.kernel.org>, <mingo@redhat.com>, <hpa@zytor.com>,
-       "Langsdorf, Mark" <mark.langsdorf@amd.com>, <tglx@linutronix.de>,
-       <hpa@linux.intel.com>
-X-OriginalArrivalTime: 18 Mar 2009 22:03:12.0713 (UTC) FILETIME=[54CADB90:01C9A815]
+	Wed, 18 Mar 2009 18:03:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53504 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751472AbZCRWDI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 18:03:08 -0400
+Date: Wed, 18 Mar 2009 14:53:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexander Duyck <alexander.h.duyck@intel.com>
+Cc: "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "gospo@redhat.com" <gospo@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "Zhao, Yu" <yu.zhao@intel.com>
+Subject: Re: [net-next PATCH 1/2] igbvf: add new driver to support 82576
+ virtual functions
+Message-Id: <20090318145340.6b282829.akpm@linux-foundation.org>
+In-Reply-To: <49C111C6.2010905@intel.com>
+References: <20090311020928.23138.20790.stgit@lost.foo-projects.org>
+	<20090310222154.4bc8c12c.akpm@linux-foundation.org>
+	<49C03C80.5020203@intel.com>
+	<20090317180826.8f3c596b.akpm@linux-foundation.org>
+	<49C111C6.2010905@intel.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks! 
+On Wed, 18 Mar 2009 08:22:46 -0700 Alexander Duyck <alexander.h.duyck@intel.com> wrote:
 
-> -----Original Message-----
-> From: H. Peter Anvin [mailto:hpa@linux.intel.com] 
-> Sent: Wednesday, March 18, 2009 4:43 PM
-> To: linux-tip-commits@vger.kernel.org
-> Cc: hpa@zytor.com; mingo@redhat.com; Langsdorf, Mark; 
-> tglx@linutronix.de; hpa@linux.intel.com
-> Subject: [tip:x86/cpu] x86, cpu: intel_cacheinfo.c: use 
-> cpumask_first(to_cpumask())
+> >>>> +static int igbvf_set_ringparam(struct net_device *netdev,
+> >>>> +                               struct ethtool_ringparam *ring)
+> >>>> +{
+> >>>> +     struct igbvf_adapter *adapter = netdev_priv(netdev);
+> >>>> +     struct igbvf_ring *tx_ring, *tx_old;
+> >>>> +     struct igbvf_ring *rx_ring, *rx_old;
+> >>>> +     int err;
+> >>>> +
+> >>>> +     if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+> >>>> +             return -EINVAL;
+> >>>> +
+> >>>> +     while (test_and_set_bit(__IGBVF_RESETTING, &adapter->state))
+> >>>> +             msleep(1);
+> >>> No timeout needed here?  Interrupts might not be working, for example..
+> >> This bit isn't set in interrupt context.  This is always used out of 
+> >> interrupt context and is just to prevent multiple setting changes at the 
+> >> same time.
+> > 
+> > Oh.  Can't use plain old mutex_lock()?
 > 
-> Commit-ID:  d42c33ef0a236c6874c748438500c78edfaa1187
-> Gitweb:     
-> http://git.kernel.org/tip/d42c33ef0a236c6874c748438500c78edfaa1187
-> Author:     H. Peter Anvin <hpa@linux.intel.com>
-> AuthorDate: Wed, 18 Mar 2009 14:36:02 -0700
-> Committer:  H. Peter Anvin <hpa@linux.intel.com>
-> CommitDate: Wed, 18 Mar 2009 14:38:36 -0700
-> 
-> x86, cpu: intel_cacheinfo.c: use cpumask_first(to_cpumask())
-> 
-> Impact: fix warning and possible UP build failure
-> 
-> Instead of using first_cpu() on a raw bitmask, use
-> cpumask_first(to_cpumask()).
-> 
-> Signed-off-by: H. Peter Anvin <hpa@linux.intel.com>
-> Cc: Mark Langsdorf <mark.langsdorf@amd.com>
-> 
-> 
-> ---
->  arch/x86/kernel/cpu/intel_cacheinfo.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c 
-> b/arch/x86/kernel/cpu/intel_cacheinfo.c
-> index b728325..6f4d2a3 100644
-> --- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-> +++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-> @@ -643,7 +643,8 @@ static ssize_t show_##file_name		
-> 				\
->  static ssize_t show_cache_disable(struct _cpuid4_info 
-> *this_leaf, char *buf,
->  		 unsigned int index)
->  {
-> -	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
-> +	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
-> +	int node = cpu_to_node(cpu);
->  	struct pci_dev *dev = k8_northbridges[node];
->  	unsigned int reg = 0;
->  
-> @@ -665,7 +666,8 @@ static ssize_t
->  store_cache_disable(struct _cpuid4_info *this_leaf, const char *buf,
->  		 size_t count, unsigned int index)
->  {
-> -	int node = cpu_to_node(first_cpu(this_leaf->shared_cpu_map));
-> +	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
-> +	int node = cpu_to_node(cpu);
->  	struct pci_dev *dev = k8_northbridges[node];
->  	unsigned long val = 0;
->  	unsigned int scrubber = 0;
-> 
-> 
+> We have one or two spots that actually check to see if the bit is set 
+> and just report a warning instead of actually waiting on the bit to clear.
 
+mutex_is_locked()?
