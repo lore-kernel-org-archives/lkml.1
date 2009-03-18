@@ -1,238 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757646AbZCRN2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757056AbZCRN13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757646AbZCRN2D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 09:28:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbZCRN0l
+	id S1757056AbZCRN13 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 09:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbZCRN0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 09:26:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36245 "EHLO mx1.redhat.com"
+	Wed, 18 Mar 2009 09:26:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36240 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755312AbZCRN0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 09:26:40 -0400
+	id S1755286AbZCRN0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 09:26:37 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, Steven Whitehouse <swhiteho@redhat.com>,
-       Abhijith Das <adas@redhat.com>
-Subject: [PATCH 04/18] GFS2: Remove "double" locking in quota
-Date: Wed, 18 Mar 2009 12:23:39 +0000
-Message-Id: <1237379033-28095-5-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1237379033-28095-4-git-send-email-swhiteho@redhat.com>
+Cc: cluster-devel@redhat.com, Abhijith Das <adas@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 02/18] GFS2: Bring back lvb-related stuff to lock_nolock to support quotas
+Date: Wed, 18 Mar 2009 12:23:37 +0000
+Message-Id: <1237379033-28095-3-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1237379033-28095-2-git-send-email-swhiteho@redhat.com>
 References: <1237379033-28095-1-git-send-email-swhiteho@redhat.com>
  <1237379033-28095-2-git-send-email-swhiteho@redhat.com>
- <1237379033-28095-3-git-send-email-swhiteho@redhat.com>
- <1237379033-28095-4-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Whitehouse <swhiteho@redhat.com>
+From: Abhijith Das <adas@redhat.com>
 
-We only really need a single spin lock for the quota data, so
-lets just use the lru lock for now.
+The quota code uses lvbs and this is currently not implemented in
+lock_nolock, thereby causing panics when quota is enabled with
+lock_nolock. This patch adds the relevant bits.
 
+Signed-off-by: Abhijith Das <adas@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Abhijith Das <adas@redhat.com>
 
-diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index 592aa50..a0117d6 100644
---- a/fs/gfs2/incore.h
-+++ b/fs/gfs2/incore.h
-@@ -540,7 +540,6 @@ struct gfs2_sbd {
+diff --git a/fs/gfs2/locking.c b/fs/gfs2/locking.c
+index 523243a..d3657bc 100644
+--- a/fs/gfs2/locking.c
++++ b/fs/gfs2/locking.c
+@@ -23,11 +23,74 @@ struct lmh_wrapper {
+ 	const struct lm_lockops *lw_ops;
+ };
  
- 	struct list_head sd_quota_list;
- 	atomic_t sd_quota_count;
--	spinlock_t sd_quota_spin;
- 	struct mutex sd_quota_mutex;
- 	wait_queue_head_t sd_quota_wait;
- 	struct list_head sd_trunc_list;
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 530d3f6..402b6a2 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -98,7 +98,6 @@ static struct gfs2_sbd *init_sbd(struct super_block *sb)
- 	mutex_init(&sdp->sd_jindex_mutex);
++struct nolock_lockspace {
++	unsigned int nl_lvb_size;
++};
++
++/**
++ * nolock_get_lock - get a lm_lock_t given a descripton of the lock
++ * @lockspace: the lockspace the lock lives in
++ * @name: the name of the lock
++ * @lockp: return the lm_lock_t here
++ *
++ * Returns: 0 on success, -EXXX on failure
++ */
++
++static int nolock_get_lock(void *lockspace, struct lm_lockname *name,
++                           void **lockp)
++{
++        *lockp = lockspace;
++        return 0;
++}
++
++/**
++ * nolock_put_lock - get rid of a lock structure
++ * @lock: the lock to throw away
++ *
++ */
++
++static void nolock_put_lock(void *lock)
++{
++}
++
++/**
++ * nolock_hold_lvb - hold on to a lock value block
++ * @lock: the lock the LVB is associated with
++ * @lvbp: return the lm_lvb_t here
++ *
++ * Returns: 0 on success, -EXXX on failure
++ */
++
++static int nolock_hold_lvb(void *lock, char **lvbp)
++{
++	struct nolock_lockspace *nl = lock;
++	int error = 0;
++
++	*lvbp = kzalloc(nl->nl_lvb_size, GFP_KERNEL);
++	if (!*lvbp)
++		error = -ENOMEM;
++
++	return error;
++}
++
++/**
++ * nolock_unhold_lvb - release a LVB
++ * @lock: the lock the LVB is associated with
++ * @lvb: the lock value block
++ *
++ */
++
++static void nolock_unhold_lvb(void *lock, char *lvb)
++{
++	kfree(lvb);
++}
++
+ static int nolock_mount(char *table_name, char *host_data,
+ 			lm_callback_t cb, void *cb_data,
+ 			unsigned int min_lvb_size, int flags,
+ 			struct lm_lockstruct *lockstruct,
+ 			struct kobject *fskobj);
++static void nolock_unmount(void *lockspace);
  
- 	INIT_LIST_HEAD(&sdp->sd_quota_list);
--	spin_lock_init(&sdp->sd_quota_spin);
- 	mutex_init(&sdp->sd_quota_mutex);
- 	init_waitqueue_head(&sdp->sd_quota_wait);
- 	INIT_LIST_HEAD(&sdp->sd_trunc_list);
-diff --git a/fs/gfs2/quota.c b/fs/gfs2/quota.c
-index 2ada6e1..e8ef0f8 100644
---- a/fs/gfs2/quota.c
-+++ b/fs/gfs2/quota.c
-@@ -104,13 +104,11 @@ int gfs2_shrink_qd_memory(int nr, gfp_t gfp_mask)
- 		/* Free from the filesystem-specific list */
- 		list_del(&qd->qd_list);
+ /* List of registered low-level locking protocols.  A file system selects one
+    of them by name at mount time, e.g. lock_nolock, lock_dlm. */
+@@ -35,6 +98,11 @@ static int nolock_mount(char *table_name, char *host_data,
+ static const struct lm_lockops nolock_ops = {
+ 	.lm_proto_name = "lock_nolock",
+ 	.lm_mount = nolock_mount,
++	.lm_unmount = nolock_unmount,
++	.lm_get_lock = nolock_get_lock,
++	.lm_put_lock = nolock_put_lock,
++	.lm_hold_lvb = nolock_hold_lvb,
++	.lm_unhold_lvb = nolock_unhold_lvb,
+ };
  
--		spin_lock(&sdp->sd_quota_spin);
- 		gfs2_assert_warn(sdp, !qd->qd_change);
- 		gfs2_assert_warn(sdp, !qd->qd_slot_count);
- 		gfs2_assert_warn(sdp, !qd->qd_bh_count);
+ static struct lmh_wrapper nolock_proto  = {
+@@ -53,6 +121,7 @@ static int nolock_mount(char *table_name, char *host_data,
+ {
+ 	char *c;
+ 	unsigned int jid;
++	struct nolock_lockspace *nl;
  
- 		gfs2_lvb_unhold(qd->qd_gl);
--		spin_unlock(&sdp->sd_quota_spin);
- 		atomic_dec(&sdp->sd_quota_count);
- 
- 		/* Delete it from the common reclaim list */
-@@ -249,10 +247,10 @@ static int slot_get(struct gfs2_quota_data *qd)
- 	unsigned int c, o = 0, b;
- 	unsigned char byte = 0;
- 
--	spin_lock(&sdp->sd_quota_spin);
-+	spin_lock(&qd_lru_lock);
- 
- 	if (qd->qd_slot_count++) {
--		spin_unlock(&sdp->sd_quota_spin);
-+		spin_unlock(&qd_lru_lock);
- 		return 0;
+ 	c = strstr(host_data, "jid=");
+ 	if (!c)
+@@ -62,15 +131,28 @@ static int nolock_mount(char *table_name, char *host_data,
+ 		sscanf(c, "%u", &jid);
  	}
  
-@@ -276,13 +274,13 @@ found:
- 
- 	sdp->sd_quota_bitmap[c][o] |= 1 << b;
- 
--	spin_unlock(&sdp->sd_quota_spin);
-+	spin_unlock(&qd_lru_lock);
++	nl = kzalloc(sizeof(struct nolock_lockspace), GFP_KERNEL);
++	if (!nl)
++		return -ENOMEM;
++
++	nl->nl_lvb_size = min_lvb_size;
++
+ 	lockstruct->ls_jid = jid;
+ 	lockstruct->ls_first = 1;
+ 	lockstruct->ls_lvb_size = min_lvb_size;
++	lockstruct->ls_lockspace = nl;
+ 	lockstruct->ls_ops = &nolock_ops;
+ 	lockstruct->ls_flags = LM_LSFLAG_LOCAL;
  
  	return 0;
- 
- fail:
- 	qd->qd_slot_count--;
--	spin_unlock(&sdp->sd_quota_spin);
-+	spin_unlock(&qd_lru_lock);
- 	return -ENOSPC;
  }
  
-@@ -290,23 +288,23 @@ static void slot_hold(struct gfs2_quota_data *qd)
- {
- 	struct gfs2_sbd *sdp = qd->qd_gl->gl_sbd;
- 
--	spin_lock(&sdp->sd_quota_spin);
-+	spin_lock(&qd_lru_lock);
- 	gfs2_assert(sdp, qd->qd_slot_count);
- 	qd->qd_slot_count++;
--	spin_unlock(&sdp->sd_quota_spin);
-+	spin_unlock(&qd_lru_lock);
- }
- 
- static void slot_put(struct gfs2_quota_data *qd)
- {
- 	struct gfs2_sbd *sdp = qd->qd_gl->gl_sbd;
- 
--	spin_lock(&sdp->sd_quota_spin);
-+	spin_lock(&qd_lru_lock);
- 	gfs2_assert(sdp, qd->qd_slot_count);
- 	if (!--qd->qd_slot_count) {
- 		gfs2_icbit_munge(sdp, sdp->sd_quota_bitmap, qd->qd_slot, 0);
- 		qd->qd_slot = -1;
- 	}
--	spin_unlock(&sdp->sd_quota_spin);
-+	spin_unlock(&qd_lru_lock);
- }
- 
- static int bh_get(struct gfs2_quota_data *qd)
-@@ -382,7 +380,6 @@ static int qd_fish(struct gfs2_sbd *sdp, struct gfs2_quota_data **qdp)
- 		return 0;
- 
- 	spin_lock(&qd_lru_lock);
--	spin_lock(&sdp->sd_quota_spin);
- 
- 	list_for_each_entry(qd, &sdp->sd_quota_list, qd_list) {
- 		if (test_bit(QDF_LOCKED, &qd->qd_flags) ||
-@@ -406,7 +403,6 @@ static int qd_fish(struct gfs2_sbd *sdp, struct gfs2_quota_data **qdp)
- 	if (!found)
- 		qd = NULL;
- 
--	spin_unlock(&sdp->sd_quota_spin);
- 	spin_unlock(&qd_lru_lock);
- 
- 	if (qd) {
-@@ -433,11 +429,9 @@ static int qd_trylock(struct gfs2_quota_data *qd)
- 		return 0;
- 
- 	spin_lock(&qd_lru_lock);
--	spin_lock(&sdp->sd_quota_spin);
- 
- 	if (test_bit(QDF_LOCKED, &qd->qd_flags) ||
- 	    !test_bit(QDF_CHANGE, &qd->qd_flags)) {
--		spin_unlock(&sdp->sd_quota_spin);
- 		spin_unlock(&qd_lru_lock);
- 		return 0;
- 	}
-@@ -451,7 +445,6 @@ static int qd_trylock(struct gfs2_quota_data *qd)
- 	gfs2_assert_warn(sdp, qd->qd_slot_count);
- 	qd->qd_slot_count++;
- 
--	spin_unlock(&sdp->sd_quota_spin);
- 	spin_unlock(&qd_lru_lock);
- 
- 	gfs2_assert_warn(sdp, qd->qd_change_sync);
-@@ -612,9 +605,9 @@ static void do_qc(struct gfs2_quota_data *qd, s64 change)
- 	x = be64_to_cpu(qc->qc_change) + change;
- 	qc->qc_change = cpu_to_be64(x);
- 
--	spin_lock(&sdp->sd_quota_spin);
-+	spin_lock(&qd_lru_lock);
- 	qd->qd_change = x;
--	spin_unlock(&sdp->sd_quota_spin);
-+	spin_unlock(&qd_lru_lock);
- 
- 	if (!x) {
- 		gfs2_assert_warn(sdp, test_bit(QDF_CHANGE, &qd->qd_flags));
-@@ -945,9 +938,9 @@ static int need_sync(struct gfs2_quota_data *qd)
- 	if (!qd->qd_qb.qb_limit)
- 		return 0;
- 
--	spin_lock(&sdp->sd_quota_spin);
-+	spin_lock(&qd_lru_lock);
- 	value = qd->qd_change;
--	spin_unlock(&sdp->sd_quota_spin);
-+	spin_unlock(&qd_lru_lock);
- 
- 	spin_lock(&gt->gt_spin);
- 	num = gt->gt_quota_scale_num;
-@@ -1040,9 +1033,9 @@ int gfs2_quota_check(struct gfs2_inode *ip, u32 uid, u32 gid)
- 			continue;
- 
- 		value = (s64)be64_to_cpu(qd->qd_qb.qb_value);
--		spin_lock(&sdp->sd_quota_spin);
-+		spin_lock(&qd_lru_lock);
- 		value += qd->qd_change;
--		spin_unlock(&sdp->sd_quota_spin);
-+		spin_unlock(&qd_lru_lock);
- 
- 		if (be64_to_cpu(qd->qd_qb.qb_limit) && (s64)be64_to_cpu(qd->qd_qb.qb_limit) < value) {
- 			print_message(qd, "exceeded");
-@@ -1228,9 +1221,7 @@ int gfs2_quota_init(struct gfs2_sbd *sdp)
- 			qd->qd_slot_count = 1;
- 
- 			spin_lock(&qd_lru_lock);
--			spin_lock(&sdp->sd_quota_spin);
- 			gfs2_icbit_munge(sdp, sdp->sd_quota_bitmap, slot, 1);
--			spin_unlock(&sdp->sd_quota_spin);
- 			list_add(&qd->qd_list, &sdp->sd_quota_list);
- 			atomic_inc(&sdp->sd_quota_count);
- 			spin_unlock(&qd_lru_lock);
-@@ -1263,18 +1254,15 @@ void gfs2_quota_cleanup(struct gfs2_sbd *sdp)
- 	while (!list_empty(head)) {
- 		qd = list_entry(head->prev, struct gfs2_quota_data, qd_list);
- 
--		spin_lock(&sdp->sd_quota_spin);
- 		if (atomic_read(&qd->qd_count) > 1 ||
- 		    (atomic_read(&qd->qd_count) &&
- 		     !test_bit(QDF_CHANGE, &qd->qd_flags))) {
--			spin_unlock(&sdp->sd_quota_spin);
- 			list_move(&qd->qd_list, head);
- 			spin_unlock(&qd_lru_lock);
- 			schedule();
- 			spin_lock(&qd_lru_lock);
- 			continue;
- 		}
--		spin_unlock(&sdp->sd_quota_spin);
- 
- 		list_del(&qd->qd_list);
- 		/* Also remove if this qd exists in the reclaim list */
++static void nolock_unmount(void *lockspace)
++{
++        struct nolock_lockspace *nl = lockspace;
++        kfree(nl);
++}
++
+ /**
+  * gfs2_register_lockproto - Register a low-level locking protocol
+  * @proto: the protocol definition
 -- 
 1.6.0.3
 
