@@ -1,88 +1,595 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZCRR6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbZCRR7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759385AbZCRR6Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 13:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbZCRR6K
+	id S1759402AbZCRR7J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 13:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbZCRR6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 13:58:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47232 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756258AbZCRR6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 13:58:09 -0400
-Date: Wed, 18 Mar 2009 17:57:27 GMT
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jaswinder@kernel.org, jaswinderrajput@gmail.com, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinder@kernel.org, jaswinderrajput@gmail.com, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1237394936.3132.1.camel@localhost.localdomain>
-References: <1237394936.3132.1.camel@localhost.localdomain>
-Subject: [tip:tracing/ftrace] tracing: fix oops in tracepoint_update_probe_range()
-Message-ID: <tip-09933a108e6730a464a1ab676c9decc11aee0edc@git.kernel.org>
-Git-Commit-ID: 09933a108e6730a464a1ab676c9decc11aee0edc
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 18 Mar 2009 17:57:29 +0000 (UTC)
+	Wed, 18 Mar 2009 13:58:52 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:18394 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753557AbZCRR6t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 13:58:49 -0400
+From: Boaz Harrosh <bharrosh@panasas.com>
+To: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 1/8] exofs: Kbuild, Headers and osd utils
+Date: Wed, 18 Mar 2009 19:57:36 +0200
+Message-Id: <1237399056-29171-1-git-send-email-bharrosh@panasas.com>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <49C1331D.1080805@panasas.com>
+References: <49C1331D.1080805@panasas.com>
+X-OriginalArrivalTime: 18 Mar 2009 17:58:45.0790 (UTC) FILETIME=[2EA003E0:01C9A7F3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  09933a108e6730a464a1ab676c9decc11aee0edc
-Gitweb:     http://git.kernel.org/tip/09933a108e6730a464a1ab676c9decc11aee0edc
-Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Wed, 18 Mar 2009 22:18:56 +0530
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 18 Mar 2009 18:54:39 +0100
+This patch includes osd infrastructure that will be used later by
+the file system.
 
-tracing: fix oops in tracepoint_update_probe_range()
+Also the declarations of constants, on disk structures,
+and prototypes.
 
-Change this crash:
+And the Kbuild+Kconfig files needed to build the exofs module.
 
- BUG: unable to handle kernel NULL pointer dereference at (null)
- IP: [<ffffffff8107d4de>] tracepoint_update_probe_range+0x1f/0x9b
- PGD 13d5fb067 PUD 13d688067 PMD 0
- Oops: 0000 [#1] SMP
-
-To a more debuggable WARN_ONCE().
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <1237394936.3132.1.camel@localhost.localdomain>
-[ moved the check outside the lock and added a WARN_ON(). ]
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 ---
- kernel/tracepoint.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+ fs/exofs/Kbuild   |   30 +++++++++
+ fs/exofs/Kconfig  |   13 ++++
+ fs/exofs/common.h |  185 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/exofs/exofs.h  |  127 ++++++++++++++++++++++++++++++++++++
+ fs/exofs/osd.c    |  153 +++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 508 insertions(+), 0 deletions(-)
+ create mode 100644 fs/exofs/Kbuild
+ create mode 100644 fs/exofs/Kconfig
+ create mode 100644 fs/exofs/common.h
+ create mode 100644 fs/exofs/exofs.h
+ create mode 100644 fs/exofs/osd.c
 
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 7960274..adf2873 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -272,12 +272,17 @@ static void disable_tracepoint(struct tracepoint *elem)
-  *
-  * Updates the probe callback corresponding to a range of tracepoints.
-  */
--void tracepoint_update_probe_range(struct tracepoint *begin,
--	struct tracepoint *end)
-+void
-+tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
- {
- 	struct tracepoint *iter;
- 	struct tracepoint_entry *mark_entry;
- 
-+	if (!begin) {
-+		WARN_ON_ONCE(1);
-+		return;
+diff --git a/fs/exofs/Kbuild b/fs/exofs/Kbuild
+new file mode 100644
+index 0000000..63d822c
+--- /dev/null
++++ b/fs/exofs/Kbuild
+@@ -0,0 +1,30 @@
++#
++# Kbuild for the EXOFS module
++#
++# Copyright (C) 2008 Panasas Inc.  All rights reserved.
++#
++# Authors:
++#   Boaz Harrosh <bharrosh@panasas.com>
++#
++# This program is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License version 2
++#
++# Kbuild - Gets included from the Kernels Makefile and build system
++#
++
++ifneq ($(OSD_INC),)
++# we are built out-of-tree Kconfigure everything as on
++
++CONFIG_EXOFS_FS=m
++ccflags-y += -DCONFIG_EXOFS_FS -DCONFIG_EXOFS_FS_MODULE
++# ccflags-y += -DCONFIG_EXOFS_DEBUG
++
++# if we are built out-of-tree and the hosting kernel has OSD headers
++# then "ccflags-y +=" will not pick the out-off-tree headers. Only by doing
++# this it will work. This might break in future kernels
++KBUILD_CPPFLAGS := -I$(OSD_INC) $(KBUILD_CPPFLAGS)
++
++endif
++
++exofs-y := osd.o
++obj-$(CONFIG_EXOFS_FS) += exofs.o
+diff --git a/fs/exofs/Kconfig b/fs/exofs/Kconfig
+new file mode 100644
+index 0000000..86194b2
+--- /dev/null
++++ b/fs/exofs/Kconfig
+@@ -0,0 +1,13 @@
++config EXOFS_FS
++	tristate "exofs: OSD based file system support"
++	depends on SCSI_OSD_ULD
++	help
++	  EXOFS is a file system that uses an OSD storage device,
++	  as its backing storage.
++
++# Debugging-related stuff
++config EXOFS_DEBUG
++	bool "Enable debugging"
++	depends on EXOFS_FS
++	help
++	  This option enables EXOFS debug prints.
+diff --git a/fs/exofs/common.h b/fs/exofs/common.h
+new file mode 100644
+index 0000000..bcc4882
+--- /dev/null
++++ b/fs/exofs/common.h
+@@ -0,0 +1,185 @@
++/*
++ * common.h - Common definitions for both Kernel and user-mode utilities
++ *
++ * Copyright (C) 2005, 2006
++ * Avishay Traeger (avishay@gmail.com) (avishay@il.ibm.com)
++ * Copyright (C) 2005, 2006
++ * International Business Machines
++ * Copyright (C) 2008, 2009
++ * Boaz Harrosh <bharrosh@panasas.com>
++ *
++ * Copyrights for code taken from ext2:
++ *     Copyright (C) 1992, 1993, 1994, 1995
++ *     Remy Card (card@masi.ibp.fr)
++ *     Laboratoire MASI - Institut Blaise Pascal
++ *     Universite Pierre et Marie Curie (Paris VI)
++ *     from
++ *     linux/fs/minix/inode.c
++ *     Copyright (C) 1991, 1992  Linus Torvalds
++ *
++ * This file is part of exofs.
++ *
++ * exofs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation.  Since it is based on ext2, and the only
++ * valid version of GPL for the Linux kernel is version 2, the only valid
++ * version of GPL for exofs is version 2.
++ *
++ * exofs is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with exofs; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
++
++#ifndef __EXOFS_COM_H__
++#define __EXOFS_COM_H__
++
++#include <linux/types.h>
++
++#include <scsi/osd_attributes.h>
++#include <scsi/osd_initiator.h>
++#include <scsi/osd_sec.h>
++
++/****************************************************************************
++ * Object ID related defines
++ * NOTE: inode# = object ID - EXOFS_OBJ_OFF
++ ****************************************************************************/
++#define EXOFS_MIN_PID   0x10000	/* Smallest partition ID */
++#define EXOFS_OBJ_OFF	0x10000	/* offset for objects */
++#define EXOFS_SUPER_ID	0x10000	/* object ID for on-disk superblock */
++#define EXOFS_ROOT_ID	0x10002	/* object ID for root directory */
++
++/* exofs Application specific page/attribute */
++# define EXOFS_APAGE_FS_DATA	(OSD_APAGE_APP_DEFINED_FIRST + 3)
++# define EXOFS_ATTR_INODE_DATA	1
++
++/*
++ * The maximum number of files we can have is limited by the size of the
++ * inode number.  This is the largest object ID that the file system supports.
++ * Object IDs 0, 1, and 2 are always in use (see above defines).
++ */
++enum {
++	EXOFS_UINT64_MAX = (~0LL),
++	EXOFS_MAX_INO_ID = (sizeof(ino_t) * 8 == 64) ? EXOFS_UINT64_MAX :
++					(1LL << (sizeof(ino_t) * 8 - 1)),
++	EXOFS_MAX_ID	 = (EXOFS_MAX_INO_ID - 1 - EXOFS_OBJ_OFF),
++};
++
++/****************************************************************************
++ * Misc.
++ ****************************************************************************/
++#define EXOFS_BLKSHIFT	12
++#define EXOFS_BLKSIZE	(1UL << EXOFS_BLKSHIFT)
++
++/****************************************************************************
++ * superblock-related things
++ ****************************************************************************/
++#define EXOFS_SUPER_MAGIC	0x5DF5
++
++/*
++ * The file system control block - stored in an object's data (mainly, the one
++ * with ID EXOFS_SUPER_ID).  This is where the in-memory superblock is stored
++ * on disk.  Right now it just has a magic value, which is basically a sanity
++ * check on our ability to communicate with the object store.
++ */
++struct exofs_fscb {
++	__le64  s_nextid;	/* Highest object ID used */
++	__le32  s_numfiles;	/* Number of files on fs */
++	__le16  s_magic;	/* Magic signature */
++	__le16  s_newfs;	/* Non-zero if this is a new fs */
++};
++
++/****************************************************************************
++ * inode-related things
++ ****************************************************************************/
++#define EXOFS_IDATA		5
++
++/*
++ * The file control block - stored in an object's attributes.  This is where
++ * the in-memory inode is stored on disk.
++ */
++struct exofs_fcb {
++	__le64  i_size;			/* Size of the file */
++	__le16  i_mode;         	/* File mode */
++	__le16  i_links_count;  	/* Links count */
++	__le32  i_uid;          	/* Owner Uid */
++	__le32  i_gid;          	/* Group Id */
++	__le32  i_atime;        	/* Access time */
++	__le32  i_ctime;        	/* Creation time */
++	__le32  i_mtime;        	/* Modification time */
++	__le32  i_flags;        	/* File flags (unused for now)*/
++	__le32  i_generation;   	/* File version (for NFS) */
++	__le32  i_data[EXOFS_IDATA];	/* Short symlink names and device #s */
++};
++
++#define EXOFS_INO_ATTR_SIZE	sizeof(struct exofs_fcb)
++
++/* This is the Attribute the fcb is stored in */
++static const struct __weak osd_attr g_attr_inode_data = ATTR_DEF(
++	EXOFS_APAGE_FS_DATA,
++	EXOFS_ATTR_INODE_DATA,
++	EXOFS_INO_ATTR_SIZE);
++
++/****************************************************************************
++ * dentry-related things
++ ****************************************************************************/
++#define EXOFS_NAME_LEN	255
++
++/*
++ * The on-disk directory entry
++ */
++struct exofs_dir_entry {
++	__le64		inode_no;		/* inode number           */
++	__le16		rec_len;		/* directory entry length */
++	u8		name_len;		/* name length            */
++	u8		file_type;		/* umm...file type        */
++	char		name[EXOFS_NAME_LEN];	/* file name              */
++};
++
++enum {
++	EXOFS_FT_UNKNOWN,
++	EXOFS_FT_REG_FILE,
++	EXOFS_FT_DIR,
++	EXOFS_FT_CHRDEV,
++	EXOFS_FT_BLKDEV,
++	EXOFS_FT_FIFO,
++	EXOFS_FT_SOCK,
++	EXOFS_FT_SYMLINK,
++	EXOFS_FT_MAX
++};
++
++#define EXOFS_DIR_PAD			4
++#define EXOFS_DIR_ROUND			(EXOFS_DIR_PAD - 1)
++#define EXOFS_DIR_REC_LEN(name_len) \
++	(((name_len) + offsetof(struct exofs_dir_entry, name)  + \
++	  EXOFS_DIR_ROUND) & ~EXOFS_DIR_ROUND)
++
++/*************************
++ * function declarations *
++ *************************/
++/* osd.c                 */
++void exofs_make_credential(u8 cred_a[OSD_CAP_LEN],
++			   const struct osd_obj_id *obj);
++
++int exofs_check_ok_resid(struct osd_request *or, u64 *in_resid, u64 *out_resid);
++static inline int exofs_check_ok(struct osd_request *or)
++{
++	return exofs_check_ok_resid(or, NULL, NULL);
++}
++int exofs_sync_op(struct osd_request *or, int timeout, u8 *cred);
++int exofs_async_op(struct osd_request *or,
++	osd_req_done_fn *async_done, void *caller_context, u8 *cred);
++
++int extract_attr_from_req(struct osd_request *or, struct osd_attr *attr);
++
++int osd_req_read_kern(struct osd_request *or,
++	const struct osd_obj_id *obj, u64 offset, void *buff, u64 len);
++
++int osd_req_write_kern(struct osd_request *or,
++	const struct osd_obj_id *obj, u64 offset, void *buff, u64 len);
++
++#endif /*ifndef __EXOFS_COM_H__*/
+diff --git a/fs/exofs/exofs.h b/fs/exofs/exofs.h
+new file mode 100644
+index 0000000..304e052
+--- /dev/null
++++ b/fs/exofs/exofs.h
+@@ -0,0 +1,127 @@
++/*
++ * Copyright (C) 2005, 2006
++ * Avishay Traeger (avishay@gmail.com) (avishay@il.ibm.com)
++ * Copyright (C) 2005, 2006
++ * International Business Machines
++ * Copyright (C) 2008, 2009
++ * Boaz Harrosh <bharrosh@panasas.com>
++ *
++ * Copyrights for code taken from ext2:
++ *     Copyright (C) 1992, 1993, 1994, 1995
++ *     Remy Card (card@masi.ibp.fr)
++ *     Laboratoire MASI - Institut Blaise Pascal
++ *     Universite Pierre et Marie Curie (Paris VI)
++ *     from
++ *     linux/fs/minix/inode.c
++ *     Copyright (C) 1991, 1992  Linus Torvalds
++ *
++ * This file is part of exofs.
++ *
++ * exofs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation.  Since it is based on ext2, and the only
++ * valid version of GPL for the Linux kernel is version 2, the only valid
++ * version of GPL for exofs is version 2.
++ *
++ * exofs is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with exofs; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
++
++#include <linux/fs.h>
++#include <linux/time.h>
++#include "common.h"
++
++#ifndef __EXOFS_H__
++#define __EXOFS_H__
++
++#define EXOFS_ERR(fmt, a...) printk(KERN_ERR "exofs: " fmt, ##a)
++
++#ifdef CONFIG_EXOFS_DEBUG
++#define EXOFS_DBGMSG(fmt, a...) \
++	printk(KERN_NOTICE "exofs @%s:%d: " fmt, __func__, __LINE__, ##a)
++#else
++#define EXOFS_DBGMSG(fmt, a...) \
++	do {} while (0)
++#endif
++
++/* u64 has problems with printk this will cast it to unsigned long long */
++#define _LLU(x) (unsigned long long)(x)
++
++/*
++ * our extension to the in-memory superblock
++ */
++struct exofs_sb_info {
++	struct osd_dev	*s_dev;			/* returned by get_osd_dev    */
++	osd_id		s_pid;			/* partition ID of file system*/
++	int		s_timeout;		/* timeout for OSD operations */
++	uint64_t	s_nextid;		/* highest object ID used     */
++	uint32_t	s_numfiles;		/* number of files on fs      */
++	spinlock_t	s_next_gen_lock;	/* spinlock for gen # update  */
++	u32		s_next_generation;	/* next gen # to use          */
++	atomic_t	s_curr_pending;		/* number of pending commands */
++	uint8_t		s_cred[OSD_CAP_LEN];	/* all-powerful credential    */
++};
++
++/*
++ * our extension to the in-memory inode
++ */
++struct exofs_i_info {
++	unsigned long  i_flags;            /* various atomic flags            */
++	uint32_t       i_data[EXOFS_IDATA];/*short symlink names and device #s*/
++	uint32_t       i_dir_start_lookup; /* which page to start lookup      */
++	wait_queue_head_t i_wq;            /* wait queue for inode            */
++	uint64_t       i_commit_size;      /* the object's written length     */
++	uint8_t        i_cred[OSD_CAP_LEN];/* all-powerful credential         */
++	struct inode   vfs_inode;          /* normal in-memory inode          */
++};
++
++/*
++ * our inode flags
++ */
++#define OBJ_2BCREATED	0	/* object will be created soon*/
++#define OBJ_CREATED	1	/* object has been created on the osd*/
++
++static inline int obj_2bcreated(struct exofs_i_info *oi)
++{
++	return test_bit(OBJ_2BCREATED, &(oi->i_flags));
++}
++
++static inline void set_obj_2bcreated(struct exofs_i_info *oi)
++{
++	set_bit(OBJ_2BCREATED, &(oi->i_flags));
++}
++
++static inline int obj_created(struct exofs_i_info *oi)
++{
++	return test_bit(OBJ_CREATED, &(oi->i_flags));
++}
++
++static inline void set_obj_created(struct exofs_i_info *oi)
++{
++	set_bit(OBJ_CREATED, &(oi->i_flags));
++}
++
++int __exofs_wait_obj_created(struct exofs_i_info *oi);
++static inline int wait_obj_created(struct exofs_i_info *oi)
++{
++	if (likely(obj_created(oi)))
++		return 0;
++
++	return __exofs_wait_obj_created(oi);
++}
++
++/*
++ * get to our inode from the vfs inode
++ */
++static inline struct exofs_i_info *exofs_i(struct inode *inode)
++{
++	return container_of(inode, struct exofs_i_info, vfs_inode);
++}
++
++#endif
+diff --git a/fs/exofs/osd.c b/fs/exofs/osd.c
+new file mode 100644
+index 0000000..b249ae9
+--- /dev/null
++++ b/fs/exofs/osd.c
+@@ -0,0 +1,153 @@
++/*
++ * Copyright (C) 2005, 2006
++ * Avishay Traeger (avishay@gmail.com) (avishay@il.ibm.com)
++ * Copyright (C) 2005, 2006
++ * International Business Machines
++ * Copyright (C) 2008, 2009
++ * Boaz Harrosh <bharrosh@panasas.com>
++ *
++ * This file is part of exofs.
++ *
++ * exofs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation.  Since it is based on ext2, and the only
++ * valid version of GPL for the Linux kernel is version 2, the only valid
++ * version of GPL for exofs is version 2.
++ *
++ * exofs is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with exofs; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
++
++#include <scsi/scsi_device.h>
++#include <scsi/osd_sense.h>
++
++#include "exofs.h"
++
++int exofs_check_ok_resid(struct osd_request *or, u64 *in_resid, u64 *out_resid)
++{
++	struct osd_sense_info osi;
++	int ret = osd_req_decode_sense(or, &osi);
++
++	if (ret) { /* translate to Linux codes */
++		if (osi.additional_code == scsi_invalid_field_in_cdb) {
++			if (osi.cdb_field_offset == OSD_CFO_STARTING_BYTE)
++				ret = -EFAULT;
++			if (osi.cdb_field_offset == OSD_CFO_OBJECT_ID)
++				ret = -ENOENT;
++			else
++				ret = -EINVAL;
++		} else if (osi.additional_code == osd_quota_error)
++			ret = -ENOSPC;
++		else
++			ret = -EIO;
 +	}
 +
- 	mutex_lock(&tracepoints_mutex);
- 	for (iter = begin; iter < end; iter++) {
- 		mark_entry = get_tracepoint(iter->name);
++	/* FIXME: should be include in osd_sense_info */
++	if (in_resid)
++		*in_resid = or->in.req ? or->in.req->data_len : 0;
++
++	if (out_resid)
++		*out_resid = or->out.req ? or->out.req->data_len : 0;
++
++	return ret;
++}
++
++void exofs_make_credential(u8 cred_a[OSD_CAP_LEN], const struct osd_obj_id *obj)
++{
++	osd_sec_init_nosec_doall_caps(cred_a, obj, false, true);
++}
++
++/*
++ * Perform a synchronous OSD operation.
++ */
++int exofs_sync_op(struct osd_request *or, int timeout, uint8_t *credential)
++{
++	int ret;
++
++	or->timeout = timeout;
++	ret = osd_finalize_request(or, 0, credential, NULL);
++	if (ret) {
++		EXOFS_DBGMSG("Faild to osd_finalize_request() => %d\n", ret);
++		return ret;
++	}
++
++	ret = osd_execute_request(or);
++
++	if (ret)
++		EXOFS_DBGMSG("osd_execute_request() => %d\n", ret);
++	/* osd_req_decode_sense(or, ret); */
++	return ret;
++}
++
++/*
++ * Perform an asynchronous OSD operation.
++ */
++int exofs_async_op(struct osd_request *or, osd_req_done_fn *async_done,
++		   void *caller_context, u8 *cred)
++{
++	int ret;
++
++	ret = osd_finalize_request(or, 0, cred, NULL);
++	if (ret) {
++		EXOFS_DBGMSG("Faild to osd_finalize_request() => %d\n", ret);
++		return ret;
++	}
++
++	ret = osd_execute_request_async(or, async_done, caller_context);
++
++	if (ret)
++		EXOFS_DBGMSG("osd_execute_request_async() => %d\n", ret);
++	return ret;
++}
++
++int extract_attr_from_req(struct osd_request *or, struct osd_attr *attr)
++{
++	struct osd_attr cur_attr = {.attr_page = 0}; /* start with zeros */
++	void *iter = NULL;
++	int nelem;
++
++	do {
++		nelem = 1;
++		osd_req_decode_get_attr_list(or, &cur_attr, &nelem, &iter);
++		if ((cur_attr.attr_page == attr->attr_page) &&
++		    (cur_attr.attr_id == attr->attr_id)) {
++			attr->len = cur_attr.len;
++			attr->val_ptr = cur_attr.val_ptr;
++			return 0;
++		}
++	} while (iter);
++
++	return -EIO;
++}
++
++int osd_req_read_kern(struct osd_request *or,
++	const struct osd_obj_id *obj, u64 offset, void* buff, u64 len)
++{
++	struct request_queue *req_q = or->osd_dev->scsi_device->request_queue;
++	struct bio *bio = bio_map_kern(req_q, buff, len, GFP_KERNEL);
++
++	if (!bio)
++		return -ENOMEM;
++
++	osd_req_read(or, obj, bio, offset);
++	return 0;
++}
++
++int osd_req_write_kern(struct osd_request *or,
++	const struct osd_obj_id *obj, u64 offset, void* buff, u64 len)
++{
++	struct request_queue *req_q = or->osd_dev->scsi_device->request_queue;
++	struct bio *bio = bio_map_kern(req_q, buff, len, GFP_KERNEL);
++
++	if (!bio)
++		return -ENOMEM;
++
++	osd_req_write(or, obj, bio, offset);
++	return 0;
++}
+-- 
+1.6.2.1
+
