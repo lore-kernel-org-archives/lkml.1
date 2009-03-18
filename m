@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZCRP1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbZCRP2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbZCRP1X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 11:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbZCRP1M
+	id S1755395AbZCRP2U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 11:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbZCRP2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 11:27:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42684 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753074AbZCRP1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 11:27:11 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Benjamin LaHaise <bcrl@kvack.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-aio <linux-aio@kvack.org>, zach.brown@oracle.com
-Subject: Re: [patch] eventfd - remove fput() call from possible IRQ context (2nd rev)
-References: <49B89B22.7080303@cosmosbay.com>
-	<20090311224712.fb8db075.akpm@linux-foundation.org>
-	<49B8A75E.6040409@cosmosbay.com>
-	<20090311233903.f036027a.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0903120625340.6040@makko.or.mcafeemobile.com>
-	<1236986902.7265.73.camel@heimdal.trondhjem.org>
-	<alpine.DEB.1.10.0903131732300.13254@makko.or.mcafeemobile.com>
-	<1237003328.7265.98.camel@heimdal.trondhjem.org>
-	<alpine.DEB.1.10.0903140729060.26556@makko.or.mcafeemobile.com>
-	<alpine.DEB.1.10.0903141826120.3888@makko.or.mcafeemobile.com>
-	<20090315174445.GD18305@kvack.org>
-	<alpine.DEB.1.10.0903151303490.16762@makko.or.mcafeemobile.com>
-	<x49wsamhpvg.fsf@segfault.boston.devel.redhat.com>
-	<49C10B6B.3040108@cosmosbay.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 18 Mar 2009 11:25:45 -0400
-In-Reply-To: <49C10B6B.3040108@cosmosbay.com> (Eric Dumazet's message of "Wed,
-	18 Mar 2009 15:55:39 +0100")
-Message-ID: <x49ocvyhmyu.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 18 Mar 2009 11:28:10 -0400
+Received: from ag-out-0708.google.com ([72.14.246.249]:22808 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752322AbZCRP2J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 11:28:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=gEITVrh5NiO2S5s/MTae9PTmiyfPxId/+8F0cudbwVgNg9fxl7n95mm6mqvVbjacOP
+         FsojthvQc+iSxt6LgXjVq+cxFgVt3/mTeNWu0743w2475pvSfP7rhZCm28AkRBD8Jj56
+         +eG+t4cDFcksiCfeShaMu3aBqmufC6QusYS88=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Wed, 18 Mar 2009 10:28:06 -0500
+Message-ID: <cfe5f7850903180828k60f844c0l475e328649607e3c@mail.gmail.com>
+Subject: MMC: driver fails to recognize insert-remove SD card after data 
+	transfer error 84
+From: Ishaq Khan <ishaq.groups@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet <dada1@cosmosbay.com> writes:
+Hi,
 
+Montavista kernel 2.6.21 on omap2430
 
->> 	rwfd = open("rwfile", O_RDWR|O_DIRECT);		assert(rwfd != -1);
->> 	if (posix_memalign((void **)&buf, getpagesize(), SIZE) < 0) {
->> 		perror("posix_memalign");
->> 		exit(1);
->> 	}
->> 	memset(buf, 0x42, SIZE);
->> 
->> 	/* Write test. */
->> 	res = io_queue_init(1024, &io_ctx);		assert(res == 0);
->> 	io_prep_pwrite(&iocb, rwfd, buf, SIZE, 0);
->> 	io_set_eventfd(&iocb, efd);
->> 	res = io_submit(io_ctx, 1, iocbs);		assert(res == 1);
->
-> yes but io_submit() is blocking. so your close(efd) will come after the release in fs/aio.c
+I have been trying to fix a problem in the MMC driver on OMAP2430.
+After rapid insert and remove SD card operation, I see the following
+error message (caused due to data timeout). After this happens the
+driver no longer detects insertions/removals..
 
-I'm not sure why you think io_submit is blocking.  In my setup, I
-preallocated the file, and the test code opens it with O_DIRECT.  So,
-io_submit should return after the dio is issued, and the I/O size is
-large enough that it should still be outstanding when io_submit returns.
+[ 1013.320000] mmcblk2: error -84 transferring data, sector 7961, nr
+8, card status 0x900
 
-Cheers,
-Jeff
+followed by bunch of I/O errors
+
+[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7961
+[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7962
+[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7963
+[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7964
+[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7965
+[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7966
+[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7967
+[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7968
+
+I have tried a number of patches that floating around but do no good
+to fix this problem. Would appreciate if someone could share their
+views regarding this problem.
+
+Thanks
+
+Ishaq
