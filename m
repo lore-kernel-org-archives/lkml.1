@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbZCRVtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760097AbZCRVtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760044AbZCRVtb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:49:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757646AbZCRVnA
+	id S1760097AbZCRVtt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757698AbZCRVnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:43:00 -0400
+	Wed, 18 Mar 2009 17:43:05 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756799AbZCRVm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:59 -0400
+	id S1757643AbZCRVnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:43:01 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 23/57] microblaze_v7: asm-offsets
-Date: Wed, 18 Mar 2009 21:30:50 +0100
-Message-Id: <513d4067a84be1ecb47577e1edf131d2b3572808.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 20/57] microblaze_v7: uaccess files
+Date: Wed, 18 Mar 2009 21:30:47 +0100
+Message-Id: <644f08d7f8cd338e606ed703e221914f75588fb5.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <039bc2fea33d23a3e7d2d85ac6fb275b8d21b5ed.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <b726b7b271cf303c36af54c4e155140541a6769b.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -37,9 +37,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <1477ec41e7ba0ec847a064e1f8e422dc2a5dcc9f.1237407249.git.monstr@monstr.eu>
  <75127eae09c978220d452d92f95763dde24f1d52.1237407249.git.monstr@monstr.eu>
  <b726b7b271cf303c36af54c4e155140541a6769b.1237407249.git.monstr@monstr.eu>
- <644f08d7f8cd338e606ed703e221914f75588fb5.1237407249.git.monstr@monstr.eu>
- <6d19f608a4ba3e7718aa55794c2845f19b5ed5e2.1237407249.git.monstr@monstr.eu>
- <039bc2fea33d23a3e7d2d85ac6fb275b8d21b5ed.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -51,18 +48,19 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/kernel/asm-offsets.c |  115 ++++++++++++++++++++++++++++++++++
- 1 files changed, 115 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/asm-offsets.c
+ arch/microblaze/include/asm/uaccess.h |  134 +++++++++++++++++++++++++++++++++
+ arch/microblaze/lib/uaccess.c         |   41 ++++++++++
+ 2 files changed, 175 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/uaccess.h
+ create mode 100644 arch/microblaze/lib/uaccess.c
 
-diff --git a/arch/microblaze/kernel/asm-offsets.c b/arch/microblaze/kernel/asm-offsets.c
+diff --git a/arch/microblaze/include/asm/uaccess.h b/arch/microblaze/include/asm/uaccess.h
 new file mode 100644
-index 0000000..799283a
+index 0000000..5a3ffc3
 --- /dev/null
-+++ b/arch/microblaze/kernel/asm-offsets.c
-@@ -0,0 +1,115 @@
++++ b/arch/microblaze/include/asm/uaccess.h
+@@ -0,0 +1,134 @@
 +/*
-+ * Copyright (C) 2007 PetaLogix
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
@@ -70,111 +68,178 @@ index 0000000..799283a
 + * for more details.
 + */
 +
-+#include <linux/init.h>
-+#include <linux/stddef.h>
-+#include <linux/sched.h>
-+#include <linux/kernel_stat.h>
-+#include <linux/ptrace.h>
-+#include <linux/hardirq.h>
-+#include <linux/thread_info.h>
-+#include <linux/kbuild.h>
++#ifndef _ASM_MICROBLAZE_UACCESS_H
++#define _ASM_MICROBLAZE_UACCESS_H
 +
-+int main(int argc, char *argv[])
++#ifdef __KERNEL__
++#ifndef __ASSEMBLY__
++
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/sched.h> /* RLIMIT_FSIZE */
++#include <linux/mm.h>
++
++#include <asm/mmu.h>
++#include <asm/page.h>
++#include <asm/pgtable.h>
++#include <asm/segment.h>
++#include <linux/string.h>
++
++#define VERIFY_READ	0
++#define VERIFY_WRITE	1
++
++extern int ___range_ok(unsigned long addr, unsigned long size);
++
++#define __range_ok(addr, size) \
++		___range_ok((unsigned long)(addr), (unsigned long)(size))
++
++#define access_ok(type, addr, size) (__range_ok((addr), (size)) == 0)
++#define __access_ok(add, size) (__range_ok((addr), (size)) == 0)
++
++extern inline int bad_user_access_length(void)
 +{
-+	/* struct pt_regs */
-+	DEFINE(PT_SIZE, sizeof(struct pt_regs));
-+	DEFINE(PT_MSR, offsetof(struct pt_regs, msr));
-+	DEFINE(PT_EAR, offsetof(struct pt_regs, ear));
-+	DEFINE(PT_ESR, offsetof(struct pt_regs, esr));
-+	DEFINE(PT_FSR, offsetof(struct pt_regs, fsr));
-+	DEFINE(PT_PC, offsetof(struct pt_regs, pc));
-+	DEFINE(PT_R0, offsetof(struct pt_regs, r0));
-+	DEFINE(PT_R1, offsetof(struct pt_regs, r1));
-+	DEFINE(PT_R2, offsetof(struct pt_regs, r2));
-+	DEFINE(PT_R3, offsetof(struct pt_regs, r3));
-+	DEFINE(PT_R4, offsetof(struct pt_regs, r4));
-+	DEFINE(PT_R5, offsetof(struct pt_regs, r5));
-+	DEFINE(PT_R6, offsetof(struct pt_regs, r6));
-+	DEFINE(PT_R7, offsetof(struct pt_regs, r7));
-+	DEFINE(PT_R8, offsetof(struct pt_regs, r8));
-+	DEFINE(PT_R9, offsetof(struct pt_regs, r9));
-+	DEFINE(PT_R10, offsetof(struct pt_regs, r10));
-+	DEFINE(PT_R11, offsetof(struct pt_regs, r11));
-+	DEFINE(PT_R12, offsetof(struct pt_regs, r12));
-+	DEFINE(PT_R13, offsetof(struct pt_regs, r13));
-+	DEFINE(PT_R14, offsetof(struct pt_regs, r14));
-+	DEFINE(PT_R15, offsetof(struct pt_regs, r15));
-+	DEFINE(PT_R16, offsetof(struct pt_regs, r16));
-+	DEFINE(PT_R17, offsetof(struct pt_regs, r17));
-+	DEFINE(PT_R18, offsetof(struct pt_regs, r18));
-+	DEFINE(PT_R19, offsetof(struct pt_regs, r19));
-+	DEFINE(PT_R20, offsetof(struct pt_regs, r20));
-+	DEFINE(PT_R21, offsetof(struct pt_regs, r21));
-+	DEFINE(PT_R22, offsetof(struct pt_regs, r22));
-+	DEFINE(PT_R23, offsetof(struct pt_regs, r23));
-+	DEFINE(PT_R24, offsetof(struct pt_regs, r24));
-+	DEFINE(PT_R25, offsetof(struct pt_regs, r25));
-+	DEFINE(PT_R26, offsetof(struct pt_regs, r26));
-+	DEFINE(PT_R27, offsetof(struct pt_regs, r27));
-+	DEFINE(PT_R28, offsetof(struct pt_regs, r28));
-+	DEFINE(PT_R29, offsetof(struct pt_regs, r29));
-+	DEFINE(PT_R30, offsetof(struct pt_regs, r30));
-+	DEFINE(PT_R31, offsetof(struct pt_regs, r31));
-+	DEFINE(PT_MODE, offsetof(struct pt_regs, kernel_mode));
-+	BLANK();
-+
-+	/* Magic offsets for PTRACE PEEK/POKE etc */
-+	DEFINE(PT_TEXT_ADDR, sizeof(struct pt_regs) + 1);
-+	DEFINE(PT_TEXT_LEN, sizeof(struct pt_regs) + 2);
-+	DEFINE(PT_DATA_ADDR, sizeof(struct pt_regs) + 3);
-+	BLANK();
-+
-+	/* struct task_struct */
-+	DEFINE(TS_THREAD_INFO, offsetof(struct task_struct, stack));
-+
-+	/* struct thread_info */
-+	DEFINE(TI_TASK, offsetof(struct thread_info, task));
-+	DEFINE(TI_EXEC_DOMAIN, offsetof(struct thread_info, exec_domain));
-+	DEFINE(TI_FLAGS, offsetof(struct thread_info, flags));
-+	DEFINE(TI_STATUS, offsetof(struct thread_info, status));
-+	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
-+	DEFINE(TI_PRE_COUNT, offsetof(struct thread_info, preempt_count));
-+	DEFINE(TI_ADDR_LIMIT, offsetof(struct thread_info, addr_limit));
-+	DEFINE(TI_RESTART_BLOCK, offsetof(struct thread_info, restart_block));
-+	DEFINE(TI_CPU_CONTEXT, offsetof(struct thread_info, cpu_context));
-+	BLANK();
-+
-+	/* struct cpu_context */
-+	DEFINE(CC_R1, offsetof(struct cpu_context, r1)); /* r1 */
-+	DEFINE(CC_R2, offsetof(struct cpu_context, r2));
-+	/* dedicated registers */
-+	DEFINE(CC_R13, offsetof(struct cpu_context, r13));
-+	DEFINE(CC_R14, offsetof(struct cpu_context, r14));
-+	DEFINE(CC_R15, offsetof(struct cpu_context, r15));
-+	DEFINE(CC_R16, offsetof(struct cpu_context, r16));
-+	DEFINE(CC_R17, offsetof(struct cpu_context, r17));
-+	DEFINE(CC_R18, offsetof(struct cpu_context, r18));
-+	/* non-volatile registers */
-+	DEFINE(CC_R19, offsetof(struct cpu_context, r19));
-+	DEFINE(CC_R20, offsetof(struct cpu_context, r20));
-+	DEFINE(CC_R21, offsetof(struct cpu_context, r21));
-+	DEFINE(CC_R22, offsetof(struct cpu_context, r22));
-+	DEFINE(CC_R23, offsetof(struct cpu_context, r23));
-+	DEFINE(CC_R24, offsetof(struct cpu_context, r24));
-+	DEFINE(CC_R25, offsetof(struct cpu_context, r25));
-+	DEFINE(CC_R26, offsetof(struct cpu_context, r26));
-+	DEFINE(CC_R27, offsetof(struct cpu_context, r27));
-+	DEFINE(CC_R28, offsetof(struct cpu_context, r28));
-+	DEFINE(CC_R29, offsetof(struct cpu_context, r29));
-+	DEFINE(CC_R30, offsetof(struct cpu_context, r30));
-+	/* special purpose registers */
-+	DEFINE(CC_MSR, offsetof(struct cpu_context, msr));
-+	DEFINE(CC_EAR, offsetof(struct cpu_context, ear));
-+	DEFINE(CC_ESR, offsetof(struct cpu_context, esr));
-+	DEFINE(CC_FSR, offsetof(struct cpu_context, fsr));
-+	BLANK();
-+
 +	return 0;
++}
++/* FIXME this is function for optimalization -> memcpy */
++#define __get_user(var, ptr)					\
++	({							\
++		int __gu_err = 0;				\
++		switch (sizeof(*(ptr))) {			\
++		case 1:						\
++		case 2:						\
++		case 4:						\
++			(var) = *(ptr);				\
++			break;					\
++		case 8:						\
++			memcpy((void *) &(var), (ptr), 8);	\
++			break;					\
++		default:					\
++			(var) = 0;				\
++			__gu_err = __get_user_bad();		\
++			break;					\
++		}						\
++		__gu_err;					\
++	})
++
++#define __get_user_bad()	(bad_user_access_length(), (-EFAULT))
++
++#define __put_user(var, ptr)					\
++	({							\
++		int __pu_err = 0;				\
++		switch (sizeof(*(ptr))) {			\
++		case 1:						\
++		case 2:						\
++		case 4:						\
++			*(ptr) = (var);				\
++			break;					\
++		case 8: {					\
++			typeof(*(ptr)) __pu_val = var;		\
++			memcpy(ptr, &__pu_val, sizeof(__pu_val));\
++			}					\
++			break;					\
++		default:					\
++			__pu_err = __put_user_bad();		\
++			break;					\
++		}							\
++		__pu_err;						\
++	})
++
++#define __put_user_bad()	(bad_user_access_length(), (-EFAULT))
++
++#define put_user(x, ptr)	__put_user(x, ptr)
++#define get_user(x, ptr)	__get_user(x, ptr)
++
++#define copy_to_user(to, from, n)		(memcpy(to, from, n), 0)
++#define copy_from_user(to, from, n)		(memcpy(to, from, n), 0)
++
++#define __copy_to_user(to, from, n)		(copy_to_user(to, from, n))
++#define __copy_from_user(to, from, n)		(copy_from_user(to, from, n))
++#define __copy_to_user_inatomic(to, from, n)	(__copy_to_user(to, from, n))
++#define __copy_from_user_inatomic(to, from, n)	(__copy_from_user(to, from, n))
++
++#define __clear_user(addr, n)	(memset((void *)addr, 0, n), 0)
++
++static inline unsigned long clear_user(void *addr, unsigned long size)
++{
++	if (access_ok(VERIFY_WRITE, addr, size))
++		size = __clear_user(addr, size);
++	return size;
++}
++
++/* Returns 0 if exception not found and fixup otherwise. */
++extern unsigned long search_exception_table(unsigned long);
++
++
++extern long strncpy_from_user(char *dst, const char __user *src, long count);
++extern long strnlen_user(const char __user *src, long count);
++extern long __strncpy_from_user(char *dst, const char __user *src, long count);
++
++/*
++ * The exception table consists of pairs of addresses: the first is the
++ * address of an instruction that is allowed to fault, and the second is
++ * the address at which the program should continue. No registers are
++ * modified, so it is entirely up to the continuation code to figure out
++ * what to do.
++ *
++ * All the routines below use bits of fixup code that are out of line
++ * with the main instruction path. This means when everything is well,
++ * we don't even have to jump over them. Further, they do not intrude
++ * on our cache or tlb entries.
++ */
++struct exception_table_entry {
++	unsigned long insn, fixup;
++};
++
++#endif  /* __ASSEMBLY__ */
++#endif /* __KERNEL__ */
++
++#endif /* _ASM_MICROBLAZE_UACCESS_H */
+diff --git a/arch/microblaze/lib/uaccess.c b/arch/microblaze/lib/uaccess.c
+new file mode 100644
+index 0000000..8eb9df5
+--- /dev/null
++++ b/arch/microblaze/lib/uaccess.c
+@@ -0,0 +1,41 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/string.h>
++#include <asm/uaccess.h>
++
++#include <asm/bug.h>
++
++long strnlen_user(const char __user *src, long count)
++{
++	return strlen(src) + 1;
++}
++
++#define __do_strncpy_from_user(dst, src, count, res)			\
++	do {								\
++		char *tmp;						\
++		strncpy(dst, src, count);				\
++		for (tmp = dst; *tmp && count > 0; tmp++, count--)	\
++			;						\
++		res = (tmp - dst);					\
++	} while (0)
++
++long __strncpy_from_user(char *dst, const char __user *src, long count)
++{
++	long res;
++	__do_strncpy_from_user(dst, src, count, res);
++	return res;
++}
++
++long strncpy_from_user(char *dst, const char __user *src, long count)
++{
++	long res = -EFAULT;
++	if (access_ok(VERIFY_READ, src, 1))
++		__do_strncpy_from_user(dst, src, count, res);
++	return res;
 +}
 -- 
 1.5.5.1
