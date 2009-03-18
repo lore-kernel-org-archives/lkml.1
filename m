@@ -1,113 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbZCRFDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbZCRFD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423AbZCRFDg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 01:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbZCRFD1
+	id S1752599AbZCRFD4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 01:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbZCRFDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 01:03:27 -0400
-Received: from mx2.suse.de ([195.135.220.15]:53755 "EHLO mx2.suse.de"
+	Wed, 18 Mar 2009 01:03:46 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:55813 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751180AbZCRFD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 01:03:26 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] Block - Honour barrier requests in loop driver
-Date: Wed, 18 Mar 2009 10:28:20 +0530
-User-Agent: KMail/1.10.3 (Linux/2.6.27.19-3.2-default; KDE/4.1.3; x86_64; ; )
-Cc: Christoph Hellwig <hch@infradead.org>, Gerd Hoffmann <kraxel@redhat.com>,
-       Constantine Sapuntzakis <csapuntz@gmail.com>,
-       Miklos Szeredi <miklos@szeredi.hu>, nikanth@gmail.com,
-       linux-kernel@vger.kernel.org
-References: <200903171417.16760.knikanth@suse.de> <200903171739.50658.knikanth@suse.de> <20090317190905.GA28816@infradead.org>
-In-Reply-To: <20090317190905.GA28816@infradead.org>
+	id S1752102AbZCRFDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 01:03:45 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903181028.20689.knikanth@suse.de>
+Message-ID: <18880.31021.850273.736650@drongo.ozlabs.ibm.com>
+Date: Wed, 18 Mar 2009 15:31:41 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 09/11] perf_counter: revamp syscall input ABI
+In-Reply-To: <20090317220421.336322251@chello.nl>
+References: <20090317215606.037073805@chello.nl>
+	<20090317220421.336322251@chello.nl>
+X-Mailer: VM 8.0.12 under 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 March 2009 00:39:05 Christoph Hellwig wrote:
-> On Tue, Mar 17, 2009 at 05:39:49PM +0530, Nikanth Karthikesan wrote:
-> > +			if (!file->f_op || !file->f_op->fsync) {
-> > +				ret = -EOPNOTSUPP;
-> > +				goto out;
-> > +			}
->
-> file->f_op is never zero, so you can remove the checks for that.
-> Otherwise looks good.
+Peter Zijlstra writes:
 
-Thanks for reviewing. I've removed that check.
+> The hardware/software classification in hw_event->type became a little strained
+> due to the addition of tracepoint tracing.
+> 
+> Instead split up the field and provide a type field to explicitly specify the
+> counter type, while using the event_id field to specify which event to use.
 
-Jens, Can you merge this?
+It would be nice if you didn't reuse the name 'type' but instead
+called the field something different ('class', perhaps?) to force a
+compile error on code that needs to be updated.  For example, you
+missed a spot in arch/powerpc/kernel/perf_counter.c and you need to
+add on the patch below.  (Thanks for updating powerpc BTW.)
 
-Thanks
-Nikanth
+Paul.
 
-Honour barrier requests in the loop back block device driver.
-In case of barrier bios, flush the backing file once before processing the
-barrier and once after to guarantee ordering. In case of filesystems that does
-not support fsync, barrier bios would be failed with -EOPNOTSUPP.
-
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-
----
-
-diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-index bf03455..cac7894 100644
---- a/drivers/block/loop.c
-+++ b/drivers/block/loop.c
-@@ -474,10 +474,35 @@ static int do_bio_filebacked(struct loop_device *lo, struct bio *bio)
- 	int ret;
- 
- 	pos = ((loff_t) bio->bi_sector << 9) + lo->lo_offset;
--	if (bio_rw(bio) == WRITE)
-+
-+	if (bio_rw(bio) == WRITE) {
-+		int barrier = bio_barrier(bio);
-+		struct file *file = lo->lo_backing_file;
-+
-+		if (barrier) {
-+			if (unlikely(!file->f_op->fsync)) {
-+				ret = -EOPNOTSUPP;
-+				goto out;
-+			}
-+
-+			ret = vfs_fsync(file, file->f_path.dentry, 0);
-+			if (unlikely(ret)) {
-+				ret = -EIO;
-+				goto out;
-+			}
-+		}
-+
- 		ret = lo_send(lo, bio, pos);
--	else
-+
-+		if (barrier && !ret) {
-+			ret = vfs_fsync(file, file->f_path.dentry, 0);
-+			if (unlikely(ret))
-+				ret = -EIO;
-+		}
-+	} else
- 		ret = lo_receive(lo, bio, lo->lo_blocksize, pos);
-+
-+out:
- 	return ret;
- }
- 
-@@ -825,6 +850,10 @@ static int loop_set_fd(struct loop_device *lo, fmode_t mode,
- 	blk_queue_make_request(lo->lo_queue, loop_make_request);
- 	lo->lo_queue->queuedata = lo;
- 	lo->lo_queue->unplug_fn = loop_unplug;
-+	if (!(lo_flags & LO_FLAGS_READ_ONLY) && file->f_op &&
-+						file->f_op->fsync) {
-+		blk_queue_ordered(lo->lo_queue, QUEUE_ORDERED_DRAIN, NULL);
-+	}
- 
- 	set_capacity(lo->lo_disk, size);
- 	bd_set_size(bdev, size << 9);
-
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index efaeecf..88b72eb 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -602,7 +602,7 @@ hw_perf_counter_init(struct perf_counter *counter)
+ 		return NULL;
+ 	if ((s64)counter->hw_event.irq_period < 0)
+ 		return NULL;
+-	ev = counter->hw_event.type;
++	ev = counter->hw_event.event_id;
+ 	if (!counter->hw_event.raw) {
+ 		if (ev >= ppmu->n_generic ||
+ 		    ppmu->generic_events[ev] == 0)
