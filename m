@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759835AbZCRSNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759871AbZCRSNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759835AbZCRSNY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 14:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbZCRSNE
+	id S1759871AbZCRSNl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 14:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759650AbZCRSNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 14:13:04 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:22225 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759411AbZCRSND (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 14:13:03 -0400
-From: Boaz Harrosh <bharrosh@panasas.com>
-To: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH 8/8] fs: Add exofs to Kernel build
-Date: Wed, 18 Mar 2009 20:11:51 +0200
-Message-Id: <1237399911-29572-1-git-send-email-bharrosh@panasas.com>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <49C1331D.1080805@panasas.com>
-References: <49C1331D.1080805@panasas.com>
-X-OriginalArrivalTime: 18 Mar 2009 18:13:00.0353 (UTC) FILETIME=[2BFBFB10:01C9A7F5]
+	Wed, 18 Mar 2009 14:13:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51098 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759685AbZCRSNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 14:13:18 -0400
+Subject: Re: [tip:tracing/ftrace] tracing: fix oops in
+ tracepoint_update_probe_range()
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinderrajput@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu, linux-tip-commits@vger.kernel.org
+In-Reply-To: <20090318180007.GE5981@nowhere>
+References: <1237394936.3132.1.camel@localhost.localdomain>
+	 <tip-966a6fdf6210e3ac8ce00b61cd1107cdf97ce744@git.kernel.org>
+	 <1237398997.22438.10.camel@ht.satnam>  <20090318180007.GE5981@nowhere>
+Content-Type: text/plain
+Date: Wed, 18 Mar 2009 23:42:10 +0530
+Message-Id: <1237399930.22438.16.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Add exofs to fs/Kconfig under "menu 'Miscellaneous filesystems'"
-- Add exofs to fs/Makefile
+On Wed, 2009-03-18 at 19:00 +0100, Frederic Weisbecker wrote:
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- fs/Kconfig  |    2 ++
- fs/Makefile |    1 +
- 2 files changed, 3 insertions(+), 0 deletions(-)
+> Jaswinder, It's hard for me to reproduce it via your config.
+> May be it's because I had to update it to match latest -tip tree and
+> then I inserted some noise inside.
+> 
+> Could you please send me your bad vmlinux, so that I can have a first look at
+> your elf sections and see if there is something helpful inside.
+> 
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index 93945dd..d0c544c 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -223,6 +223,8 @@ source "fs/romfs/Kconfig"
- source "fs/sysv/Kconfig"
- source "fs/ufs/Kconfig"
- 
-+source "fs/exofs/Kconfig"
-+
- endif # MISC_FILESYSTEMS
- 
- menuconfig NETWORK_FILESYSTEMS
-diff --git a/fs/Makefile b/fs/Makefile
-index dc20db3..f5f5ce7 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -124,3 +124,4 @@ obj-$(CONFIG_DEBUG_FS)		+= debugfs/
- obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
- obj-$(CONFIG_BTRFS_FS)		+= btrfs/
- obj-$(CONFIG_GFS2_FS)           += gfs2/
-+obj-$(CONFIG_EXOFS_FS)          += exofs/
--- 
-1.6.2.1
+OK I am uploading vmlinux (file size 14729799) and dmesg on :
+
+http://userweb.kernel.org/~jaswinder/oops_20090318/
+
+Are you testing on 32 bit or 64 bit machine.
+
+I am getting this error on 64 bit AMD box.
+
+Thanks
+--
+JSR
 
