@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760004AbZCRWmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbZCRWns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760004AbZCRWmz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 18:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758513AbZCRWkP
+	id S1760217AbZCRWns (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 18:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758854AbZCRWk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 18:40:15 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:2864 "EHLO
+	Wed, 18 Mar 2009 18:40:26 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:2892 "EHLO
 	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753139AbZCRWkN (ORCPT
+	with ESMTP id S1758946AbZCRWkX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 18:40:13 -0400
+	Wed, 18 Mar 2009 18:40:23 -0400
 From: Alex Chiang <achiang@hp.com>
-Subject: [PATCH v4 09/12] PCI: Introduce /sys/bus/pci/devices/.../rescan
+Subject: [PATCH v4 11/12] PCI Hotplug: rename legacy_fakephp to fakephp
 To: jbarnes@virtuousgeek.org
 Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Trent Piepho <xyzzy@speakeasy.org>, Alex Chiang <achiang@hp.com>
-Date: Wed, 18 Mar 2009 16:40:11 -0600
-Message-ID: <20090318224011.887.19965.stgit@bob.kio>
+       Alex Chiang <achiang@hp.com>
+Date: Wed, 18 Mar 2009 16:40:21 -0600
+Message-ID: <20090318224021.887.89590.stgit@bob.kio>
 In-Reply-To: <20090318222426.887.1008.stgit@bob.kio>
 References: <20090318222426.887.1008.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
@@ -27,77 +27,367 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This interface allows the user to force a rescan of the device's
-parent bus and all subordinate buses, and rediscover devices removed
-earlier from this part of the device tree.
+We wanted to replace fakephp wholesale, so rename legacy_fakephp back
+to fakephp. Yes, this is a silly commit, but it produces a much easier
+patch to read and review.
 
-Cc: Trent Piepho <xyzzy@speakeasy.org>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- Documentation/ABI/testing/sysfs-bus-pci |   10 ++++++++++
- drivers/pci/pci-sysfs.c                 |   22 ++++++++++++++++++++++
- 2 files changed, 32 insertions(+), 0 deletions(-)
+ drivers/pci/hotplug/Makefile         |    2 
+ drivers/pci/hotplug/fakephp.c        |  162 ++++++++++++++++++++++++++++++++++
+ drivers/pci/hotplug/legacy_fakephp.c |  162 ----------------------------------
+ 3 files changed, 163 insertions(+), 163 deletions(-)
+ create mode 100644 drivers/pci/hotplug/fakephp.c
+ delete mode 100644 drivers/pci/hotplug/legacy_fakephp.c
 
-diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
-index 5b1ddde..d33840e 100644
---- a/Documentation/ABI/testing/sysfs-bus-pci
-+++ b/Documentation/ABI/testing/sysfs-bus-pci
-@@ -58,6 +58,16 @@ Description:
- 		hot-remove the PCI device and any of its children.
- 		Depends on CONFIG_HOTPLUG.
+diff --git a/drivers/pci/hotplug/Makefile b/drivers/pci/hotplug/Makefile
+index 3314fe8..2aa117c 100644
+--- a/drivers/pci/hotplug/Makefile
++++ b/drivers/pci/hotplug/Makefile
+@@ -20,7 +20,7 @@ obj-$(CONFIG_HOTPLUG_PCI_RPA_DLPAR)	+= rpadlpar_io.o
+ obj-$(CONFIG_HOTPLUG_PCI_SGI)		+= sgi_hotplug.o
  
-+What:		/sys/bus/pci/devices/.../rescan
-+Date:		January 2009
-+Contact:	Linux PCI developers <linux-pci@vger.kernel.org>
-+Description:
-+		Writing a non-zero value to this attribute will
-+		force a rescan of the device's parent bus and all
-+		child buses, and re-discover devices removed earlier
-+		from this part of the device tree.
-+		Depends on CONFIG_HOTPLUG.
+ # Link this last so it doesn't claim devices that have a real hotplug driver
+-obj-$(CONFIG_HOTPLUG_PCI_FAKE)		+= legacy_fakephp.o
++obj-$(CONFIG_HOTPLUG_PCI_FAKE)		+= fakephp.o
+ 
+ pci_hotplug-objs	:=	pci_hotplug_core.o
+ 
+diff --git a/drivers/pci/hotplug/fakephp.c b/drivers/pci/hotplug/fakephp.c
+new file mode 100644
+index 0000000..58a9bfa
+--- /dev/null
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -0,0 +1,162 @@
++/* Works like the fakephp driver used to, except a little better.
++ *
++ * - It's possible to remove devices with subordinate busses.
++ * - New PCI devices that appear via any method, not just a fakephp triggered
++ *   rescan, will be noticed.
++ * - Devices that are removed via any method, not just a fakephp triggered
++ *   removal, will also be noticed.
++ *
++ * Uses nothing from the pci-hotplug subsystem.
++ *
++ */
 +
- What:		/sys/bus/pci/devices/.../vpd
- Date:		February 2008
- Contact:	Ben Hutchings <bhutchings@solarflare.com>
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index 6e2b1fd..92e7fd9 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -247,6 +247,27 @@ struct bus_attribute pci_bus_attrs[] = {
- 	__ATTR_NULL
- };
- 
-+static ssize_t
-+dev_rescan_store(struct device *dev, struct device_attribute *attr,
-+		 const char *buf, size_t count)
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/list.h>
++#include <linux/kobject.h>
++#include <linux/sysfs.h>
++#include <linux/init.h>
++#include <linux/pci.h>
++#include "../pci.h"
++
++struct legacy_slot {
++	struct kobject		kobj;
++	struct pci_dev		*dev;
++	struct list_head	list;
++};
++
++static LIST_HEAD(legacy_list);
++
++static ssize_t legacy_show(struct kobject *kobj, struct attribute *attr,
++			   char *buf)
 +{
++	struct legacy_slot *slot = container_of(kobj, typeof(*slot), kobj);
++	strcpy(buf, "1\n");
++	return 2;
++}
++
++static void remove_callback(void *data)
++{
++	pci_remove_bus_device((struct pci_dev *)data);
++}
++
++static ssize_t legacy_store(struct kobject *kobj, struct attribute *attr,
++			    const char *buf, size_t len)
++{
++	struct legacy_slot *slot = container_of(kobj, typeof(*slot), kobj);
 +	unsigned long val;
-+	struct pci_dev *pdev = to_pci_dev(dev);
 +
 +	if (strict_strtoul(buf, 0, &val) < 0)
 +		return -EINVAL;
 +
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
-+	if (val) {
-+		mutex_lock(&pci_remove_rescan_mutex);
-+		pci_rescan_bus(pdev->bus);
-+		mutex_unlock(&pci_remove_rescan_mutex);
-+	}
-+	return count;
++	if (val)
++		pci_rescan_bus(slot->dev->bus);
++	else
++		sysfs_schedule_callback(&slot->dev->dev.kobj, remove_callback,
++		                        slot->dev, THIS_MODULE);
++	return len;
 +}
 +
- static void remove_callback(struct device *dev)
- {
- 	int bridge = 0;
-@@ -309,6 +330,7 @@ struct device_attribute pci_dev_attrs[] = {
- 	__ATTR(msi_bus, 0644, msi_bus_show, msi_bus_store),
- #ifdef CONFIG_HOTPLUG
- 	__ATTR(remove, S_IWUSR, NULL, remove_store),
-+	__ATTR(rescan, S_IWUSR, NULL, dev_rescan_store),
- #endif
- 	__ATTR_NULL,
- };
++static struct attribute *legacy_attrs[] = {
++	&(struct attribute){ .name = "power", .mode = 0644 },
++	NULL,
++};
++
++static void legacy_release(struct kobject *kobj)
++{
++	struct legacy_slot *slot = container_of(kobj, typeof(*slot), kobj);
++
++	pci_dev_put(slot->dev);
++	kfree(slot);
++}
++
++static struct kobj_type legacy_ktype = {
++	.sysfs_ops = &(struct sysfs_ops){
++		.store = legacy_store, .show = legacy_show
++	},
++	.release = &legacy_release,
++	.default_attrs = legacy_attrs,
++};
++
++static int legacy_add_slot(struct pci_dev *pdev)
++{
++	struct legacy_slot *slot = kzalloc(sizeof(*slot), GFP_KERNEL);
++
++	if (!slot)
++		return -ENOMEM;
++
++	if (kobject_init_and_add(&slot->kobj, &legacy_ktype,
++				 &pci_slots_kset->kobj, "%s",
++				 pdev->dev.bus_id)) {
++		dev_warn(&pdev->dev, "Failed to created legacy fake slot\n");
++		return -EINVAL;
++	}
++	slot->dev = pci_dev_get(pdev);
++
++	list_add(&slot->list, &legacy_list);
++
++	return 0;
++}
++
++static int legacy_notify(struct notifier_block *nb,
++			 unsigned long action, void *data)
++{
++        struct pci_dev *pdev = to_pci_dev(data);
++
++	if (action == BUS_NOTIFY_ADD_DEVICE) {
++		legacy_add_slot(pdev);
++	} else if (action == BUS_NOTIFY_DEL_DEVICE) {
++		struct legacy_slot *slot;
++
++		list_for_each_entry(slot, &legacy_list, list)
++			if (slot->dev == pdev)
++				goto found;
++
++		dev_warn(&pdev->dev, "Missing legacy fake slot?");
++		return -ENODEV;
++found:
++		kobject_del(&slot->kobj);
++		list_del(&slot->list);
++		kobject_put(&slot->kobj);
++	}
++
++	return 0;
++}
++
++static struct notifier_block legacy_notifier = {
++	.notifier_call = legacy_notify
++};
++
++static int __init init_legacy(void)
++{
++	struct pci_dev *pdev = NULL;
++
++	/* Add existing devices */
++	while ((pdev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, pdev)))
++		legacy_add_slot(pdev);
++
++	/* Be alerted of any new ones */
++	bus_register_notifier(&pci_bus_type, &legacy_notifier);
++	return 0;
++}
++module_init(init_legacy);
++
++static void __exit remove_legacy(void)
++{
++	struct legacy_slot *slot, *tmp;
++
++	bus_unregister_notifier(&pci_bus_type, &legacy_notifier);
++
++	list_for_each_entry_safe(slot, tmp, &legacy_list, list) {
++		list_del(&slot->list);
++		kobject_del(&slot->kobj);
++		kobject_put(&slot->kobj);
++	}
++}
++module_exit(remove_legacy);
++
++
++MODULE_AUTHOR("Trent Piepho <xyzzy@speakeasy.org>");
++MODULE_DESCRIPTION("Legacy version of the fakephp interface");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/pci/hotplug/legacy_fakephp.c b/drivers/pci/hotplug/legacy_fakephp.c
+deleted file mode 100644
+index 58a9bfa..0000000
+--- a/drivers/pci/hotplug/legacy_fakephp.c
++++ /dev/null
+@@ -1,162 +0,0 @@
+-/* Works like the fakephp driver used to, except a little better.
+- *
+- * - It's possible to remove devices with subordinate busses.
+- * - New PCI devices that appear via any method, not just a fakephp triggered
+- *   rescan, will be noticed.
+- * - Devices that are removed via any method, not just a fakephp triggered
+- *   removal, will also be noticed.
+- *
+- * Uses nothing from the pci-hotplug subsystem.
+- *
+- */
+-
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/types.h>
+-#include <linux/list.h>
+-#include <linux/kobject.h>
+-#include <linux/sysfs.h>
+-#include <linux/init.h>
+-#include <linux/pci.h>
+-#include "../pci.h"
+-
+-struct legacy_slot {
+-	struct kobject		kobj;
+-	struct pci_dev		*dev;
+-	struct list_head	list;
+-};
+-
+-static LIST_HEAD(legacy_list);
+-
+-static ssize_t legacy_show(struct kobject *kobj, struct attribute *attr,
+-			   char *buf)
+-{
+-	struct legacy_slot *slot = container_of(kobj, typeof(*slot), kobj);
+-	strcpy(buf, "1\n");
+-	return 2;
+-}
+-
+-static void remove_callback(void *data)
+-{
+-	pci_remove_bus_device((struct pci_dev *)data);
+-}
+-
+-static ssize_t legacy_store(struct kobject *kobj, struct attribute *attr,
+-			    const char *buf, size_t len)
+-{
+-	struct legacy_slot *slot = container_of(kobj, typeof(*slot), kobj);
+-	unsigned long val;
+-
+-	if (strict_strtoul(buf, 0, &val) < 0)
+-		return -EINVAL;
+-
+-	if (val)
+-		pci_rescan_bus(slot->dev->bus);
+-	else
+-		sysfs_schedule_callback(&slot->dev->dev.kobj, remove_callback,
+-		                        slot->dev, THIS_MODULE);
+-	return len;
+-}
+-
+-static struct attribute *legacy_attrs[] = {
+-	&(struct attribute){ .name = "power", .mode = 0644 },
+-	NULL,
+-};
+-
+-static void legacy_release(struct kobject *kobj)
+-{
+-	struct legacy_slot *slot = container_of(kobj, typeof(*slot), kobj);
+-
+-	pci_dev_put(slot->dev);
+-	kfree(slot);
+-}
+-
+-static struct kobj_type legacy_ktype = {
+-	.sysfs_ops = &(struct sysfs_ops){
+-		.store = legacy_store, .show = legacy_show
+-	},
+-	.release = &legacy_release,
+-	.default_attrs = legacy_attrs,
+-};
+-
+-static int legacy_add_slot(struct pci_dev *pdev)
+-{
+-	struct legacy_slot *slot = kzalloc(sizeof(*slot), GFP_KERNEL);
+-
+-	if (!slot)
+-		return -ENOMEM;
+-
+-	if (kobject_init_and_add(&slot->kobj, &legacy_ktype,
+-				 &pci_slots_kset->kobj, "%s",
+-				 pdev->dev.bus_id)) {
+-		dev_warn(&pdev->dev, "Failed to created legacy fake slot\n");
+-		return -EINVAL;
+-	}
+-	slot->dev = pci_dev_get(pdev);
+-
+-	list_add(&slot->list, &legacy_list);
+-
+-	return 0;
+-}
+-
+-static int legacy_notify(struct notifier_block *nb,
+-			 unsigned long action, void *data)
+-{
+-        struct pci_dev *pdev = to_pci_dev(data);
+-
+-	if (action == BUS_NOTIFY_ADD_DEVICE) {
+-		legacy_add_slot(pdev);
+-	} else if (action == BUS_NOTIFY_DEL_DEVICE) {
+-		struct legacy_slot *slot;
+-
+-		list_for_each_entry(slot, &legacy_list, list)
+-			if (slot->dev == pdev)
+-				goto found;
+-
+-		dev_warn(&pdev->dev, "Missing legacy fake slot?");
+-		return -ENODEV;
+-found:
+-		kobject_del(&slot->kobj);
+-		list_del(&slot->list);
+-		kobject_put(&slot->kobj);
+-	}
+-
+-	return 0;
+-}
+-
+-static struct notifier_block legacy_notifier = {
+-	.notifier_call = legacy_notify
+-};
+-
+-static int __init init_legacy(void)
+-{
+-	struct pci_dev *pdev = NULL;
+-
+-	/* Add existing devices */
+-	while ((pdev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, pdev)))
+-		legacy_add_slot(pdev);
+-
+-	/* Be alerted of any new ones */
+-	bus_register_notifier(&pci_bus_type, &legacy_notifier);
+-	return 0;
+-}
+-module_init(init_legacy);
+-
+-static void __exit remove_legacy(void)
+-{
+-	struct legacy_slot *slot, *tmp;
+-
+-	bus_unregister_notifier(&pci_bus_type, &legacy_notifier);
+-
+-	list_for_each_entry_safe(slot, tmp, &legacy_list, list) {
+-		list_del(&slot->list);
+-		kobject_del(&slot->kobj);
+-		kobject_put(&slot->kobj);
+-	}
+-}
+-module_exit(remove_legacy);
+-
+-
+-MODULE_AUTHOR("Trent Piepho <xyzzy@speakeasy.org>");
+-MODULE_DESCRIPTION("Legacy version of the fakephp interface");
+-MODULE_LICENSE("GPL");
 
