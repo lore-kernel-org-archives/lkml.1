@@ -1,93 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755062AbZCRPXC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbZCRPXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755062AbZCRPXC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 11:23:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbZCRPWv
+	id S1755337AbZCRPXf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 11:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbZCRPXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 11:22:51 -0400
-Received: from mga11.intel.com ([192.55.52.93]:47300 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191AbZCRPWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 11:22:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,384,1233561600"; 
-   d="scan'208";a="439950308"
-Message-ID: <49C111C6.2010905@intel.com>
-Date: Wed, 18 Mar 2009 08:22:46 -0700
-From: Alexander Duyck <alexander.h.duyck@intel.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 18 Mar 2009 11:23:24 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:54947 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752161AbZCRPXX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 11:23:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=rqmVr9tcBOM5Tiu+3jMRm9/2Wnr8iCgOkXpeFC68sK4Au2DOoRBcmzxeWSmBkglrfZ
+         KpsdhvRkyCT+TNBvgk8tOT8cSb+MZyY9HSuB1GVkXfNYEFrmj4+7SIYibrz+wd4wzIWw
+         A/b47+I7gU9T9StE4YzfNJQdFkb3JKUGc48Cw=
+From: =?iso-8859-15?q?G=E1bor_Melis?= <mega@retes.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: RT signal queue overflow (Was: Q: SEGSEGV && uc_mcontext->ip (Was: Signal delivery order))
+Date: Wed, 18 Mar 2009 16:23:17 +0100
+User-Agent: KMail/1.9.9
+Cc: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Friesen <cfriesen@nortel.com>, linux-kernel@vger.kernel.org
+References: <200903141750.37238.mega@retes.hu> <200903181002.07584.mega@retes.hu> <alpine.LFD.2.00.0903180742320.3082@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903180742320.3082@localhost.localdomain>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "gospo@redhat.com" <gospo@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "greg@kroah.com" <greg@kroah.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "Zhao, Yu" <yu.zhao@intel.com>
-Subject: Re: [net-next PATCH 1/2] igbvf: add new driver to support 82576 virtual
- functions
-References: <20090311020928.23138.20790.stgit@lost.foo-projects.org>	<20090310222154.4bc8c12c.akpm@linux-foundation.org>	<49C03C80.5020203@intel.com> <20090317180826.8f3c596b.akpm@linux-foundation.org>
-In-Reply-To: <20090317180826.8f3c596b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200903181623.17987.mega@retes.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 17 Mar 2009 17:12:48 -0700 Alexander Duyck <alexander.h.duyck@intel.com> wrote:
-> 
->> Thanks for all the comments.  I tried to incorporate most of them into 
->> the igbvf driver and also ended up porting some over to our other 
->> drivers, specifically igb since the igbvf driver copies much of the code.
->>
->> I have added my comments inline below.
->>
->> Thanks,
->>
->> Alex
->>
->> Andrew Morton wrote:
->>> On Tue, 10 Mar 2009 19:09:28 -0700 Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
->>>
->>>> From: Alexander Duyck <alexander.h.duyck@intel.com>
->>>>
->>>> This adds an igbvf driver to handle virtual functions provided
->>>> by the igb driver.
->>> The drive-by reader is now wondering what a "virtual function" is.
-> 
-> ^^ this comment was missed.
-> 
-> I was indirectly asking for an overview (preferably in the changelog) of
-> what the whole patch actually does.
+On Miércoles 18 Marzo 2009, Linus Torvalds wrote:
+> On Wed, 18 Mar 2009, Gábor Melis wrote:
+> > It was just a month or so ago when I finally made to change to use
+> > a non-real-time signal for signalling stop-for-gc.
+>
+> Ahh, and that is when you noticed the issue with SIGSEGV?
 
-Sorry, while I missed the comment in my response I had gotten to 
-addressing it in the next version.  I updated it to more thoroughly 
-describe what the VF driver is doing.  I also included instructions on 
-how to enable the VFs from the PF so that they can be tested.
+Unfortunately not immediately because another change was needed make 
+context frobbing sigsegvs frequent enough for this to be noticed ...
 
->>>> +static int igbvf_set_ringparam(struct net_device *netdev,
->>>> +                               struct ethtool_ringparam *ring)
->>>> +{
->>>> +     struct igbvf_adapter *adapter = netdev_priv(netdev);
->>>> +     struct igbvf_ring *tx_ring, *tx_old;
->>>> +     struct igbvf_ring *rx_ring, *rx_old;
->>>> +     int err;
->>>> +
->>>> +     if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
->>>> +             return -EINVAL;
->>>> +
->>>> +     while (test_and_set_bit(__IGBVF_RESETTING, &adapter->state))
->>>> +             msleep(1);
->>> No timeout needed here?  Interrupts might not be working, for example..
->> This bit isn't set in interrupt context.  This is always used out of 
->> interrupt context and is just to prevent multiple setting changes at the 
->> same time.
-> 
-> Oh.  Can't use plain old mutex_lock()?
+> One thing you might try is to still use a non-real-time signal, but
+> simply depend on the fact that signals are basically peeled off the
+> signal bitmask in a signal number order (with the exception that
+> fatal signals are handled specially).
+>
+> IOW, on x86, just about the _only_ normal user-generated signal that
+> can happen before SIGSEGV is SIGUSR1, because SIGSEGV is 11, and
+> SIGUSR1 is 10.
+>
+> If you were to use SIGUSR2 (signal #12) you'd probably never see
+> this.
+>
+> Of course, there are other signals with numbers < 11, but they are
+> generally meant for other synchronous traps (ie signals like
+> SIGTRAP/AIGABRT/SIGFPE/SIGBUS), or for killing the process (signals
+> SIGHUP/SIGINT/SIGQUIT).
+>
+> So maybe you'd be happy with just picking another signal? It's not a
+> _pretty_ solution, but it should work across most kernel versions.
 
-We have one or two spots that actually check to see if the bit is set 
-and just report a warning instead of actually waiting on the bit to clear.
+So I did already. This is the workaround that I referred to before:
 
+"... I'll stick to the SIGUSR2 workaround that's confirmed by Oleg."
+
+So I'm happy enough that it's fixed in my app, but considering how hard 
+it was to figure out what's going on, I thought the kernel people may 
+be interested.
+
+> 			Linus
