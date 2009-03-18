@@ -1,91 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbZCRONq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758371AbZCROOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757940AbZCRONq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 10:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbZCRONg
+	id S1758371AbZCROOz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 10:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758129AbZCROOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 10:13:36 -0400
-Received: from mx2.suse.de ([195.135.220.15]:49588 "EHLO mx2.suse.de"
+	Wed, 18 Mar 2009 10:14:32 -0400
+Received: from ns1.suse.de ([195.135.220.2]:45855 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754664AbZCRONf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 10:13:35 -0400
-Date: Wed, 18 Mar 2009 15:13:31 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <npiggin@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 3/4] fs: Avoid data corruption with blocksize < pagesize
-Message-ID: <20090318141330.GA30586@duck.suse.cz>
-References: <1237311235-13623-1-git-send-email-jack@suse.cz> <1237311235-13623-2-git-send-email-jack@suse.cz> <1237311235-13623-3-git-send-email-jack@suse.cz> <1237311235-13623-4-git-send-email-jack@suse.cz> <20090318120022.GB14622@wotan.suse.de>
+	id S1758144AbZCROOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 10:14:31 -0400
+Date: Wed, 18 Mar 2009 15:14:29 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Bill Gribble <grib@billgribble.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: usbhid:  Changes since 2.6.28 in quirk handling?
+In-Reply-To: <1236947942.9606.26.camel@localhost>
+Message-ID: <alpine.LNX.2.00.0903181511010.12145@wotan.suse.de>
+References: <1236947942.9606.26.camel@localhost>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090318120022.GB14622@wotan.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 18-03-09 13:00:23, Nick Piggin wrote:
-> On Tue, Mar 17, 2009 at 06:33:54PM +0100, Jan Kara wrote:
-> > Assume the following situation:
-> > Filesystem with blocksize < pagesize - suppose blocksize = 1024,
-> > pagesize = 4096. File 'f' has first four blocks already allocated.
-> > (line with "state:" contains the state of buffers in the page - m = mapped,
-> > u = uptodate, d = dirty)
-> > 
-> >   process 1:                       process 2:
-> > 
-> > write to 'f' bytes 0 - 1024
-> >   state: |mud,-,-,-|, page dirty
-> >                                    write to 'f' bytes 1024 - 4096:
-> >                                      __block_prepare_write() maps blocks
-> >                                        state: |mud,m,m,m|, page dirty
-> >                                      we fail to copy data -> copied = 0
-> >                                      block_write_end() does nothing
-> >                                      page gets unlocked
-> > writepage() is called on the page
-> >   block_write_full_page() writes buffers with garbage
-> > 
-> > This patch fixes the problem by skipping !uptodate buffers in
-> > block_write_full_page().
-> > 
-> > CC: Nick Piggin <npiggin@suse.de>
-> > Signed-off-by: Jan Kara <jack@suse.cz>
-> > ---
-> >  fs/buffer.c |    7 ++++++-
-> >  1 files changed, 6 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/fs/buffer.c b/fs/buffer.c
-> > index 9f69741..22c0144 100644
-> > --- a/fs/buffer.c
-> > +++ b/fs/buffer.c
-> > @@ -1774,7 +1774,12 @@ static int __block_write_full_page(struct inode *inode, struct page *page,
-> >  	} while (bh != head);
-> >  
-> >  	do {
-> > -		if (!buffer_mapped(bh))
-> > +		/*
-> > +		 * Parallel write could have already mapped the buffers but
-> > +		 * it then had to restart before copying in new data. We
-> > +		 * must avoid writing garbage so just skip the buffer.
-> > +		 */
-> > +		if (!buffer_mapped(bh) || !buffer_uptodate(bh))
-> >  			continue;
-> 
-> I don't quite see how this can happen. Further down in this loop,
-> we do a test_clear_buffer_dirty(), which should exclude this I
-> think? And marking the buffer dirty if it is not uptodate should
-> be a bug.
-  Hmm, this patch definitely does something important because without it I
-hit corruption in UML in ~20 minutes and with it no corruption happens
-in ~3 hours. Maybe someone calls set_page_dirty() on the page and
-__set_page_dirty_buffers() unconditionally dirties all the buffers the
-page has? But I still don't see how the write could be lost which is what
-I observe in fsx-linux test. I'm doing some more tests to understand this
-better.
+On Fri, 13 Mar 2009, Bill Gribble wrote:
 
-									Honza
+> Hi, I have been maintaining a patch for a quirky USB device built-in to 
+> a UMPC, the Raon Digital Everun.  Without the patch, the builtin 
+> keyboard, mouse, and touchscreen are useless.  I have never submitted it 
+> for inclusion in the kernel because there are less than 5 people who 
+> have ever even attempted to install Linux on this device, and it's 
+> discontinued.  However, *I* use the thing daily, and its wifi device 
+> (libertas) has continued to get better support in the recent kernels so 
+> I port the patch forward.
+
+Hi Bill,
+
+we have drivers (and even whole architectures) supported by the kernel, 
+which have less than 5 users in the world, that's not a big deal.
+
+It makes 5 people happy, and saves you the pain from having to keep the 
+out-of-tree code working with the Linux kernel API changing all the time.
+
+> I noticed that the structure of the quirk handling code has changed 
+> somewhat; I left my patch using the "old" way of adding an entry to 
+> hid_blacklist in hid-quirks.c.  Is there a document or email trail that 
+> describes the new way of structuring this quirk code?  Any pitfalls to 
+> look out for?
+
+Looking at your patch, the only thing you need is sending a special URB to 
+the device in order to make it operational, right?
+
+Please look at hid-sony driver, which does exactly that for some of the 
+PS3 devices.
+
+You then only need to add your device to hid_blacklist[], so that generic 
+driver doesn't get bound to it and it'd be driven by your special driver.
 
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Jiri Kosina
+SUSE Labs
