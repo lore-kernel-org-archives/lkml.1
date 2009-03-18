@@ -1,80 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbZCRW2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZCRWjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221AbZCRW2y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 18:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758217AbZCRW2g
+	id S1755843AbZCRWjl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 18:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZCRWj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 18:28:36 -0400
-Received: from tundra.namei.org ([65.99.196.166]:1560 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758040AbZCRW2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 18:28:34 -0400
-Date: Thu, 19 Mar 2009 09:21:01 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Igor Zhbanov <izh1979@gmail.com>,
-       Serge Hallyn <serue@us.ibm.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>, stable@kernel.org
-Subject: Re: [PATCH] nfsd: nfsd should drop CAP_MKNOD for non-root
-In-Reply-To: <1237393292-14934-3-git-send-email-bfields@fieldses.org>
-Message-ID: <alpine.LRH.2.00.0903190920340.15412@tundra.namei.org>
-References: <1237393292-14934-1-git-send-email-bfields@fieldses.org> <1237393292-14934-2-git-send-email-bfields@fieldses.org> <1237393292-14934-3-git-send-email-bfields@fieldses.org>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 18 Mar 2009 18:39:29 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:2551 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754456AbZCRWj2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 18:39:28 -0400
+From: Alex Chiang <achiang@hp.com>
+Subject: [PATCH v4 00/12] PCI core learns hotplug
+To: jbarnes@virtuousgeek.org
+Cc: shimada-yxb@necst.nec.co.jp, achiang@hp.com, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Date: Wed, 18 Mar 2009 16:39:25 -0600
+Message-ID: <20090318222426.887.1008.stgit@bob.kio>
+User-Agent: StGIT/0.14.3.215.gff3d
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Mar 2009, J. Bruce Fields wrote:
+We're getting close to the new merge window, and I _think_ this
+patch series is ready for consideration. Notably:
 
-> From: J. Bruce Fields <bfields@citi.umich.edu>
-> 
-> Since creating a device node is normally an operation requiring special
-> privilege, Igor Zhbanov points out that it is surprising (to say the
-> least) that a client can, for example, create a device node on a
-> filesystem exported with root_squash.
-> 
-> So, make sure CAP_MKNOD is among the capabilities dropped when an nfsd
-> thread handles a request from a non-root user.
-> 
-> Reported-by: Igor Zhbanov <izh1979@gmail.com>
-> Cc: stable@kernel.org
-> Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+	- multiple rescans/removes of devices with and without bridges
+	- verified that resource allocation after multiple remove/rescan
+	  cycles is the same as what we had during initial boot
+	- fixes the complete suckage of fakephp (that I created)
+	- doesn't affect existing hotplug drivers
+	- tested on x86 and ia64 platforms
 
-Acked-by: James Morris <jmorris@namei.org>
+Please review, and consider testing. For testing ease, you can pull
+from my git branch:
 
-> ---
->  include/linux/capability.h |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/capability.h b/include/linux/capability.h
-> index 1b98725..4864a43 100644
-> --- a/include/linux/capability.h
-> +++ b/include/linux/capability.h
-> @@ -393,8 +393,10 @@ struct cpu_vfs_cap_data {
->  # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
->  # define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
->  # define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
-> -# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
-> -					CAP_FS_MASK_B1 } })
-> +# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
-> +					    | CAP_TO_MASK(CAP_SYS_RESOURCE) \
-> +					    | CAP_TO_MASK(CAP_MKNOD), \
-> +					    CAP_FS_MASK_B1 } })
->  
->  #endif /* _KERNEL_CAPABILITY_U32S != 2 */
->  
-> -- 
-> 1.6.0.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+	git://git.kernel.org/pub/scm/linux/kernel/git/achiang/pci-hotplug.git
+	branch 'test-20090318' is what you want
 
--- 
-James Morris
-<jmorris@namei.org>
+Note, this test branch does contain the small assorted patches in AER
+and the PCIe portdriver that I fixed along the way, but does not contain
+the sysfs callback mutex that I introduced to protect myself from
+Vegard Nossum. ;) If you want to hammer away at the sysfs interface,
+please apply this patch on top:
+
+	http://thread.gmane.org/gmane.linux.kernel/806648
+
+What I'm continuing to do:
+
+	- investigate converting existing hotplug drivers to use
+	  new pci_rescan_bus() interface
+
+Thanks.
+
+/ac
+
+v3 -> v4:
+	- protect sysfs interfaces with mutex
+	- undo changes in pci_do_scan_bus
+	- introduce pci_rescan_bus instead
+	- do not initialize bridges more than once
+
+v2 -> v3:
+	- properly remove device with internal bridge
+	- added Kenji Kaneshige's pci_is_root_bus() interface
+	- dropped whitespace cleanups for another time
+
+v1 -> v2:
+	- incorporated lots of Trent Piepho's work
+	- beefed up pci_do_scan_bus as heavy lifter for rescanning
+	- small bugfixes folded into earlier patches to get everything working
+
+---
+
+Alex Chiang (8):
+      PCI Hotplug: schedule fakephp for feature removal
+      PCI Hotplug: rename legacy_fakephp to fakephp
+      PCI: Introduce /sys/bus/pci/devices/.../rescan
+      PCI: Introduce /sys/bus/pci/devices/.../remove
+      PCI: Introduce /sys/bus/pci/rescan
+      PCI: Introduce pci_rescan_bus()
+      PCI: do not initialize bridges more than once
+      PCI: always scan child buses
+
+Kenji Kaneshige (1):
+      PCI: pci_is_root_bus helper
+
+Trent Piepho (3):
+      PCI Hotplug: restore fakephp interface with complete reimplementation
+      PCI: pci_scan_slot() returns newly found devices
+      PCI: don't scan existing devices
+
+
+ Documentation/ABI/testing/sysfs-bus-pci    |   27 ++
+ Documentation/feature-removal-schedule.txt |   32 ++
+ Documentation/filesystems/sysfs-pci.txt    |   10 +
+ drivers/pci/hotplug/fakephp.c              |  443 +++++++---------------------
+ drivers/pci/pci-driver.c                   |    1 
+ drivers/pci/pci-sysfs.c                    |   95 ++++++
+ drivers/pci/pci.h                          |    6 
+ drivers/pci/probe.c                        |  103 ++++---
+ drivers/pci/setup-bus.c                    |    3 
+ include/linux/pci.h                        |   12 +
+ 10 files changed, 358 insertions(+), 374 deletions(-)
+
