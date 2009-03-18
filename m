@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbZCRDZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbZCRD2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757669AbZCRDZr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 23:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZCRDZi
+	id S1757817AbZCRD2U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 23:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756448AbZCRD2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 23:25:38 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:57698 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755146AbZCRDZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 23:25:37 -0400
-Date: Wed, 18 Mar 2009 08:55:58 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: balbir@linux.vnet.ibm.com, Li Zefan <lizf@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
-	cpuacct_charge() safe when rcupreempt is used.
-Message-ID: <20090318032558.GB3960@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090317061754.GD3314@in.ibm.com> <49BF42FB.4030103@cn.fujitsu.com> <20090317073649.GH3314@in.ibm.com> <20090317131251.GU16897@balbir.in.ibm.com> <1237296361.7867.16.camel@twins> <20090317135938.GV16897@balbir.in.ibm.com> <1237298686.7867.17.camel@twins>
+	Tue, 17 Mar 2009 23:28:10 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62894 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754351AbZCRD2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 23:28:09 -0400
+Message-ID: <49C069F2.5040003@cn.fujitsu.com>
+Date: Wed, 18 Mar 2009 11:26:42 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237298686.7867.17.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Valdis.Kletnieks@vt.edu, jkosina@suse.cz, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: Re: 29-rc-mmotm - HID/USB wedge w/ WARNING: at kernel/workqueue.c:371
+References: <6648.1237271589@turing-police.cc.vt.edu>	<20090317135424.9151c4f8.akpm@linux-foundation.org>	<37742.1237327272@turing-police.cc.vt.edu>	<49C05C94.7030104@cn.fujitsu.com> <20090317195004.18fb6af6.akpm@linux-foundation.org>
+In-Reply-To: <20090317195004.18fb6af6.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 03:04:46PM +0100, Peter Zijlstra wrote:
-> On Tue, 2009-03-17 at 19:29 +0530, Balbir Singh wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-03-17 14:26:01]:
-> > 
-> > > On Tue, 2009-03-17 at 18:42 +0530, Balbir Singh wrote:
-> > > 
-> > > > I'd like to get the patches in -tip and see the results, I would
-> > > > recommend using percpu_counter_sum() while reading the data as an
-> > > > enhancement to this patch. If user space does not overwhelm with a lot
-> > > > of reads, sum would work out better.
-> > > 
-> > > You trust userspace? I'd rather not.
-> > >
-> > 
-> > Fair enough.. A badly written application monitor can frequently read
-> > this data and cause horrible performance issues. On the other hand
-> > large number of CPUs can make the lag even worse. Is it time yet for
-> > percpu_counter batch numbers? I've tested this patch and the results
-> > were not badly off the mark. 
+Andrew Morton wrote:
+> On Wed, 18 Mar 2009 10:29:40 +0800 Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 > 
-> I'd rather err on the side of caution here, you might get some crazy
-> folks depending on it and then expecting us to maintain it.
+> 
+> static void run_workqueue(struct cpu_workqueue_struct *cwq)
+> {
+> 	spin_lock_irq(&cwq->lock);
+> 	cwq->run_depth++;
+> 	if (cwq->run_depth > 3) {
+> 		/* morton gets to eat his hat */
+> 		printk("%s: recursion depth exceeded: %d\n",
+> 			__func__, cwq->run_depth);
+> 		dump_stack();
+> 	}
+> 
+> That was added five or six years ago, and I never ever got to eat my hat.
 
-So if we want to be cautious, we could use percpu_counter_sum() as
-Balbir suggested. That would address both the issues with percpu_counter
-that I pointed out earlier:
+If Valdis.Kletnieks let lockdep work, he will see the complain
+from lockdep at first.
 
-- Readers are serialized with writers and we get consistent/correct
-  values during reads.
-- Negates the effect of batching and reads would always get updated/current
-  values.
+> 
+>> If it's hard for you avoid flush_scheduled_work() in
+>> keventd's work fuction by other fix, you can create
+>> another workqueue to handle your works, IMO.
+> 
+> Why do we need to change anything here?  No known bugs were fixed, and some
+> new ones were added.
+> 
 
-Regards,
-Bharata.
+I prefer the code which has no known bugs and no known potential bugs.
+
+I defend myself:
+I did not add a new bug as you said, it's the new code hid_cease_io()
+adds a new unsafe usage of workqueue.
+
+Thanks, Lai.
+
+
+
+
+
+
