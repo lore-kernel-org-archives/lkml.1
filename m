@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbZCRVr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbZCRVsE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759568AbZCRVr1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbZCRVmm
+	id S1758394AbZCRVsE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:48:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZCRVmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:42:42 -0400
+	Wed, 18 Mar 2009 17:42:47 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757155AbZCRVmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:40 -0400
+	id S1754986AbZCRVmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:42:46 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 56/57] microblaze_v7: syscalls.h
-Date: Wed, 18 Mar 2009 21:31:23 +0100
-Message-Id: <55868bc389e07d10d00e92a1da65f31256a26f4c.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 42/57] microblaze_v7: clinkage.h linkage.h sections.h kmap_types.h
+Date: Wed, 18 Mar 2009 21:31:09 +0100
+Message-Id: <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <28a81149bf51571cbc898a672efff4770fbc1efe.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -59,20 +59,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
  <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
  <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
- <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
- <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
- <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
- <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
- <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
- <14c123f2bae10a8b5fb76cd059ba105c212776ef.1237407249.git.monstr@monstr.eu>
- <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
- <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
- <d3f49195b8f675db48d2eda4f09fddb51af6f946.1237407249.git.monstr@monstr.eu>
- <34c2f9e50610e147be556607e482b88fd674b887.1237407249.git.monstr@monstr.eu>
- <15f6f10873f7c6f4f3b06f9d4d5af3ee9714f873.1237407249.git.monstr@monstr.eu>
- <e5b88f50c39aa95431f5ecdb032c6676399ae198.1237407249.git.monstr@monstr.eu>
- <50253611a0770c1ae6a63702208cfb9f96cd1f1a.1237407249.git.monstr@monstr.eu>
- <28a81149bf51571cbc898a672efff4770fbc1efe.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -84,61 +70,110 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/syscalls.h |   45 ++++++++++++++++++++++++++++++++
- 1 files changed, 45 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/syscalls.h
+ arch/microblaze/include/asm/clinkage.h   |    1 +
+ arch/microblaze/include/asm/kmap_types.h |   29 +++++++++++++++++++++++++++++
+ arch/microblaze/include/asm/linkage.h    |   15 +++++++++++++++
+ arch/microblaze/include/asm/sections.h   |   25 +++++++++++++++++++++++++
+ 4 files changed, 70 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/clinkage.h
+ create mode 100644 arch/microblaze/include/asm/kmap_types.h
+ create mode 100644 arch/microblaze/include/asm/linkage.h
+ create mode 100644 arch/microblaze/include/asm/sections.h
 
-diff --git a/arch/microblaze/include/asm/syscalls.h b/arch/microblaze/include/asm/syscalls.h
+diff --git a/arch/microblaze/include/asm/clinkage.h b/arch/microblaze/include/asm/clinkage.h
 new file mode 100644
-index 0000000..9cb4ff0
+index 0000000..9e21843
 --- /dev/null
-+++ b/arch/microblaze/include/asm/syscalls.h
-@@ -0,0 +1,45 @@
-+#ifndef __ASM_MICROBLAZE_SYSCALLS_H
-+#define __ASM_MICROBLAZE_SYSCALLS_H
-+#ifdef __KERNEL__
-+
-+#include <linux/compiler.h>
++++ b/arch/microblaze/include/asm/clinkage.h
+@@ -0,0 +1 @@
 +#include <linux/linkage.h>
-+#include <linux/types.h>
-+#include <linux/signal.h>
+diff --git a/arch/microblaze/include/asm/kmap_types.h b/arch/microblaze/include/asm/kmap_types.h
+new file mode 100644
+index 0000000..4d7e222
+--- /dev/null
++++ b/arch/microblaze/include/asm/kmap_types.h
+@@ -0,0 +1,29 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
 +
-+/* FIXME will be removed */
-+asmlinkage int sys_ipc(uint call, int first, int second,
-+				int third, void *ptr, long fifth);
++#ifndef _ASM_MICROBLAZE_KMAP_TYPES_H
++#define _ASM_MICROBLAZE_KMAP_TYPES_H
 +
-+struct pt_regs;
-+asmlinkage int sys_vfork(struct pt_regs *regs);
-+asmlinkage int sys_clone(int flags, unsigned long stack, struct pt_regs *regs);
-+asmlinkage int sys_execve(char __user *filenamei, char __user *__user *argv,
-+			char __user *__user *envp, struct pt_regs *regs);
++enum km_type {
++	KM_BOUNCE_READ,
++	KM_SKB_SUNRPC_DATA,
++	KM_SKB_DATA_SOFTIRQ,
++	KM_USER0,
++	KM_USER1,
++	KM_BIO_SRC_IRQ,
++	KM_BIO_DST_IRQ,
++	KM_PTE0,
++	KM_PTE1,
++	KM_IRQ0,
++	KM_IRQ1,
++	KM_SOFTIRQ0,
++	KM_SOFTIRQ1,
++	KM_TYPE_NR,
++};
 +
-+asmlinkage unsigned long sys_mmap2(unsigned long addr, size_t len,
-+			unsigned long prot, unsigned long flags,
-+			unsigned long fd, unsigned long pgoff);
++#endif /* _ASM_MICROBLAZE_KMAP_TYPES_H */
+diff --git a/arch/microblaze/include/asm/linkage.h b/arch/microblaze/include/asm/linkage.h
+new file mode 100644
+index 0000000..3a8e36d
+--- /dev/null
++++ b/arch/microblaze/include/asm/linkage.h
+@@ -0,0 +1,15 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
 +
-+asmlinkage unsigned long sys_mmap(unsigned long addr, size_t len,
-+			unsigned long prot, unsigned long flags,
-+			unsigned long fd, off_t offset);
++#ifndef _ASM_MICROBLAZE_LINKAGE_H
++#define _ASM_MICROBLAZE_LINKAGE_H
 +
-+/* from signal.c */
-+asmlinkage int sys_sigsuspend(old_sigset_t mask, struct pt_regs *regs);
++#define __ALIGN		.align 4
++#define __ALIGN_STR	".align 4"
 +
-+asmlinkage int sys_rt_sigsuspend(sigset_t __user *unewset, size_t sigsetsize,
-+		struct pt_regs *regs);
++#endif /* _ASM_MICROBLAZE_LINKAGE_H */
+diff --git a/arch/microblaze/include/asm/sections.h b/arch/microblaze/include/asm/sections.h
+new file mode 100644
+index 0000000..8434a43
+--- /dev/null
++++ b/arch/microblaze/include/asm/sections.h
+@@ -0,0 +1,25 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
 +
-+asmlinkage int sys_sigaction(int sig, const struct old_sigaction *act,
-+		struct old_sigaction *oact);
++#ifndef _ASM_MICROBLAZE_SECTIONS_H
++#define _ASM_MICROBLAZE_SECTIONS_H
 +
-+asmlinkage int sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
-+		struct pt_regs *regs);
++#include <asm-generic/sections.h>
 +
-+asmlinkage int sys_sigreturn(struct pt_regs *regs);
++# ifndef __ASSEMBLY__
++extern char _ssbss[], _esbss[];
++extern unsigned long __ivt_start[], __ivt_end[];
 +
-+asmlinkage int sys_rt_sigreturn(struct pt_regs *regs);
++#  ifdef CONFIG_MTD_UCLINUX
++extern char *_ebss;
++#  endif
 +
-+#endif /* __KERNEL__ */
-+#endif /* __ASM_MICROBLAZE_SYSCALLS_H */
++extern u32 _fdt_start[], _fdt_end[];
++
++# endif /* !__ASSEMBLY__ */
++#endif /* _ASM_MICROBLAZE_SECTIONS_H */
 -- 
 1.5.5.1
 
