@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759781AbZCRVzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760849AbZCRV4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759781AbZCRVzn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757211AbZCRVoD
+	id S1760849AbZCRV4X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758550AbZCRVoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:44:03 -0400
+	Wed, 18 Mar 2009 17:44:11 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758550AbZCRVoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:44:00 -0400
+	id S1758562AbZCRVoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:44:08 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 26/57] microblaze_v7: ptrace support
-Date: Wed, 18 Mar 2009 21:30:53 +0100
-Message-Id: <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 52/57] microblaze_v7: unistd.h
+Date: Wed, 18 Mar 2009 21:31:19 +0100
+Message-Id: <15f6f10873f7c6f4f3b06f9d4d5af3ee9714f873.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <34c2f9e50610e147be556607e482b88fd674b887.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -43,6 +43,32 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <513d4067a84be1ecb47577e1edf131d2b3572808.1237407249.git.monstr@monstr.eu>
  <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
  <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
+ <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
+ <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
+ <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
+ <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
+ <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
+ <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
+ <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
+ <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
+ <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
+ <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
+ <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
+ <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
+ <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
+ <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
+ <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
+ <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
+ <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
+ <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
+ <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
+ <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
+ <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
+ <14c123f2bae10a8b5fb76cd059ba105c212776ef.1237407249.git.monstr@monstr.eu>
+ <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
+ <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
+ <d3f49195b8f675db48d2eda4f09fddb51af6f946.1237407249.git.monstr@monstr.eu>
+ <34c2f9e50610e147be556607e482b88fd674b887.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -54,19 +80,18 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/ptrace.h |   68 +++++++++
- arch/microblaze/kernel/ptrace.c      |  252 ++++++++++++++++++++++++++++++++++
- 2 files changed, 320 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/ptrace.h
- create mode 100644 arch/microblaze/kernel/ptrace.c
+ arch/microblaze/include/asm/unistd.h |  419 ++++++++++++++++++++++++++++++++++
+ 1 files changed, 419 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/unistd.h
 
-diff --git a/arch/microblaze/include/asm/ptrace.h b/arch/microblaze/include/asm/ptrace.h
+diff --git a/arch/microblaze/include/asm/unistd.h b/arch/microblaze/include/asm/unistd.h
 new file mode 100644
-index 0000000..f1f0348
+index 0000000..7191fa0
 --- /dev/null
-+++ b/arch/microblaze/include/asm/ptrace.h
-@@ -0,0 +1,68 @@
++++ b/arch/microblaze/include/asm/unistd.h
+@@ -0,0 +1,419 @@
 +/*
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
@@ -74,324 +99,416 @@ index 0000000..f1f0348
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_PTRACE_H
-+#define _ASM_MICROBLAZE_PTRACE_H
++#ifndef _ASM_MICROBLAZE_UNISTD_H
++#define _ASM_MICROBLAZE_UNISTD_H
 +
++#define __NR_restart_syscall	0 /* ok */
++#define __NR_exit		1 /* ok */
++#define __NR_fork		2 /* not for no MMU - weird */
++#define __NR_read		3 /* ok */
++#define __NR_write		4 /* ok */
++#define __NR_open		5 /* openat */
++#define __NR_close		6 /* ok */
++#define __NR_waitpid		7 /* waitid */
++#define __NR_creat		8 /* openat */
++#define __NR_link		9 /* linkat */
++#define __NR_unlink		10 /* unlinkat */
++#define __NR_execve		11 /* ok */
++#define __NR_chdir		12 /* ok */
++#define __NR_time		13 /* obsolete -> sys_gettimeofday */
++#define __NR_mknod		14 /* mknodat */
++#define __NR_chmod		15 /* fchmodat */
++#define __NR_lchown		16 /* ok */
++#define __NR_break		17 /* don't know */
++#define __NR_oldstat		18 /* remove */
++#define __NR_lseek		19 /* ok */
++#define __NR_getpid		20 /* ok */
++#define __NR_mount		21 /* ok */
++#define __NR_umount		22 /* ok */  /* use only umount2 */
++#define __NR_setuid		23 /* ok */
++#define __NR_getuid		24 /* ok */
++#define __NR_stime		25 /* obsolete -> sys_settimeofday */
++#define __NR_ptrace		26 /* ok */
++#define __NR_alarm		27 /* obsolete -> sys_setitimer */
++#define __NR_oldfstat		28 /* remove */
++#define __NR_pause		29 /* obsolete -> sys_rt_sigtimedwait */
++#define __NR_utime		30 /* obsolete -> sys_utimesat */
++#define __NR_stty		31 /* remove */
++#define __NR_gtty		32 /* remove */
++#define __NR_access		33 /* faccessat */
++#define __NR_nice		34 /* can be implemented by sys_setpriority */
++#define __NR_ftime		35 /* remove */
++#define __NR_sync		36 /* ok */
++#define __NR_kill		37 /* ok */
++#define __NR_rename		38 /* renameat */
++#define __NR_mkdir		39 /* mkdirat */
++#define __NR_rmdir		40 /* unlinkat */
++#define __NR_dup		41 /* ok */
++#define __NR_pipe		42 /* ok */
++#define __NR_times		43 /* ok */
++#define __NR_prof		44 /* remove */
++#define __NR_brk		45 /* ok -mmu, nommu specific */
++#define __NR_setgid		46 /* ok */
++#define __NR_getgid		47 /* ok */
++#define __NR_signal		48 /* obsolete -> sys_rt_sigaction */
++#define __NR_geteuid		49 /* ok */
++#define __NR_getegid		50 /* ok */
++#define __NR_acct		51 /* add it and then I can disable it */
++#define __NR_umount2		52 /* remove */
++#define __NR_lock		53 /* remove */
++#define __NR_ioctl		54 /* ok */
++#define __NR_fcntl		55 /* ok -> 64bit version*/
++#define __NR_mpx		56 /* remove */
++#define __NR_setpgid		57 /* ok */
++#define __NR_ulimit		58 /* remove */
++#define __NR_oldolduname	59 /* remove */
++#define __NR_umask		60 /* ok */
++#define __NR_chroot		61 /* ok */
++#define __NR_ustat		62 /* obsolete -> statfs64 */
++#define __NR_dup2		63 /* ok */
++#define __NR_getppid		64 /* ok */
++#define __NR_getpgrp		65 /* obsolete -> sys_getpgid */
++#define __NR_setsid		66 /* ok */
++#define __NR_sigaction		67 /* obsolete -> rt_sigaction */
++#define __NR_sgetmask		68 /* obsolete -> sys_rt_sigprocmask */
++#define __NR_ssetmask		69 /* obsolete ->sys_rt_sigprocmask */
++#define __NR_setreuid		70 /* ok */
++#define __NR_setregid		71 /* ok */
++#define __NR_sigsuspend		72 /* obsolete -> rt_sigsuspend */
++#define __NR_sigpending		73 /* obsolete -> sys_rt_sigpending */
++#define __NR_sethostname	74 /* ok */
++#define __NR_setrlimit		75 /* ok */
++#define __NR_getrlimit		76 /* ok Back compatible 2Gig limited rlimit */
++#define __NR_getrusage		77 /* ok */
++#define __NR_gettimeofday	78 /* ok */
++#define __NR_settimeofday	79 /* ok */
++#define __NR_getgroups		80 /* ok */
++#define __NR_setgroups		81 /* ok */
++#define __NR_select		82 /* obsolete -> sys_pselect7 */
++#define __NR_symlink		83 /* symlinkat */
++#define __NR_oldlstat		84 /* remove */
++#define __NR_readlink		85 /* obsolete -> sys_readlinkat */
++#define __NR_uselib		86 /* remove */
++#define __NR_swapon		87 /* ok */
++#define __NR_reboot		88 /* ok */
++#define __NR_readdir		89 /* remove ? */
++#define __NR_mmap		90 /* obsolete -> sys_mmap2 */
++#define __NR_munmap		91 /* ok - mmu and nommu */
++#define __NR_truncate		92 /* ok or truncate64 */
++#define __NR_ftruncate		93 /* ok or ftruncate64 */
++#define __NR_fchmod		94 /* ok */
++#define __NR_fchown		95 /* ok */
++#define __NR_getpriority	96 /* ok */
++#define __NR_setpriority	97 /* ok */
++#define __NR_profil		98 /* remove */
++#define __NR_statfs		99 /* ok or statfs64 */
++#define __NR_fstatfs		100  /* ok or fstatfs64 */
++#define __NR_ioperm		101 /* remove */
++#define __NR_socketcall		102 /* remove */
++#define __NR_syslog		103 /* ok */
++#define __NR_setitimer		104 /* ok */
++#define __NR_getitimer		105 /* ok */
++#define __NR_stat		106 /* remove */
++#define __NR_lstat		107 /* remove */
++#define __NR_fstat		108 /* remove */
++#define __NR_olduname		109 /* remove */
++#define __NR_iopl		110 /* remove */
++#define __NR_vhangup		111 /* ok */
++#define __NR_idle		112 /* remove */
++#define __NR_vm86old		113 /* remove */
++#define __NR_wait4		114 /* obsolete -> waitid */
++#define __NR_swapoff		115 /* ok */
++#define __NR_sysinfo		116 /* ok */
++#define __NR_ipc		117 /* remove - direct call */
++#define __NR_fsync		118 /* ok */
++#define __NR_sigreturn		119 /* obsolete -> sys_rt_sigreturn */
++#define __NR_clone		120 /* ok */
++#define __NR_setdomainname	121 /* ok */
++#define __NR_uname		122 /* remove */
++#define __NR_modify_ldt		123 /* remove */
++#define __NR_adjtimex		124 /* ok */
++#define __NR_mprotect		125 /* remove */
++#define __NR_sigprocmask	126 /* obsolete -> sys_rt_sigprocmask */
++#define __NR_create_module	127 /* remove */
++#define __NR_init_module	128 /* ok */
++#define __NR_delete_module	129 /* ok */
++#define __NR_get_kernel_syms	130 /* remove */
++#define __NR_quotactl		131 /* ok */
++#define __NR_getpgid		132 /* ok */
++#define __NR_fchdir		133 /* ok */
++#define __NR_bdflush		134 /* remove */
++#define __NR_sysfs		135 /* needed for busybox */
++#define __NR_personality	136 /* ok */
++#define __NR_afs_syscall	137 /* Syscall for Andrew File System */
++#define __NR_setfsuid		138 /* ok */
++#define __NR_setfsgid		139 /* ok */
++#define __NR__llseek		140 /* remove only lseek */
++#define __NR_getdents		141 /* ok or getdents64 */
++#define __NR__newselect		142 /* remove */
++#define __NR_flock		143 /* ok */
++#define __NR_msync		144 /* remove */
++#define __NR_readv		145 /* ok */
++#define __NR_writev		146 /* ok */
++#define __NR_getsid		147 /* ok */
++#define __NR_fdatasync		148 /* ok */
++#define __NR__sysctl		149 /* remove */
++#define __NR_mlock		150 /* ok - nommu or mmu */
++#define __NR_munlock		151 /* ok - nommu or mmu */
++#define __NR_mlockall		152 /* ok - nommu or mmu */
++#define __NR_munlockall		153 /* ok - nommu or mmu */
++#define __NR_sched_setparam		154 /* ok */
++#define __NR_sched_getparam		155 /* ok */
++#define __NR_sched_setscheduler		156 /* ok */
++#define __NR_sched_getscheduler		157 /* ok */
++#define __NR_sched_yield		158 /* ok */
++#define __NR_sched_get_priority_max	159 /* ok */
++#define __NR_sched_get_priority_min	160 /* ok */
++#define __NR_sched_rr_get_interval	161 /* ok */
++#define __NR_nanosleep		162 /* ok */
++#define __NR_mremap		163 /* ok - nommu or mmu */
++#define __NR_setresuid		164 /* ok */
++#define __NR_getresuid		165 /* ok */
++#define __NR_vm86		166 /* remove */
++#define __NR_query_module	167 /* ok */
++#define __NR_poll		168 /* obsolete -> sys_ppoll */
++#define __NR_nfsservctl		169 /* ok */
++#define __NR_setresgid		170 /* ok */
++#define __NR_getresgid		171 /* ok */
++#define __NR_prctl		172 /* ok */
++#define __NR_rt_sigreturn	173 /* ok */
++#define __NR_rt_sigaction	174 /* ok */
++#define __NR_rt_sigprocmask	175 /* ok */
++#define __NR_rt_sigpending	176 /* ok */
++#define __NR_rt_sigtimedwait	177 /* ok */
++#define __NR_rt_sigqueueinfo	178 /* ok */
++#define __NR_rt_sigsuspend	179 /* ok */
++#define __NR_pread64		180 /* ok */
++#define __NR_pwrite64		181 /* ok */
++#define __NR_chown		182 /* obsolete -> fchownat */
++#define __NR_getcwd		183 /* ok */
++#define __NR_capget		184 /* ok */
++#define __NR_capset		185 /* ok */
++#define __NR_sigaltstack	186 /* remove */
++#define __NR_sendfile		187 /* ok -> exist 64bit version*/
++#define __NR_getpmsg		188 /* remove - some people actually want streams */
++#define __NR_putpmsg		189 /* remove - some people actually want streams */
++#define __NR_vfork		190 /* for noMMU - group with clone -> maybe remove */
++#define __NR_ugetrlimit		191 /* remove - SuS compliant getrlimit */
++#define __NR_mmap2		192 /* ok */
++#define __NR_truncate64		193 /* ok */
++#define __NR_ftruncate64	194 /* ok */
++#define __NR_stat64		195 /* remove _ARCH_WANT_STAT64 */
++#define __NR_lstat64		196 /* remove _ARCH_WANT_STAT64 */
++#define __NR_fstat64		197 /* remove _ARCH_WANT_STAT64 */
++#define __NR_lchown32		198 /* ok - without 32 */
++#define __NR_getuid32		199 /* ok - without 32 */
++#define __NR_getgid32		200 /* ok - without 32 */
++#define __NR_geteuid32		201 /* ok - without 32 */
++#define __NR_getegid32		202 /* ok - without 32 */
++#define __NR_setreuid32		203 /* ok - without 32 */
++#define __NR_setregid32		204 /* ok - without 32 */
++#define __NR_getgroups32	205 /* ok - without 32 */
++#define __NR_setgroups32	206 /* ok - without 32 */
++#define __NR_fchown32		207 /* ok - without 32 */
++#define __NR_setresuid32	208 /* ok - without 32 */
++#define __NR_getresuid32	209 /* ok - without 32 */
++#define __NR_setresgid32	210 /* ok - without 32 */
++#define __NR_getresgid32	211 /* ok - without 32 */
++#define __NR_chown32		212 /* ok - without 32 -obsolete -> fchownat */
++#define __NR_setuid32		213 /* ok - without 32 */
++#define __NR_setgid32		214 /* ok - without 32 */
++#define __NR_setfsuid32		215 /* ok - without 32 */
++#define __NR_setfsgid32		216 /* ok - without 32 */
++#define __NR_pivot_root		217 /* ok */
++#define __NR_mincore		218 /* ok */
++#define __NR_madvise		219 /* ok */
++//#define __NR_madvise1		219 /* remove delete when C lib stub is removed */
++#define __NR_getdents64		220 /* ok */
++#define __NR_fcntl64		221 /* ok */
++/* 223 is unused */
++#define __NR_gettid		224 /* ok */
++#define __NR_readahead		225 /* ok */
++#define __NR_setxattr		226 /* ok */
++#define __NR_lsetxattr		227 /* ok */
++#define __NR_fsetxattr		228 /* ok */
++#define __NR_getxattr		229 /* ok */
++#define __NR_lgetxattr		230 /* ok */
++#define __NR_fgetxattr		231 /* ok */
++#define __NR_listxattr		232 /* ok */
++#define __NR_llistxattr		233 /* ok */
++#define __NR_flistxattr		234 /* ok */
++#define __NR_removexattr	235 /* ok */
++#define __NR_lremovexattr	236 /* ok */
++#define __NR_fremovexattr	237 /* ok */
++#define __NR_tkill		238 /* ok */
++#define __NR_sendfile64		239 /* ok */
++#define __NR_futex		240 /* ok */
++#define __NR_sched_setaffinity	241 /* ok */
++#define __NR_sched_getaffinity	242 /* ok */
++#define __NR_set_thread_area	243 /* remove */
++#define __NR_get_thread_area	244 /* remove */
++#define __NR_io_setup		245 /* ok */
++#define __NR_io_destroy		246 /* ok */
++#define __NR_io_getevents	247 /* ok */
++#define __NR_io_submit		248 /* ok */
++#define __NR_io_cancel		249 /* ok */
++#define __NR_fadvise64		250 /* remove -> sys_fadvise64_64 */
++/* 251 is available for reuse (was briefly sys_set_zone_reclaim) */
++#define __NR_exit_group		252 /* ok */
++#define __NR_lookup_dcookie	253 /* ok */
++#define __NR_epoll_create	254 /* ok */
++#define __NR_epoll_ctl		255 /* ok */
++#define __NR_epoll_wait		256 /* obsolete -> sys_epoll_pwait */
++#define __NR_remap_file_pages	257 /* only for mmu */
++#define __NR_set_tid_address	258 /* ok */
++#define __NR_timer_create	259 /* ok */
++#define __NR_timer_settime	(__NR_timer_create+1) /* 260 */ /* ok */
++#define __NR_timer_gettime	(__NR_timer_create+2) /* 261 */ /* ok */
++#define __NR_timer_getoverrun	(__NR_timer_create+3) /* 262 */ /* ok */
++#define __NR_timer_delete	(__NR_timer_create+4) /* 263 */ /* ok */
++#define __NR_clock_settime	(__NR_timer_create+5) /* 264 */ /* ok */
++#define __NR_clock_gettime	(__NR_timer_create+6) /* 265 */ /* ok */
++#define __NR_clock_getres	(__NR_timer_create+7) /* 266 */ /* ok */
++#define __NR_clock_nanosleep	(__NR_timer_create+8) /* 267 */ /* ok */
++#define __NR_statfs64		268 /* ok */
++#define __NR_fstatfs64		269 /* ok */
++#define __NR_tgkill		270 /* ok */
++#define __NR_utimes		271 /* obsolete -> sys_futimesat */
++#define __NR_fadvise64_64	272 /* ok */
++#define __NR_vserver		273 /* ok */
++#define __NR_mbind		274 /* only for mmu */
++#define __NR_get_mempolicy	275 /* only for mmu */
++#define __NR_set_mempolicy	276 /* only for mmu */
++#define __NR_mq_open		277 /* ok */
++#define __NR_mq_unlink		(__NR_mq_open+1) /* 278 */ /* ok */
++#define __NR_mq_timedsend	(__NR_mq_open+2) /* 279 */ /* ok */
++#define __NR_mq_timedreceive	(__NR_mq_open+3) /* 280 */ /* ok */
++#define __NR_mq_notify		(__NR_mq_open+4) /* 281 */ /* ok */
++#define __NR_mq_getsetattr	(__NR_mq_open+5) /* 282 */ /* ok */
++#define __NR_kexec_load		283 /* ok */
++#define __NR_waitid		284 /* ok */
++/* #define __NR_sys_setaltroot	285 */
++#define __NR_add_key		286 /* ok */
++#define __NR_request_key	287 /* ok */
++#define __NR_keyctl		288 /* ok */
++#define __NR_ioprio_set		289 /* ok */
++#define __NR_ioprio_get		290 /* ok */
++#define __NR_inotify_init	291 /* ok */
++#define __NR_inotify_add_watch	292 /* ok */
++#define __NR_inotify_rm_watch	293 /* ok */
++#define __NR_migrate_pages	294 /* mmu */
++#define __NR_openat		295 /* ok */
++#define __NR_mkdirat		296 /* ok */
++#define __NR_mknodat		297 /* ok */
++#define __NR_fchownat		298 /* ok */
++#define __NR_futimesat		299 /* obsolete -> sys_utimesat */
++#define __NR_fstatat64		300 /* stat64 */
++#define __NR_unlinkat		301 /* ok */
++#define __NR_renameat		302 /* ok */
++#define __NR_linkat		303 /* ok */
++#define __NR_symlinkat		304 /* ok */
++#define __NR_readlinkat		305 /* ok */
++#define __NR_fchmodat		306 /* ok */
++#define __NR_faccessat		307 /* ok */
++#define __NR_pselect6		308 /* obsolete -> sys_pselect7 */
++#define __NR_ppoll		309 /* ok */
++#define __NR_unshare		310 /* ok */
++#define __NR_set_robust_list	311 /* ok */
++#define __NR_get_robust_list	312 /* ok */
++#define __NR_splice		313 /* ok */
++#define __NR_sync_file_range	314 /* ok */
++#define __NR_tee		315 /* ok */
++#define __NR_vmsplice		316 /* ok */
++#define __NR_move_pages		317 /* mmu */
++#define __NR_getcpu		318 /* ok */
++#define __NR_epoll_pwait	319 /* ok */
++#define __NR_utimensat		320 /* ok */
++#define __NR_signalfd		321 /* ok */
++#define __NR_timerfd_create	322 /* ok */
++#define __NR_eventfd		323 /* ok */
++#define __NR_fallocate		324 /* ok */
++#define __NR_semtimedop		325 /* ok - semaphore group */
++#define __NR_timerfd_settime	326 /* ok */
++#define __NR_timerfd_gettime	327 /* ok */
++/* sysv ipc syscalls */
++#define __NR_semctl		328 /* ok */
++#define __NR_semget		329 /* ok */
++#define __NR_semop		330 /* ok */
++#define __NR_msgctl		331 /* ok */
++#define __NR_msgget		332 /* ok */
++#define __NR_msgrcv		333 /* ok */
++#define __NR_msgsnd		334 /* ok */
++#define __NR_shmat		335 /* ok */
++#define __NR_shmctl		336 /* ok */
++#define __NR_shmdt		337 /* ok */
++#define __NR_shmget		338 /* ok */
++
++
++#define __NR_signalfd4		339 /* new */
++#define __NR_eventfd2		340 /* new */
++#define __NR_epoll_create1	341 /* new */
++#define __NR_dup3		342 /* new */
++#define __NR_pipe2		343 /* new */
++#define __NR_inotify_init1	344 /* new */
++#define __NR_socket		345 /* new */
++#define __NR_socketpair		346 /* new */
++#define __NR_bind		347 /* new */
++#define __NR_listen		348 /* new */
++#define __NR_accept		349 /* new */
++#define __NR_connect		350 /* new */
++#define __NR_getsockname	351 /* new */
++#define __NR_getpeername	352 /* new */
++#define __NR_sendto		353 /* new */
++#define __NR_send		354 /* new */
++#define __NR_recvfrom		355 /* new */
++#define __NR_recv		356 /* new */
++#define __NR_setsockopt		357 /* new */
++#define __NR_getsockopt		358 /* new */
++#define __NR_shutdown		359 /* new */
++#define __NR_sendmsg		360 /* new */
++#define __NR_recvmsg		361 /* new */
++#define __NR_accept04		362 /* new */
++
++#define __NR_syscalls		363
++
++#ifdef __KERNEL__
 +#ifndef __ASSEMBLY__
-+#include <linux/types.h>
 +
-+typedef unsigned long microblaze_reg_t;
++#define __ARCH_WANT_IPC_PARSE_VERSION
++/* #define __ARCH_WANT_OLD_READDIR */
++/* #define __ARCH_WANT_OLD_STAT */
++#define __ARCH_WANT_STAT64
++#define __ARCH_WANT_SYS_ALARM
++#define __ARCH_WANT_SYS_GETHOSTNAME
++#define __ARCH_WANT_SYS_PAUSE
++#define __ARCH_WANT_SYS_SGETMASK
++#define __ARCH_WANT_SYS_SIGNAL
++#define __ARCH_WANT_SYS_TIME
++#define __ARCH_WANT_SYS_UTIME
++#define __ARCH_WANT_SYS_WAITPID
++#define __ARCH_WANT_SYS_SOCKETCALL
++#define __ARCH_WANT_SYS_FADVISE64
++#define __ARCH_WANT_SYS_GETPGRP
++#define __ARCH_WANT_SYS_LLSEEK
++#define __ARCH_WANT_SYS_NICE
++/* #define __ARCH_WANT_SYS_OLD_GETRLIMIT */
++#define __ARCH_WANT_SYS_OLDUMOUNT
++#define __ARCH_WANT_SYS_SIGPENDING
++#define __ARCH_WANT_SYS_SIGPROCMASK
++#define __ARCH_WANT_SYS_RT_SIGACTION
++/* #define __ARCH_WANT_SYS_RT_SIGSUSPEND */
 +
-+struct pt_regs {
-+	microblaze_reg_t r0;
-+	microblaze_reg_t r1;
-+	microblaze_reg_t r2;
-+	microblaze_reg_t r3;
-+	microblaze_reg_t r4;
-+	microblaze_reg_t r5;
-+	microblaze_reg_t r6;
-+	microblaze_reg_t r7;
-+	microblaze_reg_t r8;
-+	microblaze_reg_t r9;
-+	microblaze_reg_t r10;
-+	microblaze_reg_t r11;
-+	microblaze_reg_t r12;
-+	microblaze_reg_t r13;
-+	microblaze_reg_t r14;
-+	microblaze_reg_t r15;
-+	microblaze_reg_t r16;
-+	microblaze_reg_t r17;
-+	microblaze_reg_t r18;
-+	microblaze_reg_t r19;
-+	microblaze_reg_t r20;
-+	microblaze_reg_t r21;
-+	microblaze_reg_t r22;
-+	microblaze_reg_t r23;
-+	microblaze_reg_t r24;
-+	microblaze_reg_t r25;
-+	microblaze_reg_t r26;
-+	microblaze_reg_t r27;
-+	microblaze_reg_t r28;
-+	microblaze_reg_t r29;
-+	microblaze_reg_t r30;
-+	microblaze_reg_t r31;
-+	microblaze_reg_t pc;
-+	microblaze_reg_t msr;
-+	microblaze_reg_t ear;
-+	microblaze_reg_t esr;
-+	microblaze_reg_t fsr;
-+	int kernel_mode;
-+};
-+
-+#define kernel_mode(regs)		((regs)->kernel_mode)
-+#define user_mode(regs)			(!kernel_mode(regs))
-+
-+#define instruction_pointer(regs)	((regs)->pc)
-+#define profile_pc(regs)		instruction_pointer(regs)
-+
-+void show_regs(struct pt_regs *);
++/*
++ * "Conditional" syscalls
++ *
++ * What we want is __attribute__((weak,alias("sys_ni_syscall"))),
++ * but it doesn't work on all toolchains, so we just do it by hand
++ */
++#define cond_syscall(x) asm(".weak\t" #x "\n\t.set\t" #x ",sys_ni_syscall");
 +
 +#endif /* __ASSEMBLY__ */
-+
-+#endif /* _ASM_MICROBLAZE_PTRACE_H */
-diff --git a/arch/microblaze/kernel/ptrace.c b/arch/microblaze/kernel/ptrace.c
-new file mode 100644
-index 0000000..b046309
---- /dev/null
-+++ b/arch/microblaze/kernel/ptrace.c
-@@ -0,0 +1,252 @@
-+/*
-+ * `ptrace' system call
-+ *
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2007 PetaLogix
-+ * Copyright (C) 2004-07 John Williams <john.williams@petalogix.com>
-+ *
-+ * derived from arch/v850/kernel/ptrace.c
-+ *
-+ * Copyright (C) 2002,03 NEC Electronics Corporation
-+ * Copyright (C) 2002,03 Miles Bader <miles@gnu.org>
-+ *
-+ * Derived from arch/mips/kernel/ptrace.c:
-+ *
-+ * Copyright (C) 1992 Ross Biro
-+ * Copyright (C) Linus Torvalds
-+ * Copyright (C) 1994, 95, 96, 97, 98, 2000 Ralf Baechle
-+ * Copyright (C) 1996 David S. Miller
-+ * Kevin D. Kissell, kevink@mips.com and Carsten Langgaard, carstenl@mips.com
-+ * Copyright (C) 1999 MIPS Technologies, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/sched.h>
-+#include <linux/smp_lock.h>
-+#include <linux/ptrace.h>
-+#include <linux/signal.h>
-+
-+#include <linux/errno.h>
-+#include <linux/ptrace.h>
-+#include <asm/processor.h>
-+#include <linux/uaccess.h>
-+#include <asm/asm-offsets.h>
-+
-+/* Returns the address where the register at REG_OFFS in P is stashed away. */
-+static microblaze_reg_t *reg_save_addr(unsigned reg_offs,
-+					struct task_struct *t)
-+{
-+	struct pt_regs *regs;
-+
-+	/*
-+	 * Three basic cases:
-+	 *
-+	 * (1)	A register normally saved before calling the scheduler, is
-+	 *	available in the kernel entry pt_regs structure at the top
-+	 *	of the kernel stack. The kernel trap/irq exit path takes
-+	 *	care to save/restore almost all registers for ptrace'd
-+	 *	processes.
-+	 *
-+	 * (2)	A call-clobbered register, where the process P entered the
-+	 *	kernel via [syscall] trap, is not stored anywhere; that's
-+	 *	OK, because such registers are not expected to be preserved
-+	 *	when the trap returns anyway (so we don't actually bother to
-+	 *	test for this case).
-+	 *
-+	 * (3)	A few registers not used at all by the kernel, and so
-+	 *	normally never saved except by context-switches, are in the
-+	 *	context switch state.
-+	 */
-+
-+	/* Register saved during kernel entry (or not available). */
-+	regs = task_pt_regs(t);
-+
-+	return (microblaze_reg_t *)((char *)regs + reg_offs);
-+}
-+
-+#if 0
-+static inline microblaze_reg_t getreg(struct task_struct *child, unsigned reg_off)
-+{
-+	microblaze_reg_t *reg_addr = reg_save_addr(reg_off, child);
-+	return *reg_addr;
-+}
-+
-+static inline void putreg(struct task_struct *child, unsigned reg_off, microblaze_reg_t reg_val)
-+{
-+	microblaze_reg_t *reg_addr = reg_save_addr(reg_off, child);
-+	*reg_addr = reg_val;
-+}
-+#endif
-+
-+long arch_ptrace(struct task_struct *child, long request, long addr, long data)
-+{
-+	int rval;
-+	unsigned long val = 0;
-+	unsigned long copied;
-+
-+	switch (request) {
-+	case PTRACE_PEEKTEXT: /* read word at location addr. */
-+	case PTRACE_PEEKDATA:
-+		pr_debug("PEEKTEXT/PEEKDATA at %08lX\n", addr);
-+		copied = access_process_vm(child, addr, &val, sizeof(val), 0);
-+		rval = -EIO;
-+		if (copied != sizeof(val))
-+			break;
-+		rval = put_user(val, (unsigned long *)data);
-+		break;
-+
-+	case PTRACE_POKETEXT: /* write the word at location addr. */
-+	case PTRACE_POKEDATA:
-+		pr_debug("POKETEXT/POKEDATA to %08lX\n", addr);
-+		rval = 0;
-+		if (access_process_vm(child, addr, &data, sizeof(data), 1)
-+		    == sizeof(data))
-+			break;
-+		rval = -EIO;
-+		break;
-+
-+	/* Read/write the word at location ADDR in the registers. */
-+	case PTRACE_PEEKUSR:
-+	case PTRACE_POKEUSR:
-+		pr_debug("PEEKUSR/POKEUSR : 0x%08lx\n", addr);
-+		rval = 0;
-+		if (addr >= PT_SIZE && request == PTRACE_PEEKUSR) {
-+			/*
-+			 * Special requests that don't actually correspond
-+			 * to offsets in struct pt_regs.
-+			 */
-+			if (addr == PT_TEXT_ADDR) {
-+				val = child->mm->start_code;
-+			} else if (addr == PT_DATA_ADDR) {
-+				val = child->mm->start_data;
-+			} else if (addr == PT_TEXT_LEN) {
-+				val = child->mm->end_code
-+					- child->mm->start_code;
-+			} else {
-+				rval = -EIO;
-+			}
-+		} else if (addr >= 0 && addr < PT_SIZE && (addr & 0x3) == 0) {
-+			microblaze_reg_t *reg_addr = reg_save_addr(addr, child);
-+			if (request == PTRACE_PEEKUSR)
-+				val = *reg_addr;
-+			else
-+				*reg_addr = data;
-+		} else
-+			rval = -EIO;
-+
-+		if (rval == 0 && request == PTRACE_PEEKUSR)
-+			rval = put_user(val, (unsigned long *)data);
-+		break;
-+	/* Continue and stop at next (return from) syscall */
-+	case PTRACE_SYSCALL:
-+		pr_debug("PTRACE_SYSCALL\n");
-+	case PTRACE_SINGLESTEP:
-+		pr_debug("PTRACE_SINGLESTEP\n");
-+	/* Restart after a signal.  */
-+	case PTRACE_CONT:
-+		pr_debug("PTRACE_CONT\n");
-+		rval = -EIO;
-+		if (!valid_signal(data))
-+			break;
-+
-+		if (request == PTRACE_SYSCALL)
-+			set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
-+		else
-+			clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
-+
-+		child->exit_code = data;
-+		pr_debug("wakeup_process\n");
-+		wake_up_process(child);
-+		rval = 0;
-+		break;
-+
-+	/*
-+	 * make the child exit.  Best I can do is send it a sigkill.
-+	 * perhaps it should be put in the status that it wants to
-+	 * exit.
-+	 */
-+	case PTRACE_KILL:
-+		pr_debug("PTRACE_KILL\n");
-+		rval = 0;
-+		if (child->exit_state == EXIT_ZOMBIE)	/* already dead */
-+			break;
-+		child->exit_code = SIGKILL;
-+		wake_up_process(child);
-+		break;
-+
-+	case PTRACE_DETACH: /* detach a process that was attached. */
-+		pr_debug("PTRACE_DETACH\n");
-+		rval = ptrace_detach(child, data);
-+		break;
-+
-+#if 0
-+/*	#define PTRACE_GETREGS            12*/
-+	case PTRACE_GETREGS: /* get gp regs from the tracee */
-+		if (!access_ok(VERIFY_WRITE, datap, PT_SIZE)) {
-+			rval = -EIO;
-+			break;
-+		}
-+		for (i = 0; i < PT_SIZE; i += sizeof(long)) {
-+			__put_user(getreg(child, i), datap++);
-+		}
-+		rval = 0;
-+		break;
-+#endif
-+
-+#if 0
-+/*	#define PTRACE_SETREGS            13*/
-+	case PTRACE_SETREGS: /* Set gp regs for the tracee */
-+		if (!access_ok(VERIFY_READ, datap, PT_SIZE)) {
-+			rval = -EIO;
-+			break;
-+		}
-+		for (i = 0; i < PT_SIZE; i += sizeof(long)) {
-+			__get_user(val, datap++);
-+			if (i == PT_MSR) { /* may only change C and CC bits in MSR */
-+				val = (val & 0x80000004) | (getreg(child,i) & ~0x80000004);
-+			}
-+			putreg(child, i, val);
-+		}
-+		rval = 0;
-+		break;
-+#endif
-+
-+	default:
-+		/* rval = ptrace_request(child, request, addr, data); noMMU */
-+		rval = -EIO;
-+	}
-+	return rval;
-+}
-+
-+#if 0
-+static asmlinkage void syscall_trace(void)
-+{
-+	if (!test_thread_flag(TIF_SYSCALL_TRACE))
-+		return;
-+	if (!(current->ptrace & PT_PTRACED))
-+		return;
-+	/* The 0x80 provides a way for the tracing parent to distinguish
-+	 between a syscall stop and SIGTRAP delivery */
-+	ptrace_notify(SIGTRAP | ((current->ptrace & PT_TRACESYSGOOD)
-+				? 0x80 : 0));
-+	/*
-+	 * this isn't the same as continuing with a signal, but it will do
-+	 * for normal use. strace only continues with a signal if the
-+	 * stopping signal is not SIGTRAP. -brl
-+	 */
-+	if (current->exit_code) {
-+		send_sig(current->exit_code, current, 1);
-+		current->exit_code = 0;
-+	}
-+}
-+#endif
-+
-+void ptrace_disable(struct task_struct *child)
-+{
-+	/* nothing to do */
-+}
++#endif /* __KERNEL__ */
++#endif /* _ASM_MICROBLAZE_UNISTD_H */
 -- 
 1.5.5.1
 
