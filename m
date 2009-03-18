@@ -1,51 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbZCRWrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbZCRWyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbZCRWrf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 18:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZCRWrX
+	id S1757435AbZCRWyA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 18:54:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbZCRWxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 18:47:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:35172 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752128AbZCRWrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 18:47:23 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: VIRTIO_BLK_T_SCSI_CMD handling in virtio-blk
-Date: Thu, 19 Mar 2009 09:17:14 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: Anthony Liguori <aliguori@us.ibm.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-References: <20090318060919.GA21777@infradead.org>
-In-Reply-To: <20090318060919.GA21777@infradead.org>
+	Wed, 18 Mar 2009 18:53:51 -0400
+Received: from relay1.ptmail.sapo.pt ([212.55.154.21]:54116 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1753773AbZCRWxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 18:53:50 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Wed, 18 Mar 2009 22:51:37 +0000
+From: Luis Henriques <henrix@sapo.pt>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH v3 -tip] sched: Clean unused fields from struct rq
+Message-ID: <20090318225137.GA3766@hades.domain.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903190917.14780.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 March 2009 16:39:19 Christoph Hellwig wrote:
-> All backends that I checked just fail VIRTIO_BLK_T_SCSI_CMD commands, so
-> AFAICS no harm is done.  But should we really keep this broken support
-> in the protocol around?  If we do want to support packet commands in
-> the future we should probably just add the command as the first S/G list
-> entry.
+Since they are used on in statistics and are always set to zero, the following
+fields from struct rq have been removed: yld_exp_empty, yld_act_empty and
+yld_both_empty.
 
-It was pretty much a placeholder for "eject".  Feel free to be the one to
-define it.
+Both Sched Debug and SCHEDSTAT_VERSION versions has also been incremented since
+ABIs have been changed.
 
-But note that we chose not to use sg boundaries as part of the protocol, so
-if there's going to be more than one entry, you'll need some metadata.
+Signed-off-by: Luis Henriques <henrix@sapo.pt>
+---
+ kernel/sched.c       |    3 ---
+ kernel/sched_debug.c |    5 +----
+ kernel/sched_stats.h |    7 +++----
+ 3 files changed, 4 insertions(+), 11 deletions(-)
 
-> Is there an actual protocol spec for virtio-blk somewhere to write these
-> subtilities down?  Or an list of implementations to check at least?
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 8a579e2..4469034 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -646,9 +646,6 @@ struct rq {
+ 	/* could above be rq->cfs_rq.exec_clock + rq->rt_rq.rt_runtime ? */
+ 
+ 	/* sys_sched_yield() stats */
+-	unsigned int yld_exp_empty;
+-	unsigned int yld_act_empty;
+-	unsigned int yld_both_empty;
+ 	unsigned int yld_count;
+ 
+ 	/* schedule() stats */
+diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+index 4daebff..467ca72 100644
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -286,9 +286,6 @@ static void print_cpu(struct seq_file *m, int cpu)
+ #ifdef CONFIG_SCHEDSTATS
+ #define P(n) SEQ_printf(m, "  .%-30s: %d\n", #n, rq->n);
+ 
+-	P(yld_exp_empty);
+-	P(yld_act_empty);
+-	P(yld_both_empty);
+ 	P(yld_count);
+ 
+ 	P(sched_switch);
+@@ -313,7 +310,7 @@ static int sched_debug_show(struct seq_file *m, void *v)
+ 	u64 now = ktime_to_ns(ktime_get());
+ 	int cpu;
+ 
+-	SEQ_printf(m, "Sched Debug Version: v0.08, %s %.*s\n",
++	SEQ_printf(m, "Sched Debug Version: v0.09, %s %.*s\n",
+ 		init_utsname()->release,
+ 		(int)strcspn(init_utsname()->version, " "),
+ 		init_utsname()->version);
+diff --git a/kernel/sched_stats.h b/kernel/sched_stats.h
+index a8f93dd..32d2bd4 100644
+--- a/kernel/sched_stats.h
++++ b/kernel/sched_stats.h
+@@ -4,7 +4,7 @@
+  * bump this up when changing the output format or the meaning of an existing
+  * format, so that tools can adapt (or abort)
+  */
+-#define SCHEDSTAT_VERSION 14
++#define SCHEDSTAT_VERSION 15
+ 
+ static int show_schedstat(struct seq_file *seq, void *v)
+ {
+@@ -26,9 +26,8 @@ static int show_schedstat(struct seq_file *seq, void *v)
+ 
+ 		/* runqueue-specific stats */
+ 		seq_printf(seq,
+-		    "cpu%d %u %u %u %u %u %u %u %u %u %llu %llu %lu",
+-		    cpu, rq->yld_both_empty,
+-		    rq->yld_act_empty, rq->yld_exp_empty, rq->yld_count,
++		    "cpu%d %u %u %u %u %u %u %llu %llu %lu",
++		    cpu, rq->yld_count,
+ 		    rq->sched_switch, rq->sched_count, rq->sched_goidle,
+ 		    rq->ttwu_count, rq->ttwu_local,
+ 		    rq->rq_cpu_time,
+-- 
+1.6.2
 
-No, but I look forward to reading your spec :)
 
-Thanks!
-Rusty.
+-- 
+Luis Henriques
