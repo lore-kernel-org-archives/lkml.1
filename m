@@ -1,82 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbZCRPtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbZCRP7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755630AbZCRPtn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 11:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZCRPte
+	id S1755210AbZCRP7W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 11:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbZCRP7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 11:49:34 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:37395 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752423AbZCRPtd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 11:49:33 -0400
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator -
- hang traced
-From: John Stultz <johnstul@us.ibm.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200903181307.44867.elendil@planet.nl>
-References: <200903080230.10099.elendil@planet.nl>
-	 <1237344897.6160.136.camel@localhost> <20090318102825.32c821f3@skybase>
-	 <200903181307.44867.elendil@planet.nl>
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 08:48:58 -0700
-Message-Id: <1237391338.32698.9.camel@jstultz-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Mar 2009 11:59:09 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:45312 "EHLO mail.pxnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752581AbZCRP7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 11:59:08 -0400
+From: Tilman Schmidt <tilman@imap.cc>
+Subject: [PATCH] bas_gigaset: correctly allocate USB interrupt transfer buffer
+To: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+CC: Kolja Waschk <kawk@users.sourceforge.net>, Hansjoerg Lipp <hjlipp@web.de>
+Message-ID: <20090318-patch-01.tilman@imap.cc>
+Date: Wed, 18 Mar 2009 16:58:50 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-18 at 13:07 +0100, Frans Pop wrote:
-> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> Reported-by: Frans Pop <elendil@planet.nl>
-> Tested-by: Frans Pop <elendil@planet.nl>
-> 
-> I've tried this patch with 2.6.28.8 and it fixes the hang! Maybe that
-> aspect should be mentioned in the commit log?
-> 
-> I've also tested the patch with 2.6.29-rc8 and it also fixes the hang
-> during login I reported with that [1]. Which means that not only jiffies is
-> affected, but also tod! And that does not really surprise me because after
-> the system switches to tod, I also see a continuously increasing error
-> with clock->xtime_nsec always equal to -4096 (see below).
-> 
-> Am I correct that any kernel starting from 2.6.19 is affected by this, and
-> that it's the most likely cause of Debian bug report
-> http://bugs.debian.org/511334? If so, I'll get it pushed into Debian's
-> stable kernels.
+Dave,
 
-Cool!
+the following patch corrects a serious bug in the Gigaset driver,
+reported by Kolja Waschk, which made the driver unusable on the MIPS
+platform. It is not a regression in the proper sense of the word -
+the problem has been there since the creation of the Gigaset driver.
+(I wonder how we got away with it for so long.) But nevertheless I'd
+like to see it included in v2.6.29 if that is still possible. If not,
+please let me know so that I can submit it to the -stable branch as
+soon as possible.
 
-> Ever increasing error with tod on 2.6.28.8 (with Martin's patch applied):
->      0.672655! timekeeping: clock source changed from jiffies to tod (shift: 12)
->      0.676889! tod/12 (150): xtime.tv: 1237377507/55524946 -> 1237377507/55524947
->      0.677020!    clock->xtime: 0 -> -4096, error: 0 -> -4294967296
->      0.680788! tod/12 (151): xtime.tv: 1237377507/55524947 -> 1237377507/55524948
->      0.680919!    clock->xtime: -4096 -> -4096, error: -4294967296 -> -8589934592
->      0.685280! tod/12 (152): xtime.tv: 1237377507/55524948 -> 1237377507/55524949
->      0.685411!    clock->xtime: -4096 -> -4096, error: -8589934592 -> -12884901888
->      4.685237! tod/12 (1152): xtime.tv: 1237377511/55525948 -> 1237377511/55525949
->      4.685356!    clock->xtime: -4096 -> -4096, error: -4303557230592 -> -4307852197888
->     20.700920! tod/12 (5155): xtime.tv: 1237377527/55529951 -> 1237377527/55529952
->     20.701057!    clock->xtime: -4096 -> -4096, error: -21496311316480 -> -21500606283776
->     32.864888! tod/12 (8160): xtime.tv: 1237377539/55532956 -> 1237377539/55532957
->     32.865008!    clock->xtime: -4096 -> -4096, error: -34402688040960 -> -34406983008256
->     86.760987! tod/12 (21172): xtime.tv: 1237377593/55545968 -> 1237377593/55545969
->     86.761120!    clock->xtime: -4096 -> -4096, error: -90288802496512 -> -90293097463808
->    127.100183! tod/12 (29180): xtime.tv: 1237377633/55553976 -> 1237377633/55553977
->    127.100304!    clock->xtime: -4096 -> -4096, error: -124682900602880 -> -124687195570176
->    491.860765! tod/12 (37189): xtime.tv: 1237377998/55561985 -> 1237377998/55561986
->    491.860886!    clock->xtime: -4096 -> -4096, error: -159081293676544 -> -159085588643840
+The patch doesn't apply to v2.6.28 and earlier because of a (trivial)
+conflict with commit c8770dc. I'll prepare a separate patch for
+2.6.27.x/2.6.28.x as soon as this one is merged in mainline.
 
-Hrm. Is the box otherwise working ok? The TOD clock should not be
-affected by the second issue (one shot mode) discussed.
+Thanks,
+Tilman
 
-thanks
--john
+bas_gigaset: correctly allocate USB interrupt transfer buffer
+
+Every USB transfer buffer has to be allocated individually by kmalloc.
+
+Impact: bugfix, no functional change
+
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Tested-by: Kolja Waschk <kawk@users.sourceforge.net>
+---
+ drivers/isdn/gigaset/bas-gigaset.c |   16 +++++++++++++---
+ 1 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/isdn/gigaset/bas-gigaset.c b/drivers/isdn/gigaset/bas-gigaset.c
+index 18dd8aa..831ddce 100644
+--- a/drivers/isdn/gigaset/bas-gigaset.c
++++ b/drivers/isdn/gigaset/bas-gigaset.c
+@@ -46,6 +46,9 @@ MODULE_PARM_DESC(cidmode, "Call-ID mode");
+ /* length limit according to Siemens 3070usb-protokoll.doc ch. 2.1 */
+ #define IF_WRITEBUF 264
+ 
++/* interrupt pipe message size according to ibid. ch. 2.2 */
++#define IP_MSGSIZE 3
++
+ /* Values for the Gigaset 307x */
+ #define USB_GIGA_VENDOR_ID      0x0681
+ #define USB_3070_PRODUCT_ID     0x0001
+@@ -110,7 +113,7 @@ struct bas_cardstate {
+ 	unsigned char		*rcvbuf;	/* AT reply receive buffer */
+ 
+ 	struct urb		*urb_int_in;	/* URB for interrupt pipe */
+-	unsigned char		int_in_buf[3];
++	unsigned char		*int_in_buf;
+ 
+ 	spinlock_t		lock;		/* locks all following */
+ 	int			basstate;	/* bitmap (BS_*) */
+@@ -657,7 +660,7 @@ static void read_int_callback(struct urb *urb)
+ 	}
+ 
+ 	/* drop incomplete packets even if the missing bytes wouldn't matter */
+-	if (unlikely(urb->actual_length < 3)) {
++	if (unlikely(urb->actual_length < IP_MSGSIZE)) {
+ 		dev_warn(cs->dev, "incomplete interrupt packet (%d bytes)\n",
+ 			 urb->actual_length);
+ 		goto resubmit;
+@@ -2127,6 +2130,7 @@ static void gigaset_reinitbcshw(struct bc_state *bcs)
+ static void gigaset_freecshw(struct cardstate *cs)
+ {
+ 	/* timers, URBs and rcvbuf are disposed of in disconnect */
++	kfree(cs->hw.bas->int_in_buf);
+ 	kfree(cs->hw.bas);
+ 	cs->hw.bas = NULL;
+ }
+@@ -2140,6 +2144,12 @@ static int gigaset_initcshw(struct cardstate *cs)
+ 		pr_err("out of memory\n");
+ 		return 0;
+ 	}
++	ucs->int_in_buf = kmalloc(IP_MSGSIZE, GFP_KERNEL);
++	if (!ucs->int_in_buf) {
++		kfree(ucs);
++		pr_err("out of memory\n");
++		return 0;
++	}
+ 
+ 	ucs->urb_cmd_in = NULL;
+ 	ucs->urb_cmd_out = NULL;
+@@ -2292,7 +2302,7 @@ static int gigaset_probe(struct usb_interface *interface,
+ 	usb_fill_int_urb(ucs->urb_int_in, udev,
+ 			 usb_rcvintpipe(udev,
+ 					(endpoint->bEndpointAddress) & 0x0f),
+-			 ucs->int_in_buf, 3, read_int_callback, cs,
++			 ucs->int_in_buf, IP_MSGSIZE, read_int_callback, cs,
+ 			 endpoint->bInterval);
+ 	if ((rc = usb_submit_urb(ucs->urb_int_in, GFP_KERNEL)) != 0) {
+ 		dev_err(cs->dev, "could not submit interrupt URB: %s\n",
+-- 
+1.6.1.rc2
 
