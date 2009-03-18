@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758402AbZCRQ66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758947AbZCRQ72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758402AbZCRQ66 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 12:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbZCRQ6p
+	id S1758947AbZCRQ72 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 12:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758086AbZCRQ6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 12:58:45 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:36447 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755683AbZCRQ6n (ORCPT
+	Wed, 18 Mar 2009 12:58:50 -0400
+Received: from mail.fieldses.org ([141.211.133.115]:59927 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758538AbZCRQ6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 12:58:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=OCEtxjmro5wAcR7xmXnMCKEQUV0lA2GZU8KPHdFK2g7dWBHSXK9PEXeFP6Dq1ugiN/
-         mKj5rvTZwpQVJycHlJfNhDa1acOFKJqFw/9obqf3o1Ou/ez/xIosZn8xryzCc1O2fJ8g
-         gPqvVnuRd4PxyG41maLPgv4AGsWw/dzpR81CQ=
+	Wed, 18 Mar 2009 12:58:48 -0400
+Date: Wed, 18 Mar 2009 12:57:30 -0400
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, Igor Zhbanov <izh1979@gmail.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
+       David Howells <dhowells@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       SELinux <selinux@tycho.nsa.gov>
+Subject: Re: =?utf-8?B?0J7RgtCy0LXRgjogVkZTLCBORlMg?=
+	=?utf-8?Q?security_bug=3F_Shoul?=
+	=?utf-8?Q?d?= CAP_MKNOD and CAP_LINUX_IMMUTABLE be added to
+	CAP_FS_MASK?
+Message-ID: <20090318165730.GA15084@fieldses.org>
+References: <1237227705.1035.93.camel@localhost.localdomain> <20090316184926.GA6729@us.ibm.com> <1237237216.1035.195.camel@localhost.localdomain> <20090316231340.GC15522@us.ibm.com> <1237299633.6582.107.camel@localhost.localdomain> <20090317173903.GA31566@us.ibm.com> <1237312345.6582.140.camel@localhost.localdomain> <20090317182335.GB31633@us.ibm.com> <1237393287.12822.50.camel@localhost.localdomain> <20090318164712.GB27906@us.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <a4423d670903180734w7270a4f3qa2af3981b969436c@mail.gmail.com>
-References: <a4423d670903180734w7270a4f3qa2af3981b969436c@mail.gmail.com>
-Date: Wed, 18 Mar 2009 19:58:40 +0300
-Message-ID: <a4423d670903180958j4847717eh99a41534633dd314@mail.gmail.com>
-Subject: Re: next-20090318: sunhme does not transmit packets
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       Netdev <netdev@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090318164712.GB27906@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/3/18 Alexander Beregalov <a.beregalov@gmail.com>:
-> Hi
->
-> Ultra 10 can boot, it receives DHCP answer, ssh works, but few minutes
-> after machine becomes unresponsible by net at all.
-> It does not respond even on ARP requests.
->
-> On Sparc host I see that `TX packets` does not grow, but RX grows.
-> The state of the interface is
-> UP BROADCAST RUNNING MULTICAST
->
-> There is no relevant kernel messages in dmesg.
->
-> next-20090317 worked fine.
->
->
-> Let me know if I can help.
->
+On Wed, Mar 18, 2009 at 11:47:12AM -0500, Serge E. Hallyn wrote:
+> Ok, thanks for time.  It's all pretty clear to me now:
+> 
+> CAP_MKNOD and CAP_LINUX_IMMUTABLE need to be added to the CAP_FS_MASK
+> because, in 2.0 timeframe, fsuid==0 gave you those privileges.
+> 
+> xattrs didn't exist back then, so the setting of security.* and
+> trusted.* xattrs doesn't need to be enabled by fsuid==0.  So really
+> CAP_SETFCAP also doesn't need to be added to CAP_FS_MASK either.
 
-I have reproduced it on next-20090318 for the second time, but still
-do not know how.
-next-20090317 might be affected.
+Are we left with any simple one-sentence description of what CAP_FS_MASK
+means?  (Other than just a particular list of bits?)  I'm just wondering
+how additional bits will get decided in the future.
 
-Now both packet counters grow, but tcpdump cannot capture any packet.
+> I'll send out a patch later today for 2.6, unless Igor wants to
+> do it (since he's the one who found this originally).
+
+OK, apologies if I jumped the gun on the nfsd-specific patch--I lost
+track of this discussion, thought it might take longer, and wanted to
+get the one patch into 2.6.30.  Feel free to revert that, or ignore it
+and leave it to me to revert it afterwards, as convenient....
+
+--b.
