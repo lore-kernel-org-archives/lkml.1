@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752421AbZCRVm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbZCRVnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752421AbZCRVm5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755716AbZCRVmF
+	id S1757961AbZCRVnc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756079AbZCRVmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:42:05 -0400
+	Wed, 18 Mar 2009 17:42:08 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754903AbZCRVmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:03 -0400
+	id S1755635AbZCRVmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:42:07 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 47/57] microblaze_v7: namei.h
-Date: Wed, 18 Mar 2009 21:31:14 +0100
-Message-Id: <14c123f2bae10a8b5fb76cd059ba105c212776ef.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 28/57] microblaze_v7: traps support
+Date: Wed, 18 Mar 2009 21:30:55 +0100
+Message-Id: <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -45,25 +45,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
  <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
  <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
- <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
- <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
- <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
- <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
- <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
- <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
- <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
- <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
- <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
- <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
- <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
- <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
- <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
- <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
- <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
- <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
- <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
- <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
- <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -75,16 +56,16 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/namei.h |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/namei.h
+ arch/microblaze/kernel/traps.c |  105 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 105 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/traps.c
 
-diff --git a/arch/microblaze/include/asm/namei.h b/arch/microblaze/include/asm/namei.h
+diff --git a/arch/microblaze/kernel/traps.c b/arch/microblaze/kernel/traps.c
 new file mode 100644
-index 0000000..61d60b8
+index 0000000..4863a57
 --- /dev/null
-+++ b/arch/microblaze/include/asm/namei.h
-@@ -0,0 +1,22 @@
++++ b/arch/microblaze/kernel/traps.c
+@@ -0,0 +1,105 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -93,20 +74,103 @@ index 0000000..61d60b8
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_NAMEI_H
-+#define _ASM_MICROBLAZE_NAMEI_H
++#include <linux/kernel.h>
++#include <linux/kallsyms.h>
++#include <linux/module.h>
++#include <linux/sched.h>
++#include <linux/debug_locks.h>
 +
-+#ifdef __KERNEL__
++#include <asm/exceptions.h>
++#include <asm/system.h>
 +
-+/* This dummy routine maybe changed to something useful
-+ * for /usr/gnemul/ emulation stuff.
-+ * Look at asm-sparc/namei.h for details.
-+ */
-+#define __emul_prefix() NULL
++void trap_init(void)
++{
++	__enable_hw_exceptions();
++}
 +
-+#endif /* __KERNEL__ */
++void __bad_xchg(volatile void *ptr, int size)
++{
++	printk(KERN_INFO "xchg: bad data size: pc 0x%p, ptr 0x%p, size %d\n",
++		__builtin_return_address(0), ptr, size);
++	BUG();
++}
++EXPORT_SYMBOL(__bad_xchg);
 +
-+#endif /* _ASM_MICROBLAZE_NAMEI_H */
++static int kstack_depth_to_print = 24;
++
++static int __init kstack_setup(char *s)
++{
++	kstack_depth_to_print = simple_strtoul(s, NULL, 0);
++
++	return 1;
++}
++__setup("kstack=", kstack_setup);
++
++void show_trace(struct task_struct *task, unsigned long *stack)
++{
++	unsigned long addr;
++
++	if (!stack)
++		stack = (unsigned long *)&stack;
++
++	printk(KERN_NOTICE "Call Trace: ");
++#ifdef CONFIG_KALLSYMS
++	printk(KERN_NOTICE "\n");
++#endif
++	while (!kstack_end(stack)) {
++		addr = *stack++;
++		/*
++		 * If the address is either in the text segment of the
++		 * kernel, or in the region which contains vmalloc'ed
++		 * memory, it *may* be the address of a calling
++		 * routine; if so, print it so that someone tracing
++		 * down the cause of the crash will be able to figure
++		 * out the call path that was taken.
++		 */
++		if (kernel_text_address(addr))
++			print_ip_sym(addr);
++	}
++	printk(KERN_NOTICE "\n");
++
++	if (!task)
++		task = current;
++
++	debug_show_held_locks(task);
++}
++
++void show_stack(struct task_struct *task, unsigned long *sp)
++{
++	unsigned long *stack;
++	int i;
++
++	if (sp == NULL) {
++		if (task)
++			sp = (unsigned long *) ((struct thread_info *)
++						(task->stack))->cpu_context.r1;
++		else
++			sp = (unsigned long *)&sp;
++	}
++
++	stack = sp;
++
++	printk(KERN_INFO "\nStack:\n  ");
++
++	for (i = 0; i < kstack_depth_to_print; i++) {
++		if (kstack_end(sp))
++			break;
++		if (i && ((i % 8) == 0))
++			printk("\n  ");
++		printk("%08lx ", *sp++);
++	}
++	printk("\n");
++	show_trace(task, stack);
++}
++
++void dump_stack(void)
++{
++	show_stack(NULL, NULL);
++}
++EXPORT_SYMBOL(dump_stack);
 -- 
 1.5.5.1
 
