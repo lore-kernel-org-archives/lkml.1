@@ -1,83 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbZCRJen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbZCRJhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756393AbZCRJen (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 05:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbZCRJee
+	id S1756142AbZCRJhH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 05:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753453AbZCRJgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 05:34:34 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:63890 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751754AbZCRJec (ORCPT
+	Wed, 18 Mar 2009 05:36:55 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:33841 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752274AbZCRJgy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 05:34:32 -0400
-Date: Wed, 18 Mar 2009 10:28:25 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Frans Pop <elendil@planet.nl>, linux-s390@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator -
- hang traced
-Message-ID: <20090318102825.32c821f3@skybase>
-In-Reply-To: <1237344897.6160.136.camel@localhost>
-References: <200903080230.10099.elendil@planet.nl>
-	<1236817822.7680.148.camel@localhost.localdomain>
-	<1236818863.7680.156.camel@localhost.localdomain>
-	<200903121805.48041.elendil@planet.nl>
-	<1237343170.6160.131.camel@localhost>
-	<1237344897.6160.136.camel@localhost>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Mar 2009 05:36:54 -0400
+Date: Wed, 18 Mar 2009 15:06:24 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
+	cpuacct_charge() safe when rcupreempt is used.
+Message-ID: <20090318093624.GZ16897@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090317061754.GD3314@in.ibm.com> <49BF42FB.4030103@cn.fujitsu.com> <20090317073649.GH3314@in.ibm.com> <20090317131251.GU16897@balbir.in.ibm.com> <20090318031832.GA3960@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090318031832.GA3960@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Mar 2009 19:54:57 -0700
-john stultz <johnstul@us.ibm.com> wrote:
+* Bharata B Rao <bharata@linux.vnet.ibm.com> [2009-03-18 08:48:32]:
 
-> Martin: I'm not sure if the problem here is the __div64_32
-> implementation or if the emulator is doing something wrong here. Might
-> need some help from you in sorting this out.
+> On Tue, Mar 17, 2009 at 06:42:51PM +0530, Balbir Singh wrote:
+> > * Bharata B Rao <bharata@linux.vnet.ibm.com> [2009-03-17 13:06:49]:
+> > 
+> > > On Tue, Mar 17, 2009 at 02:28:11PM +0800, Li Zefan wrote:
+> > > > Bharata B Rao wrote:
+> > > > > cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
+> > > > > 	rcupreempt is used.
+> > > > > 
+> > > > > cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
+> > > > > This can race with the task's movement between cgroups. This race
+> > > > > can cause an access to freed ca pointer in cpuacct_charge(). This will not
+> > > > 
+> > > > Actually it can also end up access invalid tsk->cgroups. ;)
+> > > > 
+> > > > get tsk->cgroups (cg)
+> > > >                          (move tsk to another cgroup) or (tsk exiting)
+> > > >                          -> kfree(tsk->cgroups)
+> > > > get cg->subsys[..]
+> > > 
+> > > Ok :) Here is the patch again with updated description.
+> > > 
+> > > cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
+> > > 	rcupreempt is used.
+> > > 
+> > > cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
+> > > This can race with the task's movement between cgroups. This race
+> > > can cause an access to freed ca pointer in cpuacct_charge() or access
+> > > to invalid cgroups pointer of the task. This will not happen with rcu or
+> > > tree rcu as cpuacct_charge() is called with preemption disabled. However if
+> > > rcupreempt is used, the race is seen. Thanks to Li Zefan for explaining this.
+> > > 
+> > > Fix this race by explicitly protecting ca and the hierarchy walk with
+> > > rcu_read_lock().
+> > >
+> > 
+> > Looks good and works very well (except for the batch issue that you
+> > pointed out, it takes up to batch values before updates are seen).
+> > 
+> > I'd like to get the patches in -tip and see the results, I would
+> > recommend using percpu_counter_sum() while reading the data as an
+> > enhancement to this patch. If user space does not overwhelm with a lot
+> > of reads, sum would work out better.
+> > 
+> > 
+> > Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> 
+> So I guess this ack is not for this patch but for the per-cgroup
+> stime/utime cpuacct controller statistics patch.
+>
 
-__div64_31 is incorrect. Patch and description see below.
-
-How long did you debug this until you finally got down to div64 as the
-cause of this? It must have taken you hours!
+Yes.. for both these patches actually. Thanks for pointing it out
+though. 
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
----
-Subject: [PATCH] __div64_31 broken for CONFIG_MARCH_G5
-
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-
-The implementation of __div64_31 for G5 machines is broken. The comments
-in __div64_31 are correct, only the code does not do what the comments
-say. The part "If the remainder has overflown subtract base and increase
-the quotient" is only partially realized, the base is subtracted correctly
-but the quotient is only increased if the dividend had the last bit set.
-Using the correct instruction fixes the problem.
-
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
-diff -urpN linux-2.6/arch/s390/lib/div64.c linux-2.6-patched/arch/s390/lib/div64.c
---- linux-2.6/arch/s390/lib/div64.c	2008-12-25 00:26:37.000000000 +0100
-+++ linux-2.6-patched/arch/s390/lib/div64.c	2009-03-18 10:06:42.000000000 +0100
-@@ -61,7 +61,7 @@ static uint32_t __div64_31(uint64_t *n, 
- 		"	clr	%0,%3\n"
- 		"	jl	0f\n"
- 		"	slr	%0,%3\n"
--		"	alr	%1,%2\n"
-+		"	ahi	%1,1\n"
- 		"0:\n"
- 		: "+d" (reg2), "+d" (reg3), "=d" (tmp)
- 		: "d" (base), "2" (1UL) : "cc" );
+	Balbir
