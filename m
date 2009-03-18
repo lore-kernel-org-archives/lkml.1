@@ -1,105 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbZCRS1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbZCRSbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbZCRS1V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 14:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756244AbZCRS1K
+	id S1758799AbZCRSbf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 14:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbZCRSb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 14:27:10 -0400
-Received: from mga01.intel.com ([192.55.52.88]:7302 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755984AbZCRS1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 14:27:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,385,1233561600"; 
-   d="scan'208";a="440006047"
-Date: Wed, 18 Mar 2009 19:27:00 +0100
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
-       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
-       ak@linux.jf.intel.com
-Subject: [patch] x86, bts: use atomic memory allocation
-Message-ID: <20090318192700.A6038@sedona.ch.intel.com>
-Mime-Version: 1.0
+	Wed, 18 Mar 2009 14:31:26 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:44757 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755816AbZCRSbZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 14:31:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=dKYBgkbFn5o0cwU64Fy72l6+TvT2cMdZlllNXXoRhrEOwN4uUw3V+TTnRC8fKpibYuhlslWHKWKuGtPde6glXw89qTE7VYWN/ba71mggA9R5MQWjx5Kz3drSFTfDcK0Mlxjrsij2C0xg9HNTD2hqruk9nv0E7PcYq4s/igJ3sJU=  ;
+X-YMail-OSG: CSshIrgVM1mUP6vtwyqrusoyb4BzI6xsfLhAvHSpdmzmWlA5DMMXomlmX8s7xEjcDjY3OdoRh5ep7aLAzlfLHIiydWV05hgvakmbKihknMwYbc.8mRYmvDUH7mPqViuEfI8sg1MVL3eozGO513qK035Q
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: felipe.balbi@nokia.com
+Subject: Re: [patch/rfc 1/2] GENIRQ: add handle_threaded_irq() flow handler
+Date: Wed, 18 Mar 2009 11:31:22 -0700
+User-Agent: KMail/1.9.10
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "me@felipebalbi.com" <me@felipebalbi.com>,
+       "dmitry.torokhov@gmail.com" <dmitry.torokhov@gmail.com>,
+       "sameo@openedhand.com" <sameo@openedhand.com>
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <200903171919.48030.david-b@pacbell.net> <20090318120056.GG24947@scadufax.research.nokia.com>
+In-Reply-To: <20090318120056.GG24947@scadufax.research.nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Message-Id: <200903181131.22504.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ds_request_bts() needs to allocate memory. It uses GFP_KERNEL.
+On Wednesday 18 March 2009, Felipe Balbi wrote:
+> > +     action = desc->action;
+> > +     if (unlikely(!action || (desc->status & IRQ_DISABLED)))
+> > +             goto out_unlock;
+> 
+> you say below irqs are always enabled
 
-Hw-branch-tracer calls ds_request_bts() within on_each_cpu().
+Right here they're always disabled by spin_lock_irq().
+The "below" follows spin_unlock_irq(), which re-enables
+them to traverse that (locked) action list.
 
-Use atomic memory allocation to allow it to be used in that context.
 
+> so this branch is something we 
+> never want to happen. How about adding a WARN() then ?
 
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
+When some one says "irqs are enabled" they mean that,
+local_irq_disable() or friends have not been called,
+so for example a timer or other IRQ could arrive.
 
-Index: git-tip/arch/x86/kernel/ds.c
-===================================================================
---- git-tip.orig/arch/x86/kernel/ds.c	2009-03-17 12:26:07.000000000 +0100
-+++ git-tip/arch/x86/kernel/ds.c	2009-03-17 13:30:09.000000000 +0100
-@@ -255,8 +255,13 @@ static inline struct ds_context *ds_get_
- 	struct ds_context *new_context = NULL;
- 	unsigned long irq;
- 
--	/* Chances are small that we already have a context. */
--	new_context = kzalloc(sizeof(*new_context), GFP_KERNEL);
-+	/*
-+	 * Chances are small that we already have a context.
-+	 *
-+	 * Contexts for per-cpu tracing are allocated using
-+	 * smp_call_function(). We must not sleep.
-+	 */
-+	new_context = kzalloc(sizeof(*new_context), GFP_ATOMIC);
- 	if (!new_context)
- 		return NULL;
- 
-@@ -662,8 +667,12 @@ struct bts_tracer *ds_request_bts(struct
- 	if (ovfl)
- 		goto out;
- 
-+	/*
-+	 * Per-cpu tracing is typically requested using smp_call_function().
-+	 * We must not sleep.
-+	 */
- 	error = -ENOMEM;
--	tracer = kzalloc(sizeof(*tracer), GFP_KERNEL);
-+	tracer = kzalloc(sizeof(*tracer), GFP_ATOMIC);
- 	if (!tracer)
- 		goto out;
- 	tracer->ovfl = ovfl;
-@@ -722,8 +731,12 @@ struct pebs_tracer *ds_request_pebs(stru
- 	if (ovfl)
- 		goto out;
- 
-+	/*
-+	 * Per-cpu tracing is typically requested using smp_call_function().
-+	 * We must not sleep.
-+	 */
- 	error = -ENOMEM;
--	tracer = kzalloc(sizeof(*tracer), GFP_KERNEL);
-+	tracer = kzalloc(sizeof(*tracer), GFP_ATOMIC);
- 	if (!tracer)
- 		goto out;
- 	tracer->ovfl = ovfl;
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+The IRQ_DISABLED flag in an IRQ descriptor means
+something different:  "don't try *handling* this".
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+That particular check is used in *ALL* flow handlers.
+It guards against things like races in disable_irq()
+paths, which could allow an IRQ that was in flight
+to arrive "after" the IRQ was disabled.
 
+In the case of an IRQ enable/disable mask sitting
+across an I2C bus boundary, it's particularly easy
+to see how such a race might happen ... since both
+the thread masking the IRQ, and the one handling it,
+are subject to preemption and scheduling.
