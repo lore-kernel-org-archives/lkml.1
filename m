@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758276AbZCRVnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758486AbZCRVoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758276AbZCRVnw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbZCRVmM
+	id S1758486AbZCRVoP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbZCRVmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:42:12 -0400
+	Wed, 18 Mar 2009 17:42:14 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755280AbZCRVmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:10 -0400
+	id S1756278AbZCRVmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:42:13 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 55/57] microblaze_v7: pci headers
-Date: Wed, 18 Mar 2009 21:31:22 +0100
-Message-Id: <28a81149bf51571cbc898a672efff4770fbc1efe.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 54/57] microblaze_v7: Kbuild file
+Date: Wed, 18 Mar 2009 21:31:21 +0100
+Message-Id: <50253611a0770c1ae6a63702208cfb9f96cd1f1a.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <50253611a0770c1ae6a63702208cfb9f96cd1f1a.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <e5b88f50c39aa95431f5ecdb032c6676399ae198.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -71,7 +71,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <34c2f9e50610e147be556607e482b88fd674b887.1237407249.git.monstr@monstr.eu>
  <15f6f10873f7c6f4f3b06f9d4d5af3ee9714f873.1237407249.git.monstr@monstr.eu>
  <e5b88f50c39aa95431f5ecdb032c6676399ae198.1237407249.git.monstr@monstr.eu>
- <50253611a0770c1ae6a63702208cfb9f96cd1f1a.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -83,26 +82,42 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/pci-bridge.h |    1 +
- arch/microblaze/include/asm/pci.h        |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/pci-bridge.h
- create mode 100644 arch/microblaze/include/asm/pci.h
+ arch/microblaze/include/asm/Kbuild |   26 ++++++++++++++++++++++++++
+ 1 files changed, 26 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/Kbuild
 
-diff --git a/arch/microblaze/include/asm/pci-bridge.h b/arch/microblaze/include/asm/pci-bridge.h
+diff --git a/arch/microblaze/include/asm/Kbuild b/arch/microblaze/include/asm/Kbuild
 new file mode 100644
-index 0000000..7ad28f6
+index 0000000..31820df
 --- /dev/null
-+++ b/arch/microblaze/include/asm/pci-bridge.h
-@@ -0,0 +1 @@
-+#include <linux/pci.h>
-diff --git a/arch/microblaze/include/asm/pci.h b/arch/microblaze/include/asm/pci.h
-new file mode 100644
-index 0000000..ca03794
---- /dev/null
-+++ b/arch/microblaze/include/asm/pci.h
-@@ -0,0 +1 @@
-+#include <linux/io.h>
++++ b/arch/microblaze/include/asm/Kbuild
+@@ -0,0 +1,26 @@
++include include/asm-generic/Kbuild.asm
++
++header-y += auxvec.h
++header-y += errno.h
++header-y += fcntl.h
++header-y += ioctl.h
++header-y += ioctls.h
++header-y += ipcbuf.h
++header-y += linkage.h
++header-y += msgbuf.h
++header-y += poll.h
++header-y += resource.h
++header-y += sembuf.h
++header-y += shmbuf.h
++header-y += sigcontext.h
++header-y += siginfo.h
++header-y += socket.h
++header-y += sockios.h
++header-y += statfs.h
++header-y += stat.h
++header-y += termbits.h
++header-y += ucontext.h
++
++unifdef-y += cputable.h
++unifdef-y += elf.h
++unifdef-y += termios.h
 -- 
 1.5.5.1
 
