@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbZCRNIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757196AbZCRNIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbZCRNIU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 09:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZCRNIJ
+	id S1757196AbZCRNIf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 09:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbZCRNIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 09:08:09 -0400
-Received: from ns2.suse.de ([195.135.220.15]:41516 "EHLO mx2.suse.de"
+	Wed, 18 Mar 2009 09:08:10 -0400
+Received: from ns2.suse.de ([195.135.220.15]:41552 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754199AbZCRNII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754250AbZCRNII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 18 Mar 2009 09:08:08 -0400
-Date: Wed, 18 Mar 2009 14:04:28 +0100 (CET)
+Date: Wed, 18 Mar 2009 13:59:05 +0100 (CET)
 From: Jiri Kosina <jkosina@suse.cz>
 X-X-Sender: jkosina@wotan.suse.de
-To: Riku Voipio <riku.voipio@iki.fi>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Update email Address of Riku voipio
-In-Reply-To: <20090303201526.GB1119@kos.to>
-Message-ID: <alpine.LNX.2.00.0903181404130.12145@wotan.suse.de>
-References: <20090128091438.GA30378@kos.to> <84144f020901280156l763b7d23o43fe0ea314aae24e@mail.gmail.com> <alpine.LNX.1.10.0901282128030.5377@jikos.suse.cz> <20090303201526.GB1119@kos.to>
+To: Paul Collins <paul@burly.ondioline.org>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] hid/apple: constify arrays of struct apple_key_translation
+ and adjust users
+In-Reply-To: <1236398835-8211-2-git-send-email-paul@burly.ondioline.org>
+Message-ID: <alpine.LNX.2.00.0903181358540.12145@wotan.suse.de>
+References: <49B19FF3.2000605@gmail.com> <1236398835-8211-1-git-send-email-paul@burly.ondioline.org> <1236398835-8211-2-git-send-email-paul@burly.ondioline.org>
 User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -25,17 +27,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Mar 2009, Riku Voipio wrote:
+On Sat, 7 Mar 2009, Paul Collins wrote:
 
-> From da32dfd3eb28aa6ec8318e9782254dd0baa54b23 Mon Sep 17 00:00:00 2001
-> From: Riku Voipio <riku.voipio@iki.fi>
-> Date: Tue, 3 Mar 2009 21:37:17 +0200
-> Subject: [PATCH] Update my email address
+> Mark arrays of struct apple_key_translation const so that they may be placed in
+> .rodata, and adjust users to suit.
 > 
-> 
-> Signed-off-by: Riku Voipio <riku.voipio@iki.fi>
+> Signed-off-by: Paul Collins <paul@ondioline.org>
 
-Applied to trivial tree, thanks Riku.
+Applied, thanks Paul.
 
 -- 
 Jiri Kosina
