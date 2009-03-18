@@ -1,112 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbZCRCrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757125AbZCRCvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755683AbZCRCrV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 22:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbZCRCrM
+	id S1757125AbZCRCvi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 22:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbZCRCva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 22:47:12 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50660 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753746AbZCRCrL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 22:47:11 -0400
-Date: Wed, 18 Mar 2009 11:47:04 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: [Patch] Fix the possibility of insane return value of hpet_calibrate() against SMI. (take 2)
-Cc: Clemens Ladisch <clemens@ladisch.de>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>, robert.picco@hp.com,
-       venkatesh.pallipadi@intel.com, vojtech@suse.cz, mingo@redhat.com
-In-Reply-To: <20090318094346.7BA9.E1E9C6FF@jp.fujitsu.com>
-References: <49BFA1D7.8020302@windriver.com> <20090318094346.7BA9.E1E9C6FF@jp.fujitsu.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20090318113948.7BAD.E1E9C6FF@jp.fujitsu.com>
+	Tue, 17 Mar 2009 22:51:30 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57169 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753884AbZCRCv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 22:51:29 -0400
+Message-ID: <49C06159.9010704@cn.fujitsu.com>
+Date: Wed, 18 Mar 2009 10:50:01 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       srostedt@redhat.com, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/ftrace] ftrace: remove struct list_head from	struct
+ dyn_ftrace
+References: <49BA2C9F.8020009@cn.fujitsu.com> <tip-e94142a67f8bad494c593f0a07c9fc2fbec98c0e@git.kernel.org> <20090316123607.GA5096@nowhere> <20090316124229.GB5096@nowhere>
+In-Reply-To: <20090316124229.GB5096@nowhere>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.01 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Frederic Weisbecker wrote:
 > 
-> > >>> Each calibration of this has 1 milli second.
-> > >>> Do you think 5 msec is too long?
-> > >>>       
-> > >> This shouldn't matter when booting.  Anyway, I think it's possible to
-> > >> increase TICK_CALIBRATE without losing too much accuracy.
-> > >>     
-> > >
-> > > Hmm. If the person who is trying to reduce boot time for fastboot dislikes this impact,
-> > > then I'll try Vojtech-san's way.
-> > >   
-> > 
-> > That probably makes sense -- if it is extremely rare, and if you get two
-> > values that are the same (within some small delta) then you probably
-> > are 99.99% confident that you have the right data.
 > 
-> Ok. I'll make it.
+> May be I'm wrong. May be I misunderstood this patch.
+> But I don't understand how flags can be used at the same time as a pointer
+> and as a flag value.
 > 
-> Thanks for your comment.
 
-Here is updated version.
+When a new dyn_ftrace is added to ftrace_new_addrs list, the flag is 0,
+it's always 0 until this dyn_ftrace is removed from the list, so we can
+reuse the flag field. As Steven's suggest, using an union is better.
 
---------
+ftrace_convert_nops()
+  ftrace_record_ip() // allocate dyn_ftrace, and add it
+                     // to ftrace_new_addrs list
+  ftrace_update_code() // remove it from ftrace_new_addrs.
 
-hpet_calibrate() has a possibility of miss-calibration due to SMI.
-If SMI interrupts in the while loop of calibration, then return value
-will be big. This change calibrates until stabilizing by the return
-value with a small value.
-
-
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-
-
----
- drivers/char/hpet.c |   21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
-
-Index: hpet_test/drivers/char/hpet.c
-===================================================================
---- hpet_test.orig/drivers/char/hpet.c	2009-03-12 15:47:45.000000000 +0900
-+++ hpet_test/drivers/char/hpet.c	2009-03-18 11:12:42.000000000 +0900
-@@ -713,7 +713,7 @@
-  */
- #define	TICK_CALIBRATE	(1000UL)
- 
--static unsigned long hpet_calibrate(struct hpets *hpetp)
-+static unsigned long __hpet_calibrate(struct hpets *hpetp)
- {
- 	struct hpet_timer __iomem *timer = NULL;
- 	unsigned long t, m, count, i, flags, start;
-@@ -750,6 +750,25 @@
- 	return (m - start) / i;
- }
- 
-+static unsigned long hpet_calibrate(struct hpets *hpetp)
-+{
-+	unsigned long ret = ~0UL, tmp;
-+
-+	/*
-+	 * Try to calibrate until return value becomes stable small value.
-+	 * If SMI interruption occurs in calibration loop, the return value
-+	 * will be big. This avoids its impact.
-+	 */
-+	do {
-+		tmp = __hpet_calibrate(hpetp);
-+		if (ret <= tmp)
-+			break;
-+		ret = tmp;
-+	} while (1);
-+
-+	return ret;
-+}
-+
- int hpet_alloc(struct hpet_data *hdp)
- {
- 	u64 cap, mcfg;
-
--- 
-Yasunori Goto 
-
+Lai.
 
