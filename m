@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbZCRVKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbZCRVOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbZCRVKy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbZCRVKk
+	id S1755463AbZCRVOO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZCRVN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:10:40 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:49396 "EHLO e1.ny.us.ibm.com"
+	Wed, 18 Mar 2009 17:13:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56396 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753646AbZCRVKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:10:38 -0400
-Message-ID: <49C16349.9030503@us.ibm.com>
-Date: Wed, 18 Mar 2009 14:10:33 -0700
-From: Vernon Mauery <vernux@us.ibm.com>
+	id S1752279AbZCRVN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:13:57 -0400
+Message-ID: <49C16411.2040705@redhat.com>
+Date: Wed, 18 Mar 2009 23:13:53 +0200
+From: Avi Kivity <avi@redhat.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: andi@firstfloor.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: High contention on the sk_buff_head.lock
-References: <49C12E64.1000301@us.ibm.com> <87prge1rhu.fsf@basil.nowhere.org> <20090318.140340.55290859.davem@davemloft.net>
-In-Reply-To: <20090318.140340.55290859.davem@davemloft.net>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Question about x86/mm/gup.c's use of disabled interrupts
+References: <49C148AF.5050601@goop.org>
+In-Reply-To: <49C148AF.5050601@goop.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Andi Kleen <andi@firstfloor.org>
-> Date: Wed, 18 Mar 2009 21:54:37 +0100
-> 
->> But then again I'm not sure it's  worth it if the problem only
->> happens in out of tree RT.
-> 
-> The list of problems that only show up with the RT kernel seems to be
-> constantly increasing, but honestly is very surprising to me.
-> 
-> I don't understand why we even need to be concerned about this stuff
-> upstream, to be honest.
-> 
-> Please reproduce this in the vanilla kernel, then get back to us.
+Jeremy Fitzhardinge wrote:
+> Hi Nick,
+>
+> The comment in arch/x86/mm/gup.c:gup_get_pte() says:
+>
+>     [...] What
+>      * we do have is the guarantee that a pte will only either go from 
+> not
+>      * present to present, or present to not present or both -- it 
+> will not
+>      * switch to a completely different present page without a TLB 
+> flush in
+>      * between; something that we are blocking by holding interrupts off.
+>
+>
+> Disabling the interrupt will prevent the tlb flush IPI from coming in 
+> and flushing this cpu's tlb, but I don't see how it will prevent some 
+> other cpu from actually updating the pte in the pagetable, which is 
+> what we're concerned about here.  
 
-Huh? The numbers that I posted *were* from the vanilla kernel. I ran
-the 2.6.29-rc8 kernel with lock_stat enabled.  The lock contention
-happens on the same lock in both vanilla and -rt, it just happens
-to be more pronounced in the -rt kernel because of the double context
-switches that the sleeping spinlock/rt-mutexes introduce.
+The thread that cleared the pte holds the pte lock and is now waiting 
+for the IPI.  The thread that wants to update the pte will wait for the 
+pte lock, thus also waits on the IPI and gup_fast()'s 
+local_irq_enable().  I think.
 
---Vernon
+> Is this the only reason to disable interrupts?  
+
+Another comment says it also prevents pagetable teardown.
+
+> Also, assuming that disabling the interrupt is enough to get the 
+> guarantees we need here, there's a Xen problem because we don't use 
+> IPIs for cross-cpu tlb flushes (well, it happens within Xen).  I'll 
+> have to think a bit about how to deal with that, but I'm thinking that 
+> we could add a per-cpu "tlb flushes blocked" flag, and maintain some 
+> kind of per-cpu deferred tlb flush count so we can get around to doing 
+> the flush eventually.
+
+I was thinking about adding a hypercall for cross-vcpu tlb flushes.  
+Guess I'll wait for you to clear up all the issues first.
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
