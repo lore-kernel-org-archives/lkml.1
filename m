@@ -1,137 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbZCRRYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbZCRRZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033AbZCRRYj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 13:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZCRRYa
+	id S1758835AbZCRRZT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 13:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754108AbZCRRYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 13:24:30 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:57731 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752377AbZCRRY3 (ORCPT
+	Wed, 18 Mar 2009 13:24:55 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:43355 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755059AbZCRRYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 13:24:29 -0400
-Date: Wed, 18 Mar 2009 13:21:30 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 24/27] Convert gfp_zone() to use a table of precalculated
- values
-In-Reply-To: <20090318153508.GA24462@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0903181300540.15570@qirst.com>
-References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie> <1237226020-14057-25-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903161500280.20024@qirst.com> <20090318135222.GA4629@csn.ul.ie> <alpine.DEB.1.10.0903181011210.7901@qirst.com>
- <20090318153508.GA24462@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 18 Mar 2009 13:24:54 -0400
+Date: Wed, 18 Mar 2009 12:24:48 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, Igor Zhbanov <izh1979@gmail.com>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, neilb@suse.de, Trond.Myklebust@netapp.com,
+       David Howells <dhowells@redhat.com>, Andrew Morgan <morgan@kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       SELinux <selinux@tycho.nsa.gov>
+Subject: Re: =?utf-8?B?0J7RgtCy0LXRgjogVkZTLCBORlMg?=
+	=?utf-8?Q?security_bug=3F_Shoul?=
+	=?utf-8?Q?d?= CAP_MKNOD and CAP_LINUX_IMMUTABLE be added to
+	CAP_FS_MASK?
+Message-ID: <20090318172448.GB29523@us.ibm.com>
+References: <20090316184926.GA6729@us.ibm.com> <1237237216.1035.195.camel@localhost.localdomain> <20090316231340.GC15522@us.ibm.com> <1237299633.6582.107.camel@localhost.localdomain> <20090317173903.GA31566@us.ibm.com> <1237312345.6582.140.camel@localhost.localdomain> <20090317182335.GB31633@us.ibm.com> <1237393287.12822.50.camel@localhost.localdomain> <20090318164712.GB27906@us.ibm.com> <20090318165730.GA15084@fieldses.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090318165730.GA15084@fieldses.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting J. Bruce Fields (bfields@fieldses.org):
+> On Wed, Mar 18, 2009 at 11:47:12AM -0500, Serge E. Hallyn wrote:
+> > Ok, thanks for time.  It's all pretty clear to me now:
+> > 
+> > CAP_MKNOD and CAP_LINUX_IMMUTABLE need to be added to the CAP_FS_MASK
+> > because, in 2.0 timeframe, fsuid==0 gave you those privileges.
+> > 
+> > xattrs didn't exist back then, so the setting of security.* and
+> > trusted.* xattrs doesn't need to be enabled by fsuid==0.  So really
+> > CAP_SETFCAP also doesn't need to be added to CAP_FS_MASK either.
+> 
+> Are we left with any simple one-sentence description of what CAP_FS_MASK
+> means?  (Other than just a particular list of bits?)  I'm just wondering
+> how additional bits will get decided in the future.
 
+It means all the privileges that fsuid==0 historically meant.
 
-> time.
->
-> > > > const int gfp_zone_table[GFP_ZONEMASK] = {
-> > > > 	ZONE_NORMAL,		/* 00 No flags set */
-> > > > 	ZONE_DMA,		/* 01 Only GFP_DMA set */
-> > > > 	ZONE_HIGHMEM,		/* 02 Only GFP_HIGHMEM set */
-> > > > 	ZONE_DMA,		/* 03 GFP_HIGHMEM and GFP_DMA set */
-> > > > 	ZONE_DMA32,		/* 04 Only GFP_DMA32 set */
-> > > > 	ZONE_DMA,		/* 05 GFP_DMA and GFP_DMA32 set */
-> > > > 	ZONE_DMA32,		/* 06 GFP_DMA32 and GFP_HIGHMEM set */
-> > > > 	ZONE_DMA,		/* 07 GFP_DMA, GFP_DMA32 and GFP_DMA32 set */
-> > > > 	ZONE_MOVABLE,		/* 08 Only ZONE_MOVABLE set */
-> > > > 	ZONE_DMA,		/* 09 MOVABLE + DMA */
-> > > > 	ZONE_MOVABLE,		/* 0A MOVABLE + HIGHMEM */
-> > > > 	ZONE_DMA,		/* 0B MOVABLE + DMA + HIGHMEM */
-> > > > 	ZONE_DMA32,		/* 0C MOVABLE + DMA32 */
-> > > > 	ZONE_DMA,		/* 0D MOVABLE + DMA + DMA32 */
-> > > > 	ZONE_DMA32,		/* 0E MOVABLE + DMA32 + HIGHMEM */
-> > > > 	ZONE_DMA		/* 0F MOVABLE + DMA32 + HIGHMEM + DMA
-> > > > };
-> > > >
-> > > > Hmmmm... Guess one would need to add some #ifdeffery here to setup
-> > > > ZONE_NORMAL in cases there is no DMA, DMA32 and HIGHMEM.
-> > > >
-> > >
-> > > Indeed, as I said, this is somewhat error prone which is why the patch
-> > > calculates the table at run-time instead of compile-time trickery.
-> >
-> > One would need to define some macros to make it simpler I guess
-> >
-> > Write something like
-> >
-> > #ifdef CONFIG_ZONE_DMA
-> > #define TZONE_DMA ZONE_DMA
-> > #else
-> > #define TZONE_DMA ZONE_NORMAL
-> > #endif
-> >
-> > for each configurable item. Then just add the T to the above table.
-> >
->
-> If you don't mind, I'd like to postpone writing such a patch until a second
-> or third pass at improving the allocator. I don't think I'll have the time
-> in the short-term to put together a const-initialised-table patch that will
-> definitily be correct.
->
-> Alternatively, I can drop this patch entirely from the set.
->
->
+At one time in the past, that meant CAP_MKNOD and CAP_LINUX_IMMUTABLE.
 
-Let me give it a shot:
+It has never meant setting security.* and trusted.* xattrs.
 
-Note that there is a slight buggyness in the current implementation of
-gfp_zone. If you set both GFP_DMA32 and GFP_HIGHMEM and the arch does not
-support GFP_DMA32 then gfp_zone returns GFP_HIGHMEM which may result in
-memory being allocated that cannot be used for I/O.
+We could also define it as follows:
+	CAP_FS_MASK is the privilege to bypass all fs-related DAC permissions
+	security.* and trusted.* xattrs are MAC fs permissions
+or something like that.
 
-This version here returns GFP_NORMAL which is more correct.
+I guess one or both of those should go as a comment into capability.h
 
+> > I'll send out a patch later today for 2.6, unless Igor wants to
+> > do it (since he's the one who found this originally).
+> 
+> OK, apologies if I jumped the gun on the nfsd-specific patch--I lost
 
-#ifdef CONFIG_ZONE_HIGHMEM
-#define OPT_ZONE_HIGHMEM ZONE_HIGHMEM
-#else
-#define OPT_ZONE_HIGHMEM ZONE_NORMAL
-#endif
+Nonsense, I appreciate it...  And there's certainly still a chance that
+there will be objections to my interpretation, whereas the NFSD bit
+seems straightened out.
 
-#ifdef CONFIG_ZONE_DMA
-#define OPT_ZONE_DMA ZONE_DMA
-#else
-#define OPT_ZONE_DMA ZONE_NORMAL
-#endif
+> track of this discussion, thought it might take longer, and wanted to
+> get the one patch into 2.6.30.  Feel free to revert that, or ignore it
+> and leave it to me to revert it afterwards, as convenient....
 
-#ifdef CONFIG_ZONE_DMA32
-#define OPT_ZONE_DMA32 ZONE_DMA32
-#else
-#define OPT_ZONE_DMA32 OPT_ZONE_DMA
-#endif
+I'm not sure what the best path forward is, so I'll go ahead and
+incorporate your patch into mine for now.
 
-
-const int gfp_zone_table[GFP_ZONEMASK] = {
-	ZONE_NORMAL,            /* 00 No flags set */
-	OPT_ZONE_DMA,           /* 01 GFP_DMA */
-	OPT_ZONE_HIGHMEM,       /* 02 GFP_HIGHMEM */
-        OPT_ZONE_DMA,           /* 03 GFP_HIGHMEM GFP_DMA */
-        OPT_ZONE_DMA32,         /* 04 GFP_DMA32 */
-        OPT_ZONE_DMA,           /* 05 GFP_DMA32 GFP_DMA */
-        OPT_ZONE_DMA32,         /* 06 GFP_DMA32 GFP_HIGHMEM */
-        OPT_ZONE_DMA,           /* 07 GFP_DMA32 GFP_HIGHMEM GFP_DMA */
-        ZONE_NORMAL,            /* 08 ZONE_MOVABLE */
-        OPT_ZONE_DMA,           /* 09 MOVABLE + DMA */
-        ZONE_MOVABLE,           /* 0A MOVABLE + HIGHMEM */
-        OPT_ZONE_DMA,           /* 0B MOVABLE + HIGHMEM + DMA */
-        OPT_ZONE_DMA32,         /* 0C MOVABLE + DMA32 */
-        OPT_ZONE_DMA,           /* 0D MOVABLE + DMA32 + DMA */
-        OPT_ZONE_DMA32,         /* 0E MOVABLE + DMA32 + HIGHMEM */
-        OPT_ZONE_DMA            /* 0F MOVABLE + DMA32 + HIGHMEM + DMA */
-};
-
+thanks,
+-serge
