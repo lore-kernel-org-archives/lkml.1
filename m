@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbZCRFfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbZCRGAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755347AbZCRFfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 01:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbZCRFes
+	id S1755528AbZCRGAA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 02:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZCRF7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 01:34:48 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:60053 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752502AbZCRFer (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 01:34:47 -0400
-Message-ID: <49C087F3.3080507@snapgear.com>
-Date: Wed, 18 Mar 2009 15:34:43 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 18 Mar 2009 01:59:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37386 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751172AbZCRF7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 01:59:49 -0400
+Date: Wed, 18 Mar 2009 06:59:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
+Message-ID: <20090318055924.GA24627@elte.hu>
+References: <20090318031423.981603258@goodmis.org>
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       linux-next@vger.kernel.org, linux-m68k@vger.kernel.org
-Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
-References: <200903120437.03837.rob@landley.net> <200903161521.00036.rob@landley.net> <49BEDC75.1080704@snapgear.com> <200903172304.00157.rob@landley.net>
-In-Reply-To: <200903172304.00157.rob@landley.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090318031423.981603258@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rob,
 
-Rob Landley wrote:
-> On Monday 16 March 2009 18:10:45 Greg Ungerer wrote:
->>>>    git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git
->>>> fix-includes
-> ...
->> Did you get the "fix-includes" branch?
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
 > 
-> Quite possibly not.  (I'm not a git person.)
+> Ingo,
 > 
-> I did a "git clone git://blah fix-includes" of the branch you gave a URL to, 
-> checked for tags and saw nothing particularly interesting, did a log -v and 
-> exported an archive of the most recent commit, and built it.
+> Please pull the latest tip/tracing/ftrace tree, which can be found at:
 > 
-> (Just tried it again with the same result.)
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/ftrace
 > 
-> What _should_ I have done?
+> 
+> Steven Rostedt (4):
+>       ring-buffer: add api to allow a tracer to change clock source
+>       tracing: add global-clock option to provide cross CPU clock to traces
+>       tracing: make sched_switch stop/start light weight
+>       tracing: make power tracer start/stop methods lighter weight
+> 
+> Witold Baryluk (1):
+>       tracing: optimization of branch tracer
+> 
+> ----
+>  include/linux/compiler.h          |    6 +--
+>  include/linux/ring_buffer.h       |    7 +++-
+>  kernel/trace/ring_buffer.c        |   65 +++++++++++++++++++++---------------
+>  kernel/trace/trace.c              |   55 +++++++++++++++++++++++++------
+>  kernel/trace/trace.h              |    1 +
+>  kernel/trace/trace_power.c        |    8 +++-
+>  kernel/trace/trace_sched_switch.c |    9 +++--
+>  7 files changed, 101 insertions(+), 50 deletions(-)
 
-The git clone you have done will just get the master branch,
-and put it in a directory named fix-includes.
+Pulled, thanks a lot Steve!
 
-Which is ok, but you still won't have the "fix-includes" branch.
-Do this after the clone:
-
-   git pull 
-git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git 
-fix-includes
-
-Regards
-Greg
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+	Ingo
