@@ -1,45 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759189AbZCRTFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbZCRTHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759189AbZCRTFv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 15:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbZCRTFm
+	id S1754957AbZCRTHj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 15:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbZCRTHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 15:05:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60388 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752542AbZCRTFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 15:05:42 -0400
-Subject: Re: [tip:tracing/ftrace] tracing: fix oops in
- tracepoint_update_probe_range()
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinderrajput@gmail.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090318185853.GA16286@elte.hu>
-References: <1237394936.3132.1.camel@localhost.localdomain>
-	 <tip-966a6fdf6210e3ac8ce00b61cd1107cdf97ce744@git.kernel.org>
-	 <1237398997.22438.10.camel@ht.satnam>  <20090318185853.GA16286@elte.hu>
-Content-Type: text/plain
-Date: Thu, 19 Mar 2009 00:34:28 +0530
-Message-Id: <1237403068.22438.19.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Mar 2009 15:07:30 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:54162 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753361AbZCRTH3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 15:07:29 -0400
+Message-ID: <49C14667.2040806@cosmosbay.com>
+Date: Wed, 18 Mar 2009 20:07:19 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Vernon Mauery <vernux@us.ibm.com>
+CC: netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>
+Subject: Re: High contention on the sk_buff_head.lock
+References: <49C12E64.1000301@us.ibm.com>
+In-Reply-To: <49C12E64.1000301@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 18 Mar 2009 20:07:20 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-18 at 19:58 +0100, Ingo Molnar wrote:
-> It might have worked but it was rather ugly: it took the 
-> tracepoints_mutex for no reason.
+Vernon Mauery a écrit :
+> I have been beating on network throughput in the -rt kernel for some time
+> now.  After digging down through the send path of UDP packets, I found
+> that the sk_buff_head.lock is under some very high contention.  This lock
+> is acquired each time a packet is enqueued on a qdisc and then acquired
+> again to dequeue the packet.  Under high networking loads, the enqueueing
+> processes are not only contending among each other for the lock, but also
+> with the net-tx soft irq.  This makes for some very high contention on this
+> one lock.  My testcase is running varying numbers of concurrent netperf
+> instances pushing UDP traffic to another machine.  As the count goes from
+> 1 to 2, the network performance increases.  But from 2 to 4 and from 4
+> to 8,
+> we see a big decline, with 8 instances pushing about half of what a single
+> thread can do.
 > 
-> The clean fix to skip zero-sized sections early in the function, 
-> without taking any lock, and without emitting a warning.
+> Running 2.6.29-rc6-rt3 on an 8-way machine with a 10GbE card (I have tried
+> both NetXen and Broadcom, with very similar results), I can only push about
+> 1200 Mb/s.  Whereas with the mainline 2.6.29-rc8 kernel, I can push nearly
+> 6000 Mb/s. But still not as much as I think is possible.  I was curious and
+> decided to see if the mainline kernel was hitting the same lock, and using
+> /proc/lock_stat, it is hitting the sk_buff_head.lock as well (it was the
+> number one contended lock).
+> 
+> So while this issue really hits -rt kernels hard, it has a real effect on
+> mainline kernels as well.  The contention of the spinlocks is amplified
+> when they get turned into rt-mutexes, which causes a double context switch.
+> 
+> Below is the top of the lock_stat for 2.6.29-rc8.  This was captured from
+> a 1 minute network stress test.  The next high contender had 2 orders of
+> magnitude fewer contentions.  Think of the throughput increase if we could
+> ease this contention a bit.  We might even be able to saturate a 10GbE
+> link.
+> 
+> lock_stat version 0.3
+> -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+> 
+>       class name    con-bounces    contentions   waittime-min  
+> waittime-max   waittime-total    acq-bounces   acquisitions  
+> holdtime-min  holdtime-max holdtime-total
+> -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+> 
+> 
+>    &list->lock#3:      24517307       24643791           0.71       
+> 1286.62      56516392.42       34834296       44904018          
+> 0.60        164.79    31314786.02
+>     -------------
+>    &list->lock#3       15596927    [<ffffffff812474da>]
+> dev_queue_xmit+0x2ea/0x468
+>    &list->lock#3        9046864    [<ffffffff812546e9>]
+> __qdisc_run+0x11b/0x1ef
+>     -------------
+>    &list->lock#3        6525300    [<ffffffff812546e9>]
+> __qdisc_run+0x11b/0x1ef
+>    &list->lock#3       18118491    [<ffffffff812474da>]
+> dev_queue_xmit+0x2ea/0x468
+> 
+> 
+> The story is the same for -rt kernels, only the waittime and holdtime
+> are both
+> orders of magnitude greater.
+> 
+> I am not exactly clear on the solution, but if I understand correctly,
+> in the
+> past there has been some discussion of batched enqueueing and
+> dequeueing.  Is
+> anyone else working on this problem right now who has just not yet posted
+> anything for review?  Questions, comments, flames?
 > 
 
-Yes, now it looks better, thanks :-)
+Yes we have a known contention point here, but before adding more complex code,
+could you try following patch please ?
 
---
-JSR
+[PATCH] net: Reorder fields of struct Qdisc
+
+dev_queue_xmit() needs to dirty fields "state" and "q"
+
+On x86_64 arch, they currently span two cache lines, involving more
+cache line ping pongs than necessary.
+
+Before patch :
+
+offsetof(struct Qdisc, state)=0x38
+offsetof(struct Qdisc, q)=0x48
+offsetof(struct Qdisc, dev_queue)=0x60
+
+After patch :
+
+offsetof(struct Qdisc, dev_queue)=0x38
+offsetof(struct Qdisc, state)=0x48
+offsetof(struct Qdisc, q)=0x50
+
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+
+diff --git a/include/net/sch_generic.h b/include/net/sch_generic.h
+index f8c4742..e24feeb 100644
+--- a/include/net/sch_generic.h
++++ b/include/net/sch_generic.h
+@@ -51,10 +51,11 @@ struct Qdisc
+ 	u32			handle;
+ 	u32			parent;
+ 	atomic_t		refcnt;
+-	unsigned long		state;
++	struct netdev_queue	*dev_queue;
++
+ 	struct sk_buff		*gso_skb;
++	unsigned long		state;
+ 	struct sk_buff_head	q;
+-	struct netdev_queue	*dev_queue;
+ 	struct Qdisc		*next_sched;
+ 	struct list_head	list;
+ 
+
 
