@@ -1,64 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758371AbZCROOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbZCROTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758371AbZCROOz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 10:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758129AbZCROOc
+	id S1757871AbZCROTH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 10:19:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756161AbZCROSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 10:14:32 -0400
-Received: from ns1.suse.de ([195.135.220.2]:45855 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758144AbZCROOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 10:14:31 -0400
-Date: Wed, 18 Mar 2009 15:14:29 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Bill Gribble <grib@billgribble.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: usbhid:  Changes since 2.6.28 in quirk handling?
-In-Reply-To: <1236947942.9606.26.camel@localhost>
-Message-ID: <alpine.LNX.2.00.0903181511010.12145@wotan.suse.de>
-References: <1236947942.9606.26.camel@localhost>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Wed, 18 Mar 2009 10:18:53 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:46582 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755233AbZCROSx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 10:18:53 -0400
+Date: Wed, 18 Mar 2009 10:15:26 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 24/27] Convert gfp_zone() to use a table of precalculated
+ values
+In-Reply-To: <20090318135222.GA4629@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0903181011210.7901@qirst.com>
+References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie> <1237226020-14057-25-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903161500280.20024@qirst.com> <20090318135222.GA4629@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 13 Mar 2009, Bill Gribble wrote:
+On Wed, 18 Mar 2009, Mel Gorman wrote:
 
-> Hi, I have been maintaining a patch for a quirky USB device built-in to 
-> a UMPC, the Raon Digital Everun.  Without the patch, the builtin 
-> keyboard, mouse, and touchscreen are useless.  I have never submitted it 
-> for inclusion in the kernel because there are less than 5 people who 
-> have ever even attempted to install Linux on this device, and it's 
-> discontinued.  However, *I* use the thing daily, and its wifi device 
-> (libertas) has continued to get better support in the recent kernels so 
-> I port the patch forward.
+> On Mon, Mar 16, 2009 at 03:12:50PM -0400, Christoph Lameter wrote:
+> > On Mon, 16 Mar 2009, Mel Gorman wrote:
+> >
+> > > +int gfp_zone_table[GFP_ZONEMASK] __read_mostly;
+> >
+> > The gfp_zone_table is compile time determinable. There is no need to
+> > calculate it.
+> >
+>
+> The cost of calculating it is negligible and the code is then freed later
+> in boot. Does having a const table make any difference?
 
-Hi Bill,
+Should it not enable the compiler to determine the value at
+compile time and therefore make things like gfp_zone(constant) a
+constant?
 
-we have drivers (and even whole architectures) supported by the kernel, 
-which have less than 5 users in the world, that's not a big deal.
+> > const int gfp_zone_table[GFP_ZONEMASK] = {
+> > 	ZONE_NORMAL,		/* 00 No flags set */
+> > 	ZONE_DMA,		/* 01 Only GFP_DMA set */
+> > 	ZONE_HIGHMEM,		/* 02 Only GFP_HIGHMEM set */
+> > 	ZONE_DMA,		/* 03 GFP_HIGHMEM and GFP_DMA set */
+> > 	ZONE_DMA32,		/* 04 Only GFP_DMA32 set */
+> > 	ZONE_DMA,		/* 05 GFP_DMA and GFP_DMA32 set */
+> > 	ZONE_DMA32,		/* 06 GFP_DMA32 and GFP_HIGHMEM set */
+> > 	ZONE_DMA,		/* 07 GFP_DMA, GFP_DMA32 and GFP_DMA32 set */
+> > 	ZONE_MOVABLE,		/* 08 Only ZONE_MOVABLE set */
+> > 	ZONE_DMA,		/* 09 MOVABLE + DMA */
+> > 	ZONE_MOVABLE,		/* 0A MOVABLE + HIGHMEM */
+> > 	ZONE_DMA,		/* 0B MOVABLE + DMA + HIGHMEM */
+> > 	ZONE_DMA32,		/* 0C MOVABLE + DMA32 */
+> > 	ZONE_DMA,		/* 0D MOVABLE + DMA + DMA32 */
+> > 	ZONE_DMA32,		/* 0E MOVABLE + DMA32 + HIGHMEM */
+> > 	ZONE_DMA		/* 0F MOVABLE + DMA32 + HIGHMEM + DMA
+> > };
+> >
+> > Hmmmm... Guess one would need to add some #ifdeffery here to setup
+> > ZONE_NORMAL in cases there is no DMA, DMA32 and HIGHMEM.
+> >
+>
+> Indeed, as I said, this is somewhat error prone which is why the patch
+> calculates the table at run-time instead of compile-time trickery.
 
-It makes 5 people happy, and saves you the pain from having to keep the 
-out-of-tree code working with the Linux kernel API changing all the time.
+One would need to define some macros to make it simpler I guess
 
-> I noticed that the structure of the quirk handling code has changed 
-> somewhat; I left my patch using the "old" way of adding an entry to 
-> hid_blacklist in hid-quirks.c.  Is there a document or email trail that 
-> describes the new way of structuring this quirk code?  Any pitfalls to 
-> look out for?
+Write something like
 
-Looking at your patch, the only thing you need is sending a special URB to 
-the device in order to make it operational, right?
+#ifdef CONFIG_ZONE_DMA
+#define TZONE_DMA ZONE_DMA
+#else
+#define TZONE_DMA ZONE_NORMAL
+#endif
 
-Please look at hid-sony driver, which does exactly that for some of the 
-PS3 devices.
-
-You then only need to add your device to hid_blacklist[], so that generic 
-driver doesn't get bound to it and it'd be driven by your special driver.
-
--- 
-Jiri Kosina
-SUSE Labs
+for each configurable item. Then just add the T to the above table.
