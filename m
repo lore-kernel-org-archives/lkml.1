@@ -1,184 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbZCRCY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757089AbZCRC0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757054AbZCRCY0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 22:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbZCRCYQ
+	id S1757089AbZCRC0Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 22:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbZCRC0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 22:24:16 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:33883 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754092AbZCRCYP (ORCPT
+	Tue, 17 Mar 2009 22:26:16 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:48956 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751567AbZCRC0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 22:24:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=NJWlVcgQ0IscwJ2RKSyKC5crqQ9Si33VlcqEx65XVmtAkI6uTZdsJwuIkfh0mlDQNZ
-         Z4FHrUIzaCaoIkawlhAGn9z5o+3jchGqj+/G8SEUubcRDmnO+GgDchDpU876/HbB2k8p
-         zhi04uuD6MKSvTZlfaw/kBUwTDCYpkA8MWkw4=
-Date: Wed, 18 Mar 2009 03:24:06 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Kevin Shanahan <kmshanah@ucwb.org.au>
-Cc: Avi Kivity <avi@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-Message-ID: <20090318022405.GA6030@nowhere>
-References: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera> <qm8_cedJGaP.A.-NH.CPCvJB@chimera> <1237107837.27699.27.camel@kulgan.wumi.org.au> <49BE20B2.9070804@redhat.com> <1237207595.4964.31.camel@kulgan.wumi.org.au> <20090316200736.GD8393@nowhere> <1237244137.4964.54.camel@kulgan.wumi.org.au> <20090318001955.GB5143@nowhere> <1237338986.4801.11.camel@kulgan.wumi.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237338986.4801.11.camel@kulgan.wumi.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 17 Mar 2009 22:26:14 -0400
+Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator -
+ hang traced
+From: john stultz <johnstul@us.ibm.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200903121805.48041.elendil@planet.nl>
+References: <200903080230.10099.elendil@planet.nl>
+	 <1236817822.7680.148.camel@localhost.localdomain>
+	 <1236818863.7680.156.camel@localhost.localdomain>
+	 <200903121805.48041.elendil@planet.nl>
+Content-Type: text/plain
+Date: Tue, 17 Mar 2009 19:26:10 -0700
+Message-Id: <1237343170.6160.131.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 18, 2009 at 11:46:26AM +1030, Kevin Shanahan wrote:
-> On Wed, 2009-03-18 at 01:20 +0100, Frederic Weisbecker wrote:
-> > On Tue, Mar 17, 2009 at 09:25:37AM +1030, Kevin Shanahan wrote:
-> > > On Mon, 2009-03-16 at 21:07 +0100, Frederic Weisbecker wrote:
-> > > > I've looked a bit at your traces.
-> > > > I think it's probably too wide to find something inside.
-> > > > Latest -tip is provided with a new set of events tracing, meaning
-> > > > that you will be able to produce function graph traces with various
-> > > > sched events included.
-> > > > 
-> > > > Another thing, is it possible to reproduce it with only one ping?
-> > > > Or testing perioding pings and keep only one that raised a relevant
-> > > > threshold of latency? I think we could do a script that can do that.
-> > > > It would make the trace much clearer.
-> > > 
-> > > Yeah, I think that should be possible. If you can come up with such a
-> > > script, that would be great.
-> > 
-> > Ok, I've made a small script based on yours which could do this job.
-> > You will just have to set yourself a threshold of latency
-> > that you consider as buggy. I don't remember the latency you observed.
-> > About 5 secs right?
-> > 
-> > It's the "thres" variable in the script.
-> > 
-> > The resulting trace should be a mixup of the function graph traces
-> > and scheduler events which look like this:
-> > 
-> >  gnome-screensav-4691  [000]  6716.774277:   4691:120:S ==> [000]     0:140:R <idle>
-> >   xfce4-terminal-4723  [001]  6716.774303:   4723:120:R   + [001]  4289:120:S Xorg
-> >   xfce4-terminal-4723  [001]  6716.774417:   4723:120:S ==> [001]  4289:120:R Xorg
-> >             Xorg-4289  [001]  6716.774427:   4289:120:S ==> [001]     0:140:R <idle>
-> > 
-> > + is a wakeup and ==> is a context switch.
-> > 
-> > 
-> > The script will loop trying some pings and will only keep the trace that matches
-> > the latency threshold you defined.
-> > 
-> > Tell if the following script work for you.
-> 
-> Yes, this looks like it will work as intended.
-> 
-> One thing I was thinking about though - would we need to look for a
-> trace that consists of a fast ping followed by a slow ping? If we only
-> keep the trace data from when we experience the slow ping, the guest
-> will have already "stalled" before the trace started, so the trace won't
-> indicate any of the information about how we got into that state. Is
-> that information going to be important, or is it enough to just see what
-> it does to get out of the stalled state?
-
-
-I don't know :-)
-I fear the only thing we would see by looking at a fast ping trace
-is the kvm going to sleep at the end. I guess the hot black box
-here is likely: what happens when we try to wake up kvm and why it is
-taking so long.
-
-May be by looking at a slow ping trace, we could follow the flow once
-the kvm is supposed to be awaken. At this stage, we can perhaps
-follow both the scheduler and kvm activities. Hopefully after that
-we can reduce more the trace, by filtering some specific areas.
-
-It will likely end up with some ftrace_printk() (putting specific
-trace messages in defined locations)...
-
-
- 
-> Either way, I'll try to get some results in my maintenance window
-> tonight.
->
-> Cheers,
-> Kevin.
-> 
-> > You will need to pull the latest -tip tree and enable the following:
-> > 
-> > CONFIG_FUNCTION_TRACER=y
-> > CONFIG_FUNCTION_GRAPH_TRACER=y
-> > CONFIG_DYNAMIC_FTRACE=y
-> > CONFIG_SCHED_TRACER=y
-> > CONFIG_CONTEXT_SWITCH_TRACER=y
-> > CONFIG_EVENT_TRACER=y
-> > 
-> > Thanks!
-> > 
-> > Ah and you will need python too (since bash can't do floating point
-> > operation, it uses python here).
-> > 
-> > #!/bin/bash
-> > 
-> > # Switch off all CPUs except for one to simplify the trace
-> > echo 0 > /sys/devices/system/cpu/cpu1/online
-> > echo 0 > /sys/devices/system/cpu/cpu2/online
-> > echo 0 > /sys/devices/system/cpu/cpu3/online
-> > 
-> > 
-> > # Make sure debugfs has been mounted
-> > if [ ! -d /sys/kernel/debug/tracing ]; then
-> >     mount -t debugfs debugfs /sys/kernel/debug
-> > fi
-> > 
-> > # Set up the trace parameters
-> > pushd /sys/kernel/debug/tracing || exit 1
-> > echo 0 > tracing_enabled
-> > echo function_graph > current_tracer
-> > echo funcgraph-abstime > trace_options
-> > echo funcgraph-proc    > trace_options
-> > 
-> > # Set here the kvm IP addr
-> > addr=""
-> > 
-> > # Set here a threshold of latency in sec
-> > thres="5"
-> > found="False"
-> > lat=0
-> > prefix=/sys/kernel/debug/tracing
-> > 
-> > echo 1 > $prefix/events/sched/sched_wakeup/enable
-> > echo 1 > $prefix/events/sched/sched_switch/enable
-> > 
-> > while [ "$found" != "True" ]
-> > do
-> > 	# Flush the previous buffer
-> > 	echo nop > $prefix/current_tracer
-> > 
-> > 	# Reset the function_graph tracer
-> > 	echo function_graph > $prefix/current_tracer
-> > 
-> > 	echo 1 > $prefix/tracing_enabled
-> > 	lat=$(ping -c 1 $addr | grep rtt | grep -Eo " [0-9]+.[0-9]+")
-> > 	echo 0 > $prefix/tracing_enabled
-> > 
-> > 	found=$(python -c "print float(str($lat).strip()) > $thres")
-> > 	sleep 0.01
-> > done
-> > 
-> > echo 0 > $prefix/events/sched/sched_wakeup/enable
-> > echo 0 > $prefix/events/sched/sched_switch/enable
-> > 
-> > 
-> > echo "Found buggy latency: $lat"
-> > echo "Please send the trace you will find on $prefix/trace"
+On Thu, 2009-03-12 at 18:05 +0100, Frans Pop wrote:
+> Some other observations:
+> * when the hang occurs we're definitely still using jiffies
+> * the hang is not in the clock accumulation loop (see below)
+> * changing the TIMERINT value does *not* make any difference, I tried a
+>   few different values (incl. the default 50 and 300)
+> * changing the nr of emulated CPUs from 2 to 1 makes no difference
 > 
 > 
+> I have now been able to trace the hang (full log attached). Where I added
+> tracing printks should be fairly obvious, and see attachment.
+> No idea what to make of the result.
+> 
+>      0.150337! init: calling smp_prepare_cpus
+>      0.183775! CPUs: 2 configured, 0 standby
+>      0.183947! s390_smp: smp_detect_cpus calling get_online_cpus
+>      0.184162! s390_smp: smp_detect_cpus calling __smp_rescan_cpus
+>      0.184381! s390_smp: smp_rescan_cpus_sigp starting loop
+> [!!! Hang is here !!!]
+> 
+> [... With 5cd1c9c5 and 6c9bacb4 reverted, the boot continues as follows ...]
+> [... Next two messages are from Hercules ...]
+> CPU0000: SIGP Set prefix (0D) CPU0001, PARM 0FEC5000: CC 0
+> CPU0000: SIGP Restart (06) CPU0001, PARM 00000000: CC 0
+> [... Time of previous message is similar for failed and good boot ...]
+>      0.525049! s390_smp: smp_rescan_cpus_sigp loop done
+>      0.525310! s390_smp: smp_detect_cpus calling put_online_cpus
+>      0.525555! s390_smp: smp_detect_cpus done
+>      0.526037! cpu 0 phys_idx=0 vers=00 ident=002623 machine=3090 unused=0000
+>      0.526408! s390_smp: start loop smp_create_idle
+>      0.531784! s390_smp: loop smp_create_idle done
+> 
+> The problem loop is in smp_rescan_cpus_sigp() from arch/s390/kernel/smp.c.
+> 
+> I tried adding printks inside the loop, but that resulted in the boot
+> also failing with the two patches reverted!
+> So it looks like that loop is somehow very sensitive to timing issues.
+> Note the relatively long delay between the start and end of the loop.
+
+Hey Frans,
+	So I'm looking at the code and I think I've got an idea of what's going
+on. Its a little messy and long winded, but stick with me :)
+
+So, right now, I believe the timekeeping or clock steering code is
+working properly as designed.
+
+I too saw the code lock up in smp_rescan_cpus, but could find no reason
+for it to block there. I do notice that interrupts seem to be working,
+so I put a dump_stack() in update_wall_time() every few jiffies and I'd
+get the exact same dump every time:
+
+4.642524! ( <0000000000015d68>! show_trace+0x4c/0x88)                      
+4.642885!   <0000000000059d4e>! update_wall_time+0x19e/0x778               
+4.643281!   <000000000004541a>! do_timer+0x36/0xe8                         
+4.643627!   <000000000005d67e>! tick_periodic+0x7a/0xf8                    
+4.643977!   <000000000005d786>! tick_handle_periodic+0x8a/0xe8             
+4.644350!   <0000000000019868>! clock_comparator_work+0x34/0x54            
+4.644742!   <000000000001d368>! do_extint+0x60/0x104                       
+4.645109!   <00000000000238ea>! ext_no_vtime+0x12/0x16                     
+4.645480!   <0000000000024b52>! cpu_known+0x52/0x180                       
+4.645845! ( <0000000000000000>! 0x0)                                       
+4.646139!   <000000000032a466>! smp_prepare_cpus+0x172/0x4bc               
+4.646523!   <0000000000320166>! kernel_init+0x52/0x364                     
+4.646903!   <000000000001aae2>! kernel_thread_starter+0x6/0xc              
+4.647288!   <000000000001aadc>! kernel_thread_starter+0x0/0xc   
+
+
+So I added a printk in update_wall_time(), and a printk in
+tick_handle_periodic(). For a short time, the two messages would
+alternate, but then only update_wall_time is printed out.
+
+So we're stuck in interrupt context. 
+
+Somehow we're falling behind so that that the loop in
+tick_handle_periodic() can't catch up and we just process interrupts
+over and over.
+
+In my testing, this isn't really specific to the recent rounding change,
+however the rounding change made the issue crop up fast enough that it
+could be seen, whereas before the issue wouldn't crop up before the tod
+clock was installed. If you boot w/ clocksource=jiffies, you'll probably
+see the hang with your working kernels as well, only at a later point
+(it would be helpful if you would verify that and let me know).
+
+
+So why does this happen here, but not w/ HZ != 250, or NOHZ?
+
+Well, from my initial diagnosis, with HZ=250 we some severe error
+correction initially. We don't see this with HZ=100 or HZ=1000, and
+while we see some initial error correction w/ HZ=300, its not as severe.
+
+So, with NOHZ, the desired accumulation interval is half a second. So w/
+HZ=100 that's 50 jiffies, HZ=1000 its 500, HZ=300 is 150 and with HZ=250
+it should be 125 jiffies.
+
+However, its being calculated out as 124 jiffies. do_div() seems to be
+giving a slightly off answer.
+
+This causes quite a bit of interval error (seen as tick length error in
+the code, but w/ NOHZ enabled, tick isn't quite the right word).
+Interval error is the difference between how long a the interval should
+be and the resulting clocksource interval. So an interval should be
+500ms, but since we calculated out 124 jiffies per interval, we see an
+4ms error per interval. This causes the jiffies clocksource freq to be
+increased to correct for the error, which causes the clock to speed up
+by 1/125. 
+
+The net effect is that for each jiffy we are increasing time by more
+then one jiffy.
+
+Now, back to tick_handle_periodic(). Each interrupt, we call
+tick_handle_periodic() to trigger a tick.  Each tick we increase jiffies
+by one. However, if we're in oneshot mode(NOHZ) we also check the time
+to see if we should "catch up", in effect, on ticks that we might have
+slept through.
+
+Now, maybe you can see the circularity here? :)
+
+Jiffies is incremented each tick, and time is derived from jiffies.
+However, we're using time to decide if we should trigger an extra tick.
+This tick will in turn increase jiffies. Since the jiffies clocksource
+is being sped up, we increment time by more then a tick. So then when we
+check the time again, we're behind! Fire another tick! And on we go...
+
+
+So two issues that I've found so far:
+1) do_div() isn't dividing correctly in this case. Not sure why.
+
+2) We *really* shouldn't be using oneshot mode while the jiffies
+clocksource is in use. I believe x86 avoids this specifically, so I'm
+not sure why s390 isn't doing the same. Still have to investigate.
+
+
+So yea, *finally* a bit of progress here. Hopefully I can sort out a
+patch shortly.
+
+thanks
+-john
+
+
+
+
+
+
+
+
+
 
