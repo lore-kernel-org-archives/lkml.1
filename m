@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbZCRP2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbZCRPaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755395AbZCRP2U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 11:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbZCRP2K
+	id S1755708AbZCRPaS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 11:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbZCRPaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 11:28:10 -0400
-Received: from ag-out-0708.google.com ([72.14.246.249]:22808 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752322AbZCRP2J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 11:28:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=gEITVrh5NiO2S5s/MTae9PTmiyfPxId/+8F0cudbwVgNg9fxl7n95mm6mqvVbjacOP
-         FsojthvQc+iSxt6LgXjVq+cxFgVt3/mTeNWu0743w2475pvSfP7rhZCm28AkRBD8Jj56
-         +eG+t4cDFcksiCfeShaMu3aBqmufC6QusYS88=
+	Wed, 18 Mar 2009 11:30:04 -0400
+Received: from kroah.org ([198.145.64.141]:50220 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752088AbZCRPaD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 11:30:03 -0400
+Date: Wed, 18 Mar 2009 08:27:15 -0700
+From: Greg KH <greg@kroah.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, davem@davemloft.net
+Subject: Re: Next March 18: [staging/net ??] build break
+Message-ID: <20090318152715.GB8655@kroah.com>
+References: <20090318173830.7ea03dfb.sfr@canb.auug.org.au> <49C0D3BF.8060908@in.ibm.com>
 MIME-Version: 1.0
-Date: Wed, 18 Mar 2009 10:28:06 -0500
-Message-ID: <cfe5f7850903180828k60f844c0l475e328649607e3c@mail.gmail.com>
-Subject: MMC: driver fails to recognize insert-remove SD card after data 
-	transfer error 84
-From: Ishaq Khan <ishaq.groups@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C0D3BF.8060908@in.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Mar 18, 2009 at 04:28:07PM +0530, Sachin Sant wrote:
+> Today's Next randconfig build fails with
+>
+> drivers/staging/built-in.o: In function .ieee80211_xmit:
+> (.text+0x69460): multiple definition of .ieee80211_xmit
+> drivers/net/built-in.o:(.text+0x2557e0): first defined here
+> ld: Warning: size of symbol .ieee80211_xmit changed from 3688 in 
+> drivers/net/built-in.o to 2880 in drivers/staging/built-in.o
+> drivers/staging/built-in.o: In function ieee80211_xmit:
+> (.opd+0x2ff0): multiple definition of ieee80211_xmit
+> drivers/net/built-in.o:(.opd+0xe980): first defined here
+> make[1]: *** [drivers/built-in.o] Error 1
 
-Montavista kernel 2.6.21 on omap2430
+Known issue, don't build all the staging wireless drivers into the
+kernel tree, you will get conflicting symbols like this.
 
-I have been trying to fix a problem in the MMC driver on OMAP2430.
-After rapid insert and remove SD card operation, I see the following
-error message (caused due to data timeout). After this happens the
-driver no longer detects insertions/removals..
+People are working on this, but it's much lower priority as it isn't a
+real use case.
 
-[ 1013.320000] mmcblk2: error -84 transferring data, sector 7961, nr
-8, card status 0x900
+thanks,
 
-followed by bunch of I/O errors
-
-[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7961
-[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7962
-[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7963
-[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7964
-[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7965
-[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7966
-[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7967
-[ 1013.330000] end_request: I/O error, dev mmcblk2, sector 7968
-
-I have tried a number of patches that floating around but do no good
-to fix this problem. Would appreciate if someone could share their
-views regarding this problem.
-
-Thanks
-
-Ishaq
+greg k-h
