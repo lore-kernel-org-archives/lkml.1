@@ -1,139 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbZCRMv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbZCRMyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758132AbZCRMv0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 08:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757616AbZCRMt1
+	id S1756201AbZCRMyp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 08:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbZCRMyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 08:49:27 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:49609 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757588AbZCRMtZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 08:49:25 -0400
-Message-Id: <20090318124846.376656469@de.ibm.com>
-References: <20090318124829.637003183@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 18 Mar 2009 13:48:35 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 6/6] make page table upgrade work again
-Content-Disposition: inline; filename=006-large-map.diff
+	Wed, 18 Mar 2009 08:54:36 -0400
+Received: from norkia.v3.sk ([92.240.234.41]:55009 "EHLO norkia.v3.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750966AbZCRMyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 08:54:36 -0400
+Message-ID: <36697.89.102.207.186.1237380871.squirrel@mail.v3.sk>
+In-Reply-To: <20090318120458.GA1601@elte.hu>
+References: <1237223130-26519-1-git-send-email-joerg.roedel@amd.com>
+    <20090317120112.GP6159@amd.com> <20090318093847.GC5879@elte.hu>
+    <20090318115615.GS6159@amd.com> <20090318120458.GA1601@elte.hu>
+Date: Wed, 18 Mar 2009 08:54:31 -0400 (EDT)
+Subject: Re: e1000e 0000:00:19.0: DMA-API: device driver tries to free DMA 
+     memory it has not allocated [device address=0x0000000052ff084a] 
+     [size=90 bytes]
+From: "Lubomir Rintel" <lkundrak@v3.sk>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Joerg Roedel" <joerg.roedel@amd.com>, netdev@vger.kernel.org,
+       jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
+       bruce.w.allan@intel.com, peter.p.waskiewicz.jr@intel.com,
+       john.ronciak@intel.com, e1000-devel@lists.sourceforge.net,
+       "Ingo Molnar" <mingo@redhat.com>, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Reply-To: lkundrak@v3.sk
+User-Agent: SquirrelMail/1.4.8-5.el5_2.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+On Wed, March 18, 2009 8:04 am, Ingo Molnar wrote:
+>
+> ( e1000e Cc:s added. A new debug feature, CONFIG_DMA_API_DEBUG=y,
+>   has triggered the warning below in e1000_put_txbuf(). )
 
-After TASK_SIZE now gives the current size of the address space the
-upgrade of a 64 bit process from 3 to 4 levels of page table  needs
-to use the arch_mmap_check hook to catch large mmap lengths. The
-get_unmapped_area* functions need to check for -ENOMEM from the
-arch_get_unmapped_area*, upgrade the page table and retry.
-
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- arch/s390/include/asm/mman.h |    5 ++++
- arch/s390/mm/mmap.c          |   44 +++++++++++++++++++++++++++++--------------
- 2 files changed, 35 insertions(+), 14 deletions(-)
-
-Index: quilt-2.6/arch/s390/include/asm/mman.h
-===================================================================
---- quilt-2.6.orig/arch/s390/include/asm/mman.h
-+++ quilt-2.6/arch/s390/include/asm/mman.h
-@@ -22,4 +22,9 @@
- #define MCL_CURRENT	1		/* lock all current mappings */
- #define MCL_FUTURE	2		/* lock all future mappings */
- 
-+#if defined(__KERNEL__) && !defined(__ASSEMBLY__) && defined(CONFIG_64BIT)
-+int s390_mmap_check(unsigned long addr, unsigned long len);
-+#define arch_mmap_check(addr,len,flags)	s390_mmap_check(addr,len)
-+#endif
-+
- #endif /* __S390_MMAN_H__ */
-Index: quilt-2.6/arch/s390/mm/mmap.c
-===================================================================
---- quilt-2.6.orig/arch/s390/mm/mmap.c
-+++ quilt-2.6/arch/s390/mm/mmap.c
-@@ -89,42 +89,58 @@ EXPORT_SYMBOL_GPL(arch_pick_mmap_layout)
- 
- #else
- 
-+int s390_mmap_check(unsigned long addr, unsigned long len)
-+{
-+	if (!test_thread_flag(TIF_31BIT) &&
-+	    len >= TASK_SIZE && TASK_SIZE < (1UL << 53))
-+		return crst_table_upgrade(current->mm, 1UL << 53);
-+	return 0;
-+}
-+
- static unsigned long
- s390_get_unmapped_area(struct file *filp, unsigned long addr,
- 		unsigned long len, unsigned long pgoff, unsigned long flags)
- {
- 	struct mm_struct *mm = current->mm;
-+	unsigned long area;
- 	int rc;
- 
--	addr = arch_get_unmapped_area(filp, addr, len, pgoff, flags);
--	if (addr & ~PAGE_MASK)
--		return addr;
--	if (unlikely(mm->context.asce_limit < addr + len)) {
--		rc = crst_table_upgrade(mm, addr + len);
-+	area = arch_get_unmapped_area(filp, addr, len, pgoff, flags);
-+	if (!(area & ~PAGE_MASK))
-+		return area;
-+	if (area == -ENOMEM &&
-+	    !test_thread_flag(TIF_31BIT) && TASK_SIZE < (1UL << 53)) {
-+		/* Upgrade the page table to 4 levels and retry. */
-+		rc = crst_table_upgrade(mm, 1UL << 53);
- 		if (rc)
- 			return (unsigned long) rc;
-+		area = arch_get_unmapped_area(filp, addr, len, pgoff, flags);
- 	}
--	return addr;
-+	return area;
- }
- 
- static unsigned long
--s390_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
-+s390_get_unmapped_area_topdown(struct file *filp, const unsigned long addr,
- 			  const unsigned long len, const unsigned long pgoff,
- 			  const unsigned long flags)
- {
- 	struct mm_struct *mm = current->mm;
--	unsigned long addr = addr0;
-+	unsigned long area;
- 	int rc;
- 
--	addr = arch_get_unmapped_area_topdown(filp, addr, len, pgoff, flags);
--	if (addr & ~PAGE_MASK)
--		return addr;
--	if (unlikely(mm->context.asce_limit < addr + len)) {
--		rc = crst_table_upgrade(mm, addr + len);
-+	area = arch_get_unmapped_area_topdown(filp, addr, len, pgoff, flags);
-+	if (!(area & ~PAGE_MASK))
-+		return area;
-+	if (area == -ENOMEM &&
-+	    !test_thread_flag(TIF_31BIT) && TASK_SIZE < (1UL << 53)) {
-+		/* Upgrade the page table to 4 levels and retry. */
-+		rc = crst_table_upgrade(mm, 1UL << 53);
- 		if (rc)
- 			return (unsigned long) rc;
-+		area = arch_get_unmapped_area_topdown(filp, addr, len,
-+						      pgoff, flags);
- 	}
--	return addr;
-+	return area;
- }
- /*
-  * This function, called very early during the creation of a new
+http://lkml.org/lkml/2009/3/2/318
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Lubomir Rintel
 
