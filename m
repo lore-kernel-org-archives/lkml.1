@@ -1,115 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbZCRM7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbZCRM7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbZCRM7L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 08:59:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756254AbZCRM6z
+	id S1758164AbZCRM7b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 08:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbZCRM7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 08:58:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58516 "EHLO hera.kernel.org"
+	Wed, 18 Mar 2009 08:59:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58521 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756217AbZCRM6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 08:58:54 -0400
-Date: Wed, 18 Mar 2009 12:58:01 GMT
+	id S1758040AbZCRM7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 08:59:00 -0400
+Date: Wed, 18 Mar 2009 12:57:36 GMT
 From: Rusty Russell <rusty@rustcorp.com.au>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rusty@rustcorp.com.au, pq@iki.fi, tglx@linutronix.de, mingo@elte.hu
+       peter.oruba@amd.com, rusty@rustcorp.com.au, akpm@linux-foundation.org,
+       dmitry.adamushko@gmail.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, pq@iki.fi, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <200903111633.55952.rusty@rustcorp.com.au>
-References: <200903111633.55952.rusty@rustcorp.com.au>
-Subject: [tip:cpus4096] x86: cpumask: x86 mmio-mod.c use cpumask_var_t for downed_cpus
-Message-ID: <tip-c38da5692e3a4d5d303c04cbf7e526f1eb761076@git.kernel.org>
-Git-Commit-ID: c38da5692e3a4d5d303c04cbf7e526f1eb761076
+       peter.oruba@amd.com, akpm@linux-foundation.org, rusty@rustcorp.com.au,
+       dmitry.adamushko@gmail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <200903111632.37279.rusty@rustcorp.com.au>
+References: <200903111632.37279.rusty@rustcorp.com.au>
+Subject: [tip:cpus4096] x86: cpumask: use work_on_cpu in arch/x86/kernel/microcode_core.c
+Message-ID: <tip-af5c820a3169e81af869c113e18ec7588836cd50@git.kernel.org>
+Git-Commit-ID: af5c820a3169e81af869c113e18ec7588836cd50
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 18 Mar 2009 12:58:03 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 18 Mar 2009 12:57:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c38da5692e3a4d5d303c04cbf7e526f1eb761076
-Gitweb:     http://git.kernel.org/tip/c38da5692e3a4d5d303c04cbf7e526f1eb761076
+Commit-ID:  af5c820a3169e81af869c113e18ec7588836cd50
+Gitweb:     http://git.kernel.org/tip/af5c820a3169e81af869c113e18ec7588836cd50
 Author:     Rusty Russell <rusty@rustcorp.com.au>
-AuthorDate: Wed, 11 Mar 2009 16:33:55 +1030
+AuthorDate: Wed, 11 Mar 2009 16:32:36 +1030
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 18 Mar 2009 13:51:51 +0100
+CommitDate: Wed, 18 Mar 2009 13:50:47 +0100
 
-x86: cpumask: x86 mmio-mod.c use cpumask_var_t for downed_cpus
+x86: cpumask: use work_on_cpu in arch/x86/kernel/microcode_core.c
 
-Impact: cleanup, reduce memory usage for CONFIG_CPUMASK_OFFSTACK=y
+Impact: don't play with current's cpumask
 
-Part of the "getting rid of obsolete cpumask_t" patch:
-
- 1) Use cpumask_var_t: this is a pointer if CONFIG_CPUMASK_OFFSTACK=y
- 2) Call alloc_cpumask_var() on first entry into enter_uniprocessor()
- 3) Use modern cpumask_* functions.
+Straightforward indirection through work_on_cpu().  One change is
+that the error code from microcode_update_cpu() is now actually
+plumbed back to microcode_init_cpu(), so now we printk if it fails
+on cpu hotplug.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Pekka Paalanen <pq@iki.fi>
-LKML-Reference: <200903111633.55952.rusty@rustcorp.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Peter Oruba <peter.oruba@amd.com>
+LKML-Reference: <200903111632.37279.rusty@rustcorp.com.au>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/mm/mmio-mod.c |   19 +++++++++++++------
- 1 files changed, 13 insertions(+), 6 deletions(-)
+ arch/x86/kernel/microcode_core.c |  106 ++++++++++++++++++++++----------------
+ 1 files changed, 61 insertions(+), 45 deletions(-)
 
-diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
-index 2c4baa8..c9342ed 100644
---- a/arch/x86/mm/mmio-mod.c
-+++ b/arch/x86/mm/mmio-mod.c
-@@ -378,27 +378,34 @@ static void clear_trace_list(void)
+diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
+index c9b721b..9a8dbc0 100644
+--- a/arch/x86/kernel/microcode_core.c
++++ b/arch/x86/kernel/microcode_core.c
+@@ -108,29 +108,40 @@ struct ucode_cpu_info ucode_cpu_info[NR_CPUS];
+ EXPORT_SYMBOL_GPL(ucode_cpu_info);
+ 
+ #ifdef CONFIG_MICROCODE_OLD_INTERFACE
++struct update_for_cpu {
++	const void __user *buf;
++	size_t size;
++};
++
++static long update_for_cpu(void *_ufc)
++{
++	struct update_for_cpu *ufc = _ufc;
++	int error;
++
++	error = microcode_ops->request_microcode_user(smp_processor_id(),
++						      ufc->buf, ufc->size);
++	if (error < 0)
++		return error;
++	if (!error)
++		microcode_ops->apply_microcode(smp_processor_id());
++	return error;
++}
++
+ static int do_microcode_update(const void __user *buf, size_t size)
+ {
+-	cpumask_t old;
+ 	int error = 0;
+ 	int cpu;
+-
+-	old = current->cpus_allowed;
++	struct update_for_cpu ufc = { .buf = buf, .size = size };
+ 
+ 	for_each_online_cpu(cpu) {
+ 		struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+ 
+ 		if (!uci->valid)
+ 			continue;
+-
+-		set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-		error = microcode_ops->request_microcode_user(cpu, buf, size);
++		error = work_on_cpu(cpu, update_for_cpu, &ufc);
+ 		if (error < 0)
+-			goto out;
+-		if (!error)
+-			microcode_ops->apply_microcode(cpu);
++			break;
+ 	}
+-out:
+-	set_cpus_allowed_ptr(current, &old);
+ 	return error;
  }
  
- #ifdef CONFIG_HOTPLUG_CPU
--static cpumask_t downed_cpus;
-+static cpumask_var_t downed_cpus;
+@@ -205,11 +216,26 @@ MODULE_ALIAS_MISCDEV(MICROCODE_MINOR);
+ /* fake device for request_firmware */
+ static struct platform_device *microcode_pdev;
  
- static void enter_uniprocessor(void)
- {
- 	int cpu;
- 	int err;
- 
-+	if (downed_cpus == NULL &&
-+	    !alloc_cpumask_var(&downed_cpus, GFP_KERNEL)) {
-+		pr_notice(NAME "Failed to allocate mask\n");
-+		goto out;
-+	}
++static long reload_for_cpu(void *unused)
++{
++	struct ucode_cpu_info *uci = ucode_cpu_info + smp_processor_id();
++	int err = 0;
 +
- 	get_online_cpus();
--	downed_cpus = cpu_online_map;
--	cpu_clear(first_cpu(cpu_online_map), downed_cpus);
-+	cpumask_copy(downed_cpus, cpu_online_mask);
-+	cpumask_clear_cpu(cpumask_first(cpu_online_mask), downed_cpus);
- 	if (num_online_cpus() > 1)
- 		pr_notice(NAME "Disabling non-boot CPUs...\n");
- 	put_online_cpus();
- 
--	for_each_cpu_mask(cpu, downed_cpus) {
-+	for_each_cpu(cpu, downed_cpus) {
- 		err = cpu_down(cpu);
- 		if (!err)
- 			pr_info(NAME "CPU%d is down.\n", cpu);
- 		else
- 			pr_err(NAME "Error taking CPU%d down: %d\n", cpu, err);
++	mutex_lock(&microcode_mutex);
++	if (uci->valid) {
++		err = microcode_ops->request_microcode_fw(smp_processor_id(),
++							  &microcode_pdev->dev);
++		if (!err)
++			microcode_ops->apply_microcode(smp_processor_id());
++	}
++	mutex_unlock(&microcode_mutex);
++	return err;
++}
++
+ static ssize_t reload_store(struct sys_device *dev,
+ 			    struct sysdev_attribute *attr,
+ 			    const char *buf, size_t sz)
+ {
+-	struct ucode_cpu_info *uci = ucode_cpu_info + dev->id;
+ 	char *end;
+ 	unsigned long val = simple_strtoul(buf, &end, 0);
+ 	int err = 0;
+@@ -218,21 +244,9 @@ static ssize_t reload_store(struct sys_device *dev,
+ 	if (end == buf)
+ 		return -EINVAL;
+ 	if (val == 1) {
+-		cpumask_t old = current->cpus_allowed;
+-
+ 		get_online_cpus();
+-		if (cpu_online(cpu)) {
+-			set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-			mutex_lock(&microcode_mutex);
+-			if (uci->valid) {
+-				err = microcode_ops->request_microcode_fw(cpu,
+-						&microcode_pdev->dev);
+-				if (!err)
+-					microcode_ops->apply_microcode(cpu);
+-			}
+-			mutex_unlock(&microcode_mutex);
+-			set_cpus_allowed_ptr(current, &old);
+-		}
++		if (cpu_online(cpu))
++			err = work_on_cpu(cpu, reload_for_cpu, NULL);
+ 		put_online_cpus();
  	}
-+out:
- 	if (num_online_cpus() > 1)
- 		pr_warning(NAME "multiple CPUs still online, "
- 						"may miss events.\n");
-@@ -411,10 +418,10 @@ static void __ref leave_uniprocessor(void)
- 	int cpu;
- 	int err;
+ 	if (err)
+@@ -328,9 +342,9 @@ static int microcode_resume_cpu(int cpu)
+ 	return 0;
+ }
  
--	if (cpus_weight(downed_cpus) == 0)
-+	if (downed_cpus == NULL || cpumask_weight(downed_cpus) == 0)
- 		return;
- 	pr_notice(NAME "Re-enabling CPUs...\n");
--	for_each_cpu_mask(cpu, downed_cpus) {
-+	for_each_cpu(cpu, downed_cpus) {
- 		err = cpu_up(cpu);
- 		if (!err)
- 			pr_info(NAME "enabled CPU%d.\n", cpu);
+-static void microcode_update_cpu(int cpu)
++static long microcode_update_cpu(void *unused)
+ {
+-	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
++	struct ucode_cpu_info *uci = ucode_cpu_info + smp_processor_id();
+ 	int err = 0;
+ 
+ 	/*
+@@ -338,30 +352,27 @@ static void microcode_update_cpu(int cpu)
+ 	 * otherwise just request a firmware:
+ 	 */
+ 	if (uci->valid) {
+-		err = microcode_resume_cpu(cpu);
++		err = microcode_resume_cpu(smp_processor_id());
+ 	} else {	
+-		collect_cpu_info(cpu);
++		collect_cpu_info(smp_processor_id());
+ 		if (uci->valid && system_state == SYSTEM_RUNNING)
+-			err = microcode_ops->request_microcode_fw(cpu,
++			err = microcode_ops->request_microcode_fw(
++					smp_processor_id(),
+ 					&microcode_pdev->dev);
+ 	}
+ 	if (!err)
+-		microcode_ops->apply_microcode(cpu);
++		microcode_ops->apply_microcode(smp_processor_id());
++	return err;
+ }
+ 
+-static void microcode_init_cpu(int cpu)
++static int microcode_init_cpu(int cpu)
+ {
+-	cpumask_t old = current->cpus_allowed;
+-
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-	/* We should bind the task to the CPU */
+-	BUG_ON(raw_smp_processor_id() != cpu);
+-
++	int err;
+ 	mutex_lock(&microcode_mutex);
+-	microcode_update_cpu(cpu);
++	err = work_on_cpu(cpu, microcode_update_cpu, NULL);
+ 	mutex_unlock(&microcode_mutex);
+ 
+-	set_cpus_allowed_ptr(current, &old);
++	return err;
+ }
+ 
+ static int mc_sysdev_add(struct sys_device *sys_dev)
+@@ -379,8 +390,11 @@ static int mc_sysdev_add(struct sys_device *sys_dev)
+ 	if (err)
+ 		return err;
+ 
+-	microcode_init_cpu(cpu);
+-	return 0;
++	err = microcode_init_cpu(cpu);
++	if (err)
++		sysfs_remove_group(&sys_dev->kobj, &mc_attr_group);
++
++	return err;
+ }
+ 
+ static int mc_sysdev_remove(struct sys_device *sys_dev)
+@@ -404,7 +418,7 @@ static int mc_sysdev_resume(struct sys_device *dev)
+ 		return 0;
+ 
+ 	/* only CPU 0 will apply ucode here */
+-	microcode_update_cpu(0);
++	microcode_update_cpu(NULL);
+ 	return 0;
+ }
+ 
+@@ -424,7 +438,9 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
+ 	switch (action) {
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+-		microcode_init_cpu(cpu);
++		if (microcode_init_cpu(cpu))
++			printk(KERN_ERR "microcode: failed to init CPU%d\n",
++			       cpu);
+ 	case CPU_DOWN_FAILED:
+ 	case CPU_DOWN_FAILED_FROZEN:
+ 		pr_debug("microcode: CPU%d added\n", cpu);
