@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbZCRRk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758245AbZCRRlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759281AbZCRRk0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 13:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZCRRkM
+	id S1758245AbZCRRlm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 13:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZCRRlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 13:40:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34123 "EHLO hera.kernel.org"
+	Wed, 18 Mar 2009 13:41:31 -0400
+Received: from mga14.intel.com ([143.182.124.37]:26881 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752614AbZCRRkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 13:40:11 -0400
-Subject: Re: [tip:tracing/ftrace] tracing: fix oops in
- tracepoint_update_probe_range()
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinderrajput@gmail.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-In-Reply-To: <tip-7d1832698e6e422cc2cf0d80b9c50ca567e758a3@git.kernel.org>
-References: <1237394936.3132.1.camel@localhost.localdomain>
-	 <tip-7d1832698e6e422cc2cf0d80b9c50ca567e758a3@git.kernel.org>
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 23:08:21 +0530
-Message-Id: <1237397901.22438.4.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1752897AbZCRRla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 13:41:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,385,1233561600"; 
+   d="scan'208";a="121638481"
+Date: Wed, 18 Mar 2009 10:41:23 -0700 (Pacific Daylight Time)
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Lubomir Rintel <lkundrak@v3.sk>, Joerg Roedel <joerg.roedel@amd.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       Ingo Molnar <mingo@redhat.com>,
+       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: e1000e 0000:00:19.0: DMA-API: device driver tries to free DMA
+ memory it has not allocated [device address=0x0000000052ff084a]	[size=90
+ bytes]
+In-Reply-To: <20090318164731.GB31315@elte.hu>
+Message-ID: <alpine.WNT.2.00.0903181039100.5116@jbrandeb-desk1.amr.corp.intel.com>
+References: <1237223130-26519-1-git-send-email-joerg.roedel@amd.com> <20090317120112.GP6159@amd.com> <20090318093847.GC5879@elte.hu> <20090318115615.GS6159@amd.com> <20090318120458.GA1601@elte.hu> <36697.89.102.207.186.1237380871.squirrel@mail.v3.sk>
+ <20090318140949.GA20852@elte.hu> <F169D4F5E1F1974DBFAFABF47F60C10A1E8795AC@orsmsx507.amr.corp.intel.com> <20090318164731.GB31315@elte.hu>
+User-Agent: Alpine 2.00 (WNT 1167 2008-08-23)
+ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+X-X-Sender: amrjbrandeb@imapmail.glb.intel.com
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-18 at 17:33 +0000, Jaswinder Singh Rajput wrote:
-> Commit-ID:  7d1832698e6e422cc2cf0d80b9c50ca567e758a3
-> Gitweb:     http://git.kernel.org/tip/7d1832698e6e422cc2cf0d80b9c50ca567e758a3
-> Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-> AuthorDate: Wed, 18 Mar 2009 22:18:56 +0530
-> Commit:     Ingo Molnar <mingo@elte.hu>
-> CommitDate: Wed, 18 Mar 2009 18:30:43 +0100
+On Wed, 18 Mar 2009, Ingo Molnar wrote:
+> > >> http://lkml.org/lkml/2009/3/2/318
+> > 
+> > We are still looking for more testing from the general community of 
+> > this patch, in particular if any tx hangs are reported.  Thanks in 
+> > advance for any reports.--
 > 
-> tracing: fix oops in tracepoint_update_probe_range()
-> 
-> Change this crash:
-> 
->  BUG: unable to handle kernel NULL pointer dereference at (null)
->  IP: [<ffffffff8107d4de>] tracepoint_update_probe_range+0x1f/0x9b
->  PGD 13d5fb067 PUD 13d688067 PMD 0
->  Oops: 0000 [#1] SMP
-> 
-> To a more debuggable WARN_ONCE().
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> LKML-Reference: <1237394936.3132.1.camel@localhost.localdomain>
-> [ moved the check outside the lock and added a WARN_ON(). ]
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> ---
->  kernel/tracepoint.c |    9 +++++++--
->  1 files changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-> index 7960274..8bc1a06 100644
-> --- a/kernel/tracepoint.c
-> +++ b/kernel/tracepoint.c
-> @@ -272,12 +272,17 @@ static void disable_tracepoint(struct tracepoint *elem)
->   *
->   * Updates the probe callback corresponding to a range of tracepoints.
->   */
-> -void tracepoint_update_probe_range(struct tracepoint *begin,
-> -	struct tracepoint *end)
-> +void
-> +tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
->  {
->  	struct tracepoint *iter;
->  	struct tracepoint_entry *mark_entry;
->  
-> +	if (!iter) {
-> +		WARN_ON_ONCE(1);
-> +		goto out;
-> +	}
-> +
+> Yeah - already picked it up into tip:out-of-tree and it passed about 
+> a hundred bootup tests on various e1000e using systems already - 
+> with no problems whatsoever. Will let you know if anything breaks - 
+> e1000e has been rock solid for me in the .29 cycle.
 
-There is no out, it should be :
-
-+	if (!iter) {
-+		WARN_ON_ONCE(1);
-+		return;
-+	}
-+
-
-
+thanks! did you pull in both e1000 and e1000e fixes?  We also have a 
+similar fix in internal testing for igb.
