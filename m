@@ -1,74 +1,349 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbZCRGAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbZCRGCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528AbZCRGAA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 02:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZCRF7u
+	id S1754521AbZCRGCK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 02:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZCRGB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 01:59:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37386 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751172AbZCRF7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 01:59:49 -0400
-Date: Wed, 18 Mar 2009 06:59:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
+	Wed, 18 Mar 2009 02:01:57 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:52399 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752502AbZCRGBz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 02:01:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=YdDm6xndfdj/R/ULchae4aridzwWjw9H8UtjipdKu8dPEljNuQltA/M119MNFQ6+B9
+         khk9JDRQwo9ywL7UldN+wXxwB+1on+ij/vJ8od9NUU7HArO0LgeMwLSxOH/aHP/uIc3n
+         qKes7+RTMPsQnk5nxqLGNZMfkWJO48atkeAHQ=
+Subject: Re: [RFC][PATCH 2/4] tracing: add rb_event_discard() hack
+From: Tom Zanussi <tzanussi@gmail.com>
 To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
-Message-ID: <20090318055924.GA24627@elte.hu>
-References: <20090318031423.981603258@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090318031423.981603258@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <alpine.DEB.2.00.0903172220580.10610@gandalf.stny.rr.com>
+References: <1237271018.8033.150.camel@charm-linux>
+	 <alpine.DEB.2.00.0903172108160.10610@gandalf.stny.rr.com>
+	 <alpine.DEB.2.00.0903172220580.10610@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Wed, 18 Mar 2009 01:01:51 -0500
+Message-Id: <1237356111.7922.5.camel@charm-linux>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+On Tue, 2009-03-17 at 22:21 -0400, Steven Rostedt wrote:
+> Tom,
+> 
+> Here's an updated patch, could you see if this works for you?
+
+That seems to have done the trick - I did some quick testing and I'm not
+seeing the problems I was with my version.  Thanks!
+
+I'll be pounding on it some more when I update the other patches in the
+next iteration...
+
+Tom
 
 > 
-> Ingo,
+> Thanks,
 > 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
+> -- Steve
 > 
 > 
-> Steven Rostedt (4):
->       ring-buffer: add api to allow a tracer to change clock source
->       tracing: add global-clock option to provide cross CPU clock to traces
->       tracing: make sched_switch stop/start light weight
->       tracing: make power tracer start/stop methods lighter weight
+> From tzanussi@gmail.com Tue Mar 17 02:30:09 2009
+> Date: Tue, 17 Mar 2009 01:23:38 -0500
+> From: Tom Zanussi <tzanussi@gmail.com>
+> Subject: [RFC][PATCH 2/4] tracing: add rb_event_discard() hack
 > 
-> Witold Baryluk (1):
->       tracing: optimization of branch tracer
+> This patch overloads RINGBUF_TYPE_PADDING to provide a way to discard
+> events from the ring buffer, for the event-filtering mechanism
+> introduced in a subsequent patch.
 > 
-> ----
->  include/linux/compiler.h          |    6 +--
->  include/linux/ring_buffer.h       |    7 +++-
->  kernel/trace/ring_buffer.c        |   65 +++++++++++++++++++++---------------
->  kernel/trace/trace.c              |   55 +++++++++++++++++++++++++------
->  kernel/trace/trace.h              |    1 +
->  kernel/trace/trace_power.c        |    8 +++-
->  kernel/trace/trace_sched_switch.c |    9 +++--
->  7 files changed, 101 insertions(+), 50 deletions(-)
+> NOTE: this patch is a true hack and will likely either eventually crash
+> your machine or result in an endless loop of printed events.  But it
+> sometimes works, enough to show that the filtering apparently does what
+> it should.
+> 
+> I'm posting it only to solicit comments from any ringbuffer gurus who
+> might know know how to do it correctly, or more likely could suggest a
+> better approach.
+> 
+> [
+>  Modifications to fix timestamps and handle ring buffer peeking.
+>    - Steven Rostedt
+> ]
+> 
+> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> 
+> ---
+>  include/linux/ring_buffer.h |   11 +++-
+>  kernel/trace/ring_buffer.c  |  117 ++++++++++++++++++++++++++++++++++++--------
+>  2 files changed, 105 insertions(+), 23 deletions(-)
+> 
+> Index: linux-trace.git/include/linux/ring_buffer.h
+> ===================================================================
+> --- linux-trace.git.orig/include/linux/ring_buffer.h	2009-03-17 13:38:41.000000000 -0400
+> +++ linux-trace.git/include/linux/ring_buffer.h	2009-03-17 21:44:36.000000000 -0400
+> @@ -18,10 +18,13 @@ struct ring_buffer_event {
+>  /**
+>   * enum ring_buffer_type - internal ring buffer types
+>   *
+> - * @RINGBUF_TYPE_PADDING:	Left over page padding
+> - *				 array is ignored
+> - *				 size is variable depending on how much
+> + * @RINGBUF_TYPE_PADDING:	Left over page padding or discarded event
+> + *				 If time_delta is 0:
+> + *				  array is ignored
+> + *				  size is variable depending on how much
+>   *				  padding is needed
+> + *				 If time_delta is non zero:
+> + *				  everything else same as RINGBUF_TYPE_DATA
+>   *
+>   * @RINGBUF_TYPE_TIME_EXTEND:	Extend the time delta
+>   *				 array[0] = time delta (28 .. 59)
+> @@ -65,6 +68,8 @@ ring_buffer_event_time_delta(struct ring
+>  	return event->time_delta;
+>  }
+>  
+> +void ring_buffer_event_discard(struct ring_buffer_event *event);
+> +
+>  /*
+>   * size is in bytes for each per CPU buffer.
+>   */
+> Index: linux-trace.git/kernel/trace/ring_buffer.c
+> ===================================================================
+> --- linux-trace.git.orig/kernel/trace/ring_buffer.c	2009-03-17 13:49:03.000000000 -0400
+> +++ linux-trace.git/kernel/trace/ring_buffer.c	2009-03-17 22:10:23.000000000 -0400
+> @@ -189,16 +189,65 @@ enum {
+>  	RB_LEN_TIME_STAMP = 16,
+>  };
+>  
+> -/* inline for ring buffer fast paths */
+> +static inline int rb_null_event(struct ring_buffer_event *event)
+> +{
+> +	return event->type == RINGBUF_TYPE_PADDING && event->time_delta == 0;
+> +}
+> +
+> +static inline int rb_discarded_event(struct ring_buffer_event *event)
+> +{
+> +	return event->type == RINGBUF_TYPE_PADDING && event->time_delta;
+> +}
+> +
+> +static void rb_event_set_padding(struct ring_buffer_event *event)
+> +{
+> +	event->type = RINGBUF_TYPE_PADDING;
+> +	event->time_delta = 0;
+> +}
+> +
+> +/**
+> + * ring_buffer_event_discard - discard an event in the ring buffer
+> + * @buffer: the ring buffer
+> + * @event: the event to discard
+> + *
+> + * Sometimes a event that is in the ring buffer needs to be ignored.
+> + * This function lets the user discard an event in the ring buffer
+> + * and then that event will not be read later.
+> + *
+> + * Note, it is up to the user to be careful with this, and protect
+> + * against races. If the user discards an event that has been consumed
+> + * it is possible that it could corrupt the ring buffer.
+> + */
+> +void ring_buffer_event_discard(struct ring_buffer_event *event)
+> +{
+> +	event->type = RINGBUF_TYPE_PADDING;
+> +	/* time delta must be non zero */
+> +	if (!event->time_delta)
+> +		event->time_delta = 1;
+> +}
+> +
+>  static unsigned
+> -rb_event_length(struct ring_buffer_event *event)
+> +rb_event_data_length(struct ring_buffer_event *event)
+>  {
+>  	unsigned length;
+>  
+> +	if (event->len)
+> +		length = event->len * RB_ALIGNMENT;
+> +	else
+> +		length = event->array[0];
+> +	return length + RB_EVNT_HDR_SIZE;
+> +}
+> +
+> +/* inline for ring buffer fast paths */
+> +static unsigned
+> +rb_event_length(struct ring_buffer_event *event)
+> +{
+>  	switch (event->type) {
+>  	case RINGBUF_TYPE_PADDING:
+> -		/* undefined */
+> -		return -1;
+> +		if (rb_null_event(event))
+> +			/* undefined */
+> +			return -1;
+> +		return rb_event_data_length(event);
+>  
+>  	case RINGBUF_TYPE_TIME_EXTEND:
+>  		return RB_LEN_TIME_EXTEND;
+> @@ -207,11 +256,7 @@ rb_event_length(struct ring_buffer_event
+>  		return RB_LEN_TIME_STAMP;
+>  
+>  	case RINGBUF_TYPE_DATA:
+> -		if (event->len)
+> -			length = event->len * RB_ALIGNMENT;
+> -		else
+> -			length = event->array[0];
+> -		return length + RB_EVNT_HDR_SIZE;
+> +		return rb_event_data_length(event);
+>  	default:
+>  		BUG();
+>  	}
+> @@ -836,11 +881,6 @@ int ring_buffer_resize(struct ring_buffe
+>  }
+>  EXPORT_SYMBOL_GPL(ring_buffer_resize);
+>  
+> -static inline int rb_null_event(struct ring_buffer_event *event)
+> -{
+> -	return event->type == RINGBUF_TYPE_PADDING;
+> -}
+> -
+>  static inline void *
+>  __rb_data_page_index(struct buffer_data_page *bpage, unsigned index)
+>  {
+> @@ -1210,7 +1250,7 @@ __rb_reserve_next(struct ring_buffer_per
+>  		if (tail < BUF_PAGE_SIZE) {
+>  			/* Mark the rest of the page with padding */
+>  			event = __rb_page_index(tail_page, tail);
+> -			event->type = RINGBUF_TYPE_PADDING;
+> +			rb_event_set_padding(event);
+>  		}
+>  
+>  		if (tail <= BUF_PAGE_SIZE)
+> @@ -1960,7 +2000,7 @@ static void rb_advance_reader(struct rin
+>  
+>  	event = rb_reader_event(cpu_buffer);
+>  
+> -	if (event->type == RINGBUF_TYPE_DATA)
+> +	if (event->type == RINGBUF_TYPE_DATA || rb_discarded_event(event))
+>  		cpu_buffer->entries--;
+>  
+>  	rb_update_read_stamp(cpu_buffer, event);
+> @@ -2043,9 +2083,18 @@ rb_buffer_peek(struct ring_buffer *buffe
+>  
+>  	switch (event->type) {
+>  	case RINGBUF_TYPE_PADDING:
+> -		RB_WARN_ON(cpu_buffer, 1);
+> +		if (rb_null_event(event))
+> +			RB_WARN_ON(cpu_buffer, 1);
+> +		/*
+> +		 * Because the writer could be discarding every
+> +		 * event it creates (which would probably be bad)
+> +		 * if we were to go back to "again" then we may never
+> +		 * catch up, and will trigger the warn on, or lock
+> +		 * the box. Return the padding, and we will release
+> +		 * the current locks, and try again.
+> +		 */
+>  		rb_advance_reader(cpu_buffer);
+> -		return NULL;
+> +		return event;
+>  
+>  	case RINGBUF_TYPE_TIME_EXTEND:
+>  		/* Internal data, OK to advance */
+> @@ -2106,8 +2155,12 @@ rb_iter_peek(struct ring_buffer_iter *it
+>  
+>  	switch (event->type) {
+>  	case RINGBUF_TYPE_PADDING:
+> -		rb_inc_iter(iter);
+> -		goto again;
+> +		if (rb_null_event(event)) {
+> +			rb_inc_iter(iter);
+> +			goto again;
+> +		}
+> +		rb_advance_iter(iter);
+> +		return event;
+>  
+>  	case RINGBUF_TYPE_TIME_EXTEND:
+>  		/* Internal data, OK to advance */
+> @@ -2154,10 +2207,16 @@ ring_buffer_peek(struct ring_buffer *buf
+>  	if (!cpumask_test_cpu(cpu, buffer->cpumask))
+>  		return NULL;
+>  
+> + again:
+>  	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+>  	event = rb_buffer_peek(buffer, cpu, ts);
+>  	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+>  
+> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
+> +		cpu_relax();
+> +		goto again;
+> +	}
+> +
+>  	return event;
+>  }
+>  
+> @@ -2176,10 +2235,16 @@ ring_buffer_iter_peek(struct ring_buffer
+>  	struct ring_buffer_event *event;
+>  	unsigned long flags;
+>  
+> + again:
+>  	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+>  	event = rb_iter_peek(iter, ts);
+>  	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+>  
+> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
+> +		cpu_relax();
+> +		goto again;
+> +	}
+> +
+>  	return event;
+>  }
+>  
+> @@ -2198,6 +2263,7 @@ ring_buffer_consume(struct ring_buffer *
+>  	struct ring_buffer_event *event = NULL;
+>  	unsigned long flags;
+>  
+> + again:
+>  	/* might be called in atomic */
+>  	preempt_disable();
+>  
+> @@ -2219,6 +2285,11 @@ ring_buffer_consume(struct ring_buffer *
+>   out:
+>  	preempt_enable();
+>  
+> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
+> +		cpu_relax();
+> +		goto again;
+> +	}
+> +
+>  	return event;
+>  }
+>  EXPORT_SYMBOL_GPL(ring_buffer_consume);
+> @@ -2297,6 +2368,7 @@ ring_buffer_read(struct ring_buffer_iter
+>  	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
+>  	unsigned long flags;
+>  
+> + again:
+>  	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+>  	event = rb_iter_peek(iter, ts);
+>  	if (!event)
+> @@ -2306,6 +2378,11 @@ ring_buffer_read(struct ring_buffer_iter
+>   out:
+>  	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+>  
+> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
+> +		cpu_relax();
+> +		goto again;
+> +	}
+> +
+>  	return event;
+>  }
+>  EXPORT_SYMBOL_GPL(ring_buffer_read);
+> 
+> 
 
-Pulled, thanks a lot Steve!
-
-	Ingo
