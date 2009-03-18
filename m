@@ -1,100 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbZCREsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbZCRE71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464AbZCREsY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 00:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbZCREsN
+	id S1754204AbZCRE71 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 00:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZCRE7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 00:48:13 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:51965 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752483AbZCREsL (ORCPT
+	Wed, 18 Mar 2009 00:59:17 -0400
+Received: from mga06.intel.com ([134.134.136.21]:14049 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750782AbZCRE7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 00:48:11 -0400
-Date: Wed, 18 Mar 2009 10:18:01 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, balbir@linux.vnet.ibm.com,
-       Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
-	cpuacct_charge() safe when rcupreempt is used.
-Message-ID: <20090318044801.GC3960@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090317061754.GD3314@in.ibm.com> <49BF42FB.4030103@cn.fujitsu.com> <20090317073649.GH3314@in.ibm.com> <20090317131251.GU16897@balbir.in.ibm.com> <1237296361.7867.16.camel@twins> <20090317135938.GV16897@balbir.in.ibm.com> <1237298686.7867.17.camel@twins> <20090318032558.GB3960@in.ibm.com> <20090318125434.63d833e4.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 18 Mar 2009 00:59:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,382,1233561600"; 
+   d="scan'208";a="395395932"
+Message-ID: <49C07F96.2070306@linux.intel.com>
+Date: Tue, 17 Mar 2009 21:59:02 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090318125434.63d833e4.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+Subject: Re: linux-next - request_module_nowait() breaks iptables and iwl3945
+References: <3823.1237168684@turing-police.cc.vt.edu> <200903171627.58963.rusty@rustcorp.com.au> <39126.1237328835@turing-police.cc.vt.edu> <200903181442.16570.rusty@rustcorp.com.au>
+In-Reply-To: <200903181442.16570.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 18, 2009 at 12:54:34PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Wed, 18 Mar 2009 08:55:58 +0530
-> Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+Rusty Russell wrote:
+> On Wednesday 18 March 2009 08:57:15 Valdis.Kletnieks@vt.edu wrote:
+>> On Tue, 17 Mar 2009 16:27:58 +1030, Rusty Russell said:
+>>> On Monday 16 March 2009 12:28:04 Valdis.Kletnieks@vt.edu wrote:
+>>>> On recent linux-next, iptables and iwl3945 would fail to load
+>>> Please send .config; I can't reproduce this here.
+>> [root@turing-police ~]# /etc/init.d/iptables start
+>> iptables: Applying firewall rules: 
+>> iptables-restore v1.4.2: iptables-restore: unable to initialize table 'filter'
 > 
-> > On Tue, Mar 17, 2009 at 03:04:46PM +0100, Peter Zijlstra wrote:
-> > > On Tue, 2009-03-17 at 19:29 +0530, Balbir Singh wrote:
-> > > > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-03-17 14:26:01]:
-> > > > 
-> > > > > On Tue, 2009-03-17 at 18:42 +0530, Balbir Singh wrote:
-> > > > > 
-> > > > > > I'd like to get the patches in -tip and see the results, I would
-> > > > > > recommend using percpu_counter_sum() while reading the data as an
-> > > > > > enhancement to this patch. If user space does not overwhelm with a lot
-> > > > > > of reads, sum would work out better.
-> > > > > 
-> > > > > You trust userspace? I'd rather not.
-> > > > >
-> > > > 
-> > > > Fair enough.. A badly written application monitor can frequently read
-> > > > this data and cause horrible performance issues. On the other hand
-> > > > large number of CPUs can make the lag even worse. Is it time yet for
-> > > > percpu_counter batch numbers? I've tested this patch and the results
-> > > > were not badly off the mark. 
-> > > 
-> > > I'd rather err on the side of caution here, you might get some crazy
-> > > folks depending on it and then expecting us to maintain it.
-> > 
-> > So if we want to be cautious, we could use percpu_counter_sum() as
-> > Balbir suggested. That would address both the issues with percpu_counter
-> > that I pointed out earlier:
-> > 
-> > - Readers are serialized with writers and we get consistent/correct
-> >   values during reads.
-> > - Negates the effect of batching and reads would always get updated/current
-> >   values.
-> > 
-> 
-> Is this wrong ?
-> ==
-> -- CONFIG_32BIT
-> s64 static inline s64 percpu_counter_read_slow(struct percpu_counter *fbc)
-> {
->    s64 val;
-> retry:
->     val = fbc->counter;
->     smp_mb();
->     wait_spin_unlock(&fbc->lock);
->     if (fbc->counter < val) {
->             goto retry;
->     return val;
-> }
-> ==
+> OK, I think this might fix it.  It's already queued, but was labelled a mere
+> "cleanup".
 
-Looks ok to me, but will wait for experts' comments.
-
-However, I did a quick measurement of read times with percpu_counter_read()
-(no readside lock) and percpu_counter_sum() (readside lock) and I don't
-see a major slowdown with percpu_counter_sum().
-
-Time taken for 100 reads of cpuacct.stat with 1s delay b/n every read.
-percpu_counter_read() - 9845 us
-percpu_counter_sum() - 9974 us
-
-This is on a 8cpu system.
-
-Regards,
-Bharata.
+I wouldn't understand how it would fix it though;
+the code before my patch passes in a 1, and the code after my patch passes in a variable
+which has the value 1 as well.... using a symbolic name for it instead isn't going
+to impact the generated code afaics...
