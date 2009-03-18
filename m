@@ -1,32 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZCROK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbZCROLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbZCROK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 10:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbZCROKp
+	id S1757583AbZCROLk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 10:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbZCROLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 10:10:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52242 "EHLO mx2.mail.elte.hu"
+	Wed, 18 Mar 2009 10:11:30 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52711 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754535AbZCROKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 10:10:44 -0400
-Date: Wed, 18 Mar 2009 15:09:49 +0100
+	id S1754535AbZCROL3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 10:11:29 -0400
+Date: Wed, 18 Mar 2009 15:11:15 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Lubomir Rintel <lkundrak@v3.sk>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, netdev@vger.kernel.org,
-       jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
-       bruce.w.allan@intel.com, peter.p.waskiewicz.jr@intel.com,
-       john.ronciak@intel.com, e1000-devel@lists.sourceforge.net,
-       Ingo Molnar <mingo@redhat.com>, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: e1000e 0000:00:19.0: DMA-API: device driver tries to free DMA
-	memory it has not allocated [device address=0x0000000052ff084a]
-	[size=90 bytes]
-Message-ID: <20090318140949.GA20852@elte.hu>
-References: <1237223130-26519-1-git-send-email-joerg.roedel@amd.com> <20090317120112.GP6159@amd.com> <20090318093847.GC5879@elte.hu> <20090318115615.GS6159@amd.com> <20090318120458.GA1601@elte.hu> <36697.89.102.207.186.1237380871.squirrel@mail.v3.sk>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: mpparse cleanup
+Message-ID: <20090318141115.GA23034@elte.hu>
+References: <1237314836.3212.10.camel@localhost.localdomain> <1237380351.3042.0.camel@ht.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <36697.89.102.207.186.1237380871.squirrel@mail.v3.sk>
+In-Reply-To: <1237380351.3042.0.camel@ht.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,15 +34,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Lubomir Rintel <lkundrak@v3.sk> wrote:
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-> On Wed, March 18, 2009 8:04 am, Ingo Molnar wrote:
-> >
-> > ( e1000e Cc:s added. A new debug feature, CONFIG_DMA_API_DEBUG=y,
-> >   has triggered the warning below in e1000_put_txbuf(). )
+> On Wed, 2009-03-18 at 00:03 +0530, Jaswinder Singh Rajput wrote:
+> > The following changes since commit 0ca0f16fd17c5d880dd0abbe03595b0c7c5b3c95:
+> >   Ingo Molnar (1):
+> >         Merge branches 'x86/apic', 'x86/asm', 'x86/cleanups', 'x86/debug', 'x86/kconfig', 'x86/mm', 'x86/ptrace', 'x86/setup' and 'x86/urgent'; commit 'v2.6.29-rc8' into x86/core
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git x86/core
+> > 
+> > Jaswinder Singh Rajput (1):
+> >       x86: mpparse cleanup
+> > 
+> >  arch/x86/kernel/mpparse.c |  311 +++++++++++++++++++++------------------------
+> >  1 files changed, 146 insertions(+), 165 deletions(-)
+> > 
 > 
-> http://lkml.org/lkml/2009/3/2/318
+> Complete diff:
+> 
+> Subject: [PATCH] x86: mpparse cleanup
+> 
+> Impact: cleanup
+> 
+> - fix various style problems
+>   - fix header file issues
 
-Thanks.
+These are cleanups.
+
+> Introduced helper functions:
+> skip_entry, smp_reserve_bootmem, check_irq_src and check_slot
+
+These are functional modifications. (the object code changes)
 
 	Ingo
