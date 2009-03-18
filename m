@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbZCRIBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbZCRIFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753176AbZCRIBs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 04:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZCRIBi
+	id S1753566AbZCRIFz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 04:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbZCRIFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 04:01:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59201 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750782AbZCRIBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 04:01:37 -0400
+	Wed, 18 Mar 2009 04:05:39 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:55424 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751935AbZCRIFh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 04:05:37 -0400
+Date: Wed, 18 Mar 2009 13:35:39 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, balbir@linux.vnet.ibm.com,
+       Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
+	cpuacct_charge() safe when rcupreempt is used.
+Message-ID: <20090318080539.GD3960@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <49BF42FB.4030103@cn.fujitsu.com> <20090317073649.GH3314@in.ibm.com> <20090317131251.GU16897@balbir.in.ibm.com> <1237296361.7867.16.camel@twins> <20090317135938.GV16897@balbir.in.ibm.com> <1237298686.7867.17.camel@twins> <20090318032558.GB3960@in.ibm.com> <20090318125434.63d833e4.kamezawa.hiroyu@jp.fujitsu.com> <20090318044801.GC3960@in.ibm.com> <20090318160827.fa53cb9b.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Friesen <cfriesen@nortel.com>,
-       =?iso-8859-1?Q?G=E1bor?= Melis <mega@retes.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: SEGSEGV && uc_mcontext->ip (Was: Signal delivery order)
-In-Reply-To: Oleg Nesterov's message of  Tuesday, 17 March 2009 05:13:37 +0100 <20090317041337.GA29740@redhat.com>
-References: <200903141750.37238.mega@retes.hu>
-	<200903152306.53031.mega@retes.hu>
-	<20090316002833.GA17615@redhat.com>
-	<200903160934.03700.mega@retes.hu>
-	<20090316211316.GA6270@redhat.com>
-	<49BED93B.1090700@nortel.com>
-	<20090317041337.GA29740@redhat.com>
-X-Zippy-Says: I've got to get these SNACK CAKES to NEWARK by DAWN!!
-Message-Id: <20090318075901.4FA19FC3AB@magilla.sf.frob.com>
-Date: Wed, 18 Mar 2009 00:59:01 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20090318160827.fa53cb9b.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> First of all, perhaps I missed somethings and this is solvable without
-> kernel changes, but I can't see how.
+On Wed, Mar 18, 2009 at 04:08:27PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 18 Mar 2009 10:18:01 +0530
+> Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+> > Looks ok to me, but will wait for experts' comments.
+> > 
+> > However, I did a quick measurement of read times with percpu_counter_read()
+> > (no readside lock) and percpu_counter_sum() (readside lock) and I don't
+> > see a major slowdown with percpu_counter_sum().
+> > 
+> > Time taken for 100 reads of cpuacct.stat with 1s delay b/n every read.
+> > percpu_counter_read() - 9845 us
+> > percpu_counter_sum() - 9974 us
+> > 
+> Then, almost 1 us overhead per read().....Hmm, seems big (as counter).
 
-It depends what kind of "solved" you mean.
+Well some cost for correct and accurate counter :)
 
-Signals pending for the thread are always delivered before signals pending
-for the process.  POSIX does not guarantee this to the application, but it
-has always been so in Linux and it's fine enough to rely on that.  Truly
-externally-generated and asynchronous signals go to the process, so it's
-really only pthread_kill use within your own program that raises the issue.
+BTW, I did a few more iterations and I don't see consistent numbers.
+The results from 7 runs look like this:
 
-Among signals pending for the thread, signals < SIGRTMIN are always
-delivered before ones >= SIGRTMIN.  POSIX does not guarantee this to the
-application, but it has always been so in Linux and it's fine enough to
-rely on that.  The most sensible thing to use with pthread_kill is some
-SIGRTMIN+n signal anyway, since they are never confused with any other use.
-If your program is doing that, you don't have a problem.
+percpu_counter_read() - 11325, 11549, 5939, 9999, 7129, 7758, 11385 us
+percpu_counter_sum() - 8655, 9201, 8705, 11766, 10619, 9186, 8890 us 
 
-So on the one hand it seems pretty reasonable to say it's "solved" by
-accepting it when we say, "Welcome to Unix, these things should have
-stopped surprising you in the 1980s."  It's a strange pitfall of how
-everything fits together, granted.  But you do sort of have to make an
-effort to do things screwily before you can fall into it.
-
-All that said, it's actually probably a pretty easy hack to arrange that
-the signal posted by force_sig_info is the first one dequeued in all but
-the most utterly strange situations.
-
-
-Thanks,
-Roland
+Regards,
+Bharata.
