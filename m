@@ -1,514 +1,447 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758348AbZCRNAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbZCRM7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758348AbZCRNAB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 09:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757973AbZCRM7J
+	id S1756201AbZCRM7p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 08:59:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758040AbZCRM7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 08:59:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58555 "EHLO hera.kernel.org"
+	Wed, 18 Mar 2009 08:59:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58522 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757670AbZCRM7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 08:59:06 -0400
-Date: Wed, 18 Mar 2009 12:57:53 GMT
-From: Rusty Russell <rusty@rustcorp.com.au>
+	id S1757670AbZCRM7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 08:59:00 -0400
+Date: Wed, 18 Mar 2009 12:57:44 GMT
+From: Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akpm@linux-foundation.org, rusty@rustcorp.com.au, sfr@canb.auug.org.au,
-       tglx@linutronix.de, mingo@elte.hu
+       peter.oruba@amd.com, rusty@rustcorp.com.au, akpm@linux-foundation.org,
+       dmitry.adamushko@gmail.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, akpm@linux-foundation.org, tglx@linutronix.de,
-       sfr@canb.auug.org.au, mingo@elte.hu
-In-Reply-To: <200903111631.29787.rusty@rustcorp.com.au>
-References: <200903111631.29787.rusty@rustcorp.com.au>
-Subject: [tip:cpus4096] x86: cpumask: update 32-bit APM not to mug current->cpus_allowed
-Message-ID: <tip-89bd55d1855f8e9a4e9add8e93f3144d049c469e@git.kernel.org>
-Git-Commit-ID: 89bd55d1855f8e9a4e9add8e93f3144d049c469e
+       peter.oruba@amd.com, akpm@linux-foundation.org, rusty@rustcorp.com.au,
+       dmitry.adamushko@gmail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <200903111632.37279.rusty@rustcorp.com.au>
+References: <200903111632.37279.rusty@rustcorp.com.au>
+Subject: [tip:cpus4096] x86: microcode: cleanup
+Message-ID: <tip-4bae1967357bfc78a2fad1be5e81a4b868980ae6@git.kernel.org>
+Git-Commit-ID: 4bae1967357bfc78a2fad1be5e81a4b868980ae6
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 18 Mar 2009 12:57:55 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 18 Mar 2009 12:57:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  89bd55d1855f8e9a4e9add8e93f3144d049c469e
-Gitweb:     http://git.kernel.org/tip/89bd55d1855f8e9a4e9add8e93f3144d049c469e
-Author:     Rusty Russell <rusty@rustcorp.com.au>
-AuthorDate: Wed, 11 Mar 2009 16:31:29 +1030
+Commit-ID:  4bae1967357bfc78a2fad1be5e81a4b868980ae6
+Gitweb:     http://git.kernel.org/tip/4bae1967357bfc78a2fad1be5e81a4b868980ae6
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 11 Mar 2009 11:19:46 +0100
 Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 18 Mar 2009 13:51:45 +0100
+CommitDate: Wed, 18 Mar 2009 13:51:17 +0100
 
-x86: cpumask: update 32-bit APM not to mug current->cpus_allowed
+x86: microcode: cleanup
 
-Impact: cleanup, avoid cpumask games
+Impact: cleanup
 
-The APM code wants to run on CPU 0: we create an "on_cpu0" wrapper
-which uses work_on_cpu() if we're not already on cpu 0.
-
-This introduces a new failure mode: -ENOMEM, so we add an explicit
-err arg and handle Linux-style errnos in apm_err().
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-LKML-Reference: <200903111631.29787.rusty@rustcorp.com.au>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Peter Oruba <peter.oruba@amd.com>
+LKML-Reference: <200903111632.37279.rusty@rustcorp.com.au>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/apm_32.c |  248 +++++++++++++++++++++++++++-------------------
- 1 files changed, 145 insertions(+), 103 deletions(-)
+ arch/x86/kernel/microcode_amd.c   |   43 +++++++++----------
+ arch/x86/kernel/microcode_core.c  |   58 +++++++++++++-------------
+ arch/x86/kernel/microcode_intel.c |   83 +++++++++++++++++++++---------------
+ 3 files changed, 97 insertions(+), 87 deletions(-)
 
-diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
-index 10033fe..c1941be 100644
---- a/arch/x86/kernel/apm_32.c
-+++ b/arch/x86/kernel/apm_32.c
-@@ -466,7 +466,7 @@ static const lookup_t error_table[] = {
-  *	@err: APM BIOS return code
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index c25fdb3..453b579 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -12,31 +12,30 @@
   *
-  *	Write a meaningful log entry to the kernel log in the event of
-- *	an APM error.
-+ *	an APM error.  Note that this also handles (negative) kernel errors.
-  */
+  *  Licensed under the terms of the GNU General Public
+  *  License version 2. See file COPYING for details.
+-*/
+-
++ */
++#include <linux/platform_device.h>
+ #include <linux/capability.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/sched.h>
+-#include <linux/cpumask.h>
+-#include <linux/module.h>
+-#include <linux/slab.h>
+-#include <linux/vmalloc.h>
+ #include <linux/miscdevice.h>
++#include <linux/firmware.h>
+ #include <linux/spinlock.h>
+-#include <linux/mm.h>
+-#include <linux/fs.h>
++#include <linux/cpumask.h>
++#include <linux/pci_ids.h>
++#include <linux/uaccess.h>
++#include <linux/vmalloc.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/sched.h>
++#include <linux/init.h>
++#include <linux/slab.h>
+ #include <linux/cpu.h>
+-#include <linux/firmware.h>
+-#include <linux/platform_device.h>
+ #include <linux/pci.h>
+-#include <linux/pci_ids.h>
+-#include <linux/uaccess.h>
++#include <linux/fs.h>
++#include <linux/mm.h>
  
- static void apm_error(char *str, int err)
-@@ -478,43 +478,14 @@ static void apm_error(char *str, int err)
- 			break;
- 	if (i < ERROR_COUNT)
- 		printk(KERN_NOTICE "apm: %s: %s\n", str, error_table[i].msg);
-+	else if (err < 0)
-+		printk(KERN_NOTICE "apm: %s: linux error code %i\n", str, err);
- 	else
- 		printk(KERN_NOTICE "apm: %s: unknown error code %#2.2x\n",
- 		       str, err);
+-#include <asm/msr.h>
+-#include <asm/processor.h>
+ #include <asm/microcode.h>
++#include <asm/processor.h>
++#include <asm/msr.h>
+ 
+ MODULE_DESCRIPTION("AMD Microcode Update Driver");
+ MODULE_AUTHOR("Peter Oruba");
+@@ -72,8 +71,8 @@ struct microcode_header_amd {
+ } __attribute__((packed));
+ 
+ struct microcode_amd {
+-	struct microcode_header_amd hdr;
+-	unsigned int mpb[0];
++	struct microcode_header_amd	hdr;
++	unsigned int			mpb[0];
+ };
+ 
+ #define UCODE_MAX_SIZE			2048
+@@ -184,8 +183,8 @@ static int get_ucode_data(void *to, const u8 *from, size_t n)
+ 	return 0;
  }
  
- /*
-- * Lock APM functionality to physical CPU 0
-- */
+-static void *get_next_ucode(const u8 *buf, unsigned int size,
+-			    unsigned int *mc_size)
++static void *
++get_next_ucode(const u8 *buf, unsigned int size, unsigned int *mc_size)
+ {
+ 	unsigned int total_size;
+ 	u8 section_hdr[UCODE_CONTAINER_SECTION_HDR];
+@@ -223,7 +222,6 @@ static void *get_next_ucode(const u8 *buf, unsigned int size,
+ 	return mc;
+ }
+ 
 -
--#ifdef CONFIG_SMP
+ static int install_equiv_cpu_table(const u8 *buf)
+ {
+ 	u8 *container_hdr[UCODE_CONTAINER_HEADER_SIZE];
+@@ -372,4 +370,3 @@ struct microcode_ops * __init init_amd_microcode(void)
+ {
+ 	return &microcode_amd_ops;
+ }
 -
--static cpumask_t apm_save_cpus(void)
--{
--	cpumask_t x = current->cpus_allowed;
--	/* Some bioses don't like being called from CPU != 0 */
--	set_cpus_allowed(current, cpumask_of_cpu(0));
--	BUG_ON(smp_processor_id() != 0);
--	return x;
--}
--
--static inline void apm_restore_cpus(cpumask_t mask)
--{
--	set_cpus_allowed(current, mask);
--}
--
--#else
--
--/*
-- *	No CPU lockdown needed on a uniprocessor
-- */
--
--#define apm_save_cpus()		(current->cpus_allowed)
--#define apm_restore_cpus(x)	(void)(x)
--
--#endif
--
--/*
-  * These are the actual BIOS calls.  Depending on APM_ZERO_SEGS and
-  * apm_info.allow_ints, we are being really paranoid here!  Not only
-  * are interrupts disabled, but all the segment registers (except SS)
-@@ -568,16 +539,23 @@ static inline void apm_irq_restore(unsigned long flags)
- #	define APM_DO_RESTORE_SEGS
+diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
+index 9a8dbc0..a0f3851 100644
+--- a/arch/x86/kernel/microcode_core.c
++++ b/arch/x86/kernel/microcode_core.c
+@@ -70,47 +70,47 @@
+  *		Fix sigmatch() macro to handle old CPUs with pf == 0.
+  *		Thanks to Stuart Swales for pointing out this bug.
+  */
++#include <linux/platform_device.h>
+ #include <linux/capability.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/sched.h>
++#include <linux/miscdevice.h>
++#include <linux/firmware.h>
+ #include <linux/smp_lock.h>
++#include <linux/spinlock.h>
+ #include <linux/cpumask.h>
+-#include <linux/module.h>
+-#include <linux/slab.h>
++#include <linux/uaccess.h>
+ #include <linux/vmalloc.h>
+-#include <linux/miscdevice.h>
+-#include <linux/spinlock.h>
+-#include <linux/mm.h>
+-#include <linux/fs.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/sched.h>
++#include <linux/init.h>
++#include <linux/slab.h>
+ #include <linux/cpu.h>
+-#include <linux/firmware.h>
+-#include <linux/platform_device.h>
++#include <linux/fs.h>
++#include <linux/mm.h>
+ 
+-#include <asm/msr.h>
+-#include <asm/uaccess.h>
+-#include <asm/processor.h>
+ #include <asm/microcode.h>
++#include <asm/processor.h>
++#include <asm/msr.h>
+ 
+ MODULE_DESCRIPTION("Microcode Update Driver");
+ MODULE_AUTHOR("Tigran Aivazian <tigran@aivazian.fsnet.co.uk>");
+ MODULE_LICENSE("GPL");
+ 
+-#define MICROCODE_VERSION 	"2.00"
++#define MICROCODE_VERSION	"2.00"
+ 
+-static struct microcode_ops *microcode_ops;
++static struct microcode_ops	*microcode_ops;
+ 
+ /* no concurrent ->write()s are allowed on /dev/cpu/microcode */
+ static DEFINE_MUTEX(microcode_mutex);
+ 
+-struct ucode_cpu_info ucode_cpu_info[NR_CPUS];
++struct ucode_cpu_info		ucode_cpu_info[NR_CPUS];
+ EXPORT_SYMBOL_GPL(ucode_cpu_info);
+ 
+ #ifdef CONFIG_MICROCODE_OLD_INTERFACE
+ struct update_for_cpu {
+-	const void __user *buf;
+-	size_t size;
++	const void __user	*buf;
++	size_t			size;
+ };
+ 
+ static long update_for_cpu(void *_ufc)
+@@ -209,12 +209,12 @@ static void microcode_dev_exit(void)
+ 
+ MODULE_ALIAS_MISCDEV(MICROCODE_MINOR);
+ #else
+-#define microcode_dev_init() 0
+-#define microcode_dev_exit() do { } while (0)
++#define microcode_dev_init()	0
++#define microcode_dev_exit()	do { } while (0)
  #endif
  
-+struct apm_bios_call {
-+	u32 func;
-+	/* In and out */
-+	u32 ebx;
-+	u32 ecx;
-+	/* Out only */
-+	u32 eax;
-+	u32 edx;
-+	u32 esi;
-+
-+	/* Error: -ENOMEM, or bits 8-15 of eax */
-+	int err;
-+};
-+
- /**
-- *	apm_bios_call	-	Make an APM BIOS 32bit call
-- *	@func: APM function to execute
-- *	@ebx_in: EBX register for call entry
-- *	@ecx_in: ECX register for call entry
-- *	@eax: EAX register return
-- *	@ebx: EBX register return
-- *	@ecx: ECX register return
-- *	@edx: EDX register return
-- *	@esi: ESI register return
-+ *	__apm_bios_call - Make an APM BIOS 32bit call
-+ *	@_call: pointer to struct apm_bios_call.
-  *
-  *	Make an APM call using the 32bit protected mode interface. The
-  *	caller is responsible for knowing if APM BIOS is configured and
-@@ -586,80 +564,142 @@ static inline void apm_irq_restore(unsigned long flags)
-  *	flag is loaded into AL.  If there is an error, then the error
-  *	code is returned in AH (bits 8-15 of eax) and this function
-  *	returns non-zero.
-+ *
-+ *	Note: this makes the call on the current CPU.
-  */
--
--static u8 apm_bios_call(u32 func, u32 ebx_in, u32 ecx_in,
--	u32 *eax, u32 *ebx, u32 *ecx, u32 *edx, u32 *esi)
-+static long __apm_bios_call(void *_call)
+ /* fake device for request_firmware */
+-static struct platform_device *microcode_pdev;
++static struct platform_device	*microcode_pdev;
+ 
+ static long reload_for_cpu(void *unused)
  {
- 	APM_DECL_SEGS
- 	unsigned long		flags;
--	cpumask_t		cpus;
- 	int			cpu;
- 	struct desc_struct	save_desc_40;
- 	struct desc_struct	*gdt;
--
--	cpus = apm_save_cpus();
-+	struct apm_bios_call	*call = _call;
+@@ -282,8 +282,8 @@ static struct attribute *mc_default_attrs[] = {
+ };
  
- 	cpu = get_cpu();
-+	BUG_ON(cpu != 0);
- 	gdt = get_cpu_gdt_table(cpu);
- 	save_desc_40 = gdt[0x40 / 8];
- 	gdt[0x40 / 8] = bad_bios_desc;
+ static struct attribute_group mc_attr_group = {
+-	.attrs = mc_default_attrs,
+-	.name = "microcode",
++	.attrs		= mc_default_attrs,
++	.name		= "microcode",
+ };
  
- 	apm_irq_save(flags);
- 	APM_DO_SAVE_SEGS;
--	apm_bios_call_asm(func, ebx_in, ecx_in, eax, ebx, ecx, edx, esi);
-+	apm_bios_call_asm(call->func, call->ebx, call->ecx,
-+			  &call->eax, &call->ebx, &call->ecx, &call->edx,
-+			  &call->esi);
- 	APM_DO_RESTORE_SEGS;
- 	apm_irq_restore(flags);
- 	gdt[0x40 / 8] = save_desc_40;
- 	put_cpu();
--	apm_restore_cpus(cpus);
- 
--	return *eax & 0xff;
-+	return call->eax & 0xff;
-+}
-+
-+/* Run __apm_bios_call or __apm_bios_call_simple on CPU 0 */
-+static int on_cpu0(long (*fn)(void *), struct apm_bios_call *call)
-+{
-+	int ret;
-+
-+	/* Don't bother with work_on_cpu in the common case, so we don't
-+	 * have to worry about OOM or overhead. */
-+	if (get_cpu() == 0) {
-+		ret = fn(call);
-+		put_cpu();
-+	} else {
-+		put_cpu();
-+		ret = work_on_cpu(0, fn, call);
-+	}
-+
-+	/* work_on_cpu can fail with -ENOMEM */
-+	if (ret < 0)
-+		call->err = ret;
-+	else
-+		call->err = (call->eax >> 8) & 0xff;
-+
-+	return ret;
- }
- 
- /**
-- *	apm_bios_call_simple	-	make a simple APM BIOS 32bit call
-- *	@func: APM function to invoke
-- *	@ebx_in: EBX register value for BIOS call
-- *	@ecx_in: ECX register value for BIOS call
-- *	@eax: EAX register on return from the BIOS call
-+ *	apm_bios_call	-	Make an APM BIOS 32bit call (on CPU 0)
-+ *	@call: the apm_bios_call registers.
-+ *
-+ *	If there is an error, it is returned in @call.err.
-+ */
-+static int apm_bios_call(struct apm_bios_call *call)
-+{
-+	return on_cpu0(__apm_bios_call, call);
-+}
-+
-+/**
-+ *	__apm_bios_call_simple - Make an APM BIOS 32bit call (on CPU 0)
-+ *	@_call: pointer to struct apm_bios_call.
-  *
-  *	Make a BIOS call that returns one value only, or just status.
-  *	If there is an error, then the error code is returned in AH
-- *	(bits 8-15 of eax) and this function returns non-zero. This is
-- *	used for simpler BIOS operations. This call may hold interrupts
-- *	off for a long time on some laptops.
-+ *	(bits 8-15 of eax) and this function returns non-zero (it can
-+ *	also return -ENOMEM). This is used for simpler BIOS operations.
-+ *	This call may hold interrupts off for a long time on some laptops.
-+ *
-+ *	Note: this makes the call on the current CPU.
-  */
--
--static u8 apm_bios_call_simple(u32 func, u32 ebx_in, u32 ecx_in, u32 *eax)
-+static long __apm_bios_call_simple(void *_call)
- {
- 	u8			error;
- 	APM_DECL_SEGS
- 	unsigned long		flags;
--	cpumask_t		cpus;
- 	int			cpu;
- 	struct desc_struct	save_desc_40;
- 	struct desc_struct	*gdt;
--
--	cpus = apm_save_cpus();
-+	struct apm_bios_call	*call = _call;
- 
- 	cpu = get_cpu();
-+	BUG_ON(cpu != 0);
- 	gdt = get_cpu_gdt_table(cpu);
- 	save_desc_40 = gdt[0x40 / 8];
- 	gdt[0x40 / 8] = bad_bios_desc;
- 
- 	apm_irq_save(flags);
- 	APM_DO_SAVE_SEGS;
--	error = apm_bios_call_simple_asm(func, ebx_in, ecx_in, eax);
-+	error = apm_bios_call_simple_asm(call->func, call->ebx, call->ecx,
-+					 &call->eax);
- 	APM_DO_RESTORE_SEGS;
- 	apm_irq_restore(flags);
- 	gdt[0x40 / 8] = save_desc_40;
- 	put_cpu();
--	apm_restore_cpus(cpus);
- 	return error;
- }
- 
- /**
-+ *	apm_bios_call_simple	-	make a simple APM BIOS 32bit call
-+ *	@func: APM function to invoke
-+ *	@ebx_in: EBX register value for BIOS call
-+ *	@ecx_in: ECX register value for BIOS call
-+ *	@eax: EAX register on return from the BIOS call
-+ *	@err: bits
-+ *
-+ *	Make a BIOS call that returns one value only, or just status.
-+ *	If there is an error, then the error code is returned in @err
-+ *	and this function returns non-zero. This is used for simpler
-+ *	BIOS operations.  This call may hold interrupts off for a long
-+ *	time on some laptops.
-+ */
-+static int apm_bios_call_simple(u32 func, u32 ebx_in, u32 ecx_in, u32 *eax,
-+				int *err)
-+{
-+	struct apm_bios_call call;
-+	int ret;
-+
-+	call.func = func;
-+	call.ebx = ebx_in;
-+	call.ecx = ecx_in;
-+
-+	ret = on_cpu0(__apm_bios_call_simple, &call);
-+	*eax = call.eax;
-+	*err = call.err;
-+	return ret;
-+}
-+
-+/**
-  *	apm_driver_version	-	APM driver version
-  *	@val:	loaded with the APM version on return
-  *
-@@ -678,9 +718,10 @@ static u8 apm_bios_call_simple(u32 func, u32 ebx_in, u32 ecx_in, u32 *eax)
- static int apm_driver_version(u_short *val)
- {
- 	u32 eax;
-+	int err;
- 
--	if (apm_bios_call_simple(APM_FUNC_VERSION, 0, *val, &eax))
--		return (eax >> 8) & 0xff;
-+	if (apm_bios_call_simple(APM_FUNC_VERSION, 0, *val, &eax, &err))
-+		return err;
- 	*val = eax;
- 	return APM_SUCCESS;
- }
-@@ -701,22 +742,21 @@ static int apm_driver_version(u_short *val)
-  *	that APM 1.2 is in use. If no messges are pending the value 0x80
-  *	is returned (No power management events pending).
-  */
--
- static int apm_get_event(apm_event_t *event, apm_eventinfo_t *info)
- {
--	u32 eax;
--	u32 ebx;
--	u32 ecx;
--	u32 dummy;
-+	struct apm_bios_call call;
- 
--	if (apm_bios_call(APM_FUNC_GET_EVENT, 0, 0, &eax, &ebx, &ecx,
--			  &dummy, &dummy))
--		return (eax >> 8) & 0xff;
--	*event = ebx;
-+	call.func = APM_FUNC_GET_EVENT;
-+	call.ebx = call.ecx = 0;
-+
-+	if (apm_bios_call(&call))
-+		return call.err;
-+
-+	*event = call.ebx;
- 	if (apm_info.connection_version < 0x0102)
- 		*info = ~0; /* indicate info not valid */
- 	else
--		*info = ecx;
-+		*info = call.ecx;
- 	return APM_SUCCESS;
- }
- 
-@@ -737,9 +777,10 @@ static int apm_get_event(apm_event_t *event, apm_eventinfo_t *info)
- static int set_power_state(u_short what, u_short state)
- {
- 	u32 eax;
-+	int err;
- 
--	if (apm_bios_call_simple(APM_FUNC_SET_STATE, what, state, &eax))
--		return (eax >> 8) & 0xff;
-+	if (apm_bios_call_simple(APM_FUNC_SET_STATE, what, state, &eax, &err))
-+		return err;
- 	return APM_SUCCESS;
- }
- 
-@@ -770,6 +811,7 @@ static int apm_do_idle(void)
- 	u8 ret = 0;
- 	int idled = 0;
- 	int polling;
-+	int err;
- 
- 	polling = !!(current_thread_info()->status & TS_POLLING);
- 	if (polling) {
-@@ -782,7 +824,7 @@ static int apm_do_idle(void)
- 	}
- 	if (!need_resched()) {
- 		idled = 1;
--		ret = apm_bios_call_simple(APM_FUNC_IDLE, 0, 0, &eax);
-+		ret = apm_bios_call_simple(APM_FUNC_IDLE, 0, 0, &eax, &err);
- 	}
- 	if (polling)
- 		current_thread_info()->status |= TS_POLLING;
-@@ -797,8 +839,7 @@ static int apm_do_idle(void)
- 		 * Only report the failure the first 5 times.
- 		 */
- 		if (++t < 5) {
--			printk(KERN_DEBUG "apm_do_idle failed (%d)\n",
--			       (eax >> 8) & 0xff);
-+			printk(KERN_DEBUG "apm_do_idle failed (%d)\n", err);
- 			t = jiffies;
- 		}
- 		return -1;
-@@ -816,9 +857,10 @@ static int apm_do_idle(void)
- static void apm_do_busy(void)
- {
- 	u32 dummy;
-+	int err;
- 
- 	if (clock_slowed || ALWAYS_CALL_BUSY) {
--		(void)apm_bios_call_simple(APM_FUNC_BUSY, 0, 0, &dummy);
-+		(void)apm_bios_call_simple(APM_FUNC_BUSY, 0, 0, &dummy, &err);
- 		clock_slowed = 0;
- 	}
- }
-@@ -937,7 +979,7 @@ static void apm_power_off(void)
- 
- 	/* Some bioses don't like being called from CPU != 0 */
- 	if (apm_info.realmode_power_off) {
--		(void)apm_save_cpus();
-+		set_cpus_allowed_ptr(current, cpumask_of(0));
- 		machine_real_restart(po_bios_call, sizeof(po_bios_call));
- 	} else {
- 		(void)set_system_power_state(APM_STATE_OFF);
-@@ -956,12 +998,13 @@ static void apm_power_off(void)
- static int apm_enable_power_management(int enable)
- {
- 	u32 eax;
-+	int err;
- 
- 	if ((enable == 0) && (apm_info.bios.flags & APM_BIOS_DISENGAGED))
- 		return APM_NOT_ENGAGED;
- 	if (apm_bios_call_simple(APM_FUNC_ENABLE_PM, APM_DEVICE_BALL,
--				 enable, &eax))
--		return (eax >> 8) & 0xff;
-+				 enable, &eax, &err))
-+		return err;
- 	if (enable)
- 		apm_info.bios.flags &= ~APM_BIOS_DISABLED;
- 	else
-@@ -986,24 +1029,23 @@ static int apm_enable_power_management(int enable)
- 
- static int apm_get_power_status(u_short *status, u_short *bat, u_short *life)
- {
--	u32 eax;
--	u32 ebx;
--	u32 ecx;
--	u32 edx;
--	u32 dummy;
-+	struct apm_bios_call call;
-+
-+	call.func = APM_FUNC_GET_STATUS;
-+	call.ebx = APM_DEVICE_ALL;
-+	call.ecx = 0;
- 
- 	if (apm_info.get_power_status_broken)
- 		return APM_32_UNSUPPORTED;
--	if (apm_bios_call(APM_FUNC_GET_STATUS, APM_DEVICE_ALL, 0,
--			  &eax, &ebx, &ecx, &edx, &dummy))
--		return (eax >> 8) & 0xff;
--	*status = ebx;
--	*bat = ecx;
-+	if (apm_bios_call(&call))
-+		return call.err;
-+	*status = call.ebx;
-+	*bat = call.ecx;
- 	if (apm_info.get_power_status_swabinminutes) {
--		*life = swab16((u16)edx);
-+		*life = swab16((u16)call.edx);
- 		*life |= 0x8000;
- 	} else
--		*life = edx;
-+		*life = call.edx;
- 	return APM_SUCCESS;
- }
- 
-@@ -1048,12 +1090,14 @@ static int apm_get_battery_status(u_short which, u_short *status,
- static int apm_engage_power_management(u_short device, int enable)
- {
- 	u32 eax;
-+	int err;
- 
- 	if ((enable == 0) && (device == APM_DEVICE_ALL)
- 	    && (apm_info.bios.flags & APM_BIOS_DISABLED))
- 		return APM_DISABLED;
--	if (apm_bios_call_simple(APM_FUNC_ENGAGE_PM, device, enable, &eax))
--		return (eax >> 8) & 0xff;
-+	if (apm_bios_call_simple(APM_FUNC_ENGAGE_PM, device, enable,
-+				 &eax, &err))
-+		return err;
- 	if (device == APM_DEVICE_ALL) {
- 		if (enable)
- 			apm_info.bios.flags &= ~APM_BIOS_DISENGAGED;
-@@ -1682,16 +1726,14 @@ static int apm(void *unused)
- 	char 		*power_stat;
- 	char 		*bat_stat;
- 
--#ifdef CONFIG_SMP
- 	/* 2002/08/01 - WT
- 	 * This is to avoid random crashes at boot time during initialization
- 	 * on SMP systems in case of "apm=power-off" mode. Seen on ASUS A7M266D.
- 	 * Some bioses don't like being called from CPU != 0.
- 	 * Method suggested by Ingo Molnar.
+ static void __microcode_fini_cpu(int cpu)
+@@ -353,7 +353,7 @@ static long microcode_update_cpu(void *unused)
  	 */
--	set_cpus_allowed(current, cpumask_of_cpu(0));
-+	set_cpus_allowed_ptr(current, cpumask_of(0));
- 	BUG_ON(smp_processor_id() != 0);
--#endif
+ 	if (uci->valid) {
+ 		err = microcode_resume_cpu(smp_processor_id());
+-	} else {	
++	} else {
+ 		collect_cpu_info(smp_processor_id());
+ 		if (uci->valid && system_state == SYSTEM_RUNNING)
+ 			err = microcode_ops->request_microcode_fw(
+@@ -423,9 +423,9 @@ static int mc_sysdev_resume(struct sys_device *dev)
+ }
  
- 	if (apm_info.connection_version == 0) {
- 		apm_info.connection_version = apm_info.bios.version;
+ static struct sysdev_driver mc_sysdev_driver = {
+-	.add = mc_sysdev_add,
+-	.remove = mc_sysdev_remove,
+-	.resume = mc_sysdev_resume,
++	.add		= mc_sysdev_add,
++	.remove		= mc_sysdev_remove,
++	.resume		= mc_sysdev_resume,
+ };
+ 
+ static __cpuinit int
+@@ -464,7 +464,7 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
+ }
+ 
+ static struct notifier_block __refdata mc_cpu_notifier = {
+-	.notifier_call = mc_cpu_callback,
++	.notifier_call	= mc_cpu_callback,
+ };
+ 
+ static int __init microcode_init(void)
+diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
+index 5e9f4fc..149b9ec 100644
+--- a/arch/x86/kernel/microcode_intel.c
++++ b/arch/x86/kernel/microcode_intel.c
+@@ -70,28 +70,28 @@
+  *		Fix sigmatch() macro to handle old CPUs with pf == 0.
+  *		Thanks to Stuart Swales for pointing out this bug.
+  */
++#include <linux/platform_device.h>
+ #include <linux/capability.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/sched.h>
++#include <linux/miscdevice.h>
++#include <linux/firmware.h>
+ #include <linux/smp_lock.h>
++#include <linux/spinlock.h>
+ #include <linux/cpumask.h>
+-#include <linux/module.h>
+-#include <linux/slab.h>
++#include <linux/uaccess.h>
+ #include <linux/vmalloc.h>
+-#include <linux/miscdevice.h>
+-#include <linux/spinlock.h>
+-#include <linux/mm.h>
+-#include <linux/fs.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/sched.h>
++#include <linux/init.h>
++#include <linux/slab.h>
+ #include <linux/cpu.h>
+-#include <linux/firmware.h>
+-#include <linux/platform_device.h>
+-#include <linux/uaccess.h>
++#include <linux/fs.h>
++#include <linux/mm.h>
+ 
+-#include <asm/msr.h>
+-#include <asm/processor.h>
+ #include <asm/microcode.h>
++#include <asm/processor.h>
++#include <asm/msr.h>
+ 
+ MODULE_DESCRIPTION("Microcode Update Driver");
+ MODULE_AUTHOR("Tigran Aivazian <tigran@aivazian.fsnet.co.uk>");
+@@ -129,12 +129,13 @@ struct extended_sigtable {
+ 	struct extended_signature sigs[0];
+ };
+ 
+-#define DEFAULT_UCODE_DATASIZE 	(2000)
++#define DEFAULT_UCODE_DATASIZE	(2000)
+ #define MC_HEADER_SIZE		(sizeof(struct microcode_header_intel))
+ #define DEFAULT_UCODE_TOTALSIZE (DEFAULT_UCODE_DATASIZE + MC_HEADER_SIZE)
+ #define EXT_HEADER_SIZE		(sizeof(struct extended_sigtable))
+ #define EXT_SIGNATURE_SIZE	(sizeof(struct extended_signature))
+ #define DWSIZE			(sizeof(u32))
++
+ #define get_totalsize(mc) \
+ 	(((struct microcode_intel *)mc)->hdr.totalsize ? \
+ 	 ((struct microcode_intel *)mc)->hdr.totalsize : \
+@@ -197,30 +198,31 @@ static inline int update_match_cpu(struct cpu_signature *csig, int sig, int pf)
+ }
+ 
+ static inline int
+-update_match_revision(struct microcode_header_intel *mc_header,	int rev)
++update_match_revision(struct microcode_header_intel *mc_header, int rev)
+ {
+ 	return (mc_header->rev <= rev) ? 0 : 1;
+ }
+ 
+ static int microcode_sanity_check(void *mc)
+ {
++	unsigned long total_size, data_size, ext_table_size;
+ 	struct microcode_header_intel *mc_header = mc;
+ 	struct extended_sigtable *ext_header = NULL;
+-	struct extended_signature *ext_sig;
+-	unsigned long total_size, data_size, ext_table_size;
+ 	int sum, orig_sum, ext_sigcount = 0, i;
++	struct extended_signature *ext_sig;
+ 
+ 	total_size = get_totalsize(mc_header);
+ 	data_size = get_datasize(mc_header);
++
+ 	if (data_size + MC_HEADER_SIZE > total_size) {
+ 		printk(KERN_ERR "microcode: error! "
+-			"Bad data size in microcode data file\n");
++				"Bad data size in microcode data file\n");
+ 		return -EINVAL;
+ 	}
+ 
+ 	if (mc_header->ldrver != 1 || mc_header->hdrver != 1) {
+ 		printk(KERN_ERR "microcode: error! "
+-			"Unknown microcode update format\n");
++				"Unknown microcode update format\n");
+ 		return -EINVAL;
+ 	}
+ 	ext_table_size = total_size - (MC_HEADER_SIZE + data_size);
+@@ -318,11 +320,15 @@ get_matching_microcode(struct cpu_signature *cpu_sig, void *mc, int rev)
+ 
+ static void apply_microcode(int cpu)
+ {
++	struct microcode_intel *mc_intel;
++	struct ucode_cpu_info *uci;
+ 	unsigned long flags;
+ 	unsigned int val[2];
+-	int cpu_num = raw_smp_processor_id();
+-	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
+-	struct microcode_intel *mc_intel = uci->mc;
++	int cpu_num;
++
++	cpu_num = raw_smp_processor_id();
++	uci = ucode_cpu_info + cpu;
++	mc_intel = uci->mc;
+ 
+ 	/* We should bind the task to the CPU */
+ 	BUG_ON(cpu_num != cpu);
+@@ -348,15 +354,17 @@ static void apply_microcode(int cpu)
+ 	spin_unlock_irqrestore(&microcode_update_lock, flags);
+ 	if (val[1] != mc_intel->hdr.rev) {
+ 		printk(KERN_ERR "microcode: CPU%d update from revision "
+-			"0x%x to 0x%x failed\n", cpu_num, uci->cpu_sig.rev, val[1]);
++				"0x%x to 0x%x failed\n",
++			cpu_num, uci->cpu_sig.rev, val[1]);
+ 		return;
+ 	}
+ 	printk(KERN_INFO "microcode: CPU%d updated from revision "
+-	       "0x%x to 0x%x, date = %04x-%02x-%02x \n",
++			 "0x%x to 0x%x, date = %04x-%02x-%02x \n",
+ 		cpu_num, uci->cpu_sig.rev, val[1],
+ 		mc_intel->hdr.date & 0xffff,
+ 		mc_intel->hdr.date >> 24,
+ 		(mc_intel->hdr.date >> 16) & 0xff);
++
+ 	uci->cpu_sig.rev = val[1];
+ }
+ 
+@@ -404,18 +412,23 @@ static int generic_load_microcode(int cpu, void *data, size_t size,
+ 		leftover  -= mc_size;
+ 	}
+ 
+-	if (new_mc) {
+-		if (!leftover) {
+-			if (uci->mc)
+-				vfree(uci->mc);
+-			uci->mc = (struct microcode_intel *)new_mc;
+-			pr_debug("microcode: CPU%d found a matching microcode update with"
+-				 " version 0x%x (current=0x%x)\n",
+-				cpu, new_rev, uci->cpu_sig.rev);
+-		} else
+-			vfree(new_mc);
++	if (!new_mc)
++		goto out;
++
++	if (leftover) {
++		vfree(new_mc);
++		goto out;
+ 	}
+ 
++	if (uci->mc)
++		vfree(uci->mc);
++	uci->mc = (struct microcode_intel *)new_mc;
++
++	pr_debug("microcode: CPU%d found a matching microcode update with"
++		 " version 0x%x (current=0x%x)\n",
++			cpu, new_rev, uci->cpu_sig.rev);
++
++ out:
+ 	return (int)leftover;
+ }
+ 
