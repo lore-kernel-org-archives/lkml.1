@@ -1,165 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbZCRBQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbZCRBRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755270AbZCRBQs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 21:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbZCRBQh
+	id S1756089AbZCRBRv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 21:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZCRBRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 21:16:37 -0400
-Received: from bowden.ucwb.org.au ([203.122.237.119]:45080 "EHLO
-	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755312AbZCRBQg (ORCPT
+	Tue, 17 Mar 2009 21:17:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58081 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751992AbZCRBRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 21:16:36 -0400
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-From: Kevin Shanahan <kmshanah@ucwb.org.au>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20090318001955.GB5143@nowhere>
-References: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera>
-	 <qm8_cedJGaP.A.-NH.CPCvJB@chimera>
-	 <1237107837.27699.27.camel@kulgan.wumi.org.au>
-	 <49BE20B2.9070804@redhat.com> <1237207595.4964.31.camel@kulgan.wumi.org.au>
-	 <20090316200736.GD8393@nowhere>
-	 <1237244137.4964.54.camel@kulgan.wumi.org.au>
-	 <20090318001955.GB5143@nowhere>
-Content-Type: text/plain
-Organization: UnitingCare Wesley Bowden
-Date: Wed, 18 Mar 2009 11:46:26 +1030
-Message-Id: <1237338986.4801.11.camel@kulgan.wumi.org.au>
+	Tue, 17 Mar 2009 21:17:35 -0400
+Date: Tue, 17 Mar 2009 18:08:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexander Duyck <alexander.h.duyck@intel.com>
+Cc: "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "gospo@redhat.com" <gospo@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "Zhao, Yu" <yu.zhao@intel.com>
+Subject: Re: [net-next PATCH 1/2] igbvf: add new driver to support 82576
+ virtual functions
+Message-Id: <20090317180826.8f3c596b.akpm@linux-foundation.org>
+In-Reply-To: <49C03C80.5020203@intel.com>
+References: <20090311020928.23138.20790.stgit@lost.foo-projects.org>
+	<20090310222154.4bc8c12c.akpm@linux-foundation.org>
+	<49C03C80.5020203@intel.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-18 at 01:20 +0100, Frederic Weisbecker wrote:
-> On Tue, Mar 17, 2009 at 09:25:37AM +1030, Kevin Shanahan wrote:
-> > On Mon, 2009-03-16 at 21:07 +0100, Frederic Weisbecker wrote:
-> > > I've looked a bit at your traces.
-> > > I think it's probably too wide to find something inside.
-> > > Latest -tip is provided with a new set of events tracing, meaning
-> > > that you will be able to produce function graph traces with various
-> > > sched events included.
-> > > 
-> > > Another thing, is it possible to reproduce it with only one ping?
-> > > Or testing perioding pings and keep only one that raised a relevant
-> > > threshold of latency? I think we could do a script that can do that.
-> > > It would make the trace much clearer.
+On Tue, 17 Mar 2009 17:12:48 -0700 Alexander Duyck <alexander.h.duyck@intel.com> wrote:
+
+> Thanks for all the comments.  I tried to incorporate most of them into 
+> the igbvf driver and also ended up porting some over to our other 
+> drivers, specifically igb since the igbvf driver copies much of the code.
+> 
+> I have added my comments inline below.
+> 
+> Thanks,
+> 
+> Alex
+> 
+> Andrew Morton wrote:
+> > On Tue, 10 Mar 2009 19:09:28 -0700 Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
 > > 
-> > Yeah, I think that should be possible. If you can come up with such a
-> > script, that would be great.
-> 
-> Ok, I've made a small script based on yours which could do this job.
-> You will just have to set yourself a threshold of latency
-> that you consider as buggy. I don't remember the latency you observed.
-> About 5 secs right?
-> 
-> It's the "thres" variable in the script.
-> 
-> The resulting trace should be a mixup of the function graph traces
-> and scheduler events which look like this:
-> 
->  gnome-screensav-4691  [000]  6716.774277:   4691:120:S ==> [000]     0:140:R <idle>
->   xfce4-terminal-4723  [001]  6716.774303:   4723:120:R   + [001]  4289:120:S Xorg
->   xfce4-terminal-4723  [001]  6716.774417:   4723:120:S ==> [001]  4289:120:R Xorg
->             Xorg-4289  [001]  6716.774427:   4289:120:S ==> [001]     0:140:R <idle>
-> 
-> + is a wakeup and ==> is a context switch.
-> 
-> 
-> The script will loop trying some pings and will only keep the trace that matches
-> the latency threshold you defined.
-> 
-> Tell if the following script work for you.
+> >> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> >>
+> >> This adds an igbvf driver to handle virtual functions provided
+> >> by the igb driver.
+> > 
+> > The drive-by reader is now wondering what a "virtual function" is.
 
-Yes, this looks like it will work as intended.
+^^ this comment was missed.
 
-One thing I was thinking about though - would we need to look for a
-trace that consists of a fast ping followed by a slow ping? If we only
-keep the trace data from when we experience the slow ping, the guest
-will have already "stalled" before the trace started, so the trace won't
-indicate any of the information about how we got into that state. Is
-that information going to be important, or is it enough to just see what
-it does to get out of the stalled state?
+I was indirectly asking for an overview (preferably in the changelog) of
+what the whole patch actually does.
 
-Either way, I'll try to get some results in my maintenance window
-tonight.
+> >>
+> >> +static int igbvf_set_ringparam(struct net_device *netdev,
+> >> +                               struct ethtool_ringparam *ring)
+> >> +{
+> >> +     struct igbvf_adapter *adapter = netdev_priv(netdev);
+> >> +     struct igbvf_ring *tx_ring, *tx_old;
+> >> +     struct igbvf_ring *rx_ring, *rx_old;
+> >> +     int err;
+> >> +
+> >> +     if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+> >> +             return -EINVAL;
+> >> +
+> >> +     while (test_and_set_bit(__IGBVF_RESETTING, &adapter->state))
+> >> +             msleep(1);
+> > 
+> > No timeout needed here?  Interrupts might not be working, for example..
+> 
+> This bit isn't set in interrupt context.  This is always used out of 
+> interrupt context and is just to prevent multiple setting changes at the 
+> same time.
 
-Cheers,
-Kevin.
-
-> You will need to pull the latest -tip tree and enable the following:
-> 
-> CONFIG_FUNCTION_TRACER=y
-> CONFIG_FUNCTION_GRAPH_TRACER=y
-> CONFIG_DYNAMIC_FTRACE=y
-> CONFIG_SCHED_TRACER=y
-> CONFIG_CONTEXT_SWITCH_TRACER=y
-> CONFIG_EVENT_TRACER=y
-> 
-> Thanks!
-> 
-> Ah and you will need python too (since bash can't do floating point
-> operation, it uses python here).
-> 
-> #!/bin/bash
-> 
-> # Switch off all CPUs except for one to simplify the trace
-> echo 0 > /sys/devices/system/cpu/cpu1/online
-> echo 0 > /sys/devices/system/cpu/cpu2/online
-> echo 0 > /sys/devices/system/cpu/cpu3/online
-> 
-> 
-> # Make sure debugfs has been mounted
-> if [ ! -d /sys/kernel/debug/tracing ]; then
->     mount -t debugfs debugfs /sys/kernel/debug
-> fi
-> 
-> # Set up the trace parameters
-> pushd /sys/kernel/debug/tracing || exit 1
-> echo 0 > tracing_enabled
-> echo function_graph > current_tracer
-> echo funcgraph-abstime > trace_options
-> echo funcgraph-proc    > trace_options
-> 
-> # Set here the kvm IP addr
-> addr=""
-> 
-> # Set here a threshold of latency in sec
-> thres="5"
-> found="False"
-> lat=0
-> prefix=/sys/kernel/debug/tracing
-> 
-> echo 1 > $prefix/events/sched/sched_wakeup/enable
-> echo 1 > $prefix/events/sched/sched_switch/enable
-> 
-> while [ "$found" != "True" ]
-> do
-> 	# Flush the previous buffer
-> 	echo nop > $prefix/current_tracer
-> 
-> 	# Reset the function_graph tracer
-> 	echo function_graph > $prefix/current_tracer
-> 
-> 	echo 1 > $prefix/tracing_enabled
-> 	lat=$(ping -c 1 $addr | grep rtt | grep -Eo " [0-9]+.[0-9]+")
-> 	echo 0 > $prefix/tracing_enabled
-> 
-> 	found=$(python -c "print float(str($lat).strip()) > $thres")
-> 	sleep 0.01
-> done
-> 
-> echo 0 > $prefix/events/sched/sched_wakeup/enable
-> echo 0 > $prefix/events/sched/sched_switch/enable
-> 
-> 
-> echo "Found buggy latency: $lat"
-> echo "Please send the trace you will find on $prefix/trace"
+Oh.  Can't use plain old mutex_lock()?
 
 
