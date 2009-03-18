@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZCRBkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbZCRBp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbZCRBkr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 21:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbZCRBki
+	id S1755938AbZCRBp1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 21:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbZCRBpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 21:40:38 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:65322 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755773AbZCRBkh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 21:40:37 -0400
-Message-ID: <49C0511C.9030508@cn.fujitsu.com>
-Date: Wed, 18 Mar 2009 09:40:44 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 17 Mar 2009 21:45:11 -0400
+Received: from gw.goop.org ([64.81.55.164]:34676 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752922AbZCRBpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 21:45:09 -0400
+Message-ID: <49C04001.4010405@goop.org>
+Date: Tue, 17 Mar 2009 17:27:45 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in	cpuacct_charge()
- safe when rcupreempt is used.
-References: <20090317061754.GD3314@in.ibm.com> <49BF42FB.4030103@cn.fujitsu.com> <20090317124031.GT16897@balbir.in.ibm.com>
-In-Reply-To: <20090317124031.GT16897@balbir.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "trivial@kernel.org" <trivial@kernel.org>,
+       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       Hannes Eder <hannes@hanneseder.net>
+Subject: Re: [PATCH v2 03/15] NULL noise: arch/x86/xen/smp.c
+References: <20090305190954.30062.44759.stgit@f10box.hanneseder.net>	<20090305191350.30062.68789.stgit@f10box.hanneseder.net>	<49B032E1.50303@goop.org> <alpine.LNX.2.00.0903171417300.11733@jikos.suse.cz>
+In-Reply-To: <alpine.LNX.2.00.0903171417300.11733@jikos.suse.cz>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> * Li Zefan <lizf@cn.fujitsu.com> [2009-03-17 14:28:11]:
-> 
->> Bharata B Rao wrote:
->>> cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
->>> 	rcupreempt is used.
->>>
->>> cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
->>> This can race with the task's movement between cgroups. This race
->>> can cause an access to freed ca pointer in cpuacct_charge(). This will not
->> Actually it can also end up access invalid tsk->cgroups. ;)
->>
->> get tsk->cgroups (cg)
->>                          (move tsk to another cgroup) or (tsk exiting)
->>                          -> kfree(tsk->cgroups)
->> get cg->subsys[..]
->>
-> 
-> That problem should only occur if we dereference tsk->cgroups
-> separately and then use that to dereference cg->subsys. Since we use
+Jiri Kosina wrote:
+>
+> Noone seems to have picked this so far, so I have applied it to trivial 
+> tree. Thanks,
+>   
 
-Do you mean tsk->cgroups->subsys is safe and
-cg = tsk->cgroups;...; cg->subsys is unsafe ?
-This is wrong.
+I've got it queued up, but I'm sure we'll be able to resolve any 
+conflicts if it goes via both paths...
 
-> task_subsys_state() and that is RCU safe, we should be OK.
-> 
+J
 
-Yes, it's RCU safe, which means it's unsafe without rcu_read_lock/unlock.
