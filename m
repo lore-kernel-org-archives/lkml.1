@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758175AbZCRDe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758214AbZCRDel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758175AbZCRDe0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 23:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbZCRDcz
+	id S1758214AbZCRDel (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 23:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757475AbZCRDc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 23:32:55 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53617 "EHLO
+	Tue, 17 Mar 2009 23:32:56 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53627 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756173AbZCRDcw (ORCPT
+	with ESMTP id S1756448AbZCRDcw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 17 Mar 2009 23:32:52 -0400
-Message-Id: <20090318033249.888398770@goodmis.org>
+Message-Id: <20090318033249.684068109@goodmis.org>
 References: <20090318031423.981603258@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 17 Mar 2009 23:14:28 -0400
+Date: Tue, 17 Mar 2009 23:14:27 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -23,53 +23,69 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>,
        Miklos Szeredi <miklos@szeredi.hu>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 5/5] tracing: make power tracer start/stop methods lighter weight
-Content-Disposition: inline; filename=0005-tracing-make-power-tracer-start-stop-methods-lighte.patch
+Subject: [PATCH 4/5] tracing: make sched_switch stop/start light weight
+Content-Disposition: inline; filename=0004-tracing-make-sched_switch-stop-start-light-weight.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The start/stop methods of a tracer should be able to be executed
-in all contexts. This patch converts the power tracer to do so.
+The stopping and starting of a tracer should be light weight and
+be able to be called in all contexts. The sched_switch grabbed
+mutexes in the start/stop functions. This patch changes it to a
+simple variable, on/off.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace_power.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+ kernel/trace/trace_sched_switch.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/trace/trace_power.c b/kernel/trace/trace_power.c
-index 91ce672..bae791e 100644
---- a/kernel/trace/trace_power.c
-+++ b/kernel/trace/trace_power.c
-@@ -122,12 +122,16 @@ fail_start:
- static void start_power_trace(struct trace_array *tr)
+diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
+index 77132c2..de35f20 100644
+--- a/kernel/trace/trace_sched_switch.c
++++ b/kernel/trace/trace_sched_switch.c
+@@ -18,6 +18,7 @@ static struct trace_array	*ctx_trace;
+ static int __read_mostly	tracer_enabled;
+ static int			sched_ref;
+ static DEFINE_MUTEX(sched_register_mutex);
++static int			sched_stopped;
+ 
+ static void
+ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
+@@ -28,7 +29,7 @@ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
+ 	int cpu;
+ 	int pc;
+ 
+-	if (!sched_ref)
++	if (!sched_ref || sched_stopped)
+ 		return;
+ 
+ 	tracing_record_cmdline(prev);
+@@ -193,6 +194,7 @@ static void stop_sched_trace(struct trace_array *tr)
+ static int sched_switch_trace_init(struct trace_array *tr)
  {
- 	trace_power_enabled = 1;
--	tracing_power_register();
+ 	ctx_trace = tr;
++	tracing_reset_online_cpus(tr);
+ 	tracing_start_sched_switch_record();
+ 	return 0;
+ }
+@@ -205,13 +207,12 @@ static void sched_switch_trace_reset(struct trace_array *tr)
+ 
+ static void sched_switch_trace_start(struct trace_array *tr)
+ {
+-	tracing_reset_online_cpus(tr);
+-	tracing_start_sched_switch();
++	sched_stopped = 0;
  }
  
- static void stop_power_trace(struct trace_array *tr)
+ static void sched_switch_trace_stop(struct trace_array *tr)
  {
- 	trace_power_enabled = 0;
-+}
-+
-+static void power_trace_reset(struct trace_array *tr)
-+{
-+	trace_power_enabled = 0;
- 	unregister_trace_power_start(probe_power_start);
- 	unregister_trace_power_end(probe_power_end);
- 	unregister_trace_power_mark(probe_power_mark);
-@@ -188,7 +192,7 @@ static struct tracer power_tracer __read_mostly =
- 	.init		= power_trace_init,
- 	.start		= start_power_trace,
- 	.stop		= stop_power_trace,
--	.reset		= stop_power_trace,
-+	.reset		= power_trace_reset,
- 	.print_line	= power_print_line,
- };
+-	tracing_stop_sched_switch();
++	sched_stopped = 1;
+ }
  
+ static struct tracer sched_switch_trace __read_mostly =
 -- 
 1.6.2
 
