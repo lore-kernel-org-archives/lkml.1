@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbZCRHxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbZCRIBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752367AbZCRHxA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 03:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZCRHwv
+	id S1753176AbZCRIBs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 04:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZCRIBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 03:52:51 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:43533 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbZCRHwu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 03:52:50 -0400
-Message-ID: <49C0A80E.1040603@cs.columbia.edu>
-Date: Wed, 18 Mar 2009 03:51:42 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 18 Mar 2009 04:01:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59201 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750782AbZCRIBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 04:01:37 -0400
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>, containers@lists.osdl.org,
-       Dan Smith <danms@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] c/r: Add CR_COPY() macro (v3)
-References: <1236095764-19325-1-git-send-email-danms@us.ibm.com>	<1236095764-19325-3-git-send-email-danms@us.ibm.com>	<1236097332.22399.8.camel@nimitz>	<878wnmrtp9.fsf@caffeine.danplanet.com>	<1236128437.22399.31.camel@nimitz> <20090304150519.GB10186@us.ibm.com>
-In-Reply-To: <20090304150519.GB10186@us.ibm.com>
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Friesen <cfriesen@nortel.com>,
+       =?iso-8859-1?Q?G=E1bor?= Melis <mega@retes.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: SEGSEGV && uc_mcontext->ip (Was: Signal delivery order)
+In-Reply-To: Oleg Nesterov's message of  Tuesday, 17 March 2009 05:13:37 +0100 <20090317041337.GA29740@redhat.com>
+References: <200903141750.37238.mega@retes.hu>
+	<200903152306.53031.mega@retes.hu>
+	<20090316002833.GA17615@redhat.com>
+	<200903160934.03700.mega@retes.hu>
+	<20090316211316.GA6270@redhat.com>
+	<49BED93B.1090700@nortel.com>
+	<20090317041337.GA29740@redhat.com>
+X-Zippy-Says: I've got to get these SNACK CAKES to NEWARK by DAWN!!
+Message-Id: <20090318075901.4FA19FC3AB@magilla.sf.frob.com>
+Date: Wed, 18 Mar 2009 00:59:01 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> First of all, perhaps I missed somethings and this is solvable without
+> kernel changes, but I can't see how.
+
+It depends what kind of "solved" you mean.
+
+Signals pending for the thread are always delivered before signals pending
+for the process.  POSIX does not guarantee this to the application, but it
+has always been so in Linux and it's fine enough to rely on that.  Truly
+externally-generated and asynchronous signals go to the process, so it's
+really only pthread_kill use within your own program that raises the issue.
+
+Among signals pending for the thread, signals < SIGRTMIN are always
+delivered before ones >= SIGRTMIN.  POSIX does not guarantee this to the
+application, but it has always been so in Linux and it's fine enough to
+rely on that.  The most sensible thing to use with pthread_kill is some
+SIGRTMIN+n signal anyway, since they are never confused with any other use.
+If your program is doing that, you don't have a problem.
+
+So on the one hand it seems pretty reasonable to say it's "solved" by
+accepting it when we say, "Welcome to Unix, these things should have
+stopped surprising you in the 1980s."  It's a strange pitfall of how
+everything fits together, granted.  But you do sort of have to make an
+effort to do things screwily before you can fall into it.
+
+All that said, it's actually probably a pretty easy hack to arrange that
+the signal posted by force_sig_info is the first one dequeued in all but
+the most utterly strange situations.
 
 
-Serge E. Hallyn wrote:
-> Quoting Dave Hansen (dave@linux.vnet.ibm.com):
->> On Tue, 2009-03-03 at 16:57 -0800, Dan Smith wrote:
->>> DH> Did you convince Nathan that this ends up being a good idea?
->>>
->>> Technically he hasn't seen this version, but my hopes are not high
->>> that he will change his mind.  If the feedback is that they're not
->>> liked, I'll happily remove them.
->> I just figure if Nathan feels that strongly that we'll encounter more
->> people who feel even more so.  So, I was curious if he changed his mind
->> somehow.
-> 
-> I maintain however that two strong advantages of moving the checkpoint
-> and restart of simple registers etc into a single function are:
-> 
-> 	1. we won't forget to add (or accidentally lose) one or the
-> 		other
-> 	2. any actual special handling at checkpoint or restart, like
-> 		the loading of access registers at restart on s390x,
-> 		stand out
-> 
-
-I, too, think that this scheme is elegant, and at the same time I, too,
-think that it obfuscates the code. Since I only touch arch-dependent code
-only if I really really must, I don't have strong opinion about it ;)
-
-However, a problem with this scheme is that checkpoint and restart
-are not fully symmetric -- on restart we must sanitize the input data
-before restoring the registers to that data. I'm not familiar with
-s390, but it is likely that by not doing so we create a security issue.
-
-Oren.
-
+Thanks,
+Roland
