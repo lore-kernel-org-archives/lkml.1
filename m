@@ -1,123 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760283AbZCRTXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZCRTd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760283AbZCRTXq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 15:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759893AbZCRTVM
+	id S1755201AbZCRTd0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 15:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZCRTdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 15:21:12 -0400
-Received: from mga01.intel.com ([192.55.52.88]:39294 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759877AbZCRTVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 15:21:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,385,1233561600"; 
-   d="scan'208";a="440021830"
-Subject: [PATCH 10/13] dmaengine: allow dma support for async_tx to be toggled
-To: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-From: Dan Williams <dan.j.williams@intel.com>
-Cc: neilb@suse.de, maciej.sosnowski@intel.com
-Date: Wed, 18 Mar 2009 12:21:07 -0700
-Message-ID: <20090318192107.20375.18145.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>
-References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: StGit/0.14.3.289.g7daff
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Mar 2009 15:33:15 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:45625 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751184AbZCRTdO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 15:33:14 -0400
+Date: Wed, 18 Mar 2009 20:35:11 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Roman Zippel <zippel@linux-m68k.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [GIT] kbuild
+Message-ID: <20090318193511.GA14621@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a config option for blocking the allocation of dma channels to
-the async_tx api.
+Fix the following issues:
 
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
- crypto/async_tx/async_tx.c |    6 +++---
- drivers/dma/Kconfig        |   11 +++++++++++
- include/linux/dmaengine.h  |   18 ++++++++++++++++++
- 3 files changed, 32 insertions(+), 3 deletions(-)
+o 'make randconfig' failed to generate random values for choices
+  thus letting several build-time bugs slip through the randconfig
+  based testing in tip - and likely for others doing builds based
+  on randconfig too
 
-diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
-index c3b07cf..2b1513e 100644
---- a/crypto/async_tx/async_tx.c
-+++ b/crypto/async_tx/async_tx.c
-@@ -30,7 +30,7 @@
- #ifdef CONFIG_DMA_ENGINE
- static int __init async_tx_init(void)
- {
--	dmaengine_get();
-+	async_dmaengine_get();
- 
- 	printk(KERN_INFO "async_tx: api initialized (async)\n");
- 
-@@ -39,7 +39,7 @@ static int __init async_tx_init(void)
- 
- static void __exit async_tx_exit(void)
- {
--	dmaengine_put();
-+	async_dmaengine_put();
- }
- 
- module_init(async_tx_init);
-@@ -59,7 +59,7 @@ __async_tx_find_channel(struct dma_async_tx_descriptor *depend_tx,
- 	if (depend_tx &&
- 	    dma_has_cap(tx_type, depend_tx->chan->device->cap_mask))
- 		return depend_tx->chan;
--	return dma_find_channel(tx_type);
-+	return async_dma_find_channel(tx_type);
- }
- EXPORT_SYMBOL_GPL(__async_tx_find_channel);
- #endif
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 48ea59e..3b3c01b 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -98,6 +98,17 @@ config NET_DMA
- 	  Say Y here if you enabled INTEL_IOATDMA or FSL_DMA, otherwise
- 	  say N.
- 
-+config ASYNC_TX_DMA
-+	bool "Async_tx: Offload support for the async_tx api"
-+	depends on DMA_ENGINE
-+	help
-+	  This allows the async_tx api to take advantage of offload engines for
-+	  memcpy, memset, xor, and raid6 p+q operations.  If your platform has
-+	  a dma engine that can perform raid operations and you have enabled
-+	  MD_RAID456 say Y.
-+
-+	  If unsure, say N.
-+
- config DMATEST
- 	tristate "DMA Test client"
- 	depends on DMA_ENGINE
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index a7fa966..7eedf45 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -356,6 +356,24 @@ static inline void net_dmaengine_put(void)
- }
- #endif
- 
-+#ifdef CONFIG_ASYNC_TX_DMA
-+#define async_dmaengine_get()	dmaengine_get()
-+#define async_dmaengine_put()	dmaengine_put()
-+#define async_dma_find_channel(type) dma_find_channel(type)
-+#else
-+static inline void async_dmaengine_get(void)
-+{
-+}
-+static inline void async_dmaengine_put(void)
-+{
-+}
-+static inline struct dma_chan *
-+async_dma_find_channel(enum dma_transaction_type type)
-+{
-+	return NULL;
-+}
-+#endif
-+
- dma_cookie_t dma_async_memcpy_buf_to_buf(struct dma_chan *chan,
- 	void *dest, void *src, size_t len);
- dma_cookie_t dma_async_memcpy_buf_to_pg(struct dma_chan *chan,
+  This fix is not a minimal fix - some effort were put into making
+  the code more strightforward and a few comments was added in the
+  process.
 
+o Use seed for random with a resolution higher than 1 second.
+  Now that 'make randconfig' is much faster we can generate more
+  than one randconfig on a decent box within one second.
+
+Please pull,
+	Sam
+
+The following changes since commit 5bee17f18b595937e6beafeee5197868a3f74a06:
+  Kyle McMartin (1):
+        parisc: sba_iommu: fix build bug when CONFIG_PARISC_AGP=y
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
+
+Ingo Molnar (1):
+      kconfig: improve seed in randconfig
+
+Sam Ravnborg (1):
+      kconfig: fix randconfig for choice blocks
+
+Full diff of the two changes:
+
+ scripts/kconfig/conf.c     |   16 +++++++++++++-
+ scripts/kconfig/confdata.c |   51 +++++++++++++++++++++++++++++++-------------
+ 2 files changed, 51 insertions(+), 16 deletions(-)
+diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
+index 3e1057f..d190092 100644
+--- a/scripts/kconfig/conf.c
++++ b/scripts/kconfig/conf.c
+@@ -11,6 +11,7 @@
+ #include <time.h>
+ #include <unistd.h>
+ #include <sys/stat.h>
++#include <sys/time.h>
+ 
+ #define LKC_DIRECT_LINK
+ #include "lkc.h"
+@@ -464,9 +465,22 @@ int main(int ac, char **av)
+ 			input_mode = set_yes;
+ 			break;
+ 		case 'r':
++		{
++			struct timeval now;
++			unsigned int seed;
++
++			/*
++			 * Use microseconds derived seed,
++			 * compensate for systems where it may be zero
++			 */
++			gettimeofday(&now, NULL);
++
++			seed = (unsigned int)((now.tv_sec + 1) * (now.tv_usec + 1));
++			srand(seed);
++
+ 			input_mode = set_random;
+-			srand(time(NULL));
+ 			break;
++		}
+ 		case 'h':
+ 			printf(_("See README for usage info\n"));
+ 			exit(0);
+diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
+index 830d9ea..273d738 100644
+--- a/scripts/kconfig/confdata.c
++++ b/scripts/kconfig/confdata.c
+@@ -843,7 +843,7 @@ void conf_set_all_new_symbols(enum conf_def_mode mode)
+ 			default:
+ 				continue;
+ 			}
+-			if (!sym_is_choice(sym) || mode != def_random)
++			if (!(sym_is_choice(sym) && mode == def_random))
+ 				sym->flags |= SYMBOL_DEF_USER;
+ 			break;
+ 		default:
+@@ -856,28 +856,49 @@ void conf_set_all_new_symbols(enum conf_def_mode mode)
+ 
+ 	if (mode != def_random)
+ 		return;
+-
++	/*
++	 * We have different type of choice blocks.
++	 * If curr.tri equal to mod then we can select several
++	 * choice symbols in one block.
++	 * In this case we do nothing.
++	 * If curr.tri equal yes then only one symbol can be
++	 * selected in a choice block and we set it to yes,
++	 * and the rest to no.
++	 */
+ 	for_all_symbols(i, csym) {
+ 		if (sym_has_value(csym) || !sym_is_choice(csym))
+ 			continue;
+ 
+ 		sym_calc_value(csym);
++
++		if (csym->curr.tri != yes)
++			continue;
++
+ 		prop = sym_get_choice_prop(csym);
+-		def = -1;
+-		while (1) {
+-			cnt = 0;
+-			expr_list_for_each_sym(prop->expr, e, sym) {
+-				if (sym->visible == no)
+-					continue;
+-				if (def == cnt++) {
+-					csym->def[S_DEF_USER].val = sym;
+-					break;
+-				}
++
++		/* count entries in choice block */
++		cnt = 0;
++		expr_list_for_each_sym(prop->expr, e, sym)
++			cnt++;
++
++		/*
++		 * find a random value and set it to yes,
++		 * set the rest to no so we have only one set
++		 */
++		def = (rand() % cnt);
++
++		cnt = 0;
++		expr_list_for_each_sym(prop->expr, e, sym) {
++			if (def == cnt++) {
++				sym->def[S_DEF_USER].tri = yes;
++				csym->def[S_DEF_USER].val = sym;
++			}
++			else {
++				sym->def[S_DEF_USER].tri = no;
+ 			}
+-			if (def >= 0 || cnt < 2)
+-				break;
+-			def = (rand() % cnt) + 1;
+ 		}
+ 		csym->flags |= SYMBOL_DEF_USER;
++		/* clear VALID to get value calculated */
++		csym->flags &= ~(SYMBOL_VALID);
+ 	}
+ }
