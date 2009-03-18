@@ -1,93 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757923AbZCRS0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbZCRS1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757923AbZCRS0Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 14:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbZCRS0H
+	id S1757237AbZCRS1V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 14:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756244AbZCRS1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 14:26:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35583 "EHLO mx1.redhat.com"
+	Wed, 18 Mar 2009 14:27:10 -0400
+Received: from mga01.intel.com ([192.55.52.88]:7302 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751159AbZCRS0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 14:26:04 -0400
-Subject: [PATCH] make inotify event handles use GFP_NOFS
-From: Eric Paris <eparis@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Eric Paris <eparis@redhat.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>, aviro@redhat.com
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 14:27:32 -0400
-Message-Id: <1237400852.26799.16.camel@localhost.localdomain>
+	id S1755984AbZCRS1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 14:27:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,385,1233561600"; 
+   d="scan'208";a="440006047"
+Date: Wed, 18 Mar 2009 19:27:00 +0100
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
+       ak@linux.jf.intel.com
+Subject: [patch] x86, bts: use atomic memory allocation
+Message-ID: <20090318192700.A6038@sedona.ch.intel.com>
 Mime-Version: 1.0
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think this is a bandaide to shut up lockdep.  I could either figure
-out lockdep classes and figure out how to reclassify inotify locks since
-I believe Nick is correct when he says inotify watches pin the inode in
-core so memory pressure can't evict it.  I don't want to do that as I
-think the real fix is my next generation fsnotify which does zero
-allocations under locks and so everything can be GFP_KERNEL.  I'm
-posting this as it is clearly safe and should fix the issue.
+Ds_request_bts() needs to allocate memory. It uses GFP_KERNEL.
 
-http://marc.info/?l=linux-kernel&m=123617147432377&w=2
+Hw-branch-tracer calls ds_request_bts() within on_each_cpu().
 
-includes a lockdep warning that shows while we are reclaiming FS memory
-and inode may get evicted which generates an IN_IGNORED message.  Half
-of that code path already used GFP_NOFS but a second allocation to store
-the filename was using GFP_KERNEL.  As a precaution I also moved the
-audit handle_event code path to use GFP_NOFS.
+Use atomic memory allocation to allow it to be used in that context.
 
-This is much the same as the precaution in f04b30de3c82528 which did
-something similar.
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
-
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
 
- fs/notify/inotify/inotify_user.c |    2 +-
- kernel/auditfilter.c             |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-
-diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
-index bed766e..1634319 100644
---- a/fs/notify/inotify/inotify_user.c
-+++ b/fs/notify/inotify/inotify_user.c
-@@ -220,7 +220,7 @@ static struct inotify_kernel_event * kernel_event(s32 wd, u32 mask, u32 cookie,
- 				rem = 0;
- 		}
+Index: git-tip/arch/x86/kernel/ds.c
+===================================================================
+--- git-tip.orig/arch/x86/kernel/ds.c	2009-03-17 12:26:07.000000000 +0100
++++ git-tip/arch/x86/kernel/ds.c	2009-03-17 13:30:09.000000000 +0100
+@@ -255,8 +255,13 @@ static inline struct ds_context *ds_get_
+ 	struct ds_context *new_context = NULL;
+ 	unsigned long irq;
  
--		kevent->name = kmalloc(len + rem, GFP_KERNEL);
-+		kevent->name = kmalloc(len + rem, GFP_NOFS);
- 		if (unlikely(!kevent->name)) {
- 			kmem_cache_free(event_cachep, kevent);
- 			return NULL;
-diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
-index fbf24d1..a3fa2c0 100644
---- a/kernel/auditfilter.c
-+++ b/kernel/auditfilter.c
-@@ -1028,7 +1028,7 @@ static void audit_update_watch(struct audit_parent *parent,
+-	/* Chances are small that we already have a context. */
+-	new_context = kzalloc(sizeof(*new_context), GFP_KERNEL);
++	/*
++	 * Chances are small that we already have a context.
++	 *
++	 * Contexts for per-cpu tracing are allocated using
++	 * smp_call_function(). We must not sleep.
++	 */
++	new_context = kzalloc(sizeof(*new_context), GFP_ATOMIC);
+ 	if (!new_context)
+ 		return NULL;
  
- 		if (audit_enabled) {
- 			struct audit_buffer *ab;
--			ab = audit_log_start(NULL, GFP_KERNEL,
-+			ab = audit_log_start(NULL, GFP_NOFS,
- 				AUDIT_CONFIG_CHANGE);
- 			audit_log_format(ab, "auid=%u ses=%u",
- 				audit_get_loginuid(current),
-@@ -1067,7 +1067,7 @@ static void audit_remove_parent_watches(struct audit_parent *parent)
- 			e = container_of(r, struct audit_entry, rule);
- 			if (audit_enabled) {
- 				struct audit_buffer *ab;
--				ab = audit_log_start(NULL, GFP_KERNEL,
-+				ab = audit_log_start(NULL, GFP_NOFS,
- 					AUDIT_CONFIG_CHANGE);
- 				audit_log_format(ab, "auid=%u ses=%u",
- 					audit_get_loginuid(current),
+@@ -662,8 +667,12 @@ struct bts_tracer *ds_request_bts(struct
+ 	if (ovfl)
+ 		goto out;
+ 
++	/*
++	 * Per-cpu tracing is typically requested using smp_call_function().
++	 * We must not sleep.
++	 */
+ 	error = -ENOMEM;
+-	tracer = kzalloc(sizeof(*tracer), GFP_KERNEL);
++	tracer = kzalloc(sizeof(*tracer), GFP_ATOMIC);
+ 	if (!tracer)
+ 		goto out;
+ 	tracer->ovfl = ovfl;
+@@ -722,8 +731,12 @@ struct pebs_tracer *ds_request_pebs(stru
+ 	if (ovfl)
+ 		goto out;
+ 
++	/*
++	 * Per-cpu tracing is typically requested using smp_call_function().
++	 * We must not sleep.
++	 */
+ 	error = -ENOMEM;
+-	tracer = kzalloc(sizeof(*tracer), GFP_KERNEL);
++	tracer = kzalloc(sizeof(*tracer), GFP_ATOMIC);
+ 	if (!tracer)
+ 		goto out;
+ 	tracer->ovfl = ovfl;
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
