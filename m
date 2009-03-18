@@ -1,178 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZCRTd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZCRTgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755201AbZCRTd0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 15:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZCRTdP
+	id S1753665AbZCRTgI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 15:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbZCRTfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 15:33:15 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:45625 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751184AbZCRTdO (ORCPT
+	Wed, 18 Mar 2009 15:35:55 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:64840 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbZCRTfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 15:33:14 -0400
-Date: Wed, 18 Mar 2009 20:35:11 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [GIT] kbuild
-Message-ID: <20090318193511.GA14621@uranus.ravnborg.org>
-Mime-Version: 1.0
+	Wed, 18 Mar 2009 15:35:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FmBOVzbqCHVLVBwIiGrMkVx2PhXNdjAcMum68yBMIXWIezF3VferifFmHilxmM9r7K
+         yeFbasiKPj0mleUFIV41VH01xRihIxhom1vrQ5Q7e4VSKrCW43k/kxFMaL/xD7Ls34qX
+         6svKg2ZjjgXAFaRVyyE8/H6fglaex/yMAn7X8=
+Date: Wed, 18 Mar 2009 20:35:47 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinderrajput@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/ftrace] tracing: fix oops in
+	tracepoint_update_probe_range()
+Message-ID: <20090318193546.GF5981@nowhere>
+References: <1237394936.3132.1.camel@localhost.localdomain> <tip-966a6fdf6210e3ac8ce00b61cd1107cdf97ce744@git.kernel.org> <1237398997.22438.10.camel@ht.satnam> <20090318180007.GE5981@nowhere> <1237399930.22438.16.camel@ht.satnam>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1237399930.22438.16.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the following issues:
+On Wed, Mar 18, 2009 at 11:42:10PM +0530, Jaswinder Singh Rajput wrote:
+> On Wed, 2009-03-18 at 19:00 +0100, Frederic Weisbecker wrote:
+> 
+> > Jaswinder, It's hard for me to reproduce it via your config.
+> > May be it's because I had to update it to match latest -tip tree and
+> > then I inserted some noise inside.
+> > 
+> > Could you please send me your bad vmlinux, so that I can have a first look at
+> > your elf sections and see if there is something helpful inside.
+> > 
+> 
+> OK I am uploading vmlinux (file size 14729799) and dmesg on :
+> 
+> http://userweb.kernel.org/~jaswinder/oops_20090318/
+> 
+> Are you testing on 32 bit or 64 bit machine.
+> 
+> I am getting this error on 64 bit AMD box.
+> 
+> Thanks
+> --
+> JSR
+> 
 
-o 'make randconfig' failed to generate random values for choices
-  thus letting several build-time bugs slip through the randconfig
-  based testing in tip - and likely for others doing builds based
-  on randconfig too
+Actually I haven't tested but only looked at my elf sections and haven't
+seen anything weird. (I run a 64 too).
 
-  This fix is not a minimal fix - some effort were put into making
-  the code more strightforward and a few comments was added in the
-  process.
+Your sections are normal too:
 
-o Use seed for random with a resolution higher than 1 second.
-  Now that 'make randconfig' is much faster we can generate more
-  than one randconfig on a decent box within one second.
+$ objdump -t ./vmlinux | grep __tracepoint | sort -d
 
-Please pull,
-	Sam
+ffffffff81623b00 l     O __ksymtab_gpl	0000000000000010 __ksymtab___tracepoint_block_remap
+ffffffff8162eeb3 l     O __ksymtab_strings	0000000000000019 __kstrtab___tracepoint_block_remap
+ffffffff816fb800 g       .data	0000000000000000 __start___tracepoints
+ffffffff816fb800 g     O .data	0000000000000020 __tracepoint_power_start
+ffffffff816fb820 g     O .data	0000000000000020 __tracepoint_power_end
+ffffffff816fb840 g     O .data	0000000000000020 __tracepoint_power_mark
+ffffffff816fb860 g     O .data	0000000000000020 __tracepoint_sched_wait_task
+ffffffff816fb880 g     O .data	0000000000000020 __tracepoint_sched_wakeup
+ffffffff816fb8a0 g     O .data	0000000000000020 __tracepoint_sched_wakeup_new
+ffffffff816fb8c0 g     O .data	0000000000000020 __tracepoint_sched_switch
+ffffffff816fb8e0 g     O .data	0000000000000020 __tracepoint_sched_migrate_task
+ffffffff816fb900 g     O .data	0000000000000020 __tracepoint_sched_process_fork
+ffffffff816fb920 g     O .data	0000000000000020 __tracepoint_sched_process_free
+ffffffff816fb940 g     O .data	0000000000000020 __tracepoint_sched_process_exit
+ffffffff816fb960 g     O .data	0000000000000020 __tracepoint_sched_process_wait
+ffffffff816fb980 g     O .data	0000000000000020 __tracepoint_softirq_entry
+ffffffff816fb9a0 g     O .data	0000000000000020 __tracepoint_softirq_exit
+ffffffff816fb9c0 g     O .data	0000000000000020 __tracepoint_sched_signal_send
+ffffffff816fb9e0 g     O .data	0000000000000020 __tracepoint_workqueue_insertion
+ffffffff816fba00 g     O .data	0000000000000020 __tracepoint_workqueue_execution
+ffffffff816fba20 g     O .data	0000000000000020 __tracepoint_workqueue_creation
+ffffffff816fba40 g     O .data	0000000000000020 __tracepoint_workqueue_destruction
+ffffffff816fba60 g     O .data	0000000000000020 __tracepoint_sched_kthread_stop
+ffffffff816fba80 g     O .data	0000000000000020 __tracepoint_sched_kthread_stop_ret
+ffffffff816fbaa0 g     O .data	0000000000000020 __tracepoint_irq_handler_entry
+ffffffff816fbac0 g     O .data	0000000000000020 __tracepoint_irq_handler_exit
+ffffffff816fbae0 g     O .data	0000000000000020 __tracepoint_block_bio_bounce
+ffffffff816fbb00 g     O .data	0000000000000020 __tracepoint_block_split
+ffffffff816fbb20 g     O .data	0000000000000020 __tracepoint_block_rq_abort
+ffffffff816fbb40 g     O .data	0000000000000020 __tracepoint_block_rq_insert
+ffffffff816fbb60 g     O .data	0000000000000020 __tracepoint_block_rq_issue
+ffffffff816fbb80 g     O .data	0000000000000020 __tracepoint_block_plug
+ffffffff816fbba0 g     O .data	0000000000000020 __tracepoint_block_unplug_io
+ffffffff816fbbc0 g     O .data	0000000000000020 __tracepoint_block_unplug_timer
+ffffffff816fbbe0 g     O .data	0000000000000020 __tracepoint_block_getrq
+ffffffff816fbc00 g     O .data	0000000000000020 __tracepoint_block_sleeprq
+ffffffff816fbc20 g     O .data	0000000000000020 __tracepoint_block_rq_requeue
+ffffffff816fbc40 g     O .data	0000000000000020 __tracepoint_block_bio_backmerge
+ffffffff816fbc60 g     O .data	0000000000000020 __tracepoint_block_bio_frontmerge
+ffffffff816fbc80 g     O .data	0000000000000020 __tracepoint_block_bio_queue
+ffffffff816fbca0 g     O .data	0000000000000020 __tracepoint_block_rq_complete
+ffffffff816fbcc0 g     O .data	0000000000000020 __tracepoint_block_remap
+ffffffff816fbce0 g     O .data	0000000000000020 __tracepoint_block_bio_complete
+ffffffff816fbd00 g       .data	0000000000000000 __stop___tracepoints
 
-The following changes since commit 5bee17f18b595937e6beafeee5197868a3f74a06:
-  Kyle McMartin (1):
-        parisc: sba_iommu: fix build bug when CONFIG_PARISC_AGP=y
+You see? __start___tracepoints and __stop___tracepoints embrace very well
+a good number of tracepoints, so it's not empty.
 
-are available in the git repository at:
+You even have tracepoints for options that you haven't selected.
+It seems that if CONFIG_TRACEPOINTS is enabled, all tracepoints that are found
+in a built file will be configured.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
+And there are things such as workqueues that are always built in a kernel, so
+the tracepoint section is _never_ supposed to be empty if CONFIG_TRACEPOINTS=y
 
-Ingo Molnar (1):
-      kconfig: improve seed in randconfig
+Something screwed up somewhere...
 
-Sam Ravnborg (1):
-      kconfig: fix randconfig for choice blocks
-
-Full diff of the two changes:
-
- scripts/kconfig/conf.c     |   16 +++++++++++++-
- scripts/kconfig/confdata.c |   51 +++++++++++++++++++++++++++++++-------------
- 2 files changed, 51 insertions(+), 16 deletions(-)
-diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
-index 3e1057f..d190092 100644
---- a/scripts/kconfig/conf.c
-+++ b/scripts/kconfig/conf.c
-@@ -11,6 +11,7 @@
- #include <time.h>
- #include <unistd.h>
- #include <sys/stat.h>
-+#include <sys/time.h>
- 
- #define LKC_DIRECT_LINK
- #include "lkc.h"
-@@ -464,9 +465,22 @@ int main(int ac, char **av)
- 			input_mode = set_yes;
- 			break;
- 		case 'r':
-+		{
-+			struct timeval now;
-+			unsigned int seed;
-+
-+			/*
-+			 * Use microseconds derived seed,
-+			 * compensate for systems where it may be zero
-+			 */
-+			gettimeofday(&now, NULL);
-+
-+			seed = (unsigned int)((now.tv_sec + 1) * (now.tv_usec + 1));
-+			srand(seed);
-+
- 			input_mode = set_random;
--			srand(time(NULL));
- 			break;
-+		}
- 		case 'h':
- 			printf(_("See README for usage info\n"));
- 			exit(0);
-diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 830d9ea..273d738 100644
---- a/scripts/kconfig/confdata.c
-+++ b/scripts/kconfig/confdata.c
-@@ -843,7 +843,7 @@ void conf_set_all_new_symbols(enum conf_def_mode mode)
- 			default:
- 				continue;
- 			}
--			if (!sym_is_choice(sym) || mode != def_random)
-+			if (!(sym_is_choice(sym) && mode == def_random))
- 				sym->flags |= SYMBOL_DEF_USER;
- 			break;
- 		default:
-@@ -856,28 +856,49 @@ void conf_set_all_new_symbols(enum conf_def_mode mode)
- 
- 	if (mode != def_random)
- 		return;
--
-+	/*
-+	 * We have different type of choice blocks.
-+	 * If curr.tri equal to mod then we can select several
-+	 * choice symbols in one block.
-+	 * In this case we do nothing.
-+	 * If curr.tri equal yes then only one symbol can be
-+	 * selected in a choice block and we set it to yes,
-+	 * and the rest to no.
-+	 */
- 	for_all_symbols(i, csym) {
- 		if (sym_has_value(csym) || !sym_is_choice(csym))
- 			continue;
- 
- 		sym_calc_value(csym);
-+
-+		if (csym->curr.tri != yes)
-+			continue;
-+
- 		prop = sym_get_choice_prop(csym);
--		def = -1;
--		while (1) {
--			cnt = 0;
--			expr_list_for_each_sym(prop->expr, e, sym) {
--				if (sym->visible == no)
--					continue;
--				if (def == cnt++) {
--					csym->def[S_DEF_USER].val = sym;
--					break;
--				}
-+
-+		/* count entries in choice block */
-+		cnt = 0;
-+		expr_list_for_each_sym(prop->expr, e, sym)
-+			cnt++;
-+
-+		/*
-+		 * find a random value and set it to yes,
-+		 * set the rest to no so we have only one set
-+		 */
-+		def = (rand() % cnt);
-+
-+		cnt = 0;
-+		expr_list_for_each_sym(prop->expr, e, sym) {
-+			if (def == cnt++) {
-+				sym->def[S_DEF_USER].tri = yes;
-+				csym->def[S_DEF_USER].val = sym;
-+			}
-+			else {
-+				sym->def[S_DEF_USER].tri = no;
- 			}
--			if (def >= 0 || cnt < 2)
--				break;
--			def = (rand() % cnt) + 1;
- 		}
- 		csym->flags |= SYMBOL_DEF_USER;
-+		/* clear VALID to get value calculated */
-+		csym->flags &= ~(SYMBOL_VALID);
- 	}
- }
