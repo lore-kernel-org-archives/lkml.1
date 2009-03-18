@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760662AbZCRVy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbZCRVxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760662AbZCRVy0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbZCRVnv
+	id S1759175AbZCRVxk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbZCRVnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:43:51 -0400
+	Wed, 18 Mar 2009 17:43:42 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758244AbZCRVns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:43:48 -0400
+	id S1758193AbZCRVnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:43:40 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 46/57] microblaze_v7: headers simple files - empty or redirect to asm-generic
-Date: Wed, 18 Mar 2009 21:31:13 +0100
-Message-Id: <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 27/57] microblaze_v7: IPC support
+Date: Wed, 18 Mar 2009 21:30:54 +0100
+Message-Id: <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -44,25 +44,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
  <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
  <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
- <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
- <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
- <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
- <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
- <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
- <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
- <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
- <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
- <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
- <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
- <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
- <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
- <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
- <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
- <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
- <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
- <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
- <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
- <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -74,196 +55,295 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/cputime.h           |    1 +
- arch/microblaze/include/asm/div64.h             |    1 +
- arch/microblaze/include/asm/emergency-restart.h |    1 +
- arch/microblaze/include/asm/errno.h             |    1 +
- arch/microblaze/include/asm/futex.h             |    1 +
- arch/microblaze/include/asm/gpio.h              |   56 +++++++++++++++++++++++
- arch/microblaze/include/asm/kdebug.h            |    1 +
- arch/microblaze/include/asm/local.h             |    1 +
- arch/microblaze/include/asm/mutex.h             |    1 +
- arch/microblaze/include/asm/percpu.h            |    1 +
- arch/microblaze/include/asm/resource.h          |    1 +
- arch/microblaze/include/asm/serial.h            |   14 ++++++
- 12 files changed, 80 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/auxvec.h
- create mode 100644 arch/microblaze/include/asm/cputable.h
- create mode 100644 arch/microblaze/include/asm/cputime.h
- create mode 100644 arch/microblaze/include/asm/div64.h
- create mode 100644 arch/microblaze/include/asm/emergency-restart.h
- create mode 100644 arch/microblaze/include/asm/errno.h
- create mode 100644 arch/microblaze/include/asm/futex.h
- create mode 100644 arch/microblaze/include/asm/gpio.h
- create mode 100644 arch/microblaze/include/asm/kdebug.h
- create mode 100644 arch/microblaze/include/asm/local.h
- create mode 100644 arch/microblaze/include/asm/mutex.h
- create mode 100644 arch/microblaze/include/asm/percpu.h
- create mode 100644 arch/microblaze/include/asm/resource.h
- create mode 100644 arch/microblaze/include/asm/serial.h
- create mode 100644 arch/microblaze/include/asm/user.h
+ arch/microblaze/include/asm/ipc.h       |    1 +
+ arch/microblaze/include/asm/ipcbuf.h    |   36 +++++
+ arch/microblaze/kernel/sys_microblaze.c |  226 +++++++++++++++++++++++++++++++
+ 3 files changed, 263 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/ipc.h
+ create mode 100644 arch/microblaze/include/asm/ipcbuf.h
+ create mode 100644 arch/microblaze/kernel/sys_microblaze.c
 
-diff --git a/arch/microblaze/include/asm/auxvec.h b/arch/microblaze/include/asm/auxvec.h
+diff --git a/arch/microblaze/include/asm/ipc.h b/arch/microblaze/include/asm/ipc.h
 new file mode 100644
-index 0000000..e69de29
-diff --git a/arch/microblaze/include/asm/cputable.h b/arch/microblaze/include/asm/cputable.h
-new file mode 100644
-index 0000000..e69de29
-diff --git a/arch/microblaze/include/asm/cputime.h b/arch/microblaze/include/asm/cputime.h
-new file mode 100644
-index 0000000..6d68ad7
+index 0000000..a46e3d9
 --- /dev/null
-+++ b/arch/microblaze/include/asm/cputime.h
++++ b/arch/microblaze/include/asm/ipc.h
 @@ -0,0 +1 @@
-+#include <asm-generic/cputime.h>
-diff --git a/arch/microblaze/include/asm/div64.h b/arch/microblaze/include/asm/div64.h
++#include <asm-generic/ipc.h>
+diff --git a/arch/microblaze/include/asm/ipcbuf.h b/arch/microblaze/include/asm/ipcbuf.h
 new file mode 100644
-index 0000000..6cd978c
+index 0000000..b056fa4
 --- /dev/null
-+++ b/arch/microblaze/include/asm/div64.h
-@@ -0,0 +1 @@
-+#include <asm-generic/div64.h>
-diff --git a/arch/microblaze/include/asm/emergency-restart.h b/arch/microblaze/include/asm/emergency-restart.h
-new file mode 100644
-index 0000000..3711bd9
---- /dev/null
-+++ b/arch/microblaze/include/asm/emergency-restart.h
-@@ -0,0 +1 @@
-+#include <asm-generic/emergency-restart.h>
-diff --git a/arch/microblaze/include/asm/errno.h b/arch/microblaze/include/asm/errno.h
-new file mode 100644
-index 0000000..4c82b50
---- /dev/null
-+++ b/arch/microblaze/include/asm/errno.h
-@@ -0,0 +1 @@
-+#include <asm-generic/errno.h>
-diff --git a/arch/microblaze/include/asm/futex.h b/arch/microblaze/include/asm/futex.h
-new file mode 100644
-index 0000000..0b74582
---- /dev/null
-+++ b/arch/microblaze/include/asm/futex.h
-@@ -0,0 +1 @@
-+#include <asm-generic/futex.h>
-diff --git a/arch/microblaze/include/asm/gpio.h b/arch/microblaze/include/asm/gpio.h
-new file mode 100644
-index 0000000..ea04632
---- /dev/null
-+++ b/arch/microblaze/include/asm/gpio.h
-@@ -0,0 +1,56 @@
++++ b/arch/microblaze/include/asm/ipcbuf.h
+@@ -0,0 +1,36 @@
 +/*
-+ * Generic GPIO API implementation for PowerPC.
-+ *
-+ * Copyright (c) 2007-2008  MontaVista Software, Inc.
-+ *
-+ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef __ASM_POWERPC_GPIO_H
-+#define __ASM_POWERPC_GPIO_H
-+
-+#include <linux/errno.h>
-+#include <asm-generic/gpio.h>
-+
-+#ifdef CONFIG_GPIOLIB
-+
-+/*
-+ * We don't (yet) implement inlined/rapid versions for on-chip gpios.
-+ * Just call gpiolib.
-+ */
-+static inline int gpio_get_value(unsigned int gpio)
-+{
-+	return __gpio_get_value(gpio);
-+}
-+
-+static inline void gpio_set_value(unsigned int gpio, int value)
-+{
-+	__gpio_set_value(gpio, value);
-+}
-+
-+static inline int gpio_cansleep(unsigned int gpio)
-+{
-+	return __gpio_cansleep(gpio);
-+}
-+
-+/*
-+ * Not implemented, yet.
-+ */
-+static inline int gpio_to_irq(unsigned int gpio)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline int irq_to_gpio(unsigned int irq)
-+{
-+	return -EINVAL;
-+}
-+
-+#endif /* CONFIG_GPIOLIB */
-+
-+#endif /* __ASM_POWERPC_GPIO_H */
-diff --git a/arch/microblaze/include/asm/kdebug.h b/arch/microblaze/include/asm/kdebug.h
-new file mode 100644
-index 0000000..6ece1b0
---- /dev/null
-+++ b/arch/microblaze/include/asm/kdebug.h
-@@ -0,0 +1 @@
-+#include <asm-generic/kdebug.h>
-diff --git a/arch/microblaze/include/asm/local.h b/arch/microblaze/include/asm/local.h
-new file mode 100644
-index 0000000..c11c530
---- /dev/null
-+++ b/arch/microblaze/include/asm/local.h
-@@ -0,0 +1 @@
-+#include <asm-generic/local.h>
-diff --git a/arch/microblaze/include/asm/mutex.h b/arch/microblaze/include/asm/mutex.h
-new file mode 100644
-index 0000000..ff6101a
---- /dev/null
-+++ b/arch/microblaze/include/asm/mutex.h
-@@ -0,0 +1 @@
-+#include <asm-generic/mutex-dec.h>
-diff --git a/arch/microblaze/include/asm/percpu.h b/arch/microblaze/include/asm/percpu.h
-new file mode 100644
-index 0000000..06a959d
---- /dev/null
-+++ b/arch/microblaze/include/asm/percpu.h
-@@ -0,0 +1 @@
-+#include <asm-generic/percpu.h>
-diff --git a/arch/microblaze/include/asm/resource.h b/arch/microblaze/include/asm/resource.h
-new file mode 100644
-index 0000000..04bc4db
---- /dev/null
-+++ b/arch/microblaze/include/asm/resource.h
-@@ -0,0 +1 @@
-+#include <asm-generic/resource.h>
-diff --git a/arch/microblaze/include/asm/serial.h b/arch/microblaze/include/asm/serial.h
-new file mode 100644
-index 0000000..39bfc8c
---- /dev/null
-+++ b/arch/microblaze/include/asm/serial.h
-@@ -0,0 +1,14 @@
-+/*
-+ * Copyright (C) 2009 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_SERIAL_H
-+#define _ASM_MICROBLAZE_SERIAL_H
++#ifndef _ASM_MICROBLAZE_IPCBUF_H
++#define _ASM_MICROBLAZE_IPCBUF_H
 +
-+# define BASE_BAUD (1843200 / 16)
++/*
++ * The user_ipc_perm structure for microblaze architecture.
++ * Note extra padding because this structure is passed back and forth
++ * between kernel and user space.
++ *
++ * Pad space is left for:
++ * - 32-bit mode_t and seq
++ * - 2 miscellaneous 32-bit values
++ */
 +
-+#endif /* _ASM_MICROBLAZE_SERIAL_H */
-diff --git a/arch/microblaze/include/asm/user.h b/arch/microblaze/include/asm/user.h
++struct ipc64_perm {
++	__kernel_key_t		key;
++	__kernel_uid32_t	uid;
++	__kernel_gid32_t	gid;
++	__kernel_uid32_t	cuid;
++	__kernel_gid32_t	cgid;
++	__kernel_mode_t		mode;
++	unsigned short		__pad1;
++	unsigned short		seq;
++	unsigned short		__pad2;
++	unsigned long		__unused1;
++	unsigned long		__unused2;
++};
++
++#endif /* _ASM_MICROBLAZE_IPCBUF_H */
+diff --git a/arch/microblaze/kernel/sys_microblaze.c b/arch/microblaze/kernel/sys_microblaze.c
 new file mode 100644
-index 0000000..e69de29
+index 0000000..831fc31
+--- /dev/null
++++ b/arch/microblaze/kernel/sys_microblaze.c
+@@ -0,0 +1,226 @@
++/*
++ * Copyright (C) 2007 PetaLogix
++ *	John Williams <john.williams@petalogix.com>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *	Yasushi SHOJI <yashi@atmark-techno.com>
++ *	Tetsuya OHKAWA <tetsuya@atmark-techno.com>
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/errno.h>
++#include <linux/mm.h>
++#include <linux/smp.h>
++#include <linux/smp_lock.h>
++#include <linux/syscalls.h>
++#include <linux/sem.h>
++#include <linux/msg.h>
++#include <linux/shm.h>
++#include <linux/stat.h>
++#include <linux/mman.h>
++#include <linux/sys.h>
++#include <linux/ipc.h>
++#include <linux/utsname.h>
++#include <linux/file.h>
++#include <linux/module.h>
++#include <linux/err.h>
++#include <linux/fs.h>
++#include <linux/ipc.h>
++#include <linux/semaphore.h>
++#include <linux/syscalls.h>
++#include <linux/uaccess.h>
++#include <linux/unistd.h>
++
++#include <asm/syscalls.h>
++/*
++ * sys_ipc() is the de-multiplexer for the SysV IPC calls..
++ *
++ * This is really horribly ugly. This will be remove with new toolchain.
++ */
++asmlinkage int
++sys_ipc(uint call, int first, int second, int third, void *ptr, long fifth)
++{
++	int version, ret;
++
++	version = call >> 16; /* hack for backward compatibility */
++	call &= 0xffff;
++
++	ret = -EINVAL;
++	switch (call) {
++	case SEMOP:
++		ret = sys_semop(first, (struct sembuf *)ptr, second);
++		break;
++	case SEMGET:
++		ret = sys_semget(first, second, third);
++		break;
++	case SEMCTL:
++	{
++		union semun fourth;
++
++		if (!ptr)
++			break;
++		if ((ret = access_ok(VERIFY_READ, ptr,
++					sizeof(long)) ? 0 : -EFAULT)
++			|| (ret = get_user(fourth.__pad, (void **)ptr)))
++			break;
++		ret = sys_semctl(first, second, third, fourth);
++		break;
++	}
++	case MSGSND:
++		ret = sys_msgsnd(first, (struct msgbuf *) ptr, second, third);
++		break;
++	case MSGRCV:
++		switch (version) {
++		case 0: {
++			struct ipc_kludge tmp;
++
++			if (!ptr)
++				break;
++			if ((ret = access_ok(VERIFY_READ, ptr,
++					sizeof(tmp)) ? 0 : -EFAULT)
++				|| (ret = copy_from_user(&tmp,
++						(struct ipc_kludge *) ptr,
++						sizeof(tmp))))
++				break;
++			ret = sys_msgrcv(first, tmp.msgp, second, tmp.msgtyp,
++					third);
++			break;
++			}
++		default:
++			ret = sys_msgrcv(first, (struct msgbuf *) ptr,
++					second, fifth, third);
++			break;
++		}
++		break;
++	case MSGGET:
++		ret = sys_msgget((key_t) first, second);
++		break;
++	case MSGCTL:
++		ret = sys_msgctl(first, second, (struct msqid_ds *) ptr);
++		break;
++	case SHMAT:
++		switch (version) {
++		default: {
++			ulong raddr;
++
++			if ((ret = access_ok(VERIFY_WRITE, (ulong *) third,
++					sizeof(ulong)) ? 0 : -EFAULT))
++				break;
++			ret = do_shmat(first, (char *) ptr, second, &raddr);
++			if (ret)
++				break;
++			ret = put_user(raddr, (ulong *) third);
++			break;
++			}
++		case 1:	/* iBCS2 emulator entry point */
++			if (!segment_eq(get_fs(), get_ds()))
++				break;
++			ret = do_shmat(first, (char *) ptr, second,
++					(ulong *) third);
++			break;
++		}
++		break;
++	case SHMDT:
++		ret = sys_shmdt((char *)ptr);
++		break;
++	case SHMGET:
++		ret = sys_shmget(first, second, third);
++		break;
++	case SHMCTL:
++		ret = sys_shmctl(first, second, (struct shmid_ds *) ptr);
++		break;
++	}
++	return -EINVAL;
++}
++
++asmlinkage int sys_vfork(struct pt_regs *regs)
++{
++	return do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD, regs->r1,
++						regs, 0, NULL, NULL);
++}
++
++asmlinkage int sys_clone(int flags, unsigned long stack, struct pt_regs *regs)
++{
++	if (!stack)
++		stack = regs->r1;
++	return do_fork(flags, stack, regs, 0, NULL, NULL);
++}
++
++asmlinkage int sys_execve(char __user *filenamei, char __user *__user *argv,
++			char __user *__user *envp, struct pt_regs *regs)
++{
++	int error;
++	char *filename;
++
++	filename = getname(filenamei);
++	error = PTR_ERR(filename);
++	if (IS_ERR(filename))
++		goto out;
++	error = do_execve(filename, argv, envp, regs);
++	putname(filename);
++out:
++	return error;
++}
++
++asmlinkage unsigned long
++sys_mmap2(unsigned long addr, size_t len,
++	unsigned long prot, unsigned long flags,
++	unsigned long fd, unsigned long pgoff)
++{
++	struct file *file = NULL;
++	int ret = -EBADF;
++
++	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
++	if (!(flags & MAP_ANONYMOUS)) {
++		file = fget(fd);
++		if (!file) {
++			printk(KERN_INFO "no fd in mmap\r\n");
++			goto out;
++		}
++	}
++
++	down_write(&current->mm->mmap_sem);
++	ret = do_mmap_pgoff(file, addr, len, prot, flags, pgoff);
++	up_write(&current->mm->mmap_sem);
++	if (file)
++		fput(file);
++out:
++	return ret;
++}
++
++asmlinkage unsigned long sys_mmap(unsigned long addr, size_t len,
++			unsigned long prot, unsigned long flags,
++			unsigned long fd, off_t offset)
++{
++	int err = -EINVAL;
++
++	if (offset & ~PAGE_MASK) {
++		printk(KERN_INFO "no pagemask in mmap\r\n");
++		goto out;
++	}
++
++	err = sys_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
++out:
++	return err;
++}
++
++/*
++ * Do a system call from kernel instead of calling sys_execve so we
++ * end up with proper pt_regs.
++ */
++int kernel_execve(const char *filename, char *const argv[], char *const envp[])
++{
++	register const char *__a __asm__("r5") = filename;
++	register const void *__b __asm__("r6") = argv;
++	register const void *__c __asm__("r7") = envp;
++	register unsigned long __syscall __asm__("r12") = __NR_execve;
++	register unsigned long __ret __asm__("r3");
++	__asm__ __volatile__ ("brki r14, 0x8"
++			: "=r" (__ret), "=r" (__syscall)
++			: "1" (__syscall), "r" (__a), "r" (__b), "r" (__c)
++			: "r4", "r8", "r9",
++			"r10", "r11", "r14", "cc", "memory");
++	return __ret;
++}
 -- 
 1.5.5.1
 
