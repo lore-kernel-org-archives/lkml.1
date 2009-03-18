@@ -1,96 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZCRQtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbZCRQuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbZCRQtv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 12:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbZCRQtl
+	id S1757171AbZCRQuK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 12:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758288AbZCRQtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 12:49:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34176 "EHLO hera.kernel.org"
+	Wed, 18 Mar 2009 12:49:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48296 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753744AbZCRQtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 12:49:40 -0400
-Subject: Re: oops in tracepoint_update_probe_range() (was: Re: [oops -tip]
- : x86 AMD 64)
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090318163531.GE21331@elte.hu>
-References: <1237393396.3322.6.camel@localhost.localdomain>
-	 <20090318163531.GE21331@elte.hu>
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 22:18:56 +0530
-Message-Id: <1237394936.3132.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1758672AbZCRQtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 12:49:46 -0400
+Date: Wed, 18 Mar 2009 17:49:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Steven Rostedt <srostedt@redhat.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: linux-next: Tree for March 11 (tracing)
+Message-ID: <20090318164926.GC31315@elte.hu>
+References: <20090311225913.51589223.sfr@canb.auug.org.au> <49B7F691.5000305@oracle.com> <49B93584.3020302@oracle.com> <1236875181.11290.1.camel@localhost.localdomain> <20090318084651.3dbf01e3.randy.dunlap@oracle.com> <20090318160621.GA21331@elte.hu> <49C11DB4.3070500@oracle.com> <20090318163228.GD21331@elte.hu> <49C124DE.9090001@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C124DE.9090001@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-18 at 17:35 +0100, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > Good: f4c3c4cdb1de232
-> > Bad : 1e08816af0bc345
+
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> Ingo Molnar wrote:
+> > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > > 
-> > Config:
-> > http://userweb.kernel.org/~jaswinder/oops_20090318/config-hpdv5-tip-bad-20090318
+> >> Ingo Molnar wrote:
+> >>> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> >>>
+> >>>> On Thu, 12 Mar 2009 12:26:21 -0400 Steven Rostedt wrote:
+> >>>>
+> >>>>> On Thu, 2009-03-12 at 09:17 -0700, Randy Dunlap wrote:
+> >>>>>> [adding cc:s]
+> >>>>>>
+> >>>>>> [same report for March 12]
+> >>>>>>
+> >>>>>> Randy Dunlap wrote:
+> >>>>>>> Stephen Rothwell wrote:
+> >>>>>>>> Hi all,
+> >>>>>>>>
+> >>>>>>>> Changes since 20090310:
+> >>>>>>> Building on i386 generates a ton of printk format warnings:
+> >>>>>>>
+> >>>>>>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'unsigned int'
+> >>>>>>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 6 has type 'unsigned int'
+> >>>>>>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 9 has type 'unsigned int'
+> >>>>>>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 10 has type 'unsigned int'
+> >>>>>>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 13 has type 'unsigned int'
+> >>>>>>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 14 has type 'unsigned int'
+> >>>>>>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 17 has type 'unsigned int'
+> >>>>>>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 18 has type 'unsigned int'
+> >>>>>>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 21 has type 'unsigned int'
+> >>>>>>> kernel/trace/trace_events.c:470: warning: format '%lu' expects type 'long unsigned int', but argument 22 has type 'unsigned int'
+> >>>>>>>
+> >>>>> I believe this is corrected in Ingo's tip tree. I changed %lu to %zu to
+> >>>>> handle the "sizeof()" case. The fix was suggested by Andrew Morton.
+> >>>> This build warning is still around (20090318).
+> >>>> Is the fix not in some branch that is imported into linux-next or what?
+> >>> be patient.
+> >>>
+> >>> 	Ingo
+> >> I think that 7 days is being patient for a simple build fix.
 > > 
-> > oops:
-> > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page1.jpg
-> > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page2.jpg
-> > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page3.jpg
-> > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page4.jpg
+> > s/build fix/harmless build warning fix
+> 
+> 180+ lines of noise in a build log.
+> 
+> > If you are interested in having a resolution you can git-merge the 
+> > latest development tree yourself and you can get rid of that 
+> > warning.
 > > 
-> > <freeze>
+> > Of course that way you'd expose yourself to even fresher code, 
+> > potentially with much more serious breakages.
+> > 
+> > It's a balance of freshness versus stability, and that balance is 
+> > kept by maintainers.
+> > 
+> > If you want the latest development code - go engage with the 
+> > development trees directly.
+> > 
+> > If you want something that is relatively new (i.e. 1-2 weeks fresh) 
+> > but works on the range of systems we test, use what you get in 
+> > linux-next.
+> > 
+> > It's your choice which one you pick.
+> > 
+> > But you cannot have both.
+> > 
+> > If you genuinely think you can have it both, by all means i 
+> > encourage you to try it - it's all open source so you can run your 
+> > own tree. Just please dont feel entitled to demand it from others.
 > 
-> Steve, Frederic - the crashes above are in:
-> 
-> 	tracepoint_update_probe_range()
-> 
-> in a modular kernel apparently.
-> 
+> Thanks for the explanation.  That's what I tried to ask for
+> to begin with.  I guess that I have a language problem.
 
-This fixed the oops for me, Is this looks OK to you:
+Note, six hours ago i reintegrated all the auto-next branches so 
+this warning should be gone in the next linux-next iteration - they 
+are now traded for brand new bugs ;-)
 
-Subject: [PATCH] x86: tracepoint.c fix oops
-
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<ffffffff8107d4de>] tracepoint_update_probe_range+0x1f/0x9b
-PGD 13d5fb067 PUD 13d688067 PMD 0
-Oops: 0000 [#1] SMP
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- kernel/tracepoint.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 7960274..80d1353 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -280,6 +280,8 @@ void tracepoint_update_probe_range(struct tracepoint *begin,
- 
- 	mutex_lock(&tracepoints_mutex);
- 	for (iter = begin; iter < end; iter++) {
-+		if (!iter)
-+			goto out;
- 		mark_entry = get_tracepoint(iter->name);
- 		if (mark_entry) {
- 			set_tracepoint(&mark_entry, iter,
-@@ -288,6 +290,7 @@ void tracepoint_update_probe_range(struct tracepoint *begin,
- 			disable_tracepoint(iter);
- 		}
- 	}
-+out:
- 	mutex_unlock(&tracepoints_mutex);
- }
- 
--- 
-1.6.0.6
-
-
-
+	Ingo
