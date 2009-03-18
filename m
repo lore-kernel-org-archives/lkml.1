@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbZCRArz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbZCRAtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755134AbZCRArz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 20:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZCRArq
+	id S1755518AbZCRAtt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 20:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbZCRAtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 20:47:46 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:37413 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751685AbZCRArq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 20:47:46 -0400
-Date: Tue, 17 Mar 2009 19:47:42 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: orenl@cs.columbia.edu, lkml <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: C/R review
-Message-ID: <20090318004742.GA14308@us.ibm.com>
-References: <20090317210110.GA3897@x200.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090317210110.GA3897@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 17 Mar 2009 20:49:41 -0400
+Received: from fwtops.0.225.230.202.in-addr.arpa ([202.230.225.126]:31031 "EHLO
+	topsms.toshiba-tops.co.jp" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752710AbZCRAtk convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 20:49:40 -0400
+Date: Wed, 18 Mar 2009 09:49:35 +0900 (JST)
+Message-Id: <20090318.094935.238694196.nemoto@toshiba-tops.co.jp>
+To: dan.j.williams@intel.com
+Cc: linux-mips@linux-mips.org, ralf@linux-mips.org,
+       linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com
+Subject: Re: [PATCH 1/2] dmaengine: TXx9 Soc DMA Controller driver
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <e9c3a7c20903171002n50964148v8366fa2f00e3164c@mail.gmail.com>
+References: <e9c3a7c20903162152w6b73b4b8hba8004e7b349c447@mail.gmail.com>
+	<20090318.010939.128619068.anemo@mba.ocn.ne.jp>
+	<e9c3a7c20903171002n50964148v8366fa2f00e3164c@mail.gmail.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 6.1 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> > +Keeping the restart procedure to operate within the limits of the
-> > +caller's credentials means that there various scenarios that cannot
-> > +be supported. For instance, a setuid program that opened a protected
-> > +log file and then dropped privileges will fail the restart, because
-> > +the user won't have enough credentials to reopen the file.
+On Tue, 17 Mar 2009 10:02:14 -0700, Dan Williams <dan.j.williams@intel.com> wrote:
+> >> The sysfs device has a longer lifetime than dma_device.  See commit
+> >> 41d5e59c [1].
+> >
+> > The sysfs device for dma_chan (dma_chan_dev) has a shorter lifetime
+> > than dma_device, doesn't it?
 > 
-> That's a bug.
+> No,  dma_async_device_unregister(), and the freeing of dma_device, may
+> finish before chan_dev_release is called.  Userspace gates the final
+> release of dma_chan_dev objects.
 
-What is described is not a bug, but I think the way it is done is in
-fact a bug.
+You mean, if the sysfs device file was opened when
+dma_async_device_unregister() was called, the sysfs device will not be
+released until the sysfs device file is closed, right?  If so I can
+see.
 
-Note that just because you *can* do the restart without privilege
-doesn't mean that you have to.  If you do a restart with privilege,
-then you should be able to open that file, then drop down to the
-original task's uid.
+BTW, there are another holes in dma_async_device_register.  If
+idr_pre_get or idr_get_new was failed, idr_ref will not be freed.
 
-But to say that letting an unprivileged user do restart, and that
-it will only succeed if it can access the resources its allowed to
-access, is bogus.
-
-But I do think the way it's implemented will become buggy and needs to
-be fixed.  That is, we do cr_read_task_struct() before we do
-cr_read_files().  So in fact if I'm root doing restart of such a
-checkpoint image, I'll first drop down to uid 500, then open the files.
-
-That would obviously be a bug.
-
-Now, we don't actually restore uids yet in the current code, so
-it's still a theoretical bug :)
-
--serge
+---
+Atsushi Nemoto
