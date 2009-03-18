@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbZCRQlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZCRQnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758229AbZCRQlV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 12:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbZCRQlM
+	id S1755547AbZCRQnX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 12:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZCRQnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 12:41:12 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:57954 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753717AbZCRQlL (ORCPT
+	Wed, 18 Mar 2009 12:43:07 -0400
+Received: from mga11.intel.com ([192.55.52.93]:35072 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753301AbZCRQnF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 12:41:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=sEGSEBQ81431kQce8ly08yMuWYSy5yHle4N8AIkRczyu9J+jbo3BCTeUhyBY4Bc5dF
-         XHzhSm+vrcuw770Zh1OOnXa5+Tt1LvbzBF+aLGlfEJ2cpa+QauGHqbP1AQPkpOuMRmto
-         2qcts6Yh3W+S1CulgznT+d047u++hppf+4GCo=
-Date: Wed, 18 Mar 2009 17:41:05 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: oops in tracepoint_update_probe_range() (was: Re: [oops -tip]
-	: x86 AMD 64)
-Message-ID: <20090318164104.GB5981@nowhere>
-References: <1237393396.3322.6.camel@localhost.localdomain> <20090318163531.GE21331@elte.hu>
+	Wed, 18 Mar 2009 12:43:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,385,1233561600"; 
+   d="scan'208";a="439974715"
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, Lubomir Rintel <lkundrak@v3.sk>
+CC: Joerg Roedel <joerg.roedel@amd.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       "Ronciak, John" <john.ronciak@intel.com>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       Ingo Molnar <mingo@redhat.com>,
+       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Wed, 18 Mar 2009 09:43:02 -0700
+Subject: RE: e1000e 0000:00:19.0: DMA-API: device driver tries to free DMA
+	memory it has not allocated [device address=0x0000000052ff084a]	[size=90
+ bytes]
+Thread-Topic: e1000e 0000:00:19.0: DMA-API: device driver tries to free DMA
+	memory it has not allocated [device address=0x0000000052ff084a]	[size=90
+ bytes]
+Thread-Index: Acmn0z9RHtu2do1+SzmkQknipWijHQAFSKdQ
+Message-ID: <F169D4F5E1F1974DBFAFABF47F60C10A1E8795AC@orsmsx507.amr.corp.intel.com>
+References: <1237223130-26519-1-git-send-email-joerg.roedel@amd.com>
+ <20090317120112.GP6159@amd.com> <20090318093847.GC5879@elte.hu>
+ <20090318115615.GS6159@amd.com> <20090318120458.GA1601@elte.hu>
+ <36697.89.102.207.186.1237380871.squirrel@mail.v3.sk>
+ <20090318140949.GA20852@elte.hu>
+In-Reply-To: <20090318140949.GA20852@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090318163531.GE21331@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 18, 2009 at 05:35:31PM +0100, Ingo Molnar wrote:
+Ingo Molnar wrote:
+> * Lubomir Rintel <lkundrak@v3.sk> wrote:
 > 
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > Good: f4c3c4cdb1de232
-> > Bad : 1e08816af0bc345
-> > 
-> > Config:
-> > http://userweb.kernel.org/~jaswinder/oops_20090318/config-hpdv5-tip-bad-20090318
-> > 
-> > oops:
-> > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page1.jpg
-> > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page2.jpg
-> > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page3.jpg
-> > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page4.jpg
-> > 
-> > <freeze>
-> 
-> Steve, Frederic - the crashes above are in:
-> 
-> 	tracepoint_update_probe_range()
-> 
-> in a modular kernel apparently.
-> 
-> 	Ingo
+>> On Wed, March 18, 2009 8:04 am, Ingo Molnar wrote:
+>>> 
+>>> ( e1000e Cc:s added. A new debug feature, CONFIG_DMA_API_DEBUG=y,
+>>>   has triggered the warning below in e1000_put_txbuf(). )
+>> 
+>> http://lkml.org/lkml/2009/3/2/318
 
-Darn, ok I test this one.
-
+We are still looking for more testing from the general community of 
+this patch, in particular if any tx hangs are reported.  Thanks in 
+advance for any reports.
