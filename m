@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbZCRD2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbZCRDdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757817AbZCRD2U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 23:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756448AbZCRD2K
+	id S1757898AbZCRDdH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 23:33:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756741AbZCRDcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 23:28:10 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62894 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754351AbZCRD2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 23:28:09 -0400
-Message-ID: <49C069F2.5040003@cn.fujitsu.com>
-Date: Wed, 18 Mar 2009 11:26:42 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Valdis.Kletnieks@vt.edu, jkosina@suse.cz, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Oliver Neukum <oliver@neukum.org>
-Subject: Re: 29-rc-mmotm - HID/USB wedge w/ WARNING: at kernel/workqueue.c:371
-References: <6648.1237271589@turing-police.cc.vt.edu>	<20090317135424.9151c4f8.akpm@linux-foundation.org>	<37742.1237327272@turing-police.cc.vt.edu>	<49C05C94.7030104@cn.fujitsu.com> <20090317195004.18fb6af6.akpm@linux-foundation.org>
-In-Reply-To: <20090317195004.18fb6af6.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 17 Mar 2009 23:32:52 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53598 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752766AbZCRDcv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 23:32:51 -0400
+Message-Id: <20090318031423.981603258@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Tue, 17 Mar 2009 23:14:23 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Miklos Szeredi <miklos@szeredi.hu>
+Subject: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 18 Mar 2009 10:29:40 +0800 Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> 
-> 
-> static void run_workqueue(struct cpu_workqueue_struct *cwq)
-> {
-> 	spin_lock_irq(&cwq->lock);
-> 	cwq->run_depth++;
-> 	if (cwq->run_depth > 3) {
-> 		/* morton gets to eat his hat */
-> 		printk("%s: recursion depth exceeded: %d\n",
-> 			__func__, cwq->run_depth);
-> 		dump_stack();
-> 	}
-> 
-> That was added five or six years ago, and I never ever got to eat my hat.
 
-If Valdis.Kletnieks let lockdep work, he will see the complain
-from lockdep at first.
+Ingo,
 
-> 
->> If it's hard for you avoid flush_scheduled_work() in
->> keventd's work fuction by other fix, you can create
->> another workqueue to handle your works, IMO.
-> 
-> Why do we need to change anything here?  No known bugs were fixed, and some
-> new ones were added.
-> 
+Please pull the latest tip/tracing/ftrace tree, which can be found at:
 
-I prefer the code which has no known bugs and no known potential bugs.
-
-I defend myself:
-I did not add a new bug as you said, it's the new code hid_cease_io()
-adds a new unsafe usage of workqueue.
-
-Thanks, Lai.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace
 
 
+Steven Rostedt (4):
+      ring-buffer: add api to allow a tracer to change clock source
+      tracing: add global-clock option to provide cross CPU clock to traces
+      tracing: make sched_switch stop/start light weight
+      tracing: make power tracer start/stop methods lighter weight
 
+Witold Baryluk (1):
+      tracing: optimization of branch tracer
 
-
-
+----
+ include/linux/compiler.h          |    6 +--
+ include/linux/ring_buffer.h       |    7 +++-
+ kernel/trace/ring_buffer.c        |   65 +++++++++++++++++++++---------------
+ kernel/trace/trace.c              |   55 +++++++++++++++++++++++++------
+ kernel/trace/trace.h              |    1 +
+ kernel/trace/trace_power.c        |    8 +++-
+ kernel/trace/trace_sched_switch.c |    9 +++--
+ 7 files changed, 101 insertions(+), 50 deletions(-)
+-- 
