@@ -1,120 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbZCRKgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZCRKla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbZCRKgw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 06:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZCRKgn
+	id S1755547AbZCRKla (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 06:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZCRKlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 06:36:43 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:39124 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751967AbZCRKgm (ORCPT
+	Wed, 18 Mar 2009 06:41:21 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41621 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753104AbZCRKlU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 06:36:42 -0400
-To: Zhang Le <r0bertz@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, alan@redhat.com,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-References: <1237185871-3343-1-git-send-email-r0bertz@gentoo.org>
-	<m17i2okogv.fsf@fess.ebiederm.org>
-	<20090318072720.GA20593@adriano.hkcable.com.hk>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 18 Mar 2009 03:36:35 -0700
-In-Reply-To: <20090318072720.GA20593@adriano.hkcable.com.hk> (Zhang Le's message of "Wed\, 18 Mar 2009 15\:27\:21 +0800")
-Message-ID: <m1mybjf77w.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 18 Mar 2009 06:41:20 -0400
+Message-ID: <49C0CFC2.7080604@jp.fujitsu.com>
+Date: Wed, 18 Mar 2009 19:41:06 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: r0bertz@gentoo.org, viro@ZenIV.linux.org.uk, adobriyan@gmail.com, alan@redhat.com, torvalds@osdl.org, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Zhang Le <r0bertz@gentoo.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] filp->f_pos not correctly updated in proc_task_readdir
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+To: linux-kernel@vger.kernel.org
+CC: stable@kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] posixtimers: Fix posix clock monotonicity v2
+References: <49BF3F73.5090007@jp.fujitsu.com>
+In-Reply-To: <49BF3F73.5090007@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zhang Le <r0bertz@gentoo.org> writes:
+Impact: Regression fix (against clock_gettime() backwarding bug)
 
-> Unfortunately, unlike directories on normal filesystem, there will never be any
-> other files in /proc/xxxx/task. So, to my understanding, d_off should be
-> increasing continuously, no?
->
-> OK, here is what is going on in glibc. I left it out intentionally so as not to
-> make the discuss unnecessarily complicated. So here it is:
->
-> First of all, we can see that the d_off does not get correctly updated.
+This patch re-introduces a couple of function, task_sched_runtime
+and thread_group_sched_runtime, which was once removed at the
+time of 2.6.28-rc1.
 
-Linus has merged that fix and I have no problems with fixing d_off.
-The fact that it was not set is a bug plain and simple.
+These functions protect the sampling of thread/process clock with
+rq lock.  This rq lock is required not to update rq->clock durling
+the sampling.
+i.e.
+  The clock_gettime() may return
+   ((accounted runtime before update) + (delta after update))
+  that is less than what it should be.
+
+v1 -> v2:
+	- Revises comments for functions and patch description.
+	- Add note about accuracy of thread group's runtime.
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: stable@kernel.org	[2.6.28.x]
+---
+ kernel/posix-cpu-timers.c |    7 +++--
+ kernel/sched.c            |   65 +++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 61 insertions(+), 11 deletions(-)
+
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index 4e5288a..a65641a 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -294,7 +294,7 @@ static int cpu_clock_sample(const clockid_t which_clock, struct task_struct *p,
+ 		cpu->cpu = virt_ticks(p);
+ 		break;
+ 	case CPUCLOCK_SCHED:
+-		cpu->sched = p->se.sum_exec_runtime + task_delta_exec(p);
++		cpu->sched = task_sched_runtime(p);
+ 		break;
+ 	}
+ 	return 0;
+@@ -310,18 +310,19 @@ static int cpu_clock_sample_group(const clockid_t which_clock,
+ {
+ 	struct task_cputime cputime;
+ 
+-	thread_group_cputime(p, &cputime);
+ 	switch (CPUCLOCK_WHICH(which_clock)) {
+ 	default:
+ 		return -EINVAL;
+ 	case CPUCLOCK_PROF:
++		thread_group_cputime(p, &cputime);
+ 		cpu->cpu = cputime_add(cputime.utime, cputime.stime);
+ 		break;
+ 	case CPUCLOCK_VIRT:
++		thread_group_cputime(p, &cputime);
+ 		cpu->cpu = cputime.utime;
+ 		break;
+ 	case CPUCLOCK_SCHED:
+-		cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
++		cpu->sched = thread_group_sched_runtime(p);
+ 		break;
+ 	}
+ 	return 0;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index db66874..1d7dacf 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4064,9 +4064,25 @@ DEFINE_PER_CPU(struct kernel_stat, kstat);
+ EXPORT_PER_CPU_SYMBOL(kstat);
+ 
+ /*
+- * Return any ns on the sched_clock that have not yet been banked in
++ * Return any ns on the sched_clock that have not yet been accounted in
+  * @p in case that task is currently running.
++ *
++ * Called with task_rq_lock() held on @rq.
+  */
++static u64 __task_delta_exec(struct task_struct *p, struct rq *rq)
++{
++	u64 ns = 0;
++
++	if (task_current(rq, p)) {
++		update_rq_clock(rq);
++		ns = rq->clock - p->se.exec_start;
++		if ((s64)ns < 0)
++			ns = 0;
++	}
++
++	return ns;
++}
++
+ unsigned long long task_delta_exec(struct task_struct *p)
+ {
+ 	unsigned long flags;
+@@ -4074,16 +4090,49 @@ unsigned long long task_delta_exec(struct task_struct *p)
+ 	u64 ns = 0;
+ 
+ 	rq = task_rq_lock(p, &flags);
++	ns = __task_delta_exec(p, rq);
++	task_rq_unlock(rq, &flags);
+ 
+-	if (task_current(rq, p)) {
+-		u64 delta_exec;
++	return ns;
++}
+ 
+-		update_rq_clock(rq);
+-		delta_exec = rq->clock - p->se.exec_start;
+-		if ((s64)delta_exec > 0)
+-			ns = delta_exec;
+-	}
++/*
++ * Return accounted runtime for the task.
++ * In case the task is currently running, return the runtime plus current's
++ * pending runtime that have not been accounted yet.
++ */
++unsigned long long task_sched_runtime(struct task_struct *p)
++{
++	unsigned long flags;
++	struct rq *rq;
++	u64 ns = 0;
++
++	rq = task_rq_lock(p, &flags);
++	ns = p->se.sum_exec_runtime + __task_delta_exec(p, rq);
++	task_rq_unlock(rq, &flags);
++
++	return ns;
++}
+ 
++/*
++ * Return sum_exec_runtime for the thread group.
++ * In case the task is currently running, return the sum plus current's
++ * pending runtime that have not been accounted yet.
++ *
++ * Note that the thread group might have other running tasks as well,
++ * so the return value not includes other pending runtime that other
++ * running tasks might have.
++ */
++unsigned long long thread_group_sched_runtime(struct task_struct *p)
++{
++	struct task_cputime totals;
++	unsigned long flags;
++	struct rq *rq;
++	u64 ns;
++
++	rq = task_rq_lock(p, &flags);
++	thread_group_cputime(p, &totals);
++	ns = totals.sum_exec_runtime + __task_delta_exec(p, rq);
+ 	task_rq_unlock(rq, &flags);
+ 
+ 	return ns;
+-- 
+1.6.2.1
 
 
-> Then, let's take a look at glibc's __GETDENTS function. In this function, there
-> are 3 implementations:
-> http://sources.redhat.com/git/gitweb.cgi?p=glibc.git;a=blob;f=sysdeps/unix/sysv/linux/getdents.c;h=b33d1789adff11a04cbb1f6f5616bc8eed59418f;hb=cvs/master
-> Two of them will detect overflow, and lseek if necessary.
->
-> This means, although d_off in /proc/xxxx/task does not get updated correctly
-> everywhere, the problem of endless loop only occurs on certain platforms.
-> One of them is MIPS N32 ABI system.
-
-Ok.  glibc is performing a conversion and if it doesn't have enough
-space to convert all of the entries it read it does a seek, so it
-will reread from the kernel the unread entries.
-
-Not friendly (as seeks are notoriously hard to get right in directories)
-but not the worst behavior in the world.
-
-> Of course, there are other ways to work around this. However, to me, fixing this
-> would be the easiest and the most straight forward one. :)
-
-I'm not looking for other work arounds.  There is another bug, that I wondering if
-we can fix.
-
-The sequence:
-opendir
-readdir
-readdir
-readdir
-closedir
-
-Is supposed to guarantee that all directory entries that exist from
-the time of openddir to the time of closedir are returned.
-
-If threads are being created and destroyed between opendir and
-closedir we can fail to show threads that exist the entire time.  A
-seek is particularly bad.
-
-So I am wondering if there is a way we can change first_tid and next_tid
-so that we can do better.
-
-The fact that people have large enough thread directories that they
-are hitting an overflow case suggests that eventually we will also have
-problems with missing threads, like we have saw with missing processes
-in the root directory of /proc, before that problem was fixed.
-
-One possibility is to encode the pid in the offset.  That is slightly
-better but it doesn't fix the restart case where that pid has existed
-as the thread list is not stored in pid order.  We add new threads
-to the tail of the thread list.  Which seems like the right thing
-to do.
-
-The only way I can see to actually make this robust is to ignore
-the thread list altogether.  Have an encoded form of the pid in
-the offset, and then walk the pid bitmap.  Only returning
-for entries that are in the proper thread group.  It will
-likely be a bit slower but if we need to support seeks there
-appears not helping it.
-
-Eric
