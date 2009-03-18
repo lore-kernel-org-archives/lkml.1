@@ -1,99 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755849AbZCRGHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZCRGJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755849AbZCRGHI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 02:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZCRGGz
+	id S1756119AbZCRGJg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 02:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbZCRGJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 02:06:55 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:39156 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753125AbZCRGGz (ORCPT
+	Wed, 18 Mar 2009 02:09:27 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42898 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752849AbZCRGJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 02:06:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ZB54YF6mSnG5VJ0KFXmz9wdpeBun/8S0DfCXngrxyeRWKv9mXEgHLb8FNfRtV5acno
-         Rgyshf/eZazI2gIdMWtuYlq9TTthTpUORIP8hy1p3t+W+dtEp+puA6Wpi7W4KjGvRDwm
-         KLgSAz3miYL36BMVamKtBQVZDW8bu3FGv9ULk=
-Subject: Re: [RFC][PATCH 3/4] tracing: add per-event filtering
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <alpine.DEB.2.00.0903172131340.10610@gandalf.stny.rr.com>
-References: <1237271031.8033.151.camel@charm-linux>
-	 <alpine.DEB.2.00.0903172131340.10610@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 01:06:50 -0500
-Message-Id: <1237356410.7922.11.camel@charm-linux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Mar 2009 02:09:27 -0400
+Date: Wed, 18 Mar 2009 02:09:19 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Anthony Liguori <aliguori@us.ibm.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: VIRTIO_BLK_T_SCSI_CMD handling in virtio-blk
+Message-ID: <20090318060919.GA21777@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Currently virtio-blk just sends down the payload for packet command
+requests, setting the VIRTIO_BLK_T_SCSI_CMD flag in the type field and
+zeroing out the sector field.
 
-On Tue, 2009-03-17 at 21:37 -0400, Steven Rostedt wrote:
-> 
-> 
-> On Tue, 17 Mar 2009, Tom Zanussi wrote:
-> > diff --git a/kernel/trace/trace_events_stage_3.h b/kernel/trace/trace_events_stage_3.h
-> > index 30627d8..d556274 100644
-> > --- a/kernel/trace/trace_events_stage_3.h
-> > +++ b/kernel/trace/trace_events_stage_3.h
-> > @@ -154,6 +154,7 @@ static struct ftrace_event_call event_##call;				\
-> >  									\
-> >  static void ftrace_raw_event_##call(proto)				\
-> >  {									\
-> > +	struct ftrace_event_call *call = &event_##call;			\
-> >  	struct ring_buffer_event *event;				\
-> >  	struct ftrace_raw_##call *entry;				\
-> >  	unsigned long irq_flags;					\
-> > @@ -172,6 +173,9 @@ static void ftrace_raw_event_##call(proto)				\
-> >  	assign;								\
-> >  									\
-> >  	trace_current_buffer_unlock_commit(event, irq_flags, pc);	\
-> 
-> I have a concern hear about races.  Once the commit happens, there's 
-> nothing protecting us from being preempted. The reader could in fact come 
-> in and consume the commit, and a new write may happen, and this discard 
-> will corrupt the data in the buffer. Also in overwrite mode, the writer 
-> itself can over write this.
-> 
-> Would you be able to move the above unlock_commit after this.
-> I'll make the necessary changes in the commit to check for discarded data.
-> 
+But to make any sense of the payload of a packet command we need the
+scsi command block (request->cmd) which specifies the operation,
+location and length for this command.
 
-Yeah, I had meant to do that, but was having enough trouble with the
-ring-buffer stuff that I wanted to avoid wondering what might happen if
-I discarded an uncommitted event at that point.
+All backends that I checked just fail VIRTIO_BLK_T_SCSI_CMD commands, so
+AFAICS no harm is done.  But should we really keep this broken support
+in the protocol around?  If we do want to support packet commands in
+the future we should probably just add the command as the first S/G list
+entry.
 
-I'll make that change in the next version.
-
-Tom
-
-> Thanks,
-> 
-> -- Steve
-> 
-> 
-> 
-> > +									
-> \ > +	if (call->preds && !filter_match_preds(call, entry))		\
-> > +		rb_event_discard(event);				\
-> >  }									\
-> >  									\
-> >  static int ftrace_raw_reg_event_##call(void)				\
-> > -- 
-> > 1.5.6.3
-> > 
-> > 
-> > 
-> > 
-> > 
-> > 
-> > 
-
+Is there an actual protocol spec for virtio-blk somewhere to write these
+subtilities down?  Or an list of implementations to check at least?
