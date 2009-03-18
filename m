@@ -1,84 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbZCRDih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZCRD4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757315AbZCRDih (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 23:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbZCRDi2
+	id S1754612AbZCRD4T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 23:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbZCRD4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 23:38:28 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53473 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753011AbZCRDi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 23:38:27 -0400
-Message-ID: <73A3CDD08FF1439AA767D691B6F67845@zhaoleiwin>
-From: "Zhaolei" <zhaolei@cn.fujitsu.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Frederic Weisbecker" <fweisbec@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
-References: <1237239660-6342-1-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903161808530.5094@gandalf.stny.rr.com>
-Subject: Re: [PATCH] tracing/ftrace: fix the check on nopped sites
-Date: Wed, 18 Mar 2009 11:37:15 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+	Tue, 17 Mar 2009 23:56:06 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37470 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbZCRD4F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 23:56:05 -0400
+Date: Wed, 18 Mar 2009 12:54:34 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: bharata@linux.vnet.ibm.com
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, balbir@linux.vnet.ibm.com,
+       Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
+ cpuacct_charge() safe when rcupreempt is used.
+Message-Id: <20090318125434.63d833e4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090318032558.GB3960@in.ibm.com>
+References: <20090317061754.GD3314@in.ibm.com>
+	<49BF42FB.4030103@cn.fujitsu.com>
+	<20090317073649.GH3314@in.ibm.com>
+	<20090317131251.GU16897@balbir.in.ibm.com>
+	<1237296361.7867.16.camel@twins>
+	<20090317135938.GV16897@balbir.in.ibm.com>
+	<1237298686.7867.17.camel@twins>
+	<20090318032558.GB3960@in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2I3cdqu003016
 
-* From: "Steven Rostedt" <rostedt@goodmis.org>
-> 
-> 
-> On Mon, 16 Mar 2009, Frederic Weisbecker wrote:
-> 
->> Impact: fix a dynamic tracing failure
->> 
->> Recently, the function and function graph tracers failed to use dynamic
->> tracing after the following commit:
->> 
->> fa9d13cf135efbd454453a53b6299976bea245a9
->> (ftrace: don't try to __ftrace_replace_code on !FTRACE_FL_CONVERTED rec)
->> 
->> The patch is right except a mistake on the check for the FTRACE_FL_CONVERTED
->> flag. The code patching is aborted in case of successfully nopped sites.
->> What we want is the opposite: ignore the callsites that haven't been nopped.
->> 
->> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->> ---
->>  kernel/trace/ftrace.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->> 
->> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
->> index 90d5729..7847806 100644
->> --- a/kernel/trace/ftrace.c
->> +++ b/kernel/trace/ftrace.c
->> @@ -537,7 +537,7 @@ static void ftrace_replace_code(int enable)
->>  */
->>  if (rec->flags & FTRACE_FL_FREE ||
->>      rec->flags & FTRACE_FL_FAILED ||
->> -     rec->flags & FTRACE_FL_CONVERTED)
->> +     !(rec->flags & FTRACE_FL_CONVERTED))
->>  continue;
->>  
->>  /* ignore updates to this record's mcount site */
->> -- 
-Hello, 
+On Wed, 18 Mar 2009 08:55:58 +0530
+Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
 
-Sorry for my fault.
+> On Tue, Mar 17, 2009 at 03:04:46PM +0100, Peter Zijlstra wrote:
+> > On Tue, 2009-03-17 at 19:29 +0530, Balbir Singh wrote:
+> > > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-03-17 14:26:01]:
+> > > 
+> > > > On Tue, 2009-03-17 at 18:42 +0530, Balbir Singh wrote:
+> > > > 
+> > > > > I'd like to get the patches in -tip and see the results, I would
+> > > > > recommend using percpu_counter_sum() while reading the data as an
+> > > > > enhancement to this patch. If user space does not overwhelm with a lot
+> > > > > of reads, sum would work out better.
+> > > > 
+> > > > You trust userspace? I'd rather not.
+> > > >
+> > > 
+> > > Fair enough.. A badly written application monitor can frequently read
+> > > this data and cause horrible performance issues. On the other hand
+> > > large number of CPUs can make the lag even worse. Is it time yet for
+> > > percpu_counter batch numbers? I've tested this patch and the results
+> > > were not badly off the mark. 
+> > 
+> > I'd rather err on the side of caution here, you might get some crazy
+> > folks depending on it and then expecting us to maintain it.
+> 
+> So if we want to be cautious, we could use percpu_counter_sum() as
+> Balbir suggested. That would address both the issues with percpu_counter
+> that I pointed out earlier:
+> 
+> - Readers are serialized with writers and we get consistent/correct
+>   values during reads.
+> - Negates the effect of batching and reads would always get updated/current
+>   values.
+> 
 
-B.R.
-Zhaolei
+Is this wrong ?
+==
+-- CONFIG_32BIT
+s64 static inline s64 percpu_counter_read_slow(struct percpu_counter *fbc)
+{
+   s64 val;
+retry:
+    val = fbc->counter;
+    smp_mb();
+    wait_spin_unlock(&fbc->lock);
+    if (fbc->counter < val) {
+            goto retry;
+    return val;
+}
+==
+
+Thanks,
+-Kame
+
+
+> Regards,
+> Bharata.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> Heh, I just found this bug too, and wrote a patch. But you posted before I 
-> did, so I'll let you have it ;-)
-> 
-> Acked-by: Steven Rostedt <srostedt@redhat.com>
-> 
-> -- Steve
-> 
-> 
->ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+
