@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758376AbZCRQ61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758402AbZCRQ66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758376AbZCRQ61 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 12:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbZCRQ6S
+	id S1758402AbZCRQ66 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 12:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbZCRQ6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 12:58:18 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:35223 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753831AbZCRQ6R (ORCPT
+	Wed, 18 Mar 2009 12:58:45 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:36447 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755683AbZCRQ6n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 12:58:17 -0400
-Message-ID: <49C128A0.7030805@oracle.com>
-Date: Wed, 18 Mar 2009 10:00:16 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 18 Mar 2009 12:58:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=OCEtxjmro5wAcR7xmXnMCKEQUV0lA2GZU8KPHdFK2g7dWBHSXK9PEXeFP6Dq1ugiN/
+         mKj5rvTZwpQVJycHlJfNhDa1acOFKJqFw/9obqf3o1Ou/ez/xIosZn8xryzCc1O2fJ8g
+         gPqvVnuRd4PxyG41maLPgv4AGsWw/dzpR81CQ=
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: [PATCH] staging/line6: fix build error, select SND_RAWMIDI
-References: <20090318173830.7ea03dfb.sfr@canb.auug.org.au>
-In-Reply-To: <20090318173830.7ea03dfb.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <a4423d670903180734w7270a4f3qa2af3981b969436c@mail.gmail.com>
+References: <a4423d670903180734w7270a4f3qa2af3981b969436c@mail.gmail.com>
+Date: Wed, 18 Mar 2009 19:58:40 +0300
+Message-ID: <a4423d670903180958j4847717eh99a41534633dd314@mail.gmail.com>
+Subject: Re: next-20090318: sunhme does not transmit packets
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.49C1281C.0026:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+2009/3/18 Alexander Beregalov <a.beregalov@gmail.com>:
+> Hi
+>
+> Ultra 10 can boot, it receives DHCP answer, ssh works, but few minutes
+> after machine becomes unresponsible by net at all.
+> It does not respond even on ARP requests.
+>
+> On Sparc host I see that `TX packets` does not grow, but RX grows.
+> The state of the interface is
+> UP BROADCAST RUNNING MULTICAST
+>
+> There is no relevant kernel messages in dmesg.
+>
+> next-20090317 worked fine.
+>
+>
+> Let me know if I can help.
+>
 
-line6 needs to select SND_RAWMIDI, like many other drivers do.
+I have reproduced it on next-20090318 for the second time, but still
+do not know how.
+next-20090317 might be affected.
 
-ERROR: "snd_rawmidi_set_ops" [drivers/staging/line6/line6usb.ko] undefined!
-ERROR: "snd_rawmidi_new" [drivers/staging/line6/line6usb.ko] undefined!
-ERROR: "snd_rawmidi_transmit_peek" [drivers/staging/line6/line6usb.ko] undefined!
-ERROR: "snd_rawmidi_transmit_ack" [drivers/staging/line6/line6usb.ko] undefined!
-ERROR: "snd_rawmidi_receive" [drivers/staging/line6/line6usb.ko] undefined!
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/staging/line6/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-next-20090318.orig/drivers/staging/line6/Kconfig
-+++ linux-next-20090318/drivers/staging/line6/Kconfig
-@@ -1,6 +1,7 @@
- config LINE6_USB
- 	tristate "Line6 USB support"
- 	depends on USB && SND
-+	select SND_RAWMIDI
- 	help
- 	  This is a driver for the guitar amp, cab, and effects modeller
- 	  PODxt Pro by Line6 (and similar devices), supporting the
+Now both packet counters grow, but tcpdump cannot capture any packet.
