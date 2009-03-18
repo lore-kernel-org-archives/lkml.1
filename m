@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbZCRUgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbZCRUhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758318AbZCRUgZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 16:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbZCRUb5
+	id S1757958AbZCRUhA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 16:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbZCRUb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 16:31:57 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56215 "EHLO
+	Wed, 18 Mar 2009 16:31:59 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56235 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752204AbZCRUbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 16:31:44 -0400
+	id S1753565AbZCRUbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 16:31:45 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 07/57] microblaze_v7: Signal support
-Date: Wed, 18 Mar 2009 21:30:34 +0100
-Message-Id: <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 14/57] microblaze_v7: defconfig file
+Date: Wed, 18 Mar 2009 21:30:41 +0100
+Message-Id: <20227d6f2615060d6560785090513e251cbe2654.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <eaa0169a360a328883ab0eabd2a189c21bad4c30.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -24,6 +24,13 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu>
  <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu>
  <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>
+ <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu>
+ <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>
+ <f7c1685bd3f387be8633db5fb3dd4cb5e7c2d792.1237407249.git.monstr@monstr.eu>
+ <2f48efc353c11dfdfc7b052bdfe052b71c09ab23.1237407249.git.monstr@monstr.eu>
+ <f7f2d17e21a3df9931c75976c37a003d11190cc9.1237407249.git.monstr@monstr.eu>
+ <58cf06c85e07477170677b72ce3437af10476bec.1237407249.git.monstr@monstr.eu>
+ <eaa0169a360a328883ab0eabd2a189c21bad4c30.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,725 +42,818 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/signal.h |  165 +++++++++++
- arch/microblaze/kernel/signal.c      |  536 ++++++++++++++++++++++++++++++++++
- 2 files changed, 701 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/signal.h
- create mode 100644 arch/microblaze/kernel/signal.c
+ arch/microblaze/configs/nommu_defconfig |  802 +++++++++++++++++++++++++++++++
+ 1 files changed, 802 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/configs/nommu_defconfig
 
-diff --git a/arch/microblaze/include/asm/signal.h b/arch/microblaze/include/asm/signal.h
+diff --git a/arch/microblaze/configs/nommu_defconfig b/arch/microblaze/configs/nommu_defconfig
 new file mode 100644
-index 0000000..9676fad
+index 0000000..c1ca9cc
 --- /dev/null
-+++ b/arch/microblaze/include/asm/signal.h
-@@ -0,0 +1,165 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *	Yasushi SHOJI <yashi@atmark-techno.com>
-+ *	Tetsuya OHKAWA <tetsuya@atmark-techno.com>
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SIGNAL_H
-+#define _ASM_MICROBLAZE_SIGNAL_H
-+
-+#define SIGHUP		1
-+#define SIGINT		2
-+#define SIGQUIT		3
-+#define SIGILL		4
-+#define SIGTRAP		5
-+#define SIGABRT		6
-+#define SIGIOT		6
-+#define SIGBUS		7
-+#define SIGFPE		8
-+#define SIGKILL		9
-+#define SIGUSR1		10
-+#define SIGSEGV		11
-+#define SIGUSR2		12
-+#define SIGPIPE		13
-+#define SIGALRM		14
-+#define SIGTERM		15
-+#define SIGSTKFLT	16
-+#define SIGCHLD		17
-+#define SIGCONT		18
-+#define SIGSTOP		19
-+#define SIGTSTP		20
-+#define SIGTTIN		21
-+#define SIGTTOU		22
-+#define SIGURG		23
-+#define SIGXCPU		24
-+#define SIGXFSZ		25
-+#define SIGVTALRM	26
-+#define SIGPROF		27
-+#define SIGWINCH	28
-+#define SIGIO		29
-+#define SIGPOLL		SIGIO
-+/*
-+#define SIGLOST		29
-+*/
-+#define SIGPWR		30
-+#define SIGSYS		31
-+#define	SIGUNUSED	31
-+
-+/* These should not be considered constants from userland. */
-+#define SIGRTMIN	32
-+#define SIGRTMAX	_NSIG
-+
-+/*
-+ * SA_FLAGS values:
-+ *
-+ * SA_ONSTACK indicates that a registered stack_t will be used.
-+ * SA_RESTART flag to get restarting signals (which were the default long ago)
-+ * SA_NOCLDSTOP flag to turn off SIGCHLD when children stop.
-+ * SA_RESETHAND clears the handler when the signal is delivered.
-+ * SA_NOCLDWAIT flag on SIGCHLD to inhibit zombies.
-+ * SA_NODEFER prevents the current signal from being masked in the handler.
-+ *
-+ * SA_ONESHOT and SA_NOMASK are the historical Linux names for the Single
-+ * Unix names RESETHAND and NODEFER respectively.
-+ */
-+#define SA_NOCLDSTOP	0x00000001
-+#define SA_NOCLDWAIT	0x00000002
-+#define SA_SIGINFO	0x00000004
-+#define SA_ONSTACK	0x08000000
-+#define SA_RESTART	0x10000000
-+#define SA_NODEFER	0x40000000
-+#define SA_RESETHAND	0x80000000
-+
-+#define SA_NOMASK	SA_NODEFER
-+#define SA_ONESHOT	SA_RESETHAND
-+
-+#define SA_RESTORER	0x04000000
-+
-+/*
-+ * sigaltstack controls
-+ */
-+#define SS_ONSTACK	1
-+#define SS_DISABLE	2
-+
-+#define MINSIGSTKSZ	2048
-+#define SIGSTKSZ	8192
-+
-+# ifndef __ASSEMBLY__
-+# include <linux/types.h>
-+# include <asm-generic/signal.h>
-+
-+/* Avoid too many header ordering problems. */
-+struct siginfo;
-+
-+#  ifdef __KERNEL__
-+/*
-+ * Most things should be clean enough to redefine this at will, if care
-+ * is taken to make libc match.
-+ */
-+#  define _NSIG		64
-+#  define _NSIG_BPW	32
-+#  define _NSIG_WORDS	(_NSIG / _NSIG_BPW)
-+
-+typedef unsigned long old_sigset_t; /* at least 32 bits */
-+
-+typedef struct {
-+	unsigned long sig[_NSIG_WORDS];
-+} sigset_t;
-+
-+struct old_sigaction {
-+	__sighandler_t sa_handler;
-+	old_sigset_t sa_mask;
-+	unsigned long sa_flags;
-+	void (*sa_restorer)(void);
-+};
-+
-+struct sigaction {
-+	__sighandler_t sa_handler;
-+	unsigned long sa_flags;
-+	void (*sa_restorer)(void);
-+	sigset_t sa_mask; /* mask last for extensibility */
-+};
-+
-+struct k_sigaction {
-+	struct sigaction sa;
-+};
-+
-+#  include <asm/sigcontext.h>
-+#  undef __HAVE_ARCH_SIG_BITOPS
-+
-+#  define ptrace_signal_deliver(regs, cookie) do { } while (0)
-+
-+#  else /* !__KERNEL__ */
-+
-+/* Here we must cater to libcs that poke about in kernel headers. */
-+
-+#  define NSIG		32
-+typedef unsigned long sigset_t;
-+
-+struct sigaction {
-+	union {
-+	__sighandler_t _sa_handler;
-+	void (*_sa_sigaction)(int, struct siginfo *, void *);
-+	} _u;
-+	sigset_t sa_mask;
-+	unsigned long sa_flags;
-+	void (*sa_restorer)(void);
-+};
-+
-+#  define sa_handler	_u._sa_handler
-+#  define sa_sigaction	_u._sa_sigaction
-+
-+#  endif /* __KERNEL__ */
-+
-+typedef struct sigaltstack {
-+	void *ss_sp;
-+	int ss_flags;
-+	size_t ss_size;
-+} stack_t;
-+
-+# endif /* __ASSEMBLY__ */
-+#endif /* _ASM_MICROBLAZE_SIGNAL_H */
-diff --git a/arch/microblaze/kernel/signal.c b/arch/microblaze/kernel/signal.c
-new file mode 100644
-index 0000000..8f82e23
---- /dev/null
-+++ b/arch/microblaze/kernel/signal.c
-@@ -0,0 +1,536 @@
-+/*
-+ * Signal handling
-+ *
-+ * Copyright (C) 2003,2004 John Williams <jwilliams@itee.uq.edu.au>
-+ * Copyright (C) 2001 NEC Corporation
-+ * Copyright (C) 2001 Miles Bader <miles@gnu.org>
-+ * Copyright (C) 1999,2000 Niibe Yutaka & Kaz Kojima
-+ * Copyright (C) 1991,1992 Linus Torvalds
-+ *
-+ * 1997-11-28 Modified for POSIX.1b signals by Richard Henderson
-+ *
-+ * This file was was derived from the sh version, arch/sh/kernel/signal.c
-+ *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file COPYING in the main directory of this
-+ * archive for more details.
-+ */
-+
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/smp.h>
-+#include <linux/smp_lock.h>
-+#include <linux/kernel.h>
-+#include <linux/signal.h>
-+#include <linux/errno.h>
-+#include <linux/wait.h>
-+#include <linux/ptrace.h>
-+#include <linux/unistd.h>
-+#include <linux/stddef.h>
-+#include <linux/personality.h>
-+#include <linux/percpu.h>
-+#include <linux/linkage.h>
-+#include <asm/entry.h>
-+#include <asm/ucontext.h>
-+#include <linux/uaccess.h>
-+#include <asm/pgtable.h>
-+#include <asm/pgalloc.h>
-+#include <linux/signal.h>
-+#include <linux/syscalls.h>
-+#include <asm/cacheflush.h>
-+#include <asm/syscalls.h>
-+
-+#define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
-+
-+asmlinkage int do_signal(struct pt_regs *regs, sigset_t *oldset, int in_sycall);
-+
-+/*
-+ * Atomically swap in the new signal mask, and wait for a signal.
-+ */
-+asmlinkage int
-+sys_sigsuspend(old_sigset_t mask, struct pt_regs *regs)
-+{
-+	sigset_t saveset;
-+
-+	mask &= _BLOCKABLE;
-+	spin_lock_irq(&current->sighand->siglock);
-+	saveset = current->blocked;
-+	siginitset(&current->blocked, mask);
-+	recalc_sigpending();
-+	spin_unlock_irq(&current->sighand->siglock);
-+
-+	regs->r3 = -EINTR;
-+	while (1) {
-+		current->state = TASK_INTERRUPTIBLE;
-+		schedule();
-+		if (do_signal(regs, &saveset, 1))
-+			return -EINTR;
-+	}
-+}
-+
-+asmlinkage int
-+sys_rt_sigsuspend(sigset_t __user *unewset, size_t sigsetsize,
-+		struct pt_regs *regs)
-+{
-+	sigset_t saveset, newset;
-+
-+	/* XXX: Don't preclude handling different sized sigset_t's. */
-+	if (sigsetsize != sizeof(sigset_t))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&newset, unewset, sizeof(newset)))
-+		return -EFAULT;
-+	sigdelsetmask(&newset, ~_BLOCKABLE);
-+	spin_lock_irq(&current->sighand->siglock);
-+	saveset = current->blocked;
-+	current->blocked = newset;
-+	recalc_sigpending();
-+	spin_unlock_irq(&current->sighand->siglock);
-+
-+	regs->r3 = -EINTR;
-+	while (1) {
-+		current->state = TASK_INTERRUPTIBLE;
-+		schedule();
-+		if (do_signal(regs, &saveset, 1))
-+			return -EINTR;
-+	}
-+}
-+
-+asmlinkage int
-+sys_sigaction(int sig, const struct old_sigaction *act,
-+		struct old_sigaction *oact)
-+{
-+	struct k_sigaction new_ka, old_ka;
-+	int ret;
-+
-+	if (act) {
-+		old_sigset_t mask;
-+		if (!access_ok(VERIFY_READ, act, sizeof(*act)) ||
-+			__get_user(new_ka.sa.sa_handler, &act->sa_handler) ||
-+			__get_user(new_ka.sa.sa_restorer, &act->sa_restorer))
-+			return -EFAULT;
-+		__get_user(new_ka.sa.sa_flags, &act->sa_flags);
-+		__get_user(mask, &act->sa_mask);
-+		siginitset(&new_ka.sa.sa_mask, mask);
-+	}
-+
-+	ret = do_sigaction(sig, act ? &new_ka : NULL, oact ? &old_ka : NULL);
-+
-+	if (!ret && oact) {
-+		if (!access_ok(VERIFY_WRITE, oact, sizeof(*oact)) ||
-+			__put_user(old_ka.sa.sa_handler, &oact->sa_handler) ||
-+			__put_user(old_ka.sa.sa_restorer, &oact->sa_restorer))
-+			return -EFAULT;
-+		__put_user(old_ka.sa.sa_flags, &oact->sa_flags);
-+		__put_user(old_ka.sa.sa_mask.sig[0], &oact->sa_mask);
-+	}
-+
-+	return ret;
-+}
-+
-+asmlinkage int
-+sys_sigaltstack(const stack_t __user *uss, stack_t __user *uoss,
-+		struct pt_regs *regs)
-+{
-+	return do_sigaltstack(uss, uoss, regs->r1);
-+}
-+
-+/*
-+ * Do a signal return; undo the signal stack.
-+ */
-+
-+struct sigframe {
-+	struct sigcontext sc;
-+	unsigned long extramask[_NSIG_WORDS-1];
-+	unsigned long tramp[2];	/* signal trampoline */
-+};
-+
-+struct rt_sigframe {
-+	struct siginfo info;
-+	struct ucontext uc;
-+	unsigned long tramp[2];	/* signal trampoline */
-+};
-+
-+static int
-+restore_sigcontext(struct pt_regs *regs, struct sigcontext *sc, int *rval_p)
-+{
-+	unsigned int err = 0;
-+
-+#define COPY(x)		{err |= __get_user(regs->x, &sc->regs.x);}
-+	COPY(r0);
-+	COPY(r1);
-+	COPY(r2);	COPY(r3);	COPY(r4);	COPY(r5);
-+	COPY(r6);	COPY(r7);	COPY(r8);	COPY(r9);
-+	COPY(r10);	COPY(r11);	COPY(r12);	COPY(r13);
-+	COPY(r14);	COPY(r15);	COPY(r16);	COPY(r17);
-+	COPY(r18);	COPY(r19);	COPY(r20);	COPY(r21);
-+	COPY(r22);	COPY(r23);	COPY(r24);	COPY(r25);
-+	COPY(r26);	COPY(r27);	COPY(r28);	COPY(r29);
-+	COPY(r30);	COPY(r31);
-+	COPY(pc);	COPY(ear);	COPY(esr);	COPY(fsr);
-+#undef COPY
-+
-+	*rval_p = regs->r3;
-+
-+	return err;
-+}
-+
-+asmlinkage int sys_sigreturn(struct pt_regs *regs)
-+{
-+	struct sigframe *frame = (struct sigframe *)regs->r1;
-+	sigset_t set;
-+	int rval;
-+
-+	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
-+		goto badframe;
-+
-+	if (__get_user(set.sig[0], &frame->sc.oldmask)
-+		|| (_NSIG_WORDS > 1
-+		&& __copy_from_user(&set.sig[1], &frame->extramask,
-+					sizeof(frame->extramask))))
-+		goto badframe;
-+
-+	sigdelsetmask(&set, ~_BLOCKABLE);
-+
-+	spin_lock_irq(&current->sighand->siglock);
-+	current->blocked = set;
-+	recalc_sigpending();
-+	spin_unlock_irq(&current->sighand->siglock);
-+
-+	if (restore_sigcontext(regs, &frame->sc, &rval))
-+		goto badframe;
-+	return rval;
-+
-+badframe:
-+	force_sig(SIGSEGV, current);
-+	return 0;
-+}
-+
-+asmlinkage int sys_rt_sigreturn(struct pt_regs *regs)
-+{
-+	struct rt_sigframe *frame = (struct rt_sigframe *)regs->r1;
-+	sigset_t set;
-+	stack_t st;
-+	int rval;
-+
-+	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
-+		goto badframe;
-+
-+	if (__copy_from_user(&set, &frame->uc.uc_sigmask, sizeof(set)))
-+		goto badframe;
-+
-+	sigdelsetmask(&set, ~_BLOCKABLE);
-+	spin_lock_irq(&current->sighand->siglock);
-+	current->blocked = set;
-+	recalc_sigpending();
-+	spin_unlock_irq(&current->sighand->siglock);
-+
-+	if (restore_sigcontext(regs, &frame->uc.uc_mcontext, &rval))
-+		goto badframe;
-+
-+	if (__copy_from_user((void *)&st, &frame->uc.uc_stack, sizeof(st)))
-+		goto badframe;
-+	/* It is more difficult to avoid calling this function than to
-+	 call it and ignore errors. */
-+	do_sigaltstack(&st, NULL, regs->r1);
-+
-+	return rval;
-+
-+badframe:
-+	force_sig(SIGSEGV, current);
-+	return 0;
-+}
-+
-+/*
-+ * Set up a signal frame.
-+ */
-+
-+static int
-+setup_sigcontext(struct sigcontext *sc, struct pt_regs *regs,
-+		unsigned long mask)
-+{
-+	int err = 0;
-+
-+#define COPY(x)		{err |= __put_user(regs->x, &sc->regs.x);}
-+	COPY(r0);
-+	COPY(r1);
-+	COPY(r2);	COPY(r3);	COPY(r4);	COPY(r5);
-+	COPY(r6);	COPY(r7);	COPY(r8);	COPY(r9);
-+	COPY(r10);	COPY(r11);	COPY(r12);	COPY(r13);
-+	COPY(r14);	COPY(r15);	COPY(r16);	COPY(r17);
-+	COPY(r18);	COPY(r19);	COPY(r20);	COPY(r21);
-+	COPY(r22);	COPY(r23);	COPY(r24);	COPY(r25);
-+	COPY(r26);	COPY(r27);	COPY(r28);	COPY(r29);
-+	COPY(r30);	COPY(r31);
-+	COPY(pc);	COPY(ear);	COPY(esr);	COPY(fsr);
-+#undef COPY
-+
-+	err |= __put_user(mask, &sc->oldmask);
-+
-+	return err;
-+}
-+
-+/*
-+ * Determine which stack to use..
-+ */
-+static inline void *
-+get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size)
-+{
-+	/* Default to using normal stack */
-+	unsigned long sp = regs->r1;
-+
-+	if ((ka->sa.sa_flags & SA_ONSTACK) != 0 && !on_sig_stack(sp))
-+		sp = current->sas_ss_sp + current->sas_ss_size;
-+
-+	return (void *)((sp - frame_size) & -8UL);
-+}
-+
-+static void setup_frame(int sig, struct k_sigaction *ka,
-+			sigset_t *set, struct pt_regs *regs)
-+{
-+	struct sigframe *frame;
-+	int err = 0;
-+	int signal;
-+
-+	frame = get_sigframe(ka, regs, sizeof(*frame));
-+
-+	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
-+		goto give_sigsegv;
-+
-+	signal = current_thread_info()->exec_domain
-+		&& current_thread_info()->exec_domain->signal_invmap
-+		&& sig < 32
-+		? current_thread_info()->exec_domain->signal_invmap[sig]
-+		: sig;
-+
-+	err |= setup_sigcontext(&frame->sc, regs, set->sig[0]);
-+
-+	if (_NSIG_WORDS > 1) {
-+		err |= __copy_to_user(frame->extramask, &set->sig[1],
-+					sizeof(frame->extramask));
-+	}
-+
-+	/* Set up to return from userspace. If provided, use a stub
-+	 already in userspace. */
-+	/* minus 8 is offset to cater for "rtsd r15,8" offset */
-+	if (ka->sa.sa_flags & SA_RESTORER) {
-+		regs->r15 = ((unsigned long)ka->sa.sa_restorer)-8;
-+	} else {
-+		/* Note, these encodings are _big endian_! */
-+
-+		/* addi r12, r0, __NR_sigreturn */
-+		err |= __put_user(0x31800000 | __NR_sigreturn ,
-+				frame->tramp + 0);
-+		/* brki r14, 0x8 */
-+		err |= __put_user(0xb9cc0008, frame->tramp + 1);
-+
-+		/* Return from sighandler will jump to the tramp.
-+		 Negative 8 offset because return is rtsd r15, 8 */
-+		regs->r15 = ((unsigned long)frame->tramp)-8;
-+
-+		__invalidate_cache_sigtramp((unsigned long)frame->tramp);
-+	}
-+
-+	if (err)
-+		goto give_sigsegv;
-+
-+	/* Set up registers for signal handler */
-+	regs->r1 = (unsigned long) frame;
-+	/* Signal handler args: */
-+	regs->r5 = signal; /* Arg 0: signum */
-+	regs->r6 = (unsigned long) &frame->sc; /* arg 1: sigcontext */
-+
-+	/* Offset of 4 to handle microblaze rtid r14, 0 */
-+	regs->pc = (unsigned long)ka->sa.sa_handler;
-+
-+	set_fs(USER_DS);
-+
-+#ifdef DEBUG_SIG
-+	printk(KERN_INFO "SIG deliver (%s:%d): sp=%p pc=%08lx\n",
-+		current->comm, current->pid, frame, regs->pc);
-+#endif
-+
-+	return;
-+
-+give_sigsegv:
-+	if (sig == SIGSEGV)
-+		ka->sa.sa_handler = SIG_DFL;
-+	force_sig(SIGSEGV, current);
-+}
-+
-+static void setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
-+			sigset_t *set, struct pt_regs *regs)
-+{
-+	struct rt_sigframe *frame;
-+	int err = 0;
-+	int signal;
-+
-+	frame = get_sigframe(ka, regs, sizeof(*frame));
-+
-+	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
-+		goto give_sigsegv;
-+
-+	signal = current_thread_info()->exec_domain
-+		&& current_thread_info()->exec_domain->signal_invmap
-+		&& sig < 32
-+		? current_thread_info()->exec_domain->signal_invmap[sig]
-+		: sig;
-+
-+	err |= copy_siginfo_to_user(&frame->info, info);
-+
-+	/* Create the ucontext. */
-+	err |= __put_user(0, &frame->uc.uc_flags);
-+	err |= __put_user(0, &frame->uc.uc_link);
-+	err |= __put_user((void *)current->sas_ss_sp,
-+			&frame->uc.uc_stack.ss_sp);
-+	err |= __put_user(sas_ss_flags(regs->r1),
-+			&frame->uc.uc_stack.ss_flags);
-+	err |= __put_user(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
-+	err |= setup_sigcontext(&frame->uc.uc_mcontext,
-+			regs, set->sig[0]);
-+	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
-+
-+	/* Set up to return from userspace. If provided, use a stub
-+	 already in userspace. */
-+	/* minus 8 is offset to cater for "rtsd r15,8" */
-+	if (ka->sa.sa_flags & SA_RESTORER) {
-+		regs->r15 = ((unsigned long)ka->sa.sa_restorer)-8;
-+	} else {
-+		/* addi r12, r0, __NR_sigreturn */
-+		err |= __put_user(0x31800000 | __NR_rt_sigreturn ,
-+				frame->tramp + 0);
-+		/* brki r14, 0x8 */
-+		err |= __put_user(0xb9cc0008, frame->tramp + 1);
-+
-+		/* Return from sighandler will jump to the tramp.
-+		 Negative 8 offset because return is rtsd r15, 8 */
-+		regs->r15 = ((unsigned long)frame->tramp)-8;
-+
-+		__invalidate_cache_sigtramp((unsigned long)frame->tramp);
-+	}
-+
-+	if (err)
-+		goto give_sigsegv;
-+
-+	/* Set up registers for signal handler */
-+	regs->r1 = (unsigned long) frame;
-+	/* Signal handler args: */
-+	regs->r5 = signal; /* arg 0: signum */
-+	regs->r6 = (unsigned long) &frame->info; /* arg 1: siginfo */
-+	regs->r7 = (unsigned long) &frame->uc; /* arg2: ucontext */
-+	/* Offset to handle microblaze rtid r14, 0 */
-+	regs->pc = (unsigned long)ka->sa.sa_handler;
-+
-+	set_fs(USER_DS);
-+
-+#ifdef DEBUG_SIG
-+	printk(KERN_INFO "SIG deliver (%s:%d): sp=%p pc=%08lx\n",
-+		current->comm, current->pid, frame, regs->pc);
-+#endif
-+
-+	return;
-+
-+give_sigsegv:
-+	if (sig == SIGSEGV)
-+		ka->sa.sa_handler = SIG_DFL;
-+	force_sig(SIGSEGV, current);
-+}
-+
-+/* Handle restarting system calls */
-+static inline void
-+handle_restart(struct pt_regs *regs, struct k_sigaction *ka, int has_handler)
-+{
-+	switch (regs->r3) {
-+	case -ERESTART_RESTARTBLOCK:
-+	case -ERESTARTNOHAND:
-+		if (!has_handler)
-+			goto do_restart;
-+		regs->r3 = -EINTR;
-+		break;
-+	case -ERESTARTSYS:
-+		if (has_handler && !(ka->sa.sa_flags & SA_RESTART)) {
-+			regs->r3 = -EINTR;
-+			break;
-+	}
-+	/* fallthrough */
-+	case -ERESTARTNOINTR:
-+do_restart:
-+		/* offset of 4 bytes to re-execute trap (brki) instruction */
-+		regs->pc -= 4;
-+		break;
-+	}
-+}
-+
-+/*
-+ * OK, we're invoking a handler
-+ */
-+
-+static void
-+handle_signal(unsigned long sig, struct k_sigaction *ka,
-+		siginfo_t *info, sigset_t *oldset, struct pt_regs *regs)
-+{
-+	/* Set up the stack frame */
-+	if (ka->sa.sa_flags & SA_SIGINFO)
-+		setup_rt_frame(sig, ka, info, oldset, regs);
-+	else
-+		setup_frame(sig, ka, oldset, regs);
-+
-+	if (ka->sa.sa_flags & SA_ONESHOT)
-+		ka->sa.sa_handler = SIG_DFL;
-+
-+	if (!(ka->sa.sa_flags & SA_NODEFER)) {
-+		spin_lock_irq(&current->sighand->siglock);
-+		sigorsets(&current->blocked,
-+				&current->blocked, &ka->sa.sa_mask);
-+		sigaddset(&current->blocked, sig);
-+		recalc_sigpending();
-+		spin_unlock_irq(&current->sighand->siglock);
-+	}
-+}
-+
-+/*
-+ * Note that 'init' is a special process: it doesn't get signals it doesn't
-+ * want to handle. Thus you cannot kill init even with a SIGKILL even by
-+ * mistake.
-+ *
-+ * Note that we go through the signals twice: once to check the signals that
-+ * the kernel can handle, and then we build all the user-level signal handling
-+ * stack-frames in one go after that.
-+ */
-+int do_signal(struct pt_regs *regs, sigset_t *oldset, int in_syscall)
-+{
-+	siginfo_t info;
-+	int signr;
-+	struct k_sigaction ka;
-+#ifdef DEBUG_SIG
-+	printk(KERN_INFO "do signal: %p %p %d\n", regs, oldset, in_syscall);
-+	printk(KERN_INFO "do signal2: %lx %lx %ld [%lx]\n", regs->pc, regs->r1,
-+			regs->r12, current_thread_info()->flags);
-+#endif
-+	/*
-+	 * We want the common case to go fast, which
-+	 * is why we may in certain cases get here from
-+	 * kernel mode. Just return without doing anything
-+	 * if so.
-+	 */
-+	if (kernel_mode(regs))
-+		return 1;
-+
-+	if (!oldset)
-+		oldset = &current->blocked;
-+
-+	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
-+	if (signr > 0) {
-+		/* Whee! Actually deliver the signal. */
-+		if (in_syscall)
-+			handle_restart(regs, &ka, 1);
-+		handle_signal(signr, &ka, &info, oldset, regs);
-+		return 1;
-+	}
-+
-+	if (in_syscall)
-+		handle_restart(regs, NULL, 0);
-+
-+	/* Did we come from a system call? */
-+	return 0;
-+}
++++ b/arch/microblaze/configs/nommu_defconfig
+@@ -0,0 +1,802 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.29-rc8
++# Wed Mar 18 17:29:24 2009
++#
++CONFIG_MICROBLAZE=y
++# CONFIG_SWAP is not set
++CONFIG_RWSEM_GENERIC_SPINLOCK=y
++# CONFIG_ARCH_HAS_ILOG2_U32 is not set
++# CONFIG_ARCH_HAS_ILOG2_U64 is not set
++CONFIG_GENERIC_FIND_NEXT_BIT=y
++CONFIG_GENERIC_HWEIGHT=y
++CONFIG_GENERIC_HARDIRQS=y
++CONFIG_GENERIC_IRQ_PROBE=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_GENERIC_TIME=y
++# CONFIG_GENERIC_TIME_VSYSCALL is not set
++CONFIG_GENERIC_CLOCKEVENTS=y
++# CONFIG_PCI is not set
++# CONFIG_NO_DMA is not set
++CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
++
++#
++# General setup
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_BROKEN_ON_SMP=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
++CONFIG_LOCALVERSION=""
++CONFIG_LOCALVERSION_AUTO=y
++CONFIG_SYSVIPC=y
++CONFIG_SYSVIPC_SYSCTL=y
++CONFIG_POSIX_MQUEUE=y
++CONFIG_BSD_PROCESS_ACCT=y
++CONFIG_BSD_PROCESS_ACCT_V3=y
++# CONFIG_TASKSTATS is not set
++# CONFIG_AUDIT is not set
++
++#
++# RCU Subsystem
++#
++CONFIG_CLASSIC_RCU=y
++# CONFIG_TREE_RCU is not set
++# CONFIG_PREEMPT_RCU is not set
++# CONFIG_TREE_RCU_TRACE is not set
++# CONFIG_PREEMPT_RCU_TRACE is not set
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_LOG_BUF_SHIFT=17
++# CONFIG_GROUP_SCHED is not set
++# CONFIG_CGROUPS is not set
++CONFIG_SYSFS_DEPRECATED=y
++CONFIG_SYSFS_DEPRECATED_V2=y
++# CONFIG_RELAY is not set
++# CONFIG_NAMESPACES is not set
++# CONFIG_BLK_DEV_INITRD is not set
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
++CONFIG_SYSCTL=y
++CONFIG_ANON_INODES=y
++CONFIG_EMBEDDED=y
++CONFIG_SYSCTL_SYSCALL=y
++CONFIG_KALLSYMS=y
++CONFIG_KALLSYMS_ALL=y
++CONFIG_KALLSYMS_EXTRA_PASS=y
++# CONFIG_HOTPLUG is not set
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++CONFIG_ELF_CORE=y
++# CONFIG_BASE_FULL is not set
++CONFIG_FUTEX=y
++CONFIG_EPOLL=y
++CONFIG_SIGNALFD=y
++CONFIG_TIMERFD=y
++CONFIG_EVENTFD=y
++CONFIG_AIO=y
++CONFIG_VM_EVENT_COUNTERS=y
++CONFIG_COMPAT_BRK=y
++CONFIG_SLAB=y
++# CONFIG_SLUB is not set
++# CONFIG_SLOB is not set
++# CONFIG_PROFILING is not set
++# CONFIG_HAVE_GENERIC_DMA_COHERENT is not set
++CONFIG_SLABINFO=y
++CONFIG_RT_MUTEXES=y
++CONFIG_BASE_SMALL=1
++CONFIG_MODULES=y
++# CONFIG_MODULE_FORCE_LOAD is not set
++CONFIG_MODULE_UNLOAD=y
++# CONFIG_MODULE_FORCE_UNLOAD is not set
++# CONFIG_MODVERSIONS is not set
++# CONFIG_MODULE_SRCVERSION_ALL is not set
++CONFIG_BLOCK=y
++# CONFIG_LBD is not set
++# CONFIG_BLK_DEV_IO_TRACE is not set
++# CONFIG_BLK_DEV_BSG is not set
++# CONFIG_BLK_DEV_INTEGRITY is not set
++
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++CONFIG_IOSCHED_AS=y
++CONFIG_IOSCHED_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++# CONFIG_DEFAULT_AS is not set
++# CONFIG_DEFAULT_DEADLINE is not set
++CONFIG_DEFAULT_CFQ=y
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="cfq"
++
++#
++# Platform options
++#
++CONFIG_PLATFORM_GENERIC=y
++# CONFIG_SELFMOD is not set
++# CONFIG_OPT_LIB_FUNCTION is not set
++# CONFIG_ALLOW_EDIT_AUTO is not set
++CONFIG_KERNEL_BASE_ADDR=0x90000000
++CONFIG_XILINX_MICROBLAZE0_FAMILY="virtex5"
++CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR=1
++CONFIG_XILINX_MICROBLAZE0_USE_PCMP_INSTR=1
++CONFIG_XILINX_MICROBLAZE0_USE_BARREL=1
++CONFIG_XILINX_MICROBLAZE0_USE_DIV=1
++CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL=2
++CONFIG_XILINX_MICROBLAZE0_USE_FPU=2
++CONFIG_XILINX_MICROBLAZE0_HW_VER="7.10.d"
++
++#
++# Processor type and features
++#
++CONFIG_TICK_ONESHOT=y
++# CONFIG_NO_HZ is not set
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
++CONFIG_PREEMPT_NONE=y
++# CONFIG_PREEMPT_VOLUNTARY is not set
++# CONFIG_PREEMPT is not set
++CONFIG_HZ_100=y
++# CONFIG_HZ_250 is not set
++# CONFIG_HZ_300 is not set
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=100
++CONFIG_SCHED_HRTICK=y
++# CONFIG_MMU is not set
++CONFIG_NO_MMU=y
++
++#
++# Boot options
++#
++CONFIG_CMDLINE_BOOL=y
++CONFIG_CMDLINE="console=ttyUL0,115200"
++# CONFIG_CMDLINE_FORCE is not set
++CONFIG_OF=y
++CONFIG_OF_DEVICE=y
++CONFIG_PROC_DEVICETREE=y
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=y
++CONFIG_FLAT_NODE_MEM_MAP=y
++CONFIG_PAGEFLAGS_EXTENDED=y
++CONFIG_SPLIT_PTLOCK_CPUS=4
++# CONFIG_PHYS_ADDR_T_64BIT is not set
++CONFIG_ZONE_DMA_FLAG=0
++CONFIG_VIRT_TO_BUS=y
++
++#
++# Exectuable file formats
++#
++CONFIG_BINFMT_FLAT=y
++# CONFIG_BINFMT_ZFLAT is not set
++# CONFIG_BINFMT_SHARED_FLAT is not set
++# CONFIG_HAVE_AOUT is not set
++# CONFIG_BINFMT_MISC is not set
++CONFIG_NET=y
++
++#
++# Networking options
++#
++CONFIG_COMPAT_NET_DEV_OPS=y
++CONFIG_PACKET=y
++# CONFIG_PACKET_MMAP is not set
++CONFIG_UNIX=y
++CONFIG_XFRM=y
++# CONFIG_XFRM_USER is not set
++# CONFIG_XFRM_SUB_POLICY is not set
++# CONFIG_XFRM_MIGRATE is not set
++# CONFIG_XFRM_STATISTICS is not set
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++# CONFIG_IP_MULTICAST is not set
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=y
++# CONFIG_IP_PNP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_ARPD is not set
++# CONFIG_SYN_COOKIES is not set
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_XFRM_TUNNEL is not set
++# CONFIG_INET_TUNNEL is not set
++CONFIG_INET_XFRM_MODE_TRANSPORT=y
++CONFIG_INET_XFRM_MODE_TUNNEL=y
++CONFIG_INET_XFRM_MODE_BEET=y
++# CONFIG_INET_LRO is not set
++CONFIG_INET_DIAG=y
++CONFIG_INET_TCP_DIAG=y
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_CUBIC=y
++CONFIG_DEFAULT_TCP_CONG="cubic"
++# CONFIG_TCP_MD5SIG is not set
++# CONFIG_IPV6 is not set
++# CONFIG_NETWORK_SECMARK is not set
++# CONFIG_NETFILTER is not set
++# CONFIG_IP_DCCP is not set
++# CONFIG_IP_SCTP is not set
++# CONFIG_TIPC is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_NET_DSA is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
++# CONFIG_NET_SCHED is not set
++# CONFIG_DCB is not set
++
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_HAMRADIO is not set
++# CONFIG_CAN is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++# CONFIG_AF_RXRPC is not set
++# CONFIG_PHONET is not set
++CONFIG_WIRELESS=y
++# CONFIG_CFG80211 is not set
++CONFIG_WIRELESS_OLD_REGULATORY=y
++# CONFIG_WIRELESS_EXT is not set
++# CONFIG_LIB80211 is not set
++# CONFIG_MAC80211 is not set
++# CONFIG_WIMAX is not set
++# CONFIG_RFKILL is not set
++# CONFIG_NET_9P is not set
++
++#
++# Device Drivers
++#
++
++#
++# Generic Driver Options
++#
++CONFIG_STANDALONE=y
++# CONFIG_PREVENT_FIRMWARE_BUILD is not set
++# CONFIG_DEBUG_DRIVER is not set
++# CONFIG_DEBUG_DEVRES is not set
++# CONFIG_SYS_HYPERVISOR is not set
++# CONFIG_CONNECTOR is not set
++CONFIG_MTD=y
++# CONFIG_MTD_DEBUG is not set
++CONFIG_MTD_CONCAT=y
++CONFIG_MTD_PARTITIONS=y
++# CONFIG_MTD_TESTS is not set
++# CONFIG_MTD_REDBOOT_PARTS is not set
++CONFIG_MTD_CMDLINE_PARTS=y
++# CONFIG_MTD_AR7_PARTS is not set
++
++#
++# User Modules And Translation Layers
++#
++CONFIG_MTD_CHAR=y
++CONFIG_MTD_BLKDEVS=y
++CONFIG_MTD_BLOCK=y
++# CONFIG_FTL is not set
++# CONFIG_NFTL is not set
++# CONFIG_INFTL is not set
++# CONFIG_RFD_FTL is not set
++# CONFIG_SSFDC is not set
++# CONFIG_MTD_OOPS is not set
++
++#
++# RAM/ROM/Flash chip drivers
++#
++CONFIG_MTD_CFI=y
++# CONFIG_MTD_JEDECPROBE is not set
++CONFIG_MTD_GEN_PROBE=y
++# CONFIG_MTD_CFI_ADV_OPTIONS is not set
++CONFIG_MTD_MAP_BANK_WIDTH_1=y
++CONFIG_MTD_MAP_BANK_WIDTH_2=y
++CONFIG_MTD_MAP_BANK_WIDTH_4=y
++# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
++CONFIG_MTD_CFI_I1=y
++CONFIG_MTD_CFI_I2=y
++# CONFIG_MTD_CFI_I4 is not set
++# CONFIG_MTD_CFI_I8 is not set
++CONFIG_MTD_CFI_INTELEXT=y
++CONFIG_MTD_CFI_AMDSTD=y
++# CONFIG_MTD_CFI_STAA is not set
++CONFIG_MTD_CFI_UTIL=y
++CONFIG_MTD_RAM=y
++# CONFIG_MTD_ROM is not set
++# CONFIG_MTD_ABSENT is not set
++
++#
++# Mapping drivers for chip access
++#
++# CONFIG_MTD_COMPLEX_MAPPINGS is not set
++# CONFIG_MTD_PHYSMAP is not set
++CONFIG_MTD_UCLINUX=y
++# CONFIG_MTD_PLATRAM is not set
++
++#
++# Self-contained MTD device drivers
++#
++# CONFIG_MTD_SLRAM is not set
++# CONFIG_MTD_PHRAM is not set
++# CONFIG_MTD_MTDRAM is not set
++# CONFIG_MTD_BLOCK2MTD is not set
++
++#
++# Disk-On-Chip Device Drivers
++#
++# CONFIG_MTD_DOC2000 is not set
++# CONFIG_MTD_DOC2001 is not set
++# CONFIG_MTD_DOC2001PLUS is not set
++# CONFIG_MTD_NAND is not set
++# CONFIG_MTD_ONENAND is not set
++
++#
++# LPDDR flash memory drivers
++#
++# CONFIG_MTD_LPDDR is not set
++
++#
++# UBI - Unsorted block images
++#
++# CONFIG_MTD_UBI is not set
++# CONFIG_PARPORT is not set
++CONFIG_BLK_DEV=y
++# CONFIG_BLK_DEV_COW_COMMON is not set
++# CONFIG_BLK_DEV_LOOP is not set
++CONFIG_BLK_DEV_NBD=y
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=16
++CONFIG_BLK_DEV_RAM_SIZE=4096
++# CONFIG_BLK_DEV_XIP is not set
++# CONFIG_CDROM_PKTCDVD is not set
++# CONFIG_ATA_OVER_ETH is not set
++CONFIG_MISC_DEVICES=y
++# CONFIG_ENCLOSURE_SERVICES is not set
++# CONFIG_C2PORT is not set
++
++#
++# EEPROM support
++#
++# CONFIG_EEPROM_93CX6 is not set
++
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++# CONFIG_SCSI is not set
++# CONFIG_SCSI_DMA is not set
++# CONFIG_SCSI_NETLINK is not set
++# CONFIG_ATA is not set
++# CONFIG_MD is not set
++CONFIG_NETDEVICES=y
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_MACVLAN is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
++# CONFIG_VETH is not set
++# CONFIG_PHYLIB is not set
++CONFIG_NET_ETHERNET=y
++# CONFIG_MII is not set
++# CONFIG_DNET is not set
++# CONFIG_IBM_NEW_EMAC_ZMII is not set
++# CONFIG_IBM_NEW_EMAC_RGMII is not set
++# CONFIG_IBM_NEW_EMAC_TAH is not set
++# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
++# CONFIG_IBM_NEW_EMAC_NO_FLOW_CTRL is not set
++# CONFIG_IBM_NEW_EMAC_MAL_CLR_ICINTSTAT is not set
++# CONFIG_IBM_NEW_EMAC_MAL_COMMON_ERR is not set
++# CONFIG_B44 is not set
++CONFIG_NETDEV_1000=y
++CONFIG_NETDEV_10000=y
++
++#
++# Wireless LAN
++#
++# CONFIG_WLAN_PRE80211 is not set
++# CONFIG_WLAN_80211 is not set
++# CONFIG_IWLWIFI_LEDS is not set
++
++#
++# Enable WiMAX (Networking options) to see the WiMAX drivers
++#
++# CONFIG_WAN is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_NETCONSOLE is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
++# CONFIG_ISDN is not set
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++# CONFIG_INPUT is not set
++
++#
++# Hardware I/O ports
++#
++# CONFIG_SERIO is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++# CONFIG_VT is not set
++CONFIG_DEVKMEM=y
++# CONFIG_SERIAL_NONSTANDARD is not set
++
++#
++# Serial drivers
++#
++# CONFIG_SERIAL_8250 is not set
++
++#
++# Non-8250 serial port support
++#
++CONFIG_SERIAL_UARTLITE=y
++CONFIG_SERIAL_UARTLITE_CONSOLE=y
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++CONFIG_UNIX98_PTYS=y
++# CONFIG_DEVPTS_MULTIPLE_INSTANCES is not set
++CONFIG_LEGACY_PTYS=y
++CONFIG_LEGACY_PTY_COUNT=256
++# CONFIG_IPMI_HANDLER is not set
++CONFIG_HW_RANDOM=y
++# CONFIG_RTC is not set
++# CONFIG_GEN_RTC is not set
++# CONFIG_R3964 is not set
++# CONFIG_RAW_DRIVER is not set
++# CONFIG_TCG_TPM is not set
++# CONFIG_I2C is not set
++# CONFIG_SPI is not set
++# CONFIG_W1 is not set
++# CONFIG_POWER_SUPPLY is not set
++# CONFIG_HWMON is not set
++# CONFIG_THERMAL is not set
++# CONFIG_THERMAL_HWMON is not set
++# CONFIG_WATCHDOG is not set
++CONFIG_SSB_POSSIBLE=y
++
++#
++# Sonics Silicon Backplane
++#
++# CONFIG_SSB is not set
++
++#
++# Multifunction device drivers
++#
++# CONFIG_MFD_CORE is not set
++# CONFIG_MFD_SM501 is not set
++# CONFIG_HTC_PASIC3 is not set
++# CONFIG_MFD_TMIO is not set
++# CONFIG_REGULATOR is not set
++
++#
++# Multimedia devices
++#
++
++#
++# Multimedia core support
++#
++# CONFIG_VIDEO_DEV is not set
++# CONFIG_DVB_CORE is not set
++# CONFIG_VIDEO_MEDIA is not set
++
++#
++# Multimedia drivers
++#
++CONFIG_DAB=y
++
++#
++# Graphics support
++#
++# CONFIG_VGASTATE is not set
++CONFIG_VIDEO_OUTPUT_CONTROL=y
++# CONFIG_FB is not set
++# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++
++#
++# Display device support
++#
++# CONFIG_DISPLAY_SUPPORT is not set
++# CONFIG_SOUND is not set
++CONFIG_USB_SUPPORT=y
++# CONFIG_USB_ARCH_HAS_HCD is not set
++# CONFIG_USB_ARCH_HAS_OHCI is not set
++# CONFIG_USB_ARCH_HAS_EHCI is not set
++# CONFIG_USB_OTG_WHITELIST is not set
++# CONFIG_USB_OTG_BLACKLIST_HUB is not set
++
++#
++# Enable Host or Gadget support to see Inventra options
++#
++
++#
++# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may also be needed;
++#
++# CONFIG_USB_GADGET is not set
++
++#
++# OTG and related infrastructure
++#
++# CONFIG_MMC is not set
++# CONFIG_MEMSTICK is not set
++# CONFIG_NEW_LEDS is not set
++# CONFIG_ACCESSIBILITY is not set
++# CONFIG_RTC_CLASS is not set
++# CONFIG_DMADEVICES is not set
++# CONFIG_UIO is not set
++# CONFIG_STAGING is not set
++
++#
++# File systems
++#
++CONFIG_EXT2_FS=y
++# CONFIG_EXT2_FS_XATTR is not set
++# CONFIG_EXT3_FS is not set
++# CONFIG_EXT4_FS is not set
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++CONFIG_FS_POSIX_ACL=y
++CONFIG_FILE_LOCKING=y
++# CONFIG_XFS_FS is not set
++# CONFIG_OCFS2_FS is not set
++# CONFIG_BTRFS_FS is not set
++# CONFIG_DNOTIFY is not set
++# CONFIG_INOTIFY is not set
++# CONFIG_QUOTA is not set
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_SYSCTL=y
++CONFIG_SYSFS=y
++# CONFIG_TMPFS is not set
++# CONFIG_HUGETLB_PAGE is not set
++# CONFIG_CONFIGFS_FS is not set
++CONFIG_MISC_FILESYSTEMS=y
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_JFFS2_FS is not set
++CONFIG_CRAMFS=y
++# CONFIG_SQUASHFS is not set
++# CONFIG_VXFS_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_OMFS_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++CONFIG_ROMFS_FS=y
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++CONFIG_NETWORK_FILESYSTEMS=y
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++CONFIG_NFS_V3_ACL=y
++# CONFIG_NFS_V4 is not set
++# CONFIG_NFSD is not set
++CONFIG_LOCKD=y
++CONFIG_LOCKD_V4=y
++CONFIG_NFS_ACL_SUPPORT=y
++CONFIG_NFS_COMMON=y
++CONFIG_SUNRPC=y
++# CONFIG_SUNRPC_REGISTER_V4 is not set
++# CONFIG_RPCSEC_GSS_KRB5 is not set
++# CONFIG_RPCSEC_GSS_SPKM3 is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++
++#
++# Partition Types
++#
++# CONFIG_PARTITION_ADVANCED is not set
++CONFIG_MSDOS_PARTITION=y
++# CONFIG_NLS is not set
++# CONFIG_DLM is not set
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_ENABLE_WARN_DEPRECATED=y
++CONFIG_ENABLE_MUST_CHECK=y
++CONFIG_FRAME_WARN=1024
++# CONFIG_MAGIC_SYSRQ is not set
++CONFIG_UNUSED_SYMBOLS=y
++CONFIG_DEBUG_FS=y
++# CONFIG_HEADERS_CHECK is not set
++CONFIG_DEBUG_KERNEL=y
++CONFIG_DEBUG_SHIRQ=y
++CONFIG_DETECT_SOFTLOCKUP=y
++CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
++CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=1
++CONFIG_SCHED_DEBUG=y
++CONFIG_SCHEDSTATS=y
++CONFIG_TIMER_STATS=y
++CONFIG_DEBUG_OBJECTS=y
++CONFIG_DEBUG_OBJECTS_SELFTEST=y
++CONFIG_DEBUG_OBJECTS_FREE=y
++CONFIG_DEBUG_OBJECTS_TIMERS=y
++CONFIG_DEBUG_OBJECTS_ENABLE_DEFAULT=1
++# CONFIG_DEBUG_SLAB is not set
++# CONFIG_DEBUG_RT_MUTEXES is not set
++# CONFIG_RT_MUTEX_TESTER is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_MUTEXES is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
++# CONFIG_DEBUG_KOBJECT is not set
++CONFIG_DEBUG_INFO=y
++# CONFIG_DEBUG_VM is not set
++# CONFIG_DEBUG_NOMMU_REGIONS is not set
++# CONFIG_DEBUG_WRITECOUNT is not set
++# CONFIG_DEBUG_MEMORY_INIT is not set
++CONFIG_DEBUG_LIST=y
++CONFIG_DEBUG_SG=y
++# CONFIG_DEBUG_NOTIFIERS is not set
++# CONFIG_BOOT_PRINTK_DELAY is not set
++# CONFIG_RCU_TORTURE_TEST is not set
++# CONFIG_RCU_CPU_STALL_DETECTOR is not set
++# CONFIG_BACKTRACE_SELF_TEST is not set
++# CONFIG_DEBUG_BLOCK_EXT_DEVT is not set
++# CONFIG_FAULT_INJECTION is not set
++CONFIG_SYSCTL_SYSCALL_CHECK=y
++
++#
++# Tracers
++#
++# CONFIG_SCHED_TRACER is not set
++# CONFIG_CONTEXT_SWITCH_TRACER is not set
++# CONFIG_BOOT_TRACER is not set
++# CONFIG_TRACE_BRANCH_PROFILING is not set
++# CONFIG_DYNAMIC_PRINTK_DEBUG is not set
++# CONFIG_SAMPLES is not set
++CONFIG_EARLY_PRINTK=y
++CONFIG_HEART_BEAT=y
++# CONFIG_DEBUG_BOOTMEM is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++# CONFIG_SECURITYFS is not set
++# CONFIG_SECURITY_FILE_CAPABILITIES is not set
++CONFIG_CRYPTO=y
++
++#
++# Crypto core or helper
++#
++# CONFIG_CRYPTO_FIPS is not set
++# CONFIG_CRYPTO_MANAGER is not set
++# CONFIG_CRYPTO_MANAGER2 is not set
++# CONFIG_CRYPTO_GF128MUL is not set
++# CONFIG_CRYPTO_NULL is not set
++# CONFIG_CRYPTO_CRYPTD is not set
++# CONFIG_CRYPTO_AUTHENC is not set
++# CONFIG_CRYPTO_TEST is not set
++
++#
++# Authenticated Encryption with Associated Data
++#
++# CONFIG_CRYPTO_CCM is not set
++# CONFIG_CRYPTO_GCM is not set
++# CONFIG_CRYPTO_SEQIV is not set
++
++#
++# Block modes
++#
++# CONFIG_CRYPTO_CBC is not set
++# CONFIG_CRYPTO_CTR is not set
++# CONFIG_CRYPTO_CTS is not set
++# CONFIG_CRYPTO_ECB is not set
++# CONFIG_CRYPTO_LRW is not set
++# CONFIG_CRYPTO_PCBC is not set
++# CONFIG_CRYPTO_XTS is not set
++
++#
++# Hash modes
++#
++# CONFIG_CRYPTO_HMAC is not set
++# CONFIG_CRYPTO_XCBC is not set
++
++#
++# Digest
++#
++# CONFIG_CRYPTO_CRC32C is not set
++# CONFIG_CRYPTO_MD4 is not set
++# CONFIG_CRYPTO_MD5 is not set
++# CONFIG_CRYPTO_MICHAEL_MIC is not set
++# CONFIG_CRYPTO_RMD128 is not set
++# CONFIG_CRYPTO_RMD160 is not set
++# CONFIG_CRYPTO_RMD256 is not set
++# CONFIG_CRYPTO_RMD320 is not set
++# CONFIG_CRYPTO_SHA1 is not set
++# CONFIG_CRYPTO_SHA256 is not set
++# CONFIG_CRYPTO_SHA512 is not set
++# CONFIG_CRYPTO_TGR192 is not set
++# CONFIG_CRYPTO_WP512 is not set
++
++#
++# Ciphers
++#
++# CONFIG_CRYPTO_AES is not set
++# CONFIG_CRYPTO_ANUBIS is not set
++# CONFIG_CRYPTO_ARC4 is not set
++# CONFIG_CRYPTO_BLOWFISH is not set
++# CONFIG_CRYPTO_CAMELLIA is not set
++# CONFIG_CRYPTO_CAST5 is not set
++# CONFIG_CRYPTO_CAST6 is not set
++# CONFIG_CRYPTO_DES is not set
++# CONFIG_CRYPTO_FCRYPT is not set
++# CONFIG_CRYPTO_KHAZAD is not set
++# CONFIG_CRYPTO_SALSA20 is not set
++# CONFIG_CRYPTO_SEED is not set
++# CONFIG_CRYPTO_SERPENT is not set
++# CONFIG_CRYPTO_TEA is not set
++# CONFIG_CRYPTO_TWOFISH is not set
++
++#
++# Compression
++#
++# CONFIG_CRYPTO_DEFLATE is not set
++# CONFIG_CRYPTO_LZO is not set
++
++#
++# Random Number Generation
++#
++# CONFIG_CRYPTO_ANSI_CPRNG is not set
++CONFIG_CRYPTO_HW=y
++
++#
++# Library routines
++#
++CONFIG_GENERIC_FIND_LAST_BIT=y
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++# CONFIG_CRC_T10DIF is not set
++# CONFIG_CRC_ITU_T is not set
++# CONFIG_CRC32 is not set
++# CONFIG_CRC7 is not set
++# CONFIG_LIBCRC32C is not set
++CONFIG_ZLIB_INFLATE=y
++CONFIG_PLIST=y
++CONFIG_HAS_IOMEM=y
++CONFIG_HAS_IOPORT=y
++CONFIG_HAS_DMA=y
++CONFIG_HAVE_LMB=y
 -- 
 1.5.5.1
 
