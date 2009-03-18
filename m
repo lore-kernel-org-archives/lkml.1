@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757553AbZCRJYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbZCRJYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757553AbZCRJYR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 05:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757240AbZCRJWv
+	id S1757566AbZCRJYf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 05:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbZCRJWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 05:22:51 -0400
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:47446 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757123AbZCRJWu (ORCPT
+	Wed, 18 Mar 2009 05:22:55 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:37734 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755213AbZCRJWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 05:22:50 -0400
+	Wed, 18 Mar 2009 05:22:53 -0400
 From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: [PATCH 3 5/6] sched: Arbitrate the nomination of preferred_wakeup_cpu
+Subject: [PATCH 3 6/6] sched: Fix sd_parent_degenerate for
+	SD_POWERSAVINGS_BALANCE.
 To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>,
        "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
        "Ingo Molnar" <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, "Suresh Siddha" <suresh.b.siddha@intel.com>,
-       "Balbir Singh" <balbir@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
-Date: Wed, 18 Mar 2009 14:52:43 +0530
-Message-ID: <20090318092243.24787.92087.stgit@sofia.in.ibm.com>
+       "Balbir Singh" <balbir@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Date: Wed, 18 Mar 2009 14:52:48 +0530
+Message-ID: <20090318092248.24787.38811.stgit@sofia.in.ibm.com>
 In-Reply-To: <20090318092054.24787.18730.stgit@sofia.in.ibm.com>
 References: <20090318092054.24787.18730.stgit@sofia.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -29,117 +31,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently for sched_mc/smt_power_savings = 2, we consolidate tasks
-by having a preferred_wakeup_cpu which will be used for all the
-further wake ups.
+Currently a sched_domain having a single group can be prevented from getting
+degenerated if it contains a SD_POWERSAVINGS_BALANCE flag. But since it has
+only one group, it won't have any scope for performing powersavings balance as
+it does not have a sibling group to pull from.
 
-This preferred_wakeup_cpu is currently nominated by find_busiest_group()
-while loadbalancing for sched_domains which has SD_POWERSAVINGS_BALANCE flag
-set.
+Apart from not provide any powersavings, it also fails to participate
+in normal load-balancing.
 
-However, on systems which are multi-threaded and multi-core, we can
-have multiple sched_domains in the same hierarchy with
-SD_POWERSAVINGS_BALANCE flag set.
-
-Currently we don't have any arbitration mechanism as to while load balancing
-for which sched_domain in the hierarchy should find_busiest_group(sd)
-nominate the preferred_wakeup_cpu. Hence can overwrite valid nominations
-made previously thereby causing the preferred_wakup_cpu to ping-pong
-thereby preventing us from effectively consolidating tasks.
-
-Fix this by means of an arbitration algorithm, where in we nominate the
-preferred_wakeup_cpu sched_domain in find_busiest_group() for a particular
-sched_domain if the sched_domain:
-- is the topmost power aware sched_domain.
-	OR
-- contains the previously nominated preferred wake up cpu in it's span.
-
-This will help to further fine tune the wake-up biasing logic by
-identifying a partially busy core within a CPU package instead of
-potentially waking up a completely idle core.
+Fix this by allowing such a sched_domain to degenerate and pass on the
+responsibility of performing the POWERSAVINGS_BALANCE to it's parent domain.
 
 Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
 
- kernel/sched.c |   45 +++++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 43 insertions(+), 2 deletions(-)
+ kernel/sched.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 16d7655..651550c 100644
+index 651550c..0e7882a 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -522,6 +522,14 @@ struct root_domain {
- 	 * This is triggered at POWERSAVINGS_BALANCE_WAKEUP(2).
- 	 */
- 	unsigned int preferred_wakeup_cpu;
+@@ -6970,6 +6970,20 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
+ 				SD_SHARE_PKG_RESOURCES);
+ 		if (nr_node_ids == 1)
+ 			pflags &= ~SD_SERIALIZE;
 +
-+	/*
-+	 * top_powersavings_sd_lvl records the level of the highest
-+	 * sched_domain that has the SD_POWERSAVINGS_BALANCE flag set.
-+	 *
-+	 * Used to arbitrate nomination of the preferred_wakeup_cpu.
-+	 */
-+	enum sched_domain_level top_powersavings_sd_lvl;
- #endif
- };
- 
-@@ -3416,9 +3424,27 @@ out_balanced:
- 		goto ret;
- 
- 	if (this == group_leader && group_leader != group_min) {
-+		struct root_domain *my_rd = cpu_rq(this_cpu)->rd;
- 		*imbalance = min_load_per_task;
--		if (active_power_savings_level >= POWERSAVINGS_BALANCE_WAKEUP) {
--			cpu_rq(this_cpu)->rd->preferred_wakeup_cpu =
 +		/*
-+		 * To avoid overwriting of preferred_wakeup_cpu nominations
-+		 * while calling find_busiest_group() at various sched_domain
-+		 * levels, we define an arbitration mechanism wherein
-+		 * find_busiest_group() nominates a preferred_wakeup_cpu at
-+		 * the sched_domain sd if:
-+		 *
-+		 * - sd is the highest sched_domain in the hierarchy having the
-+		 *   SD_POWERSAVINGS_BALANCE flag set.
-+		 *
-+		 *   OR
-+		 *
-+		 * - sd contains the previously nominated preferred_wakeup_cpu
-+		 *   in it's span.
++		 * If the only flag that is preventing us from degenerating
++		 * a domain with a single group is SD_POWERSAVINGS_BALANCE
++		 * check if it can be transferred to the new parent,
++		 * and degenerate this domain. With a single
++		 * group, it anyway can't contribute to power-aware load
++		 * balancing.
 +		 */
-+		if (sd->level == my_rd->top_powersavings_sd_lvl ||
-+			cpu_isset(my_rd->preferred_wakeup_cpu,
-+					*sched_domain_span(sd))) {
-+			my_rd->preferred_wakeup_cpu =
- 				cpumask_first(sched_group_cpus(group_leader));
- 		}
- 		return group_min;
-@@ -7541,6 +7567,8 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
- 	struct root_domain *rd;
- 	cpumask_var_t nodemask, this_sibling_map, this_core_map, send_covered,
- 		tmpmask;
-+	struct sched_domain *sd;
-+
- #ifdef CONFIG_NUMA
- 	cpumask_var_t domainspan, covered, notcovered;
- 	struct sched_group **sched_group_nodes = NULL;
-@@ -7816,6 +7844,19 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
- 
- 	err = 0;
- 
-+	rd->preferred_wakeup_cpu = UINT_MAX;
-+	rd->top_powersavings_sd_lvl = SD_LV_NONE;
-+
-+	if (active_power_savings_level < POWERSAVINGS_BALANCE_WAKEUP)
-+		goto free_tmpmask;
-+
-+	/* Record the level of the highest power-aware sched_domain */
-+	for_each_domain(first_cpu(*cpu_map), sd) {
-+		if (!(sd->flags & SD_POWERSAVINGS_BALANCE))
-+			continue;
-+		rd->top_powersavings_sd_lvl = sd->level;
-+	}
-+
- free_tmpmask:
- 	free_cpumask_var(tmpmask);
- free_send_covered:
++		if (pflags & SD_POWERSAVINGS_BALANCE && parent->parent) {
++			pflags &= ~SD_POWERSAVINGS_BALANCE;
++			parent->parent->flags |=
++				sd_power_saving_flags(parent->level);
++		}
+ 	}
+ 	if (~cflags & pflags)
+ 		return 0;
 
