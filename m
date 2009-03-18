@@ -1,93 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757738AbZCRMPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbZCRMT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757738AbZCRMPw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 08:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756154AbZCRMPm
+	id S1754849AbZCRMT2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 08:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbZCRMTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 08:15:42 -0400
-Received: from cantor.suse.de ([195.135.220.2]:36186 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755687AbZCRMPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 08:15:41 -0400
-Date: Wed, 18 Mar 2009 13:11:16 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Denis Karpov <ext-denis.2.karpov@gmail.com>
-Cc: "ext Jorge Boncompte [DTI2]" <jorge@dti2.net>,
-       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>,
-       linux-ext4@vger.kernel.org
-Subject: Re: Error testing ext3 on brd ramdisk
-Message-ID: <20090318121116.GC14622@wotan.suse.de>
-References: <49AF9932.2040301@dti2.net> <20090305094623.GA17815@wotan.suse.de> <49AFAFD9.9050805@dti2.net> <49AFC1A9.90501@dti2.net> <20090310161247.GA19352@wotan.suse.de> <20090310163002.GC19352@wotan.suse.de> <49B69A09.3080408@dti2.net> <20090311021920.GA16561@wotan.suse.de> <49BA927F.8020701@dti2.net> <20090317094019.GA10360@smart.research.nokia.com>
-Mime-Version: 1.0
+	Wed, 18 Mar 2009 08:19:19 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:23620 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751037AbZCRMTS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 08:19:18 -0400
+Date: Wed, 18 Mar 2009 14:00:56 +0200
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext David Brownell <david-b@pacbell.net>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "me@felipebalbi.com" <me@felipebalbi.com>,
+       "dmitry.torokhov@gmail.com" <dmitry.torokhov@gmail.com>,
+       "sameo@openedhand.com" <sameo@openedhand.com>
+Subject: Re: [patch/rfc 1/2] GENIRQ: add handle_threaded_irq() flow handler
+Message-ID: <20090318120056.GG24947@scadufax.research.nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <20090303004427.GA8638@elte.hu> <200903171914.53688.david-b@pacbell.net> <200903171919.48030.david-b@pacbell.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090317094019.GA10360@smart.research.nokia.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <200903171919.48030.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 18 Mar 2009 12:17:51.0009 (UTC) FILETIME=[8EA02110:01C9A7C3]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 11:40:19AM +0200, Denis Karpov wrote:
-> Hello, 
-> 
-> first off, sorry if you getting this email twice.
+Hi,
 
-No problem, I'm not exactly able to reproduce it myself, but Jan Kara
-has just fixed some issues which could explain it: they happen under
-memory pressure so I may not have triggered it if I didn't put it
-under pressure.
+On Wed, Mar 18, 2009 at 03:19:47AM +0100, David Brownell wrote:
 
-Jan's fixes are here:
+[..]
 
-http://marc.info/?l=linux-ext4&m=123731584711382&w=2
+> @@ -295,6 +295,67 @@ static inline void mask_ack_irq(struct i
+>  }
+>  
+>  /**
+> + *	handle_threaded_irq - flow handler reusing current irq thread
+> + *	@irq:	the interrupt number
+> + *	@desc:	the interrupt description structure for this irq
+> + *	Context: irq thread, with IRQs enabled
+> + *
+> + *	IRQ threads which demultiplex IRQs may use this flow handler
+> + *	to chain those demultiplexed IRQs to subsidiary handlers, when
+> + *	all that IRQ dispatch logic must run in sleeping contexts.
+> + *
+> + *	Examples include some multifunction I2C and SPI based devices
+> + *	(where access to registers, including ones involved in IRQ
+> + *	dispatching, requires sleeping) that have multiple independent
+> + *	maskable interupts.
+> + *
+> + *	The irq thread using this flow handler must handle any ack,
+> + *	clear, mask or unmask issues needed.
+> + */
+> +void
+> +handle_threaded_irq(unsigned int irq, struct irq_desc *desc)
+> +{
+> +	struct irqaction *action;
+> +	irqreturn_t action_ret;
+> +
+> +	spin_lock_irq(&desc->lock);
+> +
+> +	if (unlikely(desc->status & IRQ_INPROGRESS))
+> +		goto out_unlock;
+> +	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
+> +	kstat_incr_irqs_this_cpu(irq, desc);
+> +
+> +	action = desc->action;
+> +	if (unlikely(!action || (desc->status & IRQ_DISABLED)))
+> +		goto out_unlock;
 
-It would be interesting to try them, and if they don't work maybe
-he's also interested so I cc'ed him.
+you say below irqs are always enabled so this branch is something we
+never want to happen. How about adding a WARN() then ?
 
- 
-> I also tried to do ext3/ext4 fs smoketesting and used Adraian's
-> script.  I am consistently getting the same results - filesystem get's
-> corrupted. 
-> I tested on quad Xeon, with patches posted in this thread.
-> 
-> 1. tests with brd:
-> - ext3fs on brd
->     corruption (see attached ext3fs.brd.corruption.txt)
-> - ext4fs on brd
->     corruption (see attached ext4fs.brd.corruption.txt)
-> 
-> In both cases I saw some complains from JBD/JBD2:
->  JBD: Detected IO errors while flushing file data on
-> 
-> 2. I enabled JBD debugging, re-run the tests. Console was 
-> flooded with messages and in the end I got a soft lockup.
-> I cannot consistently reproduce this (see attached 
-> brd.ext3fs.softlock.txt).
-> 
-> Just to be sure I re-run the tests on real block device (usb stick)
-> 
-> 3. tests with real block device (usb stick)
-> - ext3fs
->     no fs currption (overnight run)
-> - ext4fs 
->     no fs currption (overnight run)
-
-It's possible the real block device is not fast enough to trigger
-it, or different timings don't trigger it (brd requests complete
-immediately wheras real devices tend to complete afterwards,
-from (soft)interrupt context). 
-
-Or it could be that brd is consuming some more memory to push
-the system into reclaim and exposing those bugs Jan has fixed...
-
-
-> Any ideas what else can be done here? I'd like to find out if this is
-> filesystem or brd related fault.
-
-Yes, thanks for persisting. If you can test the patches and see
-if they help? If not, does ext2 show corruption? How about ext3
-on loop device (with backing file from tmpfs/ramfs for speed).
-
-Thanks,
-Nick
+-- 
+balbi
