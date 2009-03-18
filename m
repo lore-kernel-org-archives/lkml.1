@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760186AbZCRVu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760199AbZCRVv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760186AbZCRVu5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757824AbZCRVnR
+	id S1760199AbZCRVv1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756904AbZCRVnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:43:17 -0400
+	Wed, 18 Mar 2009 17:43:20 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757793AbZCRVnO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:43:14 -0400
+	id S1756989AbZCRVnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:43:17 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 37/57] microblaze_v7: dma support
-Date: Wed, 18 Mar 2009 21:31:04 +0100
-Message-Id: <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 39/57] microblaze_v7: atomic.h bitops.h swab.h byteorder.h
+Date: Wed, 18 Mar 2009 21:31:06 +0100
+Message-Id: <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -54,6 +54,8 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
  <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
  <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
+ <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
+ <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -65,157 +67,22 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/dma-mapping.h |  131 +++++++++++++++++++++++++++++
- arch/microblaze/include/asm/dma.h         |   16 ++++
- arch/microblaze/include/asm/scatterlist.h |   28 ++++++
- 3 files changed, 175 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/dma-mapping.h
- create mode 100644 arch/microblaze/include/asm/dma.h
- create mode 100644 arch/microblaze/include/asm/scatterlist.h
+ arch/microblaze/include/asm/atomic.h    |  123 +++++++++++++++++++++++++++++++
+ arch/microblaze/include/asm/bitops.h    |   27 +++++++
+ arch/microblaze/include/asm/byteorder.h |    6 ++
+ arch/microblaze/include/asm/swab.h      |    8 ++
+ 4 files changed, 164 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/atomic.h
+ create mode 100644 arch/microblaze/include/asm/bitops.h
+ create mode 100644 arch/microblaze/include/asm/byteorder.h
+ create mode 100644 arch/microblaze/include/asm/swab.h
 
-diff --git a/arch/microblaze/include/asm/dma-mapping.h b/arch/microblaze/include/asm/dma-mapping.h
+diff --git a/arch/microblaze/include/asm/atomic.h b/arch/microblaze/include/asm/atomic.h
 new file mode 100644
-index 0000000..e6f1246
+index 0000000..a448d94
 --- /dev/null
-+++ b/arch/microblaze/include/asm/dma-mapping.h
-@@ -0,0 +1,131 @@
-+/*
-+ * include/asm-microblaze/dma-mapping.h
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_DMA_MAPPING_H
-+#define _ASM_MICROBLAZE_DMA_MAPPING_H
-+
-+#include <asm/cacheflush.h>
-+#include <linux/io.h>
-+#include <linux/bug.h>
-+
-+struct scatterlist;
-+
-+#define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
-+#define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
-+
-+/* FIXME */
-+static inline int
-+dma_supported(struct device *dev, u64 mask)
-+{
-+	return 1;
-+}
-+
-+static inline dma_addr_t
-+dma_map_page(struct device *dev, struct page *page,
-+	unsigned long offset, size_t size,
-+	enum dma_data_direction direction)
-+{
-+	BUG();
-+	return 0;
-+}
-+
-+static inline void
-+dma_unmap_page(struct device *dev, dma_addr_t dma_address, size_t size,
-+	enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+static inline int
-+dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
-+	enum dma_data_direction direction)
-+{
-+	BUG();
-+	return 0;
-+}
-+
-+static inline void
-+dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
-+	enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+static inline void
-+dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
-+			enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+static inline void
-+dma_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
-+		size_t size, enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+static inline void
-+dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
-+		enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+static inline void
-+dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nelems,
-+		enum dma_data_direction direction)
-+{
-+	BUG();
-+}
-+
-+static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
-+{
-+	return 0;
-+}
-+
-+static inline void *dma_alloc_coherent(struct device *dev, size_t size,
-+				dma_addr_t *dma_handle, int flag)
-+{
-+	return NULL; /* consistent_alloc(flag, size, dma_handle); */
-+}
-+
-+static inline void dma_free_coherent(struct device *dev, size_t size,
-+			void *vaddr, dma_addr_t dma_handle)
-+{
-+	BUG();
-+}
-+
-+static inline dma_addr_t
-+dma_map_single(struct device *dev, void *ptr, size_t size,
-+	enum dma_data_direction direction)
-+{
-+	BUG_ON(direction == DMA_NONE);
-+
-+	return virt_to_bus(ptr);
-+}
-+
-+static inline void dma_unmap_single(struct device *dev, dma_addr_t dma_addr,
-+				    size_t size,
-+				    enum dma_data_direction direction)
-+{
-+	switch (direction) {
-+	case DMA_FROM_DEVICE:
-+		flush_dcache_range((unsigned)dma_addr,
-+			(unsigned)dma_addr + size);
-+			/* Fall through */
-+	case DMA_TO_DEVICE:
-+		break;
-+	default:
-+		BUG();
-+	}
-+}
-+
-+#endif /* _ASM_MICROBLAZE_DMA_MAPPING_H */
-diff --git a/arch/microblaze/include/asm/dma.h b/arch/microblaze/include/asm/dma.h
-new file mode 100644
-index 0000000..0967fa0
---- /dev/null
-+++ b/arch/microblaze/include/asm/dma.h
-@@ -0,0 +1,16 @@
++++ b/arch/microblaze/include/asm/atomic.h
+@@ -0,0 +1,123 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -224,22 +91,128 @@ index 0000000..0967fa0
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_DMA_H
-+#define _ASM_MICROBLAZE_DMA_H
++#ifndef _ASM_MICROBLAZE_ATOMIC_H
++#define _ASM_MICROBLAZE_ATOMIC_H
 +
-+/* we don't have dma address limit. define it as zero to be
-+ * unlimited. */
-+#define MAX_DMA_ADDRESS		(0)
++#include <linux/types.h>
++#include <linux/compiler.h> /* likely */
++#include <asm/system.h> /* local_irq_XXX and friends */
 +
-+#endif /* _ASM_MICROBLAZE_DMA_H */
-diff --git a/arch/microblaze/include/asm/scatterlist.h b/arch/microblaze/include/asm/scatterlist.h
-new file mode 100644
-index 0000000..08ff1d0
---- /dev/null
-+++ b/arch/microblaze/include/asm/scatterlist.h
-@@ -0,0 +1,28 @@
++#define ATOMIC_INIT(i)		{ (i) }
++#define atomic_read(v)		((v)->counter)
++#define atomic_set(v, i)	(((v)->counter) = (i))
++
++#define atomic_inc(v)		(atomic_add_return(1, (v)))
++#define atomic_dec(v)		(atomic_sub_return(1, (v)))
++
++#define atomic_add(i, v)	(atomic_add_return(i, (v)))
++#define atomic_sub(i, v)	(atomic_sub_return(i, (v)))
++
++#define atomic_inc_return(v)	(atomic_add_return(1, (v)))
++#define atomic_dec_return(v)	(atomic_sub_return(1, (v)))
++
++#define atomic_inc_and_test(v)	(atomic_add_return(1, (v)) == 0)
++#define atomic_dec_and_test(v)	(atomic_sub_return(1, (v)) == 0)
++
++#define atomic_inc_not_zero(v)	(atomic_add_unless((v), 1, 0))
++
++#define atomic_sub_and_test(i, v) (atomic_sub_return((i), (v)) == 0)
++
++static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
++{
++	int ret;
++	unsigned long flags;
++
++	local_irq_save(flags);
++	ret = v->counter;
++	if (likely(ret == old))
++		v->counter = new;
++	local_irq_restore(flags);
++
++	return ret;
++}
++
++static inline int atomic_add_unless(atomic_t *v, int a, int u)
++{
++	int c, old;
++
++	c = atomic_read(v);
++	while (c != u && (old = atomic_cmpxchg((v), c, c + a)) != c)
++		c = old;
++	return c != u;
++}
++
++static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++	*addr &= ~mask;
++	local_irq_restore(flags);
++}
++
++/**
++ * atomic_add_return - add and return
++ * @i: integer value to add
++ * @v: pointer of type atomic_t
++ *
++ * Atomically adds @i to @v and returns @i + @v
++ */
++static inline int atomic_add_return(int i, atomic_t *v)
++{
++	unsigned long flags;
++	int val;
++
++	local_irq_save(flags);
++	val = v->counter;
++	v->counter = val += i;
++	local_irq_restore(flags);
++
++	return val;
++}
++
++static inline int atomic_sub_return(int i, atomic_t *v)
++{
++	return atomic_add_return(-i, v);
++}
++
 +/*
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ * Atomically test *v and decrement if it is greater than 0.
++ * The function returns the old value of *v minus 1.
++ */
++static inline int atomic_dec_if_positive(atomic_t *v)
++{
++	unsigned long flags;
++	int res;
++
++	local_irq_save(flags);
++	res = v->counter - 1;
++	if (res >= 0)
++		v->counter = res;
++	local_irq_restore(flags);
++
++	return res;
++}
++
++#define atomic_add_negative(a, v)	(atomic_add_return((a), (v)) < 0)
++#define atomic_xchg(v, new) (xchg(&((v)->counter), new))
++
++/* Atomic operations are already serializing */
++#define smp_mb__before_atomic_dec()	barrier()
++#define smp_mb__after_atomic_dec()	barrier()
++#define smp_mb__before_atomic_inc()	barrier()
++#define smp_mb__after_atomic_inc()	barrier()
++
++#include <asm-generic/atomic.h>
++
++#endif /* _ASM_MICROBLAZE_ATOMIC_H */
+diff --git a/arch/microblaze/include/asm/bitops.h b/arch/microblaze/include/asm/bitops.h
+new file mode 100644
+index 0000000..d6df1fd
+--- /dev/null
++++ b/arch/microblaze/include/asm/bitops.h
+@@ -0,0 +1,27 @@
++/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
@@ -247,25 +220,51 @@ index 0000000..08ff1d0
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_SCATTERLIST_H
-+#define _ASM_MICROBLAZE_SCATTERLIST_H
++#ifndef _ASM_MICROBLAZE_BITOPS_H
++#define _ASM_MICROBLAZE_BITOPS_H
 +
-+struct scatterlist {
-+#ifdef CONFIG_DEBUG_SG
-+	unsigned long	sg_magic;
++/*
++ * Copyright 1992, Linus Torvalds.
++ */
++
++#include <asm/byteorder.h> /* swab32 */
++#include <asm/system.h> /* save_flags */
++
++/*
++ * clear_bit() doesn't provide any barrier for the compiler.
++ */
++#define smp_mb__before_clear_bit()	barrier()
++#define smp_mb__after_clear_bit()	barrier()
++#include <asm-generic/bitops.h>
++#include <asm-generic/bitops/__fls.h>
++
++#endif /* _ASM_MICROBLAZE_BITOPS_H */
+diff --git a/arch/microblaze/include/asm/byteorder.h b/arch/microblaze/include/asm/byteorder.h
+new file mode 100644
+index 0000000..ce9c587
+--- /dev/null
++++ b/arch/microblaze/include/asm/byteorder.h
+@@ -0,0 +1,6 @@
++#ifndef _ASM_MICROBLAZE_BYTEORDER_H
++#define _ASM_MICROBLAZE_BYTEORDER_H
++
++#include <linux/byteorder/big_endian.h>
++
++#endif /* _ASM_MICROBLAZE_BYTEORDER_H */
+diff --git a/arch/microblaze/include/asm/swab.h b/arch/microblaze/include/asm/swab.h
+new file mode 100644
+index 0000000..b375d7b
+--- /dev/null
++++ b/arch/microblaze/include/asm/swab.h
+@@ -0,0 +1,8 @@
++#ifndef _ASM_MICROBLAZE_SWAB_H
++#define _ASM_MICROBLAZE_SWAB_H
++
++#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
++#define __SWAB_64_THRU_32__
 +#endif
-+	unsigned long	page_link;
-+	dma_addr_t	dma_address;
-+	unsigned int	offset;
-+	unsigned int	length;
-+};
 +
-+#define sg_dma_address(sg)      ((sg)->dma_address)
-+#define sg_dma_len(sg)          ((sg)->length)
-+
-+#define ISA_DMA_THRESHOLD (~0UL)
-+
-+#endif /* _ASM_MICROBLAZE_SCATTERLIST_H */
++#endif /* _ASM_MICROBLAZE_SWAB_H */
 -- 
 1.5.5.1
 
