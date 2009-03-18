@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbZCRF3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbZCRF3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204AbZCRF3H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 01:29:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZCRF2y
+	id S1754340AbZCRF3i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 01:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbZCRF32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 01:28:54 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:48623 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbZCRF2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 01:28:54 -0400
+	Wed, 18 Mar 2009 01:29:28 -0400
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:37120 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753018AbZCRF31 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 01:29:27 -0400
+Message-ID: <49C086B1.9060500@in.ibm.com>
+Date: Wed, 18 Mar 2009 10:59:21 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+CC: jfs-discussion@lists.sourceforge.net,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Jfs-discussion] [BUG/JFS/2.6.29-rc8] kernel BUG at fs/mpage.c:473!
+References: <49BDFB4F.7040405@in.ibm.com> <1237299710.26674.6.camel@norville.austin.ibm.com>
+In-Reply-To: <1237299710.26674.6.camel@norville.austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18880.34440.280755.729382@drongo.ozlabs.ibm.com>
-Date: Wed, 18 Mar 2009 16:28:40 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, mingo@elte.hu,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 11/11] perf_counter: unify irq output code
-In-Reply-To: <18880.24188.569247.425760@drongo.ozlabs.ibm.com>
-References: <20090317215606.037073805@chello.nl>
-	<20090317220422.026219494@chello.nl>
-	<18880.24188.569247.425760@drongo.ozlabs.ibm.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
+Dave Kleikamp wrote:
+> On Mon, 2009-03-16 at 12:40 +0530, Sachin Sant wrote:
+>   
+>> While running file system stress (fsstress) on a JFS partition
+>> with 2.6.29-rc8, i hit the following BUG.
+>>     
+>
+> I tried reproducing this yesterday, but was unsuccessful.  Maybe I
+> didn't let it run long enough.  Have you run this successfully on
+> earlier kernels?  If so, what was the most recent that worked for you.
+> Have you seen it more than once?  I'm not sure how easy it is to
+> reproduce.
+I haven't tried to test with earlier kernels. This was the first
+time i ran these tests on this particular box.I run the fsstress
+on different type of file systems one after the another (in no
+particular order ). Something like ..
 
-> Nice cleanup, and thanks for updating powerpc too.  With this, I think
-> we'll need to update the powerpc perf_counter_interrupt a bit: we
-> might as well use get_perf_counter_pending() instead of the wakeup
-> variable now.  I'll send an extra patch once I have done some testing.
+* create ext2 filesystem on a device
+* run fsstress.
+* unmount the device.
 
-This seems to work OK.
+I repeat the above steps with ext3, reiserfs and jfs. May be this
+combination is causing this problem.
 
-Paul.
+I have seen this problem on two partitions of a power box. Same problem
+seem to have been reported earlier against 2.6.25-rcx kernel.
 
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 88b72eb..830ca9c 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -723,8 +723,6 @@ static void perf_counter_interrupt(struct pt_regs *regs)
- 			/* counter has overflowed */
- 			found = 1;
- 			record_and_restart(counter, val, regs);
--			if (counter->wakeup_pending)
--				need_wakeup = 1;
- 		}
- 	}
- 
-@@ -754,17 +752,14 @@ static void perf_counter_interrupt(struct pt_regs *regs)
- 	/*
- 	 * If we need a wakeup, check whether interrupts were soft-enabled
- 	 * when we took the interrupt.  If they were, we can wake stuff up
--	 * immediately; otherwise we'll have to set a flag and do the
--	 * wakeup when interrupts get soft-enabled.
-+	 * immediately; otherwise we'll have do the wakeup when interrupts
-+	 * get soft-enabled.
- 	 */
--	if (need_wakeup) {
--		if (regs->softe) {
--			irq_enter();
--			perf_counter_do_pending();
--			irq_exit();
--		} else {
--			set_perf_counter_pending();
--		}
-+	if (get_perf_counter_pending() && regs->softe) {
-+		irq_enter();
-+		clear_perf_counter_pending();
-+		perf_counter_do_pending();
-+		irq_exit();
- 	}
- }
- 
+http://lkml.indiana.edu/hypermail/linux/kernel/0803.2/1418.html
+
+
+Thanks
+-Sachin
+
+
+
+
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
