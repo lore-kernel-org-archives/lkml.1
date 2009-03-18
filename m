@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758508AbZCRNbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758711AbZCRNc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758508AbZCRNbk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 09:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756733AbZCRN1N
+	id S1758711AbZCRNc0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 09:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757890AbZCRN20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 09:27:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36283 "EHLO mx1.redhat.com"
+	Wed, 18 Mar 2009 09:28:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53175 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756115AbZCRN1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 09:27:11 -0400
+	id S1757884AbZCRN2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 09:28:25 -0400
 From: swhiteho@redhat.com
 To: linux-kernel@vger.kernel.org
-Cc: cluster-devel@redhat.com, Hannes Eder <hannes@hanneseder.net>,
+Cc: cluster-devel@redhat.com, Benjamin Marzinski <bmarzins@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 14/18] GFS2: fix sparse warnings: constant is so big it is ...
-Date: Wed, 18 Mar 2009 12:23:49 +0000
-Message-Id: <1237379033-28095-15-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1237379033-28095-14-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 17/18] GFS2: Fix locking bug in failed shared to exclusive conversion
+Date: Wed, 18 Mar 2009 12:23:52 +0000
+Message-Id: <1237379033-28095-18-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1237379033-28095-17-git-send-email-swhiteho@redhat.com>
 References: <1237379033-28095-1-git-send-email-swhiteho@redhat.com>
  <1237379033-28095-2-git-send-email-swhiteho@redhat.com>
  <1237379033-28095-3-git-send-email-swhiteho@redhat.com>
@@ -31,59 +31,68 @@ References: <1237379033-28095-1-git-send-email-swhiteho@redhat.com>
  <1237379033-28095-12-git-send-email-swhiteho@redhat.com>
  <1237379033-28095-13-git-send-email-swhiteho@redhat.com>
  <1237379033-28095-14-git-send-email-swhiteho@redhat.com>
+ <1237379033-28095-15-git-send-email-swhiteho@redhat.com>
+ <1237379033-28095-16-git-send-email-swhiteho@redhat.com>
+ <1237379033-28095-17-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hannes Eder <hannes@hanneseder.net>
+From: Benjamin Marzinski <bmarzins@redhat.com>
 
-Fix this sparse warnings:
-  fs/gfs2/rgrp.c:156:23: warning: constant 0xffffffffffffffff is so big it is unsigned long long
-  fs/gfs2/rgrp.c:157:23: warning: constant 0xaaaaaaaaaaaaaaaa is so big it is unsigned long long
-  fs/gfs2/rgrp.c:158:23: warning: constant 0x5555555555555555 is so big it is long long
-  fs/gfs2/rgrp.c:194:20: warning: constant 0x5555555555555555 is so big it is long long
-  fs/gfs2/rgrp.c:204:44: warning: constant 0x5555555555555555 is so big it is long long
+After calling out to the dlm, GFS2 sets the new state of a glock to
+gl_target in gdlm_ast().  However, gl_target is not always the lock
+state that was requested. If a conversion from shared to exclusive
+fails, finish_xmote() will call do_xmote() with LM_ST_UNLOCKED, instead
+of gl->gl_target, so that it can reacquire the lock in exlusive the next
+time around.  In this case, setting the lock to gl_target in gdlm_ast()
+will make GFS2 think that it has the glock in exclusive mode, when
+really, it doesn't have the glock locked at all.  This patch adds a new
+field to the gfs2_glock structure, gl_req, to track the mode that was
+requested.
 
-Signed-off-by: Hannes Eder <hannes@hanneseder.net>
+Signed-off-by: Benjamin Marzinski <bmarzins@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
-index c0abe69..34691d7 100644
---- a/fs/gfs2/rgrp.c
-+++ b/fs/gfs2/rgrp.c
-@@ -153,10 +153,10 @@ static inline u64 gfs2_bit_search(const __le64 *ptr, u64 mask, u8 state)
- {
- 	u64 tmp;
- 	static const u64 search[] = {
--		[0] = 0xffffffffffffffff,
--		[1] = 0xaaaaaaaaaaaaaaaa,
--		[2] = 0x5555555555555555,
--		[3] = 0x0000000000000000,
-+		[0] = 0xffffffffffffffffULL,
-+		[1] = 0xaaaaaaaaaaaaaaaaULL,
-+		[2] = 0x5555555555555555ULL,
-+		[3] = 0x0000000000000000ULL,
- 	};
- 	tmp = le64_to_cpu(*ptr) ^ search[state];
- 	tmp &= (tmp >> 1);
-@@ -191,7 +191,7 @@ u32 gfs2_bitfit(const u8 *buf, const unsigned int len, u32 goal, u8 state)
- 	const __le64 *ptr = ((__le64 *)buf) + (goal >> 5);
- 	const __le64 *end = (__le64 *)(buf + ALIGN(len, sizeof(u64)));
- 	u64 tmp;
--	u64 mask = 0x5555555555555555;
-+	u64 mask = 0x5555555555555555ULL;
- 	u32 bit;
- 
- 	BUG_ON(state > 3);
-@@ -201,7 +201,7 @@ u32 gfs2_bitfit(const u8 *buf, const unsigned int len, u32 goal, u8 state)
- 	tmp = gfs2_bit_search(ptr, mask, state);
- 	ptr++;
- 	while(tmp == 0 && ptr < end) {
--		tmp = gfs2_bit_search(ptr, 0x5555555555555555, state);
-+		tmp = gfs2_bit_search(ptr, 0x5555555555555555ULL, state);
- 		ptr++;
+diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
+index 980a086..399d1b9 100644
+--- a/fs/gfs2/incore.h
++++ b/fs/gfs2/incore.h
+@@ -203,6 +203,7 @@ struct gfs2_glock {
+ 	unsigned int gl_target;
+ 	unsigned int gl_reply;
+ 	unsigned int gl_hash;
++	unsigned int gl_req;
+ 	unsigned int gl_demote_state; /* state requested by remote node */
+ 	unsigned long gl_demote_time; /* time of first demote request */
+ 	struct list_head gl_holders;
+diff --git a/fs/gfs2/lock_dlm.c b/fs/gfs2/lock_dlm.c
+index a0bb7d2..46df988 100644
+--- a/fs/gfs2/lock_dlm.c
++++ b/fs/gfs2/lock_dlm.c
+@@ -46,11 +46,11 @@ static void gdlm_ast(void *arg)
+ 		BUG();
  	}
- 	/* Mask off any bits which are more than len bytes from the start */
+ 
+-	ret = gl->gl_target;
++	ret = gl->gl_req;
+ 	if (gl->gl_lksb.sb_flags & DLM_SBF_ALTMODE) {
+-		if (gl->gl_target == LM_ST_SHARED)
++		if (gl->gl_req == LM_ST_SHARED)
+ 			ret = LM_ST_DEFERRED;
+-		else if (gl->gl_target == LM_ST_DEFERRED)
++		else if (gl->gl_req == LM_ST_DEFERRED)
+ 			ret = LM_ST_SHARED;
+ 		else
+ 			BUG();
+@@ -147,6 +147,7 @@ static unsigned int gdlm_lock(struct gfs2_glock *gl,
+ 	int req;
+ 	u32 lkf;
+ 
++	gl->gl_req = req_state;
+ 	req = make_mode(req_state);
+ 	lkf = make_flags(gl->gl_lksb.sb_lkid, flags, req);
+ 
 -- 
 1.6.0.3
 
