@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760245AbZCRVwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbZCRVwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760245AbZCRVwV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757940AbZCRVn2
+	id S1760257AbZCRVwh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757910AbZCRVnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:43:28 -0400
+	Wed, 18 Mar 2009 17:43:31 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757917AbZCRVn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:43:26 -0400
+	id S1757876AbZCRVn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:43:28 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 41/57] microblaze_v7: system.h processor.h
-Date: Wed, 18 Mar 2009 21:31:08 +0100
-Message-Id: <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 18/57] microblaze_v7: checksum support
+Date: Wed, 18 Mar 2009 21:30:45 +0100
+Message-Id: <75127eae09c978220d452d92f95763dde24f1d52.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <1477ec41e7ba0ec847a064e1f8e422dc2a5dcc9f.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -35,29 +35,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <69ef4f976d86c870a97fbe4974c242c74acc477d.1237407249.git.monstr@monstr.eu>
  <eb4ccc67cf39abc816c8d7653fdc7561d14c1da2.1237407249.git.monstr@monstr.eu>
  <1477ec41e7ba0ec847a064e1f8e422dc2a5dcc9f.1237407249.git.monstr@monstr.eu>
- <75127eae09c978220d452d92f95763dde24f1d52.1237407249.git.monstr@monstr.eu>
- <b726b7b271cf303c36af54c4e155140541a6769b.1237407249.git.monstr@monstr.eu>
- <644f08d7f8cd338e606ed703e221914f75588fb5.1237407249.git.monstr@monstr.eu>
- <6d19f608a4ba3e7718aa55794c2845f19b5ed5e2.1237407249.git.monstr@monstr.eu>
- <039bc2fea33d23a3e7d2d85ac6fb275b8d21b5ed.1237407249.git.monstr@monstr.eu>
- <513d4067a84be1ecb47577e1edf131d2b3572808.1237407249.git.monstr@monstr.eu>
- <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
- <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
- <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
- <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
- <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
- <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
- <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
- <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
- <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
- <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
- <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
- <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
- <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
- <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
- <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
- <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
- <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -69,21 +46,20 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/processor.h |   93 +++++++++++++++++++++++++++++++
- arch/microblaze/include/asm/system.h    |   91 ++++++++++++++++++++++++++++++
- 2 files changed, 184 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/processor.h
- create mode 100644 arch/microblaze/include/asm/system.h
+ arch/microblaze/include/asm/checksum.h |   98 +++++++++++++++++++
+ arch/microblaze/lib/checksum.c         |  166 ++++++++++++++++++++++++++++++++
+ 2 files changed, 264 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/checksum.h
+ create mode 100644 arch/microblaze/lib/checksum.c
 
-diff --git a/arch/microblaze/include/asm/processor.h b/arch/microblaze/include/asm/processor.h
+diff --git a/arch/microblaze/include/asm/checksum.h b/arch/microblaze/include/asm/checksum.h
 new file mode 100644
-index 0000000..d8e1543
+index 0000000..92b3076
 --- /dev/null
-+++ b/arch/microblaze/include/asm/processor.h
-@@ -0,0 +1,93 @@
++++ b/arch/microblaze/include/asm/checksum.h
+@@ -0,0 +1,98 @@
 +/*
-+ * Copyright (C) 2008 Michal Simek
-+ * Copyright (C) 2008 PetaLogix
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
@@ -91,186 +67,267 @@ index 0000000..d8e1543
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_PROCESSOR_H
-+#define _ASM_MICROBLAZE_PROCESSOR_H
++#ifndef _ASM_MICROBLAZE_CHECKSUM_H
++#define _ASM_MICROBLAZE_CHECKSUM_H
 +
-+#include <asm/ptrace.h>
-+#include <asm/setup.h>
-+#include <asm/registers.h>
-+#include <asm/segment.h>
-+
-+# ifndef __ASSEMBLY__
-+/* from kernel/cpu/mb.c */
-+extern const struct seq_operations cpuinfo_op;
-+
-+# define cpu_relax()		barrier()
-+# define cpu_sleep()		do {} while (0)
-+# define prepare_to_copy(tsk)	do {} while (0)
-+
-+# endif /* __ASSEMBLY__ */
++#include <linux/in6.h>
 +
 +/*
-+ * User space process size: memory size
++ * computes the checksum of the TCP/UDP pseudo-header
++ * returns a 16-bit checksum, already complemented
++ */
++static inline __wsum
++csum_tcpudp_nofold(__be32 saddr, __be32 daddr, unsigned short len,
++		   unsigned short proto, __wsum sum)
++{
++	__asm__("add %0, %0, %1\n\t"
++		"addc %0, %0, %2\n\t"
++		"addc %0, %0, %3\n\t"
++		"addc %0, %0, r0\n\t"
++		: "+&d" (sum)
++		: "d" (saddr), "d" (daddr), "d" (len + proto));
++
++	return sum;
++}
++
++/*
++ * computes the checksum of a memory block at buff, length len,
++ * and adds in "sum" (32-bit)
 + *
-+ * TASK_SIZE on MMU cpu is usually 1GB. However, on no-MMU arch, both
-+ * user processes and the kernel is on the same memory region. They
-+ * both share the memory space and that is limited by the amount of
-+ * physical memory. thus, we set TASK_SIZE == amount of total memory.
++ * returns a 32-bit number suitable for feeding into itself
++ * or csum_tcpudp_magic
++ *
++ * this function must be called with even lengths, except
++ * for the last fragment, which may be odd
++ *
++ * it's best to have buff aligned on a 32-bit boundary
 + */
-+# define TASK_SIZE	(0x81000000 - 0x80000000)
++extern __wsum csum_partial(const void *buff, int len, __wsum sum);
 +
 +/*
-+ * Default implementation of macro that returns current
-+ * instruction pointer ("program counter").
++ * the same as csum_partial, but copies from src while it
++ * checksums
++ *
++ * here even more important to align src and dst on a 32-bit (or even
++ * better 64-bit) boundary
 + */
-+# define current_text_addr() ({ __label__ _l; _l: &&_l; })
++extern __wsum csum_partial_copy(const char *src, char *dst, int len, int sum);
 +
 +/*
-+ * This decides where the kernel will search for a free chunk of vm
-+ * space during mmap's. We won't be using it
++ * the same as csum_partial_copy, but copies from user space.
++ *
++ * here even more important to align src and dst on a 32-bit (or even
++ * better 64-bit) boundary
 + */
-+# define TASK_UNMAPPED_BASE	0
++extern __wsum csum_partial_copy_from_user(const char *src, char *dst,
++					int len, int sum, int *csum_err);
 +
-+/* definition in include/linux/sched.h */
-+struct task_struct;
-+
-+/* thread_struct is gone. use thread_info instead. */
-+struct thread_struct { };
-+# define INIT_THREAD	{ }
-+
-+/* Do necessary setup to start up a newly executed thread. */
-+static inline void start_thread(struct pt_regs *regs,
-+				unsigned long pc,
-+				unsigned long usp)
-+{
-+	regs->pc = pc;
-+	regs->r1 = usp;
-+	regs->kernel_mode = 0;
-+}
-+
-+/* Free all resources held by a thread. */
-+static inline void release_thread(struct task_struct *dead_task)
-+{
-+}
-+
-+/* Free all resources held by a thread. */
-+static inline void exit_thread(void)
-+{
-+}
-+
-+extern unsigned long thread_saved_pc(struct task_struct *t);
-+
-+extern unsigned long get_wchan(struct task_struct *p);
++#define csum_partial_copy_nocheck(src, dst, len, sum)	\
++	csum_partial_copy((src), (dst), (len), (sum))
 +
 +/*
-+ * create a kernel thread without removing it from tasklists
++ *	This is a version of ip_compute_csum() optimized for IP headers,
++ *	which always checksum on 4 octet boundaries.
++ *
 + */
-+extern int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
++extern __sum16 ip_fast_csum(const void *iph, unsigned int ihl);
 +
-+# define task_pt_regs(tsk) \
-+		(((struct pt_regs *)(THREAD_SIZE + task_stack_page(tsk))) - 1)
++/*
++ *	Fold a partial checksum
++ */
++static inline __sum16 csum_fold(unsigned int sum)
++{
++	sum = (sum & 0xffff) + (sum >> 16);
++	sum = (sum & 0xffff) + (sum >> 16);
++	return ~sum;
++}
 +
-+# define KSTK_EIP(tsk)	(0)
-+# define KSTK_ESP(tsk)	(0)
++static inline __sum16
++csum_tcpudp_magic(__be32 saddr, __be32 daddr, unsigned short len,
++		  unsigned short proto, __wsum sum)
++{
++	return csum_fold(csum_tcpudp_nofold(saddr, daddr, len, proto, sum));
++}
 +
-+#endif /* _ASM_MICROBLAZE_PROCESSOR_H */
-diff --git a/arch/microblaze/include/asm/system.h b/arch/microblaze/include/asm/system.h
++/*
++ * this routine is used for miscellaneous IP-like checksums, mainly
++ * in icmp.c
++ */
++extern __sum16 ip_compute_csum(const unsigned char *buff, int len);
++
++#endif /* _ASM_MICROBLAZE_CHECKSUM_H */
+diff --git a/arch/microblaze/lib/checksum.c b/arch/microblaze/lib/checksum.c
 new file mode 100644
-index 0000000..c4e3088
+index 0000000..ac7c214
 --- /dev/null
-+++ b/arch/microblaze/include/asm/system.h
-@@ -0,0 +1,91 @@
++++ b/arch/microblaze/lib/checksum.c
+@@ -0,0 +1,166 @@
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * arch/microblaze/lib/checksum.c
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ *
++ * INET		An implementation of the TCP/IP protocol suite for the LINUX
++ *		operating system.  INET is implemented using the  BSD Socket
++ *		interface as the means of communication with the user level.
++ *
++ *		IP/TCP/UDP checksumming routines
++ *
++ * Authors:	Jorge Cwik, <jorge@laser.satlink.net>
++ *		Arnt Gulbrandsen, <agulbra@nvg.unit.no>
++ *		Tom May, <ftom@netcom.com>
++ *		Andreas Schwab, <schwab@issan.informatik.uni-dortmund.de>
++ *		Lots of code moved from tcp.c and ip.c; see those files
++ *		for more names.
++ *
++ * 03/02/96	Jes Sorensen, Andreas Schwab, Roman Hodek:
++ *		Fixed some nasty bugs, causing some horrible crashes.
++ *		A: At some points, the sum (%0) was used as
++ *		length-counter instead of the length counter
++ *		(%1). Thanks to Roman Hodek for pointing this out.
++ *		B: GCC seems to mess up if one uses too many
++ *		data-registers to hold input values and one tries to
++ *		specify d0 and d1 as scratch registers. Letting gcc
++ *		choose these registers itself solves the problem.
++ *
++ *		This program is free software; you can redistribute it and/or
++ *		modify it under the terms of the GNU General Public License
++ *		as published by the Free Software Foundation; either version
++ *		2 of the License, or (at your option) any later version.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_SYSTEM_H
-+#define _ASM_MICROBLAZE_SYSTEM_H
++/* Revised by Kenneth Albanowski for m68knommu. Basic problem: unaligned access
++ kills, so most of the assembly has to go. */
 +
-+#include <asm/registers.h>
-+#include <asm/setup.h>
-+#include <asm/irqflags.h>
++#include <net/checksum.h>
++#include <asm/checksum.h>
++#include <linux/module.h>
 +
-+struct task_struct;
-+struct thread_info;
-+
-+extern struct task_struct *_switch_to(struct thread_info *prev,
-+					struct thread_info *next);
-+
-+#define switch_to(prev, next, last)					\
-+	do {								\
-+		(last) = _switch_to(task_thread_info(prev),		\
-+					task_thread_info(next));	\
-+	} while (0)
-+
-+#define smp_read_barrier_depends()	do {} while (0)
-+#define read_barrier_depends()		do {} while (0)
-+
-+#define nop()			asm volatile ("nop")
-+#define mb()			barrier()
-+#define rmb()			mb()
-+#define wmb()			mb()
-+#define set_mb(var, value)	do { var = value; mb(); } while (0)
-+#define set_wmb(var, value)	do { var = value; wmb(); } while (0)
-+
-+#define smp_mb()		mb()
-+#define smp_rmb()		rmb()
-+#define smp_wmb()		wmb()
-+
-+void show_trace(struct task_struct *task, unsigned long *stack);
-+void __bad_xchg(volatile void *ptr, int size);
-+
-+static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
-+								int size)
++static inline unsigned short from32to16(unsigned long x)
 +{
-+	unsigned long ret;
-+	unsigned long flags;
++	/* add up 16-bit and 16-bit for 16+c bit */
++	x = (x & 0xffff) + (x >> 16);
++	/* add up carry.. */
++	x = (x & 0xffff) + (x >> 16);
++	return x;
++}
 +
-+	switch (size) {
-+	case 1:
-+		local_irq_save(flags);
-+		ret = *(volatile unsigned char *)ptr;
-+		*(volatile unsigned char *)ptr = x;
-+		local_irq_restore(flags);
-+		break;
++static unsigned int do_csum(const unsigned char *buff, int len)
++{
++	int odd, count;
++	unsigned long result = 0;
 +
-+	case 4:
-+		local_irq_save(flags);
-+		ret = *(volatile unsigned long *)ptr;
-+		*(volatile unsigned long *)ptr = x;
-+		local_irq_restore(flags);
-+		break;
-+	default:
-+		__bad_xchg(ptr, size), ret = 0;
-+		break;
++	if (len <= 0)
++		goto out;
++	odd = 1 & (unsigned long) buff;
++	if (odd) {
++		result = *buff;
++		len--;
++		buff++;
 +	}
-+
-+	return ret;
++	count = len >> 1;		/* nr of 16-bit words.. */
++	if (count) {
++		if (2 & (unsigned long) buff) {
++			result += *(unsigned short *) buff;
++			count--;
++			len -= 2;
++			buff += 2;
++		}
++		count >>= 1;		/* nr of 32-bit words.. */
++		if (count) {
++			unsigned long carry = 0;
++			do {
++				unsigned long w = *(unsigned long *) buff;
++				count--;
++				buff += 4;
++				result += carry;
++				result += w;
++				carry = (w > result);
++			} while (count);
++			result += carry;
++			result = (result & 0xffff) + (result >> 16);
++		}
++		if (len & 2) {
++			result += *(unsigned short *) buff;
++			buff += 2;
++		}
++	}
++	if (len & 1)
++		result += (*buff << 8);
++	result = from32to16(result);
++	if (odd)
++		result = ((result >> 8) & 0xff) | ((result & 0xff) << 8);
++out:
++	return result;
 +}
 +
-+void disable_hlt(void);
-+void enable_hlt(void);
-+void default_idle(void);
++/*
++ *	This is a version of ip_compute_csum() optimized for IP headers,
++ *	which always checksum on 4 octet boundaries.
++ */
++__sum16 ip_fast_csum(const void *iph, unsigned int ihl)
++{
++	return (__force __sum16)~do_csum(iph,ihl*4);
++}
 +
-+#define xchg(ptr, x) \
-+	((__typeof__(*(ptr))) __xchg((unsigned long)(x), (ptr), sizeof(*(ptr))))
++/*
++ * computes the checksum of a memory block at buff, length len,
++ * and adds in "sum" (32-bit)
++ *
++ * returns a 32-bit number suitable for feeding into itself
++ * or csum_tcpudp_magic
++ *
++ * this function must be called with even lengths, except
++ * for the last fragment, which may be odd
++ *
++ * it's best to have buff aligned on a 32-bit boundary
++ */
++__wsum csum_partial(const void *buff, int len, __wsum sum)
++{
++	unsigned int result = do_csum(buff, len);
 +
-+void free_init_pages(char *what, unsigned long begin, unsigned long end);
-+void free_initmem(void);
-+extern char *klimit;
-+extern void ret_from_fork(void);
++	/* add in old sum, and carry.. */
++	result += sum;
++	if (sum > result)
++		result += 1;
++	return result;
++}
++EXPORT_SYMBOL(csum_partial);
 +
-+#ifdef CONFIG_DEBUG_FS
-+extern struct dentry *of_debugfs_root;
-+#endif
++/*
++ * this routine is used for miscellaneous IP-like checksums, mainly
++ * in icmp.c
++ */
++__sum16 ip_compute_csum(const unsigned char *buff, int len)
++{
++	return ~do_csum(buff, len);
++}
++EXPORT_SYMBOL(ip_compute_csum);
 +
-+#define arch_align_stack(x) (x)
++/*
++ * copy from fs while checksumming, otherwise like csum_partial
++ */
++__wsum
++csum_partial_copy_from_user(const char __user *src, char *dst, int len,
++						int sum, int *csum_err)
++{
++	if (csum_err)
++		*csum_err = 0;
++	memcpy(dst, src, len);
++	return csum_partial(dst, len, sum);
++}
++EXPORT_SYMBOL(csum_partial_copy_from_user);
 +
-+#endif /* _ASM_MICROBLAZE_SYSTEM_H */
++/*
++ * copy from ds while checksumming, otherwise like csum_partial
++ */
++__wsum
++csum_partial_copy(const char *src, char *dst, int len, int sum)
++{
++	memcpy(dst, src, len);
++	return csum_partial(dst, len, sum);
++}
++EXPORT_SYMBOL(csum_partial_copy);
 -- 
 1.5.5.1
 
