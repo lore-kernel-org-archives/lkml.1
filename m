@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbZCRLrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZCRLwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757012AbZCRLrs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 07:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755007AbZCRLrj
+	id S1756587AbZCRLwq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 07:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbZCRLwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 07:47:39 -0400
-Received: from india.einfochips.com ([203.88.139.151]:31395 "EHLO
-	ahmedabad.einfochips.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754903AbZCRLri (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 07:47:38 -0400
-Message-ID: <49C0DE95.3060402@einfochips.com>
-Date: Wed, 18 Mar 2009 17:14:21 +0530
-From: Viral Mehta <viral.mehta@einfochips.com>
-Organization: eIbfochips Ltd.
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Wed, 18 Mar 2009 07:52:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51721 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755737AbZCRLwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 07:52:36 -0400
+Date: Wed, 18 Mar 2009 12:51:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, bharata@linux.vnet.ibm.com
+Subject: Re: [PATCH] Kprobes: Fix locking imbalance in kretprobes
+Message-ID: <20090318115158.GF32233@elte.hu>
+References: <20090318113621.GB4129@in.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: kernel_thread question
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090318113621.GB4129@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All,
 
-//My thread routine
-int my_thread(void*)
-{
-    if(printk("blah"))
-        return 5; //WHERE THE HELL THIS VALUE GOES !! ?? !! HOW CAN I 
-SEE ITS RETURN VALUE ??? PLEASE SUGGEST
-    else
-       return 0;
-//WHERE THE HELL THIS RETURN VALUE GOES !! ?? !! HOW CAN I SEE ITS 
-RETURN VALUE ??? PLEASE SUGGEST
-//RETURNED 5 or 0 ?? I am amused
-}
+* Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
 
-//my init module
-int mod_init()
-{
-    ...
-    int i;
-    i = kernel_thread ((void *)my_thread, NULL, 0); //RETURNS NEW PROCESS ID
-    ...
-}
+> Fix locking imbalance in kretprobes:
+> 
+> =====================================
+> [ BUG: bad unlock balance detected! ]
+> -------------------------------------
+> kthreadd/2 is trying to release lock (&rp->lock) at:
+> [<c06b3080>] pre_handler_kretprobe+0xea/0xf4
 
-There is one doubt. Whatever that kernel_thread has started and it 
-completes and returns some value. How can I see that value?
--- 
-_____________________________________________________________________
-Disclaimer: This e-mail message and all attachments transmitted with it
-are intended solely for the use of the addressee and may contain legally
-privileged and confidential information. If the reader of this message
-is not the intended recipient, or an employee or agent responsible for
-delivering this message to the intended recipient, you are hereby
-notified that any dissemination, distribution, copying, or other use of
-this message or its attachments is strictly prohibited. If you have
-received this message in error, please notify the sender immediately by
-replying to this message and please delete it from your computer. Any
-views expressed in this message are those of the individual sender
-unless otherwise stated.Company has taken enough precautions to prevent
-the spread of viruses. However the company accepts no liability for any
-damage caused by any virus transmitted by this email.
-__________________________________________________________________________
- 
+Applied it to tip:tracing/kprobes, thanks Ananth!
+
+The bug has been introduced in v2.6.27-rc1 so i've marked it for a 
+-stable backport for .27.x, 28.x and 29.x.
+
+	Ingo
