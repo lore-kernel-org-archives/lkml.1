@@ -1,94 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbZCRCzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757325AbZCRC5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbZCRCzS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 22:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbZCRCzD
+	id S1757325AbZCRC5z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 22:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbZCRC5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 22:55:03 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:43026 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753746AbZCRCzB (ORCPT
+	Tue, 17 Mar 2009 22:57:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57903 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754804AbZCRC5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 22:55:01 -0400
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator -
- hang traced
-From: john stultz <johnstul@us.ibm.com>
-To: Frans Pop <elendil@planet.nl>, schwidefsky@de.ibm.com
-Cc: linux-s390@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1237343170.6160.131.camel@localhost>
-References: <200903080230.10099.elendil@planet.nl>
-	 <1236817822.7680.148.camel@localhost.localdomain>
-	 <1236818863.7680.156.camel@localhost.localdomain>
-	 <200903121805.48041.elendil@planet.nl>
-	 <1237343170.6160.131.camel@localhost>
-Content-Type: text/plain
-Date: Tue, 17 Mar 2009 19:54:57 -0700
-Message-Id: <1237344897.6160.136.camel@localhost>
+	Tue, 17 Mar 2009 22:57:45 -0400
+Date: Tue, 17 Mar 2009 19:50:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Valdis.Kletnieks@vt.edu, jkosina@suse.cz, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Oliver Neukum <oliver@neukum.org>
+Subject: Re: 29-rc-mmotm - HID/USB wedge w/ WARNING: at
+ kernel/workqueue.c:371
+Message-Id: <20090317195004.18fb6af6.akpm@linux-foundation.org>
+In-Reply-To: <49C05C94.7030104@cn.fujitsu.com>
+References: <6648.1237271589@turing-police.cc.vt.edu>
+	<20090317135424.9151c4f8.akpm@linux-foundation.org>
+	<37742.1237327272@turing-police.cc.vt.edu>
+	<49C05C94.7030104@cn.fujitsu.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-17 at 19:26 -0700, john stultz wrote:
-> So two issues that I've found so far:
-> 1) do_div() isn't dividing correctly in this case. Not sure why.
+On Wed, 18 Mar 2009 10:29:40 +0800 Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-Patch to prove this is part of the issue below. Disables the s390
-specific __div64_32() implementation and uses the generic code.
+> Valdis.Kletnieks@vt.edu wrote:
+> > On Tue, 17 Mar 2009 13:54:24 PDT, Andrew Morton said:
+> > 
+> >> It's an error in workqueue-avoid-recursion-in-run_workqueue.patch, methinks.
+> > 
+> > Thanks for the diagnosis - I got as far as realizing that any backtrace that
+> > included flush_cpu_workqueue() and worker_thread() had a problem and got
+> > stuck there.
+> > 
+> 
+> It's dangerous when we allow recursion in run_workqueue().
 
-Frans: Mind giving this a try to verify the issue goes away with this?
+static void run_workqueue(struct cpu_workqueue_struct *cwq)
+{
+	spin_lock_irq(&cwq->lock);
+	cwq->run_depth++;
+	if (cwq->run_depth > 3) {
+		/* morton gets to eat his hat */
+		printk("%s: recursion depth exceeded: %d\n",
+			__func__, cwq->run_depth);
+		dump_stack();
+	}
 
-Martin: I'm not sure if the problem here is the __div64_32
-implementation or if the emulator is doing something wrong here. Might
-need some help from you in sorting this out.
+That was added five or six years ago, and I never ever got to eat my hat.
 
+> If it's hard for you avoid flush_scheduled_work() in
+> keventd's work fuction by other fix, you can create
+> another workqueue to handle your works, IMO.
 
-
-> 2) We *really* shouldn't be using oneshot mode while the jiffies
-> clocksource is in use. I believe x86 avoids this specifically, so I'm
-> not sure why s390 isn't doing the same. Still have to investigate.
-
-Still working this.
-
-thanks
--john
-
-
-diff --git a/arch/s390/lib/div64.c b/arch/s390/lib/div64.c
-index a5f8300..6c249fa 100644
---- a/arch/s390/lib/div64.c
-+++ b/arch/s390/lib/div64.c
-@@ -68,7 +68,7 @@ static uint32_t __div64_31(uint64_t *n, uint32_t base)
- 	words[1] = reg3;
- 	return reg2;
- }
--
-+#if 0
- /*
-  * Function to divide an unsigned 64 bit integer by an unsigned
-  * 32 bit integer using the unsigned 64/31 bit division.
-@@ -123,9 +123,9 @@ uint32_t __div64_32(uint64_t *n, uint32_t base)
- 	}
- 	return r;
- }
--
-+#endif
- #else /* MARCH_G5 */
--
-+#if 0
- uint32_t __div64_32(uint64_t *n, uint32_t base)
- {
- 	register uint32_t reg2 asm("2");
-@@ -145,5 +145,5 @@ uint32_t __div64_32(uint64_t *n, uint32_t base)
- 	words[1] = reg3;
- 	return reg2;
- }
--
-+#endif
- #endif /* MARCH_G5 */
-
+Why do we need to change anything here?  No known bugs were fixed, and some
+new ones were added.
 
