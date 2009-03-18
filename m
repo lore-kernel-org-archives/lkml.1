@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759645AbZCRVro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbZCRVsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759645AbZCRVro (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757456AbZCRVmo
+	id S1759784AbZCRVsZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757518AbZCRVmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:42:44 -0400
+	Wed, 18 Mar 2009 17:42:50 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756628AbZCRVmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:43 -0400
+	id S1757567AbZCRVmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:42:49 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 51/57] microblaze_v7: fcntl.h sockios.h ucontext.h
-Date: Wed, 18 Mar 2009 21:31:18 +0100
-Message-Id: <34c2f9e50610e147be556607e482b88fd674b887.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 49/57] microblaze_v7: device.h param.h topology.h
+Date: Wed, 18 Mar 2009 21:31:16 +0100
+Message-Id: <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <d3f49195b8f675db48d2eda4f09fddb51af6f946.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -66,8 +66,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
  <14c123f2bae10a8b5fb76cd059ba105c212776ef.1237407249.git.monstr@monstr.eu>
  <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
- <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
- <d3f49195b8f675db48d2eda4f09fddb51af6f946.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -79,78 +77,94 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/fcntl.h    |    1 +
- arch/microblaze/include/asm/sockios.h  |   23 +++++++++++++++++++++++
- arch/microblaze/include/asm/ucontext.h |   22 ++++++++++++++++++++++
- 3 files changed, 46 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/fcntl.h
- create mode 100644 arch/microblaze/include/asm/sockios.h
- create mode 100644 arch/microblaze/include/asm/ucontext.h
+ arch/microblaze/include/asm/device.h   |   21 +++++++++++++++++++++
+ arch/microblaze/include/asm/param.h    |   30 ++++++++++++++++++++++++++++++
+ arch/microblaze/include/asm/topology.h |   11 +++++++++++
+ 3 files changed, 62 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/device.h
+ create mode 100644 arch/microblaze/include/asm/param.h
+ create mode 100644 arch/microblaze/include/asm/topology.h
 
-diff --git a/arch/microblaze/include/asm/fcntl.h b/arch/microblaze/include/asm/fcntl.h
+diff --git a/arch/microblaze/include/asm/device.h b/arch/microblaze/include/asm/device.h
 new file mode 100644
-index 0000000..46ab12d
+index 0000000..c042830
 --- /dev/null
-+++ b/arch/microblaze/include/asm/fcntl.h
-@@ -0,0 +1 @@
-+#include <asm-generic/fcntl.h>
-diff --git a/arch/microblaze/include/asm/sockios.h b/arch/microblaze/include/asm/sockios.h
-new file mode 100644
-index 0000000..9fff57a
---- /dev/null
-+++ b/arch/microblaze/include/asm/sockios.h
-@@ -0,0 +1,23 @@
++++ b/arch/microblaze/include/asm/device.h
+@@ -0,0 +1,21 @@
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * Arch specific extensions to struct device
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
++ * License v2. See the file "COPYING" in the main directory of this archive
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_SOCKIOS_H
-+#define _ASM_MICROBLAZE_SOCKIOS_H
++#ifndef _ASM_MICROBLAZE_DEVICE_H
++#define _ASM_MICROBLAZE_DEVICE_H
 +
-+#include <linux/ioctl.h>
++struct device_node;
 +
-+/* Socket-level I/O control calls. */
-+#define FIOSETOWN	0x8901
-+#define SIOCSPGRP	0x8902
-+#define FIOGETOWN	0x8903
-+#define SIOCGPGRP	0x8904
-+#define SIOCATMARK	0x8905
-+#define SIOCGSTAMP	0x8906		/* Get stamp (timeval) */
-+#define SIOCGSTAMPNS	0x8907		/* Get stamp (timespec) */
-+
-+#endif /* _ASM_MICROBLAZE_SOCKIOS_H */
-diff --git a/arch/microblaze/include/asm/ucontext.h b/arch/microblaze/include/asm/ucontext.h
-new file mode 100644
-index 0000000..11f6bb3
---- /dev/null
-+++ b/arch/microblaze/include/asm/ucontext.h
-@@ -0,0 +1,22 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_UCONTEXT_H
-+#define _ASM_MICROBLAZE_UCONTEXT_H
-+
-+#include <asm/sigcontext.h>
-+
-+struct ucontext {
-+	unsigned long		uc_flags;
-+	struct ucontext		*uc_link;
-+	stack_t			uc_stack;
-+	struct sigcontext	uc_mcontext;
-+	sigset_t		uc_sigmask; /* mask last for extensibility */
++struct dev_archdata {
++	/* Optional pointer to an OF device node */
++	struct device_node	*of_node;
 +};
 +
-+#endif /* _ASM_MICROBLAZE_UCONTEXT_H */
++#endif /* _ASM_MICROBLAZE_DEVICE_H */
++
++
+diff --git a/arch/microblaze/include/asm/param.h b/arch/microblaze/include/asm/param.h
+new file mode 100644
+index 0000000..8c538a4
+--- /dev/null
++++ b/arch/microblaze/include/asm/param.h
+@@ -0,0 +1,30 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_PARAM_H
++#define _ASM_MICROBLAZE_PARAM_H
++
++#ifdef __KERNEL__
++#define HZ		CONFIG_HZ	/* internal kernel timer frequency */
++#define USER_HZ		100		/* for user interfaces in "ticks" */
++#define CLOCKS_PER_SEC	(USER_HZ)	/* frequency at which times() counts */
++#endif /* __KERNEL__ */
++
++#ifndef HZ
++#define HZ 100
++#endif
++
++#define EXEC_PAGESIZE	4096
++
++#ifndef NOGROUP
++#define NOGROUP		(-1)
++#endif
++
++#define MAXHOSTNAMELEN	64	/* max length of hostname */
++
++#endif /* _ASM_MICROBLAZE_PARAM_H */
+diff --git a/arch/microblaze/include/asm/topology.h b/arch/microblaze/include/asm/topology.h
+new file mode 100644
+index 0000000..96bcea5
+--- /dev/null
++++ b/arch/microblaze/include/asm/topology.h
+@@ -0,0 +1,11 @@
++#include <asm-generic/topology.h>
++
++#ifndef _ASM_MICROBLAZE_TOPOLOGY_H
++#define _ASM_MICROBLAZE_TOPOLOGY_H
++
++struct device_node;
++static inline int of_node_to_nid(struct device_node *device)
++{
++	return 0;
++}
++#endif /* _ASM_MICROBLAZE_TOPOLOGY_H */
 -- 
 1.5.5.1
 
