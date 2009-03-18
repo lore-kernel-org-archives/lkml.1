@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbZCRDWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757804AbZCRDW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757523AbZCRDWD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 23:22:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbZCRDVw
+	id S1757804AbZCRDW1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 23:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757057AbZCRDWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 23:21:52 -0400
-Received: from mga03.intel.com ([143.182.124.21]:11252 "EHLO mga03.intel.com"
+	Tue, 17 Mar 2009 23:22:03 -0400
+Received: from mga01.intel.com ([192.55.52.88]:37300 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754578AbZCRDVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 23:21:51 -0400
+	id S1757523AbZCRDWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 23:22:00 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,381,1233561600"; 
-   d="asc'?scan'208";a="121387175"
-Subject: [PATCH -v3 1/3] crypto: Fix tfm allocation in
-	cryptd_alloc_ablkcipher
+   d="asc'?scan'208";a="673806749"
+Subject: [PATCH -v3 2/3] crypto: Add fpu template, a wrapper for blkcipher
+	touching FPU
 From: Huang Ying <ying.huang@intel.com>
 To: Herbert Xu <herbert@gondor.apana.org.au>,
        Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
 Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-YdaYaqIwvx3H+jKnEl2I"
-Date: Wed, 18 Mar 2009 11:21:47 +0800
-Message-Id: <1237346507.24215.240.camel@yhuang-dev.sh.intel.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3m6cujcn3BBx28vAaGC5"
+Date: Wed, 18 Mar 2009 11:21:57 +0800
+Message-Id: <1237346517.24215.241.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
@@ -28,66 +28,236 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-YdaYaqIwvx3H+jKnEl2I
+--=-3m6cujcn3BBx28vAaGC5
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Use crypto_alloc_base() instead of crypto_alloc_ablkcipher() to
-allocate underlying tfm in cryptd_alloc_ablkcipher. Because
-crypto_alloc_ablkcipher() prefer GENIV encapsulated crypto instead of
-raw one, while cryptd_alloc_ablkcipher needed the raw one.
+Blkcipher touching FPU need to be enclosed by kernel_fpu_begin() and
+kernel_fpu_end(). If they are invoked in cipher algorithm
+implementation, they will be invoked for each block, so that
+performance will be hurt, because they are "slow" operations. This
+patch implements "fpu" template, which makes these operations to be
+invoked for each request.
+
+v2: Make FPU mode invisible to end user
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 
 ---
- crypto/cryptd.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+ crypto/Kconfig  |    5 +
+ crypto/Makefile |    1=20
+ crypto/fpu.c    |  166 +++++++++++++++++++++++++++++++++++++++++++++++++++=
++++++
+ 3 files changed, 172 insertions(+)
 
---- a/crypto/cryptd.c
-+++ b/crypto/cryptd.c
-@@ -586,20 +586,24 @@ struct cryptd_ablkcipher *cryptd_alloc_a
- 						  u32 type, u32 mask)
- {
- 	char cryptd_alg_name[CRYPTO_MAX_ALG_NAME];
--	struct crypto_ablkcipher *tfm;
-+	struct crypto_tfm *tfm;
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -241,6 +241,11 @@ config CRYPTO_XTS
+ 	  key size 256, 384 or 512 bits. This implementation currently
+ 	  can't handle a sectorsize which is not a multiple of 16 bytes.
 =20
- 	if (snprintf(cryptd_alg_name, CRYPTO_MAX_ALG_NAME,
- 		     "cryptd(%s)", alg_name) >=3D CRYPTO_MAX_ALG_NAME)
- 		return ERR_PTR(-EINVAL);
--	tfm =3D crypto_alloc_ablkcipher(cryptd_alg_name, type, mask);
-+	type &=3D ~(CRYPTO_ALG_TYPE_MASK | CRYPTO_ALG_GENIV);
-+	type |=3D CRYPTO_ALG_TYPE_BLKCIPHER;
-+	mask &=3D ~CRYPTO_ALG_TYPE_MASK;
-+	mask |=3D (CRYPTO_ALG_GENIV | CRYPTO_ALG_TYPE_BLKCIPHER_MASK);
-+	tfm =3D crypto_alloc_base(cryptd_alg_name, type, mask);
- 	if (IS_ERR(tfm))
- 		return ERR_CAST(tfm);
--	if (crypto_ablkcipher_tfm(tfm)->__crt_alg->cra_module !=3D THIS_MODULE) {
--		crypto_free_ablkcipher(tfm);
-+	if (tfm->__crt_alg->cra_module !=3D THIS_MODULE) {
-+		crypto_free_tfm(tfm);
- 		return ERR_PTR(-EINVAL);
- 	}
++config CRYPTO_FPU
++	tristate
++	select CRYPTO_BLKCIPHER
++	select CRYPTO_MANAGER
++
+ comment "Hash modes"
 =20
--	return __cryptd_ablkcipher_cast(tfm);
-+	return __cryptd_ablkcipher_cast(__crypto_ablkcipher_cast(tfm));
- }
- EXPORT_SYMBOL_GPL(cryptd_alloc_ablkcipher);
-=20
+ config CRYPTO_HMAC
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -53,6 +53,7 @@ obj-$(CONFIG_CRYPTO_PCBC) +=3D pcbc.o
+ obj-$(CONFIG_CRYPTO_CTS) +=3D cts.o
+ obj-$(CONFIG_CRYPTO_LRW) +=3D lrw.o
+ obj-$(CONFIG_CRYPTO_XTS) +=3D xts.o
++obj-$(CONFIG_CRYPTO_FPU) +=3D fpu.o
+ obj-$(CONFIG_CRYPTO_CTR) +=3D ctr.o
+ obj-$(CONFIG_CRYPTO_GCM) +=3D gcm.o
+ obj-$(CONFIG_CRYPTO_CCM) +=3D ccm.o
+--- /dev/null
++++ b/crypto/fpu.c
+@@ -0,0 +1,166 @@
++/*
++ * FPU: Wrapper for blkcipher touching fpu
++ *
++ * Copyright (c) Intel Corp.
++ *   Author: Huang Ying <ying.huang@intel.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the F=
+ree
++ * Software Foundation; either version 2 of the License, or (at your optio=
+n)
++ * any later version.
++ *
++ */
++
++#include <crypto/algapi.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <asm/i387.h>
++
++struct crypto_fpu_ctx {
++	struct crypto_blkcipher *child;
++};
++
++static int crypto_fpu_setkey(struct crypto_tfm *parent, const u8 *key,
++			     unsigned int keylen)
++{
++	struct crypto_fpu_ctx *ctx =3D crypto_tfm_ctx(parent);
++	struct crypto_blkcipher *child =3D ctx->child;
++	int err;
++
++	crypto_blkcipher_clear_flags(child, CRYPTO_TFM_REQ_MASK);
++	crypto_blkcipher_set_flags(child, crypto_tfm_get_flags(parent) &
++				   CRYPTO_TFM_REQ_MASK);
++	err =3D crypto_blkcipher_setkey(child, key, keylen);
++	crypto_tfm_set_flags(parent, crypto_blkcipher_get_flags(child) &
++				     CRYPTO_TFM_RES_MASK);
++	return err;
++}
++
++static int crypto_fpu_encrypt(struct blkcipher_desc *desc_in,
++			      struct scatterlist *dst, struct scatterlist *src,
++			      unsigned int nbytes)
++{
++	int err;
++	struct crypto_fpu_ctx *ctx =3D crypto_blkcipher_ctx(desc_in->tfm);
++	struct crypto_blkcipher *child =3D ctx->child;
++	struct blkcipher_desc desc =3D {
++		.tfm =3D child,
++		.info =3D desc_in->info,
++		.flags =3D desc_in->flags,
++	};
++
++	kernel_fpu_begin();
++	err =3D crypto_blkcipher_crt(desc.tfm)->encrypt(&desc, dst, src, nbytes);
++	kernel_fpu_end();
++	return err;
++}
++
++static int crypto_fpu_decrypt(struct blkcipher_desc *desc_in,
++			      struct scatterlist *dst, struct scatterlist *src,
++			      unsigned int nbytes)
++{
++	int err;
++	struct crypto_fpu_ctx *ctx =3D crypto_blkcipher_ctx(desc_in->tfm);
++	struct crypto_blkcipher *child =3D ctx->child;
++	struct blkcipher_desc desc =3D {
++		.tfm =3D child,
++		.info =3D desc_in->info,
++		.flags =3D desc_in->flags,
++	};
++
++	kernel_fpu_begin();
++	err =3D crypto_blkcipher_crt(desc.tfm)->decrypt(&desc, dst, src, nbytes);
++	kernel_fpu_end();
++	return err;
++}
++
++static int crypto_fpu_init_tfm(struct crypto_tfm *tfm)
++{
++	struct crypto_instance *inst =3D crypto_tfm_alg_instance(tfm);
++	struct crypto_spawn *spawn =3D crypto_instance_ctx(inst);
++	struct crypto_fpu_ctx *ctx =3D crypto_tfm_ctx(tfm);
++	struct crypto_blkcipher *cipher;
++
++	cipher =3D crypto_spawn_blkcipher(spawn);
++	if (IS_ERR(cipher))
++		return PTR_ERR(cipher);
++
++	ctx->child =3D cipher;
++	return 0;
++}
++
++static void crypto_fpu_exit_tfm(struct crypto_tfm *tfm)
++{
++	struct crypto_fpu_ctx *ctx =3D crypto_tfm_ctx(tfm);
++	crypto_free_blkcipher(ctx->child);
++}
++
++static struct crypto_instance *crypto_fpu_alloc(struct rtattr **tb)
++{
++	struct crypto_instance *inst;
++	struct crypto_alg *alg;
++	int err;
++
++	err =3D crypto_check_attr_type(tb, CRYPTO_ALG_TYPE_BLKCIPHER);
++	if (err)
++		return ERR_PTR(err);
++
++	alg =3D crypto_get_attr_alg(tb, CRYPTO_ALG_TYPE_BLKCIPHER,
++				  CRYPTO_ALG_TYPE_MASK);
++	if (IS_ERR(alg))
++		return ERR_CAST(alg);
++
++	inst =3D crypto_alloc_instance("fpu", alg);
++	if (IS_ERR(inst))
++		goto out_put_alg;
++
++	inst->alg.cra_flags =3D alg->cra_flags;
++	inst->alg.cra_priority =3D alg->cra_priority;
++	inst->alg.cra_blocksize =3D alg->cra_blocksize;
++	inst->alg.cra_alignmask =3D alg->cra_alignmask;
++	inst->alg.cra_type =3D alg->cra_type;
++	inst->alg.cra_blkcipher.ivsize =3D alg->cra_blkcipher.ivsize;
++	inst->alg.cra_blkcipher.min_keysize =3D alg->cra_blkcipher.min_keysize;
++	inst->alg.cra_blkcipher.max_keysize =3D alg->cra_blkcipher.max_keysize;
++	inst->alg.cra_ctxsize =3D sizeof(struct crypto_fpu_ctx);
++	inst->alg.cra_init =3D crypto_fpu_init_tfm;
++	inst->alg.cra_exit =3D crypto_fpu_exit_tfm;
++	inst->alg.cra_blkcipher.setkey =3D crypto_fpu_setkey;
++	inst->alg.cra_blkcipher.encrypt =3D crypto_fpu_encrypt;
++	inst->alg.cra_blkcipher.decrypt =3D crypto_fpu_decrypt;
++
++out_put_alg:
++	crypto_mod_put(alg);
++	return inst;
++}
++
++static void crypto_fpu_free(struct crypto_instance *inst)
++{
++	crypto_drop_spawn(crypto_instance_ctx(inst));
++	kfree(inst);
++}
++
++static struct crypto_template crypto_fpu_tmpl =3D {
++	.name =3D "fpu",
++	.alloc =3D crypto_fpu_alloc,
++	.free =3D crypto_fpu_free,
++	.module =3D THIS_MODULE,
++};
++
++static int __init crypto_fpu_module_init(void)
++{
++	return crypto_register_template(&crypto_fpu_tmpl);
++}
++
++static void __exit crypto_fpu_module_exit(void)
++{
++	crypto_unregister_template(&crypto_fpu_tmpl);
++}
++
++module_init(crypto_fpu_module_init);
++module_exit(crypto_fpu_module_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("FPU block cipher wrapper");
 
 
---=-YdaYaqIwvx3H+jKnEl2I
+--=-3m6cujcn3BBx28vAaGC5
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAknAaMMACgkQKhFGF+eHlpj1BwCgmeqnAcM+0Hpj8baMdsx/Vl3M
-aJkAoJIKnxMdnFOx7q1PbrGma9enPs+B
-=Ds/H
+iEYEABECAAYFAknAaNEACgkQKhFGF+eHlpjagwCcDnD8ib3YSjjttZb9addvsf2F
+hEYAn0wj+64rS6WUpVFtKHOzOXB/7mna
+=/esL
 -----END PGP SIGNATURE-----
 
---=-YdaYaqIwvx3H+jKnEl2I--
+--=-3m6cujcn3BBx28vAaGC5--
 
