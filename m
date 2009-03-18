@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759618AbZCRVx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760662AbZCRVy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759618AbZCRVx7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758354AbZCRVnr
+	id S1760662AbZCRVy0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbZCRVnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:43:47 -0400
+	Wed, 18 Mar 2009 17:43:51 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756989AbZCRVnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:43:45 -0400
+	id S1758244AbZCRVns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:43:48 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 53/57] microblaze_v7: string.h thread_info.h
-Date: Wed, 18 Mar 2009 21:31:20 +0100
-Message-Id: <e5b88f50c39aa95431f5ecdb032c6676399ae198.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 46/57] microblaze_v7: headers simple files - empty or redirect to asm-generic
+Date: Wed, 18 Mar 2009 21:31:13 +0100
+Message-Id: <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <15f6f10873f7c6f4f3b06f9d4d5af3ee9714f873.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -63,13 +63,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
  <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
  <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
- <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
- <14c123f2bae10a8b5fb76cd059ba105c212776ef.1237407249.git.monstr@monstr.eu>
- <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
- <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
- <d3f49195b8f675db48d2eda4f09fddb51af6f946.1237407249.git.monstr@monstr.eu>
- <34c2f9e50610e147be556607e482b88fd674b887.1237407249.git.monstr@monstr.eu>
- <15f6f10873f7c6f4f3b06f9d4d5af3ee9714f873.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -81,200 +74,196 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/string.h      |   24 +++++
- arch/microblaze/include/asm/thread_info.h |  152 +++++++++++++++++++++++++++++
- 2 files changed, 176 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/string.h
- create mode 100644 arch/microblaze/include/asm/thread_info.h
+ arch/microblaze/include/asm/cputime.h           |    1 +
+ arch/microblaze/include/asm/div64.h             |    1 +
+ arch/microblaze/include/asm/emergency-restart.h |    1 +
+ arch/microblaze/include/asm/errno.h             |    1 +
+ arch/microblaze/include/asm/futex.h             |    1 +
+ arch/microblaze/include/asm/gpio.h              |   56 +++++++++++++++++++++++
+ arch/microblaze/include/asm/kdebug.h            |    1 +
+ arch/microblaze/include/asm/local.h             |    1 +
+ arch/microblaze/include/asm/mutex.h             |    1 +
+ arch/microblaze/include/asm/percpu.h            |    1 +
+ arch/microblaze/include/asm/resource.h          |    1 +
+ arch/microblaze/include/asm/serial.h            |   14 ++++++
+ 12 files changed, 80 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/auxvec.h
+ create mode 100644 arch/microblaze/include/asm/cputable.h
+ create mode 100644 arch/microblaze/include/asm/cputime.h
+ create mode 100644 arch/microblaze/include/asm/div64.h
+ create mode 100644 arch/microblaze/include/asm/emergency-restart.h
+ create mode 100644 arch/microblaze/include/asm/errno.h
+ create mode 100644 arch/microblaze/include/asm/futex.h
+ create mode 100644 arch/microblaze/include/asm/gpio.h
+ create mode 100644 arch/microblaze/include/asm/kdebug.h
+ create mode 100644 arch/microblaze/include/asm/local.h
+ create mode 100644 arch/microblaze/include/asm/mutex.h
+ create mode 100644 arch/microblaze/include/asm/percpu.h
+ create mode 100644 arch/microblaze/include/asm/resource.h
+ create mode 100644 arch/microblaze/include/asm/serial.h
+ create mode 100644 arch/microblaze/include/asm/user.h
 
-diff --git a/arch/microblaze/include/asm/string.h b/arch/microblaze/include/asm/string.h
+diff --git a/arch/microblaze/include/asm/auxvec.h b/arch/microblaze/include/asm/auxvec.h
 new file mode 100644
-index 0000000..f7728c9
---- /dev/null
-+++ b/arch/microblaze/include/asm/string.h
-@@ -0,0 +1,24 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_STRING_H
-+#define _ASM_MICROBLAZE_STRING_H
-+
-+#ifndef __KERNEL__
-+
-+#define __HAVE_ARCH_MEMSET
-+#define __HAVE_ARCH_MEMCPY
-+#define __HAVE_ARCH_MEMMOVE
-+
-+extern void *memset(void *, int, __kernel_size_t);
-+extern void *memcpy(void *, const void *, __kernel_size_t);
-+extern void *memmove(void *, const void *, __kernel_size_t);
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _ASM_MICROBLAZE_STRING_H */
-diff --git a/arch/microblaze/include/asm/thread_info.h b/arch/microblaze/include/asm/thread_info.h
+index 0000000..e69de29
+diff --git a/arch/microblaze/include/asm/cputable.h b/arch/microblaze/include/asm/cputable.h
 new file mode 100644
-index 0000000..95605b8
+index 0000000..e69de29
+diff --git a/arch/microblaze/include/asm/cputime.h b/arch/microblaze/include/asm/cputime.h
+new file mode 100644
+index 0000000..6d68ad7
 --- /dev/null
-+++ b/arch/microblaze/include/asm/thread_info.h
-@@ -0,0 +1,152 @@
++++ b/arch/microblaze/include/asm/cputime.h
+@@ -0,0 +1 @@
++#include <asm-generic/cputime.h>
+diff --git a/arch/microblaze/include/asm/div64.h b/arch/microblaze/include/asm/div64.h
+new file mode 100644
+index 0000000..6cd978c
+--- /dev/null
++++ b/arch/microblaze/include/asm/div64.h
+@@ -0,0 +1 @@
++#include <asm-generic/div64.h>
+diff --git a/arch/microblaze/include/asm/emergency-restart.h b/arch/microblaze/include/asm/emergency-restart.h
+new file mode 100644
+index 0000000..3711bd9
+--- /dev/null
++++ b/arch/microblaze/include/asm/emergency-restart.h
+@@ -0,0 +1 @@
++#include <asm-generic/emergency-restart.h>
+diff --git a/arch/microblaze/include/asm/errno.h b/arch/microblaze/include/asm/errno.h
+new file mode 100644
+index 0000000..4c82b50
+--- /dev/null
++++ b/arch/microblaze/include/asm/errno.h
+@@ -0,0 +1 @@
++#include <asm-generic/errno.h>
+diff --git a/arch/microblaze/include/asm/futex.h b/arch/microblaze/include/asm/futex.h
+new file mode 100644
+index 0000000..0b74582
+--- /dev/null
++++ b/arch/microblaze/include/asm/futex.h
+@@ -0,0 +1 @@
++#include <asm-generic/futex.h>
+diff --git a/arch/microblaze/include/asm/gpio.h b/arch/microblaze/include/asm/gpio.h
+new file mode 100644
+index 0000000..ea04632
+--- /dev/null
++++ b/arch/microblaze/include/asm/gpio.h
+@@ -0,0 +1,56 @@
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * Generic GPIO API implementation for PowerPC.
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_THREAD_INFO_H
-+#define _ASM_MICROBLAZE_THREAD_INFO_H
-+
-+#ifdef __KERNEL__
-+
-+/* we have 8k stack */
-+#define THREAD_SHIFT		13
-+#define THREAD_SIZE		(1 << THREAD_SHIFT)
-+#define THREAD_SIZE_ORDER	1
-+
-+#ifndef __ASSEMBLY__
-+# include <linux/types.h>
-+# include <asm/processor.h>
-+# include <asm/segment.h>
-+
-+/*
-+ * low level task data that entry.S needs immediate access to
-+ * - this struct should fit entirely inside of one cache line
-+ * - this struct shares the supervisor stack pages
-+ * - if the contents of this structure are changed, the assembly constants
-+ *	 must also be changed
-+ */
-+
-+struct cpu_context {
-+	__u32	r1; /* stack pointer */
-+	__u32	r2;
-+	/* dedicated registers */
-+	__u32	r13;
-+	__u32	r14;
-+	__u32	r15;
-+	__u32	r16;
-+	__u32	r17;
-+	__u32	r18;
-+	/* non-volatile registers */
-+	__u32	r19;
-+	__u32	r20;
-+	__u32	r21;
-+	__u32	r22;
-+	__u32	r23;
-+	__u32	r24;
-+	__u32	r25;
-+	__u32	r26;
-+	__u32	r27;
-+	__u32	r28;
-+	__u32	r29;
-+	__u32	r30;
-+	/* r31 is used as current task pointer */
-+	/* special purpose registers */
-+	__u32	msr;
-+	__u32	ear;
-+	__u32	esr;
-+	__u32	fsr;
-+};
-+
-+struct thread_info {
-+	struct task_struct	*task; /* main task structure */
-+	struct exec_domain	*exec_domain; /* execution domain */
-+	unsigned long		flags; /* low level flags */
-+	unsigned long		status; /* thread-synchronous flags */
-+	__u32			cpu; /* current CPU */
-+	__s32			preempt_count; /* 0 => preemptable,< 0 => BUG*/
-+	mm_segment_t		addr_limit; /* thread address space */
-+	struct restart_block	restart_block;
-+
-+	struct cpu_context	cpu_context;
-+};
-+
-+/*
-+ * macros/functions for gaining access to the thread information structure
++ * Copyright (c) 2007-2008  MontaVista Software, Inc.
 + *
-+ * preempt_count needs to be 1 initially, until the scheduler is functional.
++ * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + */
-+#define INIT_THREAD_INFO(tsk)			\
-+{						\
-+	.task		= &tsk,			\
-+	.exec_domain	= &default_exec_domain,	\
-+	.flags		= 0,			\
-+	.cpu		= 0,			\
-+	.preempt_count	= 1,			\
-+	.addr_limit	= KERNEL_DS,		\
-+	.restart_block = {			\
-+		.fn = do_no_restart_syscall,	\
-+	},					\
-+}
 +
-+#define init_thread_info	(init_thread_union.thread_info)
-+#define init_stack		(init_thread_union.stack)
++#ifndef __ASM_POWERPC_GPIO_H
++#define __ASM_POWERPC_GPIO_H
 +
-+/* how to get the thread information struct from C */
-+static inline struct thread_info *current_thread_info(void)
++#include <linux/errno.h>
++#include <asm-generic/gpio.h>
++
++#ifdef CONFIG_GPIOLIB
++
++/*
++ * We don't (yet) implement inlined/rapid versions for on-chip gpios.
++ * Just call gpiolib.
++ */
++static inline int gpio_get_value(unsigned int gpio)
 +{
-+	register unsigned long sp asm("r1");
-+
-+	return (struct thread_info *)(sp & ~(THREAD_SIZE-1));
++	return __gpio_get_value(gpio);
 +}
 +
-+/* thread information allocation */
-+#endif /* __ASSEMBLY__ */
++static inline void gpio_set_value(unsigned int gpio, int value)
++{
++	__gpio_set_value(gpio, value);
++}
 +
-+#define PREEMPT_ACTIVE		0x10000000
++static inline int gpio_cansleep(unsigned int gpio)
++{
++	return __gpio_cansleep(gpio);
++}
 +
 +/*
-+ * thread information flags
-+ * - these are process state flags that various assembly files may
-+ *   need to access
-+ * - pending work-to-be-done flags are in LSW
-+ * - other flags in MSW
++ * Not implemented, yet.
 + */
-+#define TIF_SYSCALL_TRACE	0 /* syscall trace active */
-+#define TIF_NOTIFY_RESUME	1 /* resumption notification requested */
-+#define TIF_SIGPENDING		2 /* signal pending */
-+#define TIF_NEED_RESCHED	3 /* rescheduling necessary */
-+/* restore singlestep on return to user mode */
-+#define TIF_SINGLESTEP		4
-+#define TIF_IRET		5 /* return with iret */
-+#define TIF_MEMDIE		6
-+/* true if poll_idle() is polling TIF_NEED_RESCHED */
-+#define TIF_POLLING_NRFLAG	16
++static inline int gpio_to_irq(unsigned int gpio)
++{
++	return -ENOSYS;
++}
 +
-+#define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-+#define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
-+#define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
-+#define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
-+#define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
-+#define _TIF_IRET		(1<<TIF_IRET)
-+#define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
++static inline int irq_to_gpio(unsigned int irq)
++{
++	return -EINVAL;
++}
 +
-+/* work to do on interrupt/exception return */
-+#define _TIF_WORK_MASK		0x0000FFFE
-+/* work to do on any return to u-space */
-+#define _TIF_ALLWORK_MASK	0x0000FFFF
++#endif /* CONFIG_GPIOLIB */
 +
++#endif /* __ASM_POWERPC_GPIO_H */
+diff --git a/arch/microblaze/include/asm/kdebug.h b/arch/microblaze/include/asm/kdebug.h
+new file mode 100644
+index 0000000..6ece1b0
+--- /dev/null
++++ b/arch/microblaze/include/asm/kdebug.h
+@@ -0,0 +1 @@
++#include <asm-generic/kdebug.h>
+diff --git a/arch/microblaze/include/asm/local.h b/arch/microblaze/include/asm/local.h
+new file mode 100644
+index 0000000..c11c530
+--- /dev/null
++++ b/arch/microblaze/include/asm/local.h
+@@ -0,0 +1 @@
++#include <asm-generic/local.h>
+diff --git a/arch/microblaze/include/asm/mutex.h b/arch/microblaze/include/asm/mutex.h
+new file mode 100644
+index 0000000..ff6101a
+--- /dev/null
++++ b/arch/microblaze/include/asm/mutex.h
+@@ -0,0 +1 @@
++#include <asm-generic/mutex-dec.h>
+diff --git a/arch/microblaze/include/asm/percpu.h b/arch/microblaze/include/asm/percpu.h
+new file mode 100644
+index 0000000..06a959d
+--- /dev/null
++++ b/arch/microblaze/include/asm/percpu.h
+@@ -0,0 +1 @@
++#include <asm-generic/percpu.h>
+diff --git a/arch/microblaze/include/asm/resource.h b/arch/microblaze/include/asm/resource.h
+new file mode 100644
+index 0000000..04bc4db
+--- /dev/null
++++ b/arch/microblaze/include/asm/resource.h
+@@ -0,0 +1 @@
++#include <asm-generic/resource.h>
+diff --git a/arch/microblaze/include/asm/serial.h b/arch/microblaze/include/asm/serial.h
+new file mode 100644
+index 0000000..39bfc8c
+--- /dev/null
++++ b/arch/microblaze/include/asm/serial.h
+@@ -0,0 +1,14 @@
 +/*
-+ * Thread-synchronous status.
++ * Copyright (C) 2009 Michal Simek <monstr@monstr.eu>
 + *
-+ * This is different from the flags in that nobody else
-+ * ever touches our thread-synchronous status, so we don't
-+ * have to worry about atomic accesses.
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
-+/* FPU was used by this task this quantum (SMP) */
-+#define TS_USEDFPU		0x0001
 +
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_MICROBLAZE_THREAD_INFO_H */
++#ifndef _ASM_MICROBLAZE_SERIAL_H
++#define _ASM_MICROBLAZE_SERIAL_H
++
++# define BASE_BAUD (1843200 / 16)
++
++#endif /* _ASM_MICROBLAZE_SERIAL_H */
+diff --git a/arch/microblaze/include/asm/user.h b/arch/microblaze/include/asm/user.h
+new file mode 100644
+index 0000000..e69de29
 -- 
 1.5.5.1
 
