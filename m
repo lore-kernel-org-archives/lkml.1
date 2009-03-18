@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbZCRQyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758396AbZCRQ43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758813AbZCRQyY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 12:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbZCRQyQ
+	id S1758396AbZCRQ43 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 12:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbZCRQ4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 12:54:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55956 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754358AbZCRQyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 12:54:15 -0400
-Date: Wed, 18 Mar 2009 17:54:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
+	Wed, 18 Mar 2009 12:56:20 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:51191 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753358AbZCRQ4T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 12:56:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=oyJHhU0YqgeIl7b2zzivCssjjKqaNFy36U4l/CK16CjlHsTRei2HzoTSW4jgWLmaNw
+         zYQsbLsM7/MhON77rH/8U5Zewsm7g+8iR7d6UO6AahMysPDi+PPqx0jGpP0E0ylnpvkg
+         HyBbMhrQd7YBEKx6vK6ayADOla4Gwf/IIvqrs=
+Date: Wed, 18 Mar 2009 17:56:12 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
 Subject: Re: oops in tracepoint_update_probe_range() (was: Re: [oops -tip]
 	: x86 AMD 64)
-Message-ID: <20090318165407.GA921@elte.hu>
+Message-ID: <20090318165611.GC5981@nowhere>
 References: <1237393396.3322.6.camel@localhost.localdomain> <20090318163531.GE21331@elte.hu> <1237394936.3132.1.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <1237394936.3132.1.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-
+On Wed, Mar 18, 2009 at 10:18:56PM +0530, Jaswinder Singh Rajput wrote:
 > On Wed, 2009-03-18 at 17:35 +0100, Ingo Molnar wrote:
 > > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > > 
@@ -97,11 +94,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 >  	}
 > +out:
 >  	mutex_unlock(&tracepoints_mutex);
+>  }
 
-hm, that does not look right - how can 'iter' become zero? It's a 
-text-ish symbol.
 
-I think what we might have here is a corruption of the tracepoint 
-data structures.
+Ok, it should fix the crash.
+But I think the real problem remains: iter is not supposed to point to NULL,
+this is a section range:
 
-	Ingo
+tracepoint_update_probe_range(__start___tracepoints,
+		__stop___tracepoints);
+
+It seems to mean that the section is empty.
+
+  
+> -- 
+> 1.6.0.6
+> 
+> 
+> 
+
