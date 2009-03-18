@@ -1,85 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbZCRDS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbZCRDWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756770AbZCRDS0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 23:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbZCRDSS
+	id S1757523AbZCRDWD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 23:22:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbZCRDVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 23:18:18 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:41327 "EHLO e1.ny.us.ibm.com"
+	Tue, 17 Mar 2009 23:21:52 -0400
+Received: from mga03.intel.com ([143.182.124.21]:11252 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755051AbZCRDSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 23:18:17 -0400
-Date: Wed, 18 Mar 2009 08:48:32 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
-	cpuacct_charge() safe when rcupreempt is used.
-Message-ID: <20090318031832.GA3960@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090317061754.GD3314@in.ibm.com> <49BF42FB.4030103@cn.fujitsu.com> <20090317073649.GH3314@in.ibm.com> <20090317131251.GU16897@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090317131251.GU16897@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754578AbZCRDVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 23:21:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,381,1233561600"; 
+   d="asc'?scan'208";a="121387175"
+Subject: [PATCH -v3 1/3] crypto: Fix tfm allocation in
+	cryptd_alloc_ablkcipher
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+       Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-YdaYaqIwvx3H+jKnEl2I"
+Date: Wed, 18 Mar 2009 11:21:47 +0800
+Message-Id: <1237346507.24215.240.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 06:42:51PM +0530, Balbir Singh wrote:
-> * Bharata B Rao <bharata@linux.vnet.ibm.com> [2009-03-17 13:06:49]:
-> 
-> > On Tue, Mar 17, 2009 at 02:28:11PM +0800, Li Zefan wrote:
-> > > Bharata B Rao wrote:
-> > > > cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
-> > > > 	rcupreempt is used.
-> > > > 
-> > > > cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
-> > > > This can race with the task's movement between cgroups. This race
-> > > > can cause an access to freed ca pointer in cpuacct_charge(). This will not
-> > > 
-> > > Actually it can also end up access invalid tsk->cgroups. ;)
-> > > 
-> > > get tsk->cgroups (cg)
-> > >                          (move tsk to another cgroup) or (tsk exiting)
-> > >                          -> kfree(tsk->cgroups)
-> > > get cg->subsys[..]
-> > 
-> > Ok :) Here is the patch again with updated description.
-> > 
-> > cpuacct: Make cpuacct hierarchy walk in cpuacct_charge() safe when
-> > 	rcupreempt is used.
-> > 
-> > cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
-> > This can race with the task's movement between cgroups. This race
-> > can cause an access to freed ca pointer in cpuacct_charge() or access
-> > to invalid cgroups pointer of the task. This will not happen with rcu or
-> > tree rcu as cpuacct_charge() is called with preemption disabled. However if
-> > rcupreempt is used, the race is seen. Thanks to Li Zefan for explaining this.
-> > 
-> > Fix this race by explicitly protecting ca and the hierarchy walk with
-> > rcu_read_lock().
-> >
-> 
-> Looks good and works very well (except for the batch issue that you
-> pointed out, it takes up to batch values before updates are seen).
-> 
-> I'd like to get the patches in -tip and see the results, I would
-> recommend using percpu_counter_sum() while reading the data as an
-> enhancement to this patch. If user space does not overwhelm with a lot
-> of reads, sum would work out better.
-> 
-> 
-> Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-So I guess this ack is not for this patch but for the per-cgroup
-stime/utime cpuacct controller statistics patch.
+--=-YdaYaqIwvx3H+jKnEl2I
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
-Bharata.
+Use crypto_alloc_base() instead of crypto_alloc_ablkcipher() to
+allocate underlying tfm in cryptd_alloc_ablkcipher. Because
+crypto_alloc_ablkcipher() prefer GENIV encapsulated crypto instead of
+raw one, while cryptd_alloc_ablkcipher needed the raw one.
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+---
+ crypto/cryptd.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+--- a/crypto/cryptd.c
++++ b/crypto/cryptd.c
+@@ -586,20 +586,24 @@ struct cryptd_ablkcipher *cryptd_alloc_a
+ 						  u32 type, u32 mask)
+ {
+ 	char cryptd_alg_name[CRYPTO_MAX_ALG_NAME];
+-	struct crypto_ablkcipher *tfm;
++	struct crypto_tfm *tfm;
+=20
+ 	if (snprintf(cryptd_alg_name, CRYPTO_MAX_ALG_NAME,
+ 		     "cryptd(%s)", alg_name) >=3D CRYPTO_MAX_ALG_NAME)
+ 		return ERR_PTR(-EINVAL);
+-	tfm =3D crypto_alloc_ablkcipher(cryptd_alg_name, type, mask);
++	type &=3D ~(CRYPTO_ALG_TYPE_MASK | CRYPTO_ALG_GENIV);
++	type |=3D CRYPTO_ALG_TYPE_BLKCIPHER;
++	mask &=3D ~CRYPTO_ALG_TYPE_MASK;
++	mask |=3D (CRYPTO_ALG_GENIV | CRYPTO_ALG_TYPE_BLKCIPHER_MASK);
++	tfm =3D crypto_alloc_base(cryptd_alg_name, type, mask);
+ 	if (IS_ERR(tfm))
+ 		return ERR_CAST(tfm);
+-	if (crypto_ablkcipher_tfm(tfm)->__crt_alg->cra_module !=3D THIS_MODULE) {
+-		crypto_free_ablkcipher(tfm);
++	if (tfm->__crt_alg->cra_module !=3D THIS_MODULE) {
++		crypto_free_tfm(tfm);
+ 		return ERR_PTR(-EINVAL);
+ 	}
+=20
+-	return __cryptd_ablkcipher_cast(tfm);
++	return __cryptd_ablkcipher_cast(__crypto_ablkcipher_cast(tfm));
+ }
+ EXPORT_SYMBOL_GPL(cryptd_alloc_ablkcipher);
+=20
+
+
+--=-YdaYaqIwvx3H+jKnEl2I
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknAaMMACgkQKhFGF+eHlpj1BwCgmeqnAcM+0Hpj8baMdsx/Vl3M
+aJkAoJIKnxMdnFOx7q1PbrGma9enPs+B
+=Ds/H
+-----END PGP SIGNATURE-----
+
+--=-YdaYaqIwvx3H+jKnEl2I--
+
