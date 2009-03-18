@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZCRKAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbZCRKGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422AbZCRKAx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 06:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbZCRKAn
+	id S1755231AbZCRKGL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 06:06:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZCRKF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 06:00:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34931 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753009AbZCRKAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 06:00:42 -0400
-Date: Wed, 18 Mar 2009 10:00:00 GMT
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       joerg.roedel@amd.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       joerg.roedel@amd.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090317120112.GP6159@amd.com>
-References: <20090317120112.GP6159@amd.com>
-Subject: [tip:core/iommu] dma-debug: fix dma_debug_add_bus() definition for !CONFIG_DMA_API_DEBUG
-Message-ID: <tip-84be58d4601c86306cd939ebf58a9b90989883a4@git.kernel.org>
-Git-Commit-ID: 84be58d4601c86306cd939ebf58a9b90989883a4
-X-Mailer: tip-git-log-daemon
+	Wed, 18 Mar 2009 06:05:56 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:54778 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753705AbZCRKFz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 06:05:55 -0400
+Date: Wed, 18 Mar 2009 03:05:00 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Sachin Sant <sachinp@in.ibm.com>
+cc: jfs-discussion@lists.sourceforge.net,
+       linux-kernel <linux-kernel@vger.kernel.org>, shaggy@austin.ibm.com
+Subject: Re: [Jfs-discussion] [BUG/JFS/2.6.29-rc8] kernel BUG at
+ fs/mpage.c:473!
+In-Reply-To: <49BDFB4F.7040405@in.ibm.com>
+Message-ID: <alpine.DEB.2.01.0903180259110.16244@bogon.housecafe.de>
+References: <49BDFB4F.7040405@in.ibm.com>
+User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 18 Mar 2009 10:00:02 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1/gR9CLfBtxe0Fm18Z4wIXfLm/8W663Aq3Uirk
+ ri3mFJSwgTYwO47RNDoqUYL9OvOzKlp4SwgvfCz/CfPI4dLaCH
+ +9X8n5dFWdKFg95ctlmfQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  84be58d4601c86306cd939ebf58a9b90989883a4
-Gitweb:     http://git.kernel.org/tip/84be58d4601c86306cd939ebf58a9b90989883a4
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 18 Mar 2009 11:50:29 +0100
-Commit:     Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 18 Mar 2009 11:53:48 +0100
+On Mon, 16 Mar 2009, Sachin Sant wrote:
+> autorun: reading command 85 /usr/local/autobench/scripts/autobench.dat
+> autorun: run test fsstress -d $scratchdir -l $iterations: command read
+> autorun: run test fsstress -d /mnt/tmp -l 1: was expanded
+> 03/15/2009-19:36:37 processing command: (1) 'run test fsstress -d /mnt/tmp -l 1'
 
-dma-debug: fix dma_debug_add_bus() definition for !CONFIG_DMA_API_DEBUG
+How many iterations were really run to hit this BUG? When I specify "-l 
+1", fsstress[0] comes back instantly (and no error of course)...
 
-Impact: build fix
+Thanks,
+Christian.
 
-Fix:
-
- arch/x86/kvm/x86.o: In function `dma_debug_add_bus':
- (.text+0x0): multiple definition of `dma_debug_add_bus'
-
-dma_debug_add_bus() should be a static inline function.
-
-Cc: Joerg Roedel <joerg.roedel@amd.com>
-LKML-Reference: <20090317120112.GP6159@amd.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/dma-debug.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
-index e851d23..28d53cb 100644
---- a/include/linux/dma-debug.h
-+++ b/include/linux/dma-debug.h
-@@ -83,7 +83,7 @@ extern void debug_dma_dump_mappings(struct device *dev);
- 
- #else /* CONFIG_DMA_API_DEBUG */
- 
--void dma_debug_add_bus(struct bus_type *bus)
-+static inline void dma_debug_add_bus(struct bus_type *bus)
- {
- }
- 
+[0] http://ltp.cvs.sourceforge.net/viewvc/ltp/ltp/testcases/kernel/fs/fsstress/
+-- 
+Bruce Schneier's passphrase is used to etch diamonds
