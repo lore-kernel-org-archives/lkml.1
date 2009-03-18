@@ -1,54 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbZCRRW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbZCRRYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756191AbZCRRW0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 13:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbZCRRWA
+	id S1755033AbZCRRYj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 13:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZCRRYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 13:22:00 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50005 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757569AbZCRRV7 (ORCPT
+	Wed, 18 Mar 2009 13:24:30 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:57731 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377AbZCRRY3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 13:21:59 -0400
-Subject: Re: [PATCH] BTRFS: Transpose parent_objectid and parent_gen in
- struct btrfs_fid
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Chris Mason <chris.mason@oracle.com>, balajirrao@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <21667.1237395905@redhat.com>
-References: <1237395629.10384.2.camel@think.oraclecorp.com>
-	 <20090318161626.16521.91662.stgit@warthog.procyon.org.uk>
-	 <21667.1237395905@redhat.com>
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 17:21:49 +0000
-Message-Id: <1237396909.27829.102.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 18 Mar 2009 13:24:29 -0400
+Date: Wed, 18 Mar 2009 13:21:30 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 24/27] Convert gfp_zone() to use a table of precalculated
+ values
+In-Reply-To: <20090318153508.GA24462@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0903181300540.15570@qirst.com>
+References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie> <1237226020-14057-25-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903161500280.20024@qirst.com> <20090318135222.GA4629@csn.ul.ie> <alpine.DEB.1.10.0903181011210.7901@qirst.com>
+ <20090318153508.GA24462@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-18 at 17:05 +0000, David Howells wrote:
-> Chris Mason <chris.mason@oracle.com> wrote:
-> 
-> > Won't this confuse any handles the clients already have if the server
-> > reboots with the new handle format?
-> 
-> Perhaps, but it's probably early enough in BTRFS's life to get away with it.
 
-True. It's not that hard to handle compatibility if we really care,
-either.
 
-But this struct is packed anyway -- we're not changing much on the wire;
-it's just a case of how efficient it is to load that single uint64_t
-from an unaligned location. Is that _really_ something we're ever going
-to notice?
+> time.
+>
+> > > > const int gfp_zone_table[GFP_ZONEMASK] = {
+> > > > 	ZONE_NORMAL,		/* 00 No flags set */
+> > > > 	ZONE_DMA,		/* 01 Only GFP_DMA set */
+> > > > 	ZONE_HIGHMEM,		/* 02 Only GFP_HIGHMEM set */
+> > > > 	ZONE_DMA,		/* 03 GFP_HIGHMEM and GFP_DMA set */
+> > > > 	ZONE_DMA32,		/* 04 Only GFP_DMA32 set */
+> > > > 	ZONE_DMA,		/* 05 GFP_DMA and GFP_DMA32 set */
+> > > > 	ZONE_DMA32,		/* 06 GFP_DMA32 and GFP_HIGHMEM set */
+> > > > 	ZONE_DMA,		/* 07 GFP_DMA, GFP_DMA32 and GFP_DMA32 set */
+> > > > 	ZONE_MOVABLE,		/* 08 Only ZONE_MOVABLE set */
+> > > > 	ZONE_DMA,		/* 09 MOVABLE + DMA */
+> > > > 	ZONE_MOVABLE,		/* 0A MOVABLE + HIGHMEM */
+> > > > 	ZONE_DMA,		/* 0B MOVABLE + DMA + HIGHMEM */
+> > > > 	ZONE_DMA32,		/* 0C MOVABLE + DMA32 */
+> > > > 	ZONE_DMA,		/* 0D MOVABLE + DMA + DMA32 */
+> > > > 	ZONE_DMA32,		/* 0E MOVABLE + DMA32 + HIGHMEM */
+> > > > 	ZONE_DMA		/* 0F MOVABLE + DMA32 + HIGHMEM + DMA
+> > > > };
+> > > >
+> > > > Hmmmm... Guess one would need to add some #ifdeffery here to setup
+> > > > ZONE_NORMAL in cases there is no DMA, DMA32 and HIGHMEM.
+> > > >
+> > >
+> > > Indeed, as I said, this is somewhat error prone which is why the patch
+> > > calculates the table at run-time instead of compile-time trickery.
+> >
+> > One would need to define some macros to make it simpler I guess
+> >
+> > Write something like
+> >
+> > #ifdef CONFIG_ZONE_DMA
+> > #define TZONE_DMA ZONE_DMA
+> > #else
+> > #define TZONE_DMA ZONE_NORMAL
+> > #endif
+> >
+> > for each configurable item. Then just add the T to the above table.
+> >
+>
+> If you don't mind, I'd like to postpone writing such a patch until a second
+> or third pass at improving the allocator. I don't think I'll have the time
+> in the short-term to put together a const-initialised-table patch that will
+> definitily be correct.
+>
+> Alternatively, I can drop this patch entirely from the set.
+>
+>
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Let me give it a shot:
+
+Note that there is a slight buggyness in the current implementation of
+gfp_zone. If you set both GFP_DMA32 and GFP_HIGHMEM and the arch does not
+support GFP_DMA32 then gfp_zone returns GFP_HIGHMEM which may result in
+memory being allocated that cannot be used for I/O.
+
+This version here returns GFP_NORMAL which is more correct.
+
+
+#ifdef CONFIG_ZONE_HIGHMEM
+#define OPT_ZONE_HIGHMEM ZONE_HIGHMEM
+#else
+#define OPT_ZONE_HIGHMEM ZONE_NORMAL
+#endif
+
+#ifdef CONFIG_ZONE_DMA
+#define OPT_ZONE_DMA ZONE_DMA
+#else
+#define OPT_ZONE_DMA ZONE_NORMAL
+#endif
+
+#ifdef CONFIG_ZONE_DMA32
+#define OPT_ZONE_DMA32 ZONE_DMA32
+#else
+#define OPT_ZONE_DMA32 OPT_ZONE_DMA
+#endif
+
+
+const int gfp_zone_table[GFP_ZONEMASK] = {
+	ZONE_NORMAL,            /* 00 No flags set */
+	OPT_ZONE_DMA,           /* 01 GFP_DMA */
+	OPT_ZONE_HIGHMEM,       /* 02 GFP_HIGHMEM */
+        OPT_ZONE_DMA,           /* 03 GFP_HIGHMEM GFP_DMA */
+        OPT_ZONE_DMA32,         /* 04 GFP_DMA32 */
+        OPT_ZONE_DMA,           /* 05 GFP_DMA32 GFP_DMA */
+        OPT_ZONE_DMA32,         /* 06 GFP_DMA32 GFP_HIGHMEM */
+        OPT_ZONE_DMA,           /* 07 GFP_DMA32 GFP_HIGHMEM GFP_DMA */
+        ZONE_NORMAL,            /* 08 ZONE_MOVABLE */
+        OPT_ZONE_DMA,           /* 09 MOVABLE + DMA */
+        ZONE_MOVABLE,           /* 0A MOVABLE + HIGHMEM */
+        OPT_ZONE_DMA,           /* 0B MOVABLE + HIGHMEM + DMA */
+        OPT_ZONE_DMA32,         /* 0C MOVABLE + DMA32 */
+        OPT_ZONE_DMA,           /* 0D MOVABLE + DMA32 + DMA */
+        OPT_ZONE_DMA32,         /* 0E MOVABLE + DMA32 + HIGHMEM */
+        OPT_ZONE_DMA            /* 0F MOVABLE + DMA32 + HIGHMEM + DMA */
+};
 
