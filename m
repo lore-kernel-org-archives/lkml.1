@@ -1,108 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZCRU7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755672AbZCRVCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755239AbZCRU7k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 16:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbZCRU71
+	id S1755672AbZCRVCN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZCRVB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 16:59:27 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:64175 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752903AbZCRU7Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 16:59:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
-         :message-id:content-type:content-transfer-encoding;
-        b=gFf7I3Mr1Gp37Atq57gUJQftc0WsLlm6pwCb1sPD9jfP/vm+6s1IvinktZ0WCDMGPr
-         5hRUo5dAEFXsmu1uo/ws1zBf60lLa5WoihVzXPApCJgXKi8gdJ/4EAidysfAkaZYd28W
-         rNGP113tcThzeLe9rUYC0oCr2KEf52Yl1yRIE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] MAINTAINERS: move old ide-{floppy,tape} entries to CREDITS
-Date: Wed, 18 Mar 2009 22:01:32 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc8-next-20090317; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Gadi Oxman <gadio@netvision.net.il>,
-       Paul Bristow <paul@paulbristow.net>,
-       Borislav Petkov <petkovbb@gmail.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200903182201.32668.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Mar 2009 17:01:58 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:37308 "EHLO
+	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752462AbZCRVB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:01:57 -0400
+From: monstr@monstr.eu
+To: linux-kernel@vger.kernel.org
+Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 21/57] microblaze_v7: heartbeat file
+Date: Wed, 18 Mar 2009 21:30:48 +0100
+Message-Id: <6d19f608a4ba3e7718aa55794c2845f19b5ed5e2.1237407249.git.monstr@monstr.eu>
+X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <644f08d7f8cd338e606ed703e221914f75588fb5.1237407249.git.monstr@monstr.eu>
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
+ <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
+ <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
+ <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>
+ <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu>
+ <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu>
+ <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>
+ <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu>
+ <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>
+ <f7c1685bd3f387be8633db5fb3dd4cb5e7c2d792.1237407249.git.monstr@monstr.eu>
+ <2f48efc353c11dfdfc7b052bdfe052b71c09ab23.1237407249.git.monstr@monstr.eu>
+ <f7f2d17e21a3df9931c75976c37a003d11190cc9.1237407249.git.monstr@monstr.eu>
+ <58cf06c85e07477170677b72ce3437af10476bec.1237407249.git.monstr@monstr.eu>
+ <eaa0169a360a328883ab0eabd2a189c21bad4c30.1237407249.git.monstr@monstr.eu>
+ <20227d6f2615060d6560785090513e251cbe2654.1237407249.git.monstr@monstr.eu>
+ <69ef4f976d86c870a97fbe4974c242c74acc477d.1237407249.git.monstr@monstr.eu>
+ <eb4ccc67cf39abc816c8d7653fdc7561d14c1da2.1237407249.git.monstr@monstr.eu>
+ <1477ec41e7ba0ec847a064e1f8e422dc2a5dcc9f.1237407249.git.monstr@monstr.eu>
+ <75127eae09c978220d452d92f95763dde24f1d52.1237407249.git.monstr@monstr.eu>
+ <b726b7b271cf303c36af54c4e155140541a6769b.1237407249.git.monstr@monstr.eu>
+ <644f08d7f8cd338e606ed703e221914f75588fb5.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
+References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] MAINTAINERS: move old ide-{floppy,tape} entries to CREDITS
+From: Michal Simek <monstr@monstr.eu>
 
-Ben Hutchings noticed that MAINTAINERS somehow still contain old
-ide-{floppy,tape} entries.  Fix it by moving them to CREDITS (kudos
-to Gadi and Paul for all the early hard work on ide-{floppy,tape}).
 
-Cc: Gadi Oxman <gadio@netvision.net.il>
-Cc: Paul Bristow <paul@paulbristow.net>
-Cc: Borislav Petkov <petkovbb@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
-Borislav, maybe it would make sense to rename IDE/ATAPI CDROM DRIVER
-entry to IDE/ATAPI DRIVERS one nowadays (you're the one doing most of
-ATAPI work anyway :)?
+ arch/microblaze/kernel/heartbeat.c |   66 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 66 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/heartbeat.c
 
- CREDITS     |    9 +++++++++
- MAINTAINERS |   13 -------------
- 2 files changed, 9 insertions(+), 13 deletions(-)
+diff --git a/arch/microblaze/kernel/heartbeat.c b/arch/microblaze/kernel/heartbeat.c
+new file mode 100644
+index 0000000..390bab7
+--- /dev/null
++++ b/arch/microblaze/kernel/heartbeat.c
+@@ -0,0 +1,66 @@
++/*
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/io.h>
++
++#include <asm/setup.h>
++#include <asm/page.h>
++#include <asm/prom.h>
++
++static unsigned int base_addr;
++
++void heartbeat(void)
++{
++	static unsigned int cnt, period, dist;
++
++	if (base_addr) {
++		if (cnt == 0 || cnt == dist)
++			out_be32(base_addr, 1);
++		else if (cnt == 7 || cnt == dist + 7)
++			out_be32(base_addr, 0);
++
++		if (++cnt > period) {
++			cnt = 0;
++			/*
++			 * The hyperbolic function below modifies the heartbeat
++			 * period length in dependency of the current (5min)
++			 * load. It goes through the points f(0)=126, f(1)=86,
++			 * f(5)=51, f(inf)->30.
++			 */
++			period = ((672 << FSHIFT) / (5 * avenrun[0] +
++						(7 << FSHIFT))) + 30;
++			dist = period / 4;
++		}
++	}
++}
++
++void setup_heartbeat(void)
++{
++	struct device_node *gpio = NULL;
++	int j;
++	char *gpio_list[] = {
++				"xlnx,xps-gpio-1.00.a",
++				"xlnx,opb-gpio-1.00.a",
++				NULL
++			};
++
++	for (j = 0; gpio_list[j] != NULL; j++) {
++		gpio = of_find_compatible_node(NULL, NULL, gpio_list[j]);
++		if (gpio)
++			break;
++	}
++
++	base_addr = *(int *) of_get_property(gpio, "reg", NULL);
++	base_addr = (unsigned long) ioremap(base_addr, PAGE_SIZE);
++	printk(KERN_NOTICE "Heartbeat GPIO at 0x%x\n", base_addr);
++
++	if (*(int *) of_get_property(gpio, "xlnx,is-bidir", NULL))
++		out_be32(base_addr + 4, 0); /* GPIO is configured as output */
++}
+-- 
+1.5.5.1
 
-Index: b/CREDITS
-===================================================================
---- a/CREDITS
-+++ b/CREDITS
-@@ -495,6 +495,11 @@ S: Kopmansg 2
- S: 411 13  Goteborg
- S: Sweden
- 
-+N: Paul Bristow
-+E: paul@paulbristow.net
-+W: http://paulbristow.net/linux/idefloppy.html
-+D: Maintainer of IDE/ATAPI floppy driver
-+
- N: Dominik Brodowski
- E: linux@brodo.de
- W: http://www.brodo.de/
-@@ -2642,6 +2647,10 @@ S: C/ Mieses 20, 9-B
- S: Valladolid 47009
- S: Spain
- 
-+N: Gadi Oxman
-+E: gadio@netvision.net.il
-+D: Original author and maintainer of IDE/ATAPI floppy/tape drivers
-+
- N: Greg Page
- E: gpage@sovereign.org
- D: IPX development and support
-Index: b/MAINTAINERS
-===================================================================
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2179,19 +2179,6 @@ M:	petkovbb@gmail.com
- L:	linux-ide@vger.kernel.org
- S:	Maintained
- 
--IDE/ATAPI FLOPPY DRIVERS
--P:	Paul Bristow
--M:	Paul Bristow <paul@paulbristow.net>
--W:	http://paulbristow.net/linux/idefloppy.html
--L:	linux-kernel@vger.kernel.org
--S:	Maintained
--
--IDE/ATAPI TAPE DRIVERS
--P:	Gadi Oxman
--M:	Gadi Oxman <gadio@netvision.net.il>
--L:	linux-kernel@vger.kernel.org
--S:	Maintained
--
- IDLE-I7300
- P:	Andy Henroid
- M:	andrew.d.henroid@intel.com
