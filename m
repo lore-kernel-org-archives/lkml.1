@@ -1,35 +1,39 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758225AbZCROOl (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Wed, 18 Mar 2009 10:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbZCROOO
+	id S1753425AbZCRQMm (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Wed, 18 Mar 2009 12:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbZCRQMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 10:14:14 -0400
-Received: from hrndva-commlb.mail.rr.com ([71.74.57.9]:47033 "EHLO
-	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756119AbZCROOM (ORCPT
+	Wed, 18 Mar 2009 12:12:14 -0400
+Received: from connect-ua-210.dg.net.ua ([213.186.218.210]:48284 "EHLO
+	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755461AbZCRQMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 10:14:12 -0400
-Message-Id: <7h9gbp$cgbsem@rrcs-agw-01b.hrndva.rr.com>
-X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
-From: Siemens Winners Alert <wccpr@winch.twcbc.com>
-Reply-To: siemens12@btinternet.com
-Organization: Siemens Winners Alert
-To: <info@lotto.com>
-Subject: Final Notification
-Date: Wed, 18 Mar 2009 9:14:08 -0500
+	Wed, 18 Mar 2009 12:12:12 -0400
+To: linux-kernel@vger.kernel.org
+Subject: =?UTF-8?B?0K7Qu9GPIEtpc3Mg0L7QsdGW0LnQvdGP0LthINCS0LDRgQ==?=
+Date: Wed, 18 Mar 2009 18:10:18 +0200
+From: =?UTF-8?B?0JrQvtC80LDQvdC00LAgQ29ubmVjdC51YQ==?= 
+	<donotreply@connect.com.ua>
+Reply-to: Connect <donotreply@connect.com.ua>
+Message-ID: <a403daac93085cef87a1d8d191cfd39b@localhost.localdomain>
+X-Priority: 3
+X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sum of �750,000,00 GBP has been Awarded to your E-MAIL ID,Get back to us with your info via (siemens12@rocketmail.com)
-Names :
-Address:
-Conntry :
-Occupation :
-Age :
+Владимир,
 
-Mrs Mercy Bill
-(Information Officer)
+Юля Kiss обійнялa Вас.
+Щоб відповісти, пройдіть за посиланням: http://connect.ua/mailbox/notifications
+
+
+Команда Connect.ua
+
+--
+Ви можете налаштувати параметри повідомлень
+http://connect.ua/v2/settings?notifications
+
