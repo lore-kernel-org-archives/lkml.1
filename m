@@ -1,225 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbZCRA2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbZCRAc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752990AbZCRA2n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 20:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZCRA2e
+	id S1754523AbZCRAc2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 20:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZCRAcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 20:28:34 -0400
-Received: from ns2.suse.de ([195.135.220.15]:45116 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752483AbZCRA2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 20:28:34 -0400
-From: Mark Fasheh <mfasheh@suse.com>
-To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Sunil Mushran <sunil.mushran@oracle.com>,
-       Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 19/32] ocfs2/dlm: Refactor dlm_clean_master_list()
-Date: Tue, 17 Mar 2009 13:01:09 -0700
-Message-Id: <1237320082-12921-20-git-send-email-mfasheh@suse.com>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
-References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+	Tue, 17 Mar 2009 20:32:20 -0400
+Received: from relay4.ptmail.sapo.pt ([212.55.154.24]:58937 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752676AbZCRAcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 20:32:19 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Wed, 18 Mar 2009 00:23:27 +0000
+From: Luis Henriques <henrix@sapo.pt>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [PATCH 1/2 -tip] sched: Clean unused fields from struct rq
+Message-ID: <20090318002327.GA2382@hades.domain.com>
+References: <20090318000343.GA2189@hades.domain.com> <1237334969.5189.1242.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1237334969.5189.1242.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sunil Mushran <sunil.mushran@oracle.com>
+On Wed, Mar 18, 2009 at 01:09:29AM +0100, Peter Zijlstra wrote:
+> On Wed, 2009-03-18 at 00:03 +0000, Luis Henriques wrote:
+> > Since they are used on in statistics and are always set to zero, the following
+> > frields from struct rq have been removed: yld_exp_empty, yld_act_empty and
+> > yld_both_empty.
+> > 
+> > Signed-off-by: Luis Henriques <henrix@sapo.pt>
+> > ---
+> 
+> > +++ b/kernel/sched_stats.h
+> > @@ -26,9 +26,8 @@ static int show_schedstat(struct seq_file *seq, void *v)
+> >  
+> >  		/* runqueue-specific stats */
+> >  		seq_printf(seq,
+> > -		    "cpu%d %u %u %u %u %u %u %u %u %u %llu %llu %lu",
+> > -		    cpu, rq->yld_both_empty,
+> > -		    rq->yld_act_empty, rq->yld_exp_empty, rq->yld_count,
+> > +		    "cpu%d %u %u %u %u %u %u %llu %llu %lu",
+> > +		    cpu, rq->yld_count,
+> >  		    rq->sched_switch, rq->sched_count, rq->sched_goidle,
+> >  		    rq->ttwu_count, rq->ttwu_local,
+> >  		    rq->rq_cpu_time,
+> 
+> I think this bit is ABI, so you either have to bump the version number
+> or emit 0s, iirc gregory touched some of that last -- or at least wrote
+> userspace for it..
 
-This patch refactors dlm_clean_master_list() so as to make it
-easier to convert the mle list to a hash.
+Hmm... you're right.  I should have though about that.  Anyway, what is the
+the best approach here?
 
-Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
----
- fs/ocfs2/dlm/dlmmaster.c |  148 ++++++++++++++++++++++++++-------------------
- 1 files changed, 85 insertions(+), 63 deletions(-)
+I know that changes in ABI shall not break anything, but just increasing the
+version number will really solve the issue?  Will userspace care for this?
+On the other hand, just writting 0s does not sound interesting either...
 
-diff --git a/fs/ocfs2/dlm/dlmmaster.c b/fs/ocfs2/dlm/dlmmaster.c
-index 040581e..ec6da3c 100644
---- a/fs/ocfs2/dlm/dlmmaster.c
-+++ b/fs/ocfs2/dlm/dlmmaster.c
-@@ -3207,12 +3207,87 @@ static int dlm_add_migration_mle(struct dlm_ctxt *dlm,
- 	return ret;
- }
- 
-+/*
-+ * Sets the owner of the lockres, associated to the mle, to UNKNOWN
-+ */
-+static struct dlm_lock_resource *dlm_reset_mleres_owner(struct dlm_ctxt *dlm,
-+					struct dlm_master_list_entry *mle)
-+{
-+	struct dlm_lock_resource *res;
-+	unsigned int hash;
-+
-+	/* Find the lockres associated to the mle and set its owner to UNK */
-+	hash = dlm_lockid_hash(mle->u.mlename.name, mle->u.mlename.len);
-+	res = __dlm_lookup_lockres(dlm, mle->u.mlename.name, mle->u.mlename.len,
-+				   hash);
-+	if (res) {
-+		spin_unlock(&dlm->master_lock);
-+
-+		/* move lockres onto recovery list */
-+		spin_lock(&res->spinlock);
-+		dlm_set_lockres_owner(dlm, res, DLM_LOCK_RES_OWNER_UNKNOWN);
-+		dlm_move_lockres_to_recovery_list(dlm, res);
-+		spin_unlock(&res->spinlock);
-+		dlm_lockres_put(res);
-+
-+		/* about to get rid of mle, detach from heartbeat */
-+		__dlm_mle_detach_hb_events(dlm, mle);
-+
-+		/* dump the mle */
-+		spin_lock(&dlm->master_lock);
-+		__dlm_put_mle(mle);
-+		spin_unlock(&dlm->master_lock);
-+	}
-+
-+	return res;
-+}
-+
-+static void dlm_clean_migration_mle(struct dlm_ctxt *dlm,
-+				    struct dlm_master_list_entry *mle)
-+{
-+	__dlm_mle_detach_hb_events(dlm, mle);
-+
-+	spin_lock(&mle->spinlock);
-+	__dlm_unlink_mle(dlm, mle);
-+	atomic_set(&mle->woken, 1);
-+	spin_unlock(&mle->spinlock);
-+
-+	wake_up(&mle->wq);
-+}
-+
-+static void dlm_clean_block_mle(struct dlm_ctxt *dlm,
-+				struct dlm_master_list_entry *mle, u8 dead_node)
-+{
-+	int bit;
-+
-+	BUG_ON(mle->type != DLM_MLE_BLOCK);
-+
-+	spin_lock(&mle->spinlock);
-+	bit = find_next_bit(mle->maybe_map, O2NM_MAX_NODES, 0);
-+	if (bit != dead_node) {
-+		mlog(0, "mle found, but dead node %u would not have been "
-+		     "master\n", dead_node);
-+		spin_unlock(&mle->spinlock);
-+	} else {
-+		/* Must drop the refcount by one since the assert_master will
-+		 * never arrive. This may result in the mle being unlinked and
-+		 * freed, but there may still be a process waiting in the
-+		 * dlmlock path which is fine. */
-+		mlog(0, "node %u was expected master\n", dead_node);
-+		atomic_set(&mle->woken, 1);
-+		spin_unlock(&mle->spinlock);
-+		wake_up(&mle->wq);
-+
-+		/* Do not need events any longer, so detach from heartbeat */
-+		__dlm_mle_detach_hb_events(dlm, mle);
-+		__dlm_put_mle(mle);
-+	}
-+}
- 
- void dlm_clean_master_list(struct dlm_ctxt *dlm, u8 dead_node)
- {
- 	struct dlm_master_list_entry *mle, *next;
- 	struct dlm_lock_resource *res;
--	unsigned int hash;
- 
- 	mlog_entry("dlm=%s, dead node=%u\n", dlm->name, dead_node);
- top:
-@@ -3236,30 +3311,7 @@ top:
- 		 * need to clean up if the dead node would have
- 		 * been the master. */
- 		if (mle->type == DLM_MLE_BLOCK) {
--			int bit;
--
--			spin_lock(&mle->spinlock);
--			bit = find_next_bit(mle->maybe_map, O2NM_MAX_NODES, 0);
--			if (bit != dead_node) {
--				mlog(0, "mle found, but dead node %u would "
--				     "not have been master\n", dead_node);
--				spin_unlock(&mle->spinlock);
--			} else {
--				/* must drop the refcount by one since the
--				 * assert_master will never arrive.  this
--				 * may result in the mle being unlinked and
--				 * freed, but there may still be a process
--				 * waiting in the dlmlock path which is fine. */
--				mlog(0, "node %u was expected master\n",
--				     dead_node);
--				atomic_set(&mle->woken, 1);
--				spin_unlock(&mle->spinlock);
--				wake_up(&mle->wq);
--				/* do not need events any longer, so detach 
--				 * from heartbeat */
--				__dlm_mle_detach_hb_events(dlm, mle);
--				__dlm_put_mle(mle);
--			}
-+			dlm_clean_block_mle(dlm, mle, dead_node);
- 			continue;
- 		}
- 
-@@ -3280,51 +3332,21 @@ top:
- 
- 		/* if we have reached this point, this mle needs to
- 		 * be removed from the list and freed. */
--
--		/* remove from the list early.  NOTE: unlinking
--		 * list_head while in list_for_each_safe */
--		__dlm_mle_detach_hb_events(dlm, mle);
--		spin_lock(&mle->spinlock);
--		__dlm_unlink_mle(dlm, mle);
--		atomic_set(&mle->woken, 1);
--		spin_unlock(&mle->spinlock);
--		wake_up(&mle->wq);
-+		dlm_clean_migration_mle(dlm, mle);
- 
- 		mlog(0, "%s: node %u died during migration from "
- 		     "%u to %u!\n", dlm->name, dead_node,
- 		     mle->master, mle->new_master);
--		/* if there is a lockres associated with this
--	 	 * mle, find it and set its owner to UNKNOWN */
--		hash = dlm_lockid_hash(mle->u.mlename.name, mle->u.mlename.len);
--		res = __dlm_lookup_lockres(dlm, mle->u.mlename.name,
--					   mle->u.mlename.len, hash);
--		if (res) {
--			/* unfortunately if we hit this rare case, our
--		 	 * lock ordering is messed.  we need to drop
--		 	 * the master lock so that we can take the
--		  	 * lockres lock, meaning that we will have to
--			 * restart from the head of list. */
--			spin_unlock(&dlm->master_lock);
--
--			/* move lockres onto recovery list */
--			spin_lock(&res->spinlock);
--			dlm_set_lockres_owner(dlm, res,
--				      	DLM_LOCK_RES_OWNER_UNKNOWN);
--			dlm_move_lockres_to_recovery_list(dlm, res);
--			spin_unlock(&res->spinlock);
--			dlm_lockres_put(res);
--
--			/* about to get rid of mle, detach from heartbeat */
--			__dlm_mle_detach_hb_events(dlm, mle);
--
--			/* dump the mle */
--			spin_lock(&dlm->master_lock);
--			__dlm_put_mle(mle);
--			spin_unlock(&dlm->master_lock);
- 
-+		/* If we find a lockres associated with the mle, we've
-+		 * hit this rare case that messes up our lock ordering.
-+		 * If so, we need to drop the master lock so that we can
-+		 * take the lockres lock, meaning that we will have to
-+		 * restart from the head of list. */
-+		res = dlm_reset_mleres_owner(dlm, mle);
-+		if (res)
- 			/* restart */
- 			goto top;
--		}
- 
- 		/* this may be the last reference */
- 		__dlm_put_mle(mle);
 -- 
-1.5.6
-
+Luis Henriques
