@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbZCRVsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760004AbZCRVtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759784AbZCRVsZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757518AbZCRVmu
+	id S1760004AbZCRVtA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbZCRVm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:42:50 -0400
+	Wed, 18 Mar 2009 17:42:58 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757567AbZCRVmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:49 -0400
+	id S1754717AbZCRVmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:42:55 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 49/57] microblaze_v7: device.h param.h topology.h
-Date: Wed, 18 Mar 2009 21:31:16 +0100
-Message-Id: <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 36/57] microblaze_v7: headers for executables format FLAT, ELF
+Date: Wed, 18 Mar 2009 21:31:03 +0100
+Message-Id: <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -53,19 +53,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
  <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
  <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
- <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
- <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
- <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
- <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
- <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
- <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
- <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
- <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
- <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
- <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
- <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
- <14c123f2bae10a8b5fb76cd059ba105c212776ef.1237407249.git.monstr@monstr.eu>
- <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -77,46 +64,17 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/device.h   |   21 +++++++++++++++++++++
- arch/microblaze/include/asm/param.h    |   30 ++++++++++++++++++++++++++++++
- arch/microblaze/include/asm/topology.h |   11 +++++++++++
- 3 files changed, 62 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/device.h
- create mode 100644 arch/microblaze/include/asm/param.h
- create mode 100644 arch/microblaze/include/asm/topology.h
+ arch/microblaze/include/asm/elf.h  |   30 ++++++++++++
+ arch/microblaze/include/asm/flat.h |   90 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 120 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/elf.h
+ create mode 100644 arch/microblaze/include/asm/flat.h
 
-diff --git a/arch/microblaze/include/asm/device.h b/arch/microblaze/include/asm/device.h
+diff --git a/arch/microblaze/include/asm/elf.h b/arch/microblaze/include/asm/elf.h
 new file mode 100644
-index 0000000..c042830
+index 0000000..81337f2
 --- /dev/null
-+++ b/arch/microblaze/include/asm/device.h
-@@ -0,0 +1,21 @@
-+/*
-+ * Arch specific extensions to struct device
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License v2. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_DEVICE_H
-+#define _ASM_MICROBLAZE_DEVICE_H
-+
-+struct device_node;
-+
-+struct dev_archdata {
-+	/* Optional pointer to an OF device node */
-+	struct device_node	*of_node;
-+};
-+
-+#endif /* _ASM_MICROBLAZE_DEVICE_H */
-+
-+
-diff --git a/arch/microblaze/include/asm/param.h b/arch/microblaze/include/asm/param.h
-new file mode 100644
-index 0000000..8c538a4
---- /dev/null
-+++ b/arch/microblaze/include/asm/param.h
++++ b/arch/microblaze/include/asm/elf.h
 @@ -0,0 +1,30 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
@@ -126,45 +84,124 @@ index 0000000..8c538a4
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_PARAM_H
-+#define _ASM_MICROBLAZE_PARAM_H
++#ifndef _ASM_MICROBLAZE_ELF_H
++#define _ASM_MICROBLAZE_ELF_H
 +
-+#ifdef __KERNEL__
-+#define HZ		CONFIG_HZ	/* internal kernel timer frequency */
-+#define USER_HZ		100		/* for user interfaces in "ticks" */
-+#define CLOCKS_PER_SEC	(USER_HZ)	/* frequency at which times() counts */
-+#endif /* __KERNEL__ */
++/*
++ * Note there is no "official" ELF designation for Microblaze.
++ * I've snaffled the value from the microblaze binutils source code
++ * /binutils/microblaze/include/elf/microblaze.h
++ */
++#define EM_XILINX_MICROBLAZE	0xbaab
++#define ELF_ARCH		EM_XILINX_MICROBLAZE
 +
-+#ifndef HZ
-+#define HZ 100
-+#endif
++/*
++ * This is used to ensure we don't load something for the wrong architecture.
++ */
++#define elf_check_arch(x)	((x)->e_machine == EM_XILINX_MICROBLAZE)
 +
-+#define EXEC_PAGESIZE	4096
++/*
++ * These are used to set parameters in the core dumps.
++ */
++#define ELF_CLASS	ELFCLASS32
 +
-+#ifndef NOGROUP
-+#define NOGROUP		(-1)
-+#endif
-+
-+#define MAXHOSTNAMELEN	64	/* max length of hostname */
-+
-+#endif /* _ASM_MICROBLAZE_PARAM_H */
-diff --git a/arch/microblaze/include/asm/topology.h b/arch/microblaze/include/asm/topology.h
++#endif /* _ASM_MICROBLAZE_ELF_H */
+diff --git a/arch/microblaze/include/asm/flat.h b/arch/microblaze/include/asm/flat.h
 new file mode 100644
-index 0000000..96bcea5
+index 0000000..acf0da5
 --- /dev/null
-+++ b/arch/microblaze/include/asm/topology.h
-@@ -0,0 +1,11 @@
-+#include <asm-generic/topology.h>
++++ b/arch/microblaze/include/asm/flat.h
+@@ -0,0 +1,90 @@
++/*
++ * uClinux flat-format executables
++ *
++ * Copyright (C) 2005 John Williams <jwilliams@itee.uq.edu.au>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ */
 +
-+#ifndef _ASM_MICROBLAZE_TOPOLOGY_H
-+#define _ASM_MICROBLAZE_TOPOLOGY_H
++#ifndef _ASM_MICROBLAZE_FLAT_H
++#define _ASM_MICROBLAZE_FLAT_H
 +
-+struct device_node;
-+static inline int of_node_to_nid(struct device_node *device)
++#include <asm/unaligned.h>
++
++#define	flat_stack_align(sp) /* nothing needed */
++#define	flat_argvp_envp_on_stack()	0
++#define	flat_old_ram_flag(flags)	(flags)
++#define	flat_reloc_valid(reloc, size)	((reloc) <= (size))
++#define	flat_set_persistent(relval, p)		0
++
++/*
++ * Microblaze works a little differently from other arches, because
++ * of the MICROBLAZE_64 reloc type. Here, a 32 bit address is split
++ * over two instructions, an 'imm' instruction which provides the top
++ * 16 bits, then the instruction "proper" which provides the low 16
++ * bits.
++ */
++
++/*
++ * Crack open a symbol reference and extract the address to be
++ * relocated. rp is a potentially unaligned pointer to the
++ * reference
++ */
++
++static inline unsigned long
++flat_get_addr_from_rp(unsigned long *rp, unsigned long relval,
++			unsigned long flags, unsigned long *persistent)
 +{
-+	return 0;
++	unsigned long addr;
++	(void)flags;
++
++	/* Is it a split 64/32 reference? */
++	if (relval & 0x80000000) {
++		/* Grab the two halves of the reference */
++		unsigned long val_hi, val_lo;
++
++		val_hi = get_unaligned(rp);
++		val_lo = get_unaligned(rp+1);
++
++		/* Crack the address out */
++		addr = ((val_hi & 0xffff) << 16) + (val_lo & 0xffff);
++	} else {
++		/* Get the address straight out */
++		addr = get_unaligned(rp);
++	}
++
++	return addr;
 +}
-+#endif /* _ASM_MICROBLAZE_TOPOLOGY_H */
++
++/*
++ * Insert an address into the symbol reference at rp. rp is potentially
++ * unaligned.
++ */
++
++static inline void
++flat_put_addr_at_rp(unsigned long *rp, unsigned long addr, unsigned long relval)
++{
++	/* Is this a split 64/32 reloc? */
++	if (relval & 0x80000000) {
++		/* Get the two "halves" */
++		unsigned long val_hi = get_unaligned(rp);
++		unsigned long val_lo = get_unaligned(rp + 1);
++
++		/* insert the address */
++		val_hi = (val_hi & 0xffff0000) | addr >> 16;
++		val_lo = (val_lo & 0xffff0000) | (addr & 0xffff);
++
++		/* store the two halves back into memory */
++		put_unaligned(val_hi, rp);
++		put_unaligned(val_lo, rp+1);
++	} else {
++		/* Put it straight in, no messing around */
++		put_unaligned(addr, rp);
++	}
++}
++
++#define	flat_get_relocate_addr(rel)	(rel & 0x7fffffff)
++
++#endif /* _ASM_MICROBLAZE_FLAT_H */
 -- 
 1.5.5.1
 
