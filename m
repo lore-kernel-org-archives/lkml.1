@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760815AbZCRVzC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759781AbZCRVzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760815AbZCRVzC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:55:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758520AbZCRVn6
+	id S1759781AbZCRVzn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757211AbZCRVoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:43:58 -0400
+	Wed, 18 Mar 2009 17:44:03 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758222AbZCRVnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:43:55 -0400
+	id S1758550AbZCRVoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:44:00 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 44/57] microblaze_v7: termbits.h termios.h
-Date: Wed, 18 Mar 2009 21:31:11 +0100
-Message-Id: <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 26/57] microblaze_v7: ptrace support
+Date: Wed, 18 Mar 2009 21:30:53 +0100
+Message-Id: <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -43,24 +43,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <513d4067a84be1ecb47577e1edf131d2b3572808.1237407249.git.monstr@monstr.eu>
  <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
  <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
- <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
- <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
- <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
- <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
- <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
- <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
- <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
- <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
- <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
- <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
- <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
- <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
- <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
- <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
- <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
- <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
- <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
- <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -72,18 +54,18 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/termbits.h |  203 ++++++++++++++++++++++++++++++++
- arch/microblaze/include/asm/termios.h  |   88 ++++++++++++++
- 2 files changed, 291 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/termbits.h
- create mode 100644 arch/microblaze/include/asm/termios.h
+ arch/microblaze/include/asm/ptrace.h |   68 +++++++++
+ arch/microblaze/kernel/ptrace.c      |  252 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 320 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/ptrace.h
+ create mode 100644 arch/microblaze/kernel/ptrace.c
 
-diff --git a/arch/microblaze/include/asm/termbits.h b/arch/microblaze/include/asm/termbits.h
+diff --git a/arch/microblaze/include/asm/ptrace.h b/arch/microblaze/include/asm/ptrace.h
 new file mode 100644
-index 0000000..a1b64bc
+index 0000000..f1f0348
 --- /dev/null
-+++ b/arch/microblaze/include/asm/termbits.h
-@@ -0,0 +1,203 @@
++++ b/arch/microblaze/include/asm/ptrace.h
+@@ -0,0 +1,68 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -92,295 +74,324 @@ index 0000000..a1b64bc
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_TERMBITS_H
-+#define _ASM_MICROBLAZE_TERMBITS_H
++#ifndef _ASM_MICROBLAZE_PTRACE_H
++#define _ASM_MICROBLAZE_PTRACE_H
 +
-+#include <linux/posix_types.h>
++#ifndef __ASSEMBLY__
++#include <linux/types.h>
 +
-+typedef unsigned char	cc_t;
-+typedef unsigned int	speed_t;
-+typedef unsigned int	tcflag_t;
++typedef unsigned long microblaze_reg_t;
 +
-+#define NCCS 19
-+struct termios {
-+	tcflag_t c_iflag; /* input mode flags */
-+	tcflag_t c_oflag; /* output mode flags */
-+	tcflag_t c_cflag; /* control mode flags */
-+	tcflag_t c_lflag; /* local mode flags */
-+	cc_t c_line; /* line discipline */
-+	cc_t c_cc[NCCS]; /* control characters */
++struct pt_regs {
++	microblaze_reg_t r0;
++	microblaze_reg_t r1;
++	microblaze_reg_t r2;
++	microblaze_reg_t r3;
++	microblaze_reg_t r4;
++	microblaze_reg_t r5;
++	microblaze_reg_t r6;
++	microblaze_reg_t r7;
++	microblaze_reg_t r8;
++	microblaze_reg_t r9;
++	microblaze_reg_t r10;
++	microblaze_reg_t r11;
++	microblaze_reg_t r12;
++	microblaze_reg_t r13;
++	microblaze_reg_t r14;
++	microblaze_reg_t r15;
++	microblaze_reg_t r16;
++	microblaze_reg_t r17;
++	microblaze_reg_t r18;
++	microblaze_reg_t r19;
++	microblaze_reg_t r20;
++	microblaze_reg_t r21;
++	microblaze_reg_t r22;
++	microblaze_reg_t r23;
++	microblaze_reg_t r24;
++	microblaze_reg_t r25;
++	microblaze_reg_t r26;
++	microblaze_reg_t r27;
++	microblaze_reg_t r28;
++	microblaze_reg_t r29;
++	microblaze_reg_t r30;
++	microblaze_reg_t r31;
++	microblaze_reg_t pc;
++	microblaze_reg_t msr;
++	microblaze_reg_t ear;
++	microblaze_reg_t esr;
++	microblaze_reg_t fsr;
++	int kernel_mode;
 +};
 +
-+struct ktermios {
-+	tcflag_t c_iflag; /* input mode flags */
-+	tcflag_t c_oflag; /* output mode flags */
-+	tcflag_t c_cflag; /* control mode flags */
-+	tcflag_t c_lflag; /* local mode flags */
-+	cc_t c_line; /* line discipline */
-+	cc_t c_cc[NCCS]; /* control characters */
-+	speed_t c_ispeed; /* input speed */
-+	speed_t c_ospeed; /* output speed */
-+};
++#define kernel_mode(regs)		((regs)->kernel_mode)
++#define user_mode(regs)			(!kernel_mode(regs))
 +
-+/* c_cc characters */
++#define instruction_pointer(regs)	((regs)->pc)
++#define profile_pc(regs)		instruction_pointer(regs)
 +
-+#define VINTR 0
-+#define VQUIT 1
-+#define VERASE 2
-+#define VKILL 3
-+#define VEOF 4
-+#define VTIME 5
-+#define VMIN 6
-+#define VSWTC 7
-+#define VSTART 8
-+#define VSTOP 9
-+#define VSUSP 10
-+#define VEOL 11
-+#define VREPRINT 12
-+#define VDISCARD 13
-+#define VWERASE 14
-+#define VLNEXT 15
-+#define VEOL2 16
++void show_regs(struct pt_regs *);
 +
-+/* c_iflag bits */
++#endif /* __ASSEMBLY__ */
 +
-+#define IGNBRK	0000001
-+#define BRKINT	0000002
-+#define IGNPAR	0000004
-+#define PARMRK	0000010
-+#define INPCK	0000020
-+#define ISTRIP	0000040
-+#define INLCR	0000100
-+#define IGNCR	0000200
-+#define ICRNL	0000400
-+#define IUCLC	0001000
-+#define IXON	0002000
-+#define IXANY	0004000
-+#define IXOFF	0010000
-+#define IMAXBEL	0020000
-+#define IUTF8	0040000
-+
-+/* c_oflag bits */
-+
-+#define OPOST	0000001
-+#define OLCUC	0000002
-+#define ONLCR	0000004
-+#define OCRNL	0000010
-+#define ONOCR	0000020
-+#define ONLRET	0000040
-+#define OFILL	0000100
-+#define OFDEL	0000200
-+#define NLDLY	0000400
-+#define NL0	0000000
-+#define NL1	0000400
-+#define CRDLY	0003000
-+#define CR0	0000000
-+#define CR1	0001000
-+#define CR2	0002000
-+#define CR3	0003000
-+#define TABDLY	0014000
-+#define TAB0	0000000
-+#define TAB1	0004000
-+#define TAB2	0010000
-+#define TAB3	0014000
-+#define XTABS	0014000
-+#define BSDLY	0020000
-+#define BS0	0000000
-+#define BS1	0020000
-+#define VTDLY	0040000
-+#define VT0	0000000
-+#define VT1	0040000
-+#define FFDLY	0100000
-+#define FF0	0000000
-+#define FF1	0100000
-+
-+/* c_cflag bit meaning */
-+
-+#define CBAUD	0010017
-+#define B0	0000000 /* hang up */
-+#define B50	0000001
-+#define B75	0000002
-+#define B110	0000003
-+#define B134	0000004
-+#define B150	0000005
-+#define B200	0000006
-+#define B300	0000007
-+#define B600	0000010
-+#define B1200	0000011
-+#define B1800	0000012
-+#define B2400	0000013
-+#define B4800	0000014
-+#define B9600	0000015
-+#define B19200	0000016
-+#define B38400	0000017
-+#define EXTA B19200
-+#define EXTB B38400
-+#define CSIZE	0000060
-+#define CS5	0000000
-+#define CS6	0000020
-+#define CS7	0000040
-+#define CS8	0000060
-+#define CSTOPB	0000100
-+#define CREAD	0000200
-+#define PARENB	0000400
-+#define PARODD	0001000
-+#define HUPCL	0002000
-+#define CLOCAL	0004000
-+#define CBAUDEX	0010000
-+#define B57600	0010001
-+#define B115200	0010002
-+#define B230400	0010003
-+#define B460800	0010004
-+#define B500000	0010005
-+#define B576000	0010006
-+#define B921600	0010007
-+#define BOTHER		0010000
-+#define B1000000	0010010
-+#define B1152000	0010011
-+#define B1500000	0010012
-+#define B2000000	0010013
-+#define B2500000	0010014
-+#define B3000000	0010015
-+#define B3500000	0010016
-+#define B4000000	0010017
-+#define CIBAUD		002003600000 /* input baud rate (not used) */
-+#define CMSPAR		010000000000 /* mark or space (stick) parity */
-+#define CRTSCTS		020000000000 /* flow control */
-+
-+#define IBSHIFT	16		/* Shift from CBAUD to CIBAUD */
-+
-+/* c_lflag bits */
-+
-+#define ISIG	0000001
-+#define ICANON	0000002
-+#define XCASE	0000004
-+#define ECHO	0000010
-+#define ECHOE	0000020
-+#define ECHOK	0000040
-+#define ECHONL	0000100
-+#define NOFLSH	0000200
-+#define TOSTOP	0000400
-+#define ECHOCTL	0001000
-+#define ECHOPRT	0002000
-+#define ECHOKE	0004000
-+#define FLUSHO	0010000
-+#define PENDIN	0040000
-+#define IEXTEN	0100000
-+
-+/* tcflow() and TCXONC use these */
-+
-+#define	TCOOFF		0
-+#define	TCOON		1
-+#define	TCIOFF		2
-+#define	TCION		3
-+
-+/* tcflush() and TCFLSH use these */
-+
-+#define	TCIFLUSH	0
-+#define	TCOFLUSH	1
-+#define	TCIOFLUSH	2
-+
-+/* tcsetattr uses these */
-+
-+#define	TCSANOW		0
-+#define	TCSADRAIN	1
-+#define	TCSAFLUSH	2
-+
-+#endif /* _ASM_MICROBLAZE_TERMBITS_H */
-diff --git a/arch/microblaze/include/asm/termios.h b/arch/microblaze/include/asm/termios.h
++#endif /* _ASM_MICROBLAZE_PTRACE_H */
+diff --git a/arch/microblaze/kernel/ptrace.c b/arch/microblaze/kernel/ptrace.c
 new file mode 100644
-index 0000000..102d772
+index 0000000..b046309
 --- /dev/null
-+++ b/arch/microblaze/include/asm/termios.h
-@@ -0,0 +1,88 @@
++++ b/arch/microblaze/kernel/ptrace.c
+@@ -0,0 +1,252 @@
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * `ptrace' system call
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
++ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 PetaLogix
++ * Copyright (C) 2004-07 John Williams <john.williams@petalogix.com>
++ *
++ * derived from arch/v850/kernel/ptrace.c
++ *
++ * Copyright (C) 2002,03 NEC Electronics Corporation
++ * Copyright (C) 2002,03 Miles Bader <miles@gnu.org>
++ *
++ * Derived from arch/mips/kernel/ptrace.c:
++ *
++ * Copyright (C) 1992 Ross Biro
++ * Copyright (C) Linus Torvalds
++ * Copyright (C) 1994, 95, 96, 97, 98, 2000 Ralf Baechle
++ * Copyright (C) 1996 David S. Miller
++ * Kevin D. Kissell, kevink@mips.com and Carsten Langgaard, carstenl@mips.com
++ * Copyright (C) 1999 MIPS Technologies, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_TERMIOS_H
-+#define _ASM_MICROBLAZE_TERMIOS_H
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/sched.h>
++#include <linux/smp_lock.h>
++#include <linux/ptrace.h>
++#include <linux/signal.h>
 +
-+#include <linux/string.h>
-+#include <asm/termbits.h>
-+#include <asm/ioctls.h>
++#include <linux/errno.h>
++#include <linux/ptrace.h>
++#include <asm/processor.h>
++#include <linux/uaccess.h>
++#include <asm/asm-offsets.h>
 +
-+struct winsize {
-+	unsigned short ws_row;
-+	unsigned short ws_col;
-+	unsigned short ws_xpixel;
-+	unsigned short ws_ypixel;
-+};
++/* Returns the address where the register at REG_OFFS in P is stashed away. */
++static microblaze_reg_t *reg_save_addr(unsigned reg_offs,
++					struct task_struct *t)
++{
++	struct pt_regs *regs;
 +
-+#define NCC 8
-+struct termio {
-+	unsigned short c_iflag; /* input mode flags */
-+	unsigned short c_oflag; /* output mode flags */
-+	unsigned short c_cflag; /* control mode flags */
-+	unsigned short c_lflag; /* local mode flags */
-+	unsigned char c_line; /* line discipline */
-+	unsigned char c_cc[NCC]; /* control characters */
-+};
++	/*
++	 * Three basic cases:
++	 *
++	 * (1)	A register normally saved before calling the scheduler, is
++	 *	available in the kernel entry pt_regs structure at the top
++	 *	of the kernel stack. The kernel trap/irq exit path takes
++	 *	care to save/restore almost all registers for ptrace'd
++	 *	processes.
++	 *
++	 * (2)	A call-clobbered register, where the process P entered the
++	 *	kernel via [syscall] trap, is not stored anywhere; that's
++	 *	OK, because such registers are not expected to be preserved
++	 *	when the trap returns anyway (so we don't actually bother to
++	 *	test for this case).
++	 *
++	 * (3)	A few registers not used at all by the kernel, and so
++	 *	normally never saved except by context-switches, are in the
++	 *	context switch state.
++	 */
 +
-+#ifdef __KERNEL__
-+/*	intr=^C		quit=^|		erase=del	kill=^U
-+	eof=^D		vtime=\0	vmin=\1		sxtc=\0
-+	start=^Q	stop=^S		susp=^Z		eol=\0
-+	reprint=^R	discard=^U	werase=^W	lnext=^V
-+	eol2=\0
-+*/
-+#define INIT_C_CC "\003\034\177\025\004\0\1\0\021\023\032\0\022\017\027\026\0"
++	/* Register saved during kernel entry (or not available). */
++	regs = task_pt_regs(t);
++
++	return (microblaze_reg_t *)((char *)regs + reg_offs);
++}
++
++#if 0
++static inline microblaze_reg_t getreg(struct task_struct *child, unsigned reg_off)
++{
++	microblaze_reg_t *reg_addr = reg_save_addr(reg_off, child);
++	return *reg_addr;
++}
++
++static inline void putreg(struct task_struct *child, unsigned reg_off, microblaze_reg_t reg_val)
++{
++	microblaze_reg_t *reg_addr = reg_save_addr(reg_off, child);
++	*reg_addr = reg_val;
++}
 +#endif
 +
-+/* Modem lines */
++long arch_ptrace(struct task_struct *child, long request, long addr, long data)
++{
++	int rval;
++	unsigned long val = 0;
++	unsigned long copied;
 +
-+#define TIOCM_LE	0x001
-+#define TIOCM_DTR	0x002
-+#define TIOCM_RTS	0x004
-+#define TIOCM_ST	0x008
-+#define TIOCM_SR	0x010
-+#define TIOCM_CTS	0x020
-+#define TIOCM_CAR	0x040
-+#define TIOCM_RNG	0x080
-+#define TIOCM_DSR	0x100
-+#define TIOCM_CD	TIOCM_CAR
-+#define TIOCM_RI	TIOCM_RNG
-+#define TIOCM_OUT1	0x2000
-+#define TIOCM_OUT2	0x4000
-+#define TIOCM_LOOP	0x8000
++	switch (request) {
++	case PTRACE_PEEKTEXT: /* read word at location addr. */
++	case PTRACE_PEEKDATA:
++		pr_debug("PEEKTEXT/PEEKDATA at %08lX\n", addr);
++		copied = access_process_vm(child, addr, &val, sizeof(val), 0);
++		rval = -EIO;
++		if (copied != sizeof(val))
++			break;
++		rval = put_user(val, (unsigned long *)data);
++		break;
 +
-+/* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
++	case PTRACE_POKETEXT: /* write the word at location addr. */
++	case PTRACE_POKEDATA:
++		pr_debug("POKETEXT/POKEDATA to %08lX\n", addr);
++		rval = 0;
++		if (access_process_vm(child, addr, &data, sizeof(data), 1)
++		    == sizeof(data))
++			break;
++		rval = -EIO;
++		break;
 +
-+/* Line disciplines */
++	/* Read/write the word at location ADDR in the registers. */
++	case PTRACE_PEEKUSR:
++	case PTRACE_POKEUSR:
++		pr_debug("PEEKUSR/POKEUSR : 0x%08lx\n", addr);
++		rval = 0;
++		if (addr >= PT_SIZE && request == PTRACE_PEEKUSR) {
++			/*
++			 * Special requests that don't actually correspond
++			 * to offsets in struct pt_regs.
++			 */
++			if (addr == PT_TEXT_ADDR) {
++				val = child->mm->start_code;
++			} else if (addr == PT_DATA_ADDR) {
++				val = child->mm->start_data;
++			} else if (addr == PT_TEXT_LEN) {
++				val = child->mm->end_code
++					- child->mm->start_code;
++			} else {
++				rval = -EIO;
++			}
++		} else if (addr >= 0 && addr < PT_SIZE && (addr & 0x3) == 0) {
++			microblaze_reg_t *reg_addr = reg_save_addr(addr, child);
++			if (request == PTRACE_PEEKUSR)
++				val = *reg_addr;
++			else
++				*reg_addr = data;
++		} else
++			rval = -EIO;
 +
-+#define N_TTY		0
-+#define N_SLIP		1
-+#define N_MOUSE		2
-+#define N_PPP		3
-+#define N_STRIP		4
-+#define N_AX25		5
-+#define N_X25		6 /* X.25 async */
-+#define N_6PACK		7
-+#define N_MASC		8 /* Reserved for Mobitex module <kaz@cafe.net> */
-+#define N_R3964		9 /* Reserved for Simatic R3964 module */
-+#define N_PROFIBUS_FDL	10 /* Reserved for Profibus <Dave@mvhi.com> */
-+#define N_IRDA		11 /* Linux IR - http://irda.sourceforge.net/ */
-+#define N_SMSBLOCK	12 /* SMS block mode - for talking to GSM data cards
-+				about SMS messages */
-+#define N_HDLC		13 /* synchronous HDLC */
-+#define N_SYNC_PPP	14
-+#define N_HCI		15 /* Bluetooth HCI UART */
++		if (rval == 0 && request == PTRACE_PEEKUSR)
++			rval = put_user(val, (unsigned long *)data);
++		break;
++	/* Continue and stop at next (return from) syscall */
++	case PTRACE_SYSCALL:
++		pr_debug("PTRACE_SYSCALL\n");
++	case PTRACE_SINGLESTEP:
++		pr_debug("PTRACE_SINGLESTEP\n");
++	/* Restart after a signal.  */
++	case PTRACE_CONT:
++		pr_debug("PTRACE_CONT\n");
++		rval = -EIO;
++		if (!valid_signal(data))
++			break;
 +
-+#ifdef __KERNEL__
++		if (request == PTRACE_SYSCALL)
++			set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
++		else
++			clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
 +
-+#include <asm-generic/termios.h>
++		child->exit_code = data;
++		pr_debug("wakeup_process\n");
++		wake_up_process(child);
++		rval = 0;
++		break;
 +
-+#endif	/* __KERNEL__ */
++	/*
++	 * make the child exit.  Best I can do is send it a sigkill.
++	 * perhaps it should be put in the status that it wants to
++	 * exit.
++	 */
++	case PTRACE_KILL:
++		pr_debug("PTRACE_KILL\n");
++		rval = 0;
++		if (child->exit_state == EXIT_ZOMBIE)	/* already dead */
++			break;
++		child->exit_code = SIGKILL;
++		wake_up_process(child);
++		break;
 +
-+#endif /* _ASM_MICROBLAZE_TERMIOS_H */
++	case PTRACE_DETACH: /* detach a process that was attached. */
++		pr_debug("PTRACE_DETACH\n");
++		rval = ptrace_detach(child, data);
++		break;
++
++#if 0
++/*	#define PTRACE_GETREGS            12*/
++	case PTRACE_GETREGS: /* get gp regs from the tracee */
++		if (!access_ok(VERIFY_WRITE, datap, PT_SIZE)) {
++			rval = -EIO;
++			break;
++		}
++		for (i = 0; i < PT_SIZE; i += sizeof(long)) {
++			__put_user(getreg(child, i), datap++);
++		}
++		rval = 0;
++		break;
++#endif
++
++#if 0
++/*	#define PTRACE_SETREGS            13*/
++	case PTRACE_SETREGS: /* Set gp regs for the tracee */
++		if (!access_ok(VERIFY_READ, datap, PT_SIZE)) {
++			rval = -EIO;
++			break;
++		}
++		for (i = 0; i < PT_SIZE; i += sizeof(long)) {
++			__get_user(val, datap++);
++			if (i == PT_MSR) { /* may only change C and CC bits in MSR */
++				val = (val & 0x80000004) | (getreg(child,i) & ~0x80000004);
++			}
++			putreg(child, i, val);
++		}
++		rval = 0;
++		break;
++#endif
++
++	default:
++		/* rval = ptrace_request(child, request, addr, data); noMMU */
++		rval = -EIO;
++	}
++	return rval;
++}
++
++#if 0
++static asmlinkage void syscall_trace(void)
++{
++	if (!test_thread_flag(TIF_SYSCALL_TRACE))
++		return;
++	if (!(current->ptrace & PT_PTRACED))
++		return;
++	/* The 0x80 provides a way for the tracing parent to distinguish
++	 between a syscall stop and SIGTRAP delivery */
++	ptrace_notify(SIGTRAP | ((current->ptrace & PT_TRACESYSGOOD)
++				? 0x80 : 0));
++	/*
++	 * this isn't the same as continuing with a signal, but it will do
++	 * for normal use. strace only continues with a signal if the
++	 * stopping signal is not SIGTRAP. -brl
++	 */
++	if (current->exit_code) {
++		send_sig(current->exit_code, current, 1);
++		current->exit_code = 0;
++	}
++}
++#endif
++
++void ptrace_disable(struct task_struct *child)
++{
++	/* nothing to do */
++}
 -- 
 1.5.5.1
 
