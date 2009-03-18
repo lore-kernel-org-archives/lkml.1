@@ -1,104 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbZCRV61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761291AbZCRV7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760866AbZCRV61 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760243AbZCRVvs
+	id S1761291AbZCRV7N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760808AbZCRVy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:51:48 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:37388 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760270AbZCRVvq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:51:46 -0400
-Message-ID: <49C16D7C.3080003@novell.com>
-Date: Wed, 18 Mar 2009 17:54:04 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 18 Mar 2009 17:54:59 -0400
+Received: from relay4.ptmail.sapo.pt ([212.55.154.24]:55508 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1759456AbZCRVy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:54:57 -0400
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Wed, 18 Mar 2009 21:52:24 +0000
+From: Luis Henriques <henrix@sapo.pt>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] sched: Clean unused fields from struct rq
+Message-ID: <20090318215224.GA8030@hades.domain.com>
+References: <20090318202824.GA5025@hades.domain.com> <49C160D6.6010409@novell.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: vernux@us.ibm.com, andi@firstfloor.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Patrick Mullaney <pmullaney@novell.com>
-Subject: Re: High contention on the sk_buff_head.lock
-References: <87prge1rhu.fsf@basil.nowhere.org>	<20090318.140340.55290859.davem@davemloft.net>	<49C16349.9030503@us.ibm.com> <20090318.143844.173112261.davem@davemloft.net>
-In-Reply-To: <20090318.143844.173112261.davem@davemloft.net>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig9AC78968E5C3E9223B4E1D9D"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C160D6.6010409@novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig9AC78968E5C3E9223B4E1D9D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi,
+On Wed, Mar 18, 2009 at 05:00:06PM -0400, Gregory Haskins wrote:
+> I actually key off the SCHEDSTAT_VERSION (currently 14) at the top of
+> kernel/sched_stats.h.  Cursory inspection of the existing code and your
+> patch says that this should actually be the value that needs updating
+> (vs. vSched-Debug).  However, note that I am not sure if there are also
+> users of sched-debug that need to see that version bump as well in order
+> to remain compatible.
 
-David Miller wrote:
-> From: Vernon Mauery <vernux@us.ibm.com>
-> Date: Wed, 18 Mar 2009 14:10:33 -0700
->
->  =20
->> David Miller wrote:
->>    =20
->>> From: Andi Kleen <andi@firstfloor.org>
->>> Date: Wed, 18 Mar 2009 21:54:37 +0100
->>>
->>>      =20
->>>> But then again I'm not sure it's  worth it if the problem only
->>>> happens in out of tree RT.
->>>>        =20
->>> The list of problems that only show up with the RT kernel seems to be=
+Just realised something while taking a look at you're schedtop: you are
+referring to sched_stats, which shows data in /proc/schedstat, while my patch
+actually targets sched_debug, which shows data in /proc/sched_debug.  And I
+guess this is why we have 2 different versioning mechanisms:  they refer to
+different things :-)
 
->>> constantly increasing, but honestly is very surprising to me.
->>> I don't understand why we even need to be concerned about this stuff
->>> upstream, to be honest.
->>> Please reproduce this in the vanilla kernel, then get back to us.
->>>      =20
->> Huh? The numbers that I posted *were* from the vanilla kernel. I ran
->> the 2.6.29-rc8 kernel with lock_stat enabled.  The lock contention
->> happens on the same lock in both vanilla and -rt, it just happens
->> to be more pronounced in the -rt kernel because of the double context
->> switches that the sleeping spinlock/rt-mutexes introduce.
->>    =20
->
-> And the double context switches are probably also why less
-> natural batching and locality are achieved in the RT kernel.
->
-> Isn't that true?
->  =20
-
-Note that -rt doesnt typically context-switch under contention anymore
-since we introduced adaptive-locks.  Also note that the contention
-against the lock is still contention, regardless of whether you have -rt
-or not.  Its just that the slow-path to handle the contended case for
--rt is more expensive than mainline.  However, once you have the
-contention as stated, you have already lost.
-
-We have observed the posters findings ourselves in both mainline and
--rt.  I.e. That lock doesnt scale very well once you have more than a
-handful of cores.  It's certainly a great area to look at for improving
-the overall stack, IMO, as I believe there is quite a bit of headroom
-left to be recovered that is buried there.
+So, if this is correct, my last patch actually updates the correct version,
+right?
 
 Regards,
--Greg
-
-
---------------enig9AC78968E5C3E9223B4E1D9D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknBbX0ACgkQlOSOBdgZUxmV+ACggmy0luFTSy5MC4e8WuKT+e5n
-/d4AnifozXgtOcrZoVtFlF8ToUaOcTSp
-=fBwN
------END PGP SIGNATURE-----
-
---------------enig9AC78968E5C3E9223B4E1D9D--
+-- 
+Luis Henriques
