@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbZCRRtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758795AbZCRRwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758961AbZCRRtB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 13:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZCRRsv
+	id S1758795AbZCRRwT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 13:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZCRRwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 13:48:51 -0400
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:64080 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751361AbZCRRsu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 13:48:50 -0400
-Message-ID: <49C133F6.3020202@freemail.hu>
-Date: Wed, 18 Mar 2009 18:48:38 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Wed, 18 Mar 2009 13:52:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53795 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752204AbZCRRwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 13:52:03 -0400
+Date: Wed, 18 Mar 2009 17:51:24 GMT
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       jaswinder@kernel.org, jaswinderrajput@gmail.com, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinder@kernel.org, jaswinderrajput@gmail.com, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1237394936.3132.1.camel@localhost.localdomain>
+References: <1237394936.3132.1.camel@localhost.localdomain>
+Subject: [tip:tracing/ftrace] tracing: fix oops in tracepoint_update_probe_range()
+Message-ID: <tip-966a6fdf6210e3ac8ce00b61cd1107cdf97ce744@git.kernel.org>
+Git-Commit-ID: 966a6fdf6210e3ac8ce00b61cd1107cdf97ce744
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Jean-Francois Moine <moinejf@free.fr>, linux-media@vger.kernel.org
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] gspca: add missing .type field check in VIDIOC_G_PARM
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32711; Body=3 Fuz1=3
-	Fuz2=3
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 18 Mar 2009 17:51:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+Commit-ID:  966a6fdf6210e3ac8ce00b61cd1107cdf97ce744
+Gitweb:     http://git.kernel.org/tip/966a6fdf6210e3ac8ce00b61cd1107cdf97ce744
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Wed, 18 Mar 2009 22:18:56 +0530
+Commit:     Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 18 Mar 2009 18:48:43 +0100
 
-The gspca webcam driver does not check the .type field of struct v4l2_streamparm.
-This field is an input parameter for the driver according to V4L2 API specification,
-revision 0.24 [1]. Add the missing check.
+tracing: fix oops in tracepoint_update_probe_range()
 
-The missing check was recognised by v4l-test 0.10 [2] together with gspca_sunplus driver
-and with "Trust 610 LCD POWERC@M ZOOM" webcam. This patch was verified also with
-v4l-test 0.10.
+Change this crash:
 
-References:
-[1] V4L2 API specification, revision 0.24
-    http://v4l2spec.bytesex.org/spec/r11680.htm
+ BUG: unable to handle kernel NULL pointer dereference at (null)
+ IP: [<ffffffff8107d4de>] tracepoint_update_probe_range+0x1f/0x9b
+ PGD 13d5fb067 PUD 13d688067 PMD 0
+ Oops: 0000 [#1] SMP
 
-[2] v4l-test: Test environment for Video For Linux Two API
-    http://v4l-test.sourceforge.net/
+To a more debuggable WARN_ONCE().
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <1237394936.3132.1.camel@localhost.localdomain>
+[ moved the check outside the lock and added a WARN_ON(). ]
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
---- linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c.orig	2009-03-14 12:29:38.000000000 +0100
-+++ linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c	2009-03-18 16:51:03.000000000 +0100
-@@ -1320,6 +1320,9 @@ static int vidioc_g_parm(struct file *fi
+ kernel/tracepoint.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
+index 7960274..dd15df9 100644
+--- a/kernel/tracepoint.c
++++ b/kernel/tracepoint.c
+@@ -272,12 +272,17 @@ static void disable_tracepoint(struct tracepoint *elem)
+  *
+  * Updates the probe callback corresponding to a range of tracepoints.
+  */
+-void tracepoint_update_probe_range(struct tracepoint *begin,
+-	struct tracepoint *end)
++void
++tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
  {
- 	struct gspca_dev *gspca_dev = priv;
-
-+	if (parm->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
-+		return -EINVAL;
+ 	struct tracepoint *iter;
+ 	struct tracepoint_entry *mark_entry;
+ 
++	if (!iter) {
++		WARN_ON_ONCE(1);
++		return;
++	}
 +
- 	memset(parm, 0, sizeof *parm);
- 	parm->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
- 	parm->parm.capture.readbuffers = gspca_dev->nbufread;
-
+ 	mutex_lock(&tracepoints_mutex);
+ 	for (iter = begin; iter < end; iter++) {
+ 		mark_entry = get_tracepoint(iter->name);
