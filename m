@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbZCRR7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759464AbZCRSAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759402AbZCRR7J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 13:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbZCRR6w
+	id S1759464AbZCRSAV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 14:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbZCRSAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 13:58:52 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:18394 "EHLO
+	Wed, 18 Mar 2009 14:00:00 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:17584 "EHLO
 	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753557AbZCRR6t (ORCPT
+	with ESMTP id S1753183AbZCRR77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 13:58:49 -0400
+	Wed, 18 Mar 2009 13:59:59 -0400
 From: Boaz Harrosh <bharrosh@panasas.com>
 To: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -19,291 +19,76 @@ To: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        James Bottomley <James.Bottomley@HansenPartnership.com>,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH 1/8] exofs: Kbuild, Headers and osd utils
-Date: Wed, 18 Mar 2009 19:57:36 +0200
-Message-Id: <1237399056-29171-1-git-send-email-bharrosh@panasas.com>
+Subject: [PATCH 2/8] exofs: file and file_inode operations
+Date: Wed, 18 Mar 2009 19:58:47 +0200
+Message-Id: <1237399127-29206-1-git-send-email-bharrosh@panasas.com>
 X-Mailer: git-send-email 1.6.2.1
 In-Reply-To: <49C1331D.1080805@panasas.com>
 References: <49C1331D.1080805@panasas.com>
-X-OriginalArrivalTime: 18 Mar 2009 17:58:45.0790 (UTC) FILETIME=[2EA003E0:01C9A7F3]
+X-OriginalArrivalTime: 18 Mar 2009 17:59:56.0151 (UTC) FILETIME=[58904070:01C9A7F3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch includes osd infrastructure that will be used later by
-the file system.
+implementation of the file_operations and inode_operations for
+regular data files.
 
-Also the declarations of constants, on disk structures,
-and prototypes.
-
-And the Kbuild+Kconfig files needed to build the exofs module.
+Most file_operations are generic vfs implementations except:
+- exofs_truncate will truncate the OSD object as well
+- Generic file_fsync is not good for none_bd devices so open code it
+- The default for .flush in Linux is todo nothing so call exofs_fsync
+  on the file.
 
 Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 ---
- fs/exofs/Kbuild   |   30 +++++++++
- fs/exofs/Kconfig  |   13 ++++
- fs/exofs/common.h |  185 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/exofs/exofs.h  |  127 ++++++++++++++++++++++++++++++++++++
- fs/exofs/osd.c    |  153 +++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 508 insertions(+), 0 deletions(-)
- create mode 100644 fs/exofs/Kbuild
- create mode 100644 fs/exofs/Kconfig
- create mode 100644 fs/exofs/common.h
- create mode 100644 fs/exofs/exofs.h
- create mode 100644 fs/exofs/osd.c
+ fs/exofs/Kbuild  |    2 +-
+ fs/exofs/exofs.h |   14 +++++
+ fs/exofs/file.c  |   82 ++++++++++++++++++++++++++++++
+ fs/exofs/inode.c |  148 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 245 insertions(+), 1 deletions(-)
+ create mode 100644 fs/exofs/file.c
+ create mode 100644 fs/exofs/inode.c
 
 diff --git a/fs/exofs/Kbuild b/fs/exofs/Kbuild
-new file mode 100644
-index 0000000..63d822c
---- /dev/null
+index 63d822c..269281f 100644
+--- a/fs/exofs/Kbuild
 +++ b/fs/exofs/Kbuild
-@@ -0,0 +1,30 @@
-+#
-+# Kbuild for the EXOFS module
-+#
-+# Copyright (C) 2008 Panasas Inc.  All rights reserved.
-+#
-+# Authors:
-+#   Boaz Harrosh <bharrosh@panasas.com>
-+#
-+# This program is free software; you can redistribute it and/or modify
-+# it under the terms of the GNU General Public License version 2
-+#
-+# Kbuild - Gets included from the Kernels Makefile and build system
-+#
-+
-+ifneq ($(OSD_INC),)
-+# we are built out-of-tree Kconfigure everything as on
-+
-+CONFIG_EXOFS_FS=m
-+ccflags-y += -DCONFIG_EXOFS_FS -DCONFIG_EXOFS_FS_MODULE
-+# ccflags-y += -DCONFIG_EXOFS_DEBUG
-+
-+# if we are built out-of-tree and the hosting kernel has OSD headers
-+# then "ccflags-y +=" will not pick the out-off-tree headers. Only by doing
-+# this it will work. This might break in future kernels
-+KBUILD_CPPFLAGS := -I$(OSD_INC) $(KBUILD_CPPFLAGS)
-+
-+endif
-+
-+exofs-y := osd.o
-+obj-$(CONFIG_EXOFS_FS) += exofs.o
-diff --git a/fs/exofs/Kconfig b/fs/exofs/Kconfig
-new file mode 100644
-index 0000000..86194b2
---- /dev/null
-+++ b/fs/exofs/Kconfig
-@@ -0,0 +1,13 @@
-+config EXOFS_FS
-+	tristate "exofs: OSD based file system support"
-+	depends on SCSI_OSD_ULD
-+	help
-+	  EXOFS is a file system that uses an OSD storage device,
-+	  as its backing storage.
-+
-+# Debugging-related stuff
-+config EXOFS_DEBUG
-+	bool "Enable debugging"
-+	depends on EXOFS_FS
-+	help
-+	  This option enables EXOFS debug prints.
-diff --git a/fs/exofs/common.h b/fs/exofs/common.h
-new file mode 100644
-index 0000000..bcc4882
---- /dev/null
-+++ b/fs/exofs/common.h
-@@ -0,0 +1,185 @@
-+/*
-+ * common.h - Common definitions for both Kernel and user-mode utilities
-+ *
-+ * Copyright (C) 2005, 2006
-+ * Avishay Traeger (avishay@gmail.com) (avishay@il.ibm.com)
-+ * Copyright (C) 2005, 2006
-+ * International Business Machines
-+ * Copyright (C) 2008, 2009
-+ * Boaz Harrosh <bharrosh@panasas.com>
-+ *
-+ * Copyrights for code taken from ext2:
-+ *     Copyright (C) 1992, 1993, 1994, 1995
-+ *     Remy Card (card@masi.ibp.fr)
-+ *     Laboratoire MASI - Institut Blaise Pascal
-+ *     Universite Pierre et Marie Curie (Paris VI)
-+ *     from
-+ *     linux/fs/minix/inode.c
-+ *     Copyright (C) 1991, 1992  Linus Torvalds
-+ *
-+ * This file is part of exofs.
-+ *
-+ * exofs is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation.  Since it is based on ext2, and the only
-+ * valid version of GPL for the Linux kernel is version 2, the only valid
-+ * version of GPL for exofs is version 2.
-+ *
-+ * exofs is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with exofs; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#ifndef __EXOFS_COM_H__
-+#define __EXOFS_COM_H__
-+
-+#include <linux/types.h>
-+
-+#include <scsi/osd_attributes.h>
-+#include <scsi/osd_initiator.h>
-+#include <scsi/osd_sec.h>
-+
-+/****************************************************************************
-+ * Object ID related defines
-+ * NOTE: inode# = object ID - EXOFS_OBJ_OFF
-+ ****************************************************************************/
-+#define EXOFS_MIN_PID   0x10000	/* Smallest partition ID */
-+#define EXOFS_OBJ_OFF	0x10000	/* offset for objects */
-+#define EXOFS_SUPER_ID	0x10000	/* object ID for on-disk superblock */
-+#define EXOFS_ROOT_ID	0x10002	/* object ID for root directory */
-+
-+/* exofs Application specific page/attribute */
-+# define EXOFS_APAGE_FS_DATA	(OSD_APAGE_APP_DEFINED_FIRST + 3)
-+# define EXOFS_ATTR_INODE_DATA	1
-+
-+/*
-+ * The maximum number of files we can have is limited by the size of the
-+ * inode number.  This is the largest object ID that the file system supports.
-+ * Object IDs 0, 1, and 2 are always in use (see above defines).
-+ */
-+enum {
-+	EXOFS_UINT64_MAX = (~0LL),
-+	EXOFS_MAX_INO_ID = (sizeof(ino_t) * 8 == 64) ? EXOFS_UINT64_MAX :
-+					(1LL << (sizeof(ino_t) * 8 - 1)),
-+	EXOFS_MAX_ID	 = (EXOFS_MAX_INO_ID - 1 - EXOFS_OBJ_OFF),
-+};
-+
-+/****************************************************************************
-+ * Misc.
-+ ****************************************************************************/
-+#define EXOFS_BLKSHIFT	12
-+#define EXOFS_BLKSIZE	(1UL << EXOFS_BLKSHIFT)
-+
-+/****************************************************************************
-+ * superblock-related things
-+ ****************************************************************************/
-+#define EXOFS_SUPER_MAGIC	0x5DF5
-+
-+/*
-+ * The file system control block - stored in an object's data (mainly, the one
-+ * with ID EXOFS_SUPER_ID).  This is where the in-memory superblock is stored
-+ * on disk.  Right now it just has a magic value, which is basically a sanity
-+ * check on our ability to communicate with the object store.
-+ */
-+struct exofs_fscb {
-+	__le64  s_nextid;	/* Highest object ID used */
-+	__le32  s_numfiles;	/* Number of files on fs */
-+	__le16  s_magic;	/* Magic signature */
-+	__le16  s_newfs;	/* Non-zero if this is a new fs */
-+};
-+
-+/****************************************************************************
-+ * inode-related things
-+ ****************************************************************************/
-+#define EXOFS_IDATA		5
-+
-+/*
-+ * The file control block - stored in an object's attributes.  This is where
-+ * the in-memory inode is stored on disk.
-+ */
-+struct exofs_fcb {
-+	__le64  i_size;			/* Size of the file */
-+	__le16  i_mode;         	/* File mode */
-+	__le16  i_links_count;  	/* Links count */
-+	__le32  i_uid;          	/* Owner Uid */
-+	__le32  i_gid;          	/* Group Id */
-+	__le32  i_atime;        	/* Access time */
-+	__le32  i_ctime;        	/* Creation time */
-+	__le32  i_mtime;        	/* Modification time */
-+	__le32  i_flags;        	/* File flags (unused for now)*/
-+	__le32  i_generation;   	/* File version (for NFS) */
-+	__le32  i_data[EXOFS_IDATA];	/* Short symlink names and device #s */
-+};
-+
-+#define EXOFS_INO_ATTR_SIZE	sizeof(struct exofs_fcb)
-+
-+/* This is the Attribute the fcb is stored in */
-+static const struct __weak osd_attr g_attr_inode_data = ATTR_DEF(
-+	EXOFS_APAGE_FS_DATA,
-+	EXOFS_ATTR_INODE_DATA,
-+	EXOFS_INO_ATTR_SIZE);
-+
-+/****************************************************************************
-+ * dentry-related things
-+ ****************************************************************************/
-+#define EXOFS_NAME_LEN	255
-+
-+/*
-+ * The on-disk directory entry
-+ */
-+struct exofs_dir_entry {
-+	__le64		inode_no;		/* inode number           */
-+	__le16		rec_len;		/* directory entry length */
-+	u8		name_len;		/* name length            */
-+	u8		file_type;		/* umm...file type        */
-+	char		name[EXOFS_NAME_LEN];	/* file name              */
-+};
-+
-+enum {
-+	EXOFS_FT_UNKNOWN,
-+	EXOFS_FT_REG_FILE,
-+	EXOFS_FT_DIR,
-+	EXOFS_FT_CHRDEV,
-+	EXOFS_FT_BLKDEV,
-+	EXOFS_FT_FIFO,
-+	EXOFS_FT_SOCK,
-+	EXOFS_FT_SYMLINK,
-+	EXOFS_FT_MAX
-+};
-+
-+#define EXOFS_DIR_PAD			4
-+#define EXOFS_DIR_ROUND			(EXOFS_DIR_PAD - 1)
-+#define EXOFS_DIR_REC_LEN(name_len) \
-+	(((name_len) + offsetof(struct exofs_dir_entry, name)  + \
-+	  EXOFS_DIR_ROUND) & ~EXOFS_DIR_ROUND)
-+
+@@ -26,5 +26,5 @@ KBUILD_CPPFLAGS := -I$(OSD_INC) $(KBUILD_CPPFLAGS)
+ 
+ endif
+ 
+-exofs-y := osd.o
++exofs-y := osd.o inode.o file.o
+ obj-$(CONFIG_EXOFS_FS) += exofs.o
+diff --git a/fs/exofs/exofs.h b/fs/exofs/exofs.h
+index 304e052..28deb67 100644
+--- a/fs/exofs/exofs.h
++++ b/fs/exofs/exofs.h
+@@ -124,4 +124,18 @@ static inline struct exofs_i_info *exofs_i(struct inode *inode)
+ 	return container_of(inode, struct exofs_i_info, vfs_inode);
+ }
+ 
 +/*************************
 + * function declarations *
 + *************************/
-+/* osd.c                 */
-+void exofs_make_credential(u8 cred_a[OSD_CAP_LEN],
-+			   const struct osd_obj_id *obj);
++/* inode.c               */
++void exofs_truncate(struct inode *inode);
++int exofs_setattr(struct dentry *, struct iattr *);
 +
-+int exofs_check_ok_resid(struct osd_request *or, u64 *in_resid, u64 *out_resid);
-+static inline int exofs_check_ok(struct osd_request *or)
-+{
-+	return exofs_check_ok_resid(or, NULL, NULL);
-+}
-+int exofs_sync_op(struct osd_request *or, int timeout, u8 *cred);
-+int exofs_async_op(struct osd_request *or,
-+	osd_req_done_fn *async_done, void *caller_context, u8 *cred);
++/*********************
++ * operation vectors *
++ *********************/
++/* file.c            */
++extern const struct inode_operations exofs_file_inode_operations;
++extern const struct file_operations exofs_file_operations;
 +
-+int extract_attr_from_req(struct osd_request *or, struct osd_attr *attr);
-+
-+int osd_req_read_kern(struct osd_request *or,
-+	const struct osd_obj_id *obj, u64 offset, void *buff, u64 len);
-+
-+int osd_req_write_kern(struct osd_request *or,
-+	const struct osd_obj_id *obj, u64 offset, void *buff, u64 len);
-+
-+#endif /*ifndef __EXOFS_COM_H__*/
-diff --git a/fs/exofs/exofs.h b/fs/exofs/exofs.h
+ #endif
+diff --git a/fs/exofs/file.c b/fs/exofs/file.c
 new file mode 100644
-index 0000000..304e052
+index 0000000..4738c3f
 --- /dev/null
-+++ b/fs/exofs/exofs.h
-@@ -0,0 +1,127 @@
++++ b/fs/exofs/file.c
+@@ -0,0 +1,82 @@
 +/*
 + * Copyright (C) 2005, 2006
 + * Avishay Traeger (avishay@gmail.com) (avishay@il.ibm.com)
@@ -339,104 +124,59 @@ index 0000000..304e052
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + */
 +
-+#include <linux/fs.h>
-+#include <linux/time.h>
-+#include "common.h"
++#include <linux/buffer_head.h>
 +
-+#ifndef __EXOFS_H__
-+#define __EXOFS_H__
++#include "exofs.h"
 +
-+#define EXOFS_ERR(fmt, a...) printk(KERN_ERR "exofs: " fmt, ##a)
++static int exofs_release_file(struct inode *inode, struct file *filp)
++{
++	return 0;
++}
 +
-+#ifdef CONFIG_EXOFS_DEBUG
-+#define EXOFS_DBGMSG(fmt, a...) \
-+	printk(KERN_NOTICE "exofs @%s:%d: " fmt, __func__, __LINE__, ##a)
-+#else
-+#define EXOFS_DBGMSG(fmt, a...) \
-+	do {} while (0)
-+#endif
++static int exofs_file_fsync(struct file *filp, struct dentry *dentry,
++			    int datasync)
++{
++	int ret1, ret2;
++	struct address_space *mapping = filp->f_mapping;
 +
-+/* u64 has problems with printk this will cast it to unsigned long long */
-+#define _LLU(x) (unsigned long long)(x)
++	ret1 = filemap_write_and_wait(mapping);
++	ret2 = file_fsync(filp, dentry, datasync);
 +
-+/*
-+ * our extension to the in-memory superblock
-+ */
-+struct exofs_sb_info {
-+	struct osd_dev	*s_dev;			/* returned by get_osd_dev    */
-+	osd_id		s_pid;			/* partition ID of file system*/
-+	int		s_timeout;		/* timeout for OSD operations */
-+	uint64_t	s_nextid;		/* highest object ID used     */
-+	uint32_t	s_numfiles;		/* number of files on fs      */
-+	spinlock_t	s_next_gen_lock;	/* spinlock for gen # update  */
-+	u32		s_next_generation;	/* next gen # to use          */
-+	atomic_t	s_curr_pending;		/* number of pending commands */
-+	uint8_t		s_cred[OSD_CAP_LEN];	/* all-powerful credential    */
++	return ret1 ? ret1 : ret2;
++}
++
++static int exofs_flush(struct file *file, fl_owner_t id)
++{
++	exofs_file_fsync(file, file->f_path.dentry, 1);
++	/* TODO: Flush the OSD target */
++	return 0;
++}
++
++const struct file_operations exofs_file_operations = {
++	.llseek		= generic_file_llseek,
++	.read		= do_sync_read,
++	.write		= do_sync_write,
++	.aio_read	= generic_file_aio_read,
++	.aio_write	= generic_file_aio_write,
++	.mmap		= generic_file_mmap,
++	.open		= generic_file_open,
++	.release	= exofs_release_file,
++	.fsync		= exofs_file_fsync,
++	.flush		= exofs_flush,
++	.splice_read	= generic_file_splice_read,
++	.splice_write	= generic_file_splice_write,
 +};
 +
-+/*
-+ * our extension to the in-memory inode
-+ */
-+struct exofs_i_info {
-+	unsigned long  i_flags;            /* various atomic flags            */
-+	uint32_t       i_data[EXOFS_IDATA];/*short symlink names and device #s*/
-+	uint32_t       i_dir_start_lookup; /* which page to start lookup      */
-+	wait_queue_head_t i_wq;            /* wait queue for inode            */
-+	uint64_t       i_commit_size;      /* the object's written length     */
-+	uint8_t        i_cred[OSD_CAP_LEN];/* all-powerful credential         */
-+	struct inode   vfs_inode;          /* normal in-memory inode          */
++const struct inode_operations exofs_file_inode_operations = {
++	.truncate	= exofs_truncate,
++	.setattr	= exofs_setattr,
 +};
-+
-+/*
-+ * our inode flags
-+ */
-+#define OBJ_2BCREATED	0	/* object will be created soon*/
-+#define OBJ_CREATED	1	/* object has been created on the osd*/
-+
-+static inline int obj_2bcreated(struct exofs_i_info *oi)
-+{
-+	return test_bit(OBJ_2BCREATED, &(oi->i_flags));
-+}
-+
-+static inline void set_obj_2bcreated(struct exofs_i_info *oi)
-+{
-+	set_bit(OBJ_2BCREATED, &(oi->i_flags));
-+}
-+
-+static inline int obj_created(struct exofs_i_info *oi)
-+{
-+	return test_bit(OBJ_CREATED, &(oi->i_flags));
-+}
-+
-+static inline void set_obj_created(struct exofs_i_info *oi)
-+{
-+	set_bit(OBJ_CREATED, &(oi->i_flags));
-+}
-+
-+int __exofs_wait_obj_created(struct exofs_i_info *oi);
-+static inline int wait_obj_created(struct exofs_i_info *oi)
-+{
-+	if (likely(obj_created(oi)))
-+		return 0;
-+
-+	return __exofs_wait_obj_created(oi);
-+}
-+
-+/*
-+ * get to our inode from the vfs inode
-+ */
-+static inline struct exofs_i_info *exofs_i(struct inode *inode)
-+{
-+	return container_of(inode, struct exofs_i_info, vfs_inode);
-+}
-+
-+#endif
-diff --git a/fs/exofs/osd.c b/fs/exofs/osd.c
+diff --git a/fs/exofs/inode.c b/fs/exofs/inode.c
 new file mode 100644
-index 0000000..b249ae9
+index 0000000..b0bda1e
 --- /dev/null
-+++ b/fs/exofs/osd.c
-@@ -0,0 +1,153 @@
++++ b/fs/exofs/inode.c
+@@ -0,0 +1,148 @@
 +/*
 + * Copyright (C) 2005, 2006
 + * Avishay Traeger (avishay@gmail.com) (avishay@il.ibm.com)
@@ -444,6 +184,15 @@ index 0000000..b249ae9
 + * International Business Machines
 + * Copyright (C) 2008, 2009
 + * Boaz Harrosh <bharrosh@panasas.com>
++ *
++ * Copyrights for code taken from ext2:
++ *     Copyright (C) 1992, 1993, 1994, 1995
++ *     Remy Card (card@masi.ibp.fr)
++ *     Laboratoire MASI - Institut Blaise Pascal
++ *     Universite Pierre et Marie Curie (Paris VI)
++ *     from
++ *     linux/fs/minix/inode.c
++ *     Copyright (C) 1991, 1992  Linus Torvalds
 + *
 + * This file is part of exofs.
 + *
@@ -463,132 +212,118 @@ index 0000000..b249ae9
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + */
 +
-+#include <scsi/scsi_device.h>
-+#include <scsi/osd_sense.h>
++#include <linux/writeback.h>
++#include <linux/buffer_head.h>
 +
 +#include "exofs.h"
 +
-+int exofs_check_ok_resid(struct osd_request *or, u64 *in_resid, u64 *out_resid)
++#ifdef CONFIG_EXOFS_DEBUG
++#  define EXOFS_DEBUG_OBJ_ISIZE 1
++#endif
++
++/******************************************************************************
++ * INODE OPERATIONS
++ *****************************************************************************/
++
++/*
++ * Test whether an inode is a fast symlink.
++ */
++static inline int exofs_inode_is_fast_symlink(struct inode *inode)
 +{
-+	struct osd_sense_info osi;
-+	int ret = osd_req_decode_sense(or, &osi);
++	struct exofs_i_info *oi = exofs_i(inode);
 +
-+	if (ret) { /* translate to Linux codes */
-+		if (osi.additional_code == scsi_invalid_field_in_cdb) {
-+			if (osi.cdb_field_offset == OSD_CFO_STARTING_BYTE)
-+				ret = -EFAULT;
-+			if (osi.cdb_field_offset == OSD_CFO_OBJECT_ID)
-+				ret = -ENOENT;
-+			else
-+				ret = -EINVAL;
-+		} else if (osi.additional_code == osd_quota_error)
-+			ret = -ENOSPC;
-+		else
-+			ret = -EIO;
-+	}
-+
-+	/* FIXME: should be include in osd_sense_info */
-+	if (in_resid)
-+		*in_resid = or->in.req ? or->in.req->data_len : 0;
-+
-+	if (out_resid)
-+		*out_resid = or->out.req ? or->out.req->data_len : 0;
-+
-+	return ret;
-+}
-+
-+void exofs_make_credential(u8 cred_a[OSD_CAP_LEN], const struct osd_obj_id *obj)
-+{
-+	osd_sec_init_nosec_doall_caps(cred_a, obj, false, true);
++	return S_ISLNK(inode->i_mode) && (oi->i_data[0] != 0);
 +}
 +
 +/*
-+ * Perform a synchronous OSD operation.
++ * get_block_t - Fill in a buffer_head
++ * An OSD takes care of block allocation so we just fake an allocation by
++ * putting in the inode's sector_t in the buffer_head.
++ * TODO: What about the case of create==0 and @iblock does not exist in the
++ * object?
 + */
-+int exofs_sync_op(struct osd_request *or, int timeout, uint8_t *credential)
++static int exofs_get_block(struct inode *inode, sector_t iblock,
++		    struct buffer_head *bh_result, int create)
 +{
++	map_bh(bh_result, inode->i_sb, iblock);
++	return 0;
++}
++
++const struct osd_attr g_attr_logical_length = ATTR_DEF(
++	OSD_APAGE_OBJECT_INFORMATION, OSD_ATTR_OI_LOGICAL_LENGTH, 8);
++
++/*
++ * Truncate a file to the specified size - all we have to do is set the size
++ * attribute.  We make sure the object exists first.
++ */
++void exofs_truncate(struct inode *inode)
++{
++	struct exofs_sb_info *sbi = inode->i_sb->s_fs_info;
++	struct exofs_i_info *oi = exofs_i(inode);
++	struct osd_obj_id obj = {sbi->s_pid, inode->i_ino + EXOFS_OBJ_OFF};
++	struct osd_request *or;
++	struct osd_attr attr;
++	loff_t isize = i_size_read(inode);
++	__be64 newsize;
 +	int ret;
 +
-+	or->timeout = timeout;
-+	ret = osd_finalize_request(or, 0, credential, NULL);
-+	if (ret) {
-+		EXOFS_DBGMSG("Faild to osd_finalize_request() => %d\n", ret);
-+		return ret;
++	if (!(S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode)
++	     || S_ISLNK(inode->i_mode)))
++		return;
++	if (exofs_inode_is_fast_symlink(inode))
++		return;
++	if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
++		return;
++	inode->i_mtime = inode->i_ctime = CURRENT_TIME;
++
++	nobh_truncate_page(inode->i_mapping, isize, exofs_get_block);
++
++	or = osd_start_request(sbi->s_dev, GFP_KERNEL);
++	if (unlikely(!or)) {
++		EXOFS_ERR("ERROR: exofs_truncate: osd_start_request failed\n");
++		goto fail;
 +	}
 +
-+	ret = osd_execute_request(or);
++	osd_req_set_attributes(or, &obj);
 +
++	newsize = cpu_to_be64((u64)isize);
++	attr = g_attr_logical_length;
++	attr.val_ptr = &newsize;
++	osd_req_add_set_attr_list(or, &attr, 1);
++
++	/* if we are about to truncate an object, and it hasn't been
++	 * created yet, wait
++	 */
++	if (unlikely(wait_obj_created(oi)))
++		goto fail;
++
++	ret = exofs_sync_op(or, sbi->s_timeout, oi->i_cred);
++	osd_end_request(or);
 +	if (ret)
-+		EXOFS_DBGMSG("osd_execute_request() => %d\n", ret);
-+	/* osd_req_decode_sense(or, ret); */
-+	return ret;
++		goto fail;
++
++out:
++	mark_inode_dirty(inode);
++	return;
++fail:
++	make_bad_inode(inode);
++	goto out;
 +}
 +
 +/*
-+ * Perform an asynchronous OSD operation.
++ * Set inode attributes - just call generic functions.
 + */
-+int exofs_async_op(struct osd_request *or, osd_req_done_fn *async_done,
-+		   void *caller_context, u8 *cred)
++int exofs_setattr(struct dentry *dentry, struct iattr *iattr)
 +{
-+	int ret;
++	struct inode *inode = dentry->d_inode;
++	int error;
 +
-+	ret = osd_finalize_request(or, 0, cred, NULL);
-+	if (ret) {
-+		EXOFS_DBGMSG("Faild to osd_finalize_request() => %d\n", ret);
-+		return ret;
-+	}
++	error = inode_change_ok(inode, iattr);
++	if (error)
++		return error;
 +
-+	ret = osd_execute_request_async(or, async_done, caller_context);
-+
-+	if (ret)
-+		EXOFS_DBGMSG("osd_execute_request_async() => %d\n", ret);
-+	return ret;
-+}
-+
-+int extract_attr_from_req(struct osd_request *or, struct osd_attr *attr)
-+{
-+	struct osd_attr cur_attr = {.attr_page = 0}; /* start with zeros */
-+	void *iter = NULL;
-+	int nelem;
-+
-+	do {
-+		nelem = 1;
-+		osd_req_decode_get_attr_list(or, &cur_attr, &nelem, &iter);
-+		if ((cur_attr.attr_page == attr->attr_page) &&
-+		    (cur_attr.attr_id == attr->attr_id)) {
-+			attr->len = cur_attr.len;
-+			attr->val_ptr = cur_attr.val_ptr;
-+			return 0;
-+		}
-+	} while (iter);
-+
-+	return -EIO;
-+}
-+
-+int osd_req_read_kern(struct osd_request *or,
-+	const struct osd_obj_id *obj, u64 offset, void* buff, u64 len)
-+{
-+	struct request_queue *req_q = or->osd_dev->scsi_device->request_queue;
-+	struct bio *bio = bio_map_kern(req_q, buff, len, GFP_KERNEL);
-+
-+	if (!bio)
-+		return -ENOMEM;
-+
-+	osd_req_read(or, obj, bio, offset);
-+	return 0;
-+}
-+
-+int osd_req_write_kern(struct osd_request *or,
-+	const struct osd_obj_id *obj, u64 offset, void* buff, u64 len)
-+{
-+	struct request_queue *req_q = or->osd_dev->scsi_device->request_queue;
-+	struct bio *bio = bio_map_kern(req_q, buff, len, GFP_KERNEL);
-+
-+	if (!bio)
-+		return -ENOMEM;
-+
-+	osd_req_write(or, obj, bio, offset);
-+	return 0;
++	error = inode_setattr(inode, iattr);
++	return error;
 +}
 -- 
 1.6.2.1
