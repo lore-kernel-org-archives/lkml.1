@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760228AbZCRVvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760245AbZCRVwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760228AbZCRVvr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757895AbZCRVnY
+	id S1760245AbZCRVwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757940AbZCRVn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:43:24 -0400
+	Wed, 18 Mar 2009 17:43:28 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757917AbZCRVnV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:43:21 -0400
+	id S1757917AbZCRVn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:43:26 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 22/57] microblaze_v7: setup.c, setup.h - system setting
-Date: Wed, 18 Mar 2009 21:30:49 +0100
-Message-Id: <039bc2fea33d23a3e7d2d85ac6fb275b8d21b5ed.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 41/57] microblaze_v7: system.h processor.h
+Date: Wed, 18 Mar 2009 21:31:08 +0100
+Message-Id: <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <6d19f608a4ba3e7718aa55794c2845f19b5ed5e2.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -39,6 +39,25 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <b726b7b271cf303c36af54c4e155140541a6769b.1237407249.git.monstr@monstr.eu>
  <644f08d7f8cd338e606ed703e221914f75588fb5.1237407249.git.monstr@monstr.eu>
  <6d19f608a4ba3e7718aa55794c2845f19b5ed5e2.1237407249.git.monstr@monstr.eu>
+ <039bc2fea33d23a3e7d2d85ac6fb275b8d21b5ed.1237407249.git.monstr@monstr.eu>
+ <513d4067a84be1ecb47577e1edf131d2b3572808.1237407249.git.monstr@monstr.eu>
+ <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
+ <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
+ <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
+ <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
+ <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
+ <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
+ <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
+ <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
+ <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
+ <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
+ <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
+ <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
+ <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
+ <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
+ <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
+ <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
+ <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -50,20 +69,21 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/setup.h |   43 ++++++++
- arch/microblaze/kernel/setup.c      |  198 +++++++++++++++++++++++++++++++++++
- 2 files changed, 241 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/setup.h
- create mode 100644 arch/microblaze/kernel/setup.c
+ arch/microblaze/include/asm/processor.h |   93 +++++++++++++++++++++++++++++++
+ arch/microblaze/include/asm/system.h    |   91 ++++++++++++++++++++++++++++++
+ 2 files changed, 184 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/processor.h
+ create mode 100644 arch/microblaze/include/asm/system.h
 
-diff --git a/arch/microblaze/include/asm/setup.h b/arch/microblaze/include/asm/setup.h
+diff --git a/arch/microblaze/include/asm/processor.h b/arch/microblaze/include/asm/processor.h
 new file mode 100644
-index 0000000..70075fe
+index 0000000..d8e1543
 --- /dev/null
-+++ b/arch/microblaze/include/asm/setup.h
-@@ -0,0 +1,43 @@
++++ b/arch/microblaze/include/asm/processor.h
+@@ -0,0 +1,93 @@
 +/*
-+ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2008 Michal Simek
++ * Copyright (C) 2008 PetaLogix
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
@@ -71,48 +91,96 @@ index 0000000..70075fe
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_SETUP_H
-+#define _ASM_MICROBLAZE_SETUP_H
++#ifndef _ASM_MICROBLAZE_PROCESSOR_H
++#define _ASM_MICROBLAZE_PROCESSOR_H
++
++#include <asm/ptrace.h>
++#include <asm/setup.h>
++#include <asm/registers.h>
++#include <asm/segment.h>
 +
 +# ifndef __ASSEMBLY__
++/* from kernel/cpu/mb.c */
++extern const struct seq_operations cpuinfo_op;
 +
-+#  ifdef __KERNEL__
-+extern unsigned int boot_cpuid; /* move to smp.h */
-+
-+#  define COMMAND_LINE_SIZE	256
-+extern char cmd_line[COMMAND_LINE_SIZE];
-+#  endif/* __KERNEL__ */
-+
-+void early_printk(const char *fmt, ...);
-+
-+int setup_early_printk(char *opt);
-+void disable_early_printk(void);
-+
-+void heartbeat(void);
-+void setup_heartbeat(void);
-+
-+unsigned long long sched_clock(void);
-+
-+void time_init(void);
-+void init_IRQ(void);
-+void machine_early_init(const char *cmdline, unsigned int ram,
-+						unsigned int fdt);
-+
-+void machine_restart(char *cmd);
-+void machine_shutdown(void);
-+void machine_halt(void);
-+void machine_power_off(void);
++# define cpu_relax()		barrier()
++# define cpu_sleep()		do {} while (0)
++# define prepare_to_copy(tsk)	do {} while (0)
 +
 +# endif /* __ASSEMBLY__ */
-+#endif /* _ASM_MICROBLAZE_SETUP_H */
-diff --git a/arch/microblaze/kernel/setup.c b/arch/microblaze/kernel/setup.c
-new file mode 100644
-index 0000000..d50184b
---- /dev/null
-+++ b/arch/microblaze/kernel/setup.c
-@@ -0,0 +1,198 @@
++
 +/*
-+ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * User space process size: memory size
++ *
++ * TASK_SIZE on MMU cpu is usually 1GB. However, on no-MMU arch, both
++ * user processes and the kernel is on the same memory region. They
++ * both share the memory space and that is limited by the amount of
++ * physical memory. thus, we set TASK_SIZE == amount of total memory.
++ */
++# define TASK_SIZE	(0x81000000 - 0x80000000)
++
++/*
++ * Default implementation of macro that returns current
++ * instruction pointer ("program counter").
++ */
++# define current_text_addr() ({ __label__ _l; _l: &&_l; })
++
++/*
++ * This decides where the kernel will search for a free chunk of vm
++ * space during mmap's. We won't be using it
++ */
++# define TASK_UNMAPPED_BASE	0
++
++/* definition in include/linux/sched.h */
++struct task_struct;
++
++/* thread_struct is gone. use thread_info instead. */
++struct thread_struct { };
++# define INIT_THREAD	{ }
++
++/* Do necessary setup to start up a newly executed thread. */
++static inline void start_thread(struct pt_regs *regs,
++				unsigned long pc,
++				unsigned long usp)
++{
++	regs->pc = pc;
++	regs->r1 = usp;
++	regs->kernel_mode = 0;
++}
++
++/* Free all resources held by a thread. */
++static inline void release_thread(struct task_struct *dead_task)
++{
++}
++
++/* Free all resources held by a thread. */
++static inline void exit_thread(void)
++{
++}
++
++extern unsigned long thread_saved_pc(struct task_struct *t);
++
++extern unsigned long get_wchan(struct task_struct *p);
++
++/*
++ * create a kernel thread without removing it from tasklists
++ */
++extern int kernel_thread(int (*fn)(void *), void *arg, unsigned long flags);
++
++# define task_pt_regs(tsk) \
++		(((struct pt_regs *)(THREAD_SIZE + task_stack_page(tsk))) - 1)
++
++# define KSTK_EIP(tsk)	(0)
++# define KSTK_ESP(tsk)	(0)
++
++#endif /* _ASM_MICROBLAZE_PROCESSOR_H */
+diff --git a/arch/microblaze/include/asm/system.h b/arch/microblaze/include/asm/system.h
+new file mode 100644
+index 0000000..c4e3088
+--- /dev/null
++++ b/arch/microblaze/include/asm/system.h
+@@ -0,0 +1,91 @@
++/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
@@ -120,195 +188,89 @@ index 0000000..d50184b
 + * for more details.
 + */
 +
-+#include <linux/init.h>
-+#include <linux/string.h>
-+#include <linux/seq_file.h>
-+#include <linux/cpu.h>
-+#include <linux/initrd.h>
-+#include <linux/console.h>
-+#include <linux/debugfs.h>
++#ifndef _ASM_MICROBLAZE_SYSTEM_H
++#define _ASM_MICROBLAZE_SYSTEM_H
 +
++#include <asm/registers.h>
 +#include <asm/setup.h>
-+#include <asm/sections.h>
-+#include <asm/page.h>
-+#include <linux/io.h>
-+#include <linux/bug.h>
-+#include <linux/param.h>
-+#include <linux/cache.h>
-+#include <asm/cacheflush.h>
-+#include <asm/entry.h>
-+#include <asm/cpuinfo.h>
++#include <asm/irqflags.h>
 +
-+#include <asm/system.h>
-+#include <asm/prom.h>
-+#include <asm/pgtable.h>
++struct task_struct;
++struct thread_info;
 +
-+DEFINE_PER_CPU(unsigned int, KSP);	/* Saved kernel stack pointer */
-+DEFINE_PER_CPU(unsigned int, KM);	/* Kernel/user mode */
-+DEFINE_PER_CPU(unsigned int, ENTRY_SP);	/* Saved SP on kernel entry */
-+DEFINE_PER_CPU(unsigned int, R11_SAVE);	/* Temp variable for entry */
-+DEFINE_PER_CPU(unsigned int, CURRENT_SAVE);	/* Saved current pointer */
++extern struct task_struct *_switch_to(struct thread_info *prev,
++					struct thread_info *next);
 +
-+unsigned int boot_cpuid;
-+char cmd_line[COMMAND_LINE_SIZE];
++#define switch_to(prev, next, last)					\
++	do {								\
++		(last) = _switch_to(task_thread_info(prev),		\
++					task_thread_info(next));	\
++	} while (0)
 +
-+void __init setup_arch(char **cmdline_p)
++#define smp_read_barrier_depends()	do {} while (0)
++#define read_barrier_depends()		do {} while (0)
++
++#define nop()			asm volatile ("nop")
++#define mb()			barrier()
++#define rmb()			mb()
++#define wmb()			mb()
++#define set_mb(var, value)	do { var = value; mb(); } while (0)
++#define set_wmb(var, value)	do { var = value; wmb(); } while (0)
++
++#define smp_mb()		mb()
++#define smp_rmb()		rmb()
++#define smp_wmb()		wmb()
++
++void show_trace(struct task_struct *task, unsigned long *stack);
++void __bad_xchg(volatile void *ptr, int size);
++
++static inline unsigned long __xchg(unsigned long x, volatile void *ptr,
++								int size)
 +{
-+#ifdef CONFIG_CMDLINE_FORCE
-+	strlcpy(cmd_line, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
-+	strlcpy(boot_command_line, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
-+#endif
-+	*cmdline_p = cmd_line;
++	unsigned long ret;
++	unsigned long flags;
 +
-+	console_verbose();
++	switch (size) {
++	case 1:
++		local_irq_save(flags);
++		ret = *(volatile unsigned char *)ptr;
++		*(volatile unsigned char *)ptr = x;
++		local_irq_restore(flags);
++		break;
 +
-+	unflatten_device_tree();
-+
-+	/* NOTE I think that this function is not necessary to call */
-+	/* irq_early_init(); */
-+	setup_cpuinfo();
-+
-+	__invalidate_icache_all();
-+	__enable_icache();
-+
-+	__invalidate_dcache_all();
-+	__enable_dcache();
-+
-+	panic_timeout = 120;
-+
-+	setup_memory();
-+
-+#if defined(CONFIG_SELFMOD_INTC) || defined(CONFIG_SELFMOD_TIMER)
-+	printk(KERN_NOTICE "Self modified code enable\n");
-+#endif
-+
-+#ifdef CONFIG_VT
-+#if defined(CONFIG_XILINX_CONSOLE)
-+	conswitchp = &xil_con;
-+#elif defined(CONFIG_DUMMY_CONSOLE)
-+	conswitchp = &dummy_con;
-+#endif
-+#endif
-+}
-+
-+#ifdef CONFIG_MTD_UCLINUX
-+/* Handle both romfs and cramfs types, without generating unnecessary
-+ code (ie no point checking for CRAMFS if it's not even enabled) */
-+inline unsigned get_romfs_len(unsigned *addr)
-+{
-+#ifdef CONFIG_ROMFS_FS
-+	if (memcmp(&addr[0], "-rom1fs-", 8) == 0) /* romfs */
-+		return be32_to_cpu(addr[2]);
-+#endif
-+
-+#ifdef CONFIG_CRAMFS
-+	if (addr[0] == le32_to_cpu(0x28cd3d45)) /* cramfs */
-+		return le32_to_cpu(addr[1]);
-+#endif
-+	return 0;
-+}
-+#endif	/* CONFIG_MTD_UCLINUX_EBSS */
-+
-+void __init machine_early_init(const char *cmdline, unsigned int ram,
-+		unsigned int fdt)
-+{
-+	unsigned long *src, *dst = (unsigned long *)0x0;
-+
-+/* clearing bss section */
-+	memset(__bss_start, 0, __bss_stop-__bss_start);
-+	memset(_ssbss, 0, _esbss-_ssbss);
-+
-+	/*
-+	* Copy command line passed from bootloader, or use default
-+	* if none provided, or forced
-+	*/
-+#ifndef CONFIG_CMDLINE_BOOL
-+	if (cmdline && cmdline[0] != '\0')
-+		strlcpy(cmd_line, cmdline, COMMAND_LINE_SIZE);
-+#endif
-+
-+/* initialize device tree for usage in early_printk */
-+	early_init_devtree((void *)_fdt_start);
-+
-+#ifdef CONFIG_EARLY_PRINTK
-+	setup_early_printk(NULL);
-+#endif
-+
-+	early_printk("Ramdisk addr 0x%08x, FDT 0x%08x\n", ram, fdt);
-+	printk(KERN_NOTICE "Found FDT at 0x%08x\n", fdt);
-+
-+#ifdef CONFIG_MTD_UCLINUX
-+	{
-+		int size;
-+		unsigned int romfs_base;
-+		romfs_base = (ram ? ram : (unsigned int)&__init_end);
-+		/* if CONFIG_MTD_UCLINUX_EBSS is defined, assume ROMFS is at the
-+		 * end of kernel, which is ROMFS_LOCATION defined above. */
-+		size = PAGE_ALIGN(get_romfs_len((unsigned *)romfs_base));
-+		early_printk("Found romfs @ 0x%08x (0x%08x)\n",
-+				romfs_base, size);
-+		early_printk("#### klimit %p ####\n", klimit);
-+		BUG_ON(size < 0); /* What else can we do? */
-+
-+		/* Use memmove to handle likely case of memory overlap */
-+		early_printk("Moving 0x%08x bytes from 0x%08x to 0x%08x\n",
-+			size, romfs_base, (unsigned)&_ebss);
-+		memmove(&_ebss, (int *)romfs_base, size);
-+
-+		/* update klimit */
-+		klimit += PAGE_ALIGN(size);
-+		early_printk("New klimit: 0x%08x\n", (unsigned)klimit);
++	case 4:
++		local_irq_save(flags);
++		ret = *(volatile unsigned long *)ptr;
++		*(volatile unsigned long *)ptr = x;
++		local_irq_restore(flags);
++		break;
++	default:
++		__bad_xchg(ptr, size), ret = 0;
++		break;
 +	}
-+#endif
 +
-+	for (src = __ivt_start; src < __ivt_end; src++, dst++)
-+		*dst = *src;
-+
-+	/* Initialize global data */
-+	per_cpu(KM, 0) = 0x1;	/* We start in kernel mode */
-+	per_cpu(CURRENT_SAVE, 0) = (unsigned long)current;
++	return ret;
 +}
++
++void disable_hlt(void);
++void enable_hlt(void);
++void default_idle(void);
++
++#define xchg(ptr, x) \
++	((__typeof__(*(ptr))) __xchg((unsigned long)(x), (ptr), sizeof(*(ptr))))
++
++void free_init_pages(char *what, unsigned long begin, unsigned long end);
++void free_initmem(void);
++extern char *klimit;
++extern void ret_from_fork(void);
 +
 +#ifdef CONFIG_DEBUG_FS
-+struct dentry *of_debugfs_root;
-+
-+static int microblaze_debugfs_init(void)
-+{
-+	of_debugfs_root = debugfs_create_dir("microblaze", NULL);
-+
-+	return of_debugfs_root == NULL;
-+}
-+arch_initcall(microblaze_debugfs_init);
++extern struct dentry *of_debugfs_root;
 +#endif
 +
-+void machine_restart(char *cmd)
-+{
-+	printk(KERN_NOTICE "Machine restart...\n");
-+	dump_stack();
-+	while (1)
-+		;
-+}
++#define arch_align_stack(x) (x)
 +
-+void machine_shutdown(void)
-+{
-+	printk(KERN_NOTICE "Machine shutdown...\n");
-+	while (1)
-+		;
-+}
-+
-+void machine_halt(void)
-+{
-+	printk(KERN_NOTICE "Machine halt...\n");
-+	while (1)
-+		;
-+}
-+
-+void machine_power_off(void)
-+{
-+	printk(KERN_NOTICE "Machine power off...\n");
-+	while (1)
-+		;
-+}
++#endif /* _ASM_MICROBLAZE_SYSTEM_H */
 -- 
 1.5.5.1
 
