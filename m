@@ -1,139 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbZCRS6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759293AbZCRTAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758799AbZCRS6O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 14:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757940AbZCRS5u
+	id S1759293AbZCRTAI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 15:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbZCRS7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 14:57:50 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:40160 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758225AbZCRS5s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 14:57:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
-	references:in-reply-to:content-type:
-	content-transfer-encoding:x-system-of-record;
-	b=JcP3kx474Byg+BzDYndZF48SKXpRf5C4VLfGqNlKXY074KCi4AeFgUwD8rhJL6Snv
-	WVJWAI7SgbQR5Ikmeayeg==
-Message-ID: <49C1435B.1090809@google.com>
-Date: Wed, 18 Mar 2009 11:54:19 -0700
-From: Mike Waychison <mikew@google.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 18 Mar 2009 14:59:54 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52225 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752265AbZCRS7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 14:59:53 -0400
+Date: Wed, 18 Mar 2009 19:58:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinderrajput@gmail.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/ftrace] tracing: fix oops in
+	tracepoint_update_probe_range()
+Message-ID: <20090318185853.GA16286@elte.hu>
+References: <1237394936.3132.1.camel@localhost.localdomain> <tip-966a6fdf6210e3ac8ce00b61cd1107cdf97ce744@git.kernel.org> <1237398997.22438.10.camel@ht.satnam>
 MIME-Version: 1.0
-To: Oren Laadan <orenl@cs.columbia.edu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mingo@elte.hu,
-       mpm@selenic.com, tglx@linutronix.de,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, xemul@openvz.org
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
- do?
-References: <1234475483.30155.194.camel@nimitz>	<20090212141014.2cd3d54d.akpm@linux-foundation.org>	<1234479845.30155.220.camel@nimitz>	<20090226155755.GA1456@x200.localdomain>	<20090310215305.GA2078@x200.localdomain>	<49B775B4.1040800@free.fr>	<20090312145311.GC12390@us.ibm.com>	<1236891719.32630.14.camel@bahia>	<20090312212124.GA25019@us.ibm.com>	<604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>	<20090313053458.GA28833@us.ibm.com>	<alpine.LFD.2.00.0903131018390.3940@localhost.localdomain> <49BAC6AF.9090607@google.com> <49BADFCE.8020207@cs.columbia.edu>
-In-Reply-To: <49BADFCE.8020207@cs.columbia.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1237398997.22438.10.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oren Laadan wrote:
-> 
-> Mike Waychison wrote:
->> Linus Torvalds wrote:
->>> On Thu, 12 Mar 2009, Sukadev Bhattiprolu wrote:
->>>
->>>> Ying Han [yinghan@google.com] wrote:
->>>> | Hi Serge:
->>>> | I made a patch based on Oren's tree recently which implement a new
->>>> | syscall clone_with_pid. I tested with checkpoint/restart process tree
->>>> | and it works as expected.
->>>>
->>>> Yes, I think we had a version of clone() with pid a while ago.
->>> Are people _at_all_ thinking about security?
->>>
->>> Obviously not.
->>>
->>> There's no way we can do anything like this. Sure, it's trivial to do 
->>> inside the kernel. But it also sounds like a _wonderful_ attack vector 
->>> against badly written user-land software that sends signals and has small 
->>> races.
->> I'm not really sure how this is different than a malicious app going off 
->> and spawning thousands of threads in an attempt to hit a target pid from 
->> a security pov.  Sure, it makes it easier, but it's not like there is 
->> anything in place to close the attack vector.
->>
->>> Quite frankly, from having followed the discussion(s) over the last few 
->>> weeks about checkpoint/restart in various forms, my reaction to just about 
->>> _all_ of this is that people pushing this are pretty damn borderline. 
->>>
->>> I think you guys are working on all the wrong problems. 
->>>
->>> Let's face it, we're not going to _ever_ checkpoint any kind of general 
->>> case process. Just TCP makes that fundamentally impossible in the general 
->>> case, and there are lots and lots of other cases too (just something as 
->>> totally _trivial_ as all the files in the filesystem that don't get rolled 
->>> back).
->> In some instances such as ours, TCP is probably the easiest thing to 
->> migrate.  In an rpc-based cluster application, TCP is nothing more than 
->> an RPC channel and applications already have to handle RPC channel 
->> failure and re-establishment.
->>
->> I agree that this is not the 'general case' as you mention above 
->> however.  This is the bit that sorta bothers me with the way the 
->> implementation has been going so far on this list.  The implementation 
->> that folks are building on top of Oren's patchset tries to be everything 
->> to everybody.  For our purposes, we need to have the flexibility of 
->> choosing *how* we checkpoint.  The line seems to be arbitrarily drawn at 
->> the kernel being responsible for checkpointing and restoring all 
->> resources associated with a task, and leaving userland with nothing more 
->> than transporting filesystem bits.  This approach isn't flexible enough: 
->>   Consider the case where we want to stub out most of the TCP file 
->> descriptors with ECONNRESETed sockets because we know that they are RPC 
->> sockets and can re-establish themselves, but we want to use some other 
->> mechanism for TCP sockets we don't know much about.  The current 
->> monolithic approach has zero flexibility for doing anything like this, 
->> and I figure out how we could even fit anything like this in.
-> 
-> The flexibility exists, but wasn't spelled out, so here it is:
-> 
-> 1) Similar to madvice(), I envision a cradvice() that could tell the c/r
-> something about specific resources, e.g.:
->  * cradvice(CR_ADV_MEM, ptr, len)  -> don't save that memory, it's scratch
->  * cradvice(CR_ADV_SOCK, fd, CR_ADV_SOCK_RESET)  -> reset connection on restart
-> etc .. (nevermind the exact interface right now)
-> 
-> 2) Tasks can ask to be notified (e.g. register a signal) when a checkpoint
-> or a restart complete successfully. At that time they can do their private
-> house-keeping if they know better.
-> 
-> 3) If restoring some resource is significantly easier in user space (e.g. a
-> file-descriptor of some special device which user space knows how to
-> re-initialize), then the restarting task can prepare it ahead of time,
-> and, call:
->   * cradvice(CR_ADV_USERFD, fd, 0)  -> use the fd in place instead of trying
-> 				       to restore it yourself.
 
-This would be called by the embryo process (mktree.c?) before calling 
-sys_restart?
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
+> On Wed, 2009-03-18 at 17:51 +0000, Jaswinder Singh Rajput wrote:
+> > Commit-ID:  966a6fdf6210e3ac8ce00b61cd1107cdf97ce744
+> > Gitweb:     http://git.kernel.org/tip/966a6fdf6210e3ac8ce00b61cd1107cdf97ce744
+> > Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+> > AuthorDate: Wed, 18 Mar 2009 22:18:56 +0530
+> > Commit:     Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Wed, 18 Mar 2009 18:48:43 +0100
+> > 
+> > tracing: fix oops in tracepoint_update_probe_range()
+> > 
+> > Change this crash:
+> > 
+> >  BUG: unable to handle kernel NULL pointer dereference at (null)
+> >  IP: [<ffffffff8107d4de>] tracepoint_update_probe_range+0x1f/0x9b
+> >  PGD 13d5fb067 PUD 13d688067 PMD 0
+> >  Oops: 0000 [#1] SMP
+> > 
+> > To a more debuggable WARN_ONCE().
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > LKML-Reference: <1237394936.3132.1.camel@localhost.localdomain>
+> > [ moved the check outside the lock and added a WARN_ON(). ]
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > 
+> > ---
+> >  kernel/tracepoint.c |    9 +++++++--
+> >  1 files changed, 7 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
+> > index 7960274..dd15df9 100644
+> > --- a/kernel/tracepoint.c
+> > +++ b/kernel/tracepoint.c
+> > @@ -272,12 +272,17 @@ static void disable_tracepoint(struct tracepoint *elem)
+> >   *
+> >   * Updates the probe callback corresponding to a range of tracepoints.
+> >   */
+> > -void tracepoint_update_probe_range(struct tracepoint *begin,
+> > -	struct tracepoint *end)
+> > +void
+> > +tracepoint_update_probe_range(struct tracepoint *begin, struct tracepoint *end)
+> >  {
+> >  	struct tracepoint *iter;
+> >  	struct tracepoint_entry *mark_entry;
+> >  
+> > +	if (!iter) {
+> > +		WARN_ON_ONCE(1);
+> > +		return;
+> > +	}
+> > +
+> >  	mutex_lock(&tracepoints_mutex);
+> >  	for (iter = begin; iter < end; iter++) {
+> >  		mark_entry = get_tracepoint(iter->name);
 > 
-> Method #3 is what I used in Zap to implement distributed checkpoints, where
-> it is so much easier to recreate all network connections in user space then
-> putting that logic into the kernel.
-> 
-> Now, on the other hand, doing the c/r from userland is much less flexible
-> than in the kernel (e.g. epollfd, futex state and much more) and requires
-> exposing tremendous amount of in-kernel data to user space. And we all know
-> than exposing internals is always a one-way ticket :(
-> 
-> [...]
-> 
-> Oren.
-> 
-> 
+> my original patch was correct.
 
+It might have worked but it was rather ugly: it took the 
+tracepoints_mutex for no reason.
+
+The clean fix to skip zero-sized sections early in the function, 
+without taking any lock, and without emitting a warning.
+
+	Ingo
