@@ -1,152 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752161AbZCREXC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbZCREX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752161AbZCREXC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 00:23:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZCREWX
+	id S1755251AbZCREX2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 00:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZCREWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 18 Mar 2009 00:22:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:59275 "EHLO ozlabs.org"
+Received: from ozlabs.org ([203.10.76.45]:59278 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750977AbZCREWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751180AbZCREWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 18 Mar 2009 00:22:20 -0400
-CC: linux-kernel@vger.kernel.org
-To: Ingo Molnar <mingo@redhat.com>
+To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
 Date: Wed, 18 Mar 2009 10:40:25 +1030
-Subject: [PATCH 4/9] use smp_call_function_single() in arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Message-Id: <20090318042217.EF3F1DDF39@ozlabs.org>
+Subject: [PATCH 9/9] work_on_cpu: use on drivers/firmware/dcdbas.c
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Matt Domsch <Matt_Domsch@dell.com>
+Cc: Douglas_Warzecha@dell.com
+CC: Ingo Molnar <mingo@redhat.com>
+Message-Id: <20090318042218.709E3DDF3F@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
+Impact: don't play with current's cpumask
 
-Attempting to rid us of the problematic work_on_cpu().  Just use
-smp_call_function_single() here.
+It's generally a very bad idea to mug some process's cpumask: it could
+legitimately and reasonably be changed by root, which could break us
+(if done before our code) or them (if we restore the wrong value).
 
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+So we use work_on_cpu instead of cpumask games.
+
+Note one subtle change.  If we can't get to CPU 0 for some reason, the
+return will be -EINVAL not -EBUSY.  We could fix this in the
+caller?  ie:
+
+	return work_on_cpu(0, generate_smi, smi_cmd) == 0 ? 0 : -EBUSY;
+
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Matt Domsch <Matt_Domsch@dell.com>
+Cc: Douglas_Warzecha@dell.com
 ---
- arch/x86/kernel/cpu/mcheck/mce_amd_64.c |   40 +++++++++++++++++++-------------
- 1 file changed, 24 insertions(+), 16 deletions(-)
+ drivers/firmware/dcdbas.c |   46 +++++++++++++++++++---------------------------
+ 1 file changed, 19 insertions(+), 27 deletions(-)
 
-diff -puN arch/x86/kernel/cpu/mcheck/mce_amd_64.c~arch-x86-kernel-cpu-mcheck-mce_amd_64c-avoid-using-work_on_cpu arch/x86/kernel/cpu/mcheck/mce_amd_64.c
---- a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c~arch-x86-kernel-cpu-mcheck-mce_amd_64c-avoid-using-work_on_cpu
-+++ a/arch/x86/kernel/cpu/mcheck/mce_amd_64.c
-@@ -90,7 +90,8 @@ struct thresh_restart {
- };
+diff --git a/drivers/firmware/dcdbas.c b/drivers/firmware/dcdbas.c
+--- a/drivers/firmware/dcdbas.c
++++ b/drivers/firmware/dcdbas.c
+@@ -237,31 +237,9 @@ static ssize_t host_control_on_shutdown_
+ 	return count;
+ }
  
- /* must be called with correct cpu affinity */
--static long threshold_restart_bank(void *_tr)
-+/* Called via smp_call_function_single() */
-+static void threshold_restart_bank(void *_tr)
+-/**
+- * dcdbas_smi_request: generate SMI request
+- *
+- * Called with smi_data_lock.
+- */
+-int dcdbas_smi_request(struct smi_cmd *smi_cmd)
++static long generate_smi(void *_smi_cmd)
  {
- 	struct thresh_restart *tr = _tr;
- 	u32 mci_misc_hi, mci_misc_lo;
-@@ -117,7 +118,6 @@ static long threshold_restart_bank(void 
- 
- 	mci_misc_hi |= MASK_COUNT_EN_HI;
- 	wrmsr(tr->b->address, mci_misc_lo, mci_misc_hi);
--	return 0;
- }
- 
- /* cpu init entry point, called from mce.c with preempt off */
-@@ -283,7 +283,7 @@ static ssize_t store_interrupt_enable(st
- 	tr.b = b;
- 	tr.reset = 0;
- 	tr.old_limit = 0;
--	work_on_cpu(b->cpu, threshold_restart_bank, &tr);
-+	smp_call_function_single(b->cpu, threshold_restart_bank, &tr, 1);
- 
- 	return end - buf;
- }
-@@ -305,23 +305,32 @@ static ssize_t store_threshold_limit(str
- 	tr.b = b;
- 	tr.reset = 0;
- 
--	work_on_cpu(b->cpu, threshold_restart_bank, &tr);
-+	smp_call_function_single(b->cpu, threshold_restart_bank, &tr, 1);
- 
- 	return end - buf;
- }
- 
--static long local_error_count(void *_b)
-+struct threshold_block_cross_cpu {
-+	struct threshold_block *tb;
-+	long retval;
-+};
-+
-+static void local_error_count_handler(void *_tbcc)
- {
--	struct threshold_block *b = _b;
-+	struct threshold_block_cross_cpu *tbcc = _tbcc;
-+	struct threshold_block *b = tbcc->tb;
- 	u32 low, high;
- 
- 	rdmsr(b->address, low, high);
--	return (high & 0xFFF) - (THRESHOLD_MAX - b->threshold_limit);
-+	tbcc->retval = (high & 0xFFF) - (THRESHOLD_MAX - b->threshold_limit);
- }
- 
- static ssize_t show_error_count(struct threshold_block *b, char *buf)
- {
--	return sprintf(buf, "%lx\n", work_on_cpu(b->cpu, local_error_count, b));
-+	struct threshold_block_cross_cpu tbcc = { .tb = b, };
-+
-+	smp_call_function_single(b->cpu, local_error_count_handler, &tbcc, 1);
-+	return sprintf(buf, "%lx\n", tbcc.retval);
- }
- 
- static ssize_t store_error_count(struct threshold_block *b,
-@@ -329,7 +338,7 @@ static ssize_t store_error_count(struct 
- {
- 	struct thresh_restart tr = { .b = b, .reset = 1, .old_limit = 0 };
- 
--	work_on_cpu(b->cpu, threshold_restart_bank, &tr);
-+	smp_call_function_single(b->cpu, threshold_restart_bank, &tr, 1);
- 	return 1;
- }
- 
-@@ -398,7 +407,7 @@ static __cpuinit int allocate_threshold_
- 	if ((bank >= NR_BANKS) || (block >= NR_BLOCKS))
- 		return 0;
- 
--	if (rdmsr_safe(address, &low, &high))
-+	if (rdmsr_safe_on_cpu(cpu, address, &low, &high))
- 		return 0;
- 
- 	if (!(high & MASK_VALID_HI)) {
-@@ -462,12 +471,11 @@ out_free:
- 	return err;
- }
- 
--static __cpuinit long local_allocate_threshold_blocks(void *_bank)
-+static __cpuinit long
-+local_allocate_threshold_blocks(int cpu, unsigned int bank)
- {
--	unsigned int *bank = _bank;
+-	cpumask_t old_mask;
+-	int ret = 0;
 -
--	return allocate_threshold_blocks(smp_processor_id(), *bank, 0,
--					 MSR_IA32_MC0_MISC + *bank * 4);
-+	return allocate_threshold_blocks(cpu, bank, 0,
-+					 MSR_IA32_MC0_MISC + bank * 4);
+-	if (smi_cmd->magic != SMI_CMD_MAGIC) {
+-		dev_info(&dcdbas_pdev->dev, "%s: invalid magic value\n",
+-			 __func__);
+-		return -EBADR;
+-	}
+-
+-	/* SMI requires CPU 0 */
+-	old_mask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(0));
+-	if (smp_processor_id() != 0) {
+-		dev_dbg(&dcdbas_pdev->dev, "%s: failed to get CPU 0\n",
+-			__func__);
+-		ret = -EBUSY;
+-		goto out;
+-	}
++	struct smi_cmd *smi_cmd = _smi_cmd;
+ 
+ 	/* generate SMI */
+ 	asm volatile (
+@@ -273,10 +251,24 @@ int dcdbas_smi_request(struct smi_cmd *s
+ 		  "c" (smi_cmd->ecx)
+ 		: "memory"
+ 	);
++	return 0;
++}
+ 
+-out:
+-	set_cpus_allowed_ptr(current, &old_mask);
+-	return ret;
++/**
++ * dcdbas_smi_request: generate SMI request
++ *
++ * Called with smi_data_lock.
++ */
++int dcdbas_smi_request(struct smi_cmd *smi_cmd)
++{
++	if (smi_cmd->magic != SMI_CMD_MAGIC) {
++		dev_info(&dcdbas_pdev->dev, "%s: invalid magic value\n",
++			 __func__);
++		return -EBADR;
++	}
++
++	/* SMI requires CPU 0 */
++	return work_on_cpu(0, generate_smi, smi_cmd);
  }
  
- /* symlinks sibling shared banks to first core.  first core owns dir/files. */
-@@ -525,7 +533,7 @@ static __cpuinit int threshold_create_ba
- 
- 	per_cpu(threshold_banks, cpu)[bank] = b;
- 
--	err = work_on_cpu(cpu, local_allocate_threshold_blocks, &bank);
-+	err = local_allocate_threshold_blocks(cpu, bank);
- 	if (err)
- 		goto out_free;
- 
-_
+ /**
+
 
