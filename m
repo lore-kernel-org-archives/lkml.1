@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbZCRM2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbZCRMjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300AbZCRM2e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 08:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756108AbZCRM2Z
+	id S1756829AbZCRMjX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 08:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbZCRMjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 08:28:25 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50392 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755885AbZCRM2Y (ORCPT
+	Wed, 18 Mar 2009 08:39:13 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:56047 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754375AbZCRMjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 08:28:24 -0400
-Subject: Re: [PATCH 0/3] dma-debug: add additional checks
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090318121940.GT6159@amd.com>
-References: <1237223130-26519-1-git-send-email-joerg.roedel@amd.com>
-	 <20090317120112.GP6159@amd.com> <20090318093847.GC5879@elte.hu>
-	 <20090318112324.GB32233@elte.hu> <1237376327.5069.253.camel@laptop>
-	 <20090318121940.GT6159@amd.com>
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 13:28:10 +0100
-Message-Id: <1237379290.5069.341.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.25.92 
+	Wed, 18 Mar 2009 08:39:13 -0400
+Message-ID: <49C0EB46.5050309@vflare.org>
+Date: Wed, 18 Mar 2009 18:08:30 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3]: compressed RAM block device
+References: <49BF8ABC.6040805@vflare.org> <49BF8B4E.1030603@vflare.org> <200903182325.21106.nickpiggin@yahoo.com.au>
+In-Reply-To: <200903182325.21106.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Antivirus: avast! (VPS 090317-0, 17-03-2009), Outbound message
+X-Antivirus-Status: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-18 at 13:19 +0100, Joerg Roedel wrote:
-> On Wed, Mar 18, 2009 at 12:38:47PM +0100, Peter Zijlstra wrote:
-> > On Wed, 2009-03-18 at 12:23 +0100, Ingo Molnar wrote:
-> > > another -tip testbox started triggering:
-> > > 
-> > >   BUG: MAX_LOCKDEP_ENTRIES too low!
-> > > 
-> > > it triggers due to CONFIG_DMA_API_DEBUG=y. Config attached.
-> > 
-> > 
-> > I still have this laying about.. could be we're just at the limit due to
-> > lock bloat in the kernel, could be dma_api_debug is doing something
-> > all-together iffy
+Nick Piggin wrote:
+> On Tuesday 17 March 2009 22:36:46 Nitin Gupta wrote:
+>>   drivers/block/Kconfig     |   22 +
+>>   drivers/block/Makefile    |    1 +
+>>   drivers/block/compcache.c |  995
+>> +++++++++++++++++++++++++++++++++++++++++++++ drivers/block/compcache.h | 
+>> 160 ++++++++
+>>   4 files changed, 1178 insertions(+), 0 deletions(-)
+>>
+>> Creates RAM based block device (ramzswap0) which can be used as swap
+>> device. Pages swapped to this are compressed and stored in memory itself.
+>>
+>> The module is called compcache.ko. It depends on:
+>>   - xvmalloc.ko: memory allocator
+>>   - lzo_compress.ko
+>>   - lzo_decompress.ko
+>>
+>> See Documentation/blockdev/compcache.txt for usage details.
+>>
+>> Project home: http://code.google.com/p/compcache/
 > 
-> I had a look and the maximum locking depth in dma-debug code was two.
-> Attached patch reduces this to one.
-> 
-> From d28fc4a308bf66ed98c68e1db18e4e1434206541 Mon Sep 17 00:00:00 2001
-> From: Joerg Roedel <joerg.roedel@amd.com>
-> Date: Wed, 18 Mar 2009 13:15:20 +0100
-> Subject: [PATCH] dma-debug: serialize locking in unmap path
-> 
-> Impact: reduce maximum lockdepth to one
-> 
-> This patch reduces the maximum spin lock depth from two to one in the
-> dma-debug code.
 
-While appreciated, this failure is not about lock depth, but about lock
-entries, that is items in the dependency chains.
+> I wonder how hard it would be to make the compression code
+> use an arbitrary file or device for the storage backend rather
+> than make a new block device? Then you could make a new ram
+> block device that can swap its pages out (or even extend brd.c
+> with that functionality, or use loop on tmpfs etc).
+> 
 
-Of course, these two are not unrelated, deeper lock hierarchies lead to
-longer chains -> more entries.
+Its already done as mentioned in Documentation/blockdev/compcache.txt
+(patch 3/3) but I should have added it here also: compcache accepts
+"backing_dev" parameter for backing swap partition - this allows us to
+forward any R/W request to backing swap device. Currently only poorly
+compressible pages (compress length > PAGE_SIZE/2) are forwarded to
+backing_dev.
 
-Assuming dma api debug doesn't do anything spectaculary odd, I'd say
-we've just lock bloated the kernel and might need to increase this
-static array a bit.
+Thanks,
+Nitin
+
+
+
 
