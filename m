@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbZCRUfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757804AbZCRUen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758016AbZCRUfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 16:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbZCRUbx
+	id S1757804AbZCRUen (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 16:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZCRUbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 16:31:53 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56227 "EHLO
+	Wed, 18 Mar 2009 16:31:52 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56222 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753066AbZCRUbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 16:31:43 -0400
+	id S1752819AbZCRUbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 16:31:42 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 11/57] microblaze_v7: kernel modules support
-Date: Wed, 18 Mar 2009 21:30:38 +0100
-Message-Id: <f7f2d17e21a3df9931c75976c37a003d11190cc9.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 09/57] microblaze_v7: cache support
+Date: Wed, 18 Mar 2009 21:30:36 +0100
+Message-Id: <f7c1685bd3f387be8633db5fb3dd4cb5e7c2d792.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <2f48efc353c11dfdfc7b052bdfe052b71c09ab23.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -26,8 +26,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>
  <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu>
  <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>
- <f7c1685bd3f387be8633db5fb3dd4cb5e7c2d792.1237407249.git.monstr@monstr.eu>
- <2f48efc353c11dfdfc7b052bdfe052b71c09ab23.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,262 +37,417 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/module.h      |   37 +++++++
- arch/microblaze/kernel/microblaze_ksyms.c |   46 +++++++++
- arch/microblaze/kernel/module.c           |  148 +++++++++++++++++++++++++++++
- 3 files changed, 231 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/module.h
- create mode 100644 arch/microblaze/kernel/microblaze_ksyms.c
- create mode 100644 arch/microblaze/kernel/module.c
+ arch/microblaze/include/asm/cache.h      |   43 +++++
+ arch/microblaze/include/asm/cacheflush.h |   85 ++++++++++
+ arch/microblaze/kernel/cpu/cache.c       |  258 ++++++++++++++++++++++++++++++
+ 3 files changed, 386 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/cache.h
+ create mode 100644 arch/microblaze/include/asm/cacheflush.h
+ create mode 100644 arch/microblaze/kernel/cpu/cache.c
 
-diff --git a/arch/microblaze/include/asm/module.h b/arch/microblaze/include/asm/module.h
+diff --git a/arch/microblaze/include/asm/cache.h b/arch/microblaze/include/asm/cache.h
 new file mode 100644
-index 0000000..914565a
+index 0000000..16a647d
 --- /dev/null
-+++ b/arch/microblaze/include/asm/module.h
-@@ -0,0 +1,37 @@
++++ b/arch/microblaze/include/asm/cache.h
+@@ -0,0 +1,43 @@
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * Cache operations
 + *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_MODULE_H
-+#define _ASM_MICROBLAZE_MODULE_H
-+
-+/* Microblaze Relocations */
-+#define R_MICROBLAZE_NONE 0
-+#define R_MICROBLAZE_32 1
-+#define R_MICROBLAZE_32_PCREL 2
-+#define R_MICROBLAZE_64_PCREL 3
-+#define R_MICROBLAZE_32_PCREL_LO 4
-+#define R_MICROBLAZE_64 5
-+#define R_MICROBLAZE_32_LO 6
-+#define R_MICROBLAZE_SRO32 7
-+#define R_MICROBLAZE_SRW32 8
-+#define R_MICROBLAZE_64_NONE 9
-+#define R_MICROBLAZE_32_SYM_OP_SYM 10
-+/* Keep this the last entry. */
-+#define R_MICROBLAZE_NUM 11
-+
-+struct mod_arch_specific {
-+	int foo;
-+};
-+
-+#define Elf_Shdr	Elf32_Shdr
-+#define Elf_Sym		Elf32_Sym
-+#define Elf_Ehdr	Elf32_Ehdr
-+
-+typedef struct { volatile int counter; } module_t;
-+
-+#endif /* _ASM_MICROBLAZE_MODULE_H */
-diff --git a/arch/microblaze/kernel/microblaze_ksyms.c b/arch/microblaze/kernel/microblaze_ksyms.c
-new file mode 100644
-index 0000000..e8ffb6f
---- /dev/null
-+++ b/arch/microblaze/kernel/microblaze_ksyms.c
-@@ -0,0 +1,46 @@
-+/*
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2003 John Williams <jwilliams@itee.uq.edu.au>
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
 + */
 +
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/cryptohash.h>
-+#include <linux/delay.h>
-+#include <linux/in6.h>
-+#include <linux/syscalls.h>
++#ifndef _ASM_MICROBLAZE_CACHE_H
++#define _ASM_MICROBLAZE_CACHE_H
 +
-+#include <asm/checksum.h>
-+#include <linux/io.h>
-+#include <asm/page.h>
-+#include <asm/system.h>
-+#include <linux/uaccess.h>
++#include <asm/registers.h>
 +
-+/*
-+ * libgcc functions - functions that are used internally by the
-+ * compiler... (prototypes are not correct though, but that
-+ * doesn't really matter since they're not versioned).
-+ */
-+extern void __ashldi3(void);
-+EXPORT_SYMBOL(__ashldi3);
-+extern void __ashrdi3(void);
-+EXPORT_SYMBOL(__ashrdi3);
-+extern void __divsi3(void);
-+EXPORT_SYMBOL(__divsi3);
-+extern void __lshrdi3(void);
-+EXPORT_SYMBOL(__lshrdi3);
-+extern void __modsi3(void);
-+EXPORT_SYMBOL(__modsi3);
-+extern void __mulsi3(void);
-+EXPORT_SYMBOL(__mulsi3);
-+extern void __muldi3(void);
-+EXPORT_SYMBOL(__muldi3);
-+extern void __ucmpdi2(void);
-+EXPORT_SYMBOL(__ucmpdi2);
-+extern void __udivsi3(void);
-+EXPORT_SYMBOL(__udivsi3);
-+extern void __umodsi3(void);
-+EXPORT_SYMBOL(__umodsi3);
-diff --git a/arch/microblaze/kernel/module.c b/arch/microblaze/kernel/module.c
-new file mode 100644
-index 0000000..92549a2
---- /dev/null
-+++ b/arch/microblaze/kernel/module.c
-@@ -0,0 +1,148 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/moduleloader.h>
-+#include <linux/kernel.h>
-+#include <linux/elf.h>
-+#include <linux/vmalloc.h>
-+#include <linux/slab.h>
-+#include <linux/fs.h>
-+#include <linux/string.h>
-+
-+#include <asm/pgtable.h>
-+
-+void *module_alloc(unsigned long size)
-+{
-+	void *ret;
-+	ret = (size == 0) ? NULL : vmalloc(size);
-+	pr_debug("module_alloc (%08lx@%08lx)\n", size, (unsigned long int)ret);
-+	return ret;
-+}
-+
-+void module_free(struct module *module, void *region)
-+{
-+	pr_debug("module_free(%s,%08lx)\n", module->name,
-+					(unsigned long)region);
-+	vfree(region);
-+}
-+
-+int module_frob_arch_sections(Elf_Ehdr *hdr,
-+				Elf_Shdr *sechdrs,
-+				char *secstrings,
-+				struct module *mod)
-+{
-+	return 0;
-+}
-+
-+int apply_relocate(Elf32_Shdr *sechdrs, const char *strtab,
-+	unsigned int symindex, unsigned int relsec, struct module *module)
-+{
-+	printk(KERN_ERR "module %s: ADD RELOCATION unsupported\n",
-+		module->name);
-+	return -ENOEXEC;
-+}
-+
-+int apply_relocate_add(Elf32_Shdr *sechdrs, const char *strtab,
-+	unsigned int symindex, unsigned int relsec, struct module *module)
-+{
-+
-+	unsigned int i;
-+	Elf32_Rela *rela = (void *)sechdrs[relsec].sh_addr;
-+	Elf32_Sym *sym;
-+	unsigned long int *location;
-+	unsigned long int locoffs;
-+	unsigned long int value;
-+#if __GNUC__ < 4
-+	unsigned long int old_value;
++#ifndef L1_CACHE_BYTES
++/* word-granular cache in microblaze */
++#define L1_CACHE_BYTES		4
 +#endif
 +
-+	pr_debug("Applying add relocation section %u to %u\n",
-+		relsec, sechdrs[relsec].sh_info);
++void _enable_icache(void);
++void _disable_icache(void);
++void _invalidate_icache(unsigned int addr);
 +
-+	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
++#define __enable_icache()		_enable_icache()
++#define __disable_icache()		_disable_icache()
++#define __invalidate_icache(addr)	_invalidate_icache(addr)
 +
-+		location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr +
-+				rela[i].r_offset;
-+		sym = (Elf32_Sym *)sechdrs[symindex].sh_addr +
-+			ELF32_R_SYM(rela[i].r_info);
-+		value = sym->st_value + rela[i].r_addend;
++void _enable_dcache(void);
++void _disable_dcache(void);
++void _invalidate_dcache(unsigned int addr);
 +
-+		switch (ELF32_R_TYPE(rela[i].r_info)) {
++#define __enable_dcache()		_enable_dcache()
++#define __disable_dcache()		_disable_dcache()
++#define __invalidate_dcache(addr)	_invalidate_dcache(addr)
++
++/* FIXME - I don't think this is right */
++#ifdef CONFIG_XILINX_UNCACHED_SHADOW
++#define UNCACHED_SHADOW_MASK (CONFIG_XILINX_ERAM_SIZE)
++#endif
++
++#endif /* _ASM_MICROBLAZE_CACHE_H */
+diff --git a/arch/microblaze/include/asm/cacheflush.h b/arch/microblaze/include/asm/cacheflush.h
+new file mode 100644
+index 0000000..3300b78
+--- /dev/null
++++ b/arch/microblaze/include/asm/cacheflush.h
+@@ -0,0 +1,85 @@
++/*
++ * Copyright (C) 2007 PetaLogix
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ * based on v850 version which was
++ * Copyright (C) 2001,02,03 NEC Electronics Corporation
++ * Copyright (C) 2001,02,03 Miles Bader <miles@gnu.org>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ *
++ */
++
++#ifndef _ASM_MICROBLAZE_CACHEFLUSH_H
++#define _ASM_MICROBLAZE_CACHEFLUSH_H
++
++/* Somebody depends on this; sigh... */
++#include <linux/mm.h>
++
++/*
++ * Cache handling functions.
++ * Microblaze has a write-through data cache, meaning that the data cache
++ * never needs to be flushed.  The only flushing operations that are
++ * implemented are to invalidate the instruction cache.  These are called
++ * after loading a user application into memory, we must invalidate the
++ * instruction cache to make sure we don't fetch old, bad code.
++ */
++
++/* FIXME for LL-temac driver */
++#define invalidate_dcache_range(start, end) \
++			__invalidate_dcache_range(start, end)
++
++#define flush_cache_all()			__invalidate_cache_all()
++#define flush_cache_mm(mm)			do { } while (0)
++#define flush_cache_range(vma, start, end)	__invalidate_cache_all()
++#define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
++
++#define flush_dcache_range(start, end)	__invalidate_dcache_range(start, end)
++#define flush_dcache_page(page)			do { } while (0)
++#define flush_dcache_mmap_lock(mapping)		do { } while (0)
++#define flush_dcache_mmap_unlock(mapping)	do { } while (0)
++
++#define flush_icache_range(start, len)	__invalidate_icache_range(start, len)
++#define flush_icache_page(vma, pg)		do { } while (0)
++
++#define flush_cache_vmap(start, end)		do { } while (0)
++#define flush_cache_vunmap(start, end)		do { } while (0)
++
++struct page;
++struct mm_struct;
++struct vm_area_struct;
++
++/* see arch/microblaze/kernel/cache.c */
++extern void __invalidate_icache_all(void);
++extern void __invalidate_icache_range(unsigned long start, unsigned long end);
++extern void __invalidate_icache_page(struct vm_area_struct *vma,
++				struct page *page);
++extern void __invalidate_icache_user_range(struct vm_area_struct *vma,
++				struct page *page,
++				unsigned long adr, int len);
++extern void __invalidate_cache_sigtramp(unsigned long addr);
++
++extern void __invalidate_dcache_all(void);
++extern void __invalidate_dcache_range(unsigned long start, unsigned long end);
++extern void __invalidate_dcache_page(struct vm_area_struct *vma,
++				struct page *page);
++extern void __invalidate_dcache_user_range(struct vm_area_struct *vma,
++				struct page *page,
++				unsigned long adr, int len);
++
++extern inline void __invalidate_cache_all(void)
++{
++	__invalidate_icache_all();
++	__invalidate_dcache_all();
++}
++
++#define copy_to_user_page(vma, page, vaddr, dst, src, len) \
++do { memcpy((dst), (src), (len)); \
++	flush_icache_range((unsigned) (dst), (unsigned) (dst) + (len)); \
++} while (0)
++
++#define copy_from_user_page(vma, page, vaddr, dst, src, len) \
++	memcpy((dst), (src), (len))
++
++#endif /* _ASM_MICROBLAZE_CACHEFLUSH_H */
+diff --git a/arch/microblaze/kernel/cpu/cache.c b/arch/microblaze/kernel/cpu/cache.c
+new file mode 100644
+index 0000000..252195a
+--- /dev/null
++++ b/arch/microblaze/kernel/cpu/cache.c
+@@ -0,0 +1,258 @@
++/*
++ * Cache control for MicroBlaze cache memories
++ *
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2007 PetaLogix
++ * Copyright (C) 2007 John Williams <john.williams@petalogix.com>
++ *
++ * This file is subject to the terms and conditions of the GNU General
++ * Public License. See the file COPYING in the main directory of this
++ * archive for more details.
++ */
++
++#include <asm/cacheflush.h>
++#include <linux/cache.h>
++#include <asm/cpuinfo.h>
++
++/* Exported functions */
++
++void _enable_icache(void)
++{
++	if (cpuinfo.use_icache) {
++#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++		__asm__ __volatile__ ("					\
++				msrset	r0, %0;				\
++				nop; "					\
++				:					\
++				: "i" (MSR_ICE)				\
++				: "memory");
++#else
++		__asm__ __volatile__ ("					\
++				mfs	r12, rmsr;			\
++				nop;					\
++				ori	r12, r12, %0;			\
++				mts	rmsr, r12;			\
++				nop; "					\
++				:					\
++				: "i" (MSR_ICE)				\
++				: "memory", "r12");
++#endif
++	}
++}
++
++void _disable_icache(void)
++{
++	if (cpuinfo.use_icache) {
++#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++		__asm__ __volatile__ ("					\
++				msrclr r0, %0;				\
++				nop; "					\
++				:					\
++				: "i" (MSR_ICE)				\
++				: "memory");
++#else
++		__asm__ __volatile__ ("					\
++				mfs	r12, rmsr;			\
++				nop;					\
++				andi	r12, r12, ~%0;			\
++				mts	rmsr, r12;			\
++				nop; "					\
++				:					\
++				: "i" (MSR_ICE)				\
++				: "memory", "r12");
++#endif
++	}
++}
++
++void _invalidate_icache(unsigned int addr)
++{
++	if (cpuinfo.use_icache) {
++		__asm__ __volatile__ ("					\
++				wic	%0, r0"				\
++				:					\
++				: "r" (addr));
++	}
++}
++
++void _enable_dcache(void)
++{
++	if (cpuinfo.use_dcache) {
++#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++		__asm__ __volatile__ ("					\
++				msrset	r0, %0;				\
++				nop; "					\
++				:					\
++				: "i" (MSR_DCE)				\
++				: "memory");
++#else
++		__asm__ __volatile__ ("					\
++				mfs	r12, rmsr;			\
++				nop;					\
++				ori	r12, r12, %0;			\
++				mts	rmsr, r12;			\
++				nop; "					\
++				:					\
++				: "i" (MSR_DCE)			\
++				: "memory", "r12");
++#endif
++	}
++}
++
++void _disable_dcache(void)
++{
++	if (cpuinfo.use_dcache) {
++#if CONFIG_XILINX_MICROBLAZE0_USE_MSR_INSTR
++		__asm__ __volatile__ ("					\
++				msrclr	r0, %0;				\
++				nop; "					\
++				:					\
++				: "i" (MSR_DCE)			\
++				: "memory");
++#else
++		__asm__ __volatile__ ("					\
++				mfs	r12, rmsr;			\
++				nop;					\
++				andi	r12, r12, ~%0;			\
++				mts	rmsr, r12;			\
++				nop; "					\
++				:					\
++				: "i" (MSR_DCE)			\
++				: "memory", "r12");
++#endif
++	}
++}
++
++void _invalidate_dcache(unsigned int addr)
++{
++	if (cpuinfo.use_dcache)
++		__asm__ __volatile__ ("					\
++				wdc	%0, r0"				\
++				:					\
++				: "r" (addr));
++}
++
++void __invalidate_icache_all(void)
++{
++	unsigned int i;
++	unsigned flags;
++
++	if (cpuinfo.use_icache) {
++		local_irq_save(flags);
++		__disable_icache();
++
++		/* Just loop through cache size and invalidate, no need to add
++			CACHE_BASE address */
++		for (i = 0; i < cpuinfo.icache_size;
++			i += cpuinfo.icache_line)
++				__invalidate_icache(i);
++
++		__enable_icache();
++		local_irq_restore(flags);
++	}
++}
++
++void __invalidate_icache_range(unsigned long start, unsigned long end)
++{
++	unsigned int i;
++	unsigned flags;
++	unsigned int align;
++
++	if (cpuinfo.use_icache) {
++		/*
++		 * No need to cover entire cache range,
++		 * just cover cache footprint
++		 */
++		end = min(start + cpuinfo.icache_size, end);
++		align = ~(cpuinfo.icache_line - 1);
++		start &= align; /* Make sure we are aligned */
++		/* Push end up to the next cache line */
++		end = ((end & align) + cpuinfo.icache_line);
++
++		local_irq_save(flags);
++		__disable_icache();
++
++		for (i = start; i < end; i += cpuinfo.icache_line)
++			__invalidate_icache(i);
++
++		__enable_icache();
++		local_irq_restore(flags);
++	}
++}
++
++void __invalidate_icache_page(struct vm_area_struct *vma, struct page *page)
++{
++	__invalidate_icache_all();
++}
++
++void __invalidate_icache_user_range(struct vm_area_struct *vma,
++				struct page *page, unsigned long adr,
++				int len)
++{
++	__invalidate_icache_all();
++}
++
++void __invalidate_cache_sigtramp(unsigned long addr)
++{
++	__invalidate_icache_range(addr, addr + 8);
++}
++
++void __invalidate_dcache_all(void)
++{
++	unsigned int i;
++	unsigned flags;
++
++	if (cpuinfo.use_dcache) {
++		local_irq_save(flags);
++		__disable_dcache();
 +
 +		/*
-+		 * Be careful! mb-gcc / mb-ld splits the relocs between the
-+		 * text and the reloc table. In general this means we must
-+		 * read the current contents of (*location), add any offset
-+		 * then store the result back in
++		 * Just loop through cache size and invalidate,
++		 * no need to add CACHE_BASE address
 +		 */
++		for (i = 0; i < cpuinfo.dcache_size;
++			i += cpuinfo.dcache_line)
++				__invalidate_dcache(i);
 +
-+		case R_MICROBLAZE_32:
-+#if __GNUC__ < 4
-+			old_value = *location;
-+			*location = value + old_value;
-+
-+			pr_debug("R_MICROBLAZE_32 (%08lx->%08lx)\n",
-+				old_value, value);
-+#else
-+			*location = value;
-+#endif
-+			break;
-+
-+		case R_MICROBLAZE_64:
-+#if __GNUC__ < 4
-+			/* Split relocs only required/used pre gcc4.1.1 */
-+			old_value = ((location[0] & 0x0000FFFF) << 16) |
-+					(location[1] & 0x0000FFFF);
-+			value += old_value;
-+#endif
-+			location[0] = (location[0] & 0xFFFF0000) |
-+					(value >> 16);
-+			location[1] = (location[1] & 0xFFFF0000) |
-+					(value & 0xFFFF);
-+#if __GNUC__ < 4
-+			pr_debug("R_MICROBLAZE_64 (%08lx->%08lx)\n",
-+				old_value, value);
-+#endif
-+			break;
-+
-+		case R_MICROBLAZE_64_PCREL:
-+			locoffs = (location[0] & 0xFFFF) << 16 |
-+				(location[1] & 0xFFFF);
-+			value -= (unsigned long int)(location) + 4 +
-+				locoffs;
-+			location[0] = (location[0] & 0xFFFF0000) |
-+					(value >> 16);
-+			location[1] = (location[1] & 0xFFFF0000) |
-+					(value & 0xFFFF);
-+			pr_debug("R_MICROBLAZE_64_PCREL (%08lx)\n",
-+				value);
-+			break;
-+
-+		case R_MICROBLAZE_NONE:
-+			pr_debug("R_MICROBLAZE_NONE\n");
-+			break;
-+
-+		default:
-+			printk(KERN_ERR "module %s: "
-+				"Unknown relocation: %u\n",
-+				module->name,
-+				ELF32_R_TYPE(rela->r_info));
-+			return -ENOEXEC;
-+		}
++		__enable_dcache();
++		local_irq_restore(flags);
 +	}
-+	return 0;
 +}
 +
-+int module_finalize(const Elf32_Ehdr *hdr, const Elf_Shdr *sechdrs,
-+		struct module *module)
++void __invalidate_dcache_range(unsigned long start, unsigned long end)
 +{
-+	return 0;
++	unsigned int i;
++	unsigned flags;
++	unsigned int align;
++
++	if (cpuinfo.use_dcache) {
++		/*
++		 * No need to cover entire cache range,
++		 * just cover cache footprint
++		 */
++		end = min(start + cpuinfo.dcache_size, end);
++		align = ~(cpuinfo.dcache_line - 1);
++		start &= align; /* Make sure we are aligned */
++		/* Push end up to the next cache line */
++		end = ((end & align) + cpuinfo.dcache_line);
++		local_irq_save(flags);
++		__disable_dcache();
++
++		for (i = start; i < end; i += cpuinfo.dcache_line)
++			__invalidate_dcache(i);
++
++		__enable_dcache();
++		local_irq_restore(flags);
++	}
 +}
 +
-+void module_arch_cleanup(struct module *mod)
++void __invalidate_dcache_page(struct vm_area_struct *vma, struct page *page)
 +{
++	__invalidate_dcache_all();
++}
++
++void __invalidate_dcache_user_range(struct vm_area_struct *vma,
++				struct page *page, unsigned long adr,
++				int len)
++{
++	__invalidate_dcache_all();
 +}
 -- 
 1.5.5.1
