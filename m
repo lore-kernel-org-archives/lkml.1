@@ -1,68 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759504AbZCRTMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759621AbZCRTN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759504AbZCRTMn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 15:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbZCRTMc
+	id S1759621AbZCRTN6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 15:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756839AbZCRTNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 15:12:32 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:39692 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754572AbZCRTMb (ORCPT
+	Wed, 18 Mar 2009 15:13:48 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:48973 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753423AbZCRTNr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 15:12:31 -0400
-Date: Wed, 18 Mar 2009 15:10:19 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 20/35] Use a pre-calculated value for
- num_online_nodes()
-In-Reply-To: <20090318180152.GB24462@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0903181508030.10154@qirst.com>
-References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <1237196790-7268-21-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903161207500.32577@qirst.com> <20090316163626.GJ24293@csn.ul.ie> <alpine.DEB.1.10.0903161247170.17730@qirst.com>
- <20090318150833.GC4629@csn.ul.ie> <alpine.DEB.1.10.0903181256440.15570@qirst.com> <20090318180152.GB24462@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 18 Mar 2009 15:13:47 -0400
+Subject: Re: [patch 1/2] fs: mnt_want_write speedup
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090312041334.GB1893@wotan.suse.de>
+References: <20090310143718.GB15977@wotan.suse.de>
+	 <1236809477.30142.83.camel@nimitz>  <20090312041334.GB1893@wotan.suse.de>
+Content-Type: text/plain
+Date: Wed, 18 Mar 2009 12:13:43 -0700
+Message-Id: <1237403623.8286.196.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Mar 2009, Mel Gorman wrote:
+On Thu, 2009-03-12 at 05:13 +0100, Nick Piggin wrote: 
+> On Wed, Mar 11, 2009 at 03:11:17PM -0700, Dave Hansen wrote:
+> > I'm feeling a bit better about these, although I am still honestly quite
+> > afraid of the barriers.  I also didn't like all the #ifdefs much, but
+> > here's some help on that.
+> 
+> FWIW, we have this in suse kernels because page fault performance was
+> so bad compared with SLES10. mnt_want_write & co was I think the 2nd
+> biggest offender for file backed mappings (after pvops). I think we're
+> around parity again even with pvops.
 
-> On Wed, Mar 18, 2009 at 12:58:02PM -0400, Christoph Lameter wrote:
-> > On Wed, 18 Mar 2009, Mel Gorman wrote:
-> >
-> > > Naming has never been great, but in this case the static value is a
-> > > direct replacement of num_online_nodes(). I think having a
-> > > similarly-named-but-still-different name obscures more than it helps.
-> >
-> > Creates a weird new name. Please use nr_online_nodes. Its useful elsewhere
-> > too.
-> >
->
-> Ok, I'm dropping this patch for the first pass altogether and will deal
-> with it later.
+Page faults themselves?  Which path was that from?
 
-This is important infrastructure stuff. num_online_nodes is used in a
-couple of other places where it could be replaced by nr_online_nodes.
+> Basically I think we have to improve this one way or another in mainline
+> too. Is there any way to make you feel better about the barriers? More
+> comments?
+> 
+> mnt_make_readonly()                    mnt_want_write()
+> 1. mnt_flags |= MNT_WRITE_HOLD         A. mnt_writers[x]++
+> 2. smp_mb()                            B. smp_mb()
+> 3. count += mnt_writers[0]             C. while (mnt_flags & MNT_WRITE_HOLD) ;
+>    ...                                 D. smp_rmb()
+>    count += mnt_writers[N]             E. if (mnt_flags & MNT_READONLY)
+> 4. if (count == 0)                     F.    mnt_writers[x]-- /* fail */
+> 5.     mnt_flags |= MNT_READONLY       G. else /* success */
+> 6. else /* fail */
+> 7. smp_wmb()
+> 8. mnt_flags &= ~MNT_WRITE_HOLD
+> 
+> * 2 ensures that 1 is visible before 3 is loaded
+> * B ensures that A is visible before C is loaded
+> * Therefore, either count != 0 at 4, or C will loop (or both)
+> * If count == 0
+>   * (make_readonly success)
+>   * C will loop until 8
+>   * D ensures E is not loaded until loop ends
+>   * 7 ensures 5 is visible before 8 is
+>   * Therefore E will find MNT_READONLY (want_write fail)
+> * If C does not loop
+>   * 4 will find count != 0 (make_readonly fail)
+>   * Therefore 5 is not executed.
+>   * Therefore E will not find MNT_READONLY (want_write success)
+> * If count != 0 and C loops
+>   * (make_readonly fail)
+>   * 5 will not be executed
+>   * Therefore E will not find MNT_READONLY (want_write success)
 
-7 grufile.c     gru_get_config_info          181 if (num_online_nodes() > 1 &&
-8 grufile.c     gru_get_config_info          187 info.nodes = num_online_nodes();
-9 hugetlb.c     return_unused_surplus_pages  878 unsigned long remaining_iterations = num_online_nodes();
-a hugetlb.c     return_unused_surplus_pages  907 remaining_iterations = num_online_nodes();
-b page_alloc.c  MAX_NODE_LOAD               2115 #define MAX_NODE_LOAD (num_online_nodes())
-c page_alloc.c  build_zonelists             2324 load = num_online_nodes();
-d page_alloc.c  build_all_zonelists         2475 num_online_nodes(),
-e slub.c        list_locations              3651 if (num_online_nodes() > 1 && !nodes_empty(l->nodes) &&
-f svc.c         svc_pool_map_choose_mode     127 if (num_online_nodes() > 1) {
+It is great to spell it out like that.  But, honestly, I think the code
+and comments that are there are probably better than looking at an out
+of line description like that.  
 
-In other places its avoided because deemed to be too expensive.
+> I don't know if that helps (I should reference which statements rely
+> on which). I think it shows that either one or the other only must
+> succeed.
+> 
+> It does not illustrate how the loop in the want_write side prevents
+> the sumation from getting confused by decrementing count on a different
+> CPU than it was incremented, but I've commented that case in the code
+> fairly well I think.
+
+I think you mentioned a seqlock being a possibility here.  That would
+slot in as a replacement for MNT_WRITE_HOLD, right?  mnt_make_readonly()
+takes a seq_write, mnt_want_write() takes a seq_read and doesn't
+consider MNT_READONLY valid until it gets a clear read of it.  It would
+internalize all the barriers into the seqlock implementation except for
+the mnt_writers[]-related ones.
+
+As for mnt_writers, you'd need an smp_rmb() in mnt_make_readonly()
+before reading the counters and an smp_wmb() after writing the counter
+in mnt_want_write().
+
+Is see that those are effectively consolidated down in your version into
+a single smp_mb() at both call sites when combined with the
+MNT_WRITE_HOLD barriers.
+
+If we can get this down to two explicit calls to the barrier functions
+that paired and very clear, I think I'd be much more OK with it.
+
+> > How about this on top of what you have as a bit of a cleanup?  It gets
+> > rid of all the new #ifdefs in .c files?
+> > 
+> > Did I miss the use of get_mnt_writers_ptr()?  I don't think I actually
+> > saw it used anywhere in this pair of patches, so I've stolen it.  I
+> > think gcc should compile all this new stuff down to be basically the
+> > same as you had before.  The one thing I'm not horribly sure of is the
+> > "out_free_devname:" label.  It shouldn't be reachable in the !SMP case. 
+> > 
+> > I could also consolidate the header #ifdefs into a single one if you
+> > think that looks better.
+> 
+> I don't like the get_mnt_writers_ptr terribly. The *_mnt_writers functions
+> are quite primitive and just happen to be in the .c file because they're
+> private to it. The alloc/free_mnt_writers is good (they could be
+> in the .c file too?).
+
+Yeah, it could all move to the .c file.  
+
+> Another thing I should probably do is slash away most of the crap from
+> mnt_want_write in the UP case. It only needs to do a preempt_disable,
+> test MNT_READONLY, increment mnt_writers (and similarly for mnt_make_readonly)
+
+Yeah, that's true.  I probably tried to prematurely optimize it.
+
+-- Dave
 
