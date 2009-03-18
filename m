@@ -1,23 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbZCRUc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbZCRUci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754792AbZCRUc4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 16:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZCRUbn
+	id S1756068AbZCRUci (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 16:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbZCRUbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 16:31:43 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56201 "EHLO
+	Wed, 18 Mar 2009 16:31:42 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56199 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752459AbZCRUbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752437AbZCRUbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 18 Mar 2009 16:31:39 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 01/57] microblaze_v7: Kconfig patches
-Date: Wed, 18 Mar 2009 21:30:28 +0100
-Message-Id: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 02/57] microblaze_v7: Makefiles for Microblaze cpu
+Date: Wed, 18 Mar 2009 21:30:29 +0100
+Message-Id: <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
+In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
+ <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
+References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -27,349 +30,212 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/Kconfig                       |  136 +++++++++++++++++++++++++
- arch/microblaze/Kconfig.debug                 |   26 +++++
- arch/microblaze/platform/Kconfig.platform     |   85 +++++++++++++++
- arch/microblaze/platform/generic/Kconfig.auto |   62 +++++++++++
- 4 files changed, 309 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/Kconfig
- create mode 100644 arch/microblaze/Kconfig.debug
- create mode 100644 arch/microblaze/platform/Kconfig.platform
- create mode 100644 arch/microblaze/platform/generic/Kconfig.auto
+ arch/microblaze/Makefile                  |   69 +++++++++++++++++++++++++++++
+ arch/microblaze/boot/Makefile             |   17 +++++++
+ arch/microblaze/kernel/Makefile           |   19 ++++++++
+ arch/microblaze/kernel/cpu/Makefile       |    8 +++
+ arch/microblaze/lib/Makefile              |   13 +++++
+ arch/microblaze/mm/Makefile               |    5 ++
+ arch/microblaze/platform/Makefile         |    6 +++
+ arch/microblaze/platform/generic/Makefile |    3 +
+ 8 files changed, 140 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/Makefile
+ create mode 100644 arch/microblaze/boot/Makefile
+ create mode 100644 arch/microblaze/kernel/Makefile
+ create mode 100644 arch/microblaze/kernel/cpu/Makefile
+ create mode 100644 arch/microblaze/lib/Makefile
+ create mode 100644 arch/microblaze/mm/Makefile
+ create mode 100644 arch/microblaze/platform/Makefile
+ create mode 100644 arch/microblaze/platform/generic/Makefile
 
-diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+diff --git a/arch/microblaze/Makefile b/arch/microblaze/Makefile
 new file mode 100644
-index 0000000..a2df3f8
+index 0000000..0dcbb98
 --- /dev/null
-+++ b/arch/microblaze/Kconfig
-@@ -0,0 +1,136 @@
-+# For a description of the syntax of this configuration file,
-+# see Documentation/kbuild/kconfig-language.txt.
++++ b/arch/microblaze/Makefile
+@@ -0,0 +1,69 @@
++UTS_SYSNAME = -DUTS_SYSNAME=\"uClinux\"
 +
-+mainmenu "Linux/Microblaze Kernel Configuration"
++# What CPU vesion are we building for, and crack it open
++# as major.minor.rev
++CPU_VER=$(subst ",,$(CONFIG_XILINX_MICROBLAZE0_HW_VER) )
++CPU_MAJOR=$(shell echo $(CPU_VER) | cut -d '.' -f 1)
++CPU_MINOR=$(shell echo $(CPU_VER) | cut -d '.' -f 2)
++CPU_REV=$(shell echo $(CPU_VER) | cut -d '.' -f 3)
 +
-+config MICROBLAZE
-+	def_bool y
-+	select HAVE_LMB
++export CPU_VER CPU_MAJOR CPU_MINOR CPU_REV
 +
-+config SWAP
-+	def_bool n
++# Use cpu-related CONFIG_ vars to set compile options.
 +
-+config RWSEM_GENERIC_SPINLOCK
-+	def_bool y
++# Work out HW multipler support.  This is icky.
++# 1. Spartan2 has no HW multiplers.
++# 2. MicroBlaze v3.x always uses them, except in Spartan 2
++# 3. All other FPGa/CPU ver combos, we can trust the CONFIG_ settings
++ifeq (,$(findstring spartan2,$(CONFIG_XILINX_MICROBLAZE0_FAMILY)))
++  ifeq ($(CPU_MAJOR),3)
++    CPUFLAGS-1 += -mno-xl-soft-mul
++  else
++    # USE_HW_MUL can be 0, 1, or 2, defining a heirarchy of HW Mul support.
++    CPUFLAGS-$(subst 1,,$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL)) += -mxl-multiply-high
++    CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_HW_MUL) += -mno-xl-soft-mul
++  endif
++endif
++CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_DIV) += -mno-xl-soft-div
++CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_BARREL) += -mxl-barrel-shift
++CPUFLAGS-$(CONFIG_XILINX_MICROBLAZE0_USE_PCMP) += -mxl-pattern-compare
 +
-+config RWSEM_XCHGADD_ALGORITHM
-+	bool
++CPUFLAGS-1 += $(call cc-option,-mcpu=v$(CPU_VER))
 +
-+config ARCH_HAS_ILOG2_U32
-+	def_bool n
++# The various CONFIG_XILINX cpu features options are integers 0/1/2...
++# rather than bools y/n
++CFLAGS += $(CPUFLAGS-1)
++CFLAGS += $(CPUFLAGS-2)
 +
-+config ARCH_HAS_ILOG2_U64
-+	def_bool n
++# r31 holds current when in kernel mode
++CFLAGS += -ffixed-r31
 +
-+config GENERIC_FIND_NEXT_BIT
-+	def_bool y
++LDFLAGS_BLOB := --format binary --oformat elf32-microblaze
 +
-+config GENERIC_HWEIGHT
-+	def_bool y
++LIBGCC := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 +
-+config GENERIC_HARDIRQS
-+	def_bool y
++head-y		:= arch/microblaze/kernel/head.o
++libs-y		+= arch/microblaze/lib/ $(LIBGCC)
++core-y		+= arch/microblaze/kernel/ arch/microblaze/mm/ \
++		   arch/microblaze/platform/
 +
-+config GENERIC_IRQ_PROBE
-+	def_bool y
++boot := arch/$(ARCH)/boot
 +
-+config GENERIC_CALIBRATE_DELAY
-+	def_bool y
++# defines filename extension depending memory management type
++ifeq ($(CONFIG_MMU),)
++MMUEXT		:= -nommu
++endif
++export	MMUEXT
 +
-+config GENERIC_TIME
-+	def_bool y
++all: linux.bin
 +
-+config GENERIC_TIME_VSYSCALL
-+	def_bool n
++archclean:
++	$(Q)$(MAKE) $(clean)=$(boot)
 +
-+config GENERIC_CLOCKEVENTS
-+	def_bool y
++linux.bin linux.bin.gz: vmlinux
++	$(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
 +
-+config PCI
-+	depends on !MMU
-+	def_bool n
-+
-+config NO_DMA
-+	depends on !MMU
-+	def_bool n
-+
-+source "init/Kconfig"
-+
-+source "arch/microblaze/platform/Kconfig.platform"
-+
-+menu "Processor type and features"
-+
-+source kernel/time/Kconfig
-+
-+source "kernel/Kconfig.preempt"
-+
-+source "kernel/Kconfig.hz"
-+
-+config MMU
-+	def_bool n
-+
-+config NO_MMU
-+	bool
-+	depends on !MMU
-+	default y
-+
-+comment "Boot options"
-+
-+config CMDLINE_BOOL
-+	bool "Default bootloader kernel arguments"
-+
-+config CMDLINE
-+	string "Default kernel command string"
-+	depends on CMDLINE_BOOL
-+	default "console=ttyUL0,115200"
-+	help
-+	  On some architectures there is currently no way for the boot loader
-+	  to pass arguments to the kernel. For these architectures, you should
-+	  supply some command-line options at build time by entering them
-+	  here.
-+
-+config CMDLINE_FORCE
-+	bool "Force default kernel command string"
-+	depends on CMDLINE_BOOL
-+	default n
-+	help
-+	  Set this to have arguments from the default kernel command string
-+	  override those passed by the boot loader.
-+
-+config OF
-+	def_bool y
-+
-+config OF_DEVICE
-+	def_bool y
-+
-+config PROC_DEVICETREE
-+	bool "Support for device tree in /proc"
-+	depends on PROC_FS
-+	help
-+	  This option adds a device-tree directory under /proc which contains
-+	  an image of the device tree that the kernel copies from Open
-+	  Firmware or other boot firmware. If unsure, say Y here.
-+
-+endmenu
-+
-+source "mm/Kconfig"
-+
-+menu "Exectuable file formats"
-+
-+source "fs/Kconfig.binfmt"
-+
-+endmenu
-+
-+source "net/Kconfig"
-+
-+source "drivers/Kconfig"
-+
-+source "fs/Kconfig"
-+
-+source "arch/microblaze/Kconfig.debug"
-+
-+source "security/Kconfig"
-+
-+source "crypto/Kconfig"
-+
-+source "lib/Kconfig"
-diff --git a/arch/microblaze/Kconfig.debug b/arch/microblaze/Kconfig.debug
++define archhelp
++  echo  '* linux.bin    - Create raw binary'
++  echo  '  linux.bin.gz - Create compressed raw binary'
++endef
+diff --git a/arch/microblaze/boot/Makefile b/arch/microblaze/boot/Makefile
 new file mode 100644
-index 0000000..242cd35
+index 0000000..844edf4
 --- /dev/null
-+++ b/arch/microblaze/Kconfig.debug
-@@ -0,0 +1,26 @@
-+# For a description of the syntax of this configuration file,
-+# see Documentation/kbuild/kconfig-language.txt.
-+
-+menu "Kernel hacking"
-+
-+source "lib/Kconfig.debug"
-+
-+config EARLY_PRINTK
-+	bool "Early printk function for kernel"
-+	default n
-+	help
-+	  This option turns on/off early printk messages to console.
-+	  First Uartlite node is taken.
-+
-+config HEART_BEAT
-+	bool "Heart beat function for kernel"
-+	default n
-+	help
-+	  This option turns on/off heart beat kernel functionality.
-+	  First GPIO node is taken.
-+
-+config DEBUG_BOOTMEM
-+	depends on DEBUG_KERNEL
-+	bool "Debug BOOTMEM initialization"
-+
-+endmenu
-diff --git a/arch/microblaze/platform/Kconfig.platform b/arch/microblaze/platform/Kconfig.platform
-new file mode 100644
-index 0000000..8e9b475
---- /dev/null
-+++ b/arch/microblaze/platform/Kconfig.platform
-@@ -0,0 +1,85 @@
-+# For a description of the syntax of this configuration file,
-+# see Documentation/kbuild/kconfig-language.txt.
++++ b/arch/microblaze/boot/Makefile
+@@ -0,0 +1,17 @@
 +#
-+# Platform selection Kconfig menu for MicroBlaze targets
++# arch/microblaze/boot/Makefile
 +#
 +
-+menu "Platform options"
-+choice
-+	prompt "Platform"
-+	default PLATFORM_MICROBLAZE_AUTO
-+	help
-+	  Choose which hardware board/platform you are targeting.
++targets := linux.bin linux.bin.gz
 +
-+config PLATFORM_GENERIC
-+	bool "Generic"
-+	help
-+	  Choose this option for the Generic platform.
++OBJCOPYFLAGS_linux.bin  := -O binary
 +
-+endchoice
++$(obj)/linux.bin: vmlinux FORCE
++	$(call if_changed,objcopy)
++	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
 +
-+config SELFMOD
-+	bool "Use self modified code for intc/timer"
-+	depends on EXPERIMENTAL && NO_MMU
-+	default n
-+	help
-+	  This choice enables self-modified code for interrupt controller
-+	  and timer.
++$(obj)/linux.bin.gz: $(obj)/linux.bin FORCE
++	$(call if_changed,gzip)
++	@echo 'Kernel: $@ is ready' ' (#'`cat .version`')'
 +
-+config SELFMOD_INTC
-+	bool "Use self modified code for intc"
-+	depends on SELFMOD
-+	default y
-+	help
-+	  This choice enables self-modified code for interrupt controller.
++clean-kernel += linux.bin linux.bin.gz
+diff --git a/arch/microblaze/kernel/Makefile b/arch/microblaze/kernel/Makefile
+new file mode 100644
+index 0000000..da94bec
+--- /dev/null
++++ b/arch/microblaze/kernel/Makefile
+@@ -0,0 +1,19 @@
++#
++# Makefile
++#
 +
-+config SELFMOD_TIMER
-+	bool "Use self modified code for timer"
-+	depends on SELFMOD
-+	default y
-+	help
-+	  This choice enables self-modified code for timer.
++extra-y := head.o vmlinux.lds
 +
-+config OPT_LIB_FUNCTION
-+	bool "Optimalized lib function"
-+	default y
-+	help
-+	  Allows turn on optimalized library function (memcpy and memmove).
-+	  They are optimized by using word alignment. This will work
-+	  fine if both source and destination are aligned on the same
-+	  boundary. However, if they are aligned on different boundaries
-+	  shifts will be necessary. This might result in bad performance
-+	  on MicroBlaze systems without a barrel shifter.
++obj-y += exceptions.o \
++	hw_exception_handler.o init_task.o intc.o irq.o of_device.o \
++	of_platform.o process.o prom.o prom_parse.o ptrace.o \
++	setup.o signal.o sys_microblaze.o timer.o traps.o
 +
-+config OPT_LIB_ASM
-+	bool "Optimalized lib function ASM"
-+	depends on OPT_LIB_FUNCTION
-+	default n
-+	help
-+	  Allows turn on optimalized library function (memcpy and memmove).
-+	  Function are written in asm code.
++obj-y += cpu/
 +
-+# This is still a bit broken - disabling for now JW 20070504
-+config ALLOW_EDIT_AUTO
-+	bool "Permit Display/edit of Kconfig.auto platform settings"
-+	default n
-+	help
-+	  Allows the editing of auto-generated platform settings from
-+	  the Kconfig.auto file. Obviously this does not change the
-+	  underlying hardware, so be very careful if you go editing
-+	  these settings.
++obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
++obj-$(CONFIG_SELFMOD)		+= selfmod.o
++obj-$(CONFIG_HEART_BEAT)	+= heartbeat.o
++obj-$(CONFIG_MODULES)		+= microblaze_ksyms.o module.o
 +
-+	  Also, if you enable this, and edit various Kconfig.auto
-+	  settings, YOUR CHANGES WILL BE LOST if you then disable it
-+	  again. You have been warned!
++obj-y	+= entry$(MMUEXT).o
+diff --git a/arch/microblaze/kernel/cpu/Makefile b/arch/microblaze/kernel/cpu/Makefile
+new file mode 100644
+index 0000000..20646e5
+--- /dev/null
++++ b/arch/microblaze/kernel/cpu/Makefile
+@@ -0,0 +1,8 @@
++#
++# Build the appropriate CPU version support
++#
 +
-+	  If unsure, say no.
++EXTRA_CFLAGS += -DCPU_MAJOR=$(CPU_MAJOR) -DCPU_MINOR=$(CPU_MINOR) \
++		-DCPU_REV=$(CPU_REV)
 +
-+comment "Automatic platform settings from Kconfig.auto"
-+	depends on ALLOW_EDIT_AUTO
++obj-y += cache.o cpuinfo.o cpuinfo-pvr-full.o cpuinfo-static.o mb.o pvr.o
+diff --git a/arch/microblaze/lib/Makefile b/arch/microblaze/lib/Makefile
+new file mode 100644
+index 0000000..86d63fd
+--- /dev/null
++++ b/arch/microblaze/lib/Makefile
+@@ -0,0 +1,13 @@
++#
++# Makefile
++#
 +
-+if PLATFORM_GENERIC=y
-+	source "arch/microblaze/platform/generic/Kconfig.auto"
++lib-y :=  memset.o checksum.o
++
++ifeq ($(CONFIG_OPT_LIB_ASM),y)
++lib-y += fastcopy.o
++else
++lib-y += memcpy.o memmove.o
 +endif
 +
-+endmenu
-diff --git a/arch/microblaze/platform/generic/Kconfig.auto b/arch/microblaze/platform/generic/Kconfig.auto
++lib-y +=  uaccess.o 
+diff --git a/arch/microblaze/mm/Makefile b/arch/microblaze/mm/Makefile
 new file mode 100644
-index 0000000..fbca22d
+index 0000000..bf9e447
 --- /dev/null
-+++ b/arch/microblaze/platform/generic/Kconfig.auto
-@@ -0,0 +1,62 @@
++++ b/arch/microblaze/mm/Makefile
+@@ -0,0 +1,5 @@
 +#
-+# (C) Copyright 2007 Michal Simek
-+#
-+# Michal SIMEK <monstr@monstr.eu>
-+#
-+# This program is free software; you can redistribute it and/or
-+# modify it under the terms of the GNU General Public License as
-+# published by the Free Software Foundation; either version 2 of
-+# the License, or (at your option) any later version.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+# GNU General Public License for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program; if not, write to the Free Software
-+# Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+# MA 02111-1307 USA
++# Makefile
 +#
 +
-+# Definitions for MICROBLAZE0
-+comment "Definitions for MICROBLAZE0"
-+	depends on ALLOW_EDIT_AUTO
++obj-y := init.o
+diff --git a/arch/microblaze/platform/Makefile b/arch/microblaze/platform/Makefile
+new file mode 100644
+index 0000000..ea1b75c
+--- /dev/null
++++ b/arch/microblaze/platform/Makefile
+@@ -0,0 +1,6 @@
++#
++# Makefile for arch/microblaze/platform directory
++#
++#obj-$(CONFIG_PLATFORM_GENERIC) += generic/
 +
-+config KERNEL_BASE_ADDR
-+	hex "Physical address where Linux Kernel is"
-+	default "0x90000000"
-+	help
-+	  BASE Address for kernel
-+
-+config XILINX_MICROBLAZE0_FAMILY
-+	string "Targetted FPGA family" if ALLOW_EDIT_AUTO
-+	default "virtex5"
-+
-+config XILINX_MICROBLAZE0_USE_MSR_INSTR
-+	int "USE_MSR_INSTR range (0:1)" if ALLOW_EDIT_AUTO
-+	default 1
-+
-+config XILINX_MICROBLAZE0_USE_PCMP_INSTR
-+	int "USE_PCMP_INSTR range (0:1)" if ALLOW_EDIT_AUTO
-+	default 1
-+
-+config XILINX_MICROBLAZE0_USE_BARREL
-+	int "USE_BARREL range (0:1)" if ALLOW_EDIT_AUTO
-+	default 1
-+
-+config XILINX_MICROBLAZE0_USE_DIV
-+	int "USE_DIV range (0:1)" if ALLOW_EDIT_AUTO
-+	default 1
-+
-+config XILINX_MICROBLAZE0_USE_HW_MUL
-+	int "USE_HW_MUL values (0=NONE, 1=MUL32, 2=MUL64)" if ALLOW_EDIT_AUTO
-+	default 2
-+
-+config XILINX_MICROBLAZE0_USE_FPU
-+	int "USE_FPU values (0=NONE, 1=BASIC, 2=EXTENDED)" if ALLOW_EDIT_AUTO
-+	default 2
-+
-+config XILINX_MICROBLAZE0_HW_VER
-+	string "Core version number" if ALLOW_EDIT_AUTO
-+	default 7.10.d
++obj-y	+= platform.o
+diff --git a/arch/microblaze/platform/generic/Makefile b/arch/microblaze/platform/generic/Makefile
+new file mode 100644
+index 0000000..9a8b1bd
+--- /dev/null
++++ b/arch/microblaze/platform/generic/Makefile
+@@ -0,0 +1,3 @@
++#
++# Empty Makefile to keep make clean happy
++#
 -- 
 1.5.5.1
 
