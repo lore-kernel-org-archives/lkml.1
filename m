@@ -1,113 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbZCRBbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbZCRBhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbZCRBbT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 21:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbZCRBbH
+	id S1756028AbZCRBhV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 21:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbZCRBhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 21:31:07 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:44276 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752881AbZCRBbG (ORCPT
+	Tue, 17 Mar 2009 21:37:07 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:55410 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753831AbZCRBhG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 21:31:06 -0400
-Message-ID: <49C04F5F.1020700@novell.com>
-Date: Tue, 17 Mar 2009 21:33:19 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 17 Mar 2009 21:37:06 -0400
+Date: Tue, 17 Mar 2009 21:37:02 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Tom Zanussi <tzanussi@gmail.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+Subject: Re: [RFC][PATCH 3/4] tracing: add per-event filtering
+In-Reply-To: <1237271031.8033.151.camel@charm-linux>
+Message-ID: <alpine.DEB.2.00.0903172131340.10610@gandalf.stny.rr.com>
+References: <1237271031.8033.151.camel@charm-linux>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Luis Henriques <henrix@sapo.pt>
-CC: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2 -tip] sched: Clean unused fields from struct rq
-References: <20090318000343.GA2189@hades.domain.com> <1237334969.5189.1242.camel@laptop> <20090318002327.GA2382@hades.domain.com>
-In-Reply-To: <20090318002327.GA2382@hades.domain.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig65CF0E940375645A7A21ED43"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig65CF0E940375645A7A21ED43
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Luis Henriques wrote:
-> On Wed, Mar 18, 2009 at 01:09:29AM +0100, Peter Zijlstra wrote:
->  =20
->> On Wed, 2009-03-18 at 00:03 +0000, Luis Henriques wrote:
->>    =20
->>> Since they are used on in statistics and are always set to zero, the =
-following
->>> frields from struct rq have been removed: yld_exp_empty, yld_act_empt=
-y and
->>> yld_both_empty.
->>>
->>> Signed-off-by: Luis Henriques <henrix@sapo.pt>
->>> ---
->>>      =20
->>> +++ b/kernel/sched_stats.h
->>> @@ -26,9 +26,8 @@ static int show_schedstat(struct seq_file *seq, voi=
-d *v)
->>> =20
->>>  		/* runqueue-specific stats */
->>>  		seq_printf(seq,
->>> -		    "cpu%d %u %u %u %u %u %u %u %u %u %llu %llu %lu",
->>> -		    cpu, rq->yld_both_empty,
->>> -		    rq->yld_act_empty, rq->yld_exp_empty, rq->yld_count,
->>> +		    "cpu%d %u %u %u %u %u %u %llu %llu %lu",
->>> +		    cpu, rq->yld_count,
->>>  		    rq->sched_switch, rq->sched_count, rq->sched_goidle,
->>>  		    rq->ttwu_count, rq->ttwu_local,
->>>  		    rq->rq_cpu_time,
->>>      =20
->> I think this bit is ABI, so you either have to bump the version number=
-
->> or emit 0s, iirc gregory touched some of that last -- or at least wrot=
-e
->> userspace for it..
->>    =20
->
-> Hmm... you're right.  I should have though about that.  Anyway, what is=
- the
-> the best approach here?
->
-> I know that changes in ABI shall not break anything, but just increasin=
-g the
-> version number will really solve the issue?  Will userspace care for th=
-is?
-> On the other hand, just writting 0s does not sound interesting either..=
-=2E
->
->  =20
-Hi Luis,
-  My app does check the version number, so bumping it is probably the
-best solution.   Be sure to keep me in the loop about whether this patch
-gets merged and I will be sure to update it to handle the new version.
-
-Regards,
--Greg
 
 
 
+On Tue, 17 Mar 2009, Tom Zanussi wrote:
+> diff --git a/kernel/trace/trace_events_stage_3.h b/kernel/trace/trace_events_stage_3.h
+> index 30627d8..d556274 100644
+> --- a/kernel/trace/trace_events_stage_3.h
+> +++ b/kernel/trace/trace_events_stage_3.h
+> @@ -154,6 +154,7 @@ static struct ftrace_event_call event_##call;				\
+>  									\
+>  static void ftrace_raw_event_##call(proto)				\
+>  {									\
+> +	struct ftrace_event_call *call = &event_##call;			\
+>  	struct ring_buffer_event *event;				\
+>  	struct ftrace_raw_##call *entry;				\
+>  	unsigned long irq_flags;					\
+> @@ -172,6 +173,9 @@ static void ftrace_raw_event_##call(proto)				\
+>  	assign;								\
+>  									\
+>  	trace_current_buffer_unlock_commit(event, irq_flags, pc);	\
+
+I have a concern hear about races.  Once the commit happens, there's 
+nothing protecting us from being preempted. The reader could in fact come 
+in and consume the commit, and a new write may happen, and this discard 
+will corrupt the data in the buffer. Also in overwrite mode, the writer 
+itself can over write this.
+
+Would you be able to move the above unlock_commit after this.
+I'll make the necessary changes in the commit to check for discarded data.
+
+Thanks,
+
+-- Steve
 
 
 
---------------enig65CF0E940375645A7A21ED43
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknAT18ACgkQlOSOBdgZUxlRaQCfYaqScm2ctumIsenlEDr4/BLx
-WUQAn0RFsdmkqs3uHihET/0+LI3JiBX2
-=u2GN
------END PGP SIGNATURE-----
-
---------------enig65CF0E940375645A7A21ED43--
+> +									
+\ > +	if (call->preds && !filter_match_preds(call, entry))		\
+> +		rb_event_discard(event);				\
+>  }									\
+>  									\
+>  static int ftrace_raw_reg_event_##call(void)				\
+> -- 
+> 1.5.6.3
+> 
+> 
+> 
+> 
+> 
+> 
+> 
