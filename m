@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbZCRVmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbZCRVmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755000AbZCRVmO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZCRVl6
+	id S1756904AbZCRVmf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:42:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbZCRVmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:41:58 -0400
+	Wed, 18 Mar 2009 17:42:00 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751644AbZCRVl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:41:57 -0400
+	id S1751734AbZCRVl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:41:59 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 32/57] microblaze_v7: bug headers files
-Date: Wed, 18 Mar 2009 21:30:59 +0100
-Message-Id: <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 19/57] microblaze_v7: early_printk support
+Date: Wed, 18 Mar 2009 21:30:46 +0100
+Message-Id: <b726b7b271cf303c36af54c4e155140541a6769b.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <75127eae09c978220d452d92f95763dde24f1d52.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -36,19 +36,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <eb4ccc67cf39abc816c8d7653fdc7561d14c1da2.1237407249.git.monstr@monstr.eu>
  <1477ec41e7ba0ec847a064e1f8e422dc2a5dcc9f.1237407249.git.monstr@monstr.eu>
  <75127eae09c978220d452d92f95763dde24f1d52.1237407249.git.monstr@monstr.eu>
- <b726b7b271cf303c36af54c4e155140541a6769b.1237407249.git.monstr@monstr.eu>
- <644f08d7f8cd338e606ed703e221914f75588fb5.1237407249.git.monstr@monstr.eu>
- <6d19f608a4ba3e7718aa55794c2845f19b5ed5e2.1237407249.git.monstr@monstr.eu>
- <039bc2fea33d23a3e7d2d85ac6fb275b8d21b5ed.1237407249.git.monstr@monstr.eu>
- <513d4067a84be1ecb47577e1edf131d2b3572808.1237407249.git.monstr@monstr.eu>
- <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
- <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
- <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
- <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
- <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
- <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
- <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
- <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -60,56 +47,122 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/bug.h  |   15 +++++++++++++++
- arch/microblaze/include/asm/bugs.h |   17 +++++++++++++++++
- 2 files changed, 32 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/bug.h
- create mode 100644 arch/microblaze/include/asm/bugs.h
+ arch/microblaze/kernel/early_printk.c |  106 +++++++++++++++++++++++++++++++++
+ 1 files changed, 106 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/kernel/early_printk.c
 
-diff --git a/arch/microblaze/include/asm/bug.h b/arch/microblaze/include/asm/bug.h
+diff --git a/arch/microblaze/kernel/early_printk.c b/arch/microblaze/kernel/early_printk.c
 new file mode 100644
-index 0000000..8eb2cdd
+index 0000000..4e2083b
 --- /dev/null
-+++ b/arch/microblaze/include/asm/bug.h
-@@ -0,0 +1,15 @@
++++ b/arch/microblaze/kernel/early_printk.c
+@@ -0,0 +1,106 @@
 +/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
++ * Early printk support for Microblaze.
++ *
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2003-2006 Yasushi SHOJI <yashi@atmark-techno.com>
 + *
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file "COPYING" in the main directory of this archive
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_BUG_H
-+#define _ASM_MICROBLAZE_BUG_H
-+
++#include <linux/console.h>
 +#include <linux/kernel.h>
-+#include <asm-generic/bug.h>
++#include <linux/init.h>
++#include <linux/string.h>
++#include <linux/tty.h>
++#include <linux/io.h>
++#include <asm/processor.h>
++#include <linux/fcntl.h>
++#include <asm/setup.h>
++#include <asm/prom.h>
 +
-+#endif /* _ASM_MICROBLAZE_BUG_H */
-diff --git a/arch/microblaze/include/asm/bugs.h b/arch/microblaze/include/asm/bugs.h
-new file mode 100644
-index 0000000..f2c6593
---- /dev/null
-+++ b/arch/microblaze/include/asm/bugs.h
-@@ -0,0 +1,17 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
++static u32 early_console_initialized;
++static u32 base_addr;
 +
-+#ifndef _ASM_MICROBLAZE_BUGS_H
-+#define _ASM_MICROBLAZE_BUGS_H
-+
-+static inline void check_bugs(void)
++static void early_printk_putc(char c)
 +{
-+	/* nothing to do */
++	/*
++	 * Limit how many times we'll spin waiting for TX FIFO status.
++	 * This will prevent lockups if the base address is incorrectly
++	 * set, or any other issue on the UARTLITE.
++	 * This limit is pretty arbitrary, unless we are at about 10 baud
++	 * we'll never timeout on a working UART.
++	 */
++
++	unsigned retries = 10000;
++	/* read status bit - 0x8 offset */
++	while (retries-- && (in_be32(base_addr + 8) & (1 << 3)))
++		;
++
++	/* Only attempt the iowrite if we didn't timeout */
++	/* write to TX_FIFO - 0x4 offset */
++	if (retries)
++		out_be32(base_addr + 4, c & 0xff);
 +}
 +
-+#endif /* _ASM_MICROBLAZE_BUGS_H */
++static void early_printk_write(struct console *unused,
++					const char *s, unsigned n)
++{
++	while (*s && n-- > 0) {
++		early_printk_putc(*s);
++		if (*s == '\n')
++			early_printk_putc('\r');
++		s++;
++	}
++}
++
++static struct console early_serial_console = {
++	.name = "earlyser",
++	.write = early_printk_write,
++	.flags = CON_PRINTBUFFER,
++	.index = -1,
++};
++
++static struct console *early_console = &early_serial_console;
++
++void early_printk(const char *fmt, ...)
++{
++	char buf[512];
++	int n;
++	va_list ap;
++
++	if (early_console_initialized) {
++		va_start(ap, fmt);
++		n = vscnprintf(buf, 512, fmt, ap);
++		early_console->write(early_console, buf, n);
++		va_end(ap);
++	}
++}
++
++int __init setup_early_printk(char *opt)
++{
++	if (early_console_initialized)
++		return 1;
++
++	base_addr = early_uartlite_console();
++	if (base_addr) {
++		early_console_initialized = 1;
++		early_printk("early_printk_console is enabled at 0x%08x\n",
++							base_addr);
++
++		/* register_console(early_console); */
++
++		return 0;
++	} else
++		return 1;
++}
++
++void __init disable_early_printk(void)
++{
++	if (!early_console_initialized || !early_console)
++		return;
++	printk(KERN_WARNING "disabling early console\n");
++	unregister_console(early_console);
++	early_console_initialized = 0;
++}
 -- 
 1.5.5.1
 
