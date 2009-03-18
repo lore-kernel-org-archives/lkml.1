@@ -1,17 +1,16 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbZCRLPK (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Wed, 18 Mar 2009 07:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZCRLOy
+	id S1755775AbZCRLYD (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Wed, 18 Mar 2009 07:24:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbZCRLXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 07:14:54 -0400
-Received: from soporte.saltillo.cinvestav.mx ([148.247.22.5]:40365 "EHLO
+	Wed, 18 Mar 2009 07:23:49 -0400
+Received: from soporte.saltillo.cinvestav.mx ([148.247.22.5]:40507 "EHLO
 	educa.cinvestav.edu.mx" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751521AbZCRLOx (ORCPT
+	with ESMTP id S1752421AbZCRLXs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 07:14:53 -0400
-X-Greylist: delayed 510 seconds by postgrey-1.27 at vger.kernel.org; Wed, 18 Mar 2009 07:14:52 EDT
-Message-ID: <62070.212.100.70.10.1237378588.squirrel@212.100.70.10>
-Date: Wed, 18 Mar 2009 06:16:28 -0600 (CST)
+	Wed, 18 Mar 2009 07:23:48 -0400
+Message-ID: <60977.212.100.70.10.1237377978.squirrel@212.100.70.10>
+Date: Wed, 18 Mar 2009 06:06:18 -0600 (CST)
 Subject: Dear Account User
 From: "ADMINISTRATOR" <info@sdb.ac.cn>
 Reply-To: upgarde.teamoffice@ymail.com
