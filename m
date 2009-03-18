@@ -1,222 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759019AbZCRUhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759133AbZCRUif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759019AbZCRUhv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 16:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbZCRUcD
+	id S1759133AbZCRUif (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 16:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755947AbZCRUd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 16:32:03 -0400
-Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:56243 "EHLO
-	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753998AbZCRUbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 16:31:46 -0400
-From: monstr@monstr.eu
-To: linux-kernel@vger.kernel.org
-Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 16/57] microblaze_v7: vmlinux.lds.S - linker script
-Date: Wed, 18 Mar 2009 21:30:43 +0100
-Message-Id: <eb4ccc67cf39abc816c8d7653fdc7561d14c1da2.1237407249.git.monstr@monstr.eu>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <69ef4f976d86c870a97fbe4974c242c74acc477d.1237407249.git.monstr@monstr.eu>
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
- <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
- <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
- <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>
- <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu>
- <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu>
- <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>
- <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu>
- <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>
- <f7c1685bd3f387be8633db5fb3dd4cb5e7c2d792.1237407249.git.monstr@monstr.eu>
- <2f48efc353c11dfdfc7b052bdfe052b71c09ab23.1237407249.git.monstr@monstr.eu>
- <f7f2d17e21a3df9931c75976c37a003d11190cc9.1237407249.git.monstr@monstr.eu>
- <58cf06c85e07477170677b72ce3437af10476bec.1237407249.git.monstr@monstr.eu>
- <eaa0169a360a328883ab0eabd2a189c21bad4c30.1237407249.git.monstr@monstr.eu>
- <20227d6f2615060d6560785090513e251cbe2654.1237407249.git.monstr@monstr.eu>
- <69ef4f976d86c870a97fbe4974c242c74acc477d.1237407249.git.monstr@monstr.eu>
-In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
-References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
+	Wed, 18 Mar 2009 16:33:28 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:2090 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755595AbZCRUdY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 16:33:24 -0400
+Date: Wed, 18 Mar 2009 20:33:20 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
+       OMAP <linux-omap@vger.kernel.org>
+Subject: Re: [patch 2.6.29-rc8 regulator-next] regulator: init fixes (v4)
+Message-ID: <20090318203317.GA6299@sirena.org.uk>
+References: <200903111743.34708.david-b@pacbell.net> <200903171115.06685.david-b@pacbell.net> <20090317200828.GA7060@sirena.org.uk> <200903181225.11444.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903181225.11444.david-b@pacbell.net>
+X-Cookie: Save gas, don't use the shell.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Simek <monstr@monstr.eu>
+On Wed, Mar 18, 2009 at 12:25:11PM -0700, David Brownell wrote:
+> On Tuesday 17 March 2009, Mark Brown wrote:
 
+> > The drivers can essentially ignore the physical status of the regulator
+> > when they start,
 
-Signed-off-by: Michal Simek <monstr@monstr.eu>
----
- arch/microblaze/kernel/vmlinux.lds.S |  163 ++++++++++++++++++++++++++++++++++
- 1 files changed, 163 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/kernel/vmlinux.lds.S
+> That is, shared supplies should adopt a different model?
 
-diff --git a/arch/microblaze/kernel/vmlinux.lds.S b/arch/microblaze/kernel/vmlinux.lds.S
-new file mode 100644
-index 0000000..67c0e24
---- /dev/null
-+++ b/arch/microblaze/kernel/vmlinux.lds.S
-@@ -0,0 +1,163 @@
-+/*
-+ * Copyright (C) 2008 Michal Simek
-+ * Copyright (C) 2008 PetaLogix
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+OUTPUT_FORMAT("elf32-microblaze", "elf32-microblaze", "elf32-microblaze")
-+OUTPUT_ARCH(microblaze)
-+ENTRY(_start)
-+
-+#include <asm-generic/vmlinux.lds.h>
-+
-+jiffies = jiffies_64 + 4;
-+
-+SECTIONS {
-+	. = CONFIG_KERNEL_BASE_ADDR;
-+
-+	.text : {
-+		_text = . ;
-+		_stext = . ;
-+        	*(.text .text.*)
-+		*(.fixup)
-+
-+		*(.exitcall.exit)
-+		SCHED_TEXT
-+		LOCK_TEXT
-+		KPROBES_TEXT
-+		. = ALIGN (4) ;
-+		_etext = . ;
-+	}
-+
-+	. = ALIGN (4) ;
-+	_fdt_start = . ; /* place for fdt blob */
-+	. = . + 0x4000;
-+	_fdt_end = . ;
-+
-+	. = ALIGN(16);
-+	RODATA
-+	. = ALIGN(16);
-+	__ex_table : { 
-+		__start___ex_table = .;
-+		*(__ex_table) 
-+		__stop___ex_table = .;
-+	}
-+
-+	/*
-+	 * sdata2 section can go anywhere, but must be word aligned
-+	 * and SDA2_BASE must point to the middle of it
-+	 */
-+	.sdata2 : {
-+		_ssrw = .;
-+		. = ALIGN(4096); /* page aligned when MMU used - origin 0x8 */
-+		*(.sdata2)
-+	. = ALIGN(8);
-+	_essrw = .;
-+	_ssrw_size = _essrw - _ssrw;
-+	_KERNEL_SDA2_BASE_ = _ssrw + (_ssrw_size / 2);
-+	}
-+
-+	_sdata = . ;
-+	.data ALIGN (4096) : { /* page aligned when MMU used - origin 0x4 */
-+        	*(.data)
-+	}
-+	. = ALIGN(32);
-+	.data.cacheline_aligned : { *(.data.cacheline_aligned) }
-+	_edata = . ;
-+
-+	/* Reserve some low RAM for r0 based memory references */
-+	. = ALIGN(0x4) ;
-+	r0_ram = . ;
-+	. = . +  4096;	/* a page should be enough */
-+
-+	/* The initial task */
-+	. = ALIGN(8192);
-+	.data.init_task : { *(.data.init_task) }
-+
-+	/* Under the microblaze ABI, .sdata and .sbss must be contiguous */
-+	. = ALIGN(8);
-+	.sdata : {
-+		_ssro = .;
-+		*(.sdata)
-+	}
-+
-+	.sbss :	{
-+		_ssbss = .;
-+		*(.sbss)
-+		_esbss = .;
-+		_essro = .;
-+		_ssro_size = _essro - _ssro ;
-+		_KERNEL_SDA_BASE_ = _ssro + (_ssro_size / 2) ;
-+	}
-+
-+	__init_begin = .;
-+
-+	. = ALIGN(4096);
-+	.init.text : {
-+		_sinittext = . ;
-+		*(.init.text)
-+		*(.exit.text)
-+		*(.exit.data)
-+		_einittext = .;
-+	}
-+
-+	.init.data : { *(.init.data) }
-+
-+	. = ALIGN(4);
-+	.init.ivt : {
-+		__ivt_start = .;
-+		*(.init.ivt)
-+		__ivt_end = .;
-+	}
-+
-+	.init.setup : {
-+		__setup_start = .;
-+		*(.init.setup)
-+		__setup_end = .;
-+	}
-+
-+	.initcall.init : {
-+		__initcall_start = .;
-+		INITCALLS
-+		__initcall_end = .;
-+	}
-+
-+	.con_initcall.init : {
-+		__con_initcall_start = .;
-+		*(.con_initcall.init)
-+		__con_initcall_end = .;
-+	}
-+
-+	__init_end_before_initramfs = .;
-+
-+	.init.ramfs ALIGN(4096) : {
-+		__initramfs_start = .;
-+		*(.init.ramfs)
-+		__initramfs_end = .;
-+		. = ALIGN(4);
-+		LONG(0);
-+/*
-+ * FIXME this can break initramfs for MMU.
-+ * Pad init.ramfs up to page boundary,
-+ * so that __init_end == __bss_start. This will make image.elf
-+ * consistent with the image.bin
-+ */
-+		/* . = ALIGN(4096); */
-+	}
-+	__init_end = .;
-+
-+	.bss ALIGN (4096) : { /* page aligned when MMU used */
-+		__bss_start = . ;
-+			*(.bss*)
-+			*(COMMON)
-+		. = ALIGN (4) ;
-+		__bss_stop = . ;
-+		_ebss = . ;
-+	}
-+	. = ALIGN(4096);
-+	_end = .;
-+}
--- 
-1.5.5.1
+I think that's a bit strong, once we get past init the problem pretty
+much goes away AFAICT.
 
+> That approach can't be used with drivers, as for MMC slots,
+> which need to ensure they start with a "power off" state as
+> part of a clean reset/init sequence.
+
+Pretty much.  They could cope if they used the enable/disable bounce
+hack but if they urgently need to have a specific power state they won't
+be able to cope with shared regulators anyway so it doesn't really make
+any odds.
+
+> Maybe "sharable" should be a regulator constraint flag, so
+> the regulator framework can avoid committing nastiness like
+> allocating multiple consumer handles for them.
+
+Or vice versa - it's as much a property of the consumer driver that it
+requires exclusivity.  From the point of view of the regulator API
+there's very little difference between the two cases.
+
+Note that for well behaved consumers that use mapped supply names we
+already know about them all in advance anyway...
+
+> > It will also work well with a 
+> > late_initcall which disables any unreferenced regulators -
+
+> The $SUBJECT patch will prevent such things from existing.
+
+I sent a patch backing that specific change out along with the
+late_initcall() patch.
+
+> Also, regulator use that kicks in before that particular
+> late_initcall will still see self-inconsistent state in
+> the regulator framework ... of course, $SUBJECT patch (and
+> its predecessors) is all about preventing self-inconsistency.
+
+A driver that can cope with sharing the regulator is not going to be
+able to observe anything here: it must always enable the regulator when
+it is using it even if it is already enabled (since otherwise some other
+consumer could cause it to be turned off) and it should expect that the
+regulator might be enabled by something else.  It can't do an unbalanced
+disable since otherwise it could be reversing an enable something else
+did.  It's also not possible for it to inspect the use count.
+
+If a consumer can't play with that model then I'm reasonably happy with
+it having to state any additional requirements it has in some way - if
+nothing else it gives us a bit of documentation about what's going on.
+
+> That self-inconsistency doesn't seem to concern you much.
+
+I think it's more that I'm viewing the use count as being useful
+information which the API can take advantage of ("do any consumers
+actually want this on right now?").  I think we should be able to handle
+this without changing the use count and that this is preferable because
+otherwise we make more work with shared consumers, which should be the
+simplest case.
+
+The trick is getting the non-shared regulators into sync with the
+internal status, ideally without doing things like bouncing supplies
+during init.  I think either using regulator_force_disable() or saying
+that the consmer wants exclusive access on get and then bumping the use
+count for it if the regulator is already enabled ought to cover it.
+I've not thought the latter option through fully, though.
