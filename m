@@ -1,90 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759214AbZCRR1B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759194AbZCRR2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759214AbZCRR1B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 13:27:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758880AbZCRR0t
+	id S1759194AbZCRR2W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 13:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZCRR2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 13:26:49 -0400
-Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:37717 "EHLO
-	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755528AbZCRR0t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 13:26:49 -0400
-Subject: [PATCH] drm: reorder struct drm_ioctl_desc to save space on 64 bit
- builds
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: airlied@linux.ie
-Cc: lkml <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 17:26:44 +0000
-Message-Id: <1237397204.2794.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 18 Mar 2009 13:28:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46596 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752377AbZCRR2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 13:28:10 -0400
+Date: Wed, 18 Mar 2009 18:27:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: oops in tracepoint_update_probe_range() (was: Re: [oops -tip]
+	: x86 AMD 64)
+Message-ID: <20090318172750.GA13584@elte.hu>
+References: <1237393396.3322.6.camel@localhost.localdomain> <20090318163531.GE21331@elte.hu> <1237394936.3132.1.camel@localhost.localdomain> <20090318165611.GC5981@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090318165611.GC5981@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drm: reorder struct drm_ioctl_desc to save space on 64 bit builds
 
-shrinks drm_ioctl_desc from 24 bytes to 16 bytes by reordering members
-to remove padding.
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-updates DRM_IOCTL_DEF macro to initialise structure members by name to
-handle the structure reorder.
+> On Wed, Mar 18, 2009 at 10:18:56PM +0530, Jaswinder Singh Rajput wrote:
+> > On Wed, 2009-03-18 at 17:35 +0100, Ingo Molnar wrote:
+> > > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > > 
+> > > > Good: f4c3c4cdb1de232
+> > > > Bad : 1e08816af0bc345
+> > > > 
+> > > > Config:
+> > > > http://userweb.kernel.org/~jaswinder/oops_20090318/config-hpdv5-tip-bad-20090318
+> > > > 
+> > > > oops:
+> > > > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page1.jpg
+> > > > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page2.jpg
+> > > > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page3.jpg
+> > > > http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page4.jpg
+> > > > 
+> > > > <freeze>
+> > > 
+> > > Steve, Frederic - the crashes above are in:
+> > > 
+> > > 	tracepoint_update_probe_range()
+> > > 
+> > > in a modular kernel apparently.
+> > > 
+> > 
+> > This fixed the oops for me, Is this looks OK to you:
+> > 
+> > Subject: [PATCH] x86: tracepoint.c fix oops
+> > 
+> > BUG: unable to handle kernel NULL pointer dereference at (null)
+> > IP: [<ffffffff8107d4de>] tracepoint_update_probe_range+0x1f/0x9b
+> > PGD 13d5fb067 PUD 13d688067 PMD 0
+> > Oops: 0000 [#1] SMP
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
+> >  kernel/tracepoint.c |    3 +++
+> >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
+> > index 7960274..80d1353 100644
+> > --- a/kernel/tracepoint.c
+> > +++ b/kernel/tracepoint.c
+> > @@ -280,6 +280,8 @@ void tracepoint_update_probe_range(struct tracepoint *begin,
+> >  
+> >  	mutex_lock(&tracepoints_mutex);
+> >  	for (iter = begin; iter < end; iter++) {
+> > +		if (!iter)
+> > +			goto out;
+> >  		mark_entry = get_tracepoint(iter->name);
+> >  		if (mark_entry) {
+> >  			set_tracepoint(&mark_entry, iter,
+> > @@ -288,6 +290,7 @@ void tracepoint_update_probe_range(struct tracepoint *begin,
+> >  			disable_tracepoint(iter);
+> >  		}
+> >  	}
+> > +out:
+> >  	mutex_unlock(&tracepoints_mutex);
+> >  }
+> 
+> 
+> Ok, it should fix the crash.
+> But I think the real problem remains: iter is not supposed to point to NULL,
+> this is a section range:
+> 
+> tracepoint_update_probe_range(__start___tracepoints,
+> 		__stop___tracepoints);
+> 
+> It seems to mean that the section is empty.
 
-The applied patch reduces data used in drm.ko from 10440 to 9032
+OK - so checking for !iter on entry and emitting a WARN_ONCE in that 
+case ought to change the crash for a warning, right?
 
-Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
----
-
-This patch is against v2.6.29-rc8, it compiles but hasn't had any other
-testing as I don't have any of this hardware.
-
-size reports
-drm.ko
-text	data	bss
-106297	10440	144	116881	1c891
-106297	9032	144	115473	1c311 +patch
-
-I also built these 2 drivers
-sis.ko
-text data bss
-3817	2116	0	5933	172d	
-3817	1932	0	5749	1675 +patch
-
-radeon.ko
-text data bss
-94744	9880	16400	121024
-94744	9656	16400	120800 +patch
-
-regards
-Richard
-
-
-diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-index e5f4ae9..62c2ef3 100644
---- a/include/drm/drmP.h
-+++ b/include/drm/drmP.h
-@@ -281,16 +281,16 @@ typedef int drm_ioctl_compat_t(struct file *filp, unsigned int cmd,
- 
- struct drm_ioctl_desc {
- 	unsigned int cmd;
--	drm_ioctl_t *func;
- 	int flags;
-+	drm_ioctl_t *func;
- };
- 
- /**
-  * Creates a driver or general drm_ioctl_desc array entry for the given
-  * ioctl, for use by drm_ioctl().
-  */
--#define DRM_IOCTL_DEF(ioctl, func, flags) \
--	[DRM_IOCTL_NR(ioctl)] = {ioctl, func, flags}
-+#define DRM_IOCTL_DEF(ioctl, _func, _flags) \
-+	[DRM_IOCTL_NR(ioctl)] = {.cmd = ioctl, .func = _func, .flags = _flags}
- 
- struct drm_magic_entry {
- 	struct list_head head;
-
-
+	Ingo
