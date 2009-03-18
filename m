@@ -1,82 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbZCRMNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757738AbZCRMPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757014AbZCRMNT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 08:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756154AbZCRMNJ
+	id S1757738AbZCRMPw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 08:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756154AbZCRMPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 08:13:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56485 "EHLO mx3.mail.elte.hu"
+	Wed, 18 Mar 2009 08:15:42 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36186 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756289AbZCRMNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 08:13:08 -0400
-Date: Wed, 18 Mar 2009 13:12:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] perfcounters: abstract wakeup flag setting in core to
-	fix powerpc build
-Message-ID: <20090318121246.GA4587@elte.hu>
-References: <18878.10058.953388.356531@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
+	id S1755687AbZCRMPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 08:15:41 -0400
+Date: Wed, 18 Mar 2009 13:11:16 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Denis Karpov <ext-denis.2.karpov@gmail.com>
+Cc: "ext Jorge Boncompte [DTI2]" <jorge@dti2.net>,
+       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>,
+       linux-ext4@vger.kernel.org
+Subject: Re: Error testing ext3 on brd ramdisk
+Message-ID: <20090318121116.GC14622@wotan.suse.de>
+References: <49AF9932.2040301@dti2.net> <20090305094623.GA17815@wotan.suse.de> <49AFAFD9.9050805@dti2.net> <49AFC1A9.90501@dti2.net> <20090310161247.GA19352@wotan.suse.de> <20090310163002.GC19352@wotan.suse.de> <49B69A09.3080408@dti2.net> <20090311021920.GA16561@wotan.suse.de> <49BA927F.8020701@dti2.net> <20090317094019.GA10360@smart.research.nokia.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18878.10058.953388.356531@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090317094019.GA10360@smart.research.nokia.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 17, 2009 at 11:40:19AM +0200, Denis Karpov wrote:
+> Hello, 
+> 
+> first off, sorry if you getting this email twice.
 
-* Paul Mackerras <paulus@samba.org> wrote:
+No problem, I'm not exactly able to reproduce it myself, but Jan Kara
+has just fixed some issues which could explain it: they happen under
+memory pressure so I may not have triggered it if I didn't put it
+under pressure.
 
-> Impact: build fix for powerpc
-> 
-> Commit bd753921015e7905 ("perf_counter: software counter event
-> infrastructure") introduced a use of TIF_PERF_COUNTERS into the core
-> perfcounter code.  This breaks the build on powerpc because we use
-> a flag in a per-cpu area to signal wakeups on powerpc rather than
-> a thread_info flag, because the thread_info flags have to be
-> manipulated with atomic operations and are thus slower than per-cpu
-> flags.
-> 
-> This fixes the by changing the core to use an abstracted
-> set_perf_counter_pending() function, which is defined on x86 to set
-> the TIF_PERF_COUNTERS flag and on powerpc to set the per-cpu flag
-> (paca->perf_counter_pending).  It changes the previous powerpc
-> definition of set_perf_counter_pending to not take an argument and
-> adds a clear_perf_counter_pending, so as to simplify the definition
-> on x86.
-> 
-> On x86, set_perf_counter_pending() is defined as a macro.  Defining
-> it as a static inline in arch/x86/include/asm/perf_counters.h causes
-> compile failures because <asm/perf_counters.h> gets included early in
-> <linux/sched.h>, and the definitions of set_tsk_thread_flag etc. are
-> therefore not available in <asm/perf_counters.h>.  (On powerpc this
-> problem is avoided by defining set_perf_counter_pending etc. in
-> <asm/hw_irq.h>.)
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
-> This is in the master branch of my perfcounters.git repository at:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git master
-> 
->  arch/powerpc/include/asm/hw_irq.h   |   14 +++++++++++---
->  arch/powerpc/kernel/irq.c           |   11 +++--------
->  arch/powerpc/kernel/perf_counter.c  |    3 +--
->  arch/x86/include/asm/perf_counter.h |    3 +++
->  kernel/perf_counter.c               |    2 +-
->  5 files changed, 19 insertions(+), 14 deletions(-)
+Jan's fixes are here:
 
-Pulled, thanks Paul!
+http://marc.info/?l=linux-ext4&m=123731584711382&w=2
 
-	Ingo
+It would be interesting to try them, and if they don't work maybe
+he's also interested so I cc'ed him.
+
+ 
+> I also tried to do ext3/ext4 fs smoketesting and used Adraian's
+> script.  I am consistently getting the same results - filesystem get's
+> corrupted. 
+> I tested on quad Xeon, with patches posted in this thread.
+> 
+> 1. tests with brd:
+> - ext3fs on brd
+>     corruption (see attached ext3fs.brd.corruption.txt)
+> - ext4fs on brd
+>     corruption (see attached ext4fs.brd.corruption.txt)
+> 
+> In both cases I saw some complains from JBD/JBD2:
+>  JBD: Detected IO errors while flushing file data on
+> 
+> 2. I enabled JBD debugging, re-run the tests. Console was 
+> flooded with messages and in the end I got a soft lockup.
+> I cannot consistently reproduce this (see attached 
+> brd.ext3fs.softlock.txt).
+> 
+> Just to be sure I re-run the tests on real block device (usb stick)
+> 
+> 3. tests with real block device (usb stick)
+> - ext3fs
+>     no fs currption (overnight run)
+> - ext4fs 
+>     no fs currption (overnight run)
+
+It's possible the real block device is not fast enough to trigger
+it, or different timings don't trigger it (brd requests complete
+immediately wheras real devices tend to complete afterwards,
+from (soft)interrupt context). 
+
+Or it could be that brd is consuming some more memory to push
+the system into reclaim and exposing those bugs Jan has fixed...
+
+
+> Any ideas what else can be done here? I'd like to find out if this is
+> filesystem or brd related fault.
+
+Yes, thanks for persisting. If you can test the patches and see
+if they help? If not, does ext2 show corruption? How about ext3
+on loop device (with backing file from tmpfs/ramfs for speed).
+
+Thanks,
+Nick
