@@ -1,104 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759133AbZCRUif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbZCRUju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759133AbZCRUif (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 16:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755947AbZCRUd2
+	id S1757665AbZCRUju (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 16:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZCRUji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 16:33:28 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2090 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755595AbZCRUdY (ORCPT
+	Wed, 18 Mar 2009 16:39:38 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:23509 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746AbZCRUjh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 16:33:24 -0400
-Date: Wed, 18 Mar 2009 20:33:20 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>,
-       OMAP <linux-omap@vger.kernel.org>
-Subject: Re: [patch 2.6.29-rc8 regulator-next] regulator: init fixes (v4)
-Message-ID: <20090318203317.GA6299@sirena.org.uk>
-References: <200903111743.34708.david-b@pacbell.net> <200903171115.06685.david-b@pacbell.net> <20090317200828.GA7060@sirena.org.uk> <200903181225.11444.david-b@pacbell.net>
+	Wed, 18 Mar 2009 16:39:37 -0400
+Date: Wed, 18 Mar 2009 14:39:34 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 05/11] PCI: beef up pci_do_scan_bus()
+Message-ID: <20090318203934.GC20467@ldl.fc.hp.com>
+References: <20090309052933.3918.86601.stgit@bob.kio> <20090309054900.3918.4473.stgit@bob.kio> <49B8D2F4.1030206@jp.fujitsu.com> <20090312232226.GD31042@ldl.fc.hp.com> <49BA235C.4040703@jp.fujitsu.com> <20090315164841.GA24570@ldl.fc.hp.com> <49C0B0E3.2090208@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200903181225.11444.david-b@pacbell.net>
-X-Cookie: Save gas, don't use the shell.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <49C0B0E3.2090208@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 18, 2009 at 12:25:11PM -0700, David Brownell wrote:
-> On Tuesday 17 March 2009, Mark Brown wrote:
+* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> Alex Chiang wrote:
+>> The more I think about it though, the more I think that even
+>> without the below patch to clean up the callers of
+>> pci_do_scan_bus, we should be ok, because:
+>>
+>> 	- all the old code (which I removed below) existed
+>> 	  because the old PCI core would refuse to scan PCI buses
+>> 	  that had already been discovered
+>>
+>> 	- that meant that it would never descend past a known
+>> 	  bridge to try and find new child bridges
+>>
+>> 	- that meant that hotplug drivers had to manually
+>> 	  discover new bridges and add them, essentially
+>> 	  duplicating functionality in pci_scan_bridge
+>>
+>> This patch series allows the PCI core to scan existing bridges
+>> and descend down into the children every time, looking for new
+>> bridges and devices, so all the code in shpchp, cpcihp, and other
+>> callers of pci_do_scan_bus shouldn't be necessary anymore.
+>>
+>> Also, if we do add new bridges once manually in shpchp, and then
+>> call the new pci_do_scan_bus again, we will _not_ add devices
+>> twice because the core should check each bridge and device for
+>> struct pci_dev.is_added.
+>>
+>> So anyway, I think that cleaning up the callers of
+>> pci_do_scan_bus is a good idea, but multiple calls to the
+>> interface definitely should not result in problems. If they do,
+>> then that's a bug in my patch series.
+>>
+>
+> I'm sorry, but I didn't have enough time to try your patch on
+> my environment. So I'm still just looking at the code.
 
-> > The drivers can essentially ignore the physical status of the regulator
-> > when they start,
+Ok.
 
-> That is, shared supplies should adopt a different model?
+> I looked at shpchp_configure_device() from the view point of
+> bridge hot-add. I think it is broken regardless of your change
+> because it calls pci_bus_add_devices() (through pci_do_scan_bus)
+> before assigning resources. So I think it must be changed
+> regardless of your change. But it's a little difficult for me
+> because I don't have any test environment as I mentioned before.
 
-I think that's a bit strong, once we get past init the problem pretty
-much goes away AFAICT.
+Hm, what you say makes sense.
 
-> That approach can't be used with drivers, as for MMC slots,
-> which need to ensure they start with a "power off" state as
-> part of a clean reset/init sequence.
+I managed to find a very old machine supported by cpqphp, and
+also found a card with a bridge.
 
-Pretty much.  They could cope if they used the enable/disable bounce
-hack but if they urgently need to have a specific power state they won't
-be able to cope with shared regulators anyway so it doesn't really make
-any odds.
+cpqhp_configure_device() follows a similar algorithm to
+shpchp_configure_device(). I'm just starting my testing now, and
+there is good news and bad news.
 
-> Maybe "sharable" should be a regulator constraint flag, so
-> the regulator framework can avoid committing nastiness like
-> allocating multiple consumer handles for them.
+The bad news is that although cpqphp loads successfully, and we
+can successfully offline a card, we cannot online it again
+afterwards due to BAR collisions. This failure occurs even
+without my changes (2.6.27 kernel), and I haven't had time to
+track the regression down yet.
 
-Or vice versa - it's as much a property of the consumer driver that it
-requires exclusivity.  From the point of view of the regulator API
-there's very little difference between the two cases.
+We do discover the bridge on the device correctly and it is added
+back into the device tree correctly, but we can't use it because
+it's not programmed correctly.
 
-Note that for well behaved consumers that use mapped supply names we
-already know about them all in advance anyway...
+The good news is, after rewriting cpqphp_configure_device() to
+resemble the shpchp patch I gave you, we still discover the
+bridge correctly and add it back into the device tree in the
+proper place. We no longer get BAR collisions, but we fail in a
+slightly different way.
 
-> > It will also work well with a 
-> > late_initcall which disables any unreferenced regulators -
+At least I'm not introducing a new regression in cpqphp, and I
+suspect shpchp will be similar.
 
-> The $SUBJECT patch will prevent such things from existing.
+> But I'm still worrying about your change against pci_do_scan_bus().
+> Without your change, pci_do_scan_bus() scans child buses and add
+> devices without assigning resources. I guess that it means existing
+> callers of pci_do_scan_bus() have some mechanism to assign resource
+> by theirselves and they don't expect pci_do_scan_bus() assigns
+> resources.
 
-I sent a patch backing that specific change out along with the
-late_initcall() patch.
+I looked through shpchp and couldn't find this assumption. Is it
+stored in the struct controller, under mmio_base and mmio_size?
 
-> Also, regulator use that kicks in before that particular
-> late_initcall will still see self-inconsistent state in
-> the regulator framework ... of course, $SUBJECT patch (and
-> its predecessors) is all about preventing self-inconsistency.
+I am motivated to get this patch series into 2.6.30 for several
+reasons, so I think for now, I will not change pci_do_scan_bus().
+Instead, I'll create a new interface that only the PCI core will
+use, and leave the drivers alone.
 
-A driver that can cope with sharing the regulator is not going to be
-able to observe anything here: it must always enable the regulator when
-it is using it even if it is already enabled (since otherwise some other
-consumer could cause it to be turned off) and it should expect that the
-regulator might be enabled by something else.  It can't do an unbalanced
-disable since otherwise it could be reversing an enable something else
-did.  It's also not possible for it to inspect the use count.
+Over time, we can migrate the drivers to the PCI core interface.
 
-If a consumer can't play with that model then I'm reasonably happy with
-it having to state any additional requirements it has in some way - if
-nothing else it gives us a bit of documentation about what's going on.
+> By the way, I have one question about rescan. Please suppose that
+> we enable the bridge(B) and its children using rescan interface
+> in the picture below.
+>
+>                   |
+> -------------------------------------- parent bus
+>         |                  |
+>     bridge(A)          bridge(B)
+>     (working)        (Not working)
+>         |                  |
+>   -------------      -------------
+>    |         |        |         |
+>   dev       dev      dev       dev
+> (working) (working)   (Not working)
+>
+> In this case, your rescan mechanism calls pci_do_scan_bus() for
+> parent bus, and pci_do_scan_bus() calls pci_bus_assign_resources()
+> for parent bus. My question is, does pci_bus_assign_resources() do
+> nothing against bridge(A) that is currently working? I guess  
+> pci_bus_assign_resources() would update some registers of bridge(A)
+> and it would breaks currently working devices.
 
-> That self-inconsistency doesn't seem to concern you much.
+This is a very good catch, thank you.
 
-I think it's more that I'm viewing the use count as being useful
-information which the API can take advantage of ("do any consumers
-actually want this on right now?").  I think we should be able to handle
-this without changing the use count and that this is preferable because
-otherwise we make more work with shared consumers, which should be the
-simplest case.
+I added another patch to prevent this situation. We now check to
+see if the bridge is already added inside of pci_setup_bridge().
 
-The trick is getting the non-shared regulators into sync with the
-internal status, ideally without doing things like bouncing supplies
-during init.  I think either using regulator_force_disable() or saying
-that the consmer wants exclusive access on get and then bumping the use
-count for it if the regulator is already enabled ought to cover it.
-I've not thought the latter option through fully, though.
+Thanks.
+
+/ac
+
