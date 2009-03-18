@@ -1,144 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbZCRTHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758427AbZCRTH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbZCRTHj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 15:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbZCRTHa
+	id S1758427AbZCRTH4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 15:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758881AbZCRTHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 15:07:30 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:54162 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753361AbZCRTH3 convert rfc822-to-8bit (ORCPT
+	Wed, 18 Mar 2009 15:07:36 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:48067 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754694AbZCRTHe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 15:07:29 -0400
-Message-ID: <49C14667.2040806@cosmosbay.com>
-Date: Wed, 18 Mar 2009 20:07:19 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 18 Mar 2009 15:07:34 -0400
+Message-ID: <49C145A1.3000506@cs.columbia.edu>
+Date: Wed, 18 Mar 2009 15:04:01 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Vernon Mauery <vernux@us.ibm.com>
-CC: netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>
-Subject: Re: High contention on the sk_buff_head.lock
-References: <49C12E64.1000301@us.ibm.com>
-In-Reply-To: <49C12E64.1000301@us.ibm.com>
+To: Mike Waychison <mikew@google.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
+       containers@lists.linux-foundation.org, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       linux-mm@kvack.org, viro@zeniv.linux.org.uk, mingo@elte.hu,
+       mpm@selenic.com, tglx@linutronix.de,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, xemul@openvz.org
+Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ
+ do?
+References: <1234475483.30155.194.camel@nimitz>	<20090212141014.2cd3d54d.akpm@linux-foundation.org>	<1234479845.30155.220.camel@nimitz>	<20090226155755.GA1456@x200.localdomain>	<20090310215305.GA2078@x200.localdomain>	<49B775B4.1040800@free.fr>	<20090312145311.GC12390@us.ibm.com>	<1236891719.32630.14.camel@bahia>	<20090312212124.GA25019@us.ibm.com>	<604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>	<20090313053458.GA28833@us.ibm.com>	<alpine.LFD.2.00.0903131018390.3940@localhost.localdomain> <49BAC6AF.9090607@google.com> <49BADFCE.8020207@cs.columbia.edu> <49C1435B.1090809@google.com>
+In-Reply-To: <49C1435B.1090809@google.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 18 Mar 2009 20:07:20 +0100 (CET)
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vernon Mauery a écrit :
-> I have been beating on network throughput in the -rt kernel for some time
-> now.  After digging down through the send path of UDP packets, I found
-> that the sk_buff_head.lock is under some very high contention.  This lock
-> is acquired each time a packet is enqueued on a qdisc and then acquired
-> again to dequeue the packet.  Under high networking loads, the enqueueing
-> processes are not only contending among each other for the lock, but also
-> with the net-tx soft irq.  This makes for some very high contention on this
-> one lock.  My testcase is running varying numbers of concurrent netperf
-> instances pushing UDP traffic to another machine.  As the count goes from
-> 1 to 2, the network performance increases.  But from 2 to 4 and from 4
-> to 8,
-> we see a big decline, with 8 instances pushing about half of what a single
-> thread can do.
+
+
+Mike Waychison wrote:
+> Oren Laadan wrote:
+>>
+>> Mike Waychison wrote:
+>>> Linus Torvalds wrote:
+>>>> On Thu, 12 Mar 2009, Sukadev Bhattiprolu wrote:
+>>>>
+>>>>> Ying Han [yinghan@google.com] wrote:
+>>>>> | Hi Serge:
+>>>>> | I made a patch based on Oren's tree recently which implement a new
+>>>>> | syscall clone_with_pid. I tested with checkpoint/restart process
+>>>>> tree
+>>>>> | and it works as expected.
+>>>>>
+>>>>> Yes, I think we had a version of clone() with pid a while ago.
+>>>> Are people _at_all_ thinking about security?
+>>>>
+>>>> Obviously not.
+>>>>
+>>>> There's no way we can do anything like this. Sure, it's trivial to
+>>>> do inside the kernel. But it also sounds like a _wonderful_ attack
+>>>> vector against badly written user-land software that sends signals
+>>>> and has small races.
+>>> I'm not really sure how this is different than a malicious app going
+>>> off and spawning thousands of threads in an attempt to hit a target
+>>> pid from a security pov.  Sure, it makes it easier, but it's not like
+>>> there is anything in place to close the attack vector.
+>>>
+>>>> Quite frankly, from having followed the discussion(s) over the last
+>>>> few weeks about checkpoint/restart in various forms, my reaction to
+>>>> just about _all_ of this is that people pushing this are pretty damn
+>>>> borderline.
+>>>> I think you guys are working on all the wrong problems.
+>>>> Let's face it, we're not going to _ever_ checkpoint any kind of
+>>>> general case process. Just TCP makes that fundamentally impossible
+>>>> in the general case, and there are lots and lots of other cases too
+>>>> (just something as totally _trivial_ as all the files in the
+>>>> filesystem that don't get rolled back).
+>>> In some instances such as ours, TCP is probably the easiest thing to
+>>> migrate.  In an rpc-based cluster application, TCP is nothing more
+>>> than an RPC channel and applications already have to handle RPC
+>>> channel failure and re-establishment.
+>>>
+>>> I agree that this is not the 'general case' as you mention above
+>>> however.  This is the bit that sorta bothers me with the way the
+>>> implementation has been going so far on this list.  The
+>>> implementation that folks are building on top of Oren's patchset
+>>> tries to be everything to everybody.  For our purposes, we need to
+>>> have the flexibility of choosing *how* we checkpoint.  The line seems
+>>> to be arbitrarily drawn at the kernel being responsible for
+>>> checkpointing and restoring all resources associated with a task, and
+>>> leaving userland with nothing more than transporting filesystem
+>>> bits.  This approach isn't flexible enough:   Consider the case where
+>>> we want to stub out most of the TCP file descriptors with
+>>> ECONNRESETed sockets because we know that they are RPC sockets and
+>>> can re-establish themselves, but we want to use some other mechanism
+>>> for TCP sockets we don't know much about.  The current monolithic
+>>> approach has zero flexibility for doing anything like this, and I
+>>> figure out how we could even fit anything like this in.
+>>
+>> The flexibility exists, but wasn't spelled out, so here it is:
+>>
+>> 1) Similar to madvice(), I envision a cradvice() that could tell the c/r
+>> something about specific resources, e.g.:
+>>  * cradvice(CR_ADV_MEM, ptr, len)  -> don't save that memory, it's
+>> scratch
+>>  * cradvice(CR_ADV_SOCK, fd, CR_ADV_SOCK_RESET)  -> reset connection
+>> on restart
+>> etc .. (nevermind the exact interface right now)
+>>
+>> 2) Tasks can ask to be notified (e.g. register a signal) when a
+>> checkpoint
+>> or a restart complete successfully. At that time they can do their
+>> private
+>> house-keeping if they know better.
+>>
+>> 3) If restoring some resource is significantly easier in user space
+>> (e.g. a
+>> file-descriptor of some special device which user space knows how to
+>> re-initialize), then the restarting task can prepare it ahead of time,
+>> and, call:
+>>   * cradvice(CR_ADV_USERFD, fd, 0)  -> use the fd in place instead of
+>> trying
+>>                        to restore it yourself.
 > 
-> Running 2.6.29-rc6-rt3 on an 8-way machine with a 10GbE card (I have tried
-> both NetXen and Broadcom, with very similar results), I can only push about
-> 1200 Mb/s.  Whereas with the mainline 2.6.29-rc8 kernel, I can push nearly
-> 6000 Mb/s. But still not as much as I think is possible.  I was curious and
-> decided to see if the mainline kernel was hitting the same lock, and using
-> /proc/lock_stat, it is hitting the sk_buff_head.lock as well (it was the
-> number one contended lock).
+> This would be called by the embryo process (mktree.c?) before calling
+> sys_restart?
+
+Yes.
+
 > 
-> So while this issue really hits -rt kernels hard, it has a real effect on
-> mainline kernels as well.  The contention of the spinlocks is amplified
-> when they get turned into rt-mutexes, which causes a double context switch.
-> 
-> Below is the top of the lock_stat for 2.6.29-rc8.  This was captured from
-> a 1 minute network stress test.  The next high contender had 2 orders of
-> magnitude fewer contentions.  Think of the throughput increase if we could
-> ease this contention a bit.  We might even be able to saturate a 10GbE
-> link.
-> 
-> lock_stat version 0.3
-> -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-> 
->       class name    con-bounces    contentions   waittime-min  
-> waittime-max   waittime-total    acq-bounces   acquisitions  
-> holdtime-min  holdtime-max holdtime-total
-> -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-> 
-> 
->    &list->lock#3:      24517307       24643791           0.71       
-> 1286.62      56516392.42       34834296       44904018          
-> 0.60        164.79    31314786.02
->     -------------
->    &list->lock#3       15596927    [<ffffffff812474da>]
-> dev_queue_xmit+0x2ea/0x468
->    &list->lock#3        9046864    [<ffffffff812546e9>]
-> __qdisc_run+0x11b/0x1ef
->     -------------
->    &list->lock#3        6525300    [<ffffffff812546e9>]
-> __qdisc_run+0x11b/0x1ef
->    &list->lock#3       18118491    [<ffffffff812474da>]
-> dev_queue_xmit+0x2ea/0x468
+>>
+>> Method #3 is what I used in Zap to implement distributed checkpoints,
+>> where
+>> it is so much easier to recreate all network connections in user space
+>> then
+>> putting that logic into the kernel.
+>>
+>> Now, on the other hand, doing the c/r from userland is much less flexible
+>> than in the kernel (e.g. epollfd, futex state and much more) and requires
+>> exposing tremendous amount of in-kernel data to user space. And we all
+>> know
+>> than exposing internals is always a one-way ticket :(
+>>
+>> [...]
+>>
+>> Oren.
+>>
+>>
 > 
 > 
-> The story is the same for -rt kernels, only the waittime and holdtime
-> are both
-> orders of magnitude greater.
-> 
-> I am not exactly clear on the solution, but if I understand correctly,
-> in the
-> past there has been some discussion of batched enqueueing and
-> dequeueing.  Is
-> anyone else working on this problem right now who has just not yet posted
-> anything for review?  Questions, comments, flames?
-> 
-
-Yes we have a known contention point here, but before adding more complex code,
-could you try following patch please ?
-
-[PATCH] net: Reorder fields of struct Qdisc
-
-dev_queue_xmit() needs to dirty fields "state" and "q"
-
-On x86_64 arch, they currently span two cache lines, involving more
-cache line ping pongs than necessary.
-
-Before patch :
-
-offsetof(struct Qdisc, state)=0x38
-offsetof(struct Qdisc, q)=0x48
-offsetof(struct Qdisc, dev_queue)=0x60
-
-After patch :
-
-offsetof(struct Qdisc, dev_queue)=0x38
-offsetof(struct Qdisc, state)=0x48
-offsetof(struct Qdisc, q)=0x50
-
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-
-diff --git a/include/net/sch_generic.h b/include/net/sch_generic.h
-index f8c4742..e24feeb 100644
---- a/include/net/sch_generic.h
-+++ b/include/net/sch_generic.h
-@@ -51,10 +51,11 @@ struct Qdisc
- 	u32			handle;
- 	u32			parent;
- 	atomic_t		refcnt;
--	unsigned long		state;
-+	struct netdev_queue	*dev_queue;
-+
- 	struct sk_buff		*gso_skb;
-+	unsigned long		state;
- 	struct sk_buff_head	q;
--	struct netdev_queue	*dev_queue;
- 	struct Qdisc		*next_sched;
- 	struct list_head	list;
- 
-
-
