@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbZCRIFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbZCRIJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753566AbZCRIFz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 04:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbZCRIFj
+	id S1754328AbZCRIJP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 04:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750835AbZCRII6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 04:05:39 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:55424 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751935AbZCRIFh (ORCPT
+	Wed, 18 Mar 2009 04:08:58 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:57730 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbZCRII4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 04:05:37 -0400
-Date: Wed, 18 Mar 2009 13:35:39 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, balbir@linux.vnet.ibm.com,
-       Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -tip] cpuacct: Make cpuacct hierarchy walk in
-	cpuacct_charge() safe when rcupreempt is used.
-Message-ID: <20090318080539.GD3960@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <49BF42FB.4030103@cn.fujitsu.com> <20090317073649.GH3314@in.ibm.com> <20090317131251.GU16897@balbir.in.ibm.com> <1237296361.7867.16.camel@twins> <20090317135938.GV16897@balbir.in.ibm.com> <1237298686.7867.17.camel@twins> <20090318032558.GB3960@in.ibm.com> <20090318125434.63d833e4.kamezawa.hiroyu@jp.fujitsu.com> <20090318044801.GC3960@in.ibm.com> <20090318160827.fa53cb9b.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 18 Mar 2009 04:08:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=fo5j8f5vGBSTAbr/QA07dUj9IF2x24G35uGtvZD7pdnyxURJqBXOQIiFYb1S2L39hI
+         BElaePrW67uoCi5EHlS/Pq34fDs9zRuHt0jL9ihodQCseWcMRhRZFtu2iowddDJIASvq
+         JFhDUDqCLETLgwGrvsjBUTbDaMO4LFVCY5pgo=
+Message-ID: <49C0AC13.7040107@gmail.com>
+Date: Wed, 18 Mar 2009 09:08:51 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-3.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090318160827.fa53cb9b.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Lin Ming <ming.m.lin@intel.com>
+CC: robert.moore@intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org
+Subject: Re: 2.6.29 acpi regression: acpi_ex_extract_from_field -- div by
+ zero
+References: <49BCDCAA.8040309@gmail.com>	 <d3f22a0903152046m891dc0aq6ca01eed32a9eb32@mail.gmail.com> <1237174943.4193.37.camel@minggr.sh.intel.com> <49BE7EE6.3070107@gmail.com>
+In-Reply-To: <49BE7EE6.3070107@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 18, 2009 at 04:08:27PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Wed, 18 Mar 2009 10:18:01 +0530
-> Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
-> > Looks ok to me, but will wait for experts' comments.
-> > 
-> > However, I did a quick measurement of read times with percpu_counter_read()
-> > (no readside lock) and percpu_counter_sum() (readside lock) and I don't
-> > see a major slowdown with percpu_counter_sum().
-> > 
-> > Time taken for 100 reads of cpuacct.stat with 1s delay b/n every read.
-> > percpu_counter_read() - 9845 us
-> > percpu_counter_sum() - 9974 us
-> > 
-> Then, almost 1 us overhead per read().....Hmm, seems big (as counter).
+On 16.3.2009 17:31, Jiri Slaby wrote:
+> On 16.3.2009 04:42, Lin Ming wrote:
+>>> sometimes, when booting up/resuming from disk, I get an oops[1].
+>>>
+>>> obj_desc->common_field.access_bit_width is zero, but even after the
+>>> loop. Division before the loop is apparently OK.
+>>
+>> Would please try below debug patch to see which region filed is
+>> accessed?
+>
+> Yes, except the fact, we wouldn't see anything :) -- I'll add inside the
+> if a return statement or something to disallow the oops to flood screen.
+>
+> Also, it doesn't happen regularly. Mostly several first tries after cold
+> start. I hope this is a regression and not a HW problem, but it emerged
+> after switching to 2.6.29-*, I will keep you informed.
 
-Well some cost for correct and accurate counter :)
-
-BTW, I did a few more iterations and I don't see consistent numbers.
-The results from 7 runs look like this:
-
-percpu_counter_read() - 11325, 11549, 5939, 9999, 7129, 7758, 11385 us
-percpu_counter_sum() - 8655, 9201, 8705, 11766, 10619, 9186, 8890 us 
-
-Regards,
-Bharata.
+Hmm, I didn't see it with rc8 and this patch applied so far (no 'ACPI 
+Debug' in dmesg). Also I don't see anything changed within drivers/acpi/ 
+et al. between rc7 and rc8. Maybe the timing changed somewhere else... 
+I'm confused, but keep trying.
