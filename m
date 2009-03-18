@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbZCRVrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759445AbZCRVqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759508AbZCRVrA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757029AbZCRVmi
+	id S1759445AbZCRVqp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbZCRVmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:42:38 -0400
+	Wed, 18 Mar 2009 17:42:35 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756936AbZCRVmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:37 -0400
+	id S1757156AbZCRVme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:42:34 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 34/57] microblaze_v7: ioctl support
-Date: Wed, 18 Mar 2009 21:31:01 +0100
-Message-Id: <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 50/57] microblaze_v7: pool.h socket.h
+Date: Wed, 18 Mar 2009 21:31:17 +0100
+Message-Id: <d3f49195b8f675db48d2eda4f09fddb51af6f946.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -51,6 +51,22 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
  <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
  <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
+ <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
+ <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
+ <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
+ <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
+ <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
+ <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
+ <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
+ <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
+ <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
+ <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
+ <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
+ <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
+ <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
+ <14c123f2bae10a8b5fb76cd059ba105c212776ef.1237407249.git.monstr@monstr.eu>
+ <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
+ <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -62,25 +78,25 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/ioctl.h  |    1 +
- arch/microblaze/include/asm/ioctls.h |   91 ++++++++++++++++++++++++++++++++++
- 2 files changed, 92 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/ioctl.h
- create mode 100644 arch/microblaze/include/asm/ioctls.h
+ arch/microblaze/include/asm/poll.h   |    1 +
+ arch/microblaze/include/asm/socket.h |   66 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 67 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/poll.h
+ create mode 100644 arch/microblaze/include/asm/socket.h
 
-diff --git a/arch/microblaze/include/asm/ioctl.h b/arch/microblaze/include/asm/ioctl.h
+diff --git a/arch/microblaze/include/asm/poll.h b/arch/microblaze/include/asm/poll.h
 new file mode 100644
-index 0000000..b279fe0
+index 0000000..c98509d
 --- /dev/null
-+++ b/arch/microblaze/include/asm/ioctl.h
++++ b/arch/microblaze/include/asm/poll.h
 @@ -0,0 +1 @@
-+#include <asm-generic/ioctl.h>
-diff --git a/arch/microblaze/include/asm/ioctls.h b/arch/microblaze/include/asm/ioctls.h
++#include <asm-generic/poll.h>
+diff --git a/arch/microblaze/include/asm/socket.h b/arch/microblaze/include/asm/socket.h
 new file mode 100644
-index 0000000..03582b2
+index 0000000..f919b6b
 --- /dev/null
-+++ b/arch/microblaze/include/asm/ioctls.h
-@@ -0,0 +1,91 @@
++++ b/arch/microblaze/include/asm/socket.h
+@@ -0,0 +1,66 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -89,89 +105,64 @@ index 0000000..03582b2
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_IOCTLS_H
-+#define _ASM_MICROBLAZE_IOCTLS_H
++#ifndef _ASM_MICROBLAZE_SOCKET_H
++#define _ASM_MICROBLAZE_SOCKET_H
 +
-+#include <linux/ioctl.h>
++#include <asm/sockios.h>
 +
-+/* 0x54 is just a magic number to make these relatively unique ('T') */
++/* For setsockoptions(2) */
++#define SOL_SOCKET	1
 +
-+#define TCGETS		0x5401
-+#define TCSETS		0x5402
-+#define TCSETSW		0x5403
-+#define TCSETSF		0x5404
-+#define TCGETA		0x5405
-+#define TCSETA		0x5406
-+#define TCSETAW		0x5407
-+#define TCSETAF		0x5408
-+#define TCSBRK		0x5409
-+#define TCXONC		0x540A
-+#define TCFLSH		0x540B
-+#define TIOCEXCL	0x540C
-+#define TIOCNXCL	0x540D
-+#define TIOCSCTTY	0x540E
-+#define TIOCGPGRP	0x540F
-+#define TIOCSPGRP	0x5410
-+#define TIOCOUTQ	0x5411
-+#define TIOCSTI		0x5412
-+#define TIOCGWINSZ	0x5413
-+#define TIOCSWINSZ	0x5414
-+#define TIOCMGET	0x5415
-+#define TIOCMBIS	0x5416
-+#define TIOCMBIC	0x5417
-+#define TIOCMSET	0x5418
-+#define TIOCGSOFTCAR	0x5419
-+#define TIOCSSOFTCAR	0x541A
-+#define FIONREAD	0x541B
-+#define TIOCINQ		FIONREAD
-+#define TIOCLINUX	0x541C
-+#define TIOCCONS	0x541D
-+#define TIOCGSERIAL	0x541E
-+#define TIOCSSERIAL	0x541F
-+#define TIOCPKT		0x5420
-+#define FIONBIO		0x5421
-+#define TIOCNOTTY	0x5422
-+#define TIOCSETD	0x5423
-+#define TIOCGETD	0x5424
-+#define TCSBRKP		0x5425 /* Needed for POSIX tcsendbreak() */
-+#define TIOCTTYGSTRUCT	0x5426 /* For debugging only */
-+#define TIOCSBRK	0x5427 /* BSD compatibility */
-+#define TIOCCBRK	0x5428 /* BSD compatibility */
-+#define TIOCGSID	0x5429 /* Return the session ID of FD */
-+/* Get Pty Number (of pty-mux device) */
-+#define TIOCGPTN	_IOR('T', 0x30, unsigned int)
-+#define TIOCSPTLCK	_IOW('T', 0x31, int) /* Lock/unlock Pty */
++#define SO_DEBUG	1
++#define SO_REUSEADDR	2
++#define SO_TYPE		3
++#define SO_ERROR	4
++#define SO_DONTROUTE	5
++#define SO_BROADCAST	6
++#define SO_SNDBUF	7
++#define SO_RCVBUF	8
++#define SO_SNDBUFFORCE	32
++#define SO_RCVBUFFORCE	33
++#define SO_KEEPALIVE	9
++#define SO_OOBINLINE	10
++#define SO_NO_CHECK	11
++#define SO_PRIORITY	12
++#define SO_LINGER	13
++#define SO_BSDCOMPAT	14
++/* To add :#define SO_REUSEPORT 15 */
++#define SO_PASSCRED	16
++#define SO_PEERCRED	17
++#define SO_RCVLOWAT	18
++#define SO_SNDLOWAT	19
++#define SO_RCVTIMEO	20
++#define SO_SNDTIMEO	21
 +
-+#define FIONCLEX	0x5450 /* these numbers need to be adjusted. */
-+#define FIOCLEX		0x5451
-+#define FIOASYNC	0x5452
-+#define TIOCSERCONFIG	0x5453
-+#define TIOCSERGWILD	0x5454
-+#define TIOCSERSWILD	0x5455
-+#define TIOCGLCKTRMIOS	0x5456
-+#define TIOCSLCKTRMIOS	0x5457
-+#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
-+#define TIOCSERGETLSR	0x5459 /* Get line status register */
-+#define TIOCSERGETMULTI 0x545A /* Get multiport config */
-+#define TIOCSERSETMULTI 0x545B /* Set multiport config */
++/* Security levels - as per NRL IPv6 - don't actually do anything */
++#define SO_SECURITY_AUTHENTICATION		22
++#define SO_SECURITY_ENCRYPTION_TRANSPORT	23
++#define SO_SECURITY_ENCRYPTION_NETWORK		24
 +
-+#define TIOCMIWAIT	0x545C /* wait for a change on serial input line(s) */
-+#define TIOCGICOUNT	0x545D /* read serial port inline interrupt counts */
++#define SO_BINDTODEVICE	25
 +
-+#define	FIOQSIZE	0x545E
++/* Socket filtering */
++#define SO_ATTACH_FILTER	26
++#define SO_DETACH_FILTER	27
 +
-+/* Used for packet mode */
-+#define TIOCPKT_DATA		0
-+#define TIOCPKT_FLUSHREAD	1
-+#define TIOCPKT_FLUSHWRITE	2
-+#define TIOCPKT_STOP		4
-+#define TIOCPKT_START		8
-+#define TIOCPKT_NOSTOP		16
-+#define TIOCPKT_DOSTOP		32
++#define SO_PEERNAME		28
++#define SO_TIMESTAMP		29
++#define SCM_TIMESTAMP		SO_TIMESTAMP
 +
-+#define TIOCSER_TEMT	0x01 /* Transmitter physically empty */
++#define SO_ACCEPTCONN		30
 +
-+#endif /* _ASM_MICROBLAZE_IOCTLS_H */
++#define SO_PEERSEC		31
++#define SO_PASSSEC		34
++
++#define SO_TIMESTAMPNS		35
++#define SCM_TIMESTAMPNS		SO_TIMESTAMPNS
++
++#define SO_MARK			36
++
++#endif /* _ASM_MICROBLAZE_SOCKET_H */
 -- 
 1.5.5.1
 
