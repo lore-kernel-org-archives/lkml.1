@@ -1,138 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZCREZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbZCREYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbZCREZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 00:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbZCREW1
+	id S1756849AbZCREYn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 00:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbZCREW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 00:22:27 -0400
-Received: from ozlabs.org ([203.10.76.45]:59288 "EHLO ozlabs.org"
+	Wed, 18 Mar 2009 00:22:26 -0400
+Received: from ozlabs.org ([203.10.76.45]:59285 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751685AbZCREWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751592AbZCREWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 18 Mar 2009 00:22:21 -0400
 CC: linux-kernel@vger.kernel.org
-To: Len Brown <len.brown@intel.com>
+To: davej@redhat.com
+To: cpufreq@vger.kernel.org
+CC: Ingo Molnar <mingo@redhat.com>
 From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Wed, 18 Mar 2009 10:40:24 +1030
-Subject: [PATCH 2/9] From: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Zhao Yakui <yakui.zhao@intel.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>
+Date: Wed, 18 Mar 2009 10:40:25 +1030
+Subject: [PATCH 7/9] cpumask: avoid cpumask games in arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Message-Id: <20090318042219.5CC70DDF55@ozlabs.org>
+Message-Id: <20090318042218.A0FB0DDF48@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-use smp_call_function_single() in arch/x86/kernel/acpi/cstate.c
+Impact: don't play with current's cpumask
 
-Attempting to rid us of the problematic work_on_cpu().  Just use
-smp_call_function_single() here.
+It's generally a very bad idea to mug some process's cpumask: it could
+legitimately and reasonably be changed by root, which could break us
+(if done before our code) or them (if we restore the wrong value).
 
-(Includes fix from Wu Fengguang <fengguang.wu@intel.com>)
+Use rdmsr_on_cpu and wrmsr_on_cpu instead.
 
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Zhao Yakui <yakui.zhao@intel.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+To: davej@redhat.com
+To: cpufreq@vger.kernel.org
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
 ---
- arch/x86/kernel/acpi/cstate.c |   36 ++++++++++++++++++++++++------------
- 1 file changed, 24 insertions(+), 12 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c |   60 ++++++-----------------
+ 1 file changed, 17 insertions(+), 43 deletions(-)
 
-diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
---- a/arch/x86/kernel/acpi/cstate.c
-+++ b/arch/x86/kernel/acpi/cstate.c
-@@ -53,6 +53,12 @@ struct cstate_entry {
- };
- static struct cstate_entry *cpu_cstate_entry;	/* per CPU ptr */
- 
-+/* Used for the cross-CPU calls */
-+struct acpi_processor_cx_cross_cpu {
-+	struct acpi_processor_cx *cx;
-+	long retval;
-+};
-+
- static short mwait_supported[ACPI_PROCESSOR_MAX_POWER];
- 
- #define MWAIT_SUBSTATE_MASK	(0xf)
-@@ -67,10 +73,10 @@ static short mwait_supported[ACPI_PROCES
- 
- #define NATIVE_CSTATE_BEYOND_HALT	(2)
- 
--static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
-+static void acpi_processor_ffh_cstate_probe_cpu(void *_cxcc)
+diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c b/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+--- a/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
++++ b/arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c
+@@ -323,14 +323,8 @@ static unsigned int get_cur_freq(unsigne
  {
--	struct acpi_processor_cx *cx = _cx;
--	long retval;
-+	struct acpi_processor_cx_cross_cpu *cxcc = _cxcc;
-+	struct acpi_processor_cx *cx = cxcc->cx;
- 	unsigned int eax, ebx, ecx, edx;
- 	unsigned int edx_part;
- 	unsigned int cstate_type; /* C-state type and not ACPI C-state type */
-@@ -84,16 +90,16 @@ static long acpi_processor_ffh_cstate_pr
- 	edx_part = edx >> (cstate_type * MWAIT_SUBSTATE_SIZE);
- 	num_cstate_subtype = edx_part & MWAIT_SUBSTATE_MASK;
+ 	unsigned l, h;
+ 	unsigned clock_freq;
+-	cpumask_t saved_mask;
  
--	retval = 0;
-+	cxcc->retval = 0;
- 	if (num_cstate_subtype < (cx->address & MWAIT_SUBSTATE_MASK)) {
--		retval = -1;
-+		cxcc->retval = -1;
- 		goto out;
+-	saved_mask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-	if (smp_processor_id() != cpu)
+-		return 0;
+-
+-	rdmsr(MSR_IA32_PERF_STATUS, l, h);
++	rdmsr_on_cpu(cpu, MSR_IA32_PERF_STATUS, &l, &h);
+ 	clock_freq = extract_clock(l, cpu, 0);
+ 
+ 	if (unlikely(clock_freq == 0)) {
+@@ -340,11 +334,9 @@ static unsigned int get_cur_freq(unsigne
+ 		 * P-state transition (like TM2). Get the last freq set 
+ 		 * in PERF_CTL.
+ 		 */
+-		rdmsr(MSR_IA32_PERF_CTL, l, h);
++		rdmsr_on_cpu(cpu, MSR_IA32_PERF_CTL, &l, &h);
+ 		clock_freq = extract_clock(l, cpu, 1);
  	}
- 
- 	/* mwait ecx extensions INTERRUPT_BREAK should be supported for C2/C3 */
- 	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED) ||
- 	    !(ecx & CPUID5_ECX_INTERRUPT_BREAK)) {
--		retval = -1;
-+		cxcc->retval = -1;
- 		goto out;
- 	}
- 
-@@ -107,7 +113,7 @@ static long acpi_processor_ffh_cstate_pr
- 			ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
- 			cx->address);
- out:
--	return retval;
-+	return;
+-
+-	set_cpus_allowed_ptr(current, &saved_mask);
+ 	return clock_freq;
  }
  
- int acpi_processor_ffh_cstate_probe(unsigned int cpu,
-@@ -115,6 +121,7 @@ int acpi_processor_ffh_cstate_probe(unsi
- {
- 	struct cstate_entry *percpu_entry;
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
-+	struct acpi_processor_cx_cross_cpu cxcc = { .cx = cx, };
- 	long retval;
+@@ -467,15 +459,10 @@ static int centrino_target (struct cpufr
+ 	struct cpufreq_freqs	freqs;
+ 	int			retval = 0;
+ 	unsigned int		j, k, first_cpu, tmp;
+-	cpumask_var_t saved_mask, covered_cpus;
++	cpumask_var_t covered_cpus;
  
- 	if (!cpu_cstate_entry || c->cpuid_level < CPUID_MWAIT_LEAF)
-@@ -127,13 +134,18 @@ int acpi_processor_ffh_cstate_probe(unsi
- 	percpu_entry->states[cx->index].eax = 0;
- 	percpu_entry->states[cx->index].ecx = 0;
+-	if (unlikely(!alloc_cpumask_var(&saved_mask, GFP_KERNEL)))
++	if (unlikely(!alloc_cpumask_var(&covered_cpus, GFP_KERNEL)))
+ 		return -ENOMEM;
+-	if (unlikely(!alloc_cpumask_var(&covered_cpus, GFP_KERNEL))) {
+-		free_cpumask_var(saved_mask);
+-		return -ENOMEM;
+-	}
+-	cpumask_copy(saved_mask, &current->cpus_allowed);
  
--	/* Make sure we are running on right CPU */
-+	/* Run acpi_processor_ffh_cstate_probe_cpu() on the target CPU */
+ 	if (unlikely(per_cpu(centrino_model, cpu) == NULL)) {
+ 		retval = -ENODEV;
+@@ -493,7 +480,7 @@ static int centrino_target (struct cpufr
  
--	retval = work_on_cpu(cpu, acpi_processor_ffh_cstate_probe_cpu, cx);
-+	retval = smp_call_function_single(cpu,
-+				acpi_processor_ffh_cstate_probe_cpu, &cxcc, 1);
- 	if (retval == 0) {
--		/* Use the hint in CST */
--		percpu_entry->states[cx->index].eax = cx->address;
--		percpu_entry->states[cx->index].ecx = MWAIT_ECX_INTERRUPT_BREAK;
-+		retval = cxcc.retval;
-+		if (retval == 0) {
-+			/* Use the hint in CST */
-+			percpu_entry->states[cx->index].eax = cx->address;
-+			percpu_entry->states[cx->index].ecx =
-+					MWAIT_ECX_INTERRUPT_BREAK;
-+		}
+ 	first_cpu = 1;
+ 	for_each_cpu(j, policy->cpus) {
+-		const struct cpumask *mask;
++		int good_cpu;
+ 
+ 		/* cpufreq holds the hotplug lock, so we are safe here */
+ 		if (!cpu_online(j))
+@@ -504,32 +491,30 @@ static int centrino_target (struct cpufr
+ 		 * Make sure we are running on CPU that wants to change freq
+ 		 */
+ 		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+-			mask = policy->cpus;
++			good_cpu = cpumask_any_and(policy->cpus,
++						   cpu_online_mask);
+ 		else
+-			mask = cpumask_of(j);
++			good_cpu = j;
+ 
+-		set_cpus_allowed_ptr(current, mask);
+-		preempt_disable();
+-		if (unlikely(!cpu_isset(smp_processor_id(), *mask))) {
++		if (good_cpu >= nr_cpu_ids) {
+ 			dprintk("couldn't limit to CPUs in this domain\n");
+ 			retval = -EAGAIN;
+ 			if (first_cpu) {
+ 				/* We haven't started the transition yet. */
+-				goto migrate_end;
++				goto out;
+ 			}
+-			preempt_enable();
+ 			break;
+ 		}
+ 
+ 		msr = per_cpu(centrino_model, cpu)->op_points[newstate].index;
+ 
+ 		if (first_cpu) {
+-			rdmsr(MSR_IA32_PERF_CTL, oldmsr, h);
++			rdmsr_on_cpu(good_cpu, MSR_IA32_PERF_CTL, &oldmsr, &h);
+ 			if (msr == (oldmsr & 0xffff)) {
+ 				dprintk("no change needed - msr was and needs "
+ 					"to be %x\n", oldmsr);
+ 				retval = 0;
+-				goto migrate_end;
++				goto out;
+ 			}
+ 
+ 			freqs.old = extract_clock(oldmsr, cpu, 0);
+@@ -553,14 +538,11 @@ static int centrino_target (struct cpufr
+ 			oldmsr |= msr;
+ 		}
+ 
+-		wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
+-			preempt_enable();
++		wrmsr_on_cpu(good_cpu, MSR_IA32_PERF_CTL, oldmsr, h);
++		if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
+ 			break;
+-		}
+ 
+-		cpu_set(j, *covered_cpus);
+-		preempt_enable();
++		cpumask_set_cpu(j, covered_cpus);
  	}
+ 
+ 	for_each_cpu(k, policy->cpus) {
+@@ -578,10 +560,8 @@ static int centrino_target (struct cpufr
+ 		 * Best effort undo..
+ 		 */
+ 
+-		for_each_cpu_mask_nr(j, *covered_cpus) {
+-			set_cpus_allowed_ptr(current, &cpumask_of_cpu(j));
+-			wrmsr(MSR_IA32_PERF_CTL, oldmsr, h);
+-		}
++		for_each_cpu(j, covered_cpus)
++			wrmsr_on_cpu(j, MSR_IA32_PERF_CTL, oldmsr, h);
+ 
+ 		tmp = freqs.new;
+ 		freqs.new = freqs.old;
+@@ -593,15 +573,9 @@ static int centrino_target (struct cpufr
+ 			cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ 		}
+ 	}
+-	set_cpus_allowed_ptr(current, saved_mask);
+ 	retval = 0;
+-	goto out;
+ 
+-migrate_end:
+-	preempt_enable();
+-	set_cpus_allowed_ptr(current, saved_mask);
+ out:
+-	free_cpumask_var(saved_mask);
+ 	free_cpumask_var(covered_cpus);
  	return retval;
  }
 
