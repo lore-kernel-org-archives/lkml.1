@@ -1,83 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbZCRWUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758589AbZCRWVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbZCRWUM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 18:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753496AbZCRWTz
+	id S1758589AbZCRWVh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 18:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZCRWV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 18:19:55 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:48662 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbZCRWTy (ORCPT
+	Wed, 18 Mar 2009 18:21:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47651 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754619AbZCRWV0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 18:19:54 -0400
-Message-ID: <49C17383.2090909@hp.com>
-Date: Wed, 18 Mar 2009 15:19:47 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Vernon Mauery <vernux@us.ibm.com>, Eilon Greenstein <eilong@broadcom.com>,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>
-Subject: Re: High contention on the sk_buff_head.lock
-References: <49C12E64.1000301@us.ibm.com> <87prge1rhu.fsf@basil.nowhere.org>	<49C16294.8050101@us.ibm.com>	<1237412732.29116.2.camel@lb-tlvb-eliezer>	<49C16CD4.3010708@us.ibm.com> <20090318215901.GV11935@one.firstfloor.org>
-In-Reply-To: <20090318215901.GV11935@one.firstfloor.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 18 Mar 2009 18:21:26 -0400
+Date: Wed, 18 Mar 2009 15:11:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ying Han <yinghan@google.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       guichaz@gmail.com, Alex Khesin <alexk@google.com>,
+       Mike Waychison <mikew@google.com>, Rohit Seth <rohitseth@google.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Message-Id: <20090318151157.85109100.akpm@linux-foundation.org>
+In-Reply-To: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>Thanks.  I will test to see how this affects this lock contention the
->>next time the broadcom hardware is available.
+On Wed, 18 Mar 2009 12:44:08 -0700 Ying Han <yinghan@google.com> wrote:
+
+> We triggered the failure during some internal experiment with
+> ftruncate/mmap/write/read sequence. And we found that some pages are
+> "lost" after writing to the mmaped file. which in the following test
+> cases (count >= 0).
 > 
+> First we deployed the test cases into group of machines and see about
+> >20% failure rate on average. Then, I did couple of experiment to try
+> to reproduce it on a single machine. what i found is that:
+> 1. add a fsync after write the file, i can not reproduce this issue.
+> 2. add memory pressure(mmap/mlock) while run the test in infinite
+> loop, the failure is reproduced quickly. ( background flushing ? )
 > 
-> The other strategy to reduce lock contention here is to use TSO/GSO/USO.
-> With that the lock has to be taken less often because there are less packets
-> travelling down the stack. I'm not sure how well that works with netperf style 
-> workloads though. 
+> The "bad pages" count differs each time from one digit to 4,5 digit
+> for 128M ftruncated file. and what i also found that the bad page
+> number are contiguous for each segment which total bad pages container
+> several segments. ext "1-4, 9-20, 48-50" (  batch flushing ? )
+> 
+> (The failure is reproduced based on 2.6.29-rc8, also happened on
+> 2.6.18 kernel. . Here is the simple test case to reproduce it with
+> memory pressure. )
 
-All depends on what the user provides with the test-specific -m option for how 
-much data they shove into the socket each time "send" is called, and I suppose if 
-they use a test-specific -D option to set TCP_NODELAY in the case of a TCP test 
-when they have small values of -m.  Eg
+Thanks.  This will be a regression - the testing I did back in the days
+when I actually wrote stuff would have picked this up.
 
-netperf -t TCP_STREAM ... -- -m 64K
-vs
-netperf -t TCP_STREAM ... -- -m 1024
-vs
-netperf -t TCP_STREAM ... -- -m 1024 -D
-vs
-netperf -t UDP_STREAM ... -- -m 1024
+Perhaps it is a 2.6.17 thing.  Which, IIRC, is when we made the changes to
+redirty pages on each write fault.  Or maybe it was something else.
 
-etc etc.
+Nick, Peter: I'm in .au at preset, not able to build and run kernels - is
+this something you'd have time to look into please?
 
-If the netperf test is:
+Given the amount of time for which this bug has existed, I guess it isn't a
+2.6.29 blocker, but once we've found out the cause we should have a little
+post-mortem to work out how a bug of this nature has gone undetected for so
+long.
 
-netperf -t TCP_RR ... -- -r 1   (single-byte request/response)
 
-then TSO/GSO/USO won't matter at all, and probably still wont matter even if the 
-user has ./configure'd netperf with --enable-burst and does:
-
-netperf -t TCP_RR ... -- -r 1 -b 64
-or
-netperf -t TCP_RR ... -- -r 1 -b 64 -D
-
-which was basically what I was doing for the 32-core scaling stuff I posted about 
-a few weeks ago.  That was running on multi-queue NICs, so looking at some of the 
-profiles of the "no iptables" data may help show how big/small the problem is, 
-keeping in mind that my runs (either the XFrame II runs, or the Chelsio T3C runs 
-before them) had one queue per core in the system...and as such may be a best 
-case scenario as far as lock contention on a per-queue basis goes.
-
-ftp://ftp.netperf.org/
-
-happy benchmarking,
-
-rick jones
-
-BTW, that setup went "poof" and had to go to other nefarious porpoises.  I'm not 
-sure when I can recreate it, but I still have both the XFrame and T3C NICs when 
-the HW comes free again.
+> #include <sys/mman.h>
+> #include <sys/types.h>
+> #include <fcntl.h>
+> #include <unistd.h>
+> #include <stdio.h>
+> #include <stdlib.h>
+> #include <string.h>
+> 
+> long kMemSize  = 128 << 20;
+> int kPageSize = 4096;
+> 
+> int main(int argc, char **argv) {
+> 	int status;
+> 	int count = 0;
+> 	int i;
+> 	char *fname = "/root/test.mmap";
+> 	char *mem;
+> 
+> 	unlink(fname);
+> 	int fd = open(fname, O_CREAT | O_EXCL | O_RDWR, 0600);
+> 	status = ftruncate(fd, kMemSize);
+> 
+> 	mem = mmap(0, kMemSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+> 	// Fill the memory with 1s.
+> 	memset(mem, 1, kMemSize);
+> 
+> 	for (i = 0; i < kMemSize; i++) {
+> 		int byte_good = mem[i] != 0;
+> 
+> 		if (!byte_good && ((i % kPageSize) == 0)) {
+> 			//printf("%d ", i / kPageSize);
+> 			count++;
+> 		}
+> 	}
+> 
+> 	munmap(mem, kMemSize);
+> 	close(fd);
+> 	unlink(fname);
+> 
+> 	if (count > 0) {
+> 		printf("Running %d bad page\n", count);
+> 		return 1;
+> 	}
+> 	return 0;
+> }
+> 
+> --Ying
