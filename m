@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbZCRTYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760505AbZCRTYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760302AbZCRTYH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 15:24:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759710AbZCRTVO
+	id S1760505AbZCRTYr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 15:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759738AbZCRTV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 15:21:14 -0400
-Received: from mga01.intel.com ([192.55.52.88]:39294 "EHLO mga01.intel.com"
+	Wed, 18 Mar 2009 15:21:27 -0400
+Received: from mga09.intel.com ([134.134.136.24]:21312 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759543AbZCRTVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 15:21:05 -0400
+	id S1752000AbZCRTVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 15:21:25 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,385,1233561600"; 
-   d="scan'208";a="440021805"
-Subject: [PATCH 09/13] iop-adma: P+Q self test
+   d="scan'208";a="498870713"
+Subject: [PATCH 13/13] dmatest: add pq support
 To: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: neilb@suse.de, maciej.sosnowski@intel.com
-Date: Wed, 18 Mar 2009 12:21:02 -0700
-Message-ID: <20090318192102.20375.36540.stgit@dwillia2-linux.ch.intel.com>
+Date: Wed, 18 Mar 2009 12:21:22 -0700
+Message-ID: <20090318192122.20375.85892.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>
 References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -28,229 +28,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Even though the intent is to extend dmatest with P+Q tests there is
-still value in having an always-on sanity check to prevent an
-unintentionally broken driver from registering.
-
-This depends on raid6_pq.ko for verification, the side effect being that
-PQ capable channels will fail to register when raid6 is disabled.
+Test raid6 p+q operations with a simple "always multiply by 1" q
+calculation to fit into dmatest's current destination verification
+scheme.
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/dma/iop-adma.c |  182 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 181 insertions(+), 1 deletions(-)
+ drivers/dma/dmatest.c |   26 ++++++++++++++++++++++++++
+ 1 files changed, 26 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
-index 0cdb333..2b014b6 100644
---- a/drivers/dma/iop-adma.c
-+++ b/drivers/dma/iop-adma.c
-@@ -31,6 +31,7 @@
- #include <linux/platform_device.h>
- #include <linux/memory.h>
- #include <linux/ioport.h>
-+#include <linux/raid/raid6.h>
+diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
+index a27c0fb..a5ee541 100644
+--- a/drivers/dma/dmatest.c
++++ b/drivers/dma/dmatest.c
+@@ -43,6 +43,11 @@ module_param(xor_sources, uint, S_IRUGO);
+ MODULE_PARM_DESC(xor_sources,
+ 		"Number of xor source buffers (default: 3)");
  
- #include <mach/adma.h>
++static unsigned int pq_sources = 3;
++module_param(pq_sources, uint, S_IRUGO);
++MODULE_PARM_DESC(pq_sources,
++		"Number of p+q source buffers (default: 3)");
++
+ /*
+  * Initialization patterns. All bytes in the source buffer has bit 7
+  * set, all bytes in the destination buffer has bit 7 cleared.
+@@ -227,6 +232,7 @@ static int dmatest_func(void *data)
+ 	dma_cookie_t		cookie;
+ 	enum dma_status		status;
+ 	enum dma_ctrl_flags 	flags;
++	u8			pq_coefs[pq_sources];
+ 	int			ret;
+ 	int			src_cnt;
+ 	int			dst_cnt;
+@@ -243,6 +249,11 @@ static int dmatest_func(void *data)
+ 	else if (thread->type == DMA_XOR) {
+ 		src_cnt = xor_sources | 1; /* force odd to ensure dst = src */
+ 		dst_cnt = 1;
++	} else if (thread->type == DMA_PQ) {
++		src_cnt = pq_sources | 1; /* force odd to ensure dst = src */
++		dst_cnt = 2;
++		for (i = 0; i < pq_sources; i++)
++			pq_coefs[i] = 1;
+ 	} else
+ 		goto err_srcs;
  
-@@ -1200,6 +1201,177 @@ out:
- 	return err;
- }
- 
-+static int __devinit
-+iop_adma_pq_zero_sum_self_test(struct iop_adma_device *device)
-+{
-+	#ifdef CONFIG_MD_RAID6_PQ
-+	/* combined sources, software pq results, and extra hw pq results */
-+	struct page *pq[IOP_ADMA_NUM_SRC_TEST+2+2];
-+	/* ptr to the extra hw pq buffers defined above */
-+	struct page **pq_hw = &pq[IOP_ADMA_NUM_SRC_TEST+2];
-+	/* address conversion buffers (dma_map / page_address) */
-+	void *pq_sw[IOP_ADMA_NUM_SRC_TEST+2];
-+	dma_addr_t pq_src[IOP_ADMA_NUM_SRC_TEST];
-+	dma_addr_t pq_dest[2];
+@@ -310,6 +321,15 @@ static int dmatest_func(void *data)
+ 						      dma_dsts[0] + dst_off,
+ 						      dma_srcs, xor_sources,
+ 						      len, flags);
++		else if (thread->type == DMA_PQ) {
++			dma_addr_t dma_pq[dst_cnt];
 +
-+	int i;
-+	struct dma_async_tx_descriptor *tx;
-+	struct dma_chan *dma_chan;
-+	dma_cookie_t cookie;
-+	u32 zero_sum_result;
-+	int err = 0;
-+	struct device *dev;
-+
-+	dev_dbg(device->common.dev, "%s\n", __func__);
-+
-+	for (i = 0; i < ARRAY_SIZE(pq); i++) {
-+		pq[i] = alloc_page(GFP_KERNEL);
-+		if (!pq[i]) {
-+			while (i--)
-+				__free_page(pq[i]);
-+			return -ENOMEM;
++			for (i = 0; i < dst_cnt; i++)
++				dma_pq[i] = dma_dsts[i] + dst_off;
++			tx = dev->device_prep_dma_pq(chan, dma_pq, dma_srcs,
++						     pq_sources, pq_coefs,
++						     len, flags);
 +		}
-+	}
-+
-+	/* Fill in src buffers */
-+	for (i = 0; i < IOP_ADMA_NUM_SRC_TEST; i++) {
-+		pq_sw[i] = page_address(pq[i]);
-+		memset(pq_sw[i], 0x11111111 * (1<<i), PAGE_SIZE);
-+	}
-+	pq_sw[i] = page_address(pq[i]);
-+	pq_sw[i+1] = page_address(pq[i+1]);
-+
-+	dma_chan = container_of(device->common.channels.next,
-+				struct dma_chan,
-+				device_node);
-+	if (iop_adma_alloc_chan_resources(dma_chan) < 1) {
-+		err = -ENODEV;
-+		goto out;
-+	}
-+
-+	dev = dma_chan->device->dev;
-+
-+	/* initialize the dests */
-+	memset(page_address(pq_hw[0]), 0 , PAGE_SIZE);
-+	memset(page_address(pq_hw[1]), 0 , PAGE_SIZE);
-+
-+	/* test pq */
-+	pq_dest[0] = dma_map_page(dev, pq_hw[0], 0, PAGE_SIZE, DMA_FROM_DEVICE);
-+	pq_dest[1] = dma_map_page(dev, pq_hw[1], 0, PAGE_SIZE, DMA_FROM_DEVICE);
-+	for (i = 0; i < IOP_ADMA_NUM_SRC_TEST; i++)
-+		pq_src[i] = dma_map_page(dev, pq[i], 0, PAGE_SIZE,
-+					 DMA_TO_DEVICE);
-+
-+	tx = iop_adma_prep_dma_pq(dma_chan, pq_dest, pq_src,
-+				  IOP_ADMA_NUM_SRC_TEST, (u8 *)raid6_gfexp,
-+				  PAGE_SIZE,
-+				  DMA_PREP_INTERRUPT |
-+				  DMA_CTRL_ACK);
-+
-+	cookie = iop_adma_tx_submit(tx);
-+	iop_adma_issue_pending(dma_chan);
-+	msleep(8);
-+
-+	if (iop_adma_is_complete(dma_chan, cookie, NULL, NULL) !=
-+		DMA_SUCCESS) {
-+		dev_err(dev, "Self-test pq timed out, disabling\n");
-+		err = -ENODEV;
-+		goto free_resources;
-+	}
-+
-+	raid6_call.gen_syndrome(IOP_ADMA_NUM_SRC_TEST+2, PAGE_SIZE, pq_sw);
-+
-+	if (memcmp(pq_sw[IOP_ADMA_NUM_SRC_TEST],
-+		   page_address(pq_hw[0]), PAGE_SIZE) != 0) {
-+		dev_err(dev, "Self-test p failed compare, disabling\n");
-+		err = -ENODEV;
-+		goto free_resources;
-+	}
-+	if (memcmp(pq_sw[IOP_ADMA_NUM_SRC_TEST+1],
-+		   page_address(pq_hw[1]), PAGE_SIZE) != 0) {
-+		dev_err(dev, "Self-test q failed compare, disabling\n");
-+		err = -ENODEV;
-+		goto free_resources;
-+	}
-+
-+	/* test correct zero sum using the software generated pq values */
-+	for (i = 0; i < IOP_ADMA_NUM_SRC_TEST + 2; i++)
-+		pq_src[i] = dma_map_page(dev, pq[i], 0, PAGE_SIZE,
-+					 DMA_TO_DEVICE);
-+
-+	zero_sum_result = ~0;
-+	tx = iop_adma_prep_dma_pq_zero_sum(dma_chan, pq_src,
-+					   IOP_ADMA_NUM_SRC_TEST + 2,
-+					   (u8 *) raid6_gfexp, PAGE_SIZE,
-+					   &zero_sum_result,
-+					   DMA_PREP_INTERRUPT |
-+					   DMA_CTRL_ACK);
-+
-+	cookie = iop_adma_tx_submit(tx);
-+	iop_adma_issue_pending(dma_chan);
-+	msleep(8);
-+
-+	if (iop_adma_is_complete(dma_chan, cookie, NULL, NULL) !=
-+		DMA_SUCCESS) {
-+		dev_err(dev, "Self-test pq-zero-sum timed out, disabling\n");
-+		err = -ENODEV;
-+		goto free_resources;
-+	}
-+
-+	if (zero_sum_result != 0) {
-+		dev_err(dev, "Self-test pq-zero-sum failed to validate: %x\n",
-+			zero_sum_result);
-+		err = -ENODEV;
-+		goto free_resources;
-+	}
-+
-+	/* test incorrect zero sum */
-+	i = IOP_ADMA_NUM_SRC_TEST;
-+	memset(pq_sw[i] + 100, 0, 100);
-+	memset(pq_sw[i+1] + 200, 0, 200);
-+	for (i = 0; i < IOP_ADMA_NUM_SRC_TEST + 2; i++)
-+		pq_src[i] = dma_map_page(dev, pq[i], 0, PAGE_SIZE,
-+					 DMA_TO_DEVICE);
-+
-+	zero_sum_result = 0;
-+	tx = iop_adma_prep_dma_pq_zero_sum(dma_chan, pq_src,
-+					   IOP_ADMA_NUM_SRC_TEST + 2,
-+					   (u8 *) raid6_gfexp, PAGE_SIZE,
-+					   &zero_sum_result,
-+					   DMA_PREP_INTERRUPT |
-+					   DMA_CTRL_ACK);
-+
-+	cookie = iop_adma_tx_submit(tx);
-+	iop_adma_issue_pending(dma_chan);
-+	msleep(8);
-+
-+	if (iop_adma_is_complete(dma_chan, cookie, NULL, NULL) !=
-+		DMA_SUCCESS) {
-+		dev_err(dev, "Self-test !pq-zero-sum timed out, disabling\n");
-+		err = -ENODEV;
-+		goto free_resources;
-+	}
-+
-+	if (zero_sum_result != (SUM_CHECK_P_RESULT | SUM_CHECK_Q_RESULT)) {
-+		dev_err(dev, "Self-test !pq-zero-sum failed to validate: %x\n",
-+			zero_sum_result);
-+		err = -ENODEV;
-+		goto free_resources;
-+	}
-+
-+free_resources:
-+	iop_adma_free_chan_resources(dma_chan);
-+out:
-+	i = ARRAY_SIZE(pq);
-+	while (i--)
-+		__free_page(pq[i]);
-+	return err;
-+	#else
-+	return -ENODEV; /* no raid6 support */
-+	#endif
-+}
-+
-+
- static int __devexit iop_adma_remove(struct platform_device *dev)
- {
- 	struct iop_adma_device *device = platform_get_drvdata(dev);
-@@ -1350,13 +1522,21 @@ static int __devinit iop_adma_probe(struct platform_device *pdev)
- 	}
  
- 	if (dma_has_cap(DMA_XOR, dma_dev->cap_mask) ||
--		dma_has_cap(DMA_MEMSET, dma_dev->cap_mask)) {
-+	    dma_has_cap(DMA_MEMSET, dma_dev->cap_mask)) {
- 		ret = iop_adma_xor_zero_sum_self_test(adev);
- 		dev_dbg(&pdev->dev, "xor self test returned %d\n", ret);
- 		if (ret)
- 			goto err_free_iop_chan;
- 	}
+ 		if (!tx) {
+ 			for (i = 0; i < src_cnt; i++)
+@@ -446,6 +466,8 @@ static int dmatest_add_threads(struct dmatest_chan *dtc, enum dma_transaction_ty
+ 		op = "copy";
+ 	else if (type == DMA_XOR)
+ 		op = "xor";
++	else if (type == DMA_PQ)
++		op = "pq";
+ 	else
+ 		return -EINVAL;
  
-+	if (dma_has_cap(DMA_PQ, dma_dev->cap_mask) &&
-+	    dma_has_cap(DMA_PQ_ZERO_SUM, dma_dev->cap_mask)) {
-+		ret = iop_adma_pq_zero_sum_self_test(adev);
-+		dev_dbg(&pdev->dev, "pq self test returned %d\n", ret);
-+		if (ret)
-+			goto err_free_iop_chan;
+@@ -501,6 +523,10 @@ static int dmatest_add_channel(struct dma_chan *chan)
+ 		cnt = dmatest_add_threads(dtc, DMA_XOR);
+ 		thread_count += cnt > 0 ?: 0;
+ 	}
++	if (dma_has_cap(DMA_PQ, dma_dev->cap_mask)) {
++		cnt = dmatest_add_threads(dtc, DMA_PQ);
++		thread_count += cnt > 0 ?: 0;
 +	}
-+
- 	dev_printk(KERN_INFO, &pdev->dev, "Intel(R) IOP: "
- 	  "( %s%s%s%s%s%s%s%s%s%s)\n",
- 	  dma_has_cap(DMA_PQ, dma_dev->cap_mask) ? "pq " : "",
+ 
+ 	pr_info("dmatest: Started %u threads using %s\n",
+ 		thread_count, dma_chan_name(chan));
 
