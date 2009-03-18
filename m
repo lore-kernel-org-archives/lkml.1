@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758486AbZCRVoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbZCRVoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758486AbZCRVoP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755637AbZCRVmO
+	id S1758721AbZCRVoi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbZCRVmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:42:14 -0400
+	Wed, 18 Mar 2009 17:42:17 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756278AbZCRVmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:13 -0400
+	id S1756339AbZCRVmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:42:16 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 54/57] microblaze_v7: Kbuild file
-Date: Wed, 18 Mar 2009 21:31:21 +0100
-Message-Id: <50253611a0770c1ae6a63702208cfb9f96cd1f1a.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 45/57] microblaze_v7: sigcontext.h siginfo.h
+Date: Wed, 18 Mar 2009 21:31:12 +0100
+Message-Id: <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <e5b88f50c39aa95431f5ecdb032c6676399ae198.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -62,15 +62,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
  <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
  <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
- <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
- <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
- <14c123f2bae10a8b5fb76cd059ba105c212776ef.1237407249.git.monstr@monstr.eu>
- <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
- <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
- <d3f49195b8f675db48d2eda4f09fddb51af6f946.1237407249.git.monstr@monstr.eu>
- <34c2f9e50610e147be556607e482b88fd674b887.1237407249.git.monstr@monstr.eu>
- <15f6f10873f7c6f4f3b06f9d4d5af3ee9714f873.1237407249.git.monstr@monstr.eu>
- <e5b88f50c39aa95431f5ecdb032c6676399ae198.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -82,42 +73,59 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/Kbuild |   26 ++++++++++++++++++++++++++
- 1 files changed, 26 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/Kbuild
+ arch/microblaze/include/asm/sigcontext.h |   20 ++++++++++++++++++++
+ arch/microblaze/include/asm/siginfo.h    |   15 +++++++++++++++
+ 2 files changed, 35 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/sigcontext.h
+ create mode 100644 arch/microblaze/include/asm/siginfo.h
 
-diff --git a/arch/microblaze/include/asm/Kbuild b/arch/microblaze/include/asm/Kbuild
+diff --git a/arch/microblaze/include/asm/sigcontext.h b/arch/microblaze/include/asm/sigcontext.h
 new file mode 100644
-index 0000000..31820df
+index 0000000..55873c8
 --- /dev/null
-+++ b/arch/microblaze/include/asm/Kbuild
-@@ -0,0 +1,26 @@
-+include include/asm-generic/Kbuild.asm
++++ b/arch/microblaze/include/asm/sigcontext.h
+@@ -0,0 +1,20 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
 +
-+header-y += auxvec.h
-+header-y += errno.h
-+header-y += fcntl.h
-+header-y += ioctl.h
-+header-y += ioctls.h
-+header-y += ipcbuf.h
-+header-y += linkage.h
-+header-y += msgbuf.h
-+header-y += poll.h
-+header-y += resource.h
-+header-y += sembuf.h
-+header-y += shmbuf.h
-+header-y += sigcontext.h
-+header-y += siginfo.h
-+header-y += socket.h
-+header-y += sockios.h
-+header-y += statfs.h
-+header-y += stat.h
-+header-y += termbits.h
-+header-y += ucontext.h
++#ifndef _ASM_MICROBLAZE_SIGCONTEXT_H
++#define _ASM_MICROBLAZE_SIGCONTEXT_H
 +
-+unifdef-y += cputable.h
-+unifdef-y += elf.h
-+unifdef-y += termios.h
++/* FIXME should be linux/ptrace.h */
++#include <asm/ptrace.h>
++
++struct sigcontext {
++	struct pt_regs regs;
++	unsigned long oldmask;
++};
++
++#endif /* _ASM_MICROBLAZE_SIGCONTEXT_H */
+diff --git a/arch/microblaze/include/asm/siginfo.h b/arch/microblaze/include/asm/siginfo.h
+new file mode 100644
+index 0000000..f162911
+--- /dev/null
++++ b/arch/microblaze/include/asm/siginfo.h
+@@ -0,0 +1,15 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_SIGINFO_H
++#define _ASM_MICROBLAZE_SIGINFO_H
++
++#include <linux/types.h>
++#include <asm-generic/siginfo.h>
++
++#endif /* _ASM_MICROBLAZE_SIGINFO_H */
 -- 
 1.5.5.1
 
