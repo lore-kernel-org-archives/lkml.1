@@ -1,304 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZCRBQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbZCRBQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604AbZCRBQT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 21:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbZCRBQK
+	id S1755270AbZCRBQs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 21:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbZCRBQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 21:16:10 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51238 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753453AbZCRBQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 21:16:09 -0400
-From: Mark Fasheh <mfasheh@suse.com>
-To: linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Mark Fasheh <mfasheh@suse.com>
-Subject: [PATCH 09/32] ocfs2: Increase max links count
-Date: Tue, 17 Mar 2009 13:00:59 -0700
-Message-Id: <1237320082-12921-10-git-send-email-mfasheh@suse.com>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
-References: <1237320082-12921-1-git-send-email-mfasheh@suse.com>
+	Tue, 17 Mar 2009 21:16:37 -0400
+Received: from bowden.ucwb.org.au ([203.122.237.119]:45080 "EHLO
+	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755312AbZCRBQg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 17 Mar 2009 21:16:36 -0400
+Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
+From: Kevin Shanahan <kmshanah@ucwb.org.au>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Avi Kivity <avi@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20090318001955.GB5143@nowhere>
+References: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera>
+	 <qm8_cedJGaP.A.-NH.CPCvJB@chimera>
+	 <1237107837.27699.27.camel@kulgan.wumi.org.au>
+	 <49BE20B2.9070804@redhat.com> <1237207595.4964.31.camel@kulgan.wumi.org.au>
+	 <20090316200736.GD8393@nowhere>
+	 <1237244137.4964.54.camel@kulgan.wumi.org.au>
+	 <20090318001955.GB5143@nowhere>
+Content-Type: text/plain
+Organization: UnitingCare Wesley Bowden
+Date: Wed, 18 Mar 2009 11:46:26 +1030
+Message-Id: <1237338986.4801.11.camel@kulgan.wumi.org.au>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since we've now got a directory format capable of handling a large number of
-entries, we can increase the maximum link count supported. This only gets
-increased if the directory indexing feature is turned on.
+On Wed, 2009-03-18 at 01:20 +0100, Frederic Weisbecker wrote:
+> On Tue, Mar 17, 2009 at 09:25:37AM +1030, Kevin Shanahan wrote:
+> > On Mon, 2009-03-16 at 21:07 +0100, Frederic Weisbecker wrote:
+> > > I've looked a bit at your traces.
+> > > I think it's probably too wide to find something inside.
+> > > Latest -tip is provided with a new set of events tracing, meaning
+> > > that you will be able to produce function graph traces with various
+> > > sched events included.
+> > > 
+> > > Another thing, is it possible to reproduce it with only one ping?
+> > > Or testing perioding pings and keep only one that raised a relevant
+> > > threshold of latency? I think we could do a script that can do that.
+> > > It would make the trace much clearer.
+> > 
+> > Yeah, I think that should be possible. If you can come up with such a
+> > script, that would be great.
+> 
+> Ok, I've made a small script based on yours which could do this job.
+> You will just have to set yourself a threshold of latency
+> that you consider as buggy. I don't remember the latency you observed.
+> About 5 secs right?
+> 
+> It's the "thres" variable in the script.
+> 
+> The resulting trace should be a mixup of the function graph traces
+> and scheduler events which look like this:
+> 
+>  gnome-screensav-4691  [000]  6716.774277:   4691:120:S ==> [000]     0:140:R <idle>
+>   xfce4-terminal-4723  [001]  6716.774303:   4723:120:R   + [001]  4289:120:S Xorg
+>   xfce4-terminal-4723  [001]  6716.774417:   4723:120:S ==> [001]  4289:120:R Xorg
+>             Xorg-4289  [001]  6716.774427:   4289:120:S ==> [001]     0:140:R <idle>
+> 
+> + is a wakeup and ==> is a context switch.
+> 
+> 
+> The script will loop trying some pings and will only keep the trace that matches
+> the latency threshold you defined.
+> 
+> Tell if the following script work for you.
 
-Signed-off-by: Mark Fasheh <mfasheh@suse.com>
-Acked-by: Joel Becker <joel.becker@oracle.com>
----
- fs/ocfs2/inode.c    |    6 +++---
- fs/ocfs2/namei.c    |   44 ++++++++++++++++++++++----------------------
- fs/ocfs2/ocfs2.h    |   38 ++++++++++++++++++++++++++++++++++++++
- fs/ocfs2/ocfs2_fs.h |    4 +++-
- 4 files changed, 66 insertions(+), 26 deletions(-)
+Yes, this looks like it will work as intended.
 
-diff --git a/fs/ocfs2/inode.c b/fs/ocfs2/inode.c
-index d273c4a..f1f77b2 100644
---- a/fs/ocfs2/inode.c
-+++ b/fs/ocfs2/inode.c
-@@ -276,7 +276,7 @@ void ocfs2_populate_inode(struct inode *inode, struct ocfs2_dinode *fe,
- 		     (unsigned long long)OCFS2_I(inode)->ip_blkno,
- 		     (unsigned long long)le64_to_cpu(fe->i_blkno));
- 
--	inode->i_nlink = le16_to_cpu(fe->i_links_count);
-+	inode->i_nlink = ocfs2_read_links_count(fe);
- 
- 	if (fe->i_flags & cpu_to_le32(OCFS2_SYSTEM_FL)) {
- 		OCFS2_I(inode)->ip_flags |= OCFS2_INODE_SYSTEM_FILE;
-@@ -1215,7 +1215,7 @@ int ocfs2_mark_inode_dirty(handle_t *handle,
- 	spin_unlock(&OCFS2_I(inode)->ip_lock);
- 
- 	fe->i_size = cpu_to_le64(i_size_read(inode));
--	fe->i_links_count = cpu_to_le16(inode->i_nlink);
-+	ocfs2_set_links_count(fe, inode->i_nlink);
- 	fe->i_uid = cpu_to_le32(inode->i_uid);
- 	fe->i_gid = cpu_to_le32(inode->i_gid);
- 	fe->i_mode = cpu_to_le16(inode->i_mode);
-@@ -1252,7 +1252,7 @@ void ocfs2_refresh_inode(struct inode *inode,
- 	OCFS2_I(inode)->ip_dyn_features = le16_to_cpu(fe->i_dyn_features);
- 	ocfs2_set_inode_flags(inode);
- 	i_size_write(inode, le64_to_cpu(fe->i_size));
--	inode->i_nlink = le16_to_cpu(fe->i_links_count);
-+	inode->i_nlink = ocfs2_read_links_count(fe);
- 	inode->i_uid = le32_to_cpu(fe->i_uid);
- 	inode->i_gid = le32_to_cpu(fe->i_gid);
- 	inode->i_mode = le16_to_cpu(fe->i_mode);
-diff --git a/fs/ocfs2/namei.c b/fs/ocfs2/namei.c
-index f911edc..67113cf 100644
---- a/fs/ocfs2/namei.c
-+++ b/fs/ocfs2/namei.c
-@@ -255,13 +255,13 @@ static int ocfs2_mknod(struct inode *dir,
- 		return status;
- 	}
- 
--	if (S_ISDIR(mode) && (dir->i_nlink >= OCFS2_LINK_MAX)) {
-+	if (S_ISDIR(mode) && (dir->i_nlink >= ocfs2_link_max(osb))) {
- 		status = -EMLINK;
- 		goto leave;
- 	}
- 
- 	dirfe = (struct ocfs2_dinode *) parent_fe_bh->b_data;
--	if (!dirfe->i_links_count) {
-+	if (!ocfs2_read_links_count(dirfe)) {
- 		/* can't make a file in a deleted directory. */
- 		status = -ENOENT;
- 		goto leave;
-@@ -381,7 +381,7 @@ static int ocfs2_mknod(struct inode *dir,
- 			mlog_errno(status);
- 			goto leave;
- 		}
--		le16_add_cpu(&dirfe->i_links_count, 1);
-+		ocfs2_add_links_count(dirfe, 1);
- 		status = ocfs2_journal_dirty(handle, parent_fe_bh);
- 		if (status < 0) {
- 			mlog_errno(status);
-@@ -529,7 +529,8 @@ static int ocfs2_mknod_locked(struct ocfs2_super *osb,
- 	fe->i_mode = cpu_to_le16(inode->i_mode);
- 	if (S_ISCHR(inode->i_mode) || S_ISBLK(inode->i_mode))
- 		fe->id1.dev1.i_rdev = cpu_to_le64(huge_encode_dev(dev));
--	fe->i_links_count = cpu_to_le16(inode->i_nlink);
-+
-+	ocfs2_set_links_count(fe, inode->i_nlink);
- 
- 	fe->i_last_eb_blk = 0;
- 	strcpy(fe->i_signature, OCFS2_INODE_SIGNATURE);
-@@ -668,7 +669,7 @@ static int ocfs2_link(struct dentry *old_dentry,
- 	}
- 
- 	fe = (struct ocfs2_dinode *) fe_bh->b_data;
--	if (le16_to_cpu(fe->i_links_count) >= OCFS2_LINK_MAX) {
-+	if (ocfs2_read_links_count(fe) >= ocfs2_link_max(osb)) {
- 		err = -EMLINK;
- 		goto out_unlock_inode;
- 	}
-@@ -690,13 +691,13 @@ static int ocfs2_link(struct dentry *old_dentry,
- 
- 	inc_nlink(inode);
- 	inode->i_ctime = CURRENT_TIME;
--	fe->i_links_count = cpu_to_le16(inode->i_nlink);
-+	ocfs2_set_links_count(fe, inode->i_nlink);
- 	fe->i_ctime = cpu_to_le64(inode->i_ctime.tv_sec);
- 	fe->i_ctime_nsec = cpu_to_le32(inode->i_ctime.tv_nsec);
- 
- 	err = ocfs2_journal_dirty(handle, fe_bh);
- 	if (err < 0) {
--		le16_add_cpu(&fe->i_links_count, -1);
-+		ocfs2_add_links_count(fe, -1);
- 		drop_nlink(inode);
- 		mlog_errno(err);
- 		goto out_commit;
-@@ -706,7 +707,7 @@ static int ocfs2_link(struct dentry *old_dentry,
- 			      OCFS2_I(inode)->ip_blkno,
- 			      parent_fe_bh, &lookup);
- 	if (err) {
--		le16_add_cpu(&fe->i_links_count, -1);
-+		ocfs2_add_links_count(fe, -1);
- 		drop_nlink(inode);
- 		mlog_errno(err);
- 		goto out_commit;
-@@ -895,7 +896,7 @@ static int ocfs2_unlink(struct inode *dir,
- 	if (S_ISDIR(inode->i_mode))
- 		drop_nlink(inode);
- 	drop_nlink(inode);
--	fe->i_links_count = cpu_to_le16(inode->i_nlink);
-+	ocfs2_set_links_count(fe, inode->i_nlink);
- 
- 	status = ocfs2_journal_dirty(handle, fe_bh);
- 	if (status < 0) {
-@@ -1139,7 +1140,7 @@ static int ocfs2_rename(struct inode *old_dir,
- 		}
- 
- 		if (!new_inode && new_dir != old_dir &&
--		    new_dir->i_nlink >= OCFS2_LINK_MAX) {
-+		    new_dir->i_nlink >= ocfs2_link_max(osb)) {
- 			status = -EMLINK;
- 			goto bail;
- 		}
-@@ -1293,7 +1294,7 @@ static int ocfs2_rename(struct inode *old_dir,
- 		}
- 
- 		if (S_ISDIR(new_inode->i_mode) ||
--		    (newfe->i_links_count == cpu_to_le16(1))){
-+		    (ocfs2_read_links_count(newfe) == 1)) {
- 			status = ocfs2_orphan_add(osb, handle, new_inode,
- 						  newfe, orphan_name,
- 						  &orphan_insert, orphan_dir);
-@@ -1313,9 +1314,9 @@ static int ocfs2_rename(struct inode *old_dir,
- 		new_dir->i_version++;
- 
- 		if (S_ISDIR(new_inode->i_mode))
--			newfe->i_links_count = 0;
-+			ocfs2_set_links_count(newfe, 0);
- 		else
--			le16_add_cpu(&newfe->i_links_count, -1);
-+			ocfs2_add_links_count(newfe, -1);
- 
- 		status = ocfs2_journal_dirty(handle, newfe_bh);
- 		if (status < 0) {
-@@ -1409,14 +1410,13 @@ static int ocfs2_rename(struct inode *old_dir,
- 		} else {
- 			struct ocfs2_dinode *fe;
- 			status = ocfs2_journal_access_di(handle, old_dir,
--							 old_dir_bh,
--							 OCFS2_JOURNAL_ACCESS_WRITE);
-+						      old_dir_bh,
-+						      OCFS2_JOURNAL_ACCESS_WRITE);
- 			fe = (struct ocfs2_dinode *) old_dir_bh->b_data;
--			fe->i_links_count = cpu_to_le16(old_dir->i_nlink);
-+			ocfs2_set_links_count(fe, old_dir->i_nlink);
- 			status = ocfs2_journal_dirty(handle, old_dir_bh);
- 		}
- 	}
--
- 	ocfs2_dentry_move(old_dentry, new_dentry, old_dir, new_dir);
- 	status = 0;
- bail:
-@@ -1614,7 +1614,7 @@ static int ocfs2_symlink(struct inode *dir,
- 	}
- 
- 	dirfe = (struct ocfs2_dinode *) parent_fe_bh->b_data;
--	if (!dirfe->i_links_count) {
-+	if (!ocfs2_read_links_count(dirfe)) {
- 		/* can't make a file in a deleted directory. */
- 		status = -ENOENT;
- 		goto bail;
-@@ -1932,8 +1932,8 @@ static int ocfs2_orphan_add(struct ocfs2_super *osb,
- 	 * underneath us... */
- 	orphan_fe = (struct ocfs2_dinode *) orphan_dir_bh->b_data;
- 	if (S_ISDIR(inode->i_mode))
--		le16_add_cpu(&orphan_fe->i_links_count, 1);
--	orphan_dir_inode->i_nlink = le16_to_cpu(orphan_fe->i_links_count);
-+		ocfs2_add_links_count(orphan_fe, 1);
-+	orphan_dir_inode->i_nlink = ocfs2_read_links_count(orphan_fe);
- 
- 	status = ocfs2_journal_dirty(handle, orphan_dir_bh);
- 	if (status < 0) {
-@@ -2016,8 +2016,8 @@ int ocfs2_orphan_del(struct ocfs2_super *osb,
- 	/* do the i_nlink dance! :) */
- 	orphan_fe = (struct ocfs2_dinode *) orphan_dir_bh->b_data;
- 	if (S_ISDIR(inode->i_mode))
--		le16_add_cpu(&orphan_fe->i_links_count, -1);
--	orphan_dir_inode->i_nlink = le16_to_cpu(orphan_fe->i_links_count);
-+		ocfs2_add_links_count(orphan_fe, -1);
-+	orphan_dir_inode->i_nlink = ocfs2_read_links_count(orphan_fe);
- 
- 	status = ocfs2_journal_dirty(handle, orphan_dir_bh);
- 	if (status < 0) {
-diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
-index 3749c32..fa3c6d3 100644
---- a/fs/ocfs2/ocfs2.h
-+++ b/fs/ocfs2/ocfs2.h
-@@ -408,6 +408,44 @@ static inline int ocfs2_supports_indexed_dirs(struct ocfs2_super *osb)
- 	return 0;
- }
- 
-+static inline unsigned int ocfs2_link_max(struct ocfs2_super *osb)
-+{
-+	if (ocfs2_supports_indexed_dirs(osb))
-+		return OCFS2_DX_LINK_MAX;
-+	return OCFS2_LINK_MAX;
-+}
-+
-+static inline unsigned int ocfs2_read_links_count(struct ocfs2_dinode *di)
-+{
-+	u32 nlink = le16_to_cpu(di->i_links_count);
-+	u32 hi = le16_to_cpu(di->i_links_count_hi);
-+
-+	if (di->i_dyn_features & cpu_to_le16(OCFS2_INDEXED_DIR_FL))
-+		nlink |= (hi << OCFS2_LINKS_HI_SHIFT);
-+
-+	return nlink;
-+}
-+
-+static inline void ocfs2_set_links_count(struct ocfs2_dinode *di, u32 nlink)
-+{
-+	u16 lo, hi;
-+
-+	lo = nlink;
-+	hi = nlink >> OCFS2_LINKS_HI_SHIFT;
-+
-+	di->i_links_count = cpu_to_le16(lo);
-+	di->i_links_count_hi = cpu_to_le16(hi);
-+}
-+
-+static inline void ocfs2_add_links_count(struct ocfs2_dinode *di, int n)
-+{
-+	u32 links = ocfs2_read_links_count(di);
-+
-+	links += n;
-+
-+	ocfs2_set_links_count(di, links);
-+}
-+
- /* set / clear functions because cluster events can make these happen
-  * in parallel so we want the transitions to be atomic. this also
-  * means that any future flags osb_flags must be protected by spinlock
-diff --git a/fs/ocfs2/ocfs2_fs.h b/fs/ocfs2/ocfs2_fs.h
-index d549b17..43da76e 100644
---- a/fs/ocfs2/ocfs2_fs.h
-+++ b/fs/ocfs2/ocfs2_fs.h
-@@ -419,6 +419,8 @@ static struct ocfs2_system_inode_info ocfs2_system_inodes[NUM_SYSTEM_INODES] = {
- #define OCFS2_DIR_MIN_REC_LEN	OCFS2_DIR_REC_LEN(1)
- 
- #define OCFS2_LINK_MAX		32000
-+#define	OCFS2_DX_LINK_MAX	((1U << 31) - 1U)
-+#define	OCFS2_LINKS_HI_SHIFT	16
- 
- #define S_SHIFT			12
- static unsigned char ocfs2_type_by_mode[S_IFMT >> S_SHIFT] = {
-@@ -686,7 +688,7 @@ struct ocfs2_dinode {
- 					   belongs to */
- 	__le16 i_suballoc_bit;		/* Bit offset in suballocator
- 					   block group */
--/*10*/	__le16 i_reserved0;
-+/*10*/	__le16 i_links_count_hi;	/* High 16 bits of links count */
- 	__le16 i_xattr_inline_size;
- 	__le32 i_clusters;		/* Cluster count */
- 	__le32 i_uid;			/* Owner UID */
--- 
-1.5.6
+One thing I was thinking about though - would we need to look for a
+trace that consists of a fast ping followed by a slow ping? If we only
+keep the trace data from when we experience the slow ping, the guest
+will have already "stalled" before the trace started, so the trace won't
+indicate any of the information about how we got into that state. Is
+that information going to be important, or is it enough to just see what
+it does to get out of the stalled state?
+
+Either way, I'll try to get some results in my maintenance window
+tonight.
+
+Cheers,
+Kevin.
+
+> You will need to pull the latest -tip tree and enable the following:
+> 
+> CONFIG_FUNCTION_TRACER=y
+> CONFIG_FUNCTION_GRAPH_TRACER=y
+> CONFIG_DYNAMIC_FTRACE=y
+> CONFIG_SCHED_TRACER=y
+> CONFIG_CONTEXT_SWITCH_TRACER=y
+> CONFIG_EVENT_TRACER=y
+> 
+> Thanks!
+> 
+> Ah and you will need python too (since bash can't do floating point
+> operation, it uses python here).
+> 
+> #!/bin/bash
+> 
+> # Switch off all CPUs except for one to simplify the trace
+> echo 0 > /sys/devices/system/cpu/cpu1/online
+> echo 0 > /sys/devices/system/cpu/cpu2/online
+> echo 0 > /sys/devices/system/cpu/cpu3/online
+> 
+> 
+> # Make sure debugfs has been mounted
+> if [ ! -d /sys/kernel/debug/tracing ]; then
+>     mount -t debugfs debugfs /sys/kernel/debug
+> fi
+> 
+> # Set up the trace parameters
+> pushd /sys/kernel/debug/tracing || exit 1
+> echo 0 > tracing_enabled
+> echo function_graph > current_tracer
+> echo funcgraph-abstime > trace_options
+> echo funcgraph-proc    > trace_options
+> 
+> # Set here the kvm IP addr
+> addr=""
+> 
+> # Set here a threshold of latency in sec
+> thres="5"
+> found="False"
+> lat=0
+> prefix=/sys/kernel/debug/tracing
+> 
+> echo 1 > $prefix/events/sched/sched_wakeup/enable
+> echo 1 > $prefix/events/sched/sched_switch/enable
+> 
+> while [ "$found" != "True" ]
+> do
+> 	# Flush the previous buffer
+> 	echo nop > $prefix/current_tracer
+> 
+> 	# Reset the function_graph tracer
+> 	echo function_graph > $prefix/current_tracer
+> 
+> 	echo 1 > $prefix/tracing_enabled
+> 	lat=$(ping -c 1 $addr | grep rtt | grep -Eo " [0-9]+.[0-9]+")
+> 	echo 0 > $prefix/tracing_enabled
+> 
+> 	found=$(python -c "print float(str($lat).strip()) > $thres")
+> 	sleep 0.01
+> done
+> 
+> echo 0 > $prefix/events/sched/sched_wakeup/enable
+> echo 0 > $prefix/events/sched/sched_switch/enable
+> 
+> 
+> echo "Found buggy latency: $lat"
+> echo "Please send the trace you will find on $prefix/trace"
+
 
