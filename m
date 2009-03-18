@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbZCRVqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759305AbZCRVq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758848AbZCRVqE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756602AbZCRVm3
+	id S1759305AbZCRVq3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbZCRVmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:42:29 -0400
+	Wed, 18 Mar 2009 17:42:32 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756798AbZCRVm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:27 -0400
+	id S1757076AbZCRVmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:42:31 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 31/57] microblaze_v7: includes SHM*, msgbuf
-Date: Wed, 18 Mar 2009 21:30:58 +0100
-Message-Id: <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 40/57] microblaze_v7: headers pgalloc.h pgtable.h
+Date: Wed, 18 Mar 2009 21:31:07 +0100
+Message-Id: <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -48,6 +48,15 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
  <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
  <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
+ <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
+ <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
+ <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
+ <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
+ <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
+ <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
+ <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
+ <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
+ <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -59,111 +68,92 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/msgbuf.h   |   31 +++++++++++++++++++++++
- arch/microblaze/include/asm/shmbuf.h   |   42 ++++++++++++++++++++++++++++++++
- arch/microblaze/include/asm/shmparam.h |    6 ++++
- 3 files changed, 79 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/msgbuf.h
- create mode 100644 arch/microblaze/include/asm/shmbuf.h
- create mode 100644 arch/microblaze/include/asm/shmparam.h
+ arch/microblaze/include/asm/pgalloc.h |   14 ++++++++
+ arch/microblaze/include/asm/pgtable.h |   54 +++++++++++++++++++++++++++++++++
+ 2 files changed, 68 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/pgalloc.h
+ create mode 100644 arch/microblaze/include/asm/pgtable.h
 
-diff --git a/arch/microblaze/include/asm/msgbuf.h b/arch/microblaze/include/asm/msgbuf.h
+diff --git a/arch/microblaze/include/asm/pgalloc.h b/arch/microblaze/include/asm/pgalloc.h
 new file mode 100644
-index 0000000..09dd970
+index 0000000..2a4b354
 --- /dev/null
-+++ b/arch/microblaze/include/asm/msgbuf.h
-@@ -0,0 +1,31 @@
-+#ifndef _ASM_MICROBLAZE_MSGBUF_H
-+#define _ASM_MICROBLAZE_MSGBUF_H
-+
++++ b/arch/microblaze/include/asm/pgalloc.h
+@@ -0,0 +1,14 @@
 +/*
-+ * The msqid64_ds structure for microblaze architecture.
-+ * Note extra padding because this structure is passed back and forth
-+ * between kernel and user space.
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ * Pad space is left for:
-+ * - 64-bit time_t to solve y2038 problem
-+ * - 2 miscellaneous 32-bit values
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+struct msqid64_ds {
-+	struct ipc64_perm msg_perm;
-+	__kernel_time_t msg_stime; /* last msgsnd time */
-+	unsigned long __unused1;
-+	__kernel_time_t msg_rtime; /* last msgrcv time */
-+	unsigned long __unused2;
-+	__kernel_time_t msg_ctime; /* last change time */
-+	unsigned long __unused3;
-+	unsigned long msg_cbytes; /* current number of bytes on queue */
-+	unsigned long msg_qnum; /* number of messages in queue */
-+	unsigned long msg_qbytes; /* max number of bytes on queue */
-+	__kernel_pid_t msg_lspid; /* pid of last msgsnd */
-+	__kernel_pid_t msg_lrpid; /* last receive pid */
-+	unsigned long __unused4;
-+	unsigned long __unused5;
-+};
++#ifndef _ASM_MICROBLAZE_PGALLOC_H
++#define _ASM_MICROBLAZE_PGALLOC_H
 +
-+#endif /* _ASM_MICROBLAZE_MSGBUF_H */
-diff --git a/arch/microblaze/include/asm/shmbuf.h b/arch/microblaze/include/asm/shmbuf.h
++#define check_pgt_cache()	do {} while (0)
++
++#endif /* _ASM_MICROBLAZE_PGALLOC_H */
+diff --git a/arch/microblaze/include/asm/pgtable.h b/arch/microblaze/include/asm/pgtable.h
 new file mode 100644
-index 0000000..f829c58
+index 0000000..4df31e4
 --- /dev/null
-+++ b/arch/microblaze/include/asm/shmbuf.h
-@@ -0,0 +1,42 @@
-+#ifndef _ASM_MICROBLAZE_SHMBUF_H
-+#define _ASM_MICROBLAZE_SHMBUF_H
-+
++++ b/arch/microblaze/include/asm/pgtable.h
+@@ -0,0 +1,54 @@
 +/*
-+ * The shmid64_ds structure for microblaze architecture.
-+ * Note extra padding because this structure is passed back and forth
-+ * between kernel and user space.
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ * Pad space is left for:
-+ * - 64-bit time_t to solve y2038 problem
-+ * - 2 miscellaneous 32-bit values
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+struct shmid64_ds {
-+	struct ipc64_perm	shm_perm; /* operation perms */
-+	size_t			shm_segsz; /* size of segment (bytes) */
-+	__kernel_time_t		shm_atime; /* last attach time */
-+	unsigned long		__unused1;
-+	__kernel_time_t		shm_dtime; /* last detach time */
-+	unsigned long		__unused2;
-+	__kernel_time_t		shm_ctime; /* last change time */
-+	unsigned long		__unused3;
-+	__kernel_pid_t		shm_cpid; /* pid of creator */
-+	__kernel_pid_t		shm_lpid; /* pid of last operator */
-+	unsigned long		shm_nattch; /* no. of current attaches */
-+	unsigned long		__unused4;
-+	unsigned long		__unused5;
-+};
++#ifndef _ASM_MICROBLAZE_PGTABLE_H
++#define _ASM_MICROBLAZE_PGTABLE_H
 +
-+struct shminfo64 {
-+	unsigned long	shmmax;
-+	unsigned long	shmmin;
-+	unsigned long	shmmni;
-+	unsigned long	shmseg;
-+	unsigned long	shmall;
-+	unsigned long	__unused1;
-+	unsigned long	__unused2;
-+	unsigned long	__unused3;
-+	unsigned long	__unused4;
-+};
++#include <asm/setup.h>
 +
-+#endif /* _ASM_MICROBLAZE_SHMBUF_H */
-diff --git a/arch/microblaze/include/asm/shmparam.h b/arch/microblaze/include/asm/shmparam.h
-new file mode 100644
-index 0000000..9f5fc2b
---- /dev/null
-+++ b/arch/microblaze/include/asm/shmparam.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_MICROBLAZE_SHMPARAM_H
-+#define _ASM_MICROBLAZE_SHMPARAM_H
++#define io_remap_pfn_range(vma, vaddr, pfn, size, prot)		\
++		remap_pfn_range(vma, vaddr, pfn, size, prot)
 +
-+#define SHMLBA	PAGE_SIZE /* attach addr a multiple of this */
++#define pgd_present(pgd)	(1) /* pages are always present on non MMU */
++#define pgd_none(pgd)		(0)
++#define pgd_bad(pgd)		(0)
++#define pgd_clear(pgdp)
++#define kern_addr_valid(addr)	(1)
++#define	pmd_offset(a, b)	((void *) 0)
 +
-+#endif /* _ASM_MICROBLAZE_SHMPARAM_H */
++#define PAGE_NONE		__pgprot(0) /* these mean nothing to non MMU */
++#define PAGE_SHARED		__pgprot(0) /* these mean nothing to non MMU */
++#define PAGE_COPY		__pgprot(0) /* these mean nothing to non MMU */
++#define PAGE_READONLY		__pgprot(0) /* these mean nothing to non MMU */
++#define PAGE_KERNEL		__pgprot(0) /* these mean nothing to non MMU */
++
++#define __swp_type(x)		(0)
++#define __swp_offset(x)		(0)
++#define __swp_entry(typ, off)	((swp_entry_t) { ((typ) | ((off) << 7)) })
++#define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val(pte) })
++#define __swp_entry_to_pte(x)	((pte_t) { (x).val })
++
++#ifndef __ASSEMBLY__
++static inline int pte_file(pte_t pte) { return 0; }
++#endif /* __ASSEMBLY__ */
++
++#define ZERO_PAGE(vaddr)	({ BUG(); NULL; })
++
++#define swapper_pg_dir ((pgd_t *) NULL)
++
++#define pgtable_cache_init()	do {} while (0)
++
++#define arch_enter_lazy_cpu_mode()	do {} while (0)
++
++#ifndef __ASSEMBLY__
++#include <asm-generic/pgtable.h>
++
++void setup_memory(void);
++#endif /* __ASSEMBLY__ */
++
++#endif /* _ASM_MICROBLAZE_PGTABLE_H */
 -- 
 1.5.5.1
 
