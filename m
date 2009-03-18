@@ -1,69 +1,35 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756655AbZCRL15 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Wed, 18 Mar 2009 07:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbZCRL1r
+	id S1757838AbZCROO0 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Wed, 18 Mar 2009 10:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711AbZCROOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 07:27:47 -0400
-Received: from soporte.saltillo.cinvestav.mx ([148.247.22.5]:40583 "EHLO
-	educa.cinvestav.edu.mx" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754446AbZCRL1q (ORCPT
+	Wed, 18 Mar 2009 10:14:12 -0400
+Received: from hrndva-commlb.mail.rr.com ([71.74.57.8]:46977 "EHLO
+	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756241AbZCROOK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 07:27:46 -0400
-Message-ID: <61060.212.100.70.10.1237378067.squirrel@212.100.70.10>
-Date: Wed, 18 Mar 2009 06:07:47 -0600 (CST)
-Subject: Dear Account User
-From: "ADMINISTRATOR" <info@sdb.ac.cn>
-Reply-To: upgarde.teamoffice@ymail.com
-User-Agent: SquirrelMail/1.4.3a-1
-X-Mailer: SquirrelMail/1.4.3a-1
+	Wed, 18 Mar 2009 10:14:10 -0400
+Message-Id: <7h9gbp$cgbsej@rrcs-agw-01b.hrndva.rr.com>
+X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
+From: Siemens Winners Alert <wccpr@winch.twcbc.com>
+Reply-To: siemens12@btinternet.com
+Organization: Siemens Winners Alert
+To: <info@lotto.com>
+Subject: Final Notification
+Date: Wed, 18 Mar 2009 9:14:07 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The sum of £750,000,00 GBP has been Awarded to your E-MAIL ID,Get back to us with your info via (siemens12@rocketmail.com)
+Names :
+Address:
+Conntry :
+Occupation :
+Age :
 
-
-
- Dear Account User,
-
-This Email is from SDB webmail user Customer Care and we are sending it to
-every webmail User Accounts Owner SDB safety. we are having congestions
-due to the anonymous registration of accounts so we are shutting down some
-accounts and your account was among those to be deleted.
-
-We are sending you this email to you so that you can verify and let usknow
-if you still want to use this account. If you are still interested please
-confirm your account by filling the space below. Your User
-name,password,date of birth and your country information would be needed
-toverify your account.
-
-Due to the congestion in all webmail users and removal of all
-unusedAccounts, Webmail would be shutting down all unused Accounts,
-
-You will have to confirm your E-mail by filling the space below. Your User
-name, password, date of birth and your country information would be needed
-to verify your account. Any customer mail not verified will be suspended
-within 24 hours SDB security reasons.
-
-You are to send the following information SDB verification
-
-* E-mail: ............................
-* Password: ............................
-* Date of Birth: .......................
-
-Your response should be sent to admin manager
-Email: upgarde.teamoffice@ymail.com
-
-Waiting to receive the details of your two emails
-
-Warning!!! Account owner that refuse to send this information after two
-weeks of receiving this warning will lose his/her SDB account permanently.
-
-Regard,
-SDB Customer Care Of Webmail Team.
-
+Mrs Mercy Bill
+(Information Officer)
