@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758848AbZCRVo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758994AbZCRVpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758848AbZCRVo5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756415AbZCRVmU
+	id S1758994AbZCRVpY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbZCRVmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:42:20 -0400
+	Wed, 18 Mar 2009 17:42:23 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756399AbZCRVmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:19 -0400
+	id S1756454AbZCRVmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:42:22 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 57/57] microblaze_v7: Uartlite for Microblaze
-Date: Wed, 18 Mar 2009 21:31:24 +0100
-Message-Id: <57d096a05c22f5b3dd1070e9ecd6e8e05b22e9b3.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 25/57] microblaze_v7: delay.h, timex.h
+Date: Wed, 18 Mar 2009 21:30:52 +0100
+Message-Id: <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <55868bc389e07d10d00e92a1da65f31256a26f4c.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -42,38 +42,6 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <039bc2fea33d23a3e7d2d85ac6fb275b8d21b5ed.1237407249.git.monstr@monstr.eu>
  <513d4067a84be1ecb47577e1edf131d2b3572808.1237407249.git.monstr@monstr.eu>
  <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
- <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
- <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
- <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
- <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
- <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
- <99fdae6e9b1da3ae5e2d3ebc841d1afdc694dfae.1237407249.git.monstr@monstr.eu>
- <29d86e7cd1124e596c9dde627f397ca98dccf572.1237407249.git.monstr@monstr.eu>
- <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
- <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
- <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
- <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
- <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
- <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
- <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
- <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
- <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
- <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
- <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
- <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
- <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
- <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
- <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
- <14c123f2bae10a8b5fb76cd059ba105c212776ef.1237407249.git.monstr@monstr.eu>
- <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
- <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
- <d3f49195b8f675db48d2eda4f09fddb51af6f946.1237407249.git.monstr@monstr.eu>
- <34c2f9e50610e147be556607e482b88fd674b887.1237407249.git.monstr@monstr.eu>
- <15f6f10873f7c6f4f3b06f9d4d5af3ee9714f873.1237407249.git.monstr@monstr.eu>
- <e5b88f50c39aa95431f5ecdb032c6676399ae198.1237407249.git.monstr@monstr.eu>
- <50253611a0770c1ae6a63702208cfb9f96cd1f1a.1237407249.git.monstr@monstr.eu>
- <28a81149bf51571cbc898a672efff4770fbc1efe.1237407249.git.monstr@monstr.eu>
- <55868bc389e07d10d00e92a1da65f31256a26f4c.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -85,31 +53,114 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- drivers/serial/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/microblaze/include/asm/delay.h |   72 +++++++++++++++++++++++++++++++++++
+ arch/microblaze/include/asm/timex.h |   18 +++++++++
+ 2 files changed, 90 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/delay.h
+ create mode 100644 arch/microblaze/include/asm/timex.h
 
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index 7d7f576..131901b 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -833,7 +833,7 @@ config SERIAL_IMX_CONSOLE
- 
- config SERIAL_UARTLITE
- 	tristate "Xilinx uartlite serial port support"
--	depends on PPC32
-+	depends on PPC32 || MICROBLAZE
- 	select SERIAL_CORE
- 	help
- 	  Say Y here if you want to use the Xilinx uartlite serial controller.
-@@ -1319,7 +1319,7 @@ config SERIAL_NETX_CONSOLE
- 
- config SERIAL_OF_PLATFORM
- 	tristate "Serial port on Open Firmware platform bus"
--	depends on PPC_OF
-+	depends on PPC_OF || MICROBLAZE
- 	depends on SERIAL_8250 || SERIAL_OF_PLATFORM_NWPSERIAL
- 	help
- 	  If you have a PowerPC based system that has serial ports
+diff --git a/arch/microblaze/include/asm/delay.h b/arch/microblaze/include/asm/delay.h
+new file mode 100644
+index 0000000..05b7d39
+--- /dev/null
++++ b/arch/microblaze/include/asm/delay.h
+@@ -0,0 +1,72 @@
++/*
++ * include/asm-microblaze/delay.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2008 Michal Simek
++ * Copyright (C) 2007 John Williams
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ */
++
++#ifndef _ASM_MICROBLAZE_DELAY_H
++#define _ASM_MICROBLAZE_DELAY_H
++
++extern inline void __delay(unsigned long loops)
++{
++	asm volatile ("# __delay		\n\t"		\
++			"1: addi	%0, %0, -1\t\n"		\
++			"bneid	%0, 1b		\t\n"		\
++			"nop			\t\n"
++			: "=r" (loops)
++			: "0" (loops));
++}
++
++/*
++ * Note that 19 * 226 == 4294 ==~ 2^32 / 10^6, so
++ * loops = (4294 * usecs * loops_per_jiffy * HZ) / 2^32.
++ *
++ * The mul instruction gives us loops = (a * b) / 2^32.
++ * We choose a = usecs * 19 * HZ and b = loops_per_jiffy * 226
++ * because this lets us support a wide range of HZ and
++ * loops_per_jiffy values without either a or b overflowing 2^32.
++ * Thus we need usecs * HZ <= (2^32 - 1) / 19 = 226050910 and
++ * loops_per_jiffy <= (2^32 - 1) / 226 = 19004280
++ * (which corresponds to ~3800 bogomips at HZ = 100).
++ * -- paulus
++ */
++#define __MAX_UDELAY	(226050910UL/HZ)	/* maximum udelay argument */
++#define __MAX_NDELAY	(4294967295UL/HZ)	/* maximum ndelay argument */
++
++extern unsigned long loops_per_jiffy;
++
++extern inline void __udelay(unsigned int x)
++{
++
++	unsigned long long tmp =
++		(unsigned long long)x * (unsigned long long)loops_per_jiffy \
++			* 226LL;
++	unsigned loops = tmp >> 32;
++
++/*
++	__asm__("mulxuu %0,%1,%2" : "=r" (loops) :
++		"r" (x), "r" (loops_per_jiffy * 226));
++*/
++	__delay(loops);
++}
++
++extern void __bad_udelay(void);		/* deliberately undefined */
++extern void __bad_ndelay(void);		/* deliberately undefined */
++
++#define udelay(n) (__builtin_constant_p(n) ? \
++	((n) > __MAX_UDELAY ? __bad_udelay() : __udelay((n) * (19 * HZ))) : \
++	__udelay((n) * (19 * HZ)))
++
++#define ndelay(n) (__builtin_constant_p(n) ? \
++	((n) > __MAX_NDELAY ? __bad_ndelay() : __udelay((n) * HZ)) : \
++	__udelay((n) * HZ))
++
++#define muldiv(a, b, c)		(((a)*(b))/(c))
++
++#endif /* _ASM_MICROBLAZE_DELAY_H */
+diff --git a/arch/microblaze/include/asm/timex.h b/arch/microblaze/include/asm/timex.h
+new file mode 100644
+index 0000000..678525d
+--- /dev/null
++++ b/arch/microblaze/include/asm/timex.h
+@@ -0,0 +1,18 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_TIMEX_H
++#define _ASM_MICROBLAZE_TIMEX_H
++
++#define CLOCK_TICK_RATE 1000 /* Timer input freq. */
++
++typedef unsigned long cycles_t;
++
++#define get_cycles()	(0)
++
++#endif /* _ASM_TIMEX_H */
 -- 
 1.5.5.1
 
