@@ -1,98 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbZCRMIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757814AbZCRMIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757667AbZCRMIA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 08:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbZCRMHu
+	id S1757814AbZCRMIo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 08:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757845AbZCRMIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 08:07:50 -0400
-Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:63858 "EHLO
-	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753425AbZCRMHs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 08:07:48 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator - hang traced
-Date: Wed, 18 Mar 2009 13:07:42 +0100
-User-Agent: KMail/1.9.9
-Cc: john stultz <johnstul@us.ibm.com>, linux-s390@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200903080230.10099.elendil@planet.nl> <1237344897.6160.136.camel@localhost> <20090318102825.32c821f3@skybase>
-In-Reply-To: <20090318102825.32c821f3@skybase>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903181307.44867.elendil@planet.nl>
-X-OriginalArrivalTime: 18 Mar 2009 12:07:45.0831 (UTC) FILETIME=[25E94B70:01C9A7C2]
+	Wed, 18 Mar 2009 08:08:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41226 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757823AbZCRMIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 08:08:14 -0400
+Subject: [PATCH -tip] x86: kprobes.c fix compilation warning
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 18 Mar 2009 17:37:45 +0530
+Message-Id: <1237378065.13488.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 18 March 2009, john stultz wrote:
-> In my testing, this isn't really specific to the recent rounding
-> change, however the rounding change made the issue crop up fast enough
-> that it could be seen, whereas before the issue wouldn't crop up before
-> the tod clock was installed. If you boot w/ clocksource=jiffies, you'll
-> probably see the hang with your working kernels as well, only at a
-> later point (it would be helpful if you would verify that and let me
-> know).
+Subject: [PATCH] x86: kprobes.c fix compilation warning
 
-Confirmed. It then hangs while checking/loading the initramfs.
+arch/x86/kernel/kprobes.c:196: warning: passing argument 1 of ‘search_exception_tables’ makes integer from pointer without a cast
 
-On Wednesday 18 March 2009, Martin Schwidefsky wrote:
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
->
-> The implementation of __div64_31 for G5 machines is broken. The
-> comments in __div64_31 are correct, only the code does not do what the
-> comments say. The part "If the remainder has overflown subtract base
-> and increase the quotient" is only partially realized, the base is
-> subtracted correctly but the quotient is only increased if the dividend
-> had the last bit set. Using the correct instruction fixes the problem.
->
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reported-by: Frans Pop <elendil@planet.nl>
-Tested-by: Frans Pop <elendil@planet.nl>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/kprobes.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I've tried this patch with 2.6.28.8 and it fixes the hang! Maybe that
-aspect should be mentioned in the commit log?
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index cfb3d81..ea06096 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -193,7 +193,7 @@ static int __kprobes can_boost(kprobe_opcode_t *opcodes)
+ 	kprobe_opcode_t opcode;
+ 	kprobe_opcode_t *orig_opcodes = opcodes;
+ 
+-	if (search_exception_tables(opcodes))
++	if (search_exception_tables((unsigned long)opcodes))
+ 		return 0;	/* Page fault may occur on this address. */
+ 
+ retry:
+-- 
+1.6.0.6
 
-I've also tested the patch with 2.6.29-rc8 and it also fixes the hang
-during login I reported with that [1]. Which means that not only jiffies is
-affected, but also tod! And that does not really surprise me because after
-the system switches to tod, I also see a continuously increasing error
-with clock->xtime_nsec always equal to -4096 (see below).
 
-Am I correct that any kernel starting from 2.6.19 is affected by this, and
-that it's the most likely cause of Debian bug report
-http://bugs.debian.org/511334? If so, I'll get it pushed into Debian's
-stable kernels.
 
-Cheers,
-FJP
-
-[1] http://marc.info/?t=123656370500001&r=1&w=2
-
-Ever increasing error with tod on 2.6.28.8 (with Martin's patch applied):
-     0.672655! timekeeping: clock source changed from jiffies to tod (shift: 12)
-     0.676889! tod/12 (150): xtime.tv: 1237377507/55524946 -> 1237377507/55524947
-     0.677020!    clock->xtime: 0 -> -4096, error: 0 -> -4294967296
-     0.680788! tod/12 (151): xtime.tv: 1237377507/55524947 -> 1237377507/55524948
-     0.680919!    clock->xtime: -4096 -> -4096, error: -4294967296 -> -8589934592
-     0.685280! tod/12 (152): xtime.tv: 1237377507/55524948 -> 1237377507/55524949
-     0.685411!    clock->xtime: -4096 -> -4096, error: -8589934592 -> -12884901888
-     4.685237! tod/12 (1152): xtime.tv: 1237377511/55525948 -> 1237377511/55525949
-     4.685356!    clock->xtime: -4096 -> -4096, error: -4303557230592 -> -4307852197888
-    20.700920! tod/12 (5155): xtime.tv: 1237377527/55529951 -> 1237377527/55529952
-    20.701057!    clock->xtime: -4096 -> -4096, error: -21496311316480 -> -21500606283776
-    32.864888! tod/12 (8160): xtime.tv: 1237377539/55532956 -> 1237377539/55532957
-    32.865008!    clock->xtime: -4096 -> -4096, error: -34402688040960 -> -34406983008256
-    86.760987! tod/12 (21172): xtime.tv: 1237377593/55545968 -> 1237377593/55545969
-    86.761120!    clock->xtime: -4096 -> -4096, error: -90288802496512 -> -90293097463808
-   127.100183! tod/12 (29180): xtime.tv: 1237377633/55553976 -> 1237377633/55553977
-   127.100304!    clock->xtime: -4096 -> -4096, error: -124682900602880 -> -124687195570176
-   491.860765! tod/12 (37189): xtime.tv: 1237377998/55561985 -> 1237377998/55561986
-   491.860886!    clock->xtime: -4096 -> -4096, error: -159081293676544 -> -159085588643840
