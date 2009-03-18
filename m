@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760922AbZCRV4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbZCRVz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760922AbZCRV4j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758616AbZCRVoP
+	id S1760845AbZCRVz7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758513AbZCRVoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:44:15 -0400
+	Wed, 18 Mar 2009 17:44:06 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758556AbZCRVoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:44:12 -0400
+	id S1758132AbZCRVoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:44:04 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 17/57] microblaze_v7: supported function for memory - kernel/lib
-Date: Wed, 18 Mar 2009 21:30:44 +0100
-Message-Id: <1477ec41e7ba0ec847a064e1f8e422dc2a5dcc9f.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 29/57] microblaze_v7: memory inicialization, MMU, TLB
+Date: Wed, 18 Mar 2009 21:30:56 +0100
+Message-Id: <aa044d06327435cee76599fb6220630007f38ba7.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <eb4ccc67cf39abc816c8d7653fdc7561d14c1da2.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -34,6 +34,18 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <20227d6f2615060d6560785090513e251cbe2654.1237407249.git.monstr@monstr.eu>
  <69ef4f976d86c870a97fbe4974c242c74acc477d.1237407249.git.monstr@monstr.eu>
  <eb4ccc67cf39abc816c8d7653fdc7561d14c1da2.1237407249.git.monstr@monstr.eu>
+ <1477ec41e7ba0ec847a064e1f8e422dc2a5dcc9f.1237407249.git.monstr@monstr.eu>
+ <75127eae09c978220d452d92f95763dde24f1d52.1237407249.git.monstr@monstr.eu>
+ <b726b7b271cf303c36af54c4e155140541a6769b.1237407249.git.monstr@monstr.eu>
+ <644f08d7f8cd338e606ed703e221914f75588fb5.1237407249.git.monstr@monstr.eu>
+ <6d19f608a4ba3e7718aa55794c2845f19b5ed5e2.1237407249.git.monstr@monstr.eu>
+ <039bc2fea33d23a3e7d2d85ac6fb275b8d21b5ed.1237407249.git.monstr@monstr.eu>
+ <513d4067a84be1ecb47577e1edf131d2b3572808.1237407249.git.monstr@monstr.eu>
+ <c6a6fbe7b56db27d9b74ee593cf068963f86ee58.1237407249.git.monstr@monstr.eu>
+ <e9d4d452140c50451741dd6024ab89efd24ac8e6.1237407249.git.monstr@monstr.eu>
+ <f8494212852d4cec890ae5e152353c91153c7c0d.1237407249.git.monstr@monstr.eu>
+ <5c66d0329884feb553ae745584f6db589a892eb1.1237407249.git.monstr@monstr.eu>
+ <72b06b8fa7b051005ebfa5c23c53a40d6a27f94a.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,1115 +57,321 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/lib/fastcopy.S |  660 ++++++++++++++++++++++++++++++++++++++++
- arch/microblaze/lib/memcpy.c   |  160 ++++++++++
- arch/microblaze/lib/memmove.c  |  174 +++++++++++
- arch/microblaze/lib/memset.c   |   81 +++++
- 4 files changed, 1075 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/lib/fastcopy.S
- create mode 100644 arch/microblaze/lib/memcpy.c
- create mode 100644 arch/microblaze/lib/memmove.c
- create mode 100644 arch/microblaze/lib/memset.c
+ arch/microblaze/include/asm/mmu.h         |   19 +++
+ arch/microblaze/include/asm/mmu_context.h |   21 +++
+ arch/microblaze/include/asm/tlb.h         |   16 +++
+ arch/microblaze/include/asm/tlbflush.h    |   20 +++
+ arch/microblaze/mm/init.c                 |  197 +++++++++++++++++++++++++++++
+ 5 files changed, 273 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/mmu.h
+ create mode 100644 arch/microblaze/include/asm/mmu_context.h
+ create mode 100644 arch/microblaze/include/asm/tlb.h
+ create mode 100644 arch/microblaze/include/asm/tlbflush.h
+ create mode 100644 arch/microblaze/mm/init.c
 
-diff --git a/arch/microblaze/lib/fastcopy.S b/arch/microblaze/lib/fastcopy.S
+diff --git a/arch/microblaze/include/asm/mmu.h b/arch/microblaze/include/asm/mmu.h
 new file mode 100644
-index 0000000..df5e4ad
+index 0000000..0e0431d
 --- /dev/null
-+++ b/arch/microblaze/lib/fastcopy.S
-@@ -0,0 +1,660 @@
++++ b/arch/microblaze/include/asm/mmu.h
+@@ -0,0 +1,19 @@
 +/*
-+ * Copyright 2008 (c) Jim Law - Iris LP  All rights reserved.
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License.  See the file COPYING in the main directory of this
-+ * archive for more details.
-+ *
-+ * Written by Jim Law <jlaw@irispower.com>
-+ *
-+ * intended to replace:
-+ *	memcpy in memcpy.c and
-+ *	memmove in memmove.c
-+ * ... in arch/microblaze/lib
-+ *
-+ *
-+ * assly_fastcopy.S
-+ *
-+ * Attempt at quicker memcpy and memmove for MicroBlaze
-+ *	Input :	Operand1 in Reg r5 - destination address
-+ *		Operand2 in Reg r6 - source address
-+ *		Operand3 in Reg r7 - number of bytes to transfer
-+ *	Output: Result in Reg r3 - starting destinaition address
-+ *
-+ *
-+ * Explanation:
-+ *	Perform (possibly unaligned) copy of a block of memory
-+ *	between mem locations with size of xfer spec'd in bytes
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+#include <linux/linkage.h>
++#ifndef _ASM_MICROBLAZE_MMU_H
++#define _ASM_MICROBLAZE_MMU_H
 +
-+	.globl	memcpy
-+	.ent	memcpy
++#ifndef __ASSEMBLY__
++typedef struct {
++	struct vm_list_struct	*vmlist;
++	unsigned long		end_brk;
++} mm_context_t;
++#endif /* __ASSEMBLY__ */
 +
-+memcpy:
-+fast_memcpy_ascending:
-+	/* move d to return register as value of function */
-+	addi	r3, r5, 0
-+
-+	addi	r4, r0, 4	/* n = 4 */
-+	cmpu	r4, r4, r7	/* n = c - n  (unsigned) */
-+	blti	r4, a_xfer_end	/* if n < 0, less than one word to transfer */
-+
-+	/* transfer first 0~3 bytes to get aligned dest address */
-+	andi	r4, r5, 3		/* n = d & 3 */
-+	/* if zero, destination already aligned */
-+	beqi	r4, a_dalign_done
-+	/* n = 4 - n (yields 3, 2, 1 transfers for 1, 2, 3 addr offset) */
-+	rsubi	r4, r4, 4
-+	rsub	r7, r4, r7		/* c = c - n adjust c */
-+
-+a_xfer_first_loop:
-+	/* if no bytes left to transfer, transfer the bulk */
-+	beqi	r4, a_dalign_done
-+	lbui	r11, r6, 0		/* h = *s */
-+	sbi	r11, r5, 0		/* *d = h */
-+	addi	r6, r6, 1		/* s++ */
-+	addi	r5, r5, 1		/* d++ */
-+	brid	a_xfer_first_loop	/* loop */
-+	addi	r4, r4, -1		/* n-- (IN DELAY SLOT) */
-+
-+a_dalign_done:
-+	addi	r4, r0, 32		/* n = 32 */
-+	cmpu	r4, r4, r7		/* n = c - n  (unsigned) */
-+	/* if n < 0, less than one block to transfer */
-+	blti	r4, a_block_done
-+
-+a_block_xfer:
-+	andi	r4, r7, 0xffffffe0	/* n = c & ~31 */
-+	rsub	r7, r4, r7		/* c = c - n */
-+
-+	andi	r9, r6, 3		/* t1 = s & 3 */
-+	/* if temp != 0, unaligned transfers needed */
-+	bnei	r9, a_block_unaligned
-+
-+a_block_aligned:
-+	lwi	r9, r6, 0		/* t1 = *(s + 0) */
-+	lwi	r10, r6, 4		/* t2 = *(s + 4) */
-+	lwi	r11, r6, 8		/* t3 = *(s + 8) */
-+	lwi	r12, r6, 12		/* t4 = *(s + 12) */
-+	swi	r9, r5, 0		/* *(d + 0) = t1 */
-+	swi	r10, r5, 4		/* *(d + 4) = t2 */
-+	swi	r11, r5, 8		/* *(d + 8) = t3 */
-+	swi	r12, r5, 12		/* *(d + 12) = t4 */
-+	lwi	r9, r6, 16		/* t1 = *(s + 16) */
-+	lwi	r10, r6, 20		/* t2 = *(s + 20) */
-+	lwi	r11, r6, 24		/* t3 = *(s + 24) */
-+	lwi	r12, r6, 28		/* t4 = *(s + 28) */
-+	swi	r9, r5, 16		/* *(d + 16) = t1 */
-+	swi	r10, r5, 20		/* *(d + 20) = t2 */
-+	swi	r11, r5, 24		/* *(d + 24) = t3 */
-+	swi	r12, r5, 28		/* *(d + 28) = t4 */
-+	addi	r6, r6, 32		/* s = s + 32 */
-+	addi	r4, r4, -32		/* n = n - 32 */
-+	bneid	r4, a_block_aligned	/* while (n) loop */
-+	addi	r5, r5, 32		/* d = d + 32 (IN DELAY SLOT) */
-+	bri	a_block_done
-+
-+a_block_unaligned:
-+	andi	r8, r6, 0xfffffffc	/* as = s & ~3 */
-+	add	r6, r6, r4		/* s = s + n */
-+	lwi	r11, r8, 0		/* h = *(as + 0) */
-+
-+	addi	r9, r9, -1
-+	beqi	r9, a_block_u1		/* t1 was 1 => 1 byte offset */
-+	addi	r9, r9, -1
-+	beqi	r9, a_block_u2		/* t1 was 2 => 2 byte offset */
-+
-+a_block_u3:
-+	bslli	r11, r11, 24	/* h = h << 24 */
-+a_bu3_loop:
-+	lwi	r12, r8, 4	/* v = *(as + 4) */
-+	bsrli	r9, r12, 8	/* t1 = v >> 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 0	/* *(d + 0) = t1 */
-+	bslli	r11, r12, 24	/* h = v << 24 */
-+	lwi	r12, r8, 8	/* v = *(as + 8) */
-+	bsrli	r9, r12, 8	/* t1 = v >> 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 4	/* *(d + 4) = t1 */
-+	bslli	r11, r12, 24	/* h = v << 24 */
-+	lwi	r12, r8, 12	/* v = *(as + 12) */
-+	bsrli	r9, r12, 8	/* t1 = v >> 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 8	/* *(d + 8) = t1 */
-+	bslli	r11, r12, 24	/* h = v << 24 */
-+	lwi	r12, r8, 16	/* v = *(as + 16) */
-+	bsrli	r9, r12, 8	/* t1 = v >> 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 12	/* *(d + 12) = t1 */
-+	bslli	r11, r12, 24	/* h = v << 24 */
-+	lwi	r12, r8, 20	/* v = *(as + 20) */
-+	bsrli	r9, r12, 8	/* t1 = v >> 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 16	/* *(d + 16) = t1 */
-+	bslli	r11, r12, 24	/* h = v << 24 */
-+	lwi	r12, r8, 24	/* v = *(as + 24) */
-+	bsrli	r9, r12, 8	/* t1 = v >> 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 20	/* *(d + 20) = t1 */
-+	bslli	r11, r12, 24	/* h = v << 24 */
-+	lwi	r12, r8, 28	/* v = *(as + 28) */
-+	bsrli	r9, r12, 8	/* t1 = v >> 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 24	/* *(d + 24) = t1 */
-+	bslli	r11, r12, 24	/* h = v << 24 */
-+	lwi	r12, r8, 32	/* v = *(as + 32) */
-+	bsrli	r9, r12, 8	/* t1 = v >> 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 28	/* *(d + 28) = t1 */
-+	bslli	r11, r12, 24	/* h = v << 24 */
-+	addi	r8, r8, 32	/* as = as + 32 */
-+	addi	r4, r4, -32	/* n = n - 32 */
-+	bneid	r4, a_bu3_loop	/* while (n) loop */
-+	addi	r5, r5, 32	/* d = d + 32 (IN DELAY SLOT) */
-+	bri	a_block_done
-+
-+a_block_u1:
-+	bslli	r11, r11, 8	/* h = h << 8 */
-+a_bu1_loop:
-+	lwi	r12, r8, 4	/* v = *(as + 4) */
-+	bsrli	r9, r12, 24	/* t1 = v >> 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 0	/* *(d + 0) = t1 */
-+	bslli	r11, r12, 8	/* h = v << 8 */
-+	lwi	r12, r8, 8	/* v = *(as + 8) */
-+	bsrli	r9, r12, 24	/* t1 = v >> 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 4	/* *(d + 4) = t1 */
-+	bslli	r11, r12, 8	/* h = v << 8 */
-+	lwi	r12, r8, 12	/* v = *(as + 12) */
-+	bsrli	r9, r12, 24	/* t1 = v >> 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 8	/* *(d + 8) = t1 */
-+	bslli	r11, r12, 8	/* h = v << 8 */
-+	lwi	r12, r8, 16	/* v = *(as + 16) */
-+	bsrli	r9, r12, 24	/* t1 = v >> 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 12	/* *(d + 12) = t1 */
-+	bslli	r11, r12, 8	/* h = v << 8 */
-+	lwi	r12, r8, 20	/* v = *(as + 20) */
-+	bsrli	r9, r12, 24	/* t1 = v >> 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 16	/* *(d + 16) = t1 */
-+	bslli	r11, r12, 8	/* h = v << 8 */
-+	lwi	r12, r8, 24	/* v = *(as + 24) */
-+	bsrli	r9, r12, 24	/* t1 = v >> 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 20	/* *(d + 20) = t1 */
-+	bslli	r11, r12, 8	/* h = v << 8 */
-+	lwi	r12, r8, 28	/* v = *(as + 28) */
-+	bsrli	r9, r12, 24	/* t1 = v >> 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 24	/* *(d + 24) = t1 */
-+	bslli	r11, r12, 8	/* h = v << 8 */
-+	lwi	r12, r8, 32	/* v = *(as + 32) */
-+	bsrli	r9, r12, 24	/* t1 = v >> 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 28	/* *(d + 28) = t1 */
-+	bslli	r11, r12, 8	/* h = v << 8 */
-+	addi	r8, r8, 32	/* as = as + 32 */
-+	addi	r4, r4, -32	/* n = n - 32 */
-+	bneid	r4, a_bu1_loop	/* while (n) loop */
-+	addi	r5, r5, 32	/* d = d + 32 (IN DELAY SLOT) */
-+	bri	a_block_done
-+
-+a_block_u2:
-+	bslli	r11, r11, 16	/* h = h << 16 */
-+a_bu2_loop:
-+	lwi	r12, r8, 4	/* v = *(as + 4) */
-+	bsrli	r9, r12, 16	/* t1 = v >> 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 0	/* *(d + 0) = t1 */
-+	bslli	r11, r12, 16	/* h = v << 16 */
-+	lwi	r12, r8, 8	/* v = *(as + 8) */
-+	bsrli	r9, r12, 16	/* t1 = v >> 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 4	/* *(d + 4) = t1 */
-+	bslli	r11, r12, 16	/* h = v << 16 */
-+	lwi	r12, r8, 12	/* v = *(as + 12) */
-+	bsrli	r9, r12, 16	/* t1 = v >> 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 8	/* *(d + 8) = t1 */
-+	bslli	r11, r12, 16	/* h = v << 16 */
-+	lwi	r12, r8, 16	/* v = *(as + 16) */
-+	bsrli	r9, r12, 16	/* t1 = v >> 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 12	/* *(d + 12) = t1 */
-+	bslli	r11, r12, 16	/* h = v << 16 */
-+	lwi	r12, r8, 20	/* v = *(as + 20) */
-+	bsrli	r9, r12, 16	/* t1 = v >> 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 16	/* *(d + 16) = t1 */
-+	bslli	r11, r12, 16	/* h = v << 16 */
-+	lwi	r12, r8, 24	/* v = *(as + 24) */
-+	bsrli	r9, r12, 16	/* t1 = v >> 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 20	/* *(d + 20) = t1 */
-+	bslli	r11, r12, 16	/* h = v << 16 */
-+	lwi	r12, r8, 28	/* v = *(as + 28) */
-+	bsrli	r9, r12, 16	/* t1 = v >> 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 24	/* *(d + 24) = t1 */
-+	bslli	r11, r12, 16	/* h = v << 16 */
-+	lwi	r12, r8, 32	/* v = *(as + 32) */
-+	bsrli	r9, r12, 16	/* t1 = v >> 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 28	/* *(d + 28) = t1 */
-+	bslli	r11, r12, 16	/* h = v << 16 */
-+	addi	r8, r8, 32	/* as = as + 32 */
-+	addi	r4, r4, -32	/* n = n - 32 */
-+	bneid	r4, a_bu2_loop	/* while (n) loop */
-+	addi	r5, r5, 32	/* d = d + 32 (IN DELAY SLOT) */
-+
-+a_block_done:
-+	addi	r4, r0, 4	/* n = 4 */
-+	cmpu	r4, r4, r7	/* n = c - n  (unsigned) */
-+	blti	r4, a_xfer_end	/* if n < 0, less than one word to transfer */
-+
-+a_word_xfer:
-+	andi	r4, r7, 0xfffffffc	/* n = c & ~3 */
-+	addi	r10, r0, 0		/* offset = 0 */
-+
-+	andi	r9, r6, 3		/* t1 = s & 3 */
-+	/* if temp != 0, unaligned transfers needed */
-+	bnei	r9, a_word_unaligned
-+
-+a_word_aligned:
-+	lw	r9, r6, r10		/* t1 = *(s+offset) */
-+	sw	r9, r5, r10		/* *(d+offset) = t1 */
-+	addi	r4, r4,-4		/* n-- */
-+	bneid	r4, a_word_aligned	/* loop */
-+	addi	r10, r10, 4		/* offset++ (IN DELAY SLOT) */
-+
-+	bri	a_word_done
-+
-+a_word_unaligned:
-+	andi	r8, r6, 0xfffffffc	/* as = s & ~3 */
-+	lwi	r11, r8, 0		/* h = *(as + 0) */
-+	addi	r8, r8, 4		/* as = as + 4 */
-+
-+	addi	r9, r9, -1
-+	beqi	r9, a_word_u1		/* t1 was 1 => 1 byte offset */
-+	addi	r9, r9, -1
-+	beqi	r9, a_word_u2		/* t1 was 2 => 2 byte offset */
-+
-+a_word_u3:
-+	bslli	r11, r11, 24	/* h = h << 24 */
-+a_wu3_loop:
-+	lw	r12, r8, r10	/* v = *(as + offset) */
-+	bsrli	r9, r12, 8	/* t1 = v >> 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	sw	r9, r5, r10	/* *(d + offset) = t1 */
-+	bslli	r11, r12, 24	/* h = v << 24 */
-+	addi	r4, r4,-4	/* n = n - 4 */
-+	bneid	r4, a_wu3_loop	/* while (n) loop */
-+	addi	r10, r10, 4	/* offset = ofset + 4 (IN DELAY SLOT) */
-+
-+	bri	a_word_done
-+
-+a_word_u1:
-+	bslli	r11, r11, 8	/* h = h << 8 */
-+a_wu1_loop:
-+	lw	r12, r8, r10	/* v = *(as + offset) */
-+	bsrli	r9, r12, 24	/* t1 = v >> 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	sw	r9, r5, r10	/* *(d + offset) = t1 */
-+	bslli	r11, r12, 8	/* h = v << 8 */
-+	addi	r4, r4,-4	/* n = n - 4 */
-+	bneid	r4, a_wu1_loop	/* while (n) loop */
-+	addi	r10, r10, 4	/* offset = ofset + 4 (IN DELAY SLOT) */
-+
-+	bri	a_word_done
-+
-+a_word_u2:
-+	bslli	r11, r11, 16	/* h = h << 16 */
-+a_wu2_loop:
-+	lw	r12, r8, r10	/* v = *(as + offset) */
-+	bsrli	r9, r12, 16	/* t1 = v >> 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	sw	r9, r5, r10	/* *(d + offset) = t1 */
-+	bslli	r11, r12, 16	/* h = v << 16 */
-+	addi	r4, r4,-4	/* n = n - 4 */
-+	bneid	r4, a_wu2_loop	/* while (n) loop */
-+	addi	r10, r10, 4	/* offset = ofset + 4 (IN DELAY SLOT) */
-+
-+a_word_done:
-+	add	r5, r5, r10	/* d = d + offset */
-+	add	r6, r6, r10	/* s = s + offset */
-+	rsub	r7, r10, r7	/* c = c - offset */
-+
-+a_xfer_end:
-+a_xfer_end_loop:
-+	beqi	r7, a_done		/* while (c) */
-+	lbui	r9, r6, 0		/* t1 = *s */
-+	addi	r6, r6, 1		/* s++ */
-+	sbi	r9, r5, 0		/* *d = t1 */
-+	addi	r7, r7, -1		/* c-- */
-+	brid	a_xfer_end_loop		/* loop */
-+	addi	r5, r5, 1		/* d++ (IN DELAY SLOT) */
-+
-+a_done:
-+	rtsd	r15, 8
-+	nop
-+
-+.end memcpy
-+/*----------------------------------------------------------------------------*/
-+	.globl	memmove
-+	.ent	memmove
-+
-+memmove:
-+	cmpu	r4, r5, r6	/* n = s - d */
-+	bgei	r4,fast_memcpy_ascending
-+
-+fast_memcpy_descending:
-+	/* move d to return register as value of function */
-+	addi	r3, r5, 0
-+
-+	add	r5, r5, r7	/* d = d + c */
-+	add	r6, r6, r7	/* s = s + c */
-+
-+	addi	r4, r0, 4	/* n = 4 */
-+	cmpu	r4, r4, r7	/* n = c - n  (unsigned) */
-+	blti	r4,d_xfer_end	/* if n < 0, less than one word to transfer */
-+
-+	/* transfer first 0~3 bytes to get aligned dest address */
-+	andi	r4, r5, 3		/* n = d & 3 */
-+	/* if zero, destination already aligned */
-+	beqi	r4,d_dalign_done
-+	rsub	r7, r4, r7		/* c = c - n adjust c */
-+
-+d_xfer_first_loop:
-+	/* if no bytes left to transfer, transfer the bulk */
-+	beqi	r4,d_dalign_done
-+	addi	r6, r6, -1		/* s-- */
-+	addi	r5, r5, -1		/* d-- */
-+	lbui	r11, r6, 0		/* h = *s */
-+	sbi	r11, r5, 0		/* *d = h */
-+	brid	d_xfer_first_loop	/* loop */
-+	addi	r4, r4, -1		/* n-- (IN DELAY SLOT) */
-+
-+d_dalign_done:
-+	addi	r4, r0, 32	/* n = 32 */
-+	cmpu	r4, r4, r7	/* n = c - n  (unsigned) */
-+	/* if n < 0, less than one block to transfer */
-+	blti	r4, d_block_done
-+
-+d_block_xfer:
-+	andi	r4, r7, 0xffffffe0	/* n = c & ~31 */
-+	rsub	r7, r4, r7		/* c = c - n */
-+
-+	andi	r9, r6, 3		/* t1 = s & 3 */
-+	/* if temp != 0, unaligned transfers needed */
-+	bnei	r9, d_block_unaligned
-+
-+d_block_aligned:
-+	addi	r6, r6, -32		/* s = s - 32 */
-+	addi	r5, r5, -32		/* d = d - 32 */
-+	lwi	r9, r6, 28		/* t1 = *(s + 28) */
-+	lwi	r10, r6, 24		/* t2 = *(s + 24) */
-+	lwi	r11, r6, 20		/* t3 = *(s + 20) */
-+	lwi	r12, r6, 16		/* t4 = *(s + 16) */
-+	swi	r9, r5, 28		/* *(d + 28) = t1 */
-+	swi	r10, r5, 24		/* *(d + 24) = t2 */
-+	swi	r11, r5, 20		/* *(d + 20) = t3 */
-+	swi	r12, r5, 16		/* *(d + 16) = t4 */
-+	lwi	r9, r6, 12		/* t1 = *(s + 12) */
-+	lwi	r10, r6, 8		/* t2 = *(s + 8) */
-+	lwi	r11, r6, 4		/* t3 = *(s + 4) */
-+	lwi	r12, r6, 0		/* t4 = *(s + 0) */
-+	swi	r9, r5, 12		/* *(d + 12) = t1 */
-+	swi	r10, r5, 8		/* *(d + 8) = t2 */
-+	swi	r11, r5, 4		/* *(d + 4) = t3 */
-+	addi	r4, r4, -32		/* n = n - 32 */
-+	bneid	r4, d_block_aligned	/* while (n) loop */
-+	swi	r12, r5, 0		/* *(d + 0) = t4 (IN DELAY SLOT) */
-+	bri	d_block_done
-+
-+d_block_unaligned:
-+	andi	r8, r6, 0xfffffffc	/* as = s & ~3 */
-+	rsub	r6, r4, r6		/* s = s - n */
-+	lwi	r11, r8, 0		/* h = *(as + 0) */
-+
-+	addi	r9, r9, -1
-+	beqi	r9,d_block_u1		/* t1 was 1 => 1 byte offset */
-+	addi	r9, r9, -1
-+	beqi	r9,d_block_u2		/* t1 was 2 => 2 byte offset */
-+
-+d_block_u3:
-+	bsrli	r11, r11, 8	/* h = h >> 8 */
-+d_bu3_loop:
-+	addi	r8, r8, -32	/* as = as - 32 */
-+	addi	r5, r5, -32	/* d = d - 32 */
-+	lwi	r12, r8, 28	/* v = *(as + 28) */
-+	bslli	r9, r12, 24	/* t1 = v << 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 28	/* *(d + 28) = t1 */
-+	bsrli	r11, r12, 8	/* h = v >> 8 */
-+	lwi	r12, r8, 24	/* v = *(as + 24) */
-+	bslli	r9, r12, 24	/* t1 = v << 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 24	/* *(d + 24) = t1 */
-+	bsrli	r11, r12, 8	/* h = v >> 8 */
-+	lwi	r12, r8, 20	/* v = *(as + 20) */
-+	bslli	r9, r12, 24	/* t1 = v << 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 20	/* *(d + 20) = t1 */
-+	bsrli	r11, r12, 8	/* h = v >> 8 */
-+	lwi	r12, r8, 16	/* v = *(as + 16) */
-+	bslli	r9, r12, 24	/* t1 = v << 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 16	/* *(d + 16) = t1 */
-+	bsrli	r11, r12, 8	/* h = v >> 8 */
-+	lwi	r12, r8, 12	/* v = *(as + 12) */
-+	bslli	r9, r12, 24	/* t1 = v << 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 12	/* *(d + 112) = t1 */
-+	bsrli	r11, r12, 8	/* h = v >> 8 */
-+	lwi	r12, r8, 8	/* v = *(as + 8) */
-+	bslli	r9, r12, 24	/* t1 = v << 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 8	/* *(d + 8) = t1 */
-+	bsrli	r11, r12, 8	/* h = v >> 8 */
-+	lwi	r12, r8, 4	/* v = *(as + 4) */
-+	bslli	r9, r12, 24	/* t1 = v << 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 4	/* *(d + 4) = t1 */
-+	bsrli	r11, r12, 8	/* h = v >> 8 */
-+	lwi	r12, r8, 0	/* v = *(as + 0) */
-+	bslli	r9, r12, 24	/* t1 = v << 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 0	/* *(d + 0) = t1 */
-+	addi	r4, r4, -32	/* n = n - 32 */
-+	bneid	r4, d_bu3_loop	/* while (n) loop */
-+	bsrli	r11, r12, 8	/* h = v >> 8 (IN DELAY SLOT) */
-+	bri	d_block_done
-+
-+d_block_u1:
-+	bsrli	r11, r11, 24	/* h = h >> 24 */
-+d_bu1_loop:
-+	addi	r8, r8, -32	/* as = as - 32 */
-+	addi	r5, r5, -32	/* d = d - 32 */
-+	lwi	r12, r8, 28	/* v = *(as + 28) */
-+	bslli	r9, r12, 8	/* t1 = v << 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 28	/* *(d + 28) = t1 */
-+	bsrli	r11, r12, 24	/* h = v >> 24 */
-+	lwi	r12, r8, 24	/* v = *(as + 24) */
-+	bslli	r9, r12, 8	/* t1 = v << 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 24	/* *(d + 24) = t1 */
-+	bsrli	r11, r12, 24	/* h = v >> 24 */
-+	lwi	r12, r8, 20	/* v = *(as + 20) */
-+	bslli	r9, r12, 8	/* t1 = v << 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 20	/* *(d + 20) = t1 */
-+	bsrli	r11, r12, 24	/* h = v >> 24 */
-+	lwi	r12, r8, 16	/* v = *(as + 16) */
-+	bslli	r9, r12, 8	/* t1 = v << 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 16	/* *(d + 16) = t1 */
-+	bsrli	r11, r12, 24	/* h = v >> 24 */
-+	lwi	r12, r8, 12	/* v = *(as + 12) */
-+	bslli	r9, r12, 8	/* t1 = v << 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 12	/* *(d + 112) = t1 */
-+	bsrli	r11, r12, 24	/* h = v >> 24 */
-+	lwi	r12, r8, 8	/* v = *(as + 8) */
-+	bslli	r9, r12, 8	/* t1 = v << 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 8	/* *(d + 8) = t1 */
-+	bsrli	r11, r12, 24	/* h = v >> 24 */
-+	lwi	r12, r8, 4	/* v = *(as + 4) */
-+	bslli	r9, r12, 8	/* t1 = v << 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 4	/* *(d + 4) = t1 */
-+	bsrli	r11, r12, 24	/* h = v >> 24 */
-+	lwi	r12, r8, 0	/* v = *(as + 0) */
-+	bslli	r9, r12, 8	/* t1 = v << 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 0	/* *(d + 0) = t1 */
-+	addi	r4, r4, -32	/* n = n - 32 */
-+	bneid	r4, d_bu1_loop	/* while (n) loop */
-+	bsrli	r11, r12, 24	/* h = v >> 24 (IN DELAY SLOT) */
-+	bri	d_block_done
-+
-+d_block_u2:
-+	bsrli	r11, r11, 16	/* h = h >> 16 */
-+d_bu2_loop:
-+	addi	r8, r8, -32	/* as = as - 32 */
-+	addi	r5, r5, -32	/* d = d - 32 */
-+	lwi	r12, r8, 28	/* v = *(as + 28) */
-+	bslli	r9, r12, 16	/* t1 = v << 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 28	/* *(d + 28) = t1 */
-+	bsrli	r11, r12, 16	/* h = v >> 16 */
-+	lwi	r12, r8, 24	/* v = *(as + 24) */
-+	bslli	r9, r12, 16	/* t1 = v << 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 24	/* *(d + 24) = t1 */
-+	bsrli	r11, r12, 16	/* h = v >> 16 */
-+	lwi	r12, r8, 20	/* v = *(as + 20) */
-+	bslli	r9, r12, 16	/* t1 = v << 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 20	/* *(d + 20) = t1 */
-+	bsrli	r11, r12, 16	/* h = v >> 16 */
-+	lwi	r12, r8, 16	/* v = *(as + 16) */
-+	bslli	r9, r12, 16	/* t1 = v << 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 16	/* *(d + 16) = t1 */
-+	bsrli	r11, r12, 16	/* h = v >> 16 */
-+	lwi	r12, r8, 12	/* v = *(as + 12) */
-+	bslli	r9, r12, 16	/* t1 = v << 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 12	/* *(d + 112) = t1 */
-+	bsrli	r11, r12, 16	/* h = v >> 16 */
-+	lwi	r12, r8, 8	/* v = *(as + 8) */
-+	bslli	r9, r12, 16	/* t1 = v << 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 8	/* *(d + 8) = t1 */
-+	bsrli	r11, r12, 16	/* h = v >> 16 */
-+	lwi	r12, r8, 4	/* v = *(as + 4) */
-+	bslli	r9, r12, 16	/* t1 = v << 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 4	/* *(d + 4) = t1 */
-+	bsrli	r11, r12, 16	/* h = v >> 16 */
-+	lwi	r12, r8, 0	/* v = *(as + 0) */
-+	bslli	r9, r12, 16	/* t1 = v << 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	swi	r9, r5, 0	/* *(d + 0) = t1 */
-+	addi	r4, r4, -32	/* n = n - 32 */
-+	bneid	r4, d_bu2_loop	/* while (n) loop */
-+	bsrli	r11, r12, 16	/* h = v >> 16 (IN DELAY SLOT) */
-+
-+d_block_done:
-+	addi	r4, r0, 4	/* n = 4 */
-+	cmpu	r4, r4, r7	/* n = c - n  (unsigned) */
-+	blti	r4,d_xfer_end	/* if n < 0, less than one word to transfer */
-+
-+d_word_xfer:
-+	andi	r4, r7, 0xfffffffc	/* n = c & ~3 */
-+	rsub	r5, r4, r5		/* d = d - n */
-+	rsub	r6, r4, r6		/* s = s - n */
-+	rsub	r7, r4, r7		/* c = c - n */
-+
-+	andi	r9, r6, 3		/* t1 = s & 3 */
-+	/* if temp != 0, unaligned transfers needed */
-+	bnei	r9, d_word_unaligned
-+
-+d_word_aligned:
-+	addi	r4, r4,-4		/* n-- */
-+	lw	r9, r6, r4		/* t1 = *(s+n) */
-+	bneid	r4, d_word_aligned	/* loop */
-+	sw	r9, r5, r4		/* *(d+n) = t1 (IN DELAY SLOT) */
-+
-+	bri	d_word_done
-+
-+d_word_unaligned:
-+	andi	r8, r6, 0xfffffffc	/* as = s & ~3 */
-+	lw	r11, r8, r4		/* h = *(as + n) */
-+
-+	addi	r9, r9, -1
-+	beqi	r9,d_word_u1		/* t1 was 1 => 1 byte offset */
-+	addi	r9, r9, -1
-+	beqi	r9,d_word_u2		/* t1 was 2 => 2 byte offset */
-+
-+d_word_u3:
-+	bsrli	r11, r11, 8	/* h = h >> 8 */
-+d_wu3_loop:
-+	addi	r4, r4,-4	/* n = n - 4 */
-+	lw	r12, r8, r4	/* v = *(as + n) */
-+	bslli	r9, r12, 24	/* t1 = v << 24 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	sw	r9, r5, r4	/* *(d + n) = t1 */
-+	bneid	r4, d_wu3_loop	/* while (n) loop */
-+	bsrli	r11, r12, 8	/* h = v >> 8 (IN DELAY SLOT) */
-+
-+	bri	d_word_done
-+
-+d_word_u1:
-+	bsrli	r11, r11, 24	/* h = h >> 24 */
-+d_wu1_loop:
-+	addi	r4, r4,-4	/* n = n - 4 */
-+	lw	r12, r8, r4	/* v = *(as + n) */
-+	bslli	r9, r12, 8	/* t1 = v << 8 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	sw	r9, r5, r4	/* *(d + n) = t1 */
-+	bneid	r4, d_wu1_loop	/* while (n) loop */
-+	bsrli	r11, r12, 24	/* h = v >> 24 (IN DELAY SLOT) */
-+
-+	bri	d_word_done
-+
-+d_word_u2:
-+	bsrli	r11, r11, 16	/* h = h >> 16 */
-+d_wu2_loop:
-+	addi	r4, r4,-4	/* n = n - 4 */
-+	lw	r12, r8, r4	/* v = *(as + n) */
-+	bslli	r9, r12, 16	/* t1 = v << 16 */
-+	or	r9, r11, r9	/* t1 = h | t1 */
-+	sw	r9, r5, r4	/* *(d + n) = t1 */
-+	bneid	r4, d_wu2_loop	/* while (n) loop */
-+	bsrli	r11, r12, 16	/* h = v >> 16 (IN DELAY SLOT) */
-+
-+d_word_done:
-+
-+d_xfer_end:
-+d_xfer_end_loop:
-+	beqi	r7, a_done		/* while (c) */
-+	addi	r6, r6, -1		/* s-- */
-+	lbui	r9, r6, 0		/* t1 = *s */
-+	addi	r5, r5, -1		/* d-- */
-+	sbi	r9, r5, 0		/* *d = t1 */
-+	brid	d_xfer_end_loop		/* loop */
-+	addi	r7, r7, -1		/* c-- (IN DELAY SLOT) */
-+
-+d_done:
-+	rtsd	r15, 8
-+	nop
-+
-+.end memmove
-diff --git a/arch/microblaze/lib/memcpy.c b/arch/microblaze/lib/memcpy.c
++#endif /* _ASM_MICROBLAZE_MMU_H */
+diff --git a/arch/microblaze/include/asm/mmu_context.h b/arch/microblaze/include/asm/mmu_context.h
 new file mode 100644
-index 0000000..8cb3dec
+index 0000000..150ca01
 --- /dev/null
-+++ b/arch/microblaze/lib/memcpy.c
-@@ -0,0 +1,160 @@
++++ b/arch/microblaze/include/asm/mmu_context.h
+@@ -0,0 +1,21 @@
 +/*
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2007 John Williams
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ * Reasonably optimised generic C-code for memcpy on Microblaze
-+ * This is generic C code to do efficient, alignment-aware memcpy.
-+ *
-+ * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
-+ * http://www.embedded.com/showArticle.jhtml?articleID=19205567
-+ *
-+ * Attempts were made, unsuccesfully, to contact the original
-+ * author of this code (Michael Morrow, Intel).  Below is the original
-+ * copyright notice.
-+ *
-+ * This software has been developed by Intel Corporation.
-+ * Intel specifically disclaims all warranties, express or
-+ * implied, and all liability, including consequential and
-+ * other indirect damages, for the use of this program, including
-+ * liability for infringement of any proprietary rights,
-+ * and including the warranties of merchantability and fitness
-+ * for a particular purpose. Intel does not assume any
-+ * responsibility for and errors which may appear in this program
-+ * not any responsibility to update it.
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+#include <linux/types.h>
-+#include <linux/stddef.h>
-+#include <linux/compiler.h>
-+#include <linux/module.h>
++#ifndef _ASM_MICROBLAZE_MMU_CONTEXT_H
++#define _ASM_MICROBLAZE_MMU_CONTEXT_H
 +
-+#include <linux/string.h>
-+#include <asm/system.h>
++# define init_new_context(tsk, mm)		({ 0; })
 +
-+#ifdef __HAVE_ARCH_MEMCPY
-+void *memcpy(void *v_dst, const void *v_src, __kernel_size_t c)
++# define enter_lazy_tlb(mm, tsk)		do {} while (0)
++# define change_mm_context(old, ctx, _pml4)	do {} while (0)
++# define destroy_context(mm)			do {} while (0)
++# define deactivate_mm(tsk, mm)			do {} while (0)
++# define switch_mm(prev, next, tsk)		do {} while (0)
++# define activate_mm(prev, next)		do {} while (0)
++
++#endif /* _ASM_MICROBLAZE_MMU_CONTEXT_H */
+diff --git a/arch/microblaze/include/asm/tlb.h b/arch/microblaze/include/asm/tlb.h
+new file mode 100644
+index 0000000..d1dfe37
+--- /dev/null
++++ b/arch/microblaze/include/asm/tlb.h
+@@ -0,0 +1,16 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_TLB_H
++#define _ASM_MICROBLAZE_TLB_H
++
++#define tlb_flush(tlb)	do {} while (0)
++
++#include <asm-generic/tlb.h>
++
++#endif /* _ASM_MICROBLAZE_TLB_H */
+diff --git a/arch/microblaze/include/asm/tlbflush.h b/arch/microblaze/include/asm/tlbflush.h
+new file mode 100644
+index 0000000..d7fe762
+--- /dev/null
++++ b/arch/microblaze/include/asm/tlbflush.h
+@@ -0,0 +1,20 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_TLBFLUSH_H
++#define _ASM_MICROBLAZE_TLBFLUSH_H
++
++#define flush_tlb()				BUG()
++#define flush_tlb_all()				BUG()
++#define flush_tlb_mm(mm)			BUG()
++#define flush_tlb_page(vma, addr)		BUG()
++#define flush_tlb_range(mm, start, end)		BUG()
++#define flush_tlb_pgtables(mm, start, end)	BUG()
++#define flush_tlb_kernel_range(start, end)	BUG()
++
++#endif /* _ASM_MICROBLAZE_TLBFLUSH_H */
+diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
+new file mode 100644
+index 0000000..430d85e
+--- /dev/null
++++ b/arch/microblaze/mm/init.c
+@@ -0,0 +1,197 @@
++/*
++ * Copyright (C) 2007-2008 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#include <linux/bootmem.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/lmb.h>
++#include <linux/mm.h> /* mem_init */
++#include <linux/initrd.h>
++#include <linux/pagemap.h>
++#include <linux/pfn.h>
++#include <linux/swap.h>
++
++#include <asm/page.h>
++#include <asm/mmu_context.h>
++#include <asm/pgalloc.h>
++#include <asm/sections.h>
++#include <asm/tlb.h>
++
++unsigned int __page_offset;
++/* EXPORT_SYMBOL(__page_offset); */
++
++char *klimit = _end;
++
++/*
++ * Initialize the bootmem system and give it all the memory we
++ * have available.
++ */
++unsigned int memory_start;
++unsigned int memory_end; /* due to mm/nommu.c */
++unsigned int memory_size;
++
++/*
++ * paging_init() sets up the page tables - in fact we've already done this.
++ */
++static void __init paging_init(void)
 +{
-+	const char *src = v_src;
-+	char *dst = v_dst;
-+#ifndef CONFIG_OPT_LIB_FUNCTION
-+	/* Simple, byte oriented memcpy. */
-+	while (c--)
-+		*dst++ = *src++;
++	int i;
++	unsigned long zones_size[MAX_NR_ZONES];
 +
-+	return v_dst;
-+#else
-+	/* The following code tries to optimize the copy by using unsigned
-+	 * alignment. This will work fine if both source and destination are
-+	 * aligned on the same boundary. However, if they are aligned on
-+	 * different boundaries shifts will be necessary. This might result in
-+	 * bad performance on MicroBlaze systems without a barrel shifter.
++	/*
++	 * old: we can DMA to/from any address.put all page into ZONE_DMA
++	 * We use only ZONE_NORMAL
 +	 */
-+	const uint32_t *i_src;
-+	uint32_t *i_dst;
++	zones_size[ZONE_NORMAL] = max_mapnr;
 +
-+	if (c >= 4) {
-+		unsigned  value, buf_hold;
++	/* every other zones are empty */
++	for (i = 1; i < MAX_NR_ZONES; i++)
++		zones_size[i] = 0;
 +
-+		/* Align the dstination to a word boundry. */
-+		/* This is done in an endian independant manner. */
-+		switch ((unsigned long)dst & 3) {
-+		case 1:
-+			*dst++ = *src++;
-+			--c;
-+		case 2:
-+			*dst++ = *src++;
-+			--c;
-+		case 3:
-+			*dst++ = *src++;
-+			--c;
-+		}
++	free_area_init(zones_size);
++}
 +
-+		i_dst = (void *)dst;
++void __init setup_memory(void)
++{
++	int i;
++	unsigned long map_size;
++	u32 kernel_align_start, kernel_align_size;
 +
-+		/* Choose a copy scheme based on the source */
-+		/* alignment relative to dstination. */
-+		switch ((unsigned long)src & 3) {
-+		case 0x0:	/* Both byte offsets are aligned */
-+			i_src  = (const void *)src;
-+
-+			for (; c >= 4; c -= 4)
-+				*i_dst++ = *i_src++;
-+
-+			src  = (const void *)i_src;
-+			break;
-+		case 0x1:	/* Unaligned - Off by 1 */
-+			/* Word align the source */
-+			i_src = (const void *) ((unsigned)src & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *i_src++ << 8;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *i_src++;
-+				*i_dst++ = buf_hold | value >> 24;
-+				buf_hold = value << 8;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src -= 3;
-+			break;
-+		case 0x2:	/* Unaligned - Off by 2 */
-+			/* Word align the source */
-+			i_src = (const void *) ((unsigned)src & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *i_src++ << 16;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *i_src++;
-+				*i_dst++ = buf_hold | value >> 16;
-+				buf_hold = value << 16;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src -= 2;
-+			break;
-+		case 0x3:	/* Unaligned - Off by 3 */
-+			/* Word align the source */
-+			i_src = (const void *) ((unsigned)src & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *i_src++ << 24;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *i_src++;
-+				*i_dst++ = buf_hold | value >> 8;
-+				buf_hold = value << 24;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src -= 1;
++	/* Find main memory where is the kernel */
++	for (i = 0; i < lmb.memory.cnt; i++) {
++		memory_start = (u32) lmb.memory.region[i].base;
++		memory_end = (u32) lmb.memory.region[i].base + (u32) lmb.memory.region[i].size;
++		if ((memory_start <= (u32)_text) && ((u32)_text <= memory_end)) {
++			memory_size = memory_end - memory_start;
++			PAGE_OFFSET = memory_start;
++			printk("%s: Main mem: 0x%x-0x%x, size 0x%08x\n", __func__,
++				memory_start, memory_end, memory_size);
 +			break;
 +		}
-+		dst = (void *)i_dst;
 +	}
 +
-+	/* Finish off any remaining bytes */
-+	/* simple fast copy, ... unless a cache boundry is crossed */
-+	switch (c) {
-+	case 3:
-+		*dst++ = *src++;
-+	case 2:
-+		*dst++ = *src++;
-+	case 1:
-+		*dst++ = *src++;
++	if (!memory_start || !memory_end) {
++		panic("%s: Missing memory setting 0x%08x-0x%08x\n",
++			__func__, memory_start, memory_end);
 +	}
 +
-+	return v_dst;
-+#endif
-+}
-+EXPORT_SYMBOL(memcpy);
-+#endif /* __HAVE_ARCH_MEMCPY */
++	/* reservation of region where is the kernel */
++	kernel_align_start = PAGE_DOWN((u32)_text);
++	/* ALIGN can be remove because _end in vmlinux.lds.S is align */
++	kernel_align_size = PAGE_UP((u32)klimit) - kernel_align_start;
++	lmb_reserve(kernel_align_start, kernel_align_size);
++	printk("%s: kernel addr=0x%08x-0x%08x size=0x%08x\n", __func__,
++		kernel_align_start, kernel_align_start + kernel_align_size,
++							kernel_align_size);
 +
-+void *cacheable_memcpy(void *d, const void *s, __kernel_size_t c)
-+{
-+	return memcpy(d, s, c);
-+}
-diff --git a/arch/microblaze/lib/memmove.c b/arch/microblaze/lib/memmove.c
-new file mode 100644
-index 0000000..87d17b2
---- /dev/null
-+++ b/arch/microblaze/lib/memmove.c
-@@ -0,0 +1,174 @@
-+/*
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2007 John Williams
-+ *
-+ * Reasonably optimised generic C-code for memcpy on Microblaze
-+ * This is generic C code to do efficient, alignment-aware memmove.
-+ *
-+ * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
-+ * http://www.embedded.com/showArticle.jhtml?articleID=19205567
-+ *
-+ * Attempts were made, unsuccesfully, to contact the original
-+ * author of this code (Michael Morrow, Intel).  Below is the original
-+ * copyright notice.
-+ *
-+ * This software has been developed by Intel Corporation.
-+ * Intel specifically disclaims all warranties, express or
-+ * implied, and all liability, including consequential and
-+ * other indirect damages, for the use of this program, including
-+ * liability for infringement of any proprietary rights,
-+ * and including the warranties of merchantability and fitness
-+ * for a particular purpose. Intel does not assume any
-+ * responsibility for and errors which may appear in this program
-+ * not any responsibility to update it.
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/stddef.h>
-+#include <linux/compiler.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+
-+#ifdef __HAVE_ARCH_MEMMOVE
-+void *memmove(void *v_dst, const void *v_src, __kernel_size_t c)
-+{
-+	const char *src = v_src;
-+	char *dst = v_dst;
-+
-+#ifdef CONFIG_OPT_LIB_FUNCTION
-+	const uint32_t *i_src;
-+	uint32_t *i_dst;
-+#endif
-+
-+	if (!c)
-+		return v_dst;
-+
-+	/* Use memcpy when source is higher than dest */
-+	if (v_dst <= v_src)
-+		return memcpy(v_dst, v_src, c);
-+
-+#ifndef CONFIG_OPT_LIB_FUNCTION
-+	/* copy backwards, from end to beginning */
-+	src += c;
-+	dst += c;
-+
-+	/* Simple, byte oriented memmove. */
-+	while (c--)
-+		*--dst = *--src;
-+
-+	return v_dst;
-+#else
-+	/* The following code tries to optimize the copy by using unsigned
-+	 * alignment. This will work fine if both source and destination are
-+	 * aligned on the same boundary. However, if they are aligned on
-+	 * different boundaries shifts will be necessary. This might result in
-+	 * bad performance on MicroBlaze systems without a barrel shifter.
++	/*
++	 * Kernel:
++	 * start: base phys address of kernel - page align
++	 * end: base phys address of kernel - page align
++	 *
++	 * min_low_pfn - the first page (mm/bootmem.c - node_boot_start)
++	 * max_low_pfn
++	 * max_mapnr - the first unused page (mm/bootmem.c - node_low_pfn)
++	 * num_physpages - number of all pages
 +	 */
-+	/* FIXME this part needs more test */
-+	/* Do a descending copy - this is a bit trickier! */
-+	dst += c;
-+	src += c;
 +
-+	if (c >= 4) {
-+		unsigned  value, buf_hold;
++	/* memory start is from the kernel end of memory aligned to higher addr */
++	min_low_pfn = memory_start >> PAGE_SHIFT; /* minimum for allocation */
++	num_physpages = max_mapnr = memory_size >> PAGE_SHIFT; /* RAM is assumed contiguous */
++	max_pfn = max_low_pfn = memory_end >> PAGE_SHIFT;
 +
-+		/* Align the destination to a word boundry. */
-+		/* This is done in an endian independant manner. */
++	printk(KERN_INFO "%s: max_mapnr: %#lx\n", __func__, max_mapnr);
++	printk(KERN_INFO "%s: min_low_pfn: %#lx\n", __func__, min_low_pfn);
++	printk(KERN_INFO "%s: max_low_pfn: %#lx\n", __func__, max_low_pfn);
 +
-+		switch ((unsigned long)dst & 3) {
-+		case 3:
-+			*--dst = *--src;
-+			--c;
-+		case 2:
-+			*--dst = *--src;
-+			--c;
-+		case 1:
-+			*--dst = *--src;
-+			--c;
-+		}
++	/*
++	 * Find an area to use for the bootmem bitmap.
++	 * We look for the first area which is at least
++	 * 128kB in length (128kB is enough for a bitmap
++	 * for 4GB of memory, using 4kB pages), plus 1 page
++	 * (in case the address isn't page-aligned).
++	 */
++	map_size = init_bootmem_node(NODE_DATA(0), PFN_UP(TOPHYS((u32)_end)),
++					min_low_pfn, max_low_pfn);
 +
-+		i_dst = (void *)dst;
-+		/* Choose a copy scheme based on the source */
-+		/* alignment relative to dstination. */
-+		switch ((unsigned long)src & 3) {
-+		case 0x0:	/* Both byte offsets are aligned */
++	lmb_reserve(PFN_UP(TOPHYS((u32)_end)) << PAGE_SHIFT, map_size);
 +
-+			i_src  = (const void *)src;
++	/* free bootmem is whole main memory */
++	free_bootmem(memory_start, memory_size);
 +
-+			for (; c >= 4; c -= 4)
-+				*--i_dst = *--i_src;
-+
-+			src  = (const void *)i_src;
-+			break;
-+		case 0x1:	/* Unaligned - Off by 1 */
-+			/* Word align the source */
-+			i_src = (const void *) (((unsigned)src + 4) & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *--i_src >> 24;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *--i_src;
-+				*--i_dst = buf_hold << 8 | value;
-+				buf_hold = value >> 24;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src += 1;
-+			break;
-+		case 0x2:	/* Unaligned - Off by 2 */
-+			/* Word align the source */
-+			i_src = (const void *) (((unsigned)src + 4) & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *--i_src >> 16;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *--i_src;
-+				*--i_dst = buf_hold << 16 | value;
-+				buf_hold = value >> 16;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src += 2;
-+			break;
-+		case 0x3:	/* Unaligned - Off by 3 */
-+			/* Word align the source */
-+			i_src = (const void *) (((unsigned)src + 4) & ~3);
-+
-+			/* Load the holding buffer */
-+			buf_hold = *--i_src >> 8;
-+
-+			for (; c >= 4; c -= 4) {
-+				value = *--i_src;
-+				*--i_dst = buf_hold << 24 | value;
-+				buf_hold = value >> 8;
-+			}
-+
-+			/* Realign the source */
-+			src = (const void *)i_src;
-+			src += 3;
-+			break;
-+		}
-+		dst = (void *)i_dst;
++	/* reserve allocate blocks */
++	for (i = 0; i < lmb.reserved.cnt; i++) {
++		pr_debug("reserved %d - 0x%08x-0x%08x\n", i,
++			(u32) lmb.reserved.region[i].base,
++			(u32) lmb_size_bytes(&lmb.reserved, i));
++		reserve_bootmem(lmb.reserved.region[i].base,
++			lmb_size_bytes(&lmb.reserved, i) - 1, BOOTMEM_DEFAULT);
 +	}
-+
-+	/* simple fast copy, ... unless a cache boundry is crossed */
-+	/* Finish off any remaining bytes */
-+	switch (c) {
-+	case 4:
-+		*--dst = *--src;
-+	case 3:
-+		*--dst = *--src;
-+	case 2:
-+		*--dst = *--src;
-+	case 1:
-+		*--dst = *--src;
-+	}
-+	return v_dst;
-+#endif
++	paging_init();
 +}
-+EXPORT_SYMBOL(memmove);
-+#endif /* __HAVE_ARCH_MEMMOVE */
-diff --git a/arch/microblaze/lib/memset.c b/arch/microblaze/lib/memset.c
-new file mode 100644
-index 0000000..8cd4f38
---- /dev/null
-+++ b/arch/microblaze/lib/memset.c
-@@ -0,0 +1,81 @@
-+/*
-+ * Copyright (C) 2008 Michal Simek <monstr@monstr.eu>
-+ * Copyright (C) 2007 John Williams
-+ *
-+ * Reasonably optimised generic C-code for memset on Microblaze
-+ * This is generic C code to do efficient, alignment-aware memcpy.
-+ *
-+ * It is based on demo code originally Copyright 2001 by Intel Corp, taken from
-+ * http://www.embedded.com/showArticle.jhtml?articleID=19205567
-+ *
-+ * Attempts were made, unsuccesfully, to contact the original
-+ * author of this code (Michael Morrow, Intel).  Below is the original
-+ * copyright notice.
-+ *
-+ * This software has been developed by Intel Corporation.
-+ * Intel specifically disclaims all warranties, express or
-+ * implied, and all liability, including consequential and
-+ * other indirect damages, for the use of this program, including
-+ * liability for infringement of any proprietary rights,
-+ * and including the warranties of merchantability and fitness
-+ * for a particular purpose. Intel does not assume any
-+ * responsibility for and errors which may appear in this program
-+ * not any responsibility to update it.
-+ */
 +
-+#include <linux/types.h>
-+#include <linux/stddef.h>
-+#include <linux/compiler.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+
-+#ifdef __HAVE_ARCH_MEMSET
-+void *memset(void *v_src, int c, __kernel_size_t n)
++void free_init_pages(char *what, unsigned long begin, unsigned long end)
 +{
++	unsigned long addr;
 +
-+	char *src = v_src;
-+#ifdef CONFIG_OPT_LIB_FUNCTION
-+	uint32_t *i_src;
-+	uint32_t w32;
-+#endif
-+	/* Truncate c to 8 bits */
-+	c = (c & 0xFF);
-+
-+#ifdef CONFIG_OPT_LIB_FUNCTION
-+	/* Make a repeating word out of it */
-+	w32 = c;
-+	w32 |= w32 << 8;
-+	w32 |= w32 << 16;
-+
-+	if (n >= 4) {
-+		/* Align the destination to a word boundary */
-+		/* This is done in an endian independant manner */
-+		switch ((unsigned) src & 3) {
-+		case 1:
-+			*src++ = c;
-+			--n;
-+		case 2:
-+			*src++ = c;
-+			--n;
-+		case 3:
-+			*src++ = c;
-+			--n;
-+		}
-+
-+		i_src  = (void *)src;
-+
-+		/* Do as many full-word copies as we can */
-+		for (; n >= 4; n -= 4)
-+			*i_src++ = w32;
-+
-+		src  = (void *)i_src;
++	for (addr = begin; addr < end; addr += PAGE_SIZE) {
++		ClearPageReserved(virt_to_page(addr));
++		init_page_count(virt_to_page(addr));
++		memset((void *)addr, 0xcc, PAGE_SIZE);
++		free_page(addr);
++		totalram_pages++;
 +	}
-+#endif
-+	/* Simple, byte oriented memset or the rest of count. */
-+	while (n--)
-+		*src++ = c;
-+
-+	return v_src;
++	printk(KERN_INFO "Freeing %s: %ldk freed\n", what, (end - begin) >> 10);
 +}
-+EXPORT_SYMBOL(memset);
-+#endif /* __HAVE_ARCH_MEMSET */
++
++#ifdef CONFIG_BLK_DEV_INITRD
++void free_initrd_mem(unsigned long start, unsigned long end)
++{
++	int pages = 0;
++	for (; start < end; start += PAGE_SIZE) {
++		ClearPageReserved(virt_to_page(start));
++		init_page_count(virt_to_page(start));
++		free_page(start);
++		totalram_pages++;
++		pages++;
++	}
++	printk(KERN_NOTICE "Freeing initrd memory: %dk freed\n", pages);
++}
++#endif
++
++void free_initmem(void)
++{
++	free_init_pages("unused kernel memory",
++			(unsigned long)(&__init_begin),
++			(unsigned long)(&__init_end));
++}
++
++/* FIXME from arch/powerpc/mm/mem.c*/
++void show_mem(void)
++{
++	printk(KERN_NOTICE "%s\n", __func__);
++}
++
++void __init mem_init(void)
++{
++	high_memory = (void *)__va(memory_end);
++	/* this will put all memory onto the freelists */
++	totalram_pages += free_all_bootmem();
++
++	printk(KERN_INFO "Memory: %luk/%luk available\n",
++	       (unsigned long) nr_free_pages() << (PAGE_SHIFT-10),
++	       num_physpages << (PAGE_SHIFT-10));
++}
++
++/* Check against bounds of physical memory */
++int ___range_ok(unsigned long addr, unsigned long size)
++{
++	return ((addr < memory_start) ||
++		((addr + size) > memory_end));
++}
 -- 
 1.5.5.1
 
