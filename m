@@ -1,50 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbZCRTgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752581AbZCRTo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754608AbZCRTgr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 15:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbZCRTgi
+	id S1752581AbZCRTo0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 15:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbZCRToO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 15:36:38 -0400
-Received: from ti-out-0910.google.com ([209.85.142.188]:13018 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751082AbZCRTgh (ORCPT
+	Wed, 18 Mar 2009 15:44:14 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:44084 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049AbZCRToN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 15:36:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=PsGgeUUopkD/Qyqrk7lOpeNb7J9/+La5yPUxiwO8fffIGMiaPpQuzyQhuQ/NWFgBil
-         2hbLS/TvzcG08HuVc20YtCub0z1H69hGI3r4cyTOG0+285u+vDCRJalaQV2iL9Sy4MBx
-         kaxVBeQeT07ZhSPe2ITjK+kH/C49zeVekUeoo=
-Message-ID: <49C14D33.9000009@vflare.org>
-Date: Thu, 19 Mar 2009 01:06:19 +0530
-From: Nitin Gupta <nitingupta910@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 18 Mar 2009 15:44:13 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:content-type:
+	content-transfer-encoding:x-system-of-record;
+	b=oysl/1eDkQVP8G2KdDRdaPlOAMSZ6IagJmdzEyL4TPNTFRNhCmyJeAeYIyBuKssuR
+	2TeeGqpDcvfWLk3G1skyg==
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3]: xvmalloc memory allocator
-References: <49BF8ABC.6040805@vflare.org> <49BF8B8B.40408@vflare.org>	 <alpine.DEB.1.10.0903171237180.21582@qirst.com>	 <d760cf2d0903171028o600dc94cn7a5238520d104455@mail.gmail.com>	 <alpine.DEB.1.10.0903171355410.26058@qirst.com>	 <49C11088.7000205@vflare.org>	 <alpine.DEB.1.10.0903181258110.15570@qirst.com>	 <d760cf2d0903181029r43bf417u502b46e08348f6ae@mail.gmail.com> <84144f020903181221t480caa5dhef0e581a7bef006@mail.gmail.com>
-In-Reply-To: <84144f020903181221t480caa5dhef0e581a7bef006@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Wed, 18 Mar 2009 12:44:08 -0700
+Message-ID: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com>
+Subject: ftruncate-mmap: pages are lost after writing to mmaped file.
+From: Ying Han <yinghan@google.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> Yeah, I can see the point in having a custom allocator for this. But
-> quite frankly the xvmalloc code is just too ugly to live with. You
-> might want to make it look like kernel code as per CodingStyle and
-> change the name to something less generic.
-> 
+We triggered the failure during some internal experiment with
+ftruncate/mmap/write/read sequence. And we found that some pages are
+"lost" after writing to the mmaped file. which in the following test
+cases (count >= 0).
 
-In beginning I also thought CamelCase coding would be a problem.
-But quite frankly, this is best I could do to beautify xvmalloc code.
+First we deployed the test cases into group of machines and see about
+>20% failure rate on average. Then, I did couple of experiment to try
+to reproduce it on a single machine. what i found is that:
+1. add a fsync after write the file, i can not reproduce this issue.
+2. add memory pressure(mmap/mlock) while run the test in infinite
+loop, the failure is reproduced quickly. ( background flushing ? )
 
-I will change it to kernel_style. Maybe that helps.
+The "bad pages" count differs each time from one digit to 4,5 digit
+for 128M ftruncated file. and what i also found that the bad page
+number are contiguous for each segment which total bad pages container
+several segments. ext "1-4, 9-20, 48-50" (  batch flushing ? )
 
-Thanks,
-Nitin
+(The failure is reproduced based on 2.6.29-rc8, also happened on
+2.6.18 kernel. . Here is the simple test case to reproduce it with
+memory pressure. )
 
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+long kMemSize  = 128 << 20;
+int kPageSize = 4096;
+
+int main(int argc, char **argv) {
+	int status;
+	int count = 0;
+	int i;
+	char *fname = "/root/test.mmap";
+	char *mem;
+
+	unlink(fname);
+	int fd = open(fname, O_CREAT | O_EXCL | O_RDWR, 0600);
+	status = ftruncate(fd, kMemSize);
+
+	mem = mmap(0, kMemSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	// Fill the memory with 1s.
+	memset(mem, 1, kMemSize);
+
+	for (i = 0; i < kMemSize; i++) {
+		int byte_good = mem[i] != 0;
+
+		if (!byte_good && ((i % kPageSize) == 0)) {
+			//printf("%d ", i / kPageSize);
+			count++;
+		}
+	}
+
+	munmap(mem, kMemSize);
+	close(fd);
+	unlink(fname);
+
+	if (count > 0) {
+		printf("Running %d bad page\n", count);
+		return 1;
+	}
+	return 0;
+}
+
+--Ying
