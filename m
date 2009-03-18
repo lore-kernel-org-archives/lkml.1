@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbZCRRqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758961AbZCRRtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbZCRRqm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 13:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757844AbZCRRqR
+	id S1758961AbZCRRtB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 13:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZCRRsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 13:46:17 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:12245 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756376AbZCRRqP (ORCPT
+	Wed, 18 Mar 2009 13:48:51 -0400
+Received: from mail01d.mail.t-online.hu ([84.2.42.6]:64080 "EHLO
+	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751361AbZCRRsu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 13:46:15 -0400
-Message-ID: <49C1331D.1080805@panasas.com>
-Date: Wed, 18 Mar 2009 19:45:01 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 18 Mar 2009 13:48:50 -0400
+Message-ID: <49C133F6.3020202@freemail.hu>
+Date: Wed, 18 Mar 2009 18:48:38 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-To: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>, Evgeniy Polyakov <zbr@ioremap.net>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCHSET 0/8 version 4] exofs for kernel 2.6.30
+To: Jean-Francois Moine <moinejf@free.fr>, linux-media@vger.kernel.org
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] gspca: add missing .type field check in VIDIOC_G_PARM
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Mar 2009 17:46:11.0822 (UTC) FILETIME=[6D39A0E0:01C9A7F1]
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32711; Body=3 Fuz1=3
+	Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What's new since last iteration:
+From: Márton Németh <nm127@freemail.hu>
 
-* I completely re-wrote the [PATCH 4/8] exofs: address_space_operations
-  in which we actually write/read to/from osd-storage. The difference is
-  that now we try to accumulate as many contiguous pages as possible and
-  send them as one large request. As opposed to writing each page at a
-  time, in the previous patchset.
+The gspca webcam driver does not check the .type field of struct v4l2_streamparm.
+This field is an input parameter for the driver according to V4L2 API specification,
+revision 0.24 [1]. Add the missing check.
 
-* [PATCH 5/8] exofs: dir_inode and directory operations received lots
-  of love thanks to Evgeniy Polyakov's grate comments.
+The missing check was recognised by v4l-test 0.10 [2] together with gspca_sunplus driver
+and with "Trust 610 LCD POWERC@M ZOOM" webcam. This patch was verified also with
+v4l-test 0.10.
 
-exofs is a file system that uses an OSD device as it's back store.
+References:
+[1] V4L2 API specification, revision 0.24
+    http://v4l2spec.bytesex.org/spec/r11680.htm
 
-OSD is a new T10 command set that views storage devices not as a large/flat
-array of sectors but as a container of objects, each having a length, quota,
-time attributes and more. Each object is addressed by a 64bit ID, and is
-contained in a 64bit ID partition. Each object has associated attributes
-attached to it, which are integral part of the object and provide metadata about
-the object. The standard defines some common obligatory attributes, but user
-attributes can be added as needed.
+[2] v4l-test: Test environment for Video For Linux Two API
+    http://v4l-test.sourceforge.net/
 
-Here is the list of patches
-[PATCH 1/8] exofs: Kbuild, Headers and osd utils
-[PATCH 2/8] exofs: file and file_inode operations
-[PATCH 3/8] exofs: symlink_inode and fast_symlink_inode operations
-[PATCH 4/8] exofs: address_space_operations
-[PATCH 5/8] exofs: dir_inode and directory operations
-[PATCH 6/8] exofs: super_operations and file_system_type
-[PATCH 7/8] exofs: Documentation
-[PATCH 8/8] fs: Add exofs to Kernel build
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+--- linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c.orig	2009-03-14 12:29:38.000000000 +0100
++++ linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c	2009-03-18 16:51:03.000000000 +0100
+@@ -1320,6 +1320,9 @@ static int vidioc_g_parm(struct file *fi
+ {
+ 	struct gspca_dev *gspca_dev = priv;
 
-This patchset is also available on:
-  git-clone git://git.open-osd.org/linux-open-osd.git linux-next
-or on the web at:
-  http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=refs/heads/linux-next
-
-(Above tree is based on Linus v2.6.29-rc8-212-g8144737)
-
-If anyone wants to actually run this code and test it
-then please start reading at:
-    http://open-osd.org
-You will need to checkout the out-of-tree git (below) for the user-mode utilities.
-Also the exofs.txt file in patch 7/8 should help
-
-If you want to review the user-mode library and supporting plumbings,
-  git-clone git://git.open-osd.org/open-osd.git
-or on the web at:
-  http://git.open-osd.org/gitweb.cgi?p=open-osd.git;a=summary
-
-Boaz
++	if (parm->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
++		return -EINVAL;
++
+ 	memset(parm, 0, sizeof *parm);
+ 	parm->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+ 	parm->parm.capture.readbuffers = gspca_dev->nbufread;
 
