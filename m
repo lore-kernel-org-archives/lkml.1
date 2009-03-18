@@ -1,91 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbZCROTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbZCROW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757871AbZCROTH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 10:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756161AbZCROSx
+	id S1756567AbZCROW3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 10:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZCROWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 10:18:53 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:46582 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755233AbZCROSx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 10:18:53 -0400
-Date: Wed, 18 Mar 2009 10:15:26 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 24/27] Convert gfp_zone() to use a table of precalculated
- values
-In-Reply-To: <20090318135222.GA4629@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0903181011210.7901@qirst.com>
-References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie> <1237226020-14057-25-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903161500280.20024@qirst.com> <20090318135222.GA4629@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 18 Mar 2009 10:22:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55560 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754512AbZCROWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 10:22:14 -0400
+Date: Wed, 18 Mar 2009 15:21:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, netdev@vger.kernel.org,
+       jeffrey.t.kirsher@intel.com, jesse.brandeburg@intel.com,
+       bruce.w.allan@intel.com, peter.p.waskiewicz.jr@intel.com,
+       john.ronciak@intel.com, e1000-devel@lists.sourceforge.net,
+       Ingo Molnar <mingo@redhat.com>, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: forcedeth 0000:00:0a.0: DMA-API: device driver frees DMA memory
+	with wrong function [device address=0x0000000035992232] [size=42
+	bytes] [mapped as single] [unmapped as page]
+Message-ID: <20090318142126.GA24970@elte.hu>
+References: <1237223130-26519-1-git-send-email-joerg.roedel@amd.com> <20090317120112.GP6159@amd.com> <20090318093847.GC5879@elte.hu> <20090318115615.GS6159@amd.com> <20090318120458.GA1601@elte.hu> <36697.89.102.207.186.1237380871.squirrel@mail.v3.sk> <20090318140949.GA20852@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090318140949.GA20852@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Mar 2009, Mel Gorman wrote:
 
-> On Mon, Mar 16, 2009 at 03:12:50PM -0400, Christoph Lameter wrote:
-> > On Mon, 16 Mar 2009, Mel Gorman wrote:
-> >
-> > > +int gfp_zone_table[GFP_ZONEMASK] __read_mostly;
-> >
-> > The gfp_zone_table is compile time determinable. There is no need to
-> > calculate it.
-> >
->
-> The cost of calculating it is negligible and the code is then freed later
-> in boot. Does having a const table make any difference?
+There's a similar-looking warning triggering for the forcedeth 
+driver as well on another test-system (see the details below).
 
-Should it not enable the compiler to determine the value at
-compile time and therefore make things like gfp_zone(constant) a
-constant?
+Does anyone know whether there's a fix for this too, or is it a
+new warning?
 
-> > const int gfp_zone_table[GFP_ZONEMASK] = {
-> > 	ZONE_NORMAL,		/* 00 No flags set */
-> > 	ZONE_DMA,		/* 01 Only GFP_DMA set */
-> > 	ZONE_HIGHMEM,		/* 02 Only GFP_HIGHMEM set */
-> > 	ZONE_DMA,		/* 03 GFP_HIGHMEM and GFP_DMA set */
-> > 	ZONE_DMA32,		/* 04 Only GFP_DMA32 set */
-> > 	ZONE_DMA,		/* 05 GFP_DMA and GFP_DMA32 set */
-> > 	ZONE_DMA32,		/* 06 GFP_DMA32 and GFP_HIGHMEM set */
-> > 	ZONE_DMA,		/* 07 GFP_DMA, GFP_DMA32 and GFP_DMA32 set */
-> > 	ZONE_MOVABLE,		/* 08 Only ZONE_MOVABLE set */
-> > 	ZONE_DMA,		/* 09 MOVABLE + DMA */
-> > 	ZONE_MOVABLE,		/* 0A MOVABLE + HIGHMEM */
-> > 	ZONE_DMA,		/* 0B MOVABLE + DMA + HIGHMEM */
-> > 	ZONE_DMA32,		/* 0C MOVABLE + DMA32 */
-> > 	ZONE_DMA,		/* 0D MOVABLE + DMA + DMA32 */
-> > 	ZONE_DMA32,		/* 0E MOVABLE + DMA32 + HIGHMEM */
-> > 	ZONE_DMA		/* 0F MOVABLE + DMA32 + HIGHMEM + DMA
-> > };
-> >
-> > Hmmmm... Guess one would need to add some #ifdeffery here to setup
-> > ZONE_NORMAL in cases there is no DMA, DMA32 and HIGHMEM.
-> >
->
-> Indeed, as I said, this is somewhat error prone which is why the patch
-> calculates the table at run-time instead of compile-time trickery.
+	Ingo
 
-One would need to define some macros to make it simpler I guess
+----- Forwarded message from Ingo Molnar <mingo@elte.hu> -----
 
-Write something like
+Date: Wed, 18 Mar 2009 12:20:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Subject: forcedeth 0000:00:0a.0: DMA-API: device driver frees DMA memory
+	with wrong function [device address=0x0000000035992232] [size=42
+	bytes] [mapped as single] [unmapped as page]
+Cc: Ingo Molnar <mingo@redhat.com>, iommu@lists.linux-foundation.org,
+	linux-kernel@vger.kernel.org
 
-#ifdef CONFIG_ZONE_DMA
-#define TZONE_DMA ZONE_DMA
-#else
-#define TZONE_DMA ZONE_NORMAL
-#endif
 
-for each configurable item. Then just add the T to the above table.
+-tip testing found this DMA-debug assert:
+
+[   19.648023] eth0: no link during initialization.
+[   21.952553] eth0: link up.
+[   22.684073] ------------[ cut here ]------------
+[   22.688023] WARNING: at lib/dma-debug.c:562 check_unmap+0x30e/0x4b4()
+[   22.688023] Hardware name: System Product Name
+[   22.688023] 
+forcedeth 0000:00:0a.0: DMA-API: device driver frees DMA memory with wrong function [device address=0x0000000035992232] [size=42 bytes] [mapped as single] [unmapped as page]
+[   22.688023] Modules linked in:
+[   22.688023] Pid: 1523, comm: arping Not tainted 2.6.29-rc8-tip #20999
+[   22.688023] Call Trace:
+[   22.688023]  [<c0140eae>] warn_slowpath+0x76/0xad
+[   22.688023]  [<c0293a0b>] ? add_dma_entry+0x4b/0x51
+[   22.688023]  [<c015eec5>] ? mark_lock+0x1c/0x16f
+[   22.688023]  [<c015f1a4>] ? __lock_acquire+0x18c/0x296
+[   22.688023]  [<c03473cc>] ? nv_start_xmit_optimized+0x3bd/0x3eb
+[   22.688023]  [<c015eec5>] ? mark_lock+0x1c/0x16f
+[   22.688023]  [<c015f1a4>] ? __lock_acquire+0x18c/0x296
+[   22.688023]  [<c0293572>] check_unmap+0x30e/0x4b4
+[   22.688023]  [<c055f7c3>] ? _spin_lock+0x27/0x2f
+[   22.688023]  [<c0145ba1>] ? _local_bh_enable_ip+0xa1/0xa7
+[   22.688023]  [<c049e0f8>] ? dev_queue_xmit+0x325/0x359
+[   22.688023]  [<c0188922>] ? trace_hardirqs_on+0x21/0x23
+[   22.688023]  [<c0145ba1>] ? _local_bh_enable_ip+0xa1/0xa7
+[   22.688023]  [<c0145bc6>] ? local_bh_enable+0x10/0x12
+[   22.688023]  [<c050225c>] ? packet_sendmsg+0x1b7/0x20a
+[   22.688023]  [<c02939b8>] debug_dma_unmap_page+0x59/0x61
+[   22.688023]  [<c034421f>] pci_unmap_page+0x5b/0x66
+[   22.688023]  [<c03446fd>] nv_tx_done_optimized+0x46/0x1c5
+[   22.688023]  [<c0345922>] nv_nic_irq_optimized+0xa7/0x233
+[   22.688023]  [<c017706e>] handle_IRQ_event+0x85/0xdf
+[   22.688023]  [<c01785df>] handle_fasteoi_irq+0x79/0xb9
+[   22.688023]  [<c0119973>] handle_irq+0x1f/0x24
+[   22.688023]  [<c0119332>] do_IRQ+0x45/0x88
+[   22.688023]  [<c0118455>] common_interrupt+0x35/0x40
+[   22.688023]  [<c0144515>] ? do_setitimer+0x160/0x2d9
+[   22.688023]  [<c055f69b>] ? _spin_unlock_irq+0x29/0x2b
+[   22.688023]  [<c0144515>] do_setitimer+0x160/0x2d9
+[   22.688023]  [<c04926fa>] ? sys_socketcall+0xed/0x188
+[   22.688023]  [<c014473b>] alarm_setitimer+0x39/0x58
+[   22.688023]  [<c0149776>] sys_alarm+0x10/0x12
+[   22.688023]  [<c0117d47>] sysenter_do_call+0x12/0x32
+[   22.688023] ---[ end trace bf7fa25698012db6 ]---
+[   22.688023] Mapped at:
+[   22.688023]  [<c0293cc1>] debug_dma_map_page+0x6c/0x128
+[   22.688023]  [<c0345bd0>] pci_map_single+0xb5/0xc1
+[   22.688023]  [<c0347147>] nv_start_xmit_optimized+0x138/0x3eb
+[   22.688023]  [<c049dc7c>] dev_hard_start_xmit+0x123/0x18f
+[   22.688023]  [<c04acbb9>] __qdisc_run+0xd0/0x1b3
+[   23.700081] arping used greatest stack depth: 5988 bytes left
+[   24.545512] Adding 3911816k swap on /dev/sda2.  Priority:-1 extents:1 across:3911816k 
+
+Config and full bootlog attached.
+
+	Ingo
+
