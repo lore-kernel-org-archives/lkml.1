@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZCRBvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbZCRBvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbZCRBvX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 17 Mar 2009 21:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZCRBvG
+	id S1756945AbZCRBvi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 17 Mar 2009 21:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbZCRBvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 17 Mar 2009 21:51:06 -0400
-Received: from n28.bullet.mail.mud.yahoo.com ([68.142.206.223]:21187 "HELO
-	n28.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751983AbZCRBvF (ORCPT
+	Tue, 17 Mar 2009 21:51:10 -0400
+Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:43552 "HELO
+	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755533AbZCRBvJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 17 Mar 2009 21:51:05 -0400
-X-Yahoo-Newman-Id: 422125.58699.bm@omp423.mail.mud.yahoo.com
-X-YMail-OSG: MIvh9JQVM1n4uikCTcxp8SuPjWiFNJXXfw56olTGGCR2dES7UHAxqsdiF.a2zK4YC1Eihyq2bJozW5_sffnJhyuJoAJoyRd1eC4M0iGJ46SoKCYiYRrWuWKGn8Xu9h8OfOiXh68ezz3Vp5Zoejufec5LS3jiFcup8eOxe__6bBiMWdv0QEHZGA5NRoS8VWyJNXzginNKGJsNIpeWSopKaYMb6nYKbuY86N6TJw--
+	Tue, 17 Mar 2009 21:51:09 -0400
+X-YMail-OSG: SPTjNuIVM1lvqEGasswbEu1r8s0dNojBgP56BM6lMzWEU.G7petgMFcYC4_DMgEHSBAj.dKcRcTf8UC4WsjCMtlCyXt3p8iuI.JumiuvDLbnKocCMLTvSLEbRDSa1mUWoyyimwJBoQJtKWzNyMO4oWPYMeJhRxR29U9ylAYnqWh7JU3_5bXmji6pv8QrM5gFeQuCQ46Nn6D82dceJgOALKbAVJPCQgo-
 X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 1/2] [Target_Core_Mod/Persistent_Reservations]: Release
-	reservation when freeing registration
+Subject: [PATCH 0/2] [Target_Core_Mod/Persistent_Reservations]: Updates
+	from PR client testing
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        linux-scsi <linux-scsi@vger.kernel.org>
@@ -25,8 +24,8 @@ Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        Hannes Reinecke <hare@suse.de>
 Content-Type: text/plain
-Date: Tue, 17 Mar 2009 18:49:43 -0700
-Message-Id: <1237340983.4214.49.camel@haakon2.linux-iscsi.org>
+Date: Tue, 17 Mar 2009 18:50:44 -0700
+Message-Id: <1237341044.4214.52.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -34,97 +33,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From ce2c29593fe895a293e4b983739abf424ad3a862 Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Tue, 17 Mar 2009 16:18:05 -0700
-Subject: [PATCH 1/2] [Target_Core_Mod/Persistent_Reservations]: Release reservation when freeing registration
+Greetings all,
 
-This patch fixes a bug a PROOUT REGISTER or REGISTER_AND_IGNORE_EXIST_KEY with a
-Service Action Reservation Key == 0, was not releasing the reservation if the
-registrant was the reservation holder.  This is known as a implict RELEASE,
-where handling a PROUT RELEASE (what the existing code expected) is known as a
-explict RELEASE.
+Here is a couple of bugfixes that have made while myself and the LIO
+team have been testing RHEL/Centos v5 Cluster Storage (using SCSI
+fencing) and MSFT Windows 2008 Cluster server using SPC-3 PR aware iSCSI
+storage from Target_Core_Mod + LIO-Target v3.0.
 
-This logic is mandated in spc4r17, section 5.7.11.1:
+The first was a bug where a held reservation was not being implictly
+released when the initiator's registration as being freed (this is
+obvious BUG wrt to SPC-4 language).
 
-e) If the I_T nexus is the persistent reservation holder and the persistent reservation is not an all registrants
-   type, then a PERSISTENT RESERVE OUT command with REGISTER service action or REGISTER AND
-   IGNORE EXISTING KEY service action with the SERVICE ACTION RESERVATION KEY field set to zero (see
-   5.7.11.3).
+The second was allowing non WRITE cdbs from unregistered initiators
+while a registration is held of any Write Exclusive PR Type.  I was
+unable to find any explict language in spc4r17 saying this was allowed,
+but since both of the client side cluster setups listed above seem to
+need these CDBs allowed to function, I have gone ahead and allowed these
+non WRITE CDBs to pass in core_scsi3_pr_seq_non_holder().
 
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/target_core_pr.c |   38 +++++++++++++++++++++++++++++++++++-
- 1 files changed, 36 insertions(+), 2 deletions(-)
+These patches are made against lio-core-2.6.git/master and tested on
+v2.6.29-rc8 x86 32-bit HVM.  The lio-core-2.6.git tree can be found at: 
 
-diff --git a/drivers/lio-core/target_core_pr.c b/drivers/lio-core/target_core_pr.c
-index 839aa49..a76535f 100644
---- a/drivers/lio-core/target_core_pr.c
-+++ b/drivers/lio-core/target_core_pr.c
-@@ -515,8 +515,42 @@ static void core_scsi3_free_registration(
- {
- 	se_node_acl_t *nacl = pr_reg->pr_reg_nacl;
- 	struct target_core_fabric_ops *tfo = nacl->se_tpg->se_tpg_tfo;
-+	t10_pr_registration_t *pr_res_holder;
- 	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
- 
-+	spin_lock(&dev->dev_reservation_lock);
-+	pr_res_holder = dev->dev_pr_res_holder;
-+	if (pr_res_holder == pr_reg) {
-+		/*
-+		 * Perform an implict RELEASE if the registration that
-+		 * is being released is holding the reservation.
-+		 *
-+		 * From spc4r17, section 5.7.11.1:
-+		 *
-+		 * e) If the I_T nexus is the persistent reservation holder
-+		 *    and the persistent reservation is not an all registrants
-+		 *    type, then a PERSISTENT RESERVE OUT command with REGISTER
-+		 *    service action or REGISTER AND  IGNORE EXISTING KEY
-+		 *    service action with the SERVICE ACTION RESERVATION KEY
-+		 *    field set to zero (see 5.7.11.3).
-+		 */
-+		dev->dev_pr_res_holder = NULL;
-+
-+		printk(KERN_INFO "SPC-3 PR [%s] Service Action: implict"
-+			" RELEASE cleared reservation holder TYPE: %s"
-+			" ALL_TG_PT: %d\n", tfo->get_fabric_name(),
-+			core_scsi3_pr_dump_type(pr_reg->pr_res_type),
-+			(pr_reg->pr_reg_all_tg_pt) ? 1 : 0);
-+		printk(KERN_INFO "SPC-3 PR [%s] RELEASE Node: %s\n",
-+			tfo->get_fabric_name(), nacl->initiatorname);
-+	
-+		pr_reg->pr_res_holder = pr_reg->pr_res_type = 0;
-+		pr_reg->pr_res_scope = 0;
-+#warning FIXME: Registrants only, UA + RESERVATIONS RELEASED
-+#warning FIXME: All Registrants, only release reservation when last registration is freed.
-+	}
-+	spin_unlock(&dev->dev_reservation_lock);
-+
- 	pr_reg->pr_reg_deve->deve_flags &= ~DEF_PR_REGISTERED;
- 
- 	printk(KERN_INFO "SPC-3 PR [%s] Service Action: UNREGISTER Initiator"
-@@ -526,7 +560,7 @@ static void core_scsi3_free_registration(
- 		(pr_reg->pr_reg_all_tg_pt) ? "ALL" : "SINGLE",
- 		TRANSPORT(dev)->name);
- 	printk(KERN_INFO "SPC-3 PR [%s] SA Res Key: 0x%016Lx PRgeneration:"
--		" 0x%08x\n", tfo->get_fabric_name(),  pr_reg->pr_res_key,
-+		" 0x%08x\n", tfo->get_fabric_name(), pr_reg->pr_res_key,
- 		pr_reg->pr_res_generation);
- 
- 	spin_lock(&pr_tmpl->registration_lock);
-@@ -980,7 +1014,7 @@ static int core_scsi3_emulate_pro_release(
- 	 */
- 	dev->dev_pr_res_holder = NULL;
- 
--	printk(KERN_INFO "SPC-3 PR [%s] Service Action: RELEASE cleared"
-+	printk(KERN_INFO "SPC-3 PR [%s] Service Action: explict RELEASE cleared"
- 		" reservation holder TYPE: %s ALL_TG_PT: %d\n",
- 		CMD_TFO(cmd)->get_fabric_name(),
- 		core_scsi3_pr_dump_type(pr_reg->pr_res_type),
--- 
-1.5.4.1
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
 
+[PATCH 1/2] [Target_Core_Mod/Persistent_Reservations]: Release reservation when freeing registration
+[PATCH 2/2] [Target_Core_Mod/Persistent_Reservations]: Allow non WRITE CDBs from unregistered initiators
 
+ drivers/lio-core/target_core_pr.c |   60 ++++++++++++++++++++++++++++++++-----
+ 1 files changed, 52 insertions(+), 8 deletions(-)
+
+Thanks to everyone who has been contributing their time and efforts to make
+SPC-3 compliant target mode emulation on Linux a reality!
+
+--nab
 
 
