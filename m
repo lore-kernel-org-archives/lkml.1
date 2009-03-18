@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbZCRVxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759618AbZCRVx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760018AbZCRVxX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758145AbZCRVnj
+	id S1759618AbZCRVx7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758354AbZCRVnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:43:39 -0400
+	Wed, 18 Mar 2009 17:43:47 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757903AbZCRVnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:43:37 -0400
+	id S1756989AbZCRVnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:43:45 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 35/57] microblaze_v7: io.h IO operations
-Date: Wed, 18 Mar 2009 21:31:02 +0100
-Message-Id: <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 53/57] microblaze_v7: string.h thread_info.h
+Date: Wed, 18 Mar 2009 21:31:20 +0100
+Message-Id: <e5b88f50c39aa95431f5ecdb032c6676399ae198.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <15f6f10873f7c6f4f3b06f9d4d5af3ee9714f873.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -52,6 +52,24 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <827e2a6a349e009f6c98f31178ce84042b0e2e10.1237407249.git.monstr@monstr.eu>
  <6eb167a9a027d644f10b843b8b1bde66e4c2ee25.1237407249.git.monstr@monstr.eu>
  <592d2a1c72581b6abf73841e640e7b7306c3ec3b.1237407249.git.monstr@monstr.eu>
+ <fde2defbb60d9476df3aac0dc7d87241ed247d3e.1237407249.git.monstr@monstr.eu>
+ <cde249b42d873cf948bd37d5e997307207de1bd3.1237407249.git.monstr@monstr.eu>
+ <1165ce05edc67098d818cf42fd41a621868ab2a6.1237407249.git.monstr@monstr.eu>
+ <35b0490d6a70779bdf2e2f55265c7c70a0dcbf1a.1237407249.git.monstr@monstr.eu>
+ <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
+ <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
+ <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
+ <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
+ <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
+ <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
+ <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
+ <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
+ <14c123f2bae10a8b5fb76cd059ba105c212776ef.1237407249.git.monstr@monstr.eu>
+ <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
+ <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
+ <d3f49195b8f675db48d2eda4f09fddb51af6f946.1237407249.git.monstr@monstr.eu>
+ <34c2f9e50610e147be556607e482b88fd674b887.1237407249.git.monstr@monstr.eu>
+ <15f6f10873f7c6f4f3b06f9d4d5af3ee9714f873.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -63,16 +81,18 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/io.h |  209 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 209 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/io.h
+ arch/microblaze/include/asm/string.h      |   24 +++++
+ arch/microblaze/include/asm/thread_info.h |  152 +++++++++++++++++++++++++++++
+ 2 files changed, 176 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/string.h
+ create mode 100644 arch/microblaze/include/asm/thread_info.h
 
-diff --git a/arch/microblaze/include/asm/io.h b/arch/microblaze/include/asm/io.h
+diff --git a/arch/microblaze/include/asm/string.h b/arch/microblaze/include/asm/string.h
 new file mode 100644
-index 0000000..4ff514e
+index 0000000..f7728c9
 --- /dev/null
-+++ b/arch/microblaze/include/asm/io.h
-@@ -0,0 +1,209 @@
++++ b/arch/microblaze/include/asm/string.h
+@@ -0,0 +1,24 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -81,207 +101,180 @@ index 0000000..4ff514e
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_IO_H
-+#define _ASM_MICROBLAZE_IO_H
++#ifndef _ASM_MICROBLAZE_STRING_H
++#define _ASM_MICROBLAZE_STRING_H
 +
-+#include <asm/byteorder.h>
-+#include <asm/page.h>
-+#include <linux/types.h>
-+#include <asm/page.h>
++#ifndef __KERNEL__
 +
-+#define IO_SPACE_LIMIT ~(0UL)
++#define __HAVE_ARCH_MEMSET
++#define __HAVE_ARCH_MEMCPY
++#define __HAVE_ARCH_MEMMOVE
 +
-+static inline unsigned char __raw_readb(const volatile void __iomem *addr)
-+{
-+	return *(volatile unsigned char __force *)addr;
-+}
-+static inline unsigned short __raw_readw(const volatile void __iomem *addr)
-+{
-+	return *(volatile unsigned short __force *)addr;
-+}
-+static inline unsigned int __raw_readl(const volatile void __iomem *addr)
-+{
-+	return *(volatile unsigned int __force *)addr;
-+}
-+static inline unsigned long __raw_readq(const volatile void __iomem *addr)
-+{
-+	return *(volatile unsigned long __force *)addr;
-+}
-+static inline void __raw_writeb(unsigned char v, volatile void __iomem *addr)
-+{
-+	*(volatile unsigned char __force *)addr = v;
-+}
-+static inline void __raw_writew(unsigned short v, volatile void __iomem *addr)
-+{
-+	*(volatile unsigned short __force *)addr = v;
-+}
-+static inline void __raw_writel(unsigned int v, volatile void __iomem *addr)
-+{
-+	*(volatile unsigned int __force *)addr = v;
-+}
-+static inline void __raw_writeq(unsigned long v, volatile void __iomem *addr)
-+{
-+	*(volatile unsigned long __force *)addr = v;
-+}
++extern void *memset(void *, int, __kernel_size_t);
++extern void *memcpy(void *, const void *, __kernel_size_t);
++extern void *memmove(void *, const void *, __kernel_size_t);
 +
++#endif /* __KERNEL__ */
++
++#endif /* _ASM_MICROBLAZE_STRING_H */
+diff --git a/arch/microblaze/include/asm/thread_info.h b/arch/microblaze/include/asm/thread_info.h
+new file mode 100644
+index 0000000..95605b8
+--- /dev/null
++++ b/arch/microblaze/include/asm/thread_info.h
+@@ -0,0 +1,152 @@
 +/*
-+ * read (readb, readw, readl, readq) and write (writeb, writew,
-+ * writel, writeq) accessors are for PCI and thus littel endian.
-+ * Linux 2.4 for Microblaze had this wrong.
-+ */
-+static inline unsigned char readb(const volatile void __iomem *addr)
-+{
-+	return *(volatile unsigned char __force *)addr;
-+}
-+static inline unsigned short readw(const volatile void __iomem *addr)
-+{
-+	return le16_to_cpu(*(volatile unsigned short __force *)addr);
-+}
-+static inline unsigned int readl(const volatile void __iomem *addr)
-+{
-+	return le32_to_cpu(*(volatile unsigned int __force *)addr);
-+}
-+static inline void writeb(unsigned char v, volatile void __iomem *addr)
-+{
-+	*(volatile unsigned char __force *)addr = v;
-+}
-+static inline void writew(unsigned short v, volatile void __iomem *addr)
-+{
-+	*(volatile unsigned short __force *)addr = cpu_to_le16(v);
-+}
-+static inline void writel(unsigned int v, volatile void __iomem *addr)
-+{
-+	*(volatile unsigned int __force *)addr = cpu_to_le32(v);
-+}
-+
-+/* ioread and iowrite variants. thease are for now same as __raw_
-+ * variants of accessors. we might check for endianess in the feature
-+ */
-+#define ioread8(addr)		__raw_readb((u8 *)(addr))
-+#define ioread16(addr)		__raw_readw((u16 *)(addr))
-+#define ioread32(addr)		__raw_readl((u32 *)(addr))
-+#define iowrite8(v, addr)	__raw_writeb((u8)(v), (u8 *)(addr))
-+#define iowrite16(v, addr)	__raw_writew((u16)(v), (u16 *)(addr))
-+#define iowrite32(v, addr)	__raw_writel((u32)(v), (u32 *)(addr))
-+
-+/* These are the definitions for the x86 IO instructions
-+ * inb/inw/inl/outb/outw/outl, the "string" versions
-+ * insb/insw/insl/outsb/outsw/outsl, and the "pausing" versions
-+ * inb_p/inw_p/...
-+ * The macros don't do byte-swapping.
-+ */
-+#define inb(port)		readb((u8 *)((port)))
-+#define outb(val, port)		writeb((val), (u8 *)((unsigned long)(port)))
-+#define inw(port)		readw((u16 *)((port)))
-+#define outw(val, port)		writew((val), (u16 *)((unsigned long)(port)))
-+#define inl(port)		readl((u32 *)((port)))
-+#define outl(val, port)		writel((val), (u32 *)((unsigned long)(port)))
-+
-+#define inb_p(port)		inb((port))
-+#define outb_p(val, port)	outb((val), (port))
-+#define inw_p(port)		inw((port))
-+#define outw_p(val, port)	outw((val), (port))
-+#define inl_p(port)		inl((port))
-+#define outl_p(val, port)	outl((val), (port))
-+
-+#define memset_io(a, b, c)	memset((void *)(a), (b), (c))
-+#define memcpy_fromio(a, b, c)	memcpy((a), (void *)(b), (c))
-+#define memcpy_toio(a, b, c)	memcpy((void *)(a), (b), (c))
-+
-+/**
-+ *	virt_to_phys - map virtual addresses to physical
-+ *	@address: address to remap
++ * Copyright (C) 2006 Atmark Techno, Inc.
 + *
-+ *	The returned physical address is the physical (CPU) mapping for
-+ *	the memory address given. It is only valid to use this function on
-+ *	addresses directly mapped or allocated via kmalloc.
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_THREAD_INFO_H
++#define _ASM_MICROBLAZE_THREAD_INFO_H
++
++#ifdef __KERNEL__
++
++/* we have 8k stack */
++#define THREAD_SHIFT		13
++#define THREAD_SIZE		(1 << THREAD_SHIFT)
++#define THREAD_SIZE_ORDER	1
++
++#ifndef __ASSEMBLY__
++# include <linux/types.h>
++# include <asm/processor.h>
++# include <asm/segment.h>
++
++/*
++ * low level task data that entry.S needs immediate access to
++ * - this struct should fit entirely inside of one cache line
++ * - this struct shares the supervisor stack pages
++ * - if the contents of this structure are changed, the assembly constants
++ *	 must also be changed
++ */
++
++struct cpu_context {
++	__u32	r1; /* stack pointer */
++	__u32	r2;
++	/* dedicated registers */
++	__u32	r13;
++	__u32	r14;
++	__u32	r15;
++	__u32	r16;
++	__u32	r17;
++	__u32	r18;
++	/* non-volatile registers */
++	__u32	r19;
++	__u32	r20;
++	__u32	r21;
++	__u32	r22;
++	__u32	r23;
++	__u32	r24;
++	__u32	r25;
++	__u32	r26;
++	__u32	r27;
++	__u32	r28;
++	__u32	r29;
++	__u32	r30;
++	/* r31 is used as current task pointer */
++	/* special purpose registers */
++	__u32	msr;
++	__u32	ear;
++	__u32	esr;
++	__u32	fsr;
++};
++
++struct thread_info {
++	struct task_struct	*task; /* main task structure */
++	struct exec_domain	*exec_domain; /* execution domain */
++	unsigned long		flags; /* low level flags */
++	unsigned long		status; /* thread-synchronous flags */
++	__u32			cpu; /* current CPU */
++	__s32			preempt_count; /* 0 => preemptable,< 0 => BUG*/
++	mm_segment_t		addr_limit; /* thread address space */
++	struct restart_block	restart_block;
++
++	struct cpu_context	cpu_context;
++};
++
++/*
++ * macros/functions for gaining access to the thread information structure
 + *
-+ *	This function does not give bus mappings for DMA transfers. In
-+ *	almost all conceivable cases a device driver should not be using
-+ *	this function
++ * preempt_count needs to be 1 initially, until the scheduler is functional.
 + */
-+static inline unsigned long __iomem virt_to_phys(volatile void *address)
-+{
-+	return __pa((unsigned long)address);
++#define INIT_THREAD_INFO(tsk)			\
++{						\
++	.task		= &tsk,			\
++	.exec_domain	= &default_exec_domain,	\
++	.flags		= 0,			\
++	.cpu		= 0,			\
++	.preempt_count	= 1,			\
++	.addr_limit	= KERNEL_DS,		\
++	.restart_block = {			\
++		.fn = do_no_restart_syscall,	\
++	},					\
 +}
 +
-+#define virt_to_bus virt_to_phys
++#define init_thread_info	(init_thread_union.thread_info)
++#define init_stack		(init_thread_union.stack)
 +
-+/**
-+ *	phys_to_virt - map physical address to virtual
-+ *	@address: address to remap
++/* how to get the thread information struct from C */
++static inline struct thread_info *current_thread_info(void)
++{
++	register unsigned long sp asm("r1");
++
++	return (struct thread_info *)(sp & ~(THREAD_SIZE-1));
++}
++
++/* thread information allocation */
++#endif /* __ASSEMBLY__ */
++
++#define PREEMPT_ACTIVE		0x10000000
++
++/*
++ * thread information flags
++ * - these are process state flags that various assembly files may
++ *   need to access
++ * - pending work-to-be-done flags are in LSW
++ * - other flags in MSW
++ */
++#define TIF_SYSCALL_TRACE	0 /* syscall trace active */
++#define TIF_NOTIFY_RESUME	1 /* resumption notification requested */
++#define TIF_SIGPENDING		2 /* signal pending */
++#define TIF_NEED_RESCHED	3 /* rescheduling necessary */
++/* restore singlestep on return to user mode */
++#define TIF_SINGLESTEP		4
++#define TIF_IRET		5 /* return with iret */
++#define TIF_MEMDIE		6
++/* true if poll_idle() is polling TIF_NEED_RESCHED */
++#define TIF_POLLING_NRFLAG	16
++
++#define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
++#define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
++#define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
++#define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
++#define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
++#define _TIF_IRET		(1<<TIF_IRET)
++#define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
++
++/* work to do on interrupt/exception return */
++#define _TIF_WORK_MASK		0x0000FFFE
++/* work to do on any return to u-space */
++#define _TIF_ALLWORK_MASK	0x0000FFFF
++
++/*
++ * Thread-synchronous status.
 + *
-+ *	The returned virtual address is a current CPU mapping for
-+ *	the memory address given. It is only valid to use this function on
-+ *	addresses that have a kernel mapping
-+ *
-+ *	This function does not handle bus mappings for DMA transfers. In
-+ *	almost all conceivable cases a device driver should not be using
-+ *	this function
++ * This is different from the flags in that nobody else
++ * ever touches our thread-synchronous status, so we don't
++ * have to worry about atomic accesses.
 + */
-+static inline void *phys_to_virt(unsigned long address)
-+{
-+	return (void *)__va(address);
-+}
++/* FPU was used by this task this quantum (SMP) */
++#define TS_USEDFPU		0x0001
 +
-+#define bus_to_virt(a) phys_to_virt(a)
-+
-+static inline void __iomem *__ioremap(phys_addr_t address, unsigned long size,
-+			unsigned long flags)
-+{
-+	return (void *)address;
-+}
-+
-+#define ioremap(physaddr, size)	((void __iomem *)(unsigned long)(physaddr))
-+#define iounmap(addr)		((void)0)
-+#define ioremap_nocache(physaddr, size)	ioremap(physaddr, size)
-+
-+/*
-+ * Convert a physical pointer to a virtual kernel pointer for /dev/mem
-+ * access
-+ */
-+#define xlate_dev_mem_ptr(p)	__va(p)
-+
-+/*
-+ * Convert a virtual cached pointer to an uncached pointer
-+ */
-+#define xlate_dev_kmem_ptr(p)	p
-+
-+/*
-+ * Big Endian
-+ */
-+#define out_be32(a, v) __raw_writel((v), (void __iomem __force *)(a))
-+#define out_be16(a, v) __raw_writew((v), (a))
-+
-+#define in_be32(a) __raw_readl((const void __iomem __force *)(a))
-+#define in_be16(a) __raw_readw(a)
-+
-+/*
-+ * Little endian
-+ */
-+
-+#define out_le32(a, v) __raw_writel(__cpu_to_le32(v), (a));
-+#define out_le16(a, v) __raw_writew(__cpu_to_le16(v), (a))
-+
-+#define in_le32(a) __le32_to_cpu(__raw_readl(a))
-+#define in_le16(a) __le16_to_cpu(__raw_readw(a))
-+
-+/* Byte ops */
-+#define out_8(a, v) __raw_writeb((v), (a))
-+#define in_8(a) __raw_readb(a)
-+
-+/* FIXME */
-+static inline void __iomem *ioport_map(unsigned long port, unsigned int len)
-+{
-+	return (void __iomem *) (port);
-+}
-+
-+static inline void ioport_unmap(void __iomem *addr)
-+{
-+	/* Nothing to do */
-+}
-+
-+#endif /* _ASM_MICROBLAZE_IO_H */
++#endif /* __KERNEL__ */
++#endif /* _ASM_MICROBLAZE_THREAD_INFO_H */
 -- 
 1.5.5.1
 
