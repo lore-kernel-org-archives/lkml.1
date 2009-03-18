@@ -1,109 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbZCRWyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbZCRWzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757435AbZCRWyA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 18:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbZCRWxv
+	id S1758733AbZCRWzl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 18:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZCRWzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 18:53:51 -0400
-Received: from relay1.ptmail.sapo.pt ([212.55.154.21]:54116 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1753773AbZCRWxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 18:53:50 -0400
-X-AntiVirus: PTMail-AV 0.3-0.92.0
-Date: Wed, 18 Mar 2009 22:51:37 +0000
-From: Luis Henriques <henrix@sapo.pt>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 -tip] sched: Clean unused fields from struct rq
-Message-ID: <20090318225137.GA3766@hades.domain.com>
+	Wed, 18 Mar 2009 18:55:33 -0400
+Received: from gw.goop.org ([64.81.55.164]:40473 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752604AbZCRWzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 18:55:32 -0400
+Message-ID: <49C17BD8.6050609@goop.org>
+Date: Wed, 18 Mar 2009 15:55:20 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Avi Kivity <avi@redhat.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Question about x86/mm/gup.c's use of disabled interrupts
+References: <49C148AF.5050601@goop.org> <49C16411.2040705@redhat.com> <49C1665A.4080707@goop.org> <49C16A48.4090303@redhat.com> <49C17230.20109@goop.org> <49C17880.7080109@redhat.com>
+In-Reply-To: <49C17880.7080109@redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since they are used on in statistics and are always set to zero, the following
-fields from struct rq have been removed: yld_exp_empty, yld_act_empty and
-yld_both_empty.
+Avi Kivity wrote:
+>> Hm, awkward if flush_tlb_others doesn't IPI...
+>>
+>
+> How can it avoid flushing the tlb on cpu [01]?  It's it's 
+> gup_fast()ing a pte, it may as well load it into the tlb.
 
-Both Sched Debug and SCHEDSTAT_VERSION versions has also been incremented since
-ABIs have been changed.
+xen_flush_tlb_others uses a hypercall rather than an IPI, so none of the 
+logic which depends on there being an IPI will work.
 
-Signed-off-by: Luis Henriques <henrix@sapo.pt>
----
- kernel/sched.c       |    3 ---
- kernel/sched_debug.c |    5 +----
- kernel/sched_stats.h |    7 +++----
- 3 files changed, 4 insertions(+), 11 deletions(-)
+>> Simplest fix is to make gup_get_pte() a pvop, but that does seem like 
+>> putting a red flag in front of an inner-loop hotspot, or something...
+>>
+>> The per-cpu tlb-flush exclusion flag might really be the way to go.
+>
+> I don't see how it will work, without changing Xen to look at the flag?
+>
+> local_irq_disable() is used here to lock out a remote cpu, I don't see 
+> why deferring the flush helps.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8a579e2..4469034 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -646,9 +646,6 @@ struct rq {
- 	/* could above be rq->cfs_rq.exec_clock + rq->rt_rq.rt_runtime ? */
- 
- 	/* sys_sched_yield() stats */
--	unsigned int yld_exp_empty;
--	unsigned int yld_act_empty;
--	unsigned int yld_both_empty;
- 	unsigned int yld_count;
- 
- 	/* schedule() stats */
-diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-index 4daebff..467ca72 100644
---- a/kernel/sched_debug.c
-+++ b/kernel/sched_debug.c
-@@ -286,9 +286,6 @@ static void print_cpu(struct seq_file *m, int cpu)
- #ifdef CONFIG_SCHEDSTATS
- #define P(n) SEQ_printf(m, "  .%-30s: %d\n", #n, rq->n);
- 
--	P(yld_exp_empty);
--	P(yld_act_empty);
--	P(yld_both_empty);
- 	P(yld_count);
- 
- 	P(sched_switch);
-@@ -313,7 +310,7 @@ static int sched_debug_show(struct seq_file *m, void *v)
- 	u64 now = ktime_to_ns(ktime_get());
- 	int cpu;
- 
--	SEQ_printf(m, "Sched Debug Version: v0.08, %s %.*s\n",
-+	SEQ_printf(m, "Sched Debug Version: v0.09, %s %.*s\n",
- 		init_utsname()->release,
- 		(int)strcspn(init_utsname()->version, " "),
- 		init_utsname()->version);
-diff --git a/kernel/sched_stats.h b/kernel/sched_stats.h
-index a8f93dd..32d2bd4 100644
---- a/kernel/sched_stats.h
-+++ b/kernel/sched_stats.h
-@@ -4,7 +4,7 @@
-  * bump this up when changing the output format or the meaning of an existing
-  * format, so that tools can adapt (or abort)
-  */
--#define SCHEDSTAT_VERSION 14
-+#define SCHEDSTAT_VERSION 15
- 
- static int show_schedstat(struct seq_file *seq, void *v)
- {
-@@ -26,9 +26,8 @@ static int show_schedstat(struct seq_file *seq, void *v)
- 
- 		/* runqueue-specific stats */
- 		seq_printf(seq,
--		    "cpu%d %u %u %u %u %u %u %u %u %u %llu %llu %lu",
--		    cpu, rq->yld_both_empty,
--		    rq->yld_act_empty, rq->yld_exp_empty, rq->yld_count,
-+		    "cpu%d %u %u %u %u %u %u %llu %llu %lu",
-+		    cpu, rq->yld_count,
- 		    rq->sched_switch, rq->sched_count, rq->sched_goidle,
- 		    rq->ttwu_count, rq->ttwu_local,
- 		    rq->rq_cpu_time,
--- 
-1.6.2
+Well, no, not deferring.  Making xen_flush_tlb_others() spin waiting for 
+"doing_gup" to clear on the target cpu.  Or add an explicit notion of a 
+"pte update barrier" rather than implicitly relying on the tlb IPI 
+(which is extremely convenient when available...).
 
-
--- 
-Luis Henriques
+    J
