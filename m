@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbZCRVsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759645AbZCRVro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758394AbZCRVsE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 17:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZCRVmr
+	id S1759645AbZCRVro (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 17:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757456AbZCRVmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 17:42:47 -0400
+	Wed, 18 Mar 2009 17:42:44 -0400
 Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:54475 "EHLO
 	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754986AbZCRVmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 17:42:46 -0400
+	id S1756628AbZCRVmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 17:42:43 -0400
 From: monstr@monstr.eu
 To: linux-kernel@vger.kernel.org
 Cc: john.williams@petalogix.com, Michal Simek <monstr@monstr.eu>
-Subject: [PATCH 42/57] microblaze_v7: clinkage.h linkage.h sections.h kmap_types.h
-Date: Wed, 18 Mar 2009 21:31:09 +0100
-Message-Id: <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
+Subject: [PATCH 51/57] microblaze_v7: fcntl.h sockios.h ucontext.h
+Date: Wed, 18 Mar 2009 21:31:18 +0100
+Message-Id: <34c2f9e50610e147be556607e482b88fd674b887.1237407249.git.monstr@monstr.eu>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <d3f49195b8f675db48d2eda4f09fddb51af6f946.1237407249.git.monstr@monstr.eu>
 References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>
@@ -59,6 +59,15 @@ References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
  <1ca9913fc2b9ec220fdb9909f7929abfc38e41b1.1237407249.git.monstr@monstr.eu>
  <4a7e63a56ea0490013724ffddb9f824caafdcbc6.1237407249.git.monstr@monstr.eu>
  <6d67a197ab9f953b93ef151d9a4a198ba0730ef5.1237407249.git.monstr@monstr.eu>
+ <d6fb0da1d4e4e5ac85ddca0ee61b81d3da8e95c5.1237407249.git.monstr@monstr.eu>
+ <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu>
+ <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu>
+ <5f12a0cd5bd492df05689715eb73b03b2a07f5d4.1237407249.git.monstr@monstr.eu>
+ <1e1dc8ccd5abc4e51272f52465c6b9e5f847f947.1237407249.git.monstr@monstr.eu>
+ <14c123f2bae10a8b5fb76cd059ba105c212776ef.1237407249.git.monstr@monstr.eu>
+ <4947b1131c14c1526b81493f461606018bd0f090.1237407249.git.monstr@monstr.eu>
+ <46bc9a74719cb3c21dfdd558b93bec8c5b5675d8.1237407249.git.monstr@monstr.eu>
+ <d3f49195b8f675db48d2eda4f09fddb51af6f946.1237407249.git.monstr@monstr.eu>
 In-Reply-To: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 References: <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -70,29 +79,27 @@ From: Michal Simek <monstr@monstr.eu>
 
 Signed-off-by: Michal Simek <monstr@monstr.eu>
 ---
- arch/microblaze/include/asm/clinkage.h   |    1 +
- arch/microblaze/include/asm/kmap_types.h |   29 +++++++++++++++++++++++++++++
- arch/microblaze/include/asm/linkage.h    |   15 +++++++++++++++
- arch/microblaze/include/asm/sections.h   |   25 +++++++++++++++++++++++++
- 4 files changed, 70 insertions(+), 0 deletions(-)
- create mode 100644 arch/microblaze/include/asm/clinkage.h
- create mode 100644 arch/microblaze/include/asm/kmap_types.h
- create mode 100644 arch/microblaze/include/asm/linkage.h
- create mode 100644 arch/microblaze/include/asm/sections.h
+ arch/microblaze/include/asm/fcntl.h    |    1 +
+ arch/microblaze/include/asm/sockios.h  |   23 +++++++++++++++++++++++
+ arch/microblaze/include/asm/ucontext.h |   22 ++++++++++++++++++++++
+ 3 files changed, 46 insertions(+), 0 deletions(-)
+ create mode 100644 arch/microblaze/include/asm/fcntl.h
+ create mode 100644 arch/microblaze/include/asm/sockios.h
+ create mode 100644 arch/microblaze/include/asm/ucontext.h
 
-diff --git a/arch/microblaze/include/asm/clinkage.h b/arch/microblaze/include/asm/clinkage.h
+diff --git a/arch/microblaze/include/asm/fcntl.h b/arch/microblaze/include/asm/fcntl.h
 new file mode 100644
-index 0000000..9e21843
+index 0000000..46ab12d
 --- /dev/null
-+++ b/arch/microblaze/include/asm/clinkage.h
++++ b/arch/microblaze/include/asm/fcntl.h
 @@ -0,0 +1 @@
-+#include <linux/linkage.h>
-diff --git a/arch/microblaze/include/asm/kmap_types.h b/arch/microblaze/include/asm/kmap_types.h
++#include <asm-generic/fcntl.h>
+diff --git a/arch/microblaze/include/asm/sockios.h b/arch/microblaze/include/asm/sockios.h
 new file mode 100644
-index 0000000..4d7e222
+index 0000000..9fff57a
 --- /dev/null
-+++ b/arch/microblaze/include/asm/kmap_types.h
-@@ -0,0 +1,29 @@
++++ b/arch/microblaze/include/asm/sockios.h
+@@ -0,0 +1,23 @@
 +/*
 + * Copyright (C) 2006 Atmark Techno, Inc.
 + *
@@ -101,79 +108,49 @@ index 0000000..4d7e222
 + * for more details.
 + */
 +
-+#ifndef _ASM_MICROBLAZE_KMAP_TYPES_H
-+#define _ASM_MICROBLAZE_KMAP_TYPES_H
++#ifndef _ASM_MICROBLAZE_SOCKIOS_H
++#define _ASM_MICROBLAZE_SOCKIOS_H
 +
-+enum km_type {
-+	KM_BOUNCE_READ,
-+	KM_SKB_SUNRPC_DATA,
-+	KM_SKB_DATA_SOFTIRQ,
-+	KM_USER0,
-+	KM_USER1,
-+	KM_BIO_SRC_IRQ,
-+	KM_BIO_DST_IRQ,
-+	KM_PTE0,
-+	KM_PTE1,
-+	KM_IRQ0,
-+	KM_IRQ1,
-+	KM_SOFTIRQ0,
-+	KM_SOFTIRQ1,
-+	KM_TYPE_NR,
++#include <linux/ioctl.h>
++
++/* Socket-level I/O control calls. */
++#define FIOSETOWN	0x8901
++#define SIOCSPGRP	0x8902
++#define FIOGETOWN	0x8903
++#define SIOCGPGRP	0x8904
++#define SIOCATMARK	0x8905
++#define SIOCGSTAMP	0x8906		/* Get stamp (timeval) */
++#define SIOCGSTAMPNS	0x8907		/* Get stamp (timespec) */
++
++#endif /* _ASM_MICROBLAZE_SOCKIOS_H */
+diff --git a/arch/microblaze/include/asm/ucontext.h b/arch/microblaze/include/asm/ucontext.h
+new file mode 100644
+index 0000000..11f6bb3
+--- /dev/null
++++ b/arch/microblaze/include/asm/ucontext.h
+@@ -0,0 +1,22 @@
++/*
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++
++#ifndef _ASM_MICROBLAZE_UCONTEXT_H
++#define _ASM_MICROBLAZE_UCONTEXT_H
++
++#include <asm/sigcontext.h>
++
++struct ucontext {
++	unsigned long		uc_flags;
++	struct ucontext		*uc_link;
++	stack_t			uc_stack;
++	struct sigcontext	uc_mcontext;
++	sigset_t		uc_sigmask; /* mask last for extensibility */
 +};
 +
-+#endif /* _ASM_MICROBLAZE_KMAP_TYPES_H */
-diff --git a/arch/microblaze/include/asm/linkage.h b/arch/microblaze/include/asm/linkage.h
-new file mode 100644
-index 0000000..3a8e36d
---- /dev/null
-+++ b/arch/microblaze/include/asm/linkage.h
-@@ -0,0 +1,15 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_LINKAGE_H
-+#define _ASM_MICROBLAZE_LINKAGE_H
-+
-+#define __ALIGN		.align 4
-+#define __ALIGN_STR	".align 4"
-+
-+#endif /* _ASM_MICROBLAZE_LINKAGE_H */
-diff --git a/arch/microblaze/include/asm/sections.h b/arch/microblaze/include/asm/sections.h
-new file mode 100644
-index 0000000..8434a43
---- /dev/null
-+++ b/arch/microblaze/include/asm/sections.h
-@@ -0,0 +1,25 @@
-+/*
-+ * Copyright (C) 2006 Atmark Techno, Inc.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License. See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ */
-+
-+#ifndef _ASM_MICROBLAZE_SECTIONS_H
-+#define _ASM_MICROBLAZE_SECTIONS_H
-+
-+#include <asm-generic/sections.h>
-+
-+# ifndef __ASSEMBLY__
-+extern char _ssbss[], _esbss[];
-+extern unsigned long __ivt_start[], __ivt_end[];
-+
-+#  ifdef CONFIG_MTD_UCLINUX
-+extern char *_ebss;
-+#  endif
-+
-+extern u32 _fdt_start[], _fdt_end[];
-+
-+# endif /* !__ASSEMBLY__ */
-+#endif /* _ASM_MICROBLAZE_SECTIONS_H */
++#endif /* _ASM_MICROBLAZE_UCONTEXT_H */
 -- 
 1.5.5.1
 
