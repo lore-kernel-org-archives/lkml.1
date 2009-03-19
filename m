@@ -1,190 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760879AbZCSUEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757688AbZCSUMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760879AbZCSUEf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 16:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZCSUCN
+	id S1757688AbZCSUMU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 16:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbZCSUMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 16:02:13 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:44541 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbZCSUCE (ORCPT
+	Thu, 19 Mar 2009 16:12:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35381 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751191AbZCSUMH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 16:02:04 -0400
-Message-Id: <20090319200200.152583560@goodmis.org>
-References: <20090319200122.512803803@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 19 Mar 2009 16:01:24 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/7] ftrace: protect running nmi (V3)
-Content-Disposition: inline; filename=0002-ftrace-protect-running-nmi-V3.patch
+	Thu, 19 Mar 2009 16:12:07 -0400
+Date: Thu, 19 Mar 2009 13:05:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jan Kara <jack@suse.cz>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ying Han <yinghan@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+In-Reply-To: <20090319170340.GC3899@duck.suse.cz>
+Message-ID: <alpine.LFD.2.00.0903191301500.7412@localhost.localdomain>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0903190902000.17240@localhost.localdomain> <200903200334.55710.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0903190948510.17240@localhost.localdomain>
+ <20090319170340.GC3899@duck.suse.cz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-When I review the sensitive code ftrace_nmi_enter(), I found
-the atomic variable nmi_running does protect NMI VS do_ftrace_mod_code(),
-but it can not protects NMI(entered nmi) VS NMI(ftrace_nmi_enter()).
 
-cpu#1                   | cpu#2                 | cpu#3
-ftrace_nmi_enter()      | do_ftrace_mod_code()  |
-  not modify            |                       |
-------------------------|-----------------------|--
-executing               | set mod_code_write = 1|
-executing             --|-----------------------|--------------------
-executing               |                       | ftrace_nmi_enter()
-executing               |                       |    do modify
-------------------------|-----------------------|-----------------
-ftrace_nmi_exit()       |                       |
+On Thu, 19 Mar 2009, Jan Kara wrote:
+> > 
+> > Ahh, so you re-created it? On ext2 only, or is it visible on ext3 as well? 
+> > I've not even tested - I assumed that I would have to boot into less 
+> > memory and downgrade my filesystem to ext2, which made me hope somebody 
+> > else would pick it up first ;)
+>
+>   In thread http://lkml.org/lkml/2009/3/4/179 I've reported similar problem
+> - write lost. I'm able to reproduce under UML linux at will. ext3 takes
+> with 1KB blocksize about 20 minutes to hit the corruption, ext2 with 1 KB
+> blocksize about an hour, ext2 with 4KB blocksize several hours...
 
-cpu#3 may be being modified the code which is still being executed on cpu#1,
-it will have undefined results and possibly take a GPF, this patch
-prevents it occurred.
+Hmm. I can't seem to recreate it with Ying Han's testprog, at least. 
+That's with the fs/buffer.c patch applied, but that shouldn't matter since 
+Nick reports that his (roughly equivalent) patch didn't help.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-LKML-Reference: <49C0B411.30003@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- arch/x86/kernel/ftrace.c |   63 +++++++++++++++++++++++++++++----------------
- 1 files changed, 40 insertions(+), 23 deletions(-)
+I'll continue to run it for a while, but it's been going for about an hour 
+now, with vmstat reporting bo/bi at roughly 5-10MB/s pretty continuosly.
 
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 1d0d7f4..57b33ed 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -79,11 +79,11 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
-  *
-  * 1) Put the instruction pointer into the IP buffer
-  *    and the new code into the "code" buffer.
-- * 2) Set a flag that says we are modifying code
-- * 3) Wait for any running NMIs to finish.
-- * 4) Write the code
-- * 5) clear the flag.
-- * 6) Wait for any running NMIs to finish.
-+ * 2) Wait for any running NMIs to finish and set a flag that says
-+ *    we are modifying code, it is done in an atomic operation.
-+ * 3) Write the code
-+ * 4) clear the flag.
-+ * 5) Wait for any running NMIs to finish.
-  *
-  * If an NMI is executed, the first thing it does is to call
-  * "ftrace_nmi_enter". This will check if the flag is set to write
-@@ -95,9 +95,9 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
-  * are the same as what exists.
-  */
- 
-+#define MOD_CODE_WRITE_FLAG (1 << 31)	/* set when NMI should do the write */
- static atomic_t nmi_running = ATOMIC_INIT(0);
- static int mod_code_status;		/* holds return value of text write */
--static int mod_code_write;		/* set when NMI should do the write */
- static void *mod_code_ip;		/* holds the IP to write to */
- static void *mod_code_newcode;		/* holds the text to write to the IP */
- 
-@@ -114,6 +114,20 @@ int ftrace_arch_read_dyn_info(char *buf, int size)
- 	return r;
- }
- 
-+static void clear_mod_flag(void)
-+{
-+	int old = atomic_read(&nmi_running);
-+
-+	for (;;) {
-+		int new = old & ~MOD_CODE_WRITE_FLAG;
-+
-+		if (old == new)
-+			break;
-+
-+		old = atomic_cmpxchg(&nmi_running, old, new);
-+	}
-+}
-+
- static void ftrace_mod_code(void)
- {
- 	/*
-@@ -127,27 +141,39 @@ static void ftrace_mod_code(void)
- 
- 	/* if we fail, then kill any new writers */
- 	if (mod_code_status)
--		mod_code_write = 0;
-+		clear_mod_flag();
- }
- 
- void ftrace_nmi_enter(void)
- {
--	atomic_inc(&nmi_running);
--	/* Must have nmi_running seen before reading write flag */
--	smp_mb();
--	if (mod_code_write) {
-+	if (atomic_inc_return(&nmi_running) & MOD_CODE_WRITE_FLAG) {
-+		smp_rmb();
- 		ftrace_mod_code();
- 		atomic_inc(&nmi_update_count);
- 	}
-+	/* Must have previous changes seen before executions */
-+	smp_mb();
- }
- 
- void ftrace_nmi_exit(void)
- {
- 	/* Finish all executions before clearing nmi_running */
--	smp_wmb();
-+	smp_mb();
- 	atomic_dec(&nmi_running);
- }
- 
-+static void wait_for_nmi_and_set_mod_flag(void)
-+{
-+	if (!atomic_cmpxchg(&nmi_running, 0, MOD_CODE_WRITE_FLAG))
-+		return;
-+
-+	do {
-+		cpu_relax();
-+	} while (atomic_cmpxchg(&nmi_running, 0, MOD_CODE_WRITE_FLAG));
-+
-+	nmi_wait_count++;
-+}
-+
- static void wait_for_nmi(void)
- {
- 	if (!atomic_read(&nmi_running))
-@@ -167,14 +193,9 @@ do_ftrace_mod_code(unsigned long ip, void *new_code)
- 	mod_code_newcode = new_code;
- 
- 	/* The buffers need to be visible before we let NMIs write them */
--	smp_wmb();
--
--	mod_code_write = 1;
--
--	/* Make sure write bit is visible before we wait on NMIs */
- 	smp_mb();
- 
--	wait_for_nmi();
-+	wait_for_nmi_and_set_mod_flag();
- 
- 	/* Make sure all running NMIs have finished before we write the code */
- 	smp_mb();
-@@ -182,13 +203,9 @@ do_ftrace_mod_code(unsigned long ip, void *new_code)
- 	ftrace_mod_code();
- 
- 	/* Make sure the write happens before clearing the bit */
--	smp_wmb();
--
--	mod_code_write = 0;
--
--	/* make sure NMIs see the cleared bit */
- 	smp_mb();
- 
-+	clear_mod_flag();
- 	wait_for_nmi();
- 
- 	return mod_code_status;
--- 
-1.6.2
+Of course, that's with my SSD's and an insanely fast Nehalem box, so my 
+timings are likely rather different from most other peoples.
 
--- 
+			Linus
