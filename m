@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbZCSTUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbZCSTXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757162AbZCSTUs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 15:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbZCSTUh
+	id S1758252AbZCSTXf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 15:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZCSTX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 15:20:37 -0400
-Received: from kroah.org ([198.145.64.141]:52207 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751756AbZCSTUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 15:20:37 -0400
-Date: Thu, 19 Mar 2009 12:20:31 -0700
-From: Greg KH <greg@kroah.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Sindhudweep Sarkar <sindhudweep.sarkar@gmail.com>,
-       David Airlie <airlied@linux.ie>, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Thomas Hellstrom <thellstrom@vmware.com>,
-       Richard Purdie <rpurdie@linux.intel.com>
-Subject: Re: [patch 0/5] Intel Poulsbo/Morrestown DRM driver and DRM core
-	changes
-Message-ID: <20090319192031.GA16776@kroah.com>
-References: <20090319040809.GA29249@kroah.com> <6c046ab30903190903r298a0334n939e64403b8aeda6@mail.gmail.com> <20090319162719.GB32078@kroah.com> <20090319185338.GA21890@srcf.ucam.org> <20090319190254.GA31771@kroah.com> <20090319190530.GA22248@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090319190530.GA22248@srcf.ucam.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 19 Mar 2009 15:23:26 -0400
+Received: from mx45.mail.ru ([94.100.176.59]:35000 "EHLO mx45.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754463AbZCSTXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 15:23:25 -0400
+X-Greylist: delayed 1643 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Mar 2009 15:23:25 EDT
+From: Peter Lojkin <ia6432@inbox.ru>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.28, limiting cpu time doesn't work
+Mime-Version: 1.0
+X-Mailer: mPOP Web-Mail 2.19
+X-Originating-IP: unknown via proxy [83.167.111.116]
+Date: Thu, 19 Mar 2009 21:34:07 +0300
+X-Mru-Data: 2340:1:1:70:70:0
+Reply-To: Peter Lojkin <ia6432@inbox.ru>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <E1LkN4B-0002yU-00.ia6432-inbox-ru@f205.mail.ru>
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 07:05:30PM +0000, Matthew Garrett wrote:
-> On Thu, Mar 19, 2009 at 12:02:54PM -0700, Greg KH wrote:
-> > On Thu, Mar 19, 2009 at 06:53:38PM +0000, Matthew Garrett wrote:
-> > > On Thu, Mar 19, 2009 at 09:27:19AM -0700, Greg KH wrote:
-> > > 
-> > > > But how do I get my laptop that I currently have right now up and
-> > > > running properly with linux in a better-than-800x600-framebuffer mode?
-> > > 
-> > > You don't, because there's no working X driver.
-> > 
-> > Um, no, I have one right here, seems to work ok.  Richard pointed out
-> > the public git tree for it.
-> 
-> With current X? If that's been fixed up recently then it's a definite 
-> improvement, but last I checked it only built against old X servers.
+Hello,
 
-It currently only builds with new X servers, which turned out to be a
-problem trying to get it to work on an openSUSE 11.1 machine, which uses
-an older xserver, but that's a distro issue, not an upstream issue...
+after upgrade to 2.6.28 ulimit -t doesn't work. for example:
 
-thanks,
+bash# ulimit -t 3; cpuhog
 
-greg k-h
+(where cpuhog is any program that continuously use cpu)
+with 2.6.27.20 cpuhog gets killed after 3sec as expected.
+with 2.6.28, 2.6.28.8, 2.6.29-rc8-git4 it's keep running indefinitely.
+ulimit -a and /proc/<pid>/limits show that cputime limit was set correctly.
+
+have i missed some global api changes? recompilation of recent glibc with new kernel headers and shell doesn't help...
+
+ps please cc me, i'm not on the list
+
