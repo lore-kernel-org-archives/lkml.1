@@ -1,195 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759599AbZCSI5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756910AbZCSJRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759599AbZCSI5f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 04:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759491AbZCSI5U
+	id S1756910AbZCSJRx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 05:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZCSJRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 04:57:20 -0400
-Received: from n19.bullet.mail.mud.yahoo.com ([68.142.206.146]:42168 "HELO
-	n19.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757876AbZCSI5T (ORCPT
+	Thu, 19 Mar 2009 05:17:44 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:30506 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755967AbZCSJRn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 04:57:19 -0400
-X-Yahoo-Newman-Id: 705222.80642.bm@omp402.mail.mud.yahoo.com
-X-YMail-OSG: B3weTkYVM1kiiP1fTP1sfzcA8MV.D85BViwWq0LC_9khw0Hq3WWP47cKkQE7YjuFivQFVZCHWYnDfiLQmyiCxChid0mAhBPOULu_dri9URIxQlhFtvrUe3sOik57joAKF_VX.HR.M2t.4GmwRe03kqOV93yCeLld3EhEkQXPTMQfZvF8tLXhZopcvRlRWhdOS0Vfl0T1LrX4IlEOHfdCD93V59NT_0HsADQ9OkCDcnkeXs1s3UQ-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 2/2] [Target_Core_Mod/Persistent_Reservations]: Add PROUT
-	CLEAR service action
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Hannes Reinecke <hare@suse.de>
+	Thu, 19 Mar 2009 05:17:43 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH -tip] cpuacct: per-cgroup utime/stime statistics - v3
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: bharata@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090317062155.GE3314@in.ibm.com>
+References: <20090317062155.GE3314@in.ibm.com>
 Content-Type: text/plain
-Date: Thu, 19 Mar 2009 01:57:15 -0700
-Message-Id: <1237453035.4138.39.camel@haakon2.linux-iscsi.org>
+Date: Thu, 19 Mar 2009 10:17:28 +0100
+Message-Id: <1237454248.7867.24.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 158217e58f9be1384fb06c4e296392101c7434f5 Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Thu, 19 Mar 2009 00:50:25 -0700
-Subject: [PATCH 2/2] [Target_Core_Mod/Persistent_Reservations]: Add PROUT CLEAR service action
+On Tue, 2009-03-17 at 11:51 +0530, Bharata B Rao wrote:
+> Hi,
+> 
+> Here is the next version of the cpuacct stime/utime statistics patch.
+> 
+> Ingo, Could you please consider this for -tip ?
+> 
+> Changes for v3:
+> - Fix a small race in the cpuacct hierarchy walk.
+> 
+> v2:
+> http://lkml.org/lkml/2009/3/12/170
+> 
+> v1:
+> http://lkml.org/lkml/2009/3/10/150
+> --
+> 
+> cpuacct: Add stime and utime statistics
+> 
+> Add per-cgroup cpuacct controller statistics like the system and user
+> time consumed by the group of tasks.
+> 
+> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> Signed-off-by: Balaji Rao <balajirrao@gmail.com>
 
-This patch adds support for the PROUT CLEAR service action, which releases
-any associated reservation and all registrations, as long as the calling
-I_T nexus has a registration valid Reservation Key.
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Support for unit-attention + RESERVATIONS PREEMPTED is listed as a FIXME
-in the code, and is a WIP.
-
-Here is what it looks like in action with the same SCSI target device
-across multiple iSCSI Target Portal Groups (eg: relivate target port 0x1 and 0x2)):
-In the example, the I_T Nexus NOT holding the reservation (/dev/sde) is able to
-successfully call PROUT CLEAR on the target port, this is the expected
-behaviour as defined by spc4r17, section 5.7.11.6
-
-initiator# sg_persist --out --register --param-sark=0x1234abcd -Y -v /dev/sdf
-    inquiry cdb: 12 00 00 00 24 00
-  LIO-ORG  IBLOCK  3.0
-  Peripheral device type: disk
-    Persistent Reservation Out cmd: 5f 00 00 00 00 00 00 00 18 00
-PR out: command (Register) successful
-
-initiator# sg_persist --out --register --param-sark=0x4567ffff -Y -v /dev/sde
-    inquiry cdb: 12 00 00 00 24 00
-  LIO-ORG  IBLOCK  3.0
-  Peripheral device type: disk
-    Persistent Reservation Out cmd: 5f 00 00 00 00 00 00 00 18 00
-PR out: command (Register) successful
-
-iniiator# sg_persist --out --reserve --param-rk=0x1234abcd --prout-type=5 -v /dev/sdf
-    inquiry cdb: 12 00 00 00 24 00
-  LIO-ORG  IBLOCK  3.0
-  Peripheral device type: disk
-    Persistent Reservation Out cmd: 5f 01 05 00 00 00 00 00 18 00
-PR out: command (Reserve) successful
-
-initiator# sg_persist --out --clear --param-rk=0x4567ffff -v /dev/sde
-    inquiry cdb: 12 00 00 00 24 00
-  LIO-ORG  IBLOCK  3.0
-  Peripheral device type: disk
-    Persistent Reservation Out cmd: 5f 03 00 00 00 00 00 00 18 00
-PR out: command (Clear) successful
-
-*) dmesg from lio-core-2.6.git node
-
-SPC-3 PR [iSCSI] Service Action: REGISTER Initiator Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 PR [iSCSI] for ALL TCM Subsystem iblock Object Target Port(s)
-SPC-3 PR [iSCSI] SA Res Key: 0x000000001234abcd PRgeneration: 0x00000000
-SPC-3 PR [iSCSI] Service Action: REGISTER Initiator Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 PR [iSCSI] for ALL TCM Subsystem iblock Object Target Port(s)
-SPC-3 PR [iSCSI] SA Res Key: 0x000000004567ffff PRgeneration: 0x00000001
-SPC-3 PR [iSCSI] Service Action: RESERVE created new reservation holder TYPE: Write Exclusive Access, Registrants Only ALL_TG_PT: 1
-SPC-3 PR [iSCSI] RESERVE Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 PR [iSCSI] Service Action: implict RELEASE cleared reservation holder TYPE: Write Exclusive Access, Registrants Only ALL_TG_PT: 1
-SPC-3 PR [iSCSI] RELEASE Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 PR [iSCSI] Service Action: UNREGISTER Initiator Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 PR [iSCSI] for ALL TCM Subsystem iblock Object Target Port(s)
-SPC-3 PR [iSCSI] SA Res Key: 0x000000001234abcd PRgeneration: 0x00000000
-SPC-3 PR [iSCSI] Service Action: UNREGISTER Initiator Node: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 PR [iSCSI] for ALL TCM Subsystem iblock Object Target Port(s)
-SPC-3 PR [iSCSI] SA Res Key: 0x000000004567ffff PRgeneration: 0x00000001
-SPC-3 PR [iSCSI] Service Action: CLEAR complete
-
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/target_core_pr.c |   63 +++++++++++++++++++++++++++++++++++-
- 1 files changed, 61 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/lio-core/target_core_pr.c b/drivers/lio-core/target_core_pr.c
-index cce50dc..d733bae 100644
---- a/drivers/lio-core/target_core_pr.c
-+++ b/drivers/lio-core/target_core_pr.c
-@@ -1149,7 +1149,66 @@ static int core_scsi3_emulate_pro_clear(
- 	se_cmd_t *cmd,
- 	u64 res_key)
- {
--	core_scsi3_pr_generation(SE_DEV(cmd));
-+	se_device_t *dev = cmd->se_dev;
-+	se_session_t *se_sess = SE_SESS(cmd);
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
-+	t10_pr_registration_t *pr_reg, *pr_reg_tmp, *pr_reg_n, *pr_res_holder;
-+	/*
-+	 * Locate the existing *pr_reg via se_node_acl_t pointers
-+	 */
-+	pr_reg_n = core_scsi3_locate_pr_reg(SE_DEV(cmd),
-+			se_sess->se_node_acl);
-+	if (!(pr_reg_n)) {
-+		printk(KERN_ERR "SPC-3 PR: Unable to locate"
-+			" PR_REGISTERED *pr_reg for CLEAR\n");
-+			return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
-+	}
-+	/*
-+	 * From spc4r17 section 5.7.11.6, Clearing:
-+	 *
-+	 * Any application client may release the persistent reservation and
-+	 * remove all registrations from a device server by issuing a
-+	 * PERSISTENT RESERVE OUT command with CLEAR service action through a
-+	 * registered I_T nexus with the following parameter:
-+	 *
-+	 *	a) RESERVATION KEY field set to the value of the reservation key
-+	 * 	   that is registered with the logical unit for the I_T nexus.
-+	 */
-+	if (res_key != pr_reg_n->pr_res_key) {
-+		printk(KERN_ERR "SPC-3 PR REGISTER: Received"
-+			" res_key: 0x%016Lx does not match"
-+			" existing SA REGISTER res_key:"
-+			" 0x%016Lx\n", res_key, pr_reg_n->pr_res_key);
-+		core_scsi3_put_pr_reg(pr_reg_n);
-+		return PYX_TRANSPORT_RESERVATION_CONFLICT;
-+	}
-+	/*
-+	 * a) Release the persistent reservation, if any;
-+	 */
-+	spin_lock(&dev->dev_reservation_lock);
-+	pr_res_holder = dev->dev_pr_res_holder;
-+	if (pr_res_holder) {
-+		se_node_acl_t *pr_res_nacl = pr_res_holder->pr_reg_nacl;
-+		__core_scsi3_complete_pro_release(dev, pr_res_nacl,
-+			pr_res_holder, 0);
-+	}
-+	spin_unlock(&dev->dev_reservation_lock);
-+	/*
-+	 * b) Remove all registration(s) (see spc4r17 5.7.7);
-+	 */
-+	spin_lock(&pr_tmpl->registration_lock);
-+	list_for_each_entry_safe(pr_reg, pr_reg_tmp,
-+			&pr_tmpl->registration_list, pr_reg_list) {
-+#warning FIXME: UA + RESERVATIONS PREEMPTED for all other registered I_T nexuses
-+		__core_scsi3_free_registration(dev, pr_reg,
-+					(pr_reg_n == pr_reg) ? 1 : 0);
-+	}
-+	spin_unlock(&pr_tmpl->registration_lock);
-+
-+	printk(KERN_INFO "SPC-3 PR [%s] Service Action: CLEAR complete\n",
-+		CMD_TFO(cmd)->get_fabric_name());
-+
-+	core_scsi3_pr_generation(dev);
- 	return 0;
- }
- 
-@@ -1246,9 +1305,9 @@ static int core_scsi3_emulate_pr_out(se_cmd_t *cmd, unsigned char *cdb)
- 	case PRO_RELEASE:
- 		return core_scsi3_emulate_pro_release(cmd,
- 			type, scope, res_key);
--#if 0
- 	case PRO_CLEAR:
- 		return core_scsi3_emulate_pro_clear(cmd, res_key);
-+#if 0
- 	case PRO_PREEMPT:
- 		return core_scsi3_emulate_pro_preempt(cmd,
- 			type, scope, res_key, sa_res_key);
--- 
-1.5.4.1
-
-
-
+> ---
+>  Documentation/cgroups/cpuacct.txt |   17 +++++++
+>  kernel/sched.c                    |   92 +++++++++++++++++++++++++++++++++++---
+>  2 files changed, 103 insertions(+), 6 deletions(-)
+> 
+> --- a/Documentation/cgroups/cpuacct.txt
+> +++ b/Documentation/cgroups/cpuacct.txt
+> @@ -30,3 +30,20 @@ The above steps create a new group g1 an
+>  process (bash) into it. CPU time consumed by this bash and its children
+>  can be obtained from g1/cpuacct.usage and the same is accumulated in
+>  /cgroups/cpuacct.usage also.
+> +
+> +cpuacct.stat file lists a few statistics which further divide the
+> +CPU time obtained by the cgroup into user and system times. Currently
+> +the following statistics are supported:
+> +
+> +utime: Time spent by tasks of the cgroup in user mode.
+> +stime: Time spent by tasks of the cgroup in kernel mode.
+> +
+> +utime and stime are in USER_HZ unit.
+> +
+> +cpuacct controller uses percpu_counter interface to collect utime and
+> +stime. This causes two side effects:
+> +
+> +- It is theoritically possible to see wrong values for stime and utime.
+> +  This is because percpu_counter_read() on 32bit systems is broken.
+> +- It is possible to see slightly outdated values for stime and utime
+> +  due to the batch processing nature of percpu_counter.
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -1442,10 +1442,22 @@ iter_move_one_task(struct rq *this_rq, i
+>  		   struct rq_iterator *iterator);
+>  #endif
+>  
+> +/* Time spent by the tasks of the cpu accounting group executing in ... */
+> +enum cpuacct_stat_index {
+> +	CPUACCT_STAT_UTIME,	/* ... user mode */
+> +	CPUACCT_STAT_STIME,	/* ... kernel mode */
+> +
+> +	CPUACCT_STAT_NSTATS,
+> +};
+> +
+>  #ifdef CONFIG_CGROUP_CPUACCT
+>  static void cpuacct_charge(struct task_struct *tsk, u64 cputime);
+> +static void cpuacct_update_stats(struct task_struct *tsk,
+> +		enum cpuacct_stat_index idx, cputime_t val);
+>  #else
+>  static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
+> +static inline void cpuacct_update_stats(struct task_struct *tsk,
+> +		enum cpuacct_stat_index idx, cputime_t val) {}
+>  #endif
+>  
+>  static inline void inc_cpu_load(struct rq *rq, unsigned long load)
+> @@ -4387,6 +4399,8 @@ void account_user_time(struct task_struc
+>  		cpustat->nice = cputime64_add(cpustat->nice, tmp);
+>  	else
+>  		cpustat->user = cputime64_add(cpustat->user, tmp);
+> +
+> +	cpuacct_update_stats(p, CPUACCT_STAT_UTIME, cputime);
+>  	/* Account for user time used */
+>  	acct_update_integrals(p);
+>  }
+> @@ -4448,6 +4462,8 @@ void account_system_time(struct task_str
+>  	else
+>  		cpustat->system = cputime64_add(cpustat->system, tmp);
+>  
+> +	cpuacct_update_stats(p, CPUACCT_STAT_STIME, cputime);
+> +
+>  	/* Account for system time used */
+>  	acct_update_integrals(p);
+>  }
+> @@ -9727,6 +9743,7 @@ struct cpuacct {
+>  	struct cgroup_subsys_state css;
+>  	/* cpuusage holds pointer to a u64-type object on every cpu */
+>  	u64 *cpuusage;
+> +	struct percpu_counter cpustat[CPUACCT_STAT_NSTATS];
+>  	struct cpuacct *parent;
+>  };
+>  
+> @@ -9751,20 +9768,33 @@ static struct cgroup_subsys_state *cpuac
+>  	struct cgroup_subsys *ss, struct cgroup *cgrp)
+>  {
+>  	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
+> +	int i;
+>  
+>  	if (!ca)
+> -		return ERR_PTR(-ENOMEM);
+> +		goto out;
+>  
+>  	ca->cpuusage = alloc_percpu(u64);
+> -	if (!ca->cpuusage) {
+> -		kfree(ca);
+> -		return ERR_PTR(-ENOMEM);
+> -	}
+> +	if (!ca->cpuusage)
+> +		goto out_free_ca;
+> +
+> +	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
+> +		if (percpu_counter_init(&ca->cpustat[i], 0))
+> +			goto out_free_counters;
+>  
+>  	if (cgrp->parent)
+>  		ca->parent = cgroup_ca(cgrp->parent);
+>  
+>  	return &ca->css;
+> +
+> +out_free_counters:
+> +	i--;
+> +	while (i-- >= 0)
+> +		percpu_counter_destroy(&ca->cpustat[i]);
+> +	free_percpu(ca->cpuusage);
+> +out_free_ca:
+> +	kfree(ca);
+> +out:
+> +	return ERR_PTR(-ENOMEM);
+>  }
+>  
+>  /* destroy an existing cpu accounting group */
+> @@ -9772,7 +9802,10 @@ static void
+>  cpuacct_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
+>  {
+>  	struct cpuacct *ca = cgroup_ca(cgrp);
+> +	int i;
+>  
+> +	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
+> +		percpu_counter_destroy(&ca->cpustat[i]);
+>  	free_percpu(ca->cpuusage);
+>  	kfree(ca);
+>  }
+> @@ -9859,6 +9892,25 @@ static int cpuacct_percpu_seq_read(struc
+>  	return 0;
+>  }
+>  
+> +static const char *cpuacct_stat_desc[] = {
+> +	[CPUACCT_STAT_UTIME] = "utime",
+> +	[CPUACCT_STAT_STIME] = "stime",
+> +};
+> +
+> +static int cpuacct_stats_show(struct cgroup *cgrp, struct cftype *cft,
+> +		struct cgroup_map_cb *cb)
+> +{
+> +	struct cpuacct *ca = cgroup_ca(cgrp);
+> +	int i;
+> +
+> +	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
+> +		s64 val = percpu_counter_read(&ca->cpustat[i]);
+> +		val = cputime_to_clock_t(val);
+> +		cb->fill(cb, cpuacct_stat_desc[i], val);
+> +	}
+> +	return 0;
+> +}
+> +
+>  static struct cftype files[] = {
+>  	{
+>  		.name = "usage",
+> @@ -9869,7 +9921,10 @@ static struct cftype files[] = {
+>  		.name = "usage_percpu",
+>  		.read_seq_string = cpuacct_percpu_seq_read,
+>  	},
+> -
+> +	{
+> +		.name = "stat",
+> +		.read_map = cpuacct_stats_show,
+> +	},
+>  };
+>  
+>  static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
+> @@ -9908,6 +9963,31 @@ static void cpuacct_charge(struct task_s
+>  	rcu_read_unlock();
+>  }
+>  
+> +/*
+> + * Charge the system/user time to the task's accounting group.
+> + */
+> +static void cpuacct_update_stats(struct task_struct *tsk,
+> +		enum cpuacct_stat_index idx, cputime_t val)
+> +{
+> +	struct cpuacct *ca;
+> +
+> +	if (unlikely(!cpuacct_subsys.active))
+> +		return;
+> +
+> +	/*
+> +	 * rcu_read_lock() protects ca thus making sure that hierarchy
+> +	 * walk is safe.
+> +	 */
+> +	rcu_read_lock();
+> +	ca = task_ca(tsk);
+> +
+> +	do {
+> +		percpu_counter_add(&ca->cpustat[idx], val);
+> +		ca = ca->parent;
+> +	} while (ca);
+> +	rcu_read_unlock();
+> +}
+> +
+>  struct cgroup_subsys cpuacct_subsys = {
+>  	.name = "cpuacct",
+>  	.create = cpuacct_create,
 
