@@ -1,137 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZCSUCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbZCSUCf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842AbZCSUCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 16:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbZCSUCF
+	id S1757390AbZCSUCf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 16:02:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZCSUCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 16:02:05 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51775 "EHLO
+	Thu, 19 Mar 2009 16:02:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51790 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751030AbZCSUCE (ORCPT
+	with ESMTP id S1751191AbZCSUCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Mar 2009 16:02:04 -0400
-Message-Id: <20090319200159.932486704@goodmis.org>
+Message-Id: <20090319200200.341942013@goodmis.org>
 References: <20090319200122.512803803@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 19 Mar 2009 16:01:23 -0400
+Date: Thu, 19 Mar 2009 16:01:25 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Lai Jiangshan <laijs@cn.fujitsu.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/7] tracing: give easy way to clear trace buffer
-Content-Disposition: inline; filename=0001-tracing-give-easy-way-to-clear-trace-buffer.patch
+Subject: [PATCH 3/7] function-graph: consolidate prologues for output
+Content-Disposition: inline; filename=0003-function-graph-consolidate-prologues-for-output.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-There is currently no easy way to clear the trace buffer. Currently
-the only way is to change the current tracer.
+Impact: clean up
 
-This patch lets the user clear the trace buffer by simply writing
-into the trace files.
+The prologue of the function graph entry, return and comments all
+start out pretty much the same. Each of these duplicate code and
+do so slightly differently.
 
- echo > /debug/tracing/trace
+This patch consolidates the printing of the pid, absolute time,
+cpu and proc (and for entry, the interrupt).
 
-or to clear a single cpu (i.e. for CPU 1):
-
- echo > /debug/tracing/per_cpu/cpu1/trace
-
-Requested-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace.c |   41 +++++++++++++++++++++++++++++++++--------
- 1 files changed, 33 insertions(+), 8 deletions(-)
+ kernel/trace/trace_functions_graph.c |   98 ++++++++++------------------------
+ 1 files changed, 29 insertions(+), 69 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index a2d13e8..8d981ab 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1941,9 +1941,14 @@ int tracing_open_generic(struct inode *inode, struct file *filp)
- static int tracing_release(struct inode *inode, struct file *file)
+diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+index 6004cca..2d4d185 100644
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -554,24 +554,24 @@ print_graph_entry_nested(struct ftrace_graph_ent_entry *entry,
+ }
+ 
+ static enum print_line_t
+-print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
+-			struct trace_iterator *iter)
++print_graph_prologue(struct trace_iterator *iter, struct trace_seq *s,
++		     int type, unsigned long addr)
  {
- 	struct seq_file *m = (struct seq_file *)file->private_data;
--	struct trace_iterator *iter = m->private;
-+	struct trace_iterator *iter;
- 	int cpu;
+-	int ret;
+-	int cpu = iter->cpu;
+-	pid_t *last_entry = iter->private;
+ 	struct trace_entry *ent = iter->ent;
+-	struct ftrace_graph_ent *call = &field->graph_ent;
+-	struct ftrace_graph_ret_entry *leaf_ret;
++	pid_t *last_pid = iter->private;
++	int cpu = iter->cpu;
++	int ret;
  
-+	if (!(file->f_mode & FMODE_READ))
-+		return 0;
-+
-+	iter = m->private;
-+
- 	mutex_lock(&trace_types_lock);
- 	for_each_tracing_cpu(cpu) {
- 		if (iter->buffer_iter[cpu])
-@@ -1969,12 +1974,24 @@ static int tracing_open(struct inode *inode, struct file *file)
- 	struct trace_iterator *iter;
- 	int ret = 0;
+ 	/* Pid */
+-	if (verif_pid(s, ent->pid, cpu, last_entry) == TRACE_TYPE_PARTIAL_LINE)
++	if (verif_pid(s, ent->pid, cpu, last_pid) == TRACE_TYPE_PARTIAL_LINE)
+ 		return TRACE_TYPE_PARTIAL_LINE;
  
--	iter = __tracing_open(inode, file);
--	if (IS_ERR(iter))
--		ret = PTR_ERR(iter);
--	else if (trace_flags & TRACE_ITER_LATENCY_FMT)
--		iter->iter_flags |= TRACE_FILE_LAT_FMT;
-+	/* If this file was open for write, then erase contents */
-+	if ((file->f_mode & FMODE_WRITE) &&
-+	    !(file->f_flags & O_APPEND)) {
-+		long cpu = (long) inode->i_private;
-+
-+		if (cpu == TRACE_PIPE_ALL_CPU)
-+			tracing_reset_online_cpus(&global_trace);
-+		else
-+			tracing_reset(&global_trace, cpu);
+-	/* Interrupt */
+-	ret = print_graph_irq(iter, call->func, TRACE_GRAPH_ENT, cpu, ent->pid);
+-	if (ret == TRACE_TYPE_PARTIAL_LINE)
+-		return TRACE_TYPE_PARTIAL_LINE;
++	if (type) {
++		/* Interrupt */
++		ret = print_graph_irq(iter, addr, type, cpu, ent->pid);
++		if (ret == TRACE_TYPE_PARTIAL_LINE)
++			return TRACE_TYPE_PARTIAL_LINE;
 +	}
  
-+	if (file->f_mode & FMODE_READ) {
-+		iter = __tracing_open(inode, file);
-+		if (IS_ERR(iter))
-+			ret = PTR_ERR(iter);
-+		else if (trace_flags & TRACE_ITER_LATENCY_FMT)
-+			iter->iter_flags |= TRACE_FILE_LAT_FMT;
-+	}
- 	return ret;
- }
+ 	/* Absolute time */
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME) {
+@@ -598,6 +598,20 @@ print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
+ 			return TRACE_TYPE_PARTIAL_LINE;
+ 	}
  
-@@ -2049,9 +2066,17 @@ static int show_traces_open(struct inode *inode, struct file *file)
- 	return ret;
- }
- 
-+static ssize_t
-+tracing_write_stub(struct file *filp, const char __user *ubuf,
-+		   size_t count, loff_t *ppos)
-+{
-+	return count;
++	return 0;
 +}
 +
- static const struct file_operations tracing_fops = {
- 	.open		= tracing_open,
- 	.read		= seq_read,
-+	.write		= tracing_write_stub,
- 	.llseek		= seq_lseek,
- 	.release	= tracing_release,
- };
-@@ -3576,7 +3601,7 @@ static void tracing_init_debugfs_percpu(long cpu)
- 		pr_warning("Could not create debugfs 'trace_pipe' entry\n");
++static enum print_line_t
++print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
++			struct trace_iterator *iter)
++{
++	int cpu = iter->cpu;
++	struct ftrace_graph_ent *call = &field->graph_ent;
++	struct ftrace_graph_ret_entry *leaf_ret;
++
++	if (print_graph_prologue(iter, s, TRACE_GRAPH_ENT, call->func))
++		return TRACE_TYPE_PARTIAL_LINE;
++
+ 	leaf_ret = get_return_for_leaf(iter, field);
+ 	if (leaf_ret)
+ 		return print_graph_entry_leaf(iter, field, leaf_ret, s);
+@@ -613,38 +627,12 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
+ 	int i;
+ 	int ret;
+ 	int cpu = iter->cpu;
+-	pid_t *last_pid = iter->private, pid = ent->pid;
++	pid_t pid = ent->pid;
+ 	unsigned long long duration = trace->rettime - trace->calltime;
  
- 	/* per cpu trace */
--	entry = debugfs_create_file("trace", 0444, d_cpu,
-+	entry = debugfs_create_file("trace", 0644, d_cpu,
- 				(void *) cpu, &tracing_fops);
- 	if (!entry)
- 		pr_warning("Could not create debugfs 'trace' entry\n");
-@@ -3890,7 +3915,7 @@ static __init int tracer_init_debugfs(void)
- 	if (!entry)
- 		pr_warning("Could not create debugfs 'tracing_cpumask' entry\n");
+-	/* Pid */
+-	if (verif_pid(s, pid, cpu, last_pid) == TRACE_TYPE_PARTIAL_LINE)
++	if (print_graph_prologue(iter, s, 0, 0))
+ 		return TRACE_TYPE_PARTIAL_LINE;
  
--	entry = debugfs_create_file("trace", 0444, d_tracer,
-+	entry = debugfs_create_file("trace", 0644, d_tracer,
- 				 (void *) TRACE_PIPE_ALL_CPU, &tracing_fops);
- 	if (!entry)
- 		pr_warning("Could not create debugfs 'trace' entry\n");
+-	/* Absolute time */
+-	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME) {
+-		ret = print_graph_abs_time(iter->ts, s);
+-		if (!ret)
+-			return TRACE_TYPE_PARTIAL_LINE;
+-	}
+-
+-	/* Cpu */
+-	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU) {
+-		ret = print_graph_cpu(s, cpu);
+-		if (ret == TRACE_TYPE_PARTIAL_LINE)
+-			return TRACE_TYPE_PARTIAL_LINE;
+-	}
+-
+-	/* Proc */
+-	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC) {
+-		ret = print_graph_proc(s, ent->pid);
+-		if (ret == TRACE_TYPE_PARTIAL_LINE)
+-			return TRACE_TYPE_PARTIAL_LINE;
+-
+-		ret = trace_seq_printf(s, " | ");
+-		if (!ret)
+-			return TRACE_TYPE_PARTIAL_LINE;
+-	}
+-
+ 	/* Overhead */
+ 	ret = print_graph_overhead(duration, s);
+ 	if (!ret)
+@@ -689,38 +677,10 @@ print_graph_comment(struct bprint_entry *trace, struct trace_seq *s,
+ {
+ 	int i;
+ 	int ret;
+-	int cpu = iter->cpu;
+-	pid_t *last_pid = iter->private;
+ 
+-	/* Pid */
+-	if (verif_pid(s, ent->pid, cpu, last_pid) == TRACE_TYPE_PARTIAL_LINE)
++	if (print_graph_prologue(iter, s, 0, 0))
+ 		return TRACE_TYPE_PARTIAL_LINE;
+ 
+-	/* Absolute time */
+-	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME) {
+-		ret = print_graph_abs_time(iter->ts, s);
+-		if (!ret)
+-			return TRACE_TYPE_PARTIAL_LINE;
+-	}
+-
+-	/* Cpu */
+-	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU) {
+-		ret = print_graph_cpu(s, cpu);
+-		if (ret == TRACE_TYPE_PARTIAL_LINE)
+-			return TRACE_TYPE_PARTIAL_LINE;
+-	}
+-
+-	/* Proc */
+-	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC) {
+-		ret = print_graph_proc(s, ent->pid);
+-		if (ret == TRACE_TYPE_PARTIAL_LINE)
+-			return TRACE_TYPE_PARTIAL_LINE;
+-
+-		ret = trace_seq_printf(s, " | ");
+-		if (!ret)
+-			return TRACE_TYPE_PARTIAL_LINE;
+-	}
+-
+ 	/* No overhead */
+ 	ret = print_graph_overhead(-1, s);
+ 	if (!ret)
 -- 
 1.6.2
 
