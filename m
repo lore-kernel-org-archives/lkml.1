@@ -1,122 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759165AbZCSR4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbZCSSAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759165AbZCSR4p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 13:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbZCSR4g
+	id S1757687AbZCSSAg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 14:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZCSSAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 13:56:36 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:42952 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751807AbZCSR4g (ORCPT
+	Thu, 19 Mar 2009 14:00:24 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:58451 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751626AbZCSSAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 13:56:36 -0400
-Message-ID: <49C2874D.3080002@ct.jp.nec.com>
-Date: Thu, 19 Mar 2009 10:56:29 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: signal: check signal stack overflow properly
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Mar 2009 14:00:22 -0400
+Subject: Re: Required sequence to set wireless parameters? (was:
+ 2.6.29-rc8: Reported regressions from 2.6.28)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Frans Pop <elendil@planet.nl>
+Cc: "John W. Linville" <linville@tuxdriver.com>, jeff.chua.linux@gmail.com,
+       mingo@elte.hu, torvalds@linux-foundation.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, bunk@kernel.org,
+       akpm@linux-foundation.org, kernel-testers@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <200903191602.58790.elendil@planet.nl>
+References: <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com>
+	 <1237140665.24621.2.camel@johannes.local>
+	 <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
+	 <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu>
+	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
+	 <1237317742.31814.28.camel@johannes.local>
+	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
+	 <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com>
+	 <1237455534.5100.56.camel@johannes.local>
+	 <1237455534.5100.56.camel@johannes.local>
+	 <20090319141311.GA3587@tuxdriver.com>
+	 <200903191602.58790.elendil@planet.nl>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-k25saOD3Tw6lWyrUnp4H"
+Date: Thu, 19 Mar 2009 17:53:50 +0100
+Message-Id: <1237481630.5100.92.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Impact: cleanup
+--=-k25saOD3Tw6lWyrUnp4H
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Check alternate signal stack overflow with proper stack pointer. The stack
-pointer of the next signal frame is different if that task has i387 state.
+On Thu, 2009-03-19 at 16:02 +0100, Frans Pop wrote:
 
-On x86_64, redzone would be included.
+> Mostly just curious, but is that actually required by some wireless=20
+> standard? If not, is it really reasonable to ask userland to do things in=
+=20
+> that particular order?
 
-No need to check SA_ONSTACK if we're already using alternate signal stack.
+Wext is a mess, and we've known that for a long time... But no, the
+sequence should _not_ be required, it's just _easier_ for the kernel,
+and as such has a better probability of succeeding if there are
+problems, it should still work though.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/kernel/signal.c |   48 +++++++++++++++++++++++++--------------------
- 1 files changed, 27 insertions(+), 21 deletions(-)
+However, one thing that will _not_ work is this:
 
-diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
-index 4da412a..62f2164 100644
---- a/arch/x86/kernel/signal.c
-+++ b/arch/x86/kernel/signal.c
-@@ -211,31 +211,27 @@ get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
- {
- 	/* Default to using normal stack */
- 	unsigned long sp = regs->sp;
-+	int onsigstack = on_sig_stack(sp);
- 
- #ifdef CONFIG_X86_64
- 	/* redzone */
- 	sp -= 128;
- #endif /* CONFIG_X86_64 */
- 
--	/*
--	 * If we are on the alternate signal stack and would overflow it, don't.
--	 * Return an always-bogus address instead so we will die with SIGSEGV.
--	 */
--	if (on_sig_stack(sp) && !likely(on_sig_stack(sp - frame_size)))
--		return (void __user *) -1L;
--
--	/* This is the X/Open sanctioned signal stack switching.  */
--	if (ka->sa.sa_flags & SA_ONSTACK) {
--		if (sas_ss_flags(sp) == 0)
--			sp = current->sas_ss_sp + current->sas_ss_size;
--	} else {
-+	if (!onsigstack) {
-+		/* This is the X/Open sanctioned signal stack switching.  */
-+		if (ka->sa.sa_flags & SA_ONSTACK) {
-+			if (sas_ss_flags(sp) == 0)
-+				sp = current->sas_ss_sp + current->sas_ss_size;
-+		} else {
- #ifdef CONFIG_X86_32
--		/* This is the legacy signal stack switching. */
--		if ((regs->ss & 0xffff) != __USER_DS &&
--			!(ka->sa.sa_flags & SA_RESTORER) &&
--				ka->sa.sa_restorer)
--			sp = (unsigned long) ka->sa.sa_restorer;
-+			/* This is the legacy signal stack switching. */
-+			if ((regs->ss & 0xffff) != __USER_DS &&
-+				!(ka->sa.sa_flags & SA_RESTORER) &&
-+					ka->sa.sa_restorer)
-+				sp = (unsigned long) ka->sa.sa_restorer;
- #endif /* CONFIG_X86_32 */
-+		}
- 	}
- 
- 	if (used_math()) {
-@@ -244,12 +240,22 @@ get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, size_t frame_size,
- 		sp = round_down(sp, 64);
- #endif /* CONFIG_X86_64 */
- 		*fpstate = (void __user *)sp;
--
--		if (save_i387_xstate(*fpstate) < 0)
--			return (void __user *)-1L;
- 	}
- 
--	return (void __user *)align_sigframe(sp - frame_size);
-+	sp = align_sigframe(sp - frame_size);
-+
-+	/*
-+	 * If we are on the alternate signal stack and would overflow it, don't.
-+	 * Return an always-bogus address instead so we will die with SIGSEGV.
-+	 */
-+	if (onsigstack && !likely(on_sig_stack(sp)))
-+		return (void __user *)-1L;
-+
-+	/* save i387 state */
-+	if (used_math() && save_i387_xstate(*fpstate) < 0)
-+		return (void __user *)-1L;
-+
-+	return (void __user *)sp;
- }
- 
- #ifdef CONFIG_X86_32
--- 
-1.6.1.2
+iwconfig wlan0 essid xyz
+iwconfig wlan0 key s:xyz
+
+you still need
+
+iwconfig wlan0 ap any
+
+or anything similar after setting the key to trigger the kernel to do
+something.
+
+> Reason I ask is that for example when writing wireless support for e.g. a=
+=20
+> distro installation system, it seems most logical to *first* ask the user=
+=20
+> what network (ESSID) he wants to connect to. Next to check if we can=20
+> connect to that network without additional authentication and only then,=20
+> if needed, ask for keys etc.
+> If it's not possible to set that info in that logical order that seems=20
+> rather restrictive to me and would probably mean that you'd have to reset=
+=20
+> AP, ESSID and possibly other settings before each incremental attempt.
+
+That's a pretty wrong argument, nothing says your software cannot
+collect all the information and then give it to the kernel at once
+later, I think... In fact, this is required anyway when you use RSN or
+WPA (wpa_supplicant needs all information at once), for example.
+
+johannes
+
+--=-k25saOD3Tw6lWyrUnp4H
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJwnicAAoJEKVg1VMiehFYvX4QAJZlB90q2bTsks5+lvKz3DBK
+88ZcByaRAVd4CtMD2LkLgVwc97CuXsR29rCszrsZIh6pa1/4Gnbqq53EhD1p+Tuf
+Byh4eTeUGuEiJTd8RJelZnDeLVzWgc1Vf9smuSd8loyc8p6prBKEjzwNacBADgcW
+n52BQPdr4oYM62gBqpWB18jIv16Oqru9Q3yC5MJGIxxE+E4y+zDpUmvCtq1Dlazj
+blgsRoB+bmoHo6Ws7pOmC1K6Z1g/j72Q5Ighub8sOkRRj9ASFXa1TKofN18npch/
+2jmcNiZajziX7hDJXuwZXwO3TVWcx7EHxymSE11ZK/+91Ddozijo2sq7UD66JUsD
+vOBa1xaW2sCLBlLpAxDvkt/QnBMhCi4KJY9S/3FqEC3hVqKFCvBtGTmdEY6mrCGo
+mIKolBmpo0IT/GGMEuns011o6Wqftybv3Ntl7nvu2Cxa2Jwv+2f41kd8ewoIJhYV
+g1d2/q/tyevIVx/r1LG5XZpNtYAG5a+5Kmn5tWq20p22kx8KuyZsQ9b7WgUvqkbk
+j8M+pICgwljjYCLuWGE34tXQq2HwRsRWGJVNYuztJZZOLpeXTXwcDD8LXuz4czkW
+oZMhqLSHIxkuyHpq9/jPk33x7bXQwi8EbNiXh0W2ho5a3nDQrc9tSJKlPgVZKFmq
+v6vfrF3YqZVySgPk93k3
+=2gHF
+-----END PGP SIGNATURE-----
+
+--=-k25saOD3Tw6lWyrUnp4H--
 
