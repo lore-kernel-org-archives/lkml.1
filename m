@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbZCSPbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbZCSPc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755895AbZCSPbM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 11:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbZCSPax
+	id S1757364AbZCSPc5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 11:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbZCSPcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 11:30:53 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:38941 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753763AbZCSPaw (ORCPT
+	Thu, 19 Mar 2009 11:32:45 -0400
+Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:45994 "EHLO
+	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752424AbZCSPco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 11:30:52 -0400
-Date: Thu, 19 Mar 2009 11:24:41 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: johannes@sipsolutions.net, jeff.chua.linux@gmail.com, mingo@elte.hu,
-       torvalds@linux-foundation.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, bunk@kernel.org,
-       akpm@linux-foundation.org, kernel-testers@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Required sequence to set wireless parameters? (was:
-	2.6.29-rc8: Reported regressions from 2.6.28)
-Message-ID: <20090319152441.GB3587@tuxdriver.com>
-References: <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu> <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com> <1237317742.31814.28.camel@johannes.local> <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com> <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com> <1237455534.5100.56.camel@johannes.local> <1237455534.5100.56.camel@johannes.local> <20090319141311.GA3587@tuxdriver.com> <200903191602.58790.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903191602.58790.elendil@planet.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 19 Mar 2009 11:32:44 -0400
+Subject: [PATCH] ipv6: reorder struct inet6_ifaddr to remove padding on 64
+ bit builds
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: yoshfuji@linux-ipv6.org, pekkas@netcore.fi
+Cc: netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 19 Mar 2009 15:32:40 +0000
+Message-Id: <1237476760.3266.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 04:02:56PM +0100, Frans Pop wrote:
-> John W. Linville wrote:
-> > On Thu, Mar 19, 2009 at 10:38:54AM +0100, Johannes Berg wrote:
-> >> On Thu, 2009-03-19 at 12:49 +0800, Jeff Chua wrote:
-> >> > # this needs patch to work ...
-> >> > iwconfig wlan0 mode Managed
-> >> > ifconfig wlan0 up
-> >> > iwconfig wlan0 essid xxx
-> >> > iwconfig wlan0 key restricted xxx
-> >> > iwconfig wlan0 ap auto channel auto
-> >> 
-> >> If you swap the key and essid lines, it will probably always work. But
-> >> I've yet to analyse your data to see why it doesn't in the other case.
-> > 
-> > That is what I was going to suggest.  I go so far as to say that you
-> > should set everything else before doing the "iwconfig wlan0 essid
-> > xxx" bit.
-> 
-> Mostly just curious, but is that actually required by some wireless 
-> standard? If not, is it really reasonable to ask userland to do things in 
-> that particular order?
-> 
-> Reason I ask is that for example when writing wireless support for e.g. a 
-> distro installation system, it seems most logical to *first* ask the user 
-> what network (ESSID) he wants to connect to. Next to check if we can 
-> connect to that network without additional authentication and only then, 
-> if needed, ask for keys etc.
-> If it's not possible to set that info in that logical order that seems 
-> rather restrictive to me and would probably mean that you'd have to reset 
-> AP, ESSID and possibly other settings before each incremental attempt.
+reorder struct inet6_ifaddr to remove padding on 64 bit builds
+    
+remove 8 bytes of padding so inet6_ifaddr becomes 192 bytes & fits into
+a smaller slab.
+    
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+----
+patch against v2.6.29-rc8
 
-You can ask the user for the data in whatever order you like, but
-when you are done collecting it you should issue the "iwconfig wlan0
-essid xxx" command (or execute the SIOCSIWESSID ioctl) last.  IMHO,
-it is silly to even bother setting the SSID before you have set any
-required key or (if you so choose) selecting an AP or channel.
+I've compiled & booted with this patch, modules ipv6 & ip6_tables load
+successfully, but I've not run any other tests.
 
-This is a limitation of the wireless extensions API -- nothing in
-the API really defines when an association should be triggered.
-The mac80211 component uses the setting of the SSID as the trigger
-for association.  AFAIK, this ordering should work with all other
-drivers as well.
+regards
+Richard
+ 
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+
+
+diff --git a/include/net/if_inet6.h b/include/net/if_inet6.h
+index c8effa4..38b7813 100644
+--- a/include/net/if_inet6.h
++++ b/include/net/if_inet6.h
+@@ -39,8 +39,6 @@ struct inet6_ifaddr
+ 	
+ 	__u32			valid_lft;
+ 	__u32			prefered_lft;
+-	unsigned long		cstamp;	/* created timestamp */
+-	unsigned long		tstamp; /* updated timestamp */
+ 	atomic_t		refcnt;
+ 	spinlock_t		lock;
+ 
+@@ -49,6 +47,9 @@ struct inet6_ifaddr
+ 
+ 	__u16			scope;
+ 
++	unsigned long		cstamp;	/* created timestamp */
++	unsigned long		tstamp; /* updated timestamp */
++
+ 	struct timer_list	timer;
+ 
+ 	struct inet6_dev	*idev;
+
+
