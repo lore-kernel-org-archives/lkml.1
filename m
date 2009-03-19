@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760308AbZCSUdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758479AbZCSUkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760308AbZCSUdt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 16:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756249AbZCSUdj
+	id S1758479AbZCSUkj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 16:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZCSUk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 16:33:39 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:56375 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757242AbZCSUdj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 16:33:39 -0400
-Message-ID: <49C2ACA8.4070503@oracle.com>
-Date: Thu, 19 Mar 2009 13:35:52 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 19 Mar 2009 16:40:29 -0400
+Received: from ns2.gothnet.se ([82.193.160.251]:15689 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753776AbZCSUk3 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 16:40:29 -0400
+Message-ID: <49C2ADA8.2090405@shipmail.org>
+Date: Thu, 19 Mar 2009 21:40:08 +0100
+From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090114)
 MIME-Version: 1.0
-To: monstr@monstr.eu
-CC: linux-kernel@vger.kernel.org, john.williams@petalogix.com
-Subject: Re: Microblaze linux support
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
-In-Reply-To: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49C2AC1C.0088:SCFSTAT928724,ss=1,fgs=0
+To: Greg KH <greg@kroah.com>
+CC: Dave Airlie <airlied@gmail.com>, David Airlie <airlied@linux.ie>,
+       Thomas Hellstrom <thellstrom@vmware.com>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@linux.intel.com>
+Subject: Re: [patch 0/5] Intel Poulsbo/Morrestown DRM driver and DRM core
+ changes
+References: <20090319040809.GA29249@kroah.com> <21d7e9970903182348v57a78188ocefe138d353ee197@mail.gmail.com> <49C21B0B.4060809@shipmail.org> <20090319201136.GB17094@kroah.com>
+In-Reply-To: <20090319201136.GB17094@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-BitDefender-Scanner: Mail not scanned due to license constraints
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-monstr@monstr.eu wrote:
-> Hi all,
-> 
-> I think that is the right time to send you next pack with 
-> Microblaze support. It is seventh pack - some previous packs
-> was review by community and I hope there are not any big faults.
-> 
-> We tested this kernel on some boards.
-> We have GIT server up and gitweb is available at http://developer.petalogix.com/git/gitweb.cgi
-> 
-> All information about git clone you can find on gitweb.
-> This pack is available in for-linus branch. Information about other branches are on gitweb too.
-> 
-> More information about microblaze fdt kernel you can find at www.monstr.eu/fdt/
-> If you want to test kernel with microblaze toolchain let me know.
+Greg KH wrote:
+> On Thu, Mar 19, 2009 at 11:14:35AM +0100, Thomas Hellström wrote:
+>   
+>>> First off, the non-staging patches need more complete changelog entries,
+>>> a bit of meaning goes a long way. I'll ack them if they are documented and
+>>> make sense. The unlocked ioctl hook makes sense to me at least!
+>>>   
+>>>       
+>> For the non-staging patches, (which also sit in the modesetting-newttm 
+>> tree), I can add some more elaborate comments. However I think all of
+>> them are targeted to support functionality for TTM, so unless the TTM
+>> code goes into staging or mainstream, there is little point in merging
+>> them to core drm before other drivers find them useful.
+>>
+>> Although I see the patch adding TTM is including some backwards
+>> compatibility defines (In particular the PAT compat stuff) that needs
+>> to be stripped.
+>>     
+>
+> Great, care to respin it and send it to me?
+>
+> thanks,
+>
+> greg k-h
+>   
+Greg,
+A clean TTM patch was sent to Intel with the other patches.
+I'm not sure why it got lost along the way?
 
-Hi Michal,
+/Thomas
 
-Is there an x86-hosted cross-tool chain available?
-If so, where?
 
-> I added only uart16550 and uartlite support - that's enought for first merge.
-> 
-> 
-> Thanks for you comments and especially for your ACK,
 
-Thanks,
--- 
-~Randy
+
