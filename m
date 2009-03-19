@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbZCSIvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbZCSIzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759022AbZCSIvV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 04:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZCSIvM
+	id S1757523AbZCSIzn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 04:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbZCSIzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 04:51:12 -0400
-Received: from mailbox-us-s-12.mailhostingserver.com ([75.125.101.9]:50119
-	"EHLO mailbox-us-s-12.mailhostingserver.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753025AbZCSIvL (ORCPT
+	Thu, 19 Mar 2009 04:55:32 -0400
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:21726 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754539AbZCSIzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 04:51:11 -0400
-Date: Thu, 19 Mar 2009 09:51:05 +0100
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: linux-kernel@vger.kernel.org
-Subject: [BUG] linux-2.6.29-rc7-rt1: sleeping function called from invalid
-	context
-Message-ID: <20090319085105.GD4087@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 19 Mar 2009 04:55:31 -0400
+X-YMail-OSG: PE9bTKMVM1k_BEBgldCArbscTGw3NX0TAIuOKgKgwwWYZtVYCnVTcGOcZrcMBbzhK0ITDkA2dS54_BMndXLoK3DmZ1I2J0R1VW0.SByotUu863VLbHbgOpAcNSA.UMyo7cCXso9hhmt41avrQUS9gLFO3ysq4oqZXVn8JtgxGcMR0qp9caP8xfd37DE-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH 0/2] [Target_Core_Mod/Persistent_Reservations]: Add implict
+	release and PROUT CLEAR SA
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Douglas Gilbert <dgilbert@interlog.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Hannes Reinecke <hare@suse.de>
+Content-Type: text/plain
+Date: Thu, 19 Mar 2009 01:55:27 -0700
+Message-Id: <1237452927.4138.35.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-after booting my box with linux 2.6.29-rc7-rt1 dmesg contains the
-following bug report:
+Greetings all,
 
-[   33.616819] BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
-[   33.616827] in_atomic(): 1, irqs_disabled(): 0, pid: 5015, name: modprobe
-[   33.616834] Pid: 5015, comm: modprobe Not tainted 2.6.29-rc7-rt1 #1
-SMP PREEMPT RT Wed Mar 18 17:59:59 CET 2009
-[   33.616838] Call Trace:
-[   33.616853]  [<c012941f>] __might_sleep+0xff/0x130
-[   33.616860]  [<c033c25a>] rt_spin_lock+0x2a/0x70
-[   33.616867]  [<c01b7441>] kfree+0x31/0x90
-[   33.616873]  [<c010a413>] exit_thread+0x43/0xb0
-[   33.616879]  [<c0136720>] do_exit+0x150/0x890
-[   33.616885]  [<c033f325>] ? sub_preempt_count+0x95/0xd0
-[   33.616891]  [<c0159683>] ? rt_up_read+0x33/0x50
-[   33.616898]  [<c0136e95>] do_group_exit+0x35/0x90
-[   33.616903]  [<c0136f04>] sys_exit_group+0x14/0x20
-[   33.616908]  [<c010301b>] sysenter_do_call+0x12/0x2c
-[   34.724300] BUG: sleeping function called from invalid context at kernel/rtmutex.c:683
-[   34.724308] in_atomic(): 1, irqs_disabled(): 0, pid: 5114, name: xkbcomp
-[   34.724314] Pid: 5114, comm: xkbcomp Not tainted 2.6.29-rc7-rt1 #1
-SMP PREEMPT RT Wed Mar 18 17:59:59 CET 2009
-[   34.724318] Call Trace:
-[   34.724334]  [<c012941f>] __might_sleep+0xff/0x130
-[   34.724342]  [<c033c25a>] rt_spin_lock+0x2a/0x70
-[   34.724348]  [<c01b7441>] kfree+0x31/0x90
-[   34.724354]  [<c010a413>] exit_thread+0x43/0xb0
-[   34.724359]  [<c0136720>] do_exit+0x150/0x890
-[   34.724366]  [<c033f325>] ? sub_preempt_count+0x95/0xd0
-[   34.724371]  [<c0159683>] ? rt_up_read+0x33/0x50
-[   34.724378]  [<c0136e95>] do_group_exit+0x35/0x90
-[   34.724383]  [<c0136f04>] sys_exit_group+0x14/0x20
-[   34.724388]  [<c010301b>] sysenter_do_call+0x12/0x2c
+This first patch series adds implict release of PR reservations/registrations when
+a $FABRIC_MOD logical unit ACL is being released through target_core_mod/ConfigFS.
+The second patch adds support for the PROUT CLEAR service action that allows a registered
+I_T nexus (eg: initiator port) to release PR reservations/registrations.  This is one of
+the PROUT service actions that various client side cluster code / SCSI subsystem initiators
+use with SCSI persistent reservations for fencing of failed nodes.
 
--- 
-Matthias Kaehlcke
-Embedded Linux Engineer
-Barcelona
+These patches are made against lio-core-2.6.git/master and tested on
+v2.6.29-rc8 x86 32-bit HVM using sg_persist from sg3_utils.  The lio-core-2.6.git tree
+can be found at: 
 
-          We can't solve problems by using the same kind
-             of thinking we used when we created them
-                         (Albert Einstein)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+
+[PATCH 1/2] [Target_Core_Mod/Persistent_Reservations]: Add implict PR RELEASE+UNREGISTER for LUN acl removal
+[PATCH 2/2] [Target_Core_Mod/Persistent_Reservations]: Add PROUT CLEAR service action
+
+ drivers/lio-core/target_core_base.h   |    1 +
+ drivers/lio-core/target_core_device.c |   14 ++-
+ drivers/lio-core/target_core_pr.c     |  288 ++++++++++++++++++++++++++-------
+ drivers/lio-core/target_core_pr.h     |    2 +
+ 4 files changed, 239 insertions(+), 66 deletions(-)
+
+--nab
+
+
