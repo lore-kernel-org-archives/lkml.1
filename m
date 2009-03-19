@@ -1,120 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbZCSQQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbZCSQQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756258AbZCSQQX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZCSQQN
+	id S1757917AbZCSQQi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZCSQQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:16:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46536 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751045AbZCSQQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:16:11 -0400
-Date: Thu, 19 Mar 2009 16:15:30 GMT
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1237470453-5427-1-git-send-email-fweisbec@gmail.com>
-References: <1237470453-5427-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:tracing/ftrace] tracing/ring-buffer: fix non cpu hotplug case
-Message-ID: <tip-3bf832ce1fe6988148d392599f34ca0c6a34427d@git.kernel.org>
-Git-Commit-ID: 3bf832ce1fe6988148d392599f34ca0c6a34427d
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 19 Mar 2009 16:15:32 +0000 (UTC)
+	Thu, 19 Mar 2009 12:16:17 -0400
+Received: from viefep12-int.chello.at ([62.179.121.32]:40021 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753993AbZCSQQQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 12:16:16 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Ying Han <yinghan@google.com>, Jan Kara <jack@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>
+In-Reply-To: <200903200248.22623.nickpiggin@yahoo.com.au>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com>
+	 <alpine.LFD.2.00.0903181634500.17240@localhost.localdomain>
+	 <604427e00903181654y308d57d8w2cb32eab831cf45a@mail.gmail.com>
+	 <200903200248.22623.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Thu, 19 Mar 2009 17:16:01 +0100
+Message-Id: <1237479361.24626.23.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3bf832ce1fe6988148d392599f34ca0c6a34427d
-Gitweb:     http://git.kernel.org/tip/3bf832ce1fe6988148d392599f34ca0c6a34427d
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Thu, 19 Mar 2009 14:47:33 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 19 Mar 2009 16:41:08 +0100
+On Fri, 2009-03-20 at 02:48 +1100, Nick Piggin wrote:
+> On Thursday 19 March 2009 10:54:33 Ying Han wrote:
+> > On Wed, Mar 18, 2009 at 4:36 PM, Linus Torvalds
+> >
+> > <torvalds@linux-foundation.org> wrote:
+> > > On Wed, 18 Mar 2009, Ying Han wrote:
+> > >> > Can you say what filesystem, and what mount-flags you use? Iirc, last
+> > >> > time we had MAP_SHARED lost writes it was at least partly triggered by
+> > >> > the filesystem doing its own flushing independently of the VM (ie ext3
+> > >> > with "data=journal", I think), so that kind of thing does tend to
+> > >> > matter.
+> > >>
+> > >> /etc/fstab
+> > >> "/dev/hda1 / ext2 defaults 1 0"
+> > >
+> > > Sadly, /etc/fstab is not necessarily accurate for the root filesystem. At
+> > > least Fedora will ignore the flags in it.
+> > >
+> > > What does /proc/mounts say? That should be a more reliable indication of
+> > > what the kernel actually does.
+> >
+> > "/dev/root / ext2 rw,errors=continue 0 0"
+> 
+> No luck with finding the problem yet.
+> 
+> But I think we do have a race in __set_page_dirty_buffers():
+> 
+> The page may not have buffers between the mapping->private_lock
+> critical section and the __set_page_dirty call there. So between
+> them, another thread might do a create_empty_buffers which can
+> see !PageDirty and thus it will create clean buffers. The page
+> will get dirtied by the original thread, but if the buffers are
+> clean it can be cleaned without writing out buffers.
+> 
+> Holding mapping->private_lock over the __set_page_dirty should
+> fix it, although I guess you'd want to release it before calling
+> __mark_inode_dirty so as not to put inode_lock under there. I
+> have a patch for this if it sounds reasonable.
 
-tracing/ring-buffer: fix non cpu hotplug case
+When I first did those dirty tracking patches someone (I think Andrew)
+commented no the fact that I did set_page_dirty() under one of these
+inner locks..
 
-Impact: fix warning with irqsoff tracer
+/me frobs around in archives for a bit..
 
-The ring buffer allocates its buffers on pre-smp time (early_initcall).
-It means that, at first, only the boot cpu buffer is allocated and
-the ring-buffer cpumask only has the boot cpu set (cpu_online_mask).
+ - fs/buffers.c try_to_free_buffers(): remove clear_page_dirty() from under
+   ->private_lock. This seems to be save, since ->private_lock is used to
+   serialize access to the buffers, not the page itself.
 
-Later, the secondary cpu will show up and the ring-buffer will be notified
-about this event: the appropriate buffer will be allocated and the cpumask
-will be updated.
+Hmm, that's a slightly different issue...
 
-Unfortunately, if !CONFIG_CPU_HOTPLUG, the ring-buffer will not be
-notified about the secondary cpus, meaning that the cpumask will have
-only the cpu boot set, and only one cpu buffer allocated.
+But yeah, your scenario makes heaps of sense.
 
-We fix that by using cpu_possible_mask if !CONFIG_CPU_HOTPLUG.
-
-This patch fixes the following warning with irqsoff tracer running:
-
-[  169.317794] WARNING: at kernel/trace/trace.c:466 update_max_tr_single+0xcc/0xf3()
-[  169.318002] Hardware name: AMILO Li 2727
-[  169.318002] Modules linked in:
-[  169.318002] Pid: 5624, comm: bash Not tainted 2.6.29-rc8-tip-02636-g6aafa6c #11
-[  169.318002] Call Trace:
-[  169.318002]  [<ffffffff81036182>] warn_slowpath+0xea/0x13d
-[  169.318002]  [<ffffffff8100b9d6>] ? ftrace_call+0x5/0x2b
-[  169.318002]  [<ffffffff8100b9d6>] ? ftrace_call+0x5/0x2b
-[  169.318002]  [<ffffffff8100b9d1>] ? ftrace_call+0x0/0x2b
-[  169.318002]  [<ffffffff8101ef10>] ? ftrace_modify_code+0xa9/0x108
-[  169.318002]  [<ffffffff8106e27f>] ? trace_hardirqs_off+0x25/0x27
-[  169.318002]  [<ffffffff8149afe7>] ? _spin_unlock_irqrestore+0x1f/0x2d
-[  169.318002]  [<ffffffff81064f52>] ? ring_buffer_reset_cpu+0xf6/0xfb
-[  169.318002]  [<ffffffff8106637c>] ? ring_buffer_reset+0x36/0x48
-[  169.318002]  [<ffffffff8106aeda>] update_max_tr_single+0xcc/0xf3
-[  169.318002]  [<ffffffff8100bc17>] ? sysret_check+0x22/0x5d
-[  169.318002]  [<ffffffff8106e3ea>] stop_critical_timing+0x142/0x204
-[  169.318002]  [<ffffffff8106e4cf>] trace_hardirqs_on_caller+0x23/0x25
-[  169.318002]  [<ffffffff8149ac28>] trace_hardirqs_on_thunk+0x3a/0x3c
-[  169.318002]  [<ffffffff8100bc17>] ? sysret_check+0x22/0x5d
-[  169.318002] ---[ end trace db76cbf775a750cf ]---
-
-Because this tracer may try to swap two cpu ring buffers for an
-unregistered cpu on the ring buffer.
-
-This patch might also fix a fair loss of traces due to unallocated buffers
-for secondary cpus.
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-b: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <1237470453-5427-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Can't we do the TestSetPageDirty() before private_lock ? It's currently
+done before tree_lock as well.
 
 
----
- kernel/trace/ring_buffer.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index bbf5192..384ca5d 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -577,8 +577,17 @@ struct ring_buffer *ring_buffer_alloc(unsigned long size, unsigned flags)
- 	if (buffer->pages == 1)
- 		buffer->pages++;
- 
-+	/*
-+	 * In case of non-hotplug cpu, if the ring-buffer is allocated
-+	 * in early initcall, it will not be notified of secondary cpus.
-+	 * In that off case, we need to allocate for all possible cpus.
-+	 */
-+#ifdef CONFIG_HOTPLUG_CPU
- 	get_online_cpus();
- 	cpumask_copy(buffer->cpumask, cpu_online_mask);
-+#else
-+	cpumask_copy(buffer->cpumask, cpu_possible_mask);
-+#endif
- 	buffer->cpus = nr_cpu_ids;
- 
- 	bsize = sizeof(void *) * nr_cpu_ids;
