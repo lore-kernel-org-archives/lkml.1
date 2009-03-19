@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZCSRCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbZCSRDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbZCSRCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 13:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbZCSRCF
+	id S1756155AbZCSRDy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 13:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbZCSRDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 13:02:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36458 "EHLO mx2.mail.elte.hu"
+	Thu, 19 Mar 2009 13:03:44 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57063 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755411AbZCSRCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 13:02:04 -0400
-Date: Thu, 19 Mar 2009 18:01:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] cpumask: remove cpumask allocation from idle_balance
-Message-ID: <20090319170130.GA29683@elte.hu>
-References: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com> <alpine.DEB.2.00.0903182225450.31583@gandalf.stny.rr.com> <200903191522.21045.rusty@rustcorp.com.au> <200903192310.52314.rusty@rustcorp.com.au> <20090319132426.GA27017@elte.hu> <20090319162942.GA21672@elte.hu> <49C278F2.1000600@goop.org>
+	id S1752238AbZCSRDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 13:03:44 -0400
+Date: Thu, 19 Mar 2009 18:03:40 +0100
+From: Jan Kara <jack@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ying Han <yinghan@google.com>,
+       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Message-ID: <20090319170340.GC3899@duck.suse.cz>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0903190902000.17240@localhost.localdomain> <200903200334.55710.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0903190948510.17240@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49C278F2.1000600@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <alpine.LFD.2.00.0903190948510.17240@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu 19-03-09 09:51:59, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 20 Mar 2009, Nick Piggin wrote:
+> > 
+> > Yeah, probably no need to hold private_lock while tagging the radix
+> > tree (which is what my version did). So maybe this one is a little
+> > better. I did test mine, it worked, but it didn't solve the problem.
+> 
+> Ahh, so you re-created it? On ext2 only, or is it visible on ext3 as well? 
+> I've not even tested - I assumed that I would have to boot into less 
+> memory and downgrade my filesystem to ext2, which made me hope somebody 
+> else would pick it up first ;)
+  In thread http://lkml.org/lkml/2009/3/4/179 I've reported similar problem
+- write lost. I'm able to reproduce under UML linux at will. ext3 takes
+with 1KB blocksize about 20 minutes to hit the corruption, ext2 with 1 KB
+blocksize about an hour, ext2 with 4KB blocksize several hours...
+  I've reported that also ordinary write() got lost once but that might
+have been an error in me reading the fsx logs since I never saw it again...
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+									Honza
 
-> Ingo Molnar wrote:
->> * Ingo Molnar <mingo@elte.hu> wrote:
->>
->>   
->>>> This time for sure,
->>>>       
->>> not so sure:
->>>
->>> [    4.303068] =============================================================================
->>> [    4.303332] BUG idr_layer_cache: Redzone overwritten
->>> [    4.303332] -----------------------------------------------------------------------------
->>> [    4.303332] [    4.303332] INFO: 
->>> 0xffff88003f838958-0xffff88003f83895f. First byte 0xa1 instead of 
->>> 0xbb
->>> [    4.303332] INFO: Allocated in 0xffff88003f9b94b0 age=4294878587 cpu=2 pid=0
->>> [    4.303332] INFO: Freed in 0xffff88003f8389f0 age=18446744073709463001 cpu=4294967295 pid=0
->>> [    4.303332] INFO: Slab 0xffffe200015d5340 objects=13 used=10 fp=0xffff88003f838738 flags=0x40000000000020c3
->>> [    4.303332] INFO: Object 0xffff88003f838738 @offset=1848 fp=0x(null)
->>>     
->>
->> hm, i'm seeing this even with the cpus4096 bits removed.
->>
->> It _seems_ to trigger when i add these two commits:
->>
->>   71ff49d: x86: with the last user gone, remove set_pte_present
->>   b40c757: x86/32: no need to use set_pte_present in set_pte_vaddr
->>
->> but i'm not completely sure it's related, i tried a bisection and it  
->> showed heisenbug properties.
->>
->> Might have come from upstream, that saw some IDR changes recently.
->>   
->
-> Seems very unlikely; those patches only touch 32-bit only code, 
-> and this looks like a 64-bit crash.
-
-yes - that's why i think it's a Heisenbug.
-
-	Ingo
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
