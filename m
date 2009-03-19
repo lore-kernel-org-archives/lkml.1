@@ -1,59 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759262AbZCSHSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759439AbZCSHUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759262AbZCSHSm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 03:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZCSHSc
+	id S1759439AbZCSHUv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 03:20:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZCSHUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 03:18:32 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:33680 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbZCSHSb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 03:18:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=qdG5pLvfZtSoJEzeBqeGT/t4lS5LabLIhkZzn8J7hdHSYFyWFCvnr96MRyThpaJKZc
-         MuwA11P9VYrwWtfCS+7kAS0LkUp/97vd+scMPAmD0GIRb4LT8Go/ZIMiJ+OBPV/gRe0u
-         8WyiAhT6d+Rbxu92PM1kw4FaFQ8J2D9kVXK9U=
+	Thu, 19 Mar 2009 03:20:42 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64174 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753208AbZCSHUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 03:20:41 -0400
+Message-ID: <49C1F1DF.2020105@cn.fujitsu.com>
+Date: Thu, 19 Mar 2009 15:18:55 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-In-Reply-To: <49C1EE7D.5070507@linux.intel.com>
-References: <2a27d3730903172325w16ec329cp872ec35d100f6506@mail.gmail.com>
-	 <200903190000.33572.rjw@sisk.pl> <49C1EE7D.5070507@linux.intel.com>
-Date: Thu, 19 Mar 2009 15:18:27 +0800
-X-Google-Sender-Auth: a7632c5f90bae2da
-Message-ID: <2a27d3730903190018h1a0f5b6asf5cf2002fe3504fb@mail.gmail.com>
-Subject: Re: nonboot cpu on SMP suspend
-From: Li Yang <leoli@freescale.com>
-To: chen gong <gong.chen@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: oops in tracepoint_update_probe_range()
+References: <1237393396.3322.6.camel@localhost.localdomain> <20090318163531.GE21331@elte.hu>
+In-Reply-To: <20090318163531.GE21331@elte.hu>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 3:04 PM, chen gong <gong.chen@linux.intel.com> wrote:
-> Rafael J. Wysocki 写道:
+Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> 
+>> Good: f4c3c4cdb1de232
+>> Bad : 1e08816af0bc345
 >>
->> On Wednesday 18 March 2009, Li Yang wrote:
->>>
->>> Hi all,
->>>
->>> I'm curious why we need to un-plug all the nonboot cpus before suspend
->>> and start them all over again after the suspend(ACPI sleep)?  I mean
->>> if we can bring the booting cpu back to the exact state as before
->>> suspend, why can't we just do the same for non-booting cpus?  And that
->>> will be much faster.  Any thought?  Thanks.
+>> Config:
+>> http://userweb.kernel.org/~jaswinder/oops_20090318/config-hpdv5-tip-bad-20090318
 >>
->> Because we need to enter the BIOS with one CPU on-line only.
+>> oops:
+>> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page1.jpg
+>> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page2.jpg
+>> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page3.jpg
+>> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page4.jpg
 >>
-> You mean only one CPU can be supported by BIOS when suspend/resume ?
+>> <freeze>
+> 
+> Steve, Frederic - the crashes above are in:
+> 
+> 	tracepoint_update_probe_range()
+> 
+> in a modular kernel apparently.
+> 
+>
 
-If so, is it a defect of x86 BIOS?  And is it true that for other
-architectures without a BIOS there won't be such a limitation if the
-boot code is sane?  Thanks
+I look up the jpg files, this oops is occurred when a new module is
+being loaded.
 
-- Leo
+tracepoint_module_notify() is added by Mathieu Desnoyers on the
+suggestion of me.
+
+tracepoint_update_probe_range() and tracepoint_module_notify()
+can not trigger this oops if the arguments are correct.
+
+If @begin is NULL, @end is NULL too, it's ensued by kernel/module.c.
+
+load_module(...):
+	mod->tracepoints = section_objs(hdr, sechdrs, secstrings,
+					"__tracepoints",
+					sizeof(*mod->tracepoints),
+					&mod->num_tracepoints);
+static void *section_objs(...)
+{
+	unsigned int sec = find_sec(hdr, sechdrs, secstrings, name);
+
+	/* Section 0 has sh_addr 0 and sh_size 0. */
+	*num = sechdrs[sec].sh_size / object_size;
+	return (void *)sechdrs[sec].sh_addr;
+}
+
+If the module has not "__tracepoints" section, find_sec() returns 0.
+So I think, sechdrs[0].sh_size is corrupted.
+
+Is the following fix fixed the oops for you?
+---
+diff --git a/kernel/module.c b/kernel/module.c
+index 7fa134e..2ee47ff 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1950,6 +1950,7 @@ static noinline struct module *load_module(void __user *umod,
+ 	sechdrs = (void *)hdr + hdr->e_shoff;
+ 	secstrings = (void *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
+ 	sechdrs[0].sh_addr = 0;
++	sechdrs[0].sh_size = 0;
+ 
+ 	for (i = 1; i < hdr->e_shnum; i++) {
+ 		if (sechdrs[i].sh_type != SHT_NOBITS
+
+
