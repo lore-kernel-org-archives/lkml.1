@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbZCSSZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbZCSSZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756987AbZCSSZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 14:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZCSSZR
+	id S1760131AbZCSSZq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 14:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbZCSSZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 14:25:17 -0400
+	Thu, 19 Mar 2009 14:25:21 -0400
 Received: from vpnflf.ccur.com ([12.192.68.2]:36609 "EHLO gamx.iccur.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753542AbZCSSZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 14:25:16 -0400
+	id S1755834AbZCSSZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 14:25:19 -0400
 X-Greylist: delayed 3061 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Mar 2009 14:25:16 EDT
-Date: Thu, 19 Mar 2009 13:28:58 -0400
+Date: Thu, 19 Mar 2009 13:27:44 -0400
 From: Joe Korty <joe.korty@ccur.com>
 To: stable@kernel.org
 Cc: "H. Peter Anvin" <hpa@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.28.7-stable] Fix misreporting of #cores as #hyperthreads for Q9550
-Message-ID: <20090319172858.GA2629@tsunami.ccur.com>
+Subject: [PATCH 2.6.27-stable] Fix misreporting of #cores as #hyperthreads for Q9550
+Message-ID: <20090319172744.GA2600@tsunami.ccur.com>
 Reply-To: Joe Korty <joe.korty@ccur.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -28,10 +28,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Fix misreporting of #cores for the Intel Quad Core Q9550.
 
-[ for 2.6.28-stable ]
+[ for 2.6.27-stable ]
 
 For the Q9550, in x86_64 mode, /proc/cpuinfo mistakenly
-thinks the #cores present is the #hyperthreads present.
+reports the #cores present as the #hyperthreads present.
 i386 mode was not examined but is assumed to have the
 same problem.
 
@@ -51,11 +51,11 @@ Originally-Developed-by: H. Peter Anvin <hpa@linux.intel.com>
 Backported-by: Joe Korty <joe.korty@ccur.com>
 Signed-off-by: Joe Korty <joe.korty@ccur.com>
 
-Index: 2.6.28.7/arch/x86/include/asm/msr-index.h
+Index: 2.6.27/include/asm-x86/msr-index.h
 ===================================================================
---- 2.6.28.7.orig/arch/x86/include/asm/msr-index.h	2008-12-24 18:26:37.000000000 -0500
-+++ 2.6.28.7/arch/x86/include/asm/msr-index.h	2009-03-19 11:16:08.000000000 -0400
-@@ -200,6 +200,35 @@
+--- 2.6.27.orig/include/asm-x86/msr-index.h	2009-03-19 11:07:59.000000000 -0400
++++ 2.6.27/include/asm-x86/msr-index.h	2009-03-19 11:08:27.000000000 -0400
+@@ -196,6 +196,35 @@
  #define MSR_IA32_THERM_STATUS		0x0000019c
  #define MSR_IA32_MISC_ENABLE		0x000001a0
  
@@ -91,11 +91,35 @@ Index: 2.6.28.7/arch/x86/include/asm/msr-index.h
  /* Intel Model 6 */
  #define MSR_P6_EVNTSEL0			0x00000186
  #define MSR_P6_EVNTSEL1			0x00000187
-Index: 2.6.28.7/arch/x86/kernel/cpu/intel.c
+Index: 2.6.27/arch/x86/kernel/cpu/intel.c
 ===================================================================
---- 2.6.28.7.orig/arch/x86/kernel/cpu/intel.c	2009-03-16 11:39:55.000000000 -0400
-+++ 2.6.28.7/arch/x86/kernel/cpu/intel.c	2009-03-19 11:16:08.000000000 -0400
-@@ -30,6 +30,19 @@
+--- 2.6.27.orig/arch/x86/kernel/cpu/intel.c	2009-03-19 11:08:26.000000000 -0400
++++ 2.6.27/arch/x86/kernel/cpu/intel.c	2009-03-19 11:08:27.000000000 -0400
+@@ -32,6 +32,19 @@
+ 
+ static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
+ {
++	/* Unmask CPUID levels if masked: */
++	if (c->x86 == 6 && c->x86_model >= 15) {
++		u64 misc_enable;
++
++		rdmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
++
++		if (misc_enable & MSR_IA32_MISC_ENABLE_LIMIT_CPUID) {
++			misc_enable &= ~MSR_IA32_MISC_ENABLE_LIMIT_CPUID;
++			wrmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
++			c->cpuid_level = cpuid_eax(0);
++		}
++	}
++
+ 	/* Netburst reports 64 bytes clflush size, but does IO in 128 bytes */
+ 	if (c->x86 == 15 && c->x86_cache_alignment == 64)
+ 		c->x86_cache_alignment = 128;
+Index: 2.6.27/arch/x86/kernel/cpu/intel_64.c
+===================================================================
+--- 2.6.27.orig/arch/x86/kernel/cpu/intel_64.c	2009-03-19 11:08:26.000000000 -0400
++++ 2.6.27/arch/x86/kernel/cpu/intel_64.c	2009-03-19 11:08:27.000000000 -0400
+@@ -9,6 +9,19 @@
  
  static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
  {
@@ -113,5 +137,5 @@ Index: 2.6.28.7/arch/x86/kernel/cpu/intel.c
 +	}
 +
  	if ((c->x86 == 0xf && c->x86_model >= 0x03) ||
- 		(c->x86 == 0x6 && c->x86_model >= 0x0e))
+ 	    (c->x86 == 0x6 && c->x86_model >= 0x0e))
  		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
