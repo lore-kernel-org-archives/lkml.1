@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbZCSRcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbZCSReh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759264AbZCSRcb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 13:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZCSRcQ
+	id S1758962AbZCSReh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 13:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbZCSRe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 13:32:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:43793 "EHLO mail.goop.org"
+	Thu, 19 Mar 2009 13:34:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33491 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755588AbZCSRcP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 13:32:15 -0400
-Message-ID: <49C2818B.9060201@goop.org>
-Date: Thu, 19 Mar 2009 10:31:55 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+	id S1752511AbZCSRe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 13:34:27 -0400
+Message-ID: <49C281F1.4040005@redhat.com>
+Date: Thu, 19 Mar 2009 19:33:37 +0200
+From: Avi Kivity <avi@redhat.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Avi Kivity <avi@redhat.com>,
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Memory Management List <linux-mm@kvack.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>
+       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Keir Fraser <keir.fraser@eu.citrix.com>
 Subject: Re: Question about x86/mm/gup.c's use of disabled interrupts
-References: <49C148AF.5050601@goop.org> <200903191232.05459.nickpiggin@yahoo.com.au>
-In-Reply-To: <200903191232.05459.nickpiggin@yahoo.com.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+References: <49C148AF.5050601@goop.org> <49C16411.2040705@redhat.com> <49C1665A.4080707@goop.org> <49C16A48.4090303@redhat.com> <49C17230.20109@goop.org> <49C17880.7080109@redhat.com> <49C17BD8.6050609@goop.org> <49C17E22.9040807@redhat.com> <49C18487.1020703@goop.org> <49C21473.2000702@redhat.com> <49C27E09.5070307@goop.org>
+In-Reply-To: <49C27E09.5070307@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
->> Also, assuming that disabling the interrupt is enough to get the
->> guarantees we need here, there's a Xen problem because we don't use IPIs
->> for cross-cpu tlb flushes (well, it happens within Xen).  I'll have to
->> think a bit about how to deal with that, but I'm thinking that we could
->> add a per-cpu "tlb flushes blocked" flag, and maintain some kind of
->> per-cpu deferred tlb flush count so we can get around to doing the flush
->> eventually.
+Jeremy Fitzhardinge wrote:
+> Avi Kivity wrote:
+>>> And the hypercall could result in no Xen-level IPIs at all, so it 
+>>> could be very quick by comparison to an IPI-based Linux 
+>>> implementation, in which case the flag polling would be particularly 
+>>> harsh.
 >>
->> But I want to make sure I understand the exact algorithm here.
->>     
+>> Maybe we could bring these optimizations into Linux as well.  The 
+>> only thing Xen knows that Linux doesn't is if a vcpu is not 
+>> scheduled; all other information is shared.
 >
-> FWIW, powerpc actually can flush tlbs without IPIs, and it also has
-> a gup_fast. powerpc RCU frees its page _tables_ so we can walk them,
-> and then I use speculative page references in order to be able to
-> take a reference on the page without having it pinned.
->   
+> I don't think there's a guarantee that just because a vcpu isn't 
+> running now, it won't need a tlb flush.  If a pcpu does runs vcpu 1 -> 
+> idle -> vcpu 1, then there's no need for it to do a tlb flush, but the 
+> hypercall can make force a flush when it reschedules vcpu 1 (if the 
+> tlb hasn't already been flushed by some other means).
 
-Ah, interesting.  So disabling interrupts prevents the RCU free from 
-happening, and non-atomic pte fetching is a non-issue.  So it doesn't 
-address the PAE side of the problem.
+That's what I assumed you meant.  Also, if a vcpu has a different cr3 
+loaded, the flush can be elided.  Looks like Linux does this 
+(s/vcpu/process/).
 
-> Turning gup_get_pte into a pvop would be a bit nasty because on !PAE
-> it is just a single load, and even on PAE it is pretty cheap.
->   
+> (I'm not sure to what extent Xen implements this now, but I wouldn't 
+> want to over-constrain it.)
 
-Well, it wouldn't be too bad; for !PAE it would turn into something we 
-could inline, so there'd be little to no cost.  For PAE it would be out 
-of line, but a direct function call, which would be nicely cached and 
-very predictable once we've gone through the the loop once (and for Xen 
-I think I'd just make it a cmpxchg8b-based implementation, assuming that 
-the tlb flush hypercall would offset the cost of making gup_fast a bit 
-slower).
+Well, kvm does this.
 
-But it would be better if we can address it at a higher level.
 
-    J
+>> The nice thing about local_irq_disable() is that it scales so well.
+>
+> Right.  But it effectively puts the burden on the tlb-flusher to check 
+> the state (implicitly, by trying to send an interrupt).  Putting an 
+> explicit poll in gets the same effect, but its pure overhead just to 
+> deal with the gup race.
+
+I guess it hopes the flushes are much rarer.  Certainly for threaded 
+databases doing O_DIRECT stuff, I'd expect lots of gupfs and no tlb flushes.
+
+
+-- 
+error compiling committee.c: too many arguments to function
+
