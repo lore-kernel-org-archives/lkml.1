@@ -1,38 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbZCSNq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZCSNrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756424AbZCSNq3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 09:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZCSNqR
+	id S1757233AbZCSNrv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 09:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZCSNrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 09:46:17 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54273 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754460AbZCSNqQ (ORCPT
+	Thu, 19 Mar 2009 09:47:42 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:34413 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753591AbZCSNrl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 09:46:16 -0400
-Date: Thu, 19 Mar 2009 14:46:49 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Peter W. Morreale" <pmorreale@novell.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Vernon Mauery <vernux@us.ibm.com>,
-       netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>
-Subject: Re: High contention on the sk_buff_head.lock
-Message-ID: <20090319134649.GX11935@one.firstfloor.org>
-References: <49C12E64.1000301@us.ibm.com> <87prge1rhu.fsf@basil.nowhere.org> <1237467559.6926.31.camel@hermosa>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237467559.6926.31.camel@hermosa>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 19 Mar 2009 09:47:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=uhdj/+l35Qt90FIsBXt+GpL5icNVsbo2w2h5niDddcQSCSU08J6O7YhkpvXTel8c2U
+         0IRhYZUa6r9ky88673oi87zh1PvknEx1sB0u6n+51AEhA1jue3HJjild6trMfIur3oX8
+         QJV4IQppo/xb8PUCd2KaArbf/Jmy5TA1T8Hks=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH] tracing/ring-buffer: fix non cpu hotplug case
+Date: Thu, 19 Mar 2009 14:47:33 +0100
+Message-Id: <1237470453-5427-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Recall that adaptive spin,developed in RT, is now in mainline. 
+Impact: fix warning with irqsoff tracer
 
-For mutexes, but not for spinlocks. And qdisc uses spinlocks.
+The ring buffer allocates its buffers on pre-smp time (early_initcall).
+It means that, at first, only the boot cpu buffer is allocated and
+the ring-buffer cpumask only has the boot cpu set (cpu_online_mask).
 
--Andi
+Later, the secondary cpu will show up and the ring-buffer will be notified
+about this event: the appropriate buffer will be allocated and the cpumask
+will be updated.
 
+Unfortunately, if !CONFIG_CPU_HOTPLUG, the ring-buffer will not be
+notified about the secondary cpus, meaning that the cpumask will have
+only the cpu boot set, and only one cpu buffer allocated.
+
+We fix that by using cpu_possible_mask if !CONFIG_CPU_HOTPLUG.
+
+This patch fixes the following warning with irqsoff tracer running:
+
+[  169.317794] WARNING: at kernel/trace/trace.c:466 update_max_tr_single+0xcc/0xf3()
+[  169.318002] Hardware name: AMILO Li 2727
+[  169.318002] Modules linked in:
+[  169.318002] Pid: 5624, comm: bash Not tainted 2.6.29-rc8-tip-02636-g6aafa6c #11
+[  169.318002] Call Trace:
+[  169.318002]  [<ffffffff81036182>] warn_slowpath+0xea/0x13d
+[  169.318002]  [<ffffffff8100b9d6>] ? ftrace_call+0x5/0x2b
+[  169.318002]  [<ffffffff8100b9d6>] ? ftrace_call+0x5/0x2b
+[  169.318002]  [<ffffffff8100b9d1>] ? ftrace_call+0x0/0x2b
+[  169.318002]  [<ffffffff8101ef10>] ? ftrace_modify_code+0xa9/0x108
+[  169.318002]  [<ffffffff8106e27f>] ? trace_hardirqs_off+0x25/0x27
+[  169.318002]  [<ffffffff8149afe7>] ? _spin_unlock_irqrestore+0x1f/0x2d
+[  169.318002]  [<ffffffff81064f52>] ? ring_buffer_reset_cpu+0xf6/0xfb
+[  169.318002]  [<ffffffff8106637c>] ? ring_buffer_reset+0x36/0x48
+[  169.318002]  [<ffffffff8106aeda>] update_max_tr_single+0xcc/0xf3
+[  169.318002]  [<ffffffff8100bc17>] ? sysret_check+0x22/0x5d
+[  169.318002]  [<ffffffff8106e3ea>] stop_critical_timing+0x142/0x204
+[  169.318002]  [<ffffffff8106e4cf>] trace_hardirqs_on_caller+0x23/0x25
+[  169.318002]  [<ffffffff8149ac28>] trace_hardirqs_on_thunk+0x3a/0x3c
+[  169.318002]  [<ffffffff8100bc17>] ? sysret_check+0x22/0x5d
+[  169.318002] ---[ end trace db76cbf775a750cf ]---
+
+Because this tracer may try to swap two cpu ring buffers for an
+unregistered cpu on the ring buffer.
+
+This patch might also fix a fair loss of traces due to unallocated buffers
+for secondary cpus.
+
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/trace/ring_buffer.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index c9ca8a8..bc74f00 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -578,8 +578,17 @@ struct ring_buffer *ring_buffer_alloc(unsigned long size, unsigned flags)
+ 	if (buffer->pages == 1)
+ 		buffer->pages++;
+ 
++	/*
++	 * In case of non-hotplug cpu, if the ring-buffer is allocated
++	 * in early initcall, it will not be notified of secondary cpus.
++	 * In that off case, we need to allocate for all possible cpus.
++	 */
++#ifdef CONFIG_HOTPLUG_CPU
+ 	get_online_cpus();
+ 	cpumask_copy(buffer->cpumask, cpu_online_mask);
++#else
++	cpumask_copy(buffer->cpumask, cpu_possible_mask);
++#endif
+ 	buffer->cpus = nr_cpu_ids;
+ 
+ 	bsize = sizeof(void *) * nr_cpu_ids;
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+1.6.1
+
