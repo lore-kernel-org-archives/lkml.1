@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbZCSUxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761495AbZCSUxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761335AbZCSUxT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 16:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbZCSUw6
+	id S1761495AbZCSUxc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 16:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758676AbZCSUxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 16:52:58 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56609
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752441AbZCSUw4 (ORCPT
+	Thu, 19 Mar 2009 16:53:17 -0400
+Received: from b01.ext.isohunt.com ([208.71.112.51]:59019 "EHLO
+	mail.isohunt.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761288AbZCSUxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 16:52:56 -0400
-Date: Thu, 19 Mar 2009 13:52:43 -0700 (PDT)
-Message-Id: <20090319.135243.51567158.davem@davemloft.net>
-To: ghaskins@novell.com
-Cc: vernux@us.ibm.com, andi@firstfloor.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       pmullaney@novell.com
-Subject: Re: High contention on the sk_buff_head.lock
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49C23DB9.6000905@novell.com>
-References: <49C1C09E.8050405@novell.com>
-	<20090318.223806.123468340.davem@davemloft.net>
-	<49C23DB9.6000905@novell.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Mar 2009 16:53:16 -0400
+Date: Thu, 19 Mar 2009 13:18:05 -0700
+From: "Robin H. Johnson" <robbat2@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Subject: Re: rmmod/delete_module hangs forever
+Message-ID: <20090319201805.GH3795@curie-int>
+References: <20090314213947.GA9084@curie-int>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Zs/RYxT/hKAHzkfQ"
+Content-Disposition: inline
+In-Reply-To: <20090314213947.GA9084@curie-int>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gregory Haskins <ghaskins@novell.com>
-Date: Thu, 19 Mar 2009 08:42:33 -0400
 
-> David Miller wrote:
-> > From: Gregory Haskins <ghaskins@novell.com>
-> > Date: Wed, 18 Mar 2009 23:48:46 -0400
-> >
-> >   
-> >> To see this in action, try taking a moderately large smp system
-> >> (8-way+) and scaling the number of flows.
-> >>     
-> >
-> > I can maintain line-rate over 10GB with a 64-cpu box.
-> Oh man, I am jealous of that 64-way :)
-> 
-> How many simultaneous flows?  What hardware?  What qdisc and other
-> config do you use?  MTU?  I cannot replicate such results on 10GB even
-> with much smaller cpu counts.
+--Zs/RYxT/hKAHzkfQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sun Neptune NIU 10G with 24 TX queues.
+On Sat, Mar 14, 2009 at 02:39:47PM -0700, Robin H. Johnson wrote:
+> Strace gives me this fun in the end:
+> delete_module("button", O_RDONLY|O_EXCL|O_NONBLOCK
+> and it just sits there.
+Ok, after much head-scratching and bisect-powered reboots I have
+disproved for myself that this is a kernel issue.
 
-And it's all because of the number of TX queues, nothing more.
+Instead it's some weird interaction between certain BIOS settings on my
+motherboard (ASUS P5Q Premium) and my SCSI controller (HP SC11Xe,
+FusionMPT based) I use for tape specifically when there are no SCSI
+devices on the bus. Skipping the mptspi module, or connecting a SCSI
+device causes the problem to go away, ditto changing some settings in
+the BIOS that cause IRQs to be allocated differently.
 
-It is essential for good performance with any level of cpu
-arity.
+--=20
+Robin Hugh Johnson
+Gentoo Linux Developer & Infra Guy
+E-Mail     : robbat2@gentoo.org
+GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
 
+--Zs/RYxT/hKAHzkfQ
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.10 (GNU/Linux)
+Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
+
+iEYEARECAAYFAknCqH0ACgkQPpIsIjIzwizDGACgqoKE4ia3VWR/Q87CNbpaaIh1
+6sAAniDaT5C7KUWQK64FcXJXfwCd3EI+
+=/jAR
+-----END PGP SIGNATURE-----
+
+--Zs/RYxT/hKAHzkfQ--
