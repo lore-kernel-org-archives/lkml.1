@@ -1,95 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbZCSQQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbZCSQR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757917AbZCSQQi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZCSQQR
+	id S1757939AbZCSQR5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZCSQRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:16:17 -0400
-Received: from viefep12-int.chello.at ([62.179.121.32]:40021 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753993AbZCSQQQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:16:16 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Ying Han <yinghan@google.com>, Jan Kara <jack@suse.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>
-In-Reply-To: <200903200248.22623.nickpiggin@yahoo.com.au>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com>
-	 <alpine.LFD.2.00.0903181634500.17240@localhost.localdomain>
-	 <604427e00903181654y308d57d8w2cb32eab831cf45a@mail.gmail.com>
-	 <200903200248.22623.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Thu, 19 Mar 2009 17:16:01 +0100
-Message-Id: <1237479361.24626.23.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Mar 2009 12:17:46 -0400
+Received: from kroah.org ([198.145.64.141]:32881 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752210AbZCSQRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 12:17:45 -0400
+Date: Thu, 19 Mar 2009 09:06:33 -0700
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Trent Piepho <xyzzy@speakeasy.org>
+Subject: Re: [PATCH v4 08/12] PCI: Introduce /sys/bus/pci/devices/.../remove
+Message-ID: <20090319160633.GA20816@kroah.com>
+References: <20090318222426.887.1008.stgit@bob.kio> <20090318224006.887.91805.stgit@bob.kio> <20090319024334.59e9e9bc.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090319024334.59e9e9bc.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-20 at 02:48 +1100, Nick Piggin wrote:
-> On Thursday 19 March 2009 10:54:33 Ying Han wrote:
-> > On Wed, Mar 18, 2009 at 4:36 PM, Linus Torvalds
+On Thu, Mar 19, 2009 at 02:43:34AM -0700, Andrew Morton wrote:
+> On Wed, 18 Mar 2009 16:40:06 -0600 Alex Chiang <achiang@hp.com> wrote:
+> 
+> > This patch adds an attribute named "remove" to a PCI device's sysfs
+> > directory.  Writing a non-zero value to this attribute will remove the PCI
+> > device and any children of it.
+> > 
+> > Trent Piepho wrote the original implementation and documentation.
+> > 
+> > Thanks to Vegard Nossum for testing under kmemcheck and finding locking
+> > issues with the sysfs interface.
+> > 
+> > ...
 > >
-> > <torvalds@linux-foundation.org> wrote:
-> > > On Wed, 18 Mar 2009, Ying Han wrote:
-> > >> > Can you say what filesystem, and what mount-flags you use? Iirc, last
-> > >> > time we had MAP_SHARED lost writes it was at least partly triggered by
-> > >> > the filesystem doing its own flushing independently of the VM (ie ext3
-> > >> > with "data=journal", I think), so that kind of thing does tend to
-> > >> > matter.
-> > >>
-> > >> /etc/fstab
-> > >> "/dev/hda1 / ext2 defaults 1 0"
-> > >
-> > > Sadly, /etc/fstab is not necessarily accurate for the root filesystem. At
-> > > least Fedora will ignore the flags in it.
-> > >
-> > > What does /proc/mounts say? That should be a more reliable indication of
-> > > what the kernel actually does.
-> >
-> > "/dev/root / ext2 rw,errors=continue 0 0"
+> > --- a/drivers/pci/pci-sysfs.c
+> > +++ b/drivers/pci/pci-sysfs.c
+> > @@ -246,6 +246,47 @@ struct bus_attribute pci_bus_attrs[] = {
+> >  	__ATTR(rescan, S_IWUSR, NULL, bus_rescan_store),
+> >  	__ATTR_NULL
+> >  };
+> > +
+> > +static void remove_callback(struct device *dev)
+> > +{
+> > +	int bridge = 0;
+> > +	struct pci_dev *pdev = to_pci_dev(dev);
+> > +
+> > +	mutex_lock(&pci_remove_rescan_mutex);
+> > +
+> > +	if (pdev->subordinate)
+> > +		bridge = 1;
+> > +
+> > +	pci_remove_bus_device(pdev);
+> > +	if (bridge && list_empty(&pdev->bus->devices))
+> > +		pci_remove_bus(pdev->bus);
+> > +
+> > +	mutex_unlock(&pci_remove_rescan_mutex);
+> > +}
+> > +
+> > +static ssize_t
+> > +remove_store(struct device *dev, struct device_attribute *dummy,
+> > +	     const char *buf, size_t count)
+> > +{
+> > +	int ret = 0;
+> > +	unsigned long val;
+> > +	struct pci_dev *pdev = to_pci_dev(dev);
+> > +
+> > +	if (strict_strtoul(buf, 0, &val) < 0)
+> > +		return -EINVAL;
+> > +
+> > +	if (!capable(CAP_SYS_ADMIN))
+> > +		return -EPERM;
+> > +
+> > +	if (pdev->subordinate && pci_is_root_bus(pdev->bus))
+> > +		return -EBUSY;
+> > +
+> > +	if (val)
+> > +		ret = device_schedule_callback(dev, remove_callback);
+> > +	if (ret)
+> > +		count = ret;
+> > +	return count;
+> > +}
+> >  #endif
 > 
-> No luck with finding the problem yet.
+> It is very hard for the reader (this one at least) to work out why
+> device_schedule_callback() is used here, instead of simply doing the work
+> directly.
 > 
-> But I think we do have a race in __set_page_dirty_buffers():
+> The way to solve that problem is to add a code comment.
 > 
-> The page may not have buffers between the mapping->private_lock
-> critical section and the __set_page_dirty call there. So between
-> them, another thread might do a create_empty_buffers which can
-> see !PageDirty and thus it will create clean buffers. The page
-> will get dirtied by the original thread, but if the buffers are
-> clean it can be cleaned without writing out buffers.
+> Given that we're in a sysfs write() handler where no relevant locks at all
+> are held, it seems rather weird that we cannot perform this operation
+> synchronously, but no doubt the comment will explain all of this.
 > 
-> Holding mapping->private_lock over the __set_page_dirty should
-> fix it, although I guess you'd want to release it before calling
-> __mark_inode_dirty so as not to put inode_lock under there. I
-> have a patch for this if it sounds reasonable.
+> Do we need the CAP_SYS_ADMIN check if the sysfs file permissions are
+> correct?  (I keep on asking this then forgetting the answer).
 
-When I first did those dirty tracking patches someone (I think Andrew)
-commented no the fact that I did set_page_dirty() under one of these
-inner locks..
+You can do this kind of check if you want to be paranoid.  You can
+specify the mode of the file when you create it, but if a properly
+permissive user (like root) changes the mode, it sticks, so that a
+"normal" use could then write to the file.
 
-/me frobs around in archives for a bit..
+Usually I wouldn't recommend checking, as it's overkill if you set the
+mode properly in the code.
 
- - fs/buffers.c try_to_free_buffers(): remove clear_page_dirty() from under
-   ->private_lock. This seems to be save, since ->private_lock is used to
-   serialize access to the buffers, not the page itself.
+thanks,
 
-Hmm, that's a slightly different issue...
-
-But yeah, your scenario makes heaps of sense.
-
-Can't we do the TestSetPageDirty() before private_lock ? It's currently
-done before tree_lock as well.
-
-
+greg k-h
