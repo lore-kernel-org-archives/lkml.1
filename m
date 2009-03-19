@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759559AbZCSHlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbZCSHnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759559AbZCSHlT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 03:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbZCSHlH
+	id S1758397AbZCSHnW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 03:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZCSHnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 03:41:07 -0400
-Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:60909 "EHLO
-	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754396AbZCSHlH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 03:41:07 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Mar 2009 03:41:06 EDT
-Date: Thu, 19 Mar 2009 00:34:23 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-cc: David Ellingsworth <david@identd.dyndns.org>,
-       Jean-Francois Moine <moinejf@free.fr>, linux-media@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gspca: add missing .type field check in VIDIOC_G_PARM
-In-Reply-To: <49C1DD0C.4050500@freemail.hu>
-Message-ID: <Pine.LNX.4.58.0903190032530.28292@shell2.speakeasy.net>
-References: <49C133F6.3020202@freemail.hu> <30353c3d0903181445i409604e8r33678f7ce09d0288@mail.gmail.com>
- <49C1DD0C.4050500@freemail.hu>
+	Thu, 19 Mar 2009 03:43:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47663 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751970AbZCSHnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 03:43:09 -0400
+Date: Thu, 19 Mar 2009 07:42:23 GMT
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090319103743N.fujita.tomonori@lab.ntt.co.jp>
+References: <20090319103743N.fujita.tomonori@lab.ntt.co.jp>
+Subject: [tip:core/iommu] dma-debug: warn of unmapping an invalid dma address
+Message-ID: <tip-35d40952dba7b0689a16bd1463fb7698f8dbe639@git.kernel.org>
+Git-Commit-ID: 35d40952dba7b0689a16bd1463fb7698f8dbe639
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 19 Mar 2009 07:42:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Mar 2009, [ISO-8859-1] Németh Márton wrote:
-> David Ellingsworth wrote:
-> > 2009/3/18 Németh Márton <nm127@freemail.hu>:
-> >> From: Márton Németh <nm127@freemail.hu>
-> >>
-> >> The gspca webcam driver does not check the .type field of struct v4l2_streamparm.
-> >> This field is an input parameter for the driver according to V4L2 API specification,
-> >> revision 0.24 [1]. Add the missing check.
-> >>
-> >> The missing check was recognised by v4l-test 0.10 [2] together with gspca_sunplus driver
-> >> and with "Trust 610 LCD POWERC@M ZOOM" webcam. This patch was verified also with
-> >> v4l-test 0.10.
-> >>
-> >> References:
-> >> [1] V4L2 API specification, revision 0.24
-> >>    http://v4l2spec.bytesex.org/spec/r11680.htm
-> >>
-> >> [2] v4l-test: Test environment for Video For Linux Two API
-> >>    http://v4l-test.sourceforge.net/
-> >>
-> >> Signed-off-by: Márton Németh <nm127@freemail.hu>
-> >> ---
-> >> --- linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c.orig     2009-03-14 12:29:38.000000000 +0100
-> >> +++ linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c  2009-03-18 16:51:03.000000000 +0100
-> >> @@ -1320,6 +1320,9 @@ static int vidioc_g_parm(struct file *fi
-> >>  {
-> >>        struct gspca_dev *gspca_dev = priv;
-> >>
-> >> +       if (parm->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
-> >> +               return -EINVAL;
-> >> +
-> >>        memset(parm, 0, sizeof *parm);
-> >>        parm->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-> > ^^^^^^^^^^^^^^^^^^^
-> > This line should be deleted as it's no longer needed.
->
-> Because memset() clears the whole parm structure this line is necessary. In other
-> drivers the following code is there:
->
->     tmp = parm->type;
->     memset(parm, 0, sizeof(*parm));
->     parm->type = parm;
+Commit-ID:  35d40952dba7b0689a16bd1463fb7698f8dbe639
+Gitweb:     http://git.kernel.org/tip/35d40952dba7b0689a16bd1463fb7698f8dbe639
+Author:     FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+AuthorDate: Thu, 19 Mar 2009 10:39:31 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 19 Mar 2009 08:39:48 +0100
 
-The memset isn't needed anymore either, I put it into v4l2_ioctl.  I
-removed most of the code like that but I may have missed some drivers.
+dma-debug: warn of unmapping an invalid dma address
+
+Impact: extend DMA-debug checks
+
+Calling dma_unmap families against an invalid dma address should be a
+bug.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Joerg Roedel <joerg.roedel@amd.com>
+LKML-Reference: <20090319103743N.fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ lib/dma-debug.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index 9a350b4..f9e6d38 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -531,8 +531,11 @@ static void check_unmap(struct dma_debug_entry *ref)
+ 	struct hash_bucket *bucket;
+ 	unsigned long flags;
+ 
+-	if (dma_mapping_error(ref->dev, ref->dev_addr))
++	if (dma_mapping_error(ref->dev, ref->dev_addr)) {
++		err_printk(ref->dev, NULL, "DMA-API: device driver tries "
++			   "to free an invalid DMA memory address\n");
+ 		return;
++	}
+ 
+ 	bucket = get_hash_bucket(ref, &flags);
+ 	entry = hash_bucket_find(bucket, ref);
