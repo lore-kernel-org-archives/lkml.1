@@ -1,92 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761177AbZCSUQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbZCSUVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761177AbZCSUQR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 16:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761092AbZCSUPx
+	id S1758735AbZCSUVL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 16:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZCSUU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 16:15:53 -0400
-Received: from baikonur.stro.at ([213.239.196.228]:46264 "EHLO
-	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760999AbZCSUPw (ORCPT
+	Thu, 19 Mar 2009 16:20:56 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:49634 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbZCSUUz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 16:15:52 -0400
-Date: Thu, 19 Mar 2009 21:13:10 +0100
-From: maximilian attems <max@stro.at>
-To: Frans Pop <elendil@planet.nl>, 518412@bugs.debian.org
-Cc: md@linux.it, Jon Masters <jcm@jonmasters.org>,
+	Thu, 19 Mar 2009 16:20:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=V8S2LeLkgaQ2oT6l+hB7HiVmgoizQU9fWMJJHwXjwvxDlOdcdlP5cQXbdST3g0Wo02
+         vkht6dLybieshKeBFEDUP2JBx8O27svK3DU5UFt50Lmcf6qsqJBoOlYgCZhEjtiCphuG
+         O9vvAPaCIfXUnhlqcFBcoSvzQFsHxntStdGTs=
+MIME-Version: 1.0
+In-Reply-To: <20090319192758.GB24318@elte.hu>
+References: <20090319175544.13691.42362.stgit@f10box.hanneseder.net>
+	 <20090319182628.GB28946@ZenIV.linux.org.uk>
+	 <154e089b0903191151q37ab7b20o43838845af12966f@mail.gmail.com>
+	 <20090319190730.GC28946@ZenIV.linux.org.uk>
+	 <20090319192758.GB24318@elte.hu>
+Date: Thu, 19 Mar 2009 21:20:51 +0100
+Message-ID: <19f34abd0903191320qdd73530ud85081d23e17b266@mail.gmail.com>
+Subject: Re: Nasal demons in preprocessor use (Re: [PATCH] test-suite: new 
+	preprocessor test case)
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, Christopher Li <sparse@chrisli.org>,
+       linux-sparse@vger.kernel.org, Hannes Eder <hannes@hanneseder.net>,
        linux-kernel@vger.kernel.org
-Subject: linux-2.6 install errors due to incompatible depmod files [was Re: Bug#518412: initramfs-tools: must support relative paths in modules.dep ]
-Message-ID: <20090319201310.GI3901@baikonur.stro.at>
-References: <20090319153604.GB7954@stro.at> <200903191843.28437.elendil@planet.nl> <20090319181031.GH3901@baikonur.stro.at> <200903191940.47726.elendil@planet.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903191940.47726.elendil@planet.nl>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/3/19 Ingo Molnar <mingo@elte.hu>:
+>
+> * Al Viro <viro@ZenIV.linux.org.uk> wrote:
+>
+>> On Thu, Mar 19, 2009 at 07:51:22PM +0100, Hannes Eder wrote:
+>> > When currently running sparse agains the current linux-next tree, a
+>> > lot of checks produce error messages like this:
+>> >
+>> > include/linux/skbuff.h:381:9: error: expected preprocessor identifier
+>>
+>> Cute.  If anything, this kmemcheck_define_bitfield stuff needs to be moved
+>> inside the ifdefs.
+>>
+>> Folks, this is not a valid C, period.  And no, there's no promise
+>> that gcc won't change its behaviour on such constructs whenever
+>> they feel like that.
+>>
+>> Preprocessor directives do not belong in argument lists.  Not
+>> #ifdef, not #define, not #include; this is undefined behaviour.
+>
+> Agreed.
+>
+> Vegard, it's this bit:
+>
+>        kmemcheck_define_bitfield(flags2, {
+> #ifdef CONFIG_IPV6_NDISC_NODETYPE
+>                __u8                    ndisc_nodetype:2;
+> #endif
+> #if defined(CONFIG_MAC80211) || defined(CONFIG_MAC80211_MODULE)
+>                __u8                    do_not_encrypt:1;
+>                __u8                    requeue:1;
+> #endif
+>        });
+>
+>        Ingo
+>
 
-[ adding jcm and lkml to Cc: ]
+Hm.
+
+Is this really not valid C?
+
+It worked with GCC, so I assumed it was. My mistake.
+
+Okay, that puts us in a bit of a tight spot, with regards to kmemcheck, I mean.
+
+Maybe I should just take up GCC development instead, and implement a
+-fkmemcheck or something.
+
+(To get rid of the bitfield false positives, I mean.)
+
+I guess this means that kmemcheck branch should be withdrawn from
+linux-next, at least temporarily, as I have no immediate
+workarounds/alternatives. Stephen, can you drop it?
 
 
-
-On Thu, Mar 19, 2009 at 07:40:46PM +0100, Frans Pop wrote:
-> 
-> Hmmm. I wonder if it is the old m-i-t's modprobe that is the problem when 
-> you do:
-> modprobe --set-version=2.6.26.3 --ignore-install --show-depends <module>
-> 
-> Looks like that's it:
-> # modprobe -V
-> module-init-tools version 3.4
-> # modprobe --set-version=2.6.26.3 --ignore-install --show-depends nfs
-> WARNING: Could not open 'kernel/net/sunrpc/sunrpc.ko': No such file or 
-> directory
-> WARNING: Could not open 'kernel/fs/nfs_common/nfs_acl.ko': No such file or 
-> directory
-> WARNING: Could not open 'kernel/fs/lockd/lockd.ko': No such file or 
-> directory
-> FATAL: Could not open 'kernel/fs/nfs/nfs.ko': No such file or directory
-> 
-> # modprobe -V
-> module-init-tools version 3.7-pre9
-> # modprobe --set-version=2.6.26.3 --ignore-install --show-depends nfs
-> WARNING: All config files need .conf: /etc/modprobe.d/pnp-hotplug, it will 
-> be ignored in a future release.
-> WARNING: All config files need .conf: /etc/modprobe.d/display_class, it 
-> will be ignored in a future release.
-> WARNING: All config files need .conf: /etc/modprobe.d/blacklist, it will 
-> be ignored in a future release.
-> insmod /lib/modules/2.6.26.3/kernel/net/sunrpc/sunrpc.ko
-> insmod /lib/modules/2.6.26.3/kernel/fs/nfs_common/nfs_acl.ko
-> insmod /lib/modules/2.6.26.3/kernel/fs/lockd/lockd.ko
-> insmod /lib/modules/2.6.26.3/kernel/fs/nfs/nfs.ko
-> 
-> That would mean that m-i-t has created a backwards incompatibility problem 
-> _with itself_ and that the problem actually is "installing a kernel, that 
-> was built on a system with new m-i-t, on a system with old m-i-t".
-> Or, installing a kernel, built on a system running unstable or testing, on 
-> a system running oldstable or stable. That sucks.
-
-argh indeed.
-
-arguably it is also a bug by initramfs-tools to suppress the error of above
-modprobe calls see manual_add_modules() in hook-functions:
-        for mam_x in $(modprobe --set-version="${version}" --ignore-install \
-	--show-depends "${1}" 2>/dev/null | awk '/^insmod/ { print $2 }'); do
-
-
-git history tells that jbailey added it from the start on,
-so it must have been because modprobe was/is too chatty.
-suse mkinitrd seems also only to have lost that suppression lately.
-
- 
-
-thanks for finding out fjp.
-
-kind regards
+Vegard
 
 -- 
-maks
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
