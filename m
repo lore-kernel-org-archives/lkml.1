@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761546AbZCSVLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760350AbZCSVLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761546AbZCSVLr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 17:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761284AbZCSVJ4
+	id S1760350AbZCSVLH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 17:11:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760670AbZCSVJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 17:09:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33470 "EHLO mx2.redhat.com"
+	Thu, 19 Mar 2009 17:09:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33461 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761271AbZCSVJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 17:09:55 -0400
-Message-ID: <49C2B4D0.8030904@redhat.com>
-Date: Thu, 19 Mar 2009 17:10:40 -0400
+	id S1760752AbZCSVJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 17:09:44 -0400
+Message-ID: <49C2B4D4.1040205@redhat.com>
+Date: Thu, 19 Mar 2009 17:10:44 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-CC: systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH -tip 7/9] tracing: kprobe-tracer plugin supports arguments
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>
+CC: Jim Keniston <jkenisto@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: [RFC][PATCH -tip 8/9] kprobes: support respawn probes for module
+ probing
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -26,444 +27,353 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support probe arguments and add fetch functions.
+Add module_*probe API's to respawn probes on kernel modules.
+kprobes which have been registered through register_module_*probe are
+activated when the target module is loaded, and deactivated when unloading.
+register_module_*probe require an activate_handler which is called right
+before activating the probe, and if it returns !0, kprobes will be activated.
+
+Thus, users can check whether the target module is true target or not
+(e.g. checking build-id) in activate_handler.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
 ---
- Documentation/ftrace.txt    |   39 ++++--
- kernel/trace/trace_kprobe.c |  287 +++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 305 insertions(+), 21 deletions(-)
+ include/linux/kprobes.h |   39 ++++++++
+ kernel/kprobes.c        |  250 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 289 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
-index a957adf..946c66f 100644
---- a/Documentation/ftrace.txt
-+++ b/Documentation/ftrace.txt
-@@ -1329,17 +1329,30 @@ current_tracer, instead of that, just set probe points via
- /debug/tracing/kprobe_probes.
+diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+index 2ec6cc1..9d47d08 100644
+--- a/include/linux/kprobes.h
++++ b/include/linux/kprobes.h
+@@ -37,6 +37,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/rcupdate.h>
+ #include <linux/mutex.h>
++#include <linux/module.h>
 
- Synopsis of kprobe_probes:
--  p SYMBOL[+offs|-offs]|MEMADDR	: set a probe
--  r SYMBOL[+0]				: set a return probe
-+  p SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: set a probe
-+  r SYMBOL[+0] [FETCHARGS]			: set a return probe
+ #ifdef CONFIG_KPROBES
+ #include <asm/kprobes.h>
+@@ -69,6 +70,7 @@ typedef int (*kprobe_fault_handler_t) (struct kprobe *, struct pt_regs *,
+ 				       int trapnr);
+ typedef int (*kretprobe_handler_t) (struct kretprobe_instance *,
+ 				    struct pt_regs *);
++typedef int (*probe_activate_handler_t)(void *, struct module *);
+
+ struct kprobe {
+ 	struct hlist_node hlist;
+@@ -279,6 +281,16 @@ void unregister_kretprobes(struct kretprobe **rps, int num);
+ void kprobe_flush_task(struct task_struct *tk);
+ void recycle_rp_inst(struct kretprobe_instance *ri, struct hlist_head *head);
+
++int register_module_kprobe(struct kprobe *kp,
++			   probe_activate_handler_t handler, void *data);
++int register_module_kretprobe(struct kretprobe *rp,
++			      probe_activate_handler_t handler, void *data);
++int register_module_jprobe(struct jprobe *jp,
++			   probe_activate_handler_t handler, void *data);
++void unregister_module_kprobe(struct kprobe *kp);
++void unregister_module_kretprobe(struct kretprobe *rp);
++void unregister_module_jprobe(struct jprobe *jp);
 +
-+ FETCHARGS:
-+  rN	: Fetch Nth register (N >= 0)
-+  sN	: Fetch Nth entry of stack (N >= 0)
-+  mADDR	: Fetch memory at ADDR (ADDR should be in kernel)
-+  aN	: Fetch function argument. (N >= 1)(*)
-+  rv	: Fetch return value.(**)
-+  rp	: Fetch return address.(**)
-+
-+  (*) aN may not correct on asmlinkaged functions and at function body.
-+  (**) only for return probe.
+ #else /* !CONFIG_KPROBES: */
 
- E.g.
--  echo p sys_open > /debug/tracing/kprobe_probes
-+  echo p do_sys_open a1 a2 a3 a4 > /debug/tracing/kprobe_probes
-
-- This sets a kprobe on the top of sys_open() function.
-+ This sets a kprobe on the top of do_sys_open() function with recording
-+1st to 3rd arguments.
-
--  echo r sys_open >> /debug/tracing/kprobe_probes
-+  echo r do_sys_open rv rp >> /debug/tracing/kprobe_probes
-
-- This sets a kretprobe on the return point of sys_open() function.
-+ This sets a kretprobe on the return point of do_sys_open() function with
-+recording return value and return address.
-
-   echo > /debug/tracing/kprobe_probes
-
-@@ -1351,14 +1364,12 @@ E.g.
- #
- #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
- #              | |       |          |         |
--           <...>-5117  [003]   416.481638: sys_open: @sys_open+0
--           <...>-5117  [003]   416.481662: syscall_call: <-sys_open+0
--           <...>-5117  [003]   416.481739: sys_open: @sys_open+0
--           <...>-5117  [003]   416.481762: sysenter_do_call: <-sys_open+0
--           <...>-5117  [003]   416.481818: sys_open: @sys_open+0
--           <...>-5117  [003]   416.481842: sysenter_do_call: <-sys_open+0
--           <...>-5117  [003]   416.481882: sys_open: @sys_open+0
--           <...>-5117  [003]   416.481905: sysenter_do_call: <-sys_open+0
-+           <...>-2376  [001]   262.389131: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
-+           <...>-2376  [001]   262.391166: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
-+           <...>-2376  [001]   264.384876: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
-+           <...>-2376  [001]   264.386880: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
-+           <...>-2084  [001]   265.380330: do_sys_open: @do_sys_open+0 0xffffff9c 0x804be3e 0x0 0x1b6
-+           <...>-2084  [001]   265.380399: sys_open: <-do_sys_open+0 0x3 0xc06e8ebb
-
-  @SYMBOL means that kernel hits a probe, and <-SYMBOL means kernel returns
- from SYMBOL(e.g. "sysenter_do_call: <-sys_open+0" means kernel returns from
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 33bb355..e801e8c 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -27,15 +27,124 @@
- #include <linux/types.h>
- #include <linux/string.h>
- #include <linux/ctype.h>
-+#include <linux/ptrace.h>
-
- #include <linux/ftrace.h>
- #include "trace.h"
-
-+/* TODO: Move these functions to arch/XXX/include/asm/ptrace.h */
-+#define STACK_MASK (THREAD_SIZE - 1)
-+#define valid_stack_addr(regs, addr) \
-+	(((addr) & ~STACK_MASK) == (kernel_trap_sp(regs) & ~STACK_MASK))
-+
-+#if defined(__i386__)
-+#define MAX_REG_NUM 15
-+#elif defined(__x86_64__)
-+#define MAX_REG_NUM 21
-+#else
-+#define MAX_REG_NUM (sizeof(struct pt_regs)/sizeof(unsigned long))
-+#endif
-+
-+static unsigned long fetch_register(struct pt_regs *regs, void *num)
+ static inline int kprobes_built_in(void)
+@@ -345,5 +357,32 @@ static inline void unregister_kretprobes(struct kretprobe **rps, int num)
+ static inline void kprobe_flush_task(struct task_struct *tk)
+ {
+ }
++static inline int register_module_kprobe(struct kprobe *kp,
++					 probe_activate_handler_t handler,
++					 void *data)
 +{
-+	if (unlikely((unsigned)num > MAX_REG_NUM))
-+		return 0;
-+	return *((unsigned long *)regs + (unsigned)num);
++	return -ENOSYS;
 +}
-+
-+static unsigned long fetch_stack(struct pt_regs *regs, void *num)
++static inline int register_module_kretprobe(struct kretprobe *rp,
++					    probe_activate_handler_t handler,
++					    void *data)
 +{
-+	unsigned long *addr = (unsigned long *)kernel_trap_sp(regs);
-+	addr += (unsigned)num;
-+	if (valid_stack_addr(regs, (unsigned long)addr))
-+		return *addr;
-+	else
-+		return 0;
++	return -ENOSYS;
 +}
-+
-+static unsigned long fetch_memory(struct pt_regs *regs, void *addr)
++static inline int register_module_jprobe(struct jprobe *jp,
++					 probe_activate_handler_t handler,
++					 void *data)
 +{
-+	unsigned long retval;
-+	probe_kernel_address(addr, retval);
-+	return retval;
++	return -ENOSYS;
 +}
-+
-+#if defined(__i386__)
-+#define REGPARMS 3
-+static unsigned long fetch_argument(struct pt_regs *regs, void *data)
++void unregister_module_kprobe(struct kprobe *kp)
 +{
-+	unsigned long n = (unsigned long)data;
-+	if (n > REGPARMS) {
-+		/*
-+		 * The typical case: arg n is on the stack.
-+		 * stack[0] = return address
-+		 */
-+		return fetch_stack(regs, (void *)(n - REGPARMS));
-+	} else {
-+		switch (n) {
-+		case 1: return regs->ax;
-+		case 2: return regs->dx;
-+		case 3: return regs->cx;
-+		}
-+		return 0;
-+	}
 +}
-+#elif define(__x86_64__)
-+#define REGPARMS 6
-+static unsigned long fetch_argument(struct pt_regs *regs, void *data)
++void unregister_module_kretprobe(struct kretprobe *rp)
 +{
-+	unsigned long n = (unsigned long)data;
-+	if (n > REGPARMS) {
-+		/*
-+		 * The typical case: arg n is on the stack.
-+		 * stack[0] = return address
-+		 */
-+		return fetch_stack(regs, (void *)(n - REGPARMS));
-+	} else {
-+		switch (n) {
-+		case 1: return regs->di;
-+		case 2: return regs->si;
-+		case 3: return regs->dx;
-+		case 4: return regs->cx;
-+		case 5: return regs->r8;
-+		case 6: return regs->r9;
-+		}
-+		return 0;
-+	}
 +}
-+#else
-+static unsigned long fetch_argument(struct pt_regs *regs, void *data)
++void unregister_module_jprobe(struct jprobe *jp)
 +{
-+	return fetch_stack(regs, data);
 +}
-+#endif
-+
-+static unsigned long fetch_retvalue(struct pt_regs *regs, void *dummy)
-+{
-+	return regs_return_value(regs);
-+}
-+
-+static unsigned long fetch_ip(struct pt_regs *regs, void *dummy)
-+{
-+	return instruction_pointer(regs);
-+}
-+
-+
- /**
-  * kprobe_trace_core
-  */
- #define TRACE_MAXARGS 6
+ #endif /* CONFIG_KPROBES */
+ #endif /* _LINUX_KPROBES_H */
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 5016bfb..f16a54e 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -1416,6 +1416,256 @@ static int __kprobes debugfs_kprobe_init(void)
+ late_initcall(debugfs_kprobe_init);
+ #endif /* CONFIG_DEBUG_FS */
 
-+struct fetch_func {
-+	unsigned long (*func)(struct pt_regs *, void *);
++/* Kprobes module respawn support */
++enum probe_type {
++	PROBE_TYPE_KPROBE,
++	PROBE_TYPE_KRETPROBE,
++	PROBE_TYPE_JPROBE,
++};
++
++struct module_probe_client {
++	struct list_head list;
++	const char *module;	/* including symbol name */
++	int active;
 +	void *data;
++	probe_activate_handler_t handler;
++	enum probe_type type;
++	union {
++		struct kprobe *kp;
++		struct kretprobe *rp;
++		struct jprobe *jp;
++	};
 +};
 +
-+static unsigned long call_fetch(struct fetch_func *f, struct pt_regs *regs)
++static DEFINE_MUTEX(module_probe_mutex);
++static LIST_HEAD(module_probe_list);
++
++static int activate_module_probe(struct module_probe_client *pc)
 +{
-+	return f->func(regs, f->data);
++	int ret = 0;
++	if (pc->active)
++		return 0;
++	switch (pc->type) {
++	case PROBE_TYPE_KPROBE:
++		ret = register_kprobe(pc->kp);
++		break;
++	case PROBE_TYPE_KRETPROBE:
++		ret = register_kretprobe(pc->rp);
++		break;
++	case PROBE_TYPE_JPROBE:
++		ret = register_jprobe(pc->jp);
++		break;
++	default:
++		WARN_ON(1);
++		break;
++	}
++	if (!ret)
++		pc->active = 1;
++	return ret;
 +}
 +
- struct trace_probe {
- 	struct list_head	list;
- 	union {
-@@ -43,6 +152,8 @@ struct trace_probe {
- 		struct kretprobe	rp;
- 	};
- 	const char		*symbol;	/* symbol name */
-+	unsigned int		nr_args;
-+	struct fetch_func	args[TRACE_MAXARGS];
- };
-
- static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
-@@ -152,17 +263,23 @@ static int create_trace_probe(int argc, char **argv)
- {
- 	/*
- 	 * Argument syntax:
--	 *  - Add kprobe: p SYMBOL[+OFFS|-OFFS]|ADDRESS
--	 *  - Add kretprobe: r SYMBOL[+0]
-+	 *  - Add kprobe: p SYMBOL[+OFFS|-OFFS]|ADDRESS [FETCHARGS]
-+	 *  - Add kretprobe: r SYMBOL[+0] [FETCHARGS]
-+	 * Fetch args:
-+	 *  aN	: fetch Nth of function argument. (N:1-)
-+	 *  rN	: fetch Nth of register (pt_regs + N) (N:0-)
-+	 *  sN	: fetch Nth of stack (N:0-)
-+	 *  mADDR	: fetch memory at ADDR (ADDR should be in kernel)
- 	 */
- 	struct trace_probe *tp;
- 	struct kprobe *kp;
- 	char *tmp;
--	int ret = 0;
-+	int i, ret = 0;
- 	int is_return = 0;
- 	char *symbol = NULL;
- 	long offset = 0;
- 	void *addr = NULL;
-+	unsigned long param;
-
- 	if (argc < 2)
- 		return -EINVAL;
-@@ -219,6 +336,63 @@ static int create_trace_probe(int argc, char **argv)
- 	} else
- 		kp->addr = addr;
-
-+	/* parse arguments */
-+	argc -= 2; argv += 2; ret = 0;
-+	for (i = 0; i < argc && i < TRACE_MAXARGS; i++) {
-+		tmp = argv[i];
-+		switch (*tmp) {
-+		case 'a':	/* argument */
-+			ret = strict_strtoul(tmp + 1, 10, &param);
-+			if (ret || param > PARAM_MAX_ARGS)
-+				ret = -EINVAL;
-+			else {
-+				tp->args[i].func = fetch_argument;
-+				tp->args[i].data = (void *)param;
-+			}
-+			break;
-+		case 'r':	/* register||retval||retip */
-+			if (isdigit(tmp[1])) {
-+				ret = strict_strtoul(tmp + 1, 10, &param);
-+				if (ret || param > PARAM_MAX_REGS)
-+					ret = -EINVAL;
-+				else {
-+					tp->args[i].func = fetch_register;
-+					tp->args[i].data = (void *)param;
-+				}
-+			} else if (is_return && tmp[1] == 'v') {
-+				tp->args[i].func = fetch_retvalue;
-+				tp->args[i].data = NULL;
-+			} else if (is_return && tmp[1] == 'p') {
-+				tp->args[i].func = fetch_ip;
-+				tp->args[i].data = NULL;
-+			} else
-+				ret = -EINVAL;
-+			break;
-+		case 's':	/* stack */
-+			ret = strict_strtoul(tmp + 1, 10, &param);
-+			if (ret || param > PARAM_MAX_STACK)
-+				ret = -EINVAL;
-+			else {
-+				tp->args[i].func = fetch_stack;
-+				tp->args[i].data = (void *)param;
-+			}
-+			break;
-+		case 'm':	/* memory */
-+			ret = strict_strtoul(tmp + 1, 0, &param);
-+			if (!ret) {
-+				tp->args[i].func = fetch_memory;
-+				tp->args[i].data = (void *)param;
-+			}
-+			break;
-+		default:
-+			/* TODO: support custom handler */
-+			ret = -EINVAL;
++static void deactivate_module_probe(struct module_probe_client *pc)
++{
++	if (!pc->active)
++		return;
++	switch (pc->type) {
++	case PROBE_TYPE_KPROBE:
++		unregister_kprobe(pc->kp);
++		break;
++	case PROBE_TYPE_KRETPROBE:
++		unregister_kretprobe(pc->rp);
++		break;
++	case PROBE_TYPE_JPROBE:
++		unregister_jprobe(pc->jp);
++		break;
++	default:
++		WARN_ON(1);
++		break;
++	}
++	pc->active = 0;
++}
++
++static const char *probed_module_name(struct kprobe *kp)
++{
++	if ((kp->symbol_name) && strchr(kp->symbol_name, ':'))
++		return kp->symbol_name;
++	return NULL;
++}
++
++static int module_is_exist(const char *module)
++{
++	char buf[MODULE_NAME_LEN + 8];
++	snprintf(buf, MODULE_NAME_LEN + 8, "%s:__stext", module);
++	return module_kallsyms_lookup_name(buf) ? 1 : 0;
++}
++
++static int add_module_probe(const char *module, void *p, enum probe_type type,
++			    probe_activate_handler_t handler, void *data)
++{
++	struct module_probe_client *pc;
++	int ret = 0;
++
++	if (!handler)
++		return -EINVAL;
++
++	pc = kzalloc(sizeof(struct module_probe_client), GFP_KERNEL);
++	pc->kp = p;
++	pc->type = type;
++	pc->module = module;
++	pc->handler = handler;
++	pc->data = data;
++	INIT_LIST_HEAD(&pc->list);
++
++	mutex_lock(&module_probe_mutex);
++	if (module_is_exist(module))
++		ret = activate_module_probe(pc);
++	if (ret)
++		kfree(pc);
++	else
++		list_add_tail(&pc->list, &module_probe_list);
++	mutex_unlock(&module_probe_mutex);
++	return ret;
++}
++
++static void __del_module_probe(struct module_probe_client *pc)
++{
++	list_del(&pc->list);
++	deactivate_module_probe(pc);
++	kfree(pc);
++}
++
++static int del_module_probe(void *p)
++{
++	struct module_probe_client *pc;
++	int ret;
++
++	mutex_lock(&module_probe_mutex);
++	list_for_each_entry(pc, &module_probe_list, list)
++		if (pc->kp == p) {
++			/* don't need safe loop, we exit soon */
++			__del_module_probe(pc);
++			goto found;
 +		}
-+		if (ret)
-+			goto error;
++	ret = -ENOENT;
++found:
++	mutex_unlock(&module_probe_mutex);
++	return ret;
++}
++
++int __kprobes
++register_module_kprobe(struct kprobe *kp,
++		       probe_activate_handler_t handler, void *data)
++{
++	const char *module;
++	module = probed_module_name(kp);
++	if (!module)
++		return register_kprobe(kp);
++	return add_module_probe(module, kp, PROBE_TYPE_KPROBE,
++				handler, data);
++}
++EXPORT_SYMBOL_GPL(register_module_kprobe);
++
++int __kprobes
++register_module_kretprobe(struct kretprobe *rp,
++			  probe_activate_handler_t handler, void *data)
++{
++	const char *module;
++	module = probed_module_name(&rp->kp);
++	if (!module)
++		return register_kretprobe(rp);
++	return add_module_probe(module, rp, PROBE_TYPE_KRETPROBE,
++				handler, data);
++}
++EXPORT_SYMBOL_GPL(register_module_kretprobe);
++
++int __kprobes
++register_module_jprobe(struct jprobe *jp,
++		       probe_activate_handler_t handler, void *data)
++{
++	const char *module;
++	module = probed_module_name(&jp->kp);
++	if (!module)
++		return register_jprobe(jp);
++	return add_module_probe(module, jp, PROBE_TYPE_JPROBE,
++				handler, data);
++}
++EXPORT_SYMBOL_GPL(register_module_jprobe);
++
++void __kprobes unregister_module_kprobe(struct kprobe *kp)
++{
++	const char *module;
++	module = probed_module_name(kp);
++	if (!module)
++		unregister_kprobe(kp);
++	else
++		del_module_probe(kp);
++}
++EXPORT_SYMBOL_GPL(unregister_module_kprobe);
++
++void __kprobes unregister_module_kretprobe(struct kretprobe *rp)
++{
++	const char *module;
++	module = probed_module_name(&rp->kp);
++	if (!module)
++		unregister_kretprobe(rp);
++	else
++		del_module_probe(rp);
++}
++EXPORT_SYMBOL_GPL(unregister_module_kretprobe);
++
++void __kprobes unregister_module_jprobe(struct jprobe *jp)
++{
++	const char *module;
++	module = probed_module_name(&jp->kp);
++	if (!module)
++		unregister_jprobe(jp);
++	else
++		del_module_probe(jp);
++}
++EXPORT_SYMBOL_GPL(unregister_module_jprobe);
++
++static int module_is_probed(const char *mod, const char *sym)
++{
++	int len = strlen(mod);
++	return strncmp(mod, sym, len) == 0 && sym[len] == ':';
++}
++
++static int module_probe_callback(struct notifier_block *nb,
++				 unsigned long state, void *module)
++{
++	struct module_probe_client *pc;
++	struct module *mod = module;
++	if (state == MODULE_STATE_LIVE)
++		return NOTIFY_DONE;
++
++	mutex_lock(&module_probe_mutex);
++	list_for_each_entry(pc, &module_probe_list, list) {
++		if (!module_is_probed(mod->name, pc->module))
++			continue;
++		if (state == MODULE_STATE_COMING &&
++		    pc->handler(pc->data, module)) {
++			activate_module_probe(pc);
++		} else if (state == MODULE_STATE_GOING)
++			deactivate_module_probe(pc);
 +	}
-+	tp->nr_args = i;
-+
- 	ret = register_trace_probe(tp);
- 	if (ret)
- 		goto error;
-@@ -278,18 +452,35 @@ static void probes_seq_stop(struct seq_file *m, void *v)
- static int probes_seq_show(struct seq_file *m, void *v)
- {
- 	struct trace_probe *tp = v;
-+	int i;
-
- 	if (tp == NULL)
- 		return 0;
-
- 	if (tp->symbol)
--		seq_printf(m, "%c %s%+ld\n",
-+		seq_printf(m, "%c %s%+ld ",
- 			probe_is_return(tp) ? 'r' : 'p',
- 			probe_symbol(tp), probe_offset(tp));
- 	else
--		seq_printf(m, "%c 0x%p\n",
-+		seq_printf(m, "%c 0x%p ",
- 			probe_is_return(tp) ? 'r' : 'p',
- 			probe_address(tp));
-+
-+	for (i = 0; i < tp->nr_args; i++) {
-+		if (tp->args[i].func == fetch_argument)
-+			seq_printf(m, " a%lu", (unsigned long)tp->args[i].data);
-+		else if (tp->args[i].func == fetch_register)
-+			seq_printf(m, " r%lu", (unsigned long)tp->args[i].data);
-+		else if (tp->args[i].func == fetch_stack)
-+			seq_printf(m, " s%lu", (unsigned long)tp->args[i].data);
-+		else if (tp->args[i].func == fetch_memory)
-+			seq_printf(m, " m0x%p", tp->args[i].data);
-+		else if (tp->args[i].func == fetch_retvalue)
-+			seq_printf(m, " rv");
-+		else if (tp->args[i].func == fetch_ip)
-+			seq_printf(m, " rp");
-+	}
-+	seq_printf(m, "\n");
- 	return 0;
- }
-
-@@ -380,13 +571,95 @@ static const struct file_operations kprobe_points_ops = {
- };
-
- /* event recording functions */
--static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
--				struct pt_regs *regs)
-+/* TODO: rewrite based on trace_vprintk(maybe, trace_vprintk_begin/end?) */
-+static void kprobe_trace_printk_0(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
- {
- 	__trace_printk(ip, "%s%s%+ld\n",
- 			probe_is_return(tp) ? "<-" : "@",
- 			probe_symbol(tp), probe_offset(tp));
- }
-+static void kprobe_trace_printk_1(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_printk(ip, "%s%s%+ld 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@",
-+			probe_symbol(tp), probe_offset(tp),
-+			call_fetch(&tp->args[0], regs));
-+}
-+static void kprobe_trace_printk_2(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_printk(ip, "%s%s%+ld 0x%lx 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
-+			probe_offset(tp),
-+			call_fetch(&tp->args[0], regs),
-+			call_fetch(&tp->args[1], regs));
-+}
-+static void kprobe_trace_printk_3(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_printk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
-+			probe_offset(tp),
-+			call_fetch(&tp->args[0], regs),
-+			call_fetch(&tp->args[1], regs),
-+			call_fetch(&tp->args[2], regs));
-+}
-+static void kprobe_trace_printk_4(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_printk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
-+			probe_offset(tp),
-+			call_fetch(&tp->args[0], regs),
-+			call_fetch(&tp->args[1], regs),
-+			call_fetch(&tp->args[2], regs),
-+			call_fetch(&tp->args[3], regs));
-+}
-+static void kprobe_trace_printk_5(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_printk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
-+			probe_offset(tp),
-+			call_fetch(&tp->args[0], regs),
-+			call_fetch(&tp->args[1], regs),
-+			call_fetch(&tp->args[2], regs),
-+			call_fetch(&tp->args[3], regs),
-+			call_fetch(&tp->args[4], regs));
-+}
-+static void kprobe_trace_printk_6(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_printk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
-+			probe_offset(tp),
-+			call_fetch(&tp->args[0], regs),
-+			call_fetch(&tp->args[1], regs),
-+			call_fetch(&tp->args[2], regs),
-+			call_fetch(&tp->args[3], regs),
-+			call_fetch(&tp->args[4], regs),
-+			call_fetch(&tp->args[5], regs));
++	mutex_unlock(&module_probe_mutex);
++	return NOTIFY_DONE;
 +}
 +
-+static void (*kprobe_trace_printk_n[TRACE_MAXARGS + 1])(unsigned long ip,
-+							struct trace_probe *,
-+							struct pt_regs *) = {
-+	[0] = kprobe_trace_printk_0,
-+	[1] = kprobe_trace_printk_1,
-+	[2] = kprobe_trace_printk_2,
-+	[3] = kprobe_trace_printk_3,
-+	[4] = kprobe_trace_printk_4,
-+	[5] = kprobe_trace_printk_5,
-+	[6] = kprobe_trace_printk_6,
++struct notifier_block module_probe_nb = {
++	.notifier_call = module_probe_callback
 +};
 +
-+static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
-+				struct pt_regs *regs)
++static int __init init_module_probes(void)
 +{
-+	kprobe_trace_printk_n[tp->nr_args](ip, tp, regs);
++	int ret;
++	ret = register_module_notifier(&module_probe_nb);
++	if (ret)
++		pr_warning("Failed to register module notifier\n");
++	return ret;
 +}
++module_init(init_module_probes);
++
+ module_init(init_kprobes);
 
- /* Make a debugfs interface for controling probe points */
- static __init int init_kprobe_trace(void)
+ EXPORT_SYMBOL_GPL(register_kprobe);
 -- 
 Masami Hiramatsu
 
