@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbZCSBUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757872AbZCSBc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758223AbZCSBUd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 21:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZCSBUV
+	id S1757872AbZCSBc3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 21:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbZCSBcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 21:20:21 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:32081 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753840AbZCSBUT (ORCPT
+	Wed, 18 Mar 2009 21:32:19 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:33171 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751196AbZCSBcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 21:20:19 -0400
-Subject: Re: High contention on the sk_buff_head.lock
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: David Miller <davem@davemloft.net>
-Cc: ghaskins@novell.com, vernux@us.ibm.com, andi@firstfloor.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, pmullaney@novell.com
-In-Reply-To: <20090318.180355.228447835.davem@davemloft.net>
-References: <49C16349.9030503@us.ibm.com>
-	 <20090318.143844.173112261.davem@davemloft.net>
-	 <49C16D7C.3080003@novell.com>
-	 <20090318.180355.228447835.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 18:13:11 -0700
-Message-Id: <1237425191.8204.41.camel@quadrophenia.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Wed, 18 Mar 2009 21:32:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=WdezK3i4Gz/Asgf4xIWC4VF4QYZJDS6KLCbVpPvbob+C0Yzpq8Yxg/I2hYq+lj2Ir4LitiKCS4KrjrN/4uoS4Xj43LoX8WmHCYaJetmhdJC8qH/N2SFrD55Gz3L57lHv6a27NTBgiwXPbNduCrDAXfjuontgultt9x+X+wTuohs=  ;
+X-YMail-OSG: gbEob5gVM1lolIl3w79Goq_M6EPYuKIizeB1yhJyLv_iMV3XFKuecY74v.nDLxpKoK3A_9Az.v_sh88KU8rSFtZ_IpHgjXqzA55n0DxpPxndgk2qM.oshXXVAdIO.QxMD3MpkQyJru_XtirbzJwyg4MUarAE0lVX5MiMImwXDdfBJXIJo8spFlqkJ.NEsQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>, Avi Kivity <avi@redhat.com>
+Subject: Re: Question about x86/mm/gup.c's use of disabled interrupts
+Date: Thu, 19 Mar 2009 12:32:04 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       "Xen-devel" <xen-devel@lists.xensource.com>,
+       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>
+References: <49C148AF.5050601@goop.org>
+In-Reply-To: <49C148AF.5050601@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903191232.05459.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-18 at 18:03 -0700, David Miller wrote:
-> From: Gregory Haskins <ghaskins@novell.com>
-> Date: Wed, 18 Mar 2009 17:54:04 -0400
-> 
-> > Note that -rt doesnt typically context-switch under contention anymore
-> > since we introduced adaptive-locks.  Also note that the contention
-> > against the lock is still contention, regardless of whether you have -rt
-> > or not.  Its just that the slow-path to handle the contended case for
-> > -rt is more expensive than mainline.  However, once you have the
-> > contention as stated, you have already lost.
-> 
-> First, contention is not implicitly a bad thing.
-> 
+Hi Jeremy,
 
-Its a bad thing when it does not scale.
+I think you got most of your questions already hashed out, but
+I could make a suggestion...
 
-> Second, if the -rt kernel is doing adaptive spinning I see no
-> reason why that adaptive spinning is not kicking in here to
-> make this problem just go away.
-> 
+On Thursday 19 March 2009 06:17:03 Jeremy Fitzhardinge wrote:
+> Hi Nick,
+>
+> The comment in arch/x86/mm/gup.c:gup_get_pte() says:
+>
+> 	[...] What
+> 	 * we do have is the guarantee that a pte will only either go from not
+> 	 * present to present, or present to not present or both -- it will not
+> 	 * switch to a completely different present page without a TLB flush in
+> 	 * between; something that we are blocking by holding interrupts off.
+>
+>
+> Disabling the interrupt will prevent the tlb flush IPI from coming in
+> and flushing this cpu's tlb, but I don't see how it will prevent some
+> other cpu from actually updating the pte in the pagetable, which is what
+> we're concerned about here.
 
-If only the first of N contending threads gets to spin, 2..N would
-context-switch.
+Yes, I don't believe it is possible to have a *new* pte installed until
+the flush is done.
 
 
-> This lock is held for mere cycles, just to unlink an SKB from
-> the networking qdisc, and then it is immediately released.
+> Is this the only reason to disable
+> interrupts?  Would we need to do it for the !PAE cases?
 
-For very short hold times, and heavy contention, as well as for
-scalability, the solution may lie in tunable spinner-count and adaptive
-spinner time-out.
+It has to pin page tables, and pin pages as well.
 
-Sven
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Also, assuming that disabling the interrupt is enough to get the
+> guarantees we need here, there's a Xen problem because we don't use IPIs
+> for cross-cpu tlb flushes (well, it happens within Xen).  I'll have to
+> think a bit about how to deal with that, but I'm thinking that we could
+> add a per-cpu "tlb flushes blocked" flag, and maintain some kind of
+> per-cpu deferred tlb flush count so we can get around to doing the flush
+> eventually.
+>
+> But I want to make sure I understand the exact algorithm here.
+
+FWIW, powerpc actually can flush tlbs without IPIs, and it also has
+a gup_fast. powerpc RCU frees its page _tables_ so we can walk them,
+and then I use speculative page references in order to be able to
+take a reference on the page without having it pinned.
+
+Turning gup_get_pte into a pvop would be a bit nasty because on !PAE
+it is just a single load, and even on PAE it is pretty cheap.
 
