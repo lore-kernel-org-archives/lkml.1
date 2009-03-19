@@ -1,87 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZCSQ4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758995AbZCSQ5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758870AbZCSQ4d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbZCSQ4X
+	id S1758995AbZCSQ5P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbZCSQ45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:56:23 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:57836 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbZCSQ4X (ORCPT
+	Thu, 19 Mar 2009 12:56:57 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:46930 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754030AbZCSQ44 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:56:23 -0400
-Date: Thu, 19 Mar 2009 22:27:36 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH 3 6/6] sched: Fix sd_parent_degenerate for
-	SD_POWERSAVINGS_BALANCE.
-Message-ID: <20090319165736.GO2990@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20090318092054.24787.18730.stgit@sofia.in.ibm.com> <20090318092248.24787.38811.stgit@sofia.in.ibm.com>
+	Thu, 19 Mar 2009 12:56:56 -0400
+Date: Thu, 19 Mar 2009 12:53:34 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Mel Gorman <mel@csn.ul.ie>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 24/27] Convert gfp_zone() to use a table of precalculated
+ values
+In-Reply-To: <alpine.DEB.1.10.0903191105090.8100@qirst.com>
+Message-ID: <alpine.DEB.1.10.0903191251310.24152@qirst.com>
+References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie> <1237226020-14057-25-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903161500280.20024@qirst.com> <20090318135222.GA4629@csn.ul.ie> <alpine.DEB.1.10.0903181011210.7901@qirst.com>
+ <20090318153508.GA24462@csn.ul.ie> <alpine.DEB.1.10.0903181300540.15570@qirst.com> <20090318181717.GC24462@csn.ul.ie> <alpine.DEB.1.10.0903181507120.10154@qirst.com> <20090318194604.GD24462@csn.ul.ie> <20090319090456.fb11e23c.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.1.10.0903191105090.8100@qirst.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090318092248.24787.38811.stgit@sofia.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Gautham R Shenoy <ego@in.ibm.com> [2009-03-18 14:52:48]:
+On Thu, 19 Mar 2009, Christoph Lameter wrote:
 
-> Currently a sched_domain having a single group can be prevented from getting
-> degenerated if it contains a SD_POWERSAVINGS_BALANCE flag. But since it has
-> only one group, it won't have any scope for performing powersavings balance as
-> it does not have a sibling group to pull from.
-> 
-> Apart from not provide any powersavings, it also fails to participate
-> in normal load-balancing.
-> 
-> Fix this by allowing such a sched_domain to degenerate and pass on the
-> responsibility of performing the POWERSAVINGS_BALANCE to it's parent domain.
-> 
-> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> ---
-> 
->  kernel/sched.c |   14 ++++++++++++++
->  1 files changed, 14 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 651550c..0e7882a 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -6970,6 +6970,20 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
->  				SD_SHARE_PKG_RESOURCES);
->  		if (nr_node_ids == 1)
->  			pflags &= ~SD_SERIALIZE;
-> +
-> +		/*
-> +		 * If the only flag that is preventing us from degenerating
-> +		 * a domain with a single group is SD_POWERSAVINGS_BALANCE
-> +		 * check if it can be transferred to the new parent,
-> +		 * and degenerate this domain. With a single
-> +		 * group, it anyway can't contribute to power-aware load
-> +		 * balancing.
+> It would work if we could check for BAD_ZONE with a VM_BUG_ON or a
+> BUILD_BUG_ON. If I get some time I will look into this.
 
-                   can't contribute to any form of load balancing or
-                   power savings.  
+Here is such a patch. Boots on my machine and working with that kernel
+now. There is a slight gcc problem in that the table is likely repeated
+for each compilation unit. Anyone know how to fix that?
 
-                   (SD_POWERSAVINGS_BALANCE flags has not being
-                   listed in the flags needing more than 1 group)
 
-> +		 */
-> +		if (pflags & SD_POWERSAVINGS_BALANCE && parent->parent) {
-> +			pflags &= ~SD_POWERSAVINGS_BALANCE;
-> +			parent->parent->flags |=
-> +				sd_power_saving_flags(parent->level);
-> +		}
->  	}
->  	if (~cflags & pflags)
->  		return 0;
+Subject: Use a table lookup for gfp_zone and check for errors in flags passed to the page allocator
 
---Vaidy
+Use a table to lookup the zone to use given gfp_flags using gfp_zone().
 
+This simplifies the code in gfp_zone() and also keeps the ability of the compiler to
+use constant folding to get rid of gfp_zone processing.
+
+One problem with this patch is that we define a static const array in gfp.h. This results
+in every compilation unit to reserve its own space for the array. There must be some
+trick to get the compiler to allocate this only once. The contents of the array
+must be described in the header file otherwise the compiler will not be able to
+determine the value of a lookup in the table.
+
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+
+Index: linux-2.6/include/linux/gfp.h
+===================================================================
+--- linux-2.6.orig/include/linux/gfp.h	2009-03-19 11:43:32.000000000 -0500
++++ linux-2.6/include/linux/gfp.h	2009-03-19 11:48:38.000000000 -0500
+@@ -19,7 +19,8 @@
+ #define __GFP_DMA	((__force gfp_t)0x01u)
+ #define __GFP_HIGHMEM	((__force gfp_t)0x02u)
+ #define __GFP_DMA32	((__force gfp_t)0x04u)
+-
++#define __GFP_MOVABLE	((__force gfp_t)0x08u)  /* Page is movable */
++#define GFP_ZONEMASK	((__force gfp_t)0x0fu)
+ /*
+  * Action modifiers - doesn't change the zoning
+  *
+@@ -49,7 +50,6 @@
+ #define __GFP_HARDWALL   ((__force gfp_t)0x20000u) /* Enforce hardwall cpuset memory allocs */
+ #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
+ #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
+-#define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
+
+ #define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
+ #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
+@@ -111,24 +111,56 @@
+ 		((gfp_flags & __GFP_RECLAIMABLE) != 0);
+ }
+
+-static inline enum zone_type gfp_zone(gfp_t flags)
+-{
++#ifdef CONFIG_ZONE_HIGHMEM
++#define OPT_ZONE_HIGHMEM ZONE_HIGHMEM
++#else
++#define OPT_ZONE_HIGHMEM ZONE_NORMAL
++#endif
++
+ #ifdef CONFIG_ZONE_DMA
+-	if (flags & __GFP_DMA)
+-		return ZONE_DMA;
++#define OPT_ZONE_DMA ZONE_DMA
++#else
++#define OPT_ZONE_DMA ZONE_NORMAL
+ #endif
++
+ #ifdef CONFIG_ZONE_DMA32
+-	if (flags & __GFP_DMA32)
+-		return ZONE_DMA32;
++#define OPT_ZONE_DMA32 ZONE_DMA32
++#else
++#define OPT_ZONE_DMA32 OPT_ZONE_DMA
+ #endif
+-	if ((flags & (__GFP_HIGHMEM | __GFP_MOVABLE)) ==
+-			(__GFP_HIGHMEM | __GFP_MOVABLE))
+-		return ZONE_MOVABLE;
+-#ifdef CONFIG_HIGHMEM
+-	if (flags & __GFP_HIGHMEM)
+-		return ZONE_HIGHMEM;
++
++#define BAD_ZONE MAX_NR_ZONES
++
++static const enum zone_type gfp_zone_table[GFP_ZONEMASK + 1] = {
++	ZONE_NORMAL,		/* 00 No flags set */
++	OPT_ZONE_DMA,		/* 01 GFP_DMA */
++	OPT_ZONE_HIGHMEM,	/* 02 GFP_HIGHMEM */
++	BAD_ZONE,		/* 03 GFP_HIGHMEM GFP_DMA */
++	OPT_ZONE_DMA32,		/* 04 GFP_DMA32 */
++	BAD_ZONE,		/* 05 GFP_DMA32 GFP_DMA */
++	BAD_ZONE,		/* 06 GFP_DMA32 GFP_HIGHMEM */
++	BAD_ZONE,		/* 07 GFP_DMA32 GFP_HIGHMEM GFP_DMA */
++	ZONE_NORMAL,		/* 08 ZONE_MOVABLE */
++	OPT_ZONE_DMA,		/* 09 MOVABLE + DMA */
++	ZONE_MOVABLE,		/* 0A MOVABLE + HIGHMEM */
++	BAD_ZONE,		/* 0B MOVABLE + HIGHMEM + DMA */
++	OPT_ZONE_DMA32,		/* 0C MOVABLE + DMA32 */
++	BAD_ZONE,		/* 0D MOVABLE + DMA32 + DMA */
++	BAD_ZONE,		/* 0E MOVABLE + DMA32 + HIGHMEM */
++	BAD_ZONE		/* 0F MOVABLE + DMA32 + HIGHMEM + DMA */
++};
++
++static inline enum zone_type gfp_zone(gfp_t flags)
++{
++	enum zone_type zone = gfp_zone_table[flags & 0xf];
++
++	if (__builtin_constant_p(zone))
++		BUILD_BUG_ON(zone == BAD_ZONE);
++#ifdef CONFIG_DEBUG_VM
++	else
++		BUG_ON(zone == BAD_ZONE);
+ #endif
+-	return ZONE_NORMAL;
++	return zone;
+ }
+
+ /*
+Index: linux-2.6/include/linux/mmzone.h
+===================================================================
+--- linux-2.6.orig/include/linux/mmzone.h	2009-03-19 11:47:00.000000000 -0500
++++ linux-2.6/include/linux/mmzone.h	2009-03-19 11:47:54.000000000 -0500
+@@ -240,7 +240,8 @@
+ 	ZONE_HIGHMEM,
+ #endif
+ 	ZONE_MOVABLE,
+-	__MAX_NR_ZONES
++	__MAX_NR_ZONES,
++	BAD_ZONE
+ };
+
+ #ifndef __GENERATING_BOUNDS_H
