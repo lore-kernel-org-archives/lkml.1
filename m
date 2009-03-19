@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760784AbZCSWO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbZCSWQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760784AbZCSWO4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 18:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbZCSWOp
+	id S1761284AbZCSWQo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 18:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbZCSWQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 18:14:45 -0400
-Received: from mail00d.mail.t-online.hu ([84.2.42.5]:63461 "EHLO
-	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbZCSWOo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 18:14:44 -0400
-Message-ID: <49C2C3C8.3000300@freemail.hu>
-Date: Thu, 19 Mar 2009 23:14:32 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Thu, 19 Mar 2009 18:16:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36525 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756174AbZCSWQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 18:16:35 -0400
+Date: Thu, 19 Mar 2009 23:16:29 +0100
+From: Jan Kara <jack@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ying Han <yinghan@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Message-ID: <20090319221629.GA8687@duck.suse.cz>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0903190902000.17240@localhost.localdomain> <200903200334.55710.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0903190948510.17240@localhost.localdomain> <alpine.LFD.2.00.0903191317220.3030@localhost.localdomain>
 MIME-Version: 1.0
-To: Jean-Francois Moine <moinejf@free.fr>
-CC: Trent Piepho <xyzzy@speakeasy.org>,
-       David Ellingsworth <david@identd.dyndns.org>,
-       linux-media@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gspca: add missing .type field check in VIDIOC_G_PARM
-References: <49C133F6.3020202@freemail.hu> <30353c3d0903181445i409604e8r33678f7ce09d0288@mail.gmail.com> <49C1DD0C.4050500@freemail.hu> <Pine.LNX.4.58.0903190032530.28292@shell2.speakeasy.net>
-In-Reply-To: <Pine.LNX.4.58.0903190032530.28292@shell2.speakeasy.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32720; Body=5 Fuz1=5
-	Fuz2=5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0903191317220.3030@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Thu 19-03-09 13:21:28, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 19 Mar 2009, Linus Torvalds wrote:
+> > 
+> > Ahh, so you re-created it? On ext2 only, or is it visible on ext3 as well? 
+> > I've not even tested - I assumed that I would have to boot into less 
+> > memory and downgrade my filesystem to ext2, which made me hope somebody 
+> > else would pick it up first ;)
+> 
+> Oh, btw, can people who see this (Ying Han, Nick and apparently Jan) 
+> detail their configurations, please? In particular
+  I'm able to see it only under UML. I've tried to reproduce under normal
+machine but without luck. My system is single CPU Athlon64.
 
-The gspca webcam driver does not check the .type field of struct v4l2_streamparm.
-This field is an input parameter for the driver according to V4L2 API specification,
-revision 0.24 [1]. Add the missing check.
+>  - SMP? (CONFIG_SMP and how many cores do you have if so?)
+> 
+>  - PREEMPT (NONE/VOLUNTARY or full preempt?)
+  Above two don't exist in UML, but I assume UML behaves basically like full
+preempt SMP...
 
-The missing check was recognised by v4l-test 0.10 [2] together with gspca_sunplus driver
-and with "Trust 610 LCD POWERC@M ZOOM" webcam. This patch was verified also with
-v4l-test 0.10.
+>  - RCU (CLASSIC/TREE/PREEMPT?)
+  RCU is CLASSIC.
 
-The memset() is not necessary as V4L2 framework already have done this task when
-vidioc_g_parm() is called.
-
-References:
-[1] V4L2 API specification, revision 0.24
-    http://v4l2spec.bytesex.org/spec/r11680.htm
-
-[2] v4l-test: Test environment for Video For Linux Two API
-    http://v4l-test.sourceforge.net/
-
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c.orig	2009-03-14 12:29:38.000000000 +0100
-+++ linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c	2009-03-19 20:38:22.000000000 +0100
-@@ -1320,8 +1320,9 @@ static int vidioc_g_parm(struct file *fi
- {
- 	struct gspca_dev *gspca_dev = priv;
-
--	memset(parm, 0, sizeof *parm);
--	parm->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-+	if (parm->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
-+		return -EINVAL;
-+
- 	parm->parm.capture.readbuffers = gspca_dev->nbufread;
-
- 	if (gspca_dev->sd_desc->get_streamparm) {
+										Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
