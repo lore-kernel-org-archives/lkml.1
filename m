@@ -1,81 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752373AbZCSPsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751821AbZCSPtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752373AbZCSPsn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 11:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbZCSPse
+	id S1751821AbZCSPtk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 11:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZCSPtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 11:48:34 -0400
-Received: from smtp120.mail.mud.yahoo.com ([209.191.84.77]:28838 "HELO
-	smtp120.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751045AbZCSPsd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 11:48:33 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=xVUG/bBG6EqD7zN71zw9awPHcAGHp/FYfQcXI3B0F3faSVM4G3OguYZINq7kvZ/xgevTDmJzcavYt+NVrcefN1gEa5KP7gCieaqaxZH2onf84Lvve4vjhXVk0XgBvhTiZmlWDXMe1R1O8nauxiEY7ARej8zKygg188RXAIcHFbw=  ;
-X-YMail-OSG: dRrHSWIVM1ky98pgnbnbvMTnb0hwl8_ox3XAW8l5rw9W8_kIZAzsDE15GK6fFfTtZ0VnLrkyitYloJrvU_gritSbS9JhP0g1v3DAjRewbac6RSuPjuqPXrEx.jYnVKeh0vVvoUXIhSvcGYYv63MxPfMsd618m1Il7FgbwfxqIVkeLMn7zdM8vos6V312thCk_nr21E6KS3yGDp0gQg9AWz49xyG9J5SuobfhXEhxo4FY
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Ying Han <yinghan@google.com>, Jan Kara <jack@suse.cz>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Date: Fri, 20 Mar 2009 02:48:21 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-mm" <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <alpine.LFD.2.00.0903181634500.17240@localhost.localdomain> <604427e00903181654y308d57d8w2cb32eab831cf45a@mail.gmail.com>
-In-Reply-To: <604427e00903181654y308d57d8w2cb32eab831cf45a@mail.gmail.com>
+	Thu, 19 Mar 2009 11:49:31 -0400
+Received: from www.tglx.de ([62.245.132.106]:33618 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750900AbZCSPta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 11:49:30 -0400
+Date: Thu, 19 Mar 2009 16:49:21 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michal Simek <monstr@monstr.eu>
+cc: linux-kernel@vger.kernel.org, john.williams@petalogix.com
+Subject: Re: [PATCH 08/57] microblaze_v7: Interrupt handling, timer support,
+ selfmod code
+In-Reply-To: <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>
+Message-ID: <alpine.LFD.2.00.0903191639530.29264@localhost.localdomain>
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu> <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu> <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>
+ <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu> <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu> <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>
+ <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu> <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903200248.22623.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 March 2009 10:54:33 Ying Han wrote:
-> On Wed, Mar 18, 2009 at 4:36 PM, Linus Torvalds
->
-> <torvalds@linux-foundation.org> wrote:
-> > On Wed, 18 Mar 2009, Ying Han wrote:
-> >> > Can you say what filesystem, and what mount-flags you use? Iirc, last
-> >> > time we had MAP_SHARED lost writes it was at least partly triggered by
-> >> > the filesystem doing its own flushing independently of the VM (ie ext3
-> >> > with "data=journal", I think), so that kind of thing does tend to
-> >> > matter.
-> >>
-> >> /etc/fstab
-> >> "/dev/hda1 / ext2 defaults 1 0"
-> >
-> > Sadly, /etc/fstab is not necessarily accurate for the root filesystem. At
-> > least Fedora will ignore the flags in it.
-> >
-> > What does /proc/mounts say? That should be a more reliable indication of
-> > what the kernel actually does.
->
-> "/dev/root / ext2 rw,errors=continue 0 0"
+Michal,
 
-No luck with finding the problem yet.
+On Wed, 18 Mar 2009, monstr@monstr.eu wrote:
 
-But I think we do have a race in __set_page_dirty_buffers():
+> +static u32 concurrent_irq;
+> +
+> +void do_IRQ(struct pt_regs *regs)
+> +{
+> +	unsigned int irq;
+> +	struct pt_regs *old_regs = set_irq_regs(regs);
+> +
+> +	irq_enter();
+> +	irq = get_irq(regs);
+> +next_irq:
+> +	BUG_ON(irq == -1U);
+> +	__do_IRQ(irq);
 
-The page may not have buffers between the mapping->private_lock
-critical section and the __set_page_dirty call there. So between
-them, another thread might do a create_empty_buffers which can
-see !PageDirty and thus it will create clean buffers. The page
-will get dirtied by the original thread, but if the buffers are
-clean it can be cleaned without writing out buffers.
+You use irq chips now and you set the type handlers (edge/level), but
+you still call __do_IRQ() the all in one fits nothing handler, which
+is going to be deprecated and removed.
 
-Holding mapping->private_lock over the __set_page_dirty should
-fix it, although I guess you'd want to release it before calling
-__mark_inode_dirty so as not to put inode_lock under there. I
-have a patch for this if it sounds reasonable.
+Please call 
+       generic_handle_irq(irq);
+
+which will call the correct flow handlers.
+
+> +static int microblaze_timer_set_next_event(unsigned long delta,
+> +					 struct clock_event_device *dev)
+> +{
+> +	printk(KERN_INFO "next event, delta %x, %d\n", (u32)delta, (u32)delta);
+
+  This should be pr_debug() or do you want to flood the syslog in
+  every timer interrupt ?
+
+> +	microblaze_timer_start(delta);
+> +	return 0;
+> +}
+> +
+> +static void microblaze_timer_set_mode(enum clock_event_mode mode,
+> +				    struct clock_event_device *evt)
+> +{
+> +	microblaze_timer_stop();
+> +
+> +	switch (mode) {
+> +	case CLOCK_EVT_MODE_PERIODIC:
+> +		printk(KERN_INFO "%s: periodic\n", __func__);
+
+  pr_debug as well. That's not very informative
+
+> +static irqreturn_t timer_interrupt(int irq, void *dev_id)
+> +{
+> +	struct clock_event_device *evt = &clockevent_microblaze_timer;
+> +#ifdef CONFIG_HEART_BEAT
+> +	heartbeat();
+> +#endif
+> +	timer_ack();
+> +
+> +	mb_tick_cnt += cpuinfo.freq_div_hz;
+
+Hmm. How does that work with oneshot timers ?
+
+> +	evt->event_handler(evt);
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static struct irqaction timer_irqaction = {
+> +	.handler = timer_interrupt,
+> +	.flags = IRQF_DISABLED,
+
+    IRQF_DISABLED  | IRQF_TIMER,
+
+
+> +	xtime.tv_sec = mktime(2007, 1, 1, 0, 0, 0);
+> +	xtime.tv_nsec = 0;
+> +	set_normalized_timespec(&wall_to_monotonic,
+> +				-xtime.tv_sec, -xtime.tv_nsec);
+
+  Yuck. What's that ? wall_to_monotonic is maintained by the generic
+  code.
+
+Thanks,
+
+	tglx
 
 
