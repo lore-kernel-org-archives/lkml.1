@@ -1,15 +1,15 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757961AbZCSPST (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Thu, 19 Mar 2009 11:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756855AbZCSPR5
+	id S1758233AbZCSPSe (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 19 Mar 2009 11:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757476AbZCSPR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 11:17:57 -0400
-Received: from hrndva-commlb.mail.rr.com ([71.74.57.8]:58647 "EHLO
+	Thu, 19 Mar 2009 11:17:59 -0400
+Received: from hrndva-commlb.mail.rr.com ([71.74.57.9]:58668 "EHLO
 	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753085AbZCSPR4 (ORCPT
+	with ESMTP id S1756864AbZCSPR6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 11:17:56 -0400
-Message-Id: <7h9gbp$cgrpf3@rrcs-agw-01b.hrndva.rr.com>
+	Thu, 19 Mar 2009 11:17:58 -0400
+Message-Id: <7h9gbp$cgrpff@rrcs-agw-01b.hrndva.rr.com>
 X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
 From: Dell Online Promotion <wpdesign@la.twcbc.com>
 Reply-To: dellclaimoffice@btinternet.com
