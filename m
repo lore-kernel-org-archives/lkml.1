@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbZCSNgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbZCSNiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757138AbZCSNgZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 09:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbZCSNgM
+	id S1756351AbZCSNiS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 09:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbZCSNiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 09:36:12 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:45998 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751671AbZCSNgL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 09:36:11 -0400
-Subject: Re: High contention on the sk_buff_head.lock
-From: "Peter W. Morreale" <pmorreale@novell.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Vernon Mauery <vernux@us.ibm.com>, netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>
-In-Reply-To: <1237467559.6926.31.camel@hermosa>
-References: <49C12E64.1000301@us.ibm.com> <87prge1rhu.fsf@basil.nowhere.org>
-	 <1237467559.6926.31.camel@hermosa>
-Content-Type: text/plain
-Organization: Linux Solutions Group
-Date: Thu, 19 Mar 2009 07:36:01 -0600
-Message-Id: <1237469761.6926.47.camel@hermosa>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Mar 2009 09:38:06 -0400
+Received: from lobo.ruivo.org ([66.92.68.119]:42430 "EHLO lobo.ruivo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754152AbZCSNiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 09:38:05 -0400
+Date: Thu, 19 Mar 2009 09:37:53 -0400
+From: Aristeu Rozanski <aris@ruivo.org>
+To: Pawe? Sikora <pluto@agmk.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.9] NMI watchdog detected lockup.
+Message-ID: <20090319133753.GB5507@cathedrallabs.org>
+References: <Ok0OsSvf.1237460161.3536740.pluto@agmk.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Ok0OsSvf.1237460161.3536740.pluto@agmk.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-19 at 06:59 -0600, Peter W. Morreale wrote:
-> On Wed, 2009-03-18 at 21:54 +0100, Andi Kleen wrote:
-> > Vernon Mauery <vernux@us.ibm.com> writes:
-> > >
-> 
-> > 
-> > But then again I'm not sure it's  worth it if the problem only
-> > happens in out of tree RT.
-> > 
-> 
-> Heh.  That darn bastard child again, eh?  :-)
-> 
-> 
-> Recall that adaptive spin,developed in RT, is now in mainline. 
-> 
+Hi Pawel,
+> we're currently testing trial version of Jungo pci driver for
+> linux/windows
+> (http://www.jungo.com/st/windriver_usb_pci_driver_development_software.html)
+> and get 'NMI Watchdog detected LOCKUP' on athlon64/opteron smp systems
+> with rhel 2.6.9 kernel. from the other side, the lockup doesn't occur
+> on intel x86_64 smp systems. bad news is that Jungo developers can't
+> reproduce
+> the lockup while we can trig it during simple pci bus scanning/opening
+> device.
+>
+> only diagnostic we have is console log grabbed over rs232 link.
+first: 2.6.9 is an old kernel, so I suppose you're using a vendor
+kernel.
+second: I can't see any obvious link to download the source code for
+that driver. we can't help you with binary modules, contact both the kernel
+vendor and the driver vendor.
 
-Err..  correction... *about* to be in mainline.   Only point I'm making
-is that RT does implicitly, if not explicitly, contributes to mainline.
-Its not a one-way street. 
+> NMI Watchdog detected LOCKUP, CPU=0, registers:
+something (probably the Jungo driver) is using too much time and the NMI
+watchdog is not being reset often enough. try booting with nmi_watchdog=0
+kernel parameter and check if the driver works. if the machine hangs, it means
+that the NMI watchdog was right and the CPU was really stuck because of a bug.
+contact your vendors and inform the results.
 
-Best,
--PWM
-
-> Best,
-> -PWM
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Aristeu
 
