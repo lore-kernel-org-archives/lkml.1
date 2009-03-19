@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757906AbZCSJk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbZCSJlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757906AbZCSJk5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 05:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbZCSJko
+	id S1758740AbZCSJlg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 05:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbZCSJl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 05:40:44 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:44835 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752493AbZCSJkn (ORCPT
+	Thu, 19 Mar 2009 05:41:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49932 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754446AbZCSJlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 05:40:43 -0400
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com> (sfid-20090319_054932_507952_529F646E)
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-	 <b6a2187b0903141958u9dae0fdk1f44b387108b99e4@mail.gmail.com>
-	 <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com>
-	 <1237140665.24621.2.camel@johannes.local>
-	 <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
-	 <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu>
-	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
-	 <1237317742.31814.28.camel@johannes.local>
-	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
-	 <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com>
-	 (sfid-20090319_054932_507952_529F646E)
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-vUXLo/iHZKDZb9ENFFhy"
-Date: Thu, 19 Mar 2009 10:38:54 +0100
-Message-Id: <1237455534.5100.56.camel@johannes.local>
+	Thu, 19 Mar 2009 05:41:25 -0400
+Date: Thu, 19 Mar 2009 02:34:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alex Chiang <achiang@hp.com>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Trent Piepho <xyzzy@speakeasy.org>
+Subject: Re: [PATCH v4 07/12] PCI: Introduce /sys/bus/pci/rescan
+Message-Id: <20090319023453.7467644a.akpm@linux-foundation.org>
+In-Reply-To: <20090318224001.887.63554.stgit@bob.kio>
+References: <20090318222426.887.1008.stgit@bob.kio>
+	<20090318224001.887.63554.stgit@bob.kio>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 18 Mar 2009 16:40:01 -0600 Alex Chiang <achiang@hp.com> wrote:
 
---=-vUXLo/iHZKDZb9ENFFhy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> +#ifdef CONFIG_HOTPLUG
+> +static DEFINE_MUTEX(pci_remove_rescan_mutex);
+> +static ssize_t bus_rescan_store(struct bus_type *bus, const char *buf,
+> +				size_t count)
+> +{
+> +	unsigned long val;
+> +	struct pci_bus *b = NULL;
+> +
+> +	if (strict_strtoul(buf, 0, &val) < 0)
+> +		return -EINVAL;
+> +
+> +	if (!capable(CAP_SYS_ADMIN))
+> +		return -EPERM;
+> +
+> +	if (val) {
+> +		mutex_lock(&pci_remove_rescan_mutex);
+> +		while ((b = pci_find_next_bus(b)) != NULL)
+> +			pci_rescan_bus(b);
+> +		mutex_unlock(&pci_remove_rescan_mutex);
+> +	}
+> +	return count;
+> +}
+> +
+> +struct bus_attribute pci_bus_attrs[] = {
+> +	__ATTR(rescan, S_IWUSR, NULL, bus_rescan_store),
+> +	__ATTR_NULL
+> +};
+> +#endif
 
-On Thu, 2009-03-19 at 12:49 +0800, Jeff Chua wrote:
-
-> Ignore the above loop thing. The cause seems to be this one instead.
->=20
->=20
-> # this needs patch to work ...
-> iwconfig wlan0 mode Managed
-> ifconfig wlan0 up
-> iwconfig wlan0 essid xxx
-> iwconfig wlan0 key restricted xxx
-> iwconfig wlan0 ap auto channel auto
-
-If you swap the key and essid lines, it will probably always work. But
-I've yet to analyse your data to see why it doesn't in the other case.
-
-johannes
-
---=-vUXLo/iHZKDZb9ENFFhy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJwhKrAAoJEKVg1VMiehFYNe8P+QFY0/JCRLPUMmHya4YejR7r
-1dTiQ1eOKajY2rcyrwcdP8FrXdBCOMBICRFNHb6Q3VFf1VIsqtUwrmeUs183KIRE
-Eip325lKXBroPED4aqELdbHvjzD3gvsXLeHN4I5MzkZz7FVZjp5HD0XVZWHMkagv
-RH+n/sf6y7JyrZHua8PjOXIoeFGdZKju8uwT093LvsVTo5GPN74hEzaqU7NVbtGY
-CqWlngSpt1syB1+dE7ROMolHESjuNQ3YCEMMLHhiqXDruYUhc0xD3/qCt4tFbZpY
-p8Mkx7bewgUzzFDoR7Xoa+hXYjTwwwIxNbZShyIQVvdtQoSjiZXrdrzGVRC2XW3d
-rSsy4/yAJp3VJdPI1Y4fxJ2WoKp13NNRomccaFU2NqzAZfByccwPs6WAQeFLSVph
-SFBdswXNECd6McxaLoIGsjD/xwQExa7aDu53XfP8G0jIKS/o8VfytTW1Rll0knf7
-BPzV/CzNfDtw3hmtTm5iAtM6PNG/nyB9MdvZ6xQyvPsN0kUt8aBVuQSfv7OY4nzr
-0ayGNmE3eDnKzcylP2mqakAPpkb+k6NPnBsZ9YMtjcBAvKIW3nlHZNj9vxCLr6s5
-j1tvcIHQbZFgS4VZiMc1zUACs9dVZV1EFN7PIX11agQEkTcTLOjJf3ii5Q7753EG
-taJIxppYfhR4cj7KXOW0
-=2g5X
------END PGP SIGNATURE-----
-
---=-vUXLo/iHZKDZb9ENFFhy--
-
+Why CONFIG_HOTPLUG rather than CONFIG_HOTPLUG_PCI (or similar)?
