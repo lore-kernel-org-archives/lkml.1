@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760448AbZCSSKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760195AbZCSSLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760448AbZCSSKe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 14:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbZCSSH1
+	id S1760195AbZCSSLh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 14:11:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760240AbZCSSJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 14:07:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46027 "EHLO mx2.redhat.com"
+	Thu, 19 Mar 2009 14:09:07 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:47665 "EHLO slimlogic.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758322AbZCSSH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 14:07:26 -0400
-From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH 11/13] fsnotify: fsnotify marks on inodes pin them in core
-To: linux-kernel@vger.kernel.org
-Cc: viro@zeniv.linux.org.uk, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       sfr@canb.auug.org.au, john@johnmccutchan.com, rlove@rlove.org,
-       akpm@linux-foundation.org
-Date: Thu, 19 Mar 2009 14:05:53 -0400
-Message-ID: <20090319180553.17449.71990.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20090319180456.17449.76663.stgit@paris.rdu.redhat.com>
-References: <20090319180456.17449.76663.stgit@paris.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S1760232AbZCSSJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 14:09:05 -0400
+Subject: Re: [PATCH 1/2] regulator: Don't increment use_count for boot_on
+ regulators
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1237232194-24113-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1237232194-24113-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain
+Date: Thu, 19 Mar 2009 18:09:00 +0000
+Message-Id: <1237486140.6781.340.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch pins any inodes with an fsnotify mark in core.  The idea is that
-as soon as the mark is removed from the inode->fsnotify_mark_entries list
-the inode will be iput.  In reality is doesn't quite work exactly this way.
-The igrab will happen when the mark is added to an inode, but the iput will
-happen when the inode pointer is NULL'd inside the mark.
+On Mon, 2009-03-16 at 19:36 +0000, Mark Brown wrote:
+> Don't set use_count for regulators that are enabled at boot since this
+> stops the supply being disabled by well-behaved consumers which do
+> balanced enables and disabled. Any consumers which don't do disables
+> which are not matched by enables are unable to share regulators - shared
+> regulators are the common case so the API should facilitate them.
+> 
+> Consumers that want to disable regulators that are enabled when they
+> start have two options:
+> 
+>  - Do a regulator_enable() prior to the disable to bring the use count
+>    in sync with the hardware state; this will ensure that if the
+>    regulator was enabled by another driver then this consumer will play
+>    nicely with it.
+>  - Use regulator_force_disable(); this explicitly bypasses any checks
+>    done by the core and documents the inability of the driver to share
+>    the supply.
+> 
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
+>  drivers/regulator/core.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
 
-It's possible that 2 racing things will try to remove the mark from
-different directions.  One may try to remove the mark because of an
-explicit request and one might try to remove it because the inode was
-deleted.  It's possible that the removal because of inode deletion will
-remove the mark from the inode's list, but the removal by explicit request
-will actually set entry->inode == NULL; and call the iput.  This is safe.
+Applied.
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
+Thanks
 
- fs/notify/inode_mark.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
-
-diff --git a/fs/notify/inode_mark.c b/fs/notify/inode_mark.c
-index 144b09a..362b04c 100644
---- a/fs/notify/inode_mark.c
-+++ b/fs/notify/inode_mark.c
-@@ -159,6 +159,8 @@ void fsnotify_destroy_mark_by_entry(struct fsnotify_mark_entry *entry)
- 	group->ops->freeing_mark(entry, group);
- 
- 	fsnotify_update_dentry_child_flags(inode);
-+
-+	iput(inode);
- }
- 
- void fsnotify_clear_marks_by_group(struct fsnotify_group *group)
-@@ -228,11 +230,16 @@ void fsnotify_init_mark(struct fsnotify_mark_entry *entry, void (*free_mark)(str
- 	entry->free_mark = free_mark;
- }
- 
--int fsnotify_add_mark(struct fsnotify_mark_entry *entry, struct fsnotify_group *group, struct inode *inode)
-+int fsnotify_add_mark(struct fsnotify_mark_entry *entry, struct fsnotify_group *group, struct inode *in_inode)
- {
- 	struct fsnotify_mark_entry *lentry;
-+	struct inode *inode;
- 	int ret = 0;
- 
-+	inode = igrab(in_inode);
-+	if (unlikely(!inode))
-+		return -EINVAL;
-+
- 	/*
- 	 * LOCKING ORDER!!!!
- 	 * entry->lock
+Liam
 
