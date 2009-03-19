@@ -1,128 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbZCSHul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbZCSIAC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbZCSHul (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 03:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbZCSHuc
+	id S1756918AbZCSIAC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 04:00:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZCSH7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 03:50:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48160 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752762AbZCSHub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 03:50:31 -0400
-Date: Thu, 19 Mar 2009 08:49:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Luis Henriques <henrix@sapo.pt>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 -tip] sched: Clean unused fields from struct rq
-Message-ID: <20090319074949.GB17144@elte.hu>
-References: <20090318225137.GA3766@hades.domain.com> <20090318225428.GA3769@hades.domain.com>
+	Thu, 19 Mar 2009 03:59:51 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:61407 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751165AbZCSH7t convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 03:59:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Ks1ZFgHWsalEvdv9ZtobXtfxiD8LrygvefeTsPsVPSHiiNhV85kUuJj11RXcQviCSi
+         a+T6laCQnPbJiShxmtt1qShMsCkRGfLW4zhSHg14txmosmi/z0w2QaD7p5Ef9IsebREh
+         IqIHn8LtEaM7K4eavn5UZfEd2/DNohfzo7VwA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090318225428.GA3769@hades.domain.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200903181312.02047.rob@landley.net>
+References: <200903120437.03837.rob@landley.net>
+	 <200903172304.00157.rob@landley.net> <49C087F3.3080507@snapgear.com>
+	 <200903181312.02047.rob@landley.net>
+Date: Thu, 19 Mar 2009 08:59:45 +0100
+X-Google-Sender-Auth: 8aff2f84d712dbe7
+Message-ID: <10f740e80903190059qae0629bs8658cad8f3ad8761@mail.gmail.com>
+Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Rob Landley <rob@landley.net>
+Cc: Greg Ungerer <gerg@snapgear.com>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       linux-next@vger.kernel.org, linux-m68k@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 18, 2009 at 19:12, Rob Landley <rob@landley.net> wrote:
+> On Wednesday 18 March 2009 00:34:43 Greg Ungerer wrote:
+>> Rob Landley wrote:
+>> > On Monday 16 March 2009 18:10:45 Greg Ungerer wrote:
+>> >>>>    git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git
+>> >>>> fix-includes
+> ...
+>> > What _should_ I have done?
+>>
+>> The git clone you have done will just get the master branch,
+>> and put it in a directory named fix-includes.
+>>
+>> Which is ok, but you still won't have the "fix-includes" branch.
+>> Do this after the clone:
+>>
+>>    git pull
+>> git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git
+>> fix-includes
+>
+> Ah, that did something interesting...  And the resulting headers built in
+> uClibc.  (Works for me!)
+>
+> confirmed-uClibc-builds-with-it-by: Rob Landley <rob@landley.net>
 
-* Luis Henriques <henrix@sapo.pt> wrote:
+Does it boot on ARAnyM? ;-)
 
-> On Wed, Mar 18, 2009 at 10:51:37PM +0000, Luis Henriques wrote:
-> > Since they are used on in statistics and are always set to zero, the following
-> > fields from struct rq have been removed: yld_exp_empty, yld_act_empty and
-> > yld_both_empty.
-> > 
-> > Both Sched Debug and SCHEDSTAT_VERSION versions has also been incremented since
-> > ABIs have been changed.
-> > 
-> > Signed-off-by: Luis Henriques <henrix@sapo.pt>
-> > ---
-> >  kernel/sched.c       |    3 ---
-> >  kernel/sched_debug.c |    5 +----
-> >  kernel/sched_stats.h |    7 +++----
-> >  3 files changed, 4 insertions(+), 11 deletions(-)
-> > 
-> > diff --git a/kernel/sched.c b/kernel/sched.c
-> > index 8a579e2..4469034 100644
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -646,9 +646,6 @@ struct rq {
-> >  	/* could above be rq->cfs_rq.exec_clock + rq->rt_rq.rt_runtime ? */
-> >  
-> >  	/* sys_sched_yield() stats */
-> > -	unsigned int yld_exp_empty;
-> > -	unsigned int yld_act_empty;
-> > -	unsigned int yld_both_empty;
-> >  	unsigned int yld_count;
-> >  
-> >  	/* schedule() stats */
-> > diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
-> > index 4daebff..467ca72 100644
-> > --- a/kernel/sched_debug.c
-> > +++ b/kernel/sched_debug.c
-> > @@ -286,9 +286,6 @@ static void print_cpu(struct seq_file *m, int cpu)
-> >  #ifdef CONFIG_SCHEDSTATS
-> >  #define P(n) SEQ_printf(m, "  .%-30s: %d\n", #n, rq->n);
-> >  
-> > -	P(yld_exp_empty);
-> > -	P(yld_act_empty);
-> > -	P(yld_both_empty);
-> >  	P(yld_count);
-> >  
-> >  	P(sched_switch);
-> > @@ -313,7 +310,7 @@ static int sched_debug_show(struct seq_file *m, void *v)
-> >  	u64 now = ktime_to_ns(ktime_get());
-> >  	int cpu;
-> >  
-> > -	SEQ_printf(m, "Sched Debug Version: v0.08, %s %.*s\n",
-> > +	SEQ_printf(m, "Sched Debug Version: v0.09, %s %.*s\n",
-> >  		init_utsname()->release,
-> >  		(int)strcspn(init_utsname()->version, " "),
-> >  		init_utsname()->version);
-> > diff --git a/kernel/sched_stats.h b/kernel/sched_stats.h
-> > index a8f93dd..32d2bd4 100644
-> > --- a/kernel/sched_stats.h
-> > +++ b/kernel/sched_stats.h
-> > @@ -4,7 +4,7 @@
-> >   * bump this up when changing the output format or the meaning of an existing
-> >   * format, so that tools can adapt (or abort)
-> >   */
-> > -#define SCHEDSTAT_VERSION 14
-> > +#define SCHEDSTAT_VERSION 15
-> >  
-> >  static int show_schedstat(struct seq_file *seq, void *v)
-> >  {
-> > @@ -26,9 +26,8 @@ static int show_schedstat(struct seq_file *seq, void *v)
-> >  
-> >  		/* runqueue-specific stats */
-> >  		seq_printf(seq,
-> > -		    "cpu%d %u %u %u %u %u %u %u %u %u %llu %llu %lu",
-> > -		    cpu, rq->yld_both_empty,
-> > -		    rq->yld_act_empty, rq->yld_exp_empty, rq->yld_count,
-> > +		    "cpu%d %u %u %u %u %u %u %llu %llu %lu",
-> > +		    cpu, rq->yld_count,
-> >  		    rq->sched_switch, rq->sched_count, rq->sched_goidle,
-> >  		    rq->ttwu_count, rq->ttwu_local,
-> >  		    rq->rq_cpu_time,
-> > -- 
-> > 1.6.2
-> 
-> Btw: I tried Greg schedtop with this patch and the app behaviour is as expected:
-> 
->   $ ./schedtop 
->   Exception: unsupported version
+Gr{oetje,eeting}s,
 
-Mind updating the app too and post it here please? It's the only app 
-that relies on this file AFAIK.
+						Geert
 
-	Ingo
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
