@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbZCSQ21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbZCSQa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758333AbZCSQ21 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758435AbZCSQ2B
+	id S1758304AbZCSQa3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZCSQaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:28:01 -0400
-Received: from kroah.org ([198.145.64.141]:38994 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754972AbZCSQ2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:28:00 -0400
-Date: Thu, 19 Mar 2009 09:27:19 -0700
-From: Greg KH <greg@kroah.com>
-To: Sindhudweep Sarkar <sindhudweep.sarkar@gmail.com>
-Cc: David Airlie <airlied@linux.ie>, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Thomas Hellstrom <thellstrom@vmware.com>,
-       Richard Purdie <rpurdie@linux.intel.com>
-Subject: Re: [patch 0/5] Intel Poulsbo/Morrestown DRM driver and DRM core
-	changes
-Message-ID: <20090319162719.GB32078@kroah.com>
-References: <20090319040809.GA29249@kroah.com> <6c046ab30903190903r298a0334n939e64403b8aeda6@mail.gmail.com>
+	Thu, 19 Mar 2009 12:30:13 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56870 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753043AbZCSQaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 12:30:11 -0400
+Date: Thu, 19 Mar 2009 17:29:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] cpumask: remove cpumask allocation from idle_balance
+Message-ID: <20090319162942.GA21672@elte.hu>
+References: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com> <alpine.DEB.2.00.0903182225450.31583@gandalf.stny.rr.com> <200903191522.21045.rusty@rustcorp.com.au> <200903192310.52314.rusty@rustcorp.com.au> <20090319132426.GA27017@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6c046ab30903190903r298a0334n939e64403b8aeda6@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090319132426.GA27017@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 12:03:09PM -0400, Sindhudweep Sarkar wrote:
-> This might be the opinion of a completely non educated end user but it
-> seems that an intel specific drm and other bits (xorg, mesa) would be
-> somewhat of a maintenance waste.
 
-What do you mean by this?
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> TI-OMAP 3xxx and a couple of other arm processors use similar SGX-5xx
-> graphics cores. IIRC arm is often little endian so perhaps a unified
-> driver would be easier in the long term.
+> > This time for sure,
+> 
+> not so sure:
+> 
+> [    4.303068] =============================================================================
+> [    4.303332] BUG idr_layer_cache: Redzone overwritten
+> [    4.303332] -----------------------------------------------------------------------------
+> [    4.303332] 
+> [    4.303332] INFO: 0xffff88003f838958-0xffff88003f83895f. First byte 0xa1 instead of 0xbb
+> [    4.303332] INFO: Allocated in 0xffff88003f9b94b0 age=4294878587 cpu=2 pid=0
+> [    4.303332] INFO: Freed in 0xffff88003f8389f0 age=18446744073709463001 cpu=4294967295 pid=0
+> [    4.303332] INFO: Slab 0xffffe200015d5340 objects=13 used=10 fp=0xffff88003f838738 flags=0x40000000000020c3
+> [    4.303332] INFO: Object 0xffff88003f838738 @offset=1848 fp=0x(null)
 
-Long term lots of things are good.
+hm, i'm seeing this even with the cpus4096 bits removed.
 
-But how do I get my laptop that I currently have right now up and
-running properly with linux in a better-than-800x600-framebuffer mode?
+It _seems_ to trigger when i add these two commits:
 
-That's why I need/want this driver now, there are hundreds of thousands
-of these types of laptops in the pipeline to users and I want them to
-run Linux, not be forced to run some other operating system...
+  71ff49d: x86: with the last user gone, remove set_pte_present
+  b40c757: x86/32: no need to use set_pte_present in set_pte_vaddr
 
-thanks,
+but i'm not completely sure it's related, i tried a bisection and it 
+showed heisenbug properties.
 
-greg k-h
+Might have come from upstream, that saw some IDR changes recently.
+
+	Ingo
