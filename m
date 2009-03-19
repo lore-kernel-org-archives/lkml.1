@@ -1,136 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbZCSQ1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbZCSQ2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757067AbZCSQ1r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:27:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbZCSQ1i
+	id S1758534AbZCSQ2E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbZCSQ1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:27:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36467 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752068AbZCSQ1h (ORCPT
+	Thu, 19 Mar 2009 12:27:50 -0400
+Received: from dgate20.fujitsu-siemens.com ([80.70.172.51]:42341 "EHLO
+	dgate20.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756575AbZCSQ1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:27:37 -0400
-Date: Thu, 19 Mar 2009 09:20:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Ying Han <yinghan@google.com>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-In-Reply-To: <200903200248.22623.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.LFD.2.00.0903190902000.17240@localhost.localdomain>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <alpine.LFD.2.00.0903181634500.17240@localhost.localdomain> <604427e00903181654y308d57d8w2cb32eab831cf45a@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 19 Mar 2009 12:27:48 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
+  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
+   Received:Received:Message-ID:Date:From:Organization:
+   User-Agent:MIME-Version:To:Subject:X-Enigmail-Version:
+   Content-Type;
+  b=qOkN7jvKVIwPTU/R6QLtcTw+Zgn6A2l+rOUJ9bg7U20+6mBCKp3564dd
+   pYhQwHQSGOeElR6d1vv3wAUPcnOBTWwM9wW8ZYjU9cLueEn6rIoeAM9ZL
+   vnAp4B7+y+tun2q;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.38,389,1233529200"; 
+   d="diff'?scan'208";a="56946914"
+X-IronPort-AV: E=Sophos;i="4.38,389,1233529200"; 
+   d="diff'?scan'208";a="49903646"
+Message-ID: <49C27281.4040207@fujitsu-siemens.com>
+Date: Thu, 19 Mar 2009 17:27:45 +0100
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 2.0.0.15pre (X11/20080508)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Corey Minyard <minyard@acm.org>,
+       openipmi-developer@lists.sourceforge.net
+Subject: [PATCH] limit CPU time spent in kipmid
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/mixed;
+ boundary="------------070702070202030304020601"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------070702070202030304020601
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
+Hello Corey, hi everyone,
 
-On Fri, 20 Mar 2009, Nick Piggin wrote:
-> 
-> But I think we do have a race in __set_page_dirty_buffers():
-> 
-> The page may not have buffers between the mapping->private_lock
-> critical section and the __set_page_dirty call there. So between
-> them, another thread might do a create_empty_buffers which can
-> see !PageDirty and thus it will create clean buffers.
+here is a patch that limits the CPU time spent in kipmid. I know that it 
+was previously stated that current kipmid "works as designed" (e.g. 
+http://lists.us.dell.com/pipermail/linux-poweredge/2008-October/037636.html), 
+yet users are irritated by the high amount of CPU time kipmid may use up 
+on current servers with many sensors, even though it is "nice" CPU time. 
+Moreover, kipmid busy-waiting for the KCS interface to become ready also 
+prevents CPUs from sleeping.
 
-Hmm.
+The attached patch was developed and tested on an enterprise 
+distribution kernel where it caused the CPU load of kipmid to drop to 
+essentially 0 while still delivering reliable IPMI communication.
 
-Creating clean buffers is locked by the page lock, nothing else.  And not 
-all page dirtiers hold the page lock (in fact, most try to avoid it - the 
-rule is that you either have to hold the page lock _or_ hold a reference 
-to the 'mapping', and the latter is what the mmap code does, I think).
+I am looking forward for comments.
+Martin
 
-So yeah, the page lock isn't sufficient.
+-- 
+Martin Wilck
+PRIMERGY System Software Engineer
+FSC IP ESP DEV 6
 
-> Holding mapping->private_lock over the __set_page_dirty should
-> fix it, although I guess you'd want to release it before calling
-> __mark_inode_dirty so as not to put inode_lock under there. I
-> have a patch for this if it sounds reasonable.
+Fujitsu Siemens Computers GmbH
+Heinz-Nixdorf-Ring 1
+33106 Paderborn
+Germany
 
-That would seem to make sense. Maybe moving the "TestSetPageDirty()" from 
-inside __set_page_dirty() to the caller? Something like the appended?
+Tel:			++49 5251 525 2796
+Fax:			++49 5251 525 2820
+Email:			mailto:martin.wilck@fujitsu-siemens.com
+Internet:		http://www.fujitsu-siemens.com
+Company Details:	http://www.fujitsu-siemens.com/imprint.html
 
-This is TOTALLY untested. Of course.
+--------------070702070202030304020601
+Content-Type: text/x-patch;
+ name="ipmi_si_max_busy-2.6.29-rc8.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ipmi_si_max_busy-2.6.29-rc8.diff"
 
-			Linus
+While the current kipmid implementation is optimal in the sense that kipmid obtains
+data as quickly as possible without stealing CPU time from other processes
+(by running on low prio and calling schedule() in each loop iteration), it
+may spend a lot of CPU time polling for data e.g. on the KCS interface. The
+busy loop also prevents CPUs from entering sleep states when no KCS data is
+available.
 
----
- fs/buffer.c |   23 +++++++++++------------
- 1 files changed, 11 insertions(+), 12 deletions(-)
+This patch adds a module parameter "kipmid_max_busy" that specifies how many
+microseconds kipmid should busy-loop before going to sleep. It affects only the
+SI_SM_CALL_WITH_DELAY case, where a delay is acceptible. My experiments have shown
+that SI_SM_CALL_WITH_DELAY catches about 99% of smi_event_handler calls. The
+new parameter defaults to 0 (previous behavior - busy-loop forever).
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 9f69741..891e1c7 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -760,15 +760,9 @@ EXPORT_SYMBOL(mark_buffer_dirty_inode);
-  * If warn is true, then emit a warning if the page is not uptodate and has
-  * not been truncated.
-  */
--static int __set_page_dirty(struct page *page,
-+static void __set_page_dirty(struct page *page,
- 		struct address_space *mapping, int warn)
- {
--	if (unlikely(!mapping))
--		return !TestSetPageDirty(page);
--
--	if (TestSetPageDirty(page))
--		return 0;
--
- 	spin_lock_irq(&mapping->tree_lock);
- 	if (page->mapping) {	/* Race with truncate? */
- 		WARN_ON_ONCE(warn && !PageUptodate(page));
-@@ -785,8 +779,6 @@ static int __set_page_dirty(struct page *page,
+With this patch, at least on Fujitsu Siemens hardware, the kipmid CPU time can be
+reduced to negligible values without noticeably affecting the performance of the
+IPMI interface. Recommended values for kipmid_max_busy on this hardware are in the
+100us range (50-500us).
+
+Signed-off-by: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+--- linux-2.6.29-rc8/drivers/char/ipmi/ipmi_si_intf.c.orig	2009-03-13 03:39:28.000000000 +0100
++++ linux-2.6.29-rc8/drivers/char/ipmi/ipmi_si_intf.c	2009-03-19 13:24:10.009829167 +0100
+@@ -298,6 +298,7 @@ static int force_kipmid[SI_MAX_PARMS];
+ static int num_force_kipmid;
+ 
+ static int unload_when_empty = 1;
++static unsigned int kipmid_max_busy;
+ 
+ static int try_smi_init(struct smi_info *smi);
+ static void cleanup_one_si(struct smi_info *to_clean);
+@@ -927,20 +928,53 @@ static void set_run_to_completion(void *
  	}
- 	spin_unlock_irq(&mapping->tree_lock);
- 	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
--
--	return 1;
  }
  
- /*
-@@ -816,6 +808,7 @@ static int __set_page_dirty(struct page *page,
-  */
- int __set_page_dirty_buffers(struct page *page)
- {
-+	int newly_dirty;
- 	struct address_space *mapping = page_mapping(page);
- 
- 	if (unlikely(!mapping))
-@@ -831,9 +824,12 @@ int __set_page_dirty_buffers(struct page *page)
- 			bh = bh->b_this_page;
- 		} while (bh != head);
- 	}
-+	newly_dirty = !TestSetPageDirty(page);
- 	spin_unlock(&mapping->private_lock);
- 
--	return __set_page_dirty(page, mapping, 1);
-+	if (newly_dirty)
-+		__set_page_dirty(page, mapping, 1);
-+	return newly_dirty;
- }
- EXPORT_SYMBOL(__set_page_dirty_buffers);
- 
-@@ -1262,8 +1258,11 @@ void mark_buffer_dirty(struct buffer_head *bh)
- 			return;
- 	}
- 
--	if (!test_set_buffer_dirty(bh))
--		__set_page_dirty(bh->b_page, page_mapping(bh->b_page), 0);
-+	if (!test_set_buffer_dirty(bh)) {
-+		struct page *page = bh->b_page;
-+		if (!TestSetPageDirty(page))
-+			__set_page_dirty(page, page_mapping(page), 0);
++
++
++static int ipmi_thread_must_sleep(enum si_sm_result smi_result, int *busy,
++				  struct timespec *busy_time)
++{
++	if (kipmid_max_busy == 0)
++		return 0;
++
++	if (smi_result != SI_SM_CALL_WITH_DELAY) {
++		*busy = 0;
++		return 0;
 +	}
- }
++
++	if (*busy == 0) {
++		*busy = 1;
++		getnstimeofday(busy_time);
++		timespec_add_ns(busy_time, kipmid_max_busy*NSEC_PER_USEC);
++	} else {
++		struct timespec now;
++		getnstimeofday(&now);
++		if (unlikely(timespec_compare(&now, busy_time))) {
++			*busy = 0;
++			return 1;
++		}
++	}
++	return 0;
++}
++
+ static int ipmi_thread(void *data)
+ {
+ 	struct smi_info *smi_info = data;
+ 	unsigned long flags;
+ 	enum si_sm_result smi_result;
++	struct timespec busy_time;
++	int busy = 0;
  
- /*
+ 	set_user_nice(current, 19);
+ 	while (!kthread_should_stop()) {
++		int must_sleep;
+ 		spin_lock_irqsave(&(smi_info->si_lock), flags);
+ 		smi_result = smi_event_handler(smi_info, 0);
+ 		spin_unlock_irqrestore(&(smi_info->si_lock), flags);
++		must_sleep = ipmi_thread_must_sleep(smi_result,
++						    &busy, &busy_time);
+ 		if (smi_result == SI_SM_CALL_WITHOUT_DELAY)
+ 			; /* do nothing */
+-		else if (smi_result == SI_SM_CALL_WITH_DELAY)
++		else if (smi_result == SI_SM_CALL_WITH_DELAY && !must_sleep)
+ 			schedule();
+ 		else
+ 			schedule_timeout_interruptible(1);
+@@ -1213,6 +1247,11 @@ module_param(unload_when_empty, int, 0);
+ MODULE_PARM_DESC(unload_when_empty, "Unload the module if no interfaces are"
+ 		 " specified or found, default is 1.  Setting to 0"
+ 		 " is useful for hot add of devices using hotmod.");
++module_param(kipmid_max_busy, uint, 0);
++MODULE_PARM_DESC(kipmid_max_busy,
++		 "Max time (in microseconds) to busy-wait for IPMI data before"
++		 " sleeping. 0 (default) means to wait forever. Set to 100-500"
++		 " if kipmid is using up a lot of CPU time.");
+ 
+ 
+ static void std_irq_cleanup(struct smi_info *info)
+
+--------------070702070202030304020601--
