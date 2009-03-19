@@ -1,97 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbZCSRGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751538AbZCSRGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756860AbZCSRGF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 13:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZCSRFw
+	id S1751538AbZCSRGp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 13:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZCSRGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 13:05:52 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:33148 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752146AbZCSRFv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 13:05:51 -0400
-Date: Thu, 19 Mar 2009 11:05:48 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 06/12] PCI: Introduce pci_rescan_bus()
-Message-ID: <20090319170548.GE8074@ldl.fc.hp.com>
-References: <20090318222426.887.1008.stgit@bob.kio> <20090318223956.887.57080.stgit@bob.kio> <20090319022735.f24b7329.akpm@linux-foundation.org>
+	Thu, 19 Mar 2009 13:06:35 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52132 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753334AbZCSRGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 13:06:34 -0400
+Date: Thu, 19 Mar 2009 18:06:30 +0100
+From: Jan Kara <jack@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ying Han <yinghan@google.com>,
+       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Message-ID: <20090319170630.GA9119@duck.suse.cz>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0903190902000.17240@localhost.localdomain> <200903200334.55710.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0903190948510.17240@localhost.localdomain> <20090319170340.GC3899@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090319022735.f24b7329.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090319170340.GC3899@duck.suse.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton <akpm@linux-foundation.org>:
-> On Wed, 18 Mar 2009 16:39:56 -0600 Alex Chiang <achiang@hp.com> wrote:
-> 
-> > This API is used by the PCI core to rescan a bus and rediscover
-> > newly added devices.
+On Thu 19-03-09 18:03:40, Jan Kara wrote:
+> On Thu 19-03-09 09:51:59, Linus Torvalds wrote:
 > > 
-> > Over time, it is expected that the various PCI hotplug drivers
-> > will migrate to this interface and away from the old
-> > pci_do_scan_bus() interface.
 > > 
-> > ...
-> >
-> > @@ -1195,10 +1195,39 @@ struct pci_bus * __devinit pci_scan_bus_parented(struct device *parent,
-> >  EXPORT_SYMBOL(pci_scan_bus_parented);
-> >  
-> >  #ifdef CONFIG_HOTPLUG
-> > +/**
-> > + * pci_rescan_bus - scan a PCI bus for devices.
-> > + * @bus: PCI bus to scan
-> > + *
-> > + * Scan a PCI bus and child buses for new devices, adds them,
-> > + * and enables them.
-> > + *
-> > + * Returns the max number of subordinate bus discovered.
-> > + */
-> > +unsigned int __devinit pci_rescan_bus(struct pci_bus *bus)
-> > +{
-> > +	unsigned int max;
-> > +	struct pci_dev *dev;
-> > +
-> > +	max = pci_scan_child_bus(bus);
-> > +	list_for_each_entry(dev, &bus->devices, bus_list)
-> > +		if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
-> > +		    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
-> > +			if (dev->subordinate)
-> > +				pci_bus_size_bridges(dev->subordinate);
-> > +
-> > +	pci_bus_assign_resources(bus);
-> > +	pci_enable_bridges(bus);
-> > +	pci_bus_add_devices(bus);
-> > +
-> > +	return max;
-> > +}
-> > +
-> >  EXPORT_SYMBOL(pci_add_new_bus);
-> >  EXPORT_SYMBOL(pci_scan_slot);
-> >  EXPORT_SYMBOL(pci_scan_bridge);
-> >  EXPORT_SYMBOL_GPL(pci_scan_child_bus);
-> > +EXPORT_SYMBOL_GPL(pci_rescan_bus);
-> 
-> uhm, is there any rationale for the seemingly-random mixup of export types
-> in this interface?
+> > On Fri, 20 Mar 2009, Nick Piggin wrote:
+> > > 
+> > > Yeah, probably no need to hold private_lock while tagging the radix
+> > > tree (which is what my version did). So maybe this one is a little
+> > > better. I did test mine, it worked, but it didn't solve the problem.
+> > 
+> > Ahh, so you re-created it? On ext2 only, or is it visible on ext3 as well? 
+> > I've not even tested - I assumed that I would have to boot into less 
+> > memory and downgrade my filesystem to ext2, which made me hope somebody 
+> > else would pick it up first ;)
+>   In thread http://lkml.org/lkml/2009/3/4/179 I've reported similar problem
+> - write lost. I'm able to reproduce under UML linux at will. ext3 takes
+> with 1KB blocksize about 20 minutes to hit the corruption, ext2 with 1 KB
+> blocksize about an hour, ext2 with 4KB blocksize several hours...
+  And BTW HP is reporting to us a similarly looking problem on reiserfs on
+ia64 with SLE11 (2.6.27 based). But that takes several days to reproduce
+with their proprietary test suite.
 
-History?
-
-I've no clue why we're mixing EXPORT_SYMBOL and EXPORT_SYMBOL_GPL.
-
-git-blame says that the mishmash existed pre-git.
-
-For my new interface, I thought that EXPORT_SYMBOL_GPL would be
-most appropriate, but maybe not?
-
-What would you like me to do? Make them all the same?
-
-Thanks.
-
-/ac
-
+									Honza
