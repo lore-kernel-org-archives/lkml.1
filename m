@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbZCSSto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760305AbZCSSx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760218AbZCSSto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 14:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbZCSStf
+	id S1760305AbZCSSx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 14:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbZCSSxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 14:49:35 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:53814 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753049AbZCSSte (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 14:49:34 -0400
-Message-ID: <49C29441.1030501@novell.com>
-Date: Thu, 19 Mar 2009 14:51:45 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 19 Mar 2009 14:53:17 -0400
+Received: from kroah.org ([198.145.64.141]:51423 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753698AbZCSSxQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 14:53:16 -0400
+Date: Thu, 19 Mar 2009 11:51:00 -0700
+From: Greg KH <greg@kroah.com>
+To: Sachin Sant <sachinp@in.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Next March 19: drivers/comedi build break.
+Message-ID: <20090319185100.GA20608@kroah.com>
+References: <20090319221024.5e2ad6e5.sfr@canb.auug.org.au> <49C2468A.1040504@in.ibm.com> <20090319153327.GB13963@kroah.com>
 MIME-Version: 1.0
-To: Luis Henriques <henrix@sapo.pt>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 -tip] sched: Clean unused fields from struct rq
-References: <20090318225137.GA3766@hades.domain.com> <20090318225428.GA3769@hades.domain.com> <20090319074949.GB17144@elte.hu> <49C232D4.7050004@novell.com> <20090319182327.GA3823@hades.domain.com>
-In-Reply-To: <20090319182327.GA3823@hades.domain.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE7D93F1684FB5034A96CB341"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090319153327.GB13963@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE7D93F1684FB5034A96CB341
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thu, Mar 19, 2009 at 08:33:27AM -0700, Greg KH wrote:
+> On Thu, Mar 19, 2009 at 06:50:10PM +0530, Sachin Sant wrote:
+> > Next 19 randconfig build fails with :
+> >
+> >  CC [M]  drivers/staging/comedi/comedi_fops.o
+> > In file included from drivers/staging/comedi/comedidev.h:38,
+> >                 from drivers/staging/comedi/comedi_fops.c:45:
+> > drivers/staging/comedi/interrupt.h:25: error: conflicting types for 
+> > ‘irqreturn_t’
+> > include/linux/irqreturn.h:14: error: previous declaration of 
+> > ‘irqreturn_t’ was here
+> > In file included from drivers/staging/comedi/comedidev.h:38,
+> >                 from drivers/staging/comedi/comedi_fops.c:45:
+> > drivers/staging/comedi/interrupt.h:28:1: warning: "IRQ_RETVAL" redefined
+> > In file included from include/linux/interrupt.h:10,
+> >                 from drivers/staging/comedi/interrupt.h:22,
+> >                 from drivers/staging/comedi/comedidev.h:38,
+> >                 from drivers/staging/comedi/comedi_fops.c:45:
+> > include/linux/irqreturn.h:15:1: warning: this is the location of the 
+> > previous definition
+> > make[3]: *** [drivers/staging/comedi/comedi_fops.o] Error 1
+> >
+> > Probably because of the irqreturn_t related changes.
+> 
+> Ah, I wasn't aware of them, I'll go dig and fix this up...
 
-Luis Henriques wrote:
->
-> With respect to the changes to the sched_debug ABI, from what I underst=
-ood no
-> one is using it at the moment, right?
->
->  =20
+Now fixed.
 
-I am not aware of any users personally, but that doesn't mean a whole
-heck of a lot ;)  Ingo and Peter probably have better insight here.
+thanks,
 
-However, you did the proper thing from my perspective and bumped the
-version number.  So even if there are users out there, it stands to
-reason they will likely pick up on the change in a deterministic manner
-anyway.  Therefore, IMO you are all set.
-
-Thanks Luis,
--Greg
-
-
---------------enigE7D93F1684FB5034A96CB341
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknClEIACgkQlOSOBdgZUxmWLACgjhhUWUWgOjiY1E+Sk6KlH74C
-1HcAniYz4W6ZEAfkx5SHwBGB4SvIFFqj
-=e2vO
------END PGP SIGNATURE-----
-
---------------enigE7D93F1684FB5034A96CB341--
+greg k-h
