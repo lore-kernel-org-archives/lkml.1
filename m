@@ -1,78 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbZCSEtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZCSEwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756942AbZCSEtp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 00:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZCSEtd
+	id S1758626AbZCSEwk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 00:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZCSEwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 00:49:33 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:7700 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752454AbZCSEtc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 00:49:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=QqDaInefvNLlI9DtjJWy75Mw3sM5aVxA71kkyHzV1vFGDQ6xDTnSGeRFr4gN0wg/+F
-         UiPgPaD9ULsxHyOADV90WdBafw/WcDviI41TFX4wd+ASHi2qNyGaAy+oP5vtTkdG8i0Z
-         fGqOCHNJ0KrAb9XKBtyQGPnTlwZi34bca99Mk=
+	Thu, 19 Mar 2009 00:52:31 -0400
+Received: from ozlabs.org ([203.10.76.45]:34377 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752454AbZCSEwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 00:52:30 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] cpumask: remove cpumask allocation from idle_balance
+Date: Thu, 19 Mar 2009 15:22:20 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+References: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com> <200903191129.01919.rusty@rustcorp.com.au> <alpine.DEB.2.00.0903182225450.31583@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0903182225450.31583@gandalf.stny.rr.com>
 MIME-Version: 1.0
-In-Reply-To: <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-	 <b6a2187b0903141958u9dae0fdk1f44b387108b99e4@mail.gmail.com>
-	 <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com>
-	 <1237140665.24621.2.camel@johannes.local>
-	 <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
-	 <1237143683.24621.7.camel@johannes.local>
-	 <20090315202603.GA9077@elte.hu>
-	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
-	 <1237317742.31814.28.camel@johannes.local>
-	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
-Date: Thu, 19 Mar 2009 12:49:30 +0800
-Message-ID: <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com>
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903191522.21045.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 10:58 AM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
-> I've tracked down to the sequence of iwconfig that causes it to fail.
-> This loop does not work at all without John's patch , but will work
-> 100% when patched.
-> This loop only works 8 of 10 times with/without the patch.
+Impact: fix circular locking
 
-Ignore the above loop thing. The cause seems to be this one instead.
+Steven reports a circular locking from alloc_cpumask_var doing a wakeup.
+We get rid of this using the tried-and-true technique of using a per-cpu
+cpumask_var_t rather than doing an alloc every time.  Ugly, but simple.
 
+LKML-Reference: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com>
+Reported-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-# this needs patch to work ...
-iwconfig wlan0 mode Managed
-ifconfig wlan0 up
-iwconfig wlan0 essid xxx
-iwconfig wlan0 key restricted xxx
-iwconfig wlan0 ap auto channel auto
-
-
-# this works with patch ...
-iwconfig wlan0 mode Managed essid xxx key restricted xxx
-ifconfig wlan0 up
-iwconfig wlan0 ap auto channel auto
-
-It looks the placement of "ifconfig" matters. But works on 2.6.28-rc3.
-
-
-Thanks,
-Jeff.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 5dabd80..48862d4 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3448,19 +3448,23 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
+  */
+ #define MAX_PINNED_INTERVAL	512
+ 
++/* Working cpumask for load_balance and load_balance_newidle. */
++static DEFINE_PER_CPU(cpumask_var_t, load_balance_tmpmask);
++
+ /*
+  * Check this_cpu to ensure it is balanced within domain. Attempt to move
+  * tasks if there is an imbalance.
+  */
+ static int load_balance(int this_cpu, struct rq *this_rq,
+ 			struct sched_domain *sd, enum cpu_idle_type idle,
+-			int *balance, struct cpumask *cpus)
++			int *balance)
+ {
+ 	int ld_moved, all_pinned = 0, active_balance = 0, sd_idle = 0;
+ 	struct sched_group *group;
+ 	unsigned long imbalance;
+ 	struct rq *busiest;
+ 	unsigned long flags;
++	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
+ 
+ 	cpumask_setall(cpus);
+ 
+@@ -3615,8 +3619,7 @@ out:
+  * this_rq is locked.
+  */
+ static int
+-load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+-			struct cpumask *cpus)
++load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd)
+ {
+ 	struct sched_group *group;
+ 	struct rq *busiest = NULL;
+@@ -3624,6 +3627,7 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+ 	int ld_moved = 0;
+ 	int sd_idle = 0;
+ 	int all_pinned = 0;
++	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
+ 
+ 	cpumask_setall(cpus);
+ 
+@@ -3764,10 +3768,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+ 	struct sched_domain *sd;
+ 	int pulled_task = 0;
+ 	unsigned long next_balance = jiffies + HZ;
+-	cpumask_var_t tmpmask;
+-
+-	if (!alloc_cpumask_var(&tmpmask, GFP_ATOMIC))
+-		return;
+ 
+ 	for_each_domain(this_cpu, sd) {
+ 		unsigned long interval;
+@@ -3778,7 +3778,7 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+ 		if (sd->flags & SD_BALANCE_NEWIDLE)
+ 			/* If we've pulled tasks over stop searching: */
+ 			pulled_task = load_balance_newidle(this_cpu, this_rq,
+-							   sd, tmpmask);
++							   sd);
+ 
+ 		interval = msecs_to_jiffies(sd->balance_interval);
+ 		if (time_after(next_balance, sd->last_balance + interval))
+@@ -3793,7 +3793,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+ 		 */
+ 		this_rq->next_balance = next_balance;
+ 	}
+-	free_cpumask_var(tmpmask);
+ }
+ 
+ /*
+@@ -3943,11 +3942,6 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
+ 	unsigned long next_balance = jiffies + 60*HZ;
+ 	int update_next_balance = 0;
+ 	int need_serialize;
+-	cpumask_var_t tmp;
+-
+-	/* Fails alloc?  Rebalancing probably not a priority right now. */
+-	if (!alloc_cpumask_var(&tmp, GFP_ATOMIC))
+-		return;
+ 
+ 	for_each_domain(cpu, sd) {
+ 		if (!(sd->flags & SD_LOAD_BALANCE))
+@@ -3972,7 +3966,7 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
+ 		}
+ 
+ 		if (time_after_eq(jiffies, sd->last_balance + interval)) {
+-			if (load_balance(cpu, rq, sd, idle, &balance, tmp)) {
++			if (load_balance(cpu, rq, sd, idle, &balance)) {
+ 				/*
+ 				 * We've pulled tasks over so either we're no
+ 				 * longer idle, or one of our SMT siblings is
+@@ -4006,8 +4000,6 @@ out:
+ 	 */
+ 	if (likely(update_next_balance))
+ 		rq->next_balance = next_balance;
+-
+-	free_cpumask_var(tmp);
+ }
+ 
+ /*
+@@ -8304,6 +8296,9 @@ void __init sched_init(void)
+ #ifdef CONFIG_USER_SCHED
+ 	alloc_size *= 2;
+ #endif
++#ifdef CONFIG_CPUMASK_OFFSTACK
++	alloc_size *= num_possible_cpus() * cpumask_size();
++#endif
+ 	/*
+ 	 * As sched_init() is called before page_alloc is setup,
+ 	 * we use alloc_bootmem().
+@@ -8341,6 +8336,12 @@ void __init sched_init(void)
+ 		ptr += nr_cpu_ids * sizeof(void **);
+ #endif /* CONFIG_USER_SCHED */
+ #endif /* CONFIG_RT_GROUP_SCHED */
++#ifdef CONFIG_CPUMASK_OFFSTACK
++		for_each_possible_cpu(i) {
++			per_cpu(load_balance_tmpmask, i) = (void *)ptr;
++			ptr += cpumask_size();
++		}
++#endif /* CONFIG_CPUMASK_OFFSTACK */
+ 	}
+ 
+ #ifdef CONFIG_SMP
