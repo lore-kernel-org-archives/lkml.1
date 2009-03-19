@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357AbZCSMbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbZCSMeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754357AbZCSMbZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 08:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZCSMbQ
+	id S1753810AbZCSMeO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 08:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZCSMd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 08:31:16 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39701 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752642AbZCSMbP convert rfc822-to-8bit (ORCPT
+	Thu, 19 Mar 2009 08:33:58 -0400
+Received: from juliette.telenet-ops.be ([195.130.137.74]:49612 "EHLO
+	juliette.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752560AbZCSMd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 08:31:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: nonboot cpu on SMP suspend
-Date: Thu, 19 Mar 2009 13:30:58 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
-Cc: chen gong <gong.chen@linux.intel.com>, linux-kernel@vger.kernel.org
-References: <2a27d3730903172325w16ec329cp872ec35d100f6506@mail.gmail.com> <49C1EE7D.5070507@linux.intel.com> <2a27d3730903190018h1a0f5b6asf5cf2002fe3504fb@mail.gmail.com>
-In-Reply-To: <2a27d3730903190018h1a0f5b6asf5cf2002fe3504fb@mail.gmail.com>
+	Thu, 19 Mar 2009 08:33:57 -0400
+Date: Thu, 19 Mar 2009 13:33:52 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Christian Lamparter <chunkeey@web.de>
+cc: "John W. Linville" <linville@tuxdriver.com>, linux-next@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH next-20090319] wireless/p54: P54_SPI should depend on
+ GENERIC_HARDIRQS
+Message-ID: <Pine.LNX.4.64.0903191331001.5130@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200903191330.59573.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 March 2009, Li Yang wrote:
-> On Thu, Mar 19, 2009 at 3:04 PM, chen gong <gong.chen@linux.intel.com> wrote:
-> > Rafael J. Wysocki 写道:
-> >>
-> >> On Wednesday 18 March 2009, Li Yang wrote:
-> >>>
-> >>> Hi all,
-> >>>
-> >>> I'm curious why we need to un-plug all the nonboot cpus before suspend
-> >>> and start them all over again after the suspend(ACPI sleep)?  I mean
-> >>> if we can bring the booting cpu back to the exact state as before
-> >>> suspend, why can't we just do the same for non-booting cpus?  And that
-> >>> will be much faster.  Any thought?  Thanks.
-> >>
-> >> Because we need to enter the BIOS with one CPU on-line only.
-> >>
-> > You mean only one CPU can be supported by BIOS when suspend/resume ?
-> 
-> If so, is it a defect of x86 BIOS?  And is it true that for other
-> architectures without a BIOS there won't be such a limitation if the
-> boot code is sane?  Thanks
+m68k allmodconfig:
+| drivers/net/wireless/p54/p54spi.c: In function 'p54spi_probe':
+| drivers/net/wireless/p54/p54spi.c:675: error: implicit declaration of function
+| 'set_irq_type'
+| make[4]: *** [drivers/net/wireless/p54/p54spi.o] Error 1
 
-I think that is a limitation of x86 BIOS and I don't know enough about the
-other architectures to comment.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/net/wireless/p54/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks,
-Rafael
+diff --git a/drivers/net/wireless/p54/Kconfig b/drivers/net/wireless/p54/Kconfig
+index cfc5f41..0e344ac 100644
+--- a/drivers/net/wireless/p54/Kconfig
++++ b/drivers/net/wireless/p54/Kconfig
+@@ -64,7 +64,7 @@ config P54_PCI
+ 
+ config P54_SPI
+ 	tristate "Prism54 SPI (stlc45xx) support"
+-	depends on P54_COMMON && SPI_MASTER
++	depends on P54_COMMON && SPI_MASTER && GENERIC_HARDIRQS
+ 	---help---
+ 	  This driver is for stlc4550 or stlc4560 based wireless chips.
+ 	  This driver is experimental, untested and will probably only work on
+-- 
+1.6.2
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
