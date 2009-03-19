@@ -1,37 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbZCSHqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbZCSHul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757342AbZCSHqx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 03:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZCSHqn
+	id S1758598AbZCSHul (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 03:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbZCSHuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 03:46:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45528 "EHLO mx3.mail.elte.hu"
+	Thu, 19 Mar 2009 03:50:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48160 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752495AbZCSHqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 03:46:43 -0400
-Date: Thu, 19 Mar 2009 08:46:16 +0100
+	id S1752762AbZCSHub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 03:50:31 -0400
+Date: Thu, 19 Mar 2009 08:49:49 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: oops in tracepoint_update_probe_range()
-Message-ID: <20090319074616.GA17144@elte.hu>
-References: <1237393396.3322.6.camel@localhost.localdomain> <20090318163531.GE21331@elte.hu> <49C1F1DF.2020105@cn.fujitsu.com>
+To: Luis Henriques <henrix@sapo.pt>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 -tip] sched: Clean unused fields from struct rq
+Message-ID: <20090319074949.GB17144@elte.hu>
+References: <20090318225137.GA3766@hades.domain.com> <20090318225428.GA3769@hades.domain.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49C1F1DF.2020105@cn.fujitsu.com>
+In-Reply-To: <20090318225428.GA3769@hades.domain.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
 	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,81 +35,94 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+* Luis Henriques <henrix@sapo.pt> wrote:
 
-> Ingo Molnar wrote:
-> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> On Wed, Mar 18, 2009 at 10:51:37PM +0000, Luis Henriques wrote:
+> > Since they are used on in statistics and are always set to zero, the following
+> > fields from struct rq have been removed: yld_exp_empty, yld_act_empty and
+> > yld_both_empty.
 > > 
-> >> Good: f4c3c4cdb1de232
-> >> Bad : 1e08816af0bc345
-> >>
-> >> Config:
-> >> http://userweb.kernel.org/~jaswinder/oops_20090318/config-hpdv5-tip-bad-20090318
-> >>
-> >> oops:
-> >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page1.jpg
-> >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page2.jpg
-> >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page3.jpg
-> >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page4.jpg
-> >>
-> >> <freeze>
+> > Both Sched Debug and SCHEDSTAT_VERSION versions has also been incremented since
+> > ABIs have been changed.
 > > 
-> > Steve, Frederic - the crashes above are in:
+> > Signed-off-by: Luis Henriques <henrix@sapo.pt>
+> > ---
+> >  kernel/sched.c       |    3 ---
+> >  kernel/sched_debug.c |    5 +----
+> >  kernel/sched_stats.h |    7 +++----
+> >  3 files changed, 4 insertions(+), 11 deletions(-)
 > > 
-> > 	tracepoint_update_probe_range()
-> > 
-> > in a modular kernel apparently.
-> > 
-> >
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index 8a579e2..4469034 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -646,9 +646,6 @@ struct rq {
+> >  	/* could above be rq->cfs_rq.exec_clock + rq->rt_rq.rt_runtime ? */
+> >  
+> >  	/* sys_sched_yield() stats */
+> > -	unsigned int yld_exp_empty;
+> > -	unsigned int yld_act_empty;
+> > -	unsigned int yld_both_empty;
+> >  	unsigned int yld_count;
+> >  
+> >  	/* schedule() stats */
+> > diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+> > index 4daebff..467ca72 100644
+> > --- a/kernel/sched_debug.c
+> > +++ b/kernel/sched_debug.c
+> > @@ -286,9 +286,6 @@ static void print_cpu(struct seq_file *m, int cpu)
+> >  #ifdef CONFIG_SCHEDSTATS
+> >  #define P(n) SEQ_printf(m, "  .%-30s: %d\n", #n, rq->n);
+> >  
+> > -	P(yld_exp_empty);
+> > -	P(yld_act_empty);
+> > -	P(yld_both_empty);
+> >  	P(yld_count);
+> >  
+> >  	P(sched_switch);
+> > @@ -313,7 +310,7 @@ static int sched_debug_show(struct seq_file *m, void *v)
+> >  	u64 now = ktime_to_ns(ktime_get());
+> >  	int cpu;
+> >  
+> > -	SEQ_printf(m, "Sched Debug Version: v0.08, %s %.*s\n",
+> > +	SEQ_printf(m, "Sched Debug Version: v0.09, %s %.*s\n",
+> >  		init_utsname()->release,
+> >  		(int)strcspn(init_utsname()->version, " "),
+> >  		init_utsname()->version);
+> > diff --git a/kernel/sched_stats.h b/kernel/sched_stats.h
+> > index a8f93dd..32d2bd4 100644
+> > --- a/kernel/sched_stats.h
+> > +++ b/kernel/sched_stats.h
+> > @@ -4,7 +4,7 @@
+> >   * bump this up when changing the output format or the meaning of an existing
+> >   * format, so that tools can adapt (or abort)
+> >   */
+> > -#define SCHEDSTAT_VERSION 14
+> > +#define SCHEDSTAT_VERSION 15
+> >  
+> >  static int show_schedstat(struct seq_file *seq, void *v)
+> >  {
+> > @@ -26,9 +26,8 @@ static int show_schedstat(struct seq_file *seq, void *v)
+> >  
+> >  		/* runqueue-specific stats */
+> >  		seq_printf(seq,
+> > -		    "cpu%d %u %u %u %u %u %u %u %u %u %llu %llu %lu",
+> > -		    cpu, rq->yld_both_empty,
+> > -		    rq->yld_act_empty, rq->yld_exp_empty, rq->yld_count,
+> > +		    "cpu%d %u %u %u %u %u %u %llu %llu %lu",
+> > +		    cpu, rq->yld_count,
+> >  		    rq->sched_switch, rq->sched_count, rq->sched_goidle,
+> >  		    rq->ttwu_count, rq->ttwu_local,
+> >  		    rq->rq_cpu_time,
+> > -- 
+> > 1.6.2
 > 
-> I look up the jpg files, this oops is occurred when a new module is
-> being loaded.
+> Btw: I tried Greg schedtop with this patch and the app behaviour is as expected:
 > 
-> tracepoint_module_notify() is added by Mathieu Desnoyers on the
-> suggestion of me.
-> 
-> tracepoint_update_probe_range() and tracepoint_module_notify()
-> can not trigger this oops if the arguments are correct.
-> 
-> If @begin is NULL, @end is NULL too, it's ensued by kernel/module.c.
-> 
-> load_module(...):
-> 	mod->tracepoints = section_objs(hdr, sechdrs, secstrings,
-> 					"__tracepoints",
-> 					sizeof(*mod->tracepoints),
-> 					&mod->num_tracepoints);
-> static void *section_objs(...)
-> {
-> 	unsigned int sec = find_sec(hdr, sechdrs, secstrings, name);
-> 
-> 	/* Section 0 has sh_addr 0 and sh_size 0. */
-> 	*num = sechdrs[sec].sh_size / object_size;
-> 	return (void *)sechdrs[sec].sh_addr;
-> }
-> 
-> If the module has not "__tracepoints" section, find_sec() returns 0.
-> So I think, sechdrs[0].sh_size is corrupted.
-> 
-> Is the following fix fixed the oops for you?
-> ---
-> diff --git a/kernel/module.c b/kernel/module.c
-> index 7fa134e..2ee47ff 100644
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -1950,6 +1950,7 @@ static noinline struct module *load_module(void __user *umod,
->  	sechdrs = (void *)hdr + hdr->e_shoff;
->  	secstrings = (void *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
->  	sechdrs[0].sh_addr = 0;
-> +	sechdrs[0].sh_size = 0;
->  
->  	for (i = 1; i < hdr->e_shnum; i++) {
->  		if (sechdrs[i].sh_type != SHT_NOBITS
+>   $ ./schedtop 
+>   Exception: unsupported version
 
-Jaswinder, could you please try the fix from Lai, but first do:
-
- git revert ec625cb  # tracepoints: dont update zero-sized tracepoint sections
- git revert 09933a1  # tracing: fix oops in tracepoint_update_probe_range()
-
-?
+Mind updating the app too and post it here please? It's the only app 
+that relies on this file AFAIK.
 
 	Ingo
