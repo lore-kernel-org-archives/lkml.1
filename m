@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbZCSOBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbZCSOD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756830AbZCSOBm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 10:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbZCSOB2
+	id S1757283AbZCSOD5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 10:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbZCSODr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 10:01:28 -0400
-Received: from casper.infradead.org ([85.118.1.10]:52618 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755379AbZCSOB1 (ORCPT
+	Thu, 19 Mar 2009 10:03:47 -0400
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:53045 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754647AbZCSODq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 10:01:27 -0400
-Date: Thu, 19 Mar 2009 07:02:21 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, dipankar@in.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Question about usage of RCU in the input layer
-Message-ID: <20090319070221.6aca7245@infradead.org>
-In-Reply-To: <200903190023.56929.dmitry.torokhov@gmail.com>
-References: <20090318215812.15496a86@infradead.org>
-	<200903190023.56929.dmitry.torokhov@gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Thu, 19 Mar 2009 10:03:46 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Au4EAJTrwUlMQW1W/2dsb2JhbACBT9FFg3wG
+Date: Thu, 19 Mar 2009 10:03:39 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: oops in tracepoint_update_probe_range()
+Message-ID: <20090319140339.GB21513@Krystal>
+References: <1237393396.3322.6.camel@localhost.localdomain> <20090318163531.GE21331@elte.hu> <49C1F1DF.2020105@cn.fujitsu.com> <20090319074616.GA17144@elte.hu> <20090319132248.GA20200@Krystal> <alpine.DEB.2.00.0903190933440.16987@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0903190933440.16987@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:00:47 up 19 days, 10:27,  1 user,  load average: 0.84, 0.64,
+	0.56
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Mar 2009 00:23:56 -0700
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-
-> Hi Arjan,
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> On Wednesday 18 March 2009 21:58:12 Arjan van de Ven wrote:
-> > Hi,
-> >
-> > the input layer does a "synchronize_rcu()" after a
-> > list_add_tail_rcu(), which is costing me 1 second of boot time.....
-> > And based on my understanding of the RCU concept, you only need to
-> > synchronize on delete, not on addition... so I think the
-> > synchronize is entirely redundant here...
+> On Thu, 19 Mar 2009, Mathieu Desnoyers wrote:
+> > 
+> > Jaswinder : maybe you have old modules in your /lib/modules/`uname -r`
+> > directory which have the correct version, but the wrong module.h header ?
 > 
+> Isn't there a module versioning that prevents such things?
 > 
-> It is there to guarantee that once we registered the handle all
-> subsequent input events will be delivered through it.
+> -- Steve
 
+I think it's only enabled when CONFIG_MODVERSIONS is on, which is not
+the case for his config :
 
-afaik rcu already guarantees that even without a synchronize;
-the only reason you would need a synchronize is to guarantee that
-people STOPPED using your memory. Or am I now totally misunderstanding
-RCU ?
+# CONFIG_MODVERSIONS is not set
+
+So I might be wrong, but I suspect the compatibility check in this case
+would only be based on kernel version.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
