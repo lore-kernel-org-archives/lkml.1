@@ -1,74 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758374AbZCSFjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbZCSFoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758374AbZCSFjm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 01:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbZCSFjb
+	id S1758781AbZCSFoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 01:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbZCSFoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 01:39:31 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:28050 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753022AbZCSFj3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 01:39:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=tjAoFWofbUl5q8cV/hclhGfRaHHyYziYoYBi6ivOZUqA37/tQk5buozlr+uTfZMv5o
-         2m+a1xDzg0Xywwz//DRsvpX+FT+LFxOsCBAwQekJ3pFOEylYsj9HpJQ4uOJ3xuLZwdmE
-         z2tskGxL8Nas7B3hDktpnL7xuvNtYyGNNfNNI=
-Date: Thu, 19 Mar 2009 06:39:19 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Gadi Oxman <gadio@netvision.net.il>,
-       Paul Bristow <paul@paulbristow.net>
-Subject: Re: [PATCH] MAINTAINERS: move old ide-{floppy,tape} entries to
-	CREDITS
-Message-ID: <20090319053919.GA24137@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Gadi Oxman <gadio@netvision.net.il>,
-	Paul Bristow <paul@paulbristow.net>
-References: <200903182201.32668.bzolnier@gmail.com>
+	Thu, 19 Mar 2009 01:44:05 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:33526 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754520AbZCSFoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 01:44:03 -0400
+Date: Wed, 18 Mar 2009 21:05:03 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rcu_barrier VS cpu_hotplug: Ensure callbacks in dead
+	cpu are migrated to online cpu
+Message-ID: <20090319040503.GA7117@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49B2526E.40106@cn.fujitsu.com> <20090308160005.GE19658@elte.hu> <49C1B6BF.5090702@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200903182201.32668.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49C1B6BF.5090702@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 18, 2009 at 10:01:32PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] MAINTAINERS: move old ide-{floppy,tape} entries to CREDITS
+On Thu, Mar 19, 2009 at 11:06:39AM +0800, Lai Jiangshan wrote:
+> Ingo Molnar wrote:
+> > * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+> > 
+> >> [RFC]
+> >> I don't like this patch, but I thought for some days and I can't
+> >> thought out a better one.
+> > 
+> > Interesting find. Found via code review or via testing? If via 
+> > testing, what is the symptom of the bug when it hits - did you 
+> > see CPU hotplug stress-tests hanging? Crashing too perhaps? How 
+> > frequently did it occur?
 > 
-> Ben Hutchings noticed that MAINTAINERS somehow still contain old
-> ide-{floppy,tape} entries.  Fix it by moving them to CREDITS (kudos
-> to Gadi and Paul for all the early hard work on ide-{floppy,tape}).
+> I found this bug when I tested the draft version of kfree_rcu(V3).
 > 
-> Cc: Gadi Oxman <gadio@netvision.net.il>
-> Cc: Paul Bristow <paul@paulbristow.net>
-> Cc: Borislav Petkov <petkovbb@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> I noticed kfree_rcu_cpu_notify() is called earlier than
+> rcu_cpu_notify(). This means rcu_barrier() is called earlier than
+> RCU callbacks migration, it should lockup as expectation. But actually,
+> this lockup can not occurred, I tried to explore it, and I found that
+> rcu_barrier() does not handle cpu_hotplug. It includes two bugs.
+> 
+> kfree_rcu(V3) (V4 is available too, it will be sent soon):
+> http://lkml.org/lkml/2009/3/6/156
+> 
+> The V1 fix of this bug:
+> http://lkml.org/lkml/2009/3/7/38
+> 
+> The fix of the other bug: (it changed the scheduler's code too)
+> http://lkml.org/lkml/2009/3/7/39
+> 
+> Subject: [PATCH] rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to online cpu (V2)
+> 
+> cpu hotplug may be happened asynchronously, some rcu callbacks are maybe
+> still in dead cpu, rcu_barrier() also needs to wait for these rcu callbacks
+> to complete, so we must ensure callbacks in dead cpu are migrated to
+> online cpu.
+
+Good stuff, Lai!!!  Simpler than any of the approaches that I was
+considering, and, better yet, independent of the underlying RCU
+implementation!!!
+
+I was initially worried that wake_up() might wake only one of two
+possible wait_event()s, namely rcu_barrier() and the CPU_POST_DEAD code,
+but the fact that wait_event() clears WQ_FLAG_EXCLUSIVE avoids that issue.
+I was also worried about the fact that different RCU implementations have
+different mappings of call_rcu(), call_rcu_bh(), and call_rcu_sched(), but
+this is OK as well because we just get an extra (harmless) callback in the
+case that they map together (for example, Classic RCU has call_rcu_sched()
+mapping to call_rcu()).
+
+Overlap of CPU-hotplug operations is prevented by cpu_add_remove_lock,
+and any stray callbacks that arrive (for example, from irq handlers
+running on the dying CPU) either are ahead of the CPU_DYING callbacks on
+the one hand (and thus accounted for), or happened after the rcu_barrier()
+started on the other (and thus don't need to be accounted for).
+
+So...
+
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 > ---
-> Borislav, maybe it would make sense to rename IDE/ATAPI CDROM DRIVER
-> entry to IDE/ATAPI DRIVERS one nowadays (you're the one doing most of
-> ATAPI work anyway :)?
-
-... after you, of course :).
-
-Fine with me. The easiest would be if you fold the change into the same patch.
-
+> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+> index cae8a05..2c7b845 100644
+> --- a/kernel/rcupdate.c
+> +++ b/kernel/rcupdate.c
+> @@ -122,6 +122,8 @@ static void rcu_barrier_func(void *type)
+>  	}
+>  }
 > 
->  CREDITS     |    9 +++++++++
->  MAINTAINERS |   13 -------------
->  2 files changed, 9 insertions(+), 13 deletions(-)
-
--- 
-Regards/Gruss,
-    Boris.
+> +static inline void wait_migrated_callbacks(void);
+> +
+>  /*
+>   * Orchestrate the specified type of RCU barrier, waiting for all
+>   * RCU callbacks of the specified type to complete.
+> @@ -147,6 +149,7 @@ static void _rcu_barrier(enum rcu_barrier type)
+>  		complete(&rcu_barrier_completion);
+>  	wait_for_completion(&rcu_barrier_completion);
+>  	mutex_unlock(&rcu_barrier_mutex);
+> +	wait_migrated_callbacks();
+>  }
+> 
+>  /**
+> @@ -176,9 +179,50 @@ void rcu_barrier_sched(void)
+>  }
+>  EXPORT_SYMBOL_GPL(rcu_barrier_sched);
+> 
+> +static atomic_t rcu_migrate_type_count = ATOMIC_INIT(0);
+> +static struct rcu_head rcu_migrate_head[3];
+> +static DECLARE_WAIT_QUEUE_HEAD(rcu_migrate_wq);
+> +
+> +static void rcu_migrate_callback(struct rcu_head *notused)
+> +{
+> +	if (atomic_dec_and_test(&rcu_migrate_type_count))
+> +		wake_up(&rcu_migrate_wq);
+> +}
+> +
+> +static inline void wait_migrated_callbacks(void)
+> +{
+> +	wait_event(rcu_migrate_wq, !atomic_read(&rcu_migrate_type_count));
+> +}
+> +
+> +static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
+> +		unsigned long action, void *hcpu)
+> +{
+> +	if (action == CPU_DYING) {
+> +		/*
+> +		 * preempt_disable() in on_each_cpu() prevents stop_machine(),
+> +		 * so when "on_each_cpu(rcu_barrier_func, (void *)type, 1);"
+> +		 * returns, all online cpus have queued rcu_barrier_func(),
+> +		 * and the dead cpu(if it exist) queues rcu_migrate_callback()s.
+> +		 *
+> +		 * These callbacks ensure _rcu_barrier() waits for all
+> +		 * RCU callbacks of the specified type to complete.
+> +		 */
+> +		atomic_set(&rcu_migrate_type_count, 3);
+> +		call_rcu_bh(rcu_migrate_head, rcu_migrate_callback);
+> +		call_rcu_sched(rcu_migrate_head + 1, rcu_migrate_callback);
+> +		call_rcu(rcu_migrate_head + 2, rcu_migrate_callback);
+> +	} else if (action == CPU_POST_DEAD) {
+> +		/* rcu_migrate_head is protected by cpu_add_remove_lock */
+> +		wait_migrated_callbacks();
+> +	}
+> +
+> +	return NOTIFY_OK;
+> +}
+> +
+>  void __init rcu_init(void)
+>  {
+>  	__rcu_init();
+> +	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
+>  }
+> 
+>  void rcu_scheduler_starting(void)
+> 
