@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759367AbZCSHPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759262AbZCSHSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759367AbZCSHPn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 03:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbZCSHPa
+	id S1759262AbZCSHSm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 03:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZCSHSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 03:15:30 -0400
-Received: from matrixpower.ru ([195.178.208.66]:54812 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235AbZCSHP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 03:15:29 -0400
-Date: Thu, 19 Mar 2009 10:15:18 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: David Miller <davem@davemloft.net>, vernux@us.ibm.com, andi@firstfloor.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, Patrick Mullaney <pmullaney@novell.com>
-Subject: Re: High contention on the sk_buff_head.lock
-Message-ID: <20090319071517.GA7389@ioremap.net>
-References: <87prge1rhu.fsf@basil.nowhere.org> <20090318.140340.55290859.davem@davemloft.net> <49C16349.9030503@us.ibm.com> <20090318.143844.173112261.davem@davemloft.net> <49C16D7C.3080003@novell.com>
+	Thu, 19 Mar 2009 03:18:32 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:33680 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbZCSHSb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 03:18:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=qdG5pLvfZtSoJEzeBqeGT/t4lS5LabLIhkZzn8J7hdHSYFyWFCvnr96MRyThpaJKZc
+         MuwA11P9VYrwWtfCS+7kAS0LkUp/97vd+scMPAmD0GIRb4LT8Go/ZIMiJ+OBPV/gRe0u
+         8WyiAhT6d+Rbxu92PM1kw4FaFQ8J2D9kVXK9U=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49C16D7C.3080003@novell.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <49C1EE7D.5070507@linux.intel.com>
+References: <2a27d3730903172325w16ec329cp872ec35d100f6506@mail.gmail.com>
+	 <200903190000.33572.rjw@sisk.pl> <49C1EE7D.5070507@linux.intel.com>
+Date: Thu, 19 Mar 2009 15:18:27 +0800
+X-Google-Sender-Auth: a7632c5f90bae2da
+Message-ID: <2a27d3730903190018h1a0f5b6asf5cf2002fe3504fb@mail.gmail.com>
+Subject: Re: nonboot cpu on SMP suspend
+From: Li Yang <leoli@freescale.com>
+To: chen gong <gong.chen@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 18, 2009 at 05:54:04PM -0400, Gregory Haskins (ghaskins@novell.com) wrote:
-> Note that -rt doesnt typically context-switch under contention anymore
-> since we introduced adaptive-locks.  Also note that the contention
-> against the lock is still contention, regardless of whether you have -rt
-> or not.  Its just that the slow-path to handle the contended case for
-> -rt is more expensive than mainline.  However, once you have the
-> contention as stated, you have already lost.
-> 
-> We have observed the posters findings ourselves in both mainline and
-> -rt.  I.e. That lock doesnt scale very well once you have more than a
-> handful of cores.  It's certainly a great area to look at for improving
-> the overall stack, IMO, as I believe there is quite a bit of headroom
-> left to be recovered that is buried there.
+On Thu, Mar 19, 2009 at 3:04 PM, chen gong <gong.chen@linux.intel.com> wrote:
+> Rafael J. Wysocki 写道:
+>>
+>> On Wednesday 18 March 2009, Li Yang wrote:
+>>>
+>>> Hi all,
+>>>
+>>> I'm curious why we need to un-plug all the nonboot cpus before suspend
+>>> and start them all over again after the suspend(ACPI sleep)?  I mean
+>>> if we can bring the booting cpu back to the exact state as before
+>>> suspend, why can't we just do the same for non-booting cpus?  And that
+>>> will be much faster.  Any thought?  Thanks.
+>>
+>> Because we need to enter the BIOS with one CPU on-line only.
+>>
+> You mean only one CPU can be supported by BIOS when suspend/resume ?
 
-Something tells me that you observer skb head lock contention because
-you stressed the network and anything else on that machine slacked in
-sleep. What if you will start IO stress, will __queue_lock contention
-have the same magnitude order? Or having as many processes as skbs each
-of which will race for the scheduler? Will run-queue lock show up in the
-stats?
+If so, is it a defect of x86 BIOS?  And is it true that for other
+architectures without a BIOS there won't be such a limitation if the
+boot code is sane?  Thanks
 
-I believe the asnwer is yes for all the questions.
-You stressed one subsystem and it showed up in the statistics.
-
--- 
-	Evgeniy Polyakov
+- Leo
