@@ -1,175 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbZCSCPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757133AbZCSC1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757687AbZCSCPu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 22:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754422AbZCSCPk
+	id S1757133AbZCSC1w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 22:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbZCSC1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 22:15:40 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47540 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753786AbZCSCPj (ORCPT
+	Wed, 18 Mar 2009 22:27:42 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64411 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751884AbZCSC1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 22:15:39 -0400
-Message-ID: <49C1AAC3.80406@jp.fujitsu.com>
-Date: Thu, 19 Mar 2009 11:15:31 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 18 Mar 2009 22:27:42 -0400
+Date: Wed, 18 Mar 2009 22:27:38 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [BUG] circular lock dependency in tip
+In-Reply-To: <200903191129.01919.rusty@rustcorp.com.au>
+Message-ID: <alpine.DEB.2.00.0903182225450.31583@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com> <alpine.DEB.2.00.0903181736170.31583@gandalf.stny.rr.com> <200903191129.01919.rusty@rustcorp.com.au>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 05/11] PCI: beef up pci_do_scan_bus()
-References: <20090309052933.3918.86601.stgit@bob.kio> <20090309054900.3918.4473.stgit@bob.kio> <49B8D2F4.1030206@jp.fujitsu.com> <20090312232226.GD31042@ldl.fc.hp.com> <49BA235C.4040703@jp.fujitsu.com> <20090315164841.GA24570@ldl.fc.hp.com> <49C0B0E3.2090208@jp.fujitsu.com> <20090318203934.GC20467@ldl.fc.hp.com>
-In-Reply-To: <20090318203934.GC20467@ldl.fc.hp.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->> Alex Chiang wrote:
->>> The more I think about it though, the more I think that even
->>> without the below patch to clean up the callers of
->>> pci_do_scan_bus, we should be ok, because:
->>>
->>> 	- all the old code (which I removed below) existed
->>> 	  because the old PCI core would refuse to scan PCI buses
->>> 	  that had already been discovered
->>>
->>> 	- that meant that it would never descend past a known
->>> 	  bridge to try and find new child bridges
->>>
->>> 	- that meant that hotplug drivers had to manually
->>> 	  discover new bridges and add them, essentially
->>> 	  duplicating functionality in pci_scan_bridge
->>>
->>> This patch series allows the PCI core to scan existing bridges
->>> and descend down into the children every time, looking for new
->>> bridges and devices, so all the code in shpchp, cpcihp, and other
->>> callers of pci_do_scan_bus shouldn't be necessary anymore.
->>>
->>> Also, if we do add new bridges once manually in shpchp, and then
->>> call the new pci_do_scan_bus again, we will _not_ add devices
->>> twice because the core should check each bridge and device for
->>> struct pci_dev.is_added.
->>>
->>> So anyway, I think that cleaning up the callers of
->>> pci_do_scan_bus is a good idea, but multiple calls to the
->>> interface definitely should not result in problems. If they do,
->>> then that's a bug in my patch series.
->>>
->> I'm sorry, but I didn't have enough time to try your patch on
->> my environment. So I'm still just looking at the code.
-> 
-> Ok.
-> 
->> I looked at shpchp_configure_device() from the view point of
->> bridge hot-add. I think it is broken regardless of your change
->> because it calls pci_bus_add_devices() (through pci_do_scan_bus)
->> before assigning resources. So I think it must be changed
->> regardless of your change. But it's a little difficult for me
->> because I don't have any test environment as I mentioned before.
-> 
-> Hm, what you say makes sense.
-> 
-> I managed to find a very old machine supported by cpqphp, and
-> also found a card with a bridge.
-> 
-> cpqhp_configure_device() follows a similar algorithm to
-> shpchp_configure_device(). I'm just starting my testing now, and
-> there is good news and bad news.
-> 
-> The bad news is that although cpqphp loads successfully, and we
-> can successfully offline a card, we cannot online it again
-> afterwards due to BAR collisions. This failure occurs even
-> without my changes (2.6.27 kernel), and I haven't had time to
-> track the regression down yet.
-> 
-> We do discover the bridge on the device correctly and it is added
-> back into the device tree correctly, but we can't use it because
-> it's not programmed correctly.
-> 
-> The good news is, after rewriting cpqphp_configure_device() to
-> resemble the shpchp patch I gave you, we still discover the
-> bridge correctly and add it back into the device tree in the
-> proper place. We no longer get BAR collisions, but we fail in a
-> slightly different way.
-> 
-> At least I'm not introducing a new regression in cpqphp, and I
-> suspect shpchp will be similar.
-> 
->> But I'm still worrying about your change against pci_do_scan_bus().
->> Without your change, pci_do_scan_bus() scans child buses and add
->> devices without assigning resources. I guess that it means existing
->> callers of pci_do_scan_bus() have some mechanism to assign resource
->> by theirselves and they don't expect pci_do_scan_bus() assigns
->> resources.
-> 
-> I looked through shpchp and couldn't find this assumption. Is it
-> stored in the struct controller, under mmio_base and mmio_size?
->
 
-Yes, shpchp doesn't have this assumption. As I mentioned in
-the previous e-mail, I think shpchp's bridge hot-add code is
-broken even without your change. I'm worrying about the other
-hotplug drivers such as cpqphp, cpcihp, rpaphp and ibmphp, though
-I don't have any knowledge about those hotplug drivers.
- 
-> I am motivated to get this patch series into 2.6.30 for several
-> reasons, so I think for now, I will not change pci_do_scan_bus().
-> Instead, I'll create a new interface that only the PCI core will
-> use, and leave the drivers alone.
->
-> Over time, we can migrate the drivers to the PCI core interface.
->
-
-I think it's much safer way.
- 
->> By the way, I have one question about rescan. Please suppose that
->> we enable the bridge(B) and its children using rescan interface
->> in the picture below.
->>
->>                   |
->> -------------------------------------- parent bus
->>         |                  |
->>     bridge(A)          bridge(B)
->>     (working)        (Not working)
->>         |                  |
->>   -------------      -------------
->>    |         |        |         |
->>   dev       dev      dev       dev
->> (working) (working)   (Not working)
->>
->> In this case, your rescan mechanism calls pci_do_scan_bus() for
->> parent bus, and pci_do_scan_bus() calls pci_bus_assign_resources()
->> for parent bus. My question is, does pci_bus_assign_resources() do
->> nothing against bridge(A) that is currently working? I guess  
->> pci_bus_assign_resources() would update some registers of bridge(A)
->> and it would breaks currently working devices.
+On Thu, 19 Mar 2009, Rusty Russell wrote:
 > 
-> This is a very good catch, thank you.
+> We use the same trick in load_balance() and load_balance_newidle(): the
+> cpumask is a temporary so we can eliminate busy queues with all tasks pinned.
 > 
-> I added another patch to prevent this situation. We now check to
-> see if the bridge is already added inside of pci_setup_bridge().
+> This actually only addresses a subset of the problem though: if we have a
+> heap of tasks which are pinned to two cpus, this logic doesn't help us.
 > 
-
-Sounds good to me.
-
-Thanks,
-Kenji Kaneshige
-
-
-> Thanks.
+> We could keep separate cpu load measuring only movable processes, but that
+> seems like optimizing for the wrong case.  In fact, allocating here seems
+> like optimizing for the correct case.  Since we can't do that, a per-cpu
+> scratch mask seems in order.  It's messier tho.
 > 
-> /ac
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+> Does this solve it? (Untested).
 
+It compiled and booted, and I dont see the lockdep bug. But that did not 
+show up all the time. I guess it took a special case to cause the kmalloc 
+lock -> run queue lock to happen. But since we do not allocate here 
+anymore, this should be safe.
 
+-- Steve
+
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 5dabd80..48862d4 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -3448,19 +3448,23 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
+>   */
+>  #define MAX_PINNED_INTERVAL	512
+>  
+> +/* Working cpumask for load_balance and load_balance_newidle. */
+> +static DEFINE_PER_CPU(cpumask_var_t, load_balance_tmpmask);
+> +
+>  /*
+>   * Check this_cpu to ensure it is balanced within domain. Attempt to move
+>   * tasks if there is an imbalance.
+>   */
+>  static int load_balance(int this_cpu, struct rq *this_rq,
+>  			struct sched_domain *sd, enum cpu_idle_type idle,
+> -			int *balance, struct cpumask *cpus)
+> +			int *balance)
+>  {
+>  	int ld_moved, all_pinned = 0, active_balance = 0, sd_idle = 0;
+>  	struct sched_group *group;
+>  	unsigned long imbalance;
+>  	struct rq *busiest;
+>  	unsigned long flags;
+> +	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
+>  
+>  	cpumask_setall(cpus);
+>  
+> @@ -3615,8 +3619,7 @@ out:
+>   * this_rq is locked.
+>   */
+>  static int
+> -load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+> -			struct cpumask *cpus)
+> +load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd)
+>  {
+>  	struct sched_group *group;
+>  	struct rq *busiest = NULL;
+> @@ -3624,6 +3627,7 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+>  	int ld_moved = 0;
+>  	int sd_idle = 0;
+>  	int all_pinned = 0;
+> +	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
+>  
+>  	cpumask_setall(cpus);
+>  
+> @@ -3764,10 +3768,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+>  	struct sched_domain *sd;
+>  	int pulled_task = 0;
+>  	unsigned long next_balance = jiffies + HZ;
+> -	cpumask_var_t tmpmask;
+> -
+> -	if (!alloc_cpumask_var(&tmpmask, GFP_ATOMIC))
+> -		return;
+>  
+>  	for_each_domain(this_cpu, sd) {
+>  		unsigned long interval;
+> @@ -3778,7 +3778,7 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+>  		if (sd->flags & SD_BALANCE_NEWIDLE)
+>  			/* If we've pulled tasks over stop searching: */
+>  			pulled_task = load_balance_newidle(this_cpu, this_rq,
+> -							   sd, tmpmask);
+> +							   sd);
+>  
+>  		interval = msecs_to_jiffies(sd->balance_interval);
+>  		if (time_after(next_balance, sd->last_balance + interval))
+> @@ -3793,7 +3793,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+>  		 */
+>  		this_rq->next_balance = next_balance;
+>  	}
+> -	free_cpumask_var(tmpmask);
+>  }
+>  
+>  /*
+> @@ -3943,11 +3942,6 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
+>  	unsigned long next_balance = jiffies + 60*HZ;
+>  	int update_next_balance = 0;
+>  	int need_serialize;
+> -	cpumask_var_t tmp;
+> -
+> -	/* Fails alloc?  Rebalancing probably not a priority right now. */
+> -	if (!alloc_cpumask_var(&tmp, GFP_ATOMIC))
+> -		return;
+>  
+>  	for_each_domain(cpu, sd) {
+>  		if (!(sd->flags & SD_LOAD_BALANCE))
+> @@ -3972,7 +3966,7 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
+>  		}
+>  
+>  		if (time_after_eq(jiffies, sd->last_balance + interval)) {
+> -			if (load_balance(cpu, rq, sd, idle, &balance, tmp)) {
+> +			if (load_balance(cpu, rq, sd, idle, &balance)) {
+>  				/*
+>  				 * We've pulled tasks over so either we're no
+>  				 * longer idle, or one of our SMT siblings is
+> @@ -4006,8 +4000,6 @@ out:
+>  	 */
+>  	if (likely(update_next_balance))
+>  		rq->next_balance = next_balance;
+> -
+> -	free_cpumask_var(tmp);
+>  }
+>  
+>  /*
+> @@ -8304,6 +8296,9 @@ void __init sched_init(void)
+>  #ifdef CONFIG_USER_SCHED
+>  	alloc_size *= 2;
+>  #endif
+> +#ifdef CONFIG_CPUMASK_OFFSTACK
+> +	alloc_size *= num_possible_cpus() * cpumask_size();
+> +#endif
+>  	/*
+>  	 * As sched_init() is called before page_alloc is setup,
+>  	 * we use alloc_bootmem().
+> @@ -8341,6 +8336,12 @@ void __init sched_init(void)
+>  		ptr += nr_cpu_ids * sizeof(void **);
+>  #endif /* CONFIG_USER_SCHED */
+>  #endif /* CONFIG_RT_GROUP_SCHED */
+> +#ifdef CONFIG_CPUMASK_OFFSTACK
+> +		for_each_possible_cpu(i) {
+> +			per_cpu(load_balance_tmpmask, i) = (void *)ptr;
+> +			ptr += cpumask_size();
+> +		}
+> +#endif /* CONFIG_CPUMASK_OFFSTACK */
+>  	}
+>  
+>  #ifdef CONFIG_SMP
+> 
+> 
+> 
