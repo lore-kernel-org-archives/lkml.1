@@ -1,75 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758493AbZCSBon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758200AbZCSBvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758493AbZCSBon (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 21:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZCSBob
+	id S1758200AbZCSBvj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 21:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265AbZCSBv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 21:44:31 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:4099 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752044AbZCSBoa (ORCPT
+	Wed, 18 Mar 2009 21:51:27 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60966
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754913AbZCSBv0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 21:44:30 -0400
-Subject: Re: High contention on the sk_buff_head.lock
-From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-To: David Miller <davem@davemloft.net>
-Cc: ghaskins@novell.com, vernux@us.ibm.com, andi@firstfloor.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, pmullaney@novell.com
-In-Reply-To: <20090318.181713.62394874.davem@davemloft.net>
-References: <49C16D7C.3080003@novell.com>
-	 <20090318.180355.228447835.davem@davemloft.net>
-	 <1237425191.8204.41.camel@quadrophenia.thebigcorporation.com>
-	 <20090318.181713.62394874.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 18:43:27 -0700
-Message-Id: <1237427007.8204.55.camel@quadrophenia.thebigcorporation.com>
+	Wed, 18 Mar 2009 21:51:26 -0400
+Date: Wed, 18 Mar 2009 18:51:13 -0700 (PDT)
+Message-Id: <20090318.185113.256379588.davem@davemloft.net>
+To: sgruszka@redhat.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] Document /proc/sys/net/core/netdev_budget
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090316133633.2df4ed3e@dhcp-lab-109.englab.brq.redhat.com>
+References: <20090316133633.2df4ed3e@dhcp-lab-109.englab.brq.redhat.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-18 at 18:17 -0700, David Miller wrote:
-> From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
-> Date: Wed, 18 Mar 2009 18:13:11 -0700
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+Date: Mon, 16 Mar 2009 13:36:33 +0100
+
+> The NAPI poll parameter netdev_budget is not documented in kernel-docs. Since
+> it may have a substantial effect on at least some network loads, it should be.
 > 
-> > On Wed, 2009-03-18 at 18:03 -0700, David Miller wrote:
-> > > From: Gregory Haskins <ghaskins@novell.com>
-> > > Date: Wed, 18 Mar 2009 17:54:04 -0400
-> > > 
-> > > > Note that -rt doesnt typically context-switch under contention anymore
-> > > > since we introduced adaptive-locks.  Also note that the contention
-> > > > against the lock is still contention, regardless of whether you have -rt
-> > > > or not.  Its just that the slow-path to handle the contended case for
-> > > > -rt is more expensive than mainline.  However, once you have the
-> > > > contention as stated, you have already lost.
-> > > 
-> > > First, contention is not implicitly a bad thing.
-> >
-> > Its a bad thing when it does not scale.
-> 
-> You have only one pipe to shove packets into in this case, and for
-> your workload multiple cpus are going to be trying to stuff a single
-> packet at a time from a single UDP send request.
-> 
-> There is no added parallelism you can create for that kind of workload
-> on that kind of hardware.
-> 
+> Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com> 
 
-Do we have to rule-out per-CPU queues, that aggregate into a master
-queue in a batch-wise manner? 
-
-I speculate that might reduce the lock contention by a factor of NCPUs.
-I cannot say this would be enough to mitigate the consequent overhead
-penalty. 
-
-> It is one of the issues addressed by multiqueue.
-
-Properly tuned adaptive locks, would theoretically perform
-near-optimally compared to the mainline case, and would provide better
-CPU utilization on very large parallel architectures. 
-
-Sven
-
+Applied, thanks.
