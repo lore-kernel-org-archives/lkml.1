@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760706AbZCSSLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760448AbZCSSKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760706AbZCSSLy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 14:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbZCSSJb
+	id S1760448AbZCSSKe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 14:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbZCSSH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 14:09:31 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:60980 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760110AbZCSSJa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 14:09:30 -0400
-Date: Thu, 19 Mar 2009 12:09:12 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Alex Chiang <achiang@hp.com>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 06/12] PCI: Introduce pci_rescan_bus()
-Message-ID: <20090319180912.GB14127@parisc-linux.org>
-References: <20090318222426.887.1008.stgit@bob.kio> <20090318223956.887.57080.stgit@bob.kio> <20090319022735.f24b7329.akpm@linux-foundation.org> <20090319170548.GE8074@ldl.fc.hp.com> <20090319174215.GB26248@kroah.com> <20090319174938.GJ8074@ldl.fc.hp.com>
+	Thu, 19 Mar 2009 14:07:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46027 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758322AbZCSSH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 14:07:26 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH 11/13] fsnotify: fsnotify marks on inodes pin them in core
+To: linux-kernel@vger.kernel.org
+Cc: viro@zeniv.linux.org.uk, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
+       sfr@canb.auug.org.au, john@johnmccutchan.com, rlove@rlove.org,
+       akpm@linux-foundation.org
+Date: Thu, 19 Mar 2009 14:05:53 -0400
+Message-ID: <20090319180553.17449.71990.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20090319180456.17449.76663.stgit@paris.rdu.redhat.com>
+References: <20090319180456.17449.76663.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090319174938.GJ8074@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 11:49:38AM -0600, Alex Chiang wrote:
-> I went over and ran it on all my patches, and that was indeed one
-> of the complaints.
-> 
-> But when it comes to file consistency vs "letter of the law" I
-> like to keep things consistent (even if broken) in the file.
-> 
-> I could go back and move all those EXPORT_SYMBOL declarations to
-> the "proper" place. Is that too much noise though?
+This patch pins any inodes with an fsnotify mark in core.  The idea is that
+as soon as the mark is removed from the inode->fsnotify_mark_entries list
+the inode will be iput.  In reality is doesn't quite work exactly this way.
+The igrab will happen when the mark is added to an inode, but the iput will
+happen when the inode pointer is NULL'd inside the mark.
 
-The accepted way to do this is to add a prep patch which just fixes the
-checkpatch warnings (ie moves the EXPORT_SYMBOLs).  Then your patch is
-all shiny and fresh.
+It's possible that 2 racing things will try to remove the mark from
+different directions.  One may try to remove the mark because of an
+explicit request and one might try to remove it because the inode was
+deleted.  It's possible that the removal because of inode deletion will
+remove the mark from the inode's list, but the removal by explicit request
+will actually set entry->inode == NULL; and call the iput.  This is safe.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
+
+ fs/notify/inode_mark.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
+
+diff --git a/fs/notify/inode_mark.c b/fs/notify/inode_mark.c
+index 144b09a..362b04c 100644
+--- a/fs/notify/inode_mark.c
++++ b/fs/notify/inode_mark.c
+@@ -159,6 +159,8 @@ void fsnotify_destroy_mark_by_entry(struct fsnotify_mark_entry *entry)
+ 	group->ops->freeing_mark(entry, group);
+ 
+ 	fsnotify_update_dentry_child_flags(inode);
++
++	iput(inode);
+ }
+ 
+ void fsnotify_clear_marks_by_group(struct fsnotify_group *group)
+@@ -228,11 +230,16 @@ void fsnotify_init_mark(struct fsnotify_mark_entry *entry, void (*free_mark)(str
+ 	entry->free_mark = free_mark;
+ }
+ 
+-int fsnotify_add_mark(struct fsnotify_mark_entry *entry, struct fsnotify_group *group, struct inode *inode)
++int fsnotify_add_mark(struct fsnotify_mark_entry *entry, struct fsnotify_group *group, struct inode *in_inode)
+ {
+ 	struct fsnotify_mark_entry *lentry;
++	struct inode *inode;
+ 	int ret = 0;
+ 
++	inode = igrab(in_inode);
++	if (unlikely(!inode))
++		return -EINVAL;
++
+ 	/*
+ 	 * LOCKING ORDER!!!!
+ 	 * entry->lock
+
