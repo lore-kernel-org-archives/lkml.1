@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760763AbZCSW1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761670AbZCSW13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760763AbZCSW1M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 18:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761525AbZCSW0v
+	id S1761670AbZCSW13 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 18:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760603AbZCSW1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 18:26:51 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:42987 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761570AbZCSW0u (ORCPT
+	Thu, 19 Mar 2009 18:27:08 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:42881 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761599AbZCSW1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 18:26:50 -0400
-Date: Thu, 19 Mar 2009 23:28:48 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: git-commits-head@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Add '-fwrapv' to gcc CFLAGS
-Message-ID: <20090319222848.GA26278@uranus.ravnborg.org>
-References: <200903192159.n2JLx1Bu020711@hera.kernel.org>
-Mime-Version: 1.0
+	Thu, 19 Mar 2009 18:27:07 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] deadlock when swapping to FAT
+References: <Pine.LNX.4.64.0903120819010.26206@hs20-bc2-1.build.redhat.com>
+	<87zlfqohfn.fsf@devron.myhome.or.jp>
+	<Pine.LNX.4.64.0903142153330.23664@hs20-bc2-1.build.redhat.com>
+	<878wn7h3la.fsf@devron.myhome.or.jp>
+	<Pine.LNX.4.64.0903170815110.26754@hs20-bc2-1.build.redhat.com>
+	<87prgg6sj2.fsf@devron.myhome.or.jp>
+	<Pine.LNX.4.64.0903191052180.14051@hs20-bc2-1.build.redhat.com>
+Date: Fri, 20 Mar 2009 07:27:00 +0900
+In-Reply-To: <Pine.LNX.4.64.0903191052180.14051@hs20-bc2-1.build.redhat.com>
+	(Mikulas Patocka's message of "Thu, 19 Mar 2009 15:34:00 -0400 (EDT)")
+Message-ID: <8763i5xi6j.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903192159.n2JLx1Bu020711@hera.kernel.org>
-User-Agent: Mutt/1.4.2.1i
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 09:59:01PM +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/linus/68df3755e383e6fecf2354a67b08f92f18536594
-> Commit:     68df3755e383e6fecf2354a67b08f92f18536594
-> Parent:     a1e4ee22863d41a6fbb24310d7951836cb6dafe7
-> Author:     Linus Torvalds <torvalds@linux-foundation.org>
-> AuthorDate: Thu Mar 19 11:10:17 2009 -0700
-> Committer:  Linus Torvalds <torvalds@linux-foundation.org>
-> CommitDate: Thu Mar 19 11:10:17 2009 -0700
-> 
->     Add '-fwrapv' to gcc CFLAGS
->     
->     This makes sure that gcc doesn't try to optimize away wrapping
->     arithmetic, which the kernel occasionally uses for overflow testing, ie
->     things like
->     
->     	if (ptr + offset < ptr)
->     
->     which technically is undefined for non-unsigned types. See
->     
->     	http://bugzilla.kernel.org/show_bug.cgi?id=12597
->     
->     for details.
->     
->     Not all versions of gcc support it, so we need to make it conditional
->     (it looks like it was introduced in gcc-3.4).
->     
->     Reminded-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> ---
->  Makefile |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index 2e2f4a4..f607658 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -347,6 +347,7 @@ KBUILD_CPPFLAGS := -D__KERNEL__
->  KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
->  		   -fno-strict-aliasing -fno-common \
->  		   -Werror-implicit-function-declaration
-> +KBUILD_CFLAGS	+= $(call cc-option,-fwrapv)
->  KBUILD_AFLAGS   := -D__ASSEMBLY__
->  
->  # Read KERNELRELEASE from include/config/kernel.release (if it exists)
+Mikulas Patocka <mpatocka@redhat.com> writes:
 
-Path is buggy.
-We have several architectures that plays strange games with $(CC)
-and $(CROSS_COMPILE).
-So we need to postpone any use of $(call cc-option..)
-until we have included the arch specific Makefile so
-we try with the correct $(CC) version.
+> It should prevent truncation under bmap. It is used by direct-io code to 
+> protect the file from being truncated while there's direct-io being 
+> processed on it.
 
-If you move it below the include at around line 530 you
-should be safe.
+I know, FAT is ok, of course, and the simple fs would also be ok.
+However, it's not enough for all filesystems, in theory.
 
-	Sam
+> But some filesystems do their own direct-io locking (for example XFS). So 
+> I think it would be best to place the lock to generic_block_bmap, so that 
+> filesystem that doesn't want the lock can easily avoid it.
+>
+> You can submit this patch after 2.6.29 is released.
+
+I don't have objection to it. Please submit it yourself.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
