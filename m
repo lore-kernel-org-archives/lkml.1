@@ -1,56 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbZCSQWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbZCSQ1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756093AbZCSQWy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZCSQWo
+	id S1757067AbZCSQ1r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:27:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbZCSQ1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:22:44 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:42154 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751843AbZCSQWn (ORCPT
+	Thu, 19 Mar 2009 12:27:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36467 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752068AbZCSQ1h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:22:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Z5x69bpF8bLSSJ3EmKIIghWo5lFDHLzfxZL1NpOxo2MIHWdvmG9JnsUzOCJWTo64Up
-         xz6eaBylgXaUPxz2QyER8+vpAjiTfeSXZ5AxbhyPg6VaoopjGvvPWiLuG0EzrDUIA/M/
-         NwJ2F68rBtjdy6fPqpoPwaSdqvxnCE2cDoPfQ=
-Message-ID: <49C2714D.9070007@gmail.com>
-Date: Thu, 19 Mar 2009 17:22:37 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-6.1 Thunderbird/3.0b2
+	Thu, 19 Mar 2009 12:27:37 -0400
+Date: Thu, 19 Mar 2009 09:20:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Ying Han <yinghan@google.com>, Jan Kara <jack@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+In-Reply-To: <200903200248.22623.nickpiggin@yahoo.com.au>
+Message-ID: <alpine.LFD.2.00.0903190902000.17240@localhost.localdomain>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <alpine.LFD.2.00.0903181634500.17240@localhost.localdomain> <604427e00903181654y308d57d8w2cb32eab831cf45a@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] HID: remove compat stuff
-References: <1237364017-27361-1-git-send-email-jirislaby@gmail.com> <alpine.LNX.2.00.0903191554380.14346@wotan.suse.de>
-In-Reply-To: <alpine.LNX.2.00.0903191554380.14346@wotan.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19.3.2009 16:00, Jiri Kosina wrote:
-> On Wed, 18 Mar 2009, Jiri Slaby wrote:
->
->> This removal was scheduled and there is no problem with later
->> distros to adapt for the new bus, thanks to aliases.
->>
->> module-init-tools map files are deprecated nowadays, so that
->> the patch which introduced hid ones into the m-i-t won't be
->> accepted and hence there is no reason for leaving compat stuff in.
->>
->> Signed-off-by: Jiri Slaby<jirislaby@gmail.com>
->> Cc: Jiri Kosina<jkosina@suse.cz>
->
-> This seems to be against some different codebase than what I currently
-> have in my tree. I have manually fixed the patch and applied it to
-> upstream-compat-remove branch, please check it whether it is OK by you.
 
-Looks good(tm). Thanks.
 
-It was based on an -mm kernel, which contains -next's 
-request_module_nowait. Sorry for that.
+On Fri, 20 Mar 2009, Nick Piggin wrote:
+> 
+> But I think we do have a race in __set_page_dirty_buffers():
+> 
+> The page may not have buffers between the mapping->private_lock
+> critical section and the __set_page_dirty call there. So between
+> them, another thread might do a create_empty_buffers which can
+> see !PageDirty and thus it will create clean buffers.
+
+Hmm.
+
+Creating clean buffers is locked by the page lock, nothing else.  And not 
+all page dirtiers hold the page lock (in fact, most try to avoid it - the 
+rule is that you either have to hold the page lock _or_ hold a reference 
+to the 'mapping', and the latter is what the mmap code does, I think).
+
+So yeah, the page lock isn't sufficient.
+
+> Holding mapping->private_lock over the __set_page_dirty should
+> fix it, although I guess you'd want to release it before calling
+> __mark_inode_dirty so as not to put inode_lock under there. I
+> have a patch for this if it sounds reasonable.
+
+That would seem to make sense. Maybe moving the "TestSetPageDirty()" from 
+inside __set_page_dirty() to the caller? Something like the appended?
+
+This is TOTALLY untested. Of course.
+
+			Linus
+
+---
+ fs/buffer.c |   23 +++++++++++------------
+ 1 files changed, 11 insertions(+), 12 deletions(-)
+
+diff --git a/fs/buffer.c b/fs/buffer.c
+index 9f69741..891e1c7 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -760,15 +760,9 @@ EXPORT_SYMBOL(mark_buffer_dirty_inode);
+  * If warn is true, then emit a warning if the page is not uptodate and has
+  * not been truncated.
+  */
+-static int __set_page_dirty(struct page *page,
++static void __set_page_dirty(struct page *page,
+ 		struct address_space *mapping, int warn)
+ {
+-	if (unlikely(!mapping))
+-		return !TestSetPageDirty(page);
+-
+-	if (TestSetPageDirty(page))
+-		return 0;
+-
+ 	spin_lock_irq(&mapping->tree_lock);
+ 	if (page->mapping) {	/* Race with truncate? */
+ 		WARN_ON_ONCE(warn && !PageUptodate(page));
+@@ -785,8 +779,6 @@ static int __set_page_dirty(struct page *page,
+ 	}
+ 	spin_unlock_irq(&mapping->tree_lock);
+ 	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
+-
+-	return 1;
+ }
+ 
+ /*
+@@ -816,6 +808,7 @@ static int __set_page_dirty(struct page *page,
+  */
+ int __set_page_dirty_buffers(struct page *page)
+ {
++	int newly_dirty;
+ 	struct address_space *mapping = page_mapping(page);
+ 
+ 	if (unlikely(!mapping))
+@@ -831,9 +824,12 @@ int __set_page_dirty_buffers(struct page *page)
+ 			bh = bh->b_this_page;
+ 		} while (bh != head);
+ 	}
++	newly_dirty = !TestSetPageDirty(page);
+ 	spin_unlock(&mapping->private_lock);
+ 
+-	return __set_page_dirty(page, mapping, 1);
++	if (newly_dirty)
++		__set_page_dirty(page, mapping, 1);
++	return newly_dirty;
+ }
+ EXPORT_SYMBOL(__set_page_dirty_buffers);
+ 
+@@ -1262,8 +1258,11 @@ void mark_buffer_dirty(struct buffer_head *bh)
+ 			return;
+ 	}
+ 
+-	if (!test_set_buffer_dirty(bh))
+-		__set_page_dirty(bh->b_page, page_mapping(bh->b_page), 0);
++	if (!test_set_buffer_dirty(bh)) {
++		struct page *page = bh->b_page;
++		if (!TestSetPageDirty(page))
++			__set_page_dirty(page, page_mapping(page), 0);
++	}
+ }
+ 
+ /*
