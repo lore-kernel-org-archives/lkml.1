@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbZCSSq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbZCSSsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758420AbZCSSq5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 14:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbZCSSqr
+	id S1759639AbZCSSsY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 14:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbZCSSsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 14:46:47 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:43247 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751756AbZCSSqq (ORCPT
+	Thu, 19 Mar 2009 14:48:13 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:55697 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756453AbZCSSsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 14:46:46 -0400
-Date: Thu, 19 Mar 2009 18:44:12 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Joe Malicki <jmalicki@metacarta.com>
-cc: chrisw@sous-sol.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] CRED: Fix check_unsafe_exec()
-In-Reply-To: <9353728.11137281237331262320.JavaMail.root@ouachita>
-Message-ID: <Pine.LNX.4.64.0903191839330.12886@blonde.anvils>
-References: <9353728.11137281237331262320.JavaMail.root@ouachita>
+	Thu, 19 Mar 2009 14:48:12 -0400
+Message-ID: <49C293CC.6020009@oracle.com>
+Date: Thu, 19 Mar 2009 11:49:48 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michael Buesch <mb@bu3sch.de>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+Subject: Re: linux-next: Tree for March 19 (wireless/p54)
+References: <20090319221024.5e2ad6e5.sfr@canb.auug.org.au> <49C280BE.8090106@oracle.com> <200903191850.17825.mb@bu3sch.de>
+In-Reply-To: <200903191850.17825.mb@bu3sch.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.49C29347.02B7:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 17 Mar 2009, Joe Malicki wrote:
-> ----- "Joe Malicki" <jmalicki@metacarta.com> wrote:
-> > ----- "Hugh Dickins" <hugh@veritas.com> wrote:
-> > > Yes, I'm inclined to go with that, and removing the files->count
-> > > check from exec.c.  Joe, did you manage to try your testing with
-> > > my original patch plus that files->count check removed from 2.6.28's
-> > > unsafe_exec()?
-> > 
-> > Sorry for not responding earlier.
-> > 
-> > I still got one failure with this new patch.  I added some printks
-> > to illuminate exactly why it's failing when it fails to setuid, but
-> > of course, since adding the printks I haven't reproduced yet.
+Michael Buesch wrote:
+> On Thursday 19 March 2009 18:28:30 Randy Dunlap wrote:
+>> Stephen Rothwell wrote:
+>>> Hi all,
+>>>
+>>> Changes since 20090318:
+>>
+>> ERROR: "led_classdev_register" [drivers/net/wireless/p54/p54common.ko] undefined!
+>> ERROR: "led_classdev_unregister" [drivers/net/wireless/p54/p54common.ko] undefined!
+>>
+>> One possible option (fix) is to have CONFIG_MAC80211_LEDS also select
+>> LEDS_CLASS (that would build the missing functions).
 > 
-> My tests were accidentally run without removing the files->count check.
+> Does p54 select CONFIG_MAC80211_LEDS? If that's the case, I think it should
 
-Oh good, thanks Joe, I was hoping that would be the case.
+  No, it doesn't.  p54common.c just has a large block of code that is
+surrounded by
+#ifdef CONFIG_MAC80211_LEDS
+...
+#endif
 
-> The printks confirmed the failure case was the files->count check,
-> and removing the files->check has worked thus far (though I can't be
-> sure until after a day or two has gone by given how infrequent it is).
+so we could argue that it's just purely a p54 bug.
 
-Okay, unless we hear bad news from you later, I'll post the set of three
-patches (removing the files->count check, then my original fs->count one,
-plus David's comment) in a day or two, adding a few more Ccs.
+> probably do it the other way around. p54 should build its LED code if CONFIG_MAC80211_LEDS
+> is available. Otherwise it should not.
+> 
+> This way you don't enter the SELECT dependency hell and still have automagic configuration.
+> 
+> Take a look at b43 for an example.
 
-Hugh
+
+-- 
+~Randy
