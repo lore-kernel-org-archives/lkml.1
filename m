@@ -1,165 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbZCSFoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbZCSFtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758781AbZCSFoT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 01:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbZCSFoF
+	id S1758698AbZCSFtu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 01:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZCSFtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 01:44:05 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:33526 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754520AbZCSFoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 01:44:03 -0400
-Date: Wed, 18 Mar 2009 21:05:03 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcu_barrier VS cpu_hotplug: Ensure callbacks in dead
-	cpu are migrated to online cpu
-Message-ID: <20090319040503.GA7117@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <49B2526E.40106@cn.fujitsu.com> <20090308160005.GE19658@elte.hu> <49C1B6BF.5090702@cn.fujitsu.com>
+	Thu, 19 Mar 2009 01:49:36 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:33230 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752373AbZCSFtf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 01:49:35 -0400
+Message-ID: <49C1DCDF.6050300@cosmosbay.com>
+Date: Thu, 19 Mar 2009 06:49:19 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49C1B6BF.5090702@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: David Miller <davem@davemloft.net>
+CC: sven@thebigcorporation.com, ghaskins@novell.com, vernux@us.ibm.com,
+       andi@firstfloor.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       pmullaney@novell.com
+Subject: Re: High contention on the sk_buff_head.lock
+References: <1237425191.8204.41.camel@quadrophenia.thebigcorporation.com>	<20090318.181713.62394874.davem@davemloft.net>	<1237427007.8204.55.camel@quadrophenia.thebigcorporation.com> <20090318.185441.138157931.davem@davemloft.net>
+In-Reply-To: <20090318.185441.138157931.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 19 Mar 2009 06:49:20 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 11:06:39AM +0800, Lai Jiangshan wrote:
-> Ingo Molnar wrote:
-> > * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> > 
-> >> [RFC]
-> >> I don't like this patch, but I thought for some days and I can't
-> >> thought out a better one.
-> > 
-> > Interesting find. Found via code review or via testing? If via 
-> > testing, what is the symptom of the bug when it hits - did you 
-> > see CPU hotplug stress-tests hanging? Crashing too perhaps? How 
-> > frequently did it occur?
+David Miller a écrit :
+> From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+> Date: Wed, 18 Mar 2009 18:43:27 -0700
 > 
-> I found this bug when I tested the draft version of kfree_rcu(V3).
+>> Do we have to rule-out per-CPU queues, that aggregate into a master
+>> queue in a batch-wise manner? 
 > 
-> I noticed kfree_rcu_cpu_notify() is called earlier than
-> rcu_cpu_notify(). This means rcu_barrier() is called earlier than
-> RCU callbacks migration, it should lockup as expectation. But actually,
-> this lockup can not occurred, I tried to explore it, and I found that
-> rcu_barrier() does not handle cpu_hotplug. It includes two bugs.
+> That would violate the properties and characteristics expected by
+> the packet scheduler, wrt. to fair based fairness, rate limiting,
+> etc.
 > 
-> kfree_rcu(V3) (V4 is available too, it will be sent soon):
-> http://lkml.org/lkml/2009/3/6/156
-> 
-> The V1 fix of this bug:
-> http://lkml.org/lkml/2009/3/7/38
-> 
-> The fix of the other bug: (it changed the scheduler's code too)
-> http://lkml.org/lkml/2009/3/7/39
-> 
-> Subject: [PATCH] rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to online cpu (V2)
-> 
-> cpu hotplug may be happened asynchronously, some rcu callbacks are maybe
-> still in dead cpu, rcu_barrier() also needs to wait for these rcu callbacks
-> to complete, so we must ensure callbacks in dead cpu are migrated to
-> online cpu.
+> The only legal situation where we can parallelize to single device
+> is where only the most trivial packet scheduler is attached to
+> the device and the device is multiqueue, and that is exactly what
+> we do right now.
 
-Good stuff, Lai!!!  Simpler than any of the approaches that I was
-considering, and, better yet, independent of the underlying RCU
-implementation!!!
+I agree with you David.
 
-I was initially worried that wake_up() might wake only one of two
-possible wait_event()s, namely rcu_barrier() and the CPU_POST_DEAD code,
-but the fact that wait_event() clears WQ_FLAG_EXCLUSIVE avoids that issue.
-I was also worried about the fact that different RCU implementations have
-different mappings of call_rcu(), call_rcu_bh(), and call_rcu_sched(), but
-this is OK as well because we just get an extra (harmless) callback in the
-case that they map together (for example, Classic RCU has call_rcu_sched()
-mapping to call_rcu()).
+Still, there is room for improvements, since :
 
-Overlap of CPU-hotplug operations is prevented by cpu_add_remove_lock,
-and any stray callbacks that arrive (for example, from irq handlers
-running on the dying CPU) either are ahead of the CPU_DYING callbacks on
-the one hand (and thus accounted for), or happened after the rcu_barrier()
-started on the other (and thus don't need to be accounted for).
+1) default qdisc is pfifo_fast. This beast uses three sk_buff_head (96 bytes)
+  where it could use 3 smaller list_head (3 * 16 = 48 bytes on x86_64)
 
-So...
+ (assuming sizeof(spinlock_t) is only 4 bytes, but it's more than that
+ on various situations (LOCKDEP, ...)
 
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+2) struct Qdisc layout could be better, letting read mostly fields
+   at beginning of structure. (ie move 'dev_queue', 'next_sched', reshape_fail,
+   u32_node, __parent, ...)
 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-> index cae8a05..2c7b845 100644
-> --- a/kernel/rcupdate.c
-> +++ b/kernel/rcupdate.c
-> @@ -122,6 +122,8 @@ static void rcu_barrier_func(void *type)
->  	}
->  }
-> 
-> +static inline void wait_migrated_callbacks(void);
-> +
->  /*
->   * Orchestrate the specified type of RCU barrier, waiting for all
->   * RCU callbacks of the specified type to complete.
-> @@ -147,6 +149,7 @@ static void _rcu_barrier(enum rcu_barrier type)
->  		complete(&rcu_barrier_completion);
->  	wait_for_completion(&rcu_barrier_completion);
->  	mutex_unlock(&rcu_barrier_mutex);
-> +	wait_migrated_callbacks();
->  }
-> 
->  /**
-> @@ -176,9 +179,50 @@ void rcu_barrier_sched(void)
->  }
->  EXPORT_SYMBOL_GPL(rcu_barrier_sched);
-> 
-> +static atomic_t rcu_migrate_type_count = ATOMIC_INIT(0);
-> +static struct rcu_head rcu_migrate_head[3];
-> +static DECLARE_WAIT_QUEUE_HEAD(rcu_migrate_wq);
-> +
-> +static void rcu_migrate_callback(struct rcu_head *notused)
-> +{
-> +	if (atomic_dec_and_test(&rcu_migrate_type_count))
-> +		wake_up(&rcu_migrate_wq);
-> +}
-> +
-> +static inline void wait_migrated_callbacks(void)
-> +{
-> +	wait_event(rcu_migrate_wq, !atomic_read(&rcu_migrate_type_count));
-> +}
-> +
-> +static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
-> +		unsigned long action, void *hcpu)
-> +{
-> +	if (action == CPU_DYING) {
-> +		/*
-> +		 * preempt_disable() in on_each_cpu() prevents stop_machine(),
-> +		 * so when "on_each_cpu(rcu_barrier_func, (void *)type, 1);"
-> +		 * returns, all online cpus have queued rcu_barrier_func(),
-> +		 * and the dead cpu(if it exist) queues rcu_migrate_callback()s.
-> +		 *
-> +		 * These callbacks ensure _rcu_barrier() waits for all
-> +		 * RCU callbacks of the specified type to complete.
-> +		 */
-> +		atomic_set(&rcu_migrate_type_count, 3);
-> +		call_rcu_bh(rcu_migrate_head, rcu_migrate_callback);
-> +		call_rcu_sched(rcu_migrate_head + 1, rcu_migrate_callback);
-> +		call_rcu(rcu_migrate_head + 2, rcu_migrate_callback);
-> +	} else if (action == CPU_POST_DEAD) {
-> +		/* rcu_migrate_head is protected by cpu_add_remove_lock */
-> +		wait_migrated_callbacks();
-> +	}
-> +
-> +	return NOTIFY_OK;
-> +}
-> +
->  void __init rcu_init(void)
->  {
->  	__rcu_init();
-> +	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
->  }
-> 
->  void rcu_scheduler_starting(void)
-> 
+  'struct gnet_stats_basic' has a 32 bits hole
+
+   'gnet_stats_queue' could be split, at least in Qdisc, so that three
+   seldom use fields (drops, requeues, overlimits) go in a different cache line.
+
+   gnet_stats_rate_est might be also moved in a 'not very used' cache line, if
+   I am not mistaken ?
+
+3) In stress situation a CPU A queues a skb to a sk_buff_head, but a CPU B
+   dequeues it to feed device, involving an expensive cache line miss
+   on the skb.{next|prev} (to set them to NULL)
+
+   We could:
+      Use a special dequeue op that doesnt touch skb.{next|prev}
+   Eventually set next/prev to NULL after q.lock is released
+
+
+
