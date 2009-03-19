@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbZCSPQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbZCSPRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbZCSPQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 11:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755371AbZCSPQT
+	id S1757456AbZCSPRg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 11:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756409AbZCSPRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 11:16:19 -0400
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:40069 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755916AbZCSPQS (ORCPT
+	Thu, 19 Mar 2009 11:17:24 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56706 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755652AbZCSPRX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 11:16:18 -0400
-Date: Thu, 19 Mar 2009 20:47:30 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH v3 0/6] sched: Extend sched_mc/smt_framework
-Message-ID: <20090319151730.GI2990@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20090318092054.24787.18730.stgit@sofia.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090318092054.24787.18730.stgit@sofia.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 19 Mar 2009 11:17:23 -0400
+Subject: Re: Q: NFSD readdir in linux-2.6.28
+From: David Woodhouse <dwmw2@infradead.org>
+To: "hooanon05@yahoo.co.jp" <hooanon05@yahoo.co.jp>
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <8036.1237474444@jrobl>
+References: <8036.1237474444@jrobl>
+Content-Type: text/plain
+Date: Thu, 19 Mar 2009 15:17:17 +0000
+Message-Id: <1237475837.16359.106.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Gautham R Shenoy <ego@in.ibm.com> [2009-03-18 14:52:17]:
-
-> Hi,
+On Thu, 2009-03-19 at 14:54 +0000, hooanon05@yahoo.co.jp wrote:
 > 
-> I am reposting the iteration 3 of the patch series that extends the existing
-> sched_smt_/mc_power_savings framework to work on platforms
-> that have on-chip memory controllers making each of the cpu-package
-> a 'node'. I have rebased this patch series against 2.6.29-rc8.
+> Hello David and Al,
+> I have a question about NFSD readdir.
 > 
-> Changes from V2: (Found here:  --> http://lkml.org/lkml/2009/3/3/109)
-> - Patches have been split up in an incremental manner for easy review.
-> - Fixed comments for some variables.
-> - Renamed some variables to better reflect their usage.
+> By the commit 14f7dd632011bb89c035722edd6ea0d90ca6b078
+> "[PATCH] Copy XFS readdir hack into nfsd code", nfsd_buffered_filldir()
+> was introduced and nfs3svc_encode_entry_plus() (the 'func' parameter) is
+> not called from vfs_readdir().
 > 
-> Changes from V1: (Found here: --> http://lkml.org/lkml/2009/2/16/221)
-> - Added comments to explain power-saving part in find_busiest_group()
-> - Added comments for the different sched_domain levels.
+> In 2.6.27, when nfs3svc_encode_entry_plus() calls lookup_one_len(), the
+> i_mutex lock was acquired by vfs_readdir() and it was not a problem.
 > 
-> Background
-> ------------------------------------------------------------------
-> On machines with on-chip memory controller, each physical CPU
-> package forms a NUMA node and the CPU level sched_domain will have
-> only one group.  This prevents any form of power saving balance across
-> these nodes.  Enabling the sched_mc_power_savings tunable to work as
-> designed on these new single CPU NUMA node machines will help task
-> consolidation and save power as we did in other multi core multi
-> socket platforms.
+> After the commit (above), nfsd_readdir/nfsd_buffered_readdir/vfs_readdir
+> calls nfsd_buffered_filldir(), and nfs3svc_encode_entry_plus() is called
+> later.
+> In this sequence, lookup_one_len() is called without i_mutex held.
 > 
-> Consolidation across NODES have implications of cross-node memory
-> access and other NUMA locality issues.  Even under such constraints
-> there could be scope for power savings vs performance tradeoffs and
-> hence making the sched_mc_powersavings work as expected on these
-> platform is justified.
+> Isn't it a problem?
 
-If the workload threads share lots of data from cache, then
-consolidating them will improve cache sharing at the last level cache
-in the package.  If most of the working set fits the on chip cache,
-then the cross-node reference latencies will be effectively hidden.
- 
-> sched_mc/smt_power_savings is still a tunable and power savings benefits
-> and performance would vary depending on the workload and the system
-> topology and hardware features.
+Yes, well spotted. It didn't matter when the buffered readdir() was
+purely internal to XFS, because it didn't matter there that we called
+->lookup() without i_mutex set. But now we're exposing arbitrary file
+systems to it, we need to make sure we follow the locking rules. 
 
-In your results we can see significant performance degradation for
-marginal power savings when sibling threads are used to run workloads.
-Kernbench is perhaps cpu intensive and did not leave many stall cycles
-in the processor for the sibling thread to benefit.  
+I _think_ it's sufficient to make the affected callers of
+lookup_one_len() lock the parent's i_mutex for themselves before calling
+it. I'll take a closer look...
 
-Some other workloads that experience stalls due to memory references
-may not see such degradation when run on sibling threads.
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
---Vaidy
