@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbZCSPDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZCSPJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756787AbZCSPDT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 11:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZCSPDI
+	id S1755416AbZCSPJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 11:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZCSPJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 11:03:08 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:52325 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755010AbZCSPDH (ORCPT
+	Thu, 19 Mar 2009 11:09:19 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:39921 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752424AbZCSPJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 11:03:07 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: Required sequence to set wireless parameters? (was: 2.6.29-rc8: Reported regressions from 2.6.28)
-Date: Thu, 19 Mar 2009 16:02:56 +0100
-User-Agent: KMail/1.9.9
-Cc: johannes@sipsolutions.net, jeff.chua.linux@gmail.com, mingo@elte.hu,
-       torvalds@linux-foundation.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, bunk@kernel.org,
-       akpm@linux-foundation.org, kernel-testers@vger.kernel.org,
-       netdev@vger.kernel.org
-References: <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com> <1237140665.24621.2.camel@johannes.local> <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain> <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu> <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com> <1237317742.31814.28.camel@johannes.local> <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com> <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com> <1237455534.5100.56.camel@johannes.local> <1237455534.5100.56.camel@johannes.local> <20090319141311.GA3587@tuxdriver.com>
-In-reply-To: <20090319141311.GA3587@tuxdriver.com>
+	Thu, 19 Mar 2009 11:09:18 -0400
+Date: Thu, 19 Mar 2009 11:05:48 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Mel Gorman <mel@csn.ul.ie>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 24/27] Convert gfp_zone() to use a table of precalculated
+ values
+In-Reply-To: <20090319090456.fb11e23c.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0903191105090.8100@qirst.com>
+References: <1237226020-14057-1-git-send-email-mel@csn.ul.ie> <1237226020-14057-25-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903161500280.20024@qirst.com> <20090318135222.GA4629@csn.ul.ie> <alpine.DEB.1.10.0903181011210.7901@qirst.com>
+ <20090318153508.GA24462@csn.ul.ie> <alpine.DEB.1.10.0903181300540.15570@qirst.com> <20090318181717.GC24462@csn.ul.ie> <alpine.DEB.1.10.0903181507120.10154@qirst.com> <20090318194604.GD24462@csn.ul.ie>
+ <20090319090456.fb11e23c.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903191602.58790.elendil@planet.nl>
-X-OriginalArrivalTime: 19 Mar 2009 15:02:59.0485 (UTC) FILETIME=[CAF354D0:01C9A8A3]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John W. Linville wrote:
-> On Thu, Mar 19, 2009 at 10:38:54AM +0100, Johannes Berg wrote:
->> On Thu, 2009-03-19 at 12:49 +0800, Jeff Chua wrote:
->> > # this needs patch to work ...
->> > iwconfig wlan0 mode Managed
->> > ifconfig wlan0 up
->> > iwconfig wlan0 essid xxx
->> > iwconfig wlan0 key restricted xxx
->> > iwconfig wlan0 ap auto channel auto
->> 
->> If you swap the key and essid lines, it will probably always work. But
->> I've yet to analyse your data to see why it doesn't in the other case.
-> 
-> That is what I was going to suggest.  I go so far as to say that you
-> should set everything else before doing the "iwconfig wlan0 essid
-> xxx" bit.
+On Thu, 19 Mar 2009, KAMEZAWA Hiroyuki wrote:
 
-Mostly just curious, but is that actually required by some wireless 
-standard? If not, is it really reasonable to ask userland to do things in 
-that particular order?
+> I wonder why you have to make the bad caller work insane way ?
+> Is this bad ?
+> ==
+> const int gfp_zone_table[GFP_ZONEMASK] = {
+> 	ZONE_NORMAL,		/* 00 No flags set */
+> 	ZONE_DMA,		/* 01 Only GFP_DMA set */
+> 	ZONE_HIGHMEM,		/* 02 Only GFP_HIGHMEM set */
+> 	BAD_ZONE,		/* 03 GFP_HIGHMEM and GFP_DMA set */
+> 	ZONE_DMA32,		/* 04 Only GFP_DMA32 set */
+> 	BAD_ZONE,		/* 05 GFP_DMA and GFP_DMA32 set */
+> 	BAD_ZONE,		/* 06 GFP_DMA32 and GFP_HIGHMEM set */
+> 	BAD_ZONE,		/* 07 GFP_DMA, GFP_DMA32 and GFP_DMA32 set */
+> 	ZONE_MOVABLE,		/* 08 Only ZONE_MOVABLE set */
+> 	ZONE_DMA,		/* 09 MOVABLE + DMA */
+> 	ZONE_MOVABLE,		/* 0A MOVABLE + HIGHMEM */
+> 	BAD_ZONE,		/* 0B MOVABLE + DMA + HIGHMEM */
+> 	ZONE_DMA32,		/* 0C MOVABLE + DMA32 */
+> 	BAD_ZONE,		/* 0D MOVABLE + DMA + DMA32 */
+> 	BAD_ZONE,		/* 0E MOVABLE + DMA32 + HIGHMEM */
+> 	BAD_ZONE		/* 0F MOVABLE + DMA32 + HIGHMEM + DMA
+> };
+> ==
 
-Reason I ask is that for example when writing wireless support for e.g. a 
-distro installation system, it seems most logical to *first* ask the user 
-what network (ESSID) he wants to connect to. Next to check if we can 
-connect to that network without additional authentication and only then, 
-if needed, ask for keys etc.
-If it's not possible to set that info in that logical order that seems 
-rather restrictive to me and would probably mean that you'd have to reset 
-AP, ESSID and possibly other settings before each incremental attempt.
+It would work if we could check for BAD_ZONE with a VM_BUG_ON or a
+BUILD_BUG_ON. If I get some time I will look into this.
 
-Cheers,
-FJP
