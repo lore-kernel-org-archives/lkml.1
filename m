@@ -1,77 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbZCSPh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbZCSPnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756879AbZCSPh0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 11:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbZCSPhJ
+	id S1756301AbZCSPnx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 11:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbZCSPnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 11:37:09 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:42615 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751512AbZCSPhH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 11:37:07 -0400
-Date: Thu, 19 Mar 2009 09:37:04 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: "hooanon05@yahoo.co.jp" <hooanon05@yahoo.co.jp>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: Q: NFSD readdir in linux-2.6.28
-Message-ID: <20090319153704.GZ14127@parisc-linux.org>
-References: <8036.1237474444@jrobl> <1237475837.16359.106.camel@macbook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237475837.16359.106.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 19 Mar 2009 11:43:43 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43604 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753763AbZCSPnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 11:43:42 -0400
+Subject: Re: oops in tracepoint_update_probe_range()
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090319132248.GA20200@Krystal>
+References: <1237393396.3322.6.camel@localhost.localdomain>
+	 <20090318163531.GE21331@elte.hu> <49C1F1DF.2020105@cn.fujitsu.com>
+	 <20090319074616.GA17144@elte.hu>  <20090319132248.GA20200@Krystal>
+Content-Type: text/plain
+Date: Thu, 19 Mar 2009 21:12:39 +0530
+Message-Id: <1237477359.3202.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 03:17:17PM +0000, David Woodhouse wrote:
-> > In 2.6.27, when nfs3svc_encode_entry_plus() calls lookup_one_len(), the
-> > i_mutex lock was acquired by vfs_readdir() and it was not a problem.
+On Thu, 2009-03-19 at 09:22 -0400, Mathieu Desnoyers wrote:
+> * Ingo Molnar (mingo@elte.hu) wrote:
 > > 
-> > After the commit (above), nfsd_readdir/nfsd_buffered_readdir/vfs_readdir
-> > calls nfsd_buffered_filldir(), and nfs3svc_encode_entry_plus() is called
-> > later.
-> > In this sequence, lookup_one_len() is called without i_mutex held.
+> > * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 > > 
-> > Isn't it a problem?
+> > > Ingo Molnar wrote:
+> > > > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > > > 
+> > > >> Good: f4c3c4cdb1de232
+> > > >> Bad : 1e08816af0bc345
+> > > >>
+> > > >> Config:
+> > > >> http://userweb.kernel.org/~jaswinder/oops_20090318/config-hpdv5-tip-bad-20090318
+> > > >>
+> > > >> oops:
+> > > >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page1.jpg
+> > > >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page2.jpg
+> > > >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page3.jpg
+> > > >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page4.jpg
+> > > >>
+> > > >> <freeze>
+> > > > 
+> > > > Steve, Frederic - the crashes above are in:
+> > > > 
+> > > > 	tracepoint_update_probe_range()
+> > > > 
+> > > > in a modular kernel apparently.
+> > > > 
+> > > >
+> > > 
 > 
-> Yes, well spotted. It didn't matter when the buffered readdir() was
-> purely internal to XFS, because it didn't matter there that we called
-> ->lookup() without i_mutex set. But now we're exposing arbitrary file
-> systems to it, we need to make sure we follow the locking rules. 
+> Jaswinder : maybe you have old modules in your /lib/modules/`uname -r`
+> directory which have the correct version, but the wrong module.h header ?
 > 
-> I _think_ it's sufficient to make the affected callers of
-> lookup_one_len() lock the parent's i_mutex for themselves before calling
-> it. I'll take a closer look...
 
-Should we also add this?
+yes, it was having old modules, after deleting old modules.
 
----
+[root@hpdv5 linux-2.6-tip]# make modules_install
+  INSTALL arch/x86/kernel/test_nx.ko
+  INSTALL drivers/hid/hid-dummy.ko
+  INSTALL drivers/scsi/scsi_wait_scan.ko
+  DEPMOD  2.6.29-rc8-tip
+[root@hpdv5 jaswinder-git]# /sbin/mkinitrd /boot/initrd-2.6-tip.img 2.6.29-rc8-tip
+[root@hpdv5 linux-2.6-tip]#
 
-Ensure inode is locked in lookup_one_len()
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+By following above steps, I get rid of oops, and here is my lsmod:
+[jaswinder@hpdv5]$ /sbin/lsmod 
+Module                  Size  Used by
+[jaswinder@hpdv5]$ 
 
-diff --git a/fs/namei.c b/fs/namei.c
-index bbc15c2..476b1d0 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1244,6 +1244,7 @@ struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
- 	int err;
- 	struct qstr this;
- 
-+	BUG_ON(!mutex_is_locked(&base->d_inode->i_mutex));
- 	err = __lookup_one_len(name, &this, base, len);
- 	if (err)
- 		return ERR_PTR(err);
+--
+JSR
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
