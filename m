@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbZCSPRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbZCSPbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757456AbZCSPRg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 11:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756409AbZCSPRY
+	id S1755895AbZCSPbM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 11:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbZCSPax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 11:17:24 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56706 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755652AbZCSPRX (ORCPT
+	Thu, 19 Mar 2009 11:30:53 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:38941 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753763AbZCSPaw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 11:17:23 -0400
-Subject: Re: Q: NFSD readdir in linux-2.6.28
-From: David Woodhouse <dwmw2@infradead.org>
-To: "hooanon05@yahoo.co.jp" <hooanon05@yahoo.co.jp>
-Cc: Al Viro <viro@zeniv.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <8036.1237474444@jrobl>
-References: <8036.1237474444@jrobl>
-Content-Type: text/plain
-Date: Thu, 19 Mar 2009 15:17:17 +0000
-Message-Id: <1237475837.16359.106.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 19 Mar 2009 11:30:52 -0400
+Date: Thu, 19 Mar 2009 11:24:41 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: johannes@sipsolutions.net, jeff.chua.linux@gmail.com, mingo@elte.hu,
+       torvalds@linux-foundation.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, bunk@kernel.org,
+       akpm@linux-foundation.org, kernel-testers@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Required sequence to set wireless parameters? (was:
+	2.6.29-rc8: Reported regressions from 2.6.28)
+Message-ID: <20090319152441.GB3587@tuxdriver.com>
+References: <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu> <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com> <1237317742.31814.28.camel@johannes.local> <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com> <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com> <1237455534.5100.56.camel@johannes.local> <1237455534.5100.56.camel@johannes.local> <20090319141311.GA3587@tuxdriver.com> <200903191602.58790.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903191602.58790.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-19 at 14:54 +0000, hooanon05@yahoo.co.jp wrote:
+On Thu, Mar 19, 2009 at 04:02:56PM +0100, Frans Pop wrote:
+> John W. Linville wrote:
+> > On Thu, Mar 19, 2009 at 10:38:54AM +0100, Johannes Berg wrote:
+> >> On Thu, 2009-03-19 at 12:49 +0800, Jeff Chua wrote:
+> >> > # this needs patch to work ...
+> >> > iwconfig wlan0 mode Managed
+> >> > ifconfig wlan0 up
+> >> > iwconfig wlan0 essid xxx
+> >> > iwconfig wlan0 key restricted xxx
+> >> > iwconfig wlan0 ap auto channel auto
+> >> 
+> >> If you swap the key and essid lines, it will probably always work. But
+> >> I've yet to analyse your data to see why it doesn't in the other case.
+> > 
+> > That is what I was going to suggest.  I go so far as to say that you
+> > should set everything else before doing the "iwconfig wlan0 essid
+> > xxx" bit.
 > 
-> Hello David and Al,
-> I have a question about NFSD readdir.
+> Mostly just curious, but is that actually required by some wireless 
+> standard? If not, is it really reasonable to ask userland to do things in 
+> that particular order?
 > 
-> By the commit 14f7dd632011bb89c035722edd6ea0d90ca6b078
-> "[PATCH] Copy XFS readdir hack into nfsd code", nfsd_buffered_filldir()
-> was introduced and nfs3svc_encode_entry_plus() (the 'func' parameter) is
-> not called from vfs_readdir().
-> 
-> In 2.6.27, when nfs3svc_encode_entry_plus() calls lookup_one_len(), the
-> i_mutex lock was acquired by vfs_readdir() and it was not a problem.
-> 
-> After the commit (above), nfsd_readdir/nfsd_buffered_readdir/vfs_readdir
-> calls nfsd_buffered_filldir(), and nfs3svc_encode_entry_plus() is called
-> later.
-> In this sequence, lookup_one_len() is called without i_mutex held.
-> 
-> Isn't it a problem?
+> Reason I ask is that for example when writing wireless support for e.g. a 
+> distro installation system, it seems most logical to *first* ask the user 
+> what network (ESSID) he wants to connect to. Next to check if we can 
+> connect to that network without additional authentication and only then, 
+> if needed, ask for keys etc.
+> If it's not possible to set that info in that logical order that seems 
+> rather restrictive to me and would probably mean that you'd have to reset 
+> AP, ESSID and possibly other settings before each incremental attempt.
 
-Yes, well spotted. It didn't matter when the buffered readdir() was
-purely internal to XFS, because it didn't matter there that we called
-->lookup() without i_mutex set. But now we're exposing arbitrary file
-systems to it, we need to make sure we follow the locking rules. 
+You can ask the user for the data in whatever order you like, but
+when you are done collecting it you should issue the "iwconfig wlan0
+essid xxx" command (or execute the SIOCSIWESSID ioctl) last.  IMHO,
+it is silly to even bother setting the SSID before you have set any
+required key or (if you so choose) selecting an AP or channel.
 
-I _think_ it's sufficient to make the affected callers of
-lookup_one_len() lock the parent's i_mutex for themselves before calling
-it. I'll take a closer look...
+This is a limitation of the wireless extensions API -- nothing in
+the API really defines when an association should be triggered.
+The mac80211 component uses the setting of the SSID as the trigger
+for association.  AFAIK, this ordering should work with all other
+drivers as well.
 
+John
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
