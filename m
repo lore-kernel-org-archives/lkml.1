@@ -1,122 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZCSLxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZCSLzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755379AbZCSLxx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 07:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZCSLxn
+	id S1753498AbZCSLzb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 07:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZCSLzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 07:53:43 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:53395 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751614AbZCSLxm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 07:53:42 -0400
-Message-ID: <49C232D4.7050004@novell.com>
-Date: Thu, 19 Mar 2009 07:56:04 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 19 Mar 2009 07:55:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45869 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751475AbZCSLzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 07:55:19 -0400
+Date: Thu, 19 Mar 2009 11:54:35 GMT
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-discussion>
+References: <new-discussion>
+Subject: [tip:core/stacktrace] symbols, stacktrace: look up init symbols after module symbols
+Message-ID: <tip-4a44bac1f98223ed77e47bf3b42fcfd10cddd85f@git.kernel.org>
+Git-Commit-ID: 4a44bac1f98223ed77e47bf3b42fcfd10cddd85f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Luis Henriques <henrix@sapo.pt>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 -tip] sched: Clean unused fields from struct rq
-References: <20090318225137.GA3766@hades.domain.com> <20090318225428.GA3769@hades.domain.com> <20090319074949.GB17144@elte.hu>
-In-Reply-To: <20090319074949.GB17144@elte.hu>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC7A16D84FD2F3721464DFE2F"
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 19 Mar 2009 11:54:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC7A16D84FD2F3721464DFE2F
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Commit-ID:  4a44bac1f98223ed77e47bf3b42fcfd10cddd85f
+Gitweb:     http://git.kernel.org/tip/4a44bac1f98223ed77e47bf3b42fcfd10cddd85f
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Thu, 19 Mar 2009 13:21:44 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 19 Mar 2009 13:38:35 +0100
 
-Ingo Molnar wrote:
-> * Luis Henriques <henrix@sapo.pt> wrote:
->
->  =20
->>
->> Btw: I tried Greg schedtop with this patch and the app behaviour is as=
- expected:
->>
->>   $ ./schedtop=20
->>   Exception: unsupported version
->>    =20
->
-> Mind updating the app too and post it here please? It's the only app=20
-> that relies on this file AFAIK.
->  =20
+symbols, stacktrace: look up init symbols after module symbols
 
-I can take care of the update if Luis can just confirm that this patch
-works as expected against his new ABI?
+Impact: fix incomplete stacktraces
 
---
-commit 336a22f597769bb5759d561773d05ce666019677
-Author: Gregory Haskins <ghaskins@novell.com>
-Date:   Thu Mar 19 07:54:10 2009 -0400
+I noticed such weird stacktrace entries in lockdep dumps:
 
-    Update to proposed v15 ABI
-  =20
-    Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+[    0.285956] {HARDIRQ-ON-W} state was registered at:
+[    0.285956]   [<ffffffff802bce90>] mark_irqflags+0xbe/0x125
+[    0.285956]   [<ffffffff802bf2fd>] __lock_acquire+0x674/0x82d
+[    0.285956]   [<ffffffff802bf5b2>] lock_acquire+0xfc/0x128
+[    0.285956]   [<ffffffff8135b636>] rt_spin_lock+0xc8/0xd0
+[    0.285956]   [<ffffffffffffffff>] 0xffffffffffffffff
 
-diff --git a/schedtop.cc b/schedtop.cc
-index 4d4c510..f3c9468 100644
---- a/schedtop.cc
-+++ b/schedtop.cc
-@@ -114,7 +114,7 @@ public:
-                            throw std::runtime_error("error parsing
-version");
-                      =20
-                        lis >> m_version;
--                       if (m_version !=3D 14)
-+                       if ((m_version < 14) || (m_version > 15))
-                            throw std::runtime_error("unsupported version=
-");
-                      =20
-                        state =3D state_timestamp;
-@@ -219,9 +219,11 @@ private:
-            std::string basename("/" + FormIndex("cpu", m_cpu) + "/rq/");=
+The stacktrace entry is cut off after rt_spin_lock.
 
-            Importer importer(m_smap, is, basename);
-=20
--           importer +=3D "yld_both_empty";
--           importer +=3D "yld_act_empty";
--           importer +=3D "yld_exp_empty";
-+           if (m_version < 15){
-+             importer +=3D "yld_both_empty";
-+             importer +=3D "yld_act_empty";
-+             importer +=3D "yld_exp_empty";
-+           }
-            importer +=3D "yld_count";
-            importer +=3D "sched_switch";
-            importer +=3D "sched_count";
+After much debugging i found out that stacktrace entries that
+belong to init symbols dont get printed out, due to commit:
+
+  a2da405: module: Don't report discarded init pages as kernel text.
+
+The reason is this check added to core_kernel_text():
+
+-       if (addr >= (unsigned long)_sinittext &&
++       if (system_state == SYSTEM_BOOTING &&
++           addr >= (unsigned long)_sinittext &&
+            addr <= (unsigned long)_einittext)
+                return 1;
+
+This will discard inittext symbols even though their symbol table
+is still present and even though stacktraces done while the system
+was booting up might still be relevant.
+
+To not reintroduce the (not well-specified) bug addressed in that
+commit, first do a module symbols lookup, then a final init-symbols
+lookup.
+
+This will work fine on architectures that have separate address
+spaces for modules (such as x86) - and should not crash any other
+architectures either.
+
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+LKML-Reference: <new-discussion>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ kernel/extable.c |   25 ++++++++++++++++++++++---
+ 1 files changed, 22 insertions(+), 3 deletions(-)
 
-----------------
-
-If this patch works, you have my "Acked-by" for Luis' kernel-side patch.
-
--Greg
-
-
-
---------------enigC7A16D84FD2F3721464DFE2F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknCMtUACgkQlOSOBdgZUxmSFwCcDj9c4iURzHxecP3wMem6Zqyt
-huQAn2sQfZObZAufhjlnyIZi/GUMQTip
-=p7+W
------END PGP SIGNATURE-----
-
---------------enigC7A16D84FD2F3721464DFE2F--
+diff --git a/kernel/extable.c b/kernel/extable.c
+index e136ed8..c46da6a 100644
+--- a/kernel/extable.c
++++ b/kernel/extable.c
+@@ -41,6 +41,14 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
+ 	return e;
+ }
+ 
++static inline int init_kernel_text(unsigned long addr)
++{
++	if (addr >= (unsigned long)_sinittext &&
++	    addr <= (unsigned long)_einittext)
++		return 1;
++	return 0;
++}
++
+ __notrace_funcgraph int core_kernel_text(unsigned long addr)
+ {
+ 	if (addr >= (unsigned long)_stext &&
+@@ -48,8 +56,7 @@ __notrace_funcgraph int core_kernel_text(unsigned long addr)
+ 		return 1;
+ 
+ 	if (system_state == SYSTEM_BOOTING &&
+-	    addr >= (unsigned long)_sinittext &&
+-	    addr <= (unsigned long)_einittext)
++	    init_kernel_text(addr))
+ 		return 1;
+ 	return 0;
+ }
+@@ -58,7 +65,19 @@ __notrace_funcgraph int __kernel_text_address(unsigned long addr)
+ {
+ 	if (core_kernel_text(addr))
+ 		return 1;
+-	return __module_text_address(addr) != NULL;
++	if (__module_text_address(addr))
++		return 1;
++	/*
++	 * There might be init symbols in saved stacktraces.
++	 * Give those symbols a chance to be printed in
++	 * backtraces (such as lockdep traces).
++	 *
++	 * Since we are after the module-symbols check, there's
++	 * no danger of address overlap:
++	 */
++	if (init_kernel_text(addr))
++		return 1;
++	return 0;
+ }
+ 
+ int kernel_text_address(unsigned long addr)
