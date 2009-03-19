@@ -1,52 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbZCSAeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbZCSAlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757456AbZCSAeO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 20:34:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbZCSAdt
+	id S1754590AbZCSAlI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 20:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZCSAku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 20:33:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57329 "EHLO mx2.redhat.com"
+	Wed, 18 Mar 2009 20:40:50 -0400
+Received: from mga01.intel.com ([192.55.52.88]:17749 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754419AbZCSAds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 20:33:48 -0400
-Subject: Re: [PATCH] ftrace: protect running nmi (V3)
-From: Steven Rostedt <srostedt@redhat.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <49C0B411.30003@cn.fujitsu.com>
-References: <49BE4BF7.6050407@cn.fujitsu.com>
-	 <1237225372.3624.15.camel@localhost.localdomain>
-	 <49BF9D8A.4070200@cn.fujitsu.com>  <49C0B411.30003@cn.fujitsu.com>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Wed, 18 Mar 2009 20:33:28 -0400
-Message-Id: <1237422809.3624.39.camel@localhost.localdomain>
-Mime-Version: 1.0
+	id S1753139AbZCSAkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 20:40:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,386,1233561600"; 
+   d="scan'208";a="440098493"
+Message-ID: <49C1948F.1060300@intel.com>
+Date: Wed, 18 Mar 2009 17:40:47 -0700
+From: Alexander Duyck <alexander.h.duyck@intel.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "davem@davemloft.net" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "gospo@redhat.com" <gospo@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "greg@kroah.com" <greg@kroah.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "Zhao, Yu" <yu.zhao@intel.com>
+Subject: Re: [net-next PATCH 1/2] igbvf: add new driver to support 82576 virtual
+ functions
+References: <20090311020928.23138.20790.stgit@lost.foo-projects.org>	<20090310222154.4bc8c12c.akpm@linux-foundation.org>	<49C03C80.5020203@intel.com>	<20090317180826.8f3c596b.akpm@linux-foundation.org>	<49C111C6.2010905@intel.com> <20090318145340.6b282829.akpm@linux-foundation.org>
+In-Reply-To: <20090318145340.6b282829.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Wed, 18 Mar 2009 08:22:46 -0700 Alexander Duyck <alexander.h.duyck@intel.com> wrote:
+> 
+>>>>>> +static int igbvf_set_ringparam(struct net_device *netdev,
+>>>>>> +                               struct ethtool_ringparam *ring)
+>>>>>> +{
+>>>>>> +     struct igbvf_adapter *adapter = netdev_priv(netdev);
+>>>>>> +     struct igbvf_ring *tx_ring, *tx_old;
+>>>>>> +     struct igbvf_ring *rx_ring, *rx_old;
+>>>>>> +     int err;
+>>>>>> +
+>>>>>> +     if ((ring->rx_mini_pending) || (ring->rx_jumbo_pending))
+>>>>>> +             return -EINVAL;
+>>>>>> +
+>>>>>> +     while (test_and_set_bit(__IGBVF_RESETTING, &adapter->state))
+>>>>>> +             msleep(1);
+>>>>> No timeout needed here?  Interrupts might not be working, for example..
+>>>> This bit isn't set in interrupt context.  This is always used out of 
+>>>> interrupt context and is just to prevent multiple setting changes at the 
+>>>> same time.
+>>> Oh.  Can't use plain old mutex_lock()?
+>> We have one or two spots that actually check to see if the bit is set 
+>> and just report a warning instead of actually waiting on the bit to clear.
+> 
+> mutex_is_locked()?
 
-On Wed, 2009-03-18 at 16:42 +0800, Lai Jiangshan wrote:
+I suppose that would work, but I still would prefer to keep this bit of 
+code as it is.  My main motivation is just to use what was already 
+proven, and the fact is the e1000, e1000e, igb, and several other 
+drivers all use this same approach and it works.
 
->  
-> +static void wait_for_nmi_and_set_mod_flag(void)
-> +{
-> +	if (!atomic_cmpxchg(&nmi_running, 0, MOD_CODE_WRITE_FLAG))
-> +		rerurn;
+I don't think we need the extra overhead of the mutex lock since most of 
+the calls that end up setting the __IGBVF_RESETTING bit will already be 
+wrapped within rtnl_lock/unlock calls.  As far as I can tell it looks 
+like the only two threads that would ever be competing for the lock 
+would be the igbvf_reinit_locked and whatever ethtool or ifconfig 
+requests that decide to make changes to the configuration of the netdevice.
 
-You might want to compile check patches before sending. I'll look this
-patch over in detail, and make the necessary fixes.
+Thanks,
 
--- Steve
-
-> +
-> +	do {
-> +		cpu_relax();
-> +	} while (atomic_cmpxchg(&nmi_running, 0, MOD_CODE_WRITE_FLAG));
-> +
-> +	nmi_wait_count++;
-> +}
-> +
-
+Alex
