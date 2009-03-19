@@ -1,95 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbZCSDkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbZCSDqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758503AbZCSDkk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 23:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbZCSDk3
+	id S1758424AbZCSDqt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 23:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZCSDqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 23:40:29 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:58937 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303AbZCSDk2 (ORCPT
+	Wed, 18 Mar 2009 23:46:35 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:39578 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752533AbZCSDqe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 23:40:28 -0400
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org,
-       Zhang Le <r0bertz@gentoo.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-References: <1237185871-3343-1-git-send-email-r0bertz@gentoo.org>
-	<m17i2okogv.fsf@fess.ebiederm.org>
-	<20090318072720.GA20593@adriano.hkcable.com.hk>
-	<m1mybjf77w.fsf@fess.ebiederm.org>
-	<m1wsandk64.fsf_-_@fess.ebiederm.org>
-	<20090318135718.GA32106@hawkmoon.kerlabs.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 18 Mar 2009 20:40:20 -0700
-In-Reply-To: <20090318135718.GA32106@hawkmoon.kerlabs.com> (Louis Rilling's message of "Wed\, 18 Mar 2009 14\:57\:18 +0100")
-Message-ID: <m13adaxjrv.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 18 Mar 2009 23:46:34 -0400
+Message-ID: <49C1C09E.8050405@novell.com>
+Date: Wed, 18 Mar 2009 23:48:46 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: adobriyan@gmail.com, oleg@tv-sign.ru, viro@ZenIV.linux.org.uk, r0bertz@gentoo.org, torvalds@osdl.org, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Alexey Dobriyan <adobriyan@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] proc:  Fix proc_tid_readdir so it handles the weird cases.
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+To: David Miller <davem@davemloft.net>
+CC: vernux@us.ibm.com, andi@firstfloor.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       pmullaney@novell.com
+Subject: Re: High contention on the sk_buff_head.lock
+References: <49C16349.9030503@us.ibm.com>	<20090318.143844.173112261.davem@davemloft.net>	<49C16D7C.3080003@novell.com> <20090318.180355.228447835.davem@davemloft.net>
+In-Reply-To: <20090318.180355.228447835.davem@davemloft.net>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig92404978001B3FBE2CBD5BC1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Louis Rilling <Louis.Rilling@kerlabs.com> writes:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig92404978001B3FBE2CBD5BC1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> On 18/03/09  6:39 -0700, Eric W. Biederman wrote:
->> 
->> Fix the logic in proc_task_readdir so that we provide the
->> guarantee that in the sequence:
->> opendir
->> readdir
->> readdir
->> ....
->> readdir
->> closedir
->> If a thread exists from the beginning until the end we are
->> guaranteed to see it, even if some threads are created or
->> worse are destroyed during the readdir.
->> 
->> This guarantee is provided by reusing the same logic used
->> by proc_pid_readdir for the root directory of /proc.  The
->> pid is encoded into the offset, and we walk the pid bitmap
->> of all pids in the system, and test each of them to see if
->> it belongs to the specified thread group.
->> 
->> If we seek to a bad location or if the task we say last
->> exits it is ok because we can numerically find the next
->> task we would have returned.
->> 
->> This is slower that the previous version, but it should
->> not be too slow as this techinique is already use for
->> the root directory of /proc without problems.
+David Miller wrote:
+> From: Gregory Haskins <ghaskins@novell.com>
+> Date: Wed, 18 Mar 2009 17:54:04 -0400
 >
-> This makes 'ps -T x' an O(n^2) thing, compared to O(n) before the patch, right?
-> It would be good to, at least, check for thread_group_empty().
+>  =20
+>> Note that -rt doesnt typically context-switch under contention anymore=
 
-Sort of.  It is more like it adds a constant to the traversing each thread
-directory.  With everything in cache I don't expect it to be a big constant,
-as I have reports that when I changed the pid directory it sped things up.
+>> since we introduced adaptive-locks.  Also note that the contention
+>> against the lock is still contention, regardless of whether you have -=
+rt
+>> or not.  Its just that the slow-path to handle the contended case for
+>> -rt is more expensive than mainline.  However, once you have the
+>> contention as stated, you have already lost.
+>>    =20
+>
+> First, contention is not implicitly a bad thing.
+>  =20
+However, when the contention in question is your top bottleneck, even
+small improvements have the potential to yield large performance gains. :=
+)
 
-We definitely don't hold any locks so only the process doing the traversal will pay
-the price.
+> Second, if the -rt kernel is doing adaptive spinning I see no
+> reason why that adaptive spinning is not kicking in here
+It does.  Things would be *much* worse if it wasn't.
 
-Since this is actually a correctness issue I'm willing to pay a little more to get
-the right result.
+>  to
+> make this problem just go away.
+>  =20
+Well, "go away" is a relative term.  Before adaptive-locks, the box was
+heavily context-switching under a network workload like we are
+discussing, and that is where much of the performance was lost.=20
+Adaptive-locks mitigate that particular problem so that spinlock_t
+clients now more closely model mainline behavior (i.e. spin under
+contention, at least when they can) and this brought -rt much closer to
+what you expect for performance from mainline.
 
-Eric
+However, in -rt the contention path is, by necessity, still moderately
+more heavy weight than a simple mainline spin (PI, etc), so any
+contention will still hurt relatively more.   And obviously
+adaptive-locks do nothing to address the contention itself.  Therefore,
+as long as the contention remains it will have a higher impact in -rt.=20
+But make no mistake: the contention can (and I believe does) affect both
+trees.
 
+To see this in action, try taking a moderately large smp system (8-way+)
+and scaling the number of flows.  At 1 flow the stack is generally quite
+capable of maintaining line-rate (at least up to GigE).  With two flows
+this should result in each achieving roughly 50% of the line-rate, for a
+sum total of line-rate.  But as you add flows to the equation, the
+aggregate bandwidth typically starts to drop off to be something less
+than line-rate (many times its actually much less).  And when this
+happens, the contention in question is usually at the top of the charts
+(thus all the interest in this thread).
+
+> This lock is held for mere cycles, just to unlink an SKB from
+> the networking qdisc, and then it is immediately released.
+>  =20
+To clarify: I haven't been looking at the stack code since last summer,
+so some things may have changed since then.  However, the issue back
+then from my perspective was the general backpressure in the qdisc
+subsystem (e.g. dev->queue_lock), not just the skb head.lock per se.=20
+This dev->queue_lock can be held for quite a long time, and the
+mechanism in general scales poorly as the fabric speeds and core-counts
+increase.  (It is arguable whether you would even want another buffering
+layer on any reasonably fast interconnect, anyway.  It ultimately just
+destabilizes the flows and is probably best left to the underlying
+hardware which will typically have the proper facilities for
+shaping/limiting, etc. However, that is a topic for another discussion ;)=
+=2E)
+
+One approach that we found yielded some significant improvements here
+was to bypass the qdisc outright and do per-cpu lockless queuing.  One
+thread/core could then simply aggregate the per-cpu buffers with only
+minor contention between the egress (consuming) core and the producer
+thread.  I realize that this solution as-is may not be feasible for
+production use.  However, it did serve to prove the theory that backing
+off cache-line pressures that scale with the core count *did* help the
+stack make more forward progress per unit time (e.g. higher throughput)
+as the number of flows increased.  The idea was more or less to refactor
+the egress/TX path to be more per-cpu, similar to the methodology of the
+ingress/RX side.
+
+You could probably adapt this same concept to work harmoniously with the
+qdisc infrastructure (though as previously indicated, I am not sure if
+we would *want* to ;)).  Something to consider, anyway.
+
+Regards,
+-Greg
+
+
+
+
+--------------enig92404978001B3FBE2CBD5BC1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknBwJ4ACgkQlOSOBdgZUxnEXQCffJj0zcwaubjTv4TCc3G0XXbE
+F8UAn3vAjbPApDX2/FwBE7GbwwmXUk5V
+=KqhC
+-----END PGP SIGNATURE-----
+
+--------------enig92404978001B3FBE2CBD5BC1--
