@@ -1,98 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760470AbZCSTcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760505AbZCSTdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760470AbZCSTcU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 15:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZCSTbw
+	id S1760505AbZCSTdP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 15:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758293AbZCSTc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 15:31:52 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:35094 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759401AbZCSTbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 15:31:51 -0400
-Message-ID: <49C29DA2.2050605@linux.vnet.ibm.com>
-Date: Thu, 19 Mar 2009 12:31:46 -0700
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 19 Mar 2009 15:32:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42952 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757764AbZCSTcz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 15:32:55 -0400
+Date: Thu, 19 Mar 2009 15:32:49 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Sage Weil <sage@newdream.net>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       viro@zeniv.linux.org.uk, adilger@sun.com
+Subject: Re: [PATCH] vfs: make real_lookup do dentry revalidation with
+	i_mutex held
+Message-ID: <20090319193249.GA23267@infradead.org>
+References: <Pine.LNX.4.64.0903091118210.2773@cobra.newdream.net> <20090317081730.GA20213@infradead.org> <Pine.LNX.4.64.0903170957560.18956@cobra.newdream.net>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH/RFC 1/2] perfcounters: provide a way to read the current
- value of interrupting counters
-References: <18879.14425.221429.861838@drongo.ozlabs.ibm.com> <1237275169.5189.58.camel@laptop> <18879.21884.162961.690031@cargo.ozlabs.ibm.com> <1237279060.5189.141.camel@laptop> <18879.27296.307613.67496@cargo.ozlabs.ibm.com>
-In-Reply-To: <18879.27296.307613.67496@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0903170957560.18956@cobra.newdream.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras wrote:
-> Peter Zijlstra writes:
+On Tue, Mar 17, 2009 at 10:03:35AM -0700, Sage Weil wrote:
+> On Tue, 17 Mar 2009, Christoph Hellwig wrote:
+> > Keeping i_mutes over do_revalidate seem fine from a first glance, but
+> > can you please do it without rearranging the whole code?
 > 
->>> It was specifically requested by people porting PAPI to PCL, and it
->>> seems like a reasonable request.
->> OK, then why didn't the changelog say so :-)
-> 
-> Fair point. :)
-> 
->> Could you ask them why though, if they need it I won't object too much,
->> but I'd like to know the use case.
-> 
-> PAPI has the concept of "overflowing" counters, apparently, which
-> generate a signal every N counts, about which they said: "One thing to
-> keep in mind, you should always be able to read a live counter,
-> regardless of whether or not it's set to overflow..."
-> 
-> I assume the PAPI interface lets you do everything with overflowing
-> counters that you can do with non-overflowing counters, and that's why
-> they want it, but I don't know much about PAPI myself.
-> 
->> As to the method proposed, I think Ingo and I talked about 'abusing'
->> non-blocking reads for this purpose, would that work? Then if you need
->> two fds you could dup() and flip one to non-blocking.
-> 
-> The non-blocking flag is one of the "file status" flags, which are
-> shared between all fds pointing at the same struct file.  So if you
-> dup() and set one to non-blocking, the other one becomes non-blocking
-> too.  So that doesn't fly.
-> 
->> The non-blocking read would either output whatever is already pending,
->> but in case there is no data, it would generate some on the spot.
-> 
-> The difficulty then is how userspace does know what it ended up
-> getting?  It may not always be possible to distinguish based on the
-> value you get.
-> 
-> The other idea I had was to use the file position, and say that
-> positions greater than some threshold read the event queue, and less
-> than the threshold read the counter value.  That way you can read the
-> event queue with read() and the counter value with pread(..., 0).
-> 
-> The objection to that is that the threshold is a bit artificial, and
-> would need to be different between interrupting and counting
-> counters.  Also we may need to do strange things to file->f_pos like
-> initializing it to the (non-zero) threshold when opening an
-> interrupting counter.
-> 
+> Yeah, but not without an extra goto.  Holding i_mutex over revalidate is 
+> only half of it... we also want to go ahead with the ->lookup if the 
+> revalidate fails (instead of returning -ENOENT).  I make the patch easier 
+> to read (with a goto), but I assumed we'd want the resulting code to be 
+> more clear?
 
-This could be a reason for getting rid of the purely interrupting 
-counter record type.  That way, you always read at the [artificial] 
-offset to read the event queue for counters with a non-zero irq_period, 
-and always at offset zero to read the current counter value.
-
-It would work similarly well for the other idea of creating a cloned fd. 
-  The fd returned from the initial open is always used for reading the 
-current value, and the cloned one is for reading the event queue.
-
-Regards,
-
-- Corey
-
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
+Well, if you want to re-organize real_lookup make that a separate patch.
+Might actually be worthwile to do so and clean up the other issues
+in there (too long line in the prototype, spaces after the pointer *,
+too.  And then have a small patch ontop to implement the mutex and
+going ahead with the lookup.
 
