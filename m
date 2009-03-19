@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbZCSPnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbZCSPqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756301AbZCSPnx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 11:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbZCSPnn
+	id S1753378AbZCSPqH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 11:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZCSPpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 11:43:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43604 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753763AbZCSPnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 11:43:42 -0400
-Subject: Re: oops in tracepoint_update_probe_range()
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090319132248.GA20200@Krystal>
-References: <1237393396.3322.6.camel@localhost.localdomain>
-	 <20090318163531.GE21331@elte.hu> <49C1F1DF.2020105@cn.fujitsu.com>
-	 <20090319074616.GA17144@elte.hu>  <20090319132248.GA20200@Krystal>
-Content-Type: text/plain
-Date: Thu, 19 Mar 2009 21:12:39 +0530
-Message-Id: <1237477359.3202.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Mar 2009 11:45:52 -0400
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:55902 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751122AbZCSPpw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 11:45:52 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: Q: NFSD readdir in linux-2.6.28 
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: David Woodhouse <dwmw2@infradead.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20090319153704.GZ14127@parisc-linux.org>
+References: <8036.1237474444@jrobl> <1237475837.16359.106.camel@macbook.infradead.org> <20090319153704.GZ14127@parisc-linux.org>
+Date: Fri, 20 Mar 2009 00:45:09 +0900
+Message-ID: <9148.1237477509@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-19 at 09:22 -0400, Mathieu Desnoyers wrote:
-> * Ingo Molnar (mingo@elte.hu) wrote:
-> > 
-> > * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> > 
-> > > Ingo Molnar wrote:
-> > > > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> > > > 
-> > > >> Good: f4c3c4cdb1de232
-> > > >> Bad : 1e08816af0bc345
-> > > >>
-> > > >> Config:
-> > > >> http://userweb.kernel.org/~jaswinder/oops_20090318/config-hpdv5-tip-bad-20090318
-> > > >>
-> > > >> oops:
-> > > >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page1.jpg
-> > > >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page2.jpg
-> > > >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page3.jpg
-> > > >> http://userweb.kernel.org/~jaswinder/oops_20090318/oops_page4.jpg
-> > > >>
-> > > >> <freeze>
-> > > > 
-> > > > Steve, Frederic - the crashes above are in:
-> > > > 
-> > > > 	tracepoint_update_probe_range()
-> > > > 
-> > > > in a modular kernel apparently.
-> > > > 
-> > > >
-> > > 
+
+Matthew Wilcox:
+> > I _think_ it's sufficient to make the affected callers of
+> > lookup_one_len() lock the parent's i_mutex for themselves before calling
+> > it. I'll take a closer look...
 > 
-> Jaswinder : maybe you have old modules in your /lib/modules/`uname -r`
-> directory which have the correct version, but the wrong module.h header ?
-> 
+> Should we also add this?
+	:::
+> @@ -1244,6 +1244,7 @@ struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
+>  	int err;
+>  	struct qstr this;
+>  
+> +	BUG_ON(!mutex_is_locked(&base->d_inode->i_mutex));
+>  	err = __lookup_one_len(name, &this, base, len);
 
-yes, it was having old modules, after deleting old modules.
+That was how I found this problem actually. :-)
+I implemented very similar debug code in aufs which is compiled when
+CONFIG_AUFS_DEBUG is enabled.
 
-[root@hpdv5 linux-2.6-tip]# make modules_install
-  INSTALL arch/x86/kernel/test_nx.ko
-  INSTALL drivers/hid/hid-dummy.ko
-  INSTALL drivers/scsi/scsi_wait_scan.ko
-  DEPMOD  2.6.29-rc8-tip
-[root@hpdv5 jaswinder-git]# /sbin/mkinitrd /boot/initrd-2.6-tip.img 2.6.29-rc8-tip
-[root@hpdv5 linux-2.6-tip]#
+(in aufs header files)
+#ifdef CONFIG_AUFS_DEBUG
+#define AuDebugOn(a)		BUG_ON(a)
+	:::
+#endif
+
+/* to debug easier, do not make them inlined functions */
+#define MtxMustLock(mtx)	AuDebugOn(!mutex_is_locked(mtx))
+#define IMustLock(i)		MtxMustLock(&(i)->i_mutex)
+
+(in ->lookup of aufs)
+static struct dentry *aufs_lookup(struct inode *dir, struct dentry *dentry,
+				  struct nameidata *nd)
+{
+	:::
+	IMustLock(dir);
 
 
-By following above steps, I get rid of oops, and here is my lsmod:
-[jaswinder@hpdv5]$ /sbin/lsmod 
-Module                  Size  Used by
-[jaswinder@hpdv5]$ 
-
---
-JSR
-
+J. R. Okajima
