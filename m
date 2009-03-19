@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbZCSLLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbZCSLVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbZCSLLO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 07:11:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbZCSLK5
+	id S1755486AbZCSLVU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 07:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbZCSLVC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 07:10:57 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:2092 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752617AbZCSLK4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 07:10:56 -0400
-Message-ID: <49C2283B.7010907@monstr.eu>
-Date: Thu, 19 Mar 2009 12:10:51 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
+	Thu, 19 Mar 2009 07:21:02 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54144 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752338AbZCSLVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 07:21:00 -0400
+Date: Thu, 19 Mar 2009 12:19:28 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: David Miller <davem@davemloft.net>
+Cc: shemminger@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jgarzik@pobox.com,
+       bridge@lists.linux-foundation.org, fubar@us.ibm.com,
+       bonding-devel@lists.sourceforge.net
+Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work
+	properly in bridge
+Message-ID: <20090319111927.GD4123@psychotron.englab.brq.redhat.com>
+References: <20090316111127.GB3484@psychotron.englab.brq.redhat.com> <20090318.232003.30974750.davem@davemloft.net> <20090319084444.GA4123@psychotron.englab.brq.redhat.com> <20090319.032143.08849045.davem@davemloft.net>
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       john.williams@petalogix.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Microblaze linux support
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>	 <20090319072256.GA5069@elte.hu> <49C213A2.4040609@monstr.eu>	 <20090319102142.GA2579@elte.hu>  <49C21DF0.10808@monstr.eu> <1237459666.3127.8.camel@localhost.localdomain>
-In-Reply-To: <1237459666.3127.8.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090319.032143.08849045.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> On Thu, 2009-03-19 at 11:26 +0100, Michal Simek wrote:
-> 
->> you are welcome - I can quickly test and add all changes to git.
->>
->> Is it good style separate extern definition and EXPORT_SYMBOL?
->>
->> I have three choices?
->> 1. keep extern + EXPORT_SYMBOL below  - current style
->> 2. move only extern to header file
->> 3. move extern and EXPORT_SYMBOL to header.
->>
->> What is preferable way?
-> 
-> externs should be in header files
-> 
-> EXPORT_SYMBOL should immediately follow its function/variable should
-> normally be in source files like : arch/x86/kernel/process.c
-
-Yes, I know -> is should be in all microblaze code (for example
-arch/microblaze/lib folder)
-
-
-> and if required can also be defined in header files like:
-> arch/x86/include/asm/percpu.h
-
-As wrote Ingo this is a little bit different case.
-
-Thanks for you comments,
-Michal
-> 
-> --
-> JSR
-> 
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+Thu, Mar 19, 2009 at 11:21:43AM CET, davem@davemloft.net wrote:
+>From: Jiri Pirko <jpirko@redhat.com>
+>Date: Thu, 19 Mar 2009 09:44:45 +0100
+>
+>> Yes I was looking at this thing yesterday (uc_list). But this list serves
+>> to different purpose. Do you think that it will be correct to use it for this? I
+>> would maybe like to make a new list similar to this for our purpose
+>> (say addr_list). I think it would be more correct.
+>
+>Whatever you do with that list privately inside of the bonding
+>driver should be fine.
+Well I do not need it only inside the bonding driver. I want bridge to use this
+list when adding a device in it and get mac addresses from there into its
+hashlist (to recognize these addresses as local).
+>
+>It might upset something in the generic code if you don't clean
+>it up before deregistration of the bonding device, so just be
+>tidy.
