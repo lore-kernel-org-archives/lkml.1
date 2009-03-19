@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbZCSUcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760308AbZCSUdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760775AbZCSUcc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 16:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758102AbZCSUcX
+	id S1760308AbZCSUdt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 16:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756249AbZCSUdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 16:32:23 -0400
-Received: from dallas.jonmasters.org ([72.29.103.172]:52800 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755649AbZCSUcW (ORCPT
+	Thu, 19 Mar 2009 16:33:39 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:56375 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757242AbZCSUdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 16:32:22 -0400
-Subject: Re: linux-2.6 install errors due to incompatible depmod files [was
-	Re: Bug#518412: initramfs-tools: must support relative paths in modules.dep
-	]
-From: Jon Masters <jonathan@jonmasters.org>
-To: maximilian attems <max@stro.at>
-Cc: Frans Pop <elendil@planet.nl>, 518412@bugs.debian.org, md@linux.it,
-       Jon Masters <jcm@jonmasters.org>, linux-kernel@vger.kernel.org,
-       linux-modules <linux-modules@vger.kernel.org>
-In-Reply-To: <20090319201310.GI3901@baikonur.stro.at>
-References: <20090319153604.GB7954@stro.at>
-	 <200903191843.28437.elendil@planet.nl>
-	 <20090319181031.GH3901@baikonur.stro.at>
-	 <200903191940.47726.elendil@planet.nl>
-	 <20090319201310.GI3901@baikonur.stro.at>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Thu, 19 Mar 2009 16:30:30 -0400
-Message-Id: <1237494630.31294.31.camel@perihelion.bos.jonmasters.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 19 Mar 2009 16:33:39 -0400
+Message-ID: <49C2ACA8.4070503@oracle.com>
+Date: Thu, 19 Mar 2009 13:35:52 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: monstr@monstr.eu
+CC: linux-kernel@vger.kernel.org, john.williams@petalogix.com
+Subject: Re: Microblaze linux support
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
+In-Reply-To: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.49C2AC1C.0088:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-19 at 21:13 +0100, maximilian attems wrote:
-> [ adding jcm and lkml to Cc: ]
+monstr@monstr.eu wrote:
+> Hi all,
+> 
+> I think that is the right time to send you next pack with 
+> Microblaze support. It is seventh pack - some previous packs
+> was review by community and I hope there are not any big faults.
+> 
+> We tested this kernel on some boards.
+> We have GIT server up and gitweb is available at http://developer.petalogix.com/git/gitweb.cgi
+> 
+> All information about git clone you can find on gitweb.
+> This pack is available in for-linus branch. Information about other branches are on gitweb too.
+> 
+> More information about microblaze fdt kernel you can find at www.monstr.eu/fdt/
+> If you want to test kernel with microblaze toolchain let me know.
 
-[ You want linux-modules@vger.kernel.org rather than LKML. I've added
-the former to the CC list, we can kill LKML off the CC shortly. ]
+Hi Michal,
 
-> > That would mean that m-i-t has created a backwards incompatibility problem 
-> > _with itself_ and that the problem actually is "installing a kernel, that 
-> > was built on a system with new m-i-t, on a system with old m-i-t".
+Is there an x86-hosted cross-tool chain available?
+If so, where?
 
-Looks like the problem is actually that depmod was run under the newer
-version and then you tried to use the generated files with an older
-modprobe. I'm not sure that's actually an error - it was noted that the
-slight format change was unideal for such unlikely cases and in fact we
-won't do that again in the future. But if you were just moving forwards
-from one release to the next you would have been fine - you're talking
-lack of forward compatibility actually.
+> I added only uart16550 and uartlite support - that's enought for first merge.
+> 
+> 
+> Thanks for you comments and especially for your ACK,
 
-Unless I'm missing something, in which case please clarify. I would like
-it also if you'd send me the generated files, distro info, etc.
-
-Jon.
-
-
+Thanks,
+-- 
+~Randy
