@@ -1,65 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760656AbZCSUq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761337AbZCSUr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760656AbZCSUq7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 16:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756391AbZCSUqt
+	id S1761337AbZCSUr0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 16:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759466AbZCSUrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 16:46:49 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:29483 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755809AbZCSUqs (ORCPT
+	Thu, 19 Mar 2009 16:47:14 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:55375 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756391AbZCSUrN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 16:46:48 -0400
-Date: Thu, 19 Mar 2009 14:46:46 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 08/12] PCI: Introduce /sys/bus/pci/devices/.../remove
-Message-ID: <20090319204646.GB8790@ldl.fc.hp.com>
-References: <20090318222426.887.1008.stgit@bob.kio> <20090318224006.887.91805.stgit@bob.kio> <49C2540E.70207@jp.fujitsu.com> <20090319164119.GC8074@ldl.fc.hp.com> <Pine.LNX.4.58.0903191342120.28292@shell2.speakeasy.net>
+	Thu, 19 Mar 2009 16:47:13 -0400
+Date: Thu, 19 Mar 2009 16:43:55 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 20/35] Use a pre-calculated value for
+ num_online_nodes()
+In-Reply-To: <alpine.DEB.1.10.0903181508030.10154@qirst.com>
+Message-ID: <alpine.DEB.1.10.0903191642160.22425@qirst.com>
+References: <1237196790-7268-1-git-send-email-mel@csn.ul.ie> <1237196790-7268-21-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903161207500.32577@qirst.com> <20090316163626.GJ24293@csn.ul.ie> <alpine.DEB.1.10.0903161247170.17730@qirst.com>
+ <20090318150833.GC4629@csn.ul.ie> <alpine.DEB.1.10.0903181256440.15570@qirst.com> <20090318180152.GB24462@csn.ul.ie> <alpine.DEB.1.10.0903181508030.10154@qirst.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0903191342120.28292@shell2.speakeasy.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Trent Piepho <xyzzy@speakeasy.org>:
-> On Thu, 19 Mar 2009, Alex Chiang wrote:
-> > * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> > >> +	pci_remove_bus_device(pdev);
-> > >> +	if (bridge && list_empty(&pdev->bus->devices))
-> > >> +		pci_remove_bus(pdev->bus);
-> > >
-> > > I cannot understand the above two lines. Could you explain
-> > > what it intend?
-> >
-> > If the user says:
-> >
-> > 	echo 1 > /sys/bus/pci/devices/.../remove
-> >
-> > And that device is a bridge, then we need to specifically call
-> > pci_remove_bus as well, to actually remove the bus itself.
-> > Without it, pci_bus_remove_device() will remove all of its
-> > children (and subordinate buses) in a depth-first manner, but we
-> > will never actually remove the bus that the user specified.
-> 
-> Did this end up being the source of the pci resource assignment warnings
-> that were produced when re-adding a bridge that was removed?
+Trying to the same in the style of nr_node_ids etc.
 
-I think that was one reason. I found that it was necessary during
-multiple remove/rescan cycles; after the 2nd rescan, we had a
-stale pci_bus hanging around that was manifesting itself as a
-sysfs issue.
 
-The other thing that Kenji found was in pci_setup_bridge(), where
-we don't want to initialize the BARs if the bridge has already
-been added.
+Subject: Provide nr_online_nodes and nr_possible_nodes
 
-Thanks.
+It seems that its beneficial to have a less expensive way to check for the
+number of currently active and possible nodes in a NUMA system. This will
+simplify further kernel optimizations for the cases in which only a single
+node is online or possible.
 
-/ac
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
+Index: linux-2.6/include/linux/nodemask.h
+===================================================================
+--- linux-2.6.orig/include/linux/nodemask.h	2009-03-19 15:04:28.000000000 -0500
++++ linux-2.6/include/linux/nodemask.h	2009-03-19 15:33:18.000000000 -0500
+@@ -408,6 +408,20 @@
+ #define next_online_node(nid)	next_node((nid), node_states[N_ONLINE])
+
+ extern int nr_node_ids;
++extern int nr_online_nodes;
++extern int nr_possible_nodes;
++
++static inline void node_set_online(int nid)
++{
++	node_set_state(nid, N_ONLINE);
++	nr_online_nodes = num_node_state(N_ONLINE);
++}
++
++static inline void node_set_offline(int nid)
++{
++	node_clear_state(nid, N_ONLINE);
++	nr_online_nodes = num_node_state(N_ONLINE);
++}
+ #else
+
+ static inline int node_state(int node, enum node_states state)
+@@ -434,7 +448,8 @@
+ #define first_online_node	0
+ #define next_online_node(nid)	(MAX_NUMNODES)
+ #define nr_node_ids		1
+-
++#define nr_online_nodes		1
++#define nr_possible_nodes	1
+ #endif
+
+ #define node_online_map 	node_states[N_ONLINE]
+@@ -454,8 +469,7 @@
+ #define node_online(node)	node_state((node), N_ONLINE)
+ #define node_possible(node)	node_state((node), N_POSSIBLE)
+
+-#define node_set_online(node)	   node_set_state((node), N_ONLINE)
+-#define node_set_offline(node)	   node_clear_state((node), N_ONLINE)
++
+
+ #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
+ #define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
+Index: linux-2.6/mm/hugetlb.c
+===================================================================
+--- linux-2.6.orig/mm/hugetlb.c	2009-03-19 15:11:49.000000000 -0500
++++ linux-2.6/mm/hugetlb.c	2009-03-19 15:12:13.000000000 -0500
+@@ -875,7 +875,7 @@
+ 	 * can no longer free unreserved surplus pages. This occurs when
+ 	 * the nodes with surplus pages have no free pages.
+ 	 */
+-	unsigned long remaining_iterations = num_online_nodes();
++	unsigned long remaining_iterations = nr_online_nodes;
+
+ 	/* Uncommit the reservation */
+ 	h->resv_huge_pages -= unused_resv_pages;
+@@ -904,7 +904,7 @@
+ 			h->surplus_huge_pages--;
+ 			h->surplus_huge_pages_node[nid]--;
+ 			nr_pages--;
+-			remaining_iterations = num_online_nodes();
++			remaining_iterations = nr_online_nodes;
+ 		}
+ 	}
+ }
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c	2009-03-19 15:12:19.000000000 -0500
++++ linux-2.6/mm/page_alloc.c	2009-03-19 15:30:21.000000000 -0500
+@@ -168,6 +168,10 @@
+ #if MAX_NUMNODES > 1
+ int nr_node_ids __read_mostly = MAX_NUMNODES;
+ EXPORT_SYMBOL(nr_node_ids);
++int nr_online_nodes __read_mostly = 1;
++EXPORT_SYMBOL(nr_online_nodes);
++int nr_possible_nodes __read_mostly = MAX_NUMNODES;
++EXPORT_SYMBOL(nr_possible_nodes);
+ #endif
+
+ int page_group_by_mobility_disabled __read_mostly;
+@@ -2115,7 +2119,7 @@
+ }
+
+
+-#define MAX_NODE_LOAD (num_online_nodes())
++#define MAX_NODE_LOAD nr_online_nodes
+ static int node_load[MAX_NUMNODES];
+
+ /**
+Index: linux-2.6/mm/slab.c
+===================================================================
+--- linux-2.6.orig/mm/slab.c	2009-03-19 15:13:45.000000000 -0500
++++ linux-2.6/mm/slab.c	2009-03-19 15:15:28.000000000 -0500
+@@ -881,7 +881,6 @@
+   */
+
+ static int use_alien_caches __read_mostly = 1;
+-static int numa_platform __read_mostly = 1;
+ static int __init noaliencache_setup(char *s)
+ {
+ 	use_alien_caches = 0;
+@@ -1434,9 +1433,8 @@
+ 	int order;
+ 	int node;
+
+-	if (num_possible_nodes() == 1) {
++	if (nr_possible_nodes == 1) {
+ 		use_alien_caches = 0;
+-		numa_platform = 0;
+ 	}
+
+ 	for (i = 0; i < NUM_INIT_LISTS; i++) {
+@@ -3526,7 +3524,7 @@
+ 	 * variable to skip the call, which is mostly likely to be present in
+ 	 * the cache.
+ 	 */
+-	if (numa_platform && cache_free_alien(cachep, objp))
++	if (nr_possible_nodes > 1 && cache_free_alien(cachep, objp))
+ 		return;
+
+ 	if (likely(ac->avail < ac->limit)) {
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2009-03-19 15:13:15.000000000 -0500
++++ linux-2.6/mm/slub.c	2009-03-19 15:13:38.000000000 -0500
+@@ -3648,7 +3648,7 @@
+ 						 to_cpumask(l->cpus));
+ 		}
+
+-		if (num_online_nodes() > 1 && !nodes_empty(l->nodes) &&
++		if (nr_online_nodes > 1 && !nodes_empty(l->nodes) &&
+ 				len < PAGE_SIZE - 60) {
+ 			len += sprintf(buf + len, " nodes=");
+ 			len += nodelist_scnprintf(buf + len, PAGE_SIZE - len - 50,
+Index: linux-2.6/net/sunrpc/svc.c
+===================================================================
+--- linux-2.6.orig/net/sunrpc/svc.c	2009-03-19 15:16:21.000000000 -0500
++++ linux-2.6/net/sunrpc/svc.c	2009-03-19 15:16:51.000000000 -0500
+@@ -124,7 +124,7 @@
+ {
+ 	unsigned int node;
+
+-	if (num_online_nodes() > 1) {
++	if (nr_online_nodes > 1) {
+ 		/*
+ 		 * Actually have multiple NUMA nodes,
+ 		 * so split pools on NUMA node boundaries
