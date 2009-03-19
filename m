@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbZCSRqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757629AbZCSRtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760150AbZCSRqP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 13:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZCSRp7
+	id S1757629AbZCSRtz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 13:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZCSRtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 13:45:59 -0400
-Received: from shakaweb.org ([85.25.54.21]:59567 "EHLO shakaweb.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751785AbZCSRp6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 13:45:58 -0400
-Message-ID: <49C28494.5030403@shakaweb.org>
-Date: Thu, 19 Mar 2009 18:44:52 +0100
-From: Christopher Schramm <debian@shakaweb.org>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Thu, 19 Mar 2009 13:49:42 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:9871 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752376AbZCSRtl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 13:49:41 -0400
+Date: Thu, 19 Mar 2009 11:49:38 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 06/12] PCI: Introduce pci_rescan_bus()
+Message-ID: <20090319174938.GJ8074@ldl.fc.hp.com>
+References: <20090318222426.887.1008.stgit@bob.kio> <20090318223956.887.57080.stgit@bob.kio> <20090319022735.f24b7329.akpm@linux-foundation.org> <20090319170548.GE8074@ldl.fc.hp.com> <20090319174215.GB26248@kroah.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <49C1FE7D.9070605@shakaweb.org> <20090319100122.GA30358@elte.hu> <49C25712.9010509@shakaweb.org> <20090319154955.GA21034@elte.hu>
-In-Reply-To: <20090319154955.GA21034@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 94.216.219.212
-X-SA-Exim-Mail-From: debian@shakaweb.org
-Subject: Re: APIC problem report
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shakaweb.org)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090319174215.GB26248@kroah.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar schrieb:
-> By the looks of it, chances are that various APIC fixes and 
-> robustization patches might have fixed your problem:
+* Greg KH <greg@kroah.com>:
+> On Thu, Mar 19, 2009 at 11:05:48AM -0600, Alex Chiang wrote:
+> > * Andrew Morton <akpm@linux-foundation.org>:
+> > > On Wed, 18 Mar 2009 16:39:56 -0600 Alex Chiang <achiang@hp.com> wrote:
+> > > 
+> > > >  EXPORT_SYMBOL(pci_add_new_bus);
+> > > >  EXPORT_SYMBOL(pci_scan_slot);
+> > > >  EXPORT_SYMBOL(pci_scan_bridge);
+> > > >  EXPORT_SYMBOL_GPL(pci_scan_child_bus);
+> > > > +EXPORT_SYMBOL_GPL(pci_rescan_bus);
+> > > 
+> > > uhm, is there any rationale for the seemingly-random mixup of export types
+> > > in this interface?
+> > 
+> > History?
+> > 
+> > I've no clue why we're mixing EXPORT_SYMBOL and EXPORT_SYMBOL_GPL.
 > 
->  691874f: x86: I/O APIC: timer through 8259A second-chance
->  03be750: x86: I/O APIC: keep the timer IRQ masked during set-up
->  24742ec: x86: I/O APIC: unmask the second-chance timer interrupt
->  d11d579: x86: I/O APIC: AEOI timer acknowledgement clean-ups
+> I do :)
 > 
-> These first showed up in v2.6.27. Which would match your reported 
-> symptoms of v2.6.26 failig and 2.6.28 working.
+> New PCI core exports were added with _GPL, it's the older ones that were
+> left at the "normal" level.
+> 
+> > git-blame says that the mishmash existed pre-git.
+> > 
+> > For my new interface, I thought that EXPORT_SYMBOL_GPL would be
+> > most appropriate, but maybe not?
+> 
+> Yes it is, pci hotplug exports has always been EXPORT_SYMBOL_GPL(), in
+> fact I think it was the first in-tree user of this marking.
+> 
+> > What would you like me to do? Make them all the same?
+> 
+> New ones should be _GPL() please.
+> 
+> But please put the export in the proper place, checkpatch.pl will
+> complain if you do not.  Which means you didn't run it on your patches
+> :)
 
-Yes, you're right. Looking at the detailed kernel messages, the "8259A 
-second-chance" seems to do the trick. So it's already tackled. :-)
+Andrew already yelled at me privately about checkpatch.
 
-Christopher
+I went over and ran it on all my patches, and that was indeed one
+of the complaints.
+
+But when it comes to file consistency vs "letter of the law" I
+like to keep things consistent (even if broken) in the file.
+
+I could go back and move all those EXPORT_SYMBOL declarations to
+the "proper" place. Is that too much noise though?
+
+Thanks.
+
+/ac
+
