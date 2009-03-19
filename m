@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760223AbZCSXKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbZCSXL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760223AbZCSXKb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 19:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbZCSXKV
+	id S1757384AbZCSXL5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 19:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbZCSXLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 19:10:21 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:55685 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753717AbZCSXKT (ORCPT
+	Thu, 19 Mar 2009 19:11:47 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:31827 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754661AbZCSXLq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 19:10:19 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
-	mime-version:content-type:x-system-of-record;
-	b=CwT1J2EE5yUvqnL75hZRm80viYRjAn/9apVc1uLmcM8ItzEyeIvEEB7ROEY+wd9WW
-	LQZJUEV9OQdWv2ElqhMGQ==
-Date: Thu, 19 Mar 2009 16:09:33 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: [patch] vmscan: print shrink_slab symbol name on negative shrinker
- objects
-Message-ID: <alpine.DEB.2.00.0903191609040.2457@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 19 Mar 2009 19:11:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=XMnblHiir8YiFK6+dp77hmRszjC8q8YyMxtsdjYfCO1VS/KP53pTae2scRqzm/m4LC
+         nv0pVGEWMwKnzi98rOuTnPrAHDrM8zOaL3RCaMpCeJbj0qm5QtkMkZRIB5qF2tMwIj79
+         1nO/NGIMSgM7QbByBMQ2tLEjK1ykvOZYXBksA=
+Message-ID: <49C2D126.3050807@gmail.com>
+Date: Fri, 20 Mar 2009 08:11:34 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: [PATCH] ahci: Blacklist HP Compaq 6720s that spins off disks
+ during ACPI power off
+References: <200903200006.46859.rjw@sisk.pl>
+In-Reply-To: <200903200006.46859.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a shrinker has a negative number of objects to delete, the symbol
-name of the shrinker should be printed, not shrink_slab.
+Rafael J. Wysocki wrote:
+> From: Maciej Rutecki <maciej.rutecki@gmail.com>
+> 
+> Blacklist HP Compaq 6720s so that it doesn't play a "spin down,
+> spin up, spin down" ping-pong with the hard disk during system
+> power off.
+> 
+> Signed-off-by: Maciej Rutecki <maciej.rutecki@gmail.com>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- mm/vmscan.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+Acked-by: Tejun Heo <tj@kernel.org>
 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -40,6 +40,7 @@
- #include <linux/memcontrol.h>
- #include <linux/delayacct.h>
- #include <linux/sysctl.h>
-+#include <linux/kallsyms.h>
- 
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -214,8 +215,12 @@ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
- 		do_div(delta, lru_pages + 1);
- 		shrinker->nr += delta;
- 		if (shrinker->nr < 0) {
--			printk(KERN_ERR "%s: nr=%ld\n",
--					__func__, shrinker->nr);
-+			char symname[KSYM_NAME_LEN];
-+
-+			if (lookup_symbol_name((unsigned long)shrinker->shrink,
-+					       symname) > 0)
-+				printk(KERN_ERR "shrink_slab: %s nr=%ld\n",
-+				       symname, shrinker->nr);
- 			shrinker->nr = max_pass;
- 		}
- 
+-- 
+tejun
