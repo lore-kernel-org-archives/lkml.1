@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbZCSGxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbZCSGxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758601AbZCSGxG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 02:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZCSGww
+	id S1759210AbZCSGxy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 02:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbZCSGxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 02:52:52 -0400
-Received: from mail01a.mail.t-online.hu ([84.2.40.6]:55802 "EHLO
-	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754192AbZCSGwv (ORCPT
+	Thu, 19 Mar 2009 02:53:44 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33816
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754592AbZCSGxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 02:52:51 -0400
-Message-ID: <49C1EBBB.1080109@freemail.hu>
-Date: Thu, 19 Mar 2009 07:52:43 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: David Ellingsworth <david@identd.dyndns.org>,
-       Jean-Francois Moine <moinejf@free.fr>
-CC: linux-media@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gspca: add missing .type field check in VIDIOC_G_PARM
-References: <49C133F6.3020202@freemail.hu> <30353c3d0903181445i409604e8r33678f7ce09d0288@mail.gmail.com> <49C1DD0C.4050500@freemail.hu>
-In-Reply-To: <49C1DD0C.4050500@freemail.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32721; Body=4 Fuz1=4
-	Fuz2=4
+	Thu, 19 Mar 2009 02:53:44 -0400
+Date: Wed, 18 Mar 2009 23:53:31 -0700 (PDT)
+Message-Id: <20090318.235331.65960278.davem@davemloft.net>
+To: mpatocka@redhat.com
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crash with /proc/iomem on sparc64
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0903170807440.25109@hs20-bc2-1.build.redhat.com>
+References: <Pine.LNX.4.64.0903170758060.24107@hs20-bc2-1.build.redhat.com>
+	<Pine.LNX.4.64.0903170807440.25109@hs20-bc2-1.build.redhat.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Németh Márton wrote:
-From: Márton Németh <nm127@freemail.hu>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Tue, 17 Mar 2009 08:08:08 -0400 (EDT)
 
-The gspca webcam driver does not check the .type field of struct v4l2_streamparm.
-This field is an input parameter for the driver according to V4L2 API specification,
-revision 0.24 [1]. Add the missing check.
+> 
+> 
+> On Tue, 17 Mar 2009, Mikulas Patocka wrote:
+> 
+> > Hi
+> > 
+> > When you compile kernel on Sparc64 with heap memory checking and type
+> > "cat /proc/iomem", you get a crash, because pointers in struct resource 
+> > are uninitialized.
+> > 
+> > Most code fills struct resource with zeros, so I assume that it is 
+> > responsibility of the caller of request_resource to initialized it, not 
+> > the responsibility of request_resource functuion.
+> > 
+> > After 2.6.29 is out, there could be a check for uninitialized fields added 
+> > to request_resource to avoid crashes like this.
+> > 
+> > Mikulas
+> 
+> I forgot to add:
+> 
+> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 
-The missing check was recognised by v4l-test 0.10 [2] together with gspca_sunplus driver
-and with "Trust 610 LCD POWERC@M ZOOM" webcam. This patch was verified also with
-v4l-test 0.10.
-
-References:
-[1] V4L2 API specification, revision 0.24
-   http://v4l2spec.bytesex.org/spec/r11680.htm
-
-[2] v4l-test: Test environment for Video For Linux Two API
-    http://v4l-test.sourceforge.net/
-
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c.orig	2009-03-14 12:29:38.000000000 +0100
-+++ linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c	2009-03-19 07:14:40.000000000 +0100
-@@ -1319,9 +1319,14 @@ static int vidioc_g_parm(struct file *fi
- 			struct v4l2_streamparm *parm)
- {
- 	struct gspca_dev *gspca_dev = priv;
-+	enum v4l2_buf_type type;
-
-+	if (parm->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
-+		return -EINVAL;
-+
-+	type = parm->type;
- 	memset(parm, 0, sizeof *parm);
--	parm->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-+	parm->type = type;
- 	parm->parm.capture.readbuffers = gspca_dev->nbufread;
-
- 	if (gspca_dev->sd_desc->get_streamparm) {
+Patch applied and queued up for -stable, thanks a lot.
