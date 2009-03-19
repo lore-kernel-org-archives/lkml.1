@@ -1,245 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbZCSUEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760879AbZCSUEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753695AbZCSUEQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 16:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbZCSUCL
+	id S1760879AbZCSUEf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 16:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZCSUCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 16:02:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51829 "EHLO
+	Thu, 19 Mar 2009 16:02:13 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:44541 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785AbZCSUCE (ORCPT
+	with ESMTP id S1751538AbZCSUCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 19 Mar 2009 16:02:04 -0400
-Message-Id: <20090319200200.786900451@goodmis.org>
+Message-Id: <20090319200200.152583560@goodmis.org>
 References: <20090319200122.512803803@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 19 Mar 2009 16:01:27 -0400
+Date: Thu, 19 Mar 2009 16:01:24 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Lai Jiangshan <laijs@cn.fujitsu.com>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 5/7] function-graph: calculate function depth within function graph tracer
-Content-Disposition: inline; filename=0005-function-graph-calculate-function-depth-within-func.patch
+Subject: [PATCH 2/7] ftrace: protect running nmi (V3)
+Content-Disposition: inline; filename=0002-ftrace-protect-running-nmi-V3.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-Currently, the function graph tracer depends on the trace_printk
-to record the depth. All the information is already there in the trace
-to calculate function depth, with the exception of having the printk
-be the first item. But as soon as a entry or exit is reached, then
-we know the depth.
+When I review the sensitive code ftrace_nmi_enter(), I found
+the atomic variable nmi_running does protect NMI VS do_ftrace_mod_code(),
+but it can not protects NMI(entered nmi) VS NMI(ftrace_nmi_enter()).
 
-This patch changes the iter->private data from recording a per cpu
-last_pid, to a structure that holds both the last_pid and the current
-depth. This data is used to determine the function depth for the
-printks.
+cpu#1                   | cpu#2                 | cpu#3
+ftrace_nmi_enter()      | do_ftrace_mod_code()  |
+  not modify            |                       |
+------------------------|-----------------------|--
+executing               | set mod_code_write = 1|
+executing             --|-----------------------|--------------------
+executing               |                       | ftrace_nmi_enter()
+executing               |                       |    do modify
+------------------------|-----------------------|-----------------
+ftrace_nmi_exit()       |                       |
 
+cpu#3 may be being modified the code which is still being executed on cpu#1,
+it will have undefined results and possibly take a GPF, this patch
+prevents it occurred.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+LKML-Reference: <49C0B411.30003@cn.fujitsu.com>
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace_functions_graph.c |   91 +++++++++++++++++++++++++--------
- 1 files changed, 69 insertions(+), 22 deletions(-)
+ arch/x86/kernel/ftrace.c |   63 +++++++++++++++++++++++++++++----------------
+ 1 files changed, 40 insertions(+), 23 deletions(-)
 
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index 2d4d185..66ea23b 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -14,6 +14,11 @@
- #include "trace.h"
- #include "trace_output.h"
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 1d0d7f4..57b33ed 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -79,11 +79,11 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+  *
+  * 1) Put the instruction pointer into the IP buffer
+  *    and the new code into the "code" buffer.
+- * 2) Set a flag that says we are modifying code
+- * 3) Wait for any running NMIs to finish.
+- * 4) Write the code
+- * 5) clear the flag.
+- * 6) Wait for any running NMIs to finish.
++ * 2) Wait for any running NMIs to finish and set a flag that says
++ *    we are modifying code, it is done in an atomic operation.
++ * 3) Write the code
++ * 4) clear the flag.
++ * 5) Wait for any running NMIs to finish.
+  *
+  * If an NMI is executed, the first thing it does is to call
+  * "ftrace_nmi_enter". This will check if the flag is set to write
+@@ -95,9 +95,9 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+  * are the same as what exists.
+  */
  
-+struct fgraph_data {
-+	pid_t		last_pid;
-+	int		depth;
-+};
-+
- #define TRACE_GRAPH_INDENT	2
++#define MOD_CODE_WRITE_FLAG (1 << 31)	/* set when NMI should do the write */
+ static atomic_t nmi_running = ATOMIC_INIT(0);
+ static int mod_code_status;		/* holds return value of text write */
+-static int mod_code_write;		/* set when NMI should do the write */
+ static void *mod_code_ip;		/* holds the IP to write to */
+ static void *mod_code_newcode;		/* holds the text to write to the IP */
  
- /* Flag options */
-@@ -231,16 +236,16 @@ print_graph_proc(struct trace_seq *s, pid_t pid)
- 
- /* If the pid changed since the last trace, output this event */
- static enum print_line_t
--verif_pid(struct trace_seq *s, pid_t pid, int cpu, pid_t *last_pids_cpu)
-+verif_pid(struct trace_seq *s, pid_t pid, int cpu, struct fgraph_data *data)
- {
- 	pid_t prev_pid;
- 	pid_t *last_pid;
- 	int ret;
- 
--	if (!last_pids_cpu)
-+	if (!data)
- 		return TRACE_TYPE_HANDLED;
- 
--	last_pid = per_cpu_ptr(last_pids_cpu, cpu);
-+	last_pid = &(per_cpu_ptr(data, cpu)->last_pid);
- 
- 	if (*last_pid == pid)
- 		return TRACE_TYPE_HANDLED;
-@@ -471,6 +476,7 @@ print_graph_entry_leaf(struct trace_iterator *iter,
- 		struct ftrace_graph_ent_entry *entry,
- 		struct ftrace_graph_ret_entry *ret_entry, struct trace_seq *s)
- {
-+	struct fgraph_data *data = iter->private;
- 	struct ftrace_graph_ret *graph_ret;
- 	struct ftrace_graph_ent *call;
- 	unsigned long long duration;
-@@ -481,6 +487,18 @@ print_graph_entry_leaf(struct trace_iterator *iter,
- 	call = &entry->graph_ent;
- 	duration = graph_ret->rettime - graph_ret->calltime;
- 
-+	if (data) {
-+		int cpu = iter->cpu;
-+		int *depth = &(per_cpu_ptr(data, cpu)->depth);
-+
-+		/*
-+		 * Comments display at + 1 to depth. Since
-+		 * this is a leaf function, keep the comments
-+		 * equal to this depth.
-+		 */
-+		*depth = call->depth - 1;
-+	}
-+
- 	/* Overhead */
- 	ret = print_graph_overhead(duration, s);
- 	if (!ret)
-@@ -512,12 +530,21 @@ print_graph_entry_leaf(struct trace_iterator *iter,
+@@ -114,6 +114,20 @@ int ftrace_arch_read_dyn_info(char *buf, int size)
+ 	return r;
  }
  
- static enum print_line_t
--print_graph_entry_nested(struct ftrace_graph_ent_entry *entry,
--			struct trace_seq *s, pid_t pid, int cpu)
-+print_graph_entry_nested(struct trace_iterator *iter,
-+			 struct ftrace_graph_ent_entry *entry,
-+			 struct trace_seq *s, int cpu)
- {
--	int i;
--	int ret;
- 	struct ftrace_graph_ent *call = &entry->graph_ent;
-+	struct fgraph_data *data = iter->private;
-+	int ret;
-+	int i;
++static void clear_mod_flag(void)
++{
++	int old = atomic_read(&nmi_running);
 +
-+	if (data) {
-+		int cpu = iter->cpu;
-+		int *depth = &(per_cpu_ptr(data, cpu)->depth);
++	for (;;) {
++		int new = old & ~MOD_CODE_WRITE_FLAG;
 +
-+		*depth = call->depth;
++		if (old == new)
++			break;
++
++		old = atomic_cmpxchg(&nmi_running, old, new);
 +	}
- 
- 	/* No overhead */
- 	ret = print_graph_overhead(-1, s);
-@@ -557,13 +584,13 @@ static enum print_line_t
- print_graph_prologue(struct trace_iterator *iter, struct trace_seq *s,
- 		     int type, unsigned long addr)
++}
++
+ static void ftrace_mod_code(void)
  {
-+	struct fgraph_data *data = iter->private;
- 	struct trace_entry *ent = iter->ent;
--	pid_t *last_pid = iter->private;
- 	int cpu = iter->cpu;
- 	int ret;
+ 	/*
+@@ -127,27 +141,39 @@ static void ftrace_mod_code(void)
  
- 	/* Pid */
--	if (verif_pid(s, ent->pid, cpu, last_pid) == TRACE_TYPE_PARTIAL_LINE)
-+	if (verif_pid(s, ent->pid, cpu, data) == TRACE_TYPE_PARTIAL_LINE)
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
- 	if (type) {
-@@ -616,7 +643,7 @@ print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
- 	if (leaf_ret)
- 		return print_graph_entry_leaf(iter, field, leaf_ret, s);
- 	else
--		return print_graph_entry_nested(field, s, iter->ent->pid, cpu);
-+		return print_graph_entry_nested(iter, field, s, cpu);
- 
+ 	/* if we fail, then kill any new writers */
+ 	if (mod_code_status)
+-		mod_code_write = 0;
++		clear_mod_flag();
  }
  
-@@ -624,11 +651,24 @@ static enum print_line_t
- print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
- 		   struct trace_entry *ent, struct trace_iterator *iter)
+ void ftrace_nmi_enter(void)
  {
--	int i;
--	int ret;
--	int cpu = iter->cpu;
--	pid_t pid = ent->pid;
- 	unsigned long long duration = trace->rettime - trace->calltime;
-+	struct fgraph_data *data = iter->private;
-+	pid_t pid = ent->pid;
-+	int cpu = iter->cpu;
-+	int ret;
-+	int i;
-+
-+	if (data) {
-+		int cpu = iter->cpu;
-+		int *depth = &(per_cpu_ptr(data, cpu)->depth);
-+
-+		/*
-+		 * Comments display at + 1 to depth. This is the
-+		 * return from a function, we now want the comments
-+		 * to display at the same level of the bracket.
-+		 */
-+		*depth = trace->depth - 1;
-+	}
- 
- 	if (print_graph_prologue(iter, s, 0, 0))
- 		return TRACE_TYPE_PARTIAL_LINE;
-@@ -675,8 +715,13 @@ static enum print_line_t
- print_graph_comment(struct bprint_entry *trace, struct trace_seq *s,
- 		   struct trace_entry *ent, struct trace_iterator *iter)
- {
--	int i;
-+	struct fgraph_data *data = iter->private;
-+	int depth = 0;
- 	int ret;
-+	int i;
-+
-+	if (data)
-+		depth = per_cpu_ptr(data, iter->cpu)->depth;
- 
- 	if (print_graph_prologue(iter, s, 0, 0))
- 		return TRACE_TYPE_PARTIAL_LINE;
-@@ -694,8 +739,8 @@ print_graph_comment(struct bprint_entry *trace, struct trace_seq *s,
+-	atomic_inc(&nmi_running);
+-	/* Must have nmi_running seen before reading write flag */
+-	smp_mb();
+-	if (mod_code_write) {
++	if (atomic_inc_return(&nmi_running) & MOD_CODE_WRITE_FLAG) {
++		smp_rmb();
+ 		ftrace_mod_code();
+ 		atomic_inc(&nmi_update_count);
  	}
- 
- 	/* Indentation */
--	if (trace->depth > 0)
--		for (i = 0; i < (trace->depth + 1) * TRACE_GRAPH_INDENT; i++) {
-+	if (depth > 0)
-+		for (i = 0; i < (depth + 1) * TRACE_GRAPH_INDENT; i++) {
- 			ret = trace_seq_printf(s, " ");
- 			if (!ret)
- 				return TRACE_TYPE_PARTIAL_LINE;
-@@ -780,19 +825,21 @@ static void print_graph_headers(struct seq_file *s)
- 
- static void graph_trace_open(struct trace_iterator *iter)
- {
--	/* pid on the last trace processed */
--	pid_t *last_pid = alloc_percpu(pid_t);
-+	/* pid and depth on the last trace processed */
-+	struct fgraph_data *data = alloc_percpu(struct fgraph_data);
- 	int cpu;
- 
--	if (!last_pid)
-+	if (!data)
- 		pr_warning("function graph tracer: not enough memory\n");
- 	else
- 		for_each_possible_cpu(cpu) {
--			pid_t *pid = per_cpu_ptr(last_pid, cpu);
-+			pid_t *pid = &(per_cpu_ptr(data, cpu)->last_pid);
-+			int *depth = &(per_cpu_ptr(data, cpu)->depth);
- 			*pid = -1;
-+			*depth = 0;
- 		}
- 
--	iter->private = last_pid;
-+	iter->private = data;
++	/* Must have previous changes seen before executions */
++	smp_mb();
  }
  
- static void graph_trace_close(struct trace_iterator *iter)
+ void ftrace_nmi_exit(void)
+ {
+ 	/* Finish all executions before clearing nmi_running */
+-	smp_wmb();
++	smp_mb();
+ 	atomic_dec(&nmi_running);
+ }
+ 
++static void wait_for_nmi_and_set_mod_flag(void)
++{
++	if (!atomic_cmpxchg(&nmi_running, 0, MOD_CODE_WRITE_FLAG))
++		return;
++
++	do {
++		cpu_relax();
++	} while (atomic_cmpxchg(&nmi_running, 0, MOD_CODE_WRITE_FLAG));
++
++	nmi_wait_count++;
++}
++
+ static void wait_for_nmi(void)
+ {
+ 	if (!atomic_read(&nmi_running))
+@@ -167,14 +193,9 @@ do_ftrace_mod_code(unsigned long ip, void *new_code)
+ 	mod_code_newcode = new_code;
+ 
+ 	/* The buffers need to be visible before we let NMIs write them */
+-	smp_wmb();
+-
+-	mod_code_write = 1;
+-
+-	/* Make sure write bit is visible before we wait on NMIs */
+ 	smp_mb();
+ 
+-	wait_for_nmi();
++	wait_for_nmi_and_set_mod_flag();
+ 
+ 	/* Make sure all running NMIs have finished before we write the code */
+ 	smp_mb();
+@@ -182,13 +203,9 @@ do_ftrace_mod_code(unsigned long ip, void *new_code)
+ 	ftrace_mod_code();
+ 
+ 	/* Make sure the write happens before clearing the bit */
+-	smp_wmb();
+-
+-	mod_code_write = 0;
+-
+-	/* make sure NMIs see the cleared bit */
+ 	smp_mb();
+ 
++	clear_mod_flag();
+ 	wait_for_nmi();
+ 
+ 	return mod_code_status;
 -- 
 1.6.2
 
