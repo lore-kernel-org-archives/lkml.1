@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbZCSImR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbZCSIr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbZCSImR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 04:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbZCSImB
+	id S1757597AbZCSIr2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 04:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZCSIrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 04:42:01 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:50879
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754243AbZCSIl7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 04:41:59 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: make headers_install broken for ARCH=m68k in 2.6.29-rc7.
-Date: Thu, 19 Mar 2009 03:41:53 -0500
-User-Agent: KMail/1.10.1 (Linux/2.6.27-9-generic; KDE/4.1.2; x86_64; ; )
-Cc: Greg Ungerer <gerg@snapgear.com>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       linux-next@vger.kernel.org, linux-m68k@vger.kernel.org
-References: <200903120437.03837.rob@landley.net> <200903181312.02047.rob@landley.net> <10f740e80903190059qae0629bs8658cad8f3ad8761@mail.gmail.com>
-In-Reply-To: <10f740e80903190059qae0629bs8658cad8f3ad8761@mail.gmail.com>
+	Thu, 19 Mar 2009 04:47:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36954 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751283AbZCSIrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 04:47:14 -0400
+Date: Thu, 19 Mar 2009 09:44:45 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: David Miller <davem@davemloft.net>
+Cc: shemminger@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jgarzik@pobox.com,
+       bridge@lists.linux-foundation.org, fubar@us.ibm.com,
+       bonding-devel@lists.sourceforge.net
+Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work
+	properly in bridge
+Message-ID: <20090319084444.GA4123@psychotron.englab.brq.redhat.com>
+References: <20090314094911.GA3455@psychotron.englab.brq.redhat.com> <20090315161217.7fa2c3a7@nehalam> <20090316111127.GB3484@psychotron.englab.brq.redhat.com> <20090318.232003.30974750.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903190341.54222.rob@landley.net>
+In-Reply-To: <20090318.232003.30974750.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 March 2009 02:59:45 Geert Uytterhoeven wrote:
-> On Wed, Mar 18, 2009 at 19:12, Rob Landley <rob@landley.net> wrote:
-> > On Wednesday 18 March 2009 00:34:43 Greg Ungerer wrote:
-> >> Rob Landley wrote:
-> >> > On Monday 16 March 2009 18:10:45 Greg Ungerer wrote:
-> >> >>>>    git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git
-> >> >>>> fix-includes
-> >
-> > ...
-> >
-> >> > What _should_ I have done?
-> >>
-> >> The git clone you have done will just get the master branch,
-> >> and put it in a directory named fix-includes.
-> >>
-> >> Which is ok, but you still won't have the "fix-includes" branch.
-> >> Do this after the clone:
-> >>
-> >>    git pull
-> >> git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git
-> >> fix-includes
-> >
-> > Ah, that did something interesting...  And the resulting headers built in
-> > uClibc.  (Works for me!)
-> >
-> > confirmed-uClibc-builds-with-it-by: Rob Landley <rob@landley.net>
+Thu, Mar 19, 2009 at 07:20:03AM CET, davem@davemloft.net wrote:
+>From: Jiri Pirko <jpirko@redhat.com>
+>Date: Mon, 16 Mar 2009 12:11:28 +0100
 >
-> Does it boot on ARAnyM? ;-)
+>> I can see two solutions. Either like my patch or somehow allow bridge to know
+>> more MAC addressses per port (maybe netdev can be changed to know more then
+>> one MAC address).
+>> 
+>> Any thoughts?
+>
+>The netdev struct already supports having a list of multiple unicast
+>MAC addresses, it can probably be used and inspected for this.
+Yes I was looking at this thing yesterday (uc_list). But this list serves
+to different purpose. Do you think that it will be correct to use it for this? I
+would maybe like to make a new list similar to this for our purpose
+(say addr_list). I think it would be more correct.
 
-Dunno.  When I ran aranym it popped up a menu screen and asked me to configure 
-it, so I tracked down a couple of howtos I haven't had time to read yet 
-(http://wiki.aranym.org/aranym_from_scratch and 
-http://wiki.aranym.org/afs/setup_linux).
+Eventually in the furute we would use this list as a primary place to store
+device address instead of dev_addr value and make it more general (as device
+generally may have more adresses). Just a thought...
 
-At a glance the emulator doesn't seem to actually support a serial port, so no 
-serial console, which is a bit of a limiting factor for how I normally use 
-it...
-
-Rob
+>
+>I'll hold off on your patch until we make some more progress on
+>this discussion.
