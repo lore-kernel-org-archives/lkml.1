@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbZCSWWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760615AbZCSWZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761366AbZCSWWo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 18:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758776AbZCSWWf
+	id S1760615AbZCSWZO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 18:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbZCSWY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 18:22:35 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:34788 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755912AbZCSWWe convert rfc822-to-8bit (ORCPT
+	Thu, 19 Mar 2009 18:24:59 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:43588 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755809AbZCSWY7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 18:22:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=jdh+b1lxjADpLUvnIYwuZao3Qx/G7vBQj2NQtWnOqQB/CukSnC0vtwyk5EjhNlvqXg
-         absfJSuA34g4q5bP2/h7aKwR8hpqfKyVtxvaqH4eZetyhEqlgCrk1Vn4dEE+O2HC4m0y
-         7gW182q4aTCYYl0BTsuIKpXs2/1Vj4KJ0OcBE=
-MIME-Version: 1.0
-Date: Thu, 19 Mar 2009 23:22:31 +0100
-Message-ID: <298610bb0903191522s66e3f559h31a05e4f282b92e0@mail.gmail.com>
-Subject: [PATCH][RESEND] Fix state reporting in tc1100-wmi
-From: =?UTF-8?Q?Krzysztof_Kosi=C5=84ski?= <tweenk.pl@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 19 Mar 2009 18:24:59 -0400
+To: roland@redhat.com
+CC: peterz@infradead.org, efault@gmx.de, rjw@sisk.pl, jdike@addtoit.com,
+       mingo@elte.hu, user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: [patch] fix uml slowness caused by ptrace preemption bug on host
+Message-Id: <E1LkQeU-00020Z-Be@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 19 Mar 2009 23:23:50 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The tc1100-wmi driver should print the current states of wireless LAN and
-jogdial brightness control when "cat /sys/devices/platform/tc1100-wmi/wireless"
-and "cat /sys/devices/platform/tc1100-wmi/jogdial" are executed, respectively.
-What actually happens is that both of those commands print 0 regardless of the
-hardware state. The cause is that wmi_query_block returns an ACPI_TYPE_INTEGER
-rather than ACPI_TYPE_BUFFER as the driver assumes. Additionally, the driver
-intends to return a jogdial state that is inverted with respect to the commands
-required to set it (e.g. it intends to return 1 after the jogdial file was
-written with 0).
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-This patch fixes both of those issues - the commands to query the
-state now work,
-and should return the same state that was written. Fixes bug #12286.
+This patch fixes bug #12208.
 
-Resend as requested on Bugzilla.
+This turned out to be not a scheduler regression, but an already
+existing problem in ptrace being triggered by subtle scheduler
+changes.
 
-Signed-off-by: Krzysztof Kosiński <tweenk.pl@gmail.com>
+The problem is this:
 
---- linux-2.6.27/drivers/misc/tc1100-wmi.c	2008-10-10 00:13:53.000000000 +0200
-+++ linux/drivers/misc/tc1100-wmi.c	2008-12-25 02:58:48.000000000 +0100
-@@ -95,9 +95,8 @@
- 		return -ENODEV;
+ - task A is ptracing task B
+ - task B stops on a trace event
+ - task A is woken up and preempts task B
+ - task A calls ptrace on task B, which does ptrace_check_attach()
+ - this calls wait_task_inactive(), which sees that task B is still on the runq
+ - task A goes to sleep for a jiffy
+ - ...
 
- 	obj = (union acpi_object *) result.pointer;
--	if (obj && obj->type == ACPI_TYPE_BUFFER &&
--		obj->buffer.length == sizeof(u32)) {
--		tmp = *((u32 *) obj->buffer.pointer);
-+	if (obj && obj->type == ACPI_TYPE_INTEGER) {
-+		tmp = obj->integer.value;
+Since UML does lots of the above sequences, those jiffies quickly add
+up to make it slow as hell.
+
+This patch solves this by not scheduling on preempt_enable() after
+ptrace_stop() has woken up the tracer.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+ kernel/signal.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+Index: linux.git/kernel/signal.c
+===================================================================
+--- linux.git.orig/kernel/signal.c	2009-03-19 22:48:59.000000000 +0100
++++ linux.git/kernel/signal.c	2009-03-19 22:54:22.000000000 +0100
+@@ -1572,10 +1572,16 @@ static void ptrace_stop(int exit_code, i
+ 	/* Let the debugger run.  */
+ 	__set_current_state(TASK_TRACED);
+ 	spin_unlock_irq(&current->sighand->siglock);
++	preempt_disable();
+ 	read_lock(&tasklist_lock);
+ 	if (may_ptrace_stop()) {
+ 		do_notify_parent_cldstop(current, CLD_TRAPPED);
+ 		read_unlock(&tasklist_lock);
++		/*
++		 * Don't want to allow preemption here, because
++		 * sys_ptrace() needs this task to be inactive.
++		 */
++		preempt_enable_no_resched();
+ 		schedule();
  	} else {
- 		tmp = 0;
+ 		/*
+@@ -1586,6 +1592,7 @@ static void ptrace_stop(int exit_code, i
+ 		if (clear_code)
+ 			current->exit_code = 0;
+ 		read_unlock(&tasklist_lock);
++		preempt_enable();
  	}
-@@ -110,7 +109,7 @@
- 		*out = (tmp == 3) ? 1 : 0;
- 		return 0;
- 	case TC1100_INSTANCE_JOGDIAL:
--		*out = (tmp == 1) ? 1 : 0;
-+		*out = (tmp == 1) ? 0 : 1;
- 		return 0;
- 	default:
- 		return -ENODEV;
+ 
+ 	/*
