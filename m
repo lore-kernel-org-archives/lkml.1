@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbZCSF6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbZCSF7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758698AbZCSF6t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 01:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbZCSF6g
+	id S1758829AbZCSF7j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 01:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758068AbZCSF73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 01:58:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45066
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751851AbZCSF6f (ORCPT
+	Thu, 19 Mar 2009 01:59:29 -0400
+Received: from mail00a.mail.t-online.hu ([84.2.40.5]:60790 "EHLO
+	mail00a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754032AbZCSF72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 01:58:35 -0400
-Date: Wed, 18 Mar 2009 22:58:22 -0700 (PDT)
-Message-Id: <20090318.225822.179893347.davem@davemloft.net>
-To: dada1@cosmosbay.com
-Cc: sven@thebigcorporation.com, ghaskins@novell.com, vernux@us.ibm.com,
-       andi@firstfloor.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       pmullaney@novell.com
-Subject: Re: High contention on the sk_buff_head.lock
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49C1DCDF.6050300@cosmosbay.com>
-References: <1237427007.8204.55.camel@quadrophenia.thebigcorporation.com>
-	<20090318.185441.138157931.davem@davemloft.net>
-	<49C1DCDF.6050300@cosmosbay.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Mar 2009 01:59:28 -0400
+X-Greylist: delayed 555 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Mar 2009 01:59:28 EDT
+Message-ID: <49C1DD0C.4050500@freemail.hu>
+Date: Thu, 19 Mar 2009 06:50:04 +0100
+From: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: David Ellingsworth <david@identd.dyndns.org>
+CC: Jean-Francois Moine <moinejf@free.fr>, linux-media@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gspca: add missing .type field check in VIDIOC_G_PARM
+References: <49C133F6.3020202@freemail.hu> <30353c3d0903181445i409604e8r33678f7ce09d0288@mail.gmail.com>
+In-Reply-To: <30353c3d0903181445i409604e8r33678f7ce09d0288@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail00a.mail.t-online.hu 32720; Body=4 Fuz1=4
+	Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <dada1@cosmosbay.com>
-Date: Thu, 19 Mar 2009 06:49:19 +0100
+David Ellingsworth wrote:
+> 2009/3/18 Németh Márton <nm127@freemail.hu>:
+>> From: Márton Németh <nm127@freemail.hu>
+>>
+>> The gspca webcam driver does not check the .type field of struct v4l2_streamparm.
+>> This field is an input parameter for the driver according to V4L2 API specification,
+>> revision 0.24 [1]. Add the missing check.
+>>
+>> The missing check was recognised by v4l-test 0.10 [2] together with gspca_sunplus driver
+>> and with "Trust 610 LCD POWERC@M ZOOM" webcam. This patch was verified also with
+>> v4l-test 0.10.
+>>
+>> References:
+>> [1] V4L2 API specification, revision 0.24
+>>    http://v4l2spec.bytesex.org/spec/r11680.htm
+>>
+>> [2] v4l-test: Test environment for Video For Linux Two API
+>>    http://v4l-test.sourceforge.net/
+>>
+>> Signed-off-by: Márton Németh <nm127@freemail.hu>
+>> ---
+>> --- linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c.orig     2009-03-14 12:29:38.000000000 +0100
+>> +++ linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c  2009-03-18 16:51:03.000000000 +0100
+>> @@ -1320,6 +1320,9 @@ static int vidioc_g_parm(struct file *fi
+>>  {
+>>        struct gspca_dev *gspca_dev = priv;
+>>
+>> +       if (parm->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
+>> +               return -EINVAL;
+>> +
+>>        memset(parm, 0, sizeof *parm);
+>>        parm->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+> ^^^^^^^^^^^^^^^^^^^
+> This line should be deleted as it's no longer needed.
 
-> Still, there is room for improvements, since :
-> 
-> 1) default qdisc is pfifo_fast. This beast uses three sk_buff_head (96 bytes)
->   where it could use 3 smaller list_head (3 * 16 = 48 bytes on x86_64)
-> 
->  (assuming sizeof(spinlock_t) is only 4 bytes, but it's more than that
->  on various situations (LOCKDEP, ...)
+Because memset() clears the whole parm structure this line is necessary. In other
+drivers the following code is there:
 
-I already plan on doing this, skb->{next,prev} will be replaced with a
-list_head and nearly all of the sk_buff_head usage will simply
-disappear.  It's a lot of work because every piece of SKB queue
-handling code has to be sanitized to only use the interfaces in
-linux/skbuff.h and lots of extremely ugly code like the PPP
-defragmenter make many non-trivial direct skb->{next,prev}
-manipulations.
+    tmp = parm->type;
+    memset(parm, 0, sizeof(*parm));
+    parm->type = parm;
 
-> 2) struct Qdisc layout could be better, letting read mostly fields
->    at beginning of structure. (ie move 'dev_queue', 'next_sched', reshape_fail,
->    u32_node, __parent, ...)
+Maybe changing the code similar to this would be easier to read?
 
-I have no problem with your struct layout changes, submit it formally.
-
-> 3) In stress situation a CPU A queues a skb to a sk_buff_head, but a CPU B
->    dequeues it to feed device, involving an expensive cache line miss
->    on the skb.{next|prev} (to set them to NULL)
-> 
->    We could:
->       Use a special dequeue op that doesnt touch skb.{next|prev}
->    Eventually set next/prev to NULL after q.lock is released
-
-You absolutely can't do this, as it would break GSO/GRO.  The whole
-transmit path is littered with checks of skb->next being NULL for the
-purposes of segmentation handling.
+	Márton Németh
