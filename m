@@ -1,139 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbZCSRST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbZCSRTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759907AbZCSRST (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 13:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbZCSRSI
+	id S1759208AbZCSRTk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 13:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZCSRT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 13:18:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42807 "EHLO mx1.redhat.com"
+	Thu, 19 Mar 2009 13:19:29 -0400
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:43414 "EHLO sabe.cs.wisc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753848AbZCSRSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 13:18:06 -0400
-Date: Thu, 19 Mar 2009 13:18:00 -0400 (EDT)
-From: Miloslav Trmac <mitr@redhat.com>
-To: viro <viro@zeniv.linux.org.uk>, Eric Paris <eparis@redhat.com>
-Cc: linux-audit <linux-audit@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Steve Grubb <sgrubb@redhat.com>
-Message-ID: <273781508.1737621237483080376.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-In-Reply-To: <230738142.1737601237483061914.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-Subject: [PATCH] Add SELinux context and TTY name to AUDIT_TTY records
+	id S1750831AbZCSRT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 13:19:28 -0400
+Message-ID: <49C27E95.4050401@cs.wisc.edu>
+Date: Thu, 19 Mar 2009 12:19:17 -0500
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_56699_1773635645.1237483080374"
-X-Originating-IP: [10.5.5.72]
+To: Jing Huang <huangj@brocade.com>
+CC: James.Bottomley@HansenPartnership.com, kgudipat@brocade.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       rvadivel@brocade.com, vravindr@brocade.com
+Subject: Re: [PATCH 1/5] bfa: Brocade BFA FC SCSI driver (bfad)
+References: <200903142003.n2EK39r4031547@blc-10-6.brocade.com>
+In-Reply-To: <200903142003.n2EK39r4031547@blc-10-6.brocade.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_56699_1773635645.1237483080374
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+some quick general comments:
 
-From: Miloslav Trma=C4=8D <mitr@redhat.com>
+- Patch needs to be run through checkpatch.pl again.
+- If you are not implementing a callout like issue_lip then you do not 
+need to implement a function that does nothing.
+- Remove the OS compat stuff that just calls right into the linux 
+function. For example kill bfad_os_pci_probe.
 
-Add SELinux context information and TTY name (consistent with the
-AUDIT_SYSCALL record) to AUDIT_TTY.  An example record after applying
-this patch:
+Jing Huang wrote:
+> +
+> +/**
+> + * Allocate a Scsi_Host for a port.
+> + */
+> +int
+> +bfad_im_scsi_host_alloc(struct bfad_s *bfad, struct bfad_im_port_s *im_port)
+> +{
+> +	int error = 1;
+> +
+> +	if (!idr_pre_get(&bfad_im_port_index, GFP_KERNEL)) {
+> +		printk(KERN_WARNING "idr_pre_get failure\n");
+> +		goto out;
+> +	}
+> +
+> +	error = idr_get_new(&bfad_im_port_index, im_port,
+> +					 &im_port->idr_id);
+> +	if (error) {
+> +		printk(KERN_WARNING "idr_get_new failure\n");
+> +		goto out;
+> +	}
+> +
+> +	im_port->shost = bfad_os_scsi_host_alloc(im_port, bfad);
+> +	if (!im_port->shost) {
+> +		error = 1;
+> +		goto out_free_idr;
+> +	}
+> +
+> +	im_port->shost->hostdata[0] = (unsigned long)im_port;
 
- type=3DTTY msg=3Daudit(1237480806.220:22): tty pid=3D2601 uid=3D0 auid=3D5=
-00 ses=3D1=20
- subj=3Dunconfined_u:unconfined_r:unconfined_t:s0 major=3D136 minor=3D1 tty=
-=3Dpts1=20
- comm=3D"bash" data=3D6361740D
 
-(line wrapped, new fields are "subj" and "tty".)
 
-Signed-off-by: Miloslav Trma=C4=8D <mitr@redhat.com>
----
- drivers/char/tty_audit.c |   57 ++++++++++++++++++++++++-------------
- 1 file changed, 38 insertions(+), 19 deletions(-)
+I think I asked about this before. Why do you just not allocate the bfad 
+or im_port in the hostdata? What is the struct hierarchy? Do you have 
+one bfad for the entire HBA/pci_device then have a im_port for each port 
+on the hba?
 
-------=_Part_56699_1773635645.1237483080374
-Content-Type: application/octet-stream; name=audit-tty-more-fields.patch
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename=audit-tty-more-fields.patch
 
-RnJvbTogTWlsb3NsYXYgVHJtYcSNIDxtaXRyQHJlZGhhdC5jb20+CgpBZGQgU0VMaW51eCBjb250
-ZXh0IGluZm9ybWF0aW9uIGFuZCBUVFkgbmFtZSAoY29uc2lzdGVudCB3aXRoIHRoZQpBVURJVF9T
-WVNDQUxMIHJlY29yZCkgdG8gQVVESVRfVFRZLiAgQW4gZXhhbXBsZSByZWNvcmQgYWZ0ZXIgYXBw
-bHlpbmcKdGhpcyBwYXRjaDoKCiB0eXBlPVRUWSBtc2c9YXVkaXQoMTIzNzQ4MDgwNi4yMjA6MjIp
-OiB0dHkgcGlkPTI2MDEgdWlkPTAgYXVpZD01MDAgc2VzPTEKIHN1Ymo9dW5jb25maW5lZF91OnVu
-Y29uZmluZWRfcjp1bmNvbmZpbmVkX3Q6czAgbWFqb3I9MTM2IG1pbm9yPTEgdHR5PXB0czEKIGNv
-bW09ImJhc2giIGRhdGE9NjM2MTc0MEQKCihsaW5lIHdyYXBwZWQsIG5ldyBmaWVsZHMgYXJlICJz
-dWJqIiBhbmQgInR0eSIuKQoKU2lnbmVkLW9mZi1ieTogTWlsb3NsYXYgVHJtYcSNIDxtaXRyQHJl
-ZGhhdC5jb20+Ci0tLQogZHJpdmVycy9jaGFyL3R0eV9hdWRpdC5jIHwgICA1NyArKysrKysrKysr
-KysrKysrKysrKysrKystLS0tLS0tLS0tLS0tCiAxIGZpbGUgY2hhbmdlZCwgMzggaW5zZXJ0aW9u
-cygrKSwgMTkgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jaGFyL3R0eV9hdWRp
-dC5jIGIvZHJpdmVycy9jaGFyL3R0eV9hdWRpdC5jCmluZGV4IDM0YWI2ZDcuLjFiN2FkZDQgMTAw
-NjQ0Ci0tLSBhL2RyaXZlcnMvY2hhci90dHlfYXVkaXQuYworKysgYi9kcml2ZXJzL2NoYXIvdHR5
-X2F1ZGl0LmMKQEAgLTEyLDYgKzEyLDcgQEAKICNpbmNsdWRlIDxsaW51eC9hdWRpdC5oPgogI2lu
-Y2x1ZGUgPGxpbnV4L2ZpbGUuaD4KICNpbmNsdWRlIDxsaW51eC9mZHRhYmxlLmg+CisjaW5jbHVk
-ZSA8bGludXgvc2VjdXJpdHkuaD4KICNpbmNsdWRlIDxsaW51eC90dHkuaD4KIAogc3RydWN0IHR0
-eV9hdWRpdF9idWYgewpAQCAtMTksMTIgKzIwLDIxIEBAIHN0cnVjdCB0dHlfYXVkaXRfYnVmIHsK
-IAlzdHJ1Y3QgbXV0ZXggbXV0ZXg7CS8qIFByb3RlY3RzIGFsbCBkYXRhIGJlbG93ICovCiAJaW50
-IG1ham9yLCBtaW5vcjsJLyogVGhlIFRUWSB3aGljaCB0aGUgZGF0YSBpcyBmcm9tICovCiAJdW5z
-aWduZWQgaWNhbm9uOjE7CisJY2hhciB0dHlfbmFtZVtzaXplb2YoKChzdHJ1Y3QgdHR5X3N0cnVj
-dCAqKU5VTEwpLT5uYW1lKV07CiAJc2l6ZV90IHZhbGlkOwogCXVuc2lnbmVkIGNoYXIgKmRhdGE7
-CS8qIEFsbG9jYXRlZCBzaXplIE5fVFRZX0JVRl9TSVpFICovCiB9OwogCi1zdGF0aWMgc3RydWN0
-IHR0eV9hdWRpdF9idWYgKnR0eV9hdWRpdF9idWZfYWxsb2MoaW50IG1ham9yLCBpbnQgbWlub3Is
-Ci0JCQkJCQkgaW50IGljYW5vbikKK3N0YXRpYyB2b2lkIHR0eV9hdWRpdF9idWZfc2V0dXAoc3Ry
-dWN0IHR0eV9hdWRpdF9idWYgKmJ1ZiwKKwkJCQlzdHJ1Y3QgdHR5X3N0cnVjdCAqdHR5KQorewor
-CWJ1Zi0+bWFqb3IgPSB0dHktPmRyaXZlci0+bWFqb3I7CisJYnVmLT5taW5vciA9IHR0eS0+ZHJp
-dmVyLT5taW5vcl9zdGFydCArIHR0eS0+aW5kZXg7CisJYnVmLT5pY2Fub24gPSB0dHktPmljYW5v
-bjsKKwlzdHJjcHkoYnVmLT50dHlfbmFtZSwgdHR5LT5uYW1lKTsKK30KKworc3RhdGljIHN0cnVj
-dCB0dHlfYXVkaXRfYnVmICp0dHlfYXVkaXRfYnVmX2FsbG9jKHN0cnVjdCB0dHlfc3RydWN0ICp0
-dHkpCiB7CiAJc3RydWN0IHR0eV9hdWRpdF9idWYgKmJ1ZjsKIApAQCAtMzksOSArNDksNyBAQCBz
-dGF0aWMgc3RydWN0IHR0eV9hdWRpdF9idWYgKnR0eV9hdWRpdF9idWZfYWxsb2MoaW50IG1ham9y
-LCBpbnQgbWlub3IsCiAJCWdvdG8gZXJyX2J1ZjsKIAlhdG9taWNfc2V0KCZidWYtPmNvdW50LCAx
-KTsKIAltdXRleF9pbml0KCZidWYtPm11dGV4KTsKLQlidWYtPm1ham9yID0gbWFqb3I7Ci0JYnVm
-LT5taW5vciA9IG1pbm9yOwotCWJ1Zi0+aWNhbm9uID0gaWNhbm9uOworCXR0eV9hdWRpdF9idWZf
-c2V0dXAoYnVmLCB0dHkpOwogCWJ1Zi0+dmFsaWQgPSAwOwogCXJldHVybiBidWY7CiAKQEAgLTY5
-LDcgKzc3LDggQEAgc3RhdGljIHZvaWQgdHR5X2F1ZGl0X2J1Zl9wdXQoc3RydWN0IHR0eV9hdWRp
-dF9idWYgKmJ1ZikKIAogc3RhdGljIHZvaWQgdHR5X2F1ZGl0X2xvZyhjb25zdCBjaGFyICpkZXNj
-cmlwdGlvbiwgc3RydWN0IHRhc2tfc3RydWN0ICp0c2ssCiAJCQkgIHVpZF90IGxvZ2ludWlkLCB1
-bnNpZ25lZCBzZXNzaW9uaWQsIGludCBtYWpvciwKLQkJCSAgaW50IG1pbm9yLCB1bnNpZ25lZCBj
-aGFyICpkYXRhLCBzaXplX3Qgc2l6ZSkKKwkJCSAgaW50IG1pbm9yLCBjb25zdCBjaGFyICp0dHlf
-bmFtZSwKKwkJCSAgdW5zaWduZWQgY2hhciAqZGF0YSwgc2l6ZV90IHNpemUpCiB7CiAJc3RydWN0
-IGF1ZGl0X2J1ZmZlciAqYWI7CiAKQEAgLTc3LDExICs4NiwyNSBAQCBzdGF0aWMgdm9pZCB0dHlf
-YXVkaXRfbG9nKGNvbnN0IGNoYXIgKmRlc2NyaXB0aW9uLCBzdHJ1Y3QgdGFza19zdHJ1Y3QgKnRz
-aywKIAlpZiAoYWIpIHsKIAkJY2hhciBuYW1lW3NpemVvZih0c2stPmNvbW0pXTsKIAkJdWlkX3Qg
-dWlkID0gdGFza191aWQodHNrKTsKLQotCQlhdWRpdF9sb2dfZm9ybWF0KGFiLCAiJXMgcGlkPSV1
-IHVpZD0ldSBhdWlkPSV1IHNlcz0ldSAiCi0JCQkJICJtYWpvcj0lZCBtaW5vcj0lZCBjb21tPSIs
-IGRlc2NyaXB0aW9uLAotCQkJCSB0c2stPnBpZCwgdWlkLCBsb2dpbnVpZCwgc2Vzc2lvbmlkLAot
-CQkJCSBtYWpvciwgbWlub3IpOworCQl1MzIgc2lkOworCisJCWF1ZGl0X2xvZ19mb3JtYXQoYWIs
-ICIlcyBwaWQ9JXUgdWlkPSV1IGF1aWQ9JXUgc2VzPSV1IiwKKwkJCQkgZGVzY3JpcHRpb24sIHRz
-ay0+cGlkLCB1aWQsIGxvZ2ludWlkLAorCQkJCSBzZXNzaW9uaWQpOworCQlzZWN1cml0eV90YXNr
-X2dldHNlY2lkKHRzaywgJnNpZCk7CisJCWlmIChzaWQpIHsKKwkJCWNoYXIgKmN0eDsKKwkJCXUz
-MiBsZW47CisKKwkJCWlmIChzZWN1cml0eV9zZWNpZF90b19zZWNjdHgoc2lkLCAmY3R4LCAmbGVu
-KSkKKwkJCQlhdWRpdF9sb2dfZm9ybWF0KGFiLCAiIHNzaWQ9JXUiLCBzaWQpOworCQkJZWxzZSB7
-CisJCQkJYXVkaXRfbG9nX2Zvcm1hdChhYiwgIiBzdWJqPSVzIiwgY3R4KTsKKwkJCQlzZWN1cml0
-eV9yZWxlYXNlX3NlY2N0eChjdHgsIGxlbik7CisJCQl9CisJCX0KKwkJYXVkaXRfbG9nX2Zvcm1h
-dChhYiwgIiBtYWpvcj0lZCBtaW5vcj0lZCB0dHk9JXMgY29tbT0iLCBtYWpvciwKKwkJCQkgbWlu
-b3IsIHR0eV9uYW1lKTsKIAkJZ2V0X3Rhc2tfY29tbShuYW1lLCB0c2spOwogCQlhdWRpdF9sb2df
-dW50cnVzdGVkc3RyaW5nKGFiLCBuYW1lKTsKIAkJYXVkaXRfbG9nX2Zvcm1hdChhYiwgIiBkYXRh
-PSIpOwpAQCAtMTA1LDcgKzEyOCw3IEBAIHN0YXRpYyB2b2lkIHR0eV9hdWRpdF9idWZfcHVzaChz
-dHJ1Y3QgdGFza19zdHJ1Y3QgKnRzaywgdWlkX3QgbG9naW51aWQsCiAJaWYgKGF1ZGl0X2VuYWJs
-ZWQgPT0gMCkKIAkJcmV0dXJuOwogCXR0eV9hdWRpdF9sb2coInR0eSIsIHRzaywgbG9naW51aWQs
-IHNlc3Npb25pZCwgYnVmLT5tYWpvciwgYnVmLT5taW5vciwKLQkJICAgICAgYnVmLT5kYXRhLCBi
-dWYtPnZhbGlkKTsKKwkJICAgICAgYnVmLT50dHlfbmFtZSwgYnVmLT5kYXRhLCBidWYtPnZhbGlk
-KTsKIAlidWYtPnZhbGlkID0gMDsKIH0KIApAQCAtMTkxLDcgKzIxNCw3IEBAIHZvaWQgdHR5X2F1
-ZGl0X3Rpb2NzdGkoc3RydWN0IHR0eV9zdHJ1Y3QgKnR0eSwgY2hhciBjaCkKIAkJYXVpZCA9IGF1
-ZGl0X2dldF9sb2dpbnVpZChjdXJyZW50KTsKIAkJc2Vzc2lvbmlkID0gYXVkaXRfZ2V0X3Nlc3Np
-b25pZChjdXJyZW50KTsKIAkJdHR5X2F1ZGl0X2xvZygiaW9jdGw9VElPQ1NUSSIsIGN1cnJlbnQs
-IGF1aWQsIHNlc3Npb25pZCwgbWFqb3IsCi0JCQkgICAgICBtaW5vciwgJmNoLCAxKTsKKwkJCSAg
-ICAgIG1pbm9yLCB0dHktPm5hbWUsICZjaCwgMSk7CiAJfQogfQogCkBAIC0yNDAsOSArMjYzLDcg
-QEAgc3RhdGljIHN0cnVjdCB0dHlfYXVkaXRfYnVmICp0dHlfYXVkaXRfYnVmX2dldChzdHJ1Y3Qg
-dHR5X3N0cnVjdCAqdHR5KQogCX0KIAlzcGluX3VubG9ja19pcnEoJmN1cnJlbnQtPnNpZ2hhbmQt
-PnNpZ2xvY2spOwogCi0JYnVmMiA9IHR0eV9hdWRpdF9idWZfYWxsb2ModHR5LT5kcml2ZXItPm1h
-am9yLAotCQkJCSAgIHR0eS0+ZHJpdmVyLT5taW5vcl9zdGFydCArIHR0eS0+aW5kZXgsCi0JCQkJ
-ICAgdHR5LT5pY2Fub24pOworCWJ1ZjIgPSB0dHlfYXVkaXRfYnVmX2FsbG9jKHR0eSk7CiAJaWYg
-KGJ1ZjIgPT0gTlVMTCkgewogCQlhdWRpdF9sb2dfbG9zdCgib3V0IG9mIG1lbW9yeSBpbiBUVFkg
-YXVkaXRpbmciKTsKIAkJcmV0dXJuIE5VTEw7CkBAIC0yOTQsOSArMzE1LDcgQEAgdm9pZCB0dHlf
-YXVkaXRfYWRkX2RhdGEoc3RydWN0IHR0eV9zdHJ1Y3QgKnR0eSwgdW5zaWduZWQgY2hhciAqZGF0
-YSwKIAlpZiAoYnVmLT5tYWpvciAhPSBtYWpvciB8fCBidWYtPm1pbm9yICE9IG1pbm9yCiAJICAg
-IHx8IGJ1Zi0+aWNhbm9uICE9IHR0eS0+aWNhbm9uKSB7CiAJCXR0eV9hdWRpdF9idWZfcHVzaF9j
-dXJyZW50KGJ1Zik7Ci0JCWJ1Zi0+bWFqb3IgPSBtYWpvcjsKLQkJYnVmLT5taW5vciA9IG1pbm9y
-OwotCQlidWYtPmljYW5vbiA9IHR0eS0+aWNhbm9uOworCQl0dHlfYXVkaXRfYnVmX3NldHVwKGJ1
-ZiwgdHR5KTsKIAl9CiAJZG8gewogCQlzaXplX3QgcnVuOwo=
-------=_Part_56699_1773635645.1237483080374--
+
+> +	im_port->shost->unique_id = im_port->idr_id;
+> +	im_port->shost->this_id = -1;
+> +	im_port->shost->max_id = MAX_FCP_TARGET;
+> +	im_port->shost->max_lun = MAX_FCP_LUN;
+> +	im_port->shost->max_cmd_len = 16;
+> +	im_port->shost->can_queue = bfad->cfg_data.ioc_queue_depth;
+> +	im_port->shost->transportt = bfad_im_scsi_transport_template;
+> +
+> +	error = bfad_os_scsi_add_host(im_port->shost, im_port, bfad);
+> +	if (error) {
+> +		printk(KERN_WARNING "bfad_os_scsi_add_host failure %d\n",
+> +							error);
+> +		goto out_fc_rel;
+> +	}
+> +
+> +	/* setup host fixed attribute if the lk supports */
+> +	bfad_os_fc_host_init(im_port);
+> +
+> +	return 0;
+> +
+> +out_fc_rel:
+> +	scsi_host_put(im_port->shost);
+> +
+> +out_free_idr:
+> +	idr_remove(&bfad_im_port_index, im_port->idr_id);
+> +out:
+> +	return error;
+> +}
+> +
