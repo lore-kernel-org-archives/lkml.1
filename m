@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbZCSRoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbZCSRqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758891AbZCSRoZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 13:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbZCSRoG
+	id S1760150AbZCSRqP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 13:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZCSRp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 13:44:06 -0400
-Received: from smtp1-g21.free.fr ([212.27.42.1]:53347 "EHLO smtp1-g21.free.fr"
+	Thu, 19 Mar 2009 13:45:59 -0400
+Received: from shakaweb.org ([85.25.54.21]:59567 "EHLO shakaweb.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760071AbZCSRoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 13:44:02 -0400
-Message-ID: <0a0401c9a8b9$fa181c30$f9b5a8c0@pii350>
-From: "Gilles Espinasse" <g.esp@free.fr>
-To: <sam@ravnborg.org>
-Cc: <linux-kernel@vger.kernel.org>, <linux-kbuild@vger.kernel.org>
-Subject: [PATCH] Be able to build pmac driver without IDE built-in
-Date: Thu, 19 Mar 2009 18:41:46 +0100
+	id S1751785AbZCSRp6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 13:45:58 -0400
+Message-ID: <49C28494.5030403@shakaweb.org>
+Date: Thu, 19 Mar 2009 18:44:52 +0100
+From: Christopher Schramm <debian@shakaweb.org>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Yinghai Lu <yinghai@kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <49C1FE7D.9070605@shakaweb.org> <20090319100122.GA30358@elte.hu> <49C25712.9010509@shakaweb.org> <20090319154955.GA21034@elte.hu>
+In-Reply-To: <20090319154955.GA21034@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1933
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1933
+X-SA-Exim-Connect-IP: 94.216.219.212
+X-SA-Exim-Mail-From: debian@shakaweb.org
+Subject: Re: APIC problem report
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shakaweb.org)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No reason to need IDE built-in to be able to compile pmac driver
-Tested to work on 2.6.29-rc8 and 2.6.28.8 with ide and pmac as modules
-inside an initramfs
+Ingo Molnar schrieb:
+> By the looks of it, chances are that various APIC fixes and 
+> robustization patches might have fixed your problem:
+> 
+>  691874f: x86: I/O APIC: timer through 8259A second-chance
+>  03be750: x86: I/O APIC: keep the timer IRQ masked during set-up
+>  24742ec: x86: I/O APIC: unmask the second-chance timer interrupt
+>  d11d579: x86: I/O APIC: AEOI timer acknowledgement clean-ups
+> 
+> These first showed up in v2.6.27. Which would match your reported 
+> symptoms of v2.6.26 failig and 2.6.28 working.
 
- Signed-off-by: Gilles Espinasse <g.esp@free.fr>
+Yes, you're right. Looking at the detailed kernel messages, the "8259A 
+second-chance" seems to do the trick. So it's already tackled. :-)
 
---- linux-2.6.28/drivers/ide/Kconfig.old 2009-03-19 16:36:34.000000000 +0100
-+++ linux-2.6.28/drivers/ide/Kconfig 2009-03-19 16:35:49.000000000 +0100
-@@ -676,7 +676,7 @@
- # TODO: BLK_DEV_IDEDMA_PCI -> BLK_DEV_IDEDMA_SFF
- config BLK_DEV_IDE_PMAC
-  tristate "PowerMac on-board IDE support"
-- depends on PPC_PMAC && IDE=y
-+ depends on PPC_PMAC && IDE
-  select IDE_TIMINGS
-  select BLK_DEV_IDEDMA_PCI
-  help
-
+Christopher
