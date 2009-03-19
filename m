@@ -1,88 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbZCSAqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbZCSA7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757099AbZCSAqS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 20:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754341AbZCSAqE
+	id S1756676AbZCSA7U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 20:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbZCSA7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 20:46:04 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53673 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753432AbZCSAqB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 20:46:01 -0400
-Date: Thu, 19 Mar 2009 09:44:33 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: nishimura@mxp.nes.nec.co.jp, Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm@kvack.org, balbir@linux.vnet.ibm.com, lizf@cn.fujitsu.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] memcg remvoe redundant message at swapon
-Message-Id: <20090319094433.709edb9e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0903162217030.3560@blonde.anvils>
-References: <20090310100707.e0640b0b.nishimura@mxp.nes.nec.co.jp>
-	<20090310160856.77deb5c3.akpm@linux-foundation.org>
-	<20090311085326.403a211d.kamezawa.hiroyu@jp.fujitsu.com>
-	<isapiwc.d14e3c29.6b18.49b7092b.9bc73.52@mail.jp.nec.com>
-	<20090311094739.3123b05d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090311120427.2467bd14.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0903111041260.16964@blonde.anvils>
-	<20090312084623.e98d80b9.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0903162217030.3560@blonde.anvils>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 18 Mar 2009 20:59:10 -0400
+Received: from ozlabs.org ([203.10.76.45]:39845 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752410AbZCSA7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 20:59:09 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [BUG] circular lock dependency in tip
+Date: Thu, 19 Mar 2009 11:29:01 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+References: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com> <alpine.DEB.2.00.0903181736170.31583@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0903181736170.31583@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903191129.01919.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is based on this thread http://marc.info/?l=linux-mm&m=123724233418715&w=2
-against the mmotm.
-=
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Thursday 19 March 2009 08:21:11 Steven Rostedt wrote:
+> >         if (!alloc_cpumask_var(&tmpmask, GFP_ATOMIC))
+> >                 return;
+> 
+> Is this really a good idea? I mean, if the system is very active, it can 
+> easily fail to acquire memory, you just need to have cache filled. 
 
-It's pointed out that swap_cgroup's message at swapon() is nonsense.
-Because
-  * It can be calculated very easily if all necessary information is
-    written in Kconfig.
-  * It's not necessary to annoying people at every swapon().
+OTOH, if it's very active, what's it doing in idle_balance?
 
-In other view, now, memory usage per swp_entry is reduced to 2bytes
-from 8bytes(64bit) and I think it's reasonably small.
+> I'm thinking a blind conversion of cpumask_var_t is not the best way to 
+> handle changes. This is as bad as fixing compiler warnings without looking 
+> into the real cause.
 
-Reported-by: Hugh Dickins <hugh@veritas.com>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
-Index: mmotm-2.6.29-Mar11/mm/page_cgroup.c
-===================================================================
---- mmotm-2.6.29-Mar11.orig/mm/page_cgroup.c
-+++ mmotm-2.6.29-Mar11/mm/page_cgroup.c
-@@ -426,13 +426,6 @@ int swap_cgroup_swapon(int type, unsigne
- 	}
- 	mutex_unlock(&swap_cgroup_mutex);
+Sure, and I'd love to spend far more time analyzing each and every case where
+people throw around cpumasks like candy.  Yet if I never get to the stage where
+everything is converted, then we can never have on-stack cpumasks fail compile
+with CONFIG_CPUMASK_OFFSTACK=y, and so the job will never be finished.
+
+Anyway, looking at the code:
+
+We use the same trick in load_balance() and load_balance_newidle(): the
+cpumask is a temporary so we can eliminate busy queues with all tasks pinned.
+
+This actually only addresses a subset of the problem though: if we have a
+heap of tasks which are pinned to two cpus, this logic doesn't help us.
+
+We could keep separate cpu load measuring only movable processes, but that
+seems like optimizing for the wrong case.  In fact, allocating here seems
+like optimizing for the correct case.  Since we can't do that, a per-cpu
+scratch mask seems in order.  It's messier tho.
+
+Does this solve it? (Untested).
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 5dabd80..48862d4 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3448,19 +3448,23 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
+  */
+ #define MAX_PINNED_INTERVAL	512
  
--	printk(KERN_INFO
--		"swap_cgroup: uses %ld bytes of vmalloc for pointer array space"
--		" and %ld bytes to hold mem_cgroup information per swap ents\n",
--		array_size, length * PAGE_SIZE);
--	printk(KERN_INFO
--	"swap_cgroup can be disabled by noswapaccount boot option.\n");
++/* Working cpumask for load_balance and load_balance_newidle. */
++static DEFINE_PER_CPU(cpumask_var_t, load_balance_tmpmask);
++
+ /*
+  * Check this_cpu to ensure it is balanced within domain. Attempt to move
+  * tasks if there is an imbalance.
+  */
+ static int load_balance(int this_cpu, struct rq *this_rq,
+ 			struct sched_domain *sd, enum cpu_idle_type idle,
+-			int *balance, struct cpumask *cpus)
++			int *balance)
+ {
+ 	int ld_moved, all_pinned = 0, active_balance = 0, sd_idle = 0;
+ 	struct sched_group *group;
+ 	unsigned long imbalance;
+ 	struct rq *busiest;
+ 	unsigned long flags;
++	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
+ 
+ 	cpumask_setall(cpus);
+ 
+@@ -3615,8 +3619,7 @@ out:
+  * this_rq is locked.
+  */
+ static int
+-load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+-			struct cpumask *cpus)
++load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd)
+ {
+ 	struct sched_group *group;
+ 	struct rq *busiest = NULL;
+@@ -3624,6 +3627,7 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+ 	int ld_moved = 0;
+ 	int sd_idle = 0;
+ 	int all_pinned = 0;
++	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
+ 
+ 	cpumask_setall(cpus);
+ 
+@@ -3764,10 +3768,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+ 	struct sched_domain *sd;
+ 	int pulled_task = 0;
+ 	unsigned long next_balance = jiffies + HZ;
+-	cpumask_var_t tmpmask;
 -
- 	return 0;
- nomem:
- 	printk(KERN_INFO "couldn't allocate enough memory for swap_cgroup.\n");
-Index: mmotm-2.6.29-Mar11/init/Kconfig
-===================================================================
---- mmotm-2.6.29-Mar11.orig/init/Kconfig
-+++ mmotm-2.6.29-Mar11/init/Kconfig
-@@ -603,6 +603,8 @@ config CGROUP_MEM_RES_CTLR_SWAP
- 	  is disabled by boot option, this will be automatically disabled and
- 	  there will be no overhead from this. Even when you set this config=y,
- 	  if boot option "noswapaccount" is set, swap will not be accounted.
-+	  Now, memory usage of swap_cgroup is 2 bytes per entry. If swap page
-+	  size is 4096bytes, 512k per 1Gbytes of swap.
+-	if (!alloc_cpumask_var(&tmpmask, GFP_ATOMIC))
+-		return;
  
- endif # CGROUPS
+ 	for_each_domain(this_cpu, sd) {
+ 		unsigned long interval;
+@@ -3778,7 +3778,7 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+ 		if (sd->flags & SD_BALANCE_NEWIDLE)
+ 			/* If we've pulled tasks over stop searching: */
+ 			pulled_task = load_balance_newidle(this_cpu, this_rq,
+-							   sd, tmpmask);
++							   sd);
  
+ 		interval = msecs_to_jiffies(sd->balance_interval);
+ 		if (time_after(next_balance, sd->last_balance + interval))
+@@ -3793,7 +3793,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+ 		 */
+ 		this_rq->next_balance = next_balance;
+ 	}
+-	free_cpumask_var(tmpmask);
+ }
+ 
+ /*
+@@ -3943,11 +3942,6 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
+ 	unsigned long next_balance = jiffies + 60*HZ;
+ 	int update_next_balance = 0;
+ 	int need_serialize;
+-	cpumask_var_t tmp;
+-
+-	/* Fails alloc?  Rebalancing probably not a priority right now. */
+-	if (!alloc_cpumask_var(&tmp, GFP_ATOMIC))
+-		return;
+ 
+ 	for_each_domain(cpu, sd) {
+ 		if (!(sd->flags & SD_LOAD_BALANCE))
+@@ -3972,7 +3966,7 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
+ 		}
+ 
+ 		if (time_after_eq(jiffies, sd->last_balance + interval)) {
+-			if (load_balance(cpu, rq, sd, idle, &balance, tmp)) {
++			if (load_balance(cpu, rq, sd, idle, &balance)) {
+ 				/*
+ 				 * We've pulled tasks over so either we're no
+ 				 * longer idle, or one of our SMT siblings is
+@@ -4006,8 +4000,6 @@ out:
+ 	 */
+ 	if (likely(update_next_balance))
+ 		rq->next_balance = next_balance;
+-
+-	free_cpumask_var(tmp);
+ }
+ 
+ /*
+@@ -8304,6 +8296,9 @@ void __init sched_init(void)
+ #ifdef CONFIG_USER_SCHED
+ 	alloc_size *= 2;
+ #endif
++#ifdef CONFIG_CPUMASK_OFFSTACK
++	alloc_size *= num_possible_cpus() * cpumask_size();
++#endif
+ 	/*
+ 	 * As sched_init() is called before page_alloc is setup,
+ 	 * we use alloc_bootmem().
+@@ -8341,6 +8336,12 @@ void __init sched_init(void)
+ 		ptr += nr_cpu_ids * sizeof(void **);
+ #endif /* CONFIG_USER_SCHED */
+ #endif /* CONFIG_RT_GROUP_SCHED */
++#ifdef CONFIG_CPUMASK_OFFSTACK
++		for_each_possible_cpu(i) {
++			per_cpu(load_balance_tmpmask, i) = (void *)ptr;
++			ptr += cpumask_size();
++		}
++#endif /* CONFIG_CPUMASK_OFFSTACK */
+ 	}
+ 
+ #ifdef CONFIG_SMP
+
 
