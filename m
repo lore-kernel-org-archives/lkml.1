@@ -1,191 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759644AbZCSHhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759559AbZCSHlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759644AbZCSHhq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 03:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZCSHhf
+	id S1759559AbZCSHlT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 03:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbZCSHlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 03:37:35 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34444 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751797AbZCSHhe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 03:37:34 -0400
-Date: Thu, 19 Mar 2009 07:36:34 GMT
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, rusty@rustcorp.com.au, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com>
-Subject: [tip:cpus4096] cpumask: remove cpumask allocation from idle_balance
-Message-ID: <tip-df7c8e845e8e2030e8ae947e0ace56d184d0e9a0@git.kernel.org>
-Git-Commit-ID: df7c8e845e8e2030e8ae947e0ace56d184d0e9a0
-X-Mailer: tip-git-log-daemon
+	Thu, 19 Mar 2009 03:41:07 -0400
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:60909 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754396AbZCSHlH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 03:41:07 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Mar 2009 03:41:06 EDT
+Date: Thu, 19 Mar 2009 00:34:23 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+cc: David Ellingsworth <david@identd.dyndns.org>,
+       Jean-Francois Moine <moinejf@free.fr>, linux-media@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gspca: add missing .type field check in VIDIOC_G_PARM
+In-Reply-To: <49C1DD0C.4050500@freemail.hu>
+Message-ID: <Pine.LNX.4.58.0903190032530.28292@shell2.speakeasy.net>
+References: <49C133F6.3020202@freemail.hu> <30353c3d0903181445i409604e8r33678f7ce09d0288@mail.gmail.com>
+ <49C1DD0C.4050500@freemail.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 19 Mar 2009 07:36:36 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  df7c8e845e8e2030e8ae947e0ace56d184d0e9a0
-Gitweb:     http://git.kernel.org/tip/df7c8e845e8e2030e8ae947e0ace56d184d0e9a0
-Author:     Rusty Russell <rusty@rustcorp.com.au>
-AuthorDate: Thu, 19 Mar 2009 15:22:20 +1030
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 19 Mar 2009 08:15:15 +0100
+On Thu, 19 Mar 2009, [ISO-8859-1] Németh Márton wrote:
+> David Ellingsworth wrote:
+> > 2009/3/18 Németh Márton <nm127@freemail.hu>:
+> >> From: Márton Németh <nm127@freemail.hu>
+> >>
+> >> The gspca webcam driver does not check the .type field of struct v4l2_streamparm.
+> >> This field is an input parameter for the driver according to V4L2 API specification,
+> >> revision 0.24 [1]. Add the missing check.
+> >>
+> >> The missing check was recognised by v4l-test 0.10 [2] together with gspca_sunplus driver
+> >> and with "Trust 610 LCD POWERC@M ZOOM" webcam. This patch was verified also with
+> >> v4l-test 0.10.
+> >>
+> >> References:
+> >> [1] V4L2 API specification, revision 0.24
+> >>    http://v4l2spec.bytesex.org/spec/r11680.htm
+> >>
+> >> [2] v4l-test: Test environment for Video For Linux Two API
+> >>    http://v4l-test.sourceforge.net/
+> >>
+> >> Signed-off-by: Márton Németh <nm127@freemail.hu>
+> >> ---
+> >> --- linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c.orig     2009-03-14 12:29:38.000000000 +0100
+> >> +++ linux-2.6.29-rc8/drivers/media/video/gspca/gspca.c  2009-03-18 16:51:03.000000000 +0100
+> >> @@ -1320,6 +1320,9 @@ static int vidioc_g_parm(struct file *fi
+> >>  {
+> >>        struct gspca_dev *gspca_dev = priv;
+> >>
+> >> +       if (parm->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
+> >> +               return -EINVAL;
+> >> +
+> >>        memset(parm, 0, sizeof *parm);
+> >>        parm->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+> > ^^^^^^^^^^^^^^^^^^^
+> > This line should be deleted as it's no longer needed.
+>
+> Because memset() clears the whole parm structure this line is necessary. In other
+> drivers the following code is there:
+>
+>     tmp = parm->type;
+>     memset(parm, 0, sizeof(*parm));
+>     parm->type = parm;
 
-cpumask: remove cpumask allocation from idle_balance
-
-Impact: fix circular locking
-
-Steven reports a circular locking from alloc_cpumask_var doing
-a wakeup. We get rid of this using the tried-and-true technique
-of using a per-cpu cpumask_var_t rather than doing an alloc
-every time.
-
-Simpler and more robust than a rare, implicit allocation within
-an atomic codepath.
-
-Reported-by: Steven Rostedt <rostedt@goodmis.org>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-LKML-Reference: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/sched.c |   35 ++++++++++++++++++-----------------
- 1 files changed, 18 insertions(+), 17 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 5dabd80..48862d4 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3448,19 +3448,23 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
-  */
- #define MAX_PINNED_INTERVAL	512
- 
-+/* Working cpumask for load_balance and load_balance_newidle. */
-+static DEFINE_PER_CPU(cpumask_var_t, load_balance_tmpmask);
-+
- /*
-  * Check this_cpu to ensure it is balanced within domain. Attempt to move
-  * tasks if there is an imbalance.
-  */
- static int load_balance(int this_cpu, struct rq *this_rq,
- 			struct sched_domain *sd, enum cpu_idle_type idle,
--			int *balance, struct cpumask *cpus)
-+			int *balance)
- {
- 	int ld_moved, all_pinned = 0, active_balance = 0, sd_idle = 0;
- 	struct sched_group *group;
- 	unsigned long imbalance;
- 	struct rq *busiest;
- 	unsigned long flags;
-+	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
- 
- 	cpumask_setall(cpus);
- 
-@@ -3615,8 +3619,7 @@ out:
-  * this_rq is locked.
-  */
- static int
--load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
--			struct cpumask *cpus)
-+load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd)
- {
- 	struct sched_group *group;
- 	struct rq *busiest = NULL;
-@@ -3624,6 +3627,7 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
- 	int ld_moved = 0;
- 	int sd_idle = 0;
- 	int all_pinned = 0;
-+	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
- 
- 	cpumask_setall(cpus);
- 
-@@ -3764,10 +3768,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
- 	struct sched_domain *sd;
- 	int pulled_task = 0;
- 	unsigned long next_balance = jiffies + HZ;
--	cpumask_var_t tmpmask;
--
--	if (!alloc_cpumask_var(&tmpmask, GFP_ATOMIC))
--		return;
- 
- 	for_each_domain(this_cpu, sd) {
- 		unsigned long interval;
-@@ -3778,7 +3778,7 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
- 		if (sd->flags & SD_BALANCE_NEWIDLE)
- 			/* If we've pulled tasks over stop searching: */
- 			pulled_task = load_balance_newidle(this_cpu, this_rq,
--							   sd, tmpmask);
-+							   sd);
- 
- 		interval = msecs_to_jiffies(sd->balance_interval);
- 		if (time_after(next_balance, sd->last_balance + interval))
-@@ -3793,7 +3793,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
- 		 */
- 		this_rq->next_balance = next_balance;
- 	}
--	free_cpumask_var(tmpmask);
- }
- 
- /*
-@@ -3943,11 +3942,6 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
- 	unsigned long next_balance = jiffies + 60*HZ;
- 	int update_next_balance = 0;
- 	int need_serialize;
--	cpumask_var_t tmp;
--
--	/* Fails alloc?  Rebalancing probably not a priority right now. */
--	if (!alloc_cpumask_var(&tmp, GFP_ATOMIC))
--		return;
- 
- 	for_each_domain(cpu, sd) {
- 		if (!(sd->flags & SD_LOAD_BALANCE))
-@@ -3972,7 +3966,7 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
- 		}
- 
- 		if (time_after_eq(jiffies, sd->last_balance + interval)) {
--			if (load_balance(cpu, rq, sd, idle, &balance, tmp)) {
-+			if (load_balance(cpu, rq, sd, idle, &balance)) {
- 				/*
- 				 * We've pulled tasks over so either we're no
- 				 * longer idle, or one of our SMT siblings is
-@@ -4006,8 +4000,6 @@ out:
- 	 */
- 	if (likely(update_next_balance))
- 		rq->next_balance = next_balance;
--
--	free_cpumask_var(tmp);
- }
- 
- /*
-@@ -8304,6 +8296,9 @@ void __init sched_init(void)
- #ifdef CONFIG_USER_SCHED
- 	alloc_size *= 2;
- #endif
-+#ifdef CONFIG_CPUMASK_OFFSTACK
-+	alloc_size *= num_possible_cpus() * cpumask_size();
-+#endif
- 	/*
- 	 * As sched_init() is called before page_alloc is setup,
- 	 * we use alloc_bootmem().
-@@ -8341,6 +8336,12 @@ void __init sched_init(void)
- 		ptr += nr_cpu_ids * sizeof(void **);
- #endif /* CONFIG_USER_SCHED */
- #endif /* CONFIG_RT_GROUP_SCHED */
-+#ifdef CONFIG_CPUMASK_OFFSTACK
-+		for_each_possible_cpu(i) {
-+			per_cpu(load_balance_tmpmask, i) = (void *)ptr;
-+			ptr += cpumask_size();
-+		}
-+#endif /* CONFIG_CPUMASK_OFFSTACK */
- 	}
- 
- #ifdef CONFIG_SMP
+The memset isn't needed anymore either, I put it into v4l2_ioctl.  I
+removed most of the code like that but I may have missed some drivers.
