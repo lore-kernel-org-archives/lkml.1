@@ -1,77 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbZCSATp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbZCSAdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbZCSATp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 20:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbZCSATe
+	id S1754841AbZCSAdI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 20:33:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZCSAcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 20:19:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59768 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752272AbZCSATd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 20:19:33 -0400
-Message-ID: <49C18F8B.8090306@kernel.org>
-Date: Thu, 19 Mar 2009 09:19:23 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] block: cleanup patches, take#2
-References: <1237170540-19130-1-git-send-email-tj@kernel.org> <200903161853.14268.bzolnier@gmail.com> <49BEEA64.6060607@kernel.org> <200903181817.11456.bzolnier@gmail.com>
-In-Reply-To: <200903181817.11456.bzolnier@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 19 Mar 2009 00:19:27 +0000 (UTC)
+	Wed, 18 Mar 2009 20:32:54 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:44656 "EHLO
+	snapgear.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753088AbZCSAcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 20:32:53 -0400
+Date: Thu, 19 Mar 2009 10:28:57 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200903190028.n2J0Sv7h002641@localhost.localdomain>
+To: torvalds@linux-foundation.org
+Subject: [git pull] m68k fix user exported includes
+Cc: dwmw2@infradead.org, geert@linux-m68k.org, gerg@uclinux.org,
+       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+       linux-next@vger.kernel.org, rob@landley.net, sam@ravnborg.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Bartlomiej Zolnierkiewicz wrote:
->> Heh... for some reason, I think Stephen wouldn't have much problem
->> merging those conflicts.
-> 
-> Well, you can just ask Stephen if he is fine with fixing merge conflicts
-> for a week or so.  If he agrees fine with me.  I just wouldn't like to see
-> the _whole_ tree dropped from linux-next because of the last moment block
-> _cleanup_ patches.
+Linus,
 
-Okay, let's postpone them to .31 window.
+The merge of the m68knommu and m68k includes broke "headers_install"
+for these arches. For files with differences on each of m68k and m68knommu
+a simple include of either varient was done for many of the user exported
+headers. But the specific files that are included are not exported by
+"headers_install".
 
->> I understand that you're constrained time and resource-wise and will
->> be happy to make things easier on your side but options are severely
->> limited if you don't want to take any changes other than from
->> upstream.  It would be best if you can maintain IDE changes in a git
->> tree.  All that you lose are petty controls over change history.  The
->> tree might look less tidy but it makes things much easier when
->> multiple trees are involved.  I'll be happy to provide merge commits
-> 
-> I have been planning on quilt -> git conversion of pata-2.6 tree for some
-> time now but these merge conflicts happen very seldom (once in 6-12 months)
-> while the transition period would require quite a lot of time and work...
-> 
-> Anyway point taken.
+The problem results in errors like:
 
-Ah... that sounds great.  Yeah, conversion does take time and effort
-to get accustomed to, but I think it will be well worth the while.
+  build/cross-compiler-m68k/include/asm/param.h:4:22: error: param_mm.h: No
+  such file or directory
 
->> between blk and ide at sync points, so that you can pull from them and
->> don't have to worry about conflicts.  I don't really think it will add
->> a lot to your workload.
->>
->> That said, let's postpone this patchset post -rc1 window and see how
->> things can be worked out then.  Hmmm... I'll move the IDE patches on
->> top of linux-next/pata-2.6 with other IDE patches.
-> 
-> Please do and thanks for understanding.
-> 
-> I think that we can deal with the rest of patches without a problem in the
-> second week of the merge window so everything will be nicely sorted out by
-> the time of -rc1.
+when building user space libraries.
 
-Thanks.  Much appreciated.  I'll send IDE patchset in a few days.
+Files known to be affected are:
 
--- 
-tejun
+  param.h ptrace.h setup.h sigcontext.h siginfo.h signal.h swab.h unistd.h
+
+All of these cases only have minor differences for each of the m68k and
+m68knommu varient. The best solution is to merge back into a single file
+for these cases (which was always the longer term intention anyway).
+
+Geert Uytterhoeven has checked m68k builds are still ok with this.
+Rob Landley has confirmed uClibc now builds (for m68k) with this.
+I have checked m68knommu builds are still ok.
+
+Please pull to get a fix for this regresion.
+
+Thanks
+Greg
+
+
+
+The following changes since commit 5bee17f18b595937e6beafeee5197868a3f74a06:
+  Kyle McMartin (1):
+        parisc: sba_iommu: fix build bug when CONFIG_PARISC_AGP=y
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git fix-includes
+
+Greg Ungerer (8):
+      m68k: merge the non-MMU and MMU versions of param.h
+      m68k: merge the non-MMU and MMU versions of swab.h
+      m68k: merge the non-MMU and MMU versions of sigcontext.h
+      m68k: use MMU version of setup.h for both MMU and non-MMU
+      m68k: merge the non-MMU and MMU versions of ptrace.h
+      m68k: merge the non-MMU and MMU versions of signal.h
+      m68k: use the MMU version of unistd.h for all m68k platforms
+      m68k: merge the non-MMU and MMU versions of siginfo.h
+
+ arch/m68k/include/asm/param.h         |   25 ++-
+ arch/m68k/include/asm/param_mm.h      |   22 --
+ arch/m68k/include/asm/param_no.h      |   22 --
+ arch/m68k/include/asm/ptrace.h        |   88 ++++++++-
+ arch/m68k/include/asm/ptrace_mm.h     |   80 -------
+ arch/m68k/include/asm/ptrace_no.h     |   87 --------
+ arch/m68k/include/asm/setup.h         |  377 ++++++++++++++++++++++++++++++++-
+ arch/m68k/include/asm/setup_mm.h      |  376 --------------------------------
+ arch/m68k/include/asm/setup_no.h      |   10 -
+ arch/m68k/include/asm/sigcontext.h    |   25 ++-
+ arch/m68k/include/asm/sigcontext_mm.h |   19 --
+ arch/m68k/include/asm/sigcontext_no.h |   17 --
+ arch/m68k/include/asm/siginfo.h       |   98 +++++++++-
+ arch/m68k/include/asm/siginfo_mm.h    |   92 --------
+ arch/m68k/include/asm/siginfo_no.h    |    6 -
+ arch/m68k/include/asm/signal.h        |  216 ++++++++++++++++++-
+ arch/m68k/include/asm/signal_mm.h     |  206 ------------------
+ arch/m68k/include/asm/signal_no.h     |  159 --------------
+ arch/m68k/include/asm/swab.h          |   30 +++-
+ arch/m68k/include/asm/swab_mm.h       |   16 --
+ arch/m68k/include/asm/swab_no.h       |   24 --
+ arch/m68k/include/asm/unistd.h        |  377 ++++++++++++++++++++++++++++++++-
+ arch/m68k/include/asm/unistd_mm.h     |  372 --------------------------------
+ arch/m68k/include/asm/unistd_no.h     |  372 --------------------------------
+ 24 files changed, 1209 insertions(+), 1907 deletions(-)
+ delete mode 100644 arch/m68k/include/asm/param_mm.h
+ delete mode 100644 arch/m68k/include/asm/param_no.h
+ delete mode 100644 arch/m68k/include/asm/ptrace_mm.h
+ delete mode 100644 arch/m68k/include/asm/ptrace_no.h
+ delete mode 100644 arch/m68k/include/asm/setup_mm.h
+ delete mode 100644 arch/m68k/include/asm/setup_no.h
+ delete mode 100644 arch/m68k/include/asm/sigcontext_mm.h
+ delete mode 100644 arch/m68k/include/asm/sigcontext_no.h
+ delete mode 100644 arch/m68k/include/asm/siginfo_mm.h
+ delete mode 100644 arch/m68k/include/asm/siginfo_no.h
+ delete mode 100644 arch/m68k/include/asm/signal_mm.h
+ delete mode 100644 arch/m68k/include/asm/signal_no.h
+ delete mode 100644 arch/m68k/include/asm/swab_mm.h
+ delete mode 100644 arch/m68k/include/asm/swab_no.h
+ delete mode 100644 arch/m68k/include/asm/unistd_mm.h
+ delete mode 100644 arch/m68k/include/asm/unistd_no.h
+
