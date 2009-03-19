@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752454AbZCSELv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbZCSEMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752454AbZCSELv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 00:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZCSEL2
+	id S1756857AbZCSEMs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 00:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbZCSEMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 00:11:28 -0400
-Received: from kroah.org ([198.145.64.141]:34730 "EHLO coco.kroah.org"
+	Thu, 19 Mar 2009 00:12:38 -0400
+Received: from kroah.org ([198.145.64.141]:34750 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751296AbZCSELZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 00:11:25 -0400
-Date: Wed, 18 Mar 2009 21:08:32 -0700
+	id S1755523AbZCSELn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 00:11:43 -0400
+Date: Wed, 18 Mar 2009 21:08:55 -0700
 From: Greg KH <greg@kroah.com>
 To: David Airlie <airlied@linux.ie>
 Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        Thomas Hellstrom <thellstrom@vmware.com>,
        Richard Purdie <rpurdie@linux.intel.com>
-Subject: [patch 1/5] drm: Split out the mm declarations in a separate
-	header. Add atomic operations.
-Message-ID: <20090319040832.GB29249@kroah.com>
+Subject: [patch 2/5] drm: Add a tracker for global objects.
+Message-ID: <20090319040855.GF29249@kroah.com>
 References: <20090319035834.875839585@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="drm-split-out-the-mm-declarations-in-a-separate-header.-add-atomic-operations.patch"
+Content-Disposition: inline; filename="drm-add-a-tracker-for-global-objects.patch"
 In-Reply-To: <20090319040809.GA29249@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,326 +34,37 @@ Signed-off-by: Richard Purdie <rpurdie@linux.intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/drm_mm.c |  165 +++++++++++++++++++++++++++++++++++++++--------
- include/drm/drmP.h       |   37 ----------
- include/drm/drm_mm.h     |   90 +++++++++++++++++++++++++
- 3 files changed, 228 insertions(+), 64 deletions(-)
+ drivers/gpu/drm/Makefile     |    3 -
+ drivers/gpu/drm/drm_drv.c    |    3 +
+ drivers/gpu/drm/drm_global.c |  105 +++++++++++++++++++++++++++++++++++++++++++
+ include/drm/drmP.h           |   20 ++++++++
+ 4 files changed, 130 insertions(+), 1 deletion(-)
 
---- a/drivers/gpu/drm/drm_mm.c
-+++ b/drivers/gpu/drm/drm_mm.c
-@@ -42,8 +42,11 @@
-  */
+--- a/drivers/gpu/drm/drm_drv.c
++++ b/drivers/gpu/drm/drm_drv.c
+@@ -386,6 +386,8 @@ static int __init drm_core_init(void)
  
- #include "drmP.h"
-+#include "drm_mm.h"
- #include <linux/slab.h>
- 
-+#define MM_UNUSED_TARGET 4
+ 	DRM_INFO("Initialized %s %d.%d.%d %s\n",
+ 		 CORE_NAME, CORE_MAJOR, CORE_MINOR, CORE_PATCHLEVEL, CORE_DATE);
++	drm_global_init();
 +
- unsigned long drm_mm_tail_space(struct drm_mm *mm)
- {
- 	struct list_head *tail_node;
-@@ -74,16 +77,62 @@ int drm_mm_remove_space_from_tail(struct
  	return 0;
- }
+ err_p3:
+ 	drm_sysfs_destroy();
+@@ -399,6 +401,7 @@ err_p1:
  
-+static struct drm_mm_node *drm_mm_kmalloc(struct drm_mm *mm, int atomic)
-+{
-+	struct drm_mm_node *child;
-+
-+	if (atomic)
-+		child = kmalloc(sizeof(*child), GFP_ATOMIC);
-+	else
-+		child = kmalloc(sizeof(*child), GFP_KERNEL);
-+
-+	if (unlikely(child == NULL)) {
-+		spin_lock(&mm->unused_lock);
-+		if (list_empty(&mm->unused_nodes))
-+			child = NULL;
-+		else {
-+			child =
-+			    list_entry(mm->unused_nodes.next,
-+				       struct drm_mm_node, fl_entry);
-+			list_del(&child->fl_entry);
-+			--mm->num_unused;
-+		}
-+		spin_unlock(&mm->unused_lock);
-+	}
-+	return child;
-+}
-+
-+int drm_mm_pre_get(struct drm_mm *mm)
-+{
-+	struct drm_mm_node *node;
-+
-+	spin_lock(&mm->unused_lock);
-+	while (mm->num_unused < MM_UNUSED_TARGET) {
-+		spin_unlock(&mm->unused_lock);
-+		node = kmalloc(sizeof(*node), GFP_KERNEL);
-+		spin_lock(&mm->unused_lock);
-+
-+		if (unlikely(node == NULL)) {
-+			int ret = (mm->num_unused < 2) ? -ENOMEM : 0;
-+			spin_unlock(&mm->unused_lock);
-+			return ret;
-+		}
-+		++mm->num_unused;
-+		list_add_tail(&node->fl_entry, &mm->unused_nodes);
-+	}
-+	spin_unlock(&mm->unused_lock);
-+	return 0;
-+}
-+EXPORT_SYMBOL(drm_mm_pre_get);
- 
- static int drm_mm_create_tail_node(struct drm_mm *mm,
--			    unsigned long start,
--			    unsigned long size)
-+				   unsigned long start,
-+				   unsigned long size, int atomic)
+ static void __exit drm_core_exit(void)
  {
- 	struct drm_mm_node *child;
++	drm_global_release();
+ 	remove_proc_entry("dri", NULL);
+ 	drm_sysfs_destroy();
  
--	child = (struct drm_mm_node *)
--		drm_alloc(sizeof(*child), DRM_MEM_MM);
--	if (!child)
-+	child = drm_mm_kmalloc(mm, atomic);
-+	if (unlikely(child == NULL))
- 		return -ENOMEM;
- 
- 	child->free = 1;
-@@ -97,8 +146,7 @@ static int drm_mm_create_tail_node(struc
- 	return 0;
- }
- 
--
--int drm_mm_add_space_to_tail(struct drm_mm *mm, unsigned long size)
-+int drm_mm_add_space_to_tail(struct drm_mm *mm, unsigned long size, int atomic)
- {
- 	struct list_head *tail_node;
- 	struct drm_mm_node *entry;
-@@ -106,20 +154,21 @@ int drm_mm_add_space_to_tail(struct drm_
- 	tail_node = mm->ml_entry.prev;
- 	entry = list_entry(tail_node, struct drm_mm_node, ml_entry);
- 	if (!entry->free) {
--		return drm_mm_create_tail_node(mm, entry->start + entry->size, size);
-+		return drm_mm_create_tail_node(mm, entry->start + entry->size,
-+					       size, atomic);
- 	}
- 	entry->size += size;
- 	return 0;
- }
- 
- static struct drm_mm_node *drm_mm_split_at_start(struct drm_mm_node *parent,
--					    unsigned long size)
-+						 unsigned long size,
-+						 int atomic)
- {
- 	struct drm_mm_node *child;
- 
--	child = (struct drm_mm_node *)
--		drm_alloc(sizeof(*child), DRM_MEM_MM);
--	if (!child)
-+	child = drm_mm_kmalloc(parent->mm, atomic);
-+	if (unlikely(child == NULL))
- 		return NULL;
- 
- 	INIT_LIST_HEAD(&child->fl_entry);
-@@ -151,8 +200,9 @@ struct drm_mm_node *drm_mm_get_block(str
- 		tmp = parent->start % alignment;
- 
- 	if (tmp) {
--		align_splitoff = drm_mm_split_at_start(parent, alignment - tmp);
--		if (!align_splitoff)
-+		align_splitoff =
-+		    drm_mm_split_at_start(parent, alignment - tmp, 0);
-+		if (unlikely(align_splitoff == NULL))
- 			return NULL;
- 	}
- 
-@@ -161,7 +211,7 @@ struct drm_mm_node *drm_mm_get_block(str
- 		parent->free = 0;
- 		return parent;
- 	} else {
--		child = drm_mm_split_at_start(parent, size);
-+		child = drm_mm_split_at_start(parent, size, 0);
- 	}
- 
- 	if (align_splitoff)
-@@ -169,14 +219,49 @@ struct drm_mm_node *drm_mm_get_block(str
- 
- 	return child;
- }
-+
- EXPORT_SYMBOL(drm_mm_get_block);
- 
-+struct drm_mm_node *drm_mm_get_block_atomic(struct drm_mm_node *parent,
-+					    unsigned long size,
-+					    unsigned alignment)
-+{
-+
-+	struct drm_mm_node *align_splitoff = NULL;
-+	struct drm_mm_node *child;
-+	unsigned tmp = 0;
-+
-+	if (alignment)
-+		tmp = parent->start % alignment;
-+
-+	if (tmp) {
-+		align_splitoff =
-+		    drm_mm_split_at_start(parent, alignment - tmp, 1);
-+		if (unlikely(align_splitoff == NULL))
-+			return NULL;
-+	}
-+
-+	if (parent->size == size) {
-+		list_del_init(&parent->fl_entry);
-+		parent->free = 0;
-+		return parent;
-+	} else {
-+		child = drm_mm_split_at_start(parent, size, 1);
-+	}
-+
-+	if (align_splitoff)
-+		drm_mm_put_block(align_splitoff);
-+
-+	return child;
-+}
-+EXPORT_SYMBOL(drm_mm_get_block_atomic);
-+
- /*
-  * Put a block. Merge with the previous and / or next block if they are free.
-  * Otherwise add to the free stack.
-  */
- 
--void drm_mm_put_block(struct drm_mm_node * cur)
-+void drm_mm_put_block(struct drm_mm_node *cur)
- {
- 
- 	struct drm_mm *mm = cur->mm;
-@@ -188,21 +273,27 @@ void drm_mm_put_block(struct drm_mm_node
- 	int merged = 0;
- 
- 	if (cur_head->prev != root_head) {
--		prev_node = list_entry(cur_head->prev, struct drm_mm_node, ml_entry);
-+		prev_node =
-+		    list_entry(cur_head->prev, struct drm_mm_node, ml_entry);
- 		if (prev_node->free) {
- 			prev_node->size += cur->size;
- 			merged = 1;
- 		}
- 	}
- 	if (cur_head->next != root_head) {
--		next_node = list_entry(cur_head->next, struct drm_mm_node, ml_entry);
-+		next_node =
-+		    list_entry(cur_head->next, struct drm_mm_node, ml_entry);
- 		if (next_node->free) {
- 			if (merged) {
- 				prev_node->size += next_node->size;
- 				list_del(&next_node->ml_entry);
- 				list_del(&next_node->fl_entry);
--				drm_free(next_node, sizeof(*next_node),
--					 DRM_MEM_MM);
-+				if (mm->num_unused < MM_UNUSED_TARGET) {
-+					list_add(&next_node->fl_entry,
-+						 &mm->unused_nodes);
-+					++mm->num_unused;
-+				} else
-+					kfree(next_node);
- 			} else {
- 				next_node->size += cur->size;
- 				next_node->start = cur->start;
-@@ -215,14 +306,19 @@ void drm_mm_put_block(struct drm_mm_node
- 		list_add(&cur->fl_entry, &mm->fl_entry);
- 	} else {
- 		list_del(&cur->ml_entry);
--		drm_free(cur, sizeof(*cur), DRM_MEM_MM);
-+		if (mm->num_unused < MM_UNUSED_TARGET) {
-+			list_add(&cur->fl_entry, &mm->unused_nodes);
-+			++mm->num_unused;
-+		} else
-+			kfree(cur);
- 	}
- }
-+
- EXPORT_SYMBOL(drm_mm_put_block);
- 
--struct drm_mm_node *drm_mm_search_free(const struct drm_mm * mm,
--				  unsigned long size,
--				  unsigned alignment, int best_match)
-+struct drm_mm_node *drm_mm_search_free(const struct drm_mm *mm,
-+				       unsigned long size,
-+				       unsigned alignment, int best_match)
- {
- 	struct list_head *list;
- 	const struct list_head *free_stack = &mm->fl_entry;
-@@ -247,7 +343,6 @@ struct drm_mm_node *drm_mm_search_free(c
- 				wasted += alignment - tmp;
- 		}
- 
--
- 		if (entry->size >= size + wasted) {
- 			if (!best_match)
- 				return entry;
-@@ -260,6 +355,7 @@ struct drm_mm_node *drm_mm_search_free(c
- 
- 	return best;
- }
-+EXPORT_SYMBOL(drm_mm_search_free);
- 
- int drm_mm_clean(struct drm_mm * mm)
- {
-@@ -267,14 +363,17 @@ int drm_mm_clean(struct drm_mm * mm)
- 
- 	return (head->next->next == head);
- }
--EXPORT_SYMBOL(drm_mm_search_free);
-+EXPORT_SYMBOL(drm_mm_clean);
- 
- int drm_mm_init(struct drm_mm * mm, unsigned long start, unsigned long size)
- {
- 	INIT_LIST_HEAD(&mm->ml_entry);
- 	INIT_LIST_HEAD(&mm->fl_entry);
-+	INIT_LIST_HEAD(&mm->unused_nodes);
-+	mm->num_unused = 0;
-+	spin_lock_init(&mm->unused_lock);
- 
--	return drm_mm_create_tail_node(mm, start, size);
-+	return drm_mm_create_tail_node(mm, start, size, 0);
- }
- EXPORT_SYMBOL(drm_mm_init);
- 
-@@ -282,6 +381,7 @@ void drm_mm_takedown(struct drm_mm * mm)
- {
- 	struct list_head *bnode = mm->fl_entry.next;
- 	struct drm_mm_node *entry;
-+	struct drm_mm_node *next;
- 
- 	entry = list_entry(bnode, struct drm_mm_node, fl_entry);
- 
-@@ -293,7 +393,16 @@ void drm_mm_takedown(struct drm_mm * mm)
- 
- 	list_del(&entry->fl_entry);
- 	list_del(&entry->ml_entry);
-+	kfree(entry);
-+
-+	spin_lock(&mm->unused_lock);
-+	list_for_each_entry_safe(entry, next, &mm->unused_nodes, fl_entry) {
-+		list_del(&entry->fl_entry);
-+		kfree(entry);
-+		--mm->num_unused;
-+	}
-+	spin_unlock(&mm->unused_lock);
- 
--	drm_free(entry, sizeof(*entry), DRM_MEM_MM);
-+	BUG_ON(mm->num_unused != 0);
- }
- EXPORT_SYMBOL(drm_mm_takedown);
 --- /dev/null
-+++ b/include/drm/drm_mm.h
-@@ -0,0 +1,90 @@
++++ b/drivers/gpu/drm/drm_global.c
+@@ -0,0 +1,105 @@
 +/**************************************************************************
 + *
-+ * Copyright 2006-2008 Tungsten Graphics, Inc., Cedar Park, TX. USA.
++ * Copyright 2008-2009 VMware, Inc., Palo Alto, CA., USA
 + * All Rights Reserved.
 + *
 + * Permission is hereby granted, free of charge, to any person obtaining a
@@ -377,129 +87,124 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 + * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 + * USE OR OTHER DEALINGS IN THE SOFTWARE.
 + *
-+ *
 + **************************************************************************/
-+/*
-+ * Authors:
-+ * Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
-+ */
-+
-+#ifndef _DRM_MM_H_
-+#define _DRM_MM_H_
-+
-+/*
-+ * Generic range manager structs
-+ */
-+#include <linux/list.h>
-+
-+struct drm_mm_node {
-+	struct list_head fl_entry;
-+	struct list_head ml_entry;
-+	int free;
-+	unsigned long start;
-+	unsigned long size;
-+	struct drm_mm *mm;
-+	void *private;
++#include <drmP.h>
++struct drm_global_item {
++	struct mutex mutex;
++	void *object;
++	int refcount;
 +};
 +
-+struct drm_mm {
-+	struct list_head fl_entry;
-+	struct list_head ml_entry;
-+	struct list_head unused_nodes;
-+	int num_unused;
-+	spinlock_t unused_lock;
-+};
++static struct drm_global_item glob[DRM_GLOBAL_NUM];
 +
-+/*
-+ * Basic range manager support (drm_mm.c)
-+ */
-+
-+extern struct drm_mm_node *drm_mm_get_block(struct drm_mm_node *parent,
-+					    unsigned long size,
-+					    unsigned alignment);
-+extern struct drm_mm_node *drm_mm_get_block_atomic(struct drm_mm_node *parent,
-+						   unsigned long size,
-+						   unsigned alignment);
-+extern void drm_mm_put_block(struct drm_mm_node *cur);
-+extern struct drm_mm_node *drm_mm_search_free(const struct drm_mm *mm,
-+					      unsigned long size,
-+					      unsigned alignment,
-+					      int best_match);
-+extern int drm_mm_init(struct drm_mm *mm, unsigned long start,
-+		       unsigned long size);
-+extern void drm_mm_takedown(struct drm_mm *mm);
-+extern int drm_mm_clean(struct drm_mm *mm);
-+extern unsigned long drm_mm_tail_space(struct drm_mm *mm);
-+extern int drm_mm_remove_space_from_tail(struct drm_mm *mm,
-+					 unsigned long size);
-+extern int drm_mm_add_space_to_tail(struct drm_mm *mm,
-+				    unsigned long size, int atomic);
-+extern int drm_mm_pre_get(struct drm_mm *mm);
-+
-+static inline struct drm_mm *drm_get_mm(struct drm_mm_node *block)
++void drm_global_init(void)
 +{
-+	return block->mm;
++	int i;
++
++	for (i = 0; i < DRM_GLOBAL_NUM; ++i) {
++		struct drm_global_item *item = &glob[i];
++		mutex_init(&item->mutex);
++		item->object = NULL;
++		item->refcount = 0;
++	}
 +}
 +
-+#endif
++void drm_global_release(void)
++{
++	int i;
++	for (i = 0; i < DRM_GLOBAL_NUM; ++i) {
++		struct drm_global_item *item = &glob[i];
++		BUG_ON(item->object != NULL);
++		BUG_ON(item->refcount != 0);
++	}
++}
++
++int drm_global_item_ref(struct drm_global_reference *ref)
++{
++	int ret;
++	struct drm_global_item *item = &glob[ref->global_type];
++	void *object;
++
++	mutex_lock(&item->mutex);
++	if (item->refcount == 0) {
++		item->object = kmalloc(ref->size, GFP_KERNEL);
++		if (unlikely(item->object == NULL)) {
++			ret = -ENOMEM;
++			goto out_err;
++		}
++
++		ref->object = item->object;
++		ret = ref->init(ref);
++		if (unlikely(ret != 0))
++			goto out_err;
++
++		++item->refcount;
++	}
++	ref->object = item->object;
++	object = item->object;
++	mutex_unlock(&item->mutex);
++	return 0;
++out_err:
++	kfree(item->object);
++	mutex_unlock(&item->mutex);
++	item->object = NULL;
++	return ret;
++}
++EXPORT_SYMBOL(drm_global_item_ref);
++
++void drm_global_item_unref(struct drm_global_reference *ref)
++{
++	struct drm_global_item *item = &glob[ref->global_type];
++
++	mutex_lock(&item->mutex);
++	BUG_ON(item->refcount == 0);
++	BUG_ON(ref->object != item->object);
++	if (--item->refcount == 0) {
++		ref->release(ref);
++		kfree(item->object);
++		item->object = NULL;
++	}
++	mutex_unlock(&item->mutex);
++}
++EXPORT_SYMBOL(drm_global_item_unref);
+--- a/drivers/gpu/drm/Makefile
++++ b/drivers/gpu/drm/Makefile
+@@ -10,7 +10,8 @@ drm-y       :=	drm_auth.o drm_bufs.o drm
+ 		drm_lock.o drm_memory.o drm_proc.o drm_stub.o drm_vm.o \
+ 		drm_agpsupport.o drm_scatter.o ati_pcigart.o drm_pci.o \
+ 		drm_sysfs.o drm_hashtab.o drm_sman.o drm_mm.o \
+-		drm_crtc.o drm_crtc_helper.o drm_modes.o drm_edid.o
++		drm_crtc.o drm_crtc_helper.o drm_modes.o drm_edid.o \
++		drm_global.o
+ 
+ drm-$(CONFIG_COMPAT) += drm_ioc32.o
+ 
 --- a/include/drm/drmP.h
 +++ b/include/drm/drmP.h
-@@ -86,6 +86,7 @@ struct drm_device;
+@@ -1405,5 +1405,25 @@ extern void *drm_calloc(size_t nmemb, si
  
- #include "drm_os_linux.h"
- #include "drm_hashtab.h"
-+#include "drm_mm.h"
+ /*@}*/
  
- /***********************************************************************/
- /** \name DRM template customization defaults */
-@@ -502,26 +503,6 @@ struct drm_sigdata {
- };
- 
- 
--/*
-- * Generic memory manager structs
-- */
--
--struct drm_mm_node {
--	struct list_head fl_entry;
--	struct list_head ml_entry;
--	int free;
--	unsigned long start;
--	unsigned long size;
--	struct drm_mm *mm;
--	void *private;
--};
--
--struct drm_mm {
--	struct list_head fl_entry;
--	struct list_head ml_entry;
--};
--
--
- /**
-  * Mappings list
-  */
-@@ -1298,22 +1279,6 @@ extern char *drm_get_connector_status_na
- extern int drm_sysfs_connector_add(struct drm_connector *connector);
- extern void drm_sysfs_connector_remove(struct drm_connector *connector);
- 
--/*
-- * Basic memory manager support (drm_mm.c)
-- */
--extern struct drm_mm_node *drm_mm_get_block(struct drm_mm_node * parent,
--				       unsigned long size,
--				       unsigned alignment);
--extern void drm_mm_put_block(struct drm_mm_node * cur);
--extern struct drm_mm_node *drm_mm_search_free(const struct drm_mm *mm, unsigned long size,
--					 unsigned alignment, int best_match);
--extern int drm_mm_init(struct drm_mm *mm, unsigned long start, unsigned long size);
--extern void drm_mm_takedown(struct drm_mm *mm);
--extern int drm_mm_clean(struct drm_mm *mm);
--extern unsigned long drm_mm_tail_space(struct drm_mm *mm);
--extern int drm_mm_remove_space_from_tail(struct drm_mm *mm, unsigned long size);
--extern int drm_mm_add_space_to_tail(struct drm_mm *mm, unsigned long size);
--
- /* Graphics Execution Manager library functions (drm_gem.c) */
- int drm_gem_init(struct drm_device *dev);
- void drm_gem_destroy(struct drm_device *dev);
++enum drm_global_types {
++	DRM_GLOBAL_TTM_MEM = 0,
++	DRM_GLOBAL_TTM_BO,
++	DRM_GLOBAL_TTM_OBJECT,
++	DRM_GLOBAL_NUM
++};
++
++struct drm_global_reference {
++	enum drm_global_types global_type;
++	size_t size;
++	void *object;
++	int (*init) (struct drm_global_reference *);
++	void (*release) (struct drm_global_reference *);
++};
++
++extern void drm_global_init(void);
++extern void drm_global_release(void);
++extern int drm_global_item_ref(struct drm_global_reference *ref);
++extern void drm_global_item_unref(struct drm_global_reference *ref);
++
+ #endif				/* __KERNEL__ */
+ #endif
 
