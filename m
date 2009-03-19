@@ -1,114 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751821AbZCSPtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZCSPvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751821AbZCSPtk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 11:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZCSPtb
+	id S1754504AbZCSPvS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 11:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbZCSPvB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 11:49:31 -0400
-Received: from www.tglx.de ([62.245.132.106]:33618 "EHLO www.tglx.de"
+	Thu, 19 Mar 2009 11:51:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41235 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750900AbZCSPta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 11:49:30 -0400
-Date: Thu, 19 Mar 2009 16:49:21 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Michal Simek <monstr@monstr.eu>
-cc: linux-kernel@vger.kernel.org, john.williams@petalogix.com
-Subject: Re: [PATCH 08/57] microblaze_v7: Interrupt handling, timer support,
- selfmod code
-In-Reply-To: <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>
-Message-ID: <alpine.LFD.2.00.0903191639530.29264@localhost.localdomain>
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu> <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu> <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>
- <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu> <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu> <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>
- <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu> <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751695AbZCSPvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 11:51:00 -0400
+Date: Thu, 19 Mar 2009 16:49:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christopher Schramm <debian@shakaweb.org>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: APIC problem report
+Message-ID: <20090319154955.GA21034@elte.hu>
+References: <49C1FE7D.9070605@shakaweb.org> <20090319100122.GA30358@elte.hu> <49C25712.9010509@shakaweb.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C25712.9010509@shakaweb.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal,
 
-On Wed, 18 Mar 2009, monstr@monstr.eu wrote:
+* Christopher Schramm <debian@shakaweb.org> wrote:
 
-> +static u32 concurrent_irq;
-> +
-> +void do_IRQ(struct pt_regs *regs)
-> +{
-> +	unsigned int irq;
-> +	struct pt_regs *old_regs = set_irq_regs(regs);
-> +
-> +	irq_enter();
-> +	irq = get_irq(regs);
-> +next_irq:
-> +	BUG_ON(irq == -1U);
-> +	__do_IRQ(irq);
+> Thanks for the quick replay, Ingo!
+>
+> Following your request, I installed Debian 5.0. Had to use noapic 
+> again for getting the boot media to work (think it utilizes 
+> 2.6.26).
+>
+> The kernel panic is the same for all three systems: "not syncing: 
+> IO-APIC + timer doesn't work!".
+>
+> The installed system had the same problem (2.6.26 again), then I 
+> compiled 2.6.28.8 (with default config). Booting that one with 
+> APIC enabled throws the known "MP-BIOS bug" message, but then 
+> continues booting - no kernel panic.
+>
+> I will try Knoppix' kernel config and your git code, when I find 
+> some spare time.
 
-You use irq chips now and you set the type handlers (edge/level), but
-you still call __do_IRQ() the all in one fits nothing handler, which
-is going to be deprecated and removed.
+By the looks of it, chances are that various APIC fixes and 
+robustization patches might have fixed your problem:
 
-Please call 
-       generic_handle_irq(irq);
+ 691874f: x86: I/O APIC: timer through 8259A second-chance
+ 03be750: x86: I/O APIC: keep the timer IRQ masked during set-up
+ 24742ec: x86: I/O APIC: unmask the second-chance timer interrupt
+ d11d579: x86: I/O APIC: AEOI timer acknowledgement clean-ups
 
-which will call the correct flow handlers.
+These first showed up in v2.6.27. Which would match your reported 
+symptoms of v2.6.26 failig and 2.6.28 working. The bootup warning
+about a BIOS problem is still there because there is an underlying 
+problem - we just work it around and fall back more robustly.
 
-> +static int microblaze_timer_set_next_event(unsigned long delta,
-> +					 struct clock_event_device *dev)
-> +{
-> +	printk(KERN_INFO "next event, delta %x, %d\n", (u32)delta, (u32)delta);
-
-  This should be pr_debug() or do you want to flood the syslog in
-  every timer interrupt ?
-
-> +	microblaze_timer_start(delta);
-> +	return 0;
-> +}
-> +
-> +static void microblaze_timer_set_mode(enum clock_event_mode mode,
-> +				    struct clock_event_device *evt)
-> +{
-> +	microblaze_timer_stop();
-> +
-> +	switch (mode) {
-> +	case CLOCK_EVT_MODE_PERIODIC:
-> +		printk(KERN_INFO "%s: periodic\n", __func__);
-
-  pr_debug as well. That's not very informative
-
-> +static irqreturn_t timer_interrupt(int irq, void *dev_id)
-> +{
-> +	struct clock_event_device *evt = &clockevent_microblaze_timer;
-> +#ifdef CONFIG_HEART_BEAT
-> +	heartbeat();
-> +#endif
-> +	timer_ack();
-> +
-> +	mb_tick_cnt += cpuinfo.freq_div_hz;
-
-Hmm. How does that work with oneshot timers ?
-
-> +	evt->event_handler(evt);
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +static struct irqaction timer_irqaction = {
-> +	.handler = timer_interrupt,
-> +	.flags = IRQF_DISABLED,
-
-    IRQF_DISABLED  | IRQF_TIMER,
-
-
-> +	xtime.tv_sec = mktime(2007, 1, 1, 0, 0, 0);
-> +	xtime.tv_nsec = 0;
-> +	set_normalized_timespec(&wall_to_monotonic,
-> +				-xtime.tv_sec, -xtime.tv_nsec);
-
-  Yuck. What's that ? wall_to_monotonic is maintained by the generic
-  code.
-
-Thanks,
-
-	tglx
-
-
+	Ingo
