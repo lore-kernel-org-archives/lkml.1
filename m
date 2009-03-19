@@ -1,206 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbZCSQT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757629AbZCSQUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756972AbZCSQT7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZCSQTu
+	id S1757629AbZCSQUo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZCSQUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:19:50 -0400
-Received: from smtp106.biz.mail.mud.yahoo.com ([68.142.200.254]:42175 "HELO
-	smtp106.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751066AbZCSQTu (ORCPT
+	Thu, 19 Mar 2009 12:20:34 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:47572 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751434AbZCSQUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:19:50 -0400
-X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
-X-YMail-OSG: _GQR9tEVM1kAHJcTO6qcTu0WqeReJbqUuRqHQUKL8bEhphbmUIQDUAgy1uV.xOHptuddYiVxo55zTOCNvnF8v8aXtlYawktxMktt2PqWN646XQuNt40GcbjFu_LET9i7nkD9hMBGRerOsMscgbxHP798U75QHNWgjS5M_BPDfOp93.HHhGyaKGTLWBH1mIn3LF121mrJvTR6t3hyyUpjWbwZWw--
-X-Yahoo-Newman-Property: ymail-3
-From: Steven King <sfking@fdwdc.com>
-Organization: fdwdc.com
-To: Greg Ungerer <gerg@snapgear.com>
-Subject: Re: [RFC 01/14] Coldfire generic GPIO (m68knommu)
-Date: Thu, 19 Mar 2009 09:19:44 -0700
-User-Agent: KMail/1.9.10
-Cc: uClinux development list <uclinux-dev@uclinux.org>,
-       linux-kernel@vger.kernel.org
-References: <200903111455.42856.sfking@fdwdc.com> <49C1E70C.2050404@snapgear.com>
-In-Reply-To: <49C1E70C.2050404@snapgear.com>
+	Thu, 19 Mar 2009 12:20:34 -0400
+Date: Thu, 19 Mar 2009 12:20:30 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: oops in tracepoint_update_probe_range()
+In-Reply-To: <20090319160003.GA25000@Krystal>
+Message-ID: <alpine.DEB.2.00.0903191219260.16987@gandalf.stny.rr.com>
+References: <1237393396.3322.6.camel@localhost.localdomain> <20090318163531.GE21331@elte.hu> <49C1F1DF.2020105@cn.fujitsu.com> <20090319074616.GA17144@elte.hu> <20090319132248.GA20200@Krystal> <alpine.DEB.2.00.0903190933440.16987@gandalf.stny.rr.com>
+ <20090319155050.GB21034@elte.hu> <20090319160003.GA25000@Krystal>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903190919.44927.sfking@fdwdc.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, March 18, 2009 11:32:44 Greg Ungerer wrote:
-> Hi Steven,
->
-> Steven King wrote:
-> > The basic Coldfire generic gpio implementation.
-> >
-> > Signed-off-by: Steven King <sfking@fdwdc.com>
-> >
-> > diff --git a/arch/m68knommu/platform/coldfire/gpio.c
-> > b/arch/m68knommu/platform/coldfire/gpio.c
-> > new file mode 100644
-> > index 0000000..c2504b9
-> > --- /dev/null
-> > +++ b/arch/m68knommu/platform/coldfire/gpio.c
-> > @@ -0,0 +1,1969 @@
-> > +/*
-> > + * Coldfire generic GPIO support.
-> > + *
-> > + * (C) Copyright 2009, Steven King <sfking@fdwdc.com>
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License as published by
-> > + * the Free Software Foundation; version 2 of the License.
-> > + *
-> > + * This program is distributed in the hope that it will be useful,
-> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> > + * GNU General Public License for more details.
-> > + */
-> > +
-> > +#include <linux/kernel.h>
-> > +#include <linux/init.h>
-> > +#include <linux/sysdev.h>
-> > +
-> > +#include <asm/gpio.h>
-> > +#include <asm/pinmux.h>
-> > +
-> > +struct mcf_gpio_chip {
-> > +	struct gpio_chip gpio_chip;
-> > +	void __iomem *pddr;
-> > +	void __iomem *podr;
-> > +	void __iomem *ppdr;
-> > +	void __iomem *setr;
-> > +	void __iomem *clrr;
-> > +	const u8 *gpio_to_pinmux;
-> > +};
-> > +
-> > +#define MCF_CHIP(chip) container_of(chip, struct mcf_gpio_chip,
-> > gpio_chip) +
-> > +static int mcf_gpio_direction_input(struct gpio_chip *chip, unsigned
-> > offset) +{
-> > +	unsigned long flags;
-> > +	MCFGPIO_PORTTYPE dir;
-> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
-> > +
-> > +	local_irq_save(flags);
-> > +	dir = mcfgpio_read(mcf_chip->pddr);
-> > +	dir &= ~mcfgpio_bit(chip->base + offset);
-> > +	mcfgpio_write(dir, mcf_chip->pddr);
-> > +	local_irq_restore(flags);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int mcf_gpio_get_value(struct gpio_chip *chip, unsigned offset)
-> > +{
-> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
-> > +
-> > +	return mcfgpio_read(mcf_chip->ppdr) & mcfgpio_bit(chip->base + offset);
-> > +}
-> > +
-> > +static int mcf_gpio_direction_output(struct gpio_chip *chip, unsigned
-> > offset, +		int value)
-> > +{
-> > +	unsigned long flags;
-> > +	MCFGPIO_PORTTYPE data;
-> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
-> > +
-> > +	local_irq_save(flags);
-> > +	/* write the value to the output latch */
-> > +	data = mcfgpio_read(mcf_chip->podr);
-> > +	if (value)
-> > +		data |= mcfgpio_bit(chip->base + offset);
-> > +	else
-> > +		data &= ~mcfgpio_bit(chip->base + offset);
-> > +	mcfgpio_write(data, mcf_chip->podr);
-> > +
-> > +	/* now set the direction to output */
-> > +	data = mcfgpio_read(mcf_chip->pddr);
-> > +	data |= mcfgpio_bit(chip->base + offset);
-> > +	mcfgpio_write(data, mcf_chip->pddr);
-> > +	local_irq_restore(flags);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static void mcf_gpio_set_value(struct gpio_chip *chip, unsigned offset,
-> > +		int value)
-> > +{
-> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
-> > +
-> > +	unsigned long flags;
-> > +	MCFGPIO_PORTTYPE data;
-> > +
-> > +	local_irq_save(flags);
-> > +	data = mcfgpio_read(mcf_chip->podr);
-> > +	if (value)
-> > +		data |= mcfgpio_bit(chip->base + offset);
-> > +	else
-> > +		data &= ~mcfgpio_bit(chip->base + offset);
-> > +	mcfgpio_write(data, mcf_chip->podr);
-> > +	local_irq_restore(flags);
-> > +}
-> > +
-> > +#if defined(CONFIG_M520x) || defined(CONFIG_M523x) || \
-> > +      defined(CONFIG_M527x) || defined(CONFIG_M528x) ||
-> > defined(CONFIG_M532x) +static void mcf_gpio_set_value_fast(struct
-> > gpio_chip *chip, unsigned offset, +		int value)
-> > +{
-> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
-> > +
-> > +	if (value)
-> > +		mcfgpio_write(mcfgpio_bit(chip->base + offset), mcf_chip->setr);
-> > +	else
-> > +		mcfgpio_write(~mcfgpio_bit(chip->base + offset), mcf_chip->clrr);
-> > +}
-> > +#endif
-> > +static int mcf_gpio_request(struct gpio_chip *chip, unsigned offset)
-> > +{
-> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
-> > +
-> > +	return mcf_chip->gpio_to_pinmux ?
-> > +		mcf_pinmux_request(mcf_chip->gpio_to_pinmux[offset], 0) : 0;
-> > +}
-> > +
-> > +static void mcf_gpio_free(struct gpio_chip *chip, unsigned offset)
-> > +{
-> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
-> > +
-> > +	mcf_gpio_direction_input(chip, offset);
-> > +
-> > +	if (mcf_chip->gpio_to_pinmux)
-> > +		mcf_pinmux_release(mcf_chip->gpio_to_pinmux[offset], 0);
-> > +}
-> > +
-> > +static struct mcf_gpio_chip mcf_gpio_chips[] = {
-> > +#if defined(CONFIG_M5206) || defined(CONFIG_M5206e)
->
-> I would rather see this table's contents in the per-platform
-> setup code (so under ~/arch/m68knommu/platform/m5206, etc).
-> Associated with each family members specific code. I would have a
-> gpio.c in each platform directory just for this.
->
-> Keep the common code above in coldfire/gpio.c (the support functions
-> could obviously no longer be static). When new family members
-> are created/added this common coldfire/gpio.c won't need to be
-> touched.
 
-Yeah, I was trying to keep the implementation details static as much as 
-possible.  Having a per-platform table means the struct mcf_gpio_chip also 
-needs to go into a header which I found mildly aesthetically unpleasing.  Oh 
-well.
+On Thu, 19 Mar 2009, Mathieu Desnoyers wrote:
 
-> Otherwise I don't see any specific problems with it.
+> * Ingo Molnar (mingo@elte.hu) wrote:
+> > 
+> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > On Thu, 19 Mar 2009, Mathieu Desnoyers wrote:
+> > > > 
+> > > > Jaswinder : maybe you have old modules in your /lib/modules/`uname -r`
+> > > > directory which have the correct version, but the wrong module.h header ?
+> > > 
+> > > Isn't there a module versioning that prevents such things?
+> > 
+> > It can be overriden. In any case, the NULL check we have there now 
+> > makes sense.
+> > 
+> > 	Ingo
+> 
+> Well, it duplicates the check for begin == end. Actually, if begin !=
+> end _and_ being is NULL, this should be a WARN_ON or BUG_ON, because
+> the kernel would be trying to load a module with incompatible struct
+> module.
+> 
+> Are we supposed to assume that module.c allows loading modules with
+> incompatible struct module at all ? That sounds like we would be trying
+> to fix up things broken by the module loader in the first place.
 
-Cool.  I'll fold the per-platform table into the next version of the patch which 
-adds pinmux support (and which definately is going to require per-platform 
-files).
+Then it should be WARN_ON, no need to lock up a box hard, and give the 
+user in X with no serial, no idea why the box just locked up.
 
--- 
-Steven King -- sfking at fdwdc dot com
+-- Steve
+
