@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756351AbZCSNiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756160AbZCSNp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756351AbZCSNiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 09:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbZCSNiG
+	id S1756160AbZCSNp2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 09:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZCSNpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 09:38:06 -0400
-Received: from lobo.ruivo.org ([66.92.68.119]:42430 "EHLO lobo.ruivo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754152AbZCSNiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 09:38:05 -0400
-Date: Thu, 19 Mar 2009 09:37:53 -0400
-From: Aristeu Rozanski <aris@ruivo.org>
-To: Pawe? Sikora <pluto@agmk.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.9] NMI watchdog detected lockup.
-Message-ID: <20090319133753.GB5507@cathedrallabs.org>
-References: <Ok0OsSvf.1237460161.3536740.pluto@agmk.net>
-MIME-Version: 1.0
+	Thu, 19 Mar 2009 09:45:10 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54268 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752311AbZCSNpJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 09:45:09 -0400
+Date: Thu, 19 Mar 2009 14:45:40 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+Cc: David Miller <davem@davemloft.net>, ghaskins@novell.com, vernux@us.ibm.com,
+       andi@firstfloor.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       pmullaney@novell.com
+Subject: Re: High contention on the sk_buff_head.lock
+Message-ID: <20090319134540.GW11935@one.firstfloor.org>
+References: <49C16D7C.3080003@novell.com> <20090318.180355.228447835.davem@davemloft.net> <1237425191.8204.41.camel@quadrophenia.thebigcorporation.com> <20090318.181713.62394874.davem@davemloft.net> <1237427007.8204.55.camel@quadrophenia.thebigcorporation.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Ok0OsSvf.1237460161.3536740.pluto@agmk.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1237427007.8204.55.camel@quadrophenia.thebigcorporation.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pawel,
-> we're currently testing trial version of Jungo pci driver for
-> linux/windows
-> (http://www.jungo.com/st/windriver_usb_pci_driver_development_software.html)
-> and get 'NMI Watchdog detected LOCKUP' on athlon64/opteron smp systems
-> with rhel 2.6.9 kernel. from the other side, the lockup doesn't occur
-> on intel x86_64 smp systems. bad news is that Jungo developers can't
-> reproduce
-> the lockup while we can trig it during simple pci bus scanning/opening
-> device.
->
-> only diagnostic we have is console log grabbed over rs232 link.
-first: 2.6.9 is an old kernel, so I suppose you're using a vendor
-kernel.
-second: I can't see any obvious link to download the source code for
-that driver. we can't help you with binary modules, contact both the kernel
-vendor and the driver vendor.
+> Do we have to rule-out per-CPU queues, that aggregate into a master
+> queue in a batch-wise manner? 
 
-> NMI Watchdog detected LOCKUP, CPU=0, registers:
-something (probably the Jungo driver) is using too much time and the NMI
-watchdog is not being reset often enough. try booting with nmi_watchdog=0
-kernel parameter and check if the driver works. if the machine hangs, it means
-that the NMI watchdog was right and the CPU was really stuck because of a bug.
-contact your vendors and inform the results.
+TSO/GSO/USO is that actually in a very specific way. It batches
+packets into larger packets and then less per packet locks need to be taken.  
+It was unclear if that was used in this workload or not.
 
+-Andi
 -- 
-Aristeu
-
+ak@linux.intel.com -- Speaking for myself only.
