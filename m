@@ -1,65 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761293AbZCSUlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761277AbZCSUmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761293AbZCSUlv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 16:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759865AbZCSUlN
+	id S1761277AbZCSUmM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 16:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760793AbZCSUla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 16:41:13 -0400
-Received: from systemlinux.org ([83.151.29.59]:59394 "EHLO m18s25.vlinux.de"
+	Thu, 19 Mar 2009 16:41:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59344 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757018AbZCSUlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 16:41:12 -0400
-Date: Thu, 19 Mar 2009 21:10:08 +0100
-From: Andre Noll <maan@systemlinux.org>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, neilb@suse.de,
-       maciej.sosnowski@intel.com, Yuri Tikhonov <yur@emcraft.com>,
-       Ilya Yanok <yanok@emcraft.com>
-Subject: Re: [PATCH 02/13] async_tx: don't use src_list argument of async_xor() for dma addresses
-Message-ID: <20090319201008.GC10491@skl-net.de>
-References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com> <20090318192026.20375.3053.stgit@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="B4IIlcmfBL/1gGOG"
+	id S1760993AbZCSUl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 16:41:29 -0400
+From: Gabor Kovacs <kgabor@bolyai.elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Lava dual parallel PCI card IRQ problem
+Date: Thu, 19 Mar 2009 16:41:22 -0400
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <200903130051.18119.kgabor@bolyai.elte.hu> <200903171852.20408.kgabor@bolyai.elte.hu> <20090318113559.2771b3c7@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090318113559.2771b3c7@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090318192026.20375.3053.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200903191641.22590.kgabor@bolyai.elte.hu>
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Alan,
 
---B4IIlcmfBL/1gGOG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Your patch looks good. IRQ detection works on my dual parallel port.
 
-On 12:20, Dan Williams wrote:
+[ 3131.988489] pnp: the driver 'parport_pc' has been registered
+[ 3131.988510] parport_pc 00:04: current resources: before 
+pnp_assign_resources
+[ 3131.988513] parport_pc 00:04:   irq 7 flags 0x401
+[ 3131.988516] parport_pc 00:04:   io  0x378-0x37f flags 0x101
+[ 3131.988521] parport_pc 00:04: assigning independent options
+[ 3131.988524] parport_pc 00:04: assigning dependent option 1
+[ 3131.988527] parport_pc 00:04:   io 0 already set to 0x378-0x37f flags 0x101
+[ 3131.988530] parport_pc 00:04:   irq 0 already set to 7 flags 0x401
+[ 3131.988532] parport_pc 00:04: current resources: after pnp_assign_resources
+[ 3131.988535] parport_pc 00:04:   irq 7 flags 0x401
+[ 3131.988538] parport_pc 00:04:   io  0x378-0x37f flags 0x101
+[ 3131.988542] parport_pc 00:04: current resources: pnp_start_dev
+[ 3131.988546] parport_pc 00:04:   irq 7 flags 0x401
+[ 3131.988549] parport_pc 00:04:   io  0x378-0x37f flags 0x101
+[ 3131.988553] parport_pc 00:04: set resources
+[ 3131.989987] parport_pc 00:04: encode 3 resources
+[ 3131.989990] parport_pc 00:04:   encode io 0x378-0x37f decode 0x1
+[ 3131.989993] parport_pc 00:04:   encode irq 7 edge high exclusive (2-byte 
+descriptor)
+[ 3131.989996] parport_pc 00:04:   encode dma -1 type 0x0 transfer 0x0 master 
+0
+[ 3131.990898] parport_pc 00:04: activated
+[ 3131.990898] parport_pc 00:04: reported by Plug and Play ACPI
+[ 3131.990898] parport0: PC-style at 0x378, irq 7 [PCSPP]
+[ 3132.093522] parport_pc 00:04: driver attached
+[ 3132.094824] PCI parallel port detected: 1407:8002, I/O at 0xb880(0x0), IRQ 
+17
+[ 3132.094824] parport1: PC-style at 0xb880 [PCSPP,TRISTATE,EPP]
+[ 3132.185524] PCI parallel port detected: 1407:8003, I/O at 0xb800(0x0), IRQ 
+17
+[ 3132.185547] parport2: PC-style at 0xb800 [PCSPP,TRISTATE,EPP]
 
-> Using src_list argument of async_xor() as a storage for dma addresses
-> implies sizeof(dma_addr_t) <=3D sizeof(struct page *) restriction which is
-> not always true (e.g. ppc440spe).
+======
 
-This message does not tell what the patch is going to do about that.
-It would also be nice to mention (either in the log message or as a
-comment) why allocating the dma_src arrays on the stack is not going
-to be a problem.
+01:07.0 Parallel controller: Lava Computer mfg Inc Lava Dual Parallel port A 
+(rev 03) (prog-if 01 [BiDir])
+        Subsystem: Lava Computer mfg Inc Lava Dual Parallel port A                                        
+        Flags: medium devsel, IRQ 17                                                                      
+        I/O ports at b880 [size=8]                                                                        
+        Kernel driver in use: parport_pc                                                                  
+        Kernel modules: parport_pc                                                                        
 
-Andre
---=20
-The only person who always got his work done by Friday was Robinson Crusoe
+01:07.1 Parallel controller: Lava Computer mfg Inc Lava Dual Parallel port B 
+(rev 03) (prog-if 01 [BiDir])
+        Subsystem: Lava Computer mfg Inc Lava Dual Parallel port B                                        
+        Flags: medium devsel, IRQ 17                                                                      
+        I/O ports at b800 [size=8]                                                                        
+        Kernel driver in use: parport_pc                                                                  
+        Kernel modules: parport_pc                                                                        
 
---B4IIlcmfBL/1gGOG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+......
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+06:00.0 Ethernet controller: VIA Technologies, Inc. VT6120/VT6121/VT6122 
+Gigabit Ethernet Adapter (rev 82)
+        Subsystem: VIA Technologies, Inc. Device 0110
+        Flags: bus master, fast devsel, latency 0, IRQ 17
+        I/O ports at e800 [size=256]
+        Memory at febffc00 (64-bit, non-prefetchable) [size=256]
+        Capabilities: [50] Power Management version 3
+        Capabilities: [90] Express Endpoint, MSI 00
+        Capabilities: [c0] Message Signalled Interrupts: Mask+ 64bit+ 
+Queue=0/0 Enable-
+        Kernel driver in use: via-velocity
+        Kernel modules: via-velocity
 
-iD8DBQFJwqagWto1QDEAkw8RAol7AJ9jG26hiovmH4WW54bhvV1PctW/LQCeOxo7
-a4ILQjqS5mMDQoLby5qlPvs=
-=mIQl
------END PGP SIGNATURE-----
+===
 
---B4IIlcmfBL/1gGOG--
+I also tried commenting out "irq = PARPORT_IRQ_NONE;" Interrupts are working, 
+of course, driver is not yet aware of irq sharing. Each time I have some 
+network traffic, I get an interrupt on parport, too. I guess the two ports on 
+Lava card cannot be distinguished either.
+
+Looking forward to the next part.
+
+-- Gabor
+
+On Wednesday 18 March 2009 07:35:59 Alan Cox wrote:
+> First cut to try
+>
+> parport: Use the PCI IRQ if offered
+>
+> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+>
+> parport: Use the PCI IRQ if offered
+>
+> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+>
+>
+
