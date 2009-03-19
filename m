@@ -1,141 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757934AbZCSDIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbZCSD0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757934AbZCSDIb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 18 Mar 2009 23:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZCSDIW
+	id S1755686AbZCSD0D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 18 Mar 2009 23:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZCSDZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 18 Mar 2009 23:08:22 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53343 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751383AbZCSDIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 18 Mar 2009 23:08:22 -0400
-Message-ID: <49C1B6BF.5090702@cn.fujitsu.com>
-Date: Thu, 19 Mar 2009 11:06:39 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 18 Mar 2009 23:25:47 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:37141 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751970AbZCSDZq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 18 Mar 2009 23:25:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=r2IO4x/WL8X9Li5jfy9XOaTDa3y2yfmZjE90YXpJFXszusA12jvVlYYJWRVqKwfgPS
+         2Aevq7V9rowX9xkYikhK3CNLMTmFOqk/ddgAhGRa0E6xWEbByYTcNKmX26WMiEre6N9/
+         HAoSqyNvzcNcU3DlWV/oHl/eJQyzG2zImUPuE=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcu_barrier VS cpu_hotplug: Ensure callbacks in dead
- cpu are migrated to online cpu
-References: <49B2526E.40106@cn.fujitsu.com> <20090308160005.GE19658@elte.hu>
-In-Reply-To: <20090308160005.GE19658@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
+References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
+	 <b6a2187b0903141958u9dae0fdk1f44b387108b99e4@mail.gmail.com>
+	 <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com>
+	 <1237140665.24621.2.camel@johannes.local>
+	 <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
+	 <1237143683.24621.7.camel@johannes.local>
+	 <20090315202603.GA9077@elte.hu>
+	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
+	 <1237317742.31814.28.camel@johannes.local>
+	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
+Date: Thu, 19 Mar 2009 11:25:44 +0800
+Message-ID: <b6a2187b0903182025y5552900cu6213a4f4eafeb6e6@mail.gmail.com>
+Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> 
->> [RFC]
->> I don't like this patch, but I thought for some days and I can't
->> thought out a better one.
-> 
-> Interesting find. Found via code review or via testing? If via 
-> testing, what is the symptom of the bug when it hits - did you 
-> see CPU hotplug stress-tests hanging? Crashing too perhaps? How 
-> frequently did it occur?
+On Thu, Mar 19, 2009 at 10:58 AM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+> I've tracked down to the sequence of iwconfig that causes it to fail.
 
-I found this bug when I tested the draft version of kfree_rcu(V3).
+> This loop only works 8 of 10 times with/without the patch.
+>        iwconfig wlan0 mode Managed essid xxx key restricted xxx
+>        iwconfig wlan0 ap auto channel auto  # auto outside loop
+>        for((i = 0; i < 5; i++))
+>        do
+>                iwconfig wlan0 | grep -q "Not-Associated"
+>                [ $? -ne 0 ] && break
+>                echo ".\c"
+>                sleep 1
+>        done
 
-I noticed kfree_rcu_cpu_notify() is called earlier than
-rcu_cpu_notify(). This means rcu_barrier() is called earlier than
-RCU callbacks migration, it should lockup as expectation. But actually,
-this lockup can not occurred, I tried to explore it, and I found that
-rcu_barrier() does not handle cpu_hotplug. It includes two bugs.
 
-kfree_rcu(V3) (V4 is available too, it will be sent soon):
-http://lkml.org/lkml/2009/3/6/156
+I've modified it a little, and now it works 100% without patch, by
+using "iwlist scan" instead of "sleep 1" ...
+        iwconfig wlan0 mode Managed essid xxx key restricted xxx
+        iwconfig wlan0 ap auto channel auto  # auto outside loop
+        for((i = 0; i < 5; i++))
+        do
+                iwlist wlan0 scan >/dev/null  #use scan instead of sleep
+                iwconfig $DEV | grep -q "Access Point: Not-Associated"
+                [ $? -ne 0 ] && break
+                echo ".\c"
+        done
 
-The V1 fix of this bug:
-http://lkml.org/lkml/2009/3/7/38
 
-The fix of the other bug: (it changed the scheduler's code too)
-http://lkml.org/lkml/2009/3/7/39
+So, this will work for older kernel and well as 2.6.29-rc8.
 
-Subject: [PATCH] rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to online cpu (V2)
+Rafael, can we close the case? It's the iwconfig sequence that used to
+work on 2.6.28-rc3 but now needs to be updated for 2.6.29-rc8.
 
-cpu hotplug may be happened asynchronously, some rcu callbacks are maybe
-still in dead cpu, rcu_barrier() also needs to wait for these rcu callbacks
-to complete, so we must ensure callbacks in dead cpu are migrated to
-online cpu.
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index cae8a05..2c7b845 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -122,6 +122,8 @@ static void rcu_barrier_func(void *type)
- 	}
- }
- 
-+static inline void wait_migrated_callbacks(void);
-+
- /*
-  * Orchestrate the specified type of RCU barrier, waiting for all
-  * RCU callbacks of the specified type to complete.
-@@ -147,6 +149,7 @@ static void _rcu_barrier(enum rcu_barrier type)
- 		complete(&rcu_barrier_completion);
- 	wait_for_completion(&rcu_barrier_completion);
- 	mutex_unlock(&rcu_barrier_mutex);
-+	wait_migrated_callbacks();
- }
- 
- /**
-@@ -176,9 +179,50 @@ void rcu_barrier_sched(void)
- }
- EXPORT_SYMBOL_GPL(rcu_barrier_sched);
- 
-+static atomic_t rcu_migrate_type_count = ATOMIC_INIT(0);
-+static struct rcu_head rcu_migrate_head[3];
-+static DECLARE_WAIT_QUEUE_HEAD(rcu_migrate_wq);
-+
-+static void rcu_migrate_callback(struct rcu_head *notused)
-+{
-+	if (atomic_dec_and_test(&rcu_migrate_type_count))
-+		wake_up(&rcu_migrate_wq);
-+}
-+
-+static inline void wait_migrated_callbacks(void)
-+{
-+	wait_event(rcu_migrate_wq, !atomic_read(&rcu_migrate_type_count));
-+}
-+
-+static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
-+		unsigned long action, void *hcpu)
-+{
-+	if (action == CPU_DYING) {
-+		/*
-+		 * preempt_disable() in on_each_cpu() prevents stop_machine(),
-+		 * so when "on_each_cpu(rcu_barrier_func, (void *)type, 1);"
-+		 * returns, all online cpus have queued rcu_barrier_func(),
-+		 * and the dead cpu(if it exist) queues rcu_migrate_callback()s.
-+		 *
-+		 * These callbacks ensure _rcu_barrier() waits for all
-+		 * RCU callbacks of the specified type to complete.
-+		 */
-+		atomic_set(&rcu_migrate_type_count, 3);
-+		call_rcu_bh(rcu_migrate_head, rcu_migrate_callback);
-+		call_rcu_sched(rcu_migrate_head + 1, rcu_migrate_callback);
-+		call_rcu(rcu_migrate_head + 2, rcu_migrate_callback);
-+	} else if (action == CPU_POST_DEAD) {
-+		/* rcu_migrate_head is protected by cpu_add_remove_lock */
-+		wait_migrated_callbacks();
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
- void __init rcu_init(void)
- {
- 	__rcu_init();
-+	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
- }
- 
- void rcu_scheduler_starting(void)
-
+Thanks,
+Jeff.
