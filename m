@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761162AbZCSXiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761648AbZCSXr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761162AbZCSXiT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 19:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZCSXiG
+	id S1761648AbZCSXr7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 19:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbZCSXrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 19:38:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47035 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755962AbZCSXiF (ORCPT
+	Thu, 19 Mar 2009 19:47:49 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:39357 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755828AbZCSXrt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 19:38:05 -0400
-Date: Thu, 19 Mar 2009 16:33:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] vmscan: print shrink_slab symbol name on negative
- shrinker objects
-Message-Id: <20090319163314.527687fc.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0903191609040.2457@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903191609040.2457@chino.kir.corp.google.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Mar 2009 19:47:49 -0400
+Date: Fri, 20 Mar 2009 05:17:34 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [Patch 00/11] Hardware Breakpoint Interfaces - v5
+Message-ID: <20090319234734.GA10517@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Mar 2009 16:09:33 -0700 (PDT) David Rientjes <rientjes@google.com> wrote:
+Hi Ingo,
+	Please find the new set of patches that implement Hardware
+breakpoint interfaces for kernel- and user-space, an ftrace plugin using these
+interfaces to trace memory accesses over kernel symbols and a demonstrative
+example.
 
-> When a shrinker has a negative number of objects to delete, the symbol
-> name of the shrinker should be printed, not shrink_slab.
-> 
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  mm/vmscan.c |    9 +++++++--
->  1 files changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -40,6 +40,7 @@
->  #include <linux/memcontrol.h>
->  #include <linux/delayacct.h>
->  #include <linux/sysctl.h>
-> +#include <linux/kallsyms.h>
->  
->  #include <asm/tlbflush.h>
->  #include <asm/div64.h>
-> @@ -214,8 +215,12 @@ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
->  		do_div(delta, lru_pages + 1);
->  		shrinker->nr += delta;
->  		if (shrinker->nr < 0) {
-> -			printk(KERN_ERR "%s: nr=%ld\n",
-> -					__func__, shrinker->nr);
-> +			char symname[KSYM_NAME_LEN];
-> +
-> +			if (lookup_symbol_name((unsigned long)shrinker->shrink,
-> +					       symname) > 0)
-> +				printk(KERN_ERR "shrink_slab: %s nr=%ld\n",
-> +				       symname, shrinker->nr);
->  			shrinker->nr = max_pass;
->  		}
+While a previous version of these patches was posted
+here: http://lkml.org/lkml/2009/3/7/23 and generated substantial amount of
+discussions over LKML, a summary of proposed changes to the patchset was posted
+here: http://lkml.org/lkml/2009/3/13/381.
 
-Can we use the new printk("%pF", ...) here?
+In short, the infrastructure has been changed to provide interfaces to use
+Hardware Breakpoint (or Watchpoint) registers on a first-come first-serve basis
+(without over-committing resources). The serviced-requests are maintained in an
+array of pointers to the register's datastructure. Requests from kernel-space
+will be serviced in decreasing order of register numbers (starting from
+HB_NUM - 1).
+
+The ksym_tracer ftrace plugin now also contains a startup self-test and support
+for showing aggregate counters (through ftrace's histogram infrastructure).
+
+Kindly let me know if the new patchset addresses the concerns of the community
+and is deemed fit for inclusion in -tip tree. The patchset is based on commit
+62f84ea922bd60803e446153ea99ce5d7245d6f9 of -tip tree.
+
+Thanks,
+K.Prasad
+
