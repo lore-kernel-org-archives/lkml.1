@@ -1,105 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbZCSVTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759658AbZCSVWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759545AbZCSVTs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 17:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbZCSVTg
+	id S1759658AbZCSVWm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 17:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbZCSVWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 17:19:36 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:36415 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754539AbZCSVTf (ORCPT
+	Thu, 19 Mar 2009 17:22:32 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:35124 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752677AbZCSVWb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 17:19:35 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Oren Laadan <orenl@cs.columbia.edu>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       linux-api@vger.kernel.org, containers@lists.linux-foundation.org,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-mm@kvack.org,
-       viro@zeniv.linux.org.uk, mpm@selenic.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de,
-       xemul@openvz.org
-References: <1236891719.32630.14.camel@bahia>
-	<20090312212124.GA25019@us.ibm.com>
-	<604427e00903122129y37ad791aq5fe7ef2552415da9@mail.gmail.com>
-	<20090313053458.GA28833@us.ibm.com>
-	<alpine.LFD.2.00.0903131018390.3940@localhost.localdomain>
-	<20090313193500.GA2285@x200.localdomain>
-	<alpine.LFD.2.00.0903131401070.3940@localhost.localdomain>
-	<1236981097.30142.251.camel@nimitz> <49BADAE5.8070900@cs.columbia.edu>
-	<m1hc1xrlt5.fsf@fess.ebiederm.org> <20090314081207.GA16436@elte.hu>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 19 Mar 2009 14:19:15 -0700
-In-Reply-To: <20090314081207.GA16436@elte.hu> (Ingo Molnar's message of "Sat\, 14 Mar 2009 09\:12\:07 +0100")
-Message-ID: <m1hc1p9pnw.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 19 Mar 2009 17:22:31 -0400
+Date: Thu, 19 Mar 2009 16:16:15 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, mingo@elte.hu,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>, peterz@infradead.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: [PATCH 1/1] introduce user_ns inheritance in user-sched
+Message-ID: <20090319211615.GA18383@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: mingo@elte.hu, xemul@openvz.org, tglx@linutronix.de, torvalds@linux-foundation.org, sukadev@linux.vnet.ibm.com, akpm@linux-foundation.org, mpm@selenic.com, viro@zeniv.linux.org.uk, linux-mm@kvack.org, adobriyan@gmail.com, linux-kernel@vger.kernel.org, hpa@zytor.com, containers@lists.linux-foundation.org, linux-api@vger.kernel.org, dave@linux.vnet.ibm.com, orenl@cs.columbia.edu
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: How much of a mess does OpenVZ make? ;) Was: What can OpenVZ do?
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+In a kernel compiled with CONFIG_USER_SCHED=y, cpu shares are
+allocated according to uid.  Shares are specifiable under
+/sys/kernel/uids/<uid>/
 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
->
->> >> In the OpenVZ case, they've at least demonstrated that the 
->> >> filesystem can be moved largely with rsync.  Unlinked files 
->> >> need some in-kernel TLC (or /proc mangling) but it isn't 
->> >> *that* bad.
->> >
->> > And in the Zap we have successfully used a log-based 
->> > filesystem (specifically NILFS) to continuously snapshot the 
->> > file-system atomically with taking a checkpoint, so it can 
->> > easily branch off past checkpoints, including the file 
->> > system.
->> >
->> > And unlinked files can be (inefficiently) handled by saving 
->> > their full contents with the checkpoint image - it's not a 
->> > big toll on many apps (if you exclude Wine and UML...). At 
->> > least that's a start.
->> 
->> Oren we might want to do a proof of concept implementation 
->> like I did with network namespaces.  That is done in the 
->> community and goes far enough to show we don't have horribly 
->> nasty code.  The patches and individual changes don't need to 
->> be quite perfect but close enough that they can be considered 
->> for merging.
->> 
->> For the network namespace that seems to have made a big 
->> difference.
->> 
->> I'm afraid in our clean start we may have focused a little too 
->> much on merging something simple and not gone far enough on 
->> showing that things will work.
->> 
->> After I had that in the network namespace and we had a clear 
->> vision of the direction.  We started merging the individual 
->> patches and things went well.
->
-> I'm curious: what is the actual end result other than good 
-> looking code? In terms of tangible benefits to the everyday 
-> Linux distro user. [This is not meant to be sarcastic, i'm
-> truly curious.]
+In a kernel compiled with CONFIG_USER_NS=y, clone(2) with the
+CLONE_NEWUSER flag creates a new user namespace, and the newly
+cloned task will belong to uid 0 in the new user namespace.
 
-Of the network namespace?  Sorry I'm not certain what you are asking.
+Without this patch,  if uid 500 calls clone(CLONE_NEWUSER) (which
+is possible using a program with the cap_sys_admin,cap_setuid,cap_setgid=pe
+file capabilities), then the new task will get the cpu shares of
+uid 0.
 
-Eric
+After this patch, if uid 500 calls clone(CLONE_NEWUSER), then even
+though it is uid 0 in the new user namespace, it will be restricted to
+the cpu shares of uid 500.
+
+Currently there is no way to set shares for uids in user namespaces
+other than the initial one.  That will be trivial to add when
+sysfs tagging (or its functional equivalent, also needed to
+expose network devices in network namespaces other than init)
+becomes available.
+
+Until cross-user-namespace file accesses are enforced, nothing
+stops uid 0 in a child namespace from simply writing new values
+into /sys/kernel/uids/500.
+
+Here are results of some testing with and without the patch.
+
+Cpu shares are initialized as follows::
+	user root:   2048
+	user hallyn: 1024
+	user serge:  512
+
+Results are the 'real' part of time make -j4 > o 2>&1,
+each time after a make clean.
+
+=================================================================
+UNPATCHED
+User 1: user serge creates a child user_ns and runs as user root
+User 2: hallyn runs as user hallyn
+=================================================================
+           User 1          User 2
+run 1:   2m58.834s        3m0.609s
+run 2:   2m59.248s        2m59.457s
+
+=============================================================
+PATCHED
+User 1: user serge
+User 2: user hallyn
+=============================================================
+
+           User 1          User 2
+run 1:   3m6.337s        2m22.681s
+run 2:   3m6.323s        2m21.855s
+
+=============================================================
+PATCHED
+User 1: user serge setuid to user root
+User 2: hallyn
+=============================================================
+
+           User 1          User 2
+run 1:   2m17.782s       3m3.947s
+run 2:   2m18.497s       3m7.961s
+
+==========================================================
+PATCHED
+User 1: user root inside userns created by userid serge
+User 2: hallyn
+==========================================================
+
+           User 1          User 2
+run 1:   3m9.876s        2m8.428s
+run 2:   3m8.539s        2m6.356s
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: mingo@elte.hu
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: peterz@infradead.org
+---
+ kernel/user.c           |   12 +++++++++---
+ kernel/user_namespace.c |    2 +-
+ 2 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/user.c b/kernel/user.c
+index 850e0ba..53aeea2 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -101,7 +101,12 @@ static int sched_create_user(struct user_struct *up)
+ {
+ 	int rc = 0;
+ 
+-	up->tg = sched_create_group(&root_task_group);
++	struct task_group *parent = &root_task_group;
++
++	if (up->user_ns != &init_user_ns)
++		parent = up->user_ns->creator->tg;
++
++	up->tg = sched_create_group(parent);
+ 	if (IS_ERR(up->tg))
+ 		rc = -ENOMEM;
+ 
+@@ -434,11 +439,11 @@ struct user_struct *alloc_uid(struct user_namespace *ns, uid_t uid)
+ 		new->uid = uid;
+ 		atomic_set(&new->__count, 1);
+ 
++		new->user_ns = get_user_ns(ns);
++
+ 		if (sched_create_user(new) < 0)
+ 			goto out_free_user;
+ 
+-		new->user_ns = get_user_ns(ns);
+-
+ 		if (uids_user_create(new))
+ 			goto out_destoy_sched;
+ 
+@@ -472,6 +477,7 @@ out_destoy_sched:
+ 	sched_destroy_user(new);
+ 	put_user_ns(new->user_ns);
+ out_free_user:
++	put_user_ns(new->user_ns);
+ 	kmem_cache_free(uid_cachep, new);
+ out_unlock:
+ 	uids_mutex_unlock();
+diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
+index 076c7c8..a99d3c7 100644
+--- a/kernel/user_namespace.c
++++ b/kernel/user_namespace.c
+@@ -35,6 +35,7 @@ int create_user_ns(struct cred *new)
+ 		INIT_HLIST_HEAD(ns->uidhash_table + n);
+ 
+ 	/* Alloc new root user.  */
++	ns->creator = new->user;
+ 	root_user = alloc_uid(ns, 0);
+ 	if (!root_user) {
+ 		kfree(ns);
+@@ -42,7 +43,6 @@ int create_user_ns(struct cred *new)
+ 	}
+ 
+ 	/* set the new root user in the credentials under preparation */
+-	ns->creator = new->user;
+ 	new->user = root_user;
+ 	new->uid = new->euid = new->suid = new->fsuid = 0;
+ 	new->gid = new->egid = new->sgid = new->fsgid = 0;
+-- 
+1.5.4.3
+
