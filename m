@@ -1,35 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbZCSKtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZCSKus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754540AbZCSKtW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 06:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbZCSKtI
+	id S1755094AbZCSKus (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 06:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbZCSKui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 06:49:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35284 "EHLO hera.kernel.org"
+	Thu, 19 Mar 2009 06:50:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42201 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752271AbZCSKtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 06:49:05 -0400
+	id S1750934AbZCSKuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 06:50:37 -0400
+Date: Thu, 19 Mar 2009 11:50:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Michal Simek <monstr@monstr.eu>
+Cc: linux-kernel@vger.kernel.org, john.williams@petalogix.com,
+       Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: Microblaze linux support
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: monstr@monstr.eu
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       john.williams@petalogix.com, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20090319105001.GC2579@elte.hu>
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <20090319072256.GA5069@elte.hu> <49C213A2.4040609@monstr.eu> <20090319102142.GA2579@elte.hu> <49C21DF0.10808@monstr.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <49C21DF0.10808@monstr.eu>
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
-	 <20090319072256.GA5069@elte.hu> <49C213A2.4040609@monstr.eu>
-	 <20090319102142.GA2579@elte.hu>  <49C21DF0.10808@monstr.eu>
-Content-Type: text/plain
-Date: Thu, 19 Mar 2009 16:17:46 +0530
-Message-Id: <1237459666.3127.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-19 at 11:26 +0100, Michal Simek wrote:
 
+* Michal Simek <monstr@monstr.eu> wrote:
+
+> Hi Ingo,
+> > * Michal Simek <monstr@monstr.eu> wrote:
+> > 
+> >> WARNING: externs should be avoided in .c files
+> >> #110: FILE: arch/microblaze/kernel/microblaze_ksyms.c:45:
+> >> +extern void __umodsi3(void);
+> >>
+> >> WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+> >> #111: FILE: arch/microblaze/kernel/microblaze_ksyms.c:46:
+> >> +EXPORT_SYMBOL(__umodsi3);
+> > 
+> > externs should be in header files.
+> > 
+> > The rest indeed looks like false positives. Thanks for addressing 
+> > these things so quickly!
+> 
 > you are welcome - I can quickly test and add all changes to git.
 > 
 > Is it good style separate extern definition and EXPORT_SYMBOL?
@@ -41,13 +64,6 @@ On Thu, 2009-03-19 at 11:26 +0100, Michal Simek wrote:
 > 
 > What is preferable way?
 
-externs should be in header files
+Where are the symbols defined - by gcc's library?
 
-EXPORT_SYMBOL should immediately follow its function/variable should
-normally be in source files like : arch/x86/kernel/process.c
-and if required can also be defined in header files like:
-arch/x86/include/asm/percpu.h
-
---
-JSR
-
+	Ingo
