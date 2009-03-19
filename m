@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbZCSGxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbZCSHEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759210AbZCSGxy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 02:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbZCSGxo
+	id S1758248AbZCSHEn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 03:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756918AbZCSHEe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 02:53:44 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33816
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754592AbZCSGxo (ORCPT
+	Thu, 19 Mar 2009 03:04:34 -0400
+Received: from mga06.intel.com ([134.134.136.21]:42565 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753081AbZCSHEd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 02:53:44 -0400
-Date: Wed, 18 Mar 2009 23:53:31 -0700 (PDT)
-Message-Id: <20090318.235331.65960278.davem@davemloft.net>
-To: mpatocka@redhat.com
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crash with /proc/iomem on sparc64
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0903170807440.25109@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0903170758060.24107@hs20-bc2-1.build.redhat.com>
-	<Pine.LNX.4.64.0903170807440.25109@hs20-bc2-1.build.redhat.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Mar 2009 03:04:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,388,1233561600"; 
+   d="scan'208";a="499017934"
+Message-ID: <49C1EE7D.5070507@linux.intel.com>
+Date: Thu, 19 Mar 2009 15:04:29 +0800
+From: chen gong <gong.chen@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Li Yang <leoli@freescale.com>, linux-kernel@vger.kernel.org
+Subject: Re: nonboot cpu on SMP suspend
+References: <2a27d3730903172325w16ec329cp872ec35d100f6506@mail.gmail.com> <200903190000.33572.rjw@sisk.pl>
+In-Reply-To: <200903190000.33572.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Tue, 17 Mar 2009 08:08:08 -0400 (EDT)
-
+Rafael J. Wysocki 写道:
+> On Wednesday 18 March 2009, Li Yang wrote:
+>> Hi all,
+>>
+>> I'm curious why we need to un-plug all the nonboot cpus before suspend
+>> and start them all over again after the suspend(ACPI sleep)?  I mean
+>> if we can bring the booting cpu back to the exact state as before
+>> suspend, why can't we just do the same for non-booting cpus?  And that
+>> will be much faster.  Any thought?  Thanks.
 > 
+> Because we need to enter the BIOS with one CPU on-line only.
 > 
-> On Tue, 17 Mar 2009, Mikulas Patocka wrote:
-> 
-> > Hi
-> > 
-> > When you compile kernel on Sparc64 with heap memory checking and type
-> > "cat /proc/iomem", you get a crash, because pointers in struct resource 
-> > are uninitialized.
-> > 
-> > Most code fills struct resource with zeros, so I assume that it is 
-> > responsibility of the caller of request_resource to initialized it, not 
-> > the responsibility of request_resource functuion.
-> > 
-> > After 2.6.29 is out, there could be a check for uninitialized fields added 
-> > to request_resource to avoid crashes like this.
-> > 
-> > Mikulas
-> 
-> I forgot to add:
-> 
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-
-Patch applied and queued up for -stable, thanks a lot.
+You mean only one CPU can be supported by BIOS when suspend/resume ?
