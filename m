@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbZCSPve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbZCSPwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754985AbZCSPve (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 11:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZCSPvS
+	id S1754994AbZCSPwS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 11:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZCSPwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 11:51:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41277 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754441AbZCSPvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 11:51:17 -0400
-Date: Thu, 19 Mar 2009 16:50:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: oops in tracepoint_update_probe_range()
-Message-ID: <20090319155050.GB21034@elte.hu>
-References: <1237393396.3322.6.camel@localhost.localdomain> <20090318163531.GE21331@elte.hu> <49C1F1DF.2020105@cn.fujitsu.com> <20090319074616.GA17144@elte.hu> <20090319132248.GA20200@Krystal> <alpine.DEB.2.00.0903190933440.16987@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903190933440.16987@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 19 Mar 2009 11:52:00 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60505 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761AbZCSPv7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 11:51:59 -0400
+Subject: Re: Q: NFSD readdir in linux-2.6.28
+From: David Woodhouse <dwmw2@infradead.org>
+To: hooanon05@yahoo.co.jp
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <8913.1237476890@jrobl>
+References: <8036.1237474444@jrobl>
+	 <1237475837.16359.106.camel@macbook.infradead.org>  <8913.1237476890@jrobl>
+Content-Type: text/plain
+Date: Thu, 19 Mar 2009 15:51:52 +0000
+Message-Id: <1237477912.16359.109.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-03-20 at 00:34 +0900, hooanon05@yahoo.co.jp wrote:
+> If you remember why you discarded the FS_NO_LOOKUP_IN_READDIR flag
+> approach, please let me know. URL or something is enough.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+I was just lamenting that decision. I think someone persuaded me that
+the extra complexity wasn't worth it, and that we should just do it
+unconditionally. 
 
-> On Thu, 19 Mar 2009, Mathieu Desnoyers wrote:
-> > 
-> > Jaswinder : maybe you have old modules in your /lib/modules/`uname -r`
-> > directory which have the correct version, but the wrong module.h header ?
-> 
-> Isn't there a module versioning that prevents such things?
+One option would be to restore the FS_NO_LOOKUP_IN_READDIR flag, and
+document that it means that your ->lookup is called _without_ i_mutex
+held. That would actually be OK in all cases that need the flag, I
+believe (since the whole point in those cases is that they have their
+_own_ locking which is why we did it in the first place).
 
-It can be overriden. In any case, the NULL check we have there now 
-makes sense.
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-	Ingo
