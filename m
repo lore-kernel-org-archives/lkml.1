@@ -1,126 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760373AbZCSTeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbZCSTj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760373AbZCSTeU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 15:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZCSTeI
+	id S1757703AbZCSTj3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 15:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbZCSTjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 15:34:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38539 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752084AbZCSTeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 15:34:07 -0400
-Date: Thu, 19 Mar 2009 15:34:00 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] deadlock when swapping to FAT
-In-Reply-To: <87prgg6sj2.fsf@devron.myhome.or.jp>
-Message-ID: <Pine.LNX.4.64.0903191052180.14051@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0903120819010.26206@hs20-bc2-1.build.redhat.com>
- <87zlfqohfn.fsf@devron.myhome.or.jp> <Pine.LNX.4.64.0903142153330.23664@hs20-bc2-1.build.redhat.com>
- <878wn7h3la.fsf@devron.myhome.or.jp> <Pine.LNX.4.64.0903170815110.26754@hs20-bc2-1.build.redhat.com>
- <87prgg6sj2.fsf@devron.myhome.or.jp>
+	Thu, 19 Mar 2009 15:39:19 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:34263 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753872AbZCSTjS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 15:39:18 -0400
+Date: Thu, 19 Mar 2009 19:39:10 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Christopher Li <sparse@chrisli.org>, linux-sparse@vger.kernel.org,
+       Hannes Eder <hannes@hanneseder.net>, linux-kernel@vger.kernel.org
+Subject: Re: Nasal demons in preprocessor use (Re: [PATCH] test-suite: new
+	preprocessor test case)
+Message-ID: <20090319193910.GE28946@ZenIV.linux.org.uk>
+References: <20090319175544.13691.42362.stgit@f10box.hanneseder.net> <20090319182628.GB28946@ZenIV.linux.org.uk> <154e089b0903191151q37ab7b20o43838845af12966f@mail.gmail.com> <20090319190730.GC28946@ZenIV.linux.org.uk> <20090319192758.GB24318@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090319192758.GB24318@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Mar 2009, OGAWA Hirofumi wrote:
-
-> Mikulas Patocka <mpatocka@redhat.com> writes:
+On Thu, Mar 19, 2009 at 08:27:58PM +0100, Ingo Molnar wrote:
+> Vegard, it's this bit:
 > 
-> > On Sun, 15 Mar 2009, OGAWA Hirofumi wrote:
-> >
-> >> Mikulas Patocka <mpatocka@redhat.com> writes:
-> >> 
-> >> > Note that the same race condition is happening in all the other 
-> >> > filesystems. Maybe move that i_alloc_sem up to ->bmap method caller?
-> >> 
-> >> It can be. However, I guess locking strategy would be per
-> >> filesystems. Because the fs may be using i_alloc_sem in get_block
-> >> already.
-> >
-> > Which ones take it in get_block? I grepped for i_alloc_sem and don't see 
-> > them. Besides, it is mostly taken only for read and recursive taking of 
-> > read-lock for read is allowed. It is taken for writes only in truncate.
-> 
-> I don't know which fs take it, and whether i_alloc_sem is enough for
-> which fs. It was just guess. And important one is locking strategy of
-> that would be per filesystems. E.g. it seems XFS is taking own lock.
-> 
-> Well, personally, I don't have objection to add i_alloc_sem, however I'm
-> not sure, what does i_alloc_sem guarantee for other fs.
+>         kmemcheck_define_bitfield(flags2, {
+> #ifdef CONFIG_IPV6_NDISC_NODETYPE
+>                 __u8                    ndisc_nodetype:2;
+> #endif
+> #if defined(CONFIG_MAC80211) || defined(CONFIG_MAC80211_MODULE)
+>                 __u8                    do_not_encrypt:1;
+>                 __u8                    requeue:1;
+> #endif
+>         });
 
-It should prevent truncation under bmap. It is used by direct-io code to 
-protect the file from being truncated while there's direct-io being 
-processed on it.
+BTW, there's a related turd: kernel/cred.c
+        if (
+#ifdef CONFIG_KEYS
+                !p->cred->thread_keyring &&
+#endif
+                clone_flags & CLONE_THREAD
+            ) {
+is not only ucking fugly, it's not a valid C if you have PROFILE_ALL_BRANCHES
+set.  Why?  Because then we get if() #defined ;-/
 
-But some filesystems do their own direct-io locking (for example XFS). So 
-I think it would be best to place the lock to generic_block_bmap, so that 
-filesystem that doesn't want the lock can easily avoid it.
+BTW^2, speaking of that ifdef...  What happens to
+static void put_cred_rcu(struct rcu_head *rcu)
+{
+        struct cred *cred = container_of(rcu, struct cred, rcu);
 
-You can submit this patch after 2.6.29 is released.
+        if (atomic_read(&cred->usage) != 0)
+                panic("CRED: put_cred_rcu() sees %p with usage %d\n",
+                      cred, atomic_read(&cred->usage));
 
-Mikulas
-
-> -- 
-> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-
-
-FAT filesystem used down_read(&mapping->host->i_alloc_sem) to prevent 
-a race between bmap and truncate. However, such race is present in all the
-other filesystems --- it is generally assumed that blocks queried with
-get_block won't disappear while get_block is in progress.
-
-The race can be only triggered by root, non-privileged users can't use
-bmap, so it is not a security issue (unless there is some program run
-by root that bmaps users' files).
-
-This patch fixes the race in a generic way, in all the filesystems. If some
-filesystem employs its own locking and doesn't want to take i_alloc_sem
-(I don't know about any, where taking i_alloc_sem could be problem),
-let it use its own function and not generic_block_bmap.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-
----
- fs/buffer.c    |    8 ++++++++
- fs/fat/inode.c |    2 --
- 2 files changed, 8 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.29-rc8-devel/fs/buffer.c
-===================================================================
---- linux-2.6.29-rc8-devel.orig/fs/buffer.c	2009-03-19 15:57:03.000000000 +0100
-+++ linux-2.6.29-rc8-devel/fs/buffer.c	2009-03-19 15:58:00.000000000 +0100
-@@ -2964,7 +2964,15 @@ sector_t generic_block_bmap(struct addre
- 	tmp.b_state = 0;
- 	tmp.b_blocknr = 0;
- 	tmp.b_size = 1 << inode->i_blkbits;
-+
-+	/*
-+	 * Protect the inode from being truncated while get_block is
-+	 * in progress.
-+	 */
-+	down_read(&mapping->host->i_alloc_sem);
- 	get_block(inode, block, &tmp, 0);
-+	up_read(&mapping->host->i_alloc_sem);
-+
- 	return tmp.b_blocknr;
- }
- 
-Index: linux-2.6.29-rc8-devel/fs/fat/inode.c
-===================================================================
---- linux-2.6.29-rc8-devel.orig/fs/fat/inode.c	2009-03-19 15:56:50.000000000 +0100
-+++ linux-2.6.29-rc8-devel/fs/fat/inode.c	2009-03-19 15:56:58.000000000 +0100
-@@ -202,9 +202,7 @@ static sector_t _fat_bmap(struct address
- 	sector_t blocknr;
- 
- 	/* fat_get_cluster() assumes the requested blocknr isn't truncated. */
--	down_read(&mapping->host->i_alloc_sem);
- 	blocknr = generic_block_bmap(mapping, block, fat_get_block);
--	up_read(&mapping->host->i_alloc_sem);
- 
- 	return blocknr;
- }
+        security_cred_free(cred);
+        key_put(cred->thread_keyring);
+        key_put(cred->request_key_auth);
+        release_tgcred(cred);
+        put_group_info(cred->group_info);
+        free_uid(cred->user);
+        kmem_cache_free(cred_jar, cred);
+}
+if CONFIG_KEYS is not set?
