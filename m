@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbZCSN5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbZCSOBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757013AbZCSN5W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 09:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbZCSN5K
+	id S1756830AbZCSOBm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 10:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbZCSOB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 09:57:10 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:43543 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754272AbZCSN5I (ORCPT
+	Thu, 19 Mar 2009 10:01:28 -0400
+Received: from casper.infradead.org ([85.118.1.10]:52618 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755379AbZCSOB1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 09:57:08 -0400
-Date: Thu, 19 Mar 2009 15:39:54 +0200
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Peta Blaha <blahapeta@gmail.com>
-Cc: "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] input/joystick: add driver fortius 1942
-Message-ID: <20090319133953.GB18295@scadufax.research.nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <739e73230903190651w4fff7aaen818a42540ffbdc8d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <739e73230903190651w4fff7aaen818a42540ffbdc8d@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 19 Mar 2009 13:56:51.0859 (UTC) FILETIME=[8E0FA630:01C9A89A]
-X-Nokia-AV: Clean
+	Thu, 19 Mar 2009 10:01:27 -0400
+Date: Thu, 19 Mar 2009 07:02:21 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, dipankar@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Question about usage of RCU in the input layer
+Message-ID: <20090319070221.6aca7245@infradead.org>
+In-Reply-To: <200903190023.56929.dmitry.torokhov@gmail.com>
+References: <20090318215812.15496a86@infradead.org>
+	<200903190023.56929.dmitry.torokhov@gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 02:51:07PM +0100, ext Peta Blaha wrote:
-> Driver for Fortius 1942 device.
+On Thu, 19 Mar 2009 00:23:56 -0700
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+
+> Hi Arjan,
 > 
-> Signed-off-by: Petr Blaha <blahapeta@gmail.com>
+> On Wednesday 18 March 2009 21:58:12 Arjan van de Ven wrote:
+> > Hi,
+> >
+> > the input layer does a "synchronize_rcu()" after a
+> > list_add_tail_rcu(), which is costing me 1 second of boot time.....
+> > And based on my understanding of the RCU concept, you only need to
+> > synchronize on delete, not on addition... so I think the
+> > synchronize is entirely redundant here...
+> 
+> 
+> It is there to guarantee that once we registered the handle all
+> subsequent input events will be delivered through it.
 
-It's not that long. you can send it to the list.
 
-It also makes our life easier when trying to comment on the patch. Just
-run scripts/checkpatch.pl --strict on your patch file before sending it
-and solve any issues reported by that tool.
-
-Also, that Signed-off-by line is not needed in the driver itself.
-
--- 
-balbi
+afaik rcu already guarantees that even without a synchronize;
+the only reason you would need a synchronize is to guarantee that
+people STOPPED using your memory. Or am I now totally misunderstanding
+RCU ?
