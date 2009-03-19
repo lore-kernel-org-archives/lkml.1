@@ -1,68 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbZCSNEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbZCSNJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756298AbZCSNEV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 09:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbZCSNEI
+	id S1754842AbZCSNJW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 09:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZCSNJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 09:04:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42037 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754357AbZCSNEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 09:04:07 -0400
-Date: Thu, 19 Mar 2009 13:03:25 GMT
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rusty@rustcorp.com.au, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com>
-Subject: [tip:cpus4096] cpumask: remove cpumask allocation from idle_balance, fix
-Message-ID: <tip-8c083f081d0014057901c68a0a3e0f8ca7ac8d23@git.kernel.org>
-Git-Commit-ID: 8c083f081d0014057901c68a0a3e0f8ca7ac8d23
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 19 Mar 2009 13:03:26 +0000 (UTC)
+	Thu, 19 Mar 2009 09:09:13 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33834 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753854AbZCSNJM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 09:09:12 -0400
+Date: Thu, 19 Mar 2009 13:10:02 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Meelis Roos <mroos@linux.ee>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Lava dual parallel PCI card IRQ problem
+Message-ID: <20090319131002.4040b4dd@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0903191500520.4721@ondatra.tartu-labor>
+References: <20090318143921.22B5B13A4B0@koiott.tartu-labor>
+	<Pine.LNX.4.64.0903191500520.4721@ondatra.tartu-labor>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8c083f081d0014057901c68a0a3e0f8ca7ac8d23
-Gitweb:     http://git.kernel.org/tip/8c083f081d0014057901c68a0a3e0f8ca7ac8d23
-Author:     Rusty Russell <rusty@rustcorp.com.au>
-AuthorDate: Thu, 19 Mar 2009 15:22:20 +1030
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 19 Mar 2009 13:49:44 +0100
+> PCI parallel port detected: 1407:8000, I/O at 0xdff0(0x0), IRQ 11
 
-cpumask: remove cpumask allocation from idle_balance, fix
+Well we are half way there - it has detected the port and IRQ properly.
 
-Impact: fix boot crash
+> parport1: PC-style at 0xdff0 [PCSPP,TRISTATE,EPP]
+> [...]
+> lp0: using parport0 (interrupt-driven).
+> lp1: using parport1 (polling).
 
-Fix typo in the size calculation.
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-LKML-Reference: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 48862d4..11dd527 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -8297,7 +8297,7 @@ void __init sched_init(void)
- 	alloc_size *= 2;
- #endif
- #ifdef CONFIG_CPUMASK_OFFSTACK
--	alloc_size *= num_possible_cpus() * cpumask_size();
-+	alloc_size += num_possible_cpus() * cpumask_size();
- #endif
- 	/*
- 	 * As sched_init() is called before page_alloc is setup,
+You may need to stick a few printks in the port registration path to see
+why it made that decision.
