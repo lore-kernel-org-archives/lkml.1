@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbZCSVE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbZCSVFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758521AbZCSVE6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 17:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZCSVEt
+	id S1755331AbZCSVFe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 17:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZCSVFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 17:04:49 -0400
-Received: from www.tglx.de ([62.245.132.106]:53385 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752541AbZCSVEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 17:04:48 -0400
-Date: Thu, 19 Mar 2009 22:02:59 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH] kbuild: work around distcc/icecc madness
-Message-ID: <alpine.LFD.2.00.0903192121300.29264@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 19 Mar 2009 17:05:23 -0400
+Received: from pne-smtpout1-sn2.hy.skanova.net ([81.228.8.83]:45977 "EHLO
+	pne-smtpout1-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752565AbZCSVFW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 17:05:22 -0400
+X-Greylist: delayed 1075 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Mar 2009 17:05:21 EDT
+Message-ID: <49C2B38C.3040606@gmail.com>
+Date: Thu, 19 Mar 2009 22:05:16 +0100
+From: =?ISO-8859-1?Q?Erik_Andr=E9n?= <erik.andren@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: greg@kroah.com
+CC: sjakub@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Fixup asus_oled.c
+References: <1> <1237496227-6078-1-git-send-email-erik.andren@gmail.com> <1237496227-6078-2-git-send-email-erik.andren@gmail.com>
+In-Reply-To: <1237496227-6078-2-git-send-email-erik.andren@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: workaround for distcc/icecc
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Peter and I noticed that distcc and icecc based kernel compiles
-started to show random full kernel rebuilds even when nothing or just
-a .c file changed. The reason is "change of the command line" which
-caused scripts/mod/empty.o to rebuild and due to the dependencies the
-complete kernel tree. I never change the command line simply because I
-use a script for my builds.
+Sorry, wrong patch.
+I'll send the correct one shortly.
 
-The root cause for this problem is the check for the CFI support in
-x86 binutils. The call is generated via:
+Erik Andrén wrote:
+> ---
+>  drivers/staging/asus_oled/asus_oled.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/staging/asus_oled/asus_oled.c b/drivers/staging/asus_oled/asus_oled.c
+> index d81f4bd..7a40f61 100644
+> --- a/drivers/staging/asus_oled/asus_oled.c
+> +++ b/drivers/staging/asus_oled/asus_oled.c
+> @@ -522,7 +522,7 @@ static ssize_t odev_set_picture(struct asus_oled_dev *odev, const char *buf, siz
+>  			line were equal to the last character in this line. */
+>  			if (odev->buf_offs % odev->width != 0) {
+>  				ret = append_values(odev, odev->last_val,
+> -					odev->width - (odev->buf_offs % odev->width);
+> +					odev->width - (odev->buf_offs % odev->width));
+>  				if (ret < 0)
+>  					return ret;
+>  			}
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-    echo -e "$(1)" | $(CC) $(KBUILD_AFLAGS) -c -xassembler -o "$$TMP" -
-
-This works fine as long as a local gcc is used or distcc/icecc use the
-local machine. When distcc/icecc offload the compile to a remote
-machine the compile fails with the following error message:
-   gcc: : No such file or directory
-
-Now we get command lines with -DCONFIG_CFI* and without every other
-compile which causes the full rebuilds.
-
-Digging trough the distcc/icecc code it seems that the stdin input for
-remote compiles is not handled correctly. Indeed there is some strange
-comment about this, but unfortunately no decision to compile it
-local. :(
-
-distcc and icecc are used by many developers and we can not fix the
-versions which are out there in the wild, but we can avoid the stdin
-based call easily: echo the asm code into the temp file which is used
-for the output and use it as input file for the compiler.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
----
- scripts/Kbuild.include |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-Index: linux-2.6-tip/scripts/Kbuild.include
-===================================================================
---- linux-2.6-tip.orig/scripts/Kbuild.include
-+++ linux-2.6-tip/scripts/Kbuild.include
-@@ -98,8 +98,9 @@ as-option = $(call try-run,\
- # as-instr
- # Usage: cflags-y += $(call as-instr,instr,option1,option2)
- 
--as-instr = $(call try-run,\
--	echo -e "$(1)" | $(CC) $(KBUILD_AFLAGS) -c -xassembler -o "$$TMP" -,$(2),$(3))
-+as-instr = $(call try-run,		\
-+	echo -e "$(1)" > "$$TMP"; 	\
-+	$(CC) $(KBUILD_AFLAGS) -c -xassembler -o "$$TMP" "$$TMP",$(2),$(3))
- 
- # cc-option
- # Usage: cflags-y += $(call cc-option,-march=winchip-c6,-march=i586)
+iEYEARECAAYFAknCs4kACgkQN7qBt+4UG0GJjQCgrpAc2Hmq5su3U4uBga3QNwYD
+I2IAnj4eweBvjVaUtb+fgrXE4waKTvr7
+=wCcy
+-----END PGP SIGNATURE-----
