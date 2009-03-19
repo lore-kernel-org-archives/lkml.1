@@ -1,72 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbZCSTj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbZCSTnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757703AbZCSTj3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 15:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbZCSTjT
+	id S1755111AbZCSTnc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 15:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757018AbZCSTnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 15:39:19 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34263 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753872AbZCSTjS (ORCPT
+	Thu, 19 Mar 2009 15:43:20 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46793 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751030AbZCSTnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 15:39:18 -0400
-Date: Thu, 19 Mar 2009 19:39:10 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Christopher Li <sparse@chrisli.org>, linux-sparse@vger.kernel.org,
-       Hannes Eder <hannes@hanneseder.net>, linux-kernel@vger.kernel.org
-Subject: Re: Nasal demons in preprocessor use (Re: [PATCH] test-suite: new
-	preprocessor test case)
-Message-ID: <20090319193910.GE28946@ZenIV.linux.org.uk>
-References: <20090319175544.13691.42362.stgit@f10box.hanneseder.net> <20090319182628.GB28946@ZenIV.linux.org.uk> <154e089b0903191151q37ab7b20o43838845af12966f@mail.gmail.com> <20090319190730.GC28946@ZenIV.linux.org.uk> <20090319192758.GB24318@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090319192758.GB24318@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 19 Mar 2009 15:43:20 -0400
+Message-Id: <20090319194233.744044174@chello.nl>
+References: <20090319192610.660857280@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Thu, 19 Mar 2009 20:26:17 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: mingo@elte.hu, paulus@samba.org, rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 07/10] perf_counter: hook up the tracepoint events
+Content-Disposition: inline; filename=perf_swcounter_event.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 08:27:58PM +0100, Ingo Molnar wrote:
-> Vegard, it's this bit:
-> 
->         kmemcheck_define_bitfield(flags2, {
-> #ifdef CONFIG_IPV6_NDISC_NODETYPE
->                 __u8                    ndisc_nodetype:2;
-> #endif
-> #if defined(CONFIG_MAC80211) || defined(CONFIG_MAC80211_MODULE)
->                 __u8                    do_not_encrypt:1;
->                 __u8                    requeue:1;
-> #endif
->         });
+Enable usage of tracepoints as perf counter events.
 
-BTW, there's a related turd: kernel/cred.c
-        if (
-#ifdef CONFIG_KEYS
-                !p->cred->thread_keyring &&
-#endif
-                clone_flags & CLONE_THREAD
-            ) {
-is not only ucking fugly, it's not a valid C if you have PROFILE_ALL_BRANCHES
-set.  Why?  Because then we get if() #defined ;-/
+tracepoint event ids can be found in /debug/tracing/event/*/*/id
+and (for now) are represented as -65536+id in the type field.
 
-BTW^2, speaking of that ifdef...  What happens to
-static void put_cred_rcu(struct rcu_head *rcu)
-{
-        struct cred *cred = container_of(rcu, struct cred, rcu);
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/perf_counter.h |    3 +++
+ init/Kconfig                 |    5 +++++
+ kernel/perf_counter.c        |   43 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 51 insertions(+)
 
-        if (atomic_read(&cred->usage) != 0)
-                panic("CRED: put_cred_rcu() sees %p with usage %d\n",
-                      cred, atomic_read(&cred->usage));
+Index: linux-2.6/include/linux/perf_counter.h
+===================================================================
+--- linux-2.6.orig/include/linux/perf_counter.h
++++ linux-2.6/include/linux/perf_counter.h
+@@ -53,6 +53,8 @@ enum hw_event_types {
+ 	PERF_COUNT_PAGE_FAULTS_MAJ	= -7,
+ 
+ 	PERF_SW_EVENTS_MIN		= -8,
++
++	PERF_TP_EVENTS_MIN		= -65536
+ };
+ 
+ /*
+@@ -222,6 +224,7 @@ struct perf_counter {
+ 	struct perf_data		*usrdata;
+ 	struct perf_data		data[2];
+ 
++	void (*destroy)(struct perf_counter *);
+ 	struct rcu_head			rcu_head;
+ #endif
+ };
+Index: linux-2.6/kernel/perf_counter.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_counter.c
++++ linux-2.6/kernel/perf_counter.c
+@@ -1152,6 +1152,9 @@ static void free_counter_rcu(struct rcu_
+ 
+ static void free_counter(struct perf_counter *counter)
+ {
++	if (counter->destroy)
++		counter->destroy(counter);
++
+ 	call_rcu(&counter->rcu_head, free_counter_rcu);
+ }
+ 
+@@ -1727,6 +1730,45 @@ static const struct hw_perf_counter_ops 
+ 	.read		= cpu_migrations_perf_counter_read,
+ };
+ 
++#ifdef CONFIG_EVENT_PROFILE
++void perf_tpcounter_event(int event_id)
++{
++	perf_swcounter_event(PERF_TP_EVENTS_MIN + event_id, 1, 1,
++			task_pt_regs(current));
++}
++
++extern int ftrace_profile_enable(int);
++extern void ftrace_profile_disable(int);
++
++static void tp_perf_counter_destroy(struct perf_counter *counter)
++{
++	int event_id = counter->hw_event.type - PERF_TP_EVENTS_MIN;
++
++	ftrace_profile_disable(event_id);
++}
++
++static const struct hw_perf_counter_ops *
++tp_perf_counter_init(struct perf_counter *counter)
++{
++	int event_id = counter->hw_event.type - PERF_TP_EVENTS_MIN;
++	int ret;
++
++	ret = ftrace_profile_enable(event_id);
++	if (ret)
++		return NULL;
++
++	counter->destroy = tp_perf_counter_destroy;
++
++	return &perf_ops_generic;
++}
++#else
++static const struct hw_perf_counter_ops *
++tp_perf_counter_init(struct perf_counter *counter)
++{
++	return NULL;
++}
++#endif
++
+ static const struct hw_perf_counter_ops *
+ sw_perf_counter_init(struct perf_counter *counter)
+ {
+@@ -1772,6 +1814,7 @@ sw_perf_counter_init(struct perf_counter
+ 			hw_ops = &perf_ops_cpu_migrations;
+ 		break;
+ 	default:
++		hw_ops = tp_perf_counter_init(counter);
+ 		break;
+ 	}
+ 
+Index: linux-2.6/init/Kconfig
+===================================================================
+--- linux-2.6.orig/init/Kconfig
++++ linux-2.6/init/Kconfig
+@@ -945,6 +945,11 @@ config PERF_COUNTERS
+ 
+ 	  Say Y if unsure.
+ 
++config EVENT_PROFILE
++	bool "Tracepoint profile sources"
++	depends on PERF_COUNTERS && EVENT_TRACER
++	default y
++
+ endmenu
+ 
+ config VM_EVENT_COUNTERS
 
-        security_cred_free(cred);
-        key_put(cred->thread_keyring);
-        key_put(cred->request_key_auth);
-        release_tgcred(cred);
-        put_group_info(cred->group_info);
-        free_uid(cred->user);
-        kmem_cache_free(cred_jar, cred);
-}
-if CONFIG_KEYS is not set?
+-- 
+
