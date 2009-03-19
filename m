@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757001AbZCSJY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbZCSJeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757001AbZCSJY5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 05:24:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZCSJYs
+	id S1753483AbZCSJeQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 05:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZCSJd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 05:24:48 -0400
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:49432 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751428AbZCSJYr (ORCPT
+	Thu, 19 Mar 2009 05:33:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50951 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751503AbZCSJd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 05:24:47 -0400
-Date: Thu, 19 Mar 2009 14:54:29 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH -tip] cpuacct: per-cgroup utime/stime statistics - v3
-Message-ID: <20090319092429.GF16897@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090317062155.GE3314@in.ibm.com> <1237454248.7867.24.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1237454248.7867.24.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 19 Mar 2009 05:33:57 -0400
+Date: Thu, 19 Mar 2009 02:27:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alex Chiang <achiang@hp.com>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 06/12] PCI: Introduce pci_rescan_bus()
+Message-Id: <20090319022735.f24b7329.akpm@linux-foundation.org>
+In-Reply-To: <20090318223956.887.57080.stgit@bob.kio>
+References: <20090318222426.887.1008.stgit@bob.kio>
+	<20090318223956.887.57080.stgit@bob.kio>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-03-19 10:17:28]:
+On Wed, 18 Mar 2009 16:39:56 -0600 Alex Chiang <achiang@hp.com> wrote:
 
-> On Tue, 2009-03-17 at 11:51 +0530, Bharata B Rao wrote:
-> > Hi,
-> > 
-> > Here is the next version of the cpuacct stime/utime statistics patch.
-> > 
-> > Ingo, Could you please consider this for -tip ?
-> > 
-> > Changes for v3:
-> > - Fix a small race in the cpuacct hierarchy walk.
-> > 
-> > v2:
-> > http://lkml.org/lkml/2009/3/12/170
-> > 
-> > v1:
-> > http://lkml.org/lkml/2009/3/10/150
-> > --
-> > 
-> > cpuacct: Add stime and utime statistics
-> > 
-> > Add per-cgroup cpuacct controller statistics like the system and user
-> > time consumed by the group of tasks.
-> > 
-> > Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> > Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+> This API is used by the PCI core to rescan a bus and rediscover
+> newly added devices.
 > 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Over time, it is expected that the various PCI hotplug drivers
+> will migrate to this interface and away from the old
+> pci_do_scan_bus() interface.
+> 
+> ...
 >
- 
-Sorry, I should done this earlier
+> @@ -1195,10 +1195,39 @@ struct pci_bus * __devinit pci_scan_bus_parented(struct device *parent,
+>  EXPORT_SYMBOL(pci_scan_bus_parented);
+>  
+>  #ifdef CONFIG_HOTPLUG
+> +/**
+> + * pci_rescan_bus - scan a PCI bus for devices.
+> + * @bus: PCI bus to scan
+> + *
+> + * Scan a PCI bus and child buses for new devices, adds them,
+> + * and enables them.
+> + *
+> + * Returns the max number of subordinate bus discovered.
+> + */
+> +unsigned int __devinit pci_rescan_bus(struct pci_bus *bus)
+> +{
+> +	unsigned int max;
+> +	struct pci_dev *dev;
+> +
+> +	max = pci_scan_child_bus(bus);
+> +	list_for_each_entry(dev, &bus->devices, bus_list)
+> +		if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
+> +		    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
+> +			if (dev->subordinate)
+> +				pci_bus_size_bridges(dev->subordinate);
+> +
+> +	pci_bus_assign_resources(bus);
+> +	pci_enable_bridges(bus);
+> +	pci_bus_add_devices(bus);
+> +
+> +	return max;
+> +}
+> +
+>  EXPORT_SYMBOL(pci_add_new_bus);
+>  EXPORT_SYMBOL(pci_scan_slot);
+>  EXPORT_SYMBOL(pci_scan_bridge);
+>  EXPORT_SYMBOL_GPL(pci_scan_child_bus);
+> +EXPORT_SYMBOL_GPL(pci_rescan_bus);
 
+uhm, is there any rationale for the seemingly-random mixup of export types
+in this interface?
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-
--- 
-	Balbir
