@@ -1,159 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbZCSQfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758924AbZCSQhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758891AbZCSQfm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbZCSQfL
+	id S1758924AbZCSQhU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbZCSQhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:35:11 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:44838 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753021AbZCSQfH (ORCPT
+	Thu, 19 Mar 2009 12:37:05 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:38909 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751032AbZCSQhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:35:07 -0400
+	Thu, 19 Mar 2009 12:37:04 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4UpUBdE5/HuH1R9pYyr/1O2R4kiTuAO+JXJqxg3s6vMVRr2EpLuwRwgesqG53A1Y+Z3AG+8oo7SYGlRaUFDaTNeEaQhRu+7vMkIn3j6svchWZr83o9fEQ/Wjd1piE0NuHQM6Ae5YnD4fCTHi795tsx6atSs1DOOmD2BhT0QuWsw=  ;
-X-YMail-OSG: iS5W.CAVM1lFSnJDv78amvJDo6aAiR5HxQC.nZQcNtxhV..4S8_uFmL3eokkelCUNvuvqcIz5OzLCYCjU3P86yOax2FV.wt9mQl3XQ0RPKc.MgDNOuljDKmuvTFfeTz9MPNLUsoWAxKYxa6ghYgWbui6AqK46l.BwfUVNpR9zRsU1NrXiMTPq7zTVUi3vg--
+  b=znPc0h7i+YkC7f8a+lr3ubmF2dkLWMPycfypoDH5x+grf7ZwAVgF89ph6hmSBLBvCqOg8h4R3VTc+5d5CRHZf5kiFPSXTM2nOq5p+pkx66resKhrUUGD2EhqmJSny5gAlUemTOuaExbRLSTod1xHxzH6UmbGxADb3354VGFpyHY=  ;
+X-YMail-OSG: LK6pvkEVM1kpBi703SdRNXr9FyomfJ.Cbb0m_0EKTe04Pb_4isczFk3tKB1iHoXtHxZlxS5CcRj7k6HU27BBpzRFCg7cdxURVa5XdQC7c_UlStVDGEbXwF9Hw_unPASWspWjvFuHNc3bjgaNzwqC45OYDWdTgyDrWYrF260t2T8.ZlZoQbIE_a1qF36NOIWd0ysfqQt4evr6Ab4kK2WguLE6OaMp18YFrNlTg6YMBdgq
 X-Yahoo-Newman-Property: ymail-3
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Date: Fri, 20 Mar 2009 03:34:54 +1100
+Date: Fri, 20 Mar 2009 03:36:52 +1100
 User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
 Cc: Ying Han <yinghan@google.com>, Jan Kara <jack@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel" <linux-kernel@vger.kernel.org>,
        "linux-mm" <linux-mm@kvack.org>, guichaz@gmail.com,
        Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <alpine.LFD.2.00.0903190902000.17240@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903190902000.17240@localhost.localdomain>
+       Rohit Seth <rohitseth@google.com>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <1237479361.24626.23.camel@twins>
+In-Reply-To: <1237479361.24626.23.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903200334.55710.nickpiggin@yahoo.com.au>
+Message-Id: <200903200336.53545.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 March 2009 03:20:57 Linus Torvalds wrote:
-> On Fri, 20 Mar 2009, Nick Piggin wrote:
+On Friday 20 March 2009 03:16:01 Peter Zijlstra wrote:
+> On Fri, 2009-03-20 at 02:48 +1100, Nick Piggin wrote:
+> > On Thursday 19 March 2009 10:54:33 Ying Han wrote:
+> > > On Wed, Mar 18, 2009 at 4:36 PM, Linus Torvalds
+> > >
+> > > <torvalds@linux-foundation.org> wrote:
+> > > > On Wed, 18 Mar 2009, Ying Han wrote:
+> > > >> > Can you say what filesystem, and what mount-flags you use? Iirc,
+> > > >> > last time we had MAP_SHARED lost writes it was at least partly
+> > > >> > triggered by the filesystem doing its own flushing independently
+> > > >> > of the VM (ie ext3 with "data=journal", I think), so that kind of
+> > > >> > thing does tend to matter.
+> > > >>
+> > > >> /etc/fstab
+> > > >> "/dev/hda1 / ext2 defaults 1 0"
+> > > >
+> > > > Sadly, /etc/fstab is not necessarily accurate for the root
+> > > > filesystem. At least Fedora will ignore the flags in it.
+> > > >
+> > > > What does /proc/mounts say? That should be a more reliable indication
+> > > > of what the kernel actually does.
+> > >
+> > > "/dev/root / ext2 rw,errors=continue 0 0"
+> >
+> > No luck with finding the problem yet.
+> >
 > > But I think we do have a race in __set_page_dirty_buffers():
 > >
 > > The page may not have buffers between the mapping->private_lock
 > > critical section and the __set_page_dirty call there. So between
 > > them, another thread might do a create_empty_buffers which can
-> > see !PageDirty and thus it will create clean buffers.
->
-> Hmm.
->
-> Creating clean buffers is locked by the page lock, nothing else.  And not
-> all page dirtiers hold the page lock (in fact, most try to avoid it - the
-> rule is that you either have to hold the page lock _or_ hold a reference
-> to the 'mapping', and the latter is what the mmap code does, I think).
->
-> So yeah, the page lock isn't sufficient.
-
-No. FWIW, I thought there might be a race due to page fault code
-not holding page lock over set_page_dirty (well there *are* some kinds
-of races, but they're another story). So I tried out my patches that
-move that lock over set_page_dirty for __do_fault and do_wp_page
-(so the lock is held over pte_mkwrite and set_page_dirty), but that
-still didn't solve the problem either.
-
-
+> > see !PageDirty and thus it will create clean buffers. The page
+> > will get dirtied by the original thread, but if the buffers are
+> > clean it can be cleaned without writing out buffers.
+> >
 > > Holding mapping->private_lock over the __set_page_dirty should
 > > fix it, although I guess you'd want to release it before calling
 > > __mark_inode_dirty so as not to put inode_lock under there. I
 > > have a patch for this if it sounds reasonable.
 >
-> That would seem to make sense. Maybe moving the "TestSetPageDirty()" from
-> inside __set_page_dirty() to the caller? Something like the appended?
+> When I first did those dirty tracking patches someone (I think Andrew)
+> commented no the fact that I did set_page_dirty() under one of these
+> inner locks..
 >
-> This is TOTALLY untested. Of course.
+> /me frobs around in archives for a bit..
+>
+>  - fs/buffers.c try_to_free_buffers(): remove clear_page_dirty() from under
+>    ->private_lock. This seems to be save, since ->private_lock is used to
+>    serialize access to the buffers, not the page itself.
+>
+> Hmm, that's a slightly different issue...
+>
+> But yeah, your scenario makes heaps of sense.
+>
+> Can't we do the TestSetPageDirty() before private_lock ? It's currently
+> done before tree_lock as well.
 
-Yeah, probably no need to hold private_lock while tagging the radix
-tree (which is what my version did). So maybe this one is a little
-better. I did test mine, it worked, but it didn't solve the problem.
-
-Still, it does appear to solve a real race, which we should close.
-
->
-> 			Linus
->
-> ---
->  fs/buffer.c |   23 +++++++++++------------
->  1 files changed, 11 insertions(+), 12 deletions(-)
->
-> diff --git a/fs/buffer.c b/fs/buffer.c
-> index 9f69741..891e1c7 100644
-> --- a/fs/buffer.c
-> +++ b/fs/buffer.c
-> @@ -760,15 +760,9 @@ EXPORT_SYMBOL(mark_buffer_dirty_inode);
->   * If warn is true, then emit a warning if the page is not uptodate and
-> has * not been truncated.
->   */
-> -static int __set_page_dirty(struct page *page,
-> +static void __set_page_dirty(struct page *page,
->  		struct address_space *mapping, int warn)
->  {
-> -	if (unlikely(!mapping))
-> -		return !TestSetPageDirty(page);
-> -
-> -	if (TestSetPageDirty(page))
-> -		return 0;
-> -
->  	spin_lock_irq(&mapping->tree_lock);
->  	if (page->mapping) {	/* Race with truncate? */
->  		WARN_ON_ONCE(warn && !PageUptodate(page));
-> @@ -785,8 +779,6 @@ static int __set_page_dirty(struct page *page,
->  	}
->  	spin_unlock_irq(&mapping->tree_lock);
->  	__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
-> -
-> -	return 1;
->  }
->
->  /*
-> @@ -816,6 +808,7 @@ static int __set_page_dirty(struct page *page,
->   */
->  int __set_page_dirty_buffers(struct page *page)
->  {
-> +	int newly_dirty;
->  	struct address_space *mapping = page_mapping(page);
->
->  	if (unlikely(!mapping))
-> @@ -831,9 +824,12 @@ int __set_page_dirty_buffers(struct page *page)
->  			bh = bh->b_this_page;
->  		} while (bh != head);
->  	}
-> +	newly_dirty = !TestSetPageDirty(page);
->  	spin_unlock(&mapping->private_lock);
->
-> -	return __set_page_dirty(page, mapping, 1);
-> +	if (newly_dirty)
-> +		__set_page_dirty(page, mapping, 1);
-> +	return newly_dirty;
->  }
->  EXPORT_SYMBOL(__set_page_dirty_buffers);
->
-> @@ -1262,8 +1258,11 @@ void mark_buffer_dirty(struct buffer_head *bh)
->  			return;
->  	}
->
-> -	if (!test_set_buffer_dirty(bh))
-> -		__set_page_dirty(bh->b_page, page_mapping(bh->b_page), 0);
-> +	if (!test_set_buffer_dirty(bh)) {
-> +		struct page *page = bh->b_page;
-> +		if (!TestSetPageDirty(page))
-> +			__set_page_dirty(page, page_mapping(page), 0);
-> +	}
->  }
->
->  /*
-
+I think there might be issues with having a clean page but dirty buffers
+if you do it that way... At any rate, if we can solve the race without
+swapping the order, I think that would be safer.
 
